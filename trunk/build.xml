@@ -23,8 +23,12 @@
 		<loadproperties srcFile="${basedir}/build.properties" />
 	</target>
 
-    <target name="clean">
+    <target name="clean" depends="load-properties">
         <delete dir="${build.dir}" failonerror="false"/>
+    	<delete failonerror="false">
+    		<fileset dir="${dist.dir}" includes="**/*.jar"/>
+			<fileset dir="${dist.dir}" includes="**/*.war"/>
+    	</delete>
     </target>
     
     <target name="init" depends="clean, set-debug-mode, set-optimize-mode">
@@ -184,5 +188,121 @@
 		</xmlvalidate>	
 	</target>
 	
+    <target name="doc" depends="load-properties">
+        <delete dir="${dist.dir}/doc" failonerror="false"/>
+        <mkdir dir="${dist.dir}/doc"/>
+    	<javadoc destdir="${dist.dir}/doc" author="true" version="true" use="true" windowtitle="UniTime API Documentation" source="1.5" linksource="false" breakiterator="true" useexternalfile="yes">
+    		<doctitle><![CDATA[
+    		<table border='0' style='font-size: 11pt;font-weight: normal;'><tr><td align='left'>
+    			UniTime 3.0 (University Course Timetabling & Student Sectioning Application)<br>
+    			Copyright (C) 2007, UniTime.org
+        		<br><br>
+    			This program is free software; you can redistribute it and/or modify
+    			it under the terms of the GNU General Public License as published by
+    			the Free Software Foundation; either version 2 of the License, or
+    			(at your option) any later version.
+        		<br><br>
+    			This program is distributed in the hope that it will be useful,
+    			but WITHOUT ANY WARRANTY; without even the implied warranty of
+    			MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    			GNU General Public License for more details.
+        		<br><br>
+    			You should have received a copy of the GNU General Public License along
+    			with this program; if not, write to the Free Software Foundation, Inc.,
+    			51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+    		</td></tr></table>
+   			]]></doctitle>
+	 	   	<group title="UniTime Common Classes" packages="org.unitime.commons*"/>
+	   	   	<group title="University Course Timetabling" packages="org.unitime.timetable*"/>
+	 	   	<link href="http://java.sun.com/j2se/1.5.0/docs/api/"/>
+			<fileset dir="${src.dir}"/>
+			<classpath>
+	            <fileset dir="${lib.dir}">
+	            	<include name="*.jar"/>
+	            </fileset>
+				<fileset dir="${3rd_party.dir}">
+					<include name="*.jar" />
+				</fileset>
+			</classpath>
+    	</javadoc>
+    	<replace dir="${dist.dir}/doc">
+    		<include name="**/*.html"/>
+    		<replacetoken>Tomas Muller</replacetoken>
+    		<replacevalue>Tom&#225;&#353; M&#252;ller</replacevalue>
+		</replace>
+    </target>
+
+    <target name="build-dist" depends="compile-war,doc">
+		<tar destfile="${dist.dir}/unitime-3.0_bld${build.number}.tar">
+			<tarfileset dir="${basedir}/Documentation/License" includes="gpl.txt" fullpath="license/gpl.txt"/>
+			<tarfileset dir="${basedir}/Documentation" includes="ReadMe.txt" fullpath="doc/readme.txt"/>
+			<tarfileset dir="${basedir}/Documentation/Interfaces" includes="*.dtd" prefix="doc/dtd"/>
+			<tarfileset dir="${basedir}/Documentation/Interfaces/Examples" includes="*.xml" prefix="doc/dtd"/>
+			<tarfileset dir="${basedir}/Documentation/Database/MySQL" includes="*.sql" prefix="doc/mysql"/>
+			<tarfileset dir="${dist.dir}" includes="*.war" prefix="web"/>
+			<tarfileset dir="${dist.dir}" includes="solver.jar" prefix="solver-min"/>
+			<tarfileset dir="${dist.dir}" includes="timetable.jar" prefix="solver"/>
+			<tarfileset dir="${lib.dir}" prefix="solver">
+				<include name="cpsolver-all-1.1.jar"/>
+				<include name="dom4j-1.6.1.jar"/>
+				<include name="hibernate3.jar"/>
+				<include name="commons-logging-1.1.jar"/>
+				<include name="commons-collections-3.2.jar"/>
+				<include name="cglib-2.1.3.jar"/>
+				<include name="asm-attrs.jar"/>
+				<include name="asm.jar"/>
+				<include name="ehcache-1.2.3.jar"/>
+				<include name="jta.jar"/>
+				<include name="antlr-2.7.6.jar"/>
+				<include name="commons-dbcp-1.2.2.jar"/>
+				<include name="commons-pool-1.3.jar"/>
+				<include name="mysql-connector-java-5.0.5-bin.jar"/>
+			</tarfileset>
+			<tarfileset dir="${3rd_party.dir}" prefix="solver">
+				<include name="jsp-api.jar"/>
+				<include name="servlet-api.jar"/>
+				<include name="log4j-1.2.8.jar"/>
+				<include name="ojdbc14.jar"/>
+			</tarfileset>
+			<tarfileset dir="${dist.dir}/doc" prefix="doc/api"/>
+		</tar>
+		<gzip zipfile="${dist.dir}/unitime-3.0_bld${build.number}.tar.gz" src="${dist.dir}/unitime-3.0_bld${build.number}.tar"/>
+		<delete file="${dist.dir}/unitime-3.0_bld${build.number}.tar"/>
+		<zip destfile="${dist.dir}/unitime-3.0_bld${build.number}.zip">
+			<zipfileset dir="${basedir}/Documentation/License" includes="gpl.txt" fullpath="license/gpl.txt"/>
+			<zipfileset dir="${basedir}/Documentation" includes="ReadMe.txt" fullpath="doc/readme.txt"/>
+			<zipfileset dir="${basedir}/Documentation/Interfaces" includes="*.dtd" prefix="doc/dtd"/>
+			<zipfileset dir="${basedir}/Documentation/Interfaces/Examples" includes="*.xml" prefix="doc/dtd"/>
+			<zipfileset dir="${basedir}/Documentation/Database/MySQL" includes="*.sql" prefix="doc/mysql"/>
+			<zipfileset dir="${dist.dir}" includes="*.war" prefix="web"/>
+			<zipfileset dir="${dist.dir}" includes="solver.jar" prefix="solver-min"/>
+			<zipfileset dir="${dist.dir}" includes="timetable.jar" prefix="solver"/>
+			<zipfileset dir="${lib.dir}" prefix="solver">
+				<include name="cpsolver-all-1.1.jar"/>
+				<include name="dom4j-1.6.1.jar"/>
+				<include name="hibernate3.jar"/>
+				<include name="commons-logging-1.1.jar"/>
+				<include name="commons-collections-3.2.jar"/>
+				<include name="cglib-2.1.3.jar"/>
+				<include name="asm-attrs.jar"/>
+				<include name="asm.jar"/>
+				<include name="ehcache-1.2.3.jar"/>
+				<include name="jta.jar"/>
+				<include name="antlr-2.7.6.jar"/>
+				<include name="commons-dbcp-1.2.2.jar"/>
+				<include name="commons-pool-1.3.jar"/>
+				<include name="mysql-connector-java-5.0.5-bin.jar"/>
+			</zipfileset>
+			<zipfileset dir="${3rd_party.dir}" prefix="solver">
+				<include name="jsp-api.jar"/>
+				<include name="servlet-api.jar"/>
+				<include name="log4j-1.2.8.jar"/>
+				<include name="ojdbc14.jar"/>
+			</zipfileset>
+			<zipfileset dir="${dist.dir}/doc" prefix="doc/api"/>
+		</zip>
+	</target>
+	
 	<target name="build" depends="load-properties,compile-war,done" />
+	<target name="dist" depends="load-properties,compile-war,build-dist,done" />
 </project>
