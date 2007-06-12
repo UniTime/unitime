@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+ * UniTime 3.0 (University Course Timetabling & Student Sectioning Application)
+ * Copyright (C) 2007, UniTime.org
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ -->
+<project name="UniTime" basedir="." default="build">
+
+	<target name="load-properties">
+		<loadproperties srcFile="${basedir}/build.properties" />
+	</target>
+
+    <target name="clean">
+        <delete dir="${build.dir}" failonerror="false"/>
+    </target>
+    
+    <target name="init" depends="clean, set-debug-mode, set-optimize-mode">
+        <mkdir dir="${build.dir}"/>
+        <mkdir dir="${temp.dir}"/>
+    	<mkdir dir="${dist.dir}"/>
+    </target>
+	
+	<target name="set-debug-mode" unless="java.debug">
+		<property name="java.debug" value="false"/>
+	</target>
+	
+	<target name="set-optimize-mode" unless="java.optimize">
+		<property name="java.optimize" value="true"/>
+	</target>
+    
+    <target name="prepare" depends="init">
+        <buildnumber/>
+        <echo message="Build number: ${build.number}"/>
+        <tstamp>
+            <format property="build.date" pattern="EEE, d MMM yyyy" locale="en"/>
+        </tstamp>
+        <echo message="Build date: ${build.date}"/>
+        <propertyfile file="build.date" comment="Build info">
+            <entry  key="build.date" value="${build.date}"/>
+        	<entry  key="build.number" value="${build.number}"/>
+        </propertyfile>
+        <copy todir="${build.dir}" overwrite="Yes" preservelastmodified="Yes">
+            <fileset dir="${src.dir}" includes="**/*.java"/>
+        </copy>
+        <replace file="${build.dir}/org/unitime/timetable/util/Constants.java" propertyFile="build.date">
+            <replacefilter token="@build.date@" property="build.date"/>
+        </replace>
+        <replace file="${build.dir}/org/unitime/timetable/util/Constants.java" propertyFile="build.date">
+            <replacefilter token="@build.number@" property="build.number"/>
+        </replace>
+        <path id="build.classpath">
+            <fileset dir="${lib.dir}">
+            	<include name="*.jar"/>
+            </fileset>
+			<fileset dir="${3rd_party.dir}">
+				<include name="*.jar" />
+			</fileset>
+        </path>
+    </target>
+	
+	<target name="compile-java" depends="prepare">
+		<javac debug="${java.debug}" optimize="${java.optimize}" source="1.5" target="1.5" destdir="${build.dir}">
+			<src path="${build.dir}" />
+			<classpath refid="build.classpath" />
+		</javac>
+		
+		<delete file="build.date" failonerror="false" />		
+	</target>
+
+	<target name="timetable-jar" depends="compile-java">
+		<jar destfile="${dist.dir}/timetable.jar">
+			<fileset dir="${build.dir}">
+				<include name="**/*.class" />
+			</fileset>
+			<fileset dir="${src.dir}">
+				<include name="*.xml" />
+				<include name="*.properties" />
+				<include name="solver.key" />
+			</fileset>
+			<manifest>
+				<attribute name="Main-Class" value="org.unitime.timetable.solver.remote.core.Startup" />
+				<attribute name="Class-Path" value="cpsolver-all-1.1.jar log4j-1.2.8.jar dom4j-1.6.1.jar hibernate3.jar commons-logging-1.1.jar commons-collections-3.2.jar cglib-2.1.3.jar asm-attrs.jar asm.jar ehcache-1.2.3.jar jta.jar antlr-2.7.6.jar jsp-api.jar servlet-api.jar ojdbc14.jar commons-dbcp-1.2.2.jar commons-pool-1.3.jar mysql-connector-java-5.0.5-bin.jar" />
+				<attribute name="Timetabling-Version" value="3.0_bld${build.number}"/>
+			</manifest>
+		</jar>
+	</target>
+
+	<target name="solver-jar" depends="compile-java">
+		<jar destfile="${dist.dir}/solver.jar">
+			<fileset dir="${build.dir}">
+				<include name="org/unitime/timetable/solver/remote/core/*.class" />
+			</fileset>
+			<fileset dir="${src.dir}">
+				<include name="application.properties" />
+				<include name="custom.properties" />
+				<include name="solver.key" />
+			</fileset>
+			<fileset dir="${jsp.dir}">
+				<include name="images/solver*.gif" />
+			</fileset>
+			<manifest>
+				<attribute name="Main-Class" value="org.unitime.timetable.solver.remote.core.StartupMinimal" />
+				<attribute name="Class-Path" value="tray-win32.jar" />
+				<attribute name="Timetabling-Version" value="3.0_bld${build.number}"/>
+			</manifest>
+		</jar>
+		<signjar jar="${dist.dir}/solver.jar" alias="solver" storepass="Fh3g1H03e95kf54xZ" keystore="${src.dir}/solver.key"/>
+	</target>	
+
+	<target name="copy-libs" depends="init">
+		<copy todir="${war.dir}/WEB-INF/lib" overwrite="Yes" preservelastmodified="Yes">
+			<fileset dir="${lib.dir}">
+				<include name="*.jar" />
+			</fileset>
+		</copy>
+		<copy todir="${war.dir}/WEB-INF" overwrite="Yes" preservelastmodified="Yes">
+			<fileset dir="${jsp.dir}/WEB-INF">
+				<include name="**/*.xml" />
+				<include name="**/*.tld" />
+				<include name="**/*.xsd" />
+				<include name="**/*.dtd" />
+				<exclude name="classes/**/*.*" />
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="copy-jsp" depends="init, solver-jar">
+		<copy todir="${war.dir}" overwrite="Yes" preservelastmodified="Yes">
+			<fileset dir="${jsp.dir}">
+				<include name="**/*.js" />
+				<include name="**/*.jsp" />
+				<include name="**/*.jspf" />
+				<include name="**/*.htm" />
+				<include name="**/*.html" />
+				<include name="**/*.css" />
+				<include name="images/*.jpg" />
+				<include name="images/*.png" />
+				<include name="images/*.gif" />
+				<include name="images/*.ico" />
+				<include name="solver/*.jar" />
+				<include name="solver/*.jnlp" />
+				<include name="help/**/*.*" />
+				<include name="scripts/**/*.gif" />
+				<exclude name="WEB-INF/classes/**/*.*" />
+				<exclude name="test/**/*.*" />
+			</fileset>
+		</copy>
+		<replace file="${war.dir}/help/Release-Notes.xml" token="@release.date@" value="${build.date}" />
+		<copy todir="${war.dir}/solver" file="${dist.dir}/solver.jar"/>
+	</target>
+
+	<target name="compile-war" depends="timetable-jar,copy-libs,copy-jsp">
+		<copy todir="${war.dir}/WEB-INF/lib" file="${dist.dir}/timetable.jar"/>
+		<jar destfile="${dist.dir}/UniTime.war">
+			<fileset dir="${war.dir}">
+				<include name="**/*.*" />
+			</fileset>
+			<manifest>
+				<attribute name="Timetabling-Version" value="3.0_bld${build.number}"/>
+			</manifest>
+		</jar>
+	</target>
+
+	<target name="done">
+		<delete dir="${temp.dir}" />
+	</target>
+
+	<target name="validate">
+		<xmlvalidate failonerror="no">
+		  <fileset dir="Documentation/Interfaces/Examples" includes="**/*.xml"/>
+		</xmlvalidate>	
+	</target>
+	
+	<target name="build" depends="load-properties,compile-war,done" />
+</project>

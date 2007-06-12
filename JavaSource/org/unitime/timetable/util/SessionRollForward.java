@@ -1,0 +1,1343 @@
+/*
+ * UniTime 3.0 (University Course Timetabling & Student Sectioning Application)
+ * Copyright (C) 2007, UniTime.org, and individual contributors
+ * as indicated by the @authors tag.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
+package org.unitime.timetable.util;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.TreeSet;
+import java.util.Vector;
+
+import org.apache.struts.action.ActionMessage;
+import org.apache.struts.action.ActionMessages;
+import org.unitime.commons.Debug;
+import org.unitime.timetable.form.RollForwardSessionForm;
+import org.unitime.timetable.model.Building;
+import org.unitime.timetable.model.BuildingPref;
+import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.DatePattern;
+import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.DepartmentRoomFeature;
+import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.Designator;
+import org.unitime.timetable.model.DistributionPref;
+import org.unitime.timetable.model.DistributionType;
+import org.unitime.timetable.model.ExternalBuilding;
+import org.unitime.timetable.model.ExternalRoom;
+import org.unitime.timetable.model.ExternalRoomDepartment;
+import org.unitime.timetable.model.ExternalRoomFeature;
+import org.unitime.timetable.model.GlobalRoomFeature;
+import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.NonUniversityLocation;
+import org.unitime.timetable.model.PreferenceGroup;
+import org.unitime.timetable.model.Room;
+import org.unitime.timetable.model.RoomDept;
+import org.unitime.timetable.model.RoomFeature;
+import org.unitime.timetable.model.RoomFeaturePref;
+import org.unitime.timetable.model.RoomGroup;
+import org.unitime.timetable.model.RoomGroupPref;
+import org.unitime.timetable.model.RoomPref;
+import org.unitime.timetable.model.SchedulingSubpart;
+import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.SolverGroup;
+import org.unitime.timetable.model.SubjectArea;
+import org.unitime.timetable.model.TimePattern;
+import org.unitime.timetable.model.TimePref;
+import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.model.dao.BuildingDAO;
+import org.unitime.timetable.model.dao.CourseCatalogDAO;
+import org.unitime.timetable.model.dao.DatePatternDAO;
+import org.unitime.timetable.model.dao.DepartmentDAO;
+import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
+import org.unitime.timetable.model.dao.DistributionTypeDAO;
+import org.unitime.timetable.model.dao.ExternalBuildingDAO;
+import org.unitime.timetable.model.dao.ExternalRoomDAO;
+import org.unitime.timetable.model.dao.ExternalRoomDepartmentDAO;
+import org.unitime.timetable.model.dao.ExternalRoomFeatureDAO;
+import org.unitime.timetable.model.dao.GlobalRoomFeatureDAO;
+import org.unitime.timetable.model.dao.NonUniversityLocationDAO;
+import org.unitime.timetable.model.dao.RoomDAO;
+import org.unitime.timetable.model.dao.RoomDeptDAO;
+import org.unitime.timetable.model.dao.RoomFeatureDAO;
+import org.unitime.timetable.model.dao.RoomGroupDAO;
+import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.model.dao.SolverGroupDAO;
+import org.unitime.timetable.model.dao.SubjectAreaDAO;
+import org.unitime.timetable.model.dao.TimePatternDAO;
+import org.unitime.timetable.model.dao.TimetableManagerDAO;
+
+
+/**
+ * @author Stephanie Schluttenhofer
+ *
+ */
+public class SessionRollForward {
+	private static HashMap roomList;
+	private static HashMap sessionHasCourseCatalogList;
+	private static HashMap sessionHasExternalBuildingList;
+	private static HashMap sessionHasExternalRoomList;
+	private static HashMap sessionHasExternalRoomDeptList;
+	private static HashMap sessionHasExternalRoomFeatureList;
+
+
+	public void rollBuildingAndRoomDataForward(ActionMessages errors, RollForwardSessionForm rollForwardSessionForm) {
+		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
+		Session fromSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollRoomDataForwardFrom());
+
+		rollRoomFeaturesForward(errors, fromSession, toSession);
+		rollRoomGroupsForward(errors, fromSession, toSession);
+		rollBuildingsForward(errors, fromSession, toSession);
+		rollLocationsForward(errors, fromSession, toSession);
+		(new SessionDAO()).getSession().clear();
+	}
+
+	private void rollRoomGroupsForward(ActionMessages errors, Session fromSession, Session toSession) {
+		RoomGroup fromRoomGroup = null;
+		RoomGroup toRoomGroup = null;
+		RoomGroupDAO rgDao = new RoomGroupDAO();
+		RoomDAO rDao = new RoomDAO();
+		NonUniversityLocationDAO nulDao = new NonUniversityLocationDAO();
+		Collection fromRoomGroups = RoomGroup.getAllRoomGroupsForSession(fromSession);
+		try {
+			if (fromRoomGroups != null && !fromRoomGroups.isEmpty()){
+				for (Iterator it = fromRoomGroups.iterator(); it.hasNext();){
+					fromRoomGroup = (RoomGroup) it.next();
+					if (fromRoomGroup != null){
+						if(!fromRoomGroup.isGlobal().booleanValue()){
+							toRoomGroup = (RoomGroup) fromRoomGroup.clone();
+							toRoomGroup.setSession(toSession);
+							toRoomGroup.setDepartment(fromRoomGroup.getDepartment().findSameDepartmentInSession(toSession));
+							rgDao.saveOrUpdate(toRoomGroup);
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+			Debug.error(e.getStackTrace().toString());
+			Debug.error(e.getMessage());
+			errors.add("rollForward", new ActionMessage("errors.rollForward", "Room Groups", fromSession.getLabel(), toSession.getLabel(), "Failed to roll all room groups forward."));
+		}
+	}
+
+	private void rollRoomFeaturesForward(ActionMessages errors, Session fromSession, Session toSession) {
+		DepartmentRoomFeature fromRoomFeature = null;
+		DepartmentRoomFeature toRoomFeature = null;
+		RoomFeatureDAO rfDao = new RoomFeatureDAO();
+		RoomDAO rDao = new RoomDAO();
+		NonUniversityLocationDAO nulDao = new NonUniversityLocationDAO();
+		Collection fromRoomFeatures = DepartmentRoomFeature.getAllRoomFeaturesForSession(fromSession);
+		try{
+			if (fromRoomFeatures != null && !fromRoomFeatures.isEmpty()){
+				for(Iterator it = fromRoomFeatures.iterator(); it.hasNext();){
+					fromRoomFeature = (DepartmentRoomFeature) it.next();
+					if (fromRoomFeature != null){
+						toRoomFeature = (DepartmentRoomFeature)fromRoomFeature.clone();
+						toRoomFeature.setDepartment(fromRoomFeature.getDepartment().findSameDepartmentInSession(toSession));
+						rfDao.saveOrUpdate(toRoomFeature);
+					}
+				}
+			}
+			if (sessionHasExternalRoomFeatureList(toSession)){
+				GlobalRoomFeatureDAO grfDao = new GlobalRoomFeatureDAO();
+				GlobalRoomFeature grf = null;
+				List newGlobalFeatures = grfDao.getQuery("select distinct erf.value, erf.name from ExternalRoomFeature erf" +
+					" where erf.room.building.session.uniqueId=:sessionId" +
+					"  and erf.value not in (select grf.label from GlobalRoomFeature grf)")
+					.setLong("sessionId", toSession.getUniqueId())
+					.list();
+				if (newGlobalFeatures != null){
+					String newLabel = null;
+					String newSisReference = null;
+					for (Iterator nrfIt = newGlobalFeatures.iterator(); nrfIt.hasNext();){
+						List l = (List) nrfIt.next();
+						if (l != null && l.size() == 2){
+							newLabel = (String) l.get(0);
+							newSisReference = (String) l.get(1);
+							grf = new GlobalRoomFeature();
+							grf.setLabel(newLabel);
+							grf.setSisReference(newSisReference);
+							grf.setSisValue(null);
+							grfDao.saveOrUpdate(grf);
+						}
+						
+					}
+				}
+				
+			}
+		} catch (Exception e) {
+			Debug.error(e.getStackTrace().toString());
+			Debug.error(e.getMessage());
+			errors.add("rollForward", new ActionMessage("errors.rollForward", "Room Features", fromSession.getLabel(), toSession.getLabel(), "Failed to roll all room features forward."));
+		}	
+	}
+
+	private void rollRoomFeaturesForLocationForward(Location fromLocation, Location toLocation, Session toSession, HashMap roomFeatureCache){
+		if(fromLocation.getFeatures() != null && !fromLocation.getFeatures().isEmpty()){
+			RoomFeature fromFeature = null;
+			GlobalRoomFeature toGlobalFeature = null;
+			DepartmentRoomFeature toDepartmentFeature = null;
+			boolean rollGlobalFeaturesFromFromLocation = true;
+			if (toLocation instanceof Room) {
+				Room toRoom = (Room) toLocation;
+				if (toRoom.getExternalUniqueId() != null){
+					ExternalRoom er = ExternalRoom.findExternalRoomForSession(toRoom.getExternalUniqueId(), toSession);
+					if (er != null){
+						rollGlobalFeaturesFromFromLocation = false;
+						if (er.getRoomFeatures() != null){
+							ExternalRoomFeature erf = null;
+							for (Iterator erfIt = er.getRoomFeatures().iterator(); erfIt.hasNext();){
+								erf = (ExternalRoomFeature) erfIt.next();
+								toGlobalFeature = GlobalRoomFeature.findGlobalRoomFeatureForLabel(erf.getValue());
+								toLocation.addTofeatures(toGlobalFeature);
+							}
+						}
+					}
+				}
+			}
+			for(Iterator rfIt = fromLocation.getFeatures().iterator(); rfIt.hasNext();){
+				fromFeature = (RoomFeature) rfIt.next();
+				if (fromFeature instanceof GlobalRoomFeature && rollGlobalFeaturesFromFromLocation) {
+					GlobalRoomFeature fromGlobalFeature = (GlobalRoomFeature) fromFeature;
+					toLocation.addTofeatures(fromGlobalFeature);
+					fromGlobalFeature.getRooms().add(toLocation);
+				} else if (fromFeature instanceof DepartmentRoomFeature) {
+					DepartmentRoomFeature fromDepartmentFeature = (DepartmentRoomFeature) fromFeature;
+					toDepartmentFeature = (DepartmentRoomFeature) roomFeatureCache.get(fromDepartmentFeature);
+					if (toDepartmentFeature == null){
+						toDepartmentFeature = fromDepartmentFeature.findSameFeatureInSession(toSession);
+						if (toDepartmentFeature != null){
+							roomFeatureCache.put(fromDepartmentFeature, toDepartmentFeature);
+							toLocation.addTofeatures(toDepartmentFeature);
+							if (toDepartmentFeature.getRooms() == null){
+								toDepartmentFeature.setRooms(new java.util.HashSet());
+							}
+							toDepartmentFeature.getRooms().add(toLocation);
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	private void rollRoomForward(ActionMessages errors, Session fromSession, Session toSession, Location location) {
+		Room fromRoom = null;
+		Room toRoom = null;
+		RoomDAO rDao = new RoomDAO();
+		RoomDeptDAO rdDao = new RoomDeptDAO();
+		DepartmentDAO dDao = new DepartmentDAO();
+		Building toBuilding = null;
+		RoomDept fromRoomDept = null;
+		RoomDept toRoomDept = null;
+		Department toDept = null;
+		Department fromDept = null;
+		HashMap roomFeatureCache = new HashMap();
+		HashMap roomGroupCache = new HashMap();
+
+		try {
+			fromRoom = (Room) location;		
+			
+			if (fromRoom.getExternalUniqueId() != null &&sessionHasExternalRoomList(toSession)){
+				ExternalRoom toExternalRoom = ExternalRoom.findExternalRoomForSession(fromRoom.getExternalUniqueId(), toSession);
+				if (toExternalRoom != null) {
+					toRoom = new Room();
+					toRoom.setCapacity(toExternalRoom.getCapacity());
+					toRoom.setClassification(toExternalRoom.getClassification());
+					toRoom.setCoordinateX(toExternalRoom.getCoordinateX());
+					toRoom.setCoordinateY(toExternalRoom.getCoordinateY());
+					toRoom.setDisplayName(toExternalRoom.getDisplayName());
+					toRoom.setExternalUniqueId(toExternalRoom.getExternalUniqueId());
+					toRoom.setIgnoreRoomCheck(fromRoom.isIgnoreRoomCheck());
+					toRoom.setIgnoreTooFar(fromRoom.isIgnoreTooFar());
+					toRoom.setPattern(fromRoom.getPattern());
+					toRoom.setRoomNumber(toExternalRoom.getRoomNumber());
+					toRoom.setScheduledRoomType(toExternalRoom.getScheduledRoomType());
+				} else {
+					return;
+				}
+			} else {
+				toRoom = (Room)fromRoom.clone();
+			}
+			toRoom.setSession(toSession);
+			toBuilding = fromRoom.getBuilding().findSameBuildingInSession(toSession);
+			if (toBuilding != null) {
+				toRoom.setBuilding(toBuilding);
+				if (fromRoom.getManagerIds() != null && fromRoom.getManagerIds().length() != 0){
+					String toManagerStr = "";
+					for (StringTokenizer stk = new StringTokenizer(fromRoom.getManagerIds(),",");stk.hasMoreTokens();) {
+						Long fromDeptId = Long.valueOf(stk.nextToken());
+						if (fromDeptId != null){
+							fromDept = dDao.get(fromDeptId);
+							if (fromDept != null){
+								toDept = fromDept.findSameDepartmentInSession(toSession);
+								if (toDept != null){
+									if (toManagerStr.length() != 0){
+										toManagerStr += ",";
+									}
+									toManagerStr += toDept.getUniqueId().toString();
+								}
+							}
+						}
+					}
+					toRoom.setManagerIds(toManagerStr);
+				} else {
+					toRoom.setPattern(null);
+				}
+				rollRoomFeaturesForLocationForward(fromRoom, toRoom, toSession, roomFeatureCache);
+				rollRoomGroupsForLocationForward(fromRoom, toRoom, toSession, roomGroupCache);
+				rDao.saveOrUpdate(toRoom);
+				boolean rollForwardExistingRoomDepts = true;
+				if (fromRoom.getExternalUniqueId() != null && sessionHasExternalRoomDeptList(toSession)){
+					ExternalRoom toExternalRoom = ExternalRoom.findExternalRoomForSession(fromRoom.getExternalUniqueId(), toSession);
+					if (toExternalRoom.getRoomDepartments() != null && !toExternalRoom.getRoomDepartments().isEmpty()){
+						ExternalRoomDepartment toExternalRoomDept = null;
+						fromRoomDept = null;
+						for(Iterator erdIt = toExternalRoom.getRoomDepartments().iterator(); (erdIt.hasNext() && rollForwardExistingRoomDepts);){
+							boolean foundDept = false;
+							toExternalRoomDept = (ExternalRoomDepartment) erdIt.next();
+							for(Iterator rdIt = fromRoom.getRoomDepts().iterator(); (rdIt.hasNext() && !foundDept);){
+								fromRoomDept = (RoomDept) rdIt.next();
+								if (fromRoomDept.getDepartment().getDeptCode().equals(toExternalRoomDept.getDepartmentCode())){
+									foundDept = true;
+								}
+							}
+							if (!foundDept){
+								rollForwardExistingRoomDepts = false;
+							}
+						}
+					}
+				} 
+				if (rollForwardExistingRoomDepts){
+					if (fromRoom.getRoomDepts() != null && !fromRoom.getRoomDepts().isEmpty()){
+						for (Iterator deptIt = fromRoom.getRoomDepts().iterator(); deptIt.hasNext();){
+							fromRoomDept = (RoomDept)deptIt.next();
+							rollForwardRoomDept(fromRoomDept, toRoom, toSession);
+						}
+					}
+				} else {
+					// resetting department sharing related fields
+					toRoom.setPattern(null);
+					toRoom.setManagerIds(null);
+					ExternalRoom toExternalRoom = ExternalRoom.findExternalRoomForSession(fromRoom.getExternalUniqueId(), toSession);
+					ExternalRoomDepartment toExternalRoomDept = null;
+					fromRoomDept = null;
+					for(Iterator erdIt = toExternalRoom.getRoomDepartments().iterator(); erdIt.hasNext();){
+						boolean foundDept = false;
+						toExternalRoomDept = (ExternalRoomDepartment) erdIt.next();
+						for(Iterator rdIt = fromRoom.getRoomDepts().iterator(); (rdIt.hasNext() && !foundDept);){
+							fromRoomDept = (RoomDept) rdIt.next();
+							if (fromRoomDept.getDepartment().getDeptCode().equals(toExternalRoomDept.getDepartmentCode())){
+								foundDept = true;
+							}
+						}
+						if (foundDept){
+							rollForwardRoomDept(fromRoomDept, toRoom, toSession);
+						} else {
+							rollForwardRoomDept(toExternalRoomDept, toRoom, toSession);
+						}
+					}
+				}
+				rDao.saveOrUpdate(toRoom);
+				rDao.getSession().flush();
+				rDao.getSession().evict(toRoom);
+				rDao.getSession().evict(fromRoom);
+			}								
+		} catch (Exception e) {
+			Debug.error(e.getStackTrace().toString());
+			Debug.error(e.getMessage());
+			errors.add("rollForward", new ActionMessage("errors.rollForward", "Rooms", fromSession.getLabel(), toSession.getLabel(), "Failed to roll all rooms forward."));
+		}
+	}
+
+	private RoomDept rollForwardRoomDept(RoomDept fromRoomDept, Room toRoom, Session toSession){
+		Department toDept = fromRoomDept.getDepartment().findSameDepartmentInSession(toSession);
+		RoomDept toRoomDept = null;
+		RoomDeptDAO rdDao = new RoomDeptDAO();
+		if (toDept != null){
+			toRoomDept = new RoomDept();
+			toRoomDept.setRoom(toRoom);
+			toRoomDept.setControl(fromRoomDept.isControl());
+			toRoomDept.setDepartment(toDept);
+			toRoom.addToroomDepts(toRoomDept);
+			toDept.addToroomDepts(toRoomDept);
+			rdDao.saveOrUpdate(toRoomDept);
+		}
+		return(toRoomDept);
+	}
+	
+	private RoomDept rollForwardRoomDept(ExternalRoomDepartment toExternalRoomDept, Room toRoom, Session toSession){
+		Department toDept = Department.findByDeptCode(toExternalRoomDept.getDepartmentCode(), toSession.getUniqueId());
+		RoomDept toRoomDept = null;
+		RoomDeptDAO rdDao = new RoomDeptDAO();
+		if (toDept != null){
+			toRoomDept = new RoomDept();
+			toRoomDept.setRoom(toRoom);
+			toRoomDept.setControl(new Boolean(false));
+			toRoomDept.setDepartment(toDept);
+			toRoom.addToroomDepts(toRoomDept);
+			toDept.addToroomDepts(toRoomDept);
+			rdDao.saveOrUpdate(toRoomDept);		}
+		return(toRoomDept);
+	}
+
+	private void rollRoomGroupsForLocationForward(Location fromLocation, Location toLocation, Session toSession, HashMap roomGroupCache) {
+		if(fromLocation.getRoomGroups() != null && !fromLocation.getRoomGroups().isEmpty()){
+			RoomGroup fromRoomGroup = null;
+			RoomGroup toDepartmentRoomGroup = null;
+			for(Iterator rfIt = fromLocation.getRoomGroups().iterator(); rfIt.hasNext();){
+				fromRoomGroup = (RoomGroup) rfIt.next();
+				if (fromRoomGroup.isGlobal().booleanValue()) {					
+					if (toLocation.getRoomGroups() == null){
+						toLocation.setRoomGroups(new java.util.HashSet());
+					}
+					toLocation.getRoomGroups().add(fromRoomGroup);
+					fromRoomGroup.getRooms().add(toLocation);
+				} else {
+					toDepartmentRoomGroup = (RoomGroup) roomGroupCache.get(fromRoomGroup);
+					if (toDepartmentRoomGroup == null){
+						toDepartmentRoomGroup = fromRoomGroup.findSameRoomGroupInSession(toSession);
+						if (toDepartmentRoomGroup != null){
+							roomGroupCache.put(fromRoomGroup, toDepartmentRoomGroup);
+							if (toLocation.getRoomGroups() == null){
+								toLocation.setRoomGroups(new java.util.HashSet());
+							}
+							toLocation.getRoomGroups().add(toDepartmentRoomGroup);
+							if (toDepartmentRoomGroup.getRooms() == null){
+								toDepartmentRoomGroup.setRooms(new java.util.HashSet());
+							}
+							toDepartmentRoomGroup.getRooms().add(toLocation);
+						}
+						
+					}
+				}
+			}		
+		}
+		
+	}
+
+	private void rollNonUniversityLocationsForward(ActionMessages errors, Session fromSession, Session toSession, Location location) {
+		NonUniversityLocation fromNonUniversityLocation = null;
+		NonUniversityLocation toNonUniversityLocation = null;
+		NonUniversityLocationDAO nulDao = new NonUniversityLocationDAO();
+		RoomDeptDAO rdDao = new RoomDeptDAO();
+		DepartmentDAO dDao = new DepartmentDAO();
+		Building toBuilding = null;
+		RoomDept fromRoomDept = null;
+		RoomDept toRoomDept = null;
+		Department toDept = null;
+		Department fromDept = null;
+		HashMap roomFeatureCache = new HashMap();
+		HashMap roomGroupCache = new HashMap();
+
+		try {
+			fromNonUniversityLocation = (NonUniversityLocation) location;					
+			toNonUniversityLocation = (NonUniversityLocation)fromNonUniversityLocation.clone();
+			toNonUniversityLocation.setSession(toSession);
+			if (fromNonUniversityLocation.getManagerIds() != null && fromNonUniversityLocation.getManagerIds().length() != 0){
+				String toManagerStr = "";
+				for (StringTokenizer stk = new StringTokenizer(fromNonUniversityLocation.getManagerIds(),",");stk.hasMoreTokens();) {
+					Long fromDeptId = Long.valueOf(stk.nextToken());
+					if (fromDeptId != null){
+						fromDept = dDao.get(fromDeptId);
+						if (fromDept != null){
+							toDept = fromDept.findSameDepartmentInSession(toSession);
+							if (toDept != null){
+								if (toManagerStr.length() != 0){
+									toManagerStr += ",";
+								}
+								toManagerStr += toDept.getUniqueId().toString();
+							}
+						}
+					}
+				}
+				toNonUniversityLocation.setManagerIds(toManagerStr);
+			} else {
+				toNonUniversityLocation.setPattern(null);
+			}
+			rollRoomFeaturesForLocationForward(fromNonUniversityLocation, toNonUniversityLocation, toSession, roomFeatureCache);
+			rollRoomGroupsForLocationForward(fromNonUniversityLocation, toNonUniversityLocation, toSession, roomGroupCache);
+			nulDao.saveOrUpdate(toNonUniversityLocation);
+			if (fromNonUniversityLocation.getRoomDepts() != null && !fromNonUniversityLocation.getRoomDepts().isEmpty()){
+				for (Iterator deptIt = fromNonUniversityLocation.getRoomDepts().iterator(); deptIt.hasNext();){
+					fromRoomDept = (RoomDept)deptIt.next();
+					toDept = fromRoomDept.getDepartment().findSameDepartmentInSession(toSession);
+					if (toDept != null){
+						toRoomDept = new RoomDept();
+						toRoomDept.setRoom(toNonUniversityLocation);
+						toRoomDept.setControl(fromRoomDept.isControl());
+						toRoomDept.setDepartment(toDept);
+						toNonUniversityLocation.addToroomDepts(toRoomDept);
+						toDept.addToroomDepts(toRoomDept);
+						rdDao.saveOrUpdate(toRoomDept);
+					}
+				}
+				nulDao.saveOrUpdate(toNonUniversityLocation);
+				nulDao.getSession().flush();
+				nulDao.getSession().evict(toNonUniversityLocation);
+				nulDao.getSession().evict(fromNonUniversityLocation);
+			}					
+		} catch (Exception e) {
+			Debug.error(e.getStackTrace().toString());
+			Debug.error(e.getMessage());
+			errors.add("rollForward", new ActionMessage("errors.rollForward", "Non University Locations", fromSession.getLabel(), toSession.getLabel(), "Failed to roll all non university locations forward."));
+		}		
+	}
+
+	private void rollLocationsForward(ActionMessages errors, Session fromSession, Session toSession) {
+		if (fromSession.getRooms() != null && !fromSession.getRooms().isEmpty()){
+			Location location = null;
+			for (Iterator it = fromSession.getRooms().iterator(); it.hasNext();){
+				location = (Location) it.next();
+				if (location instanceof Room) {
+					rollRoomForward(errors, fromSession, toSession, location);
+				} else if (location instanceof NonUniversityLocation){
+					rollNonUniversityLocationsForward(errors, fromSession, toSession, location);
+				}
+			}
+		}
+		if (sessionHasExternalRoomList(toSession)){
+			ExternalRoomDAO erDao = new ExternalRoomDAO();
+			BuildingDAO bDao = new BuildingDAO();
+			RoomDAO rDao = new RoomDAO();
+			String query = "from ExternalRoom er where er.building.session.uniqueId=:sessionId ";
+			query += " and er.externalUniqueId not in (select r.externalUniqueId from Room r where r.session.uniqueId =:sessionId)";
+			query += " and er.classification in ('classroom', 'classLab')";
+			List l = erDao.getQuery(query).setLong("sessionId", toSession.getUniqueId()).list();
+			if (l != null){
+				ExternalRoom er = null;
+				Room r = null;
+				Building b = null;
+				for (Iterator erIt = l.iterator(); erIt.hasNext();){
+					er = (ExternalRoom) erIt.next();
+					b = Building.findByExternalIdAndSession(er.getBuilding().getExternalUniqueId(), toSession);
+					
+					if (b == null){
+						b = new Building();
+						b.setAbbreviation(er.getBuilding().getAbbreviation());
+						b.setCoordinateX(er.getBuilding().getCoordinateX());
+						b.setCoordinateY(er.getBuilding().getCoordinateY());
+						b.setExternalUniqueId(er.getBuilding().getExternalUniqueId());
+						b.setName(er.getBuilding().getDisplayName());
+						b.setSession(toSession);
+						bDao.saveOrUpdate(b);
+					}
+					r = new Room();
+					r.setBuilding(b);
+					r.setCapacity(er.getCapacity());
+					r.setClassification(er.getClassification());
+					r.setCoordinateX(er.getCoordinateX());
+					r.setCoordinateY(er.getCoordinateY());
+					r.setDisplayName(er.getDisplayName());
+					r.setExternalUniqueId(er.getExternalUniqueId());
+					r.setIgnoreRoomCheck(new Boolean(false));
+					r.setIgnoreTooFar(new Boolean(false));
+					r.setRoomNumber(er.getRoomNumber());
+					r.setScheduledRoomType(er.getScheduledRoomType());
+					r.setSession(toSession);
+					if (er.getRoomFeatures() != null){
+						ExternalRoomFeature erf = null;
+						GlobalRoomFeature grf = null;
+						for (Iterator erfIt = er.getRoomFeatures().iterator(); erfIt.hasNext();){
+							erf = (ExternalRoomFeature) erfIt.next();
+							grf = GlobalRoomFeature.findGlobalRoomFeatureForLabel(erf.getValue());
+							if (grf != null){
+								r.addTofeatures(grf);
+							}
+						}
+					}
+					rDao.saveOrUpdate(r);
+					ExternalRoomDepartment toExternalRoomDept = null;
+					for(Iterator erdIt = er.getRoomDepartments().iterator(); erdIt.hasNext();){
+						toExternalRoomDept = (ExternalRoomDepartment) erdIt.next();
+						rollForwardRoomDept(toExternalRoomDept, r, toSession);
+					}
+				}
+			}
+		}
+	}
+
+	private void rollBuildingsForward(ActionMessages errors, Session fromSession, Session toSession) {
+		if (fromSession.getBuildings() != null && !fromSession.getBuildings().isEmpty()){
+			try{
+				Building fromBldg = null;
+				Building toBldg = null;
+				BuildingDAO bDao = new BuildingDAO();
+				ExternalBuilding toExternalBuilding = null;
+				for (Iterator it = fromSession.getBuildings().iterator(); it.hasNext();){
+					fromBldg = (Building)it.next();
+					if (fromBldg.getExternalUniqueId() != null && sessionHasExternalBuildingList(toSession)){
+						toExternalBuilding = ExternalBuilding.findExternalBuildingForSession(fromBldg.getExternalUniqueId(), toSession);
+						if (toExternalBuilding != null){
+							toBldg = new Building();
+							toBldg.setAbbreviation(toExternalBuilding.getAbbreviation());
+							toBldg.setCoordinateX(toExternalBuilding.getCoordinateX());
+							toBldg.setCoordinateY(toExternalBuilding.getCoordinateY());
+							toBldg.setExternalUniqueId(toExternalBuilding.getExternalUniqueId());
+							toBldg.setName(toExternalBuilding.getDisplayName());
+						} else {
+							continue;
+						}
+					} else {
+						toBldg = (Building) fromBldg.clone();
+					}
+					if (toSession.getBuildings() == null){
+						toSession.setBuildings(new java.util.HashSet());
+					}
+					toBldg.setSession(toSession);
+					toSession.getBuildings().add(toBldg);
+					bDao.saveOrUpdate(toBldg);
+					bDao.getSession().flush();
+					bDao.getSession().evict(toBldg);
+					bDao.getSession().evict(fromBldg);	
+				}
+			} catch (Exception e) {
+				Debug.error(e.getStackTrace().toString());
+				Debug.error(e.getMessage());
+				errors.add("rollForward", new ActionMessage("errors.rollForward", "Buildings", fromSession.getLabel(), toSession.getLabel(), "Failed to roll all buildings forward."));
+			}
+		}
+		
+	}
+
+	public void rollManagersForward(ActionMessages errors, RollForwardSessionForm rollForwardSessionForm) {
+		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
+		Session fromSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollManagersForwardFrom());
+		Department fromDepartment = null;
+		Department toDepartment = null;
+		TimetableManagerDAO tmDao = new TimetableManagerDAO();
+		try {
+			for(Iterator it = fromSession.getDepartments().iterator(); it.hasNext();){
+				fromDepartment = (Department) it.next();
+				if (fromDepartment != null && fromDepartment.getTimetableManagers() != null){
+					toDepartment = fromDepartment.findSameDepartmentInSession(toSession);
+					if (toDepartment != null){
+						if (toDepartment.getTimetableManagers() == null){
+							toDepartment.setTimetableManagers(new java.util.HashSet());
+						}
+						TimetableManager tm = null;
+						for (Iterator tmIt = fromDepartment.getTimetableManagers().iterator(); tmIt.hasNext();){
+							tm = (TimetableManager) tmIt.next();
+							if (tm != null){
+								tm.getDepartments().add(toDepartment);
+								tmDao.saveOrUpdate(tm);
+								tmDao.getSession().flush();
+							}
+						}
+					}
+				}
+			}
+			tmDao.getSession().flush();
+			tmDao.getSession().clear();			
+		} catch (Exception e) {
+			Debug.error(e.getStackTrace().toString());
+			Debug.error(e.getMessage());
+			errors.add("rollForward", new ActionMessage("errors.rollForward", "Timetable Managers", fromSession.getLabel(), toSession.getLabel(), "Failed to roll all timetable managers forward."));
+		}
+	}
+
+	public void rollDepartmentsForward(ActionMessages errors, RollForwardSessionForm rollForwardSessionForm) {
+		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
+		Session fromSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollDeptsFowardFrom());
+		Department fromDepartment = null;
+		Department toDepartment = null;
+		DepartmentDAO dDao = new DepartmentDAO();
+		SolverGroup sg = null;
+		try {
+			for(Iterator it = fromSession.getDepartments().iterator(); it.hasNext();){
+				fromDepartment = (Department) it.next();
+				if (fromDepartment != null){
+					toDepartment = (Department) fromDepartment.clone();
+					toDepartment.setSession(toSession);
+					toSession.addTodepartments(toDepartment);
+					dDao.saveOrUpdate(toDepartment);
+					if(fromDepartment.getSolverGroup() != null) {
+						sg = SolverGroup.findBySessionIdName(toSession.getUniqueId(), fromDepartment.getSolverGroup().getName());
+						if (sg == null){
+							sg = (SolverGroup)fromDepartment.getSolverGroup().clone();
+							sg.setSession(toSession);
+						}
+						if (sg != null){
+							if (null == sg.getDepartments()){
+								sg.setDepartments(new java.util.HashSet());
+							}
+							sg.getDepartments().add(toDepartment);
+							toDepartment.setSolverGroup(sg);
+							SolverGroupDAO sgDao = new SolverGroupDAO();
+							sgDao.saveOrUpdate(sg);
+						}
+					}
+
+					if (fromDepartment.getDatePatterns() != null && !fromDepartment.getDatePatterns().isEmpty()){
+						DatePattern fromDp = null;
+						DatePattern toDp = null;
+						for (Iterator dpIt = fromDepartment.getDatePatterns().iterator(); dpIt.hasNext();){
+							fromDp = (DatePattern) dpIt.next();
+							toDp = DatePattern.findByName(toSession, fromDp.getName());
+							if (toDp != null){
+								if (null == toDepartment.getDatePatterns()){
+									toDepartment.setDatePatterns(new java.util.HashSet());
+								}
+								toDepartment.getDatePatterns().add(toDp);
+							}
+						}
+					}
+					if (fromDepartment.getTimePatterns() != null && !fromDepartment.getTimePatterns().isEmpty()){
+						TimePattern fromTp = null;
+						TimePattern toTp = null;
+						for (Iterator dpIt = fromDepartment.getTimePatterns().iterator(); dpIt.hasNext();){
+							fromTp = (TimePattern) dpIt.next();
+							toTp = TimePattern.findByName(toSession, fromTp.getName());
+							if (toTp != null){
+								if (null == toDepartment.getTimePatterns()){
+									toDepartment.setTimePatterns(new java.util.HashSet());
+								}
+								toDepartment.getTimePatterns().add(toTp);
+							}
+						}
+					}
+					dDao.saveOrUpdate(toDepartment);
+					DistributionTypeDAO dtDao = new DistributionTypeDAO();
+					List l = dtDao.getQuery("select dt from DistributionType dt inner join dt.departments as d where d.uniqueId = " + fromDepartment.getUniqueId().toString()).list();
+					if (l != null && !l.isEmpty()){
+						DistributionType distributionType = null;
+						for (Iterator dtIt = l.iterator(); dtIt.hasNext();){
+							distributionType = (DistributionType) dtIt.next();
+							distributionType.getDepartments().add(toDepartment);
+							dtDao.saveOrUpdate(distributionType);
+						}
+					}
+	
+					dDao.getSession().flush();
+					dDao.getSession().evict(toDepartment);
+					dDao.getSession().evict(fromDepartment);
+				}
+			}
+			dDao.getSession().flush();
+			dDao.getSession().clear();
+		} catch (Exception e) {
+			Debug.error(e.getStackTrace().toString());
+			Debug.error(e.getMessage());
+			errors.add("rollForward", new ActionMessage("errors.rollForward", "Departments", fromSession.getLabel(), toSession.getLabel(), "Failed to roll all departments forward."));
+		}
+
+	}
+
+	public void rollDatePatternsForward(ActionMessages errors, RollForwardSessionForm rollForwardSessionForm) {
+		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
+		Session fromSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollDatePatternsForwardFrom());
+		Vector fromDatePatterns = DatePattern.findAll(fromSession, true, null, null);
+		DatePattern fromDatePattern = null;
+		DatePattern toDatePattern = null;
+		DatePatternDAO dpDao = new DatePatternDAO();
+		try {
+			for(Iterator it = fromDatePatterns.iterator(); it.hasNext();){
+				fromDatePattern = (DatePattern) it.next();
+				if (fromDatePattern != null){
+					toDatePattern = (DatePattern) fromDatePattern.clone();
+					toDatePattern.setSession(toSession);
+					dpDao.saveOrUpdate(toDatePattern);
+					dpDao.getSession().flush();
+				}
+			}
+			if (fromSession.getDefaultDatePattern() != null){
+				DatePattern defDp = DatePattern.findByName(toSession, fromSession.getDefaultDatePattern().getName());
+				if (defDp != null){
+					toSession.setDefaultDatePattern(defDp);
+					SessionDAO sDao = new SessionDAO();
+					sDao.saveOrUpdate(toSession);
+				}
+			}
+			dpDao.getSession().flush();
+			dpDao.getSession().clear();
+		} catch (Exception e) {
+			Debug.error(e.getStackTrace().toString());
+			Debug.error(e.getMessage());
+			errors.add("rollForward", new ActionMessage("errors.rollForward", "Date Patterns", fromSession.getLabel(), toSession.getLabel(), "Failed to roll all date patterns forward."));
+		}		
+	}
+
+	public void rollSubjectAreasForward(ActionMessages errors, RollForwardSessionForm rollForwardSessionForm) {
+		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
+		Session fromSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollSubjectAreasForwardFrom());
+		SubjectArea toSubjectArea = null;
+		SubjectArea fromSubjectArea = null;
+		SubjectAreaDAO sDao = new SubjectAreaDAO();
+		Department toDepartment = null;
+		try {
+			if (sessionHasCourseCatalog(toSession)) {
+				CourseCatalogDAO ccDao = new CourseCatalogDAO();
+				List subjects = ccDao.getQuery("select distinct cc.subject, cc.previousSubject from CourseCatalog cc where cc.session.uniqueId=:sessionId and cc.previousSubject != null")
+					.setLong("sessionId", toSession.getUniqueId())
+					.list();
+				if (subjects != null){
+					String toSubject = null;
+					String fromSubject = null;
+					List subjectInfo = null;
+					for (Iterator saIt = subjects.iterator(); saIt.hasNext();){
+						subjectInfo = (List) saIt.next();
+						if (subjectInfo != null && subjectInfo.size() == 2){
+							toSubject = (String) subjectInfo.get(0);
+							fromSubject = (String) subjectInfo.get(1);							
+							fromSubjectArea = SubjectArea.findByAbbv(toSession.getUniqueId(), fromSubject);
+							toSubjectArea = (SubjectArea)fromSubjectArea.clone();
+							if (!toSubject.equals(fromSubject)){
+								toSubjectArea.setSubjectAreaAbbreviation(toSubject);
+							}
+							toSubjectArea.setSession(toSession);
+							toSession.addTosubjectAreas(toSubjectArea);
+							if (fromSubjectArea.getDepartment() != null) {
+								toDepartment = fromSubjectArea.getDepartment().findSameDepartmentInSession(toSession);
+								if (toDepartment != null){
+									toSubjectArea.setDepartment(toDepartment);
+									toDepartment.addTosubjectAreas(toSubjectArea);
+									sDao.saveOrUpdate(toSubjectArea);
+									sDao.getSession().flush();
+									sDao.getSession().evict(toSubjectArea);
+									sDao.getSession().evict(fromSubjectArea);
+								}
+							}
+						}
+					}
+				}
+				List pseudoSubjects = sDao.getQuery("from SubjectArea sa where sa.session=:fromSessionId and sa.pseudo = 1 and sa.subjectAreaAbbreviation not in (select cc.subject from CourseCatalog cc where cc.session.uniqueId=:toSessionId)")
+					.setLong("fromSessionId", fromSession.getUniqueId())
+					.setLong("toSessionId", toSession.getUniqueId())
+					.list();
+				if (pseudoSubjects != null){
+					for(Iterator it = pseudoSubjects.iterator(); it.hasNext();){
+						fromSubjectArea = (SubjectArea) it.next();
+						if (fromSubjectArea != null){
+							toSubjectArea = (SubjectArea)fromSubjectArea.clone();
+							toSubjectArea.setSession(toSession);
+							toSession.addTosubjectAreas(toSubjectArea);
+							if (fromSubjectArea.getDepartment() != null) {
+								toDepartment = fromSubjectArea.getDepartment().findSameDepartmentInSession(toSession);
+								if (toDepartment != null){
+									toSubjectArea.setDepartment(toDepartment);
+									toDepartment.addTosubjectAreas(toSubjectArea);
+									sDao.saveOrUpdate(toSubjectArea);
+									sDao.getSession().flush();
+									sDao.getSession().evict(toSubjectArea);
+									sDao.getSession().evict(fromSubjectArea);
+								}
+							}
+						}
+					}
+				}
+				List newSubjects = ccDao.getQuery("select subject from CourseCatalog cc where cc.session.uniqueId=:sessionId and cc.previousSubject = null and cc.subject not in (select sa.subjectAreaAbbreviation from SubjectArea sa where sa.session.uniqueId=:sessionId)")
+					.setLong("sessionId", toSession.getUniqueId())
+					.list();
+				toDepartment = Department.findByDeptCode("TEMP", toSession.getUniqueId());
+				if (toDepartment == null){
+					toDepartment = new Department();
+					toDepartment.setAbbreviation("TEMP");
+					toDepartment.setAllowReqRoom(new Boolean(false));
+					toDepartment.setAllowReqTime(new Boolean(false));
+					toDepartment.setDeptCode("TEMP");
+					toDepartment.setExternalManager(new Boolean(false));
+					toDepartment.setExternalUniqueId(null);
+					toDepartment.setName("Temp Department For New Subjects");
+					toDepartment.setSession(toSession);
+					toSession.addTodepartments(toDepartment);
+					DepartmentDAO.getInstance().saveOrUpdate(toDepartment);
+				}
+				String toSubject = null;
+				for (Iterator saIt = newSubjects.iterator(); saIt.hasNext();){
+					toSubject = (String) saIt.next();
+					if (toSubject != null){
+						toSubjectArea = new SubjectArea();
+						toSubjectArea.setDepartment(toDepartment);
+						toSubjectArea.setLongTitle("New Subject - Please Name Me");
+						toSubjectArea.setPseudoSubjectArea(new Boolean(false));
+						toSubjectArea.setScheduleBookOnly(new Boolean(false));
+						toSubjectArea.setSession(toSession);
+						toSubjectArea.setShortTitle("New Subject");
+						toSubjectArea.setSubjectAreaAbbreviation(toSubject);
+						toDepartment.addTosubjectAreas(toSubjectArea);
+						toSession.addTosubjectAreas(toSubjectArea);
+						sDao.saveOrUpdate(toSubjectArea);
+						sDao.getSession().flush();
+						sDao.getSession().evict(toSubjectArea);
+						sDao.getSession().evict(fromSubjectArea);
+					}
+				}
+			} else if (fromSession.getSubjectAreas() != null && !fromSession.getSubjectAreas().isEmpty()){
+				for(Iterator it = fromSession.getSubjectAreas().iterator(); it.hasNext();){
+					fromSubjectArea = (SubjectArea) it.next();
+					if (fromSubjectArea != null){
+						toSubjectArea = (SubjectArea)fromSubjectArea.clone();
+						toSubjectArea.setSession(toSession);
+						toSession.addTosubjectAreas(toSubjectArea);
+						if (fromSubjectArea.getDepartment() != null) {
+							toDepartment = fromSubjectArea.getDepartment().findSameDepartmentInSession(toSession);
+							if (toDepartment != null){
+								toSubjectArea.setDepartment(toDepartment);
+								toDepartment.addTosubjectAreas(toSubjectArea);
+								sDao.saveOrUpdate(toSubjectArea);
+								sDao.getSession().flush();
+								sDao.getSession().evict(toSubjectArea);
+								sDao.getSession().evict(fromSubjectArea);
+								
+							}
+						}
+					}
+				}
+			}
+			sDao.getSession().flush();
+			sDao.getSession().clear();
+		} catch (Exception e) {
+			Debug.error(e.getStackTrace().toString());
+			Debug.error(e.getMessage());
+			errors.add("rollForward", new ActionMessage("errors.rollForward", "Subject Areas", fromSession.getLabel(), toSession.getLabel(), "Failed to roll all subject areas forward."));
+		}
+	}
+	
+	private Department findToManagingDepartmentForPrefGroup(PreferenceGroup toPrefGroup){
+		Department toDepartment = null;
+		if (toPrefGroup instanceof DepartmentalInstructor) {
+			DepartmentalInstructor toInstructor = (DepartmentalInstructor) toPrefGroup;
+			toDepartment = toInstructor.getDepartment();
+		} else if (toPrefGroup instanceof SchedulingSubpart) {
+			SchedulingSubpart toSchedSubpart = (SchedulingSubpart) toPrefGroup;
+			toDepartment = toSchedSubpart.getManagingDept();		
+		} else if (toPrefGroup instanceof Class_) {
+			Class_ toClass_ = (Class_) toPrefGroup;
+			toDepartment = toClass_.getManagingDept();								
+		}
+		return(toDepartment);
+	}
+	
+	protected void rollForwardBuildingPrefs(PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession) throws Exception{
+		if (fromPrefGroup.getBuildingPreferences() != null && fromPrefGroup.getBuildingPreferences().size() > 0){
+			BuildingPref fromBuildingPref = null;
+			BuildingPref toBuildingPref = null;
+			for (Iterator it = fromPrefGroup.getBuildingPreferences().iterator(); it.hasNext(); ){
+				fromBuildingPref = (BuildingPref) it.next();	
+				Building b = fromBuildingPref.getBuilding().findSameBuildingInSession(toSession);
+				if (b != null){
+					toBuildingPref = new BuildingPref();
+					toBuildingPref.setBuilding(b);
+					toBuildingPref.setPrefLevel(fromBuildingPref.getPrefLevel());
+					toBuildingPref.setDistanceFrom(fromBuildingPref.getDistanceFrom());
+					toBuildingPref.setOwner(toPrefGroup);
+					toPrefGroup.addTopreferences(toBuildingPref);
+				}
+			}
+		}		
+	}
+	
+	protected void rollForwardRoomPrefs(PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession){
+		if (fromPrefGroup.getRoomPreferences() != null && fromPrefGroup.getRoomPreferences().size() > 0){
+			RoomPref fromRoomPref = null;
+			RoomPref toRoomPref = null;
+			Department toDepartment = findToManagingDepartmentForPrefGroup(toPrefGroup);
+			
+			if (!getRoomList().containsKey(toDepartment)){
+				getRoomList().put(toDepartment, buildRoomListForDepartment(toDepartment, toSession));
+			} 
+			Set l = (Set)getRoomList().get(toDepartment);
+			if (l != null && l.size() >0 ){					
+				for (Iterator it = fromPrefGroup.getRoomPreferences().iterator(); it.hasNext();){
+					fromRoomPref = (RoomPref) it.next();
+					toRoomPref = new RoomPref();
+					if (fromRoomPref.getRoom() instanceof Room) {
+						Room fromRoom = (Room) fromRoomPref.getRoom();
+						Location loc = null;
+						Room toRoom = null;
+						for (Iterator rmIt = l.iterator(); rmIt.hasNext();){
+							loc = (Location) rmIt.next();
+							if (loc instanceof Room) {
+								toRoom = (Room) loc;
+								if (toRoom.getBuilding().getExternalUniqueId().equals(fromRoom.getBuilding().getExternalUniqueId()) && toRoom.getRoomNumber().equals(fromRoom.getRoomNumber())){
+									break;
+								}								
+							}
+						}
+						if (toRoom.getBuilding().getExternalUniqueId().equals(fromRoom.getBuilding().getExternalUniqueId()) && toRoom.getRoomNumber().equals(fromRoom.getRoomNumber())){
+							toRoomPref.setRoom(toRoom);
+							toRoomPref.setPrefLevel(fromRoomPref.getPrefLevel());
+							toRoomPref.setOwner(toPrefGroup);
+							toPrefGroup.addTopreferences(toRoomPref);
+						}	
+					} else if (fromRoomPref.getRoom() instanceof NonUniversityLocation) {
+						NonUniversityLocation fromNonUniversityLocation = (NonUniversityLocation) fromRoomPref.getRoom();
+						Location loc = null;
+						NonUniversityLocation toNonUniversityLocation = null;
+						for (Iterator rmIt = l.iterator(); rmIt.hasNext();){
+							loc = (Location) rmIt.next();
+							if (loc instanceof NonUniversityLocation) {
+								toNonUniversityLocation = (NonUniversityLocation) loc;
+								if (toNonUniversityLocation.getName().equals(fromNonUniversityLocation.getName())){
+									break;
+								}								
+							}
+						}
+						if (toNonUniversityLocation.getName().equals(fromNonUniversityLocation.getName())){
+							toRoomPref.setRoom(toNonUniversityLocation);
+							toRoomPref.setPrefLevel(fromRoomPref.getPrefLevel());
+							toRoomPref.setOwner(toPrefGroup);
+							toPrefGroup.addTopreferences(toRoomPref);
+						}	
+					}				
+				}
+			}
+		}		
+	}
+	protected void rollForwardRoomFeaturePrefs(PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup){
+		if (fromPrefGroup.getRoomFeaturePreferences() != null && fromPrefGroup.getRoomFeaturePreferences().size() > 0){
+			RoomFeaturePref fromRoomFeaturePref = null;
+			RoomFeaturePref toRoomFeaturePref = null;
+			for (Iterator it = fromPrefGroup.getRoomFeaturePreferences().iterator(); it.hasNext(); ){
+				fromRoomFeaturePref = (RoomFeaturePref) it.next();
+				toRoomFeaturePref = new RoomFeaturePref();
+				if (fromRoomFeaturePref.getRoomFeature() instanceof GlobalRoomFeature) {
+					GlobalRoomFeature grf = (GlobalRoomFeature) fromRoomFeaturePref.getRoomFeature();
+					toRoomFeaturePref.setRoomFeature(grf);
+					toRoomFeaturePref.setPrefLevel(fromRoomFeaturePref.getPrefLevel());
+					toRoomFeaturePref.setOwner(toPrefGroup);
+					toPrefGroup.addTopreferences(toRoomFeaturePref);
+				} else {
+					Department toDepartment = findToManagingDepartmentForPrefGroup(toPrefGroup);
+					Collection l = DepartmentRoomFeature.getAllDepartmentRoomFeatures(toDepartment);
+					DepartmentRoomFeature fromDepartmentRoomFeature = (DepartmentRoomFeature) fromRoomFeaturePref.getRoomFeature();
+					if (l != null && l.size() > 0){
+						DepartmentRoomFeature toDepartmentRoomFeature = null;
+						for (Iterator rfIt = l.iterator(); rfIt.hasNext();){
+							toDepartmentRoomFeature = (DepartmentRoomFeature) rfIt.next();
+							if (toDepartmentRoomFeature.getLabel().equals(fromDepartmentRoomFeature.getLabel())){
+								break;
+							}
+						}
+						if (toDepartmentRoomFeature.getLabel().equals(fromDepartmentRoomFeature.getLabel())){
+							toRoomFeaturePref.setRoomFeature(toDepartmentRoomFeature);
+							toRoomFeaturePref.setPrefLevel(fromRoomFeaturePref.getPrefLevel());
+							toRoomFeaturePref.setOwner(toPrefGroup);
+							toPrefGroup.addTopreferences(toRoomFeaturePref);
+						}
+					}
+				}
+			}
+		}		
+	}
+	
+	protected void rollForwardRoomGroupPrefs(PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup){
+		if (fromPrefGroup.getRoomGroupPreferences() != null && fromPrefGroup.getRoomGroupPreferences().size() > 0){
+			RoomGroupPref fromRoomGroupPref = null;
+			RoomGroupPref toRoomGroupPref = null;
+			for (Iterator it = fromPrefGroup.getRoomGroupPreferences().iterator(); it.hasNext();){
+				fromRoomGroupPref = (RoomGroupPref) it.next();
+				toRoomGroupPref = new RoomGroupPref();
+				if (fromRoomGroupPref.getRoomGroup().isDefaultGroup().booleanValue()){
+					toRoomGroupPref.setRoomGroup(fromRoomGroupPref.getRoomGroup());
+					toRoomGroupPref.setPrefLevel(fromRoomGroupPref.getPrefLevel());
+					toRoomGroupPref.setOwner(toPrefGroup);
+					toPrefGroup.addTopreferences(toRoomGroupPref);
+				} else {
+					Department toDepartment = findToManagingDepartmentForPrefGroup(toPrefGroup);
+					Collection l = RoomGroup.getAllDepartmentRoomGroups(toDepartment);
+					if (l != null && l.size() > 0) {
+						RoomGroup toRoomGroup = null;
+						for (Iterator itRg = l.iterator(); itRg.hasNext();){
+							toRoomGroup = (RoomGroup) itRg.next();
+							if (toRoomGroup.getName().equals(fromRoomGroupPref.getRoomGroup().getName())){
+								break;
+							}
+						}
+						if (toRoomGroup.getName().equals(fromRoomGroupPref.getRoomGroup().getName())){
+							toRoomGroupPref.setRoomGroup(toRoomGroup);
+							toRoomGroupPref.setPrefLevel(fromRoomGroupPref.getPrefLevel());
+							toRoomGroupPref.setOwner(toPrefGroup);
+							toPrefGroup.addTopreferences(toRoomGroupPref);
+						}						
+					}
+				}
+			}
+		}		
+	}
+	
+	protected void rollForwardTimePrefs(PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup){
+		if (fromPrefGroup.getTimePreferences() != null && fromPrefGroup.getTimePreferences().size() > 0){
+			TimePref fromTimePref = null;
+			TimePref toTimePref = null;
+			for (Iterator it = fromPrefGroup.getTimePreferences().iterator(); it.hasNext();){
+				fromTimePref = (TimePref) it.next();
+				toTimePref = new TimePref();
+				if (fromTimePref.getPreference() != null){
+					toTimePref.setPreference(fromTimePref.getPreference());
+				}
+				toTimePref.setPrefLevel(fromTimePref.getPrefLevel());
+				if (fromTimePref.getTimePattern() != null){
+					toTimePref.setTimePattern(fromTimePref.getTimePattern());
+				}
+				toTimePref.setOwner(toPrefGroup);
+				toPrefGroup.addTopreferences(toTimePref);
+			}
+		}
+	}
+
+	private void rollInstructorDistributionPrefs(DepartmentalInstructor fromInstructor, DepartmentalInstructor toInstructor){
+		if (fromInstructor.getDistributionPreferences() != null && fromInstructor.getDistributionPreferences().size() > 0){
+			DistributionPref fromDistributionPref = null;
+			DistributionPref toDistributionPref = null;
+			for (Iterator it = fromInstructor.getDistributionPreferences().iterator(); it.hasNext();){
+				fromDistributionPref = (DistributionPref) it.next();
+				toDistributionPref = new DistributionPref();
+				if(fromDistributionPref.getDistributionType() != null) {
+					toDistributionPref.setDistributionType(fromDistributionPref.getDistributionType());
+				}
+				if(fromDistributionPref.getGrouping() != null) {
+					toDistributionPref.setGrouping(fromDistributionPref.getGrouping());
+				}
+				toDistributionPref.setPrefLevel(fromDistributionPref.getPrefLevel());
+				toDistributionPref.setOwner(toInstructor);
+				toInstructor.addTopreferences(toDistributionPref);
+			}
+		}
+	}
+	
+	public void rollInstructorDataForward(ActionMessages errors, RollForwardSessionForm rollForwardSessionForm) {
+		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
+		Session fromSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollInstructorDataForwardFrom());
+		DepartmentalInstructor toInstructor = null;
+		DepartmentalInstructor fromInstructor = null;
+		DepartmentalInstructorDAO iDao = new DepartmentalInstructorDAO();
+		Department toDepartment = null;
+		Department fromDepartment = null;
+		
+		try {
+			if (fromSession.getDepartments() != null){
+				for(Iterator dIt = fromSession.getDepartments().iterator(); dIt.hasNext();){
+					fromDepartment = (Department) dIt.next();
+					if (fromDepartment != null && fromDepartment.getInstructors() != null && !fromDepartment.getInstructors().isEmpty()){
+						toDepartment = fromDepartment.findSameDepartmentInSession(toSession);
+						if (toDepartment != null){
+							for (Iterator iIt = fromDepartment.getInstructors().iterator(); iIt.hasNext();){
+								fromInstructor = (DepartmentalInstructor) iIt.next();
+								toInstructor = (DepartmentalInstructor) fromInstructor.clone();
+								toInstructor.setDepartment(toDepartment);
+								rollForwardBuildingPrefs(fromInstructor, toInstructor, toSession);
+								rollForwardRoomPrefs(fromInstructor, toInstructor, toSession);
+								rollForwardRoomFeaturePrefs(fromInstructor, toInstructor);
+								rollForwardRoomGroupPrefs(fromInstructor, toInstructor);
+								rollForwardTimePrefs(fromInstructor, toInstructor);
+								rollInstructorDistributionPrefs(fromInstructor, toInstructor);
+								if (fromInstructor.getDesignatorSubjectAreas() != null && !fromInstructor.getDesignatorSubjectAreas().isEmpty()){
+									Designator fromDesignator = null;
+									Designator toDesignator = null;
+									for (Iterator dsIt = fromInstructor.getDesignatorSubjectAreas().iterator(); dsIt.hasNext();){
+										fromDesignator = (Designator) dsIt.next();
+										toDesignator = new Designator();
+										toDesignator.setCode(fromDesignator.getCode());
+										toDesignator.setInstructor(toInstructor);
+										toDesignator.setSubjectArea(SubjectArea.findByAbbv(toSession.getUniqueId(), fromDesignator.getSubjectArea().getSubjectAreaAbbreviation()));
+										if (toDesignator.getSubjectArea() != null){
+											toDesignator.getSubjectArea().addTodesignatorInstructors(toDesignator);
+											toInstructor.addTodesignatorSubjectAreas(toDesignator);
+										}
+									}
+								}
+								iDao.saveOrUpdate(toInstructor);
+								iDao.getSession().flush();
+								iDao.getSession().evict(toInstructor);
+								iDao.getSession().evict(fromInstructor);
+							}
+						}
+					}
+				}
+				iDao.getSession().flush();
+				iDao.getSession().clear();
+			}
+			
+		} catch (Exception e) {
+			Debug.error(e.getStackTrace().toString());
+			Debug.error(e.getMessage());
+			errors.add("rollForward", new ActionMessage("errors.rollForward", "Instructors", fromSession.getLabel(), toSession.getLabel(), "Failed to roll all instructors forward."));
+		}
+		
+	}
+
+	public void rollCourseOfferingsForward(ActionMessages errors, RollForwardSessionForm rollForwardSessionForm) {
+		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
+		Session fromSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollCourseOfferingsForwardFrom());
+		if (toSession.getSubjectAreas() != null) {
+			SubjectArea subjectArea = null;
+			InstructionalOfferingRollForward instrOffrRollFwd = new InstructionalOfferingRollForward();
+			SubjectArea.loadSubjectAreas(toSession.getUniqueId());
+			for (Iterator saIt = fromSession.getSubjectAreas().iterator(); saIt.hasNext();){
+				subjectArea = (SubjectArea) saIt.next();
+				instrOffrRollFwd.rollForwardInstructionalOfferingsForASubjectArea(subjectArea.getSubjectAreaAbbreviation(), fromSession, toSession);
+			}
+		}
+	}
+	
+	private static String buildRoomQueryForDepartment(Department dept, Session sess, String locType){
+		StringBuffer sb = new StringBuffer();
+		sb.append("select l from " + locType + " as l inner join l.roomDepts as rd where l.session.uniqueId = ");
+		sb.append(sess.getUniqueId().toString());
+		sb.append(" and ( rd.department.uniqueId = ");
+		sb.append(dept.getUniqueId().toString());
+		sb.append(" or rd.department.externalManager = true ) ");
+		return(sb.toString());
+	}
+	
+	private static Set buildRoomListForDepartment(Department department, Session session){
+		TreeSet ts = new TreeSet();
+		Iterator it = RoomDAO.getInstance().getQuery(buildRoomQueryForDepartment(department, session, "Room")).iterate();
+		Room r = null;
+		while(it.hasNext()){
+			r = (Room) it.next();
+			RoomDept rd = null;
+			for (Iterator it2 = r.getRoomDepts().iterator(); it2.hasNext();){
+				rd = (RoomDept) it2.next();
+				rd.getDepartment();
+			}
+			ts.add(r);
+		}
+		it = NonUniversityLocationDAO.getInstance().getQuery(buildRoomQueryForDepartment(department, session, "NonUniversityLocation")).iterate();
+		NonUniversityLocation l = null;
+		while(it.hasNext()){
+			l = (NonUniversityLocation) it.next();
+			RoomDept rd = null;
+			for (Iterator it2 = l.getRoomDepts().iterator(); it2.hasNext();){
+				rd = (RoomDept) it2.next();
+				rd.getDepartment();
+			}
+			ts.add(l);
+		}
+		return(ts);
+	}
+
+	public static HashMap getRoomList() {
+		if (roomList == null){
+			roomList = new HashMap();
+		}
+		return roomList;
+	}
+
+	public boolean sessionHasCourseCatalog(Session session){
+		if (!getSessionHasCourseCatalogList().containsKey(session)){
+			CourseCatalogDAO ccDao = new CourseCatalogDAO();
+			int cnt = ((Long)ccDao.getQuery("select count(*) from CourseCatalog cc where cc.session.uniqueId =" + session.getUniqueId().toString()).list().get(0)).intValue();
+			getSessionHasCourseCatalogList().put(session, new Boolean(cnt != 0));	
+		}
+		return(((Boolean)getSessionHasCourseCatalogList().get(session)).booleanValue());
+	}
+	
+	public static HashMap getSessionHasCourseCatalogList() {
+		if (sessionHasCourseCatalogList == null){
+			sessionHasCourseCatalogList = new HashMap();
+		}
+		return(sessionHasCourseCatalogList);
+	}
+	
+	public boolean sessionHasExternalBuildingList(Session session){
+		if (!getSessionHasExternalBuildingList().containsKey(session)){
+			ExternalBuildingDAO ebDao = new ExternalBuildingDAO();
+			int cnt = ((Long)ebDao.getQuery("select count(*) from ExternalBuilding eb where eb.session.uniqueId =" + session.getUniqueId().toString()).list().get(0)).intValue();
+			getSessionHasExternalBuildingList().put(session, new Boolean(cnt != 0));
+		}
+		return(((Boolean) getSessionHasExternalBuildingList().get(session)).booleanValue());
+	}
+	
+	public static HashMap getSessionHasExternalBuildingList(){
+		if (sessionHasExternalBuildingList == null){
+			sessionHasExternalBuildingList = new HashMap();
+		}
+		return(sessionHasExternalBuildingList);
+	}
+
+	public boolean sessionHasExternalRoomList(Session session){
+		if (!getSessionHasExternalRoomList().containsKey(session)){
+			ExternalRoomDAO erDao = new ExternalRoomDAO();
+			int cnt = ((Long)erDao.getQuery("select count(*) from ExternalRoom er where er.building.session.uniqueId =" + session.getUniqueId().toString()).list().get(0)).intValue();
+			getSessionHasExternalRoomList().put(session, new Boolean(cnt != 0));
+		}
+		return(((Boolean) getSessionHasExternalRoomList().get(session)).booleanValue());
+	}
+	
+	public static HashMap getSessionHasExternalRoomList(){
+		if (sessionHasExternalRoomList == null){
+			sessionHasExternalRoomList = new HashMap();
+		}
+		return(sessionHasExternalRoomList);
+	}
+
+	public boolean sessionHasExternalRoomDeptList(Session session){
+		if (!getSessionHasExternalRoomDeptList().containsKey(session)){
+			ExternalRoomDepartmentDAO erdDao = new ExternalRoomDepartmentDAO();
+			int cnt = ((Long)erdDao.getQuery("select count(*) from ExternalRoomDepartment erd where erd.room.building.session.uniqueId =" + session.getUniqueId().toString()).list().get(0)).intValue();
+			getSessionHasExternalRoomDeptList().put(session, new Boolean(cnt != 0));
+		}
+		return(((Boolean) getSessionHasExternalRoomDeptList().get(session)).booleanValue());
+	}
+	
+	public static HashMap getSessionHasExternalRoomDeptList(){
+		if (sessionHasExternalRoomDeptList == null){
+			sessionHasExternalRoomDeptList = new HashMap();
+		}
+		return(sessionHasExternalRoomDeptList);
+	}
+
+	public boolean sessionHasExternalRoomFeatureList(Session session){
+		if (!getSessionHasExternalRoomFeatureList().containsKey(session)){
+			ExternalRoomFeatureDAO erfDao = new ExternalRoomFeatureDAO();
+			int cnt = ((Long)erfDao.getQuery("select count(*) from ExternalRoomFeature erf where erf.room.building.session.uniqueId =" + session.getUniqueId().toString()).list().get(0)).intValue();
+			getSessionHasExternalRoomFeatureList().put(session, new Boolean(cnt != 0));
+		}
+		return(((Boolean) getSessionHasExternalRoomFeatureList().get(session)).booleanValue());
+	}
+	
+	public static HashMap getSessionHasExternalRoomFeatureList(){
+		if (sessionHasExternalRoomFeatureList == null){
+			sessionHasExternalRoomFeatureList = new HashMap();
+		}
+		return(sessionHasExternalRoomFeatureList);
+	}
+
+	public void rollTimePatternsForward(ActionMessages errors, RollForwardSessionForm rollForwardSessionForm) {
+		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
+		Session fromSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollTimePatternsForwardFrom());
+		Vector fromDatePatterns = TimePattern.findAll(fromSession, null);
+		TimePattern fromTimePattern = null;
+		TimePattern toTimePattern = null;
+		TimePatternDAO tpDao = new TimePatternDAO();
+		try {
+			for(Iterator it = fromDatePatterns.iterator(); it.hasNext();){
+				fromTimePattern = (TimePattern) it.next();
+				if (fromTimePattern != null){
+					toTimePattern = (TimePattern) fromTimePattern.clone();
+					toTimePattern.setSession(toSession);
+					tpDao.saveOrUpdate(toTimePattern);
+					tpDao.getSession().flush();
+				}
+			}
+			tpDao.getSession().flush();
+			tpDao.getSession().clear();
+		} catch (Exception e) {
+			Debug.error(e.getStackTrace().toString());
+			Debug.error(e.getMessage());
+			errors.add("rollForward", new ActionMessage("errors.rollForward", "Time Patterns", fromSession.getLabel(), toSession.getLabel(), "Failed to roll all time patterns forward."));
+		}		
+	}
+	
+
+}

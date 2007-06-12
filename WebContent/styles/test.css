@@ -1,0 +1,136 @@
+/*
+ * UniTime 3.0 (University Course Timetabling & Student Sectioning Application)
+ * Copyright (C) 2007, UniTime.org
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
+
+.MenuBody A:link {
+	color: black;
+	font-family: sans-serif, verdana, arial;
+	text-decoration: none;
+	background-color: transparent;
+	border: none;
+	padding: 1px;
+	white-space: no-wrap;
+}
+
+.MenuBody A:visited {
+	color: black;
+	font-family: sans-serif, verdana, arial;
+	text-decoration: none;
+	background-color: transparent;
+	border: none;
+	padding: 1px;
+	white-space: no-wrap;
+}
+
+.MenuBody A:active {
+	color: black;
+	font-family: sans-serif, verdana, arial;
+	text-decoration: none;
+	background-color: #FFFFFF;
+	border: #ce8409 1px solid; /* WAS 8EACD0*/
+	padding: 1px;
+	white-space: no-wrap;
+}
+
+.MenuBody A:hover {
+	color: black;
+	font-family: sans-serif, verdana, arial;
+	text-decoration: none;
+	background-color: #e3b25c; /* WAS DFE7F2*/
+	border: #ce8409 1px solid; /* WAS 8EACD0*/
+	padding: 1px;
+	white-space: no-wrap;
+}
+
+.MenuBody {
+	background-color: #f6ebc8; /* WAS BBCDD0 */
+	color: black;
+	font-size: 80%;
+	font-family: sans-serif, verdana, arial;
+}
+
+.UserInfo {
+	background-color: #f6ebc8; /* WAS BBCDD0 */
+	color: black;
+	font-size: 80%;
+	font-family: sans-serif, verdana, arial;
+	border-bottom:1px solid #ce8409; /* WAS 8EACD0 */
+	border-left:1px solid #ce8409;
+	border-right:1px solid #ce8409;
+}
+
+.UserInfoTabSelect {
+	border-top:1px solid #ce8409; /* WAS 8EACD0 */
+	border-right:1px solid #ce8409;
+	border-left:1px solid #ce8409;
+}
+
+.UserInfoTabLeft {
+	border-bottom:1px solid #ce8409;
+	border-top:1px solid #f4c87a;
+	border-left:1px solid #f4c87a;
+	background-color: e4e4e4;
+}
+
+.UserInfoTabRight {
+	border-bottom:1px solid #ce8409;
+	border-top:1px solid #f4c87a;
+	border-right:1px solid #f4c87a;
+	background-color: e4e4e4;
+}
+
+.UserInfoTabDisabled {
+	border-bottom:1px solid #ce8409;
+	border-right:1px solid #f4c87a;
+	border-top:1px solid #f4c87a;
+	color:#e3b25c; /* WAS 8EACD0 */
+	background-color: e4e4e4;
+}
+
+.UserInfoTabBg {
+	border-bottom:1px solid #ce8409;
+	background-color: e4e4e4;
+}
+
+.HelpBody A:link {
+	text-decoration: none;
+	background-color: #8EACD0;
+	border: none;
+}
+
+.HelpBody A:visited {
+	text-decoration: none;
+	background-color: #8EACD0;
+	border: none;
+}
+
+.HelpBody A:active {
+	text-decoration: none;
+	background-color: #8EACD0;
+	border: none;
+}
+
+.HelpBody A:hover {
+	text-decoration: none;
+	background-color: #8EACD0;
+	border: none;
+}
+
+.HelpBody {
+	background-color: #ce8409; /* WAS 8EACD0*/
+}
