@@ -1,0 +1,477 @@
+<%--
+ * UniTime 3.0 (University Course Timetabling & Student Sectioning Application)
+ * Copyright (C) 2007, UniTime.org
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+--%>
+<%@ page language="java" autoFlush="true" errorPage="../error.jsp" %>
+<%@ page import="org.unitime.timetable.util.Constants" %>
+<%@ page import="org.unitime.timetable.model.AcademicArea" %>
+<%@ page import="org.unitime.timetable.model.AcademicClassification" %>
+<%@ page import="org.unitime.timetable.model.CourseOffering" %>
+<%@ page import="org.unitime.timetable.model.PosMajor" %>
+<%@ page import="org.unitime.timetable.model.ReservationType" %>
+<%@ page import="org.unitime.timetable.model.Reservation" %>
+<%@ page import="org.unitime.timetable.model.StudentGroup" %>
+<%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
+<%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
+<%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
+<%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
+<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+
+<SCRIPT language="javascript">
+	<!--
+	var origTotal = 0;
+	
+	function updateResvTotal() {
+		i=0;
+		total = 0;
+		while ( (o = document.getElementById("reserved_" + i++)) !=null ) {
+			if (o.value == parseInt(o.value) && parseInt(o.value)>=0) {
+				total += parseInt(o.value);
+			}
+			else {
+				document.getElementById("resvTotal").innerHTML = "<font color='red'><b>ERR</b></font>";
+				return;
+			}
+		}
+		if (total<origTotal) {
+			str = "<img height='15' align='bottom' src='images/down_arrow_red.jpg'> <font color='red'><b>" + (origTotal-total) + "</b></font>&nbsp;&nbsp;";
+			document.getElementById("resvTotal").innerHTML = str.blink();
+			str = "<font color='red'><b>" + total + "</b></font>&nbsp;&nbsp;";
+			setTimeout("document.getElementById('resvTotal').innerHTML = str;",1500);
+		}
+		if (total>origTotal) {
+			str = "<img height='15' align='bottom' src='images/up_arrow_green.jpg'> <font color='green'><b>" + (total-origTotal) + "</b></font>&nbsp;&nbsp;";
+			document.getElementById("resvTotal").innerHTML = str.blink();
+			str = "<font color='green'><b>" + total + "</b></font>&nbsp;&nbsp;";
+			setTimeout("document.getElementById('resvTotal').innerHTML = str;",1500);
+		}
+		if (total==origTotal)
+			document.getElementById("resvTotal").innerHTML = total + "&nbsp;&nbsp;";
+	}
+	
+	// -->
+</SCRIPT>
+	
+	<TABLE width="93%" border="0" cellspacing="0" cellpadding="3">
+	
+		<TR>
+			<TD colspan="2" align="right">
+				<tt:section-header>
+					<html:submit property="op" 
+						styleClass="btn" accesskey="U" titleKey="title.updateReservation">			
+						<bean:message key="button.updateReservation" />
+					</html:submit>						
+				
+					<% if (frmName.equals("individualReservationEditForm")) { %>
+					<html:button property="op" 
+						styleClass="btn" accesskey="L" titleKey="title.lookupPuId"
+						onclick="window.open('puidLookup.do', 'puidWin', 'menubar=no,scrollbar=no,status=no,toolbar=no,height=240,width=455,top=100,left=100' );">			
+						<bean:message key="button.lookupPuId" />
+					</html:button>						
+					<% } %>
+	
+					<tt:back styleClass="btn" name="Back" title="Return to %%" accesskey="B" back="1" />
+					
+				</tt:section-header>
+			</TD>
+		</TR>
+
+	<%@ include file="reservationCommon.jspf" %>
+	
+		<TR>
+			<TD colspan="2" class="WelcomeRowHead" align="right">
+				<html:submit property="op" 
+					styleClass="btn" accesskey="R" titleKey="title.addReservationRow">			
+					<bean:message key="button.addReservationRow" />
+				</html:submit>						
+			</TD>
+		</TR>
+
+		<TR>
+			<TD colspan="2" align="center">
+			
+				<TABLE border="0" cellspacing="0" cellpadding="5" align="center">
+				
+					<!-- Table Header -->
+					<TR>
+						<% if (frmName.equals("academicAreaReservationEditForm")) { %>
+						<TD class="BottomBorder"><I>Academic <BR>Area</I></TD>
+						<% } %>
+						
+						<% if (frmName.equals("posReservationEditForm")) { %>
+						<TD class="BottomBorder"><I>Program of Study <BR>Major</I></TD>
+						<% } %>
+						
+						<% if (frmName.equals("academicAreaReservationEditForm") || frmName.equals("posReservationEditForm")) { %>
+						
+						<!-- TODO Reservations - functionality to be made visible later -->
+						<!-- TD class="BottomBorder"><I>Academic <BR>Classification</I></TD -->
+						<% } %>
+						
+						<% if (frmName.equals("studentGroupReservationEditForm")) { %>
+						<TD class="BottomBorder"><I>Student <BR>Group</I></TD>
+						<% } %>
+						
+						<% if (frmName.equals("courseReservationEditForm")) { %>
+						<TD class="BottomBorder"><I>Course <BR>Offering</I></TD>
+						<% } %>
+						
+						<% if (frmName.equals("individualReservationEditForm")) { %>
+						<TD class="BottomBorder"><I>Student <BR>&nbsp;</I></TD>
+						<TD class="BottomBorder"><I>Add over <BR>the Limit</I></TD>
+						<TD class="BottomBorder"><I>Expiration Date<BR>(mm/dd/yyyy)</I></TD>
+						<% } %>
+						
+						<TD class="BottomBorder">
+						<% if (frmName.equals("courseReservationEditForm")) { %>
+							&nbsp;
+						<% } 
+						   else { %>
+							<I>Reservation <BR>Type</I>
+						<% } %>
+						</TD>
+
+						<% if (!frmName.equals("individualReservationEditForm")) { %>
+						<!-- TODO Reservations - bypass to be removed later -->
+						<logic:notEqual name="<%=frmName%>" property="ownerType" value="<%= Constants.RESV_OWNER_CLASS %>">
+								<TD class="BottomBorder"><I>Reserved <BR>Spaces</I></TD>
+						</logic:notEqual>
+						<!-- end bypass -->
+						<!-- TD class="BottomBorder"><I>Reserved <BR>Spaces</I></TD -->
+						<% } %>
+
+						<!-- TODO Reservations - functionality to be made visible later -->
+						<!-- TD class="BottomBorder"><I>Priority <BR> &nbsp;</I></TD -->
+						
+						<% if (!frmName.equals("individualReservationEditForm")) { %>
+						<logic:equal name="<%=frmName%>" property="ownerType" value="<%= Constants.RESV_OWNER_CLASS %>">
+						<TD class="BottomBorder">&nbsp;</TD>
+						<TD class="BottomBorder">&nbsp;</TD>
+						<TD class="BottomBorder">&nbsp;</TD>
+						</logic:equal>
+						<logic:notEqual name="<%=frmName%>" property="ownerType" value="<%= Constants.RESV_OWNER_CLASS %>">
+						<% if (!frmName.equals("courseReservationEditForm") ) { %>
+						<TD class="BottomBorder"><I>Requested <BR>Spaces</I></TD>
+						<% } else { %>
+							<TD class="BottomBorder">&nbsp;</TD>
+						<% } %>
+						<TD class="BottomBorder"><I>Projected <BR>Enrollment</I></TD>
+						<TD class="BottomBorder"><I>Last Term <BR>Enrollment</I></TD>
+						</logic:notEqual>
+						<% } %>
+
+						<TD class="BottomBorder">&nbsp;</TD>
+					</TR>
+					
+					<!-- Reservation Data -->
+					
+					<%
+						int resvTotal = 0;
+						int reqTotal = 0;
+						int projTotal = 0;
+						int lastTermTotal = 0;
+					%>
+					
+					<logic:iterate name="<%=frmName%>" property="reservationId" id="resv" indexId="ctr">
+					
+					<TR>
+						<% if (frmName.equals("academicAreaReservationEditForm")) { %>
+						<TD class="BottomBorderGray">
+							<html:select name="<%=frmName%>" property="<%= "academicAreaId[" + ctr + "]" %>"
+								onfocus="setUp();" 
+								onkeypress="return selectSearch(event, this);" 
+								onkeydown="return checkKey(event, this);" >					
+								<html:option value="<%= Constants.BLANK_OPTION_VALUE %>"><%= Constants.BLANK_OPTION_LABEL %></html:option>
+								<html:options collection="<%= AcademicArea.ACAD_AREA_REQUEST_ATTR %>" property="uniqueId" labelProperty="labelAbbrTitle" />
+							</html:select>
+						</TD>
+						<% } %>
+						
+						<% if (frmName.equals("posReservationEditForm")) { %>
+						<TD class="BottomBorderGray">
+							<html:select name="<%=frmName%>" property="<%= "posMajorId[" + ctr + "]" %>"
+								onfocus="setUp();" 
+								onkeypress="return selectSearch(event, this);" 
+								onkeydown="return checkKey(event, this);" >					
+								<html:option value="<%= Constants.BLANK_OPTION_VALUE %>"><%= Constants.BLANK_OPTION_LABEL %></html:option>
+								<html:options collection="<%= PosMajor.POSMAJOR_ATTR_NAME %>" property="uniqueId" labelProperty="labelNameCode" />
+							</html:select>
+						</TD>
+						<% } %>
+						
+						<% if (frmName.equals("academicAreaReservationEditForm") || frmName.equals("posReservationEditForm")) { %>
+						
+						<!-- TODO Reservations - functionality to be made visible later -->
+						<!-- TD class="BottomBorderGray">
+							<htm: select name="<%=frmName%>" property="<%= "academicClassificationId[" + ctr + "]" %>"
+								onfocus="setUp();" 
+								onkeypress="return selectSearch(event, this);" 
+								onkeydown="return checkKey(event, this);" >					
+								<htm : option value="<%= Constants.BLANK_OPTION_VALUE %>"><%= Constants.BLANK_OPTION_LABEL %></htm : option>
+								<htm : options collection="<%= AcademicClassification.ACAD_CLASS_REQUEST_ATTR %>" property="uniqueId" labelProperty="labelNameCode" />
+							</htm: select>
+						</TD -->
+						<% } %>
+
+						<% if (frmName.equals("studentGroupReservationEditForm")) { %>
+						<TD class="BottomBorderGray">
+							<html:select name="<%=frmName%>" property="<%= "studentGroupId[" + ctr + "]" %>"
+								onfocus="setUp();" 
+								onkeypress="return selectSearch(event, this);" 
+								onkeydown="return checkKey(event, this);" >					
+								<html:option value="<%= Constants.BLANK_OPTION_VALUE %>"><%= Constants.BLANK_OPTION_LABEL %></html:option>
+								<html:options collection="<%= StudentGroup.STUGRP_ATTR_NAME %>" property="uniqueId" labelProperty="groupName" />
+							</html:select>
+						</TD>
+						<% } %>
+						
+						<% if (frmName.equals("courseReservationEditForm")) { %>
+						<TD class="BottomBorderGray">
+							<html:select name="<%=frmName%>" property="<%= "courseOfferingId[" + ctr + "]" %>"
+								onfocus="setUp();" 
+								onkeypress="return selectSearch(event, this);" 
+								onkeydown="return checkKey(event, this);" >					
+								<html:option value="<%= Constants.BLANK_OPTION_VALUE %>"><%= Constants.BLANK_OPTION_LABEL %></html:option>
+								<html:options collection="<%= CourseOffering.CRS_OFFERING_LIST_ATTR_NAME %>" property="uniqueId" labelProperty="courseName" />
+							</html:select>
+						</TD>
+						<% } %>
+						
+						<% if (frmName.equals("individualReservationEditForm")) { %>
+						<TD class="BottomBorderGray">
+							<html:text size="10" maxlength="10" name="<%=frmName%>" property="<%= "puid[" + ctr + "]" %>"/>
+							&nbsp; <bean:write name="<%=frmName%>" property="<%= "studentName[" + ctr + "]" %>"/>
+							<html:hidden property="<%= "studentName[" + ctr + "]" %>"/>
+						</TD>
+						<TD class="BottomBorderGray" align="center">
+							<html:radio property="<%= "overLimit[" + ctr + "]" %>" value="true">Yes</html:radio>&nbsp;
+							<html:radio property="<%= "overLimit[" + ctr + "]" %>" value="false">No</html:radio>&nbsp;
+						</TD>
+						<TD class="BottomBorderGray">
+							<html:text size="10" maxlength="10" name="<%=frmName%>" property="<%= "expirationDate[" + ctr + "]" %>"/>
+						</TD>
+						<% } %>
+						
+						<TD class="BottomBorderGray">
+							<html:hidden name="<%=frmName%>" property="<%= "reservationId[" + ctr + "]" %>"/>
+						<% if (frmName.equals("courseReservationEditForm")) { %>
+							<html:hidden name="<%=frmName%>" property="<%= "reservationType[" + ctr + "]" %>"/>&nbsp;
+						<% } 
+						   else { %>
+							<html:select name="<%=frmName%>" property="<%= "reservationType[" + ctr + "]" %>"
+								onfocus="setUp();" 
+								onkeypress="return selectSearch(event, this);" 
+								onkeydown="return checkKey(event, this);" >					
+								<html:option value="<%= Constants.BLANK_OPTION_VALUE %>"><%= Constants.BLANK_OPTION_LABEL %></html:option>
+								<html:options collection="<%= ReservationType.RESVTYPE_ATTR_NAME %>" property="uniqueId" labelProperty="label" />
+							</html:select>
+						<% } %>
+						</TD>
+						
+						<% if (!frmName.equals("individualReservationEditForm")) { %>
+						<TD class="BottomBorderGray">
+							<!-- TODO Reservations - bypass to be removed later -->
+							<logic:equal name="<%=frmName%>" property="ownerType" value="<%= Constants.RESV_OWNER_CLASS %>">
+								<html:hidden name="<%=frmName%>" property="<%= "reserved[" + ctr + "]" %>" value="0" />&nbsp;
+							</logic:equal>
+							<logic:notEqual name="<%=frmName%>" property="ownerType" value="<%= Constants.RESV_OWNER_CLASS %>">
+								<html:text size="4" maxlength="4" styleId="<%= "reserved_" + ctr %>" onchange="updateResvTotal();" name="<%=frmName%>" property="<%= "reserved[" + ctr + "]" %>"/>
+							</logic:notEqual>
+							<bean:define id="resvSpace" name="<%=frmName%>" property="<%= "reserved[" + ctr + "]" %>"/>
+							<% if (resvSpace!=null && resvSpace.toString().length()>0) 
+								resvTotal += Integer.parseInt((String) resvSpace);
+							%>
+							<!-- end bypass -->
+							
+							<!-- TODO Reservations - functionality to be made visible later -->
+							<!-- htm : text size="4" maxlength="4" name="<%=frmName%>" property="<%= "reserved[" + ctr + "]" %>"/ -->
+						</TD>
+						<% } %>
+						
+						<!-- TODO Reservations - functionality to be made visible later -->
+						<!-- TD class="BottomBorderGray" align="right">
+							<htm : select name="<%=frmName%>" property="<%= "priority[" + ctr + "]" %>"
+								onfocus="setUp();" 
+								onkeypress="return selectSearch(event, this);" 
+								onkeydown="return checkKey(event, this);" >					
+								<htm : option value="<%= Constants.BLANK_OPTION_VALUE %>"><%= Constants.BLANK_OPTION_LABEL %></htm :option>
+								<htm : options collection="<%= Reservation.RESV_PRIORITY_REQUEST_ATTR %>" property="value" labelProperty="label" />
+							</htm : select>
+						</TD -->
+						
+						<% if (!frmName.equals("individualReservationEditForm") ) { %>
+						<TD class="BottomBorderGray" align="right">
+							<html:hidden property="<%= "requested[" + ctr + "]" %>"/>&nbsp;
+							<% if (!frmName.equals("courseReservationEditForm") ) { %>
+							<bean:write name="<%=frmName%>" property="<%= "requested[" + ctr + "]" %>"/>
+							<bean:define id="reqSpace" name="<%=frmName%>" property="<%= "requested[" + ctr + "]" %>"/>
+							<% if (reqSpace!=null && reqSpace.toString().length()>0) 
+								reqTotal += Integer.parseInt((String) reqSpace);  
+							   else 
+							   	out.print("-"); %>&nbsp;
+						<% } %>
+						</TD>
+						
+						<TD class="BottomBorderGray" align="right">
+							<html:hidden property="<%= "projectedEnrollment[" + ctr + "]" %>"/>
+							<logic:notEqual name="<%=frmName%>" property="ownerType" value="<%= Constants.RESV_OWNER_CLASS %>">
+								&nbsp;<bean:write name="<%=frmName%>" property="<%= "projectedEnrollment[" + ctr + "]" %>"/>
+								<bean:define id="projSpace" name="<%=frmName%>" property="<%= "projectedEnrollment[" + ctr + "]" %>"/>							
+								<% if (projSpace!=null && projSpace.toString().length()>0) 
+									projTotal += Integer.parseInt((String) projSpace); 
+								   else 
+								   	out.print("-"); %>
+							</logic:notEqual>&nbsp;
+						</TD>
+						
+						<TD class="BottomBorderGray" align="right">
+							<html:hidden property="<%= "priorEnrollment[" + ctr + "]" %>"/>
+							<logic:notEqual name="<%=frmName%>" property="ownerType" value="<%= Constants.RESV_OWNER_CLASS %>">
+								&nbsp;<bean:write name="<%=frmName%>" property="<%= "priorEnrollment[" + ctr + "]" %>"/>
+								<bean:define id="lastTermSpace" name="<%=frmName%>" property="<%= "priorEnrollment[" + ctr + "]" %>"/>
+								<% if (lastTermSpace!=null && lastTermSpace.toString().length()>0) 
+									lastTermTotal += Integer.parseInt((String) lastTermSpace);  
+								   else 
+								   	out.print("-"); %>&nbsp;
+							</logic:notEqual>&nbsp;
+						</TD>
+						<% } %>
+						
+						<TD class="BottomBorderGray" align="center">
+						<!-- TODO Reservations - bypass to be removed later -->
+							<html:hidden property="<%= "priority[" + ctr + "]" %>"/>
+							<% if (frmName.equals("academicAreaReservationEditForm") || frmName.equals("posReservationEditForm")) { %>
+							<html:hidden property="<%= "academicClassificationId[" + ctr + "]" %>"/>
+							<% } %>
+						<!-- end bypass -->
+							&nbsp;
+							<% if (!frmName.equals("courseReservationEditForm")) { %>
+							<logic:empty name="<%=frmName%>" property="<%= "priorEnrollment[" + ctr + "]" %>">
+								<html:submit property="op" 
+									styleClass="btn" titleKey="title.removeReservation"
+									onclick="<%= "javascript: doDel('" + ctr + "');"%>">
+									<bean:message key="button.removeReservation" />
+								</html:submit>
+							</logic:empty> 			
+							<% } %>
+						</TD>
+
+					</TR>
+					
+					</logic:iterate>
+					
+					<!-- Totals -->
+					<logic:notEqual name="<%=frmName%>" property="ownerType" value="<%= Constants.RESV_OWNER_CLASS %>">
+					<TR>
+						<TD class='rowTotal'>
+								<I>Total</I>
+						</TD>
+						
+						<% if (frmName.equals("academicAreaReservationEditForm") || frmName.equals("posReservationEditForm")) { %>
+						
+						<!-- TODO Reservations - functionality to be made visible later -->
+						<!-- TD class="BottomBorder"><I>Academic <BR>Classification</I></TD -->
+						<% } %>
+						
+						<% if (frmName.equals("individualReservationEditForm")) { %>
+						<TD class='rowTotal'>&nbsp;</TD>
+						<TD class='rowTotal'>&nbsp;</TD>
+						<% } %>
+						
+						<TD class='rowTotal'>&nbsp;</TD>
+
+						<% if (!frmName.equals("individualReservationEditForm")) { %>
+						<!-- TODO Reservations - bypass to be removed later -->
+						<logic:notEqual name="<%=frmName%>" property="ownerType" value="<%= Constants.RESV_OWNER_CLASS %>">
+								<TD class='rowTotal' align='right'><DIV id='resvTotal'><%= resvTotal %>&nbsp;</DIV></TD>
+						</logic:notEqual>
+						<!-- end bypass -->
+						<!-- TD class="BottomBorder"><I>Reserved <BR>Spaces</I></TD -->
+						<% } %>
+
+						<!-- TODO Reservations - functionality to be made visible later -->
+						<!-- TD class="BottomBorder"><I>Priority <BR> &nbsp;</I></TD -->
+						
+						<% if (!frmName.equals("individualReservationEditForm")) { %>
+						<logic:equal name="<%=frmName%>" property="ownerType" value="<%= Constants.RESV_OWNER_CLASS %>">
+						<TD class='rowTotal'>&nbsp;</TD>
+						<TD class='rowTotal'>&nbsp;</TD>
+						<TD class='rowTotal'>&nbsp;</TD>
+						</logic:equal>
+						<logic:notEqual name="<%=frmName%>" property="ownerType" value="<%= Constants.RESV_OWNER_CLASS %>">
+						<% if (!frmName.equals("courseReservationEditForm") ) { %>
+						<TD class='rowTotal' align='right'><%= reqTotal>=0 ? reqTotal : "" %>&nbsp; &nbsp; </TD>
+						<% } else { %>
+							<TD class='rowTotal'>&nbsp;</TD>
+						<% } %>
+						<TD class='rowTotal' align='right'><%= projTotal>=0 ? projTotal : "" %>&nbsp; </TD>
+						<TD class='rowTotal' align='right'><%= lastTermTotal>=0 ? lastTermTotal : "" %>&nbsp; &nbsp; </TD>
+						</logic:notEqual>
+						<% } %>
+
+						<TD class='rowTotal'>&nbsp;</TD>
+					</TR>
+					</logic:notEqual>&nbsp;
+					
+				</TABLE>
+			</TD>
+		</TR>
+	
+		<TR>
+			<TD colspan="2" class="WelcomeRowHead">
+				&nbsp;
+			</TD>
+		</TR>
+
+		<TR>
+			<TD colspan="2" align="right">
+			
+				<html:hidden property="reservationClass"/>
+				<INPUT type="hidden" name="deleteId" id="deleteId" value="">
+				
+				<html:submit property="op" 
+					styleClass="btn" accesskey="U" titleKey="title.updateReservation">			
+					<bean:message key="button.updateReservation" />
+				</html:submit>						
+
+				<% if (frmName.equals("individualReservationEditForm")) { %>
+				<html:button property="op" 
+					styleClass="btn" accesskey="L" titleKey="title.lookupPuId"
+					onclick="window.open('puidLookup.do', 'puidWin', 'menubar=no,scrollbar=no,status=no,toolbar=no,height=240,width=455,top=100,left=100' );">			
+					<bean:message key="button.lookupPuId" />
+				</html:button>						
+				<% } %>
+
+				<tt:back styleClass="btn" name="Back" title="Return to %%" accesskey="B" back="1" />
+
+				<SCRIPT type="text/javascript" language="javascript">
+					function doDel(id) {
+						var delId = document.<%=frmName%>.deleteId;
+						delId.value = id;
+					}
+				</SCRIPT>				
+			</TD>
+		</TR>
+
+	</TABLE>	
+
+<SCRIPT language="javascript">
+	<!--
+	origTotal = <%=resvTotal%>;
+	// -->
+</SCRIPT>
+	

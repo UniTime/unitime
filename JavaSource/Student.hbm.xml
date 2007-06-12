@@ -1,0 +1,191 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC 
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<!-- 
+ * UniTime 3.0 (University Course Timetabling & Student Sectioning Application)
+ * Copyright (C) 2007, UniTime.org
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ -->
+ 
+<hibernate-mapping package="org.unitime.timetable.model">
+
+	<class name="Student" table="STUDENT">
+		
+ 		<cache include="non-lazy" usage="nonstrict-read-write"/>
+ 		
+        <id name="uniqueId" column="UNIQUEID" type="java.lang.Long">
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">PREF_GROUP_SEQ</param>
+            </generator>
+        </id>
+		
+		<property
+			name="externalUniqueId"
+			column="EXTERNAL_UID"
+			type="java.lang.String"
+			not-null="false"
+			length="40"
+		/>
+
+		<property
+			name="firstName"
+			column="FIRST_NAME"
+			type="java.lang.String"
+			not-null="true"
+			length="50"
+		/>
+
+		<property
+			name="middleName"
+			column="MIDDLE_NAME"
+			type="java.lang.String"
+			not-null="false"
+			length="50"
+		/>
+		
+		<property
+			name="lastName"
+			column="LAST_NAME"
+			type="java.lang.String"
+			not-null="true"
+			length="100"
+		/>
+						
+		<property
+			name="email"
+			column="EMAIL"
+			type="java.lang.String"
+			not-null="false"
+			length="200"
+		/>
+		
+		<property
+			name="freeTimeCategory"
+			column="FREE_TIME_CAT"
+			type="java.lang.Integer"
+			not-null="true"
+			length="10"
+		/>
+
+		<property
+			name="schedulePreference"
+			column="SCHEDULE_PREFERENCE"
+			type="java.lang.Integer"
+			not-null="true"
+			length="10"
+		/>
+
+		<many-to-one 
+			name="status" 
+			class="StudentStatusType" 
+			column="STATUS_TYPE_ID" 
+			not-null="false" 
+			foreign-key="FK_STUDENT_STATUS_STUDENT"
+		/>
+
+		<property
+			name="statusChangeDate"
+			column="STATUS_CHANGE_DATE"
+			type="java.util.Date"
+			not-null="false"
+			length="20"
+		/>
+		
+		<many-to-one 
+			name="session" 
+			class="Session" 
+			column="SESSION_ID" 
+			foreign-key="FK_STUDENT_SESSION"
+			not-null="true"
+		/>
+
+		<set
+			name="academicAreaClassifications"
+			inverse="false"
+			cascade="all"
+			table="STUDENT_ACAD_AREA"
+			lazy="true"
+			>
+	 		<cache include="non-lazy" usage="read-write"/>
+			<key column="STUDENT_ID"/>
+			<one-to-many class="AcademicAreaClassification"/>
+		</set>
+		
+		<set name="posMajors" table="STUDENT_MAJOR" inverse="false">
+			<cache include="non-lazy" usage="read-write"/>
+			<key column="STUDENT_ID" foreign-key="FK_STUDENT_MAJOR_STUDENT" /> 
+			<many-to-many class="PosMajor" 
+				column="MAJOR_ID" 
+				foreign-key="FK_STUDENT_MAJOR_MAJOR"
+				/>
+		</set>
+
+		<set name="posMinors" table="STUDENT_MINOR" inverse="false">
+			<cache include="non-lazy" usage="read-write"/>
+			<key column="STUDENT_ID" foreign-key="FK_STUDENT_MINOR_STUDENT"/> 
+			<many-to-many class="PosMinor" 
+				column="MINOR_ID" 
+				foreign-key="FK_STUDENT_MINOR_MINOR"
+				/>
+		</set>
+
+		<set name="accomodations" table="STUDENT_TO_ACOMODATION" inverse="false">
+			<cache include="non-lazy" usage="read-write"/>
+			<key column="STUDENT_ID" foreign-key="FK_STUDENT_ACOMODATION_ACCOM"/> 
+			<many-to-many class="StudentAccomodation" 
+				column="ACCOMODATION_ID" 
+				foreign-key="FK_STUDENT_ACOMODATION_STUDENT"
+				/>
+		</set>
+
+		<set name="groups" table="STUDENT_TO_GROUP" inverse="false">
+			<cache include="non-lazy" usage="read-write"/>
+			<key column="STUDENT_ID" foreign-key="FK_STUDENT_GROUP_GROUP"/> 
+			<many-to-many class="StudentGroup" 
+				column="GROUP_ID" 
+				foreign-key="FK_STUDENT_GROUP_STUDENT"
+				/>
+		</set>
+
+		<set name="waitlists" table="WAITLIST" inverse="true" cascade="all" lazy="true">
+	 		<cache include="non-lazy" usage="read-write"/>
+			<key column="STUDENT_ID" foreign-key="FK_WAITLIST_STUDENT"/>
+			<one-to-many class="WaitList"/>
+		</set>
+ 		
+		<set name="courseDemands" table="COURSE_DEMAND" inverse="true" cascade="all" lazy="true" >
+	 		<cache include="non-lazy" usage="read-write"/>
+			<key column="STUDENT_ID" foreign-key="FK_COURSE_DEMAND_STUDENT"/>
+			<one-to-many class="CourseDemand"/>
+		</set>
+
+		<set name="classEnrollments" table="STUDENT_CLASS_ENRL" inverse="true" cascade="all" lazy="true">
+	 		<cache include="non-lazy" usage="read-write"/>
+			<key column="STUDENT_ID" foreign-key="FK_STUDENT_CLASS_ENRL_STUDENT"/>
+			<one-to-many class="StudentClassEnrollment"/>
+		</set>
+
+		<set name="lastLikeCourseDemands" table="LASTLIKE_COURSE_DEMAND" inverse="true" cascade="all" lazy="true">
+	 		<cache include="non-lazy" usage="read-write"/>
+			<key column="STUDENT_ID" foreign-key="FK_LASTLIKE_COURSE_DEMAND_STUDENT"/>
+			<one-to-many class="LastLikeCourseDemand"/>
+		</set>
+
+	</class>
+
+</hibernate-mapping>

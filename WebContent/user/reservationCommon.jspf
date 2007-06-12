@@ -1,0 +1,74 @@
+<%--
+ * UniTime 3.0 (University Course Timetabling & Student Sectioning Application)
+ * Copyright (C) 2007, UniTime.org
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+--%>
+		<logic:messagesPresent>
+		<TR>
+			<TD colspan="2" align="left" class="errorCell">
+					<B><U>ERRORS</U></B><BR>
+				<BLOCKQUOTE>
+				<UL>
+				    <html:messages id="error">
+				      <LI>
+						${error}
+				      </LI>
+				    </html:messages>
+			    </UL>
+			    </BLOCKQUOTE>
+			</TD>
+		</TR>
+		</logic:messagesPresent>
+
+		<TR>
+			<TD colspan="2">
+				<html:hidden property="ownerName"/>
+				<html:hidden property="ownerId"/>
+				<html:hidden property="ownerType"/>
+				<html:hidden property="ownerTypeLabel"/>
+				<html:hidden property="ioLimit"/>
+				<html:hidden property="crsLimit"/>
+				<b><bean:write name="<%=frmName%>" property="ownerName"/></b> &nbsp;
+				<I>(<bean:write name="<%=frmName%>" property="ownerTypeLabel"/>)</I>
+			</TD>
+		</TR>
+
+		<TR>
+			<TD width="10%" nowrap>
+				Instructional Offering Limit:
+			</TD>
+			<TD width="90%" align="left">
+				<logic:equal name="<%=frmName%>" property="unlimited" value="true">
+					<img src='images/infinity.gif' alt='Unlimited Enrollment' title='Unlimited Enrollment' border='0' align='top'>
+				</logic:equal>
+				<logic:notEqual name="<%=frmName%>" property="unlimited" value="true">
+					<bean:write name="<%=frmName%>" property="ioLimit"/>
+				</logic:notEqual>
+			</TD>
+		</TR>
+	
+		<logic:notEqual name="<%=frmName%>" property="crsLimit" value="-">
+		<TR>
+			<TD>
+				Course Offering Limit:
+			</TD>
+			<TD>
+				<bean:write name="<%=frmName%>" property="crsLimit"/>
+			</TD>
+		</TR>
+		</logic:notEqual>
+	
+	

@@ -1,0 +1,1872 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE struts-config PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 1.2//EN" "http://struts.apache.org/dtds/struts-config_1_2.dtd">
+<!-- 
+ * UniTime 3.0 (University Course Timetabling & Student Sectioning Application)
+ * Copyright (C) 2007, UniTime.org
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ -->
+<struts-config>
+
+   <display-name>UniTime</display-name>
+   <description>University Course Timetabling &amp; Student Sectioning Application</description>
+   
+   <data-sources />
+   
+   <form-beans >
+	  <form-bean name="distributionTypeListForm" type="org.unitime.timetable.form.DistributionTypeListForm" />
+	  <form-bean name="distributionTypeEditForm" type="org.unitime.timetable.form.DistributionTypeEditForm" />
+	  <form-bean name="sessionListForm" type="org.unitime.timetable.form.SessionListForm" />
+	  <form-bean name="sessionEditForm" type="org.unitime.timetable.form.SessionEditForm" />
+	  <form-bean name="subjectListForm" type="org.unitime.timetable.form.SubjectListForm" />
+	  <form-bean name="buildingListForm" type="org.unitime.timetable.form.BuildingListForm" />
+	  <form-bean name="roomListForm" type="org.unitime.timetable.form.RoomListForm" />
+	  <form-bean name="departmentListForm" type="org.unitime.timetable.form.DepartmentListForm" />
+	  <form-bean name="roleListForm" type="org.unitime.timetable.form.RoleListForm" />
+	  <form-bean name="mgrForm" type="org.unitime.timetable.form.TimetableManagerForm" />
+	  <form-bean name="roomFeatureListForm" type="org.unitime.timetable.form.RoomFeatureListForm" />
+	  <form-bean name="roomFeatureEditForm" type="org.unitime.timetable.form.RoomFeatureEditForm" />
+	  <form-bean name="instructionalOfferingListForm" type="org.unitime.timetable.form.InstructionalOfferingListForm" />
+	  <form-bean name="instructionalOfferingConfigEditForm" type="org.unitime.timetable.form.InstructionalOfferingConfigEditForm" />
+	  <form-bean name="schedulingSubpartEditForm" type="org.unitime.timetable.form.SchedulingSubpartEditForm" />
+	  <form-bean name="instructorSearchForm" type="org.unitime.timetable.form.InstructorSearchForm" />
+	  <form-bean name="instructorEditForm" type="org.unitime.timetable.form.InstructorEditForm" />
+	  <form-bean name="mgrSettingsForm" type="org.unitime.timetable.form.ManagerSettingsForm" />
+	  <form-bean name="settingsForm" type="org.unitime.timetable.form.SettingsForm" />
+	  <form-bean name="solverParamGroupsForm" type="org.unitime.timetable.form.SolverParamGroupsForm" />
+	  <form-bean name="solverParamDefForm" type="org.unitime.timetable.form.SolverParamDefForm" />
+	  <form-bean name="solverSettingsForm" type="org.unitime.timetable.form.SolverSettingsForm" />
+	  <form-bean name="solverInfoDefForm" type="org.unitime.timetable.form.SolverInfoDefForm" />
+	  <form-bean name="listSolutionsForm" type="org.unitime.timetable.form.ListSolutionsForm" />
+	  <form-bean name="solverLogForm" type="org.unitime.timetable.form.SolverLogForm" />
+	  <form-bean name="solverForm" type="org.unitime.timetable.form.SolverForm" />
+	  <form-bean name="manageSolversForm" type="org.unitime.timetable.form.ManageSolversForm" />
+	  <form-bean name="cbsForm" type="org.unitime.timetable.form.CbsForm" />
+	  <form-bean name="timetableForm" type="org.unitime.timetable.form.TimetableForm" />
+	  <form-bean name="unassignedForm" type="org.unitime.timetable.form.UnassignedForm" />
+	  <form-bean name="suggestionsForm" type="org.unitime.timetable.form.SuggestionsForm" />
+	  <form-bean name="classListForm" type="org.unitime.timetable.form.ClassListForm" />
+	  <form-bean name="classEditForm" type="org.unitime.timetable.form.ClassEditForm" />
+      <form-bean name="distributionPrefsForm" type="org.unitime.timetable.form.DistributionPrefsForm" />
+      <form-bean name="hibernateQueryTestForm" type="org.unitime.timetable.form.HibernateQueryTestForm" />
+      <form-bean name="classOwnerChangeForm" type="org.unitime.timetable.form.ClassOwnerChangeForm" />
+	  <form-bean name="classAssignmentsReportForm" type="org.unitime.timetable.form.ClassAssignmentsReportForm" />
+	  <form-bean name="assignmentHistoryForm" type="org.unitime.timetable.form.AssignmentHistoryForm" />
+   	  <form-bean name="solutionChangesForm" type="org.unitime.timetable.form.SolutionChangesForm" />
+	  <form-bean name="assignedClassesForm" type="org.unitime.timetable.form.AssignedClassesForm" />
+	  <form-bean name="solutionReportForm" type="org.unitime.timetable.form.SolutionReportForm" />
+	  <form-bean name="timePatternEditForm" type="org.unitime.timetable.form.TimePatternEditForm" />
+      <form-bean name="instructionalOfferingDetailForm" type="org.unitime.timetable.form.InstructionalOfferingDetailForm" />
+      <form-bean name="crossListsModifyForm" type="org.unitime.timetable.form.CrossListsModifyForm" />
+      <form-bean name="instructionalOfferingModifyForm" type="org.unitime.timetable.form.InstructionalOfferingModifyForm" />
+      <form-bean name="datePatternEditForm" type="org.unitime.timetable.form.DatePatternEditForm" />
+	  <form-bean name="roomGroupListForm" type="org.unitime.timetable.form.RoomGroupListForm" />
+      <form-bean name="roomGroupEditForm" type="org.unitime.timetable.form.RoomGroupEditForm" />
+      <form-bean name="roomDeptListForm" type="org.unitime.timetable.form.RoomDeptListForm" />
+      <form-bean name="roomDeptEditForm" type="org.unitime.timetable.form.RoomDeptEditForm" />
+      <form-bean name="addNonUnivLocationForm" type="org.unitime.timetable.form.AddNonUnivLocationForm" />
+      <form-bean name="nonUnivLocationForm" type="org.unitime.timetable.form.NonUnivLocationForm" />
+      <form-bean name="specialUseRoomForm" type="org.unitime.timetable.form.SpecialUseRoomForm" />
+      <form-bean name="roomDetailForm" type="org.unitime.timetable.form.RoomDetailForm" />
+      <form-bean name="editRoomPrefForm" type="org.unitime.timetable.form.EditRoomPrefForm" />
+      <form-bean name="editRoomFeatureForm" type="org.unitime.timetable.form.EditRoomFeatureForm" />
+      <form-bean name="editRoomGroupForm" type="org.unitime.timetable.form.EditRoomGroupForm" />
+      <form-bean name="editRoomDeptForm" type="org.unitime.timetable.form.EditRoomDeptForm" />
+      <form-bean name="solverGroupEditForm" type="org.unitime.timetable.form.SolverGroupEditForm" />
+      <form-bean name="editRoomForm" type="org.unitime.timetable.form.EditRoomForm" />
+      <form-bean name="instructorListUpdateForm" type="org.unitime.timetable.form.InstructorListUpdateForm" />
+      <form-bean name="courseOfferingEditForm" type="org.unitime.timetable.form.CourseOfferingEditForm" />
+      <form-bean name="designatorListForm" type="org.unitime.timetable.form.DesignatorListForm" />
+      <form-bean name="designatorEditForm" type="org.unitime.timetable.form.DesignatorEditForm" />
+      <form-bean name="applicationConfigForm" type="org.unitime.timetable.form.ApplicationConfigForm" />
+      <form-bean name="reservationListForm" type="org.unitime.timetable.form.ReservationListForm" />
+      <form-bean name="reservationEditForm" type="org.unitime.timetable.form.ReservationEditForm" />
+      <form-bean name="courseReservationEditForm" type="org.unitime.timetable.form.CourseReservationEditForm" />
+      <form-bean name="academicAreaReservationEditForm" type="org.unitime.timetable.form.AcademicAreaReservationEditForm" />
+      <form-bean name="posReservationEditForm" type="org.unitime.timetable.form.PosReservationEditForm" />
+      <form-bean name="individualReservationEditForm" type="org.unitime.timetable.form.IndividualReservationEditForm" />
+      <form-bean name="studentGroupReservationEditForm" type="org.unitime.timetable.form.StudentGroupReservationEditForm" />
+      <form-bean name="departmentEditForm" type="org.unitime.timetable.form.DepartmentEditForm" />
+      <form-bean name="classInstructorAssignmentForm" type="org.unitime.timetable.form.ClassInstructorAssignmentForm" />
+      <form-bean name="chameleonForm" type="org.unitime.timetable.form.ChameleonForm" />
+      <form-bean name="sectioningDemoForm" type="org.unitime.timetable.form.SectioningDemoForm" />
+      <form-bean name="inquiryForm" type="org.unitime.timetable.form.InquiryForm" />
+      <form-bean name="dataImportForm" type="org.unitime.timetable.form.DataImportForm" />
+      <form-bean name="exactTimeEditForm" type="org.unitime.timetable.form.ExactTimeEditForm" />
+      <form-bean name="lastChangesForm" type="org.unitime.timetable.form.LastChangesForm" />
+      <form-bean name="rollForwardSessionForm" type="org.unitime.timetable.form.RollForwardSessionForm" />
+      <form-bean name="deptStatusTypeEditForm" type="org.unitime.timetable.form.DeptStatusTypeEditForm" />
+   </form-beans>
+
+   <global-exceptions>
+   		<exception key="errors.exception" type="Exception" path="/error.jsp" />
+   </global-exceptions>
+
+   <action-mappings >
+
+	  <action 
+	     path="/sort"
+		 type="fr.improve.struts.taglib.layout.sort.SortAction"
+		 scope="request"
+		 validate="false" />
+		    
+	  <action 
+	     path="/treeview"
+		 type="fr.improve.struts.taglib.layout.treeview.TreeviewAction"
+		 scope="request"
+		 validate="false" />
+
+	  <action
+         path="/getCourseNumbers"
+         type="org.unitime.timetable.action.ajax.CourseNumSuggestAction"
+         scope="request"
+         validate="false" />
+		
+      <action
+         path="/sessionEdit"
+         attribute="sessionEditForm"
+         name="sessionEditForm"
+         parameter="doit"
+         scope="request"
+         type="org.unitime.timetable.action.SessionEditAction"
+         validate="false">
+         <forward name="showEdit" path="sessionEditTile" />
+         <forward name="showAdd" path="sessionAddTile" />
+         <forward
+            name="showSessionList"
+            path="/sessionList.do"
+            redirect="true" />
+      </action>
+
+      <action
+         path="/sessionList"
+         attribute="sessionListForm"
+         input="sessionListTile"
+         name="sessionListForm"
+         scope="request"
+         type="org.unitime.timetable.action.SessionListAction"
+         validate="false">
+         <forward name="showSessionList" path="sessionListTile" />
+      </action>
+
+      <action
+         path="/distributionTypeEdit"
+         attribute="distributionTypeEditForm"
+         name="distributionTypeEditForm"
+         parameter="do"
+         scope="request"
+         type="org.unitime.timetable.action.DistributionTypeEditAction">
+         <forward name="showEdit" path="distributionTypeEditTile" />
+         <forward
+            name="showDistributionTypeList"
+            path="/distributionTypeList.do"
+            redirect="true" />
+      </action>
+      <action
+         path="/distributionTypeList"
+         attribute="distributionTypeListForm"
+         input="distributionTypeListTile"
+         name="distributionTypeListForm"
+         scope="request"
+         type="org.unitime.timetable.action.DistributionTypeListAction"
+         validate="false">
+         <forward name="showDistributionTypeList" path="distributionTypeListTile" />
+      </action> 
+     
+      <action
+         path="/subjectList"
+         attribute="subjectListForm"
+         input="subjectListTile"
+         name="subjectListForm"
+         scope="request"
+         type="org.unitime.timetable.action.SubjectListAction">
+         <forward name="showSubjectList" path="subjectListTile" />
+      </action>
+
+      <action
+      	path="/subjectAreaEdit"
+	    type="org.unitime.timetable.action.SubjectAreaEditAction"
+	    attribute="subjectAreaEditForm"
+	    input="subjectAreaEditTile"
+	    name="subjectAreaEditForm"
+	    scope="request"
+	    validate="false">
+	    <forward 
+	      	name="editSubjectArea" 
+	      	path="subjectAreaEditTile" />
+	    <forward 
+	      	name="addSubjectArea" 
+	      	path="subjectAreaAddTile" />
+	    <forward 
+	      	name="back" 
+	      	path="/subjectList.do" />
+      </action>
+      
+      <action
+         path="/buildingList"
+         attribute="buildingListForm"
+         input="buildingListTile"
+         name="buildingListForm"
+         scope="request"
+         type="org.unitime.timetable.action.BuildingListAction">
+         <forward name="showBuildingList" path="buildingListTile" />
+      </action>
+
+     <action
+         path="/roomList"
+         attribute="roomListForm"
+         input="roomListTile"
+         name="roomListForm"
+         scope="request"
+         validate="false"
+         type="org.unitime.timetable.action.RoomListAction">
+         <forward name="showRoomList" path="roomListTile" />         
+         <forward name="showRoomSearch" path="/roomSearch.do" />
+      </action>
+
+	 <action
+         path="/departmentList"
+         attribute="departmentListForm"
+         input="departmentListTile"
+         name="departmentListForm"
+         scope="request"
+         type="org.unitime.timetable.action.DepartmentListAction">
+         <forward name="showDepartmentList" path="departmentListTile" />
+      </action>
+
+      <action
+         path="/selectPrimaryRole"
+         attribute="roleListForm"
+         input="selectPrimaryRoleTile"
+         name="roleListForm"
+         scope="request"
+         type="org.unitime.timetable.action.RoleListAction"
+         validate="false">
+         <forward
+            name="getUserSelectedRole"
+            path="selectPrimaryRoleTile" />
+         <forward
+            name="getDefaultAcadSession"
+            path="selectAcadSessionTile" />
+         <forward
+            name="success"
+            path="/main.jsp" />
+         <forward
+            name="fail"
+            path="selectPrimaryRoleTile" />
+         <forward
+            name="loginRequired"
+            path="loginRequiredTile" />
+      </action>
+
+      <action
+         path="/loginRequired"
+         type="org.unitime.timetable.action.TilesRedirectAction"
+         scope="request"
+         validate="false">
+         <forward
+            name="success"
+            path="loginRequiredTile" />
+      </action>
+      
+      <action
+         path="/roomFeatureList"
+         attribute="roomFeatureListForm"
+         input="roomFeatureListTile"
+         name="roomFeatureListForm"
+         parameter="doit"
+         scope="request"
+         type="org.unitime.timetable.action.RoomFeatureListAction">
+         <forward name="showRoomFeatureList" path="roomFeatureListTile" />         
+         <forward name="showAdd" path="/roomFeatureEdit.do" />
+      </action>  
+
+ <!--      
+	<action 
+         path="/globalRoomFeatureEdit"
+         name="globalRoomFeatureEditForm"
+         attribute="roomFeatureEditForm"
+         input="globalRoomFeatureEditTile"
+         parameter="doit"
+         scope="request"
+         type="org.unitime.timetable.action.RoomFeatureEditAction" >
+         <forward name="showEdit" path="globalRoomFeatureEditTile" />
+         <forward name="showAdd" path="globalRoomFeatureEditTile" />
+         <forward
+            name="showRoomFeatureList"
+            path="/roomFeatureList.do"
+            redirect="true" />
+      </action> 
+           
+	<action
+         path="/managerRoomFeatureEdit"
+         name="managerRoomFeatureEditForm"
+         attribute="roomFeatureEditForm"
+         parameter="doit"
+         scope="request"
+         type="org.unitime.timetable.action.RoomFeatureEditAction">
+         <forward name="showEdit" path="managerRoomFeatureEditTile" />
+         <forward name="showAdd" path="managerRoomFeatureEditTile" />
+         <forward
+            name="showRoomFeatureList"
+            path="/roomFeatureList.do"
+            redirect="true" />
+      </action>
+-->
+	  <action
+         path="/roomFeatureEdit"
+         name="roomFeatureEditForm"
+         attribute="roomFeatureEditForm"
+         parameter="doit"
+         scope="request"
+         validate="false"
+         type="org.unitime.timetable.action.RoomFeatureEditAction">
+         <forward name="showEdit" path="roomFeatureEditTile" />
+         <forward name="showAdd" path="roomFeatureEditTile" />
+         <forward name="showRoomFeatureList" path="/roomFeatureList.do" />
+      </action>
+
+      <action
+         path="/timetableManagerEdit"
+         type="org.unitime.timetable.action.TimetableManagerEditAction"
+         attribute="mgrForm"
+         input="mgrAddTile"
+         name="mgrForm"
+         scope="request"
+         validate="false">
+         <forward
+            name="success"
+            path="/timetableManagerList.do" />
+         <forward
+            name="fail"
+            path="timetableManagerEditTile" />
+         <forward
+            name="editManagerInfo"
+            path="timetableManagerEditTile" />
+         <forward
+            name="addManagerInfo"
+            path="timetableManagerAddTile" />
+         <forward
+            name="displayManagerList"
+            path="/timetableManagerList.do" />
+      </action>
+
+      <action
+         path="/timetableManagerList"
+         type="org.unitime.timetable.action.TimetableManagerListAction"
+         validate="false">
+         <forward
+            name="success"
+            path="timetableManagerListTile"
+            redirect="true" />
+         <forward
+            name="fail"
+            path="/error.jsp"
+            redirect="true" />
+      </action>
+ 
+      <action
+         path="/instructionalOfferingSearch"
+         attribute="instructionalOfferingListForm"
+         input="instructionalOfferingSearchTile"
+         name="instructionalOfferingListForm"
+         parameter="doit"
+         scope="request"
+         type="org.unitime.timetable.action.InstructionalOfferingSearchAction"
+         validate="false">
+        <forward 
+        	name="showInstructionalOfferingList" 
+        	path="instructionalOfferingListTile" />
+        <forward 
+        	name="showInstructionalOfferingSearch" 
+        	path="instructionalOfferingSearchTile" />
+        <forward 
+        	name="showInstructionalOfferingDetail" 
+        	path="/instructionalOfferingDetail.do" />
+        <forward 
+        	name="showCourseOfferingEdit" 
+        	path="/courseOfferingEdit.do" />
+        <forward 
+        	name="editInstructionalOffering" 
+        	path="instructionalOfferingEditTile" />
+      </action>
+      
+      <action
+         path="/instructionalOfferingShowSearch"
+         type="org.unitime.timetable.action.InstructionalOfferingShowSearchAction"
+         attribute="instructionalOfferingListForm"
+         input="instructionalOfferingSearchTile"
+         name="instructionalOfferingListForm"
+         scope="request"
+         validate="false">
+        <forward 
+        	name="showInstructionalOfferingList" 
+        	path="instructionalOfferingListTile" />
+        <forward 
+        	name="showInstructionalOfferingSearch" 
+        	path="instructionalOfferingSearchTile" />
+      </action>
+
+      <action
+         path="/instructionalOfferingChange"
+         attribute="instructionalOfferingListForm"
+         input="instructionalOfferingListTile"
+         name="instructionalOfferingListForm"
+         parameter="doit"
+         scope="request"
+         type="org.unitime.timetable.action.InstructionalOfferingSearchAction"
+         validate="false">
+        <forward 
+        	name="showInstructionalOfferingList" 
+        	path="instructionalOfferingListTile" />
+        <forward 
+        	name="showInstructionalOfferingSearch" 
+        	path="instructionalOfferingSearchTile" />
+      </action>
+
+     <action
+         path="/instructionalOfferingList"
+         attribute="instructionalOfferingListForm"
+         input="instructionalOfferingListTile"
+         name="instructionalOfferingListForm"
+         scope="request"
+         type="org.unitime.timetable.action.InstructionalOfferingListAction"
+         validate="false">
+         <forward 
+         	name="showInstructionalOfferingList" 
+         	path="instructionalOfferingListTile" />
+      </action>
+
+      <action
+         path="/instructionalOfferingConfigEdit"
+         type="org.unitime.timetable.action.InstructionalOfferingConfigEditAction"
+         attribute="instructionalOfferingConfigEditForm"
+         input="instructionalOfferingConfigEditTile"
+         name="instructionalOfferingConfigEditForm"
+         scope="request"
+         validate="false">
+         <forward
+            name="displayForm"
+            path="instructionalOfferingConfigEditTile"
+            redirect="true" />
+         <forward
+            name="fail"
+            path="/error.jsp"
+            redirect="true" />
+        <forward 
+        	name="instructionalOfferingSearch" 
+        	path="/instructionalOfferingSearch.do" />
+        <forward 
+        	name="instructionalOfferingDetail" 
+        	path="/instructionalOfferingDetail.do" />
+      </action>
+      
+      <action
+         path="/crossListsModify"
+         type="org.unitime.timetable.action.CrossListsModifyAction"
+         attribute="crossListsModifyForm"
+         input="crossListsModifyTile"
+         name="crossListsModifyForm"
+         scope="request"
+         validate="false">
+        <forward 
+        	name="crossListsModify" 
+        	path="crossListsModifyTile" />
+        <forward 
+        	name="instructionalOfferingDetail" 
+        	path="/instructionalOfferingDetail.do" />
+      </action>
+ 
+      <action
+         path="/instructionalOfferingModify"
+         type="org.unitime.timetable.action.InstructionalOfferingModifyAction"
+         attribute="instructionalOfferingModifyForm"
+         input="instructionalOfferingModifyTile"
+         name="instructionalOfferingModifyForm"
+         scope="request"
+         validate="false">
+        <forward 
+        	name="instructionalOfferingModify" 
+        	path="instructionalOfferingModifyTile" />
+        <forward 
+        	name="instructionalOfferingDetail" 
+        	path="/instructionalOfferingDetail.do" />
+      </action>
+      
+      <action
+         path="/schedulingSubpartEdit"
+         type="org.unitime.timetable.action.SchedulingSubpartEditAction"
+         attribute="SchedulingSubpartEditForm"
+         input="schedulingSubpartEditTile"
+         name="schedulingSubpartEditForm"
+         scope="request"
+         validate="false"> 
+        <forward 
+        	name="editSchedulingSubpart" 
+        	path="schedulingSubpartEditTile" />
+        <forward 
+        	name="instructionalOfferingSearch" 
+        	path="/instructionalOfferingSearch.do" />
+        <forward 
+        	name="addDistributionPrefs" 
+        	path="/distributionPrefs.do" />
+        <forward 
+        	name="displaySubpartDetail" 
+        	path="/schedulingSubpartDetail.do" 
+        	/>
+      </action>
+  
+      <action 
+      	path="/preferenceLevelList" 
+      	type="org.unitime.timetable.action.PreferenceLevelListAction"
+        validate="false">
+         <forward
+            name="success"
+            path="preferenceLevelListTile"
+            redirect="true" />
+         <forward
+            name="fail"
+            path="/error.jsp"
+            redirect="true" />
+      </action>
+      
+      <action 
+      	path="/itypeDescList" 
+      	type="org.unitime.timetable.action.ItypeDescListAction" 
+      	validate="false">
+        <forward
+            name="success"
+            path="itypeDescListTile"
+            redirect="true" />
+        <forward
+            name="fail"
+            path="/error.jsp"
+            redirect="true" />
+      </action>
+      <action
+         attribute="instructorSearchForm"
+         input="/user/instructorSearch.jsp"
+         name="instructorSearchForm"
+         path="/instructorSearch"
+         scope="request"
+         validate="false"
+         type="org.unitime.timetable.action.InstructorSearchAction">
+         <forward name="showInstructorSearch" path="instructorSearchTile" />
+         <forward name="showInstructorList" path="instructorListTile" />
+         <forward name="instructorList" path="/instructorList.do" />
+      </action>
+      <action
+         attribute="instructorSearchForm"
+         input="instructorListTile"
+         name="instructorSearchForm"
+         parameter="op"
+         path="/instructorList"
+         scope="request"
+         validate="false"
+         type="org.unitime.timetable.action.InstructorListAction">
+         <forward name="showInstructorList" path="instructorListTile" />
+         <forward name="showInstructorSearch" path="/instructorSearch.do" />
+      </action>
+      
+      <action
+         path="/managerSettings"
+         type="org.unitime.timetable.action.ManagerSettingsAction"
+         attribute="mgrSettingsForm"
+         input="managerSettingsTile"
+         name="mgrSettingsForm"
+         scope="request"
+         validate="false">
+         <forward
+            name="showManagerSettings"
+            path="managerSettingsTile"
+            redirect="true" />      
+      </action>
+      
+      <action
+         path="/settings"
+         type="org.unitime.timetable.action.SettingsAction"
+         attribute="settingsForm"
+         input="settingsTile"
+         name="settingsForm"
+         scope="request"
+         validate="false">
+         <forward
+            name="showSettings"
+            path="settingsTile"
+            redirect="true" />      
+      </action>
+      
+      <action
+      	path="/solverParamGroups"
+      	type="org.unitime.timetable.action.SolverParamGroupsAction"
+      	attribute="solverParamGroupsForm"
+		input="solverParamGroupsTile"
+		name="solverParamGroupsForm"
+		scope="request"
+		validate="false">
+		<forward
+			name="showSolverParamGroups"
+			path="solverParamGroupsTile"
+			redirect="true">
+		</forward>
+	  </action>
+	  
+	  <action
+	  	path="/solverParamDef"
+	  	type="org.unitime.timetable.action.SolverParamDefAction"
+	  	attribute="solverParamDefForm"
+	  	input="solverParamDefTile"
+	  	name="solverParamDefForm"
+	  	scope="request"
+	  	validate="false">
+	  	<forward
+          name="showSolverParamDef"
+          path="solverParamDefTile"
+          redirect="true" />
+      </action>
+      
+      <action
+      	path="/solverSettings"
+      	type="org.unitime.timetable.action.SolverSettingsAction"
+      	attribute="solverSettingsForm"
+      	input="solverSettingsTile"
+      	name="solverSettingsForm"
+      	scope="request"
+      	validate="false">
+      	<forward
+          name="showSolverSettings"
+          path="solverSettingsTile"
+          redirect="true" />
+        </action>
+        
+        <action
+			path="/solverInfoDef"
+			type="org.unitime.timetable.action.SolverInfoDefAction"
+			attribute="solverInfoDefForm"
+			input="solverInfoDefTile"
+			name="solverInfoDefForm"
+			scope="request"
+			validate="false">
+   		  <forward
+	        name="showSolverInfoDef"
+    	    path="solverInfoDefTile"
+	        redirect="true" />
+	    </action>
+	    
+	<action
+		path="/listSolutions"
+		type="org.unitime.timetable.action.ListSolutionsAction"
+		attribute="listSolutionsForm"
+		input="listSolutionsTile"
+		name="listSolutionsForm"
+		scope="request"
+		validate="false">
+      <forward
+        name="showSolutions"
+        path="listSolutionsTile"
+        redirect="true" />
+      
+    </action>
+    
+    <action
+    	path="/solverLog"
+    	type="org.unitime.timetable.action.SolverLogAction"
+    	attribute="solverLogForm"
+    	input="solverLogTile"
+    	name="solverLogForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+    		name="showLog"
+    		path="solverLogTile"
+    		redirect="true" />
+    </action>
+    <action
+    	path="/solver"
+    	type="org.unitime.timetable.action.SolverAction"
+    	attribute="solverForm"
+    	input="solverTile"
+    	name="solverForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+    		name="showSolver"
+    		path="solverTile"
+	        redirect="true" />
+    </action>
+    <action
+		path="/manageSolvers"
+		type="org.unitime.timetable.action.ManageSolversAction"
+		attribute="manageSolversForm"
+		input="manageSolversTile"
+		name="manageSolversForm"
+		scope="request"
+		validate="false">
+      <forward
+        name="showSolvers"
+        path="manageSolversTile"
+        redirect="true" />
+      <forward
+        name="showSolver"
+        path="solverTile"
+        redirect="true" />
+    </action>
+    <action
+    	path="/cbs"
+    	type="org.unitime.timetable.action.CbsAction"
+    	attribute="cbsForm"
+    	input="cbsTile"
+    	name="cbsForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+	    	name="showCbs"
+	    	path="cbsTile"
+	    	redirect="true" />
+    </action>
+    <action
+    	path="/timetable"
+		type="org.unitime.timetable.action.TimetableAction"
+		attribute="timetableForm"
+		input="timetableTile"
+		name="timetableForm"
+		scope="request"
+		validate="false">
+		<forward
+			name="showTimetable"
+	        path="timetableTile"
+    	    redirect="true" />
+    </action>
+    <action
+    	path="/unassigned"
+    	type="org.unitime.timetable.action.UnassignedAction"
+    	attribute="unassignedForm"
+    	input="unassignedTile"
+    	name="unassignedForm"
+    	scope="request"
+    	validate="false">
+		<forward
+			name="showUnassigned"
+			path="unassignedTile"
+			redirect="true" />
+    </action>
+    <action
+    	path="/suggestions"
+    	type="org.unitime.timetable.action.SuggestionsAction"
+    	attribute="suggestionsForm"
+    	input="suggestionsTile"
+    	name="suggestionsForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+    		name="showSuggestions"
+    		path="suggestionsTile"
+    		redirect="true" />
+    </action>
+    
+    <action 
+    	path="/hibernateStats" 
+    	forward="statsTile" />
+  
+    <action
+         path="/classEdit"
+         type="org.unitime.timetable.action.ClassEditAction"
+         attribute="ClassEditForm"
+         input="classEditTile"
+         name="classEditForm"
+         scope="request"
+         validate="false"> 
+        
+        <forward 
+        	name="editClass" 
+        	path="classEditTile" />
+        <forward 
+        	name="instructionalOfferingSearch" 
+        	path="/instructionalOfferingSearch.do" />
+        <forward 
+        	name="addDistributionPrefs" 
+        	path="/distributionPrefs.do" />
+        <forward 
+        	name="changeClassOwner" 
+        	path="/classOwnerChange.do" />
+        <forward 
+        	name="displayClassDetail" 
+        	path="/classDetail.do" />
+     </action>
+     
+     <action
+         path="/classSearch"
+         attribute="classListForm"
+         input="classSearchTile"
+         name="classListForm"
+         parameter="doit"
+         scope="request"
+         type="org.unitime.timetable.action.ClassSearchAction"
+         validate="false">
+        <forward 
+        	name="showClassList" 
+        	path="classListTile" />
+        <forward 
+        	name="showClassSearch" 
+        	path="classSearchTile" />
+        <forward 
+        	name="editClass" 
+        	path="classEditTile" />
+      </action>
+      
+      <action
+         path="/classShowSearch"
+         type="org.unitime.timetable.action.ClassShowSearchAction"
+         attribute="classListForm"
+         input="classSearchTile"
+         name="classListForm"
+         scope="request"
+         validate="false">
+        <forward 
+        	name="showClassSearch" 
+        	path="classSearchTile" />
+        <forward 
+        	name="showClassList" 
+        	path="classListTile" />
+      </action>
+
+      <action
+         path="/classChange"
+         attribute="classListForm"
+         input="classListTile"
+         name="classListForm"
+         parameter="doit"
+         scope="request"
+         type="org.unitime.timetable.action.ClassSearchAction"
+         validate="false">
+        <forward name="showClassList" path="classListTile" />
+        <forward name="showClassSearch" path="classSearchTile" />
+      </action>
+
+     <action
+         path="/classList"
+         attribute="classListForm"
+         input="classListTile"
+         name="classListForm"
+         scope="request"
+         type="org.unitime.timetable.action.ClassListAction"
+         validate="false">
+         <forward 
+         	name="showClassList" 
+         	path="classListTile" />
+      </action>
+     
+      <action
+         path="/distributionPrefs"
+         type="org.unitime.timetable.action.DistributionPrefsAction"
+         attribute="distributionPrefsForm"
+         input="distributionPrefsTile"
+         name="distributionPrefsForm"
+         scope="request"
+         validate="false">
+        <forward 
+        	name="distributionPrefs" 
+        	path="distributionPrefsTile" />
+      </action>
+      
+      <action
+         path="/hibernateQueryTest"
+         type="org.unitime.timetable.action.HibernateQueryTestAction"
+         attribute="hibernateQueryTestForm"
+         input="hibernateQueryTestTile"
+         name="hibernateQueryTestForm"
+         scope="request"
+         validate="false">
+        <forward 
+        	name="displayQueryForm" 
+        	path="hibernateQueryTestTile" />
+      </action>
+      
+      <action
+         path="/classOwnerChange"
+         type="org.unitime.timetable.action.ClassOwnerChangeAction"
+         attribute="classOwnerChangeForm"
+         input="classOwnerChangeTile"
+         name="classOwnerChangeForm"
+         scope="request"
+         validate="false">
+         <forward 
+         	name="ownerChange" 
+         	path="classOwnerChangeTile" />
+         <forward 
+         	name="editClass" 
+         	path="/classEdit.do" />
+      </action>
+      
+        <action
+         path="/classAssignmentsReportSearch"
+         attribute="classAssignmentsReportForm"
+         input="classAssignmentsReportSearchTile"
+         name="classAssignmentsReportForm"
+         parameter="doit"
+         scope="request"
+         type="org.unitime.timetable.action.ClassAssignmentsReportSearchAction"
+         validate="false">
+        <forward 
+        	name="showClassAssignmentsReportList" 
+        	path="classAssignmentsReportListTile" />
+        <forward 
+        	name="showClassAssignmentsReportSearch" 
+        	path="classAssignmentsReportSearchTile" />
+        <forward 
+        	name="editClass" 
+        	path="classEditTile" />
+      </action>
+      
+      <action
+         path="/classAssignmentsReportShowSearch"
+         type="org.unitime.timetable.action.ClassAssignmentsReportShowSearchAction"
+         attribute="classAssignmentsReportForm"
+         input="classAssignmentsReportSearchTile"
+         name="classAssignmentsReportForm"
+         scope="request"
+         parameter="doit"
+         validate="false">
+        <forward 
+        	name="showClassAssignmentsReportSearch" 
+        	path="classAssignmentsReportSearchTile" />
+        <forward 
+        	name="showClassAssignmentsReportList" 
+        	path="classAssignmentsReportListTile" />
+      </action>
+
+      <action
+         path="/classAssignmentsReportChange"
+         attribute="classAssignmentsReportForm"
+         input="classAssignmentsReportListTile"
+         name="classAssignmentsReportForm"
+         parameter="doit"
+         scope="request"
+         type="org.unitime.timetable.action.ClassAssignmentsReportSearchAction"
+         validate="false">
+        <forward name="showClassAssignmentsReportList" path="classAssignmentsReportListTile" />
+        <forward name="showClassAssignmentsReportSearch" path="classAssignmentsReportSearchTile" />
+      </action>
+
+     <action
+         path="/classAssignmentsReportList"
+         attribute="classAssignmentsReportForm"
+         input="classAssignmentsReportListTile"
+         name="classAssignmentsReportForm"
+         scope="request"
+         type="org.unitime.timetable.action.ClassAssignmentsReportListAction"
+         validate="false">
+         <forward 
+         	name="showClassAssignmentsReportList" 
+         	path="classAssignmentsReportListTile" />
+      </action>
+      
+      <action 
+	    path="/logOut"
+      	forward="/logout.jsp" />
+      	
+      <action
+      	path="/assignmentHistory"
+      	attribute="assignmentHistoryForm"
+      	input="assignmentHistoryTile"
+      	name="assignmentHistoryForm"
+      	scope="request"
+      	type="org.unitime.timetable.action.AssignmentHistoryAction"
+      	validate="false">
+      	<forward
+      		name="showAssignmentHistory"
+      		path="assignmentHistoryTile" />
+      </action>
+      
+      <action
+      	path="/solutionChanges"
+      	attribute="solutionChangesForm"
+      	input="solutionChangesTile"
+      	name="solutionChangesForm"
+      	scope="request"
+      	type="org.unitime.timetable.action.SolutionChangesAction"
+      	validate="false">
+      	<forward 
+      		name="showSolutionChanges"
+      		path="solutionChangesTile" />
+       </action>
+    
+    	<action
+    	  path="/assignedClasses"
+    	  attribute="assignedClassesForm"
+    	  input="assignedClassesTile"
+    	  name="assignedClassesForm"
+    	  scope="request"
+    	  type="org.unitime.timetable.action.AssignedClassesAction"
+    	  validate="false">
+    	  <forward 
+    	  	name="showAssignedClasses" path="assignedClassesTile" />
+	    </action>
+	    
+	    <action
+	      path="/solutionReport"  
+	      attribute="solutionReportForm"
+	      input="solutionReportTile"
+	      name="solutionReportForm"
+	      scope="request"
+	      type="org.unitime.timetable.action.SolutionReportAction" 
+	      validate="false">
+    	  <forward 
+    	  	name="showSolutionReport" path="solutionReportTile" />
+	    </action>
+	    
+	    <action
+	      path="/timePatternEdit"
+	      attribute="timePatternEditForm"
+	      input="timePatternEditTile"
+	      name="timePatternEditForm"
+	      scope="request"
+	      type="org.unitime.timetable.action.TimePatternEditAction" 
+	      validate="false">
+	      <forward
+	        name="showTimePatterns" path="timePatternEditTile" />
+	    </action>
+	     
+	    <action
+	      path="/solverGroupEdit"
+	      attribute="solverGroupEditForm"
+	      input="solverGroupEditTile"
+	      name="solverGroupEditForm"
+	      scope="request"
+	      type="org.unitime.timetable.action.SolverGroupEditAction" 
+	      validate="false">
+	      <forward
+	        name="showSolverGroups" path="solverGroupEditTile" />
+	    </action>
+
+      	<action
+          path="/instructionalOfferingDetail"
+          type="org.unitime.timetable.action.InstructionalOfferingDetailAction"
+          attribute="instructionalOfferingDetailForm"
+          input="instructionalOfferingDetailTile"
+          name="instructionalOfferingDetailForm"
+          scope="request"
+          validate="false">
+	      <forward
+	        name="modifyConfig" 
+	        path="/instructionalOfferingConfigEdit.do" />
+	      <forward
+	        name="showInstructionalOfferings" 
+	        path="/instructionalOfferingShowSearch.do" />
+	      <forward
+	        name="modifyCrossLists" 
+	        path="/crossListsModify.do" />
+	      <forward
+	        name="showConfigDetail" 
+	        path="instructionalOfferingDetailTile" />
+	      <forward
+	        name="addReservation" 
+	        path="/reservationAdd.do" />
+	       <forward 
+       		name="displayCourseReservation" 
+       		path="/courseReservationEdit.do" />
+	    </action>
+	    
+    <action
+      attribute="SchedulingSubpartEditForm"
+      input="schedulingSubpartDetailTile"
+      name="schedulingSubpartEditForm"
+      path="/schedulingSubpartDetail"
+      scope="request"
+      type="org.unitime.timetable.action.SchedulingSubpartDetailAction"
+      validate="false">
+      <forward name="instructionalOfferingSearch" path="/instructionalOfferingSearch.do" />
+      <forward name="displaySchedulingSubpart" path="schedulingSubpartDetailTile" />
+      <forward name="addDistributionPrefs" path="/distributionPrefs.do" />
+    </action>
+
+    <action
+      attribute="ClassEditForm"
+      input="classDetailTile"
+      name="classEditForm"
+      path="/classDetail"
+      scope="request"
+      type="org.unitime.timetable.action.ClassDetailAction"
+      validate="false">
+      <forward 
+       	name="displayClass" 
+       	path="classDetailTile" />
+       <forward 
+       	name="instructionalOfferingSearch" 
+       	path="/instructionalOfferingSearch.do" />
+       <forward 
+       	name="addDistributionPrefs" 
+       	path="/distributionPrefs.do" />
+       <forward 
+       	name="changeClassOwner" 
+       	path="/classOwnerChange.do" />
+      <forward
+        name="addReservation" 
+        path="/reservationAdd.do" />
+      <forward 
+   		name="displayCourseReservation" 
+   		path="/courseReservationEdit.do" />
+    </action>
+
+    <action
+      attribute="instructorSearchForm"
+      input="instructorListTile"
+      name="instructorSearchForm"
+      parameter="doit"
+      path="/instructorChange"
+      scope="request"
+      type="org.unitime.timetable.action.InstructorSearchAction"
+      validate="false">
+      <forward name="showInstructorList" path="instructorListTile" />
+      <forward name="showInstructorSearch" path="instructorSearchTile" />
+    </action>
+
+    <action
+      attribute="datePatternEditForm"
+      input="datePatternEditTile"
+      name="datePatternEditForm"
+      path="/datePatternEdit"
+      scope="request"
+      type="org.unitime.timetable.action.DatePatternEditAction" 
+      validate="false">
+      <forward name="showDatePatterns" path="datePatternEditTile" />
+    </action>
+
+    <action
+      attribute="roomGroupListForm"
+      input="/admin/roomGroupList.jsp"
+      name="roomGroupListForm"
+      parameter="doit"
+      path="/roomGroupList"
+      scope="request"
+      type="org.unitime.timetable.action.RoomGroupListAction">
+      <forward name="showRoomGroupList" path="roomGroupListTile" />
+      <forward name="showAdd" path="/roomGroupEdit.do" />
+    </action>
+
+    <action
+      attribute="roomGroupEditForm"
+      input="/admin/roomGroupEdit.jsp"
+      name="roomGroupEditForm"
+      parameter="doit"
+      path="/roomGroupEdit"
+      scope="request"
+      validate="false"
+      type="org.unitime.timetable.action.RoomGroupEditAction">
+      <forward name="showRoomGroupList" path="/roomGroupList.do" />
+      <forward name="showEdit" path="roomGroupEditTile" />
+      <forward name="showAdd" path="roomGroupEditTile" />
+    </action>
+
+    <action
+      attribute="roomDeptListForm"
+      input="/admin/roomDeptList.jsp"
+      name="roomDeptListForm"
+      parameter="doit"
+      path="/roomDeptList"
+      scope="request"
+      type="org.unitime.timetable.action.RoomDeptListAction">
+      <forward name="showRoomDeptList" path="roomDeptListTile" />
+    </action>
+
+    <action
+      attribute="roomDeptEditForm"
+      input="/admin/roomDeptEdit.jsp"
+      name="roomDeptEditForm"
+      parameter="doit"
+      path="/roomDeptEdit"
+      scope="request"
+      validate="false"
+      type="org.unitime.timetable.action.RoomDeptEditAction">
+      <forward name="showEdit" path="roomDeptEditTile" />
+      <forward name="showRoomDeptList" path="/roomDeptList.do" />
+      <forward name="showRoomList" path="/roomList.do" />
+    </action>
+
+    <action
+      attribute="nonUnivLocationForm"
+      input="/admin/addNonUnivLocation.jsp"
+      name="nonUnivLocationForm"
+      path="/addNonUnivLocation"
+      scope="request"
+      validate="false"
+      type="org.unitime.timetable.action.AddNonUnivLocationAction" >
+      <forward name="showAdd" path="nonUnivLocationAddTile" />
+      <forward name="showRoomList" path="/roomList.do" />
+     </action>
+
+    <action
+      attribute="specialUseRoomForm"
+      input="/admin/addSpecialUseRoom.jsp"
+      name="specialUseRoomForm"
+      path="/addSpecialUseRoom"
+      scope="request"
+      validate="false"
+      type="org.unitime.timetable.action.AddSpecialUseRoomAction" >
+      <forward name="showAdd" path="specialUseRoomAddTile" />      
+      <forward name="showRoomList" path="/roomList.do" />
+	</action>
+
+    <action
+      attribute="roomDetailForm"
+      input="/admin/roomDetail.jsp"
+      name="roomDetailForm"
+      path="/roomDetail"
+      scope="request"
+      parameter="doit"
+      type="org.unitime.timetable.action.RoomDetailAction"
+      validate="false">
+      <forward name="showEditRoomFeature" path="/editRoomFeature.do" />
+      <forward name="showRoomList" path="/roomList.do" />
+      <forward name="showEditRoomGroup" path="/editRoomGroup.do" />
+      <forward name="showEditRoomPref" path="/editRoomPref.do" />
+      <forward name="showEditRoomDept" path="/editRoomDept.do" />
+      <forward name="showEditRoom" path="/editRoom.do" />
+      <forward name="showRoomDetail" path="roomDetailTile" />
+    </action>
+
+    <action
+      attribute="editRoomPrefForm"
+      input="/admin/setUpRoomPref.jsp"
+      name="editRoomPrefForm"
+      path="/editRoomPref"
+      scope="request"
+      type="org.unitime.timetable.action.EditRoomPrefAction"
+      validate="false">
+      <forward name="showRoomDetail" path="/roomDetail.do" />
+      <forward name="showEditRoomPref" path="editRoomPrefTile" />
+    </action>
+
+    <action
+      attribute="editRoomFeatureForm"
+      input="/admin/editRoomFeature.jsp"
+      name="editRoomFeatureForm"
+      path="/editRoomFeature"
+      scope="request"
+      type="org.unitime.timetable.action.EditRoomFeatureAction"
+      validate="false">
+      <forward name="showRoomDetail" path="/roomDetail.do" />
+      <forward name="showEditRoomFeature" path="editRoomFeatureTile" />
+    </action>
+
+    <action
+      attribute="editRoomGroupForm"
+      input="/admin/editRoomGroup.jsp"
+      name="editRoomGroupForm"
+      path="/editRoomGroup"
+      scope="request"
+      type="org.unitime.timetable.action.EditRoomGroupAction"
+      validate="false">
+      <forward name="showRoomDetail" path="/roomDetail.do" />
+      <forward name="showEditRoomGroup" path="editRoomGroupTile" />
+    </action>
+
+    <action
+      attribute="editRoomDeptForm"
+      input="/admin/editRoomDept.jsp"
+      name="editRoomDeptForm"
+      path="/editRoomDept"
+      scope="request"
+      type="org.unitime.timetable.action.EditRoomDeptAction"
+      validate="false">
+      <forward name="showRoomDetail" path="/roomDetail.do" />
+      <forward name="showEditRoomDept" path="editRoomDeptTile" />
+    </action>
+    
+    <action 
+    	path="/back"
+    	type="org.unitime.timetable.action.BackAction"
+		scope="request"
+		validate="false" />
+
+    <action
+      attribute="roomListForm"
+      input="/admin/roomSearch.jsp"
+      name="roomListForm"
+      path="/roomSearch"
+      scope="request"
+      type="org.unitime.timetable.action.RoomSearchAction"
+      validate="false">
+      <forward name="showRoomList" path="roomListTile" />
+      <forward name="roomList" path="/roomList.do" />
+      <forward name="showRoomSearch" path="roomSearchTile" />
+    </action>
+
+    <action
+      attribute="roomListForm"
+      input="/admin/roomList.jsp"
+      name="roomListForm"
+      path="/roomChange"
+      scope="request"
+      type="org.unitime.timetable.action.RoomSearchAction"
+      validate="false">
+      <forward name="showRoomList" path="roomListTile" />
+      <forward name="showRoomSearch" path="roomSearchTile" />
+    </action>
+    
+    <action
+      attribute="roomFeatureListForm"
+      input="/admin/roomFeatureList.jsp"
+      name="roomFeatureListForm"
+      path="/roomFeatureChange"
+      scope="request"
+      type="org.unitime.timetable.action.RoomFeatureSearchAction"
+      validate="false">
+      <forward name="showRoomFeatureList" path="roomFeatureListTile" />
+      <forward name="showRoomFeatureSearch" path="roomFeatureSearchTile" />
+    </action>
+		
+	<action 
+		path="/activeSessions"
+		forward="activeSessionsTile"
+		scope="request" />
+    <action
+      attribute="roomFeatureListForm"
+      input="/admin/roomFeatureSearch.jsp"
+      name="roomFeatureListForm"
+      path="/roomFeatureSearch"
+      scope="request"
+      type="org.unitime.timetable.action.RoomFeatureSearchAction"
+      validate="false">
+      <forward name="roomFeatureList" path="/roomFeatureList.do" />
+      <forward name="showRoomFeatureSearch" path="roomFeatureSearchTile" />
+      <forward name="showRoomFeatureList" path="roomFeatureListTile" />
+    </action>
+    <action
+      attribute="roomFeatureEditForm"
+      input="/admin/roomFeatureAdd.jsp"
+      name="roomFeatureEditForm"
+      path="/roomFeatureAdd"
+      scope="request"
+      type="org.unitime.timetable.action.RoomFeatureAddAction"
+      validate="false">
+      <forward name="showAdd" path="roomFeatureAddTile" />
+      <forward name="showRoomFeatureList" path="/roomFeatureList.do" />
+    </action>
+    <action
+      attribute="roomGroupListForm"
+      input="/admin/roomGroupSearch.jsp"
+      name="roomGroupListForm"
+      path="/roomGroupSearch"
+      scope="request"
+      type="org.unitime.timetable.action.RoomGroupSearchAction"
+      validate="false">
+      <forward name="showRoomGroupList" path="roomGroupListTile" />
+      <forward name="roomGroupList" path="/roomGroupList.do" />
+      <forward name="showRoomGroupSearch" path="roomGroupSearchTile" />
+    </action>
+    <action
+      attribute="roomGroupListForm"
+      input="/admin/roomGroupList.jsp"
+      name="roomGroupListForm"
+      path="/roomGroupChange"
+      scope="request"
+      type="org.unitime.timetable.action.RoomGroupSearchAction"
+      validate="false">
+      <forward name="showRoomGroupList" path="roomGroupListTile" />
+      <forward name="showRoomGroupSearch" path="roomGroupSearchTile" />
+    </action>
+    <action
+      attribute="roomGroupEditForm"
+      input="/admin/roomGroupAdd.jsp"
+      name="roomGroupEditForm"
+      path="/roomGroupAdd"
+      scope="request"
+      type="org.unitime.timetable.action.RoomGroupAddAction"
+      validate="false">
+      <forward name="showRoomGroupList" path="/roomGroupList.do" />
+      <forward name="showAdd" path="roomGroupAddTile" />
+    </action>
+    <action
+      attribute="editRoomForm"
+      input="/admin/editRoom.jsp"
+      name="editRoomForm"
+      path="/editRoom"
+      scope="request"
+      type="org.unitime.timetable.action.EditRoomAction"
+      validate="false">
+      <forward name="showEditRoom" path="editRoomTile" />
+      <forward name="showRoomDetail" path="roomDetailTile" />
+    </action>
+    <action
+      attribute="instructorListUpdateForm"
+      input="/user/instructorListUpdate.jsp"
+      name="instructorListUpdateForm"
+      path="/instructorListUpdate"
+      scope="request"
+      type="org.unitime.timetable.action.InstructorListUpdateAction"
+      validate="false" >
+      <forward name="showUpdateInstructorList" path="instructorListUpdateTile" />
+    </action>
+    <action
+      attribute="instructorEditForm"
+      input="/user/instructorDetail.jsp"
+      name="instructorEditForm"
+      path="/instructorDetail"
+      scope="request"
+      type="org.unitime.timetable.action.InstructorDetailAction"
+      validate="false" >
+      <forward name="showInstructorDetail" path="instructorDetailTile" />
+      <forward 
+      	name="addDesignator" 
+      	path="/designatorAdd.do" />
+    </action>
+    <action
+      attribute="instructorEditForm"
+      input="/user/instructorAdd.jsp"
+      name="instructorEditForm"
+      path="/instructorAdd"
+      scope="request"
+      type="org.unitime.timetable.action.InstructorAddAction"
+      validate="false" >
+      <forward name="showAdd" path="instructorAddTile" />
+    </action>
+    <action
+      attribute="instructorEditForm"
+      input="/user/instructorInfoEdit.jsp"
+      name="instructorEditForm"
+      path="/instructorInfoEdit"
+      scope="request"
+      type="org.unitime.timetable.action.InstructorInfoEditAction"
+      validate="false" >
+      <forward name="showEdit" path="instructorInfoEditTile" />
+      <forward name="showDetail" path="/instructorDetail.do" />
+      <forward name="showList" path="/instructorSearch.do" />
+    </action>
+    <action
+      attribute="instructorEditForm"
+      input="/user/instructorPrefsEdit.jsp"
+      name="instructorEditForm"
+      path="/instructorPrefEdit"
+      scope="request"
+      type="org.unitime.timetable.action.InstructorPrefEditAction"
+      validate="false">
+      <forward name="showEdit" path="instructorPrefsEditTile" />
+      <forward name="showDetail" path="/instructorDetail.do" />
+    </action>
+    
+    <action
+       path="/courseOfferingEdit"
+       type="org.unitime.timetable.action.CourseOfferingEditAction"
+       attribute="courseOfferingEditForm"
+       input="courseOfferingEditTile"
+       name="courseOfferingEditForm"
+       scope="request"
+       validate="false">
+       <forward 
+       		name="displayCourseOffering" 
+       		path="courseOfferingEditTile" />
+       <forward 
+       		name="instructionalOfferingDetail" 
+       		path="/instructionalOfferingDetail.do" />
+       <forward 
+       		name="displayAcadAreaReservation" 
+       		path="/academicAreaReservationEdit.do" />
+    </action>
+    
+    <action
+       path="/designatorList"
+       type="org.unitime.timetable.action.DesignatorListAction"
+       attribute="designatorListForm"
+       input="designatorListTile"
+       name="designatorListForm"
+       scope="request"
+       validate="false">
+       <forward 
+       		name="displayDesignatorList" 
+       		path="designatorListTile" />
+       <forward 
+       		name="addDesignator" 
+       		path="/designatorAdd.do" />
+    </action>
+    
+    <action
+       path="/designatorAdd"
+       type="org.unitime.timetable.action.DesignatorEditAction"
+       attribute="designatorEditForm"
+       input="designatorAddTile"
+       name="designatorEditForm"
+       scope="request"
+       validate="false" >
+       <forward 
+       		name="displayDesignatorDetail" 
+       		path="designatorAddTile" />
+       <forward 
+       		name="displayDesignatorList" 
+       		path="/designatorList.do" />
+    </action>
+    
+    <action
+       path="/designatorEdit"
+       type="org.unitime.timetable.action.DesignatorEditAction"
+       attribute="designatorEditForm"
+       input="designatorEditTile"
+       name="designatorEditForm"
+       scope="request"
+       validate="false" >
+       <forward 
+       		name="displayDesignatorDetail" 
+       		path="designatorEditTile" />
+       <forward 
+       		name="displayDesignatorList" 
+       		path="/designatorList.do" />
+    </action>
+    
+    <action
+       path="/applicationConfig"
+       type="org.unitime.timetable.action.ApplicationConfigAction"
+       attribute="applicationConfigForm"
+       input="applicationConfigTile"
+       name="applicationConfigForm"
+       scope="request"
+       validate="false">
+       <forward 
+       		name="displayApplicationConfig" 
+       		path="applicationConfigTile" />
+    </action>
+    
+    <action
+       path="/reservationList"
+       type="org.unitime.timetable.action.ReservationListAction"
+       attribute="reservationListForm"
+       input="reservationListTile"
+       name="reservationListForm"
+       scope="request"
+       validate="false" >
+       <forward 
+       		name="displayReservationList" 
+       		path="reservationListTile" />
+       <forward 
+       		name="addReservation" 
+       		path="/reservationAdd.do" />
+    </action>
+    
+    <action
+       path="/reservationAdd"
+       type="org.unitime.timetable.action.ReservationEditAction"
+       attribute="reservationEditForm"
+       input="reservationAddTile"
+       name="reservationEditForm"
+       scope="request"
+       validate="false">
+       <forward 
+       		name="displayReservationDetail" 
+       		path="reservationAddTile" />
+       <forward 
+       		name="displayReservationList" 
+       		path="/reservationList.do" />
+       <forward 
+       		name="displayCourseReservation" 
+       		path="/courseReservationEdit.do" />
+    </action>
+         
+    <action
+       path="/reservationEdit"
+       type="org.unitime.timetable.action.ReservationEditAction"
+       attribute="reservationEditForm"
+       input="reservationEditTile"
+       name="reservationEditForm"
+       scope="request"
+       validate="false">
+       <forward 
+       		name="displayReservationDetail" 
+       		path="reservationEditTile" />
+       <forward 
+       		name="displayReservationList" 
+       		path="/reservationList.do" />
+       <forward 
+       		name="displayCourseReservation" 
+       		path="/courseReservationEdit.do" />
+       <forward 
+       		name="displayAcadAreaReservation" 
+       		path="/academicAreaReservationEdit.do" />
+       <forward 
+       		name="displayPosReservation" 
+       		path="/posReservationEdit.do" />
+       <forward 
+       		name="displayIndividualReservation" 
+       		path="/individualReservationEdit.do" />
+       <forward 
+       		name="displayStudentGroupReservation" 
+       		path="/studentGroupReservationEdit.do" />
+    </action>
+    
+    <action
+       path="/courseReservationEdit"
+       type="org.unitime.timetable.action.CourseReservationEditAction"
+       attribute="courseReservationEditForm"
+       input="courseReservationEditTile"
+       name="courseReservationEditForm"
+       scope="request"
+       validate="false">         
+       <forward 
+       		name="displayCourseReservationDetail" 
+       		path="courseReservationEditTile" />
+    </action>
+    
+    <action
+       path="/academicAreaReservationEdit"
+       type="org.unitime.timetable.action.AcademicAreaReservationEditAction"
+       attribute="academicAreaReservationEditForm"
+       input="academicAreaReservationEditTile"
+       name="academicAreaReservationEditForm"
+       scope="request"
+       validate="false">         
+       <forward 
+       		name="displayAcadAreaReservationDetail" 
+       		path="academicAreaReservationEditTile" />
+    </action>
+
+    <action
+       path="/posReservationEdit"
+       type="org.unitime.timetable.action.PosReservationEditAction"
+       attribute="posReservationEditForm"
+       input="posReservationEditTile"
+       name="posReservationEditForm"
+       scope="request"
+       validate="false">         
+       <forward 
+       		name="displayPosReservationDetail" 
+       		path="posReservationEditTile" />
+    </action>
+
+    <action
+       path="/individualReservationEdit"
+       type="org.unitime.timetable.action.IndividualReservationEditAction"
+       attribute="individualReservationEditForm"
+       input="individualReservationEditTile"
+       name="individualReservationEditForm"
+       scope="request"
+       validate="false">         
+       <forward 
+       		name="displayIndividualReservationDetail" 
+       		path="individualReservationEditTile" />
+    </action>
+
+    <action
+       path="/studentGroupReservationEdit"
+       type="org.unitime.timetable.action.StudentGroupReservationEditAction"
+       attribute="studentGroupReservationEditForm"
+       input="studentGroupReservationEditTile"
+       name="studentGroupReservationEditForm"
+       scope="request"
+       validate="false">         
+       <forward 
+       		name="displayStuGrpReservationDetail" 
+       		path="studentGroupReservationEditTile" />
+    </action>
+    
+    <action
+       path="/departmentEdit"
+       type="org.unitime.timetable.action.DepartmentEditAction"
+       attribute="departmentEditForm"
+       input="departmentEditTile"
+       name="departmentEditForm"
+       scope="request"
+       validate="false">
+       <forward 
+       		name="back" 
+       		path="/departmentList.do" />
+       <forward 
+       		name="add" 
+       		path="departmentAddTile" />
+       <forward 
+       		name="edit" 
+       		path="departmentEditTile" />
+    </action>
+
+      <action
+         path="/classInstructorAssignment"
+         type="org.unitime.timetable.action.ClassInstructorAssignmentAction"
+         attribute="classInstructorAssignmentForm"
+         input="classInstructorAssignmentTile"
+         name="classInstructorAssignmentForm"
+         scope="request"
+         validate="false">
+        <forward 
+        	name="classInstructorAssignment" 
+        	path="classInstructorAssignmentTile" />
+        <forward 
+        	name="instructionalOfferingDetail" 
+        	path="/instructionalOfferingDetail.do" />
+      </action>
+    
+    <action
+       path="/chameleon"
+       type="org.unitime.timetable.action.ChameleonAction"
+       attribute="chameleonForm"
+       input="chameleonTile"
+       name="chameleonForm"
+       scope="request"
+       validate="false">
+       <forward 
+       		name="displayForm" 
+       		path="chameleonTile" />
+       <forward
+	        name="reload"
+            path="/selectPrimaryRole.do" />
+    </action>
+    
+    <action
+       path="/sectioningDemo"
+       type="org.unitime.timetable.action.SectioningDemoAction"
+       attribute="sectioningDemoForm"
+       input="sectioningDemoTile"
+       name="sectioningDemoForm"
+       scope="request"
+       validate="false" >
+       <forward 
+       		name="displayForm" 
+       		path="sectioningDemoTile" />
+    </action>
+
+    <action
+       path="/inquiry"
+       type="org.unitime.timetable.action.InquiryAction"
+       attribute="inquiryForm"
+       input="inquiryTile"
+       name="inquiryForm"
+       scope="request"
+       validate="false" >
+       <forward 
+       		name="display" 
+       		path="inquiryTile" />
+       <forward 
+       		name="submit" 
+       		path="/selectPrimaryRole.do" />
+    </action>
+    
+    <action
+      path="/login"
+      type="org.unitime.timetable.action.LoginAction"
+      validate="false" />
+
+    <action
+      attribute="dataImportForm"
+      input="dataImportTile"
+      name="dataImportForm"
+      path="/dataImport"
+      scope="request"
+      type="org.unitime.timetable.action.DataImportAction"
+      validate="false" >
+       <forward 
+       		name="display" 
+       		path="dataImportTile" />
+   </action>
+
+    <action
+       path="/exactTimeEdit"
+       type="org.unitime.timetable.action.ExactTimeEditAction"
+       attribute="exactTimeEditForm"
+       input="exactTimeEditTile"
+       name="exactTimeEditForm"
+       scope="request"
+       validate="false" >
+       <forward 
+       		name="display" 
+       		path="exactTimeEditTile" />
+    </action>
+
+    <action
+       path="/lastChanges"
+       type="org.unitime.timetable.action.LastChangesAction"
+       attribute="lastChangesForm"
+       input="lastChangesTile"
+       name="lastChangesForm"
+       scope="request"
+       validate="false" >
+       <forward 
+       		name="display" 
+       		path="lastChangesTile" />
+    </action>
+
+    <action
+       path="/deptStatusTypeEdit"
+       type="org.unitime.timetable.action.DeptStatusTypeEditAction"
+       attribute="deptStatusTypeEditForm"
+       input="deptStatusTypeEditTile"
+       name="deptStatusTypeEditForm"
+       scope="request"
+       validate="false" >
+       <forward 
+       		name="display" 
+       		path="deptStatusTypeEditTile" />
+    </action>
+
+	  <action
+         path="/sectioningDemoAjax"
+         type="org.unitime.timetable.action.ajax.SectioningDemoAjax"
+         scope="request"
+         validate="false" />
+         
+	  <action
+         path="/distributionPrefsAjax"
+         type="org.unitime.timetable.action.ajax.DistributionPrefsAjax"
+         scope="request"
+         validate="false" />
+    <action
+      attribute="rollForwardSessionForm"
+      input="rollForwardSessionTile"
+      name="rollForwardSessionForm"
+      path="/rollForwardSession"
+      scope="request"
+      validate="false"
+      type="org.unitime.timetable.action.RollForwardSessionAction" >
+       <forward 
+       		name="displayRollForwardSessionForm" 
+       		path="rollForwardSessionTile" />
+       <forward 
+       		name="submit" 
+       		path="/rollForwardSession.do" />
+      </action>
+
+   </action-mappings>
+
+	<!-- Struts Layout Controller -->
+	<controller 
+		processorClass = "fr.improve.struts.taglib.layout.workflow.LayoutRequestProcessor" />
+
+	<!-- Message Resource Keys -->
+    <message-resources 
+   		parameter="messages" 
+   	/>
+   		
+	<!-- Add the following line to tag above in development to avoid reloading of application. -->
+	<!-- 
+   		factory="org.unitime.timetable.util.MessageResourcesFactory" 
+	-->
+	
+	<!-- Struts Layout Skin Plugin -->
+	<plug-in className="fr.improve.struts.taglib.layout.workflow.LayoutPlugin">
+	 	<set-property property="skinResources" value="struts-layout"/>
+ 	</plug-in>
+ 
+	<!-- Tiles Plugin -->
+	<plug-in className="org.apache.struts.tiles.TilesPlugin" >
+	  	<set-property
+	  		property="definitions-config"
+	  		value="/WEB-INF/tiles-defs.xml" />
+	  	<set-property
+	  		property="definitions-debug"
+	  		value="3" />
+		<set-property
+	  		property="definitions-parser-details"
+	  		value="3" />
+	  	<set-property
+	  		property="definitions-parser-validate"
+	  		value="true" />
+	</plug-in>
+
+</struts-config>
