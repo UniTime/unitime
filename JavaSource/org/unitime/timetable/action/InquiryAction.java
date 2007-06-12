@@ -155,20 +155,22 @@ public class InquiryAction extends Action {
 	            	
 	            	Email email = new Email();
 	            	
-	            	String cc = (String)ApplicationProperties.getProperty("tmtbl.inquiry.email","smasops@purdue.edu");
+                    String inqEmail = ApplicationProperties.getProperty("tmtbl.inquiry.email","smasops@purdue.edu");
+	            	String cc = inqEmail;
 	            	List ccList = myForm.getCarbonCopy();
 	            	if (ccList.size()>0) {
 	            		for (Iterator i=ccList.iterator(); i.hasNext(); ) {
 	            			cc += ";" + (String) i.next();
 	            		}
 	            	}
+                    
+                    String host = ApplicationProperties.getProperty("tmtbl.smtp.host", "smtp.purdue.edu");
+                    String domain = ApplicationProperties.getProperty("tmtbl.smtp.domain", host);
+                    String sender = ApplicationProperties.getProperty("tmtbl.inquiry.sender", inqEmail);
+                    String mgrEmail = (mgr.getEmailAddress()==null?user.getLogin()+"@purdue.edu":mgr.getEmailAddress());
 	            	
 	            	email.sendMail(
-	            			(String)ApplicationProperties.getProperty("tmtbl.smtp.host", "smtp.purdue.edu"), 
-	            			(String)ApplicationProperties.getProperty("tmtbl.smtp.domain", "smtp.purdue.edu"), 
-	            			(String)ApplicationProperties.getProperty("tmtbl.inquiry.sender", "smasops@purdue.edu"), 
-	            			(mgr.getEmailAddress()==null?user.getLogin()+"@purdue.edu":mgr.getEmailAddress()), 
-	            			cc, 
+	            			host, domain, sender, mgrEmail, cc, 
 	            			"Timetabling ("+myForm.getTypeMsg(myForm.getType())+"): "+myForm.getSubject(), 
 	            			mail, 
 	            			new Vector());
@@ -177,19 +179,19 @@ public class InquiryAction extends Action {
             		
 	            		mail = "The following inquiry was submitted on your behalf. "+
 	            			"We will contact you soon. "+
-            				"This email was automatically generated, please do not reply.\n\n"+
-            				"Thank you, \n\n"+
-            				"SMAS Team\n\n"+
-            				"-- INQUIRY ("+myForm.getTypeMsg(myForm.getType())+"): "+myForm.getSubject()+" ---------- \n\n"+
+            				"This email was automatically generated, please do not reply.\n\n";
+                        
+                        if (ApplicationProperties.getProperty("tmtbl.inquiry.sender.name")!=null) {
+                            mail += "Thank you, \n\n"+ApplicationProperties.getProperty("tmtbl.inquiry.sender.name")+"\n\n";
+                        }
+                        
+                        mail +=
+                            "-- INQUIRY ("+myForm.getTypeMsg(myForm.getType())+"): "+myForm.getSubject()+" ---------- \n\n"+
             				myForm.getMessage()+"\n"+
             				"-- END INQUIRY -------------------------------------------";
-            		
-	            		email.sendMail(
-	            				(String)ApplicationProperties.getProperty("tmtbl.smtp.host", "smtp.purdue.edu"), 
-	            				(String)ApplicationProperties.getProperty("tmtbl.smtp.domain", "smtp.purdue.edu"), 
-	            				(String)ApplicationProperties.getProperty("tmtbl.inquiry.sender", "smasops@purdue.edu"),
-	            				(String)ApplicationProperties.getProperty("tmtbl.inquiry.email","smasops@purdue.edu"), 
-	            				(mgr.getEmailAddress()==null?user.getLogin()+"@purdue.edu":mgr.getEmailAddress()),
+                        
+                        email.sendMail(
+                                host, domain, sender, inqEmail, mgrEmail,
 	            				"RE: Timetabling ("+myForm.getTypeMsg(myForm.getType())+"): "+myForm.getSubject(),
 	            				mail,
 	            				new Vector());
