@@ -23,14 +23,15 @@
 <%@ page import="org.unitime.timetable.model.Session" %>
 <%@ page import="org.unitime.timetable.model.TimetableManager" %>
 <%@ page import="org.unitime.timetable.ApplicationProperties" %>
+<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <%@ include file="/checkLogin.jspf" %>
 <html>
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 	<link rel="stylesheet" type="text/css" href="styles/timetabling.css" />
-	<% if (ApplicationProperties.getProperty("tmtbl.custom.css")!=null) { %>
+	<tt:hasProperty name="tmtbl.custom.css">
 		<LINK rel="stylesheet" type="text/css" href="<%=ApplicationProperties.getProperty("tmtbl.custom.css")%>" />
-	<% } %>
+	</tt:hasProperty>
 	<script language="javascript" type="text/javascript" src="scripts/tree.js"></script>
 </head>
 <body class="MenuBody">
@@ -126,10 +127,6 @@
 				leaf_item('Status Types','Manage Session/Department Status Types','deptStatusTypeEdit.do');
 				leaf_item('Import Data','Import Data','dataImport.do');
 				leaf_item('Change Log','View Change Log','lastChanges.do');
-<%	if (ApplicationProperties.getProperty("tmtbl.menu.admin.extra")!=null) {
-		out.println(ApplicationProperties.getProperty("tmtbl.menu.admin.extra"));
-	}
-%>
 			enditem(); //41
 	
 			menu_item('42','Solver','Solver','','expand');
@@ -139,16 +136,22 @@
 				leaf_item('Definitions', 'Manage Solution Info Definitions','solverInfoDef.do');
 				leaf_item('Solver Groups', 'Manage Solver Groups','solverGroupEdit.do');
 			enditem(); //42
+
+			<tt:hasProperty name="tmtbl.menu.admin.extra">
+				menu_item('43','Custom','Custom Menus','','expand');
+					<tt:property name="tmtbl.menu.admin.extra"/>
+				enditem(); //43
+			</tt:hasProperty>
 			
-			menu_item('43','Defaults','Defaults','','expand');
+			menu_item('44','Defaults','Defaults','','expand');
 				leaf_item('Configuration','Application Configuration','applicationConfig.do');
 				leaf_item('Settings','Set Default Settings for Users','settings.do');
-			enditem(); //43
+			enditem(); //44
 
-			menu_item('44','Utilities','Miscellaneous Application Utilities','','expand');
+			menu_item('45','Utilities','Miscellaneous Application Utilities','','expand');
 				leaf_item('Hibernate Statistics','Display Hibernate Session Statistics','hibernateStats.do');
 				leaf_item('Test HQL','Test HQL Queries','hibernateQueryTest.do');
-			enditem(); //44
+			enditem(); //45
 			
 		enditem(); //4
 
