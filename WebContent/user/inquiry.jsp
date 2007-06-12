@@ -17,7 +17,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 --%>
 <%@ page language="java" autoFlush="true"%>
-<%@ page import="org.unitime.timetable.ApplicationProperties" %>
 <%@ page import="org.unitime.timetable.util.Constants" %>
 <%@ page import="org.unitime.timetable.model.TimetableManager" %>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
@@ -153,37 +152,40 @@
 			</TD>
 		</TR>
 
-		<% if (ApplicationProperties.getProperty("tmtbl.contact.address")!=null && ApplicationProperties.getProperty("tmtbl.contact.address").length()>0) { %>
+		<tt:hasProperty name="tmtbl.contact.address">
 			<TR>
 				<TD valign="top">Address:</TD>
-				<TD><%=ApplicationProperties.getProperty("tmtbl.contact.address")%></TD>
+				<TD><tt:property name="tmtbl.contact.address"/></TD>
 			</TR>
-		<% } %>
-
-		<% if (ApplicationProperties.getProperty("tmtbl.contact.phone")!=null && ApplicationProperties.getProperty("tmtbl.contact.phone").length()>0) { %>
-			<TR>
-				<TD>Phone:</TD>
-				<TD><%=ApplicationProperties.getProperty("tmtbl.contact.phone")%></TD>
-			</TR>
-		<% } %>
+		</tt:hasProperty>
 		
-		<% if (ApplicationProperties.getProperty("tmtbl.contact.office_hours")!=null && ApplicationProperties.getProperty("tmtbl.contact.office_hours").length()>0) { %>
+		<tt:hasProperty name="tmtbl.contact.phone">
 			<TR>
-				<TD>Office Hours:</TD>
-				<TD><%=ApplicationProperties.getProperty("tmtbl.contact.office_hours")%></TD>
+				<TD valign="top">Phone:</TD>
+				<TD><tt:property name="tmtbl.contact.phone"/></TD>
 			</TR>
-		<% } %>
-
-		<% if (ApplicationProperties.getProperty("tmtbl.contact.email")!=null && ApplicationProperties.getProperty("tmtbl.contact.email").length()>0) { %>
+		</tt:hasProperty>
+		
+		<tt:hasProperty name="tmtbl.contact.office_hours">
 			<TR>
-				<TD>Email:</TD>
-				<% if (ApplicationProperties.getProperty("tmtbl.contact.email_mailto")!=null && ApplicationProperties.getProperty("tmtbl.contact.email_mailto").length()>0) { %>
-					<TD><a href="mailto:<%=ApplicationProperties.getProperty("tmtbl.contact.email_mailto")%>"><%=ApplicationProperties.getProperty("tmtbl.contact.email")%></a></TD>
-				<% } else { %>
-					<TD><a href="mailto:<%=ApplicationProperties.getProperty("tmtbl.contact.email")%>"><%=ApplicationProperties.getProperty("tmtbl.contact.email")%></a></TD>
-				<% } %>
-			</TR>		
-		<% } %>
+				<TD valign="top">Office Hours:</TD>
+				<TD><tt:property name="tmtbl.contact.office_hours"/></TD>
+			</TR>
+		</tt:hasProperty>
+		
+		<tt:hasProperty name="tmtbl.contact.email">
+			<TR>
+				<TD valign="top">Email:</TD>
+				<TD>
+					<tt:hasProperty name="tmtbl.contact.email_mailto">
+						<a href="mailto:%tmtbl.contact.email_mailto%"><tt:property name="tmtbl.contact.email"/></a>
+					</tt:hasProperty>
+					<tt:notHasProperty name="tmtbl.contact.email_mailto">
+						<a href="mailto:%tmtbl.contact.email%"><tt:property name="tmtbl.contact.email"/></a>
+					</tt:notHasProperty>
+				<tt:property name="tmtbl.contact.office_hours"/></TD>
+			</TR>
+		</tt:hasProperty>
 	</TABLE>
 	</logic:notEqual>
 </html:form>
