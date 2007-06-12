@@ -29,6 +29,7 @@
     		<fileset dir="${dist.dir}" includes="**/*.jar"/>
 			<fileset dir="${dist.dir}" includes="**/*.war"/>
     	</delete>
+    	<delete dir="${dist.dir}/doc" failonerror="false"/>
     </target>
     
     <target name="init" depends="clean, set-debug-mode, set-optimize-mode">
@@ -128,6 +129,9 @@
 		<copy todir="${war.dir}/WEB-INF/lib" overwrite="Yes" preservelastmodified="Yes">
 			<fileset dir="${lib.dir}">
 				<include name="*.jar" />
+			</fileset>
+			<fileset dir="${3rd_party.dir}">
+				<include name="log4j-1.2.8.jar" />
 			</fileset>
 		</copy>
 		<copy todir="${war.dir}/WEB-INF" overwrite="Yes" preservelastmodified="Yes">
@@ -232,7 +236,7 @@
 		</replace>
     </target>
 
-    <target name="build-dist" depends="compile-war,doc">
+    <target name="build-dist" depends="compile-war">
 		<tar destfile="${dist.dir}/unitime-3.0_bld${build.number}.tar">
 			<tarfileset dir="${basedir}/Documentation/License" includes="gpl.txt" fullpath="license/gpl.txt"/>
 			<tarfileset dir="${basedir}/Documentation" includes="ReadMe.txt" fullpath="doc/readme.txt"/>
@@ -264,7 +268,9 @@
 				<include name="log4j-1.2.8.jar"/>
 				<include name="ojdbc14.jar"/>
 			</tarfileset>
+			<!--
 			<tarfileset dir="${dist.dir}/doc" prefix="doc/api"/>
+			-->
 		</tar>
 		<gzip zipfile="${dist.dir}/unitime-3.0_bld${build.number}.tar.gz" src="${dist.dir}/unitime-3.0_bld${build.number}.tar"/>
 		<delete file="${dist.dir}/unitime-3.0_bld${build.number}.tar"/>
@@ -299,7 +305,9 @@
 				<include name="log4j-1.2.8.jar"/>
 				<include name="ojdbc14.jar"/>
 			</zipfileset>
+			<!--
 			<zipfileset dir="${dist.dir}/doc" prefix="doc/api"/>
+			-->
 		</zip>
 	</target>
 	
