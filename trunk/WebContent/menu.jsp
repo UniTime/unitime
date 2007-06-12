@@ -22,7 +22,6 @@
 <%@ page errorPage="error.jsp" %>
 <%@ page import="org.unitime.timetable.model.Session" %>
 <%@ page import="org.unitime.timetable.model.TimetableManager" %>
-<%@ page import="org.unitime.timetable.ApplicationProperties" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <%@ include file="/checkLogin.jspf" %>
 <html>
@@ -30,7 +29,7 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 	<link rel="stylesheet" type="text/css" href="styles/timetabling.css" />
 	<tt:hasProperty name="tmtbl.custom.css">
-		<LINK rel="stylesheet" type="text/css" href="<%=ApplicationProperties.getProperty("tmtbl.custom.css")%>" />
+		<LINK rel="stylesheet" type="text/css" href="%tmtbl.custom.css%" />
 	</tt:hasProperty>
 	<script language="javascript" type="text/javascript" src="scripts/tree.js"></script>
 </head>
@@ -158,12 +157,24 @@
 <% } %>
 
 	menu_item('5','Help','Help Manual','','expand');
-		leaf_item('Data Entry Manual','Manual for Data Entry','help/Data-Entry-Manual.pdf', '_help');
-		leaf_item('Solver Manual','Manual for Solving Departmental Problem','help/Solver-Manual.pdf', '_help');
-		leaf_item('Tips &amp; Tricks','Tips &amp; Tricks','help/tips.html');
-		leaf_item('FAQ','Frequently Asked Questions','help/faq.html');
-		leaf_item('Release Notes','Release Notes','help/Release-Notes.xml', '_help');
-		leaf_item('Contact Us','Contact Us','inquiry.do');
+		<tt:hasProperty name="tmtbl.help.manual.input_data">
+			leaf_item('Data Entry Manual','Manual for Data Entry','%tmtbl.help.manual.input_data%', '_help');
+		</tt:hasProperty>
+		<tt:hasProperty name="tmtbl.help.manual.solver">
+			leaf_item('Solver Manual','Manual for Solving Departmental Problem','%tmtbl.help.manual.solver%', '_help');
+		</tt:hasProperty>
+		<tt:hasProperty name="tmtbl.help.tricks">
+			leaf_item('Tips &amp; Tricks','Tips &amp; Tricks','%tmtbl.help.tricks%');
+		</tt:hasProperty>
+		<tt:hasProperty name="tmtbl.help.faq">
+			leaf_item('FAQ','Frequently Asked Questions','%tmtbl.help.faq%');
+		</tt:hasProperty>
+		<tt:hasProperty name="tmtbl.help.release_notes">
+			leaf_item('Release Notes','Release Notes','%tmtbl.help.release_notes%', '_help');
+		</tt:hasProperty>
+		<tt:hasProperty name="tmtbl.inquiry.email">
+			leaf_item('Contact Us','Contact Us','inquiry.do');
+		</tt:hasProperty>
 	enditem(); //5
 
 	leaf_item('System Messages','View System Messages','blank.jsp');
