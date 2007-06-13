@@ -39,7 +39,7 @@
         
 		<property
 			name="primary"
-			column="PRIMARY"
+			column="IS_PRIMARY"
 			type="java.lang.Boolean"
 			not-null="false"
 		/>
