@@ -2181,7 +2181,7 @@ CREATE TABLE `timetable`.`tmtbl_mgr_to_roles` (
   `manager_id` DECIMAL(20, 0) NULL,
   `role_id` DECIMAL(20, 0) NULL,
   `uniqueid` DECIMAL(20, 0) NOT NULL,
-  `primary` INT(1) NULL,
+  `is_primary` INT(1) NULL,
   PRIMARY KEY (`uniqueid`),
   UNIQUE INDEX `uk_tmtbl_mgr_to_roles_mgr_role` (`manager_id`, `role_id`),
   CONSTRAINT `fk_tmtbl_mgr_to_roles_manager` FOREIGN KEY `fk_tmtbl_mgr_to_roles_manager` (`manager_id`)
