@@ -140,7 +140,7 @@ public class ChameleonAction extends Action {
             throw new Exception ("User is not a Timetable Manager");
 
         String puid = frm.getPuid();
-        while (puid.startsWith("0")) puid = puid.substring(1);
+        //while (puid.startsWith("0")) puid = puid.substring(1);
 		u.setId(puid);
 		u.setName(tm.getName() + " (A)");
 		u.setAdmin(false);
