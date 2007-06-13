@@ -644,4 +644,8 @@
 		<put name="body" value="/admin/deptStatusTypeEdit.jsp" />
   	</definition>
   	
+   	<definition	name="userEditTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Users (Database Authentication)"/>
+		<put name="body" value="/admin/userEdit.jsp" />
+  	</definition>
 </tiles-definitions>
