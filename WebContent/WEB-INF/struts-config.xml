@@ -108,6 +108,7 @@
       <form-bean name="lastChangesForm" type="org.unitime.timetable.form.LastChangesForm" />
       <form-bean name="rollForwardSessionForm" type="org.unitime.timetable.form.RollForwardSessionForm" />
       <form-bean name="deptStatusTypeEditForm" type="org.unitime.timetable.form.DeptStatusTypeEditForm" />
+      <form-bean name="userEditForm" type="org.unitime.timetable.form.UserEditForm" />
    </form-beans>
 
    <global-exceptions>
@@ -1803,6 +1804,19 @@
        <forward 
        		name="display" 
        		path="deptStatusTypeEditTile" />
+    </action>
+
+    <action
+       path="/userEdit"
+       type="org.unitime.timetable.action.UserEditAction"
+       attribute="userEditForm"
+       input="userEditTile"
+       name="userEditForm"
+       scope="request"
+       validate="false" >
+       <forward 
+       		name="display" 
+       		path="userEditTile" />
     </action>
 
 	  <action

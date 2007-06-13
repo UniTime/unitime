@@ -20,8 +20,7 @@
 package org.unitime.timetable.model;
 
 import org.unitime.timetable.model.base.BaseUser;
-
-
+import org.unitime.timetable.model.dao.UserDAO;
 
 public class User extends BaseUser {
 	private static final long serialVersionUID = 1L;
@@ -51,6 +50,23 @@ public class User extends BaseUser {
 	}
 
 /*[CONSTRUCTOR MARKER END]*/
+    
+    public static User findByExternalId(String externalId) {
+        return (User)
+            new UserDAO().
+            getSession().
+            createQuery("select u from User u where u.externalUniqueId=:externalId").
+            setString("externalId", externalId).
+            uniqueResult();
+    }
 
-
+    public static User findByUserName(String userName) {
+        return (User)
+            new UserDAO().
+            getSession().
+            createQuery("select u from User u where u.username=:userName").
+            setString("userName", userName).
+            uniqueResult();
+    }
+    
 }
