@@ -110,10 +110,10 @@ public class HibernateUtil {
         configureHibernate(properties);
     }
     
-    public static String getProperty(Properties properties, String name, String defaultValue) {
+    public static String getProperty(Properties properties, String name) {
         String value = properties.getProperty(name);
         if (value!=null) return value;
-        return ApplicationProperties.getProperty(name, defaultValue);
+        return ApplicationProperties.getProperty(name);
     }
     
     public static void fixSchemaInFormulas(Configuration cfg) {
@@ -144,7 +144,7 @@ public class HibernateUtil {
 			sSessionFactory=null;
 		}
 		
-		sLog.info("Connecting to "+getProperty(properties,"connection.url",null));
+		sLog.info("Connecting to "+getProperty(properties,"connection.url"));
 		ClassLoader classLoader = HibernateUtil.class.getClassLoader();
 		sLog.debug("  -- class loader retrieved");
 
@@ -155,20 +155,24 @@ public class HibernateUtil {
         Document document = builder.parse(classLoader.getResource("hibernate.cfg.xml").openStream());
         sLog.debug("  -- hibernate.cfg.xml parsed");
         
-        if (getProperty(document, "connection.datasource", null)!=null || getProperty(document,"connection.url", null)==null) {
+        if (getProperty(properties,"connection.url")!=null) {
             removeProperty(document, "connection.datasource");
-            setProperty(document, "connection.driver_class", getProperty(properties,"connection.driver_class",null)); 
-            setProperty(document, "connection.url",getProperty(properties,"connection.url",null));
-            setProperty(document, "connection.username",getProperty(properties,"connection.username",null));
+            String driver = getProperty(properties,"connection.driver_class");
+            if (driver!=null) setProperty(document, "connection.driver_class", driver);
+                setProperty(document, "connection.url",getProperty(properties,"connection.url"));
+            String userName = getProperty(properties,"connection.username");
+            if (userName!=null)
+                setProperty(document, "connection.username",userName);
+            String password = getProperty(properties,"connection.password");
+            if (password!=null)
+                setProperty(document, "connection.password", password);
             setProperty(document, "hibernate.jdbc.batch_size", "100");
             setProperty(document, "hibernate.cache.use_second_level_cache", "false");
-            setProperty(document, "connection.password", getProperty(properties,"connection.password",null));
 
             /*// JDBC Pool 
             setProperty(document, "connection.pool_size", "5");
             setProperty(document, "connection.release_mode", "on_close");
             */
-            
             
             /*// C3P0 Pool
             setProperty(document, "hibernate.c3p0.min_size", "0");
