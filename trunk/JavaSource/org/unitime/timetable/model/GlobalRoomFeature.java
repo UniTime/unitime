@@ -122,5 +122,12 @@ public class GlobalRoomFeature extends BaseGlobalRoomFeature {
 		}
 		return(null);
 	}
+    
+    public String htmlLabel() {
+        return "<span "+
+            "title='"+getLabel()+" (global)'>"+
+            getLabel() +
+            "</span>";
+    }
 
 }

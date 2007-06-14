@@ -58,6 +58,8 @@ public class RoomFeatureEditForm extends ActionForm {
 	private String deptCode;
 	
 	private String name;
+    
+    private String abbv;
 
 	private String id;
 
@@ -196,7 +198,12 @@ public class RoomFeatureEditForm extends ActionForm {
                     new ActionMessage("errors.required", "Name") );
         }
         
-		try {
+        if(abbv==null || abbv.equalsIgnoreCase("")) {
+            errors.add("roomFeature", 
+                    new ActionMessage("errors.required", "Abbreviation") );
+        }
+
+        try {
 			
 			for (Iterator i=RoomFeature.getAllGlobalRoomFeatures().iterator();i.hasNext();) {
 				RoomFeature rf = (RoomFeature)i.next();
@@ -253,6 +260,14 @@ public class RoomFeatureEditForm extends ActionForm {
 	public void setDoit(String doit) {
 		this.doit = doit;
 	}
+    
+    public String getAbbv() {
+        return abbv;
+    }
+    
+    public void setAbbv(String abbv) {
+        this.abbv = abbv;
+    }
 	
 	/** 
 	 * Method reset
@@ -260,7 +275,7 @@ public class RoomFeatureEditForm extends ActionForm {
 	 * @param request
 	 */
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
-		name = "";
+		name = ""; abbv = "";
 		setDeptSize(request);
 	}
 	

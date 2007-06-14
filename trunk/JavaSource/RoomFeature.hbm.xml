@@ -56,6 +56,14 @@
 			length="20"
 		/>
 		
+		<property
+			name="abbv"
+			column="ABBV"
+			type="java.lang.String"
+			not-null="false"
+			length="20"
+		/>
+
 		<set name="rooms" table="ROOM_JOIN_ROOM_FEATURE" inverse="true">
 			<cache include="non-lazy" usage="read-write"/>
 			<key column="FEATURE_ID"/> 

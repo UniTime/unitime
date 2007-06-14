@@ -150,6 +150,7 @@ public class RoomFeatureAddAction extends Action {
 		
 			GlobalRoomFeature rf = new GlobalRoomFeature();
 			rf.setLabel(roomFeatureEditForm.getName());
+            rf.setAbbv(roomFeatureEditForm.getAbbv());
 
 			try {
 				tx = hibSession.beginTransaction();				

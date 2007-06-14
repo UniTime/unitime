@@ -69,12 +69,15 @@ public abstract class Preference extends BasePreference implements Comparable {
 			sb.append("<span style='font-weight:bold;' title='"+preferenceTitle()+"'>" );
 		}
 		
-		sb.append(this.preferenceText());
+		sb.append(this.preferenceAbbv());
 		sb.append("</span>");
 		return (sb.toString());
     }
     
     public abstract String preferenceText();
+    public String preferenceAbbv() {
+        return preferenceText();
+    }
     
 	/* (non-Javadoc)
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)

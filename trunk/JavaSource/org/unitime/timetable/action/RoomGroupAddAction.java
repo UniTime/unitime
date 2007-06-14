@@ -137,6 +137,7 @@ public class RoomGroupAddAction extends Action {
 		RoomGroup rg = new RoomGroup();
 		
 		rg.setName(roomGroupEditForm.getName());
+        rg.setAbbv(roomGroupEditForm.getAbbv());
 		rg.setSession(Session.getCurrentAcadSession(user));
 		rg.setDescription(roomGroupEditForm.getDesc());
 		

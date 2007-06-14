@@ -97,6 +97,13 @@
 		</TR>
 			
 		<TR>
+			<TD>Abbreviation: <font class="reqField">*</font></TD>
+			<TD>
+				<html:text property="abbv" maxlength="20" size="20" />
+			<TD>
+		</TR>
+
+		<TR>
 			<TD>Global:</TD>
 			<TD>
 				<html:checkbox property="global" disabled="true"/>

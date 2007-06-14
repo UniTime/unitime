@@ -58,6 +58,10 @@ public class RoomFeaturePref extends BaseRoomFeaturePref {
     	return(this.getRoomFeature().getLabel());
     }
     
+    public String preferenceAbbv() {
+        return(this.getRoomFeature().getAbbv());
+    }
+
     public int compareTo(Object o) {
     	try {
     		RoomFeaturePref p = (RoomFeaturePref)o;
