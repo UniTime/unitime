@@ -168,6 +168,9 @@ public class HibernateUtil {
                 setProperty(document, "connection.password", password);
             setProperty(document, "hibernate.jdbc.batch_size", "100");
             setProperty(document, "hibernate.cache.use_second_level_cache", "false");
+            String idgen = getProperty(properties, "tmtbl.uniqueid.generator");
+            if (idgen!=null)
+                setProperty(document, "tmtbl.uniqueid.generator", idgen);
 
             /*// JDBC Pool 
             setProperty(document, "connection.pool_size", "5");
