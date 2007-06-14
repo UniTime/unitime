@@ -37,6 +37,7 @@ public abstract class BaseRoomGroup  implements Serializable {
 	public static String PROP_NAME = "name";
 	public static String PROP_DESCRIPTION = "description";
 	public static String PROP_GLOBAL = "global";
+    public static String PROP_ABBV = "abbv";
 	public static String PROP_DEFAULT_GROUP = "defaultGroup";
 
 
@@ -81,6 +82,7 @@ public abstract class BaseRoomGroup  implements Serializable {
 	// fields
 	private java.lang.String name;
 	private java.lang.String description;
+    private java.lang.String abbv;
 	private java.lang.Boolean global;
 	private java.lang.Boolean defaultGroup;
 
@@ -232,8 +234,13 @@ public abstract class BaseRoomGroup  implements Serializable {
 		this.rooms = rooms;
 	}
 
-
-
+    public String getAbbv() {
+        return abbv;
+    }
+    
+    public void setAbbv(String abbv) {
+        this.abbv = abbv;
+    }
 
 
 	public boolean equals (Object obj) {

@@ -27,7 +27,7 @@
 
 	<!-- Buttons -->
 	<TR>
-		<TD valign="middle" colspan="3">
+		<TD valign="middle" colspan="4">
 			<tt:section-header>
 				<tt:section-title>
 					<span style='font-weight:normal;'>
@@ -67,7 +67,7 @@
 
 	<logic:messagesPresent>
 	<TR>
-		<TD colspan="3" align="left" class="errorCell">
+		<TD colspan="4" align="left" class="errorCell">
 			<B><U>ERRORS</U></B><BR>
 			<BLOCKQUOTE>
 			<UL>
@@ -85,7 +85,7 @@
 <!-- room features list -->
 	<% if (request.getAttribute("roomFeaturesGlobal") != null) {%>
 		<TR>
-			<TD valign="middle" colspan="3">
+			<TD valign="middle" colspan="4">
 				&nbsp;<A name="roomFeaturesGlobal"/>
 			</TD>
 		</TR>
@@ -94,7 +94,7 @@
 
 	<% if (request.getAttribute("roomFeaturesDepartment") != null) {%>
 		<TR>
-			<TD valign="middle" colspan="3">
+			<TD valign="middle" colspan="4">
 				&nbsp;<A name="roomFeaturesDepartment"/>
 			</TD>
 		</TR>
@@ -103,18 +103,18 @@
 	
 	<% if (request.getAttribute("roomFeaturesDepartment") == null && request.getAttribute("roomFeaturesGlobal") == null) {%>
 		<TR>
-			<TD valign="middle" colspan="3">
+			<TD valign="middle" colspan="4">
 				<i>There are no room features available for the selected department.</i>
 			</TD>
 		</TR>
 	<% } %>
 
 	<TR>
-		<TD valign="middle" colspan="3">&nbsp;</TD>
+		<TD valign="middle" colspan="4">&nbsp;</TD>
 	<TR>
 
 	<TR>
-		<TD valign="middle" colspan="3">
+		<TD valign="middle" colspan="4">
 			<tt:section-header>
 			<tt:section-title>
 				<% if (request.getAttribute("roomFeaturesGlobal") != null) {%>
@@ -130,7 +130,7 @@
 
 <!-- Buttons -->
 	<TR>
-		<TD valign="middle" colspan="3">
+		<TD valign="middle" colspan="4">
 			<TABLE align="right" cellspacing="0" cellpadding="2" class="FormWithNoPadding">
 				<TR>
 					<logic:equal name="roomFeatureListForm" property="canAdd" value="true">

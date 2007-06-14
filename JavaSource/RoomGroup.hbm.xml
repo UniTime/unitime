@@ -54,6 +54,13 @@
 			length="20"
 			/>
 			
+		<property name="abbv"
+		    column="ABBV"
+			type="java.lang.String"
+			not-null="true"
+			length="20"
+			/>
+
 		<property
 			name="description"
 			column="DESCRIPTION"

@@ -35,6 +35,7 @@ public abstract class BaseRoomFeature  implements Serializable {
 
 	public static String REF = "RoomFeature";
 	public static String PROP_LABEL = "label";
+    public static String PROP_ABBV = "abbv";
 
 
 	// constructors
@@ -73,6 +74,7 @@ public abstract class BaseRoomFeature  implements Serializable {
 
 	// fields
 	private java.lang.String label;
+    private java.lang.String abbv;
 
 	// collections
 	private java.util.Set rooms;
@@ -134,6 +136,13 @@ public abstract class BaseRoomFeature  implements Serializable {
 	}
 
 
+    public String getAbbv() {
+        return abbv;
+    }
+    
+    public void setAbbv(String abbv) {
+        this.abbv = abbv;
+    }
 
 
 

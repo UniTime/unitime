@@ -55,6 +55,7 @@ public class RoomGroupEditForm extends ActionForm {
 	// --------------------------------------------------------- Instance Variables
 	private String id;
 	private String name;
+    private String abbv;
 	private boolean global;
 	private boolean deft;
 	private boolean feature;
@@ -93,7 +94,12 @@ public class RoomGroupEditForm extends ActionForm {
                     new ActionMessage("errors.required", "Name") );
         }
         
-		try {
+        if(abbv==null || abbv.equalsIgnoreCase("")) {
+            errors.add("roomGroup", 
+                    new ActionMessage("errors.required", "Abbreviation") );
+        }
+
+        try {
 			
 			for (Iterator i=RoomGroup.getAllGlobalRoomGroups().iterator();i.hasNext();) {
 				RoomGroup rg = (RoomGroup)i.next();
@@ -332,7 +338,15 @@ public class RoomGroupEditForm extends ActionForm {
 		this.deptCode = deptCode;
 	}
 	
-	/**
+    public String getAbbv() {
+        return abbv;
+    }
+    
+    public void setAbbv(String abbv) {
+        this.abbv = abbv;
+    }
+
+    /**
 	 * 
 	 * @param deptCode
 	 * @param request

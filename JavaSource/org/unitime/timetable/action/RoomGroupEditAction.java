@@ -120,6 +120,8 @@ public class RoomGroupEditAction extends LookupDispatchAction {
 		//get depts owned by user
 		if (roomGroupEditForm.getName()==null || roomGroupEditForm.getName().length()==0)
 			roomGroupEditForm.setName(rg.getName());
+        if (roomGroupEditForm.getAbbv()==null || roomGroupEditForm.getAbbv().length()==0)
+            roomGroupEditForm.setAbbv(rg.getAbbv());
 		roomGroupEditForm.setGlobal(rg.isGlobal().booleanValue());
 		roomGroupEditForm.setDeptCode(rg.isGlobal().booleanValue()?null:rg.getDepartment().getDeptCode());
 		roomGroupEditForm.setDeft(rg.isDefaultGroup().booleanValue());
@@ -366,6 +368,9 @@ public class RoomGroupEditAction extends LookupDispatchAction {
 		if (roomGroupEditForm.getName() != null && !roomGroupEditForm.getName().trim().equalsIgnoreCase("")) {
 			rg.setName(roomGroupEditForm.getName());
 		}
+        if (roomGroupEditForm.getAbbv() != null && !roomGroupEditForm.getAbbv().trim().equalsIgnoreCase("")) {
+            rg.setAbbv(roomGroupEditForm.getAbbv());
+        }
 		if (roomGroupEditForm.getDesc() != null) {
 			rg.setDescription(roomGroupEditForm.getDesc());
 		}
