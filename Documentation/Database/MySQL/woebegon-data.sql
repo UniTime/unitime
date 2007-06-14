@@ -2642,27 +2642,27 @@ VALUES (12607, 7986, 226199, 1),
   (223702, 7992, 223207, 1),
   (223703, 7993, 223207, 1);
 
-INSERT INTO `timetable`.`room_feature`(`uniqueid`, `discriminator`, `label`, `sis_reference`, `sis_value`, `department_id`)
-VALUES (468, 'global', 'Chalkboard < 20 Ft.', 'feetOfChalkboard', '< 20', NULL),
-  (469, 'global', 'Chalkboard >= 20 Ft.', 'feetOfChalkboard', '>= 20', NULL),
-  (123, 'global', 'Audio Recording', 'audioRecording', NULL, NULL),
-  (125, 'global', 'Computer', 'puccComputer', NULL, NULL),
-  (437, 'global', 'Fixed Seating', 'fixedSeating', NULL, NULL),
-  (438, 'global', 'Computer Projection', 'computerProjection', NULL, NULL),
-  (440, 'global', 'Tables and Chairs', 'seatingType', 'tablesAndChairs', NULL),
-  (441, 'global', 'Tablet Arm Chairs', 'seatingType', 'tabletArmChairs', NULL),
-  (442, 'global', 'Theater Seats', 'seatingType', 'theaterSeats', NULL);
+INSERT INTO `timetable`.`room_feature`(`uniqueid`, `discriminator`, `label`, `abbv`, `sis_reference`, `sis_value`, `department_id`)
+VALUES (468, 'global', 'Chalkboard < 20 Ft.', 'Ch<20Ft', 'feetOfChalkboard', '< 20', NULL),
+  (469, 'global', 'Chalkboard >= 20 Ft.', 'Ch>=20Ft', 'feetOfChalkboard', '>= 20', NULL),
+  (123, 'global', 'Audio Recording', 'AudioRec', 'audioRecording', NULL, NULL),
+  (125, 'global', 'Computer', 'Comp', 'puccComputer', NULL, NULL),
+  (437, 'global', 'Fixed Seating', 'FixSeat', 'fixedSeating', NULL, NULL),
+  (438, 'global', 'Computer Projection', 'CompPrj', 'computerProjection', NULL, NULL),
+  (440, 'global', 'Tables and Chairs', 'Tables&Chrs', 'seatingType', 'tablesAndChairs', NULL),
+  (441, 'global', 'Tablet Arm Chairs', 'TabletArmChrs', 'seatingType', 'tabletArmChairs', NULL),
+  (442, 'global', 'Theater Seats', 'ThtrSeat', 'seatingType', 'theaterSeats', NULL);
 
 INSERT INTO `timetable`.`room_feature_pref`(`uniqueid`, `owner_id`, `pref_level_id`, `room_feature_id`, `last_modified_time`)
 VALUES (121508, 226242, 2, 125, NULL),
   (121514, 226240, 7, 442, NULL);
 
-INSERT INTO `timetable`.`room_group`(`uniqueid`, `session_id`, `name`, `description`, `global`, `default_group`, `department_id`)
-VALUES (6225, 223206, 'Biology Labs', NULL, 0, 0, 223207),
-  (6226, 223206, 'Computing Labs', NULL, 0, 0, 223207),
-  (6227, 223206, 'Hall of Music', NULL, 1, 0, NULL),
-  (6223, 223206, 'Chem Labs', 'Chemistry Laboratories', 1, 0, NULL),
-  (6224, 223206, 'Classroom', NULL, 1, 1, NULL);
+INSERT INTO `timetable`.`room_group`(`uniqueid`, `session_id`, `name`, `abbv`, `description`, `global`, `default_group`, `department_id`)
+VALUES (6225, 223206, 'Biology Labs', 'Biol Labs', NULL, 0, 0, 223207),
+  (6226, 223206, 'Computing Labs', 'Comp Labs', NULL, 0, 0, 223207),
+  (6227, 223206, 'Hall of Music', 'Hall of Music', NULL, 1, 0, NULL),
+  (6223, 223206, 'Chemistry Labs', 'Chem Labs', 'Chemistry Laboratories', 1, 0, NULL),
+  (6224, 223206, 'Classroom', 'Classroom', NULL, 1, 1, NULL);
 
 INSERT INTO `timetable`.`room_group_pref`(`uniqueid`, `owner_id`, `pref_level_id`, `room_group_id`, `last_modified_time`)
 VALUES (121335, 223377, 1, 6224, NULL),
