@@ -31,6 +31,7 @@ import java.util.Vector;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Transaction;
+import org.unitime.timetable.model.AcademicAreaClassification;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.ClassWaitList;
@@ -41,6 +42,7 @@ import org.unitime.timetable.model.CourseOfferingReservation;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.LastLikeCourseDemand;
+import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentClassEnrollment;
@@ -187,6 +189,7 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
     public static Student loadStudent(org.unitime.timetable.model.Student s, Hashtable courseTable, Hashtable classTable) {
         sLog.debug("Loading student "+s.getUniqueId()+" (id="+s.getExternalUniqueId()+", name="+s.getFirstName()+" "+s.getMiddleName()+" "+s.getLastName()+")");
         Student student = new Student(s.getUniqueId().longValue());
+        loadStudentInfo(student,s);
         int priority = 0;
         for (Iterator i=new TreeSet(s.getCourseDemands()).iterator();i.hasNext();) {
             CourseDemand cd = (CourseDemand)i.next();
@@ -290,6 +293,7 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
         Student student = (Student)studentTable.get(s.getUniqueId());
         if (student==null) {
             student = new Student(s.getUniqueId().longValue(),true);
+            loadStudentInfo(student,s);
             studentTable.put(s.getUniqueId(),student);
         }
         int priority = student.getRequests().size();
@@ -329,6 +333,19 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
                     }
                 }
             }
+        }
+    }
+    
+    public static void loadStudentInfo(Student student, org.unitime.timetable.model.Student s) {
+        for (Iterator i=s.getAcademicAreaClassifications().iterator();i.hasNext();) {
+            AcademicAreaClassification aac = (AcademicAreaClassification)i.next();
+            student.getAcademicAreaClasiffications().add(aac.getAcademicArea().getAcademicAreaAbbreviation()+":"+aac.getAcademicClassification().getCode());
+            sLog.debug("  -- aac: "+aac.getAcademicArea().getAcademicAreaAbbreviation()+":"+aac.getAcademicClassification().getCode());
+        }
+        for (Iterator i=s.getPosMajors().iterator();i.hasNext();) {
+            PosMajor major = (PosMajor)i.next();
+            student.getMajors().add(major.getCode());
+            sLog.debug("  -- mj: "+major.getCode());
         }
     }
 
