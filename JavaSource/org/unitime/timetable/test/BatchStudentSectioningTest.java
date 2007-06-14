@@ -170,13 +170,17 @@ public class BatchStudentSectioningTest {
             cfg.setProperty("Data.Initiative","puWestLafayetteTrdtn");
             cfg.setProperty("Data.Term","Fal");
             cfg.setProperty("Data.Year","2007");
-            cfg.setProperty("connection.url", "jdbc:oracle:thin:@tamarind.smas.purdue.edu:1521:xe");
+            cfg.setProperty("connection.url", "jdbc:oracle:thin:@parade.adpc.purdue.edu:1522:smasarch");
+            cfg.setProperty("connection.driver_class", "oracle.jdbc.driver.OracleDriver");
+            cfg.setProperty("connection.username", "timetable");
+            cfg.setProperty("connection.password", "time4tea");
             cfg.setProperty("Load.IncludeCourseDemands", (sIncludeCourseDemands?"true":"false"));
             cfg.setProperty("Load.IncludeLastLikeStudents", (sIncludeLastLikeStudents?"true":"false"));
             cfg.setProperty("Load.IncludeUseCommittedAssignments", (sIncludeUseCommittedAssignments?"true":"false"));
             if (args.length>=1) {
                 cfg.load(new FileInputStream(args[0]));
             }
+            cfg.putAll(System.getProperties());
             
             if (args.length>=2) {
                 File logFile = new File(ToolBox.configureLogging(args[1], null, true, false));
