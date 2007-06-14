@@ -131,53 +131,53 @@ public class Building extends BaseBuilding implements Comparable {
 	 * Update building information using External Building
 	 * @param sessionId
 	 */
-	public static void updateBuildings(Long sessionId) {
-		
-		Session currentSession = Session.getSessionById(sessionId);
-		TreeSet currentBuildings = new TreeSet(currentSession.getBuildings());
-		Hashtable updateBuildings = ExternalBuilding.getBuildings(sessionId);
-		
-		Iterator b = currentBuildings.iterator();
-		BuildingDAO bldgDAO = new BuildingDAO();
-		
-		while(b.hasNext()) {
-			Building bldg = (Building)b.next();
-			ExternalBuilding extBldg = 
-				(ExternalBuilding)updateBuildings.get(bldg.getExternalUniqueId());
-			if(extBldg != null) {
-				if(updateBldgInfo(bldg, extBldg)) {
-					bldgDAO.update(bldg);
-				}
-				b.remove();
-				updateBuildings.remove(extBldg.getExternalUniqueId());
-			}
-		}
-		
-		b = currentBuildings.iterator();
-		while(b.hasNext()) {
-			Building bldg = (Building)b.next();
-			if(checkBuildingDelete(bldg)) {
-				currentSession.getBuildings().remove(bldg);
-				bldgDAO.delete(bldg);
-			}
-		}
-		
-		Iterator eb = (updateBuildings.values()).iterator();
-		while(eb.hasNext()) {
-			ExternalBuilding extBldg = (ExternalBuilding)eb.next();
-			Building newBldg = new Building();
-			newBldg.setAbbreviation(extBldg.getAbbreviation());
-			newBldg.setCoordinateX(extBldg.getCoordinateX());
-			newBldg.setCoordinateY(extBldg.getCoordinateY());
-			newBldg.setName(extBldg.getDisplayName());
-			newBldg.setSession(currentSession);
-			newBldg.setExternalUniqueId(extBldg.getExternalUniqueId());
-			bldgDAO.save(newBldg);
-		}
-		
-		return;
-	}
-	
+    public static void updateBuildings(Long sessionId) {
+        
+        Session currentSession = Session.getSessionById(sessionId);
+        TreeSet currentBuildings = new TreeSet(currentSession.getBuildings());
+        Hashtable updateBuildings = ExternalBuilding.getBuildings(sessionId);
+        
+        Iterator b = currentBuildings.iterator();
+        BuildingDAO bldgDAO = new BuildingDAO();
+        
+        while(b.hasNext()) {
+            Building bldg = (Building)b.next();
+            ExternalBuilding extBldg = 
+                (ExternalBuilding)updateBuildings.get(bldg.getExternalUniqueId());
+            if(extBldg != null) {
+                if(updateBldgInfo(bldg, extBldg)) {
+                    bldgDAO.update(bldg);
+                }
+                b.remove();
+                updateBuildings.remove(extBldg.getExternalUniqueId());
+            }
+        }
+        
+        b = currentBuildings.iterator();
+        while(b.hasNext()) {
+            Building bldg = (Building)b.next();
+            if(checkBuildingDelete(bldg)) {
+                currentSession.getBuildings().remove(bldg);
+                bldgDAO.delete(bldg);
+            }
+        }
+        
+        Iterator eb = (updateBuildings.values()).iterator();
+        while(eb.hasNext()) {
+            ExternalBuilding extBldg = (ExternalBuilding)eb.next();
+            Building newBldg = new Building();
+            newBldg.setAbbreviation(extBldg.getAbbreviation());
+            newBldg.setCoordinateX(extBldg.getCoordinateX());
+            newBldg.setCoordinateY(extBldg.getCoordinateY());
+            newBldg.setName(extBldg.getDisplayName());
+            newBldg.setSession(currentSession);
+            newBldg.setExternalUniqueId(extBldg.getExternalUniqueId());
+            bldgDAO.save(newBldg);
+        }
+        
+        return;
+    }
+    
 	/*
 	 * Update building information
 	 * @param bldg (Building)
