@@ -17,6 +17,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-alter table ROLES rename column PRIMARY to IS_PRIMARY;
+alter table TMTBL_MGR_TO_ROLES rename column PRIMARY to IS_PRIMARY;
 
 commit;
