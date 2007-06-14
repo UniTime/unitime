@@ -241,13 +241,13 @@ public class RoomFeatureListAction extends Action {
         WebTable.setOrder(request.getSession(),"roomFeatureList.gord",request.getParameter("gord"),1);
         WebTable.setOrder(request.getSession(),"roomFeatureList.mord",request.getParameter("mord"),1);
         
-		WebTable globalWebTable = new WebTable(3, "Global Room Features", "roomFeatureList.do?gord=%%", new String[] {
-				"Name", "", "Rooms" },
-				new String[] { "left", "left", "left" }, new boolean[] { true, true, true});
+		WebTable globalWebTable = new WebTable(4, "Global Room Features", "roomFeatureList.do?gord=%%", new String[] {
+				"Name", "Abbreviation", "", "Rooms" },
+				new String[] { "left", "left", "left", "left" }, new boolean[] { true, true, true, true});
 
-		WebTable departmentWebTable = new WebTable(3, "Department Room Features", "roomFeatureList.do?mord=%%", new String[] {
-				"Name", "Department", "Rooms" },
-				new String[] { "left", "left", "left" }, new boolean[] { true, true, true});
+		WebTable departmentWebTable = new WebTable(4, "Department Room Features", "roomFeatureList.do?mord=%%", new String[] {
+				"Name", "Abbreviation", "Department", "Rooms" },
+				new String[] { "left", "left", "left", "left" }, new boolean[] { true, true, true, true});
 		
 		boolean isAdmin = user.getRole().equals(Roles.ADMIN_ROLE);
 		boolean showAll = false;
@@ -299,11 +299,13 @@ public class RoomFeatureListAction extends Action {
 					new String[] {
 							"<A name=\"A"+gr.getUniqueId()+"\"></A>"+
 							(isAdmin?"":"<font color=gray>")+gr.getLabel().replaceAll(" ","&nbsp;")+(isAdmin?"":"</font>"),
+                            gr.getAbbv(),
 							"",
 							(isAdmin?"":"<font color=gray>")+assignedRoom+(isAdmin?"":"</font>") 
 							 }, 
 					new Comparable[] {
 							gr.getLabel(),
+                            gr.getAbbv(),
 							"",
 							null});
 			haveGlobalRoomFeature = true;
@@ -342,10 +344,12 @@ public class RoomFeatureListAction extends Action {
 						new String[] {
 							"<A name=\"A"+drf.getUniqueId()+"\"></A>"+
 							(isOwner?"":"<font color=gray>")+drf.getLabel().replaceAll(" ","&nbsp;")+(isOwner?"":"</font>"),
+                            drf.getAbbv(),
 							(isOwner?"":"<font color=gray>")+ownerName+(isOwner?"":"</font>"),
 							(isOwner?"":"<font color=gray>")+assignedRoom+(isOwner?"":"</font>")},
 						new Comparable[] {
 								drf.getLabel(),
+                                drf.getAbbv(),
 								ownerName,
 								null}
 						);
@@ -406,13 +410,13 @@ public class RoomFeatureListAction extends Action {
             TimetableManager manager = tdao.get(new Long(mgrId));
             TimetableManager owner = manager;
     		
-    		PdfWebTable globalWebTable = new PdfWebTable(3, "Global Room Features", null, new String[] {
-    				"Name", "", "Rooms" },
-    				new String[] { "left", "left", "left" }, new boolean[] { true, true, true});
+    		PdfWebTable globalWebTable = new PdfWebTable(4, "Global Room Features", null, new String[] {
+    				"Name", "Abbreviation", "", "Rooms" },
+    				new String[] { "left", "left", "left", "left" }, new boolean[] { true, true, true, true});
 
     		PdfWebTable departmentWebTable = new PdfWebTable(3, "Department Room Features", null, new String[] {
-    				"Name", "Department ", "Rooms" },
-    				new String[] { "left", "left", "left" }, new boolean[] { true, true, true});
+    				"Name", "Abbreviation", "Department ", "Rooms" },
+    				new String[] { "left", "left", "left", "left" }, new boolean[] { true, true, true, true});
     		
     		boolean isAdmin = user.getRole().equals(Roles.ADMIN_ROLE);
     		boolean showAll = false;
@@ -470,11 +474,13 @@ public class RoomFeatureListAction extends Action {
     					null, 
     					new String[] {
     							gr.getLabel(),
+                                gr.getAbbv(),
     							"",
     							assignedRoom.toString() 
     							 }, 
     					new Comparable[] {
     							gr.getLabel(),
+                                gr.getAbbv(),
     							"",
     							null});
     			haveGlobalRoomFeature = true;
@@ -512,10 +518,12 @@ public class RoomFeatureListAction extends Action {
     					null, 
     						new String[] {
     							drf.getLabel(),
+                                drf.getAbbv(),
     							ownerName,
     							assignedRoom.toString()},
     						new Comparable[] {
     								drf.getLabel(),
+                                    drf.getAbbv(),
     								ownerName,
     								null}
     						);

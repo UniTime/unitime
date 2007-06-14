@@ -30,7 +30,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
@@ -200,25 +199,6 @@ public class RoomListAction extends Action {
 		return mapping.findForward("showRoomList");
 
 	}
-	
-	public String makeAbbv(String name) {
-		StringBuffer sb = new StringBuffer();
-		for (StringTokenizer stk = new StringTokenizer(name," ");stk.hasMoreTokens();) {
-			String word = stk.nextToken();
-			if ("and".equalsIgnoreCase(word))
-				sb.append("&amp;");
-			else if (word.replaceAll("[a-zA-Z\\.]*", "").length()==0) {
-				for (int i=0;i<word.length();i++) {
-					if (i==0)
-						sb.append(word.substring(i,i+1).toUpperCase());
-					else if ((i==1 && word.length()>3) || (word.charAt(i)>='A' && word.charAt(i)<='Z'))
-						sb.append(word.charAt(i));
-				}
-			} else
-				sb.append(word);
-		}
-		return sb.toString();
-	}
 
 	/**
 	 * 
@@ -346,21 +326,20 @@ public class RoomListAction extends Action {
 			if (!featuresOneColumn) {
 				int i = fixedHeading1.length;
 				for (Iterator it = globalRoomFeatures.iterator(); it.hasNext();) {
-					String name = ((GlobalRoomFeature) it.next()).getLabel();
-					heading1[i] = "<span title='"+name+"'>"+makeAbbv(name)+"</span>"; 
+                    GlobalRoomFeature grf =(GlobalRoomFeature) it.next(); 
+					heading1[i] = "<span title='"+grf.getLabel()+"'>"+grf.getAbbv()+"</span>"; 
 					alignment1[i] = "center";
 					sorted1[i] = true;
 					i++;
 				}
 				for (Iterator it = deptRoomFeatures.iterator(); it.hasNext();) {
 					DepartmentRoomFeature drf = (DepartmentRoomFeature)it.next();
-					String name = drf.getLabel();
-					String title = name;
+					String title = drf.getLabel();
 					if (roomListForm.getDeptCodeX().equalsIgnoreCase("All")) {
 						Department dept = drf.getDepartment();
 						title+=" ("+dept.getShortLabel()+")";
 					}
-					heading1[i] = "<span title='"+title+"'>"+makeAbbv(name)+"</span>";
+					heading1[i] = "<span title='"+title+"'>"+drf.getAbbv()+"</span>";
 					alignment1[i] = "center";
 					sorted1[i] = true;
 					i++;
@@ -405,21 +384,20 @@ public class RoomListAction extends Action {
 			if (!featuresOneColumn) {
 				int i = fixedHeading2.length;
 				for (Iterator it = globalRoomFeatures.iterator(); it.hasNext();) {
-					String name = ((GlobalRoomFeature) it.next()).getLabel();
-					heading2[i] = "<span title='"+name+"'>"+makeAbbv(name)+"</span>"; 
+                    GlobalRoomFeature grf = (GlobalRoomFeature)it.next();
+					heading2[i] = "<span title='"+grf.getLabel()+"'>"+grf.getAbbv()+"</span>"; 
 					alignment2[i] = "center";
 					sorted2[i] = true;
 					i++;
 				}
 				for (Iterator it = deptRoomFeatures.iterator(); it.hasNext();) {
 					DepartmentRoomFeature drf = (DepartmentRoomFeature)it.next();
-					String name = drf.getLabel();
-					String title = name;
+					String title = drf.getLabel();
 					if (roomListForm.getDeptCodeX().equalsIgnoreCase("All")) {
 						Department dept = drf.getDepartment();
 						title+=" ("+dept.getShortLabel()+")";
 					}
-					heading2[i] = "<span title='"+title+"'>"+makeAbbv(name)+"</span>";
+					heading2[i] = "<span title='"+title+"'>"+drf.getAbbv()+"</span>";
 					alignment2[i] = "center";
 					sorted2[i] = true;
 					i++;
@@ -628,15 +606,16 @@ public class RoomListAction extends Action {
 				if (featuresOneColumn) {
 					// get features column
 					text[idx] = "";
+                    comp[idx] = "";
 					first = true;
 					for (Iterator it = new TreeSet(location.getGlobalRoomFeatures()).iterator(); it.hasNext();) {
 						GlobalRoomFeature rf = (GlobalRoomFeature) it.next();
 						if (!first) {
 							text[idx] = text[idx] + "<br>";
 						} else {
-							comp[idx] = rf.getLabel().trim();
+							comp[idx] = comp[idx] + rf.getLabel().trim();
 						}
-						text[idx] += rf.getLabel();
+						text[idx] += rf.htmlLabel();
 						first = false;
 					}
 					for (Iterator it = new TreeSet(location.getDepartmentRoomFeatures()).iterator(); it.hasNext();) {
@@ -644,7 +623,7 @@ public class RoomListAction extends Action {
 						if (!first) {
 							text[idx] = text[idx] + "<br>";
 						} else {
-							comp[idx] = drf.getLabel().trim();
+							comp[idx] = comp[idx] + drf.getLabel().trim();
 						}
 						text[idx] += drf.htmlLabel();
 						first = false;

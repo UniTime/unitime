@@ -60,6 +60,10 @@ public class RoomGroupPref extends BaseRoomGroupPref {
 		return (this.getRoomGroup().getName());
     }
 
+    public String preferenceAbbv() { 
+        return (this.getRoomGroup().getAbbv());
+    }
+
     public Object clone() {
     	RoomGroupPref pref = new RoomGroupPref();
     	pref.setPrefLevel(getPrefLevel());

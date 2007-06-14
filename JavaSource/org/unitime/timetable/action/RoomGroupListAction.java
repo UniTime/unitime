@@ -236,15 +236,15 @@ public class RoomGroupListAction extends Action {
         WebTable.setOrder(request.getSession(),"roomGroupList.gord",request.getParameter("gord"),1);
         WebTable.setOrder(request.getSession(),"roomGroupList.mord",request.getParameter("mord"),1);
         
-		WebTable globalWebTable = new WebTable(4, "Global Room Groups", "roomGroupList.do?gord=%%", new String[] {
-				"Name", "Default", "Rooms", "Description" },
-				new String[] { "left", "middle", "left", "left" }, 
-				new boolean[] { true, true, true, true} );
+		WebTable globalWebTable = new WebTable(5, "Global Room Groups", "roomGroupList.do?gord=%%", new String[] {
+				"Name", "Abbreviation", "Default", "Rooms", "Description" },
+				new String[] { "left", "left", "middle", "left", "left" }, 
+				new boolean[] { true, true, true, true, true} );
 		
-		WebTable departmentWebTable = new WebTable(4, "Department Room Groups", "roomGroupList.do?mord=%%", new String[] {
-				"Name", "Department", "Rooms", "Description" },
-				new String[] { "left", "left", "left", "left" }, 
-				new boolean[] { true, true, true, true} );
+		WebTable departmentWebTable = new WebTable(5, "Department Room Groups", "roomGroupList.do?mord=%%", new String[] {
+				"Name", "Abbreviation", "Department", "Rooms", "Description" },
+				new String[] { "left", "left", "left", "left", "left" }, 
+				new boolean[] { true, true, true, true, true} );
 
 		boolean haveGlobalRoomGroup = false;
 		for (Iterator it = globalRoomGroups.iterator(); it.hasNext();) {
@@ -278,11 +278,13 @@ public class RoomGroupListAction extends Action {
 					new String[] {
 							"<A name=\"A"+rg.getUniqueId()+"\"></A>"+
 							(isAdmin?"":"<font color=gray>")+rg.getName().replaceAll(" ","&nbsp;")+(isAdmin?"":"</font>"),
+                            rg.getAbbv(),
 							(rg.isDefaultGroup().booleanValue()?"<IMG border='0' title='This group is default group.' alt='Default' align='absmiddle' src='images/tick.gif'>":""),
 							(isAdmin?"":"<font color=gray>")+assignedRoom+(isAdmin?"":"</font>"), 
 							(isAdmin?"":"<font color=gray>")+(rg.getDescription() == null ? "" : rg.getDescription()).replaceAll(" ","&nbsp;").replaceAll("\\\n","<BR>")+(isAdmin?"":"</font>") }, 
 					new Comparable[] {
 							rg.getName(),
+                            rg.getAbbv(),
 							new Integer(rg.isDefaultGroup().booleanValue()?0:1),
 							null,
 							(rg.getDescription() == null ? "" : rg.getDescription())
@@ -322,11 +324,13 @@ public class RoomGroupListAction extends Action {
 					new String[] {
 							"<A name=\"A"+rg.getUniqueId()+"\"></A>"+
 							(isOwner?"":"<font color=gray>")+rg.getName().replaceAll(" ","&nbsp;")+(isOwner?"":"</font>"),
+                            rg.getAbbv(),
 							(isOwner?"":"<font color=gray>")+ownerName+(isOwner?"":"</font>"),
 							(isOwner?"":"<font color=gray>")+assignedRoom+(isOwner?"":"</font>"), 
 							(isOwner?"":"<font color=gray>")+(rg.getDescription() == null ? "" : rg.getDescription()).replaceAll(" ","&nbsp;").replaceAll("\\\n","<BR>")+(isOwner?"":"</font>") }, 
 					new Comparable[] {
 							rg.getName(),
+                            rg.getAbbv(),
 							ownerName,
 							null,
 							(rg.getDescription() == null ? "" : rg.getDescription())
@@ -408,15 +412,15 @@ public class RoomGroupListAction extends Action {
     			Debug.error(e);
     		}
             
-    		PdfWebTable globalWebTable = new PdfWebTable(4, "Global Room Groups", null, new String[] {
-    				"Name", "Default ", "Rooms", "Description" },
-    				new String[] { "left", "middle", "left", "left" }, 
-    				new boolean[] { true, true, true, true} );
+    		PdfWebTable globalWebTable = new PdfWebTable(5, "Global Room Groups", null, new String[] {
+    				"Name", "Abbreviation", "Default ", "Rooms", "Description" },
+    				new String[] { "left", "left", "middle", "left", "left" }, 
+    				new boolean[] { true, true, true, true, true} );
     		
-    		PdfWebTable departmentWebTable = new PdfWebTable(4, "Department Room Groups", null, new String[] {
-    				"Name", "Department ", "Rooms", "Description" },
-    				new String[] { "left", "left", "left", "left" }, 
-    				new boolean[] { true, true, true, true} );
+    		PdfWebTable departmentWebTable = new PdfWebTable(5, "Department Room Groups", null, new String[] {
+    				"Name", "Abbreviation", "Department ", "Rooms", "Description" },
+    				new String[] { "left", "left", "left", "left", "left" }, 
+    				new boolean[] { true, true, true, true, true} );
 
     		boolean haveGlobalRoomGroup = false;
     		for (Iterator it = globalRoomGroups.iterator(); it.hasNext();) {
@@ -456,11 +460,13 @@ public class RoomGroupListAction extends Action {
     					null, 
     					new String[] {
     							rg.getName(),
+                                rg.getAbbv(),
     							(rg.isDefaultGroup().booleanValue()?"Yes":"No"),
     							assignedRoom.toString(), 
     							(rg.getDescription() == null ? "" : rg.getDescription())}, 
     					new Comparable[] {
     							rg.getName(),
+                                rg.getAbbv(),
     							new Integer(rg.isDefaultGroup().booleanValue()?0:1),
     							null,
     							(rg.getDescription() == null ? "" : rg.getDescription())
@@ -498,11 +504,13 @@ public class RoomGroupListAction extends Action {
     					null, 
     					new String[] {
     							rg.getName(),
+                                rg.getAbbv(),
     							ownerName,
     							assignedRoom.toString(), 
     							(rg.getDescription() == null ? "" : rg.getDescription())}, 
     					new Comparable[] {
     							rg.getName(),
+                                rg.getAbbv(),
     							ownerName,
     							null,
     							(rg.getDescription() == null ? "" : rg.getDescription())

@@ -22,6 +22,7 @@ package org.unitime.timetable.model;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.StringTokenizer;
 
 import org.hibernate.HibernateException;
 import org.hibernate.criterion.Order;
@@ -157,5 +158,25 @@ public class RoomFeature extends BaseRoomFeature implements Comparable {
 	public String getLabelWithType() {
 	    return getLabel();
 	}
+    
+    public String getAbbv() {
+        if (super.getAbbv()!=null && super.getAbbv().trim().length()>0) return super.getAbbv();
+        StringBuffer sb = new StringBuffer();
+        for (StringTokenizer stk = new StringTokenizer(getLabel()," ");stk.hasMoreTokens();) {
+            String word = stk.nextToken();
+            if ("and".equalsIgnoreCase(word))
+                sb.append("&amp;");
+            else if (word.replaceAll("[a-zA-Z\\.]*", "").length()==0) {
+                for (int i=0;i<word.length();i++) {
+                    if (i==0)
+                        sb.append(word.substring(i,i+1).toUpperCase());
+                    else if ((i==1 && word.length()>3) || (word.charAt(i)>='A' && word.charAt(i)<='Z'))
+                        sb.append(word.charAt(i));
+                }
+            } else
+                sb.append(word);
+        }
+        return sb.toString();
+    }
 	
 }

@@ -26,7 +26,7 @@
 <TABLE width="93%" border="0" cellspacing="0" cellpadding="3">
 
 	<TR>
-		<TD align="right" colspan="4">
+		<TD align="right" colspan="5">
 			<tt:section-header>
 				<tt:section-title>
 					<span style='font-weight:normal;'>
@@ -66,7 +66,7 @@
 
 	<logic:messagesPresent>
 	<TR>
-		<TD colspan="4" align="left" class="errorCell">
+		<TD colspan="5" align="left" class="errorCell">
 			<B><U>ERRORS</U></B><BR>
 			<BLOCKQUOTE>
 			<UL>
@@ -108,11 +108,11 @@
 	<% } %>
 
 	<TR>
-		<TD valign="middle" colspan="4">&nbsp;</TD>
+		<TD valign="middle" colspan="5">&nbsp;</TD>
 	<TR>
 
 	<TR>
-		<TD valign="middle" colspan="4">
+		<TD valign="middle" colspan="5">
 			<tt:section-header>
 			<tt:section-title>
 				<% if (request.getAttribute("roomGroupsGlobal") != null) {%>
@@ -127,7 +127,7 @@
 	<TR>
 
 	<TR>
-		<TD align="right" colspan='4'>
+		<TD align="right" colspan='5'>
 			<TABLE align="right" cellspacing="0" cellpadding="2" class="FormWithNoPadding">
 				<TR>
 					<logic:equal name="roomGroupListForm" property="canAdd" value="true">

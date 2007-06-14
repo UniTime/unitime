@@ -119,6 +119,9 @@ public class RoomFeatureEditAction extends LookupDispatchAction {
 		
 		if (roomFeatureEditForm.getName()==null || roomFeatureEditForm.getName().length()==0)
 			roomFeatureEditForm.setName(rf.getLabel());
+        
+        if (roomFeatureEditForm.getAbbv()==null || roomFeatureEditForm.getAbbv().length()==0)
+            roomFeatureEditForm.setAbbv(rf.getAbbv());
 		
 		//get rooms		
 		Collection assigned = getAssignedRooms(user, rf, roomFeatureEditForm);
@@ -248,6 +251,7 @@ public class RoomFeatureEditAction extends LookupDispatchAction {
 			RoomFeature roomFeature = (new RoomFeatureDAO()).get(id, hibSession);
 		
 			roomFeature.setLabel(roomFeatureEditForm.getName());
+            roomFeature.setAbbv(roomFeatureEditForm.getAbbv());
 			
 			String[] selectedAssigned = roomFeatureEditForm.getAssignedSelected();
 			String[] selectedNotAssigned = roomFeatureEditForm.getNotAssignedSelected();
