@@ -299,7 +299,7 @@ public class RoomFeatureListAction extends Action {
 					new String[] {
 							"<A name=\"A"+gr.getUniqueId()+"\"></A>"+
 							(isAdmin?"":"<font color=gray>")+gr.getLabel().replaceAll(" ","&nbsp;")+(isAdmin?"":"</font>"),
-                            gr.getAbbv(),
+                            (isAdmin?"":"<font color=gray>")+gr.getAbbv().replaceAll(" ","&nbsp;")+(isAdmin?"":"</font>"),
 							"",
 							(isAdmin?"":"<font color=gray>")+assignedRoom+(isAdmin?"":"</font>") 
 							 }, 
@@ -344,7 +344,7 @@ public class RoomFeatureListAction extends Action {
 						new String[] {
 							"<A name=\"A"+drf.getUniqueId()+"\"></A>"+
 							(isOwner?"":"<font color=gray>")+drf.getLabel().replaceAll(" ","&nbsp;")+(isOwner?"":"</font>"),
-                            drf.getAbbv(),
+                            (isOwner?"":"<font color=gray>")+drf.getAbbv().replaceAll(" ","&nbsp;")+(isOwner?"":"</font>"),
 							(isOwner?"":"<font color=gray>")+ownerName+(isOwner?"":"</font>"),
 							(isOwner?"":"<font color=gray>")+assignedRoom+(isOwner?"":"</font>")},
 						new Comparable[] {
