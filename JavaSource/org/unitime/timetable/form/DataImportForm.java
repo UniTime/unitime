@@ -35,8 +35,8 @@ import org.unitime.timetable.dataexchange.AcademicAreaImportDAO;
 import org.unitime.timetable.dataexchange.AcademicClassificationImportDAO;
 import org.unitime.timetable.dataexchange.BuildingRoomImport;
 import org.unitime.timetable.dataexchange.CourseCatalogImportDAO;
-import org.unitime.timetable.dataexchange.CourseDemandImportDAO;
 import org.unitime.timetable.dataexchange.DepartmentImportDAO;
+import org.unitime.timetable.dataexchange.LastLikeCourseDemandImport;
 import org.unitime.timetable.dataexchange.PosMajorImportDAO;
 import org.unitime.timetable.dataexchange.PosMinorImportDAO;
 import org.unitime.timetable.dataexchange.SessionImportDAO;
@@ -147,7 +147,7 @@ public class DataImportForm extends ActionForm {
         	new StaffImportDAO().loadFromXML(fileName);
         }
         else if(root.getName().equalsIgnoreCase("lastLikeCourseDemand")) {
-        	new CourseDemandImportDAO().loadFromXML(fileName);
+        	new LastLikeCourseDemandImport().loadXml(fileName);
         }
         else if(root.getName().equalsIgnoreCase("academicAreaReservations")) {
         	new AcadAreaReservationImportDAO().loadFromXML(fileName);
