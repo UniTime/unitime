@@ -278,7 +278,7 @@ public class RoomGroupListAction extends Action {
 					new String[] {
 							"<A name=\"A"+rg.getUniqueId()+"\"></A>"+
 							(isAdmin?"":"<font color=gray>")+rg.getName().replaceAll(" ","&nbsp;")+(isAdmin?"":"</font>"),
-                            rg.getAbbv(),
+                            (isAdmin?"":"<font color=gray>")+rg.getAbbv().replaceAll(" ","&nbsp;")+(isAdmin?"":"</font>"),
 							(rg.isDefaultGroup().booleanValue()?"<IMG border='0' title='This group is default group.' alt='Default' align='absmiddle' src='images/tick.gif'>":""),
 							(isAdmin?"":"<font color=gray>")+assignedRoom+(isAdmin?"":"</font>"), 
 							(isAdmin?"":"<font color=gray>")+(rg.getDescription() == null ? "" : rg.getDescription()).replaceAll(" ","&nbsp;").replaceAll("\\\n","<BR>")+(isAdmin?"":"</font>") }, 
@@ -324,7 +324,7 @@ public class RoomGroupListAction extends Action {
 					new String[] {
 							"<A name=\"A"+rg.getUniqueId()+"\"></A>"+
 							(isOwner?"":"<font color=gray>")+rg.getName().replaceAll(" ","&nbsp;")+(isOwner?"":"</font>"),
-                            rg.getAbbv(),
+                            (isOwner?"":"<font color=gray>")+rg.getAbbv().replaceAll(" ","&nbsp;")+(isOwner?"":"</font>"),
 							(isOwner?"":"<font color=gray>")+ownerName+(isOwner?"":"</font>"),
 							(isOwner?"":"<font color=gray>")+assignedRoom+(isOwner?"":"</font>"), 
 							(isOwner?"":"<font color=gray>")+(rg.getDescription() == null ? "" : rg.getDescription()).replaceAll(" ","&nbsp;").replaceAll("\\\n","<BR>")+(isOwner?"":"</font>") }, 
