@@ -99,16 +99,19 @@ public class StudentImportDAO extends StudentDAO {
             student.setSchedulePreference(new Integer(0));
             
             loadAcadAreaClassifications(element, student, session);
-            loadMajors(element, student, session);
+            if(!loadMajors(element, student, session)) continue;
             loadMinors(element, student, session);
 
-            saveOrUpdate(student);
+            try {
+            	saveOrUpdate(student);
+            } catch (Exception ex) {
+            }
         }
         return;
 	}
 
-	private void loadMajors(Element element, Student student, Session session) throws Exception {
-		if(element.element("studentMajors") == null) return;
+	private boolean loadMajors(Element element, Student student, Session session) throws Exception {
+		if(element.element("studentMajors") == null) return false;
 
 		for (Iterator it = element.element("studentMajors").elementIterator("major"); it.hasNext();) {
 			Element el = (Element) it.next();
@@ -124,11 +127,11 @@ public class StudentImportDAO extends StudentDAO {
 			else {
 				major = PosMajor.findByCode(session.getSessionId(), code);
 			}
-			if(major == null) {
-				throw new Exception("Major " + code + " was not found.");
+			if(major != null) {
+				student.addToPosMajors(major);
 			}
-			student.addToPosMajors(major);
 		}
+		return student.getPosMajors().size() > 0;
 	}
 
 	private void loadMinors(Element element, Student student, Session session) throws Exception {
@@ -148,10 +151,9 @@ public class StudentImportDAO extends StudentDAO {
 			else {
 				minor = PosMinor.findByCode(session.getSessionId(), code);
 			}
-			if(minor == null) {
-				throw new Exception("Minor " + code + " was not found.");
+			if(minor != null) {
+				student.addToPosMinors(minor);
 			}
-			student.addToPosMinors(minor);
 		}
 	}
 
