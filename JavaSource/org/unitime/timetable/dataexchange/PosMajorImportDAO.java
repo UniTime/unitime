@@ -99,6 +99,9 @@ public class PosMajorImportDAO extends PosMajorDAO {
             	throw new Exception("Could not find AcademicArea: " + element.attributeValue("academicArea"));
             }
             boolean found = false;
+            if(posMajor.getAcademicAreas() == null) {
+            	posMajor.setAcademicAreas(new HashSet());
+            }
             for (Iterator iter = posMajor.getAcademicAreas().iterator(); iter.hasNext();) {
 				AcademicArea area = (AcademicArea) iter.next();
 				if(area.getAcademicAreaAbbreviation().equals(element.attributeValue("academicArea"))) {
