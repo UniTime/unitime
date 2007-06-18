@@ -19,6 +19,7 @@
 */
 package org.unitime.commons.hibernate.util;
 
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Properties;
 
@@ -34,6 +35,7 @@ import org.hibernate.mapping.Formula;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Property;
 import org.hibernate.mapping.Selectable;
+import org.hibernate.util.ConfigHelper;
 import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.commons.hibernate.interceptors.LobCleanUpInterceptor;
 import org.unitime.timetable.ApplicationProperties;
@@ -168,6 +170,9 @@ public class HibernateUtil {
                 setProperty(document, "connection.password", password);
             setProperty(document, "hibernate.jdbc.batch_size", "100");
             setProperty(document, "hibernate.cache.use_second_level_cache", "false");
+            String dialect = getProperty(properties, "dialect");
+            if (dialect!=null)
+                setProperty(document, "dialect", dialect);
             String idgen = getProperty(properties, "tmtbl.uniqueid.generator");
             if (idgen!=null)
                 setProperty(document, "tmtbl.uniqueid.generator", idgen);
@@ -219,13 +224,58 @@ public class HibernateUtil {
     	}).setSF(sSessionFactory);
         sLog.debug("  -- session factory set to _BaseRootDAO");
     }
-	
-	public static void closeHibernate() {
+    
+    public static void closeHibernate() {
 		if (sSessionFactory!=null) {
 			sSessionFactory.close();
 			sSessionFactory=null;
 		}
 	}
+    
+    public static void configureHibernateFromRootDAO(String cfgName, Configuration cfg) {
+        try {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            sLog.debug("  -- document factory created");
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            sLog.debug("  -- document builder created");
+            Document document = builder.parse(ConfigHelper.getConfigStream(cfgName==null?"/hibernate.cfg.xml":cfgName));
+            
+            String dialect = ApplicationProperties.getProperty("dialect");
+            if (dialect!=null) setProperty(document, "dialect", dialect);
+            
+            String idgen = ApplicationProperties.getProperty("tmtbl.uniqueid.generator");
+            if (idgen!=null) setProperty(document, "tmtbl.uniqueid.generator", idgen);
+            
+            for (Enumeration e=ApplicationProperties.getProperties().propertyNames();e.hasMoreElements();) {
+                String name = (String)e.nextElement();
+                if (name.startsWith("hibernate.") || name.startsWith("connection.") || name.startsWith("tmtbl.hibernate.")) {
+                    String value = ApplicationProperties.getProperty(name);
+                    if ("NULL".equals(value))
+                        removeProperty(document, name);
+                    else
+                        setProperty(document, name, value);
+                    if (!name.equals("connection.password"))
+                        sLog.debug("  -- set "+name+": "+value);
+                    else
+                        sLog.debug("  -- set "+name+": *****");
+                }
+            }
+
+            cfg.configure(document);
+            sLog.debug("  -- hibernate configured");
+            
+            cfg.setInterceptor(new org.unitime.commons.hibernate.interceptors.LobCleanUpInterceptor(cfg));
+            sLog.debug("  -- interceptor set");
+            
+            HibernateUtil.fixSchemaInFormulas(cfg);
+            sLog.debug("  -- %SCHEMA% in formulas changed to "+cfg.getProperty("default_schema"));
+            
+            UniqueIdGenerator.configure(cfg);
+            sLog.debug("  -- UniquId generator configured");
+        } catch (Exception e) {
+            sLog.error("Unable to configure hibernate, reason: "+e.getMessage(),e);
+        }
+    }
     
     private static String sConnectionUrl = null;
     
