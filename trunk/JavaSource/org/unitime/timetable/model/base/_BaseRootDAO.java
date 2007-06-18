@@ -35,7 +35,6 @@ import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.criterion.Expression;
 import org.hibernate.criterion.Order;
-import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 
 
@@ -69,29 +68,11 @@ public abstract class _BaseRootDAO {
 	}
 
 	public static void initialize (String configFileName, Configuration configuration) {
-		org.unitime.timetable.model.dao._RootDAO.configuration = configuration;
-		if (null == configFileName && null != sessionFactory) return;
-		else if (null != sessionFactoryMap && null != sessionFactoryMap.get(configFileName)) return;
-		else {
-			if (null == configFileName) {
-				configuration.configure();
-				configuration.setInterceptor(new org.unitime.commons.hibernate.interceptors.LobCleanUpInterceptor(configuration));
-                HibernateUtil.fixSchemaInFormulas(configuration);
-                UniqueIdGenerator.configure(configuration);
-				org.unitime.timetable.model.dao._RootDAO.setSessionFactory(
-					configuration.buildSessionFactory());
-			}
-			else {
-				configuration.configure(
-					configFileName);
-				configuration.setInterceptor(new org.unitime.commons.hibernate.interceptors.LobCleanUpInterceptor(configuration));
-                HibernateUtil.fixSchemaInFormulas(configuration);
-                UniqueIdGenerator.configure(configuration);
-				org.unitime.timetable.model.dao._RootDAO.setSessionFactory(
-					configFileName,
-					configuration.buildSessionFactory());
-			}
-		}
+		if (configFileName==null && sessionFactory!=null) return;
+        if (sessionFactoryMap!=null && sessionFactoryMap.get(configFileName)!=null) return;
+        HibernateUtil.configureHibernateFromRootDAO(configFileName, configuration);
+        org.unitime.timetable.model.dao._RootDAO.setSessionFactory(configuration.buildSessionFactory());
+        org.unitime.timetable.model.dao._RootDAO.configuration = configuration;
 	}
 
 	/**
