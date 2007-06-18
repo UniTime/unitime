@@ -188,7 +188,7 @@
 		</logic:equal>
 		<logic:equal name="<%=frmName%>" property="sameItypeAsParent" value="false">
 		<TR>
-			<TD>Credit:</TD>
+			<TD>Subpart Credit:</TD>
 			<TD>
 				<bean:write name="<%=frmName%>" property="creditText" />
 			<TD>
