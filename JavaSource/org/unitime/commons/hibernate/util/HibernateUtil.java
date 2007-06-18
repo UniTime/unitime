@@ -238,7 +238,7 @@ public class HibernateUtil {
             sLog.debug("  -- document factory created");
             DocumentBuilder builder = factory.newDocumentBuilder();
             sLog.debug("  -- document builder created");
-            Document document = builder.parse(ConfigHelper.getConfigStream(cfgName==null?"/hibernate.cfg.xml":cfgName));
+            Document document = builder.parse(ConfigHelper.getConfigStream(cfgName==null?"hibernate.cfg.xml":cfgName));
             
             String dialect = ApplicationProperties.getProperty("dialect");
             if (dialect!=null) setProperty(document, "dialect", dialect);
