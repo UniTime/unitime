@@ -40,7 +40,7 @@
   <head>
     <title>Preview of <%=datePattern==null?"":datePattern.getName()%></title>
     <link rel="stylesheet" type="text/css" href="<%=request.getContextPath()%>/styles/timetabling.css">
-    <script language='JavaScript' type='text/javascript' src='<%=request.getContextPath()%>/scripts/datepatt.js'>
+    <script language='JavaScript' type='text/javascript' src='<%=request.getContextPath()%>/scripts/datepatt.js'></script>
   </head>
   <body class="bodyStyle">
   	<table border='0' width='100%' height='100%'><tr>
