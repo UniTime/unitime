@@ -341,7 +341,7 @@ public class DatePatternEditAction extends Action {
             			if (days.isEmpty()) {
             				int offset = dp.getPatternOffset();
         					for (int x=0;x<dp.getPattern().length();x++) {
-        						if (dp.getPattern().charAt(x)!='1') continue;
+                                if (dp.getPattern().charAt(x)!='1') continue;
        							days.add(new Integer(x+offset));
         					}
             			}
@@ -368,34 +368,42 @@ public class DatePatternEditAction extends Action {
             			}
 	            		
             			if (likeDp!=null) {
-                            out.println("      -- like "+likeDp.getName()+", diff="+likeDiff);
-                            out.println("      -- "+likeDp.getUsage(allClasses));
-                            out.println("    -- transfering all classes and subparts from "+dp.getName()+" to "+likeDp.getName());
-                            for (Iterator j=classes.iterator();j.hasNext();) {
-                                Class_ clazz = (Class_)j.next();
-                                clazz.setDatePattern(likeDp.isDefault()?null:likeDp);
-                                hibSession.saveOrUpdate(clazz);
+                            if (likeDiff<=5) {
+                                out.println("      -- like "+likeDp.getName()+", diff="+likeDiff);
+                                out.println("      -- "+likeDp.getUsage(allClasses));
+                                out.println("    -- transfering all classes and subparts from "+dp.getName()+" to "+likeDp.getName());
+                                for (Iterator j=classes.iterator();j.hasNext();) {
+                                    Class_ clazz = (Class_)j.next();
+                                    clazz.setDatePattern(likeDp.isDefault()?null:likeDp);
+                                    hibSession.saveOrUpdate(clazz);
+                                }
+                                for (Iterator j=subparts.iterator();j.hasNext();) {
+                                    SchedulingSubpart subpart = (SchedulingSubpart)j.next();
+                                    subpart.setDatePattern(likeDp.isDefault()?null:likeDp);
+                                    hibSession.saveOrUpdate(subpart);
+                                }
+                                out.println("    -- deleting date pattern "+dp.getName());
+                                for (Iterator j=dp.getDepartments().iterator();j.hasNext();) {
+                                    Department d = (Department)j.next();
+                                    d.getDatePatterns().remove(dp);
+                                    hibSession.saveOrUpdate(d);
+                                }
+                                ChangeLog.addChange(
+                                        hibSession, 
+                                        request, 
+                                        dp, 
+                                        ChangeLog.Source.DATE_PATTERN_EDIT, 
+                                        ChangeLog.Operation.DELETE, 
+                                        null, 
+                                        null);
+                                hibSession.delete(dp);
+                            } else {
+                                out.println("      -- like "+likeDp.getName()+", diff="+likeDiff);
+                                out.println("      -- "+likeDp.getUsage(allClasses));
+                                SimpleDateFormat sdf = new SimpleDateFormat("MM/dd");
+                                dp.setName("generated "+sdf.format(dp.getStartDate())+" - "+sdf.format(dp.getEndDate()));
+                                hibSession.saveOrUpdate(dp);
                             }
-                            for (Iterator j=subparts.iterator();j.hasNext();) {
-                                SchedulingSubpart subpart = (SchedulingSubpart)j.next();
-                                subpart.setDatePattern(likeDp.isDefault()?null:likeDp);
-                                hibSession.saveOrUpdate(subpart);
-                            }
-                            out.println("    -- deleting date pattern "+dp.getName());
-                            for (Iterator j=dp.getDepartments().iterator();j.hasNext();) {
-                                Department d = (Department)j.next();
-                                d.getDatePatterns().remove(dp);
-                                hibSession.saveOrUpdate(d);
-                            }
-                            ChangeLog.addChange(
-                                    hibSession, 
-                                    request, 
-                                    dp, 
-                                    ChangeLog.Source.DATE_PATTERN_EDIT, 
-                                    ChangeLog.Operation.DELETE, 
-                                    null, 
-                                    null);
-                            hibSession.delete(dp);
             			}
 	            	}
 	            	
