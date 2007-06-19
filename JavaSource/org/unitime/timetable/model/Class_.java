@@ -96,6 +96,7 @@ public class Class_ extends BaseClass_ {
     public void setManagingDept(Department dept) {
         Department oldDept = getManagingDept();
         super.setManagingDept(dept);
+        if (dept==null) return;
         if (oldDept!=null && !oldDept.equals(dept) && getAssignments()!=null && !getAssignments().isEmpty()) {
             for (Iterator i=getAssignments().iterator();i.hasNext();) {
                 Assignment a = (Assignment)i.next();
