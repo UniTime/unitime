@@ -54,6 +54,7 @@ import org.unitime.timetable.form.RoomListForm;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
+import org.unitime.timetable.model.ExternalRoom;
 import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.NonUniversityLocation;
@@ -153,26 +154,33 @@ public class RoomListAction extends Action {
 
         roomListForm.setEditRoomSharing(false);
 		roomListForm.setCanAdd(false);
+        roomListForm.setCanAddNonUniv(false);
+        roomListForm.setCanAddSpecial(false);
+        boolean hasExternalRooms = !ExternalRoom.findAll(sessionId).isEmpty();
 		if (Constants.ALL_OPTION_LABEL.equals(roomListForm.getDeptCodeX())) {
-			roomListForm.setCanAdd(false);
 	        for (Iterator i=owner.departmentsForSession(sessionId).iterator();i.hasNext();) {
 	        	Department d = (Department)i.next();
 	        	if (d.isEditableBy(user)) {
-	        		roomListForm.setCanAdd(true); 
+                    roomListForm.setCanAdd(!hasExternalRooms && user.getRole().equals(Roles.ADMIN_ROLE));
+                    roomListForm.setCanAddNonUniv(true);
+                    roomListForm.setCanAddSpecial(hasExternalRooms);
 	        		break;
 	        	}
 	        }
 		} else {
 			if (user.getRole().equals(Roles.ADMIN_ROLE)) {
 				roomListForm.setEditRoomSharing(true);
-				roomListForm.setCanAdd(true);
+				roomListForm.setCanAdd(!hasExternalRooms);
+                roomListForm.setCanAddNonUniv(true);
+                roomListForm.setCanAddSpecial(hasExternalRooms);
 			} else {
 		        for (Iterator i=owner.departmentsForSession(sessionId).iterator();i.hasNext();) {
 		        	Department d = (Department)i.next();
 		        	if (roomListForm.getDeptCodeX().equals(d.getDeptCode())) {
 		        		if (d.isEditableBy(user)) {
 		        			roomListForm.setEditRoomSharing(true);
-		        			roomListForm.setCanAdd(true);
+		        			roomListForm.setCanAddNonUniv(true);
+                            roomListForm.setCanAddSpecial(hasExternalRooms);
 		        			break;
 		        		}
 		        	}

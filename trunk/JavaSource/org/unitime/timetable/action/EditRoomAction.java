@@ -19,9 +19,12 @@
 */
 package org.unitime.timetable.action;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
@@ -39,6 +42,7 @@ import org.hibernate.Transaction;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.EditRoomForm;
+import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Location;
@@ -48,6 +52,8 @@ import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomDept;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.model.dao.BuildingDAO;
+import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.util.Constants;
@@ -91,73 +97,100 @@ public class EditRoomAction extends Action {
 
 		//return to room list
 		if(doit!= null && doit.equals(rsc.getMessage("button.returnToRoomDetail"))) {
-			response.sendRedirect("roomDetail.do?id="+editRoomForm.getId());
+            if (editRoomForm.getId()==null || editRoomForm.getId().length()==0)
+                response.sendRedirect("roomList.do");
+            else
+                response.sendRedirect("roomDetail.do?id="+editRoomForm.getId());
 			return null;
 			//the following call cannot be used since doit is has the same value as for return to room list (Back)
 			//return mapping.findForward("showRoomDetail");
 		}
-		
-		//update location
-		if(doit != null && doit.equals(rsc.getMessage("button.update"))) {
+        
+        User user = Web.getUser(webSession);
+        Session s = Session.getCurrentAcadSession(user);
+        String mgrId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
+        TimetableManagerDAO tdao = new TimetableManagerDAO();
+        TimetableManager owner = tdao.get(new Long(mgrId));
+        boolean admin = Web.hasRole(request.getSession(), new String[] { Roles.ADMIN_ROLE});
+        
+        //update location
+		if(doit != null && (doit.equals(rsc.getMessage("button.update")) || doit.equals(rsc.getMessage("button.save")))) {
 			ActionMessages errors = new ActionMessages();
 			errors = editRoomForm.validate(mapping, request);
 			if (errors.size() == 0) {
-				doUpdate(editRoomForm,request);
+                if (editRoomForm.getId()==null || editRoomForm.getId().length()==0) {
+                    doSave(editRoomForm, request);
+                } else {
+                    doUpdate(editRoomForm,request);
+                }
 				response.sendRedirect("roomDetail.do?id="+editRoomForm.getId());
 				return null;
 			} else {
 				saveErrors(request, errors);
+                setupDepartments(user, owner, s.getUniqueId(), request);
+                setBldgs(s, request);
+                return mapping.findForward("showEditRoom");
 			}
 		}	
-		
-		//get location information
-		Long id = Long.valueOf(request.getParameter("id"));
-		LocationDAO ldao = new LocationDAO();
-		Location location = ldao.get(id);
-		if (location instanceof Room) {
-			Room r = (Room)location;
-			editRoomForm.setName(r.getRoomNumber());
-            editRoomForm.setType(r.getScheduledRoomType());
-			editRoomForm.setBldgName(r.getBuildingAbbv());
-			editRoomForm.setRoom(true);
-            editRoomForm.setExternalId(r.getExternalUniqueId());
-		} else {
-			editRoomForm.setName(((NonUniversityLocation)location).getName());
-            editRoomForm.setType(null);
-			editRoomForm.setBldgName("");
-			editRoomForm.setRoom(false);
-            editRoomForm.setExternalId(null);
-		}
-		editRoomForm.setCapacity(location.getCapacity().toString());
-		editRoomForm.setIgnoreTooFar(location.isIgnoreTooFar());
-		editRoomForm.setIgnoreRoomCheck(location.isIgnoreRoomCheck());
-		editRoomForm.setCoordX(location.getCoordinateX()==null || location.getCoordinateX().intValue()<0?null:location.getCoordinateX().toString());
-		editRoomForm.setCoordY(location.getCoordinateY()==null || location.getCoordinateY().intValue()<0?null:location.getCoordinateY().toString());
-		editRoomForm.setControlDept(null);
-		
-		User user = Web.getUser(webSession);
-		Session s = Session.getCurrentAcadSession(user);
-		String mgrId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-		TimetableManagerDAO tdao = new TimetableManagerDAO();
-        TimetableManager owner = tdao.get(new Long(mgrId));
-    	boolean admin = Web.hasRole(request.getSession(), new String[] { Roles.ADMIN_ROLE});
+        
+        if (request.getParameter("id")!=null && request.getParameter("id").length()>0) {
+            //get location information
+            Long id = Long.valueOf(request.getParameter("id"));
+            LocationDAO ldao = new LocationDAO();
+            Location location = ldao.get(id);
+            if (location instanceof Room) {
+                Room r = (Room)location;
+                editRoomForm.setName(r.getRoomNumber());
+                editRoomForm.setType(r.getScheduledRoomType());
+                editRoomForm.setBldgName(r.getBuildingAbbv());
+                editRoomForm.setRoom(true);
+                editRoomForm.setExternalId(r.getExternalUniqueId());
+            } else {
+                editRoomForm.setName(((NonUniversityLocation)location).getName());
+                editRoomForm.setType(null);
+                editRoomForm.setBldgName("");
+                editRoomForm.setRoom(false);
+                editRoomForm.setExternalId(null);
+            }
+            editRoomForm.setCapacity(location.getCapacity().toString());
+            editRoomForm.setIgnoreTooFar(location.isIgnoreTooFar());
+            editRoomForm.setIgnoreRoomCheck(location.isIgnoreRoomCheck());
+            editRoomForm.setCoordX(location.getCoordinateX()==null || location.getCoordinateX().intValue()<0?null:location.getCoordinateX().toString());
+            editRoomForm.setCoordY(location.getCoordinateY()==null || location.getCoordinateY().intValue()<0?null:location.getCoordinateY().toString());
+            editRoomForm.setControlDept(null);
 
-		Set ownedDepts = owner.departmentsForSession(s.getUniqueId());
-		boolean controls = false;
-		boolean allDepts = true;
-		for (Iterator i=location.getRoomDepts().iterator();i.hasNext();) {
-			RoomDept rd = (RoomDept)i.next();
-			if (rd.isControl().booleanValue())
-				editRoomForm.setControlDept(rd.getDepartment().getUniqueId().toString());
-			if (rd.isControl().booleanValue() && ownedDepts!=null && ownedDepts.contains(rd.getDepartment()))
-				controls = true;
-			if (ownedDepts==null || !ownedDepts.contains(rd.getDepartment())) {
-				allDepts = false;
-			}
-		}
-		editRoomForm.setOwner(admin || controls || allDepts);
-		
-		EditRoomAction.setupDepartments(request, location);
+            Set ownedDepts = owner.departmentsForSession(s.getUniqueId());
+            boolean controls = false;
+            boolean allDepts = true;
+            for (Iterator i=location.getRoomDepts().iterator();i.hasNext();) {
+                RoomDept rd = (RoomDept)i.next();
+                if (rd.isControl().booleanValue())
+                    editRoomForm.setControlDept(rd.getDepartment().getUniqueId().toString());
+                if (rd.isControl().booleanValue() && ownedDepts!=null && ownedDepts.contains(rd.getDepartment()))
+                    controls = true;
+                if (ownedDepts==null || !ownedDepts.contains(rd.getDepartment())) {
+                    allDepts = false;
+                }
+            }
+            editRoomForm.setOwner(admin || controls || allDepts);
+            
+            EditRoomAction.setupDepartments(request, location);
+        } else {
+            editRoomForm.reset(mapping, request);
+            
+            Set departments = owner.departmentsForSession(s.getUniqueId());
+            if (!admin && (departments.size() == 1)) {
+                Department d = (Department) departments.iterator().next();
+                editRoomForm.setControlDept(d.getUniqueId().toString());
+            } else if (webSession.getAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME) != null) {
+                Department d = Department.findByDeptCode(webSession.getAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME).toString(), s.getUniqueId());
+                if (d!=null)
+                    editRoomForm.setControlDept(d.getUniqueId().toString());
+            }
+
+            setupDepartments(user, owner, s.getUniqueId(), request);
+            setBldgs(s, request);
+        }
 		
 		return mapping.findForward("showEditRoom");
 	}
@@ -169,16 +202,48 @@ public class EditRoomAction extends Action {
     	Collection availableDepts = new Vector();
 
         for (Iterator i=location.getRoomDepts().iterator();i.hasNext();) {
-    		RoomDept rd = (RoomDept)i.next();
-			Department d = rd.getDepartment();
-			availableDepts.add(new LabelValueBean(d.getDeptCode() + " - " + d.getName(), d.getUniqueId().toString()));
-		}
+            RoomDept rd = (RoomDept)i.next();
+            Department d = rd.getDepartment();
+            availableDepts.add(new LabelValueBean(d.getDeptCode() + " - " + d.getName(), d.getUniqueId().toString()));
+        }
 		
 		request.setAttribute(Department.DEPT_ATTR_NAME, availableDepts);
     }
-	
+    
+    public static void setupDepartments(User user, TimetableManager manager, Long sessionId, HttpServletRequest request) throws Exception {
+        Set departments = new TreeSet();
+        if (user.getRole().equals(Roles.ADMIN_ROLE)) {
+            departments = Department.findAllBeingUsed(sessionId);
+        } else {
+            departments = manager.departmentsForSession(sessionId);
+        }
+        
+        Collection availableDepts = new Vector();
+        
+        for (Iterator i=departments.iterator();i.hasNext();) {
+            Department d = (Department)i.next();
+            availableDepts.add(new LabelValueBean(d.getDeptCode() + " - " + d.getName(), d.getUniqueId().toString()));
+        }
+        
+        request.setAttribute(Department.DEPT_ATTR_NAME, availableDepts);
+    }
+    
+    private void setBldgs(Session session, HttpServletRequest request) throws Exception {
+        Collection bldgs = session.getBldgsFast(null);
+        
+        ArrayList list = new ArrayList();
+        for (Iterator iter = bldgs.iterator(); iter.hasNext();) {
+            Building b = (Building) iter.next();
+            list.add(new LabelValueBean(
+                    b.getAbbreviation() + "-" + b.getName(), 
+                    b.getUniqueId().toString()));
+        }
+            
+        request.setAttribute(Building.BLDG_LIST_ATTR_NAME, list);
+    }
+    
 
-	/**
+    /**
 	 * 
 	 * @param editRoomForm
 	 * @param request
@@ -188,8 +253,8 @@ public class EditRoomAction extends Action {
 		HttpSession webSession = request.getSession();
 		User user = Web.getUser(webSession);
 		Long sessionId = Session.getCurrentAcadSession(user).getSessionId();
-		
-		Long id = Long.valueOf(request.getParameter("id"));
+        
+        Long id = Long.valueOf(editRoomForm.getId());
 		LocationDAO ldao = new LocationDAO();
 		org.hibernate.Session hibSession = ldao.getSession();
 		Transaction tx = null;
@@ -256,6 +321,54 @@ public class EditRoomAction extends Action {
 			throw e;
 		}
 	}
+    
+    private void doSave(EditRoomForm editRoomForm, HttpServletRequest request) throws Exception {
+        HttpSession webSession = request.getSession();
+        User user = Web.getUser(webSession);
+        Session session = Session.getCurrentAcadSession(user);
+
+        LocationDAO ldao = new LocationDAO();
+        org.hibernate.Session hibSession = ldao.getSession();
+        Transaction tx = null;
+        try {
+            tx = hibSession.beginTransaction();
+
+            Room room = new Room();
+                        
+            room.setRoomNumber(editRoomForm.getName());
+            room.setBuilding(new BuildingDAO().get(Long.valueOf(editRoomForm.getBldgId())));
+            room.setRoomDepts(new HashSet());
+            RoomDept rd = new RoomDept();
+            rd.setRoom(room); rd.setDepartment(new DepartmentDAO().get(Long.valueOf(editRoomForm.getControlDept()))); rd.setControl(Boolean.TRUE);
+            room.getRoomDepts().add(rd);
+            room.setCapacity(Integer.valueOf(editRoomForm.getCapacity().trim()));
+            room.setIgnoreTooFar(Boolean.FALSE);
+            room.setIgnoreRoomCheck(editRoomForm.isIgnoreRoomCheck()!=null && editRoomForm.isIgnoreRoomCheck().booleanValue());
+            room.setExternalUniqueId(editRoomForm.getExternalId());
+            room.setScheduledRoomType(editRoomForm.getType());
+            room.setCoordinateX(editRoomForm.getCoordX()==null || editRoomForm.getCoordX().length()==0 ? new Integer(-1) : Integer.valueOf(editRoomForm.getCoordX()));
+            room.setCoordinateY(editRoomForm.getCoordY()==null || editRoomForm.getCoordY().length()==0 ? new Integer(-1) : Integer.valueOf(editRoomForm.getCoordY()));
+            room.setSession(session);
+            hibSession.saveOrUpdate(room);
+            
+            ChangeLog.addChange(
+                    hibSession, 
+                    request, 
+                    (Location)room, 
+                    ChangeLog.Source.ROOM_EDIT, 
+                    ChangeLog.Operation.UPDATE, 
+                    null, 
+                    room.getControllingDepartment());
+
+            hibSession.flush();
+            tx.commit();
+            
+            editRoomForm.setId(room.getUniqueId().toString());
+        } catch (Exception e) {
+            if (tx!=null) tx.rollback();
+            throw e;
+        }
+    }    
 
 }
 

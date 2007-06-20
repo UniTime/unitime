@@ -25,6 +25,10 @@ import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
+import org.unitime.commons.web.Web;
+import org.unitime.timetable.model.Room;
+import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.dao.RoomDAO;
 
 /** 
  * MyEclipse Struts
@@ -48,6 +52,7 @@ public class EditRoomForm extends ActionForm {
 	private Boolean ignoreRoomCheck;
 	private String controlDept;
 	private String bldgName;
+    private String bldgId;
 	private String coordX, coordY;
     private String externalId;
     private String type;
@@ -174,6 +179,13 @@ public class EditRoomForm extends ActionForm {
         this.type = type;
     }
 
+    public String getBldgId() {
+        return bldgId;
+    }
+    public void setBldgId(String bldgId) {
+        this.bldgId = bldgId;
+    }
+
 	/** 
 	 * Method validate
 	 * @param mapping
@@ -185,15 +197,43 @@ public class EditRoomForm extends ActionForm {
 		HttpServletRequest request) {
 		ActionErrors errors = new ActionErrors();
 
+        if ((id==null || id.length()==0) && (bldgId==null || bldgId.length()==0)) {
+            errors.add("Building", new ActionMessage("errors.required", "Building") );
+        }
+        
         if(name==null || name.equalsIgnoreCase("")) {
-        	errors.add("Name", 
-                    new ActionMessage("errors.required", "Name") );
+        	errors.add("Name", new ActionMessage("errors.required", "Name") );
+        }
+        
+        if (room && name!=null && name.length()>0) {
+            if (id==null || id.length()==0) {
+                if (bldgId!=null && bldgId.length()>0) {
+                    try {
+                        Room room = Room.findByBldgIdRoomNbr(Long.valueOf(bldgId), name, Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId());
+                        if (room!=null) errors.add("Name", new ActionMessage("errors.exists", room.getLabel()));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            } else {
+                try {
+                    Room room = Room.findByBldgIdRoomNbr(new RoomDAO().get(Long.valueOf(id)).getBuilding().getUniqueId(), name, Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId());
+                    if (room!=null && !room.getUniqueId().toString().equals(id)) errors.add("Name", new ActionMessage("errors.exists", room.getLabel()));
+                } catch (Exception e) {}
+            }
         }
         
         if(capacity==null || capacity.equalsIgnoreCase("")) {
         	errors.add("Capacity", 
                     new ActionMessage("errors.required", "Capacity") );
         }
+
+        /*
+        if(room && coordX==null || coordX.equalsIgnoreCase("") || coordY==null || coordY.equalsIgnoreCase("")) {
+            errors.add("Coordinations", 
+                    new ActionMessage("errors.required", "Coordinations") );
+        }
+        */
         
         return errors;
 	}
@@ -204,6 +244,8 @@ public class EditRoomForm extends ActionForm {
 	 * @param request
 	 */
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
+        bldgName=null; capacity=null; coordX=null; coordY=null; doit=null;
+        externalId=null; id=null; name=null; owner=false; room=true; type=null; bldgId = null;
 		ignoreTooFar=Boolean.FALSE; ignoreRoomCheck=Boolean.FALSE;
 	}
     
