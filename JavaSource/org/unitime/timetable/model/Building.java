@@ -127,7 +127,15 @@ public class Building extends BaseBuilding implements Comparable {
 		return null;
 	}
 	
-	/*
+    public static Building findByName(String name, Long sessionId) throws Exception {
+        return (Building)(new BuildingDAO()).getSession().createQuery(
+                "select b from Building b where b.session.uniqueId=:sessionId and b.name=:name").
+                setLong("sessionId", sessionId.longValue()).
+                setString("name", name).
+                uniqueResult();
+    }
+
+    /*
 	 * Update building information using External Building
 	 * @param sessionId
 	 */
