@@ -72,14 +72,14 @@ public class LoginAction extends Action {
 
 		// Check form is submitted
 		if (cs == null || !cs.equals("login")) {
-			response.sendRedirect(ApplicationProperties.getProperty("tmtbl.loginUrl"));
+			response.sendRedirect(ApplicationProperties.getProperty("tmtbl.login_url"));
 			return null;
 		}
 		
 		if (username == null || username.length() == 0 
 				|| password == null || password.length() == 0) {
 
-			response.sendRedirect(ApplicationProperties.getProperty("tmtbl.loginUrl")+"?e=1");
+			response.sendRedirect(ApplicationProperties.getProperty("tmtbl.login_url")+"?e=1");
 			return null;
 		}
 
@@ -90,7 +90,7 @@ public class LoginAction extends Action {
 			
 			Set creds = lc.getSubject().getPublicCredentials();
 			if (creds==null || creds.size()==0) {
-				response.sendRedirect(ApplicationProperties.getProperty("tmtbl.loginUrl")+"?e=2");
+				response.sendRedirect(ApplicationProperties.getProperty("tmtbl.login_url")+"?e=2");
 				return null;
 			}
 			
@@ -119,7 +119,7 @@ public class LoginAction extends Action {
 		} 
 		catch (LoginException le) {
 			Debug.error(le.getMessage());
-			response.sendRedirect(ApplicationProperties.getProperty("tmtbl.loginUrl")+"?e=3");
+			response.sendRedirect(ApplicationProperties.getProperty("tmtbl.login_url")+"?e=3");
 		}
 
 		return null;

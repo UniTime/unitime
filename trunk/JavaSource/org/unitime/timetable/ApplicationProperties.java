@@ -53,7 +53,7 @@ public class ApplicationProperties {
 
 		// Spawn thread to dynamically reload 
 		// by design once this thread is set up it cannot be destroyed even if the reloaded property is set to false
-		String dynamicReload = props.getProperty("tmtbl.properties.dynamicReload", null);
+		String dynamicReload = props.getProperty("tmtbl.properties.dynamic_reload", null);
 		if ((appPropertiesLastModified>0 || custPropertiesLastModified>0) && dynamicReload!=null && dynamicReload.equalsIgnoreCase("true")) {
 			pfc = new PropertyFileChangeListener();
 	        pfc.start();
@@ -283,7 +283,7 @@ public class ApplicationProperties {
                 Debug.info("Starting Property File Change Listener Thread ...");
                 
                 long threadInterval = Constants.getPositiveInteger(
-                        ApplicationProperties.getProperty("tmtbl.properties.dynamicReloadInterval"), 15000 );
+                        ApplicationProperties.getProperty("tmtbl.properties.dynamic_reload_interval"), 15000 );
                 
                 while (true) {
                     try {
