@@ -42,10 +42,12 @@ public class RoomDetailForm extends ActionForm {
 	private String doit;
 	private String sharingTable;
 	private String name;
+    private String externalId;
 	private Integer capacity;
 	private Integer coordinateX;
 	private Integer coordinateY;
 	private String type;
+    private String typeName;
 	private String patterns;
 	private Collection groups;
 	private Collection globalFeatures;	
@@ -148,7 +150,15 @@ public class RoomDetailForm extends ActionForm {
 		this.name = name;
 	}
 
-	public String getPatterns() {
+    public String getExternalId() {
+        return externalId;
+    }
+
+    public void setExternalId(String externalId) {
+        this.externalId = externalId;
+    }
+
+    public String getPatterns() {
 		return patterns;
 	}
 
@@ -164,7 +174,15 @@ public class RoomDetailForm extends ActionForm {
 		this.type = type;
 	}
 
-	public boolean isDeleteFlag() {
+    public String getTypeName() {
+        return typeName;
+    }
+
+    public void setTypeName(String typeName) {
+        this.typeName = typeName;
+    }
+
+    public boolean isDeleteFlag() {
 		return deleteFlag;
 	}
 

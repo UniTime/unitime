@@ -49,6 +49,8 @@ public class EditRoomForm extends ActionForm {
 	private String controlDept;
 	private String bldgName;
 	private String coordX, coordY;
+    private String externalId;
+    private String type;
 	private boolean owner;
 	private boolean room;
 	
@@ -158,6 +160,19 @@ public class EditRoomForm extends ActionForm {
 	public void setRoom(boolean room) {
 		this.room = room;
 	}
+    
+    public String getExternalId() {
+        return externalId;
+    }
+    public void setExternalId(String externalId) {
+        this.externalId = externalId;
+    }
+    public String getType() {
+        return type;
+    }
+    public void setType(String type) {
+        this.type = type;
+    }
 
 	/** 
 	 * Method validate
@@ -191,6 +206,6 @@ public class EditRoomForm extends ActionForm {
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
 		ignoreTooFar=Boolean.FALSE; ignoreRoomCheck=Boolean.FALSE;
 	}
-
+    
 }
 

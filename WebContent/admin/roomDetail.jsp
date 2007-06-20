@@ -130,6 +130,12 @@
 			</TR>
 		</logic:messagesPresent>
 	
+		<logic:notEmpty name="<%=frmName%>" property="externalId">
+			<TR>
+				<TD>External Id:</TD><TD><bean:write name="<%=frmName%>" property="externalId"/></TD>
+			</TR>
+		</logic:notEmpty>		
+
 		<TR>
 			<TD>Capacity:</TD><TD width='100%'><%=frm.getCapacity()%></TD>
 		</TR>
@@ -162,9 +168,9 @@
 		</TR>
 
 		<TR>
-			<TD>Type:</TD><TD><%=frm.getType()%></TD>
+			<TD>Type:</TD><TD><bean:write name="<%=frmName%>" property="typeName"/></TD>
 		</TR>
-		
+
 		<logic:notEmpty name="<%=frmName%>" property="roomPrefs">
 			<TR>
 				<TD valign="top">Preference:</TD>
