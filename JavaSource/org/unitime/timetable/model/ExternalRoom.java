@@ -80,5 +80,13 @@ public class ExternalRoom extends BaseExternalRoom {
 		}
 		return(null);
 	}
+    
+    public static List findAll(Long sessionId) {
+        return new ExternalRoomDAO().getSession().createQuery(
+                "select r from ExternalRoom r where r.building.session.uniqueId=:sessionId").
+                setLong("sessionId", sessionId).
+                setCacheable(true).
+                list();
+    }
 	
 }
