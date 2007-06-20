@@ -135,4 +135,13 @@ public class Room extends BaseRoom {
 		}
 		return(newRoom);
 	}
+    
+    public static Room findByBldgIdRoomNbr(Long bldgId, String roomNbr, Long sessionId) {
+        return (Room)new RoomDAO().getSession().createQuery(
+                "select r from Room r where r.building.uniqueId=:bldgId and r.roomNumber=:roomNbr and r.session.uniqueId=:sessionId").
+                setLong("bldgId", bldgId).
+                setString("roomNbr", roomNbr).
+                setLong("sessionId", sessionId).
+                uniqueResult();
+    }
 }
