@@ -59,7 +59,7 @@
 				if (sysMessage!=null && sysMessage.trim().length()>0) {
 			%>
 			<TR>
-				<TD class="WelcomeRowHead" align="center">System Messages</TD>
+				<TD class="WelcomeRowHead" align="left">System Messages</TD>
 			</TR>
 			<TR>
 				<TD align="left">
