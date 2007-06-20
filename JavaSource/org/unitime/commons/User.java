@@ -217,7 +217,7 @@ public class User {
     }
     
     public static boolean canIdentify() {
-        return "true".equals(ApplicationProperties.getProperty("tmtbl.instructor.externalId.lookup.enabled","false"));
+        return "true".equals(ApplicationProperties.getProperty("tmtbl.instructor.external_id.lookup.enabled","false"));
     }
 	
     public static User identify(String externalId) {
@@ -227,7 +227,7 @@ public class User {
                 HashMap attributes = new HashMap();
                 attributes.put(ExternalUidLookup.SEARCH_ID, externalId);
                 
-                String className = ApplicationProperties.getProperty("tmtbl.manager.externalId.lookup.class");
+                String className = ApplicationProperties.getProperty("tmtbl.manager.external_id.lookup.class");
                 ExternalUidLookup lookup = (ExternalUidLookup)(Class.forName(className).newInstance());
                 Map results = lookup.doLookup(attributes);
                 if (results==null) return null;

@@ -90,10 +90,10 @@ public class MessageResources extends org.apache.struts.util.MessageResources {
 			pc.setURL(url);
 			
 			// Set reloading strategy 
-			String dynamicReload = ApplicationProperties.getProperty("tmtbl.properties.dynamicReload", null);
+			String dynamicReload = ApplicationProperties.getProperty("tmtbl.properties.dynamic_reload", null);
 			if (dynamicReload!=null && dynamicReload.equalsIgnoreCase("true")) {
 				long refreshDelay = Constants.getPositiveInteger(
-						ApplicationProperties.getProperty("tmtbl.properties.dynamicReloadInterval"), 15000 );
+						ApplicationProperties.getProperty("tmtbl.properties.dynamic_reload_interval"), 15000 );
 				
 				FileChangedReloadingStrategy strategy = new FileChangedReloadingStrategy();
 				strategy.setRefreshDelay(refreshDelay); 

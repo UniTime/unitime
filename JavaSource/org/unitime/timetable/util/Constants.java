@@ -154,8 +154,8 @@ public class Constants extends net.sf.cpsolver.coursett.Constants {
     
     /** Configuration Keys */
     public static final String SESSION_APP_ACCESS_LEVEL = "systemAccess";
-    public static final String CFG_APP_ACCESS_LEVEL = "systemAccessLevel";
-    public static final String CFG_SYSTEM_MESSAGE = "systemMessage";
+    public static final String CFG_APP_ACCESS_LEVEL = "tmtbl.access_level";
+    public static final String CFG_SYSTEM_MESSAGE = "tmtbl.system_message";
 
     /** Configuration Values */
     public static final String APP_ACL_ALL = "all";
