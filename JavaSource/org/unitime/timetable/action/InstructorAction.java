@@ -71,7 +71,7 @@ public class InstructorAction extends Action {
 	
 		InstructorEditForm frm = (InstructorEditForm) form;
 		
-        String uidLookupEnabled = ApplicationProperties.getProperty("tmtbl.instructor.externalId.lookup.enabled");
+        String uidLookupEnabled = ApplicationProperties.getProperty("tmtbl.instructor.external_id.lookup.enabled");
         if (uidLookupEnabled!=null && uidLookupEnabled.equalsIgnoreCase("true")) {
         	frm.setLookupEnabled(Boolean.TRUE);
         }
@@ -183,7 +183,7 @@ public class InstructorAction extends Action {
         	HashMap attributes = new HashMap();
         	attributes.put(ExternalUidLookup.SEARCH_ID, id);
         	
-        	String className = ApplicationProperties.getProperty("tmtbl.instructor.externalId.lookup.class");        	
+        	String className = ApplicationProperties.getProperty("tmtbl.instructor.external_id.lookup.class");        	
         	ExternalUidLookup lookup = (ExternalUidLookup) (Class.forName(className).newInstance());
        		results = lookup.doLookup(attributes);
         }

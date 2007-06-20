@@ -136,7 +136,7 @@ public class TimetableManagerEditAction extends Action {
         // Redirect from Manager List - Add Manager
         if (op.equalsIgnoreCase(rsc.getMessage("button.addTimetableManager"))) {
             frm.setOp1("1");
-            String uidLookupEnabled = ApplicationProperties.getProperty("tmtbl.manager.externalId.lookup.enabled");
+            String uidLookupEnabled = ApplicationProperties.getProperty("tmtbl.manager.external_id.lookup.enabled");
             if (uidLookupEnabled!=null && uidLookupEnabled.equalsIgnoreCase("true")) {
                 frm.setLookupEnabled(Boolean.TRUE);
             } else {
@@ -288,7 +288,7 @@ public class TimetableManagerEditAction extends Action {
         	HashMap attributes = new HashMap();
         	attributes.put(ExternalUidLookup.SEARCH_ID, id);
         	
-        	String className = ApplicationProperties.getProperty("tmtbl.manager.externalId.lookup.class");        	
+        	String className = ApplicationProperties.getProperty("tmtbl.manager.external_id.lookup.class");        	
         	ExternalUidLookup lookup = (ExternalUidLookup) (Class.forName(className).newInstance());
        		Map results = lookup.doLookup(attributes);
             if (results==null)
@@ -385,7 +385,7 @@ public class TimetableManagerEditAction extends Action {
                 frm.addToSolverGrs(sg);
         }        
         
-        String uidLookupEnabled = ApplicationProperties.getProperty("tmtbl.manager.externalId.lookup.enabled");
+        String uidLookupEnabled = ApplicationProperties.getProperty("tmtbl.manager.external_id.lookup.enabled");
         if (uidLookupEnabled!=null && uidLookupEnabled.equalsIgnoreCase("true")) {
         	frm.setLookupEnabled(Boolean.TRUE);
         } else {
