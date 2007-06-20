@@ -142,18 +142,21 @@ public class Building extends BaseBuilding implements Comparable {
         
         while(b.hasNext()) {
             Building bldg = (Building)b.next();
-            ExternalBuilding extBldg = 
-                (ExternalBuilding)updateBuildings.get(bldg.getExternalUniqueId());
-            if(extBldg != null) {
-                if(updateBldgInfo(bldg, extBldg)) {
-                    bldgDAO.update(bldg);
-                }
-                updateBuildings.remove(extBldg.getExternalUniqueId());
-            } else {
-                if(checkBuildingDelete(bldg)) {
-                    currentSession.getBuildings().remove(bldg);
-                    bldgDAO.delete(bldg);
-                }
+            String externalUniqueId = bldg.getExternalUniqueId();
+            if(externalUniqueId != null) {
+            	ExternalBuilding extBldg = 
+            		(ExternalBuilding)updateBuildings.get(externalUniqueId);
+            	if(extBldg != null) {
+	                if(updateBldgInfo(bldg, extBldg)) {
+	                	bldgDAO.update(bldg);
+	                }
+	                updateBuildings.remove(extBldg.getExternalUniqueId());
+            	} else {
+            		if(checkBuildingDelete(bldg)) {
+            			currentSession.getBuildings().remove(bldg);
+            			bldgDAO.delete(bldg);
+            		}
+            	}
             }
         }
         
