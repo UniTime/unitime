@@ -117,12 +117,16 @@ public class EditRoomAction extends Action {
 		if (location instanceof Room) {
 			Room r = (Room)location;
 			editRoomForm.setName(r.getRoomNumber());
+            editRoomForm.setType(r.getScheduledRoomType());
 			editRoomForm.setBldgName(r.getBuildingAbbv());
 			editRoomForm.setRoom(true);
+            editRoomForm.setExternalId(r.getExternalUniqueId());
 		} else {
 			editRoomForm.setName(((NonUniversityLocation)location).getName());
+            editRoomForm.setType(null);
 			editRoomForm.setBldgName("");
 			editRoomForm.setRoom(false);
+            editRoomForm.setExternalId(null);
 		}
 		editRoomForm.setCapacity(location.getCapacity().toString());
 		editRoomForm.setIgnoreTooFar(location.isIgnoreTooFar());
@@ -216,6 +220,11 @@ public class EditRoomAction extends Action {
 			} else {
 				location.setIgnoreRoomCheck(Boolean.TRUE);
 			}
+            
+            if (location instanceof Room) {
+                ((Room)location).setExternalUniqueId(editRoomForm.getExternalId());
+                ((Room)location).setScheduledRoomType(editRoomForm.getType());
+            }
 			
 			location.setCoordinateX(editRoomForm.getCoordX()==null || editRoomForm.getCoordX().length()==0 ? new Integer(-1) : Integer.valueOf(editRoomForm.getCoordX()));
 			location.setCoordinateY(editRoomForm.getCoordY()==null || editRoomForm.getCoordY().length()==0 ? new Integer(-1) : Integer.valueOf(editRoomForm.getCoordY()));
