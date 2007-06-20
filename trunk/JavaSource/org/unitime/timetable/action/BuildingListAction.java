@@ -70,7 +70,7 @@ public class BuildingListAction extends Action {
         
 	    User user = Web.getUser(webSession);	    
 		BuildingListForm buildingListForm = (BuildingListForm) form;
-		buildingListForm.setBuildings(Session.getCurrentAcadSession(user).getBuildings());
+		buildingListForm.setBuildings(Session.getCurrentAcadSession(user).getBldgsFast(null));
 		return mapping.findForward("showBuildingList");
 		
 	}
