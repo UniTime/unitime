@@ -21,6 +21,8 @@
 <%@ page import="org.apache.struts.util.LabelValueBean" %>
 <%@ page import="org.unitime.timetable.util.Constants" %>
 <%@ page import="org.unitime.timetable.model.Department" %>
+<%@ page import="org.unitime.commons.web.Web" %>
+<%@ page import="org.unitime.timetable.model.Roles" %>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
@@ -31,6 +33,7 @@
 	// Get Form 
 	String frmName = "editRoomForm";	
 	EditRoomForm frm = (EditRoomForm) request.getAttribute(frmName);
+	boolean admin = Web.hasRole(request.getSession(), new String[] { Roles.ADMIN_ROLE});
 %>	
 
 <tiles:importAttribute />
@@ -77,6 +80,37 @@
 			<TD>
 		</TR>
 			
+		<logic:equal name="<%=frmName%>" property="room" value="true">
+			<% if (admin) { %>
+				<TR>
+					<TD>External Id:</TD>
+					<TD width='100%'>
+						<html:text property="externalId" maxlength="40" size="40" />
+					<TD>
+				</TR>
+			<% } else { %>
+				<html:hidden property="externalId"/>
+			<% } %>
+		</logic:equal>
+		
+		<logic:equal name="<%=frmName%>" property="room" value="true">
+			<% if (admin) { %>
+				<TR>
+					<TD>Type:</TD>
+					<TD width='100%'>
+						<html:select property="type">
+							<html:option value="genClassroom">Classroom</html:option>
+							<html:option value="computingLab">Computing Laboratory</html:option>
+							<html:option value="departmental">Additional Instructional Room</html:option>
+							<html:option value="specialUse">Special Use Room</html:option>
+						</html:select>
+					<TD>
+				</TR>
+			<% } else { %>
+				<html:hidden property="type"/>
+			<% } %>
+		</logic:equal>
+
 		<TR>
 			<TD>Capacity:</TD>
 			<TD>
