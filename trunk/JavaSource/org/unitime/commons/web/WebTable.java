@@ -270,7 +270,7 @@ public class WebTable {
                                 + (iAlign != null ? iAlign[i] : "left") + "\""
                                 + (i == iHeaders.length - 1
                                         ? " colspan=" + last + " "
-                                        : "") + " class=\"WebTableHeader\"><i>" + header + "</i></td>");
+                                        : "") + " class=\"WebTableHeader\">" + header + "</td>");
                     } else {
                         sb.append("<td class=\"WebTableHeader\" "
                                 + (i == iHeaders.length - 1
