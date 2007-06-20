@@ -110,6 +110,7 @@
       <form-bean name="deptStatusTypeEditForm" type="org.unitime.timetable.form.DeptStatusTypeEditForm" />
       <form-bean name="userEditForm" type="org.unitime.timetable.form.UserEditForm" />
       <form-bean name="subjectAreaEditForm" type="org.unitime.timetable.form.SubjectAreaEditForm" />
+      <form-bean name="buildingEditForm" type="org.unitime.timetable.form.BuildingEditForm" />
    </form-beans>
 
    <global-exceptions>
@@ -1818,6 +1819,22 @@
        <forward 
        		name="display" 
        		path="userEditTile" />
+    </action>
+
+    <action
+       path="/buildingEdit"
+       type="org.unitime.timetable.action.BuildingEditAction"
+       attribute="buildingEditForm"
+       input="buildingEditTile"
+       name="buildingEditForm"
+       scope="request"
+       validate="false" >
+       <forward 
+       		name="display" 
+       		path="buildingEditTile" />
+       <forward 
+       		name="back" 
+       		path="/buildingList.do" />
     </action>
 
 	  <action
