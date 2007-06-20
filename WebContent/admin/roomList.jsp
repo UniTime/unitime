@@ -61,12 +61,24 @@
 				<TR>
 					<logic:equal name="<%=frmName%>" property="canAdd" value="true">
 						<TD nowrap>
+							<html:form action="editRoom" styleClass="FormWithNoPadding">
+								<html:hidden property="op" value="Add"/>
+								<html:submit onclick="displayLoading();" styleClass="btn" accesskey="R" titleKey="title.addRoom">
+									<bean:message key="button.addRoom" />
+								</html:submit>
+							</html:form>
+						</TD>
+					</logic:equal>
+					<logic:equal name="<%=frmName%>" property="canAddNonUniv" value="true">
+						<TD nowrap>
 							<html:form action="addNonUnivLocation" styleClass="FormWithNoPadding">
 								<html:submit onclick="displayLoading();" styleClass="btn" accesskey="N" titleKey="title.addNonUnivLocation">
 									<bean:message key="button.addNonUnivLocation" />
 								</html:submit>
 							</html:form>
 						</TD>
+					</logic:equal>
+					<logic:equal name="<%=frmName%>" property="canAddSpecial" value="true">
 						<TD nowrap>
 							<html:form action="addSpecialUseRoom" styleClass="FormWithNoPadding">
 								<html:submit property="op" onclick="displayLoading();" styleClass="btn" accesskey="U" titleKey="title.addSpecialUseRoom">
@@ -224,12 +236,24 @@
 				<TR>
 					<logic:equal name="<%=frmName%>" property="canAdd" value="true">
 						<TD nowrap>
+							<html:form action="editRoom" styleClass="FormWithNoPadding">
+								<html:hidden property="op" value="Add"/>
+								<html:submit onclick="displayLoading();" styleClass="btn" accesskey="R" titleKey="title.addRoom">
+									<bean:message key="button.addRoom" />
+								</html:submit>
+							</html:form>
+						</TD>
+					</logic:equal>
+					<logic:equal name="<%=frmName%>" property="canAddNonUniv" value="true">
+						<TD nowrap>
 							<html:form action="addNonUnivLocation" styleClass="FormWithNoPadding">
 								<html:submit onclick="displayLoading();" styleClass="btn" accesskey="N" titleKey="title.addNonUnivLocation">
 									<bean:message key="button.addNonUnivLocation" />
 								</html:submit>
 							</html:form>
 						</TD>
+					</logic:equal>
+					<logic:equal name="<%=frmName%>" property="canAddSpecial" value="true">
 						<TD nowrap>
 							<html:form action="addSpecialUseRoom" styleClass="FormWithNoPadding">
 								<html:submit property="op" onclick="displayLoading();" styleClass="btn" accesskey="S" titleKey="title.addSpecialUseRoom">
