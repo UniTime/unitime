@@ -207,7 +207,8 @@ public class ApplicationConfigAction extends Action {
 			    new String[] {"Key", "Value", "Description"},
 			    new String[] {"left", "left", "left"},
 			    null );
-
+        webTable.enableHR("#EFEFEF");
+        
         try {
             ApplicationConfigDAO sDao = new ApplicationConfigDAO();
 			hibSession = sDao.getSession();
