@@ -21,6 +21,7 @@
 <%@ page import="org.apache.struts.util.LabelValueBean" %>
 <%@ page import="org.unitime.timetable.util.Constants" %>
 <%@ page import="org.unitime.timetable.model.Department" %>
+<%@ page import="org.unitime.timetable.model.Building" %>
 <%@ page import="org.unitime.commons.web.Web" %>
 <%@ page import="org.unitime.timetable.model.Roles" %>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
@@ -44,9 +45,16 @@
 		<TR>
 			<TD valign="middle" colspan='2'>
 				<tt:section-header>
-					<html:submit property="doit" onclick="displayLoading();" styleClass="btn" accesskey="U" titleKey="title.updateRoom">
-						<bean:message key="button.update" />
-					</html:submit>
+					<logic:empty name="<%=frmName%>" property="id">
+						<html:submit property="doit" onclick="displayLoading();" styleClass="btn" accesskey="S" titleKey="title.saveRoom">
+							<bean:message key="button.save" />
+						</html:submit>
+					</logic:empty>
+					<logic:notEmpty name="<%=frmName%>" property="id">
+						<html:submit property="doit" onclick="displayLoading();" styleClass="btn" accesskey="U" titleKey="title.updateRoom">
+							<bean:message key="button.update" />
+						</html:submit>
+					</logic:notEmpty>
 					&nbsp;
 					<html:submit property="doit" onclick="displayLoading();" styleClass="btn" accesskey="B" titleKey="title.returnToRoomList">
 						<bean:message key="button.returnToRoomDetail" />
@@ -72,13 +80,44 @@
 			</TR>
 		</logic:messagesPresent>
 		
-		<TR>
-			<TD>Name:</TD>
-			<TD width='100%'>
-				<bean:write name="<%=frmName%>" property="bldgName"/>
-				<html:text property="name" maxlength="20" size="20" />
-			<TD>
-		</TR>
+		<logic:empty name="<%=frmName%>" property="id">
+			<TR>
+				<TD>Building:</TD>
+				<TD width='100%'>
+					<html:select property="bldgId">
+						<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
+						<html:options collection="<%=Building.BLDG_LIST_ATTR_NAME%>" property="value" labelProperty="label"/>
+					</html:select>
+				<TD>
+			</TR>
+
+			<TR>
+				<TD>Room Number:</TD>
+				<TD width='100%'>
+					<html:text property="name" maxlength="20" size="20" />
+				<TD>
+			</TR>
+
+			<TR>
+				<TD nowrap>Department:</TD>
+				<TD>
+					<html:select property="controlDept">
+						<html:options collection="<%=Department.DEPT_ATTR_NAME%>" property="value" labelProperty="label"/>
+					</html:select>
+				</TD>
+			</TR>
+		</logic:empty>
+		
+		
+		<logic:notEmpty name="<%=frmName%>" property="id">
+			<TR>
+				<TD>Name:</TD>
+				<TD width='100%'>
+					<bean:write name="<%=frmName%>" property="bldgName"/>
+					<html:text property="name" maxlength="20" size="20" />
+				<TD>
+			</TR>
+		</logic:notEmpty>
 			
 		<logic:equal name="<%=frmName%>" property="room" value="true">
 			<% if (admin) { %>
@@ -118,25 +157,29 @@
 			</TD>
 		</TR>
 		
-		<TR>
-			<TD nowrap>Controlling Department:</TD>
-			<TD>
-				<logic:equal name="<%=frmName%>" property="owner" value="true">
-					<html:select property="controlDept">
-						<html:option value="<%=Constants.BLANK_OPTION_VALUE%>">No controlling department</html:option>
-						<html:options collection="<%=Department.DEPT_ATTR_NAME%>" property="value" labelProperty="label"/>
-					</html:select>
-				</logic:equal>
-				<logic:equal name="<%=frmName%>" property="owner" value="false">
-					<html:hidden property="controlDept"/>
-					<logic:iterate scope="request" name="<%=Department.DEPT_ATTR_NAME%>" id="d">
-						<logic:equal name="<%=frmName%>" property="controlDept" value="<%=((LabelValueBean)d).getValue()%>">
-							<bean:write name="d" property="label"/>
+		<logic:notEmpty name="<%=frmName%>" property="id">
+			<logic:notEmpty name="<%=Department.DEPT_ATTR_NAME%>" scope="request">
+				<TR>
+					<TD nowrap>Controlling Department:</TD>
+					<TD>
+						<logic:equal name="<%=frmName%>" property="owner" value="true">
+							<html:select property="controlDept">
+								<html:option value="<%=Constants.BLANK_OPTION_VALUE%>">No controlling department</html:option>
+								<html:options collection="<%=Department.DEPT_ATTR_NAME%>" property="value" labelProperty="label"/>
+							</html:select>
 						</logic:equal>
-					</logic:iterate>
-				</logic:equal>
-			</TD>
-		</TR>
+						<logic:equal name="<%=frmName%>" property="owner" value="false">
+							<html:hidden property="controlDept"/>
+							<logic:iterate scope="request" name="<%=Department.DEPT_ATTR_NAME%>" id="d">
+								<logic:equal name="<%=frmName%>" property="controlDept" value="<%=((LabelValueBean)d).getValue()%>">
+									<bean:write name="d" property="label"/>
+								</logic:equal>
+							</logic:iterate>
+						</logic:equal>
+					</TD>
+				</TR>
+			</logic:notEmpty>
+		</logic:notEmpty>
 			
 		<logic:equal name="<%=frmName%>" property="room" value="true">
 			<TR>
@@ -178,9 +221,16 @@
 			
 		<TR>
 			<TD colspan='2' align='right'>
-					<html:submit property="doit" onclick="displayLoading();" styleClass="btn" accesskey="U" titleKey="title.updateRoom">
-						<bean:message key="button.update" />
-					</html:submit>
+					<logic:empty name="<%=frmName%>" property="id">
+						<html:submit property="doit" onclick="displayLoading();" styleClass="btn" accesskey="S" titleKey="title.saveRoom">
+							<bean:message key="button.save" />
+						</html:submit>
+					</logic:empty>
+					<logic:notEmpty name="<%=frmName%>" property="id">
+						<html:submit property="doit" onclick="displayLoading();" styleClass="btn" accesskey="U" titleKey="title.updateRoom">
+							<bean:message key="button.update" />
+						</html:submit>
+					</logic:notEmpty>
 					&nbsp;
 					<html:submit property="doit" onclick="displayLoading();" styleClass="btn" accesskey="B" titleKey="title.returnToRoomList">
 						<bean:message key="button.returnToRoomDetail" />

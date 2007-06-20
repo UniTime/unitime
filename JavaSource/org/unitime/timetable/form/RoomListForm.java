@@ -56,6 +56,8 @@ public class RoomListForm extends ActionForm {
 	private boolean editRoomSharing;
 	private boolean deptSize;
 	private boolean canAdd;
+    private boolean canAddNonUniv;
+    private boolean canAddSpecial;
 	
 	// --------------------------------------------------------- Methods
 
@@ -84,7 +86,7 @@ public class RoomListForm extends ActionForm {
 		rooms = new ArrayList();
 		editRoomSharing = false;
 		deptSize=displayDeptList(request);
-		canAdd = false;
+		canAdd = false; canAddNonUniv = false; canAddSpecial = false;
 	}
 	
 	/**
@@ -143,4 +145,16 @@ public class RoomListForm extends ActionForm {
 	public boolean getCanAdd() {
 		return canAdd;
 	}
+    public void setCanAddNonUniv(boolean canAddNonUniv) {
+        this.canAddNonUniv = canAddNonUniv;
+    }
+    public boolean getCanAddNonUniv() {
+        return canAddNonUniv;
+    }
+    public void setCanAddSpecial(boolean canAddSpecial) {
+        this.canAddSpecial = canAddSpecial;
+    }
+    public boolean getCanAddSpecial() {
+        return canAddSpecial;
+    }
 }
