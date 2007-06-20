@@ -17,6 +17,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  --%>
 <%@ page language="java" autoFlush="true"%>
+<%@ page import="org.unitime.timetable.ApplicationProperties"%>
+<%@ page import="java.util.Vector"%>
+<%@ page import="java.util.Collections"%>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
@@ -99,4 +102,34 @@
 	<%= request.getAttribute(org.unitime.timetable.model.ApplicationConfig.APP_CFG_ATTR_NAME) %> 
 </TABLE>
 
+<BR>&nbsp;<BR>
+
+<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TR>
+		<TD colspan="2"><div class="WelcomeRowHead">Application Properties</div></TD>
+	</TR>
+	<TR>
+		<TD><div class="WebTableHeader">Key</div></TD>
+		<TD><div class="WebTableHeader">Value</div></TD>
+	</TR>
+	
+	<% 
+		Vector props = new Vector (ApplicationProperties.getProperties().keySet()); 
+		Collections.sort(props);
+		for (Object prop: props) {
+			String value = ApplicationProperties.getProperty(prop.toString());
+	%>
+	<TR>
+		<TD valign="top" class="BottomBorderGray">
+			<%if (prop.toString().startsWith("tmtbl")) { out.println("<font color='navy'>"); } %>
+			<%= prop %>
+			<%if (prop.toString().startsWith("tmtbl")) { out.println("</font>"); } %>
+			<% if (value==null || value.length()==0) { out.println("<font class='errorCell'>&nbsp; *</font>"); } %>
+		</TD>
+		<TD class="BottomBorderGray">&nbsp;<%= value %></TD>
+	</TR>
+	<%			
+		}
+	%>
+</TABLE>
 
