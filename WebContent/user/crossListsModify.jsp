@@ -113,7 +113,19 @@
 		</logic:messagesPresent>
 
 		<TR>
-			<TD>Course Offering: </TD>
+			<TD>Instructional Offering Limit: </TD>
+			<TD align="left">
+				<logic:equal name="crossListsModifyForm" property="unlimited" value="true">
+					<img src='images/infinity.gif' alt='Unlimited Enrollment' title='Unlimited Enrollment' border='0' align='top'>
+				</logic:equal>
+				<logic:notEqual name="crossListsModifyForm" property="unlimited" value="true">
+					<bean:write name="crossListsModifyForm" property="ioLimit"/>
+				</logic:notEqual>
+			</TD>
+		</TR>
+
+		<TR>
+			<TD>Course Offerings: </TD>
 			<TD>
 				<html:select
 					name="crossListsModifyForm"
@@ -133,51 +145,34 @@
 		</TR>
 
 		<TR>
-			<TD>Instructional Offering Limit: </TD>
-			<TD align="left">
-				<logic:equal name="crossListsModifyForm" property="unlimited" value="true">
-					<img src='images/infinity.gif' alt='Unlimited Enrollment' title='Unlimited Enrollment' border='0' align='top'>
-				</logic:equal>
-				<logic:notEqual name="crossListsModifyForm" property="unlimited" value="true">
-					<bean:write name="crossListsModifyForm" property="ioLimit"/>
-				</logic:notEqual>
-			</TD>
-		</TR>
-
-		<TR>
-			<TD>Instructional Offering: </TD>
-			<TD>&nbsp;</TD>
-		</TR>
-
-		<TR>
 			<TD>&nbsp;</TD>
 			<TD align="left">
 				<bean:define id="cos" name="crossListsModifyForm" property="courseOfferingIds" />
 				<TABLE align="left" border="0" cellspacing="0" cellpadding="3">
 					<TR>
-						<TD align="center"><I> Offering </I></TD>
-						<TD align="center"><I> Controlling </I></TD>
+						<TD align="left" class="WebTableHeader"> Offering </TD>
+						<TD align="center" class="WebTableHeader"> Controlling </TD>
 						<% if ( ((java.util.List)cos).size()>1 ) { %>
-						<TD align="center"><I> Reserved </I></TD>
-						<TD align="right"><!-- I> Requested </I --></TD>
-						<TD align="right"><I> Projected </I></TD>
-						<TD align="right"><I> Last Term </I></TD>
+						<TD align="center" class="WebTableHeader"> Reserved </TD>
+						<TD align="right" class="WebTableHeader"><!-- I> Requested </I --></TD>
+						<TD align="right" class="WebTableHeader"> Projected </TD>
+						<TD align="right" class="WebTableHeader"> Last Term </TD>
 						<% } %>
 						<TD>&nbsp;</TD>
 					</TR>
 
 					<logic:iterate name="crossListsModifyForm" property="courseOfferingIds" id="co" indexId="ctr">
 					<TR>
-						<TD>
+						<TD class="BottomBorderGray">
 							<html:hidden property="<%= "courseOfferingIds[" + ctr + "]" %>"/>
 							<html:hidden property="<%= "courseOfferingNames[" + ctr + "]" %>"/>
 							<html:hidden property="<%= "ownedCourse[" + ctr + "]" %>"/>
 						<% if ( ((java.util.List)cos).size()==1 ) { %>
 							<html:hidden property="<%= "limits[" + ctr + "]" %>"/>
 						<% } %>
-							&nbsp; <bean:write name="crossListsModifyForm" property="<%= "courseOfferingNames[" + ctr + "]" %>"/> &nbsp;
+							<bean:write name="crossListsModifyForm" property="<%= "courseOfferingNames[" + ctr + "]" %>"/> &nbsp;
 						</TD>
-						<TD align="center">
+						<TD align="center" class="BottomBorderGray">
 							&nbsp;
 							<logic:equal name="crossListsModifyForm" property="<%= "ownedCourse[" + ctr + "]" %>" value="true" >
 								<html:radio name="crossListsModifyForm" property="ctrlCrsOfferingId" value="<%= co.toString() %>" />
@@ -185,7 +180,7 @@
 							&nbsp;
 						</TD>
 						<% if ( ((java.util.List)cos).size()>1 ) { %>
-						<TD align="center">
+						<TD align="center" class="BottomBorderGray">
 							&nbsp;
 							<html:hidden property="<%= "resvId[" + ctr + "]" %>"/>
 							<logic:equal name="crossListsModifyForm" property="ownedInstrOffr" value="true" >
@@ -200,13 +195,13 @@
 								resvTotal += Integer.parseInt((String) resvSpace); %>
 							&nbsp;
 						</TD>
-						<TD align="right">
+						<TD align="right" class="BottomBorderGray">
 							&nbsp;
 							<html:hidden property="<%= "requested[" + ctr + "]" %>"/>
 							<bean:write name="crossListsModifyForm" property="<%= "requested[" + ctr + "]" %>" />
 							&nbsp;
 						</TD>
-						<TD align="right">
+						<TD align="right" class="BottomBorderGray">
 							&nbsp;
 							<html:hidden property="<%= "projected[" + ctr + "]" %>"/>
 							<bean:write name="crossListsModifyForm" property="<%= "projected[" + ctr + "]" %>" />
@@ -216,7 +211,7 @@
 							   else 
 							   	out.print("-"); %>&nbsp;
 						</TD>
-						<TD align="right">
+						<TD align="right" class="BottomBorderGray">
 							&nbsp;
 							<html:hidden property="<%= "lastTerm[" + ctr + "]" %>"/>
 							<bean:write name="crossListsModifyForm" property="<%= "lastTerm[" + ctr + "]" %>" />
@@ -227,7 +222,7 @@
 							   	out.print("-"); %>&nbsp;
 						</TD>
 						<% } %>
-						<TD align="center" nowrap>
+						<TD align="center" nowrap class="BottomBorderGray">
 							&nbsp;
 							<logic:notEqual name="crossListsModifyForm" property="readOnlyCrsOfferingId" value="<%= co.toString() %>" >
 								<A href="#null" onClick="document.forms[0].elements['hdnOp'].value='delete';document.forms[0].elements['deletedCourseOfferingId'].value='<%= co.toString() %>';document.forms[0].submit();"><IMG border="0" src="images/Delete16.gif" title="Remove course from instructional offering & mark it as not offered."></A>
