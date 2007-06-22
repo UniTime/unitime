@@ -219,28 +219,28 @@
 			<TD>
 				<TABLE border="0" width="100%" cellspacing="0" cellpadding="2">
 					<TR>
-						<TD align="left"><I>Title</I></TD>
-						<TD align="center"><I>Controlling</I></TD>
-						<TD align="left"><I>Schedule of Classes Note</I></TD>
+						<TD align="center" class="WebTableHeader">&nbsp;</TD>
+						<TD align="left" class="WebTableHeader">Title</TD>
+						<TD align="left" class="WebTableHeader">Schedule of Classes Note</TD>
 						<logic:equal name="instructionalOfferingDetailForm" property="hasDemandOfferings" value="true">
-							<TD align="left"><I>Demands From</I></TD>
+							<TD align="left" class="WebTableHeader">Demands From</TD>
 						</logic:equal>
 						<TD align="center">&nbsp;</TD>
 					</TR>
 				<logic:iterate id="co" name="instructionalOfferingDetailForm" property="courseOfferings" >
 					<TR>
-						<TD><bean:write name="co" property="courseNameWithTitle"/></TD>
 						<TD align="center">&nbsp;<logic:equal name="co" property="isControl" value="true"><IMG src="images/tick.gif" alt="Controlling Course" title="Controlling Course" border="0"></logic:equal>&nbsp;</TD>
-						<TD>&nbsp;<bean:write name="co" property="scheduleBookNote"/></TD>
+						<TD class="BottomBorderGray"><bean:write name="co" property="courseNameWithTitle"/></TD>
+						<TD class="BottomBorderGray">&nbsp;<bean:write name="co" property="scheduleBookNote"/></TD>
 						<logic:equal name="instructionalOfferingDetailForm" property="hasDemandOfferings" value="true">
-							<TD>&nbsp;
+							<TD class="BottomBorderGray">&nbsp;
 							<%
 								CourseOffering cod = ((CourseOffering)co).getDemandOffering();
 								if (cod!=null) out.write(cod.getCourseName()); 
 							 %>
 							</TD>
 						</logic:equal>
-						<TD align="right">
+						<TD align="right" class="BottomBorderGray">
 							<!-- Display buttons if course offering is owned by current user -->
 							<% 
 								String courseOfferingId = ((CourseOffering)co).getUniqueId().toString();
