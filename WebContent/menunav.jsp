@@ -62,10 +62,9 @@
 		<table cellpadding="0" cellspacing="0" border="0">
 			<tr>
 				<td height="20">
-					<a onclick="minimize();" onmouseover="mouseover();"
-					onmouseout="mouseout();"><img id="idCloseMenu"
-					src="images/minimize.gif" title="Minimize Menu" border="0"
-					tabindex="4" alt="" /></a></td>
+					<a href="menu.jsp?e=all" target="__idMenuFrame"><img border="0" src="images/openMenu.gif" alt="Expand All Menus" title="Expand All Menus"></a>
+					<a onclick="minimize();" onmouseover="mouseover();"	onmouseout="mouseout();"><img id="idCloseMenu" src="images/minimize.gif" title="Minimize Menu" border="0" tabindex="4" alt="" /></a>
+				</td>
 				<td height="20" width="7">&nbsp;</td>
 			</tr>
 		</table>
