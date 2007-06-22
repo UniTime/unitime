@@ -38,6 +38,10 @@
 <% User user = Web.getUser(session); 
    TimetableManager manager = (user==null?null:TimetableManager.getManager(user)); 
    Session acadSession = (user==null?null:Session.getCurrentAcadSession(user));
+   String expand="expand";
+   if (request.getParameter("e")!=null && request.getParameter("e").equals("all")) {
+		expand="collapse";
+   }
 %>
 <% if (user!=null && manager!=null && acadSession!=null) { %>
 	
@@ -94,7 +98,7 @@
 	leaf_item('Sectioning','Student Sectioning','sectioningDemo.do');
 <% } %>
 		
-	menu_item('3','User Preferences','User Preferences','','expand');
+	menu_item('3','User Preferences','User Preferences','','<%=expand%>');
 		leaf_item('Change Role','Change Role','selectPrimaryRole.do?list=Y');
 <% if ( ( user!=null && user.getRole().equals(Roles.ADMIN_ROLE) )
 			|| ( session.getAttribute("hdnAdminAlias")!=null && session.getAttribute("hdnAdminAlias").toString().equals("1") ) ) { %>
@@ -106,8 +110,8 @@
 <% if (user!=null
 		&& user.getRole().equals(Roles.ADMIN_ROLE)) { %>
 
-		menu_item('4','Administration','Administration','','expand');
-			menu_item('41','Input Data','Application Level Input Data','','expand');
+		menu_item('4','Administration','Administration','','<%=expand%>');
+			menu_item('41','Input Data','Application Level Input Data','','<%=expand%>');
 				leaf_item('Academic Sessions','Academic Session Management','sessionList.do');
 				leaf_item('Managers','Timetable Managers','timetableManagerList.do');
 				leaf_item('Departments','Manage Departments','departmentList.do');
@@ -115,7 +119,7 @@
 				leaf_item('Buildings','Manage Buildings','buildingList.do');
 				leaf_item('Rooms','Manage Rooms','roomList.do');
 				leaf_item('Date Patterns','Manage Date Patterns','datePatternEdit.do');
-				menu_item('411','Time Patterns','Manage Time Patterns','timePatternEdit.do','expand');
+				menu_item('411','Time Patterns','Manage Time Patterns','timePatternEdit.do','<%=expand%>');
 					leaf_item('Exact Time','Exact Time Pattern','exactTimeEdit.do');
 				enditem(); //411
 				leaf_item('Distribution Types','Manage Distribution Types','distributionTypeList.do');
@@ -128,7 +132,7 @@
 				leaf_item('Change Log','View Change Log','lastChanges.do');
 			enditem(); //41
 	
-			menu_item('42','Solver','Solver','','expand');
+			menu_item('42','Solver','Solver','','<%=expand%>');
 				leaf_item('Parameter Groups', 'Manage Solver Parameter Groups','solverParamGroups.do');
 				leaf_item('Parameters', 'Manage Solver Parameter Definitions','solverParamDef.do');
 				leaf_item('Settings', 'Manage Solver Settings','solverSettings.do');
@@ -137,17 +141,17 @@
 			enditem(); //42
 
 			<tt:hasProperty name="tmtbl.menu.admin.extra">
-				menu_item('43','Custom','Custom Menus','','expand');
+				menu_item('43','Custom','Custom Menus','','<%=expand%>');
 					<tt:property name="tmtbl.menu.admin.extra"/>
 				enditem(); //43
 			</tt:hasProperty>
 			
-			menu_item('44','Defaults','Defaults','','expand');
+			menu_item('44','Defaults','Defaults','','<%=expand%>');
 				leaf_item('Configuration','Application Configuration','applicationConfig.do');
 				leaf_item('Settings','Set Default Settings for Users','settings.do');
 			enditem(); //44
 
-			menu_item('45','Utilities','Miscellaneous Application Utilities','','expand');
+			menu_item('45','Utilities','Miscellaneous Application Utilities','','<%=expand%>');
 				leaf_item('Hibernate Statistics','Display Hibernate Session Statistics','hibernateStats.do');
 				leaf_item('Test HQL','Test HQL Queries','hibernateQueryTest.do');
 			enditem(); //45
@@ -156,7 +160,7 @@
 
 <% } %>
 
-	menu_item('5','Help','Help Manual','','expand');
+	menu_item('5','Help','Help Manual','','<%=expand%>');
 		<tt:hasProperty name="tmtbl.help.manual.input_data">
 			leaf_item('Data Entry Manual','Manual for Data Entry','%tmtbl.help.manual.input_data%', '_help');
 		</tt:hasProperty>
