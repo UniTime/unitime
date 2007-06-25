@@ -69,7 +69,7 @@ public class TimetableManagerBuilder {
 
 		// Create new table
         PdfWebTable webTable = new PdfWebTable( cols,
-			    "",
+			    (html?"":"Manager List - "+Web.getUser(request.getSession()).getAttribute(Constants.ACAD_YRTERM_LABEL_ATTR_NAME)),
 			    "timetableManagerList.do?order=%%",
                 (dispLastChanges?
                         new String[] {"Roles", "External Id", "Name", "Email Address", "Department", "Subject Area", "Solver Group", "Last Change"}:
