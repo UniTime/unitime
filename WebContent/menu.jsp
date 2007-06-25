@@ -168,10 +168,10 @@
 			leaf_item('Solver Manual','Manual for Solving Departmental Problem','%tmtbl.help.manual.solver%', '_help');
 		</tt:hasProperty>
 		<tt:hasProperty name="tmtbl.help.tricks">
-			leaf_item('Tips &amp; Tricks','Tips &amp; Tricks','%tmtbl.help.tricks%');
+			leaf_item('Tips &amp; Tricks','Tips &amp; Tricks','%tmtbl.help.tricks%', '_help');
 		</tt:hasProperty>
 		<tt:hasProperty name="tmtbl.help.faq">
-			leaf_item('FAQ','Frequently Asked Questions','%tmtbl.help.faq%');
+			leaf_item('FAQ','Frequently Asked Questions','%tmtbl.help.faq%', '_help');
 		</tt:hasProperty>
 		<tt:hasProperty name="tmtbl.help.release_notes">
 			leaf_item('Release Notes','Release Notes','%tmtbl.help.release_notes%', '_help');
