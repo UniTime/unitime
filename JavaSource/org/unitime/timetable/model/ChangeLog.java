@@ -302,6 +302,7 @@ public class ChangeLog extends BaseChangeLog implements Comparable {
             if (source!=null)
                 q.setString("source",source.name());
             q.setMaxResults(1);
+            q.setCacheable(true);
             List logs = q.list();
             return (logs.isEmpty()?null:(ChangeLog)logs.get(0));
         } catch (Exception e) {
@@ -349,6 +350,7 @@ public class ChangeLog extends BaseChangeLog implements Comparable {
                 q.setString("objectType",objectType);
                 if (source!=null) q.setString("source",source.name());
                 q.setMaxResults(1);
+                q.setCacheable(true);
                 List logs = q.list();
                 if (!logs.isEmpty()) {
                     ChangeLog cl = (ChangeLog)logs.get(0);
@@ -383,6 +385,7 @@ public class ChangeLog extends BaseChangeLog implements Comparable {
             if (source!=null)
                 q.setString("source",source.name());
             q.setMaxResults(n);
+            q.setCacheable(true);
             return q.list();
         } catch (Exception e) {
             Debug.error(e);
@@ -405,6 +408,7 @@ public class ChangeLog extends BaseChangeLog implements Comparable {
             if (subjAreaId!=null) q.setLong("subjAreaId",subjAreaId.longValue());
             if (departmentId!=null) q.setLong("departmentId",departmentId.longValue());
             q.setMaxResults(n);
+            q.setCacheable(true);
             return q.list();
         } catch (Exception e) {
             Debug.error(e);
