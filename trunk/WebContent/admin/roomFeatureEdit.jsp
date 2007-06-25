@@ -124,7 +124,7 @@
 			</TR>
 			<TR>
 				<TD colspan='2'>
-					<tt:section-title>Currently assigned rooms</tt:section-title>
+					<tt:section-title>Currently Assigned Rooms</tt:section-title>
 				</TD>
 			</TR>
 			<TR>
@@ -177,7 +177,7 @@
 			</TR>
 			<TR>
 				<TD colspan='2'>
-					<tt:section-title>Currently not assigned rooms</tt:section-title>
+					<tt:section-title>Currently Not Assigned Rooms</tt:section-title>
 				</TD>
 			</TR>
 			<TR>
