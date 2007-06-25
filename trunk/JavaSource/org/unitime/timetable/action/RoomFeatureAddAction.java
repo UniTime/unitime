@@ -182,6 +182,7 @@ public class RoomFeatureAddAction extends Action {
 		
 			DepartmentRoomFeature rf = new DepartmentRoomFeature();
 			rf.setLabel(roomFeatureEditForm.getName());
+            rf.setAbbv(roomFeatureEditForm.getAbbv());
 			
 			String mgrId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
 			TimetableManagerDAO tdao = new TimetableManagerDAO();
