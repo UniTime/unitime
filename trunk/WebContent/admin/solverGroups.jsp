@@ -17,6 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  --%>
 <%@ page language="java" autoFlush="true"%>
+<%@ page import="org.unitime.timetable.util.Constants"%>
+<%@ page import="org.unitime.commons.web.Web"%>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
@@ -164,14 +166,32 @@
 	</TABLE>
 </logic:notEqual>
 <logic:equal name="solverGroupEditForm" property="op" value="List">
+	<input type='hidden' name='sure' value='0'/>
 	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TR>
+			<TD align="right" colspan="5">
+				<tt:section-header>
+					<tt:section-title>
+						Solver Groups - <%= Web.getUser(session).getAttribute(Constants.ACAD_YRTERM_LABEL_ATTR_NAME) %>
+					</tt:section-title>
+					<html:submit property="op" value="Add New"/> 
+					<html:submit property="op" onclick="if (confirm('Are you sure?')) sure.value=1;" value="Delete All"/> 
+					<html:submit property="op" onclick="if (confirm('Are you sure?')) sure.value=1;" value="Auto Setup"/> 
+					<html:submit property="op" value="Export PDF"/> 
+				</tt:section-header>
+			</TD>
+		</TR>
 		<%= request.getAttribute("SolverGroups.table") %> 
 		<TR>
-			<input type='hidden' name='sure' value='0'/>
-			<TD align="right" colspan="4">
+			<TD align="right" class="WelcomeRowHead" colspan="5">&nbsp;</TD>
+		</TR>
+		<TR>
+			<TD align="right" colspan="5">
 				<html:submit property="op" value="Add New"/> 
 				<html:submit property="op" onclick="if (confirm('Are you sure?')) sure.value=1;" value="Delete All"/> 
 				<html:submit property="op" onclick="if (confirm('Are you sure?')) sure.value=1;" value="Auto Setup"/> 
+				<html:submit property="op" value="Export PDF"/> 
+			</TD>
 		</TR>
 	</TABLE>
 </logic:equal>
