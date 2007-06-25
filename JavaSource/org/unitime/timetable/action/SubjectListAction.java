@@ -19,6 +19,11 @@
 */
 package org.unitime.timetable.action;
 
+import java.io.File;
+import java.text.DecimalFormat;
+import java.util.Iterator;
+import java.util.List;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -26,8 +31,17 @@ import javax.servlet.http.HttpSession;
 import org.hibernate.HibernateException;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
+import org.unitime.commons.web.WebTable;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.SubjectListForm;
+import org.unitime.timetable.model.ChangeLog;
+import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.Settings;
+import org.unitime.timetable.model.SubjectArea;
+import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.webutil.PdfWebTable;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
@@ -71,7 +85,65 @@ public class SubjectListAction extends Action {
 	    User user = Web.getUser(webSession);	    
 	    SubjectListForm subjectListForm = (SubjectListForm) form;
 		subjectListForm.setSubjects(Session.getCurrentAcadSession(user).getSubjectAreas());
-		return mapping.findForward("showSubjectList");
+		
+        if ("Export PDF".equals(request.getParameter("op"))) {
+            boolean dispLastChanges = (!"no".equals(Settings.getSettingValue(user, Constants.SETTINGS_DISP_LAST_CHANGES)));
+            
+            PdfWebTable webTable = new PdfWebTable((dispLastChanges?7:6),
+                    "Subject Area List - "+user.getAttribute(Constants.ACAD_YRTERM_LABEL_ATTR_NAME),
+                    "subjectList.do?ord=%%",
+                    (dispLastChanges?
+                        new String[] {"Abbv", "Title", "Department", "Managers", "Sched Book\nOnly", "Pseudo","Last Change"}:
+                        new String[] {"Abbv", "Title", "Departmnet", "Managers", "Sched Book\nOnly", "Pseudo"}),
+                    new String[] {"left", "left","left","left","left","left","right"},
+                    new boolean[] {true, true, true, true, true, true, false} );
+            for (Iterator i=subjectListForm.getSubjects().iterator();i.hasNext();) {
+                SubjectArea s = (SubjectArea) i.next();
+                DecimalFormat df5 = new DecimalFormat("####0");
+                Department d = s.getDepartment();
+                String sdName = "";
+                for (Iterator it = s.getManagers().iterator(); it.hasNext();) {
+                    TimetableManager mgr = (TimetableManager) it.next();
+                    if (sdName.length() > 0)
+                        sdName = sdName + "\n";
+                    sdName = sdName + mgr.getFirstName() + " " + mgr.getLastName();
+                }
+
+                String lastChangeStr = null;
+                Long lastChangeCmp = null;
+                if (dispLastChanges) {
+                    List changes = ChangeLog.findLastNChanges(d.getSession().getUniqueId(), null, null, d.getUniqueId(), 1);
+                    ChangeLog lastChange =  (changes == null || changes.isEmpty() ? null : (ChangeLog) changes.get(0));
+                    lastChangeStr =  (lastChange == null ? "" : ChangeLog.sDFdate.format(lastChange.getTimeStamp()) + " by " + lastChange.getManager().getShortName());
+                    lastChangeCmp = new Long( lastChange == null ? 0 : lastChange.getTimeStamp().getTime());
+                }
+
+                webTable.addLine(
+                    null,
+                    new String[] { 
+                        s.getSubjectAreaAbbreviation(),
+                        s.getLongTitle(),
+                        (d == null) ? "" : d.getDeptCode()+(d.getAbbreviation()==null?"":": "+d.getAbbreviation().trim()),
+                        (sdName == null || sdName.trim().length()==0) ? "" : sdName,
+                        s.isScheduleBookOnly().booleanValue() ? "Yes":"No",
+                        s.isPseudoSubjectArea().booleanValue() ? "Yes":"No", 
+                        lastChangeStr },
+                    new Comparable[] { 
+                        s.getSubjectAreaAbbreviation(),
+                        s.getLongTitle(),
+                        (d == null) ? "" : d.getDeptCode(),
+                        sdName,
+                        s.isScheduleBookOnly().toString(),
+                        s.isPseudoSubjectArea().toString(),
+                        lastChangeCmp });
+            }
+
+            File file = ApplicationProperties.getTempFile("subjects", "pdf");
+            webTable.exportPdf(file, WebTable.getOrder(request.getSession(), "SubjectList.ord"));
+            request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
+        }
+        
+        return mapping.findForward("showSubjectList");
 		
 	}
 

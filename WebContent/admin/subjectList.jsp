@@ -45,6 +45,8 @@
 					<html:submit property="op" styleClass="btn" accesskey="S" titleKey="title.addSubjectArea">
 						<bean:message key="button.addSubjectArea" />
 					</html:submit>
+
+					<input type='button' onclick="document.location='subjectList.do?op=Export%20PDF';" title='Export PDF (Alt+P)' accesskey="P" class="btn" value="Export PDF">
 				</tt:section-header>
 			</TD>
 		</TR>
@@ -56,14 +58,14 @@
 	boolean dispLastChanges = (!"no".equals(Settings.getSettingValue(Web.getUser(session), Constants.SETTINGS_DISP_LAST_CHANGES)));
 	
     WebTable webTable = new WebTable( 
-	    (dispLastChanges?8:7),
+	    (dispLastChanges?7:6),
 	    "",
 	    "subjectList.do?ord=%%",
 	    (dispLastChanges?
-		    new String[] {"Abbv", "Title", "Dept Number", "Dept Name", "Managers", "Sched Book Only", "Pseudo","Last Change"}:
-		    new String[] {"Abbv", "Title", "Dept Number", "Dept Name", "Managers", "Sched Book Only", "Pseudo"}),
-	    new String[] {"left", "left","left","left","left","left","left","right"},
-	    new boolean[] {true, true, true, true, true, true, true, false} );
+		    new String[] {"Abbv", "Title", "Department", "Managers", "Sched Book Only", "Pseudo","Last Change"}:
+		    new String[] {"Abbv", "Title", "Department", "Managers", "Sched Book Only", "Pseudo"}),
+	    new String[] {"left", "left","left","left","left","left","right"},
+	    new boolean[] {true, true, true, true, true, true, false} );
     webTable.enableHR("#EFEFEF");
     webTable.setRowStyle("white-space: nowrap");
     WebTable.setOrder(session,"SubjectList.ord",request.getParameter("ord"),1);
@@ -108,8 +110,9 @@
 		new String[] { 
 			"<A name='" + s.getUniqueId() + "'>" + s.getSubjectAreaAbbreviation() + "</A>",
 			s.getLongTitle(),
-			(d == null) ? "&nbsp;" : d.getDeptCode(),
-			(d == null) ? "&nbsp;" : ( (d.getAbbreviation()== null || d.getAbbreviation().trim().length()==0) ? "&nbsp;" : d.getAbbreviation()), 
+			(d == null) ? "&nbsp;" : "<span title='"+d.getHtmlTitle()+"'>"+
+                            d.getDeptCode()+(d.getAbbreviation()==null?"":": "+d.getAbbreviation().trim())+
+                            "</span>",
 			(sdName == null || sdName.trim().length()==0) ? "&nbsp;" : sdName,
 			s.isScheduleBookOnly().booleanValue() ? "<IMG src='images/tick.gif' border='0' title='Schedule Book Only' alt='Schedule Book Only'>" : "&nbsp;",
 			s.isPseudoSubjectArea().booleanValue() ? "<IMG src='images/tick.gif' border='0' title='Pseudo' alt='Pseudo'>" : "&nbsp;", 
@@ -118,7 +121,7 @@
 			s.getSubjectAreaAbbreviation(),
 			s.getLongTitle(),
 			(d == null) ? "" : d.getDeptCode(),
-			(d == null) ? "" : d.getAbbreviation(), sdName,
+			sdName,
 			s.isScheduleBookOnly().toString(),
 			s.isPseudoSubjectArea().toString(),
 			lastChangeCmp });
@@ -146,6 +149,8 @@
 				<html:submit property="op" styleClass="btn" accesskey="S" titleKey="title.addSubjectArea">
 					<bean:message key="button.addSubjectArea" />
 				</html:submit>
+
+				<input type='button' onclick="document.location='subjectList.do?op=Export%20PDF';" title='Export PDF (Alt+P)' accesskey="P" class="btn" value="Export PDF">
 			</TD>
 		</TR>
 
