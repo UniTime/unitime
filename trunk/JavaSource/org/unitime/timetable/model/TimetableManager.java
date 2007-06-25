@@ -245,7 +245,7 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
 		StringBuffer sb = new StringBuffer();
 		if (getFirstName()!=null && getFirstName().length()>0) {
 			sb.append(getFirstName().substring(0,1).toUpperCase());
-			sb.append(".&nbsp;");
+			sb.append(". ");
 		}
 		if (getLastName()!=null && getLastName().length()>0) {
 			sb.append(getLastName().substring(0,1).toUpperCase());
