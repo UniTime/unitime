@@ -25,14 +25,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.hibernate.criterion.Order;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
-import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.ManagerRole;
@@ -54,9 +52,9 @@ import org.unitime.timetable.util.Constants;
  */
 public class TimetableManagerBuilder {
     
-    public String htmlTableForManager(HttpServletRequest request, int order) {
+    public PdfWebTable getManagersTable(HttpServletRequest request, boolean images, boolean html) {
 
-        int cols = 6;
+        int cols = 7;
 		org.hibernate.Session hibSession = null;
         
         Session session = null;
@@ -70,7 +68,7 @@ public class TimetableManagerBuilder {
 
 
 		// Create new table
-        WebTable webTable = new WebTable( cols,
+        PdfWebTable webTable = new PdfWebTable( cols,
 			    "",
 			    "timetableManagerList.do?order=%%",
                 (dispLastChanges?
@@ -127,25 +125,35 @@ public class TimetableManagerBuilder {
 	        
 		    for (Iterator i=mgrRoles.iterator(); i.hasNext(); ) {
 		        ManagerRole mgrRole = (ManagerRole) i.next();
-		        String roleRef = mgrRole.getRole().getReference();
-		        
-		        String border = "0";
+                String roleRef = mgrRole.getRole().getReference(); 
 		        String title = roleRef;
-		        if(mgrRoles.size()>1 && mgrRole.isPrimary().booleanValue()) {
-		            border="1";
-		            title = roleRef + " - Primary Role";
-		        }
-		        
-		        roleStr += "<IMG height='25' width='25' border='" + border + "'" +
-		        		"src='" + request.getContextPath() + "/images/" + Roles.getRoleIcon(roleRef) + "' " +
+                if (images && html) {
+                    String border = "0";
+                    if(mgrRoles.size()>1 && mgrRole.isPrimary().booleanValue()) {
+                        border="1";
+                        title = mgrRole.getRole().getReference() + " - Primary Role";
+                    }
+                    roleStr += "<IMG height='25' width='25' border='" + border + "'" +
+                        "src='" + request.getContextPath() + "/images/" + Roles.getRoleIcon(roleRef) + "' " +
 		        		"title='" + title + "' " +
 		        		"alt='" + title + "' " +
 		        		"align='middle'>";
+                } else {
+                    if (roleStr.length()>0) roleStr+=","+(html?"<br>":"\n");
+                    if (mgrRoles.size()>1 && mgrRole.isPrimary().booleanValue()) {
+                        roleStr += (html?"<span title='"+roleRef+" - Primary Role' style='font-weight:bold;'>"+roleRef+"</span>":"@@BOLD "+roleRef+"@@END_BOLD ");
+                    } else {
+                        roleStr += roleRef;
+                    }
+                }
 		        roleOrd += title;
 		    }
 		    
 		    if (manager.isExternalManager()) {
-		        roleStr = roleStr + "<IMG height='25' width='25' src='" + request.getContextPath() + "/images/ext-mgr-icon.gif' alt='External Manager' title='External Manager' border='0' align='middle'>";
+                if (images && html)
+                    roleStr += "<IMG height='25' width='25' src='" + request.getContextPath() + "/images/ext-mgr-icon.gif' alt='External Manager' title='External Manager' border='0' align='middle'>";
+                else
+                    roleStr += ","+(html?"<br>":"\n")+"External Manager";
 		    }
 
 		    Long currentAcadSession = (Long) user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
@@ -154,42 +162,42 @@ public class TimetableManagerBuilder {
 		    for (Iterator di=depts.iterator(); di.hasNext(); ) {
 		        Department dept = (Department) di.next();
 		        
-		        if(!dept.getSession().getUniqueId().equals(currentAcadSession))
-		            continue;
+		        if (!dept.getSession().getUniqueId().equals(currentAcadSession)) continue;
 		        
-	            if (deptStr.trim().length()>0)
-	                deptStr += ", <BR>";
-	            deptStr += Constants.toInitialCase(dept.getDeptCode() + ": " + dept.getAbbreviation());
+	            if (deptStr.trim().length()>0) deptStr += ", "+(html?"<br>":"\n");
+	            deptStr += 
+                    (html?
+                            "<span title='"+dept.getHtmlTitle()+"'>"+
+                            dept.getDeptCode()+(dept.getAbbreviation()==null?"":": "+dept.getAbbreviation().trim())+
+                            "</span>"
+                         :
+                             dept.getDeptCode()+(dept.getAbbreviation()==null?"":": "+dept.getAbbreviation().trim())
+                     );
 		        
 		        // Construct SubjectArea List
-	            Vector v = new Vector();
 			    Set saList = dept.getSubjectAreas();
-			    if(saList!=null && saList.size()>0) {
+			    if (saList!=null && saList.size()>0) {
 			        for (Iterator si = saList.iterator(); si.hasNext(); ) {
 			            SubjectArea sa = (SubjectArea) si.next();
-			            String saAbbv = sa.getSubjectAreaAbbreviation().trim();
-			            v.addElement(saAbbv);
+                        if (subjectList.length()>0) subjectList+=","+(html?"<br>":"\n");
+                        subjectList += (html?"<span title='"+sa.getLongTitle()+"'>"+sa.getSubjectAreaAbbreviation().trim()+"</span>":sa.getSubjectAreaAbbreviation().trim());
 			        }
 			    }
-			    if(v!=null &&v.size()>0)
-			        subjectList += (Constants.arrayToStr(v.toArray(), "", "<BR>") + "<BR>" );
-			    else 
-			        subjectList += "&nbsp;";
 		    }
 		    
-		    if (deptStr.trim().length()==0)
+		    if (html && deptStr.trim().length()==0)
 		        deptStr = "&nbsp;";
-		    if (subjectList.trim().length()==0)
+		    if (html && subjectList.trim().length()==0)
 		        subjectList = "&nbsp;";
 		    
 		    String solverGroupStr = "";
 		    for (Iterator i=manager.getSolverGroups().iterator();i.hasNext();) {
 		    	SolverGroup sg = (SolverGroup)i.next();
 		    	if (!sg.getSession().getUniqueId().equals(currentAcadSession)) continue;
-		    	if (solverGroupStr.length()>0) solverGroupStr += "<BR>";
-		    	solverGroupStr += sg.getAbbv();
+		    	if (solverGroupStr.length()>0) solverGroupStr += ","+(html?"<br>":"\n");
+		    	solverGroupStr += (html?"<span title='"+sg.getName()+"'>"+sg.getAbbv()+"</span>":sg.getAbbv());
 		    }
-		    if (solverGroupStr.length()==0) solverGroupStr = "&nbsp;";
+		    if (html && solverGroupStr.length()==0) solverGroupStr = "&nbsp;";
             
             String lastChangeStr = null;
             Long lastChangeCmp = null;
@@ -197,21 +205,20 @@ public class TimetableManagerBuilder {
                 List changes = null;
                 if (session!=null) changes = ChangeLog.findLastNChanges(session.getUniqueId(), manager.getUniqueId(), null, null, 1);
                 ChangeLog lastChange = (changes==null || changes.isEmpty()?null:(ChangeLog)changes.get(0));
-                lastChangeStr = (lastChange==null?"&nbsp;":"<span title='"+lastChange.getLabel(request)+"'>"+ChangeLog.sDFdate.format(lastChange.getTimeStamp())+" by "+lastChange.getManager().getShortName()+"</span>");
+                if (html)
+                    lastChangeStr = (lastChange==null?"&nbsp;":"<span title='"+lastChange.getLabel(request)+"'>"+ChangeLog.sDFdate.format(lastChange.getTimeStamp())+" by "+lastChange.getManager().getShortName()+"</span>");
+                else
+                    lastChangeStr = (lastChange==null?"":ChangeLog.sDFdate.format(lastChange.getTimeStamp())+" by "+lastChange.getManager().getShortName());
                 lastChangeCmp = new Long(lastChange==null?0:lastChange.getTimeStamp().getTime());
             }
 		    
 		    // Add to web table
 		    webTable.addLine(
 	        	onClick,
-	        	new String[] { roleStr, "<A name='" + manager.getUniqueId() + "'>" + puid + "&nbsp;</A>", fullName + "&nbsp;", email + "&nbsp;",deptStr + "&nbsp;", subjectList + "&nbsp;", solverGroupStr + "&nbsp;", lastChangeStr},
+	        	new String[] { roleStr, (html?"<A name='" + manager.getUniqueId() + "'>" + puid + "&nbsp;</A>":puid), fullName, email, deptStr, subjectList, solverGroupStr, lastChangeStr},
 	        	new Comparable[] {roleOrd, puid, fullName, email, deptStr, subjectList, solverGroupStr, lastChangeCmp} );
 		}
-
-		if(order>=1)
-		    return webTable.printTable(order);
-		else
-		    return webTable.printTable();
-
+        
+        return webTable;
     }
 }

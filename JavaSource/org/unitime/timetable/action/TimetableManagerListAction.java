@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.action;
 
+import java.io.File;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -28,7 +30,10 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Roles;
+import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.webutil.PdfWebTable;
 import org.unitime.timetable.webutil.TimetableManagerBuilder;
 
 
@@ -71,8 +76,19 @@ public class TimetableManagerListAction extends Action {
 		}
 
 		WebTable.setOrder(request.getSession(),"timetableManagerList.ord",request.getParameter("order"),1);
+        
+        PdfWebTable table =  new TimetableManagerBuilder().getManagersTable(request,true,true);
+        int order = WebTable.getOrder(request.getSession(),"timetableManagerList.ord");
+        String tblData = (order>=1?table.printTable(order):table.printTable());
+        
+        if ("Export PDF".equals(request.getParameter("op"))) {
+            PdfWebTable pdfTable =  new TimetableManagerBuilder().getManagersTable(request,false,false);
+            File file = ApplicationProperties.getTempFile("managers", "pdf");
+            pdfTable.exportPdf(file, order);
+            request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
+        }
+            
 
-		String tblData = new TimetableManagerBuilder().htmlTableForManager(request, WebTable.getOrder(request.getSession(),"timetableManagerList.ord")); 
         request.setAttribute("schedDeputyList", errM + tblData);
         return mapping.findForward("success");
     }
