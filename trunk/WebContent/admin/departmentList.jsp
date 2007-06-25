@@ -36,11 +36,18 @@
 				 Department List - <%= Web.getUser(session).getAttribute(Constants.ACAD_YRTERM_LABEL_ATTR_NAME) %>
 				</tt:section-title>
 
-				<html:form action="departmentEdit" styleClass="FormWithNoPadding">
-					<html:submit property="op" onclick="displayLoading();" styleClass="btn" accesskey="D" titleKey="title.addDepartment">
-					<bean:message key="button.addDepartment" />
-				</html:submit>
-				</html:form>
+				<TABLE align="right" cellspacing="0" cellpadding="2" class="FormWithNoPadding">
+					<TR><TD nowrap>
+							<html:form action="departmentEdit" styleClass="FormWithNoPadding">
+								<html:submit property="op" onclick="displayLoading();" styleClass="btn" accesskey="D" titleKey="title.addDepartment">
+								<bean:message key="button.addDepartment" />
+							</html:submit>
+						</html:form>
+					</TD><TD nowrap>
+						<input type='button' onclick="document.location='departmentList.do?op=Export%20PDF';" title='Export PDF (Alt+P)' accesskey="P" class="btn" value="Export PDF">
+					</TD></TR>
+				</TABLE>
+
 			</tt:section-header>
 		</TD>
 	</TR>
@@ -172,12 +179,17 @@
 	</TR>
 	<TR>
 		<TD align="right">
-				<html:form action="departmentEdit" styleClass="FormWithNoPadding">
-					<html:hidden property="op" value="Add"/>
-					<html:submit onclick="displayLoading();" styleClass="btn" accesskey="D" titleKey="title.addDepartment">
-						<bean:message key="button.addDepartment" />
-					</html:submit>
-				</html:form>
+				<TABLE align="right" cellspacing="0" cellpadding="2" class="FormWithNoPadding">
+					<TR><TD nowrap>
+							<html:form action="departmentEdit" styleClass="FormWithNoPadding">
+								<html:submit property="op" onclick="displayLoading();" styleClass="btn" accesskey="D" titleKey="title.addDepartment">
+								<bean:message key="button.addDepartment" />
+							</html:submit>
+						</html:form>
+					</TD><TD nowrap>
+						<input type='button' onclick="document.location='departmentList.do?op=Export%20PDF';" title='Export PDF (Alt+P)' accesskey="P" class="btn" value="Export PDF">
+					</TD></TR>
+				</TABLE>
 		</TD>
 	</TR>
 </TABLE>				
