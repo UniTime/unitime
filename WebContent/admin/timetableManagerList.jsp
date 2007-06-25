@@ -32,11 +32,18 @@
 					Manager List - <%= Web.getUser(session).getAttribute(Constants.ACAD_YRTERM_LABEL_ATTR_NAME) %>
 				</tt:section-title>
 				
-				<html:form action="timetableManagerEdit" styleClass="FormWithNoPadding">			
-					<html:submit property="op" onclick="displayLoading();" styleClass="btn" accesskey="T" titleKey="title.addTimetableManager">
-						<bean:message key="button.addTimetableManager" />
-					</html:submit>
-				</html:form>
+				<TABLE align="right" cellspacing="0" cellpadding="2" class="FormWithNoPadding">
+					<TR><TD nowrap>
+						<html:form action="timetableManagerEdit" styleClass="FormWithNoPadding">			
+							<html:submit property="op" onclick="displayLoading();" styleClass="btn" accesskey="T" titleKey="title.addTimetableManager">
+								<bean:message key="button.addTimetableManager" />
+							</html:submit>
+						</html:form>
+					</TD><TD nowrap>
+						<input type='button' onclick="document.location='timetableManagerList.do?op=Export%20PDF';" title='Export PDF (Alt+P)' accesskey="P" class="btn" value="Export PDF">
+					</TD></TR>
+				</TABLE>
+				
 			</tt:section-header>
 		</TD>
 	</TR>
