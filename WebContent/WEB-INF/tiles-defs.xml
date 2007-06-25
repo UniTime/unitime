@@ -224,12 +224,12 @@
   	</definition>
 
   	<definition	name="roomFeatureEditTile" extends="pageLayoutDef">
-  		<put name="title" type="string" value="Edit Room Features"/>
+  		<put name="title" type="string" value="Edit Room Feature"/>
 		<put name="body" value="/admin/roomFeatureEdit.jsp" />
   	</definition>
   	
   	<definition	name="roomFeatureAddTile" extends="pageLayoutDef">
-  		<put name="title" type="string" value="Add Room Features"/>
+  		<put name="title" type="string" value="Add Room Feature"/>
 		<put name="body" value="/admin/roomFeatureAdd.jsp" />
   	</definition>
   	
@@ -244,12 +244,12 @@
   	</definition>
   	
   	<definition	name="roomGroupAddTile" extends="pageLayoutDef">
-  		<put name="title" type="string" value="Add Room Groups"/>
+  		<put name="title" type="string" value="Add Room Group"/>
 		<put name="body" value="/admin/roomGroupAdd.jsp" />
   	</definition>
 
   	<definition	name="roomGroupEditTile" extends="pageLayoutDef">
-  		<put name="title" type="string" value="Edit Room Groups"/>
+  		<put name="title" type="string" value="Edit Room Group"/>
 		<put name="body" value="/admin/roomGroupEdit.jsp" />
   	</definition>
 
