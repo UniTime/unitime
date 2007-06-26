@@ -16,17 +16,20 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 --%>
-<%@ page import="org.unitime.timetable.ApplicationProperties" %>
+<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <%@ page errorPage="error.jsp" %>
 <%@ include file="/checkLogin.jspf" %>
 <%@ include file="/checkAccessLevel.jspf" %>
 <html>
 <head>
-	<% if (ApplicationProperties.getProperty("tmtbl.title")!=null) { %>
-		<title><%=ApplicationProperties.getProperty("tmtbl.title")%></title>
-	<% } else {%>
+	<tt:hasProperty name="tmtbl.title">
+		<title>
+			<tt:property name="tmtbl.title"/>
+		</title>
+	</tt:hasProperty>
+	<tt:notHasProperty name="tmtbl.title">
 		<title>Timetabling</title>
-	<% } %>
+	</tt:notHasProperty>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 	<link rel="stylesheet" type="text/css" href="styles/timetabling.css" />
 	<link rel="shortcut icon" href="images/timetabling.ico" />

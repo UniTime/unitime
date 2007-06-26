@@ -16,14 +16,14 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 --%>
-<%@ page import="org.unitime.timetable.ApplicationProperties" %>
+<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <html>
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 	<link rel="stylesheet" type="text/css" href="styles/timetabling.css" />
-	<% if (ApplicationProperties.getProperty("tmtbl.custom.css")!=null) { %>
-		<LINK rel="stylesheet" type="text/css" href="<%=ApplicationProperties.getProperty("tmtbl.custom.css")%>" />
-	<% } %>
+	<tt:hasProperty name="tmtbl.custom.css">
+		<LINK rel="stylesheet" type="text/css" href="%tmtbl.custom.css%" />
+	</tt:hasProperty>
 	<script language="javascript" type="text/javascript">
 		function menuopen() {
 			var parentFrame = window.parent.document.getElementById('__idMenuFrameset');

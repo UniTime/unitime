@@ -16,15 +16,15 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 --%>
-<%@ page import="org.unitime.timetable.ApplicationProperties" %>
+<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
 <html>
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 	<link rel="stylesheet" type="text/css" href="styles/timetabling.css" />
-	<% if (ApplicationProperties.getProperty("tmtbl.custom.css")!=null) { %>
-		<LINK rel="stylesheet" type="text/css" href="<%=ApplicationProperties.getProperty("tmtbl.custom.css")%>" />
-	<% } %>
+	<tt:hasProperty name="tmtbl.custom.css">
+		<LINK rel="stylesheet" type="text/css" href="%tmtbl.custom.css%" />
+	</tt:hasProperty>
 	<script language="javascript" type="text/javascript">
 	
 		var strMenuFramesetRows =  window.parent.document.getElementById('__idMenuFramesetLeft').rows;
@@ -53,11 +53,11 @@
 <body class="HelpBody" tabindex="1">
 <table width="100%" cellpadding="0" cellspacing="0" border="0" valign="middle">
 	<tr>
-		<% if (ApplicationProperties.getProperty("tmtbl.title")!=null) { %>
+		<tt:hasProperty name="tmtbl.title">
 			<td align='left'>
-				&nbsp;&nbsp;&nbsp;<%=ApplicationProperties.getProperty("tmtbl.title")%>
+				&nbsp;&nbsp;&nbsp;<tt:property name="tmtbl.title"/>
 			</td>
-		<% } %>
+		</tt:hasProperty>
 		<td align="right">
 		<table cellpadding="0" cellspacing="0" border="0">
 			<tr>

@@ -18,7 +18,6 @@
 --%>
 <%@ page language="java" autoFlush="true"%>
 <%@ page import="java.util.*" %>
-<%@ page import="org.unitime.timetable.ApplicationProperties" %>
 <%@ page import="org.unitime.timetable.solver.WebSolver" %>
 <%@ page import="org.unitime.timetable.solver.SolverProxy" %>
 <%@ page import="org.unitime.timetable.model.dao.SolutionDAO" %>
@@ -423,16 +422,16 @@ try {
 }
 %>
 
-<% if ("true".equals(ApplicationProperties.getProperty("tmtbl.solver.remote.allow_jnlp_exec"))) {%>
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
-		<TR>
-			<TD><DIV class="WelcomeRowHeadBlank">&nbsp;</DIV></TD>
-		</TR>
-		<TR><TD align="right">
-			<html:button onclick="document.location='solver/solver.jnlp';" property="op" value="Start Local Solver"/>
-		</TD></TR>
-	</TABLE>
-<% } %>
+	<tt:propertyEquals name="tmtbl.solver.remote.allow_jnlp_exec" value="true">
+		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+			<TR>
+				<TD><DIV class="WelcomeRowHeadBlank">&nbsp;</DIV></TD>
+			</TR>
+			<TR><TD align="right">
+				<html:button onclick="document.location='solver/solver.jnlp';" property="op" value="Start Local Solver"/>
+			</TD></TR>
+		</TABLE>
+	</tt:propertyEquals>
 
 <logic:equal name="solverForm" property="changeTab" value="true">
 	<script language="javascript" type="text/javascript">

@@ -30,9 +30,9 @@
 <%@ page import="org.unitime.timetable.model.SolverGroup" %>
 <%@ page import="org.unitime.commons.Debug" %>
 <%@ page import="org.unitime.timetable.model.Session" %>
-<%@ page import="org.unitime.timetable.ApplicationProperties" %>
 <jsp:directive.page import="org.unitime.timetable.model.Roles"/>
 <%@ include file="../checkLogin.jspf" %>
+<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <HTML>
@@ -67,9 +67,9 @@
 	<META http-equiv="refresh" content="<%=tab==0?(3600*4):10%>">
 	<META http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 	<LINK rel="stylesheet" type="text/css" href="../styles/timetabling.css" />
-	<% if (ApplicationProperties.getProperty("tmtbl.custom.css")!=null) { %>
-		<LINK rel="stylesheet" type="text/css" href="<%="../"+ApplicationProperties.getProperty("tmtbl.custom.css")%>" />
-	<% } %>
+	<tt:hasProperty name="tmtbl.custom.css">
+		<LINK rel="stylesheet" type="text/css" href="../%tmtbl.custom.css%" />
+	</tt:hasProperty>
 	<SCRIPT language="javascript" type="text/javascript" src="../tree.js"></SCRIPT>
 
 </HEAD>
@@ -200,13 +200,12 @@
 			<TD valign="top"><FONT color="#000040"><I><%=sessionStatus%></I></FONT></TD>
 		</TR>
 
-		<% 
-			if ("true".equals(ApplicationProperties.getProperty("tmtbl.userinfo.show_database","true"))) { %>
+		<tt:propertyEquals name="tmtbl.userinfo.show_database" value="true">
 			<TR align="left">
 				<TD valign="top" height="15"><FONT color="#000000">&nbsp;Database</FONT></TD>
 				<TD valign="top" height="15"><FONT color="#000040"><I><%=HibernateUtil.getDatabaseName()%></I></FONT></TD>
 			</TR>
-		<% 	} %>
+		</tt:propertyEquals>
 
 		<TR align="left">
 			<TD valign="top" height="15"><FONT color="#000000">&nbsp;Version</FONT></TD>
