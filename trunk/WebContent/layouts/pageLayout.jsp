@@ -20,7 +20,6 @@
 <%@ page errorPage="/error.jsp" %>
 <%@ page import="java.text.NumberFormat" %>
 <%@ page import="net.sf.cpsolver.ifs.util.JProf" %>
-<%@ page import="org.unitime.timetable.ApplicationProperties" %>
 <%@ page import="java.util.Date" %>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld"	prefix="bean"%>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld"	prefix="html"%>
@@ -52,9 +51,9 @@ String serverPath = request.getScheme()+"://"+request.getServerName()+":"+reques
 	<META http-equiv="expires" content="0">
 	<STYLE type="text/css">@import url(<%=basePath%>scripts/jscalendar/calendar-blue.css);</STYLE>
     <LINK rel="stylesheet" type="text/css" href="<%=basePath%>styles/timetabling.css">
-	<% if (ApplicationProperties.getProperty("tmtbl.custom.css")!=null) { %>
-		<LINK rel="stylesheet" type="text/css" href="<%=basePath+ApplicationProperties.getProperty("tmtbl.custom.css")%>" />
-	<% } %>
+    <tt:hasProperty name="tmtbl.custom.css">
+    	<LINK rel="stylesheet" type="text/css" href="<%=basePath%>%tmtbl.custom.css%" />
+    </tt:hasProperty>
     <link rel="shortcut icon" href="<%=basePath%>images/timetabling.ico" />
 	<TITLE><tiles:getAsString name="title" /></TITLE>
     <SCRIPT language="JavaScript" type="text/javascript" src="<%=basePath%>scripts/loading.js"></SCRIPT>
@@ -76,14 +75,11 @@ String serverPath = request.getScheme()+"://"+request.getServerName()+":"+reques
 	// --></SCRIPT>
 </HEAD>
 <BODY class="bodyStyle" <tiles:getAsString name="onLoadFunction" />>
-	<% String globalWarning = ApplicationProperties.getProperty("tmtbl.global.warn");
-	   if (globalWarning!=null && globalWarning.length()>0) { %>
+	<tt:hasProperty name="tmtbl.global.warn">
 		<table width='100%' border='0' cellpadding='3' cellspacing='0'><tr><td class="reqGlobalWarn" width='5'>&nbsp;</td><td class="reqGlobalWarn" >
-				<%=globalWarning%>
+			<tt:property name="tmtbl.global.warn"/>
 		</td></tr></table>
-	<%
-	   }
-	%>
+	</tt:hasProperty>
 	<% if (request.getAttribute(Constants.REQUEST_OPEN_URL)!=null) { %>
 		<script language="JavaScript">
 			window.open('<%=request.getAttribute(Constants.REQUEST_OPEN_URL)%>');
