@@ -33,7 +33,6 @@
 		<put name="header" value="/header.jsp" />
 		<put name="menu" value="/menu.jsp" />
 		<put name="body" value="" />
-		<put name="footer" value="/footer.jsp" />
   	</definition>
 
 	<definition
