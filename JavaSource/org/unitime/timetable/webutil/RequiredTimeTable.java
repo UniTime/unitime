@@ -255,7 +255,7 @@ public class RequiredTimeTable {
     	StringBuffer sb = new StringBuffer("[");
     	for (int i=0;i<getModel().getPreferenceNames().length;i++) {
     		if (i>0) sb.append(",");
-    		sb.append("'"+getModel().getPreferenceText(getModel().getPreferenceNames()[i])+"'");
+    		sb.append("'"+getModel().getPreferenceText(getModel().getPreferenceNames()[i]).replaceAll("'", "&#39;")+"'");
     	}
     	sb.append("]");
     	return sb.toString();
