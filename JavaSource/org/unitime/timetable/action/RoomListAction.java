@@ -161,7 +161,7 @@ public class RoomListAction extends Action {
 	        for (Iterator i=owner.departmentsForSession(sessionId).iterator();i.hasNext();) {
 	        	Department d = (Department)i.next();
 	        	if (d.isEditableBy(user)) {
-                    roomListForm.setCanAdd(!hasExternalRooms && user.getRole().equals(Roles.ADMIN_ROLE));
+                    roomListForm.setCanAdd(user.getRole().equals(Roles.ADMIN_ROLE)); //&& !hasExternalRooms
                     roomListForm.setCanAddNonUniv(true);
                     roomListForm.setCanAddSpecial(hasExternalRooms);
 	        		break;
@@ -170,7 +170,7 @@ public class RoomListAction extends Action {
 		} else {
 			if (user.getRole().equals(Roles.ADMIN_ROLE)) {
 				roomListForm.setEditRoomSharing(true);
-				roomListForm.setCanAdd(!hasExternalRooms);
+				roomListForm.setCanAdd(true); // !hasExternalRooms
                 roomListForm.setCanAddNonUniv(true);
                 roomListForm.setCanAddSpecial(hasExternalRooms);
 			} else {
