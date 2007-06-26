@@ -18,9 +18,9 @@
 --%>
 <%@ page language="java"%>
 <%@ page errorPage="error.jsp"%>
-<%@ page import="org.unitime.timetable.ApplicationProperties" %>
 <%@ page import="org.unitime.timetable.model.ApplicationConfig"%>
 <%@ page import="org.unitime.timetable.util.Constants" %>
+<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 
 <HTML>
 <HEAD>
@@ -28,14 +28,11 @@
     <SCRIPT language="JavaScript" type="text/javascript" src="scripts/loading.js"></SCRIPT>
 </HEAD>
 <BODY class="bodyStyle">
-	<% String globalWarning = ApplicationProperties.getProperty("tmtbl.global.warn");
-	   if (globalWarning!=null && globalWarning.length()>0) { %>
+	<tt:hasProperty name="tmtbl.global.warn">
 		<table width='100%' border='0' cellpadding='3' cellspacing='0'><tr><td class="reqGlobalWarn" width='5'>&nbsp;</td><td class="reqGlobalWarn" >
-				<%=globalWarning%>
+			<tt:property name="tmtbl.global.warn"/>
 		</td></tr></table>
-	<%
-	   }
-	%>
+	</tt:hasProperty>
 <DIV id="contentMain">
 &nbsp;
 <BR>
