@@ -335,7 +335,7 @@ public class DistributionPref extends BaseDistributionPref {
     	return q.list();
     }
     
-    public static Collection getInstructorPreferences(Long sessionId, Long ownerId, Long subjectAreaId) {
+    public static Collection getInstructorPreferences(Long sessionId, Long ownerId, Long subjectAreaId, String courseNbr) {
         if (sessionId==null) return null;
         StringBuffer sb = new StringBuffer();
         sb.append("select distinct dp ");
@@ -352,6 +352,16 @@ public class DistributionPref extends BaseDistributionPref {
             sb.append(" and ci.lead = true ");
             sb.append(" and co.isControl = true ");
             sb.append(" and co.subjectArea.uniqueId = :subjectAreaId ");
+            if (courseNbr!=null && courseNbr.trim().length()>0) {
+                sb.append(" and co.courseNbr ");
+                if (courseNbr.indexOf('*')>=0) {
+                    sb.append(" like ");
+                    courseNbr = courseNbr.replace('*', '%').toUpperCase();
+                } else {
+                    sb.append(" = ");
+                }
+                sb.append(":courseNbr");
+            }       
         }
         if (ownerId != null) {
             sb.append(" and di.department.uniqueId = :ownerId ");
@@ -365,6 +375,8 @@ public class DistributionPref extends BaseDistributionPref {
             q.setLong("ownerId", ownerId.longValue());
         if (subjectAreaId!=null) {
             q.setLong("subjectAreaId", subjectAreaId.longValue());
+            if (courseNbr!=null && courseNbr.trim().length()>0)
+                q.setString("courseNbr", courseNbr.toUpperCase());
         }
         return q.list();
     }
