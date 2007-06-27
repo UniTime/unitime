@@ -23,11 +23,101 @@
 
 <doc-title>Timetabling - Release Notes</doc-title>
 
-<!-- When a release date is not available or to be decided use the tag @release.date@ -->
-
 <release>
-	<version>3.0</version>
+	<version>3.0.@build.number@</version>
 	<release-date>@release.date@</release-date>
+	<category>
+		<title>USER INTERFACE</title>
+		<item>
+			<name>Rooms</name>
+			<description>
+				<line>Room Features, Room Groups: Abbreviation column added</line>
+				<line>Room Detail, Room Edit: Administrator can see and change external id.</line>
+				<line>Room Detail, Room Edit: Administrator can change room type (property Room.scheduledRoomType).</line>
+				<line>Allow Add Special Use Room only when external rooms are populated for the given session.</line>
+				<line>Added add any room capability (administrator only).</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructional Offering Cross Lits</name>
+			<description>
+				<line>Made screen more intuitive.</line>
+			</description>
+		</item>
+		<item>
+			<name>Date Patterns</name>
+			<description>
+				<line>Display of the selected date pattern corrected.</line>
+				<line>Fix Generated feature improved
+					<line>replace the generated date pattern with an existing one if the difference is not more than 5 days</line>
+					<line>otherwise rename the generated date pattern to "generated start - end" where start and end are start and end days in MM/dd format</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Administration</name>
+			<description>
+				<line>Subject Areas: Struts configuration corrected.</line>
+				<line>Buildings: Add/update/delete functions added.</line>
+				<line>Buildings, Timetable Managers, Departments, Subject Areas, Solver Groups: Export PDF function added.</line>
+				<line>Application Config: Display all effective properties set for the application.</line>
+			</description>
+		</item>
+		<item>
+			<name>Menu</name>
+			<description>
+				<line>FAQ and Tips &amp; Tricks pages moved to wiki.</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructors</name>
+			<description>
+				<line>Instructor Lookup: Fixed problem with I2A2 lookup (No getter method for property: "puid" of bean: "i2a2") -- User object has no longer method getPuid(), but it has getId().</line>
+				<line>Instructor Delete: Fixed hibernate problem (deleted object would be re-saved by cascade) when an instructor with some class assignments was deleted.</line>
+			</description>
+		</item>
+		<item>
+			<name>Distribution Preferences</name>
+			<description>
+				<line>Distribution preferences that are set on instructors were not filtered by course number, this is now corrected.</line>
+				<line>Add/Edit Distribution Preference: Compare classes using ClassComparator, not by their unique ids.</line>
+			</description>
+		</item>
+		<title>SOLVER</title>
+		<item>
+			<name>Student Sectioning</name>
+			<description>
+				<line>Load academic areas, classifications, majors, and minors</line>
+				<line>Solver update, https://lists.sourceforge.net/lists/listinfo/cpsolver-cvs for more details.</line>
+			</description>
+		</item>
+		<title>OTHER</title>
+		<item>
+			<name>Database</name>
+			<description>
+				<line>Database connection properties can be set in custom.property file</line>
+				<line>Buildings: Minor change to remove non-existent building as part of update process.</line>
+				<line>Major Import: Create empty set for academic areas if null.</line>
+				<line>Configuration Edit: Fixed org.hibernate.PropertyAccessException (Exception occurred inside setter of org.unitime.timetable.model.Class_.managingDept)</line>
+				<line>ChangeLog: queries made cacheable.</line>
+				<line>Last-like Course Demands Import: speed up -- cache the SubjectAreas and CourseOfferings.</line>
+			</description>
+		</item>
+		<item>
+			<name>Other</name>
+			<description>
+				<line>Timetabling CSS: Fixed a bug.</line>
+				<line>WebTable: Removed italic tag and instead depend on css to do all formatting</line>
+				<line>Changed logos to remove SMAS and put unitime.org.</line>
+				<line>File footer.jsp removed -- it is not used.</line>
+				<line>Tags propertyEquals and propertyNotEquals added.</line>
+				<line>Use property tags instead of using ApplicationProperties class directly in JSPs.</line>
+			</description>
+		</item>
+	</category>
+
+	<version>3.0.19</version>
+	<release-date>Wed, 13 Jun 2007</release-date>
 	<category>
 		<title>ALL MODULES</title>
 		<item>
