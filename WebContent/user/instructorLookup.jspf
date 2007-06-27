@@ -67,7 +67,7 @@
 									<html:radio property="searchSelect" value="i2a2"/>
 								</td>
 								<td>
-									<bean:write name="i2a2" property="puid" /> &nbsp;
+									<bean:write name="i2a2" property="id" /> &nbsp;
 								</td>
 								<td>
 									<bean:write name="i2a2" property="name" /> &nbsp;
