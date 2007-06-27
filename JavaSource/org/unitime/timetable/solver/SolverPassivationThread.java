@@ -46,6 +46,7 @@ public class SolverPassivationThread extends Thread {
 	
 	public void run() {
 		try {
+            sLog.info("Solver passivation thread started.");
 			while (true) {
 				for (Iterator i=iSolvers.entrySet().iterator();i.hasNext();) {
 					Map.Entry entry = (Map.Entry)i.next();
