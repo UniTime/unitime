@@ -167,6 +167,7 @@
 			</fileset>
 		</copy>
 		<replace file="${war.dir}/help/Release-Notes.xml" token="@release.date@" value="${build.date}" />
+		<replace file="${war.dir}/help/Release-Notes.xml" token="@build.number@" value="${build.number}" />
 		<copy todir="${war.dir}/solver" file="${dist.dir}/solver.jar"/>
 	</target>
 
