@@ -60,6 +60,7 @@ import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.DistributionPrefDAO;
@@ -483,7 +484,6 @@ public class DistributionPrefsAction extends Action {
 		                    query.append("        Class_ c ");
 		                    query.append("  where s.uniqueId=:itype ");
 		                    query.append("    and s.uniqueId=c.schedulingSubpart.uniqueId ");	                    
-		                    query.append("  order by c.uniqueId asc");	                    
 		                    
 			        		q = hibSession.createQuery(query.toString());
 			        		q.setFetchSize(200);
@@ -492,6 +492,8 @@ public class DistributionPrefsAction extends Action {
 			                
 			        		result = q.list();
 			        		if(result!=null && result.size()>0) {
+                                Collections.sort(result, new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
+                                
 			        		    if(classNumber.equals(Preference.BLANK_PREF_VALUE)) 
 			        		        frm.setClassNumber(index, DistributionPrefsForm.ALL_CLASSES_SELECT);
 			        		        
