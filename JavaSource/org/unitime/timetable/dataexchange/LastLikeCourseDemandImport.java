@@ -19,16 +19,17 @@
 */
 package org.unitime.timetable.dataexchange;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 
 import org.dom4j.Element;
-
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.LastLikeCourseDemand;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.SubjectArea;
-import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 
 /**
@@ -39,6 +40,9 @@ import org.unitime.timetable.model.dao.SubjectAreaDAO;
 
 public class LastLikeCourseDemandImport extends BaseImport {
 
+	private HashMap<String, SubjectArea> subjectAreas = new HashMap<String, SubjectArea>();
+	private HashMap<String, String> courseOfferings = new HashMap<String, String>();
+	
 	public LastLikeCourseDemandImport() {
 		super();
 	}
@@ -53,11 +57,15 @@ public class LastLikeCourseDemandImport extends BaseImport {
 	        if(session == null) {
 	           	throw new Exception("No session found for the given campus, year, and term.");
 	        }
+
+	        loadSubjectAreas(session.getSessionId());
+	        loadCourseOfferings(session.getSessionId());
+
 			beginTransaction();
 	        for ( Iterator it = root.elementIterator(); it.hasNext(); ) {
 	            Element element = (Element) it.next();
 	            String externalId = element.attributeValue("externalId");
-	            System.out.println("Loading " + externalId);
+//	            System.out.println("Loading " + externalId);
 	            Student student = fetchStudent(externalId, session.getSessionId());
 	            if(student == null) continue;
 	            loadCourses(element, student, session);
@@ -94,7 +102,7 @@ public class LastLikeCourseDemandImport extends BaseImport {
 			if(courseNumber == null) {
 				throw new Exception("Course Number is required.");
 			}
-			SubjectArea area = fetchSubjectArea(subject, session.getSessionId());
+			SubjectArea area = subjectAreas.get(subject);
 			if(area == null) {
 				System.out.println("Subject area " + subject + " not found");
 				continue;
@@ -102,13 +110,9 @@ public class LastLikeCourseDemandImport extends BaseImport {
 
 	        LastLikeCourseDemand demand = new LastLikeCourseDemand();
 
-	        CourseOffering courseOffering = fetchCourseOffering(courseNumber, area.getUniqueId());
-			if(courseOffering == null) {
-		        demand.setCoursePermId(null);
-			} else {
-		        demand.setCoursePermId(courseOffering.getPermId());
-			}
-	        demand.setCourseNbr(courseNumber);
+			demand.setCoursePermId(courseOfferings.get(courseNumber + area.getUniqueId().toString()));
+
+			demand.setCourseNbr(courseNumber);
 	        demand.setStudent(student);
 	        demand.setSubjectArea(area);
 	        demand.setPriority(Integer.decode(el.attributeValue("priority")));
@@ -116,23 +120,25 @@ public class LastLikeCourseDemandImport extends BaseImport {
 		}
 	}
 
-	SubjectArea fetchSubjectArea(String subjectAreaAbbv, Long sessionId) {
-		return (SubjectArea) new SubjectAreaDAO().
-		getSession().
-		createQuery("select distinct a from SubjectArea as a where a.session.uniqueId=:sessionId and a.subjectAreaAbbreviation=:subjectAreaAbbv").
-		setLong("sessionId", sessionId.longValue()).
-		setString("subjectAreaAbbv", subjectAreaAbbv).
-		setCacheable(true).
-		uniqueResult();
+	private void loadSubjectAreas(Long sessionId) {
+		List areas = new ArrayList();
+		areas = new SubjectAreaDAO().
+			getSession().
+			createQuery("select distinct a from SubjectArea as a where a.session.uniqueId=:sessionId").
+			setLong("sessionId", sessionId.longValue()).
+			setCacheable(true).
+			list();
+		for (Iterator it = areas.iterator(); it.hasNext();) {
+			SubjectArea area = (SubjectArea) it.next();
+			subjectAreas.put(area.getSubjectAreaAbbreviation(), area);
+		}
 	}
 
-	CourseOffering fetchCourseOffering(String courseNbr, Long subjectAreaId) {
-		return (CourseOffering) new CourseOfferingDAO().
-		getSession().
-		createQuery("select distinct a from CourseOffering as a where a.courseNbr=:courseNbr and a.subjectArea=:subjectAreaId").
-		setLong("subjectAreaId", subjectAreaId.longValue()).
-		setString("courseNbr", courseNbr).
-		setCacheable(true).
-		uniqueResult();
+	private void loadCourseOfferings(Long sessionId) {
+		for (Iterator it = CourseOffering.findAll(sessionId).iterator(); it.hasNext();) {
+			CourseOffering offer = (CourseOffering) it.next();
+			courseOfferings.put(offer.getCourseNbr() + offer.getSubjectArea().getUniqueId().toString(), offer.getPermId());
+
+		}
 	}
 }
