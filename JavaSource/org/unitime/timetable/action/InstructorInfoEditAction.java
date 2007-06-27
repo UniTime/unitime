@@ -194,7 +194,16 @@ public class InstructorInfoEditAction extends InstructorAction {
 			tx = hibSession.beginTransaction();
 	        DepartmentalInstructor inst = idao.get(new Long(instructorId));
 	        
-	        for (Iterator i=inst.getClasses().iterator();i.hasNext();) {
+            ChangeLog.addChange(
+                    hibSession, 
+                    request, 
+                    inst, 
+                    ChangeLog.Source.INSTRUCTOR_EDIT, 
+                    ChangeLog.Operation.DELETE, 
+                    null, 
+                    inst.getDepartment());
+
+            for (Iterator i=inst.getClasses().iterator();i.hasNext();) {
 	        	ClassInstructor ci = (ClassInstructor)i.next();
 	        	ci.getClassInstructing().getClassInstructors().remove(ci);
 	        	hibSession.saveOrUpdate(ci);
@@ -220,15 +229,6 @@ public class InstructorInfoEditAction extends InstructorAction {
 	        	d = inst.getDepartment();
 	        }
 	        
-            ChangeLog.addChange(
-                    hibSession, 
-                    request, 
-                    inst, 
-                    ChangeLog.Source.INSTRUCTOR_EDIT, 
-                    ChangeLog.Operation.DELETE, 
-                    null, 
-                    inst.getDepartment());
-
             hibSession.delete(inst);
             
 	        tx.commit();
