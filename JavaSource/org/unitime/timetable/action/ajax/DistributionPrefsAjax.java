@@ -35,6 +35,7 @@ import org.apache.struts.action.ActionMapping;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.SchedulingSubpart;
+import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
@@ -124,15 +125,15 @@ public class DistributionPrefsAjax extends Action {
     
     protected void coumputeClasses(String schedulingSubpartId, ServletOutputStream out) throws Exception {
         if (schedulingSubpartId==null || schedulingSubpartId.length()==0 || schedulingSubpartId.equals(Preference.BLANK_PREF_VALUE)) return;
-        List classes = new Class_DAO().
+        TreeSet classes = new TreeSet(new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
+        classes.addAll(new Class_DAO().
             getSession().
             createQuery("select distinct c from Class_ c "+
-                    "where c.schedulingSubpart.uniqueId=:schedulingSubpartId "+
-                    "order by c.uniqueId").
+                    "where c.schedulingSubpart.uniqueId=:schedulingSubpartId").
             setFetchSize(200).
             setCacheable(true).
             setLong("schedulingSubpartId", Long.parseLong(schedulingSubpartId)).
-            list();
+            list());
         print(out, "-1", "All");
         for (Iterator i=classes.iterator();i.hasNext();) {
             Class_ c = (Class_)i.next();
