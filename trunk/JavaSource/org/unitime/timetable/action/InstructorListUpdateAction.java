@@ -222,7 +222,15 @@ public class InstructorListUpdateAction extends Action {
 					DepartmentalInstructor inst = (DepartmentalInstructor) iter.next();
 					if (s1.indexOf(inst.getUniqueId().toString()) == -1) {
 
-					    for (Iterator i=inst.getClasses().iterator();i.hasNext();) {
+                        ChangeLog.addChange(
+                                hibSession, 
+                                request, 
+                                inst, 
+                                ChangeLog.Source.INSTRUCTOR_MANAGE, 
+                                ChangeLog.Operation.DELETE, 
+                                null, inst.getDepartment());
+
+                        for (Iterator i=inst.getClasses().iterator();i.hasNext();) {
 				        	ClassInstructor ci = (ClassInstructor)i.next();
 				        	ci.getClassInstructing().getClassInstructors().remove(ci);
 				        	hibSession.saveOrUpdate(ci);
@@ -243,14 +251,6 @@ public class InstructorListUpdateAction extends Action {
 				        	hibSession.delete(d);
 				        }
                         
-                        ChangeLog.addChange(
-                                hibSession, 
-                                request, 
-                                inst, 
-                                ChangeLog.Source.INSTRUCTOR_MANAGE, 
-                                ChangeLog.Operation.DELETE, 
-                                null, inst.getDepartment());
-				        
 						hibSession.delete(inst);
 					}
 				}
