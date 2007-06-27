@@ -97,12 +97,12 @@ public class DistributionPrefsTableBuilder {
         Collection prefs = new HashSet();
 		if (isAdmin || isViewAll) {
 			prefs.addAll(DistributionPref.getPreferences(session.getUniqueId(), null, true, null, subjAreaId, (courseNbr==null || courseNbr.length()==0 ? null : courseNbr)));
-            prefs.addAll(DistributionPref.getInstructorPreferences(session.getUniqueId(),null,subjAreaId));
+            prefs.addAll(DistributionPref.getInstructorPreferences(session.getUniqueId(),null,subjAreaId, (courseNbr==null || courseNbr.length()==0 ? null : courseNbr)));
 		} else {
 			for (Iterator i=manager.departmentsForSession(session.getUniqueId()).iterator();i.hasNext();) {
 				Department d = (Department)i.next();
 				prefs.addAll(DistributionPref.getPreferences(session.getUniqueId(), d.getUniqueId(), true, null, subjAreaId, (courseNbr==null || courseNbr.length()==0 ? null : courseNbr)));
-                prefs.addAll(DistributionPref.getInstructorPreferences(session.getUniqueId(),d.getUniqueId(),subjAreaId));
+                prefs.addAll(DistributionPref.getInstructorPreferences(session.getUniqueId(),d.getUniqueId(),subjAreaId, (courseNbr==null || courseNbr.length()==0 ? null : courseNbr)));
 			}
 		}
 		
@@ -135,12 +135,12 @@ public class DistributionPrefsTableBuilder {
         Collection prefs = new HashSet();
         if (isAdmin || isViewAll) {
             prefs.addAll(DistributionPref.getPreferences(session.getUniqueId(), null, true, null, subjAreaId, (courseNbr==null || courseNbr.length()==0 ? null : courseNbr)));
-            prefs.addAll(DistributionPref.getInstructorPreferences(session.getUniqueId(),null,subjAreaId));
+            prefs.addAll(DistributionPref.getInstructorPreferences(session.getUniqueId(),null,subjAreaId, (courseNbr==null || courseNbr.length()==0 ? null : courseNbr)));
         } else {
             for (Iterator i=manager.departmentsForSession(session.getUniqueId()).iterator();i.hasNext();) {
                 Department d = (Department)i.next();
                 prefs.addAll(DistributionPref.getPreferences(session.getUniqueId(), d.getUniqueId(), true, null, subjAreaId, (courseNbr==null || courseNbr.length()==0 ? null : courseNbr)));
-                prefs.addAll(DistributionPref.getInstructorPreferences(session.getUniqueId(),d.getUniqueId(),subjAreaId));
+                prefs.addAll(DistributionPref.getInstructorPreferences(session.getUniqueId(),d.getUniqueId(),subjAreaId, (courseNbr==null || courseNbr.length()==0 ? null : courseNbr)));
             }
         }
 		
