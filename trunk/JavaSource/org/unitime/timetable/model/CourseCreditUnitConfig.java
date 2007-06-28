@@ -144,4 +144,6 @@ public abstract class CourseCreditUnitConfig extends BaseCourseCreditUnitConfig 
 		newCreditConfig.setCreditUnitType(getCreditUnitType());
 		newCreditConfig.setDefinesCreditAtCourseLevel(isDefinesCreditAtCourseLevel());
 	}
+	
+	public abstract Object clone();
 }
