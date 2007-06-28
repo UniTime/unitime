@@ -1304,4 +1304,36 @@ public class Class_ extends BaseClass_ {
 			
 	}
 	
+	public Object clone(){
+		Class_ newClass = new Class_();
+		newClass.setDatePattern(getDatePattern());
+		newClass.setDisplayInScheduleBook(isDisplayInScheduleBook());
+		newClass.setDisplayInstructor(isDisplayInstructor());
+		newClass.setExpectedCapacity(getExpectedCapacity());
+		newClass.setManagingDept(getManagingDept());
+		newClass.setMaxExpectedCapacity(getMaxExpectedCapacity());
+		newClass.setNbrRooms(getNbrRooms());
+		newClass.setNotes(getNotes());
+		newClass.setRoomRatio(getRoomRatio());
+		newClass.setSchedulePrintNote(getSchedulePrintNote());
+		newClass.setSchedulingSubpart(getSchedulingSubpart());
+		return(newClass);
+	}
+	
+	public Object cloneWithPreferences(){
+		Class_ newClass = (Class_) this.clone();
+		if (getPreferences() != null){
+			Preference origPref = null;
+			Preference newPref = null;
+			for (Iterator prefIt = getPreferences().iterator(); prefIt.hasNext();){
+				origPref = (Preference) prefIt.next();	
+				if (!(origPref instanceof DistributionPref)) {
+					newPref = (Preference)origPref.clone();
+					newPref.setOwner(newClass);
+					newClass.addTopreferences(newPref);
+				}
+			}
+		}
+		return(newClass);
+	}
 }

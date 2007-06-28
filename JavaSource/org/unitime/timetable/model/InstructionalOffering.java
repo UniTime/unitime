@@ -720,4 +720,21 @@ public class InstructionalOffering extends BaseInstructionalOffering {
         	hibSession.delete(co);
         }
 	}
+	
+	public void cloneOfferingConfigurationFrom(InstructionalOffering instrOffrToCloneFrom){
+		if (instrOffrToCloneFrom == null || instrOffrToCloneFrom.getInstrOfferingConfigs() == null){
+			return;
+		}
+		if (getInstrOfferingConfigs() != null){
+			getInstrOfferingConfigs().clear();
+		}
+		InstrOfferingConfig origIoc = null;
+		InstrOfferingConfig newIoc = null;
+		for (Iterator iocIt = instrOffrToCloneFrom.getInstrOfferingConfigs().iterator(); iocIt.hasNext();){
+			origIoc = (InstrOfferingConfig) iocIt.next();
+			newIoc = (InstrOfferingConfig)origIoc.cloneWithSubparts();
+			newIoc.setInstructionalOffering(this);
+			this.addToinstrOfferingConfigs(newIoc);
+		}
+	}
 }

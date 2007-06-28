@@ -480,4 +480,39 @@ public class InstrOfferingConfig extends BaseInstrOfferingConfig {
     	}
     	return(false);
     }
+    
+    public Object clone(){
+    	InstrOfferingConfig newInstrOffrConfig = new InstrOfferingConfig();
+    	newInstrOffrConfig.setLimit(getLimit());
+    	newInstrOffrConfig.setName(getName());
+    	newInstrOffrConfig.setUnlimitedEnrollment(isUnlimitedEnrollment());
+    	return(newInstrOffrConfig);
+    }
+    
+    private void setSubpartConfig(SchedulingSubpart schedulingSubpart, InstrOfferingConfig instrOffrConfig){
+    	schedulingSubpart.setInstrOfferingConfig(instrOffrConfig);
+    	instrOffrConfig.addToschedulingSubparts(schedulingSubpart);
+    	if (schedulingSubpart.getChildSubparts() != null){
+    		SchedulingSubpart childSubpart = null;
+    		for (Iterator cssIt = schedulingSubpart.getChildSubparts().iterator(); cssIt.hasNext();){
+    			childSubpart = (SchedulingSubpart) cssIt.next();
+    			setSubpartConfig(childSubpart, instrOffrConfig);
+    		}
+    	}
+    }
+    public Object cloneWithSubparts(){
+    	InstrOfferingConfig newInstrOffrConfig = (InstrOfferingConfig)clone();
+    	if (getSchedulingSubparts() != null){
+    		SchedulingSubpart origSubpart = null;
+    		SchedulingSubpart newSubpart = null;
+    		for (Iterator ssIt = getSchedulingSubparts().iterator(); ssIt.hasNext();){
+    			origSubpart = (SchedulingSubpart) ssIt.next();
+    			if (origSubpart.getParentSubpart() == null){
+    				newSubpart = (SchedulingSubpart)origSubpart.cloneDeep();
+    				setSubpartConfig(newSubpart, newInstrOffrConfig);
+    			}
+    		}
+    	}
+    	return(newInstrOffrConfig);
+    }
 }
