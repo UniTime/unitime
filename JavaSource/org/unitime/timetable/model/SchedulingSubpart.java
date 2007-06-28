@@ -633,4 +633,94 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     		//course already contains this config so we do not need to add it again.
     	}
     }
+    
+    public Object clone(){
+    	SchedulingSubpart newSchedulingSubpart = new SchedulingSubpart();
+    	newSchedulingSubpart.setAutoSpreadInTime(isAutoSpreadInTime());
+    	if (getCreditConfigs() != null){
+    		CourseCreditUnitConfig ccuc = null;
+    		CourseCreditUnitConfig newCcuc = null;
+    		for (Iterator credIt = getCreditConfigs().iterator(); credIt.hasNext();){
+    			ccuc = (CourseCreditUnitConfig) credIt.next();
+    			newCcuc = (CourseCreditUnitConfig) ccuc.clone();
+    			newCcuc.setOwner(newSchedulingSubpart);
+    			newSchedulingSubpart.addTocreditConfigs(newCcuc);
+    		}
+    	}
+    	newSchedulingSubpart.setDatePattern(getDatePattern());
+    	newSchedulingSubpart.setItype(getItype());
+    	newSchedulingSubpart.setMinutesPerWk(getMinutesPerWk());
+    	newSchedulingSubpart.setStudentAllowOverlap(isStudentAllowOverlap());
+    	return(newSchedulingSubpart);
+    }
+
+    public Object cloneWithPreferences(){
+    	SchedulingSubpart newSchedulingSubpart = (SchedulingSubpart)clone();
+    	if (getPreferences() != null){
+			Preference p = null;
+			Preference newPref = null;
+			for (Iterator prefIt = getPreferences().iterator(); prefIt.hasNext();){
+				p = (Preference) prefIt.next();	
+				if (!(p instanceof DistributionPref)) {
+					newPref = (Preference)p.clone();
+					newPref.setOwner(newSchedulingSubpart);
+					newSchedulingSubpart.addTopreferences(newPref);
+				}
+			}
+		}
+    	return(newSchedulingSubpart);
+    }
+   
+    public Object cloneDeep(){
+    	SchedulingSubpart newSchedulingSubpart = (SchedulingSubpart)cloneWithPreferences();
+    	HashMap childClassToParentClass = new HashMap();
+    	if (getClasses() != null){
+    		Class_ origClass = null;
+    		Class_ newClass = null;
+    		for (Iterator cIt = getClasses().iterator(); cIt.hasNext();){
+    			origClass = (Class_) cIt.next();
+    			newClass = (Class_) origClass.cloneWithPreferences();
+    			newClass.setSchedulingSubpart(newSchedulingSubpart);
+    			newSchedulingSubpart.addToclasses(newClass);
+    			newClass.setSectionNumberCache(origClass.getSectionNumberCache());
+    			newClass.setUniqueIdRolledForwardFrom(origClass.getUniqueId());
+    			if (origClass.getChildClasses() != null){
+    				Class_ childClass = null;
+    				for (Iterator ccIt = origClass.getChildClasses().iterator(); ccIt.hasNext();){
+    					childClass = (Class_) ccIt.next();
+    					childClassToParentClass.put(childClass.getUniqueId(), newClass);
+    				}
+    			}
+    		}
+    	}
+    	if (getChildSubparts() != null){
+    		SchedulingSubpart origChildSubpart = null;
+    		SchedulingSubpart newChildSubpart = null;
+    		for (Iterator ssIt = getChildSubparts().iterator(); ssIt.hasNext();){
+    			origChildSubpart = (SchedulingSubpart) ssIt.next();
+    			newChildSubpart = (SchedulingSubpart)origChildSubpart.cloneDeep();
+    			newChildSubpart.setParentSubpart(newSchedulingSubpart);
+    			newSchedulingSubpart.addTochildSubparts(newChildSubpart);
+    			if (newChildSubpart.getClasses() != null){
+    				Class_ newChildClass = null;
+    				Class_ newParentClass = null;
+    				for (Iterator nccIt = newChildSubpart.getClasses().iterator(); nccIt.hasNext();){
+    					newChildClass = (Class_) nccIt.next();
+    					newParentClass = (Class_) childClassToParentClass.get(newChildClass.getUniqueIdRolledForwardFrom());
+    					newChildClass.setParentClass(newParentClass);
+    					newParentClass.addTochildClasses(newChildClass);
+    					newChildClass.setUniqueIdRolledForwardFrom(null);
+    				}
+    			}
+    		}
+    	}
+    	if (newSchedulingSubpart.getClasses() != null && getParentSubpart() == null){
+    		Class_ newClass = null;
+    		for (Iterator cIt = getClasses().iterator(); cIt.hasNext();){
+    			newClass = (Class_) cIt.next();
+    			newClass.setUniqueIdRolledForwardFrom(null);
+    		}
+    	}	
+    	return(newSchedulingSubpart);
+    }
 }
