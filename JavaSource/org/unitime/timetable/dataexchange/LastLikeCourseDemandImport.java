@@ -65,7 +65,6 @@ public class LastLikeCourseDemandImport extends BaseImport {
 	        for ( Iterator it = root.elementIterator(); it.hasNext(); ) {
 	            Element element = (Element) it.next();
 	            String externalId = element.attributeValue("externalId");
-//	            System.out.println("Loading " + externalId);
 	            Student student = fetchStudent(externalId, session.getSessionId());
 	            if(student == null) continue;
 	            loadCourses(element, student, session);
