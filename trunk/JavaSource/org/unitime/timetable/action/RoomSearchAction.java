@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.action;
 
+import java.util.Set;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -32,8 +34,11 @@ import org.apache.struts.action.ActionMessages;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.RoomListForm;
+import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Settings;
+import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 
@@ -103,6 +108,17 @@ public class RoomSearchAction extends Action {
 		} else {
             // No session attribute found - Load dept code
 			LookupTables.setupDeptsForUser(request, user, sessionId, true);
+            
+            TimetableManager owner = new TimetableManagerDAO().get(Long.valueOf((String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME)));
+            
+            if (owner.isExternalManager()) {
+                Set depts = Department.findAllOwned(sessionId, owner, true);
+                if (depts.size()==1) {
+                    roomListForm.setDeptCodeX(((Department)depts.iterator().next()).getDeptCode());
+                    httpSession.setAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME, roomListForm.getDeptCodeX());
+                    return mapping.findForward("roomList");
+                }
+            }
 			
 			return mapping.findForward("showRoomSearch");
 		}
