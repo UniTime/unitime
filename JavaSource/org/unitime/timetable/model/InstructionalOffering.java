@@ -734,6 +734,26 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 			origIoc = (InstrOfferingConfig) iocIt.next();
 			newIoc = (InstrOfferingConfig)origIoc.cloneWithSubparts();
 			newIoc.setInstructionalOffering(this);
+			if (!getControllingCourseOffering().getSubjectArea().getUniqueId().equals(instrOffrToCloneFrom.getControllingCourseOffering().getSubjectArea().getUniqueId())){
+				Department controlDept = getControllingCourseOffering().getSubjectArea().getDepartment();
+				SchedulingSubpart ss = null;
+				Class_ c = null;
+				if (newIoc.getSchedulingSubparts() != null){
+					for (Iterator ssIt = newIoc.getSchedulingSubparts().iterator(); ssIt.hasNext();){
+						ss = (SchedulingSubpart) ssIt.next();
+						if (ss.getClasses() != null){
+							for (Iterator cIt = ss.getClasses().iterator(); cIt.hasNext();){
+								c = (Class_) cIt.next();
+								if (c.getManagingDept() != null 
+										&& !c.getManagingDept().getUniqueId().equals(controlDept.getUniqueId()) 
+										&& !c.getManagingDept().isExternalManager().booleanValue()){
+									c.setManagingDept(controlDept);
+								}
+							}
+						}
+					}
+				}
+			}
 			this.addToinstrOfferingConfigs(newIoc);
 		}
 	}
