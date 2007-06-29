@@ -40,6 +40,15 @@
 				</tt:section-title>
 			<TABLE align="right" cellspacing="0" cellpadding="2" class="FormWithNoPadding">
 				<TR>
+					<logic:equal name="roomGroupListForm" property="deptSize" value="false">
+						<TD>
+							<html:form action="roomGroupList" styleClass="FormWithNoPadding">			
+								<html:submit property="op" onclick="displayLoading();" styleClass="btn" accesskey="P" titleKey="title.exportPDF">
+									<bean:message key="button.exportPDF" />
+								</html:submit>
+							</html:form>
+						</TD>
+					</logic:equal>
 					<logic:equal name="roomGroupListForm" property="canAdd" value="true">
 						<TD nowrap>
 							<html:form action="roomGroupAdd" styleClass="FormWithNoPadding">			
@@ -130,6 +139,15 @@
 		<TD align="right" colspan='5'>
 			<TABLE align="right" cellspacing="0" cellpadding="2" class="FormWithNoPadding">
 				<TR>
+					<logic:equal name="roomGroupListForm" property="deptSize" value="false">
+						<TD nowrap>
+							<html:form action="roomGroupList">			
+								<html:submit property="op" onclick="displayLoading();" styleClass="btn" accesskey="P" titleKey="title.exportPDF">
+									<bean:message key="button.exportPDF" />
+								</html:submit>
+							</html:form>
+						</TD>
+					</logic:equal>
 					<logic:equal name="roomGroupListForm" property="canAdd" value="true">
 						<TD nowrap>
 							<html:form action="roomGroupAdd">			
