@@ -597,17 +597,13 @@ public class RoomListAction extends Action {
 	
 				// get groups column
 				text[idx] = "";
-				boolean first = true;
+                comp[idx] = "";
 				for (Iterator it = new TreeSet(location.getRoomGroups()).iterator(); it.hasNext();) {
 					RoomGroup rg = (RoomGroup) it.next();
 					if (!rg.isGlobal().booleanValue() && !depts.contains(rg.getDepartment())) continue;
-					if (!first) {
-						text[idx] = text[idx] + "<br>";
-					} else {
-						comp[idx] = rg.getName().trim();
-					}
+                    if (text[idx].length()>0) text[idx] += "<br>";
+                    comp[idx] = comp[idx] + rg.getName().trim();
 					text[idx] += rg.htmlLabel();
-					first = false;
 				}
 				idx++;
 				
@@ -615,26 +611,17 @@ public class RoomListAction extends Action {
 					// get features column
 					text[idx] = "";
                     comp[idx] = "";
-					first = true;
 					for (Iterator it = new TreeSet(location.getGlobalRoomFeatures()).iterator(); it.hasNext();) {
 						GlobalRoomFeature rf = (GlobalRoomFeature) it.next();
-						if (!first) {
-							text[idx] = text[idx] + "<br>";
-						} else {
-							comp[idx] = comp[idx] + rf.getLabel().trim();
-						}
+                        if (text[idx].length()>0) text[idx] += "<br>";
+                        comp[idx] = comp[idx] + rf.getLabel().trim();
 						text[idx] += rf.htmlLabel();
-						first = false;
 					}
 					for (Iterator it = new TreeSet(location.getDepartmentRoomFeatures()).iterator(); it.hasNext();) {
 						DepartmentRoomFeature drf = (DepartmentRoomFeature) it.next();
-						if (!first) {
-							text[idx] = text[idx] + "<br>";
-						} else {
-							comp[idx] = comp[idx] + drf.getLabel().trim();
-						}
+                        if (text[idx].length()>0) text[idx] += "<br>";
+                        comp[idx] = comp[idx] + drf.getLabel().trim();
 						text[idx] += drf.htmlLabel();
-						first = false;
 					}
 					idx++;
 				} else {
@@ -694,26 +681,23 @@ public class RoomListAction extends Action {
 			// set request attributes
 			if (classRoomsSize != 0) {
 				int ord = WebTable.getOrder(httpSession, "classrooms.ord");
-				if (ord>=heading1.length) ord = 0;
-				request.setAttribute("classrooms", classRoomsTable
-						.printTable(ord));
+				if (ord>heading1.length) ord = 0;
+				request.setAttribute("classrooms", classRoomsTable.printTable(ord));
 			}
 			if (additonalRoomsSize != 0) {
-				int ord = WebTable.getOrder(httpSession, "classrooms.ord");
-				if (ord>=heading1.length) ord = 0;
-				request.setAttribute("additionalRooms", additionalRoomsTable
-						.printTable(ord));
+				int ord = WebTable.getOrder(httpSession, "additionalRooms.ord");
+				if (ord>heading1.length) ord = 0;
+				request.setAttribute("additionalRooms", additionalRoomsTable.printTable(ord));
 			}
 			if (specialRoomsSize != 0) {
-				int ord = WebTable.getOrder(httpSession, "classrooms.ord");
-				if (ord>=heading1.length) ord = 0;
-				request.setAttribute("specialRooms", specialRoomsTable
-								.printTable(ord));
+				int ord = WebTable.getOrder(httpSession, "specialRooms.ord");
+				if (ord>heading1.length) ord = 0;
+				request.setAttribute("specialRooms", specialRoomsTable.printTable(ord));
 			}
 			
 			if (nonUnivSize>0) {
-				int ord = WebTable.getOrder(httpSession, "classrooms.ord");
-				if (ord>=heading2.length) ord = 0;
+				int ord = WebTable.getOrder(httpSession, "nonUniv.ord");
+				if (ord>heading2.length) ord = 0;
 				request.setAttribute("nonUnivLocation", nonUnivTable.printTable(ord));
 			}
 			
@@ -1082,43 +1066,29 @@ public class RoomListAction extends Action {
 	
 				// get groups column
 				text[idx] = "";
-				boolean first = true;
 				for (Iterator it = new TreeSet(location.getRoomGroups()).iterator(); it.hasNext();) {
 					RoomGroup rg = (RoomGroup) it.next();
 					if (!rg.isGlobal().booleanValue() && !depts.contains(rg.getDepartment())) continue;
-					if (!first) {
-						text[idx] = text[idx] + "\n";
-					} else {
-						comp[idx] = rg.getName().trim();
-					}
+					if (text[idx].length()>0) text[idx] += "\n";
+                    comp[idx] = comp[idx] + rg.getName().trim();
 					text[idx] += (rg.isGlobal().booleanValue()?"":"@@COLOR "+rg.getDepartment().getRoomSharingColor(null)+" ")+rg.getName(); 
-					first = false;
 				}
 				idx++;
 				
 				if (featuresOneColumn) {
 					// get features column
 					text[idx] = "";
-					first = true;
 					for (Iterator it = new TreeSet(location.getGlobalRoomFeatures()).iterator(); it.hasNext();) {
 						GlobalRoomFeature rf = (GlobalRoomFeature) it.next();
-						if (!first) {
-							text[idx] = text[idx] + "\n";
-						} else {
-							comp[idx] = rf.getLabel().trim();
-						}
+                        if (text[idx].length()>0) text[idx] += "\n";
+                        comp[idx] = comp[idx] + rf.getLabel().trim();
 						text[idx] += rf.getLabel();
-						first = false;
 					}
 					for (Iterator it = new TreeSet(location.getDepartmentRoomFeatures()).iterator(); it.hasNext();) {
 						DepartmentRoomFeature drf = (DepartmentRoomFeature) it.next();
-						if (!first) {
-							text[idx] = text[idx] + "\n";
-						} else {
-							comp[idx] = drf.getLabel().trim();
-						}
+                        if (text[idx].length()>0) text[idx] += "\n";
+                        comp[idx] = comp[idx] + drf.getLabel().trim();
 						text[idx] +="@@COLOR "+drf.getDepartment().getRoomSharingColor(null)+" "+drf.getLabel();
-						first = false;
 					}
 					idx++;
 				} else {
@@ -1174,7 +1144,9 @@ public class RoomListAction extends Action {
 			// set request attributes
 			if (classRoomsSize != 0) {
 				PdfWebTable table = classRoomsTable;
-    			PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(request.getSession(),"classrooms.ord"));
+                int ord = WebTable.getOrder(httpSession, "classrooms.ord");
+                if (ord>heading1.length) ord = 0;
+    			PdfPTable pdfTable = table.printPdfTable(ord);
     			if (doc==null) {
     				doc = new Document(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()),30,30,30,30);
     				PdfWriter iWriter = PdfWriter.getInstance(doc, out);
@@ -1189,7 +1161,9 @@ public class RoomListAction extends Action {
 			}
 			if (additonalRoomsSize != 0) {
 				PdfWebTable table = additionalRoomsTable;
-    			PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(request.getSession(),"additionalRooms.ord"));
+                int ord = WebTable.getOrder(httpSession, "additionalRooms.ord");
+                if (ord>heading1.length) ord = 0;
+    			PdfPTable pdfTable = table.printPdfTable(ord);
     			if (doc==null) {
     				doc = new Document(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()),30,30,30,30);
     				PdfWriter iWriter = PdfWriter.getInstance(doc, out);
@@ -1204,7 +1178,9 @@ public class RoomListAction extends Action {
 			}
 			if (specialRoomsSize != 0) {
 				PdfWebTable table = specialRoomsTable;
-    			PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(request.getSession(),"specialRooms.ord"));
+                int ord = WebTable.getOrder(httpSession, "specialRooms.ord");
+                if (ord>heading1.length) ord = 0;
+    			PdfPTable pdfTable = table.printPdfTable(ord);
     			if (doc==null) {
     				doc = new Document(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()),30,30,30,30);
     				PdfWriter iWriter = PdfWriter.getInstance(doc, out);
@@ -1220,7 +1196,9 @@ public class RoomListAction extends Action {
 			
 			if (nonUnivSize>0) {
 				PdfWebTable table = nonUnivTable;
-    			PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(request.getSession(),"nonUniv.ord"));
+                int ord = WebTable.getOrder(httpSession, "nonUniv.ord");
+                if (ord>heading2.length) ord = 0;
+    			PdfPTable pdfTable = table.printPdfTable(ord);
     			if (doc==null) {
     				doc = new Document(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()),30,30,30,30);
     				PdfWriter iWriter = PdfWriter.getInstance(doc, out);
