@@ -59,6 +59,15 @@
 			</tt:section-title>
 			<TABLE align="right" cellspacing="0" cellpadding="2" class="FormWithNoPadding">
 				<TR>
+					<logic:equal name="<%=frmName%>" property="deptSize" value="false">
+						<TD>
+							<html:form action="roomList" styleClass="FormWithNoPadding">			
+								<html:submit property="op" onclick="displayLoading();" styleClass="btn" accesskey="P" titleKey="title.exportPDF">
+									<bean:message key="button.exportPDF" />
+								</html:submit>
+							</html:form>
+						</TD>
+					</logic:equal>
 					<logic:equal name="<%=frmName%>" property="canAdd" value="true">
 						<TD nowrap>
 							<html:form action="editRoom" styleClass="FormWithNoPadding">
@@ -234,6 +243,15 @@
 		<TD valign="middle" colspan="<%=colspan%>" align="right">
 			<TABLE align="right" cellspacing="0" cellpadding="2" class="FormWithNoPadding">
 				<TR>
+					<logic:equal name="<%=frmName%>" property="deptSize" value="false">
+						<TD>
+							<html:form action="roomList" styleClass="FormWithNoPadding">			
+								<html:submit property="op" onclick="displayLoading();" styleClass="btn" accesskey="P" titleKey="title.exportPDF">
+									<bean:message key="button.exportPDF" />
+								</html:submit>
+							</html:form>
+						</TD>
+					</logic:equal>
 					<logic:equal name="<%=frmName%>" property="canAdd" value="true">
 						<TD nowrap>
 							<html:form action="editRoom" styleClass="FormWithNoPadding">
