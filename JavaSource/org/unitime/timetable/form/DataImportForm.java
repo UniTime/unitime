@@ -41,7 +41,7 @@ import org.unitime.timetable.dataexchange.PosMajorImportDAO;
 import org.unitime.timetable.dataexchange.PosMinorImportDAO;
 import org.unitime.timetable.dataexchange.SessionImportDAO;
 import org.unitime.timetable.dataexchange.StaffImportDAO;
-import org.unitime.timetable.dataexchange.StudentImportDAO;
+import org.unitime.timetable.dataexchange.StudentImport;
 import org.unitime.timetable.dataexchange.SubjectAreaImportDAO;
 
 
@@ -141,7 +141,7 @@ public class DataImportForm extends ActionForm {
         	new PosMinorImportDAO().loadFromXML(fileName);
         }
         else if(root.getName().equalsIgnoreCase("students")) {
-        	new StudentImportDAO().loadFromXML(fileName);
+        	new StudentImport().loadXml(fileName);
         }
         else if(root.getName().equalsIgnoreCase("staff")) {
         	new StaffImportDAO().loadFromXML(fileName);
