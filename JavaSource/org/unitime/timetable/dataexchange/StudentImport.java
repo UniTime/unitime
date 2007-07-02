@@ -13,7 +13,6 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.dao.AcademicAreaDAO;
 import org.unitime.timetable.model.dao.AcademicClassificationDAO;
-import org.unitime.timetable.model.dao.StudentDAO;
 
 public class StudentImport extends BaseImport {
 
@@ -49,12 +48,10 @@ public class StudentImport extends BaseImport {
 	            loadAcadAreaClassifications(element, student, session);
 	            if(!loadMajors(element, student, session)) continue;
 	            loadMinors(element, student, session);
+                
+                getHibSession().save(student);
 
-	            try {
-	            	new StudentDAO().save(student);
-	            } catch (Exception ex) {
 	            flushIfNeeded(true);
-	        }
 	        }
 		} catch (Exception e) {
 			fatal("Exception: " + e.getMessage(), e);
