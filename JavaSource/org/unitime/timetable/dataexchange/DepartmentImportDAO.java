@@ -56,6 +56,11 @@ public class DepartmentImportDAO extends DepartmentDAO {
 
 		Document document = (new SAXReader()).read(fis);
         Element root = document.getRootElement();
+        
+        loadFromXML(root);
+    }
+    
+    public void loadFromXML(Element root) throws Exception {
 
         if (!root.getName().equalsIgnoreCase("departments")) {
         	throw new Exception("Given XML file is not an Department load file.");

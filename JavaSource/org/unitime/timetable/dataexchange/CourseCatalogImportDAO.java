@@ -61,6 +61,11 @@ public class CourseCatalogImportDAO extends CourseCatalogDAO {
 
 		Document document = (new SAXReader()).read(fis);
         Element root = document.getRootElement();
+        
+        loadFromXML(root);
+    }
+    
+    public void loadFromXML(Element root) throws Exception {
 
         if (!root.getName().equalsIgnoreCase("courseCatalog")) {
         	throw new Exception("Given XML file is not a Course Catalog load file.");

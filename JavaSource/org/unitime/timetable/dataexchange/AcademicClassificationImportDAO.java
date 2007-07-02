@@ -56,6 +56,11 @@ public class AcademicClassificationImportDAO extends AcademicClassificationDAO {
 
 		Document document = (new SAXReader()).read(fis);
         Element root = document.getRootElement();
+    
+        loadFromXML(root);
+    }
+    
+    public void loadFromXML(Element root) throws Exception {
 
         if (!root.getName().equalsIgnoreCase("academicClassifications")) {
         	throw new Exception("Given XML file is not a AcademicClassification load file.");
