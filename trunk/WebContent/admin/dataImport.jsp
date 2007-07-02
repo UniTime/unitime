@@ -20,7 +20,7 @@
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html"%>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic"%>
 
-<html:form action="/dataImport" focus="fileName">
+<html:form action="/dataImport" focus="file" enctype="multipart/form-data">
 
 	<TABLE width="95%" border="0" cellspacing="0" cellpadding="3">
 
@@ -50,9 +50,9 @@
 		</logic:messagesPresent>
 
 		<TR>
-			<TD nowrap>File Name:</TD>
+			<TD nowrap>File:</TD>
 			<TD>
-				<html:text name="dataImportForm" property="fileName" size="100" maxlength="255"/>
+				<html:file name="dataImportForm" property="file" size="100" maxlength="255"/>
 			</TD>
 		</TR>
 		
