@@ -19,14 +19,13 @@
 */
 package org.unitime.timetable.form;
 
-import java.io.File;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
+import org.apache.struts.upload.FormFile;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
@@ -57,7 +56,7 @@ public class DataImportForm extends ActionForm {
 	// --------------------------------------------------------- Instance Variables
 
 	/** fileName property */
-	private String fileName;
+	private FormFile file;
 
 	private String op;
 
@@ -72,15 +71,16 @@ public class DataImportForm extends ActionForm {
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 		ActionErrors errors = new ActionErrors();
 		
-        if(fileName == null || fileName.trim().length() == 0) {
-        	errors.add("name", new ActionMessage("errors.required", "File Name") );
+        if (file == null || file.getFileSize()<=0) {
+        	errors.add("name", new ActionMessage("errors.required", "File") );
         }
+        /*
         else {
 	        File file = new File(fileName);
 	        if(!file.exists()) {
 	        	errors.add("notFound", new ActionMessage("errors.fileNotFound", fileName) );
 	        }
-        }
+        }*/
 
         return errors;
 	}
@@ -91,23 +91,23 @@ public class DataImportForm extends ActionForm {
 	 * @param request
 	 */
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
-		this.fileName = null;
+		this.file = null;
 	}
 
 	/** 
 	 * Returns the fileName.
 	 * @return String
 	 */
-	public String getFileName() {
-		return fileName;
+	public FormFile getFile() {
+		return file;
 	}
 
 	/** 
 	 * Set the fileName.
 	 * @param fileName The fileName to set
 	 */
-	public void setFileName(String fileName) {
-		this.fileName = fileName;
+	public void setFile(FormFile file) {
+		this.file = file;
 	}
 
 	public String getOp() {
@@ -119,47 +119,48 @@ public class DataImportForm extends ActionForm {
 	}
 
 	public void doImport() throws Exception {
-		Document document = (new SAXReader()).read(fileName);
+        
+		Document document = (new SAXReader()).read(file.getInputStream());
         Element root = document.getRootElement();
 
         if (root.getName().equalsIgnoreCase("academicAreas")) {
-        	new AcademicAreaImportDAO().loadFromXML(fileName);
+        	new AcademicAreaImportDAO().loadFromXML(root);
         }
         else if(root.getName().equalsIgnoreCase("subjectAreas")) {
-        	new SubjectAreaImportDAO().loadFromXML(fileName);
+        	new SubjectAreaImportDAO().loadFromXML(root);
         }
         else if(root.getName().equalsIgnoreCase("academicClassifications")) {
-        	new AcademicClassificationImportDAO().loadFromXML(fileName);
+        	new AcademicClassificationImportDAO().loadFromXML(root);
         }
         else if(root.getName().equalsIgnoreCase("departments")) {
-        	new DepartmentImportDAO().loadFromXML(fileName);
+        	new DepartmentImportDAO().loadFromXML(root);
         }
         else if(root.getName().equalsIgnoreCase("posMajors")) {
-        	new PosMajorImportDAO().loadFromXML(fileName);
+        	new PosMajorImportDAO().loadFromXML(root);
         }
         else if(root.getName().equalsIgnoreCase("posMinors")) {
-        	new PosMinorImportDAO().loadFromXML(fileName);
+        	new PosMinorImportDAO().loadFromXML(root);
         }
         else if(root.getName().equalsIgnoreCase("students")) {
-        	new StudentImport().loadXml(fileName);
+        	new StudentImport().loadXml(root);
         }
         else if(root.getName().equalsIgnoreCase("staff")) {
-        	new StaffImportDAO().loadFromXML(fileName);
+        	new StaffImportDAO().loadFromXML(root);
         }
         else if(root.getName().equalsIgnoreCase("lastLikeCourseDemand")) {
-        	new LastLikeCourseDemandImport().loadXml(fileName);
+        	new LastLikeCourseDemandImport().loadXml(root);
         }
         else if(root.getName().equalsIgnoreCase("academicAreaReservations")) {
-        	new AcadAreaReservationImportDAO().loadFromXML(fileName);
+        	new AcadAreaReservationImportDAO().loadFromXML(root);
         }
         else if(root.getName().equalsIgnoreCase("session")) {
-        	new SessionImportDAO().loadFromXML(fileName);
+        	new SessionImportDAO().loadFromXML(root);
         }
         else if(root.getName().equalsIgnoreCase("courseCatalog")) {
-        	new CourseCatalogImportDAO().loadFromXML(fileName);
+        	new CourseCatalogImportDAO().loadFromXML(root);
         }
         else if(root.getName().equalsIgnoreCase("buildingsRooms")) {
-        	new BuildingRoomImport().loadXml(fileName);
+        	new BuildingRoomImport().loadXml(root);
         }
         else {
         	throw new Exception(root.getName() + " is an unknown data type.");
