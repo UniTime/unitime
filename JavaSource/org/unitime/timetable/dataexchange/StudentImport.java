@@ -33,6 +33,20 @@ public class StudentImport extends BaseImport {
 	        }
 
 			beginTransaction();
+            
+            /* 
+             * If some records of a table related to students need to be explicitly deleted, 
+             * hibernate can also be used to delete them. For instance, the following query 
+             * deletes all last-like course demands for given academic session:
+             *   
+             * delete LastLikeCourseDemand ll where ll.student.uniqueId in
+             *      (select s.uniqueId from Student s where s.session.uniqueId=:sessionId)
+             */
+            
+            getHibSession().createQuery("delete Student s where s.session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).executeUpdate();
+            
+            flush(true);
+            
 	        for ( Iterator it = rootElement.elementIterator(); it.hasNext(); ) {
 	            Element element = (Element) it.next();
             	Student student = new Student();
@@ -53,13 +67,12 @@ public class StudentImport extends BaseImport {
 
 	            flushIfNeeded(true);
 	        }
+            
+            commitTransaction();
 		} catch (Exception e) {
 			fatal("Exception: " + e.getMessage(), e);
 			rollbackTransaction();
 			throw e;
-		}
-		finally {
-            flush(true);
 		}
 	}
 	private boolean loadMajors(Element element, Student student, Session session) throws Exception {
