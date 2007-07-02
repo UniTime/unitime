@@ -31,6 +31,43 @@
 		<item>
 			<name>Rooms</name>
 			<description>
+				<line>For external manager with only one department (e.g., LAB) -- display the rooms of the department right away.</line>
+				<line>Fixed display problem of departmental room features (sometimes, multiple features were displayed in a single row).</line>
+				<line>Table ordering corrected (each table can be ordered separately, but only ordering of the class rooms table was actually used).</line>
+			</description>
+		</item>
+		<item>
+			<name>Rooms, Room Features, Room Groups</name>
+			<description>
+				<line>For external manager with only one department (e.g., LAB) -- display Export PDF button next to other buttons (Search/Export PDF component is not present).</line>
+			</description>
+		</item>
+		<title>OTHER</title>
+		<item>
+			<name>Data Import</name>
+			<description>
+				<line>StudentImport and LastLikeCourseDemandImport are now inherited from BaseImport.</line>
+				<line>StudentImport: speed improved by not using StudentDAO.save(student); all students for given academic session are deleted first</line>
+				<line>LastLikeCourseDemandImport: all last-like course demands for given academic session are deleted first</line>
+				<line>Data Import page now uploads the selected file (using Struts file upload).</line>
+				
+			</description>
+		</item>
+		<item>
+			<name>Cloning</name>
+			<description>
+				<line>Added methods for cloning of instructional offerings and all underlaying objects (configurations, subparts, classes, etc).</line>
+			</description>
+		</item>		
+	</category>
+	
+	<version>3.0.22</version>
+	<release-date>Wed, 27 Jun 2007</release-date>
+	<category>
+		<title>USER INTERFACE</title>
+		<item>
+			<name>Rooms</name>
+			<description>
 				<line>Room Features, Room Groups: Abbreviation column added</line>
 				<line>Room Detail, Room Edit: Administrator can see and change external id.</line>
 				<line>Room Detail, Room Edit: Administrator can change room type (property Room.scheduledRoomType).</line>
