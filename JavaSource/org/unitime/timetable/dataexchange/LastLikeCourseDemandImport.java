@@ -62,6 +62,13 @@ public class LastLikeCourseDemandImport extends BaseImport {
 	        loadCourseOfferings(session.getSessionId());
 
 			beginTransaction();
+            
+            getHibSession().createQuery("delete LastLikeCourseDemand ll where ll.student.uniqueId in " +
+                    "(select s.uniqueId from Student s where s.session.uniqueId=:sessionId)").
+                    setLong("sessionId", session.getUniqueId()).executeUpdate();
+            
+            flush(true);
+            
 	        for ( Iterator it = root.elementIterator(); it.hasNext(); ) {
 	            Element element = (Element) it.next();
 	            String externalId = element.attributeValue("externalId");
@@ -70,13 +77,12 @@ public class LastLikeCourseDemandImport extends BaseImport {
 	            loadCourses(element, student, session);
 	            flushIfNeeded(true);
 	        }
+            
+            commitTransaction();
 		} catch (Exception e) {
 			fatal("Exception: " + e.getMessage(), e);
 			rollbackTransaction();
 			throw e;
-		}
-		finally {
-            flush(true);
 		}
 	}
 
