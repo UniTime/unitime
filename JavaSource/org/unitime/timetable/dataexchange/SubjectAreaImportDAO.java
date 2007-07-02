@@ -57,6 +57,12 @@ public class SubjectAreaImportDAO extends SubjectAreaDAO {
 
 		Document document = (new SAXReader()).read(fis);
         Element root = document.getRootElement();
+        
+        loadFromXML(root);
+        
+    }
+    
+    public void loadFromXML(Element root) throws Exception {
 
         if (!root.getName().equalsIgnoreCase("subjectAreas")) {
         	throw new Exception("Given XML file is not a SubjectArea load file.");

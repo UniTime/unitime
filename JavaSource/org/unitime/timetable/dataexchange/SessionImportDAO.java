@@ -60,6 +60,11 @@ public class SessionImportDAO extends SessionDAO {
 		Document document = (new SAXReader()).read(fis);
         Element root = document.getRootElement();
 
+        loadFromXML(root);
+    }
+    
+    public void loadFromXML(Element root) throws Exception {
+
         if (!root.getName().equalsIgnoreCase("session")) {
         	throw new Exception("Given XML file is not a Session load file.");
         }
