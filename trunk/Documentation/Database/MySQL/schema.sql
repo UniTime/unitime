@@ -1159,43 +1159,6 @@ CREATE TABLE `timetable`.`offr_group_offering` (
 )
 ENGINE = INNODB;
 
-DROP TABLE IF EXISTS `timetable`.`plan_table`;
-CREATE TABLE `timetable`.`plan_table` (
-  `statement_id` VARCHAR(30) BINARY NULL,
-  `timestamp` DATETIME NULL,
-  `remarks` VARCHAR(80) BINARY NULL,
-  `operation` VARCHAR(30) BINARY NULL,
-  `options` VARCHAR(30) BINARY NULL,
-  `object_node` VARCHAR(128) BINARY NULL,
-  `object_owner` VARCHAR(30) BINARY NULL,
-  `object_name` VARCHAR(30) BINARY NULL,
-  `object_instance` DECIMAL(22, 0) NULL,
-  `object_type` VARCHAR(30) BINARY NULL,
-  `optimizer` VARCHAR(255) BINARY NULL,
-  `search_columns` DECIMAL(22, 0) NULL,
-  `id` DECIMAL(22, 0) NULL,
-  `parent_id` DECIMAL(22, 0) NULL,
-  `position` DECIMAL(22, 0) NULL,
-  `cost` DECIMAL(22, 0) NULL,
-  `cardinality` DECIMAL(22, 0) NULL,
-  `bytes` DECIMAL(22, 0) NULL,
-  `other_tag` VARCHAR(255) BINARY NULL,
-  `partition_start` VARCHAR(255) BINARY NULL,
-  `partition_stop` VARCHAR(255) BINARY NULL,
-  `partition_id` DECIMAL(22, 0) NULL,
-  `other` LONGTEXT BINARY NULL,
-  `distribution` VARCHAR(30) BINARY NULL,
-  `cpu_cost` DECIMAL(22, 0) NULL,
-  `io_cost` DECIMAL(22, 0) NULL,
-  `temp_space` DECIMAL(22, 0) NULL,
-  `access_predicates` VARCHAR(4000) BINARY NULL,
-  `filter_predicates` VARCHAR(4000) BINARY NULL,
-  `projection` VARCHAR(4000) BINARY NULL,
-  `time` DECIMAL(22, 0) NULL,
-  `qblock_name` VARCHAR(30) BINARY NULL
-)
-ENGINE = INNODB;
-
 DROP TABLE IF EXISTS `timetable`.`position_code_to_type`;
 CREATE TABLE `timetable`.`position_code_to_type` (
   `position_code` CHAR(5) BINARY NOT NULL,
@@ -1326,16 +1289,6 @@ CREATE TABLE `timetable`.`preference_level` (
   `uniqueid` DECIMAL(20, 0) NOT NULL,
   PRIMARY KEY (`uniqueid`),
   UNIQUE INDEX `uk_preference_level_pref_id` (`pref_id`)
-)
-ENGINE = INNODB;
-
-DROP TABLE IF EXISTS `timetable`.`qx__$schema`;
-CREATE TABLE `timetable`.`qx__$schema` (
-  `table_name` VARCHAR(30) BINARY NULL,
-  `column_name` VARCHAR(30) BINARY NULL,
-  `informix_type_code` INT(4) NULL,
-  `informix_type_data` BIGINT(10) NULL,
-  UNIQUE INDEX `qx__$schemaindex` (`table_name`(30), `column_name`(30))
 )
 ENGINE = INNODB;
 
