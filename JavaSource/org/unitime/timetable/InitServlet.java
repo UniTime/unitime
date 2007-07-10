@@ -89,7 +89,6 @@ public class InitServlet extends HttpServlet implements Servlet {
 			
 			SolverInfo.stopInfoCacheCleanup();
 		
-			logMessage(" - Stopping Property File Change Listener ... ");							
 			ApplicationProperties.stopListener();
 			
 			logMessage("******* Timetabling Application : Shut down DONE *******");
