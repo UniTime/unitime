@@ -53,9 +53,21 @@
 			<TD width="90%" align="left">
 				<logic:equal name="<%=frmName%>" property="unlimited" value="true">
 					<img src='images/infinity.gif' alt='Unlimited Enrollment' title='Unlimited Enrollment' border='0' align='top'>
+					<bean:define id="instrOffrLimit" value="-1" />
 				</logic:equal>
 				<logic:notEqual name="<%=frmName%>" property="unlimited" value="true">
-					<bean:write name="<%=frmName%>" property="ioLimit"/>
+					<TABLE border="0" cellspacing="0" cellpadding="0" align="left">
+					<TR><TD align="left">
+						<bean:write name="<%=frmName%>" property="ioLimit"/>
+						<bean:define id="instrOffrLimit">
+							<bean:write name="<%=frmName%>" property="ioLimit"/>
+						</bean:define>
+					</TD>
+					<TD align="left">
+						<DIV id='resvTotalDiff'>
+						</DIV>
+					</TD></TR>
+					</TABLE>					
 				</logic:notEqual>
 			</TD>
 		</TR>

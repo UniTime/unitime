@@ -34,38 +34,56 @@
 <SCRIPT language="javascript">
 	<!--
 	var origTotal = 0;
+	var ioLimit = -1;
+	var colorCodeTotal = true;
+	var mismatchHtml = 
+		" &nbsp;&nbsp; " +
+		"<img src='images/Error16.jpg' alt='Limits do not match' title='Limits do not match' border='0' align='top'> &nbsp;" +
+		"<font color='#FF0000'>Reserved spaces does not match limit</font>";
 	
+	String.prototype.trim = function() {
+		return this.replace(/^\s+|\s+$/g,"");
+	}
+	String.prototype.ltrim = function() {
+		return this.replace(/^\s+/,"");
+	}
+	String.prototype.rtrim = function() {
+		return this.replace(/\s+$/,"");
+	}
+		
 	function updateResvTotal() {
 		i=0;
 		total = 0;
 		while ( (o = document.getElementById("reserved_" + i++)) !=null ) {
-			if (o.value == parseInt(o.value) && parseInt(o.value)>=0) {
-				total += parseInt(o.value);
+			val = o.value = o.value.trim();
+			if (val=="") val = 0;
+			if (val == parseInt(val) && parseInt(val)>=0) {
+				total += parseInt(val);
 			}
 			else {
-				document.getElementById("resvTotal").innerHTML = "<font color='red'><b>ERR</b></font>";
+				document.getElementById("resvTotal").innerHTML = "<font color='red'><b>?</b></font>";
 				return;
 			}
 		}
-		if (total<origTotal) {
-			str = "<img height='15' align='bottom' src='images/down_arrow_red.jpg'> <font color='red'><b>" + (origTotal-total) + "</b></font>&nbsp;&nbsp;";
-			document.getElementById("resvTotal").innerHTML = str.blink();
+		
+		str = "<b>" + total + "</b>&nbsp;&nbsp;";
+		if (total<origTotal && origTotal>=0 && colorCodeTotal) {
 			str = "<font color='red'><b>" + total + "</b></font>&nbsp;&nbsp;";
-			setTimeout("document.getElementById('resvTotal').innerHTML = str;",1500);
 		}
-		if (total>origTotal) {
-			str = "<img height='15' align='bottom' src='images/up_arrow_green.jpg'> <font color='green'><b>" + (total-origTotal) + "</b></font>&nbsp;&nbsp;";
-			document.getElementById("resvTotal").innerHTML = str.blink();
+		if (total>origTotal && origTotal>=0 && colorCodeTotal) {
 			str = "<font color='green'><b>" + total + "</b></font>&nbsp;&nbsp;";
-			setTimeout("document.getElementById('resvTotal').innerHTML = str;",1500);
 		}
-		if (total==origTotal)
-			document.getElementById("resvTotal").innerHTML = total + "&nbsp;&nbsp;";
+		document.getElementById('resvTotal').innerHTML = str;
+		
+		if (total!=ioLimit && origTotal>=0) 
+			document.getElementById("resvTotalDiff").innerHTML = mismatchHtml;
+		else 
+			document.getElementById("resvTotalDiff").innerHTML = "";
 	}
 	
 	// -->
 </SCRIPT>
-	
+
 	<TABLE width="93%" border="0" cellspacing="0" cellpadding="3">
 	
 		<TR>
@@ -397,7 +415,15 @@
 						<% if (!frmName.equals("individualReservationEditForm")) { %>
 						<!-- TODO Reservations - bypass to be removed later -->
 						<logic:notEqual name="<%=frmName%>" property="ownerType" value="<%= Constants.RESV_OWNER_CLASS %>">
-								<TD class='rowTotal' align='right'><DIV id='resvTotal'><%= resvTotal %>&nbsp;</DIV></TD>
+								<TD class='rowTotal' align='right'><DIV id='resvTotal'><%= 
+									frmName.equals("courseReservationEditForm") 
+										? resvTotal
+										: resvTotal>reqTotal
+											? "<font color='green'><b>" + resvTotal + "</b></font>" 
+											: resvTotal<reqTotal
+												? "<font color='red'><b>" + resvTotal + "</b></font>" 
+												: resvTotal 
+								%>&nbsp;</DIV></TD>
 						</logic:notEqual>
 						<!-- end bypass -->
 						<!-- TD class="BottomBorder"><I>Reserved <BR>Spaces</I></TD -->
@@ -471,7 +497,24 @@
 
 <SCRIPT language="javascript">
 	<!--
-	origTotal = <%=resvTotal%>;
+	origTotal = <%=reqTotal%>;
+	<% int ioLimit = pageContext.getAttribute("instrOffrLimit")!=null 
+						? Integer.valueOf((String) pageContext.getAttribute("instrOffrLimit"))
+						: -1; 
+
+		if (ioLimit!=-1 && resvTotal!=ioLimit) {						
+	%>	
+		document.getElementById("resvTotalDiff").innerHTML = mismatchHtml;
+	<%
+		}		
+		if (frmName.equals("courseReservationEditForm")) {
+	%>
+		colorCodeTotal = false;
+	<%
+		}		
+	%>
+	ioLimit = <%=ioLimit%>;
+	
 	// -->
 </SCRIPT>
 	
