@@ -267,7 +267,7 @@ public class ReservationsTableBuilder {
                        		  //TODO Reservations Bypass to be removed later
                        		  //resv.getPriority().toString(),
                        		  "&nbsp;",
-                       		  clsOwner ? "&nbsp;": getResvString(resv.getRequested(), resv.getReserved()),
+                       		  clsOwner ? "&nbsp;": resv.getReserved().toString(),
                        		  "&nbsp;",
                        		  //clsOwner ? "&nbsp;": ( resv.getRequested()!=null ? resv.getRequested().toString() : "-" ),
                        		  clsOwner ? "&nbsp;": ( resv.getProjectedEnrollment()!=null ? resv.getProjectedEnrollment().toString() : "-" ),
@@ -320,7 +320,7 @@ public class ReservationsTableBuilder {
         if (courseOffrResvTbl!=null && corTotals!=null) {
             courseOffrResvTbl.addLine(
 //                    null, new String[] { "&nbsp;", "&nbsp;", "&nbsp;", "<DIV class='rowTotal'>"+getResvString(new Integer(corTotals[3]), new Integer(corTotals[0]))+"</DIV>", "<DIV class='rowTotal'>"+corTotals[3]+"</DIV>", "<DIV class='rowTotal'>"+corTotals[1]+"</DIV>", "<DIV class='rowTotal'>"+corTotals[2]+"</DIV>" }, null );
-            		null, new String[] { "&nbsp;", "&nbsp;", "&nbsp;", "<DIV class='rowTotal'>"+getResvString(new Integer(corTotals[3]), new Integer(corTotals[0]))+"</DIV>", "&nbsp;", "<DIV class='rowTotal'>"+corTotals[1]+"</DIV>", "<DIV class='rowTotal'>"+corTotals[2]+"</DIV>" }, null );
+            		null, new String[] { "&nbsp;", "&nbsp;", "&nbsp;", "<DIV class='rowTotal'>"+new Integer(corTotals[0])+"</DIV>", "&nbsp;", "<DIV class='rowTotal'>"+corTotals[1]+"</DIV>", "<DIV class='rowTotal'>"+corTotals[2]+"</DIV>" }, null );
         }
 
         if (posResvTbl!=null && prTotals!=null) {
