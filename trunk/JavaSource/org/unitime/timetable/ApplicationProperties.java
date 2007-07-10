@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
@@ -43,7 +44,6 @@ public class ApplicationProperties {
 	private static Properties props = new Properties();
     private static long appPropertiesLastModified = -1, custPropertiesLastModified = -1;  
     private static PropertyFileChangeListener pfc=null;
-	private static PFCListenerShutdownHook hook = null;
 	
 	/**
 	 * Sets the properties 
@@ -57,10 +57,6 @@ public class ApplicationProperties {
 		if ((appPropertiesLastModified>0 || custPropertiesLastModified>0) && dynamicReload!=null && dynamicReload.equalsIgnoreCase("true")) {
 			pfc = new PropertyFileChangeListener();
 	        pfc.start();
-	 
-	        // Add shutdown hook to terminate threads gracefully
-	        hook = new PFCListenerShutdownHook();
-	        Runtime.getRuntime().addShutdownHook(hook);
 		}		
 	}
 	
@@ -72,7 +68,7 @@ public class ApplicationProperties {
             // Load properties set in application.properties
 			URL appPropertiesUrl = ApplicationProperties.class.getClassLoader().getResource("application.properties");
             if (appPropertiesUrl!=null) {
-				Debug.info("Reading " + appPropertiesUrl + " ...");
+				Debug.info("Reading " + URLDecoder.decode(appPropertiesUrl.getPath(), "UTF-8") + " ...");
 				props.load(appPropertiesUrl.openStream());
 			}
             try {
@@ -86,7 +82,7 @@ public class ApplicationProperties {
             // Load properties set in custom.properties
             URL custPropertiesUrl = ApplicationProperties.class.getClassLoader().getResource("custom.properties");
             if (custPropertiesUrl!=null) {
-                Debug.info("Reading " + custPropertiesUrl + " ...");
+                Debug.info("Reading " + URLDecoder.decode(custPropertiesUrl.getPath(), "UTF-8") + " ...");
                 props.load(custPropertiesUrl.openStream());
             }
             try {
@@ -248,23 +244,14 @@ public class ApplicationProperties {
 		return file;
 	}
 	
-    private static class PFCListenerShutdownHook extends Thread {
-        public void run() {
-            Debug.info("Executing Property File Change Listener Shut Down Hook ...");
-    		if (pfc!=null && pfc.isAlive() && !pfc.isInterrupted())
-    			pfc.interrupt();
-        }
-    }
-
 	/**
 	 * Stop Property File Change Listener Thread 
 	 */
 	public static void stopListener() {
-		if (pfc!=null && pfc.isAlive() && !pfc.isInterrupted())
+		if (pfc!=null && pfc.isAlive() && !pfc.isInterrupted()) {
+			Debug.info("Stopping Property File Change Listener Thread ...");
 			pfc.interrupt();
-		
-		if (hook!=null && hook.isAlive() && !hook.isInterrupted())
-			Runtime.getRuntime().removeShutdownHook(hook);
+		}
 	}
     
     /**
@@ -295,7 +282,6 @@ public class ApplicationProperties {
                     }
                 }
                 
-                Debug.info("Exiting Property File Change Listener Thread ...");
             } catch (Exception e) {
                 Debug.warning("Property File Change Listener Thread failed, reason: "+e.getMessage());
             }
