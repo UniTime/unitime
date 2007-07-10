@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.test;
 
+import java.text.SimpleDateFormat;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -39,17 +40,28 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseOfferingReservation;
+import org.unitime.timetable.model.DatePattern;
+import org.unitime.timetable.model.ExactTimeMins;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.LastLikeCourseDemand;
+import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.PosMinor;
+import org.unitime.timetable.model.PreferenceLevel;
+import org.unitime.timetable.model.Room;
+import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentClassEnrollment;
+import org.unitime.timetable.model.TimePatternModel;
+import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.SessionDAO;
 
+import net.sf.cpsolver.coursett.model.Lecture;
+import net.sf.cpsolver.coursett.model.Placement;
+import net.sf.cpsolver.coursett.model.RoomLocation;
 import net.sf.cpsolver.coursett.model.TimeLocation;
 import net.sf.cpsolver.studentsct.StudentSectioningLoader;
 import net.sf.cpsolver.studentsct.StudentSectioningModel;
@@ -73,15 +85,18 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
     private boolean iIncludeCourseDemands = true;
     private boolean iIncludeLastLikeStudents = true;
     private boolean iIncludeUseCommittedAssignments = false;
+    private boolean iMakeupAssignmentsFromRequiredPrefs = false;
     private String iInitiative = null;
     private String iTerm = null;
     private String iYear = null;
+    private long iMakeupAssignmentId = 0;
 
     public BatchStudentSectioningLoader(StudentSectioningModel model) {
         super(model);
         iIncludeCourseDemands = model.getProperties().getPropertyBoolean("Load.IncludeCourseDemands", iIncludeCourseDemands);
         iIncludeLastLikeStudents = model.getProperties().getPropertyBoolean("Load.IncludeLastLikeStudents", iIncludeLastLikeStudents);
         iIncludeUseCommittedAssignments = model.getProperties().getPropertyBoolean("Load.IncludeUseCommittedAssignments", iIncludeUseCommittedAssignments);
+        iMakeupAssignmentsFromRequiredPrefs = model.getProperties().getPropertyBoolean("Load.MakeupAssignmentsFromRequiredPrefs", iMakeupAssignmentsFromRequiredPrefs);
         iInitiative = model.getProperties().getProperty("Data.Initiative");
         iYear = model.getProperties().getProperty("Data.Year");
         iTerm = model.getProperties().getProperty("Data.Term");
@@ -92,10 +107,12 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
         
         if (session==null) throw new Exception("Session "+iInitiative+" "+iTerm+iYear+" not found!");
         
+        sLog.info("Loading data for "+iInitiative+" "+iTerm+iYear+"...");
+        
         load(session);
     }
     
-    private static String getInstructorIds(Class_ clazz) {
+    private String getInstructorIds(Class_ clazz) {
         if (!clazz.isDisplayInstructor().booleanValue()) return null;
         String ret = null;
         TreeSet ts = new TreeSet(clazz.getClassInstructors());
@@ -110,7 +127,7 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
         return ret;
     }
     
-    private static String getInstructorNames(Class_ clazz) {
+    private String getInstructorNames(Class_ clazz) {
         if (!clazz.isDisplayInstructor().booleanValue()) return null;
         String ret = null;
         TreeSet ts = new TreeSet(clazz.getClassInstructors());
@@ -124,8 +141,107 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
         }
         return ret;
     }
+    
+    public TimeLocation makeupTime(Class_ c) {
+        DatePattern datePattern = c.effectiveDatePattern(); 
+        if (datePattern==null) {
+            sLog.warn("        -- makup time for "+c.getClassLabel()+": no date pattern set");
+            return null;
+        }        
+        for (Iterator i=c.getEffectiveTimePreferences().iterator();i.hasNext();) {
+            TimePref tp = (TimePref)i.next();
+            TimePatternModel pattern = tp.getTimePatternModel();
+            if (pattern.isExactTime()) {
+                int length = ExactTimeMins.getNrSlotsPerMtg(pattern.getExactDays(),c.getSchedulingSubpart().getMinutesPerWk().intValue());
+                int breakTime = ExactTimeMins.getBreakTime(pattern.getExactDays(),c.getSchedulingSubpart().getMinutesPerWk().intValue()); 
+                return new TimeLocation(pattern.getExactDays(),pattern.getExactStartSlot(),length,PreferenceLevel.sIntLevelNeutral,0,datePattern.getUniqueId(),datePattern.getName(),datePattern.getPatternBitSet(),breakTime);
+            } else {
+                for (int time=0;time<pattern.getNrTimes(); time++) {
+                    for (int day=0;day<pattern.getNrDays(); day++) {
+                        String pref = pattern.getPreference(day,time);
+                        if (pref.equals(PreferenceLevel.sRequired)) {
+                        return new TimeLocation(
+                                pattern.getDayCode(day),
+                                pattern.getStartSlot(time),
+                                pattern.getSlotsPerMtg(),
+                                PreferenceLevel.prolog2int(pattern.getPreference(day, time)),
+                                pattern.getNormalizedPreference(day,time,0.77),
+                                datePattern.getUniqueId(),
+                                datePattern.getName(),
+                                datePattern.getPatternBitSet(),
+                                pattern.getBreakTime());
+                        }
+                    }
+                }
+            }
+        }
+        if (c.getEffectiveTimePreferences().isEmpty())
+            sLog.warn("        -- makup time for "+c.getClassLabel()+": no time preference set");
+        else
+            sLog.warn("        -- makup time for "+c.getClassLabel()+": no required time set");
+        return null;
+    }
+    
+    public Vector makeupRooms(Class_ c) {
+        Vector rooms = new Vector();
+        for (Iterator i=c.getEffectiveRoomPreferences().iterator();i.hasNext();) {
+            RoomPref rp = (RoomPref)i.next();
+            if (!PreferenceLevel.sRequired.equals(rp.getPrefLevel().getPrefProlog())) {
+                sLog.warn("        -- makup room for "+c.getClassLabel()+": preference for "+rp.getRoom().getLabel()+" is not required");
+                continue;
+            }
+            Location room = (Location)rp.getRoom();
+            RoomLocation roomLocation = new RoomLocation(
+                    room.getUniqueId(),
+                    room.getLabel(),
+                    (room instanceof Room? ((Room)room).getBuilding().getUniqueId() : null),
+                    0,
+                    room.getCapacity().intValue(),
+                    room.getCoordinateX().intValue(),
+                    room.getCoordinateY().intValue(),
+                    room.isIgnoreTooFar().booleanValue(),
+                    null);
+            rooms.addElement(roomLocation);
+        }        
+        return rooms;
+    }
+    
+    public Placement makeupPlacement(Class_ c) {
+        TimeLocation time = makeupTime(c);
+        if (time==null) return null;
+        Vector rooms = makeupRooms(c);
+        Vector times = new Vector(1); times.addElement(time);
+        Lecture lecture = new Lecture(c.getUniqueId(), null, c.getSchedulingSubpart().getUniqueId(), c.getClassLabel(), times, rooms, rooms.size(), new Placement(null,time,rooms), 0, 0, 1.0);
+        lecture.setNote(c.getNotes());
+        Placement p = (Placement)lecture.getInitialAssignment();
+        p.setAssignmentId(new Long(iMakeupAssignmentId++));
+        lecture.setBestAssignment(p);
+        sLog.debug("        -- makup placement for "+c.getClassLabel()+": "+p.getLongName());
+        return p;
+    }
+    
+    private Section loadSection(Subpart subpart, Section parentSection, Class_ c, int limit) {
+        Placement p = null;
+        if (iMakeupAssignmentsFromRequiredPrefs) {
+            p = makeupPlacement(c);
+        } else {
+            Assignment a = c.getCommittedAssignment();
+            p = (a==null?null:a.getPlacement());
+        }
+        Section section = new Section(c.getUniqueId().longValue(), limit, c.getClassLabel(), subpart, p, getInstructorIds(c), getInstructorNames(c), parentSection);
+        if (section.getTime()!=null && section.getTime().getDatePatternId().equals(c.getSession().getDefaultDatePattern().getUniqueId()))
+            section.getTime().setDatePattern(section.getTime().getDatePatternId(),"",section.getTime().getWeekCode());
+        if (section.getTime()!=null && section.getTime().getDatePatternName().startsWith("generated")) {
+            SimpleDateFormat sdf = new SimpleDateFormat("MM/dd");
+            section.getTime().setDatePattern(
+                    section.getTime().getDatePatternId(), 
+                    sdf.format(c.effectiveDatePattern().getStartDate())+" - "+sdf.format(c.effectiveDatePattern().getEndDate()), 
+                    section.getTime().getWeekCode());
+        }
+        return section;
+    }
 
-    private static Offering loadOffering(InstructionalOffering io, Hashtable courseTable, Hashtable classTable) {
+    private Offering loadOffering(InstructionalOffering io, Hashtable courseTable, Hashtable classTable) {
         sLog.debug("Loading offering "+io.getCourseName());
         if (!io.hasClasses()) {
             sLog.debug("  -- offering "+io.getCourseName()+" has no class");
@@ -169,16 +285,13 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
                 sLog.debug("    -- created subpart "+subpart);
                 for (Iterator k=ss.getClasses().iterator();k.hasNext();) {
                     Class_ c = (Class_)k.next();
-                    Assignment a = c.getCommittedAssignment();
                     int limit = c.getClassLimit();
                     if (ioc.isUnlimitedEnrollment().booleanValue()) limit = -1;
                     Section parentSection = (c.getParentClass()==null?null:(Section)class2section.get(c.getParentClass()));
                     if (c.getParentClass()!=null && parentSection==null) {
                         sLog.error("    -- class "+c.getClassLabel()+" has parent "+c.getParentClass().getClassLabel()+", but the appropriate parent section is not loaded.");
                     }
-                    Section section = new Section(c.getUniqueId().longValue(), limit, c.getClassLabel(), subpart, (a==null?null:a.getPlacement()), getInstructorIds(c), getInstructorNames(c), parentSection);
-                    if (section.getTime()!=null && section.getTime().getDatePatternId().equals(c.getSession().getDefaultDatePattern().getUniqueId()))
-                        section.getTime().setDatePattern(section.getTime().getDatePatternId(),"",section.getTime().getWeekCode());
+                    Section section = loadSection(subpart, parentSection, c, limit);
                     class2section.put(c, section);
                     classTable.put(c.getUniqueId(), section);
                     sLog.debug("      -- created section "+section);
@@ -188,7 +301,7 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
         return offering;
     }
     
-    public static Student loadStudent(org.unitime.timetable.model.Student s, Hashtable courseTable, Hashtable classTable) {
+    public Student loadStudent(org.unitime.timetable.model.Student s, Hashtable courseTable, Hashtable classTable) {
         sLog.debug("Loading student "+s.getUniqueId()+" (id="+s.getExternalUniqueId()+", name="+s.getFirstName()+" "+s.getMiddleName()+" "+s.getLastName()+")");
         Student student = new Student(s.getUniqueId().longValue());
         loadStudentInfo(student,s);
@@ -270,7 +383,7 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
         return student;
     }
     
-    public static double getLastLikeStudentWeight(Course course, Hashtable demands) {
+    public double getLastLikeStudentWeight(Course course, Hashtable demands) {
         int projected = course.getProjected();
         int limit = course.getLimit();
         if (projected<=0) {
@@ -290,7 +403,7 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
         return weight;
     }
     
-    public static void loadLastLikeStudent(org.hibernate.Session hibSession, LastLikeCourseDemand d, org.unitime.timetable.model.Student s, CourseOffering co, Hashtable studentTable, Hashtable courseTable, Hashtable classTable, Hashtable demands, Hashtable classAssignments) {
+    public void loadLastLikeStudent(org.hibernate.Session hibSession, LastLikeCourseDemand d, org.unitime.timetable.model.Student s, CourseOffering co, Hashtable studentTable, Hashtable courseTable, Hashtable classTable, Hashtable demands, Hashtable classAssignments) {
         sLog.debug("Loading last like demand of student "+s.getUniqueId()+" (id="+s.getExternalUniqueId()+", name="+s.getFirstName()+" "+s.getMiddleName()+" "+s.getLastName()+") for "+co.getCourseName());
         Student student = (Student)studentTable.get(s.getUniqueId());
         if (student==null) {
@@ -338,7 +451,7 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
         }
     }
     
-    public static void loadStudentInfo(Student student, org.unitime.timetable.model.Student s) {
+    public void loadStudentInfo(Student student, org.unitime.timetable.model.Student s) {
         HashSet majors = new HashSet();
         HashSet minors = new HashSet();
         for (Iterator i=s.getAcademicAreaClassifications().iterator();i.hasNext();) {
