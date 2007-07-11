@@ -237,7 +237,15 @@
 		</replace>
     </target>
 
-    <target name="build-dist" depends="compile-war">
+	<target name="wiki" depends="compile-java">
+		<taskdef name="wikiget" classname="org.unitime.commons.ant.WikiGet">
+			<classpath refid="build.classpath"/>
+			<classpath path="${build.dir}"/>
+		</taskdef>
+		<wikiget url="http://www.unitime.org/wiki" output="${dist.dir}/wiki"/>
+	</target>
+
+	<target name="build-dist" depends="compile-war,wiki">
 		<tar destfile="${dist.dir}/unitime-3.0_bld${build.number}.tar">
 			<tarfileset dir="${basedir}/Documentation/License" includes="gpl.txt" fullpath="license/gpl.txt"/>
 			<tarfileset dir="${basedir}/Documentation" includes="ReadMe.txt" fullpath="doc/readme.txt"/>
@@ -270,6 +278,7 @@
 				<include name="log4j-1.2.8.jar"/>
 				<include name="ojdbc14.jar"/>
 			</tarfileset>
+			<tarfileset dir="${dist.dir}/wiki" prefix="doc/wiki"/>
 			<!--
 			<tarfileset dir="${dist.dir}/doc" prefix="doc/api"/>
 			-->
@@ -308,6 +317,7 @@
 				<include name="log4j-1.2.8.jar"/>
 				<include name="ojdbc14.jar"/>
 			</zipfileset>
+			<zipfileset dir="${dist.dir}/wiki" prefix="doc/wiki"/>
 			<!--
 			<zipfileset dir="${dist.dir}/doc" prefix="doc/api"/>
 			-->
@@ -315,5 +325,5 @@
 	</target>
 	
 	<target name="build" depends="load-properties,compile-war,done" />
-	<target name="dist" depends="load-properties,compile-war,build-dist,done" />
+	<target name="dist" depends="load-properties,compile-war,wiki,build-dist,done" />
 </project>

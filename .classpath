@@ -57,5 +57,8 @@
 	<classpathentry kind="src" path="/cpsolver_v1"/>
 	-->
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/cpsolver-all-1.1.jar" sourcepath="/cpsolver_v1/src"/>
+	<classpathentry kind="lib" path="3rd_party/log4j-1.2.8.jar"/>
+	<classpathentry kind="lib" path="3rd_party/ojdbc14.jar"/>
+	<classpathentry kind="lib" path="3rd_party/ant.jar"/>
 	<classpathentry kind="output" path="WebContent/WEB-INF/classes"/>
 </classpath>
