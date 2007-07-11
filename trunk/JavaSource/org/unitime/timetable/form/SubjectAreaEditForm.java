@@ -20,12 +20,16 @@
 package org.unitime.timetable.form;
 
 import javax.servlet.http.HttpServletRequest;
+
+import org.apache.struts.Globals;
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
+import org.apache.struts.util.MessageResources;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.SubjectArea;
+import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.util.Constants;
 
 
@@ -67,29 +71,42 @@ public class SubjectAreaEditForm extends ActionForm {
 		
 		ActionErrors errors = new ActionErrors();
 
-		if(abbv==null || abbv.trim().length()==0) {
-        	errors.add("abbv", new ActionMessage("errors.required", "Abbreviation") );
-        }
+		// Get Message Resources
+        MessageResources rsc = 
+            (MessageResources) super.getServlet()
+            	.getServletContext().getAttribute(Globals.MESSAGES_KEY);
+        
+		if (op.equals(rsc.getMessage("button.deleteSubjectArea"))) {
+	        SubjectArea sa = new SubjectAreaDAO().get(getUniqueId());
+			if (sa.hasOfferedCourses()) {
+				errors.add("uniqueid", new ActionMessage("errors.generic", "A subject area with offered classes cannot be deleted") );
+			}
+		}
+		else {
+			if(abbv==null || abbv.trim().length()==0) {
+	        	errors.add("abbv", new ActionMessage("errors.required", "Abbreviation") );
+	        }
 
-		if(shortTitle==null || shortTitle.trim().length()==0) {
-        	errors.add("shortTitle", new ActionMessage("errors.required", "Short Title") );
-        }
+			if(shortTitle==null || shortTitle.trim().length()==0) {
+	        	errors.add("shortTitle", new ActionMessage("errors.required", "Short Title") );
+	        }
 
-		if(longTitle==null || longTitle.trim().length()==0) {
-        	errors.add("longTitle", new ActionMessage("errors.required", "Long Title") );
-        }
+			if(longTitle==null || longTitle.trim().length()==0) {
+	        	errors.add("longTitle", new ActionMessage("errors.required", "Long Title") );
+	        }
 
-		if(department==null || department.longValue()<=0) {
-        	errors.add("department", new ActionMessage("errors.required", "Department") );
-        }
-		
-		if (errors.size()==0) {
-			Long sessionId = (Long) ((Web.getUser(request.getSession())).getAttribute(Constants.SESSION_ID_ATTR_NAME));
-			SubjectArea sa = SubjectArea.findByAbbv(sessionId, abbv);
-			if (uniqueId==null && sa!=null) 
-	        	errors.add("abbv", new ActionMessage("errors.generic", "A subject area with the abbreviation exists for the academic session") );
-			if (uniqueId!=null && sa!=null && !sa.getUniqueId().equals(uniqueId)) 
-	        	errors.add("abbv", new ActionMessage("errors.generic", "A subject area with the abbreviation exists for the academic session") );
+			if(department==null || department.longValue()<=0) {
+	        	errors.add("department", new ActionMessage("errors.required", "Department") );
+	        }
+			
+			if (errors.size()==0) {
+				Long sessionId = (Long) ((Web.getUser(request.getSession())).getAttribute(Constants.SESSION_ID_ATTR_NAME));
+				SubjectArea sa = SubjectArea.findByAbbv(sessionId, abbv);
+				if (uniqueId==null && sa!=null) 
+		        	errors.add("abbv", new ActionMessage("errors.generic", "A subject area with the abbreviation exists for the academic session") );
+				if (uniqueId!=null && sa!=null && !sa.getUniqueId().equals(uniqueId)) 
+		        	errors.add("abbv", new ActionMessage("errors.generic", "A subject area with the abbreviation exists for the academic session") );
+			}
 		}
 		
 		return errors;
