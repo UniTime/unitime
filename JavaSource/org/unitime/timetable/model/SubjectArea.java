@@ -22,6 +22,7 @@ package org.unitime.timetable.model;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
@@ -262,5 +263,18 @@ public class SubjectArea extends BaseSubjectArea implements Comparable {
 		} else {
 			return(null);
 		}
+	}
+
+	/**
+	 * Check if a subject area has offered classes
+	 * @return
+	 */
+	public boolean hasOfferedCourses() {
+		Set courses = getCourseOfferings();
+		for (Object co: courses) {
+			if ( !((CourseOffering)co).getInstructionalOffering().isNotOffered())
+				return true;
+		}
+		return false;
 	}
 }
