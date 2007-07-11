@@ -248,10 +248,16 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
             return null;
         }
         Offering offering = new Offering(io.getUniqueId().longValue(), io.getCourseName());
+        boolean unlimited = false;
+        for (Iterator i=io.getInstrOfferingConfigs().iterator();i.hasNext();) {
+            InstrOfferingConfig ioc = (InstrOfferingConfig)i.next();
+            if (ioc.isUnlimitedEnrollment().booleanValue()) unlimited = true;
+        }
         for (Iterator i=io.getCourseOfferings().iterator();i.hasNext();) {
             CourseOffering co = (CourseOffering)i.next();
             int projected = (co.getProjectedDemand()==null?0:co.getProjectedDemand().intValue());
             int limit = co.getInstructionalOffering().getLimit().intValue();
+            if (unlimited) limit=-1;
             for (Iterator j=co.getInstructionalOffering().getCourseReservations().iterator();j.hasNext();) {
                 CourseOfferingReservation reservation = (CourseOfferingReservation)j.next();
                 if (reservation.getCourseOffering().equals(co) && reservation.getReserved()!=null)
