@@ -22,6 +22,8 @@
 <%@ page errorPage="error.jsp" %>
 <%@ page import="org.unitime.timetable.model.Session" %>
 <%@ page import="org.unitime.timetable.model.TimetableManager" %>
+<%@ page import="org.unitime.timetable.model.Settings" %>
+<%@ page import="org.unitime.timetable.util.Constants" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <%@ include file="/checkLogin.jspf" %>
 <html>
@@ -39,7 +41,8 @@
    TimetableManager manager = (user==null?null:TimetableManager.getManager(user)); 
    Session acadSession = (user==null?null:Session.getCurrentAcadSession(user));
    String expand="expand";
-   if (request.getParameter("e")!=null && request.getParameter("e").equals("all")) {
+   String expandProp = Settings.getSettingValue(user, Constants.SETTINGS_MENU_EXPAND);
+   if (expandProp!=null && expandProp.equalsIgnoreCase("yes")) {
 		expand="collapse";
    }
 %>
