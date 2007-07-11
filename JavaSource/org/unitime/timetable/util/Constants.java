@@ -136,6 +136,7 @@ public class Constants extends net.sf.cpsolver.coursett.Constants {
     public static final String SETTINGS_TIME_GRID_ORIENTATION_HORIZONTAL = "horizontal";
     public static final String SETTINGS_AUTOCALC = "cfgAutoCalc";
     public static final String SETTINGS_JS_DIALOGS = "jsConfirm";
+    public static final String SETTINGS_MENU_EXPAND = "expandMenuItems";
     public static final String SETTINGS_INHERIT_INSTRUCTOR_PREF = "inheritInstrPref";
     public static final String SETTINGS_INHERIT_INSTRUCTOR_PREF_CONFIRM = "ask";
     public static final String SETTINGS_INHERIT_INSTRUCTOR_PREF_YES = "always";
