@@ -84,6 +84,7 @@ public class SubjectAreaEditAction extends Action {
 		SubjectAreaEditForm frm = (SubjectAreaEditForm) form;
 		MessageResources rsc = getResources(request);
 		User user = Web.getUser(request.getSession());
+		ActionMessages errors=null;
 		
 		// Read operation to be performed
 		String op = (frm.getOp()!=null
@@ -107,29 +108,33 @@ public class SubjectAreaEditAction extends Action {
         if (op.equals(rsc.getMessage("button.updateSubjectArea"))
         		|| op.equals(rsc.getMessage("button.saveSubjectArea")) ) {
             // Validate input
-            ActionMessages errors = frm.validate(mapping, request);
-            if(errors.size()>0) {
-                saveErrors(request, errors);
-        		LookupTables.setupDepts(request, (Long)user.getAttribute(Constants.SESSION_ID_ATTR_NAME));
-                if (frm.getUniqueId()!=null)
-                	return mapping.findForward("editSubjectArea");
-                else
-                	return mapping.findForward("addSubjectArea");
-            } 
-            else {
+            errors = frm.validate(mapping, request);
+            if(errors.size()==0) {
             	doUpdate(request, frm);
             }
         }
         
         // Delete
         if(op.equals(rsc.getMessage("button.deleteSubjectArea"))) {
-        	doDelete(request, frm);
+            errors = frm.validate(mapping, request);
+            if(errors.size()==0) {
+            	doDelete(request, frm);
+            }
         }
         
     	if (frm.getUniqueId()!=null)
        		request.setAttribute(Constants.JUMP_TO_ATTR_NAME, frm.getUniqueId().toString());
     	
-		return mapping.findForward("back");
+    	if (errors!=null && errors.size()>0) {
+	        saveErrors(request, errors);
+			LookupTables.setupDepts(request, (Long)user.getAttribute(Constants.SESSION_ID_ATTR_NAME));
+	        if (frm.getUniqueId()!=null)
+	        	return mapping.findForward("editSubjectArea");
+	        else
+	        	return mapping.findForward("addSubjectArea");
+    	}
+    	
+        return mapping.findForward("back");
 	}
 
 	/**
