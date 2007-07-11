@@ -62,17 +62,15 @@
 
 		WebTable webTable = new WebTable((dispLastChanges ? 10 : 9), "",
 				"departmentList.do?ord=%%",
-				(dispLastChanges ? new String[] { "Number", "Abbv",
-				"Name", "External<br>Manager", "Subjects", "Rooms",
-				"Status", "Dist&nbsp;Pref Priority", "Allow Required",
-				"Last Change" } : new String[] { "Number",
-				"Abbreviation", "Name", "External Manager",
-				"Subjects", "Rooms", "Status",
-				"Dist Pref Priority", "Allow Required" }),
-				new String[] { "left", "left", "left", "left", "right",
-				"right", "left", "right", "left", "left" },
-				new boolean[] { true, true, true, true, true, true, true,
-				true, true, false });
+				(dispLastChanges 
+					? new String[] { "Number", "Abbv", "Name", "External<br>Manager", 
+									 "Subjects", "Rooms", "Status", "Dist&nbsp;Pref Priority", 
+									 "Allow Required", "Last Change" } 
+					: new String[] { "Number", "Abbreviation", "Name", "External Manager",
+									 "Subjects", "Rooms", "Status", "Dist Pref Priority", 
+									 "Allow Required" }),
+				new String[] { "left", "left", "left", "left", "right",	"right", "left", "right", "left", "left" },
+				new boolean[] { true, true, true, true, true, true, true, true, true, false });
 		WebTable.setOrder(session, "DepartmentList.ord", request.getParameter("ord"), 1);
         webTable.enableHR("#EFEFEF");
         webTable.setRowStyle("white-space: nowrap");
@@ -127,39 +125,37 @@
 				allowReqOrd = 1;
 			}
 
-			webTable
-			.addLine(
-			"onClick=\"document.location='departmentEdit.do?op=Edit&id="
-					+ d.getUniqueId() + "';\"",
-			new String[] {
-					d.getDeptCode(),
-					d.getAbbreviation(),
-					"<A name='" + d.getUniqueId() + "'>" + d.getName() + "</A>",
-					(d.isExternalManager().booleanValue() 
-						? "<span title='" + d.getExternalMgrLabel()	+ "'>" + d.getExternalMgrAbbv()	+ "</span>"
-						: "&nbsp;"),
-					df5.format(d.getSubjectAreas().size()),
-					df5.format(d.getRoomDepts().size()),
-					(d.getStatusType() == null ? "<i>" : "&nbsp;")
-						+ d.effectiveStatusType().getLabel()
-						+ (d.getStatusType() == null ? "</i>" : ""),
-					(d.getDistributionPrefPriority() == null && d.getDistributionPrefPriority().intValue() != 0 
-						? "&nbsp;" : d.getDistributionPrefPriority().toString()),
-					allowReq, lastChangeStr },
-			new Comparable[] {
-					d.getDeptCode(),
-					d.getAbbreviation(),
-					d.getName(),
-					(d.isExternalManager()
-					.booleanValue() ? d
-					.getExternalMgrAbbv() : ""),
-					new Integer(d.getSubjectAreas()
-					.size()),
-					new Integer(d.getRoomDepts().size()),
-					d.effectiveStatusType().getOrd(),
-					d.getDistributionPrefPriority(),
-					new Integer(allowReqOrd),
-					lastChangeCmp });
+			webTable.addLine(
+				"onClick=\"document.location='departmentEdit.do?op=Edit&id=" + d.getUniqueId() + "';\"",
+				new String[] {
+						d.getDeptCode(),
+						d.getAbbreviation()==null ? "&nbsp;" : d.getAbbreviation(),
+						"<A name='" + d.getUniqueId() + "'>" + d.getName() + "</A>",
+						(d.isExternalManager().booleanValue() 
+							? "<span title='" + d.getExternalMgrLabel()	+ "'>" + d.getExternalMgrAbbv()	+ "</span>"
+							: "&nbsp;"),
+						df5.format(d.getSubjectAreas().size()),
+						df5.format(d.getRoomDepts().size()),
+						(d.getStatusType() == null ? "<i>" : "&nbsp;")
+							+ d.effectiveStatusType().getLabel()
+							+ (d.getStatusType() == null ? "</i>" : ""),
+						(d.getDistributionPrefPriority() == null && d.getDistributionPrefPriority().intValue() != 0 
+							? "&nbsp;" : d.getDistributionPrefPriority().toString()),
+						allowReq, lastChangeStr },
+				new Comparable[] {
+						d.getDeptCode(),
+						d.getAbbreviation()==null ? "&nbsp;" : d.getAbbreviation(),
+						d.getName(),
+						(d.isExternalManager()
+						.booleanValue() ? d
+						.getExternalMgrAbbv() : ""),
+						new Integer(d.getSubjectAreas()
+						.size()),
+						new Integer(d.getRoomDepts().size()),
+						d.effectiveStatusType().getOrd(),
+						d.getDistributionPrefPriority(),
+						new Integer(allowReqOrd),
+						lastChangeCmp });
 		}
 		%>
 
