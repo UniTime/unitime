@@ -27,7 +27,7 @@
 		name="InstructionalOffering"
 		table="INSTRUCTIONAL_OFFERING">
 		
- 		<cache include="non-lazy" usage="nonstrict-read-write"/>
+ 		<cache include="non-lazy" usage="read-write"/>
  		
         <id
             name="uniqueId"
@@ -100,7 +100,7 @@
 			table="COURSE_OFFERING"
 			order-by="SUBJECT_AREA_ID,COURSE_NBR"
 			>
-	 		<cache include="non-lazy" usage="nonstrict-read-write"/> 		
+	 		<cache include="non-lazy" usage="read-write"/> 		
 			<key column="INSTR_OFFR_ID"/>
 			<one-to-many class="CourseOffering"/>
 		</set>

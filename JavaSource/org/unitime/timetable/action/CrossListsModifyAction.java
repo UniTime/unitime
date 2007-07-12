@@ -292,7 +292,9 @@ public class CrossListsModifyAction extends Action {
                     }
                     else {
 	                    for (Iterator resvIter=resv1.iterator(); resvIter.hasNext();) {
+	                    	
 	                        AcadAreaReservation ar1 = (AcadAreaReservation) resvIter.next();
+	                        
 	                        AcadAreaReservation ar2 = new AcadAreaReservation();
 	                        ar2.setAcademicArea(ar1.getAcademicArea());
 	                        ar2.setAcademicClassification(ar1.getAcademicClassification());
@@ -305,10 +307,13 @@ public class CrossListsModifyAction extends Action {
 	                        ar2.setReserved(ar1.getReserved());
 	                        resvs.add(ar2);
 	                        
+	                        // Delete academic area reservations
+	                        Debug.debug("Removing academic area reservation from course offering");
 	                        hibSession.delete(ar1);
 	                        resvIter.remove();
 	                    }
                     }
+                    co1.setAcadAreaReservations(null);
                     
 /*	                
 	                hibSession.saveOrUpdate(io1);
@@ -323,6 +328,8 @@ public class CrossListsModifyAction extends Action {
 			                
 		                    // Remove from Subject Area
 					        SubjectArea sa = co3.getSubjectArea();
+					        sa.getCourseOfferings().remove(co1);
+					        /*
 		                    Set saCrses = sa.getCourseOfferings();
 			                for (Iterator j=saCrses.iterator(); j.hasNext(); ) {
 			                    CourseOffering co4 = (CourseOffering) j.next();
@@ -332,12 +339,12 @@ public class CrossListsModifyAction extends Action {
 			                        break;
 			                    }
 			                }
-			                
+			                */
 			                hibSession.saveOrUpdate(sa);
-			                hibSession.refresh(sa);
+			                //hibSession.refresh(sa);
 			                
 			                // Remove from collection
-			                i.remove();
+			                //i.remove();
 			            }
 			        }
 			        
@@ -351,6 +358,7 @@ public class CrossListsModifyAction extends Action {
 		                CourseOfferingReservation resv = (CourseOfferingReservation) iterR.next();
 		                if ( (ids.size()>1 && resv.getCourseOffering().getUniqueId().equals(co1.getUniqueId()))
 		                      || ids.size()==1  ) {
+	                        Debug.debug("Removing course offering from course offering reservations");
 		                    iterR.remove();
 		                    hibSession.delete(resv);
 		                }
