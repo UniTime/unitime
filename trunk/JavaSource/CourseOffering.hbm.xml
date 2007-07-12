@@ -27,7 +27,7 @@
 		name="CourseOffering"
 		table="COURSE_OFFERING">
 
- 		<cache include="non-lazy" usage="nonstrict-read-write"/>
+ 		<cache include="non-lazy" usage="read-write"/>
  		
         <id
             name="uniqueId"
@@ -74,23 +74,14 @@
 		    name="demand"
 		    type="java.lang.Integer"
 		    formula=" (select count(distinct cod.student_id) from %SCHEMA%.LASTLIKE_COURSE_DEMAND cod where cod.subject_area_id = subject_area_id and cod.course_nbr = course_nbr ) "
-		    />
+	    />
 
 		<property
 		    name="subjectAreaAbbv"
 		    type="java.lang.String"
 		    formula=" ( select sa.SUBJECT_AREA_ABBREVIATION from %SCHEMA%.subject_area sa where sa.uniqueid = subject_area_id ) "
-		    />
+	    />
 		    
-			<many-to-one
-			name="subjectArea"
-			class="SubjectArea"
-			column="SUBJECT_AREA_ID"
-			insert="true"
-			update="true"
-			not-null="true"
-			foreign-key="FK_CRS_OFFR_SUBJECT_AREA"
-		/>
 		<property
 			name="courseNbr"
 			column="COURSE_NBR"
@@ -99,6 +90,39 @@
 			length="10"
 		/>			
  
+		<property
+			name="title"
+			column="TITLE"
+			type="java.lang.String"
+			not-null="false"
+			length="90"
+		/>
+		
+		<property
+			name="scheduleBookNote"
+			column="SCHEDULE_BOOK_NOTE"
+			type="java.lang.String"
+			not-null="false"
+			length="1000"
+		/>
+
+		<property
+			name="externalUniqueId"
+			column="EXTERNAL_UID"
+			type="java.lang.String"
+			not-null="false"
+			length="40"
+		/>
+		
+		<property
+			name="UniqueIdRolledForwardFrom"
+			column="UID_ROLLED_FWD_FROM"
+			type="java.lang.Long"
+			not-null="false"
+			length="20"
+		/>
+		
+		
 		<properties 
 			name="uniqueCourseNbr"
 			unique="true">
@@ -139,6 +163,16 @@
 		</set>
 		<!-- End -->
 		
+		<many-to-one
+			name="subjectArea"
+			class="SubjectArea"
+			column="SUBJECT_AREA_ID"
+			insert="true"
+			update="true"
+			not-null="true"
+			foreign-key="FK_CRS_OFFR_SUBJECT_AREA"
+		/>
+
 		<many-to-one 
 			name="instructionalOffering" 
 			class="InstructionalOffering" 
@@ -149,22 +183,6 @@
 			foreign-key="FK_CRS_OFFR_INSTR_OFFR"
 		/>
 		
-		<property
-			name="title"
-			column="TITLE"
-			type="java.lang.String"
-			not-null="false"
-			length="90"
-		/>
-		
-		<property
-			name="scheduleBookNote"
-			column="SCHEDULE_BOOK_NOTE"
-			type="java.lang.String"
-			not-null="false"
-			length="1000"
-		/>
-
 		<many-to-one
 		    name="demandOffering"
 		    class="CourseOffering"
@@ -179,23 +197,6 @@
 		    column="DEMAND_OFFERING_TYPE"
 		    not-null="false"
 		/>
-		
-		<property
-			name="externalUniqueId"
-			column="EXTERNAL_UID"
-			type="java.lang.String"
-			not-null="false"
-			length="40"
-		/>
-		
-		<property
-			name="UniqueIdRolledForwardFrom"
-			column="UID_ROLLED_FWD_FROM"
-			type="java.lang.Long"
-			not-null="false"
-			length="20"
-		/>
-		
 		
 	</class>
 </hibernate-mapping>
