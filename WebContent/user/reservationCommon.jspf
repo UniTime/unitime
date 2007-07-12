@@ -64,8 +64,10 @@
 						</bean:define>
 					</TD>
 					<TD align="left">
+						<logic:equal name="<%=frmName%>" property="crsLimit" value="-">
 						<DIV id='resvTotalDiff'>
 						</DIV>
+						</logic:equal>
 					</TD></TR>
 					</TABLE>					
 				</logic:notEqual>
@@ -78,7 +80,18 @@
 				Course Offering Limit:
 			</TD>
 			<TD>
-				<bean:write name="<%=frmName%>" property="crsLimit"/>
+				<TABLE border="0" cellspacing="0" cellpadding="0" align="left">
+					<TR><TD align="left">
+						<bean:write name="<%=frmName%>" property="crsLimit"/>
+						<bean:define id="crsOffrLimit">
+							<bean:write name="<%=frmName%>" property="crsLimit"/>
+						</bean:define>
+					</TD>
+					<TD align="left">
+						<DIV id='resvTotalDiff'>
+						</DIV>
+					</TD></TR>
+				</TABLE>					
 			</TD>
 		</TR>
 		</logic:notEqual>
