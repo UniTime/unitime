@@ -501,8 +501,17 @@
 	<% int ioLimit = pageContext.getAttribute("instrOffrLimit")!=null 
 						? Integer.valueOf((String) pageContext.getAttribute("instrOffrLimit"))
 						: -1; 
+	   
+	   int limit = ioLimit;
+	   
+	   int crsLimit = pageContext.getAttribute("crsOffrLimit")!=null 
+						? Integer.valueOf((String) pageContext.getAttribute("crsOffrLimit"))
+						: -1; 
 
-		if (ioLimit!=-1 && resvTotal!=ioLimit) {						
+		if (crsLimit!=-1)
+			limit = crsLimit;
+			
+		if (limit!=-1 && resvTotal!=limit) {						
 	%>	
 		document.getElementById("resvTotalDiff").innerHTML = mismatchHtml;
 	<%
@@ -513,7 +522,7 @@
 	<%
 		}		
 	%>
-	ioLimit = <%=ioLimit%>;
+	ioLimit = <%=limit%>;
 	
 	// -->
 </SCRIPT>
