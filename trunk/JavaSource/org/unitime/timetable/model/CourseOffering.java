@@ -221,6 +221,7 @@ public class CourseOffering extends BaseCourseOffering {
 		    io.addTocourseOfferings(co);
 		    cdao.saveOrUpdate(co);		    
 		    cdao.getSession().refresh(co);
+		    cdao.getSession().refresh(subjArea);
 	    }
 	    catch (Exception e) {
 	        //Database.closeConnObjs(stmt, rs);
