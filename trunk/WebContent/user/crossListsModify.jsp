@@ -33,33 +33,51 @@
 <SCRIPT language="javascript">
 	<!--
 	var origTotal = 0;
+	var ioLimit = -1;
+	var colorCodeTotal = true;
+	var mismatchHtml = 
+		" &nbsp;&nbsp; " +
+		"<img src='images/Error16.jpg' alt='Limits do not match' title='Limits do not match' border='0' align='top'> &nbsp;" +
+		"<font color='#FF0000'>Reserved spaces does not match limit</font>";
 	
+	String.prototype.trim = function() {
+		return this.replace(/^\s+|\s+$/g,"");
+	}
+	String.prototype.ltrim = function() {
+		return this.replace(/^\s+/,"");
+	}
+	String.prototype.rtrim = function() {
+		return this.replace(/\s+$/,"");
+	}
+		
 	function updateResvTotal() {
 		i=0;
 		total = 0;
 		while ( (o = document.getElementById("reserved_" + i++)) !=null ) {
-			if (o.value == parseInt(o.value) && parseInt(o.value)>=0) {
-				total += parseInt(o.value);
+			val = o.value = o.value.trim();
+			if (val=="") val = 0;
+			if (val == parseInt(val) && parseInt(val)>=0) {
+				total += parseInt(val);
 			}
 			else {
-				document.getElementById("resvTotal").innerHTML = "<font color='red'><b>ERR</b></font>";
+				document.getElementById("resvTotal").innerHTML = "<font color='red'><b>?</b></font>";
 				return;
 			}
 		}
-		if (total<origTotal) {
-			str = "<img height='15' align='bottom' src='images/down_arrow_red.jpg'> <font color='red'><b>" + (origTotal-total) + "</b></font>&nbsp;&nbsp;";
-			document.getElementById("resvTotal").innerHTML = str.blink();
+		
+		str = "<b>" + total + "</b>&nbsp;&nbsp;";
+		if (total<origTotal && origTotal>=0 && colorCodeTotal) {
 			str = "<font color='red'><b>" + total + "</b></font>&nbsp;&nbsp;";
-			setTimeout("document.getElementById('resvTotal').innerHTML = str;",1500);
 		}
-		if (total>origTotal) {
-			str = "<img height='15' align='bottom' src='images/up_arrow_green.jpg'> <font color='green'><b>" + (total-origTotal) + "</b></font>&nbsp;&nbsp;";
-			document.getElementById("resvTotal").innerHTML = str.blink();
+		if (total>origTotal && origTotal>=0 && colorCodeTotal) {
 			str = "<font color='green'><b>" + total + "</b></font>&nbsp;&nbsp;";
-			setTimeout("document.getElementById('resvTotal').innerHTML = str;",1500);
 		}
-		if (total==origTotal)
-			document.getElementById("resvTotal").innerHTML = total + "&nbsp;&nbsp;";
+		document.getElementById('resvTotal').innerHTML = str;
+		
+		if (total!=ioLimit && origTotal>=0) 
+			document.getElementById("resvTotalDiff").innerHTML = mismatchHtml;
+		else 
+			document.getElementById("resvTotalDiff").innerHTML = "";
 	}
 	
 	// -->
@@ -117,9 +135,21 @@
 			<TD align="left">
 				<logic:equal name="crossListsModifyForm" property="unlimited" value="true">
 					<img src='images/infinity.gif' alt='Unlimited Enrollment' title='Unlimited Enrollment' border='0' align='top'>
+					<bean:define id="instrOffrLimit" value="-1" />
 				</logic:equal>
 				<logic:notEqual name="crossListsModifyForm" property="unlimited" value="true">
-					<bean:write name="crossListsModifyForm" property="ioLimit"/>
+					<TABLE border="0" cellspacing="0" cellpadding="0" align="left">
+					<TR><TD align="left">
+						<bean:write name="crossListsModifyForm" property="ioLimit"/>
+						<bean:define id="instrOffrLimit">
+							<bean:write name="crossListsModifyForm" property="ioLimit"/>
+						</bean:define>
+					</TD>
+					<TD align="left">
+						<DIV id='resvTotalDiff'>
+						</DIV>
+					</TD></TR>
+					</TABLE>					
 				</logic:notEqual>
 			</TD>
 		</TR>
@@ -281,6 +311,17 @@
 
 <SCRIPT language="javascript">
 	<!--
-	origTotal = <%=resvTotal%>;
+	<% int ioLimit = pageContext.getAttribute("instrOffrLimit")!=null 
+						? Integer.valueOf((String) pageContext.getAttribute("instrOffrLimit"))
+						: -1; 
+
+		if (ioLimit!=-1 && resvTotal!=ioLimit) {						
+	%>	
+		document.getElementById("resvTotalDiff").innerHTML = mismatchHtml;
+	<%
+		}		
+	%>
+	colorCodeTotal = false;
+	ioLimit = <%=ioLimit%>;
 	// -->
 </SCRIPT>
