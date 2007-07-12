@@ -110,6 +110,7 @@ public class InstructionalOffering extends BaseInstructionalOffering {
         while (it.hasNext()){
             tempCo = (CourseOffering) it.next();
             if (tempCo.getUniqueId().intValue()==co.getUniqueId().intValue()){
+            	Debug.debug("Removing course from instructional offering");
                 s.remove(tempCo);
                 tempCo.setInstructionalOffering(null);
                 setCourseOfferings(s);
