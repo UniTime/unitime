@@ -166,11 +166,12 @@
 					onclick="displayLoading();">
 					<bean:message key="button.exportPDF" />
 				</html:submit> 
-
+<%-- 
 				<html:submit property="op" 
 					accesskey="A" styleClass="btn" titleKey="title.addReservationIo">
 					<bean:message key="button.addReservationIo" />
 				</html:submit> 
+--%>				
 			</TD>
 		</TR>
 		<TR>
