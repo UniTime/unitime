@@ -545,7 +545,7 @@ A.submenuLink {
 	text-decoration: none;
 	background-color: transparent;
 	border: none;
-	padding: 1px;
+	padding: 2px;
 	white-space: no-wrap;
 }
 
@@ -555,7 +555,7 @@ A.submenuLink {
 	text-decoration: none;
 	background-color: transparent;
 	border: none;
-	padding: 1px;
+	padding: 2px;
 	white-space: no-wrap;
 }
 
@@ -565,7 +565,7 @@ A.submenuLink {
 	text-decoration: none;
 	background-color: #FFFFFF;
 	border: #8EACD0 1px solid;
-	padding: 1px;
+	padding: 2px;
 	white-space: no-wrap;
 }
 
@@ -607,14 +607,14 @@ A.submenuLink {
 	border-bottom:1px solid #8EACD0;
 	border-top:1px solid #BBCDD0;
 	border-left:1px solid #BBCDD0;
-	background-color: e4e4e4;
+	background-color: #e4e4e4;
 }
 
 .UserInfoTabRight {
 	border-bottom:1px solid #8EACD0;
 	border-top:1px solid #BBCDD0;
 	border-right:1px solid #BBCDD0;
-	background-color: e4e4e4;
+	background-color: #e4e4e4;
 }
 
 .UserInfoTabDisabled {
@@ -622,12 +622,12 @@ A.submenuLink {
 	border-right:1px solid #BBCDD0;
 	border-top:1px solid #BBCDD0;
 	color:#8EACD0;
-	background-color: e4e4e4;
+	background-color: #e4e4e4;
 }
 
 .UserInfoTabBg {
 	border-bottom:1px solid #8EACD0;
-	background-color: e4e4e4;
+	background-color: #e4e4e4;
 }
 
 .TextBody {
