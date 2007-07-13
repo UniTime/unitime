@@ -37,14 +37,22 @@
 
 <BODY class="bodyMain">
 
-	<% if (ApplicationProperties.getProperty("tmtbl.header.external", "").trim().length()>0) { %>
-	<jsp:include flush="true" page="<%=ApplicationProperties.getProperty("tmtbl.header.external")%>" />
-	<% } %>
+<% if (ApplicationProperties.getProperty("tmtbl.header.external", "").trim().length()>0) { %>
+<jsp:include flush="true" page="<%=ApplicationProperties.getProperty("tmtbl.header.external")%>" />
+<% } %>
 
-<BR> <DIV align="center" class="H1"><%= request.getParameter("message") %> <BR>
-&nbsp;<BR>
-<A class="l7" href="<%=request.getContextPath()%>/login.do"
-	target="_top">LOG IN</A></DIV>
+<DIV align="center" class="H1">
+	<BR> 
+	<IMG src="images/timetabling.jpg" alt="Timetabling" title="Timetabling Log In">
+	<BR>
+	&nbsp;
+	
+	<BR> 
+	<%= request.getParameter("message") %> 
+	<BR>&nbsp;<BR>
+	
+	<A class="l7" href="<%=request.getContextPath()%>/login.do" target="_top">LOG IN</A>
+</DIV>
 
 </BODY>
 </HTML>
