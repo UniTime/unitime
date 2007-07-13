@@ -1,3 +1,22 @@
+/*
+ * UniTime 3.0 (University Course Timetabling & Student Sectioning Application)
+ * Copyright (C) 2007, UniTime.org
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
+
 spool woebegon-data.log
 set feedback off
 set define off
@@ -8996,3 +9015,66 @@ prompt Generate statistics (for Oracle Cost Based Optimizer (CBO)) about data st
 execute dbms_stats.gather_schema_stats(ownname => 'TIMETABLE', estimate_percent => 100, method_opt=>'for all columns size auto', cascade=>true, options => 'GATHER');
 prompt Done.
 spool off
+
+-----------------------------------------------------------
+-- Apply all recent changes
+-- File: 03 On fly student sectioning.sql
+
+insert into SOLVER_PARAMETER_GROUP 
+	(UNIQUEID, NAME, DESCRIPTION, CONDITION, ORD) values 
+	(SOLVER_PARAMETER_GROUP_SEQ.nextval, 'OnFlySectioning', 'On Fly Student Sectioning', '', -1);
+	
+update SOLVER_PARAMETER_GROUP g set g.ord = ( select max(x.ord)+1 from SOLVER_PARAMETER_GROUP x )
+	where g.name='OnFlySectioning';
+	
+insert into SOLVER_PARAMETER_DEF
+	(select SOLVER_PARAMETER_DEF_SEQ.nextval as UNIQUEID, 
+		'OnFlySectioning.Enabled' as NAME, 
+		'false' as DEFAULT_VALUE, 
+		'Enable on fly sectioning (if enabled, students will be resectioned after each iteration)' as DESCRIPTION, 
+		'boolean' as TYPE, 
+		0 as ORD, 
+		1 as VISIBLE, 
+		UNIQUEID as SOLVER_PARAM_GROUP_ID from SOLVER_PARAMETER_GROUP where NAME='OnFlySectioning');
+		
+insert into SOLVER_PARAMETER_DEF
+	(select SOLVER_PARAMETER_DEF_SEQ.nextval as UNIQUEID, 
+		'OnFlySectioning.Recursive' as NAME, 
+		'true' as DEFAULT_VALUE, 
+		'Recursively resection lectures affected by a student swap' as DESCRIPTION, 
+		'boolean' as TYPE, 
+		1 as ORD, 
+		1 as VISIBLE, 
+		UNIQUEID as SOLVER_PARAM_GROUP_ID from SOLVER_PARAMETER_GROUP where NAME='OnFlySectioning');
+
+insert into SOLVER_PARAMETER_DEF
+	(select SOLVER_PARAMETER_DEF_SEQ.nextval as UNIQUEID, 
+		'OnFlySectioning.ConfigAsWell' as NAME, 
+		'false' as DEFAULT_VALUE, 
+		'Resection students between configurations as well' as DESCRIPTION, 
+		'boolean' as TYPE, 
+		2 as ORD, 
+		1 as VISIBLE, 
+		UNIQUEID as SOLVER_PARAM_GROUP_ID from SOLVER_PARAMETER_GROUP where NAME='OnFlySectioning');
+
+insert into SOLVER_PARAMETER
+	(select SOLVER_PARAMETER_SEQ.nextval as UNIQUEID,
+	 'on' as VALUE,
+	 d.UNIQUEID as SOLVER_PARAM_DEF_ID,
+	 NULL as SOLUTION_ID,
+	 s.UNIQUEID as SOLVER_PREDEF_SETTING_ID
+	 from SOLVER_PARAMETER_DEF d, SOLVER_PREDEF_SETTING s where d.NAME='OnFlySectioning.Enabled' and s.NAME='Default.Solver');
+	 
+insert into SOLVER_PARAMETER
+	(select SOLVER_PARAMETER_SEQ.nextval as UNIQUEID,
+	 'on' as VALUE,
+	 d.UNIQUEID as SOLVER_PARAM_DEF_ID,
+	 NULL as SOLUTION_ID,
+	 s.UNIQUEID as SOLVER_PREDEF_SETTING_ID
+	 from SOLVER_PARAMETER_DEF d, SOLVER_PREDEF_SETTING s where d.NAME='Global.LoadStudentEnrlsFromSolution' and s.NAME='Default.Solver');
+	 
+insert into SETTINGS (UNIQUEID, NAME, DEFAULT_VALUE, ALLOWED_VALUES, DESCRIPTION)
+	values (SETTINGS_SEQ.nextval, 'roomFeaturesInOneColumn', 'yes', 'yes,no', 'Display Room Features In One Column');
+	
+
+commit;

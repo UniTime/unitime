@@ -2951,7 +2951,8 @@ VALUES (88, 'jsConfirm', 'yes', 'yes,no', 'Display confirmation dialogs'),
   (87, 'timeGridSize', 'Workdays x Daytime', 'Workdays x Daytime,All Week x Daytime,Workdays x Evening,All Week x Evening,All Week x All Times', 'Time grid default selection'),
   (89, 'inheritInstrPref', 'never', 'ask,always,never', 'Inherit instructor preferences on a class'),
   (108, 'showVarLimits', 'no', 'yes,no', 'Show the option to set variable class limits'),
-  (128, 'keepSort', 'no', 'yes,no', 'Sort classes on detail pages');
+  (128, 'keepSort', 'no', 'yes,no', 'Sort classes on detail pages'),
+  (168, 'roomFeaturesInOneColumn', 'yes', 'yes,no', 'Display Room Features In One Column');
 
 INSERT INTO `timetable`.`solution`(`uniqueid`, `created`, `valid`, `commited`, `commit_date`, `note`, `creator`, `owner_id`, `last_modified_time`)
 VALUES (806, '2007-06-06 17:02:27', 1, 1, '2007-06-06 17:03:11', NULL, 'IFS Timetable Solver v1.1 build127, Tue, 5 Jun 2007', 345, NULL),
@@ -3551,7 +3552,9 @@ VALUES (24921, '300', 54, NULL, 3),
   (94592, '20.0', 205, 807, NULL),
   (94580, 'true', 9, 807, NULL),
   (94572, '0.0', 110, 807, NULL),
-  (94518, '2222222222222224222222222222222223333222222222222222222222222224222222222222222223333222222222222222222222222224222222222222222223333222222222222222222222222224222222222222222223333222222222222222222222222224222222222222222223333222222222222222222222', 182, 807, NULL);
+  (94518, '2222222222222224222222222222222223333222222222222222222222222224222222222222222223333222222222222222222222222224222222222222222223333222222222222222222222222224222222222222222223333222222222222222222222222224222222222222222223333222222222222222222222', 182, 807, NULL),
+  (94676, 'on', 261, NULL, 4),
+  (95008, 'on', 13, NULL, 4);
 
 INSERT INTO `timetable`.`solver_parameter_def`(`uniqueid`, `name`, `default_value`, `description`, `type`, `ord`, `visible`, `solver_param_group_id`)
 VALUES (109, 'Placement.NrAssignmentsWeight2', '0.0', 'Number of assignments weight (level 2)', 'double', 20, 0, 10),
@@ -3717,7 +3720,10 @@ VALUES (109, 'Placement.NrAssignmentsWeight2', '0.0', 'Number of assignments wei
   (105, 'Placement.TooBigRoomWeight1', '0.01', 'Too big room weight (level 1)', 'double', 16, 1, 10),
   (106, 'Placement.DistanceInstructorPreferenceWeight1', '0.1', 'Back-to-back instructor preferences weight (level 1)', 'double', 17, 1, 10),
   (107, 'Placement.DeptSpreadPenaltyWeight1', '0.1', 'Department balancing: penalty of when a slot over initial allowance is used (level 1)', 'double', 18, 1, 10),
-  (108, 'Placement.ThresholdKoef1', '0.1', 'Threshold koeficient (level 1)', 'double', 19, 1, 10);
+  (108, 'Placement.ThresholdKoef1', '0.1', 'Threshold koeficient (level 1)', 'double', 19, 1, 10),
+  (261, 'OnFlySectioning.Enabled', 'false', 'Enable on fly sectioning (if enabled, students will be resectioned after each iteration)', 'boolean', 1, 1, 81),
+  (262, 'OnFlySectioning.Recursive', 'true', 'Recursively resection lectures affected by a student swap', 'boolean', 2, 1, 81),
+  (263, 'OnFlySectioning.ConfigAsWell', 'false', 'Resection students between configurations as well', 'boolean', 3, 1, 81);
 
 INSERT INTO `timetable`.`solver_parameter_group`(`uniqueid`, `name`, `description`, `condition`, `ord`)
 VALUES (41, 'Distance', 'Distances', NULL, 14),
@@ -3735,7 +3741,8 @@ VALUES (41, 'Distance', 'Distances', NULL, 14),
   (11, 'Classes', 'Implementations', NULL, 10),
   (12, 'Spread', 'Same Subpart Balancing', NULL, 11),
   (13, 'SearchIntensification', 'Search Intensification', NULL, 12),
-  (61, 'Neighbour', 'Neighbour Selection', NULL, 15);
+  (61, 'Neighbour', 'Neighbour Selection', NULL, 15),
+  (81, 'OnFlySectioning', 'On Fly Student Sectioning', NULL, 16);
 
 INSERT INTO `timetable`.`solver_predef_setting`(`uniqueid`, `name`, `description`, `appearance`)
 VALUES (1, 'Default.Interactive', 'Interactive', 0),
