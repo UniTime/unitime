@@ -42,6 +42,55 @@
 				<line>For external manager with only one department (e.g., LAB) -- display Export PDF button next to other buttons (Search/Export PDF component is not present).</line>
 			</description>
 		</item>
+		<item>
+			<name>Reservations</name>
+			<description>
+				<line>Removed color coding of total.</line>
+				<line>Made changes pertaining to display of totals.</line>
+				<line>Hide 'Add New' button as it is not useful</line>
+			</description>
+		</item>
+		<item>
+			<name>Cross-lists</name>
+			<description>
+				<line>Removed color coding of total.</line>
+				<line>Made changes pertaining to display of totals.</line>
+				<line>Fixed bug deleted object will be resaved ...</line>
+			</description>
+		</item>
+		<item>
+			<name>Departments</name>
+			<description>
+				<line>Fixed bug that makes abbv column un-sortable if any one value is null.</line>
+			</description>
+		</item>
+		<item>
+			<name>Subject Areas</name>
+			<description>
+				<line>Validate that subject area has no offered courses when delete operation is selected.</line>
+			</description>
+		</item>
+		<item>
+			<name>Menu</name>
+			<description>
+				<line>Use settings value to determine if menus are expanded on user login. By default it is not.</line>
+			</description>
+		</item>
+		<title>SOLVER</title>
+		<item>
+			<name>Course Timetabling</name>
+			<description>
+				<line>Added (optional) on fly student sectioning
+					<line>In this mode, students are resectioned after each iteration, but only between classes that are affected by the iteration.</line>
+					<line>This slows down the solver, but it can dramatically improve results in the case when there is more stress put on student conflicts (e.g., Woebegon College example).</line></line>
+			</description>
+		</item>
+		<item>
+			<name>Student Sectioning</name>
+			<description>
+				<line>Various fixes and improvements, see https://lists.sourceforge.net/lists/listinfo/cpsolver-cvs for more details.</line>
+			</description>
+		</item>
 		<title>OTHER</title>
 		<item>
 			<name>Data Import</name>
@@ -50,15 +99,32 @@
 				<line>StudentImport: speed improved by not using StudentDAO.save(student); all students for given academic session are deleted first</line>
 				<line>LastLikeCourseDemandImport: all last-like course demands for given academic session are deleted first</line>
 				<line>Data Import page now uploads the selected file (using Struts file upload).</line>
-				
 			</description>
 		</item>
 		<item>
-			<name>Cloning</name>
+			<name>Documentation</name>
+			<description>
+				<line>Added SQL scripts to create timetable schema and populate it with Woebegon College test suite for Oracle.</line>
+				<line>Offline copy of UniTime wiki (http://www.unitime.org/wiki) added into the distribution.</line>
+			</description>
+		</item>
+		<item>
+			<name>Woebegon College test suite</name>
+			<description>
+				<line>Added on fly student sectioning solver parameters.</line>
+				<line>Enabled on fly student sectioning in Default solver configuration.</line>
+				<line>Enabled load of student enrollments for commited solutions in Default solver configuration.</line>
+				<line>Added roomFeaturesInOneColumn user setting.</line>
+			</description>
+		</item>
+		<item>
+			<name>Other</name>
 			<description>
 				<line>Added methods for cloning of instructional offerings and all underlaying objects (configurations, subparts, classes, etc).</line>
+				<line>ApplicationProperties: Removed shutdown hook since InitServlet.destroy() shuts the listener down; removed encoding from messages</line>
+				<line>Changed timetabling banner to make consistent with the one used inside the application</line>
 			</description>
-		</item>		
+		</item>
 	</category>
 	
 	<version>3.0.22</version>
