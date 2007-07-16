@@ -17,7 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  -->
 
-<!ELEMENT class ( class*, time?, room*, instructor* ) >
+<!ELEMENT class ( class*, date*, time?, (room|location)*, instructor* ) >
 <!ATTLIST class displayInScheduleBook ( false | true ) #IMPLIED >
 <!ATTLIST class id CDATA #IMPLIED >
 <!ATTLIST class limit NMTOKEN #IMPLIED >
@@ -25,14 +25,15 @@
 <!ATTLIST class suffix NMTOKEN #REQUIRED >
 <!ATTLIST class type NMTOKEN #REQUIRED >
 
-<!ELEMENT config ( subpart+, class+ ) >
+<!ELEMENT config ( subpart*, class* ) >
 <!ATTLIST config limit NMTOKEN #REQUIRED >
-<!ATTLIST config name NMTOKEN #REQUIRED >
+<!ATTLIST config name CDATA #REQUIRED >
 
 <!ELEMENT consent EMPTY >
 <!ATTLIST consent type CDATA #REQUIRED >
 
 <!ELEMENT course EMPTY >
+<!ATTLIST course id CDATA #IMPLIED >
 <!ATTLIST course controlling ( false | true ) #REQUIRED >
 <!ATTLIST course courseNbr NMTOKEN #REQUIRED >
 <!ATTLIST course scheduleBookNote CDATA #IMPLIED >
@@ -41,7 +42,7 @@
 
 <!ELEMENT courseCredit EMPTY >
 <!ATTLIST courseCredit creditFormat ( arrangeHours | fixedUnit | variableMinMax | variableRange ) #REQUIRED >
-<!ATTLIST courseCredit creditType ( collegiate | equivalent | mastersCredit | phdThesisCredit ) #REQUIRED >
+<!ATTLIST courseCredit creditType ( collegiate | equivalent | mastersCredit | phdThesisCredit | continuingEdUnits ) #REQUIRED >
 <!ATTLIST courseCredit creditUnitType CDATA #REQUIRED >
 <!ATTLIST courseCredit fixedCredit CDATA #IMPLIED >
 <!ATTLIST courseCredit fractionalCreditAllowed ( false | true ) #IMPLIED >
@@ -58,23 +59,25 @@
 <!ATTLIST instructor mname CDATA #IMPLIED >
 <!ATTLIST instructor share NMTOKEN #REQUIRED >
 
-<!ELEMENT offering ( designatorRequired, consent, courseCredit, course+, config+ ) >
+<!ELEMENT offering ( designatorRequired?, consent?, courseCredit*, course+, config* ) >
 <!ATTLIST offering action CDATA #REQUIRED >
 <!ATTLIST offering id NMTOKEN #REQUIRED >
 <!ATTLIST offering offered NMTOKEN #REQUIRED >
 
-<!ELEMENT offerings ( offering ) >
+<!ELEMENT offerings ( offering* ) >
 <!ATTLIST offerings campus NMTOKEN #REQUIRED >
 <!ATTLIST offerings term NMTOKEN #REQUIRED >
 <!ATTLIST offerings year NMTOKEN #REQUIRED >
 
 <!ELEMENT room EMPTY >
 <!ATTLIST room building NMTOKEN #REQUIRED >
-<!ATTLIST room external_id CDATA #IMPLIED >
 <!ATTLIST room id CDATA #IMPLIED >
 <!ATTLIST room roomNbr NMTOKEN #REQUIRED >
 
-<!ELEMENT subpart ( subpartCredit?, subpart* ) >
+<!ELEMENT location EMPTY >
+<!ATTLIST location name CDATA #REQUIRED >
+
+<!ELEMENT subpart ( subpartCredit*, subpart* ) >
 <!ATTLIST subpart minPerWeek NMTOKEN #REQUIRED >
 <!ATTLIST subpart suffix CDATA #IMPLIED >
 <!ATTLIST subpart type NMTOKEN #REQUIRED >
@@ -92,3 +95,7 @@
 <!ATTLIST time days NMTOKEN #REQUIRED >
 <!ATTLIST time endTime NMTOKEN #REQUIRED >
 <!ATTLIST time startTime NMTOKEN #REQUIRED >
+
+<!ELEMENT date EMPTY >
+<!ATTLIST date endDate CDATA #REQUIRED >
+<!ATTLIST date startDate CDATA #REQUIRED >

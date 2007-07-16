@@ -27,6 +27,22 @@
 	<version>3.0.@build.number@</version>
 	<release-date>@release.date@</release-date>
 	<category>
+		<title>OTHER</title>
+		<item>
+			<name>Data Export</name>
+			<description>
+				<line>Course offering and course timetable export added
+					<line>DTDs CourseOfferingExport.dtd and CourseTimetable.dtd updated</line>
+				</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.0.23</version>
+	<release-date>Fri, 13 Jul 2007</release-date>
+	<category>
 		<title>USER INTERFACE</title>
 		<item>
 			<name>Rooms</name>
@@ -126,7 +142,9 @@
 			</description>
 		</item>
 	</category>
-	
+</release>
+
+<release>
 	<version>3.0.22</version>
 	<release-date>Wed, 27 Jun 2007</release-date>
 	<category>
@@ -218,7 +236,9 @@
 			</description>
 		</item>
 	</category>
+</release>
 
+<release>
 	<version>3.0.19</version>
 	<release-date>Wed, 13 Jun 2007</release-date>
 	<category>
