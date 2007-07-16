@@ -202,6 +202,7 @@
 						int reqTotal = 0;
 						int projTotal = 0;
 						int lastTermTotal = 0;
+						boolean resvExists = false;
 					%>
 					
 					<logic:iterate name="<%=frmName%>" property="reservationId" id="resv" indexId="ctr">
@@ -310,8 +311,10 @@
 								<html:text size="4" maxlength="4" styleId="<%= "reserved_" + ctr %>" onchange="updateResvTotal();" name="<%=frmName%>" property="<%= "reserved[" + ctr + "]" %>"/>
 							</logic:notEqual>
 							<bean:define id="resvSpace" name="<%=frmName%>" property="<%= "reserved[" + ctr + "]" %>"/>
-							<% if (resvSpace!=null && resvSpace.toString().length()>0) 
-								resvTotal += Integer.parseInt((String) resvSpace);
+							<% if (resvSpace!=null && resvSpace.toString().length()>0) {
+									resvTotal += Integer.parseInt((String) resvSpace);
+									resvExists = true;									
+								}
 							%>
 							<!-- end bypass -->
 							
@@ -511,7 +514,7 @@
 		if (crsLimit!=-1)
 			limit = crsLimit;
 			
-		if (limit!=-1 && resvTotal!=limit) {						
+		if (limit!=-1 && resvTotal!=limit && resvExists) {						
 	%>	
 		document.getElementById("resvTotalDiff").innerHTML = mismatchHtml;
 	<%
