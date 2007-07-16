@@ -86,6 +86,7 @@
 	int resvTotal = 0;
 	int projTotal = 0;
 	int lastTermTotal = 0;
+	boolean resvExists = false;
 %>
 					
 	
@@ -226,8 +227,9 @@
 								<html:hidden property="<%= "limits[" + ctr + "]" %>" />
 							</logic:notEqual>
 							<bean:define id="resvSpace" name="crossListsModifyForm" property="<%= "limits[" + ctr + "]" %>"/>							
-							<% if (resvSpace!=null && resvSpace.toString().length()>0 && Constants.isInteger(resvSpace.toString())) 
-								resvTotal += Integer.parseInt((String) resvSpace); %>
+							<% if (resvSpace!=null && resvSpace.toString().length()>0 && Constants.isInteger(resvSpace.toString())) { 
+								resvExists = true;
+								resvTotal += Integer.parseInt((String) resvSpace); }%>
 							&nbsp;
 						</TD>
 						<TD align="right" class="BottomBorderGray">
@@ -320,7 +322,7 @@
 						? Integer.valueOf((String) pageContext.getAttribute("instrOffrLimit"))
 						: -1; 
 
-		if (ioLimit!=-1 && resvTotal!=ioLimit) {						
+		if (ioLimit!=-1 && resvTotal!=ioLimit && resvExists) {						
 	%>	
 		document.getElementById("resvTotalDiff").innerHTML = mismatchHtml;
 	<%
