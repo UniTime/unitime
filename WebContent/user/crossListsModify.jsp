@@ -141,9 +141,14 @@
 					<TABLE border="0" cellspacing="0" cellpadding="0" align="left">
 					<TR><TD align="left">
 						<bean:write name="crossListsModifyForm" property="ioLimit"/>
-						<bean:define id="instrOffrLimit">
-							<bean:write name="crossListsModifyForm" property="ioLimit"/>
-						</bean:define>
+						<logic:notEmpty name="crossListsModifyForm" property="ioLimit">
+							<bean:define id="instrOffrLimit">
+								<bean:write name="crossListsModifyForm" property="ioLimit"/>
+							</bean:define>
+						</logic:notEmpty>
+						<logic:empty name="crossListsModifyForm" property="ioLimit">
+							<bean:define id="instrOffrLimit" value="-1" />
+						</logic:empty>
 					</TD>
 					<TD align="left">
 						<DIV id='resvTotalDiff'>
