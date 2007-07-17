@@ -327,7 +327,8 @@ public class CourseReservationEditAction extends ReservationAction {
         }
         
         // Add blank rows
-        if (frm.getAddBlankRow().booleanValue())
+    	Collection coList = (Collection)request.getAttribute(CourseOffering.CRS_OFFERING_LIST_ATTR_NAME);
+        if (frm.getAddBlankRow().booleanValue() && courseResv.size()<coList.size())
             frm.addBlankRows();
     }
 }
