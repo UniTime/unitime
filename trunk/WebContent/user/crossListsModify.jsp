@@ -53,9 +53,13 @@
 	function updateResvTotal() {
 		i=0;
 		total = 0;
+		blanksExist = false;
 		while ( (o = document.getElementById("reserved_" + i++)) !=null ) {
 			val = o.value = o.value.trim();
-			if (val=="") val = 0;
+			if (val=="") {
+				val = 0;
+				blanksExist = true;
+			}
 			if (val == parseInt(val) && parseInt(val)>=0) {
 				total += parseInt(val);
 			}
@@ -324,7 +328,7 @@
 
 		if (ioLimit!=-1 && resvTotal!=ioLimit && resvExists) {						
 	%>	
-		document.getElementById("resvTotalDiff").innerHTML = mismatchHtml;
+		updateResvTotal();
 	<%
 		}		
 	%>
