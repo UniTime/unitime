@@ -58,22 +58,33 @@
 				<logic:notEqual name="<%=frmName%>" property="unlimited" value="true">
 					<TABLE border="0" cellspacing="0" cellpadding="0" align="left">
 					<TR><TD align="left">
-						<bean:write name="<%=frmName%>" property="ioLimit"/>
-						<bean:define id="instrOffrLimit">
-							<bean:write name="<%=frmName%>" property="ioLimit"/>
-						</bean:define>
+						<logic:notEmpty name="<%=frmName%>" property="ioLimit">
+							<bean:define id="instrOffrLimit">
+								<bean:write name="<%=frmName%>" property="ioLimit"/>
+							</bean:define>
+						</logic:notEmpty>
+						<logic:empty name="<%=frmName%>" property="ioLimit">
+							<bean:define id="instrOffrLimit" value="-1" />
+						</logic:empty>
 					</TD>
 					<TD align="left">
-						<logic:equal name="<%=frmName%>" property="crsLimit" value="-">
-						<DIV id='resvTotalDiff'>
-						</DIV>
-						</logic:equal>
+						<logic:notEmpty name="<%=frmName%>" property="crsLimit">
+							<logic:equal name="<%=frmName%>" property="crsLimit" value="-">
+								<DIV id='resvTotalDiff'>
+								</DIV>
+							</logic:equal>
+						</logic:notEmpty>
+						<logic:empty name="<%=frmName%>" property="crsLimit">
+							<DIV id='resvTotalDiff'>
+							</DIV>
+						</logic:empty>
 					</TD></TR>
 					</TABLE>					
 				</logic:notEqual>
 			</TD>
 		</TR>
 	
+		<logic:notEmpty name="<%=frmName%>" property="crsLimit">
 		<logic:notEqual name="<%=frmName%>" property="crsLimit" value="-">
 		<TR>
 			<TD>
@@ -95,5 +106,6 @@
 			</TD>
 		</TR>
 		</logic:notEqual>
+		</logic:notEmpty>
 	
 	
