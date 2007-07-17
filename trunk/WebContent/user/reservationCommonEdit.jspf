@@ -384,7 +384,6 @@
 							<% } %>
 						<!-- end bypass -->
 							&nbsp;
-							<% if (!frmName.equals("courseReservationEditForm")) { %>
 							<logic:empty name="<%=frmName%>" property="<%= "priorEnrollment[" + ctr + "]" %>">
 								<html:submit property="op" 
 									styleClass="btn" titleKey="title.removeReservation"
@@ -392,7 +391,6 @@
 									<bean:message key="button.removeReservation" />
 								</html:submit>
 							</logic:empty> 			
-							<% } %>
 						</TD>
 
 					</TR>
