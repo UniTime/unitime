@@ -52,11 +52,15 @@
 	}
 		
 	function updateResvTotal() {
+		blanksExist = false;
 		i=0;
 		total = 0;
 		while ( (o = document.getElementById("reserved_" + i++)) !=null ) {
 			val = o.value = o.value.trim();
-			if (val=="") val = 0;
+			if (val=="") { 
+				val = 0;
+				blanksExist = true;
+			}
 			if (val == parseInt(val) && parseInt(val)>=0) {
 				total += parseInt(val);
 			}
@@ -75,7 +79,7 @@
 		}
 		document.getElementById('resvTotal').innerHTML = str;
 		
-		if (total!=ioLimit && origTotal>=0) 
+		if (total!=ioLimit && origTotal>=0 && !blanksExist) 
 			document.getElementById("resvTotalDiff").innerHTML = mismatchHtml;
 		else 
 			document.getElementById("resvTotalDiff").innerHTML = "";
@@ -516,7 +520,7 @@
 			
 		if (limit!=-1 && resvTotal!=limit && resvExists) {						
 	%>	
-		document.getElementById("resvTotalDiff").innerHTML = mismatchHtml;
+		updateResvTotal();
 	<%
 		}		
 		if (frmName.equals("courseReservationEditForm")) {
