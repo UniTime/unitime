@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.MessageResources;
 import org.hibernate.Session;
@@ -110,7 +111,22 @@ public class CourseReservationEditAction extends ReservationAction {
         
         // Add Blank Rows
         if ( op.equals(rsc.getMessage("button.addReservationRow")) ) {
-            frm.addBlankRows();        
+        	Collection coList = (Collection)request.getAttribute(CourseOffering.CRS_OFFERING_LIST_ATTR_NAME);
+        	if (coList!=null && coList.size()>0) {
+        		if (frm.getCourseOfferingId().size()<coList.size())
+        			frm.addBlankRows();
+        		else { 
+        			if (errors==null) errors = new ActionMessages();
+        			errors.add("courseOfferingId", 
+                            new ActionMessage(
+                                    "errors.generic", 
+                                    "Cannot add reservations that exceed the number of courses in the offering."));
+        			saveErrors(request, errors);
+        		}
+        	}
+        	else {
+        		frm.addBlankRows();
+        	}
         }        
         
         // Delete rows
