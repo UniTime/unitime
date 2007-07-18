@@ -44,11 +44,13 @@ import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.RoomDetailForm;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.DepartmentRoomFeature;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.NonUniversityLocation;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomDept;
+import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimetableManager;
@@ -142,9 +144,12 @@ public class RoomDetailAction extends Action {
 				return mapping.findForward("showEditRoomPref");
 			}
 		}
+		
+		if (request.getParameter("id")==null && roomDetailForm.getId()==null)
+		    return mapping.findForward("showRoomList");
 				
 		//get location
-		Long id = Long.valueOf(request.getParameter("id"));
+		Long id = Long.valueOf(request.getParameter("id")!=null?request.getParameter("id"):roomDetailForm.getId());
 		LocationDAO ldao = new LocationDAO();
 		Location location = ldao.get(id);
 		if (location instanceof Room) {
@@ -208,7 +213,26 @@ public class RoomDetailAction extends Action {
 		roomDetailForm.setPatterns(location.getPattern());
 		roomDetailForm.setGlobalFeatures(new TreeSet(location.getGlobalRoomFeatures()));
 		roomDetailForm.setDepartmentFeatures(new TreeSet(location.getDepartmentRoomFeatures()));
+		for (Iterator i=roomDetailForm.getDepartmentFeatures().iterator();i.hasNext();) {
+		    DepartmentRoomFeature drf = (DepartmentRoomFeature)i.next();
+            boolean skip = true;
+            for (Iterator j=location.getRoomDepts().iterator();j.hasNext();) {
+                RoomDept rd = (RoomDept)j.next();
+                if (drf.getDepartment().equals(rd.getDepartment())) { skip=false; break; }
+            }
+            if (skip) i.remove();
+		}
 		roomDetailForm.setGroups(new TreeSet(location.getRoomGroups()));
+        for (Iterator i=roomDetailForm.getGroups().iterator();i.hasNext();) {
+            RoomGroup rg = (RoomGroup)i.next();
+            if (rg.isGlobal()) continue;
+            boolean skip = true;
+            for (Iterator j=location.getRoomDepts().iterator();j.hasNext();) {
+                RoomDept rd = (RoomDept)j.next();
+                if (rg.getDepartment().equals(rd.getDepartment())) { skip=false; break; }
+            }
+            if (skip) i.remove();
+        }
 		if (location instanceof Room) {
 			Room r = (Room) location;
 			roomDetailForm.setName(r.getLabel());
@@ -280,6 +304,14 @@ public class RoomDetailAction extends Action {
 			tx = hibSession.beginTransaction();
 			Location location = ldao.get(id, hibSession);
 			if (location != null){
+                ChangeLog.addChange(
+                        hibSession, 
+                        request, 
+                        location, 
+                        ChangeLog.Source.ROOM_EDIT, 
+                        ChangeLog.Operation.DELETE, 
+                        null, 
+                        location.getControllingDepartment());
 				List roomPrefs = hibSession.createCriteria(RoomPref.class).add(Restrictions.eq("room.uniqueId", id)).list();
 				for (Iterator i=location.getRoomDepts().iterator();i.hasNext();) {
 					RoomDept rd = (RoomDept)i.next();
@@ -294,14 +326,6 @@ public class RoomDetailAction extends Action {
 					hibSession.delete(rp);
 					hibSession.saveOrUpdate(rp.getOwner());
 				}
-                ChangeLog.addChange(
-                        hibSession, 
-                        request, 
-                        location, 
-                        ChangeLog.Source.ROOM_EDIT, 
-                        ChangeLog.Operation.DELETE, 
-                        null, 
-                        location.getControllingDepartment());
 				hibSession.delete(location);
 			}
 			tx.commit();
