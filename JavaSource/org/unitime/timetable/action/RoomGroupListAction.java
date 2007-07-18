@@ -256,6 +256,7 @@ public class RoomGroupListAction extends Action {
 			boolean haveRooms = false;
 			for (Iterator iter = rs.iterator();iter.hasNext();) {
 				Location r = (Location) iter.next();
+				if (!sessionId.equals(r.getSession().getUniqueId())) continue;
 				if (!showAll) {
 					boolean skip = true;
 					for (Iterator j=r.getRoomDepts().iterator();j.hasNext();) {
@@ -314,6 +315,12 @@ public class RoomGroupListAction extends Action {
 			
 			for (Iterator iter = rs.iterator();iter.hasNext();) {
 				Location r = (Location) iter.next();
+                boolean skip = true;
+                for (Iterator j=r.getRoomDepts().iterator();j.hasNext();) {
+                    RoomDept rd = (RoomDept)j.next();
+                    if (rg.getDepartment().equals(rd.getDepartment())) { skip=false; break; }
+                }
+                if (skip) continue;
 				if (assignedRoom.length() > 0) 
 					assignedRoom.append(", ");
 				assignedRoom.append(r.getLabel().replaceAll(" ","&nbsp;"));
@@ -433,6 +440,7 @@ public class RoomGroupListAction extends Action {
     			int nrRows = 0;
     			for (Iterator iter = rs.iterator();iter.hasNext();) {
     				Location r = (Location) iter.next();
+    				if (!sessionId.equals(r.getSession().getUniqueId())) continue;
     				if (!showAll) {
     					boolean skip = true;
     					for (Iterator j=r.getRoomDepts().iterator();j.hasNext();) {
@@ -494,6 +502,12 @@ public class RoomGroupListAction extends Action {
     			
     			for (Iterator iter = rs.iterator();iter.hasNext();) {
     				Location r = (Location) iter.next();
+                    boolean skip = true;
+                    for (Iterator j=r.getRoomDepts().iterator();j.hasNext();) {
+                        RoomDept rd = (RoomDept)j.next();
+                        if (rg.getDepartment().equals(rd.getDepartment())) { skip=false; break; }
+                    }
+                    if (skip) continue;
     				if (assignedRoom.length() > 0) assignedRoom.append(", ");
     				if (PdfWebTable.getWidthOfLastLine(assignedRoom.toString(),false,false)>500)
     					assignedRoom.append("\n");
