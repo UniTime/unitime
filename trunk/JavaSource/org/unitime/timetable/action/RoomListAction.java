@@ -601,6 +601,14 @@ public class RoomListAction extends Action {
 				for (Iterator it = new TreeSet(location.getRoomGroups()).iterator(); it.hasNext();) {
 					RoomGroup rg = (RoomGroup) it.next();
 					if (!rg.isGlobal().booleanValue() && !depts.contains(rg.getDepartment())) continue;
+					if (!rg.isGlobal().booleanValue()) {
+                        boolean skip = true;
+                        for (Iterator j=location.getRoomDepts().iterator();j.hasNext();) {
+                            RoomDept rd = (RoomDept)j.next();
+                            if (rg.getDepartment().equals(rd.getDepartment())) { skip=false; break; }
+                        }
+                        if (skip) continue;
+					}
                     if (text[idx].length()>0) text[idx] += "<br>";
                     comp[idx] = comp[idx] + rg.getName().trim();
 					text[idx] += rg.htmlLabel();
@@ -619,6 +627,12 @@ public class RoomListAction extends Action {
 					}
 					for (Iterator it = new TreeSet(location.getDepartmentRoomFeatures()).iterator(); it.hasNext();) {
 						DepartmentRoomFeature drf = (DepartmentRoomFeature) it.next();
+	                    boolean skip = true;
+	                    for (Iterator j=location.getRoomDepts().iterator();j.hasNext();) {
+	                        RoomDept rd = (RoomDept)j.next();
+	                        if (drf.getDepartment().equals(rd.getDepartment())) { skip=false; break; }
+	                    }
+	                    if (skip) continue;
                         if (text[idx].length()>0) text[idx] += "<br>";
                         comp[idx] = comp[idx] + drf.getLabel().trim();
 						text[idx] += drf.htmlLabel();
@@ -636,6 +650,10 @@ public class RoomListAction extends Action {
 					for (Iterator it = deptRoomFeatures.iterator(); it.hasNext();) {
 					    DepartmentRoomFeature drf = (DepartmentRoomFeature) it.next();
 						boolean b = location.hasFeature(drf);
+                        for (Iterator j=location.getRoomDepts().iterator();j.hasNext();) {
+                            RoomDept rd = (RoomDept)j.next();
+                            if (drf.getDepartment().equals(rd.getDepartment())) { b=false; break; }
+                        }
 						text[idx] = b ? "<IMG border='0' title='" + drf.getLabel() + "' alt='" + drf.getLabel() + "' align='absmiddle' src='images/tick.gif'>" : "&nbsp;";
 						comp[idx] = "" + b;
 						idx++;
@@ -1069,6 +1087,14 @@ public class RoomListAction extends Action {
 				for (Iterator it = new TreeSet(location.getRoomGroups()).iterator(); it.hasNext();) {
 					RoomGroup rg = (RoomGroup) it.next();
 					if (!rg.isGlobal().booleanValue() && !depts.contains(rg.getDepartment())) continue;
+                    if (!rg.isGlobal().booleanValue()) {
+                        boolean skip = true;
+                        for (Iterator j=location.getRoomDepts().iterator();j.hasNext();) {
+                            RoomDept rd = (RoomDept)j.next();
+                            if (rg.getDepartment().equals(rd.getDepartment())) { skip=false; break; }
+                        }
+                        if (skip) continue;
+                    }
 					if (text[idx].length()>0) text[idx] += "\n";
                     comp[idx] = comp[idx] + rg.getName().trim();
 					text[idx] += (rg.isGlobal().booleanValue()?"":"@@COLOR "+rg.getDepartment().getRoomSharingColor(null)+" ")+rg.getName(); 
@@ -1086,6 +1112,12 @@ public class RoomListAction extends Action {
 					}
 					for (Iterator it = new TreeSet(location.getDepartmentRoomFeatures()).iterator(); it.hasNext();) {
 						DepartmentRoomFeature drf = (DepartmentRoomFeature) it.next();
+                        boolean skip = true;
+                        for (Iterator j=location.getRoomDepts().iterator();j.hasNext();) {
+                            RoomDept rd = (RoomDept)j.next();
+                            if (drf.getDepartment().equals(rd.getDepartment())) { skip=false; break; }
+                        }
+                        if (skip) continue;
                         if (text[idx].length()>0) text[idx] += "\n";
                         comp[idx] = comp[idx] + drf.getLabel().trim();
 						text[idx] +="@@COLOR "+drf.getDepartment().getRoomSharingColor(null)+" "+drf.getLabel();
@@ -1102,7 +1134,11 @@ public class RoomListAction extends Action {
 					}
 					for (Iterator it = deptRoomFeatures.iterator(); it.hasNext();) {
 					    DepartmentRoomFeature drf = (DepartmentRoomFeature) it.next();
-						boolean b = location.hasFeature(drf);
+                        boolean b = location.hasFeature(drf);
+                        for (Iterator j=location.getRoomDepts().iterator();j.hasNext();) {
+                            RoomDept rd = (RoomDept)j.next();
+                            if (drf.getDepartment().equals(rd.getDepartment())) { b=false; break; }
+                        }
 						text[idx] = b ? "Yes" : "No";
 						comp[idx] = "" + b;
 						idx++;
