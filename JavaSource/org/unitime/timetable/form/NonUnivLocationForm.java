@@ -34,7 +34,6 @@ import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimetableManager;
-import org.unitime.timetable.util.Constants;
 
 
 /** 
@@ -102,17 +101,19 @@ public class NonUnivLocationForm extends ActionForm {
 		name = "";
 		ignoreTooFar = false;
 		ignoreRoomCheck = false;
-		setDeptSize(request);
+		try {
+		    setDeptSize(request);
+		} catch (Exception e) {}
 	}
 
 	/**
 	 * 
 	 * @param request
 	 */
-	private void setDeptSize(HttpServletRequest request) {
+	private void setDeptSize(HttpServletRequest request) throws Exception {
     	deptSize = 0;
     	User user = Web.getUser(request.getSession());
-    	Long sessionId = (Long) user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
+    	Long sessionId = Session.getCurrentAcadSession(user).getSessionId();
     	if (!user.getRole().equals(Roles.ADMIN_ROLE)) {
 	    	TimetableManager mgr = TimetableManager.getManager(user);
 	    	Set mgrDepts = Department.findAllOwned(sessionId, mgr, true);
