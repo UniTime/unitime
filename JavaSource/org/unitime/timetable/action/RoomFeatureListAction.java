@@ -279,6 +279,7 @@ public class RoomFeatureListAction extends Action {
 			boolean haveRooms = false;
 			for (Iterator iter = rs.iterator();iter.hasNext();) {
 				Location r = (Location) iter.next();
+				if (!sessionId.equals(r.getSession().getUniqueId())) continue;
 				if (!showAll) {
 					boolean skip = true;
 					for (Iterator j=r.getRoomDepts().iterator();j.hasNext();) {
@@ -335,6 +336,12 @@ public class RoomFeatureListAction extends Action {
 			
 			for (Iterator iter = rs.iterator();iter.hasNext();) {
 				Location r = (Location) iter.next();
+                boolean skip = true;
+                for (Iterator j=r.getRoomDepts().iterator();j.hasNext();) {
+                    RoomDept rd = (RoomDept)j.next();
+                    if (drf.getDepartment().equals(rd.getDepartment())) { skip=false; break; }
+                }
+                if (skip) continue;
 				if (assignedRoom.length() > 0) assignedRoom.append(", ");
 				assignedRoom.append(r.getLabel().replaceAll(" ","&nbsp;"));
 			}
@@ -414,7 +421,7 @@ public class RoomFeatureListAction extends Action {
     				"Name", "Abbreviation", "", "Rooms" },
     				new String[] { "left", "left", "left", "left" }, new boolean[] { true, true, true, true});
 
-    		PdfWebTable departmentWebTable = new PdfWebTable(3, "Department Room Features", null, new String[] {
+    		PdfWebTable departmentWebTable = new PdfWebTable(4, "Department Room Features", null, new String[] {
     				"Name", "Abbreviation", "Department ", "Rooms" },
     				new String[] { "left", "left", "left", "left" }, new boolean[] { true, true, true, true});
     		
@@ -449,6 +456,7 @@ public class RoomFeatureListAction extends Action {
     			boolean haveRooms = false;
     			for (Iterator iter = rs.iterator();iter.hasNext();) {
     				Location r = (Location) iter.next();
+    				if (!sessionId.equals(r.getSession().getUniqueId())) continue;
     				if (!showAll) {
     					boolean skip = true;
     					for (Iterator j=r.getRoomDepts().iterator();j.hasNext();) {
@@ -508,6 +516,12 @@ public class RoomFeatureListAction extends Action {
     			
     			for (Iterator iter = rs.iterator();iter.hasNext();) {
     				Location r = (Location) iter.next();
+                    boolean skip = true;
+                    for (Iterator j=r.getRoomDepts().iterator();j.hasNext();) {
+                        RoomDept rd = (RoomDept)j.next();
+                        if (drf.getDepartment().equals(rd.getDepartment())) { skip=false; break; }
+                    }
+                    if (skip) continue;
     				if (assignedRoom.length() > 0) assignedRoom.append(", ");
     				if (PdfWebTable.getWidthOfLastLine(assignedRoom.toString(),false,false)>750)
     					assignedRoom.append("\n");
