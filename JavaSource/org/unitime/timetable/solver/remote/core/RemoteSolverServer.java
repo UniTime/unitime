@@ -189,22 +189,22 @@ public class RemoteSolverServer implements Runnable {
 				System.out.println("Reading "+propertiesUrl+" ...");
 				properties.load(propertiesUrl.openStream());
 			}
-            propertiesUrl = classLoader.getResource("custom.properties");
+            propertiesUrl = classLoader.getResource(properties.getProperty("tmtbl.custom.properties","custom.properties"));
             if (propertiesUrl!=null) {
                 System.out.println("Reading "+propertiesUrl+" ...");
                 properties.load(propertiesUrl.openStream());
             }
 			
-			if (System.getProperty("Solver.Properties")!=null) {
+			if (System.getProperty("tmtbl.custom.properties")!=null) {
 				FileInputStream in = null;
 				try {
-					System.out.println("Reading "+System.getProperty("Solver.Properties")+" ...");
+					System.out.println("Reading "+System.getProperty("tmtbl.custom.properties")+" ...");
 					Properties x = new Properties();
-					in = new FileInputStream(System.getProperty("Solver.Properties"));
+					in = new FileInputStream(System.getProperty("tmtbl.custom.properties"));
 					x.load(in);
 					properties.putAll(x);
 				} catch (Exception e) {
-					System.out.println("Unable to read properties file "+System.getProperty("Solver.Properties")+", message: "+e.getMessage());
+					System.out.println("Unable to read properties file "+System.getProperty("tmtbl.custom.properties")+", message: "+e.getMessage());
 				} finally {
 					if (in!=null) in.close();
 				}
