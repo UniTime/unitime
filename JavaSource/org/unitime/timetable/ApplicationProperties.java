@@ -20,6 +20,7 @@
 package org.unitime.timetable;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -79,19 +80,32 @@ public class ApplicationProperties {
                 }
             } catch (Exception e) {}
             
-            // Load properties set in custom.properties
-            URL custPropertiesUrl = ApplicationProperties.class.getClassLoader().getResource("custom.properties");
+            // Load properties set in custom properties
+            String customProperties = System.getProperty("tmtbl.custom.properties");
+            if (customProperties==null)
+                customProperties = props.getProperty("tmtbl.custom.properties", "custom.properties");
+            URL custPropertiesUrl = ApplicationProperties.class.getClassLoader().getResource(customProperties);
             if (custPropertiesUrl!=null) {
                 Debug.info("Reading " + URLDecoder.decode(custPropertiesUrl.getPath(), "UTF-8") + " ...");
                 props.load(custPropertiesUrl.openStream());
-            }
-            try {
                 try {
-                    custPropertiesLastModified = new File(custPropertiesUrl.toURI()).lastModified();
-                } catch (URISyntaxException e) {
-                    custPropertiesLastModified = new File(custPropertiesUrl.getPath()).lastModified();
+                    try {
+                        custPropertiesLastModified = new File(custPropertiesUrl.toURI()).lastModified();
+                    } catch (URISyntaxException e) {
+                        custPropertiesLastModified = new File(custPropertiesUrl.getPath()).lastModified();
+                    }
+                } catch (Exception e) {}
+            } else if (new File(customProperties).exists()) {
+                Debug.info("Reading " + customProperties + " ...");
+                FileReader reader = null;
+                try {
+                    reader = new FileReader(customProperties);
+                    props.load(reader);
+                    custPropertiesLastModified = new File(customProperties).lastModified();
+                } finally {
+                    if (reader!=null) reader.close();
                 }
-            } catch (Exception e) {}
+            }
             
             // Load system properties
             props.putAll(System.getProperties());
