@@ -128,13 +128,21 @@ public class ApplicationProperties {
                     appPropTS = new File(appPropertiesUrl.getPath()).lastModified();
                 }
             } catch (Exception e) {}
-            URL custPropertiesUrl = ApplicationProperties.class.getClassLoader().getResource("custom.properties");
+
+            String customProperties = System.getProperty("tmtbl.custom.properties");
+            if (customProperties==null) 
+                customProperties = props.getProperty("tmtbl.custom.properties", "custom.properties");
+            URL custPropertiesUrl = ApplicationProperties.class.getClassLoader().getResource(customProperties);
             long custPropTS = -1;
             try {
-                try {
-                    custPropTS = new File(custPropertiesUrl.toURI()).lastModified();
-                } catch (URISyntaxException e) {
-                    custPropTS = new File(custPropertiesUrl.getPath()).lastModified();
+                if (custPropertiesUrl!=null) {
+                    try {
+                        custPropTS = new File(custPropertiesUrl.toURI()).lastModified();
+                    } catch (URISyntaxException e) {
+                        custPropTS = new File(custPropertiesUrl.getPath()).lastModified();
+                    }
+                } else if (new File(customProperties).exists()) {
+                    custPropTS = new File(customProperties).lastModified();
                 }
             } catch (Exception e) {}
             
