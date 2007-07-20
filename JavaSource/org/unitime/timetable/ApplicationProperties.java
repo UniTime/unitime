@@ -20,7 +20,7 @@
 package org.unitime.timetable;
 
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -97,13 +97,13 @@ public class ApplicationProperties {
                 } catch (Exception e) {}
             } else if (new File(customProperties).exists()) {
                 Debug.info("Reading " + customProperties + " ...");
-                FileReader reader = null;
+                FileInputStream fis = null;
                 try {
-                    reader = new FileReader(customProperties);
-                    props.load(reader);
+                    fis = new FileInputStream(customProperties);
+                    props.load(fis);
                     custPropertiesLastModified = new File(customProperties).lastModified();
                 } finally {
-                    if (reader!=null) reader.close();
+                    if (fis!=null) fis.close();
                 }
             }
             
