@@ -72,6 +72,7 @@
 			<name>Other</name>
 			<description>
 				<line>Macromedia image files imported from the old Timetabling project.</line>
+				<line>Constraint solver updated, see https://lists.sourceforge.net/lists/listinfo/cpsolver-cvs for more details.</line>
 			</description>
 		</item>
 	</category>
