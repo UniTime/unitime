@@ -27,6 +27,31 @@
 	<version>3.0.@build.number@</version>
 	<release-date>@release.date@</release-date>
 	<category>
+		<title>USER INTERFACE</title>
+		<item>
+			<name>Cross-lists</name>
+			<description>
+				<line>Fixed exception that occurs when course has no configurations and hence no instructional offering limit.</line>
+				<line>Fix display of error message regarding mismatch in limits if the screen loads without any pre-existing reservations.</line>
+				<line>Suppress display of mimatch limits if there are any blank values in the reserved spaces field.</line>
+			</description>
+		</item>
+		<item>
+			<name>Reservations</name>
+			<description>
+				<line>For reservations on class: check that the number of reservation does not exceed the number of courses in the offering.</line>
+				<line>Allow deletion of course reservations on class.</line>
+				<line>Fix exceptions caused when inst offering limit and/or course offering limits are null.</line>
+				<line>Course Reservations: On screen load - Do not add blank row if no. of reservations >= no. of courses in the offering.</line>
+			</description>
+		</item>
+		<item>
+			<name>Room Features and Groups</name>
+			<description>
+				<line>For global room features/groups: only display rooms from the current academic session.</line>
+				<line>For departmental room features/groups: do not display rooms that are no longer shared by the feature's/group's department.</line>
+			</description>
+		</item>
 		<title>OTHER</title>
 		<item>
 			<name>Data Export</name>
@@ -34,6 +59,19 @@
 				<line>Course offering and course timetable export added
 					<line>DTDs CourseOfferingExport.dtd and CourseTimetable.dtd updated</line>
 				</line>
+			</description>
+		</item>
+		<item>
+			<name>Custom Properties</name>
+			<description>
+				<line>Location of custom properties can be redefined by tmtbl.custom.properties property.
+					<line>It can also be passed to JVM as a system property, e.g., -Dtmtbl.custom.properties=~/my.properties.</line></line>
+			</description>
+		</item>
+		<item>
+			<name>Other</name>
+			<description>
+				<line>Macromedia image files imported from the old Timetabling project.</line>
 			</description>
 		</item>
 	</category>
