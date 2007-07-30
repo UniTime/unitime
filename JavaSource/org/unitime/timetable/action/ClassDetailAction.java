@@ -47,6 +47,7 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionPref;
+import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Reservation;
@@ -221,6 +222,12 @@ public class ClassDetailAction extends PreferencesAction {
 			    request.setAttribute("ownerName", frm.getClassName());
 			    request.setAttribute("ownerType", Constants.RESV_OWNER_CLASS);
 			    request.setAttribute("ownerTypeLabel", Constants.RESV_OWNER_CLASS_LBL);
+			    InstrOfferingConfig ioc = c.getSchedulingSubpart().getInstrOfferingConfig();
+                request.setAttribute("ioLimit", 
+                		ioc.getInstructionalOffering().getLimit()!=null 
+	                		? ioc.getInstructionalOffering().getLimit().toString()
+	                		: null);
+                request.setAttribute("unlimited", ioc.isUnlimitedEnrollment());
 			    return mapping.findForward("displayCourseReservation");
 			    // End Bypass
 
