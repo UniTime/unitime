@@ -62,9 +62,11 @@
 							<bean:define id="instrOffrLimit">
 								<bean:write name="<%=frmName%>" property="ioLimit"/>
 							</bean:define>
+							<bean:write name="<%=frmName%>" property="ioLimit"/>
 						</logic:notEmpty>
 						<logic:empty name="<%=frmName%>" property="ioLimit">
 							<bean:define id="instrOffrLimit" value="-1" />
+							-
 						</logic:empty>
 					</TD>
 					<TD align="left">
