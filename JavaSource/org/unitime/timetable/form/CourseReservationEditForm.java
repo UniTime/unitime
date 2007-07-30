@@ -128,4 +128,13 @@ public class CourseReservationEditForm extends CharacteristicReservationForm {
          super.addReservation(resv);
          addToCourseOfferingId(resv.getCourseOffering().getUniqueId().toString());
      }
+
+	public void removeRow(int rowNum) {
+		if (rowNum>=0) {
+			super.removeRow(rowNum);
+			courseOfferingId.remove(rowNum);
+		}
+	}
+     
+     
 }
