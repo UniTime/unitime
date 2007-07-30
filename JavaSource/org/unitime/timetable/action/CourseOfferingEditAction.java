@@ -117,7 +117,7 @@ public class CourseOfferingEditAction extends Action {
 		    request.setAttribute("ownerTypeLabel", Constants.RESV_OWNER_COURSE_LBL);
 		    
 		    InstructionalOffering io = co.getInstructionalOffering();
-            request.setAttribute("ioLimit", io.getLimit()!=null ? io.getLimit().toString() : "-");
+            request.setAttribute("ioLimit", io.getLimit()!=null ? io.getLimit().toString() : null);
             request.setAttribute("unlimited", io.hasUnlimitedEnrollment());
 
 		    Collection ioResvs2 = io.getReservations(false, false, false, false, true);
