@@ -292,7 +292,7 @@ public class ReservationEditAction extends ReservationAction {
             excludeList = new String[] { Constants.RESV_COURSE };
         }
         
-        frm.setIoLimit(io.getLimit()!=null ? io.getLimit().toString() : "-");
+        frm.setIoLimit(io.getLimit()!=null ? io.getLimit().toString() : null);
         frm.setUnlimited(io.hasUnlimitedEnrollment());
         
         Vector backList = BackTracker.getBackList(request.getSession());
