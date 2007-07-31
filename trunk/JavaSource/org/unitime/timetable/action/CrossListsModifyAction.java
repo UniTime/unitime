@@ -22,6 +22,7 @@ package org.unitime.timetable.action;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -254,9 +255,11 @@ public class CrossListsModifyAction extends Action {
         InstructionalOffering io = idao.get(frm.getInstrOfferingId());
         Session hibSession = idao.getSession();
         Transaction tx = null;
+        HashMap saList = new HashMap();
+        
+        ReservationType permResvType=ReservationType.getReservationTypebyRef(Constants.RESV_TYPE_PERM_REF);
         
         try {
-	        ReservationType permResvType = null;
 	        tx = hibSession.beginTransaction();
 	        StringTokenizer strTok = new StringTokenizer(origCourseIds);
 	        
@@ -325,26 +328,11 @@ public class CrossListsModifyAction extends Action {
 			            
 			            CourseOffering co3 = (CourseOffering) i.next();
 			            if (co3.equals(co1)) {
-			                
 		                    // Remove from Subject Area
 					        SubjectArea sa = co3.getSubjectArea();
 					        sa.getCourseOfferings().remove(co1);
-					        /*
-		                    Set saCrses = sa.getCourseOfferings();
-			                for (Iterator j=saCrses.iterator(); j.hasNext(); ) {
-			                    CourseOffering co4 = (CourseOffering) j.next();
-			                    if (co4.equals(co1)) {
-			                        Debug.debug("Removing course offering from subject area list");
-			                        j.remove();
-			                        break;
-			                    }
-			                }
-			                */
 			                hibSession.saveOrUpdate(sa);
-			                //hibSession.refresh(sa);
-			                
-			                // Remove from collection
-			                //i.remove();
+			                saList.put(sa.getSubjectAreaAbbreviation(), sa);
 			            }
 			        }
 			        
@@ -454,9 +442,6 @@ public class CrossListsModifyAction extends Action {
 	                
 	                if (ids.size()>1) {
 		                if (cor1==null) {
-		                    if (permResvType==null)
-		                        permResvType=ReservationType.getReservationTypebyRef(Constants.RESV_TYPE_PERM_REF);
-		                    
 		                    cor1 = new CourseOfferingReservation();
 		                    cor1.setCourseOffering(co1);
 		                    cor1.setOwner(io.getUniqueId());
@@ -522,6 +507,7 @@ public class CrossListsModifyAction extends Action {
 	                    else {
 		                    for (Iterator resvIter=resv2.iterator(); resvIter.hasNext();) {
 		                        AcadAreaReservation ar2 = (AcadAreaReservation) resvIter.next();
+
 		                        AcadAreaReservation ar3 = new AcadAreaReservation();
 		                        ar3.setAcademicArea(ar2.getAcademicArea());
 		                        ar3.setAcademicClassification(ar2.getAcademicClassification());
@@ -533,8 +519,14 @@ public class CrossListsModifyAction extends Action {
 		                        ar3.setReservationType(ar2.getReservationType());
 		                        ar3.setReserved(ar2.getReserved());
 		                        resvs.add(ar3);
+
+		                        // Delete academic area reservations
+		                        Debug.debug("Removing academic area reservation from course offering");
+		                        hibSession.delete(ar2);
+		                        resvIter.remove();
 		                    }
 	                    }
+	                    co2.setAcadAreaReservations(null);
 	                    
 	                    addedOfferings.addElement(co3);
 	                    addedResvs.addElement(resvs);
@@ -556,9 +548,6 @@ public class CrossListsModifyAction extends Action {
 	                        cor3.setRequested(cor2.getRequested());
 	                        cor3.setReservationType(cor2.getReservationType());
 	                    } else {
-		                    if (permResvType==null)
-		                        permResvType=ReservationType.getReservationTypebyRef(Constants.RESV_TYPE_PERM_REF);
-		                    
 		                    cor3.setOwnerClassId(Constants.RESV_OWNER_IO);
 		                    cor3.setPriorEnrollment(null);
 		                    cor3.setPriority(new Integer(1));
@@ -569,26 +558,30 @@ public class CrossListsModifyAction extends Action {
                         addedCourseResvs.addElement(cor3);
 		                
 	                    // Remove from collection
-	                    i.remove();
+	                    //i.remove();
 
+    			        sa2.getCourseOfferings().remove(co2);
+	                    hibSession.saveOrUpdate(sa2);
+		                saList.put(sa2.getSubjectAreaAbbreviation(), sa2);
+                        
 	                    // Delete course offering
+                        io1.removeCourseOffering(co2);
 	                    hibSession.delete(co2);
 	                    hibSession.flush();
 
-	                    hibSession.saveOrUpdate(sa2);
-	                    hibSession.flush();
-
-	                    hibSession.refresh(sa2);
+	                    //hibSession.refresh(sa2);
 	                    
 	                }
 	                
-	                io1.setCourseOfferings(offerings);
-	                hibSession.saveOrUpdate(io1);
+	                //io1.setCourseOfferings(offerings);
+	                //hibSession.saveOrUpdate(io1);
 	                hibSession.delete(io1);
 	                hibSession.flush();
 	                
 	                hibSession.saveOrUpdate(sa);
-	    	        hibSession.refresh(sa);
+	                saList.put(sa.getSubjectAreaAbbreviation(), sa);
+
+	    	        //hibSession.refresh(sa);
 	                
 	            }            
 	        }
@@ -652,6 +645,11 @@ public class CrossListsModifyAction extends Action {
 	        		hibSession.refresh(ss);
 	        	}
 	        }
+	        
+	        Set keys = saList.keySet();
+	        for (Iterator i1=keys.iterator(); i1.hasNext();) {
+	        	hibSession.refresh(saList.get(i1.next()));
+	        }	        
         }
         catch (Exception e) {
             Debug.error(e);
