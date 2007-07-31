@@ -18,9 +18,9 @@
 --%>
 <%@ page language="java" import="java.util.*" pageEncoding="UTF-8"%>
 <%@ page import="org.unitime.timetable.webutil.RequiredTimeTable" %>
-<%@ page import="org.unitime.timetable.model.dao.TimePatternDAO" %>
 <%@ page import="org.unitime.timetable.model.TimePattern" %>
 <%@ page import="org.unitime.timetable.model.TimePatternModel" %>
+<%@ page import="org.unitime.timetable.model.Session" %>
 <script language="javascript" src="../scripts/rtt.js"></script>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html style="background-color:white">
@@ -30,8 +30,9 @@
   <body><form method="post" action="tpcomb.jsp">
 <%
 try {
+	Long sessionId = Session.defaultSession().getUniqueId();
 	TimePattern timePattern = null;
-	for (Iterator i=TimePattern.findByMinPerWeek("puWestLafayetteTrdtn","Fal",false,false,false,30, null).iterator();i.hasNext();) {
+	for (Iterator i=TimePattern.findByMinPerWeek(sessionId,false,false,false,30, null).iterator();i.hasNext();) {
 		timePattern = (TimePattern)i.next();
 		break;
 	}
@@ -54,12 +55,10 @@ try {
 %>
    </select> <input type='submit' value='Update' accesskey="0"/><br><hr>
 <%
-	Vector timePatterns = new Vector((new TimePatternDAO()).findAll());
-	Collections.sort(timePatterns);
+	Vector timePatterns = TimePattern.findAll(sessionId,true);
 	for (Iterator i=timePatterns.iterator();i.hasNext();) {
 		TimePattern tp = (TimePattern)i.next();
-		if (!tp.getAcademicInitiative().equals("puWestLafayetteTrdtn")) continue;
-		if (!tp.getAcademicTerm().equals("Fal")) continue;
+		if (tp.getType().intValue()==TimePattern.sTypeExtended) continue;
 		RequiredTimeTable rtt = tp.getRequiredTimeTable(true);
 		if (rtt.getModel().isExactTime()) continue;
 		//rtt.update(request);
