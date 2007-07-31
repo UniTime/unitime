@@ -18,8 +18,8 @@
 --%>
 <%@ page language="java" import="java.util.*" pageEncoding="UTF-8"%>
 <%@ page import="org.unitime.timetable.webutil.RequiredTimeTable" %>
-<%@ page import="org.unitime.timetable.model.dao.TimePatternDAO" %>
 <%@ page import="org.unitime.timetable.model.TimePattern" %>
+<%@ page import="org.unitime.timetable.model.Session" %>
 <script language="javascript" src="../scripts/rtt.js"></script>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html style="background-color:white">
@@ -31,13 +31,12 @@
   
 <%
 try {
-	Vector timePatterns = new Vector((new TimePatternDAO()).findAll());
-	Collections.sort(timePatterns);
+	Long sessionId = Session.defaultSession().getUniqueId();
+	Vector timePatterns = TimePattern.findAll(sessionId,true);
 	boolean canEdit = request.getParameter("canEdit")==null || "1".equals(request.getParameter("canEdit"));
 	for (Iterator i=timePatterns.iterator();i.hasNext();) {
 		TimePattern tp = (TimePattern)i.next();
-		if (!tp.getAcademicInitiative().equals("puWestLafayetteTrdtn")) continue;
-		if (!tp.getAcademicTerm().equals("Fal")) continue;
+		if (tp.getType().intValue()==TimePattern.sTypeExtended) continue;
 		RequiredTimeTable rtt = tp.getRequiredTimeTable(true);
 		rtt.setName("t"+tp.getUniqueId());
 		rtt.update(request);
