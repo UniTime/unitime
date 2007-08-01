@@ -173,6 +173,9 @@ public class HibernateUtil {
             String dialect = getProperty(properties, "dialect");
             if (dialect!=null)
                 setProperty(document, "dialect", dialect);
+            String default_schema = getProperty(properties, "default_schema");
+            if (default_schema!=null)
+                setProperty(document, "default_schema", default_schema);
             String idgen = getProperty(properties, "tmtbl.uniqueid.generator");
             if (idgen!=null)
                 setProperty(document, "tmtbl.uniqueid.generator", idgen);
@@ -242,6 +245,9 @@ public class HibernateUtil {
             
             String dialect = ApplicationProperties.getProperty("dialect");
             if (dialect!=null) setProperty(document, "dialect", dialect);
+            
+            String default_schema = ApplicationProperties.getProperty("default_schema");
+            if (default_schema!=null) setProperty(document, "default_schema", default_schema);
             
             String idgen = ApplicationProperties.getProperty("tmtbl.uniqueid.generator");
             if (idgen!=null) setProperty(document, "tmtbl.uniqueid.generator", idgen);
