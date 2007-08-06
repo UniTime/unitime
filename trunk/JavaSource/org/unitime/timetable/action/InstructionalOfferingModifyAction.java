@@ -225,7 +225,7 @@ public class InstructionalOfferingModifyAction extends Action {
         }
 
         frm.setDirectionsClassesCanMove(); //after all classes have been loaded into the form tell the form to determine whether each class can be moved up or down.
-        frm.initalizeSubpartSubtotals();
+        frm.initalizeSubpartSubtotalsAndDisplayFlags();
         frm.initializeDisplayAllClassesInSchedBook();
         frm.initializeDisplayAllClassInstructors();
 
@@ -282,7 +282,7 @@ public class InstructionalOfferingModifyAction extends Action {
         }
         frm.initializeOrigSubparts();
         frm.setDirectionsClassesCanMove(); //after all classes have been loaded into the form tell the form to determine whether each class can be moved up or down.
-        frm.initalizeSubpartSubtotals();
+        frm.initalizeSubpartSubtotalsAndDisplayFlags();
         frm.initializeDisplayAllClassesInSchedBook();
         frm.initializeDisplayAllClassInstructors();
     }
