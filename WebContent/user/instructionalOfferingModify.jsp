@@ -43,24 +43,28 @@
 <SCRIPT language="javascript">
 	<!--
 	
-	function updateResvTotal(subpartIndex) {
+	function updateSubpartTotal(subpartIndex) {
 		subtotalName='subtotalIndexes['+subpartIndex+']';
 		origLimitName='origMinLimit['+subpartIndex+']';
 		minLimitName='minClassLimits['+subpartIndex+']'
 		totalIndex=document.getElementsByName(subtotalName)[0].value;
 		subtotalValueName='subtotalValues['+totalIndex+']';
+		subtotalValueName2='subtotalValues2['+totalIndex+']';
 		origTotal=document.getElementsByName(subtotalValueName)[0].value;
 		origSubpartLimit=document.getElementsByName(origLimitName)[0].value;
 		newSubpartLimit=document.getElementsByName(minLimitName)[0].value;
+		if(newSubpartLimit.length == 0 || (newSubpartLimit.search("[^0-9]")) >= 0) 
+              { newSubpartLimit = 0;}
 		newTotal=origTotal-origSubpartLimit+(newSubpartLimit-0);
 		document.getElementsByName(subtotalValueName)[0].value=newTotal;
-		document.getElementsByName(subtotalValueName)[1].value=newTotal;
-		document.getElementsByName(subtotalValueName)[2].value=newTotal;
+		document.getElementById(subtotalValueName).innerHTML='&nbsp; ' + newTotal;
+		document.getElementById(subtotalValueName2).innerHTML=newTotal;
 		document.getElementsByName(origLimitName)[0].value=newSubpartLimit;
 	}
 	
 	// -->
 </SCRIPT>
+
 
 <tiles:importAttribute />
 <% 
@@ -70,6 +74,27 @@
 	if (session.getAttribute(Constants.CRS_NBR_ATTR_NAME)!=null )
 		crsNbr = session.getAttribute(Constants.CRS_NBR_ATTR_NAME).toString();
 %>
+<SCRIPT language="javascript">
+	<!--
+	
+	function updateSubpartFlags(value, baseName, subpartIndex, flagName) {
+		for (var i=0;i<<%=frm.getClassIds().size()%>;i++) {
+                  var chbox = document.getElementsByName(baseName+'['+i+']');
+                  var subtotalIndexName = 'subtotalIndexes['+i+']';
+                  var subpartIndexValue = document.getElementsByName(subtotalIndexName)[0].value;
+                  if ((subpartIndexValue * 1) == (subpartIndex * 1)
+                   && chbox!=null && chbox.length>0)
+                   {     chbox[0].checked = value;}
+                  	
+            }
+        var subpartFlag = document.getElementsByName(flagName+'['+subpartIndex+']');
+        subpartFlag[0].checked = value;
+        subpartFlag[1].checked = value;
+	}
+	
+	// -->
+</SCRIPT>
+
 <script language='JavaScript'>
       function resetAllDisplayFlags(value, baseName) {
             for (var i=0;i<<%=frm.getClassIds().size()%>;i++) {
@@ -150,22 +175,48 @@
 		<TD align="left" colspan="2">
 		<table align="left" border="0" cellspacing="0" cellpadding="1">
 			<tr>
-			<td valign="center">
+			<td valign="top">
 			Scheduling Subpart Limits:
 			</td>
 			<td> &nbsp;&nbsp;&nbsp;</td>
 			<td valign="center">
-			<table align="left" border="0" cellspacing="2" cellpadding="1">
+			<table align="left" valign="top" border="0" cellspacing="0" cellpadding="0">
+				<logic:iterate name="<%=frmName%>" property="subtotalValues" id="v" indexId="ctr">
 			<tr> 
-				<logic:iterate name="<%=frmName%>" property="subtotalValues" id="v" indexId="ctr">				
-<% if (ctr > 0 && ctr%5 == 0) { %></tr><tr><%} %>
-				<td valign="center">
+				<td valign="top">
 				<html:hidden property="<%= "subtotalLabels[" + ctr + "]" %>"/>
 				<html:hidden property="<%= "subtotalValues[" + ctr + "]" %>"/>
+				<b>
 				<bean:write name="<%=frmName%>" property="<%= "subtotalLabels[" + ctr + "]" %>"/>:
-				<html:text name="<%=frmName%>" property="<%= "subtotalValues[" + ctr + "]" %>" maxlength="5" size="5" disabled="true"/>
+				</b>
+				</td> 
+				<td>
+				<div id="<%= "subtotalValues[" + ctr + "]" %>">
+				&nbsp; <bean:write name="<%=frmName%>" property="<%= "subtotalValues[" + ctr + "]" %>"/>
+				</div>
 				</td>
-				</logic:iterate>
+				<TD align="center" nowrap>
+				&nbsp; &nbsp; Display Instructors: 
+				<logic:equal name="<%=frmName%>" property="<%= "readOnlyClasses[" + ctr + "]" %>" value="false" >
+					<html:checkbox name="<%=frmName%>" property="<%= "displayAllClassesInstructorsForSubpart[" + ctr + "]" %>" onclick="<%= "updateSubpartFlags(this.checked, 'displayInstructors', "+ctr+", 'displayAllClassesInstructorsForSubpart');"%>"/>
+				</logic:equal>
+				<logic:equal name="<%=frmName%>" property="<%= "readOnlyClasses[" + ctr + "]" %>" value="true" >
+					<bean:write name="<%=frmName%>" property="<%= "displayAllClassesInstructorsForSubpart[" + ctr + "]" %>"/>
+					<html:hidden property="<%= "displayAllClassesInstructorsForSubpart[" + ctr + "]" %>"/>
+				</logic:equal>
+				</TD>
+					<TD align="center" nowrap>
+				&nbsp; &nbsp; Display in Schedule: 
+				<logic:equal name="<%=frmName%>" property="<%= "readOnlyClasses[" + ctr + "]" %>" value="false" >
+					<html:checkbox name="<%=frmName%>" property="<%= "displayAllClassesInSchedBookForSubpart[" + ctr + "]" %>" onclick="<%= "updateSubpartFlags(this.checked, 'displayInScheduleBooks', "+ctr+", 'displayAllClassesInSchedBookForSubpart');"%>"/>
+				</logic:equal>
+				<logic:equal name="<%=frmName%>" property="<%= "readOnlyClasses[" + ctr + "]" %>" value="true" >
+					<bean:write name="<%=frmName%>" property="<%= "displayAllClassesInSchedBookForSubpart[" + ctr + "]" %>"/>
+					<html:hidden property="<%= "displayAllClassesInSchedBookForSubpart[" + ctr + "]" %>"/>
+				</logic:equal>
+				</TD>		
+				</tr>
+				</logic:iterate>			
 			</tr>
 			</table>
 			</td>
@@ -209,7 +260,7 @@
 					<TR onmouseover="this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='default';" onmouseout="this.style.backgroundColor='transparent';">
 						<TD nowrap><logic:equal name="<%=frmName%>" property="<%= "classHasErrors[" + ctr + "]" %>" value="true" ><IMG src="images/Error16.jpg"></logic:equal><logic:equal name="<%=frmName%>" property="<%= "classHasErrors[" + ctr + "]" %>" value="false" >&nbsp;</logic:equal></TD>
 						<TD nowrap><html:hidden property="<%= "classIds[" + ctr + "]" %>"/><html:hidden property="<%= "subpartIds[" + ctr + "]" %>"/><html:hidden property="<%= "itypes[" + ctr + "]" %>"/><html:hidden property="<%= "mustHaveChildClasses[" + ctr + "]" %>"/><html:hidden property="<%= "parentClassIds[" + ctr + "]" %>"/><html:hidden property="<%= "readOnlyClasses[" + ctr + "]" %>"/><html:hidden property="<%= "classCanMoveUp[" + ctr + "]" %>"/><html:hidden property="<%= "classCanMoveDown[" + ctr + "]" %>"/><html:hidden property="<%= "subtotalIndexes[" + ctr + "]" %>"/><html:hidden property="<%= "classHasErrors[" + ctr + "]" %>"/><html:hidden property="<%= "classLabels[" + ctr + "]" %>"/><html:hidden property="<%= "classLabelIndents[" + ctr + "]" %>"/><%=frm.getClassLabelIndents().get(ctr.intValue()).toString()%><bean:write name="<%=frmName%>" property="<%= "classLabels[" + ctr + "]" %>"/> &nbsp;</TD>
-						<TD align="left" nowrap><logic:equal name="<%=frmName%>" property="<%= "readOnlyClasses[" + ctr + "]" %>" value="false" ><html:hidden property="<%= "origMinLimit[" + ctr + "]" %>" value="<%= (String)frm.getMinClassLimits().get(ctr) %>"/><html:text name="<%=frmName%>" property="<%= "minClassLimits[" + ctr + "]" %>" tabindex="<%=java.lang.Integer.toString(2000 + ctr.intValue())%>" maxlength="5" size="5" onchange="<%= "updateResvTotal(" + ctr + ");document.getElementsByName('maxClassLimits[" + ctr + "]')[0].value=this.value"%>"/></logic:equal><logic:equal name="<%=frmName%>" property="<%= "readOnlyClasses[" + ctr + "]" %>" value="true" ><html:hidden property="<%= "minClassLimits[" + ctr + "]" %>"/><bean:write name="<%=frmName%>" property="<%= "minClassLimits[" + ctr + "]" %>"/></logic:equal></TD>
+						<TD align="left" nowrap><logic:equal name="<%=frmName%>" property="<%= "readOnlyClasses[" + ctr + "]" %>" value="false" ><html:hidden property="<%= "origMinLimit[" + ctr + "]" %>" value="<%= (String)frm.getMinClassLimits().get(ctr) %>"/><html:text name="<%=frmName%>" property="<%= "minClassLimits[" + ctr + "]" %>" tabindex="<%=java.lang.Integer.toString(2000 + ctr.intValue())%>" maxlength="5" size="5" onchange="<%= "updateSubpartTotal(" + ctr + ");document.getElementsByName('maxClassLimits[" + ctr + "]')[0].value=this.value"%>"/></logic:equal><logic:equal name="<%=frmName%>" property="<%= "readOnlyClasses[" + ctr + "]" %>" value="true" ><html:hidden property="<%= "minClassLimits[" + ctr + "]" %>"/><bean:write name="<%=frmName%>" property="<%= "minClassLimits[" + ctr + "]" %>"/></logic:equal></TD>
 						<logic:equal name="<%=frmName%>" property="displayMaxLimit" value="true" >
 						<TD align="left" nowrap><logic:equal name="<%=frmName%>" property="<%= "readOnlyClasses[" + ctr + "]" %>" value="false" ><html:text name="<%=frmName%>" property="<%= "maxClassLimits[" + ctr + "]" %>" tabindex="<%=java.lang.Integer.toString(4000 + ctr.intValue())%>" maxlength="5" size="5"/></logic:equal><logic:equal name="<%=frmName%>" property="<%= "readOnlyClasses[" + ctr + "]" %>" value="true" ><html:hidden property="<%= "maxClassLimits[" + ctr + "]" %>"/><bean:write name="<%=frmName%>" property="<%= "maxClassLimits[" + ctr + "]" %>"/></logic:equal></TD>
 						</logic:equal>
@@ -235,25 +286,51 @@
 		</TR>
 		<TR>
 		<TD align="left" colspan="2">
-		<table align="left" border="0" cellspacing="0" cellpadding="1">
-			<tr>
-			<td valign="center">
+			<table align="left" valign="top" border="0" cellspacing="0" cellpadding="0">
+			<tr> 
+			<td valign="top">
 			Scheduling Subpart Limits:
-			</td>
+			</td> 
 			<td> &nbsp;&nbsp;&nbsp;</td>
 			<td valign="center">
-			<table align="left" border="0" cellspacing="2" cellpadding="1">
-			<tr>
+			<table align="left" valign="top" border="0" cellspacing="0" cellpadding="0">
 				<logic:iterate name="<%=frmName%>" property="subtotalValues" id="v" indexId="ctr">				
-<% if (ctr > 0 && ctr%5 == 0) { %></tr><tr><%} %>
-				<td valign="center">
-				<bean:write name="<%=frmName%>" property="<%= "subtotalLabels[" + ctr + "]" %>"/>:
-				<html:text name="<%=frmName%>" property="<%= "subtotalValues[" + ctr + "]" %>" maxlength="5" size="5" disabled="true"/>
+				<tr><td valign="top">
+				<html:hidden property="<%= "subtotalLabels[" + ctr + "]" %>"/>
+				<html:hidden property="<%= "subtotalValues[" + ctr + "]" %>"/>
+				<b><bean:write name="<%=frmName%>" property="<%= "subtotalLabels[" + ctr + "]" %>"/>:</b>
+				</td> 
+				<td>
+				<div id="<%= "subtotalValues2[" + ctr + "]" %>">
+				&nbsp; <bean:write name="<%=frmName%>" property="<%= "subtotalValues[" + ctr + "]" %>"/>
+				</div>
 				</td>
+				<TD align="center" nowrap>
+				&nbsp; &nbsp; Display Instructors: 
+				<logic:equal name="<%=frmName%>" property="<%= "readOnlyClasses[" + ctr + "]" %>" value="false" >
+					<html:checkbox name="<%=frmName%>" property="<%= "displayAllClassesInstructorsForSubpart[" + ctr + "]" %>" onclick="<%= "updateSubpartFlags(this.checked, 'displayInstructors', "+ctr+", 'displayAllClassesInstructorsForSubpart');"%>"/>
+				</logic:equal>
+				<logic:equal name="<%=frmName%>" property="<%= "readOnlyClasses[" + ctr + "]" %>" value="true" >
+					<bean:write name="<%=frmName%>" property="<%= "displayAllClassesInstructorsForSubpart[" + ctr + "]" %>"/>
+					<html:hidden property="<%= "displayAllClassesInstructorsForSubpart[" + ctr + "]" %>"/>
+				</logic:equal>
+				</TD>
+					<TD align="center" nowrap>
+				&nbsp; &nbsp; Display in Schedule: 
+				<logic:equal name="<%=frmName%>" property="<%= "readOnlyClasses[" + ctr + "]" %>" value="false" >
+					<html:checkbox name="<%=frmName%>" property="<%= "displayAllClassesInSchedBookForSubpart[" + ctr + "]" %>" onclick="<%= "updateSubpartFlags(this.checked, 'displayInScheduleBooks', "+ctr+", 'displayAllClassesInSchedBookForSubpart');"%>"/>
+				</logic:equal>
+				<logic:equal name="<%=frmName%>" property="<%= "readOnlyClasses[" + ctr + "]" %>" value="true" >
+					<bean:write name="<%=frmName%>" property="<%= "displayAllClassesInSchedBookForSubpart[" + ctr + "]" %>"/>
+					<html:hidden property="<%= "displayAllClassesInSchedBookForSubpart[" + ctr + "]" %>"/>
+				</logic:equal>
+				</TD>
+				</tr>
 				</logic:iterate>
-			</tr>
 			</table>
 			</td>
+			</tr>
+			</table></td>
 			</tr>
 		</table>
 		</TD>

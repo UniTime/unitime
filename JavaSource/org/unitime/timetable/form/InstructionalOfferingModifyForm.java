@@ -83,6 +83,8 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 	private List subtotalIndexes;
 	private List subtotalLabels;
 	private List subtotalValues;
+	private List displayAllClassesInSchedBookForSubpart;
+	private List displayAllClassesInstructorsForSubpart;
 	
 	private List classHasErrors;
 	private Long addTemplateClassId;
@@ -457,6 +459,8 @@ public class InstructionalOfferingModifyForm extends ActionForm {
        	subtotalIndexes = DynamicList.getInstance(new ArrayList(), factoryClasses);
        	subtotalLabels = DynamicList.getInstance(new ArrayList(), factoryClasses);
        	subtotalValues = DynamicList.getInstance(new ArrayList(), factoryClasses);
+       	displayAllClassesInSchedBookForSubpart = DynamicList.getInstance(new ArrayList(), factoryClasses);
+       	displayAllClassesInstructorsForSubpart = DynamicList.getInstance(new ArrayList(), factoryClasses);
     	classCanMoveUp = DynamicList.getInstance(new ArrayList(), factoryClasses);
     	classCanMoveDown = DynamicList.getInstance(new ArrayList(), factoryClasses);
     }
@@ -559,6 +563,10 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     }
     
     public void initializeDisplayAllClassesInSchedBook(){
+    	if (this.getClassLabels().size() > this.getDisplayInScheduleBooks().size()){
+    		setDisplayAllClassesInSchedBook("false");
+    		return;
+    	}
     	String display = "true";
     	for (Iterator it = this.getDisplayInScheduleBooks().iterator(); it.hasNext();){
     		String value = (String) it.next();
@@ -571,6 +579,10 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     }
 
     public void initializeDisplayAllClassInstructors(){
+    	if (this.getClassLabels().size() > this.getDisplayInstructors().size()){
+    		setDisplayAllClassesInstructors("false");
+    		return;
+    	}
     	String display = "true";
     	for (Iterator it = this.getDisplayInstructors().iterator(); it.hasNext();){
     		String value = (String) it.next();
@@ -582,25 +594,42 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     	setDisplayAllClassesInstructors(display);
     }
 
-    public void initalizeSubpartSubtotals(){
+    public void initalizeSubpartSubtotalsAndDisplayFlags(){
 		HashMap subpartToIndex = new HashMap();
     	this.setSubtotalIndexes(DynamicList.getInstance(new ArrayList(), factoryClasses));
 		this.setSubtotalLabels(DynamicList.getInstance(new ArrayList(), factoryClasses));
 		this.setSubtotalValues(DynamicList.getInstance(new ArrayList(), factoryClasses));
-    	SchedulingSubpartDAO ssDao = new SchedulingSubpartDAO();
+		this.setDisplayAllClassesInSchedBookForSubpart(DynamicList.getInstance(new ArrayList(), factoryClasses));
+		this.setDisplayAllClassesInstructorsForSubpart(DynamicList.getInstance(new ArrayList(), factoryClasses));
+		SchedulingSubpartDAO ssDao = new SchedulingSubpartDAO();
 		SchedulingSubpart ss = null;
     	int i = 0;
+    	int cnt = 0;
     	Iterator ssIt = this.getSubpartIds().iterator();
     	Iterator limitIt = this.getMinClassLimits().iterator();
+    	Iterator schedBookIt = this.getDisplayInScheduleBooks().iterator();
+    	Iterator instrDisplayIt = this.getDisplayInstructors().iterator();
+    	Boolean displayInSchedBook = null;
+    	Boolean displayInstructor = null;
     	while (ssIt.hasNext() && limitIt.hasNext()){
     		Long subpartId = Long.valueOf((String) ssIt.next());
     		Integer limit = new Integer((String) limitIt.next());
+     		displayInSchedBook = determineBooleanValueAtIndex(this.getDisplayInScheduleBooks(), cnt);
+     	   	if (schedBookIt.hasNext()){
+    			schedBookIt.next();
+    		}
+     		displayInstructor = determineBooleanValueAtIndex(this.getDisplayInstructors(), cnt);
+     	   	if (instrDisplayIt.hasNext()){
+    			instrDisplayIt.next();
+    		}
     		int addLimit = (limit == null)?0:limit.intValue();
     		Integer subtotalIndex = null;
 
     		if (!subpartToIndex.containsKey(subpartId)) {
      			ss = ssDao.get(subpartId);
     			getSubtotalValues().add(addLimit);
+    			getDisplayAllClassesInSchedBookForSubpart().add(displayInSchedBook);
+    			getDisplayAllClassesInstructorsForSubpart().add(displayInstructor);
     			String label = ss.getItypeDesc() + ss.getSchedulingSubpartSuffix();
     			getSubtotalLabels().add(label);
      			subpartToIndex.put(subpartId, new Integer(i));
@@ -610,9 +639,17 @@ public class InstructionalOfferingModifyForm extends ActionForm {
         		subtotalIndex = (Integer) subpartToIndex.get(subpartId);
         		int oldSubtotal = ((Integer) this.getSubtotalValues().get(subtotalIndex)).intValue();
         		int newSubtotal = oldSubtotal + addLimit;
-        		this.getSubtotalValues().set(subtotalIndex.intValue(), newSubtotal);	
+        		this.getSubtotalValues().set(subtotalIndex.intValue(), newSubtotal);
+        		boolean oldDisplayInSchedBook = ((Boolean) this.getDisplayAllClassesInSchedBookForSubpart().get(subtotalIndex)).booleanValue();
+        		boolean newDisplayInSchedBook = oldDisplayInSchedBook && displayInSchedBook.booleanValue();
+        		this.getDisplayAllClassesInSchedBookForSubpart().set(subtotalIndex, new Boolean(newDisplayInSchedBook));
+        		boolean oldDisplayInstructor = ((Boolean) this.getDisplayAllClassesInstructorsForSubpart().get(subtotalIndex)).booleanValue();
+        		boolean newDisplayInstructor = oldDisplayInstructor && displayInstructor.booleanValue();
+        		this.getDisplayAllClassesInstructorsForSubpart().set(subtotalIndex, newDisplayInstructor);
     		}
+    		
     		getSubtotalIndexes().add(subtotalIndex);
+    		cnt++;
     	}
 		i=0;
     	for (Iterator it = this.getSubpartIds().iterator(); it.hasNext();){
@@ -622,6 +659,35 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 
     }
 
+    private boolean determineBooleanValueAtIndex(List l, int index){
+    	if (l == null){
+    		return(false);
+    	}
+    	if (l.size() == 0){
+    		return(false);
+    	}
+    	if (l.size() < (index + 1)){
+    		return(false);
+    	}
+    	if (l.get(index) == null){
+    		return(false);
+    	}
+    	if (l.get(index) instanceof Boolean) {
+			Boolean value = (Boolean) l.get(index);
+			return(value.booleanValue());
+		}
+    	if (l.get(index) instanceof String) {
+			String str_value = (String) l.get(index);
+			if (str_value.equals("on")){
+				return(true);
+			} else if (str_value.equals("yes")){
+				return(true);
+			} else {
+				return(Boolean.parseBoolean(str_value));
+			}
+		}
+    	return(false);
+    }
 	public List getClassIds() {
 		return classIds;
 	}
@@ -1297,6 +1363,24 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 
 	public void setDisplayAllClassesInstructors(String displayAllClassesInstructors) {
 		this.displayAllClassesInstructors = displayAllClassesInstructors;
+	}
+
+	public List getDisplayAllClassesInSchedBookForSubpart() {
+		return displayAllClassesInSchedBookForSubpart;
+	}
+
+	public void setDisplayAllClassesInSchedBookForSubpart(
+			List displayAllClassesInSchedBookForSubpart) {
+		this.displayAllClassesInSchedBookForSubpart = displayAllClassesInSchedBookForSubpart;
+	}
+
+	public List getDisplayAllClassesInstructorsForSubpart() {
+		return displayAllClassesInstructorsForSubpart;
+	}
+
+	public void setDisplayAllClassesInstructorsForSubpart(
+			List displayAllClassesInstructorsForSubpart) {
+		this.displayAllClassesInstructorsForSubpart = displayAllClassesInstructorsForSubpart;
 	}
 
 }
