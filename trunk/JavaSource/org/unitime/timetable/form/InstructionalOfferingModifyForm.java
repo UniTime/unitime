@@ -85,6 +85,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 	private List subtotalValues;
 	private List displayAllClassesInSchedBookForSubpart;
 	private List displayAllClassesInstructorsForSubpart;
+	private List readOnlySubparts;
 	
 	private List classHasErrors;
 	private Long addTemplateClassId;
@@ -463,6 +464,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
        	displayAllClassesInstructorsForSubpart = DynamicList.getInstance(new ArrayList(), factoryClasses);
     	classCanMoveUp = DynamicList.getInstance(new ArrayList(), factoryClasses);
     	classCanMoveDown = DynamicList.getInstance(new ArrayList(), factoryClasses);
+    	readOnlySubparts = DynamicList.getInstance(new ArrayList(), factoryClasses);
     }
     
 //    private int numberOfClassesOfSubpartWithParentClassId(String parentClassId, String classSubpartId){
@@ -601,27 +603,24 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		this.setSubtotalValues(DynamicList.getInstance(new ArrayList(), factoryClasses));
 		this.setDisplayAllClassesInSchedBookForSubpart(DynamicList.getInstance(new ArrayList(), factoryClasses));
 		this.setDisplayAllClassesInstructorsForSubpart(DynamicList.getInstance(new ArrayList(), factoryClasses));
+		this.setReadOnlySubparts(DynamicList.getInstance(new ArrayList(), factoryClasses));
 		SchedulingSubpartDAO ssDao = new SchedulingSubpartDAO();
 		SchedulingSubpart ss = null;
     	int i = 0;
     	int cnt = 0;
     	Iterator ssIt = this.getSubpartIds().iterator();
     	Iterator limitIt = this.getMinClassLimits().iterator();
-    	Iterator schedBookIt = this.getDisplayInScheduleBooks().iterator();
-    	Iterator instrDisplayIt = this.getDisplayInstructors().iterator();
+
     	Boolean displayInSchedBook = null;
     	Boolean displayInstructor = null;
+    	Boolean readOnlySubpart = null;
     	while (ssIt.hasNext() && limitIt.hasNext()){
     		Long subpartId = Long.valueOf((String) ssIt.next());
     		Integer limit = new Integer((String) limitIt.next());
-     		displayInSchedBook = determineBooleanValueAtIndex(this.getDisplayInScheduleBooks(), cnt);
-     	   	if (schedBookIt.hasNext()){
-    			schedBookIt.next();
-    		}
-     		displayInstructor = determineBooleanValueAtIndex(this.getDisplayInstructors(), cnt);
-     	   	if (instrDisplayIt.hasNext()){
-    			instrDisplayIt.next();
-    		}
+     		displayInSchedBook = new Boolean(determineBooleanValueAtIndex(this.getDisplayInScheduleBooks(), cnt));    	   	
+     		displayInstructor = new Boolean(determineBooleanValueAtIndex(this.getDisplayInstructors(), cnt));
+       	   	readOnlySubpart = new Boolean(determineBooleanValueAtIndex(this.getReadOnlyClasses(), cnt));
+     	   	
     		int addLimit = (limit == null)?0:limit.intValue();
     		Integer subtotalIndex = null;
 
@@ -630,6 +629,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     			getSubtotalValues().add(addLimit);
     			getDisplayAllClassesInSchedBookForSubpart().add(displayInSchedBook);
     			getDisplayAllClassesInstructorsForSubpart().add(displayInstructor);
+    			getReadOnlySubparts().add(readOnlySubpart);
     			String label = ss.getItypeDesc() + ss.getSchedulingSubpartSuffix();
     			getSubtotalLabels().add(label);
      			subpartToIndex.put(subpartId, new Integer(i));
@@ -646,6 +646,9 @@ public class InstructionalOfferingModifyForm extends ActionForm {
         		boolean oldDisplayInstructor = ((Boolean) this.getDisplayAllClassesInstructorsForSubpart().get(subtotalIndex)).booleanValue();
         		boolean newDisplayInstructor = oldDisplayInstructor && displayInstructor.booleanValue();
         		this.getDisplayAllClassesInstructorsForSubpart().set(subtotalIndex, newDisplayInstructor);
+        		boolean oldReadOnlySubpart = ((Boolean) this.getReadOnlySubparts().get(subtotalIndex)).booleanValue();
+        		boolean newReadOnlySubpart = oldReadOnlySubpart && readOnlySubpart.booleanValue();
+        		this.getReadOnlySubparts().set(subtotalIndex, newReadOnlySubpart);
     		}
     		
     		getSubtotalIndexes().add(subtotalIndex);
@@ -1381,6 +1384,14 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 	public void setDisplayAllClassesInstructorsForSubpart(
 			List displayAllClassesInstructorsForSubpart) {
 		this.displayAllClassesInstructorsForSubpart = displayAllClassesInstructorsForSubpart;
+	}
+
+	public List getReadOnlySubparts() {
+		return readOnlySubparts;
+	}
+
+	public void setReadOnlySubparts(List readOnlySubparts) {
+		this.readOnlySubparts = readOnlySubparts;
 	}
 
 }
