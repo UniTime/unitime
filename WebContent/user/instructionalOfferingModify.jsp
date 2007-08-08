@@ -183,12 +183,10 @@
 			<table align="left" valign="top" border="0" cellspacing="0" cellpadding="0">
 				<logic:iterate name="<%=frmName%>" property="subtotalValues" id="v" indexId="ctr">
 			<tr onmouseover="this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='default';" onmouseout="this.style.backgroundColor='transparent';"> 
-				<td valign="top">
+				<td valign="top" align="right">
 				<html:hidden property="<%= "subtotalLabels[" + ctr + "]" %>"/>
 				<html:hidden property="<%= "subtotalValues[" + ctr + "]" %>"/>
-				<b>
-				<bean:write name="<%=frmName%>" property="<%= "subtotalLabels[" + ctr + "]" %>"/>:
-				</b>
+				<b><%=((String)frm.getSubtotalLabels().get(ctr)).trim()%>:</b>
 				</td> 
 				<td>
 				<div id="<%= "subtotalValues[" + ctr + "]" %>">
@@ -299,10 +297,9 @@
 			<td valign="center">
 			<table align="left" valign="top" border="0" cellspacing="0" cellpadding="0">
 				<logic:iterate name="<%=frmName%>" property="subtotalValues" id="v" indexId="ctr">				
-				<tr onmouseover="this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='default';" onmouseout="this.style.backgroundColor='transparent';"><td valign="top">
-				<html:hidden property="<%= "subtotalLabels[" + ctr + "]" %>"/>
-				<html:hidden property="<%= "subtotalValues[" + ctr + "]" %>"/>
-				<b><bean:write name="<%=frmName%>" property="<%= "subtotalLabels[" + ctr + "]" %>"/>:</b>
+				<tr onmouseover="this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='default';" onmouseout="this.style.backgroundColor='transparent';">
+				<td valign="top" align="right">
+				<b><%=((String)frm.getSubtotalLabels().get(ctr)).trim()%>:</b>
 				</td> 
 				<td>
 				<div id="<%= "subtotalValues2[" + ctr + "]" %>">
