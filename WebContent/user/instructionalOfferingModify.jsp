@@ -182,7 +182,7 @@
 			<td valign="center">
 			<table align="left" valign="top" border="0" cellspacing="0" cellpadding="0">
 				<logic:iterate name="<%=frmName%>" property="subtotalValues" id="v" indexId="ctr">
-			<tr> 
+			<tr onmouseover="this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='default';" onmouseout="this.style.backgroundColor='transparent';"> 
 				<td valign="top">
 				<html:hidden property="<%= "subtotalLabels[" + ctr + "]" %>"/>
 				<html:hidden property="<%= "subtotalValues[" + ctr + "]" %>"/>
@@ -197,21 +197,25 @@
 				</td>
 				<TD align="center" nowrap>
 				&nbsp; &nbsp; Display Instructors: 
-				<logic:equal name="<%=frmName%>" property="<%= "readOnlyClasses[" + ctr + "]" %>" value="false" >
+				<logic:equal name="<%=frmName%>" property="<%= "readOnlySubparts[" + ctr + "]" %>" value="false" >
 					<html:checkbox name="<%=frmName%>" property="<%= "displayAllClassesInstructorsForSubpart[" + ctr + "]" %>" onclick="<%= "updateSubpartFlags(this.checked, 'displayInstructors', "+ctr+", 'displayAllClassesInstructorsForSubpart');"%>"/>
 				</logic:equal>
-				<logic:equal name="<%=frmName%>" property="<%= "readOnlyClasses[" + ctr + "]" %>" value="true" >
-					<bean:write name="<%=frmName%>" property="<%= "displayAllClassesInstructorsForSubpart[" + ctr + "]" %>"/>
+				<logic:equal name="<%=frmName%>" property="<%= "readOnlySubparts[" + ctr + "]" %>" value="true" >
+					<logic:equal name="<%=frmName%>" property="<%= "displayAllClassesInstructorsForSubpart[" + ctr + "]" %>" value="true" >
+						<IMG border='0' title='Display all instructors for this subpart in the schedule book.' alt='true' align='absmiddle' src='images/tick.gif'>
+					</logic:equal>
 					<html:hidden property="<%= "displayAllClassesInstructorsForSubpart[" + ctr + "]" %>"/>
 				</logic:equal>
 				</TD>
 					<TD align="center" nowrap>
 				&nbsp; &nbsp; Display in Schedule: 
-				<logic:equal name="<%=frmName%>" property="<%= "readOnlyClasses[" + ctr + "]" %>" value="false" >
+				<logic:equal name="<%=frmName%>" property="<%= "readOnlySubparts[" + ctr + "]" %>" value="false" >
 					<html:checkbox name="<%=frmName%>" property="<%= "displayAllClassesInSchedBookForSubpart[" + ctr + "]" %>" onclick="<%= "updateSubpartFlags(this.checked, 'displayInScheduleBooks', "+ctr+", 'displayAllClassesInSchedBookForSubpart');"%>"/>
 				</logic:equal>
-				<logic:equal name="<%=frmName%>" property="<%= "readOnlyClasses[" + ctr + "]" %>" value="true" >
-					<bean:write name="<%=frmName%>" property="<%= "displayAllClassesInSchedBookForSubpart[" + ctr + "]" %>"/>
+				<logic:equal name="<%=frmName%>" property="<%= "readOnlySubparts[" + ctr + "]" %>" value="true" >
+					<logic:equal name="<%=frmName%>" property="<%= "displayAllClassesInSchedBookForSubpart[" + ctr + "]" %>" value="true" >
+						<IMG border='0' title='Display all classes for this subpart in the schedule book.' alt='true' align='absmiddle' src='images/tick.gif'>
+					</logic:equal>
 					<html:hidden property="<%= "displayAllClassesInSchedBookForSubpart[" + ctr + "]" %>"/>
 				</logic:equal>
 				</TD>		
@@ -271,8 +275,8 @@
 						<TD align="left" nowrap><logic:equal name="<%=frmName%>" property="<%= "readOnlyClasses[" + ctr + "]" %>" value="false" ><html:text name="<%=frmName%>" property="<%= "numberOfRooms[" + ctr + "]" %>" tabindex="<%=java.lang.Integer.toString(8000 + ctr.intValue())%>" maxlength="5" size="5"/></logic:equal><logic:equal name="<%=frmName%>" property="<%= "readOnlyClasses[" + ctr + "]" %>" value="true" ><bean:write name="<%=frmName%>" property="<%= "numberOfRooms[" + ctr + "]" %>"/><html:hidden property="<%= "numberOfRooms[" + ctr + "]" %>"/></logic:equal></TD>
 						<TD align="left" nowrap><logic:equal name="<%=frmName%>" property="<%= "readOnlyClasses[" + ctr + "]" %>" value="false" ><html:select style="width:200;" property="<%= "departments[" + ctr + "]" %>" tabindex="<%=java.lang.Integer.toString(10000 + ctr.intValue())%>"><html:option value="-1">Department</html:option><html:options collection="<%=Department.EXTERNAL_DEPT_ATTR_NAME + "list"%>" property="uniqueId" labelProperty="managingDeptLabel" /></html:select></logic:equal><logic:equal name="<%=frmName%>" property="<%= "readOnlyClasses[" + ctr + "]" %>" value="true" ><logic:iterate scope="request" name="<%=Department.EXTERNAL_DEPT_ATTR_NAME%>" id="dept"><logic:equal name="<%=frmName%>" property="<%= "departments[" + ctr + "]" %>" value="<%=((Department)dept).getUniqueId().toString()%>"><bean:write name="dept" property="managingDeptLabel" /></logic:equal></logic:iterate><html:hidden property="<%= "departments[" + ctr + "]" %>"/></logic:equal></TD>
 						<TD align="left" nowrap><logic:equal name="<%=frmName%>" property="<%= "readOnlyClasses[" + ctr + "]" %>" value="false" ><html:select style="width:100;" property="<%= "datePatterns[" + ctr + "]" %>" tabindex="<%=java.lang.Integer.toString(12000 + ctr.intValue())%>"><html:options collection="<%=DatePattern.DATE_PATTERN_LIST_ATTR%>" property="id" labelProperty="value" /></html:select></logic:equal><logic:equal name="<%=frmName%>" property="<%= "readOnlyClasses[" + ctr + "]" %>" value="true" ><logic:equal name="<%=frmName%>" property="<%= "datePatterns[" + ctr + "]"%>" value="">Default</logic:equal><logic:iterate scope="request" name="<%=DatePattern.DATE_PATTERN_LIST_ATTR%>" id="dp"><logic:notEqual name="<%=frmName%>" property="<%= "datePatterns[" + ctr + "]" %>" value=""><logic:equal name="<%=frmName%>" property="<%= "datePatterns[" + ctr + "]" %>" value="<%=((IdValue)dp).getId().toString()%>"><bean:write name="dp" property="value" /></logic:equal></logic:notEqual></logic:iterate><html:hidden property="<%= "datePatterns[" + ctr + "]" %>"/></logic:equal></TD>
-						<TD align="center" nowrap><logic:equal name="<%=frmName%>" property="<%= "readOnlyClasses[" + ctr + "]" %>" value="false" ><html:checkbox name="<%=frmName%>" property="<%= "displayInstructors[" + ctr + "]" %>" tabindex="<%=java.lang.Integer.toString(14000 + ctr.intValue())%>"/></logic:equal><logic:equal name="<%=frmName%>" property="<%= "readOnlyClasses[" + ctr + "]" %>" value="true" ><bean:write name="<%=frmName%>" property="<%= "displayInstructors[" + ctr + "]" %>"/><html:hidden property="<%= "displayInstructors[" + ctr + "]" %>"/></logic:equal></TD>
-						<TD align="center" nowrap><logic:equal name="<%=frmName%>" property="<%= "readOnlyClasses[" + ctr + "]" %>" value="false" ><html:checkbox name="<%=frmName%>" property="<%= "displayInScheduleBooks[" + ctr + "]" %>" tabindex="<%=java.lang.Integer.toString(16000 + ctr.intValue())%>"/></logic:equal><logic:equal name="<%=frmName%>" property="<%= "readOnlyClasses[" + ctr + "]" %>" value="true" ><bean:write name="<%=frmName%>" property="<%= "displayInScheduleBooks[" + ctr + "]" %>"/><html:hidden property="<%= "displayInScheduleBooks[" + ctr + "]" %>"/></logic:equal></TD>
+						<TD align="center" nowrap><logic:equal name="<%=frmName%>" property="<%= "readOnlyClasses[" + ctr + "]" %>" value="false" ><html:checkbox name="<%=frmName%>" property="<%= "displayInstructors[" + ctr + "]" %>" tabindex="<%=java.lang.Integer.toString(14000 + ctr.intValue())%>"/></logic:equal><logic:equal name="<%=frmName%>" property="<%= "readOnlyClasses[" + ctr + "]" %>" value="true" >					<logic:equal name="<%=frmName%>" property="<%= "displayInstructors[" + ctr + "]" %>" value="true" ><IMG border='0' title='Display all instructors for this class in the schedule book.' alt='true' align='absmiddle' src='images/tick.gif'></logic:equal><html:hidden property="<%= "displayInstructors[" + ctr + "]" %>"/></logic:equal></TD>
+						<TD align="center" nowrap><logic:equal name="<%=frmName%>" property="<%= "readOnlyClasses[" + ctr + "]" %>" value="false" ><html:checkbox name="<%=frmName%>" property="<%= "displayInScheduleBooks[" + ctr + "]" %>" tabindex="<%=java.lang.Integer.toString(16000 + ctr.intValue())%>"/></logic:equal><logic:equal name="<%=frmName%>" property="<%= "readOnlyClasses[" + ctr + "]" %>" value="true" ><logic:equal name="<%=frmName%>" property="<%= "displayInScheduleBooks[" + ctr + "]" %>" value="true" ><IMG border='0' title='Display this classes in the schedule book.' alt='true' align='absmiddle' src='images/tick.gif'></logic:equal><html:hidden property="<%= "displayInScheduleBooks[" + ctr + "]" %>"/></logic:equal></TD>
 						<TD align="center" nowrap><logic:equal name="<%=frmName%>" property="<%= "readOnlyClasses[" + ctr + "]" %>" value="false" ><logic:equal name="<%=frmName%>" property="<%= "classCanMoveUp[" + ctr + "]" %>" value="true" ><A href="#null" onClick="document.forms[0].elements['hdnOp'].value='moveUp';document.forms[0].elements['moveUpClassId'].value='<%= c.toString() %>';document.forms[0].submit();"><IMG border="0" src="images/arrow_u.gif" title="Move Class Up"></A></logic:equal></logic:equal></TD>
 						<TD align="center" nowrap><logic:equal name="<%=frmName%>" property="<%= "readOnlyClasses[" + ctr + "]" %>" value="false" ><logic:equal name="<%=frmName%>" property="<%= "classCanMoveDown[" + ctr + "]" %>" value="true" ><A href="#null" onClick="document.forms[0].elements['hdnOp'].value='moveDown';document.forms[0].elements['moveDownClassId'].value='<%= c.toString() %>';document.forms[0].submit();"><IMG border="0" src="images/arrow_d.gif" title="Move Class Down"></A></logic:equal></logic:equal></TD>
 						<TD align="center" nowrap><logic:equal name="<%=frmName%>" property="<%= "readOnlyClasses[" + ctr + "]" %>" value="false" ><A href="#null" onClick="document.forms[0].elements['hdnOp'].value='delete';document.forms[0].elements['deletedClassId'].value='<%= c.toString() %>';document.forms[0].submit();"><IMG border="0" src="images/Delete16.gif" title="Remove Class from Instructional Offering"></A></logic:equal></TD>
@@ -295,7 +299,7 @@
 			<td valign="center">
 			<table align="left" valign="top" border="0" cellspacing="0" cellpadding="0">
 				<logic:iterate name="<%=frmName%>" property="subtotalValues" id="v" indexId="ctr">				
-				<tr><td valign="top">
+				<tr onmouseover="this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='default';" onmouseout="this.style.backgroundColor='transparent';"><td valign="top">
 				<html:hidden property="<%= "subtotalLabels[" + ctr + "]" %>"/>
 				<html:hidden property="<%= "subtotalValues[" + ctr + "]" %>"/>
 				<b><bean:write name="<%=frmName%>" property="<%= "subtotalLabels[" + ctr + "]" %>"/>:</b>
@@ -307,21 +311,25 @@
 				</td>
 				<TD align="center" nowrap>
 				&nbsp; &nbsp; Display Instructors: 
-				<logic:equal name="<%=frmName%>" property="<%= "readOnlyClasses[" + ctr + "]" %>" value="false" >
+				<logic:equal name="<%=frmName%>" property="<%= "readOnlySubparts[" + ctr + "]" %>" value="false" >
 					<html:checkbox name="<%=frmName%>" property="<%= "displayAllClassesInstructorsForSubpart[" + ctr + "]" %>" onclick="<%= "updateSubpartFlags(this.checked, 'displayInstructors', "+ctr+", 'displayAllClassesInstructorsForSubpart');"%>"/>
 				</logic:equal>
-				<logic:equal name="<%=frmName%>" property="<%= "readOnlyClasses[" + ctr + "]" %>" value="true" >
-					<bean:write name="<%=frmName%>" property="<%= "displayAllClassesInstructorsForSubpart[" + ctr + "]" %>"/>
+				<logic:equal name="<%=frmName%>" property="<%= "readOnlySubparts[" + ctr + "]" %>" value="true" >
+					<logic:equal name="<%=frmName%>" property="<%= "displayAllClassesInstructorsForSubpart[" + ctr + "]" %>" value="true" >
+						<IMG border='0' title='Display all instructors for this subpart in the schedule book.' alt='true' align='absmiddle' src='images/tick.gif'>
+					</logic:equal>
 					<html:hidden property="<%= "displayAllClassesInstructorsForSubpart[" + ctr + "]" %>"/>
 				</logic:equal>
 				</TD>
 					<TD align="center" nowrap>
 				&nbsp; &nbsp; Display in Schedule: 
-				<logic:equal name="<%=frmName%>" property="<%= "readOnlyClasses[" + ctr + "]" %>" value="false" >
+				<logic:equal name="<%=frmName%>" property="<%= "readOnlySubparts[" + ctr + "]" %>" value="false" >
 					<html:checkbox name="<%=frmName%>" property="<%= "displayAllClassesInSchedBookForSubpart[" + ctr + "]" %>" onclick="<%= "updateSubpartFlags(this.checked, 'displayInScheduleBooks', "+ctr+", 'displayAllClassesInSchedBookForSubpart');"%>"/>
 				</logic:equal>
-				<logic:equal name="<%=frmName%>" property="<%= "readOnlyClasses[" + ctr + "]" %>" value="true" >
-					<bean:write name="<%=frmName%>" property="<%= "displayAllClassesInSchedBookForSubpart[" + ctr + "]" %>"/>
+				<logic:equal name="<%=frmName%>" property="<%= "readOnlySubparts[" + ctr + "]" %>" value="true" >
+					<logic:equal name="<%=frmName%>" property="<%= "displayAllClassesInSchedBookForSubpart[" + ctr + "]" %>" value="true" >
+						<IMG border='0' title='Display all classes for this subpart in the schedule book.' alt='true' align='absmiddle' src='images/tick.gif'>
+					</logic:equal>
 					<html:hidden property="<%= "displayAllClassesInSchedBookForSubpart[" + ctr + "]" %>"/>
 				</logic:equal>
 				</TD>
