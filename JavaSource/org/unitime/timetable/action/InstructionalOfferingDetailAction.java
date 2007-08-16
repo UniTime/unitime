@@ -115,7 +115,8 @@ public class InstructionalOfferingDetailAction extends Action {
 		Debug.debug ("Op: " + op);
 
 		// Delete insructional offering
-		if(op.equals(rsc.getMessage("button.deleteIo"))) {
+		if(op.equals(rsc.getMessage("button.deleteIo"))
+				&& request.getAttribute("cfgDelete")==null) {
 			doDelete(request, frm);
 			
 			if (httpSession.getAttribute(Constants.CRS_NBR_ATTR_NAME)!=null )
