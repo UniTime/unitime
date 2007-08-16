@@ -330,6 +330,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
 
             // Redirect to instr offering detail on success
             request.setAttribute("io", frm.getInstrOfferingId());
+            request.setAttribute("cfgDelete", "1");
             return mapping.findForward("instructionalOfferingDetail");
 		}
 
