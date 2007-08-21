@@ -108,7 +108,7 @@ public class UnassignedAction extends Action {
 			
 			WebTable webTable = new WebTable( 4,
 					null, "unassigned.do?ord=%%",
-					new String[] {"Name", "Instructor", "Students", "Initial Assignment"},
+					new String[] {"Class", "Instructor", "Students", "Initial Assignment"},
 					new String[] {"left", "left", "left", "left"},
 					null );
 			if (model==null) {
@@ -165,7 +165,7 @@ public class UnassignedAction extends Action {
 		
 		PdfWebTable webTable = new PdfWebTable( 4,
 				"Not-assigned Classes", null,
-				new String[] {"Name", "Instructor", "Students", "Initial Assignment"},
+				new String[] {"Class", "Instructor", "Students", "Initial Assignment"},
 				new String[] {"left", "left", "left", "left"},
 				null );
 		for (int i=0;i<model.getNrRows();i++) {
