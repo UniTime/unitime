@@ -23,6 +23,7 @@ import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.BitSet;
 
+import org.unitime.commons.NaturalOrderComparator;
 import org.unitime.timetable.model.PreferenceLevel;
 
 
@@ -153,7 +154,7 @@ public class TimetableGridCell implements Serializable, Comparable {
     	if (cmp!=0) return cmp;
     	cmp = (iWeekCode==null || c.iWeekCode==null?0:Double.compare(iWeekCode.length(),c.iWeekCode.length()));
     	if (cmp!=0) return cmp;
-    	return iName.compareTo(c.iName);
+    	return new NaturalOrderComparator().compare(iName,c.iName);
     }
     
     public boolean hasDays() {
