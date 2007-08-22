@@ -326,7 +326,7 @@ public class PdfTimetableGridTable {
 							addText(c, cell.getRoomName());
 						else
 							addText(c, cell.getShortCommentNoColors()==null?null:cell.getShortCommentNoColors());
-						if (iTable.getWeek()<0 && cell.hasDays() && !cell.getDays().equals(iTable.getDefaultDatePatternName()))
+						if (iTable.getWeek()==-100 && cell.hasDays() && !cell.getDays().equals(iTable.getDefaultDatePatternName()))
 							addText(c, cell.getDays());
 						iPdfTable.addCell(c);
 						slot+=length-1;
@@ -381,7 +381,7 @@ public class PdfTimetableGridTable {
 								addText(c, cell.getRoomName());
 							else
 								addText(c, cell.getShortCommentNoColors()==null?null:cell.getShortCommentNoColors());
-							if (iTable.getWeek()<0 && cell.hasDays() && !cell.getDays().equals(iTable.getDefaultDatePatternName()))
+							if (iTable.getWeek()==-100 && cell.hasDays() && !cell.getDays().equals(iTable.getDefaultDatePatternName()))
 								addText(c, cell.getDays());
 							iPdfTable.addCell(c);
 							slot+=length-1;
@@ -427,7 +427,7 @@ public class PdfTimetableGridTable {
 							c.setColspan(colSpan);
 							if (bgColor!=null)
 								c.setBackgroundColor(getColor(bgColor));
-							if (iTable.getWeek()<0 && cell.hasDays() && !cell.getDays().equals(iTable.getDefaultDatePatternName()))
+							if (iTable.getWeek()==-100 && cell.hasDays() && !cell.getDays().equals(iTable.getDefaultDatePatternName()))
 								addTextVertical(c, cell.getDays());
 							if (iTable.getResourceType()!=TimetableGridModel.sResourceTypeRoom)
 								addTextVertical(c, cell.getRoomName());
@@ -504,7 +504,7 @@ public class PdfTimetableGridTable {
 								addText(c, cell.getRoomName());
 							else
 								addText(c, cell.getShortComment()==null?"":cell.getShortComment());
-							if (iTable.getWeek()<0 && cell.hasDays() && !cell.getDays().equals(iTable.getDefaultDatePatternName()))
+							if (iTable.getWeek()==-100 && cell.hasDays() && !cell.getDays().equals(iTable.getDefaultDatePatternName()))
 								addText(c, cell.getDays());
 							iPdfTable.addCell(c);
                     	}
