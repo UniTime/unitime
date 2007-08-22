@@ -120,7 +120,7 @@ public class TimetableGridTable {
 	private int iResourceType = TimetableGridModel.sResourceTypeRoom;
 	private String iFindStr = null;
 	private int iOrderBy = sOrderByNameAsc;
-	private int iWeek = -1;
+	private int iWeek = -100;
 	private boolean iShowUselessTimes = false;
 	
 	private String iDefaultDatePatternName = null;
@@ -146,14 +146,14 @@ public class TimetableGridTable {
 	public void setShowUselessTimes(boolean showUselessTimes) { iShowUselessTimes = showUselessTimes; }
 	public Vector getWeeks(HttpSession httpSession) throws Exception { 
 		Vector weeks = new Vector();
-		weeks.addElement(new IdValue(new Long(-1),"All weeks"));
+		weeks.addElement(new IdValue(new Long(-100),"All weeks"));
         Session session = Session.getCurrentAcadSession(Web.getUser(httpSession));
 		int startWeek = DateUtils.getWeek(session.getSessionBeginDateTime())-(Session.sNrExcessDays/7);
 		int endWeek = DateUtils.getWeek(session.getSessionEndDateTime())+(Session.sNrExcessDays/7);
 		for (int i=startWeek;i<=endWeek;i++) {
 			weeks.addElement(new IdValue(new Long(i),sDF.format(DateUtils.getStartDate(session.getYear(),i))+" - "+sDF.format(DateUtils.getEndDate(session.getYear(),i))));
 		}
-		if (iWeek<startWeek || iWeek>endWeek) iWeek = -1;
+		if (iWeek<startWeek || iWeek>endWeek) iWeek = -100;
 		return weeks;
 	}
 	
@@ -394,7 +394,7 @@ public class TimetableGridTable {
 								out.print("<BR>"+cell.getRoomName());
 							else
 								out.print(cell.getShortComment()==null?"":"<BR>"+cell.getShortComment());
-							if (iWeek<0 && cell.hasDays() && !cell.getDays().equals(iDefaultDatePatternName))
+							if (iWeek==-100 && cell.hasDays() && !cell.getDays().equals(iDefaultDatePatternName))
 								out.print("<BR>"+cell.getDays());
 							out.println("</td>");
 							slot+=length-1;
@@ -460,7 +460,7 @@ public class TimetableGridTable {
 								out.print("<BR>"+cell.getRoomName());
 							else
 								out.print(cell.getShortComment()==null?"":"<BR>"+cell.getShortComment());
-							if (iWeek<0 && cell.hasDays() && !cell.getDays().equals(iDefaultDatePatternName))
+							if (iWeek==-100 && cell.hasDays() && !cell.getDays().equals(iDefaultDatePatternName))
 								out.print("<BR>"+cell.getDays());
 							out.println("</td>");
 							slot+=length-1;
@@ -524,7 +524,7 @@ public class TimetableGridTable {
 								out.print("<BR>"+cell.getRoomName());
 							else
 								out.print(cell.getShortComment()==null?"":"<BR>"+cell.getShortComment());
-							if (iWeek<0 && cell.hasDays() && !cell.getDays().equals(iDefaultDatePatternName))
+							if (iWeek==-100 && cell.hasDays() && !cell.getDays().equals(iDefaultDatePatternName))
 								out.print("<BR>"+cell.getDays());
                     		out.println("</td>");
                     	}
@@ -566,7 +566,7 @@ public class TimetableGridTable {
 		DatePattern defaultDatePattern = acadSession.getDefaultDatePatternNotNull();
     	iDefaultDatePatternName = (defaultDatePattern==null?null:defaultDatePattern.getName());
 		SolverProxy solver = WebSolver.getSolver(session);
-		int startDay = (getWeek()<0?-1:DateUtils.getFirstDayOfWeek(acadSession.getYear(),getWeek())-acadSession.getDayOfYear(1,acadSession.getStartMonth())-1);
+		int startDay = (getWeek()==-100?-1:DateUtils.getFirstDayOfWeek(acadSession.getYear(),getWeek())-acadSession.getDayOfYear(1,acadSession.getStartMonth())-1);
 		if (solver!=null) {
 			iModels = solver.getTimetableGridTables(getFindString(), getResourceType(), startDay, getBgMode());
 			Collections.sort(iModels,new TimetableGridModelComparator());
