@@ -42,7 +42,13 @@ public class DateUtils {
 		c.set(year,1,1,0,0,0);
 		c.set(Calendar.WEEK_OF_YEAR,week);
 		c.set(Calendar.DAY_OF_WEEK,Calendar.MONDAY);
-		return c.get(Calendar.DAY_OF_YEAR);
+		int dayOfYear = c.get(Calendar.DAY_OF_YEAR); 
+		if (c.get(Calendar.YEAR)<year) {
+		    Calendar x = Calendar.getInstance(Locale.US);
+		    x.set(c.get(Calendar.YEAR),11,31,0,0,0);
+		    dayOfYear -= x.get(Calendar.DAY_OF_YEAR);
+		}
+		return dayOfYear;
     }
     public static Date getDate(int year, int dayOfYear) {
 		Calendar c = Calendar.getInstance(Locale.US);
