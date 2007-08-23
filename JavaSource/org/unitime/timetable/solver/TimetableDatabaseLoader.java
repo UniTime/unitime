@@ -878,6 +878,26 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		DepartmentalInstructor instructor = (DepartmentalInstructor)e.nextElement();
     		getInstructorConstraint(instructor,hibSession).addVariable(lecture);
     	}
+
+    	long estNrValues = lecture.nrTimeLocations();
+    	for (int i=0;i<lecture.getNrRooms();i++) {
+    	    estNrValues *= (lecture.nrRoomLocations()-i)/(lecture.getNrRooms()-i);
+    	}
+    	if (estNrValues>1000000) {
+    	    iProgress.error("Class "+getClassLabel(lecture)+" has too many possible placements ("+estNrValues+"). " +
+    	    		"The class was not loaded in order to prevent out of memory exception. " +
+    	    		"Please restrict the number of available rooms and/or times for this class.");
+            for (Enumeration e=instructors.elements();e.hasMoreElements();) {
+                DepartmentalInstructor instructor = (DepartmentalInstructor)e.nextElement();
+                getInstructorConstraint(instructor,hibSession).removeVariable(lecture);
+            }
+    	    return null;
+    	} else if (estNrValues>10000) {
+            iProgress.warn("Class "+getClassLabel(lecture)+" has quite a lot of possible placements ("+estNrValues+"). " +
+                    "Solver may run too slow. " +
+                    "If possible, please restrict the number of available rooms and/or times for this class.");
+    	}
+    	
         if (lecture.values().isEmpty()) {
         	if (!iInteractiveMode) {
         		iProgress.warn("Class "+getClassLabel(lecture)+" has no available placement (class not loaded).");
