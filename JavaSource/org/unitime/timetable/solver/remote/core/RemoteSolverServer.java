@@ -97,7 +97,7 @@ public class RemoteSolverServer implements Runnable {
 		}
 	}
 	
-	public static void initServer(ResourceProvider provider, String url) throws Exception {
+	public static void initServer(ResourceProvider provider, String url, Properties webServerProperties) throws Exception {
 		if (sServerThread==null) {
 			throw new Exception("sServerThread is null!!!");
 		}
@@ -112,7 +112,15 @@ public class RemoteSolverServer implements Runnable {
 			}
 		}
 		
-		sRemoteSolverClass.getMethod("init", new Class[] {Properties.class, String.class}).invoke(null, new Object[]{sServerThread.getProperties(), url});
+		Properties properties = null;
+		if (webServerProperties!=null) {
+		    properties = webServerProperties;
+		    properties.putAll(sServerThread.getProperties());
+		} else {
+		    properties = sServerThread.getProperties();
+		}
+		
+		sRemoteSolverClass.getMethod("init", new Class[] {Properties.class, String.class}).invoke(null, new Object[]{properties, url});
 		
 		ServerLogger.setInitialized(true);
 	}

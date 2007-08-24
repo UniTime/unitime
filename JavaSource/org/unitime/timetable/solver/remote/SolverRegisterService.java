@@ -299,6 +299,9 @@ public class SolverRegisterService extends Thread {
 			if ("url".equals(command)) {
 				return HibernateUtil.getConnectionUrl();
 			}
+			if ("properties".equals(command)) {
+			    return ApplicationProperties.getProperties();
+			}
 			if ("disconnect".equals(command)) {
 				if (iProxy!=null) {
                     synchronized (iServers) {
