@@ -21,6 +21,7 @@ package org.unitime.timetable.solver.remote.core;
 
 import java.net.Socket;
 import java.util.Hashtable;
+import java.util.Properties;
 
 /**
  * @author Tomas Muller
@@ -132,7 +133,11 @@ public class ControlThread extends Thread implements ResourceProvider {
 				        if (SolverTray.isInitialized()) {
 				        	SolverTray.getInstance().setStatus("initializing",SolverTray.sSolverPauseIcon);
 				        }
-						RemoteSolverServer.initServer(this, (String)query("url"));
+				        Properties webServerProperties = null;
+				        try {
+				            webServerProperties = (Properties)query("properties");
+				        } catch (Exception e) {}
+						RemoteSolverServer.initServer(this, (String)query("url"), webServerProperties);
 				        if (SolverTray.isInitialized()) {
 				        	SolverTray.getInstance().setStatus("running at "+iSocket.getLocalAddress().getHostName()+":"+iServer.getPort(),SolverTray.sSolverRunIcon);
 				        }
