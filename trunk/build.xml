@@ -104,13 +104,17 @@
 	</target>
 
 	<target name="solver-jar" depends="compile-java">
+		<copy file="${src.dir}/custom.properties" tofile="${temp.dir}/custom.properties" failonerror="false" />
+		<echo message="" file="${temp.dir}/custom.properties" append="true"/>
 		<jar destfile="${dist.dir}/solver.jar">
 			<fileset dir="${build.dir}">
 				<include name="org/unitime/timetable/solver/remote/core/*.class" />
 			</fileset>
+			<fileset dir="${temp.dir}">
+				<include name="custom.properties" />
+			</fileset>
 			<fileset dir="${src.dir}">
 				<include name="application.properties" />
-				<include name="custom.properties" />
 				<include name="solver.key" />
 			</fileset>
 			<fileset dir="${jsp.dir}">
