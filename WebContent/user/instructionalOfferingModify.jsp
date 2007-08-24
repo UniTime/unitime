@@ -49,7 +49,8 @@
 		minLimitName='minClassLimits['+subpartIndex+']'
 		totalIndex=document.getElementsByName(subtotalName)[0].value;
 		subtotalValueName='subtotalValues['+totalIndex+']';
-		subtotalValueName2='subtotalValues2['+totalIndex+']';
+		subtotalValueName1='subtotal1Values'+totalIndex;
+		subtotalValueName2='subtotal2Values' + totalIndex;
 		origTotal=document.getElementsByName(subtotalValueName)[0].value;
 		origSubpartLimit=document.getElementsByName(origLimitName)[0].value;
 		newSubpartLimit=document.getElementsByName(minLimitName)[0].value;
@@ -57,8 +58,8 @@
               { newSubpartLimit = 0;}
 		newTotal=origTotal-origSubpartLimit+(newSubpartLimit-0);
 		document.getElementsByName(subtotalValueName)[0].value=newTotal;
-		document.getElementById(subtotalValueName).innerHTML='&nbsp; ' + newTotal;
-		document.getElementById(subtotalValueName2).innerHTML=newTotal;
+		document.getElementById(subtotalValueName1).innerHTML=newTotal;
+		document.getElementById(subtotalValueName2).innerHTML=newTotal; 
 		document.getElementsByName(origLimitName)[0].value=newSubpartLimit;
 	}
 	
@@ -183,16 +184,12 @@
 			<table align="left" valign="top" border="0" cellspacing="0" cellpadding="0">
 				<logic:iterate name="<%=frmName%>" property="subtotalValues" id="v" indexId="ctr">
 			<tr onmouseover="this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='default';" onmouseout="this.style.backgroundColor='transparent';"> 
-				<td valign="top" align="right">
+				<td valign="top" align="right" nowrap>
 				<html:hidden property="<%= "subtotalLabels[" + ctr + "]" %>"/>
 				<html:hidden property="<%= "subtotalValues[" + ctr + "]" %>"/>
-				<b><%=((String)frm.getSubtotalLabels().get(ctr)).trim()%>:</b>
+				<b><%=((String)frm.getSubtotalLabels().get(ctr)).trim()%>:</b> &nbsp; 
 				</td> 
-				<td>
-				<div id="<%= "subtotalValues[" + ctr + "]" %>">
-				&nbsp; <bean:write name="<%=frmName%>" property="<%= "subtotalValues[" + ctr + "]" %>"/>
-				</div>
-				</td>
+				<td align="right" nowrap><div id="<%= "subtotal1Values" + ctr %>"><bean:write name="<%=frmName%>" property="<%= "subtotalValues[" + ctr + "]" %>"/></div></td>
 				<TD align="center" nowrap>
 				&nbsp; &nbsp; Display Instructors: 
 				<logic:equal name="<%=frmName%>" property="<%= "readOnlySubparts[" + ctr + "]" %>" value="false" >
@@ -298,14 +295,10 @@
 			<table align="left" valign="top" border="0" cellspacing="0" cellpadding="0">
 				<logic:iterate name="<%=frmName%>" property="subtotalValues" id="v" indexId="ctr">				
 				<tr onmouseover="this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='default';" onmouseout="this.style.backgroundColor='transparent';">
-				<td valign="top" align="right">
-				<b><%=((String)frm.getSubtotalLabels().get(ctr)).trim()%>:</b>
+				<td valign="top" align="right" nowrap>
+				<b><%=((String)frm.getSubtotalLabels().get(ctr)).trim()%>:</b> &nbsp; 
 				</td> 
-				<td>
-				<div id="<%= "subtotalValues2[" + ctr + "]" %>">
-				&nbsp; <bean:write name="<%=frmName%>" property="<%= "subtotalValues[" + ctr + "]" %>"/>
-				</div>
-				</td>
+				<td nowrap align="right"><div id="<%= "subtotal2Values" + ctr %>"><bean:write name="<%=frmName%>" property="<%= "subtotalValues[" + ctr + "]" %>"/></div></td>
 				<TD align="center" nowrap>
 				&nbsp; &nbsp; Display Instructors: 
 				<logic:equal name="<%=frmName%>" property="<%= "readOnlySubparts[" + ctr + "]" %>" value="false" >
@@ -318,7 +311,7 @@
 					<html:hidden property="<%= "displayAllClassesInstructorsForSubpart[" + ctr + "]" %>"/>
 				</logic:equal>
 				</TD>
-					<TD align="center" nowrap>
+				<TD align="center" nowrap>
 				&nbsp; &nbsp; Display in Schedule: 
 				<logic:equal name="<%=frmName%>" property="<%= "readOnlySubparts[" + ctr + "]" %>" value="false" >
 					<html:checkbox name="<%=frmName%>" property="<%= "displayAllClassesInSchedBookForSubpart[" + ctr + "]" %>" onclick="<%= "updateSubpartFlags(this.checked, 'displayInScheduleBooks', "+ctr+", 'displayAllClassesInSchedBookForSubpart');"%>"/>
@@ -337,9 +330,7 @@
 			</tr>
 			</table></td>
 			</tr>
-		</table>
-		</TD>
-		</TR>
+		
 		
 <SCRIPT language="javascript">
 	<!--		
