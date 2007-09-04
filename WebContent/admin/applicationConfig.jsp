@@ -20,6 +20,7 @@
 <%@ page import="org.unitime.timetable.ApplicationProperties"%>
 <%@ page import="java.util.Vector"%>
 <%@ page import="java.util.Collections"%>
+<%@ page import="java.util.regex.Pattern"%>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
@@ -116,8 +117,11 @@
 	<% 
 		Vector props = new Vector (ApplicationProperties.getProperties().keySet()); 
 		Collections.sort(props);
+		Pattern pattern = Pattern.compile(ApplicationProperties.getProperty("tmtbl.appConfig.pattern","^tmtbl\\..*$"));
 		for (Object prop: props) {
+			if (!pattern.matcher(prop.toString()).matches()) continue;
 			String value = ApplicationProperties.getProperty(prop.toString());
+			
 	%>
 	<TR>
 		<TD valign="top" class="BottomBorderGray">
