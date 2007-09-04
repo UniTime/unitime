@@ -389,9 +389,14 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
         return student;
     }
     
-    public double getLastLikeStudentWeight(Course course, Hashtable demands) {
+    
+    public static double getLastLikeStudentWeight(Course course, int real, int lastLike) {
         int projected = course.getProjected();
         int limit = course.getLimit();
+        if (course.getLimit()<0) {
+            sLog.debug("  -- Course "+course.getName()+" is unlimited.");
+            return 1.0;
+        }
         if (projected<=0) {
             sLog.warn("  -- No projected demand for course "+course.getName()+", using course limit ("+limit+")");
             projected = limit;
@@ -399,17 +404,56 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
             sLog.warn("  -- Projected number of students is over course limit for course "+course.getName()+" ("+Math.round(projected)+">"+limit+")");
             projected = limit;
         }
-        Number lastLike = (Number)demands.get(new Long(course.getId()));
-        if (lastLike==null) {
+        if (lastLike==0) {
             sLog.warn("  -- No last like info for course "+course.getName());
             return 1.0;
         }
-        double weight = ((double)projected) / lastLike.doubleValue(); 
-        sLog.debug("  -- last like student weight for "+course.getName()+" is "+weight+" (lastLike="+Math.round(lastLike.doubleValue())+", projected="+projected+")");
+        double weight = ((double)Math.max(0, projected - real)) / lastLike; 
+        sLog.debug("  -- last like student weight for "+course.getName()+" is "+weight+" (lastLike="+lastLike+", real="+real+", projected="+projected+")");
         return weight;
     }
     
-    public void loadLastLikeStudent(org.hibernate.Session hibSession, LastLikeCourseDemand d, org.unitime.timetable.model.Student s, CourseOffering co, Hashtable studentTable, Hashtable courseTable, Hashtable classTable, Hashtable demands, Hashtable classAssignments) {
+    private void fixWeights() {
+        Hashtable lastLike = new Hashtable();
+        Hashtable real = new Hashtable();
+        for (Enumeration e=getModel().getStudents().elements();e.hasMoreElements();) {
+            Student student = (Student)e.nextElement();
+            for (Enumeration f=student.getRequests().elements();f.hasMoreElements();) {
+                Request request = (Request)f.nextElement();
+                if (request instanceof CourseRequest) {
+                    CourseRequest courseRequest = (CourseRequest)request;
+                    Course course = (Course)courseRequest.getCourses().firstElement();
+                    Integer cnt = (Integer)(student.isDummy()?lastLike:real).get(course);
+                    (student.isDummy()?lastLike:real).put(course, new Integer((cnt==null?0:cnt.intValue())+1));
+                }
+            }
+        }
+        for (Enumeration e=new Vector(getModel().getStudents()).elements();e.hasMoreElements();) {
+            Student student = (Student)e.nextElement();
+            for (Enumeration f=new Vector(student.getRequests()).elements();f.hasMoreElements();) {
+                Request request = (Request)f.nextElement();
+                if (!student.isDummy()) {
+                    request.setWeight(1.0); continue;
+                }
+                if (request instanceof CourseRequest) {
+                    CourseRequest courseRequest = (CourseRequest)request;
+                    Course course = (Course)courseRequest.getCourses().firstElement();
+                    Integer lastLikeCnt = (Integer)lastLike.get(course);
+                    Integer realCnt = (Integer)real.get(course);
+                    courseRequest.setWeight(getLastLikeStudentWeight(course, realCnt==null?0:realCnt.intValue(), lastLikeCnt==null?0:lastLikeCnt.intValue()));
+                } else request.setWeight(1.0);
+                 if (request.getWeight()<=0.0) {
+                    getModel().removeVariable(request);
+                    student.getRequests().remove(request);
+                }
+            }
+            if (student.getRequests().isEmpty()) {
+                getModel().getStudents().remove(student);
+            }
+        }
+    }
+    
+    public void loadLastLikeStudent(org.hibernate.Session hibSession, LastLikeCourseDemand d, org.unitime.timetable.model.Student s, CourseOffering co, Hashtable studentTable, Hashtable courseTable, Hashtable classTable, Hashtable classAssignments) {
         sLog.debug("Loading last like demand of student "+s.getUniqueId()+" (id="+s.getExternalUniqueId()+", name="+s.getFirstName()+" "+s.getMiddleName()+" "+s.getLastName()+") for "+co.getCourseName());
         Student student = (Student)studentTable.get(s.getUniqueId());
         if (student==null) {
@@ -432,7 +476,6 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
                 student,
                 courses,
                 false);
-        request.setWeight(getLastLikeStudentWeight(course, demands));
         sLog.debug("  -- added request "+request);
         if (classAssignments!=null && !classAssignments.isEmpty()) {
             HashSet assignedSections = new HashSet();
@@ -547,17 +590,6 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
             }
             
             if (iIncludeLastLikeStudents) {
-                Hashtable demands = new Hashtable();
-                for (Iterator i=hibSession.createQuery("select co.uniqueId, count(d.uniqueId) from "+
-                        "CourseOffering co left join co.demandOffering cx, LastLikeCourseDemand d where co.subjectArea.session.uniqueId=:sessionId and "+
-                        "(( d.subjectArea=co.subjectArea and d.courseNbr=co.courseNbr ) or "+
-                        " ( d.subjectArea=cx.subjectArea and d.courseNbr=cx.courseNbr )) "+
-                        "group by co.uniqueId").setLong("sessionId",session.getUniqueId().longValue()).iterate();i.hasNext();) {
-                    Object[] o = (Object[])i.next();
-                    Long courceOfferingId = (Long)o[0];
-                    Number demand = (Number)o[1];
-                    demands.put(courceOfferingId, demand);
-                }
                 Hashtable classAssignments = null;
                 if (iIncludeUseCommittedAssignments) {
                     classAssignments = new Hashtable();
@@ -574,7 +606,6 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
                         }
                         classIds.add(classId);
                     }
-
                 }
             
                 Hashtable lastLikeStudentTable = new Hashtable();
@@ -590,7 +621,7 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
                     org.unitime.timetable.model.Student s = (org.unitime.timetable.model.Student)o[1];
                     CourseOffering co = (CourseOffering)o[2];
                     if (s.getExternalUniqueId()!=null && loadedStudentIds.contains(s.getExternalUniqueId())) continue;
-                    loadLastLikeStudent(hibSession, d, s, co, lastLikeStudentTable, courseTable, classTable, demands, classAssignments);
+                    loadLastLikeStudent(hibSession, d, s, co, lastLikeStudentTable, courseTable, classTable, classAssignments);
                 }
                 for (Enumeration e=lastLikeStudentTable.elements();e.hasMoreElements();) {
                     Student student = (Student)e.nextElement();
@@ -607,6 +638,7 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
                             sLog.debug("Unable to assign "+request.getInitialAssignment()+", conflicts: "+conflicts);
                     }
                 }
+                fixWeights();
             }
             
             tx.commit();
