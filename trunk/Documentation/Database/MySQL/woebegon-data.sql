@@ -25,8 +25,8 @@
 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 
 INSERT INTO `timetable`.`application_config`(`name`, `value`, `description`)
-VALUES ('systemMessage', 'Welcome to Woebegon College test suite.', 'Message displayed to users when they first log in to Timetabling'),
-  ('systemAccessLevel', 'all', 'Access Levels: all | {dept code}(:{dept code})*');
+VALUES ('tmtbl.system_message', 'Welcome to Woebegon College test suite.', 'Message displayed to users when they first log in to Timetabling'),
+  ('tmtbl.access_level', 'all', 'Access Levels: all | {dept code}(:{dept code})*');
 
 INSERT INTO `timetable`.`assigned_instructors`(`assignment_id`, `instructor_id`, `last_modified_time`)
 VALUES (142137, 226242, NULL),
