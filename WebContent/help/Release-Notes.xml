@@ -29,6 +29,137 @@
 	<category>
 		<title>USER INTERFACE</title>
 		<item>
+			<name>Edit Course Offering</name>
+			<description>
+				<line>Fix parse exception caused by non numeric io limit.</line>
+			</description>
+		</item>
+		<item>
+			<name>Reservations</name>
+			<description>
+				<line>Print instructional offering limit.</line>
+				<line>Course Reservations (on a class):
+					<line>Fixed problem: The instructional offering limit is not displayed.</line>
+					<line>Fixed problem: If there are two courses listed in a reservation on a class and the user wants to delete the first one (clicks on the Delete button next to the first one), the second course is deleted instead.</line></line>
+				<line>Fix parse exception cause by non numeric io limit.</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructional Offering Cross Lists</name>
+			<description>
+				<line>Fixed hibernate exception.</line>
+			</description>
+		</item>
+		<item>
+			<name>Multiple Class Setup</name>
+			<description>
+				<line>Updated display of schedule subpart limits</line>
+				<line>Added ability to mark all classes of a subpart as display instructors.</line>
+				<line>Added ability to mark all classes of a subpart as display in schedule.</line>
+				<line>Fixed bug with Display All Instructors and Display All in Schedule.</line>
+				<line>Changed <i>Display Instructors</i> and <i>Display in Schedule</i> to show the checkmark icon (tick.gif) when they are true and the schedule deputy does not have permission to edit the field.  Used to display the word <i>true</i> or <i>false</i>.  This applies to both the subpart rows and then class rows.</line>
+				<line>Added change in row background color when mousing over a subpart row.  Class rows did this already.</line>
+				<line>Cleaned up alignment of scheduling subpart limit labels.</line>
+				<line>Fixed Javascript Errors with subtotals in IE.</line>
+				<line>Fixed Javascript Error that prevented min/max limit from being syncronized.</line>
+				<line>Fixed Button alignment on bottom of screen.</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructional Offering Configuration Edit</name>
+			<description>
+				<line>Fix bug that deleted instr offering when a configuration was deleted.</line>
+			</description>
+		</item>
+		<item>
+			<name>Not-assigned Classes</name>
+			<description>
+				<line>Column Name renamed to Class.</line>
+			</description>
+		</item>
+		<item>
+			<name>Timetable Grid</name>
+			<description>
+				<line>Use NaturalOrderComparator for ordering cells in a timetable grid (the case when two or more classes overlap in time).</line>
+				<line>Week -1 can represent the last week of the previous year (visible, e.g., for Spring 2008 term), value of selection 'All weeks' changed to -100 (was -1).</line>
+				<line>Visualisation of the weeks of the previous year corrected (former reasoning "week &lt; 0 implies all weeks" was wrong in this case).</line>
+			</description>
+		</item>
+		<item>
+			<name>Application Configuration</name>
+			<description>
+				<line>Only display application properties that starts with <u>tmtbl.</u>
+					<line>This feature is customizable by property <u>tmtbl.appConfig.pattern</u>, default is the regular expression <u>^tmtbl\..*$</u></line>
+				</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Solver</title>
+		<item>
+			<name>Solver Warnings</name>
+			<description>
+				<line>With every class, estimate the number of possible placements and
+					<line>refuse to load a class if the number of placements exceed 1 000 000, the following error is printed:
+						<line>
+							Class C has too many possible placements (X).
+							The class was not loaded in order to prevent out of memory exception.
+							Please restrict the number of available rooms and/or times for this class.
+						</line>
+						<line>
+							( where C is the name of the class, and X is the estimated number of placements )
+						</line>
+					</line>
+					<line>otherwise, print the following warning if the number of placements exceed 10 000:
+						<line>
+							Class C has quite a lot of possible placements (X).
+							Solver may run too slow.
+							If possible, please restrict the number of available rooms and/or times for this class.
+						</line>
+						<line>
+							( where C is the name of the class, and X is the estimated number of placements )
+						</line>
+					</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Remote Solver</name>
+			<description>
+				<line>Ask web server for its application properties before constructing a database connection.</line>
+			</description>
+		</item>
+		<item>
+			<name>Other</name>
+			<description>
+				<line>Constraint solver updated, see https://lists.sourceforge.net/lists/listinfo/cpsolver-cvs for more details.</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>OTHER</title>
+		<item>
+			<name>Hibernate Configuration</name>
+			<description>
+				<line>Propagate application property default_schema into the hibernate configuration, if it is set.</line>
+			</description>
+		</item>
+		<item>
+			<name>Database</name>
+			<description>
+				<line>Size of column APPLICATION_CONFIG.NAME changed to match the hibernate configuration.</line>
+				<line>Woebegon College Example: In table APPLICATION_CONFIG, property systemAccessLevel changed to tmtbl.access_level, systemMessage changed to tmtbl.system_message.</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.0.24</version>
+	<release-date>Mon, 23 Jul 2007</release-date>
+	<category>
+		<title>USER INTERFACE</title>
+		<item>
 			<name>Cross-lists</name>
 			<description>
 				<line>Fixed exception that occurs when course has no configurations and hence no instructional offering limit.</line>
