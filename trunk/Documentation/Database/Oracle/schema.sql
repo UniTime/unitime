@@ -291,7 +291,7 @@ prompt =================================
 prompt
 create table TIMETABLE.APPLICATION_CONFIG
 (
-  NAME        VARCHAR2(20),
+  NAME        VARCHAR2(1000),
   VALUE       VARCHAR2(4000),
   DESCRIPTION VARCHAR2(100)
 );
