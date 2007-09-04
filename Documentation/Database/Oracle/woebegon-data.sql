@@ -520,9 +520,9 @@ prompt Loading ACAD_AREA_RESERVATION...
 prompt Table is empty
 prompt Loading APPLICATION_CONFIG...
 insert into APPLICATION_CONFIG (NAME, VALUE, DESCRIPTION)
-values ('systemMessage', 'Welcome to Woebegon College test suite.', 'Message displayed to users when they first log in to Timetabling');
+values ('tmtbl.system_message', 'Welcome to Woebegon College test suite.', 'Message displayed to users when they first log in to Timetabling');
 insert into APPLICATION_CONFIG (NAME, VALUE, DESCRIPTION)
-values ('systemAccessLevel', 'all', 'Access Levels: all | {dept code}(:{dept code})*');
+values ('tmtbl.access_level', 'all', 'Access Levels: all | {dept code}(:{dept code})*');
 commit;
 prompt 2 records loaded
 prompt Loading OFFR_CONSENT_TYPE...
