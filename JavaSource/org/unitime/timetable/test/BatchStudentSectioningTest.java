@@ -35,6 +35,7 @@ import net.sf.cpsolver.ifs.util.DataProperties;
 import net.sf.cpsolver.ifs.util.ToolBox;
 import net.sf.cpsolver.studentsct.StudentSectioningModel;
 import net.sf.cpsolver.studentsct.StudentSectioningXMLSaver;
+import net.sf.cpsolver.studentsct.check.InevitableStudentConflicts;
 import net.sf.cpsolver.studentsct.check.OverlapCheck;
 import net.sf.cpsolver.studentsct.check.SectionLimitCheck;
 import net.sf.cpsolver.studentsct.report.CourseConflictTable;
@@ -118,6 +119,11 @@ public class BatchStudentSectioningTest {
             DistanceConflictTable dct = new DistanceConflictTable((StudentSectioningModel)solution.getModel());
             dct.createTable(true, false).save(new File(outDir, "distances-lastlike.csv"));
             dct.createTable(false, true).save(new File(outDir, "distances-real.csv"));
+            
+            if (cfg.getPropertyBoolean("Test.InevitableStudentConflictsCheck", false)) {
+                InevitableStudentConflicts ch = new InevitableStudentConflicts(model);
+                if (!ch.check()) ch.getCSVFile().save(new File(outDir, "inevitable-conflicts.csv"));
+            }
         } catch (IOException e) {
             sLog.error(e.getMessage(),e);
         }
