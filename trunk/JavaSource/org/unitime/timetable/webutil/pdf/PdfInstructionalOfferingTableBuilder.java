@@ -493,13 +493,13 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
 			TimePref tp = (TimePref)i.next();
 			RequiredTimeTable rtt = tp.getRequiredTimeTable(a);
 			if (getGridAsText()) {
-				addText(cell, rtt.getModel().toString().replaceAll(", ", "\n"), false, false, Element.ALIGN_CENTER, color, true);
+				addText(cell, rtt.getModel().toString().replaceAll(", ", "\n"), false, false, Element.ALIGN_LEFT, color, true);
 			} else {
 				try {
 					rtt.getModel().setDefaultSelection(getDefaultTimeGridSize());
 					if (rtt.getModel().isExactTime()) {
 						StringBuffer sb = new StringBuffer();
-						addText(cell, rtt.exactTime(false), false, false, Element.ALIGN_CENTER, color, true);
+						addText(cell, rtt.exactTime(false), false, false, Element.ALIGN_LEFT, color, true);
 					} else {
 						java.awt.Image awtImage = rtt.createBufferedImage(getTimeVertival());
 						Image img = Image.getInstance(awtImage, Color.WHITE);
@@ -507,7 +507,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
 						if (cell.getPhrase()==null) {
 							cell.setPhrase(new Paragraph(ck));
 							cell.setVerticalAlignment(Element.ALIGN_TOP);
-							cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+							cell.setHorizontalAlignment(Element.ALIGN_LEFT);
 						} else {
 							cell.getPhrase().add(ck);
 						}
