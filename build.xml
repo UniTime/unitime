@@ -340,6 +340,42 @@
 		<copy file="${dist.dir}/UniTime.war" todir="${env.TOMCAT_HOME}/webapps" 
 			overwrite="Yes" preservelastmodified="No" verbose="Yes" />
 	</target>
+	
+	<target name="check-java-opts-def" depends="load-properties" if="env.JAVA_OPTS">
+		<property name="java.opts" value="${env.JAVA_OPTS}"/>
+	</target>
+
+	<target name="check-java-opts-nodef" depends="load-properties" unless="env.JAVA_OPTS">
+		<property name="java.opts" value=""/>
+	</target>
+	
+	<target name="check-java-opts" depends="check-java-opts-def,check-java-opts-nodef"/>
+
+	<target name="start" depends="check-tomcat-home,check-java-opts">
+		<java jar="${env.TOMCAT_HOME}/bin/bootstrap.jar" fork="true" maxmemory="1024m" taskname="tomcat">
+			<arg value="start"/>
+			<sysproperty key="java.util.logging.manager" value="org.apache.juli.ClassLoaderLogManager"/>
+			<sysproperty key="java.util.logging.config.file" value="${env.TOMCAT_HOME}/conf/logging.properties"/>
+			<sysproperty key="java.endorsed.dirs" value="${env.TOMCAT_HOME}/endorsed"/>
+			<sysproperty key="catalina.base" value="${env.TOMCAT_HOME}"/>
+			<sysproperty key="catalina.home" value="${env.TOMCAT_HOME}"/>
+			<sysproperty key="java.io.tmpdir" value="${env.TOMCAT_HOME}/temp"/>
+			<jvmarg line="${java.opts}"/>
+		</java>
+	</target>
+	
+	<target name="stop" depends="check-tomcat-home,check-java-opts">
+		<java jar="${env.TOMCAT_HOME}/bin/bootstrap.jar" fork="true" maxmemory="1024m" taskname="tomcat">
+			<arg value="stop"/>
+			<sysproperty key="java.util.logging.manager" value="org.apache.juli.ClassLoaderLogManager"/>
+			<sysproperty key="java.util.logging.config.file" value="${env.TOMCAT_HOME}/conf/logging.properties"/>
+			<sysproperty key="java.endorsed.dirs" value="${env.TOMCAT_HOME}/endorsed"/>
+			<sysproperty key="catalina.base" value="${env.TOMCAT_HOME}"/>
+			<sysproperty key="catalina.home" value="${env.TOMCAT_HOME}"/>
+			<sysproperty key="java.io.tmpdir" value="${env.TOMCAT_HOME}/temp"/>
+			<jvmarg line="${java.opts}"/>
+		</java>
+	</target>
 
 	<target name="build" depends="load-properties,compile-war,done" />
 	<target name="dist" depends="load-properties,compile-war,wiki,build-dist,done" />
