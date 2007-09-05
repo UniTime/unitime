@@ -21,6 +21,7 @@
 
 	<target name="load-properties">
 		<loadproperties srcFile="${basedir}/build.properties" />
+		<property environment="env"/>
 	</target>
 
     <target name="clean" depends="load-properties">
@@ -329,6 +330,17 @@
 		</zip>
 	</target>
 	
+	<target name="check-tomcat-home" depends="load-properties" unless="env.TOMCAT_HOME">
+		<fail>
+			Environment variable TOMCAT_HOME is not defined.
+		</fail>
+	</target>
+	
+	<target name="deploy" depends="check-tomcat-home">
+		<copy file="${dist.dir}/UniTime.war" todir="${env.TOMCAT_HOME}/webapps" 
+			overwrite="Yes" preservelastmodified="No" verbose="Yes" />
+	</target>
+
 	<target name="build" depends="load-properties,compile-war,done" />
 	<target name="dist" depends="load-properties,compile-war,wiki,build-dist,done" />
 </project>
