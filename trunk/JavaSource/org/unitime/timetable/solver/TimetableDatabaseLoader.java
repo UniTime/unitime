@@ -2013,10 +2013,12 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 		}
 		
     	iDepartmentIds = "";
-    	for (Iterator i=iSolverGroup[0].getDepartments().iterator();i.hasNext();) {
-    		Department d = (Department)i.next();
-    		iDepartmentIds += d.getUniqueId().toString();
-    		if (i.hasNext()) iDepartmentIds += ",";
+    	for (int j=0;j<iSolverGroup.length;j++) {
+    	    for (Iterator i=iSolverGroup[j].getDepartments().iterator();i.hasNext();) {
+    	        Department d = (Department)i.next();
+    	        if (iDepartmentIds.length()>0) iDepartmentIds += ",";
+    	        iDepartmentIds += d.getUniqueId().toString();
+    	    }
     	}
     	getModel().getProperties().setProperty("General.DepartmentIds",iDepartmentIds);
 		
