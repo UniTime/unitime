@@ -21,8 +21,14 @@ package org.unitime.timetable.test;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.text.DecimalFormat;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.TreeSet;
 
 import net.sf.cpsolver.ifs.model.Neighbour;
 import net.sf.cpsolver.ifs.model.Value;
@@ -155,7 +161,29 @@ public class BatchStudentSectioningTest {
         sLog.info("Average unassigned priority "+sDF.format(model.avgUnassignPriority()));
         sLog.info("Average number of requests "+sDF.format(model.avgNrRequests()));
         sLog.info("Unassigned request weight "+sDF.format(model.getUnassignedRequestWeight())+" / "+sDF.format(model.getTotalRequestWeight()));
-        sLog.info("Info: "+solution.getInfo());
+        sLog.info("Info: "+ToolBox.dict2string(solution.getExtendedInfo(),2));
+
+        PrintWriter pw = null;
+        try {
+            pw = new PrintWriter(new FileWriter(new File(new File(cfg.getProperty("General.Output",".")),"info.properties")));
+            TreeSet entrySet = new TreeSet(new Comparator() {
+                public int compare(Object o1, Object o2) {
+                    Map.Entry e1 = (Map.Entry)o1;
+                    Map.Entry e2 = (Map.Entry)o2;
+                    return ((Comparable)e1.getKey()).compareTo(e2.getKey());
+                }
+            });
+            entrySet.addAll(solution.getExtendedInfo().entrySet());
+            for (Iterator i=entrySet.iterator();i.hasNext();) {
+                Map.Entry entry = (Map.Entry)i.next();
+                pw.println(entry.getKey().toString().toLowerCase().replace(' ','.')+"="+entry.getValue());
+            }
+            pw.flush();
+        } catch (IOException e) {
+            sLog.error("Unable to save info, reason: "+e.getMessage(),e);
+        } finally {
+            if (pw!=null) pw.close();
+        }
     }
     
     
