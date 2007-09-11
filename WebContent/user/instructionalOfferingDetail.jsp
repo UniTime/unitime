@@ -340,7 +340,7 @@
 		<TR>
 			<TD>Course Catalog: </TD>
 			<TD>
-				<A href="<bean:write name="instructionalOfferingDetailForm" property="catalogLinkLocation" />" target="_new"><bean:write name="instructionalOfferingDetailForm" property="catalogLinkLabel" /></A>
+				<A href="<bean:write name="instructionalOfferingDetailForm" property="catalogLinkLocation" />" target="_blank"><bean:write name="instructionalOfferingDetailForm" property="catalogLinkLabel" /></A>
 			</TD>
 		</TR>
 		</logic:notEmpty>
