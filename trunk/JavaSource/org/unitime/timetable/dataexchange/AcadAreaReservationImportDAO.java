@@ -95,9 +95,7 @@ public class AcadAreaReservationImportDAO extends AcadAreaReservationDAO {
 					throw new Exception("Reservation Type is required.");
 				}
 				AcademicArea area = fetchAcademicArea(academicArea, session.getSessionId());
-				if(area == null) {
-					throw new Exception("Academic Area " + academicArea + " not found.");
-				}
+				if(area == null) continue;
 				String priority = el.attributeValue("priority");
 				if(priority == null) {
 					priority = "1";
@@ -106,6 +104,7 @@ public class AcadAreaReservationImportDAO extends AcadAreaReservationDAO {
 				AcadAreaReservation reservation = new AcadAreaReservation();
 		        
 		        CourseOffering offer = CourseOffering.findBySessionSubjAreaAbbvCourseNbr(session.getUniqueId(), subject, course);
+		        if(offer == null) continue;
 		        reservation.setOwner(offer.getUniqueId());
 	
 		        reservation.setReservationType(fetchReservationType(reservationType));
