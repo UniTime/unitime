@@ -121,7 +121,7 @@ ENGINE = INNODB;
 
 DROP TABLE IF EXISTS `timetable`.`application_config`;
 CREATE TABLE `timetable`.`application_config` (
-  `name` VARCHAR(1000) BINARY NOT NULL,
+  `name` VARCHAR(512) BINARY NOT NULL,
   `value` VARCHAR(4000) BINARY NULL,
   `description` VARCHAR(100) BINARY NULL,
   PRIMARY KEY (`name`)
