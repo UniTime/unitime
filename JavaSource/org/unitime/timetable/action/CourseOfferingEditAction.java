@@ -349,7 +349,7 @@ public class CourseOfferingEditAction extends Action {
         CourseOffering co = cdao.get(courseOfferingId);
 
         InstructionalOffering io = co.getInstructionalOffering();
-        Long subjectAreaId = io.getControllingCourseOffering().getSubjectArea().getUniqueId();
+        Long subjectAreaId = co.getSubjectArea().getUniqueId();//io.getControllingCourseOffering().getSubjectArea().getUniqueId();
 
         frm.setDemandCourseOfferingId(co.getDemandOffering()==null?null:co.getDemandOffering().getUniqueId());
         frm.setAllowDemandCourseOfferings(true);//co.getLastLikeSemesterCourseOfferingDemands().isEmpty());
