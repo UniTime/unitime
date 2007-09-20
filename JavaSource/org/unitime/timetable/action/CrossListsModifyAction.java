@@ -631,8 +631,11 @@ public class CrossListsModifyAction extends Action {
 		        	Set classes = subpart.getClasses();
 			        for (Iterator iterCls=classes.iterator(); iterCls.hasNext(); ) {
 			        	Class_ cls = (Class_) iterCls.next();
-			        	cls.setManagingDept(dept);
-			        	hibSession.saveOrUpdate(cls);
+			        	// Only change departmental class managing dept and not externally managed
+			        	if (!cls.getManagingDept().isExternalManager()) {
+				        	cls.setManagingDept(dept);
+				        	hibSession.saveOrUpdate(cls);
+			        	}
 			        }
 		        }	        		        	
 	        }
