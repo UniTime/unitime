@@ -51,6 +51,7 @@ import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseOfferingReservation;
+import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.ReservationType;
@@ -619,6 +620,24 @@ public class CrossListsModifyAction extends Action {
 	            hibSession.saveOrUpdate(io);
 	        }
             
+	        // Update managing department on all classes
+	        Department dept = io.getControllingCourseOffering().getDepartment();
+	        Set cfgs = io.getInstrOfferingConfigs();
+	        for (Iterator iterCfg=cfgs.iterator(); iterCfg.hasNext(); ) {
+	        	InstrOfferingConfig cfg = (InstrOfferingConfig) iterCfg.next();
+	        	Set subparts = cfg.getSchedulingSubparts();
+		        for (Iterator iterSbp=subparts.iterator(); iterSbp.hasNext(); ) {
+		        	SchedulingSubpart subpart = (SchedulingSubpart) iterSbp.next();
+		        	Set classes = subpart.getClasses();
+			        for (Iterator iterCls=classes.iterator(); iterCls.hasNext(); ) {
+			        	Class_ cls = (Class_) iterCls.next();
+			        	cls.setManagingDept(dept);
+			        	hibSession.saveOrUpdate(cls);
+			        }
+		        }	        		        	
+	        }
+	        
+	        
             ChangeLog.addChange(
                     hibSession, 
                     request, 
