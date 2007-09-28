@@ -29,6 +29,82 @@
 	<category>
 		<title>USER INTERFACE</title>
 		<item>
+			<name>Instructional Offerings</name>
+			<description>
+				<line>PDF Export: Horizontal alignment of the time preference column changed to left (was center).</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructional Offering Detail</name>
+			<description>
+				<line>Fix bug in IE: external link should open in a new window.</line>
+			</description>
+		</item>
+		<item>
+			<name>Edit Course Offering</name>
+			<description>
+				<line>
+					Fixed problem "The course cannot be renamed. A course with the same course number already exists." when a course offering edit 
+					screen was used on a non-controlling cross-listed course of a different subject area than the controlling course but with the 
+					same course number as the controlling course.
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructional Offering Cross Lists</name>
+			<description>
+				<line>
+					Fixed bug: When the change in cross-list results in a change of controlling department of an instructional offering, 
+					all departmental classes (i.e., classes that are managed by the controlling department) have to have their managing 
+					department changed to the new controlling department.
+				</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Solver</title>
+		<item>
+			<name>Database Load</name>
+			<description>
+				<line>
+					Property General.DepartmentIds was not correctly computed in the case when multiple solver groups were loaded together 
+					-- it did contain only departments of the first solver group.
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Other</name>
+			<description>
+				<line>Constraint solver updated, see https://lists.sourceforge.net/lists/listinfo/cpsolver-cvs for more details.</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>OTHER</title>
+		<item>
+			<name>Data Import</name>
+			<description>
+				<line>Import of Academic Area Reservations: Skip over a reservation if the academic area is not found.</line>
+			</description>
+		</item>
+		<item>
+			<name>Database</name>
+			<description>
+				<line>Fixed problems with creation of the database schema for certain versions of MySQL (table APPLICATION_CONFIG).
+					<line>Fixed problem ERROR 1071 (specified key was too long) on table application_config.</line>
+					<line>Fixed problem ERROR 1170 (BLOB/TEXT column 'name' used in key specification without a key length) that occurred on MySQL 4.1.</line> 
+				</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.0.25</version>
+	<release-date>Tue, 4 Sep 2007</release-date>
+	<category>
+		<title>USER INTERFACE</title>
+		<item>
 			<name>Edit Course Offering</name>
 			<description>
 				<line>Fix parse exception caused by non numeric io limit.</line>
