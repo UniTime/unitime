@@ -124,7 +124,7 @@ CREATE TABLE `timetable`.`application_config` (
   `name` VARCHAR(512) BINARY NOT NULL,
   `value` VARCHAR(4000) BINARY NULL,
   `description` VARCHAR(100) BINARY NULL,
-  PRIMARY KEY (`name`)
+  PRIMARY KEY (`name`(512))
 )
 ENGINE = INNODB;
 
