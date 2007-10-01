@@ -38,6 +38,7 @@ import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Settings;
+import org.unitime.timetable.model.UserData;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.PdfWebTable;
 
@@ -84,6 +85,12 @@ public class DepartmentListAction extends Action {
 		DepartmentListForm departmentListForm = (DepartmentListForm) form;
 		departmentListForm.setDepartments(Department.findAll(Session.getCurrentAcadSession(user).getUniqueId()));
         
+        if ("Apply".equals(departmentListForm.getOp())) {
+            UserData.setPropertyBoolean(webSession,"Departments.showUnusedDepts", departmentListForm.getShowUnusedDepts());
+        } else {
+            departmentListForm.setShowUnusedDepts(UserData.getPropertyBoolean(webSession, "Departments.showUnusedDepts", false));
+        }
+
         if ("Export PDF".equals(request.getParameter("op"))) {
             boolean dispLastChanges = (!"no".equals(Settings.getSettingValue(user, Constants.SETTINGS_DISP_LAST_CHANGES)));
             
@@ -97,7 +104,7 @@ public class DepartmentListAction extends Action {
                     new boolean[] { true, true, true, true, true, true, true, true, true, false });
             for (Iterator i=departmentListForm.getDepartments().iterator();i.hasNext();) {
                 Department d = (Department) i.next();
-                if (!d.getSubjectAreas().isEmpty() || !d.getTimetableManagers().isEmpty() || d.isExternalManager().booleanValue()) {
+                if (departmentListForm.getShowUnusedDepts() || !d.getSubjectAreas().isEmpty() || !d.getTimetableManagers().isEmpty() || d.isExternalManager().booleanValue()) {
                     DecimalFormat df5 = new DecimalFormat("####0");
 
                     String lastChangeStr = null;

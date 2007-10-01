@@ -35,6 +35,8 @@ import org.apache.struts.action.ActionMapping;
 * @struts:form name="departmentListForm"
 */
 public class DepartmentListForm extends ActionForm {
+    private String iOp = null;
+    private boolean iShowUnusedDepts = false;
 
 	/**
 	 * 
@@ -51,10 +53,11 @@ public class DepartmentListForm extends ActionForm {
 	 * @param request
 	 */
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
-
 		departments = new ArrayList();
+		iShowUnusedDepts=false;
+		iOp = null;
 	}
-
+	
 	/**
 	 * @return Returns the departments.
 	 */
@@ -67,4 +70,9 @@ public class DepartmentListForm extends ActionForm {
 	public void setDepartments(Collection departments) {
 		this.departments = departments;
 	}
+	
+	public boolean getShowUnusedDepts() { return iShowUnusedDepts; }
+	public void setShowUnusedDepts(boolean showUnusedDepts) { iShowUnusedDepts = showUnusedDepts; }
+    public String getOp() { return iOp; }
+    public void setOp(String op) { iOp = op; }
 }
