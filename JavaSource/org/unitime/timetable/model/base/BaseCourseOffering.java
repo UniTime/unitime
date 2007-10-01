@@ -112,6 +112,7 @@ public abstract class BaseCourseOffering  implements Serializable {
 
 	// collections
 	private java.util.Set acadAreaReservations;
+	private java.util.Set courseReservations;
 
 
 
@@ -408,6 +409,20 @@ public abstract class BaseCourseOffering  implements Serializable {
 	}
 
 
+   /**
+    * Return the value associated with the column: courseReservations
+    */
+   public java.util.Set getCourseReservations () {
+       return courseReservations;
+   }
+
+   /**
+    * Set the value related to the column: courseReservations
+    * @param courseReservations the courseReservations value
+    */
+   public void setCourseReservations (java.util.Set courseReservations) {
+       this.courseReservations = courseReservations;
+   }
 
 
 
