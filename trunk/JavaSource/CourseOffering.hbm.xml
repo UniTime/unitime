@@ -146,6 +146,17 @@
 				length="10"
 			/>			
 		</properties>
+		
+		<set
+			name="courseReservations"
+			inverse="true"
+			lazy="true"
+			cascade="all-delete-orphan"
+			table="COURSE_RESERVATION">
+	 		<cache include="non-lazy" usage="read-write"/> 		
+			<key column="COURSE_OFFERING"/>
+			<one-to-many class="CourseOfferingReservation"/>
+		</set>
 
 		<!-- TODO Reservations functionality to be removed later -->
 		<set
