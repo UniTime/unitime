@@ -319,7 +319,7 @@ public class InstructionalOfferingModifyAction extends Action {
         InstrOfferingConfig ioc = iocdao.get(frm.getInstrOffrConfigId());
         Session hibSession = iocdao.getSession();
     	// Get default room group
-		RoomGroup rg = (RoomGroup)hibSession.createQuery("from RoomGroup as rg where rg.global = true and rg.defaultGroup= true").list().get(0);
+		RoomGroup rg = RoomGroup.getGlobalDefaultRoomGroup();
 
 		Transaction tx = null;
 
@@ -526,7 +526,7 @@ public class InstructionalOfferingModifyAction extends Action {
 						ss.addTopreferences(tp);
 					}
 
-        			if (currentManagingDept.getUniqueId().equals(controllingDept.getUniqueId())){
+        			if (currentManagingDept.getUniqueId().equals(controllingDept.getUniqueId()) && rg!=null){
     					rgp = new RoomGroupPref();
     					rgp.setOwner(ss);
     					rgp.setPrefLevel(prefLevel);
