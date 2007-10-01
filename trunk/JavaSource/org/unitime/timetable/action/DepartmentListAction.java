@@ -82,7 +82,7 @@ public class DepartmentListAction extends Action {
         
 	    User user = Web.getUser(webSession);	    
 		DepartmentListForm departmentListForm = (DepartmentListForm) form;
-		departmentListForm.setDepartments(Session.getCurrentAcadSession(user).getDepartments());
+		departmentListForm.setDepartments(Department.findAll(Session.getCurrentAcadSession(user).getUniqueId()));
         
         if ("Export PDF".equals(request.getParameter("op"))) {
             boolean dispLastChanges = (!"no".equals(Settings.getSettingValue(user, Constants.SETTINGS_DISP_LAST_CHANGES)));
