@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.action;
 
+import java.util.Iterator;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -28,12 +30,16 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.MessageResources;
+import org.hibernate.HibernateException;
+import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.DepartmentEditForm;
+import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Roles;
+import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.util.Constants;
 
@@ -109,6 +115,52 @@ public class DepartmentEditAction extends Action {
 	private void doDelete(
 			HttpServletRequest request, 
 			DepartmentEditForm frm) throws Exception{
+        org.hibernate.Session hibSession = new DepartmentDAO().getSession();
+        Transaction tx = null;
+        try {
+            tx = hibSession.beginTransaction();
+            Department department = new DepartmentDAO().get(frm.getId(), hibSession);
+            if (department.isExternalManager().booleanValue()) {
+                for (Iterator i=hibSession.
+                        createQuery("select c from Class_ c where c.managingDept.uniqueId=:deptId").
+                        setLong("deptId", department.getUniqueId()).iterate(); i.hasNext();) {
+                    Class_ clazz = (Class_)i.next();
+                    if (clazz.getSchedulingSubpart().getManagingDept().equals(department)) {
+                        // Clear all room preferences from the subpart
+                        for (Iterator j = clazz.getSchedulingSubpart().getPreferences().iterator(); j.hasNext(); ) {
+                            Object pref = j.next();
+                            if (!(pref instanceof TimePref)) j.remove();
+                        }
+                        clazz.getSchedulingSubpart().deleteAllDistributionPreferences(hibSession);
+                        hibSession.saveOrUpdate(clazz.getSchedulingSubpart());
+                    }
+                    clazz.setManagingDept(clazz.getControllingDept());
+                    // Clear all room preferences from the class
+                    for (Iterator j = clazz.getPreferences().iterator(); j.hasNext(); ) {
+                        Object pref = j.next();
+                        if (!(pref instanceof TimePref)) j.remove();
+                    }
+                    clazz.deleteAllDistributionPreferences(hibSession);
+                    hibSession.saveOrUpdate(clazz);
+                }
+            } else {
+                hibSession.createQuery(
+                        "delete StudentClassEnrollment e where e.clazz.uniqueId in " +
+                        "(select c.uniqueId from Class_ c, CourseOffering co where " +
+                        "co.isControl=1 and " +
+                        "c.schedulingSubpart.instrOfferingConfig.instructionalOffering=co.instructionalOffering and "+
+                        "co.subjectArea.department.uniqueId=:deptId)").
+                        setLong("deptId", department.getUniqueId()).
+                        executeUpdate();
+            }
+            hibSession.delete(department);
+            tx.commit();
+        } catch (HibernateException e) {
+            try {
+                if (tx!=null && tx.isActive()) tx.rollback();
+            } catch (Exception e1) { }
+            throw e;
+        }
 		
 	}
 }
