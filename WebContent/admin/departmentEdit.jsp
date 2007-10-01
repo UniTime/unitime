@@ -50,9 +50,11 @@
 						<html:submit property="op" styleClass="btn" accesskey="U" titleKey="title.updateDepartment">
 							<bean:message key="button.updateDepartment"/>
 						</html:submit>
-						<html:submit property="op" styleClass="btn" accesskey="D" titleKey="title.deleteDepartment">
-							<bean:message key="button.deleteDepartment"/>
-						</html:submit>
+						<logic:equal name="departmentEditForm" property="canDelete" value="true">
+							<html:submit property="op" styleClass="btn" accesskey="D" titleKey="title.deleteDepartment">
+								<bean:message key="button.deleteDepartment"/>
+							</html:submit>
+						</logic:equal>
 					</logic:notEmpty>
 
 					<html:submit property="op" styleClass="btn" accesskey="B" titleKey="title.backToPrevious">
@@ -124,7 +126,12 @@
 		<TR>
 			<TD nowrap>Externally Managed:</TD>
 			<TD>
-				<html:checkbox property="isExternal"/>
+				<logic:equal name="departmentEditForm" property="canChangeExternalManagement" value="true">
+					<html:checkbox property="isExternal"/>
+				</logic:equal>
+				<logic:equal name="departmentEditForm" property="canChangeExternalManagement" value="false">
+					<html:checkbox property="isExternal" disabled="true"/>
+				</logic:equal>
 			</TD>
 		</TR>
 
@@ -182,9 +189,11 @@
 					<html:submit property="op" styleClass="btn" accesskey="U" titleKey="title.updateDepartment">
 						<bean:message key="button.updateDepartment"/>
 					</html:submit>
-					<html:submit property="op" styleClass="btn" accesskey="D" titleKey="title.deleteDepartment">
-						<bean:message key="button.deleteDepartment"/>
-					</html:submit>
+					<logic:equal name="departmentEditForm" property="canDelete" value="true">
+						<html:submit property="op" styleClass="btn" accesskey="D" titleKey="title.deleteDepartment">
+							<bean:message key="button.deleteDepartment"/>
+						</html:submit>
+					</logic:equal>
 				</logic:notEmpty>	
 					
 				<html:submit property="op" styleClass="btn" accesskey="B" titleKey="title.backToPrevious">
