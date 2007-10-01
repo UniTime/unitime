@@ -50,6 +50,7 @@ public class DepartmentEditForm extends ActionForm {
 	public String iAbbv = null;
 	public String iExternalId = null;
 	public Boolean canDelete = Boolean.TRUE;
+	public Boolean canChangeExternalManagement = Boolean.TRUE;
 	public int iDistPrefPriority = 0;
 	public boolean iIsExternal = false;
 	public String iExtAbbv = null;
@@ -93,12 +94,12 @@ public class DepartmentEditForm extends ActionForm {
 			errors.add("deptCode", new ActionMessage("errors.generic", e.getMessage()));
 		}
 		
-
 		return errors;
 	}
 
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
 		setCanDelete(Boolean.TRUE);
+		canChangeExternalManagement=Boolean.TRUE;
 		iId = null; iName = null; iDeptCode = null; iStatusType = null; iAbbv=null; iDistPrefPriority = 0;
 		iIsExternal = false; iExtName = null; iExtAbbv = null;
         iAllowReqTime = false; iAllowReqRoom = false;
@@ -136,7 +137,15 @@ public class DepartmentEditForm extends ActionForm {
 		this.canDelete = canDelete;
 	}
 
-	public boolean getIsExternal() { return iIsExternal; }
+    public Boolean getCanChangeExternalManagement() {
+        return canChangeExternalManagement;
+    }
+
+    public void setCanChangeExternalManagement(Boolean canChangeExternalManagement) {
+        this.canChangeExternalManagement = canChangeExternalManagement;
+    }
+
+    public boolean getIsExternal() { return iIsExternal; }
 	public void setIsExternal(boolean isExternal) { iIsExternal = isExternal; }
     public boolean getAllowReqTime() { return iAllowReqTime; }
     public void setAllowReqTime(boolean allowReqTime) { iAllowReqTime = allowReqTime; }
@@ -165,6 +174,17 @@ public class DepartmentEditForm extends ActionForm {
 		setExtAbbv(department.getExternalMgrAbbv());
 		setExtName(department.getExternalMgrLabel());
 		setCanDelete(Boolean.TRUE);
+		if (department.getSolverGroup()!=null) 
+		    setCanDelete(Boolean.FALSE);
+		setCanChangeExternalManagement(Boolean.TRUE);
+		if (!department.getSubjectAreas().isEmpty()) {
+		    setCanChangeExternalManagement(Boolean.FALSE);
+		} else if (department.isExternalManager()) {
+            int nrExtManaged = ((Number)new DepartmentDAO().getSession().
+                    createQuery("select count(c) from Class_ c where c.managingDept.uniqueId=:deptId").
+                    setLong("deptId", department.getUniqueId()).uniqueResult()).intValue();
+            if (nrExtManaged>0) setCanChangeExternalManagement(Boolean.FALSE);
+		}
         setAllowReqRoom(department.isAllowReqRoom()!=null && department.isAllowReqRoom().booleanValue());
         setAllowReqTime(department.isAllowReqTime()!=null && department.isAllowReqTime().booleanValue());
 	}
@@ -252,6 +272,7 @@ public class DepartmentEditForm extends ActionForm {
 			department.setExternalMgrAbbv(getExtAbbv());
             department.setAllowReqRoom(new Boolean(getAllowReqRoom()));
             department.setAllowReqTime(new Boolean(getAllowReqTime()));
+
 			dao.saveOrUpdate(department);
 //			if( acadSession != null) {
 //				session.saveOrUpdate(acadSession);
