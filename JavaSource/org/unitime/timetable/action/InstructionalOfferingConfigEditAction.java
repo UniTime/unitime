@@ -1221,7 +1221,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
             childSubparts = new HashSet();
             ioc.addToschedulingSubparts(subpart);
 
-            if (md<0 && !ioc.isUnlimitedEnrollment().booleanValue()) {
+            if (md<0 && !ioc.isUnlimitedEnrollment().booleanValue() && rg!=null) {
 	            // Add default room group pref of classroom
 	            HashSet prefs = new HashSet();
 	            RoomGroupPref rgp = new RoomGroupPref();
@@ -1349,7 +1349,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
 	                }
 
 	                // Check if changed to Department and is not unlimited enroll
-	                if (md<0 && !ioc.isUnlimitedEnrollment().booleanValue()) {
+	                if (md<0 && !ioc.isUnlimitedEnrollment().booleanValue() && rg!=null) {
 	                    // Add default room group pref of classroom
 	    	            RoomGroupPref rgp = new RoomGroupPref();
 	    	            rgp.setPrefLevel(
