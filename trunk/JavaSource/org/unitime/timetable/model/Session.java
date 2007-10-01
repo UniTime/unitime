@@ -34,6 +34,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
+import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.timetable.model.base.BaseSession;
@@ -90,11 +91,24 @@ public class Session extends BaseSession implements Comparable {
 	 * @throws HibernateException
 	 */
 	public static void deleteSessionById(Long id) throws HibernateException {
-		Session sessn = Session.getSessionById(id);
-		if (sessn != null) {
-			(new SessionDAO()).delete(sessn);
+		org.hibernate.Session hibSession = new SessionDAO().getSession();
+		Transaction tx = null;
+		try {
+		    tx = hibSession.beginTransaction();
+		    Session session = new SessionDAO().get(id, hibSession);
+            hibSession.createQuery(
+                    "delete StudentClassEnrollment e where e.student.uniqueId in " +
+                    "(select s.uniqueId from Student s where s.session.uniqueId=:sessionId)").
+                    setLong("sessionId", id).
+                    executeUpdate();
+		    hibSession.delete(session);
+		    tx.commit();
+		} catch (HibernateException e) {
+		    try {
+                if (tx!=null && tx.isActive()) tx.rollback();
+            } catch (Exception e1) { }
+            throw e;
 		}
-
 	}
 
 	public void saveOrUpdate() throws HibernateException {
