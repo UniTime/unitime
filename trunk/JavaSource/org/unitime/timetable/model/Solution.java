@@ -754,15 +754,13 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		}
 		
 		hibSession.createQuery(
-				"delete StudentEnrollment x where x in "+
-				" ( select s from StudentEnrollment s where s.solution.uniqueId=:solutionId ) ")
-				.setInteger("solutionId", getUniqueId().intValue())
+				"delete StudentEnrollment x where x.solution.uniqueId=:solutionId ")
+				.setLong("solutionId", getUniqueId().longValue())
 				.executeUpdate();
 		
 		hibSession.createQuery(
-				"delete JointEnrollment x where x in "+
-				" ( select j from JointEnrollment j where j.solution.uniqueId=:solutionId ) ")
-				.setInteger("solutionId", getUniqueId().intValue())
+				"delete JointEnrollment x where x.solution.uniqueId=:solutionId ")
+				.setLong("solutionId", getUniqueId().longValue())
 				.executeUpdate();
 
 		deleteObjects(
@@ -784,8 +782,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 				);
 		
 		hibSession.createQuery(
-				"delete Assignment x where x in "+
-				" ( select a from Assignment a where a.solution.uniqueId=:solutionId ) ")
+				"delete Assignment x where x.solution.uniqueId=:solutionId ")
 				.setInteger("solutionId", getUniqueId().intValue())
 				.executeUpdate();
 		
