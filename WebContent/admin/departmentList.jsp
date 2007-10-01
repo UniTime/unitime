@@ -23,11 +23,11 @@
 <%@ page import="org.unitime.timetable.model.Settings"%>
 <%@ page import="org.unitime.commons.web.Web"%>
 <%@ page import="org.unitime.timetable.model.ChangeLog"%>
+<%@ page import="org.unitime.timetable.form.DepartmentListForm" %>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld"	prefix="bean"%>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld"	prefix="html"%>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic"%>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
-
 <TABLE width="98%" border="0" cellspacing="0" cellpadding="3">
 	<TR>
 		<TD align="right">
@@ -53,10 +53,11 @@
 	</TR>
 </TABLE>
 
-<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+<TABLE width="98%" border="0" cellspacing="0" cellpadding="3">
 
 	<%
-				boolean dispLastChanges = (
+		DepartmentListForm frm = (DepartmentListForm) request.getAttribute("departmentListForm");
+		boolean dispLastChanges = (
 				!"no".equals(Settings.getSettingValue(Web.getUser(session),
 					Constants.SETTINGS_DISP_LAST_CHANGES)));
 
@@ -80,7 +81,7 @@
 		id="bldg">
 		<%
 		org.unitime.timetable.model.Department d = (org.unitime.timetable.model.Department) bldg;
-		if (!d.getSubjectAreas().isEmpty()
+		if (frm.getShowUnusedDepts() || !d.getSubjectAreas().isEmpty()
 			|| !d.getTimetableManagers().isEmpty()
 			|| d.isExternalManager().booleanValue()) {
 				
@@ -169,11 +170,18 @@
 
 <TABLE width="98%" border="0" cellspacing="0" cellpadding="3">
 	<TR>
-		<TD align="right" class="WelcomeRowHead">
-		&nbsp;
+		<TD align="right" colspan="2">
+			<tt:section-header/>
 		</TD>
 	</TR>
 	<TR>
+		<TD align="left">
+			<html:form action="/departmentList">
+				Show all departments (including departments with no manager and no subject area):
+				<html:hidden property="op" value="Apply"/>
+				<html:checkbox property="showUnusedDepts" onchange="submit()"/>
+			</html:form>
+		</TD>
 		<TD align="right">
 				<TABLE align="right" cellspacing="0" cellpadding="2" class="FormWithNoPadding">
 					<TR><TD nowrap>
@@ -183,7 +191,7 @@
 							</html:submit>
 						</html:form>
 					</TD><TD nowrap>
-						<input type='button' onclick="document.location='departmentList.do?op=Export%20PDF';" title='Export PDF (Alt+P)' accesskey="P" class="btn" value="Export PDF">
+						<html:submit onclick="displayLoading();" property="op" value="Export PDF" title='Export PDF (Alt+P)' accesskey="P" styleClass="btn"/>
 					</TD></TR>
 				</TABLE>
 		</TD>
