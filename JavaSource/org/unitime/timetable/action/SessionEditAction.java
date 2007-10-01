@@ -31,6 +31,7 @@ import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.apache.struts.actions.LookupDispatchAction;
 import org.hibernate.HibernateException;
@@ -138,6 +139,14 @@ public class SessionEditAction extends LookupDispatchAction {
 		 			 new String[] {Roles.ADMIN_ROLE} )) {
 		  throw new Exception ("Access Denied.");
 		}
+        
+        if (Session.getAllSessions().size()==1) {
+            ActionMessages errors = new ActionMessages();
+            errors.add("sessionId", new ActionMessage("errors.generic", "Last academic session cannot be deleted -- there needs to be at least one academic session present."));
+            saveErrors(request, errors);
+            return mapping.findForward("showEdit");
+            
+        }
 
 		SessionEditForm sessionEditForm = (SessionEditForm) form;		
 		Long id =  new Long(Long.parseLong(request.getParameter("sessionId")));
