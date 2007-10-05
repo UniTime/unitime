@@ -95,7 +95,7 @@ public class ItypeDescListAction extends Action {
 					
 				    // Add to web table
 				    webTable.addLine(
-			        	"onclick=\"document.location.href='itypeDescEdit.do?op=edit&id=" + itypeDesc.getItype() + "';\"",
+				        null,//"onclick=\"document.location.href='itypeDescEdit.do?op=edit&id=" + itypeDesc.getItype() + "';\"",
 			        	new String[] {itypeDesc.getItype().toString(),
 			        					itypeDesc.getAbbv(), 
 			        					itypeDesc.getDesc(),
