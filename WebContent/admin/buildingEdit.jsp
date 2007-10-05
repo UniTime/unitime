@@ -34,9 +34,9 @@
 				<logic:equal name="buildingEditForm" property="op" value="Save">
 				Add
 				</logic:equal>
-				<logic:notEqual name="buildingEditForm" property="op" value="Update">
+				<logic:equal name="buildingEditForm" property="op" value="Update">
 				Edit
-				</logic:notEqual>
+				</logic:equal>
 				Building
 				</DIV>
 			</TD>
