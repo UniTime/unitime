@@ -379,7 +379,7 @@ public class TimePattern extends BaseTimePattern implements Comparable {
      * @param pattern given time pattern (from different academic session)
      * @return
      */
-    public TimePattern getMatchingTimePattern(Long sessionId, TimePattern pattern) {
+    public static TimePattern getMatchingTimePattern(Long sessionId, TimePattern pattern) {
         //if exact time -> return exact time
         if (pattern.getType()==sTypeExactTime) {
             return findExactTime(sessionId);
@@ -441,7 +441,7 @@ public class TimePattern extends BaseTimePattern implements Comparable {
      * @param timePref given time preference (from different academic session)
      * @return
      */
-    public TimePref getMatchingTimePreference(Long sessionId, TimePref timePref) {
+    public static TimePref getMatchingTimePreference(Long sessionId, TimePref timePref) {
         TimePatternModel oldModel = timePref.getTimePatternModel();
         TimePattern newTimePattern = getMatchingTimePattern(sessionId, timePref.getTimePattern());
         if (newTimePattern==null) {
