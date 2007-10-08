@@ -192,6 +192,17 @@ public class TimePattern extends BaseTimePattern implements Comparable {
     	return (TimePattern)list.get(0);
     }
     
+    public static TimePattern findExactTime(Long sessionId) {
+        List list = (new TimePatternDAO()).getSession().
+        createQuery("select distinct p from TimePattern as p "+
+                    "where p.session.uniqueId=:sessionId and " +
+                    "p.type="+sTypeExactTime).
+                    setLong("sessionId",sessionId.longValue()).
+                    setCacheable(true).list();
+        if (list==null || list.isEmpty()) return null;
+        return (TimePattern)list.get(0);        
+    }
+    
     /**
      * Returns time string only. The subclasses append the type 
      */
@@ -331,5 +342,140 @@ public class TimePattern extends BaseTimePattern implements Comparable {
 		newTimePattern.setVisible(isVisible());
 		return newTimePattern;
 	}
+	
+	/**
+	 * Return true, if this time pattern contains all times and days of the given time pattern 
+	 * and also the number of meetings and the number of minutes per meeting are the same for both patterns.
+	 * @param other given pattern (the smaller one)
+	 * @param strongComparison if true, both patterns must have the same number of slots per meetings and break times
+	 * @return true if the given pattern can be mapped to this pattern
+	 */
+	public boolean contains(TimePattern other, boolean strongComparison) {
+	    if (getNrMeetings()!=other.getNrMeetings()) return false;
+	    if (getMinPerMtg()!=other.getMinPerMtg()) return false;
+	    if (strongComparison && getBreakTime()!=other.getBreakTime()) return false;
+	    if (strongComparison && getSlotsPerMtg()!=other.getSlotsPerMtg()) return false;
+	    return getDays().containsAll(other.getDays()) && getTimes().contains(other.getTimes());
+	}
 
+    /**
+     * Return true, if this time pattern contains the same times and days as the given time pattern 
+     * and also the number of meetings and the number of minutes per meeting are the same for both patterns.
+     * @param other given pattern
+     * @param strongComparison if true, both patterns must have the same number of slots per meetings and break times
+     * @return true if the given pattern can be mapped to this pattern
+     */
+    public boolean match(TimePattern other, boolean strongComparison) {
+        if (getNrMeetings()!=other.getNrMeetings()) return false;
+        if (getMinPerMtg()!=other.getMinPerMtg()) return false;
+        if (strongComparison && getBreakTime()!=other.getBreakTime()) return false;
+        if (strongComparison && getSlotsPerMtg()!=other.getSlotsPerMtg()) return false;
+        return getDays().equals(other.getDays()) && getTimes().equals(other.getTimes());
+    }
+
+    /**
+     * Return best matching time pattern for the given time pattern
+     * @param sessionId id of academic session from which the returned time pattern should be
+     * @param pattern given time pattern (from different academic session)
+     * @return
+     */
+    public TimePattern getMatchingTimePattern(Long sessionId, TimePattern pattern) {
+        //if exact time -> return exact time
+        if (pattern.getType()==sTypeExactTime) {
+            return findExactTime(sessionId);
+        }
+        
+        //consider all time patterns with the same number of meeting and number of minutes per meeting
+	    TreeSet list = new TreeSet( 
+	        (new TimePatternDAO()).getSession().
+	        createQuery("select distinct p from TimePattern as p "+
+                        "where p.session.uniqueId=:sessionId and "+
+                        "p.minPerMtg = :minPerMtg and p.nrMeetings = :nrMeetings").
+                        setLong("sessionId",sessionId.longValue()).
+                        setInteger("minPerMtg",pattern.getMinPerMtg().intValue()).
+                        setInteger("nrMeetings",pattern.getNrMeetings().intValue()).
+                        setCacheable(true).list());
+	    
+        //look for strongly matching pattern first (among visible patterns)
+	    for (Iterator i=list.iterator();i.hasNext();) {
+	        TimePattern tp = (TimePattern)i.next();
+	        if (tp.isVisible() && tp.match(pattern,true)) return tp;
+	    }
+
+	    //look for weakly matching pattern first (among visible patterns)
+        for (Iterator i=list.iterator();i.hasNext();) {
+            TimePattern tp = (TimePattern)i.next();
+            if (tp.isVisible() && tp.match(pattern,false)) return tp;
+        }
+	        
+        //look for pattern that contains all the times and days (among visible patterns, same slotsPerMtg/breakTime as well)
+        for (Iterator i=list.iterator();i.hasNext();) {
+            TimePattern tp = (TimePattern)i.next();
+            if (tp.isVisible() && tp.contains(pattern,true)) return tp;
+        }
+
+        //look for pattern that contains all the times and days (among visible patterns, slotsPerMtg/breakTime can differ)
+        for (Iterator i=list.iterator();i.hasNext();) {
+            TimePattern tp = (TimePattern)i.next();
+            if (tp.isVisible() && tp.contains(pattern,false)) return tp;
+        }
+
+        //look for pattern that contains all the times and days (among hidden patterns, same slotsPerMtg/breakTime as well)
+        for (Iterator i=list.iterator();i.hasNext();) {
+            TimePattern tp = (TimePattern)i.next();
+            if (!tp.isVisible() && tp.contains(pattern,true)) return tp;
+        }
+
+        //look for pattern that contains all the times and days (among hidden patterns, slotsPerMtg/breakTime can differ)
+        for (Iterator i=list.iterator();i.hasNext();) {
+            TimePattern tp = (TimePattern)i.next();
+            if (!tp.isVisible() && tp.contains(pattern,false)) return tp;
+        }
+        
+        return null;
+	}
+    
+    /**
+     * Return best matching time preference for the given time preference
+     * @param sessionId id of academic session from which the returned time preference should be
+     * @param timePref given time preference (from different academic session)
+     * @return
+     */
+    public TimePref getMatchingTimePreference(Long sessionId, TimePref timePref) {
+        TimePatternModel oldModel = timePref.getTimePatternModel();
+        TimePattern newTimePattern = getMatchingTimePattern(sessionId, timePref.getTimePattern());
+        if (newTimePattern==null) {
+            if (oldModel.countPreferences(PreferenceLevel.sRequired)==1) {
+                newTimePattern = findExactTime(sessionId);
+                if (newTimePattern==null) return null;
+                TimePatternModel newModel = newTimePattern.getTimePatternModel();
+                for (int d=0;d<oldModel.getNrDays();d++)
+                    for (int t=0;t<oldModel.getNrTimes();t++) {
+                        if (PreferenceLevel.sRequired.equals(oldModel.getPreference(d, t))) {
+                            newModel.setExactDays(oldModel.getDayCode(d));
+                            newModel.setExactStartSlot(oldModel.getStartSlot(t));
+                            TimePref newTimePref = new TimePref();
+                            newTimePref.setPrefLevel(timePref.getPrefLevel());
+                            newTimePref.setTimePattern(newTimePattern);
+                            newTimePref.setPreference(newModel.getPreferences());
+                            return newTimePref;
+                        }
+                    }
+            }
+            return null;
+        }
+        TimePatternModel newModel = newTimePattern.getTimePatternModel();
+        if (newModel.isExactTime()) {
+            newModel.setExactDays(oldModel.getExactDays());
+            newModel.setExactStartSlot(oldModel.getExactStartSlot());
+        } else {
+            newModel.combineWith(oldModel, false);
+        }
+        TimePref newTimePref = new TimePref();
+        newTimePref.setPrefLevel(timePref.getPrefLevel());
+        newTimePref.setTimePattern(newTimePattern);
+        newTimePref.setPreference(newModel.getPreferences());
+        return newTimePref;
+    }
+	
 }
