@@ -18,10 +18,28 @@
  --%>
 <%@ page import="org.unitime.timetable.util.Constants" %>
 <%@ page import="org.unitime.commons.web.Web" %>
+<%@ page import="org.unitime.timetable.webutil.JavascriptFunctions" %>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean"%> 
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html"%>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic"%>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+
+<SCRIPT language="javascript">
+	<!--
+		<%= JavascriptFunctions.getJsConfirm(Web.getUser(session)) %>
+		
+		function confirmDelete() {
+			if (jsConfirm!=null && !jsConfirm)
+				return true;
+
+			if(confirm('The department and all associated data will be deleted. Continue?')) {
+				return true;
+			}
+			return false;
+		}
+
+	// -->
+</SCRIPT>
 
 <html:form action="/departmentEdit">
 	<html:hidden property="id"/>
@@ -51,7 +69,7 @@
 							<bean:message key="button.updateDepartment"/>
 						</html:submit>
 						<logic:equal name="departmentEditForm" property="canDelete" value="true">
-							<html:submit property="op" styleClass="btn" accesskey="D" titleKey="title.deleteDepartment">
+							<html:submit property="op" onclick="return confirmDelete();" styleClass="btn" accesskey="D" titleKey="title.deleteDepartment">
 								<bean:message key="button.deleteDepartment"/>
 							</html:submit>
 						</logic:equal>
@@ -190,7 +208,7 @@
 						<bean:message key="button.updateDepartment"/>
 					</html:submit>
 					<logic:equal name="departmentEditForm" property="canDelete" value="true">
-						<html:submit property="op" styleClass="btn" accesskey="D" titleKey="title.deleteDepartment">
+						<html:submit property="op" onclick="return confirmDelete();" styleClass="btn" accesskey="D" titleKey="title.deleteDepartment">
 							<bean:message key="button.deleteDepartment"/>
 						</html:submit>
 					</logic:equal>
