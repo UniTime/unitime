@@ -106,6 +106,15 @@ public class LookupTables {
     }
 
     /**
+     * Get all departments that are not external and store it in request object
+     * @param request
+     * @throws Exception
+     */
+    public static void setupNonExternalDepts(HttpServletRequest request, Long sessionId) throws Exception {
+        request.setAttribute(Department.DEPT_ATTR_NAME, Department.findAllNonExternal(sessionId));
+    }
+
+    /**
      * Get All Depts and store it in request object
      * @param request
      * @throws Exception
