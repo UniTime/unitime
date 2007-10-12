@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.action;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -36,12 +37,28 @@ import org.hibernate.Transaction;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.SubjectAreaEditForm;
+import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.ChangeLog;
+import org.unitime.timetable.model.ClassInstructor;
+import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.DepartmentRoomFeature;
+import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.DistributionObject;
+import org.unitime.timetable.model.DistributionPref;
+import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.Roles;
+import org.unitime.timetable.model.Room;
+import org.unitime.timetable.model.RoomDept;
+import org.unitime.timetable.model.RoomFeaturePref;
+import org.unitime.timetable.model.RoomGroupPref;
+import org.unitime.timetable.model.RoomPref;
+import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.SubjectArea;
+import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.util.Constants;
@@ -93,14 +110,14 @@ public class SubjectAreaEditAction extends Action {
 		
         // Add
         if(op.equals(rsc.getMessage("button.addSubjectArea"))) {
-    		LookupTables.setupDepts(request, (Long)user.getAttribute(Constants.SESSION_ID_ATTR_NAME));
+    		LookupTables.setupNonExternalDepts(request, (Long)user.getAttribute(Constants.SESSION_ID_ATTR_NAME));
         	return mapping.findForward("addSubjectArea");
         }
         
         // Edit
         if(op.equals(rsc.getMessage("op.edit"))) {
             doLoad(request, frm);
-    		LookupTables.setupDepts(request, (Long)user.getAttribute(Constants.SESSION_ID_ATTR_NAME));
+    		LookupTables.setupNonExternalDepts(request, (Long)user.getAttribute(Constants.SESSION_ID_ATTR_NAME));
         	return mapping.findForward("editSubjectArea");
         }
         
@@ -127,7 +144,7 @@ public class SubjectAreaEditAction extends Action {
     	
     	if (errors!=null && errors.size()>0) {
 	        saveErrors(request, errors);
-			LookupTables.setupDepts(request, (Long)user.getAttribute(Constants.SESSION_ID_ATTR_NAME));
+			LookupTables.setupNonExternalDepts(request, (Long)user.getAttribute(Constants.SESSION_ID_ATTR_NAME));
 	        if (frm.getUniqueId()!=null)
 	        	return mapping.findForward("editSubjectArea");
 	        else
@@ -221,6 +238,7 @@ public class SubjectAreaEditAction extends Action {
 			DepartmentDAO ddao = new DepartmentDAO();
 			
 			SubjectArea sa = null;
+			Department oldDept = null;
 			
 			hibSession = sdao.getSession();
 			tx = hibSession.beginTransaction();
@@ -235,8 +253,117 @@ public class SubjectAreaEditAction extends Action {
 			sa.setSession(
 					org.unitime.timetable.model.Session.getCurrentAcadSession(
 							Web.getUser( request.getSession() )));
-	        sa.setSubjectAreaAbbreviation(frm.getAbbv());        
-	        sa.setDepartment(dept);
+	        sa.setSubjectAreaAbbreviation(frm.getAbbv());
+	        if (sa.getDepartment()!=null && !dept.equals(sa.getDepartment())) {
+	            HashSet availableRooms = new HashSet();
+	            HashSet availableBuildings = new HashSet();
+	            for (Iterator i=dept.getRoomDepts().iterator();i.hasNext();) {
+	                RoomDept roomDept = (RoomDept)i.next();
+	                availableRooms.add(roomDept.getRoom());
+	                if (roomDept.getRoom() instanceof Room)
+	                    availableBuildings.add(((Room)roomDept.getRoom()).getBuilding());
+	            }
+	            for (Iterator i=sa.getCourseOfferings().iterator();i.hasNext();) {
+	                CourseOffering co = (CourseOffering)i.next();
+	                if (!co.getIsControl() || co.getInstructionalOffering()==null) continue;
+	                for (Iterator j=co.getInstructionalOffering().getInstrOfferingConfigs().iterator();j.hasNext();) {
+	                    InstrOfferingConfig ioc = (InstrOfferingConfig)j.next();
+	                    for (Iterator k=ioc.getSchedulingSubparts().iterator();k.hasNext();) {
+	                        SchedulingSubpart ss = (SchedulingSubpart)k.next();
+	                        if (!ss.getManagingDept().isExternalManager()) {
+	                            for (Iterator l=ss.getPreferences().iterator();l.hasNext();) {
+	                                Preference p = (Preference)l.next();
+	                                if (p instanceof TimePref) continue;
+	                                if (p instanceof RoomPref) {
+	                                    RoomPref rp = (RoomPref)p;
+	                                    if (!availableRooms.contains(rp.getRoom())) l.remove();
+                                    } else if (p instanceof BuildingPref) {
+                                        BuildingPref bp = (BuildingPref)p;
+                                        if (!availableBuildings.contains(bp.getBuilding())) l.remove();
+	                                } else if (p instanceof RoomFeaturePref) {
+	                                    RoomFeaturePref rfp = (RoomFeaturePref)p;
+	                                    if (rfp.getRoomFeature() instanceof DepartmentRoomFeature) l.remove();
+	                                } else if (p instanceof RoomGroupPref) {
+	                                    RoomGroupPref rgp = (RoomGroupPref)p;
+	                                    if (!rgp.getRoomGroup().isGlobal()) l.remove();
+	                                }
+	                            }
+	                            hibSession.saveOrUpdate(ss);
+	                        }
+	                        for (Iterator l=ss.getClasses().iterator();l.hasNext();) {
+	                            Class_ c = (Class_)l.next();
+	                            if (!c.getManagingDept().isExternalManager()) {
+	                                for (Iterator m=c.getPreferences().iterator();m.hasNext();) {
+	                                    Preference p = (Preference)m.next();
+	                                    if (p instanceof TimePref) continue;
+	                                    if (p instanceof RoomPref) {
+	                                        RoomPref rp = (RoomPref)p;
+	                                        if (!availableRooms.contains(rp.getRoom())) m.remove();
+	                                    } else if (p instanceof BuildingPref) {
+	                                        BuildingPref bp = (BuildingPref)p;
+	                                        if (!availableBuildings.contains(bp.getBuilding())) m.remove();
+	                                    } else if (p instanceof RoomFeaturePref) {
+	                                        RoomFeaturePref rfp = (RoomFeaturePref)p;
+	                                        if (rfp.getRoomFeature() instanceof DepartmentRoomFeature) m.remove();
+	                                    } else if (p instanceof RoomGroupPref) {
+	                                        RoomGroupPref rgp = (RoomGroupPref)p;
+	                                        if (!rgp.getRoomGroup().isGlobal()) m.remove();
+	                                    }
+	                                }
+	                                c.setManagingDept(dept);
+	                            }
+	                            for (Iterator m=c.getClassInstructors().iterator();m.hasNext();) {
+	                                ClassInstructor ci = (ClassInstructor)m.next();
+	                                DepartmentalInstructor newInstructor = null;
+	                                if (ci.getInstructor().getExternalUniqueId()!=null) {
+	                                    newInstructor = DepartmentalInstructor.findByPuidDepartmentId(
+	                                            ci.getInstructor().getExternalUniqueId(), dept.getUniqueId());
+	                                }
+	                                ci.getInstructor().getClasses().remove(ci);
+	                                hibSession.saveOrUpdate(ci.getInstructor());
+                                    if (newInstructor!=null) {
+                                        ci.setInstructor(newInstructor);
+                                        newInstructor.getClasses().add(ci);
+                                        hibSession.saveOrUpdate(newInstructor);
+                                    } else {
+                                        m.remove();
+                                        hibSession.delete(ci);
+                                    }
+	                            }
+	                            hibSession.saveOrUpdate(c);
+	                        }
+	                    }
+	                }
+	            }
+	            
+	            for (Iterator i=sa.getDepartment().getPreferences().iterator();i.hasNext();) {
+	                Preference p = (Preference)i.next();
+	                if (p instanceof DistributionPref) {
+	                    DistributionPref dp = (DistributionPref)p;
+	                    boolean change = true;
+	                    for (Iterator j=dp.getOrderedSetOfDistributionObjects().iterator();j.hasNext();) {
+	                        DistributionObject dobj = (DistributionObject)j.next();
+	                        if (dobj.getPrefGroup() instanceof SchedulingSubpart) {
+	                            SchedulingSubpart ss = (SchedulingSubpart)dobj.getPrefGroup();
+	                            if (!ss.getControllingCourseOffering().getSubjectArea().equals(sa)) change=false;
+	                             break;
+	                        } else if (dobj.getPrefGroup() instanceof Class_) {
+	                            Class_ c = (Class_)dobj.getPrefGroup();
+	                            if (!c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea().equals(sa)) change=false;
+                                break;
+	                        }
+	                    }
+	                    if (change) {
+                            dp.setOwner(dept);
+                            hibSession.saveOrUpdate(dp);
+	                    }
+	                }
+	            }
+	            oldDept = sa.getDepartment();
+	            sa.setDepartment(dept);
+	        } else if (sa.getDepartment()==null) {
+	            sa.setDepartment(dept);
+	        }
 	        sa.setExternalUniqueId(frm.getExternalId());
 	        sa.setShortTitle(frm.getShortTitle());
 	        sa.setLongTitle(frm.getLongTitle());
@@ -257,6 +384,9 @@ public class SubjectAreaEditAction extends Action {
                     dept);
 			hibSession.flush();
 			hibSession.refresh(org.unitime.timetable.model.Session.getCurrentAcadSession( Web.getUser(request.getSession()) ));
+			if (oldDept!=null) {
+			    hibSession.refresh(oldDept); hibSession.refresh(sa.getDepartment());
+			}
 		}
 		catch (Exception e) {
 			if (tx!=null)
