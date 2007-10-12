@@ -56,6 +56,9 @@ public class SubjectAreaEditForm extends ActionForm {
 	private Boolean scheduleBkOnly;
 	private Boolean pseudo;
 	
+	private boolean canDelete;
+	private boolean canChangeDepartment;
+	
 	/*
 	 * Generated Methods
 	 */
@@ -76,8 +79,8 @@ public class SubjectAreaEditForm extends ActionForm {
             (MessageResources) super.getServlet()
             	.getServletContext().getAttribute(Globals.MESSAGES_KEY);
         
-		if (op.equals(rsc.getMessage("button.deleteSubjectArea"))) {
-	        SubjectArea sa = new SubjectAreaDAO().get(getUniqueId());
+        if (op.equals(rsc.getMessage("button.deleteSubjectArea"))) {
+            SubjectArea sa = new SubjectAreaDAO().get(getUniqueId());
 			if (sa.hasOfferedCourses()) {
 				errors.add("uniqueid", new ActionMessage("errors.generic", "A subject area with offered classes cannot be deleted") );
 			}
@@ -127,6 +130,7 @@ public class SubjectAreaEditForm extends ActionForm {
 		department=null;
 		scheduleBkOnly=null;
 		pseudo=null;
+		canDelete=true; canChangeDepartment=true;
 	}
 
 	/** 
@@ -220,6 +224,11 @@ public class SubjectAreaEditForm extends ActionForm {
 		else
 			this.uniqueId = uniqueId;
 	}
+	
+	public boolean isCanDelete() { return canDelete; }
+	public void setCanDelete(boolean canDelete) { this.canDelete = canDelete; }
+	public boolean isCanChangeDepartment() { return canChangeDepartment; }
+	public void setCanChangeDepartment(boolean canChangeDepartment) { this.canChangeDepartment = canChangeDepartment; }
 	
 	
 }
