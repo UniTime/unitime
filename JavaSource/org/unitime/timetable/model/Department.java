@@ -74,7 +74,16 @@ public class Department extends BaseDepartment implements Comparable {
 				list());
 	}
 	
-	public static TreeSet findAllOwned(Long sessionId, TimetableManager mgr, boolean includeExternal) {
+    public static TreeSet findAllNonExternal(Long sessionId) {
+        return new TreeSet((new DepartmentDAO()).
+                getSession().
+                createQuery("select distinct d from Department as d where d.externalManager=0 and d.session.uniqueId=:sessionId").
+                setLong("sessionId", sessionId.longValue()).
+                setCacheable(true).
+                list());
+    }
+
+    public static TreeSet findAllOwned(Long sessionId, TimetableManager mgr, boolean includeExternal) {
 		TreeSet ret = new TreeSet(mgr.departmentsForSession(sessionId));
 		if (includeExternal && !mgr.isExternalManager()) ret.addAll(findAllExternal(sessionId));
 		return ret;
