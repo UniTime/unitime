@@ -40,7 +40,7 @@
   		id="timetable.pageLayout"
   		page="/layouts/pageLayout.jsp">
 		<put name="onLoadFunction" type="string" value="onLoad='doLoad()'" />
-		<put name="title" type="string" value="SMAS Timetabling Application" />
+		<put name="title" type="string" value="Timetabling Application" />
 		<put name="header" value="/header.jsp" />
 		<put name="body" value="" />
  		<put name="body2" value="" />
