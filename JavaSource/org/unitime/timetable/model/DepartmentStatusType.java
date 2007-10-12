@@ -170,4 +170,9 @@ public class DepartmentStatusType extends BaseDepartmentStatusType implements Co
 	public boolean applyDepartment() {
 		return apply(sApplyDepartment);
 	}
+	
+	/** Status is active when someone can edit, timetable or commit*/
+	public boolean isActive() {
+	    return canTimetable() || canCommit() || canManagerEdit() || canOwnerEdit() || canManagerLimitedEdit() || canOwnerLimitedEdit();
+	}
 }
