@@ -21,6 +21,7 @@ package org.unitime.commons.hibernate.util;
 
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -28,6 +29,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.MappingException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
@@ -35,6 +37,7 @@ import org.hibernate.mapping.Formula;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Property;
 import org.hibernate.mapping.Selectable;
+import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.util.ConfigHelper;
 import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.commons.hibernate.interceptors.LobCleanUpInterceptor;
@@ -308,5 +311,50 @@ public class HibernateUtil {
             return schema+"@"+url.substring(1+url.lastIndexOf(':'));
         }
         return schema;
+    }
+    
+    public static void clearCache() {
+        clearCache(null, true);
+    }
+    
+    public static void clearCache(Class persistentClass) {
+        clearCache(persistentClass, false);
+    }
+
+    public static void clearCache(Class persistentClass, boolean evictQueries) {
+        _RootDAO dao = new _RootDAO();
+        org.hibernate.Session hibSession = dao.getSession(); 
+        SessionFactory hibSessionFactory = hibSession.getSessionFactory();
+        if (persistentClass==null) {
+            for (Iterator i=hibSessionFactory.getAllClassMetadata().entrySet().iterator();i.hasNext();) {
+                Map.Entry entry = (Map.Entry)i.next();
+                String className = (String)entry.getKey();
+                ClassMetadata classMetadata = (ClassMetadata)entry.getValue();
+                try {
+                    hibSessionFactory.evict(Class.forName(className));
+                    for (int j=0;j<classMetadata.getPropertyNames().length;j++) {
+                        if (classMetadata.getPropertyTypes()[j].isCollectionType()) {
+                            try {
+                                hibSessionFactory.evictCollection(className+"."+classMetadata.getPropertyNames()[j]);
+                            } catch (MappingException e) {}
+                        }
+                    }
+                } catch (ClassNotFoundException e) {}
+            }
+        } else {
+            ClassMetadata classMetadata = hibSessionFactory.getClassMetadata(persistentClass);
+            hibSessionFactory.evict(persistentClass);
+            if (classMetadata!=null) {
+                for (int j=0;j<classMetadata.getPropertyNames().length;j++) {
+                    if (classMetadata.getPropertyTypes()[j].isCollectionType()) {
+                        try {
+                            hibSessionFactory.evictCollection(persistentClass.getClass().getName()+"."+classMetadata.getPropertyNames()[j]);
+                        } catch (MappingException e) {}
+                    }
+                }
+            }
+        }
+        if (evictQueries)
+            hibSessionFactory.evictQueries();
     }
 }
