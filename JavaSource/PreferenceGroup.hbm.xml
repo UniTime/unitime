@@ -641,7 +641,7 @@
 				foreign-key="FK_DEPT_SOLVER_GR"
 			/>		
 			<set name="instructors"
-				table="DEPARTMENTAL_INSTRUCTOR" >
+				table="DEPARTMENTAL_INSTRUCTOR" cascade="all-delete-orphan" inverse="true">
 		 		<cache include="non-lazy" usage="read-write"/>
 				<key column="DEPARTMENT_UNIQUEID"/>			
 				<one-to-many 
@@ -903,7 +903,7 @@
 				column="DEPARTMENT_UNIQUEID" 
 				not-null="true"
 				insert="true"
-				update="false"
+				update="true"
 				foreign-key="FK_INSTRUCTOR_DEPT"
 			/>
 	
