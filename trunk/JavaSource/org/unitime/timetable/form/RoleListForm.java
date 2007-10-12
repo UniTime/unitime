@@ -24,7 +24,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
 
 /**
  * MyEclipse Struts
@@ -34,85 +33,33 @@ import org.apache.struts.action.ActionMessage;
  * @struts:form name="roleListForm"
  */
 public class RoleListForm extends ActionForm {
-
-    // --------------------------------------------------------- Instance Variables
-
-    /**
-	 * Comment for <code>serialVersionUID</code>
-	 */
 	private static final long serialVersionUID = 3546920294733526840L;
 
-	/** primaryRole property */
-    private String primaryRole;
+    private Long iSessionId;
+    private Long iRoleId;
 
-    /** action property */
-    private String action;
-
-    // --------------------------------------------------------- Methods
-
-    /**
-     * Method validate
-     * @param mapping
-     * @param request
-     * @return ActionErrors
-     */
-    public ActionErrors validate(
-        ActionMapping mapping,
-        HttpServletRequest request) {
-
+    public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 		ActionErrors errors = new ActionErrors();
-
-		// Check Primary Role Selected
-		if(action!=null && action.trim().equals("selectRole")
-		        && (primaryRole==null || primaryRole.trim().length()==0) )
-			errors.add("primaryRole", new ActionMessage("errors.lookup.primaryRole.required"));
-
 		return errors;
     }
 
-    /**
-     * Method reset
-     * @param mapping
-     * @param request
-     */
     public void reset(ActionMapping mapping, HttpServletRequest request) {
-        primaryRole = "";
-        action = "";
+        iSessionId = null; iRoleId = null;
     }
 
-     /**
-     * Returns the primaryRole.
-     * @return String
-     */
-    public String getPrimaryRole() {
-        return primaryRole;
+    public Long getSessionId() {
+        return iSessionId;
     }
-
-    /**
-     * Set the primaryRole.
-     * @param primaryRole The primaryRole to set
-     */
-    public void setPrimaryRole(String primaryRole) {
-        this.primaryRole = primaryRole;
+    
+    public void setSessionId(Long sessionId) {
+        iSessionId = sessionId;
     }
-
-    public void setPrimaryRole(String primaryRole, Object yrTerm) {
-        if(yrTerm!=null && yrTerm.toString().trim().length()>0)
-            this.primaryRole = yrTerm.toString().trim()  + "-" + primaryRole;
-        else
-            this.primaryRole = primaryRole;
+    
+    public Long getRoleId() {
+        return iRoleId;
     }
-
-    /**
-     * @return Returns the action.
-     */
-    public String getAction() {
-        return action;
-    }
-    /**
-     * @param action The action to set.
-     */
-    public void setAction(String action) {
-        this.action = action;
+    
+    public void setRoleId(Long roleId) {
+        iRoleId = roleId;
     }
 }
