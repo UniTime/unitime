@@ -21,94 +21,15 @@
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean"%> 
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html"%>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic"%>
-
-	<html:form action="selectPrimaryRole.do" target="_top">
+<html:form action="selectPrimaryRole.do" target="_top">
+	<html:hidden property="sessionId"/>
+	<html:hidden property="roleId"/>
 	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
-		<TR>
-			<TD>
-				<DIV class="WelcomeRowHead">Select Session / Role</DIV>
-			</TD>
-		</TR>
-
-		<TR>
-			<TD>
-				&nbsp;<BR>
-				<% 
-					String list = request.getParameter("list");
-				   	if (list==null || !list.equals("Y")) 
-						out.println("A default role and/or academic session could not be assigned."); 
-				   	
-				   	java.util.Vector v = (java.util.Vector) request.getAttribute(Roles.USER_ROLES_ATTR_NAME);
-				   	if (v!=null && v.size()>0 ) 
-						out.println("Please select one of the academic session / role combinations below to proceed.<BR>&nbsp;");
-					else
-						out.println(
-							"<BR>&nbsp;<BR>&nbsp;<BR>&nbsp;<BR>" +
-							"<div align=center class=errorCell>" +
-							" 	<font class=errorMessage>" +
-							"   <b>Reason</b>: There are no academic sessions that can be edited by your user role.</font>" +
-							"</div><BR>&nbsp;");
-				%>
-				
-			</TD>
-		</TR>
-
-		<%
-			String oldRole = "";
-		%>
-		<TR>
-			<TD>
-			<TABLE border="0" cellspacing="0" cellpadding="1">
-			<logic:iterate scope="request" name="<%=Roles.USER_ROLES_ATTR_NAME%>" id="userRole">
-	            	<%
-		
-					String roleToken = userRole.toString();
-		            int indx = roleToken.indexOf("-");
-		            String acadYearTerm = roleToken.substring(0, indx);
-		            String currentRole = roleToken.substring(indx+1);
-	
-	            	if (!oldRole.equals(currentRole)) {
-	            	
-	            		String currentRoleLabel = currentRole;
-	            			
-			            out.print ("<TR><TD>&nbsp;<B><U>" + currentRoleLabel + "</U></B></TD><TD>&nbsp;</TD></TR>  ");
-			            oldRole = currentRole;
-		            }
-		            
-	            	%>
-	            	<TR>
-	            		<TD>&nbsp;</TD>
-	            		<TD>	            	
-			            	<html:radio property="primaryRole" value="<%=userRole.toString()%>" /> 
-			            	<%= acadYearTerm %>
-			            </TD>
-			</logic:iterate>
-			</TABLE>
-			</TD>
-		</TR>
-		
-		<TR>
-			<TD>
-				<DIV class="WelcomeRowHeadBlank">&nbsp;</DIV>
-			</TD>
-		</TR>
-
-		<%	if (v!=null && v.size()>0 ) { %>
-		<TR>
-			<TD align="right">
-				<html:hidden property="action" value="selectRole" />
-				<html:submit accesskey="A" titleKey="title.applySessionRole" styleClass="btn">
-					<bean:message key="button.applySessionRole" />
-				</html:submit>
-			</TD>
-		</TR>		
+		<% if (!"Y".equals(request.getParameter("list"))) { %>
+			<tr><td colspan='4'>
+				<i>A default user role and/or academic session could not be assigned. Please select one of the user role and academic session combinations below to proceed.<br><br></i>
+			</td></tr>
 		<% } %>
-		
-		<TR>
-			<TD>
-				&nbsp;<BR><html:errors /><BR>&nbsp;
-			</TD>
-		</TR>
+		<%=request.getAttribute(Roles.USER_ROLES_ATTR_NAME)%>
 	</TABLE>
-	</html:form>
-
+</html:form>
