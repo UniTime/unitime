@@ -35,6 +35,7 @@ import org.apache.struts.util.MessageResources;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.unitime.commons.User;
+import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.SubjectAreaEditForm;
 import org.unitime.timetable.model.BuildingPref;
@@ -177,7 +178,9 @@ public class SubjectAreaEditAction extends Action {
         frm.setShortTitle(sa.getShortTitle() !=null ? sa.getShortTitle() : "");
         frm.setLongTitle(sa.getLongTitle() !=null ? sa.getLongTitle() : "");
         frm.setPseudo(sa.isPseudoSubjectArea() !=null ? sa.isPseudoSubjectArea() : null);
-        frm.setScheduleBkOnly(sa.isScheduleBookOnly() !=null ? sa.isScheduleBookOnly() : null);		
+        frm.setScheduleBkOnly(sa.isScheduleBookOnly() !=null ? sa.isScheduleBookOnly() : null);
+        frm.setCanDelete(!sa.hasOfferedCourses());
+        frm.setCanChangeDepartment(sa.getDepartment()==null || sa.getDepartment().getSolverGroup()==null || sa.getDepartment().getSolverGroup().getCommittedSolution()==null);
 	}
 	
 	/**
@@ -209,12 +212,22 @@ public class SubjectAreaEditAction extends Action {
 	        	CourseOffering co = (CourseOffering) i.next();
 	        	hibSession.delete(co);
 	        }
-			
-			hibSession.delete(sa);
+	        
+            ChangeLog.addChange(
+                    hibSession, 
+                    request, 
+                    sa, 
+                    ChangeLog.Source.SUBJECT_AREA_EDIT, 
+                    ChangeLog.Operation.DELETE, 
+                    null, 
+                    sa.getDepartment());
+            
+            hibSession.delete(sa);
 			
 			tx.commit();
 			hibSession.flush();
-			hibSession.refresh(org.unitime.timetable.model.Session.getCurrentAcadSession( Web.getUser(request.getSession()) ));
+
+			HibernateUtil.clearCache();
 		}
 		catch (Exception e) {
 			if (tx!=null)
@@ -372,16 +385,17 @@ public class SubjectAreaEditAction extends Action {
 	        
 	        hibSession.saveOrUpdate(sa);			
 			
-	        tx.commit();			
-			hibSession.refresh(sa);
             ChangeLog.addChange(
-            		hibSession, 
+                    hibSession, 
                     request, 
                     sa, 
                     ChangeLog.Source.SUBJECT_AREA_EDIT, 
                     (frm.getUniqueId()==null?ChangeLog.Operation.CREATE:ChangeLog.Operation.UPDATE), 
                     sa, 
                     dept);
+
+            tx.commit();			
+			hibSession.refresh(sa);
 			hibSession.flush();
 			hibSession.refresh(org.unitime.timetable.model.Session.getCurrentAcadSession( Web.getUser(request.getSession()) ));
 			if (oldDept!=null) {
