@@ -84,7 +84,7 @@ public class SubjectListAction extends Action {
         
 	    User user = Web.getUser(webSession);	    
 	    SubjectListForm subjectListForm = (SubjectListForm) form;
-		subjectListForm.setSubjects(Session.getCurrentAcadSession(user).getSubjectAreas());
+		subjectListForm.setSubjects(SubjectArea.getSubjectAreaList(Session.getCurrentAcadSession(user).getUniqueId()));
 		
         if ("Export PDF".equals(request.getParameter("op"))) {
             boolean dispLastChanges = (!"no".equals(Settings.getSettingValue(user, Constants.SETTINGS_DISP_LAST_CHANGES)));
