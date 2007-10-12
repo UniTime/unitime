@@ -21,7 +21,6 @@ package org.unitime.timetable.model;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
@@ -73,8 +72,8 @@ public class Session extends BaseSession implements Comparable {
 	/*
 	 * @return all sessions
 	 */
-	public static ArrayList getAllSessions() throws HibernateException {
-		return (ArrayList) (new SessionDAO()).findAll();
+	public static TreeSet getAllSessions() throws HibernateException {
+		return new TreeSet((new SessionDAO()).findAll());
 	}
 
 	/**
@@ -128,23 +127,45 @@ public class Session extends BaseSession implements Comparable {
 	public boolean getIsDefault() throws HibernateException {
 		return isDefault();
 	}
-
+	
 	public static Session defaultSession() throws HibernateException {
-		Iterator it = getAllSessions().iterator();
-		Session sessn = null;
-		Calendar now = Calendar.getInstance();
-		Calendar t = Calendar.getInstance();
-		t.add(Calendar.DAY_OF_YEAR, (365 * 200));
-		while (it.hasNext()) {
-			Session sessn1 = (Session) it.next();
-			if (sessn1.getSessionBeginDateTime().before(t.getTime())
-					&& sessn1.getSessionBeginDateTime().after(now.getTime())) {
-				t.setTime(sessn1.getSessionBeginDateTime());
-				sessn = sessn1;
-				break;
-			}
+	    return defaultSession(getAllSessions());
+	}
+
+    public static Session defaultSession(ManagerRole role) throws HibernateException {
+        if (Roles.ADMIN_ROLE.equals(role.getRole().getReference()))
+            return defaultSession(getAllSessions());
+        else
+            return defaultSession(role.getTimetableManager().sessionsCanManage());
+    }
+
+    public static Session defaultSession(Set sessions) throws HibernateException {
+        if (sessions==null || sessions.isEmpty()) return null; // no session -> no default
+        TreeSet orderedSession = (sessions instanceof TreeSet?(TreeSet)sessions:new TreeSet(sessions));
+        
+        //try to pick among active sessions first (check that all active sessions are of the same initiative)
+        String initiative = null;
+        Session lastActive = null;
+        for (Iterator it = sessions.iterator();it.hasNext();) {
+            Session session = (Session)it.next();
+            if (session.getStatusType()==null || !session.getStatusType().isActive()) continue;
+            if (initiative==null) 
+                initiative = session.getAcademicInitiative();
+            else if (!initiative.equals(session.getAcademicInitiative()))
+                return null; // multiple initiatives -> no default
+            lastActive = session;
+        }
+        if (lastActive!=null) return lastActive; //return the last (most recent) active session
+        
+        //pick among all sessions (check that all sessions are of the same initiative)
+		for (Iterator it = sessions.iterator();it.hasNext();) {
+		    Session session = (Session)it.next();
+		    if (initiative==null) 
+		        initiative = session.getAcademicInitiative();
+		    else if (!initiative.equals(session.getAcademicInitiative())) 
+		        return null; // multiple initiatives -> no default
 		}
-		return sessn;
+		return (Session)orderedSession.last(); // return the last one, i.e., the most recent one
 	}
 
 	/**
@@ -177,7 +198,8 @@ public class Session extends BaseSession implements Comparable {
 	 * @return Returns the label.
 	 */
 	public String getLabel() {
-		return this.getAcademicTerm() + " " + this.getYear();
+		return getAcademicTerm() + " " + getYear() + 
+		    " ("+(getAcademicInitiative().length()>9?getAcademicInitiative().substring(0,9):getAcademicInitiative())+")";
 	}
 
 	public String toString() {
@@ -778,51 +800,16 @@ public class Session extends BaseSession implements Comparable {
 	}
 
 	public int compareTo(Object o) {
-		if (o == null || !(o instanceof Session))
-			return (-1);
+		if (o == null || !(o instanceof Session)) return -1;
 		Session s = (Session) o;
-
-		if (this.getUniqueId() != null && s.getUniqueId() != null
-				&& this.getUniqueId().equals(s.getUniqueId())) {
-			return (0);
-		}
-		if (this.getAcademicInitiative().equals(s.getAcademicInitiative())) {
-			if (this.getYear() == s.getYear()) {
-				if (this.getAcademicTerm() != null
-						&& s.getAcademicTerm() != null) {
-					if (this.getAcademicTerm().equals(s.getAcademicTerm())) {
-						return (0);
-					} else {
-						if (this.getAcademicTerm().equals("Fal")) {
-							return (1);
-						} else {
-							if (this.getAcademicTerm().equals("Sum")
-									&& s.getAcademicTerm().equals("Fal")) {
-								return (-1);
-							} else {
-								if (this.getAcademicTerm().equals("Sum")
-										&& s.getAcademicTerm().equals("Spr")) {
-									return (1);
-								} else {
-									return (-1);
-								}
-							}
-						}
-					}
-				} else {
-					return (-1);
-				}
-			} else {
-				if (this.getYear() > s.getYear()) {
-					return (1);
-				} else {
-					return (-1);
-				}
-			}
-		} else {
-			return (this.getAcademicInitiative().compareTo(s
-					.getAcademicInitiative()));
-		}
+		
+		int cmp = getAcademicInitiative().compareTo(s.getAcademicInitiative());
+		if (cmp!=0) return cmp;
+		
+		cmp = getSessionBeginDateTime().compareTo(s.getSessionBeginDateTime());
+		if (cmp!=0) return cmp;
+		
+		return getUniqueId().compareTo(s.getUniqueId());
 	}
 
 	public DatePattern getDefaultDatePatternNotNull() {
