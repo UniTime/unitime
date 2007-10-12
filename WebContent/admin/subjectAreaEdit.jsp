@@ -47,6 +47,8 @@
 
 <html:form method="post" action="subjectAreaEdit.do">
 <html:hidden name="subjectAreaEditForm" property="uniqueId" />
+	<html:hidden property="canDelete" />
+	<html:hidden property="canChangeDepartment" />
 	
 	<TABLE width="95%" border="0" cellspacing="0" cellpadding="3">
 
@@ -73,9 +75,11 @@
 							<bean:message key="button.updateSubjectArea"/>
 						</html:submit>
 						
-						<html:submit property="op" onclick="return confirmDelete();" styleClass="btn" accesskey="D" titleKey="title.deleteSubjectArea">
-							<bean:message key="button.deleteSubjectArea"/>
-						</html:submit>
+						<logic:equal name="subjectAreaEditForm" property="canDelete" value="true">
+							<html:submit property="op" onclick="return confirmDelete();" styleClass="btn" accesskey="D" titleKey="title.deleteSubjectArea">
+								<bean:message key="button.deleteSubjectArea"/>
+							</html:submit>
+						</logic:equal>
 					</logic:notEmpty>
 
 					<html:submit property="op" styleClass="btn" accesskey="B" titleKey="title.backToPrevious">
@@ -138,13 +142,22 @@
 		<TR>
 			<TD>Department:</TD>
 			<TD>
-				<html:select property="department"
-					onfocus="setUp();" 
-					onkeypress="return selectSearch(event, this);" 
-					onkeydown="return checkKey(event, this);" >
-					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
-					<html:options collection="<%=Department.DEPT_ATTR_NAME%>" property="uniqueId" labelProperty="label"/>
+				<logic:equal name="subjectAreaEditForm" property="canChangeDepartment" value="true">
+					<html:select property="department"
+						onfocus="setUp();" 
+						onkeypress="return selectSearch(event, this);" 
+						onkeydown="return checkKey(event, this);" >
+						<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
+						<html:options collection="<%=Department.DEPT_ATTR_NAME%>" property="uniqueId" labelProperty="label"/>
 					</html:select>
+				</logic:equal>
+				<logic:equal name="subjectAreaEditForm" property="canChangeDepartment" value="false">
+					<html:hidden property="department"/>
+					<html:select property="department" disabled="true">
+						<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
+						<html:options collection="<%=Department.DEPT_ATTR_NAME%>" property="uniqueId" labelProperty="label"/>
+					</html:select>
+				</logic:equal>
 			</TD>
 		</TR>
 
@@ -181,9 +194,11 @@
 						<bean:message key="button.updateSubjectArea"/>
 					</html:submit>
 					
-					<html:submit property="op" onclick="return confirmDelete();" styleClass="btn" accesskey="D" titleKey="title.deleteSubjectArea">
-						<bean:message key="button.deleteSubjectArea"/>
-					</html:submit>
+					<logic:equal name="subjectAreaEditForm" property="canDelete" value="true">
+						<html:submit property="op" onclick="return confirmDelete();" styleClass="btn" accesskey="D" titleKey="title.deleteSubjectArea">
+							<bean:message key="button.deleteSubjectArea"/>
+						</html:submit>
+					</logic:equal>
 				</logic:notEmpty>
 
 				<html:submit property="op" styleClass="btn" accesskey="B" titleKey="title.backToPrevious">
