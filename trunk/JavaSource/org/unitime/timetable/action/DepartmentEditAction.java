@@ -34,8 +34,10 @@ import org.hibernate.HibernateException;
 import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
+import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.DepartmentEditForm;
+import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Roles;
@@ -48,6 +50,7 @@ public class DepartmentEditAction extends Action {
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		try {
+		    
 			DepartmentEditForm myForm = (DepartmentEditForm) form;
 			MessageResources rsc = getResources(request);
 		
@@ -153,8 +156,17 @@ public class DepartmentEditAction extends Action {
                         setLong("deptId", department.getUniqueId()).
                         executeUpdate();
             }
+            ChangeLog.addChange(
+                    hibSession, 
+                    request, 
+                    department, 
+                    ChangeLog.Source.DEPARTMENT_EDIT, 
+                    ChangeLog.Operation.DELETE, 
+                    null, 
+                    null);
             hibSession.delete(department);
             tx.commit();
+            HibernateUtil.clearCache();
         } catch (HibernateException e) {
             try {
                 if (tx!=null && tx.isActive()) tx.rollback();
