@@ -150,7 +150,8 @@ public class ExportPreferences {
 			x.addAttribute("courseNbr",co.getCourseNbr());
 			x.addAttribute("projectedDemand",co.getProjectedDemand().toString());
 			x.addAttribute("isControl",co.getIsControl().toString());
-			x.addAttribute("permId",co.getPermId());
+			if (co.getPermId()!=null)
+			    x.addAttribute("permId",co.getPermId());
 		}
 		for (Iterator i=io.getInstrOfferingConfigs().iterator();i.hasNext();) {
 			InstrOfferingConfig c = (InstrOfferingConfig)i.next();
