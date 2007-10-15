@@ -230,11 +230,19 @@ public class Suggestions implements Serializable {
             }
             ret = new Suggestion(iSolver, initialAssignments, resolvedLectures, conflictsToResolve.values());
             if (placement!=null) ret.setHint(new Hint(iSolver, placement));
+            if (iHints!=null) {
+                for (Enumeration e=iHints.elements();e.hasMoreElements();) {
+                    Placement plac = (Placement)e.nextElement();
+                    Lecture lect = (Lecture)plac.variable();
+                    if (lect.getAssignment()!=null) lect.unassign(0);
+                }
+            }
             for (Enumeration e=unAssignedVariables.elements();e.hasMoreElements();) {
                 Lecture lect = (Lecture)e.nextElement();
                 if (lect.getAssignment()!=null)
                     lect.unassign(0);
             }
+            if (placement!=null) placement.variable().unassign(0);
             for (Iterator i=initialAssignments.values().iterator();i.hasNext();) {
                 Placement plac = (Placement)i.next();
                 Lecture lect = (Lecture)plac.variable();
