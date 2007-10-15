@@ -643,10 +643,15 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
 				if (p!=null) {
 					Placement ini = (Placement)initialAssignments.get(p.variable());
 					record.add(ini,p);
-					p.variable().assign(0,p);
 					Progress.getInstance(currentSolution().getModel()).info(p.variable().getName()+": "+(ini==null?"not assigned":ini.getName())+" &rarr; "+p.getName());
+                    if (ini!=null) p.variable().unassign(0);
 				}
 			}
+            for (Iterator i=hints.iterator();i.hasNext();) {
+                Hint hint = (Hint)i.next();
+                Placement p = hint.getPlacement((TimetableModel)currentSolution().getModel());
+                if (p!=null) p.variable().assign(0,p);
+            }
 			for (Enumeration e=currentSolution().getModel().unassignedVariables().elements();e.hasMoreElements();) {
 				Lecture lec = (Lecture)e.nextElement();
 				Placement p = (Placement)initialAssignments.get(lec);
