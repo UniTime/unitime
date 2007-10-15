@@ -58,13 +58,15 @@
 		<property
 			name="demand"
 			type="java.lang.Integer"
-			formula="( select /*+ RULE */ count(distinct cod.student_id) from %SCHEMA%.LASTLIKE_COURSE_DEMAND cod, 
+			formula="( select /*+ RULE */ count(distinct cod.student_id) from %SCHEMA%.LASTLIKE_COURSE_DEMAND cod, %SCHEMA%.STUDENT s, %SCHEMA%.SUBJECT_AREA sa, 
 				%SCHEMA%.course_offering co left outer join %SCHEMA%.course_offering cox on co.demand_offering_id=cox.uniqueid
-				where co.instr_offr_id = uniqueid and 
-				((cod.subject_area_id = co.subject_area_id and cod.course_nbr = co.course_nbr) or
-				(cod.subject_area_id = cox.subject_area_id and cod.course_nbr = cox.course_nbr)) )"
+				where co.instr_offr_id = uniqueid and co.subject_area_id = sa.uniqueid and cod.student_id = s.uniqueid and s.session_id = sa.session_id and
+				((co.perm_id is null and cod.subject_area_id = co.subject_area_id and cod.course_nbr = co.course_nbr) or
+				(co.perm_id is not null and co.perm_id = cod.course_perm_id) or
+				(cox.perm_id is null and cod.subject_area_id = cox.subject_area_id and cod.course_nbr = cox.course_nbr) or
+				(cox.perm_id is not null and cox.perm_id = cod.course_perm_id)))"
 		/>
-
+		
 		<property
 			name="projectedDemand"
 			type="java.lang.Integer"
