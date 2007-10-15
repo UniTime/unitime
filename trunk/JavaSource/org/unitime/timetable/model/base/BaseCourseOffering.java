@@ -68,7 +68,6 @@ public abstract class BaseCourseOffering  implements Serializable {
 		org.unitime.timetable.model.SubjectArea subjectArea,
 		org.unitime.timetable.model.InstructionalOffering instructionalOffering,
 		java.lang.Boolean isControl,
-		java.lang.String permId,
 		java.lang.Integer nbrExpectedStudents,
 		java.lang.String courseNbr) {
 
@@ -76,7 +75,6 @@ public abstract class BaseCourseOffering  implements Serializable {
 		this.setSubjectArea(subjectArea);
 		this.setInstructionalOffering(instructionalOffering);
 		this.setIsControl(isControl);
-		this.setPermId(permId);
 		this.setNbrExpectedStudents(nbrExpectedStudents);
 		this.setCourseNbr(courseNbr);
 		initialize();

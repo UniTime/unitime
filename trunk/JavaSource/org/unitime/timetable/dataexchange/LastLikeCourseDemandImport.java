@@ -142,7 +142,8 @@ public class LastLikeCourseDemandImport extends BaseImport {
 	private void loadCourseOfferings(Long sessionId) {
 		for (Iterator it = CourseOffering.findAll(sessionId).iterator(); it.hasNext();) {
 			CourseOffering offer = (CourseOffering) it.next();
-			courseOfferings.put(offer.getCourseNbr() + offer.getSubjectArea().getUniqueId().toString(), offer.getPermId());
+			if (offer.getPermId()!=null)
+			    courseOfferings.put(offer.getCourseNbr() + offer.getSubjectArea().getUniqueId().toString(), offer.getPermId());
 
 		}
 	}
