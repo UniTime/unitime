@@ -31,7 +31,6 @@ import java.util.Vector;
 import org.hibernate.LazyInitializationException;
 import org.hibernate.Query;
 import org.hibernate.Session;
-import org.hibernate.criterion.Restrictions;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.timetable.model.base.BaseCourseOffering;
@@ -72,7 +71,6 @@ public class CourseOffering extends BaseCourseOffering {
 		org.unitime.timetable.model.SubjectArea subjectArea,
 		org.unitime.timetable.model.InstructionalOffering instructionalOffering,
 		java.lang.Boolean isControl,
-		java.lang.String permId,
 		java.lang.Integer nbrExpectedStudents,
 		java.lang.String courseNbr) {
 
@@ -81,7 +79,6 @@ public class CourseOffering extends BaseCourseOffering {
 			subjectArea,
 			instructionalOffering,
 			isControl,
-			permId,
 			nbrExpectedStudents,
 			courseNbr);
 	}
@@ -202,8 +199,7 @@ public class CourseOffering extends BaseCourseOffering {
 		    co.setProjectedDemand(new Integer(0));
 		    co.setNbrExpectedStudents(new Integer(0));
 		    co.setIsControl(new Boolean(true));
-		    //FIXME hfernan - What is the perm id for a new course offering?
-		    co.setPermId("-1");
+		    co.setPermId(null);
 		    
 		    HashSet s = new HashSet();
 		    s.add(co);
@@ -330,15 +326,25 @@ public class CourseOffering extends BaseCourseOffering {
     }
     
     public List getCourseOfferingDemands() {
-    	return (new CourseOfferingDAO()).
-    		getSession().
-    		createCriteria(LastLikeCourseDemand.class).
-    		add(Restrictions.eq("subjectArea",getSubjectArea())).
-    		add(Restrictions.eq("courseNbr",getCourseNbr())).
-    		list();    	
+        if (getPermId()!=null)
+            return (new CourseOfferingDAO()).
+                getSession().
+                createQuery("select d from LastLikeCourseDemand d where d.coursePermId=:permId and d.subjectArea.session.uniqueId=:sessionId").
+                setString("permId",getPermId()).
+                setLong("sessionId",getSubjectArea().getSessionId()).
+                setCacheable(true).
+                list();
+        else 
+            return (new CourseOfferingDAO()).
+    		    getSession().
+    		    createQuery("select d from LastLikeCourseDemand d where d.subjectArea.uniqueId=:subjectAreaId and d.courseNbr=:courseNbr").
+    		    setLong("subjectAreaId",getSubjectArea().getUniqueId()).
+    		    setString("courseNbr",getCourseNbr()).
+    		    setCacheable(true).
+    		    list();    	
     }
     
-	//TODO: to distinguish between last like semester student demands and all student demands in the future
+    //TODO: to distinguish between last like semester student demands and all student demands in the future
     public List getLastLikeSemesterCourseOfferingDemands() {
     	return getCourseOfferingDemands();
     }
