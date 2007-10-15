@@ -1058,6 +1058,7 @@ CREATE TABLE `timetable`.`lastlike_course_demand` (
   PRIMARY KEY (`uniqueid`),
   INDEX `idx_ll_course_demand_course` (`subject_area_id`, `course_nbr`(10)),
   INDEX `idx_ll_course_demand_student` (`student_id`),
+  INDEX `idx_ll_course_demand_permid` (`course_perm_id`),
   CONSTRAINT `fk_ll_course_demand_student` FOREIGN KEY `fk_ll_course_demand_student` (`student_id`)
     REFERENCES `timetable`.`student` (`uniqueid`)
     ON DELETE CASCADE
