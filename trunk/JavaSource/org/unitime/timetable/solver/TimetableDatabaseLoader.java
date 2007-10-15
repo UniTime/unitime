@@ -2331,6 +2331,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 		
 
 		Hashtable demands = new Hashtable();
+		Hashtable demandsPermId = new Hashtable();
 		StringBuffer subjectAreas = new StringBuffer();
 		for (int i=0;i<iSolverGroup.length;i++) {
 			for (Iterator j=iSolverGroup[i].getDepartments().iterator();j.hasNext();) {
@@ -2346,13 +2347,15 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 		}
 			
 		if (subjectAreas.length()>0) {
-			Query q = hibSession.createQuery("select d.subjectArea.uniqueId, d.courseNbr, d.student.uniqueId "+
+			Query q = hibSession.createQuery("select d.subjectArea.uniqueId, d.courseNbr, d.student.uniqueId, d.coursePermId "+
 					"from LastLikeCourseDemand d where d.subjectArea.uniqueId in ("+subjectAreas+")");
 			for (Iterator i=q.iterate();i.hasNext();) {
 				Object[] d = (Object[])i.next();
 				Long subjectAreaId = (Long)d[0];
 				String courseNbr = (String)d[1];
 				Long studentId = (Long)d[2];
+				String coursePermId = (String)d[3];
+				
 				Hashtable demandsThisSubjArea = (Hashtable)demands.get(subjectAreaId);
 				HashSet studentIds = (HashSet)demandsThisSubjArea.get(courseNbr);
 				if (studentIds==null) {
@@ -2360,6 +2363,15 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 					demandsThisSubjArea.put(courseNbr, studentIds);
 				}
 				studentIds.add(studentId);
+				
+				if (coursePermId!=null) {
+				    studentIds = (HashSet)demandsPermId.get(coursePermId);
+	                if (studentIds==null) {
+	                    studentIds = new HashSet();
+	                    demandsPermId.put(coursePermId, studentIds);
+	                }
+	                studentIds.add(studentId);
+				}
 			}
 		}			
 			
@@ -2411,29 +2423,42 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         		CourseOffering course = (CourseOffering)i2.next();
 
         		Set studentIds = null;
-        		Hashtable demandsThisSubjArea = (Hashtable)demands.get(course.getSubjectArea().getUniqueId());
-        		if (demandsThisSubjArea!=null) {
-        			studentIds = (Set)demandsThisSubjArea.get(course.getCourseNbr());
-        		} else {
-        			studentIds = new HashSet(course.getCourseOfferingDemands().size());
-        			for (Iterator i3=course.getCourseOfferingDemands().iterator();i3.hasNext();) {
-                        LastLikeCourseDemand demand = (LastLikeCourseDemand)i3.next();
-        				studentIds.add(demand.getStudent().getUniqueId());
-        			}
-        		}
-        		if (course.getDemandOffering()!=null) {
-        			demandsThisSubjArea = (Hashtable)demands.get(course.getDemandOffering().getSubjectArea().getUniqueId());
-            		if (demandsThisSubjArea!=null) {
-            			if (studentIds==null) studentIds = new HashSet();
-            			studentIds.addAll((Set)demandsThisSubjArea.get(course.getDemandOffering().getCourseNbr()));
-            		} else {
-            			if (studentIds==null) 
-            				studentIds = new HashSet(course.getDemandOffering().getCourseOfferingDemands().size());
-            			for (Iterator i3=course.getDemandOffering().getCourseOfferingDemands().iterator();i3.hasNext();) {
+                Hashtable demandsThisSubjArea = (Hashtable)demands.get(course.getSubjectArea().getUniqueId());
+                if (demandsThisSubjArea!=null) {
+                    if (course.getPermId()!=null && demandsPermId.containsKey(course.getPermId()))
+                        studentIds = (Set)demandsPermId.get(course.getPermId());
+                    else
+                        studentIds = (Set)demandsThisSubjArea.get(course.getCourseNbr());
+                } else {
+                    List courseDemands = course.getCourseOfferingDemands();
+                    if (!courseDemands.isEmpty()) {
+                        studentIds = new HashSet(courseDemands.size());
+                        for (Iterator i3=courseDemands.iterator();i3.hasNext();) {
                             LastLikeCourseDemand demand = (LastLikeCourseDemand)i3.next();
-            				studentIds.add(demand.getStudent().getUniqueId());
-            			}
-            		}
+                            studentIds.add(demand.getStudent().getUniqueId());
+                        }
+                    }
+                }
+        		if (course.getDemandOffering()!=null) {
+                    demandsThisSubjArea = (Hashtable)demands.get(course.getDemandOffering().getSubjectArea().getUniqueId());
+                    if (demandsThisSubjArea!=null) {
+                        if (studentIds==null) studentIds = new HashSet();
+                        if (course.getDemandOffering().getPermId()!=null && demandsPermId.containsKey(course.getDemandOffering().getPermId())) {
+                            studentIds.addAll((Set)demandsPermId.get(course.getDemandOffering().getPermId()));
+                        } else {
+                            studentIds.addAll((Set)demandsThisSubjArea.get(course.getDemandOffering().getCourseNbr()));
+                        }
+                    } else {
+                        List courseDemands = course.getDemandOffering().getCourseOfferingDemands();
+                        if (!courseDemands.isEmpty()) {
+                            if (studentIds==null)
+                                studentIds = new HashSet(courseDemands.size());
+                            for (Iterator i3=courseDemands.iterator();i3.hasNext();) {
+                                LastLikeCourseDemand demand = (LastLikeCourseDemand)i3.next();
+                                studentIds.add(demand.getStudent().getUniqueId());
+                            }
+                        }
+                    }
         		}
         		
         		int courseLimit = -1;
