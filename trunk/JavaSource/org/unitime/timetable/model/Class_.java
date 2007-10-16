@@ -669,65 +669,6 @@ public class Class_ extends BaseClass_ {
     	return getSchedulingSubpart().effectiveDatePattern();
     }
 
-// This code should no longer be needed but I am keeping it here as a reference.
-//    public void setFacilityGroupUpdateSubpartIfNeeded(FacilityGroup group, org.hibernate.Session hibSession) {
-//    	if (group.equals(getFacilityGroup())) return; //same group -> no change
-//
-//    	if (getFacilityGroup()==null) {
-//    		super.setFacilityGroup(group); return;
-//    	}
-//
-//    	super.setFacilityGroup(group);
-//    	getPreferences().clear(); //clear my preferences
-//
-//    	deleteAllDistributionPreferences(hibSession);
-//
-//    	SchedulingSubpart subpart = getSchedulingSubpart();
-//    	if (subpart==null) return;
-//
-//    	Department mgrDept = getSchedulingSubpart().getManagingDept();
-//    	if (mgrDept==null) return;
-//
-//    	boolean clearSubpart = false;
-//
-//    	if (mgrDept.isExternalManager().booleanValue()) { //LLR/LAB
-//    		//FIXME: ?? not sure what to do with this
-//    		if (group.getReference().equals(Constants.FACILITY_GROUP_DEPT))
-//    			clearSubpart = true; //change to departmental
-//    	} else if (!group.getReference().equals(Constants.FACILITY_GROUP_DEPT)) { //deputy -> LLR/LAB
-//    		boolean allClassesSameFacility = true;
-//    		for (Iterator i=subpart.getClasses().iterator();i.hasNext();) {
-//    			Class_ c = (Class_)i.next();
-//    			if (!c.getFacilityGroup().equals(group)) {
-//    				allClassesSameFacility = false; break;
-//    			}
-//    		}
-//    		if (allClassesSameFacility)
-//    			clearSubpart = true; //all classes are now LLR / LAB -> subpart owner change to LLR / LAB
-//    	}
-//
-//    	if (clearSubpart) {
-//    		subpart.deleteAllDistributionPreferences(hibSession);
-//
-//    		//onwer of subpar changed -> clear subpart preferences, but keep time pattern
-//    		for (Iterator i=getSchedulingSubpart().getPreferences().iterator();i.hasNext();) {
-//    			Preference p = (Preference)i.next();
-//    			if (p instanceof TimePref) {
-//    				TimePref tp = (TimePref)p;
-//    				TimePatternModel m = tp.getTimePatternModel();
-//    				if (!group.getReference().equals(Constants.FACILITY_GROUP_DEPT))
-//    					m.weakenHardPreferences();
-//    				tp.setTimePatternModel(m);
-//    				hibSession.saveOrUpdate(tp);
-//    			} else {
-//    				i.remove();
-//    				hibSession.delete(p);
-//    			}
-//    		}
-//    		hibSession.saveOrUpdate(getSchedulingSubpart());
-//    	}
-//    }
-
     public boolean canUseHardTimePreferences(User user) {
     	if (user.isAdmin()) return true;
         TimetableManager tm = TimetableManager.getManager(user);
