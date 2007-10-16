@@ -27,7 +27,6 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.unitime.timetable.authenticate.jaas.DbAuthenticateModule;
 import org.unitime.timetable.model.User;
-import org.unitime.timetable.model.dao.UserDAO;
 
 /** 
  * 
@@ -45,7 +44,7 @@ public class UserEditForm extends ActionForm {
         
         if (iExternalId ==null || iExternalId.trim().length()==0)
             errors.add("externalId", new ActionMessage("errors.required", ""));
-        else if (!"Update".equals(getOp()) && (new UserDAO()).get(getExternalId())!=null) {
+        else if (!"Update".equals(getOp()) && User.findByExternalId(getExternalId())!=null) {
             errors.add("externalId", new ActionMessage("errors.exists", iExternalId));
         }
 
