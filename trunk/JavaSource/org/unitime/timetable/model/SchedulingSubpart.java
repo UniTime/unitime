@@ -74,7 +74,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
 	public String getItypeDesc() {
 		try {
 			ItypeDesc itype = getItype();
-			return (itype==null?null:itype.getSmas_abbv());
+			return (itype==null?null:itype.getAbbv());
 		} catch (Exception e) {
 			Debug.error(e);
 			return null;

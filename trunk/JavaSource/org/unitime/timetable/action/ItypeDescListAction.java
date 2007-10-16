@@ -75,10 +75,10 @@ public class ItypeDescListAction extends Action {
 	        org.hibernate.Session hibSession = null;
 
 			// Create new table
-		    WebTable webTable = new WebTable( 6,
+		    WebTable webTable = new WebTable( 5,
 		    	    "Instructional Types",
-		    	    new String[] {"ITYPE", "ABBV", "DESCRIPTION", "SIS_REF", "SMAS_ABBV", "BASIC"},
-		    	    new String[] {"left", "left","left","left", "left","left"},
+		    	    new String[] {"ITYPE", "ABBV", "DESCRIPTION", "SIS_REF", "BASIC"},
+		    	    new String[] {"left", "left","left","left", "left"},
 		    	    null );
 
 	        // Loop through ItypeDesc class
@@ -100,7 +100,6 @@ public class ItypeDescListAction extends Action {
 			        					itypeDesc.getAbbv(), 
 			        					itypeDesc.getDesc(),
 			        					itypeDesc.getSis_ref(),
-			        					itypeDesc.getSmas_abbv(),
 			        					itypeDesc.getBasic().toString()},
 			        	null, null);
 				}

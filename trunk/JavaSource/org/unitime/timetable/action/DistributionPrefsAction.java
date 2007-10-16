@@ -446,7 +446,7 @@ public class DistributionPrefsAction extends Action {
 		        		    for(int i=0; i<result.size(); i++) {
 		        		        SchedulingSubpart a = (SchedulingSubpart)result.get(i);
 		        		        String ssid = a.getUniqueId().toString();
-		        		        String name = a.getItype().getSmas_abbv();
+		        		        String name = a.getItype().getAbbv();
 		        		        String sufix = a.getSchedulingSubpartSuffix();
 		        		        while (a.getParentSubpart()!=null) {
 		        		        	name = "&nbsp;&nbsp;&nbsp;&nbsp;"+name;

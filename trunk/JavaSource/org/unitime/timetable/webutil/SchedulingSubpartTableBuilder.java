@@ -261,7 +261,7 @@ public class SchedulingSubpartTableBuilder {
             rr = -1;
         }
         
-        Debug.debug("setting up subpart: " + itype.getSmas_abbv() + ", Level: " + level);
+        Debug.debug("setting up subpart: " + itype.getAbbv() + ", Level: " + level);
 
         // Generate Javascript
         String onBlur1 = "";

@@ -722,8 +722,8 @@ public class ImportPreferences {
 			subpart = new SchedulingSubpart();
 			subpart.setItype(
 					(ItypeDesc)hibSession.
-					createQuery("select i from ItypeDesc i where i.smas_abbv=:smas_abbv").
-					setString("smas_abbv", element.attributeValue("itype")).
+					createQuery("select i from ItypeDesc i where i.abbv=:abbv").
+					setString("abbv", element.attributeValue("itype")).
 					uniqueResult());
 			subpart.setParentSubpart(parent);
 			subpart.setInstrOfferingConfig(cfg);

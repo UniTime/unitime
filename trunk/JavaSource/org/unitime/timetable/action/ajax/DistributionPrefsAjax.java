@@ -111,7 +111,7 @@ public class DistributionPrefsAjax extends Action {
         for (Iterator i=subparts.iterator();i.hasNext();) {
             SchedulingSubpart s = (SchedulingSubpart)i.next();
             String id = s.getUniqueId().toString();
-            String name = s.getItype().getSmas_abbv();
+            String name = s.getItype().getAbbv();
             String sufix = s.getSchedulingSubpartSuffix();
             while (s.getParentSubpart()!=null) {
                 name = "_"+name;
