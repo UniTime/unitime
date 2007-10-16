@@ -264,7 +264,7 @@ public class SchedulingSubpartDetailAction extends PreferencesAction {
 	        frm.setInstrOfferingId(io.getUniqueId().toString());
 	        frm.setSchedulingSubpartId(subpartId);
 	        frm.setInstructionalType(ss.getItype().getItype().toString());
-	        String label = ss.getItype().getSmas_abbv();
+	        String label = ss.getItype().getAbbv();
 	        if (io.hasMultipleConfigurations())
 	        	label += " [" + ioc.getName() + "]";
 	        frm.setInstructionalTypeLabel(label);
@@ -298,7 +298,7 @@ public class SchedulingSubpartDetailAction extends PreferencesAction {
 	        frm.setParentSubpartId(parentSS==null || !parentSS.isViewableBy(user)?null:parentSS.getUniqueId().toString());
 	        frm.setParentSubpartLabel(parentSS==null?null:parentSS.getSchedulingSubpartLabel());
 	        while(parentSS!=null) {
-	            parentSubpart = parentSS.getItype().getSmas_abbv() + " - " + parentSubpart;
+	            parentSubpart = parentSS.getItype().getAbbv() + " - " + parentSubpart;
 	            parentSS = parentSS.getParentSubpart();
 	        }
 	        frm.setParentSubpart(parentSubpart);

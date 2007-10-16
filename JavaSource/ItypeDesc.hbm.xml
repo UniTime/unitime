@@ -62,14 +62,6 @@
 		/>
 		
 		<property
-			name="smas_abbv"
-			column="SMAS_ABBV"
-			type="java.lang.String"
-			not-null="false"
-			length="5"
-		/>
-		
-		<property
 			name="basic"
 			column="BASIC"
 			type="java.lang.Integer"

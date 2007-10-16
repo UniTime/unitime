@@ -1015,7 +1015,6 @@ CREATE TABLE `timetable`.`itype_desc` (
   `abbv` VARCHAR(7) BINARY NULL,
   `description` VARCHAR(50) BINARY NULL,
   `sis_ref` VARCHAR(20) BINARY NULL,
-  `smas_abbv` VARCHAR(5) BINARY NULL,
   `basic` INT(1) NULL,
   PRIMARY KEY (`itype`)
 )

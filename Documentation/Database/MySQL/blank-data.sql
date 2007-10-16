@@ -228,19 +228,19 @@ VALUES (33, 'BTB_DAY', 'Back-To-Back Day', '0', 26, 'P43210R', 'Classes must be 
   (66, 'EVERY_OTHER_DAY', 'Two Days After', '1', 35, 'P43210R', 'The second class has to be placed two days after the first class (Monday &rarr; Wednesday, Tuesday &rarr; Thurday, Wednesday &rarr; Friday, Thursday &rarr; Monday, Friday &rarr; Tuesday).<br> When prohibited or (strongly) discouraged: The second class has to be placed two days before the first class (Monday &rarr; Thursday, Tuesday &rarr; Friday, Wednesday &rarr; Monday, Thursday &rarr; Tuesday, Friday &rarr; Wednesday).<br> Note: This constraint works only between pairs of classes.', '2d After', 0),
   (67, 'MEET_WITH', 'Meet Together', '0', 31, '2R', 'Given classes are meeting together (same as if the given classes require constraints Can Share Room, Same Room, Same Time and Same Days all together).', 'Meet Together', 0);
   
-INSERT INTO `timetable`.`itype_desc`(`itype`, `abbv`, `description`, `sis_ref`, `smas_abbv`, `basic`)
-VALUES (10, ' ', 'Lecture', 'lec', 'Lec  ', 1),
-  (20, ' ', 'Recitation', 'rec', 'Rec  ', 1),
-  (25, ' ', 'Presentation', 'prsn', 'Prsn ', 1),
-  (30, ' ', 'Laboratory', 'lab', 'Lab  ', 1),
-  (35, ' ', 'Laboratory Preparation', 'labP', 'LabP ', 1),
-  (40, ' ', 'Studio', 'stdo', 'Stdo ', 1),
-  (45, ' ', 'Distance Learning', 'dist', 'Dist ', 1),
-  (50, ' ', 'Clinic', 'clin', 'Clin ', 1),
-  (60, ' ', 'Experiential', 'expr', 'Expr ', 1),
-  (70, ' ', 'Research', 'res', 'Res  ', 1),
-  (80, ' ', 'Individual Study', 'ind', 'Ind  ', 1),
-  (90, ' ', 'Practice Study Observation', 'pso', 'Pso  ', 1);
+INSERT INTO `timetable`.`itype_desc`(`itype`, `description`, `sis_ref`, `abbv`, `basic`)
+VALUES (10, 'Lecture', 'lec', 'Lec  ', 1),
+  (20, 'Recitation', 'rec', 'Rec  ', 1),
+  (25, 'Presentation', 'prsn', 'Prsn ', 1),
+  (30, 'Laboratory', 'lab', 'Lab  ', 1),
+  (35, 'Laboratory Preparation', 'labP', 'LabP ', 1),
+  (40, 'Studio', 'stdo', 'Stdo ', 1),
+  (45, 'Distance Learning', 'dist', 'Dist ', 1),
+  (50, 'Clinic', 'clin', 'Clin ', 1),
+  (60, 'Experiential', 'expr', 'Expr ', 1),
+  (70, 'Research', 'res', 'Res  ', 1),
+  (80, 'Individual Study', 'ind', 'Ind  ', 1),
+  (90, 'Practice Study Observation', 'pso', 'Pso  ', 1);
 
 INSERT INTO `timetable`.`position_type`(`uniqueid`, `reference`, `label`, `sort_order`)
 VALUES (68, 'PROF', 'Professor', 100),
