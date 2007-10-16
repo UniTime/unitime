@@ -31,6 +31,7 @@
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
+<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 
 <tiles:importAttribute />
 
@@ -58,33 +59,30 @@
 
 	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
-			<TD width="100%">
-				<DIV class="WelcomeRowHead">
-				<logic:equal name="solverSettingsForm" property="op" value="Create">
-				Add
-				</logic:equal>
-				<logic:notEqual name="solverSettingsForm" property="op" value="Create">
-				Edit
-				</logic:notEqual>
-				Sovler Settings
-				</DIV>
-			</TD>
-			<TD align="right" nowrap>
-				<html:submit property="op">
-					<bean:write name="solverSettingsForm" property="op" />
-				</html:submit> 
-				<logic:notEqual name="solverSettingsForm" property="op" value="Create">
-					<html:submit property="op" value="Delete"/> 
-				</logic:notEqual>
-				<html:submit property="op" value="Export" /> 
-				<html:submit property="op" value="Cancel" /> 
+			<TD colspan='2'>
+				<tt:section-header>
+					<tt:section-title>
+						<logic:equal name="solverSettingsForm" property="op" value="Create">
+						Add
+						</logic:equal>
+						<logic:notEqual name="solverSettingsForm" property="op" value="Create">
+						Edit
+						</logic:notEqual>
+						Sovler Configuration
+					</tt:section-title>
+					<html:submit property="op">
+						<bean:write name="solverSettingsForm" property="op" />
+					</html:submit> 
+					<logic:notEqual name="solverSettingsForm" property="op" value="Create">
+						<html:submit property="op" value="Delete"/> 
+					</logic:notEqual>
+					<html:submit property="op" value="Export" /> 
+					<html:submit property="op" value="Cancel" /> 
+				</tt:section-header>
 			</TD>
 		</TR>
-	</TABLE>
-	
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
-			<TD>Name:</TD>
+			<TD>Reference:</TD>
 			<TD>
 				<html:text property="name" size="30" maxlength="100"/>
 				&nbsp;<html:errors property="name"/>
@@ -92,7 +90,7 @@
 		</TR>
 
 		<TR>
-			<TD>Description:</TD>
+			<TD>Name:</TD>
 			<TD>
 				<html:text property="description" size="30" maxlength="1000"/>
 				&nbsp;<html:errors property="description"/>
@@ -243,6 +241,11 @@
 %>		
 		<TR></TR>
 		
+		<TR>
+			<TD colspan='2'>
+				<tt:section-title/>
+			</TD>
+		</TR>		
 		<TR>
 			<TD align="right" colspan="2">
 				<html:submit property="op">
