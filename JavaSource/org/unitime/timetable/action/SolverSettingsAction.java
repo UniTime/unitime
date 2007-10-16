@@ -96,7 +96,7 @@ public class SolverSettingsAction extends Action {
         }
         
         // Add / Update
-        if ("Update".equals(op) || "Create".equals(op) || "Export".equals(op)) {
+        if ("Update".equals(op) || "Create".equals(op)) {
             // Validate input
             ActionMessages errors = myForm.validate(mapping, request);
             if(errors.size()>0) {
@@ -316,8 +316,8 @@ public class SolverSettingsAction extends Action {
 		WebTable.setOrder(request.getSession(),"solverSettings.ord",request.getParameter("ord"),1);
 		// Create web table instance 
         WebTable webTable = new WebTable( 4,
-			    "Solver Settings", "solverSettings.do?ord=%%",
-			    new String[] {"Name", "Description", "Appearance"},
+			    "Solver Configurations", "solverSettings.do?ord=%%",
+			    new String[] {"Reference", "Name", "Appearance"},
 			    new String[] {"left", "left", "left"},
 			    null );
         
