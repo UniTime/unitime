@@ -83,7 +83,6 @@ public class RoomFeaturePref extends BaseRoomFeaturePref {
     	return ToolBox.equals(getRoomFeature(),((RoomFeaturePref)other).getRoomFeature());
     }
     public boolean isApplicable(PreferenceGroup group) {
-    	//FIXME: user (schedule deputy/llr manager/lab manager) features cannot be set on a class with different facility group than (DEPT/LLR/LAB)
     	return true;
     }
 
