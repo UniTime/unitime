@@ -204,10 +204,9 @@ public class TimetableManagerForm extends ActionForm {
                 errors.add("roles", 
                         new ActionMessage("errors.generic", "At least one role must be assigned"));
 
-            if (op.equalsIgnoreCase(rsc.getMessage("button.insertTimetableManager"))
-            		&& externalId!=null && externalId.trim().length()>0) {
+            if (externalId!=null && externalId.trim().length()>0) {
             	TimetableManager mgr = TimetableManager.findByExternalId(externalId);
-            	if (mgr!=null)
+            	if (mgr!=null && !mgr.getUniqueId().toString().equals(getUniqueId()))
                     errors.add("roles", 
                             new ActionMessage("errors.generic", "Duplicate Record - This manager already exists"));
             }
