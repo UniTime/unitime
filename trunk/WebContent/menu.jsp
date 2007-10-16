@@ -138,8 +138,8 @@
 			menu_item('42','Solver','Solver','','<%=expand%>');
 				leaf_item('Parameter Groups', 'Manage Solver Parameter Groups','solverParamGroups.do');
 				leaf_item('Parameters', 'Manage Solver Parameter Definitions','solverParamDef.do');
-				leaf_item('Settings', 'Manage Solver Settings','solverSettings.do');
-				leaf_item('Definitions', 'Manage Solution Info Definitions','solverInfoDef.do');
+				leaf_item('Configurations', 'Manage Solver Configurations','solverSettings.do');
+				// leaf_item('Definitions', 'Manage Solution Info Definitions','solverInfoDef.do');
 				leaf_item('Solver Groups', 'Manage Solver Groups','solverGroupEdit.do');
 			enditem(); //42
 
