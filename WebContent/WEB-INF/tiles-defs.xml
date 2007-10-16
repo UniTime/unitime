@@ -359,7 +359,7 @@
   	</definition>
 
 	<definition	name="solverSettingsTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Solver Settings"/>
+		<put name="title" type="string" value="Solver Configurations"/>
 		<put name="body" value="/admin/solverSettings.jsp" />
   	</definition>
 
