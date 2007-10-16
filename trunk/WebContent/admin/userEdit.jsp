@@ -42,7 +42,7 @@
 		</TR>
 
 		<TR>
-			<TD>External Id:</TD>
+			<TD>External ID:</TD>
 			<TD>
 				<logic:equal name="userEditForm" property="op" value="Add New">
 					<html:text property="externalId" size="15" maxlength="15"/>

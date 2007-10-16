@@ -160,7 +160,7 @@ public class UserEditAction extends Action {
 		// Create web table instance 
         WebTable webTable = new WebTable( 4,
 			    "Users", "userEdit.do?ord=%%",
-			    new String[] {"External Id", "User Name", "Manager"},
+			    new String[] {"External ID", "User Name", "Manager"},
 			    new String[] {"left", "left", "left"},
 			    null );
         
