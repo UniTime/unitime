@@ -56,7 +56,6 @@ public abstract class BaseItypeDesc  implements Serializable {
 	public static String PROP_ABBV = "abbv";
 	public static String PROP_DESC = "desc";
 	public static String PROP_SIS_REF = "sis_ref";
-	public static String PROP_SMAS_ABBV = "smas_abbv";
 	public static String PROP_BASIC = "basic";
 
 
@@ -86,7 +85,6 @@ public abstract class BaseItypeDesc  implements Serializable {
 	private java.lang.String abbv;
 	private java.lang.String desc;
 	private java.lang.String sis_ref;
-	private java.lang.String smas_abbv;
 	private java.lang.Integer basic;
 
 
@@ -159,23 +157,6 @@ public abstract class BaseItypeDesc  implements Serializable {
 	 */
 	public void setSis_ref (java.lang.String sis_ref) {
 		this.sis_ref = sis_ref;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: SMAS_ABBV
-	 */
-	public java.lang.String getSmas_abbv () {
-		return smas_abbv;
-	}
-
-	/**
-	 * Set the value related to the column: SMAS_ABBV
-	 * @param smas_abbv the SMAS_ABBV value
-	 */
-	public void setSmas_abbv (java.lang.String smas_abbv) {
-		this.smas_abbv = smas_abbv;
 	}
 
 
