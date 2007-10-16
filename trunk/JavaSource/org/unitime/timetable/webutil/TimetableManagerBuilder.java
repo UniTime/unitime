@@ -72,8 +72,8 @@ public class TimetableManagerBuilder {
 			    (html?"":"Manager List - "+Web.getUser(request.getSession()).getAttribute(Constants.ACAD_YRTERM_LABEL_ATTR_NAME)),
 			    "timetableManagerList.do?order=%%",
                 (dispLastChanges?
-                        new String[] {"Roles", "External Id", "Name", "Email Address", "Department", "Subject Area", "Solver Group", "Last Change"}:
-                        new String[] {"Roles", "External Id", "Name", "Email Address", "Department", "Subject Area", "Solver Group"}),
+                        new String[] {"Roles", "External ID", "Name", "Email Address", "Department", "Subject Area", "Solver Group", "Last Change"}:
+                        new String[] {"Roles", "External ID", "Name", "Email Address", "Department", "Subject Area", "Solver Group"}),
 			    new String[] {"left", "left", "left", "left", "left", "left", "left", "left"},
 			    new boolean[] {true, true, true, true, true, true, true, false} );
         webTable.enableHR("#EFEFEF");
