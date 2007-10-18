@@ -162,7 +162,9 @@ public class TimetableManagerEditAction extends Action {
             }
 
             Roles role = new RolesDAO().get(new Long(frm.getRole()));
-            frm.addToRoles(role);    
+            frm.addToRoles(role); 
+            if (frm.getRoles().size()==1)
+                frm.setPrimaryRole(role.getRoleId().toString());
         }
         
         // Add Department
@@ -250,6 +252,8 @@ public class TimetableManagerEditAction extends Action {
 
             if (deleteType.equalsIgnoreCase("role")) {
                 frm.removeFromRoles(Integer.parseInt(deleteId));
+                if (frm.getRoles().size()==1)
+                    frm.setPrimaryRole(frm.getRoles(0));
             }
 
             if (deleteType.equalsIgnoreCase("manager")) {

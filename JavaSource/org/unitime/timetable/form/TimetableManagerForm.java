@@ -196,9 +196,12 @@ public class TimetableManagerForm extends ActionForm {
                 errors.add("primaryRole", 
                         new ActionMessage("errors.required", "Primary Role"));
             
-            if(depts.size()==0)
-                errors.add("depts", 
-                        new ActionMessage("errors.generic", "At least one department must be assigned"));
+            if(depts.size()==0) {
+                Roles deptRole = Roles.getRole(Roles.DEPT_SCHED_MGR_ROLE);
+                if (deptRole!=null && roles.contains(deptRole.getRoleId().toString()))
+                    errors.add("depts",
+                            new ActionMessage("errors.generic", "At least one department must be assigned for role "+deptRole.getAbbv()));
+            }
 
             if(roles.size()==0)
                 errors.add("roles", 
@@ -217,7 +220,7 @@ public class TimetableManagerForm extends ActionForm {
 
     public void addToRoles (Roles role) {
         roles.add(role.getRoleId());
-        roleRefs.add(role.getReference());
+        roleRefs.add(role.getAbbv());
     }
     
     public void removeFromRoles (int index) {
