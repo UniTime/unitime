@@ -29,6 +29,247 @@
 	<category>
 		<title>USER INTERFACE</title>
 		<item>
+			<name>Instructional Offering Config, Multiple Class Setup</name>
+			<description>
+				<line>
+					Default room group might not be set; in such a case, create no default room group 
+					preference rather than throwing an exception.
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Edit Academic Session</name>
+			<description>
+				<line>Fixed some database/hibernate issues with a deletion of an academic session.</line>
+				<line>Added check so that a user cannot delete the very last one academic session.</line>
+			</description>
+		</item>
+		<item>
+			<name>Departments</name>
+			<description>
+				<line>
+					Added toggle: Show all departments (including departments with no manager and no subject area) 
+					that allows a user to see all departments (by default, only departments that are being used 
+					for timetabling are displayed).
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Edit Department</name>
+			<description>
+				<line>Column Externally Managed renamed to External Manager.</line>
+				<line>External Manager flag cannot be changed if:
+					<line>There is one or more subject areas associated with the department.</line>
+					<line>The department is marked as external manager, and there are classes that are managed by the department.</line>
+				</line>
+				<line>Added delete department functionality.
+					<line>A department cannot be deleted if there is a solver group associated with it,</line>
+					<line>or if there is course that is offered in one of its subject areas.</line>
+					<line>
+						If an externally managed department is about to be deleted, all classes that 
+						are managed by the department are changed to be departmental (old room and 
+						distribution preferences are deleted)
+					</line>
+				</line>
+				<line>Delete department: display confirmation
+					<line>The department and all associated data will be deleted. Continue?</line>
+				</line>
+				<line>On delete: added change log message, clear hibernate cache to prevent cache problems (e.g., while displaying timetabling managers).</line>
+			</description>
+		</item>
+		<item>
+			<name>Timetables</name>
+			<description>
+				<line>Fixed MySQL problem in solution delete.</line>
+			</description>
+		</item>
+		<item>
+			<name>Select User Role</name>
+			<description>
+				<line>Selection of user role and academic session redesigned in order to tackle the following problems:
+					<line>Academic initiative was not considered at all (can become a problem if the application is to be used for more than one campus).</line>
+					<line>Ordering of listed sessions was inconsistent (e.g., it was different for Administrator role and other roles).</line>
+					<line>Ability to display additional session information (e.g., academic initiative, session status).</line>
+					<line>Ability to display current selection (if used to change current user role / academic session).</line>
+					<line>Department code does not need to be of length 4.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Edit Subject Area</name>
+			<description>
+				<line>A subject area can only be associated with a department that is not marked as external manager.</line>
+				<line>When a department of a subject area is changed:
+					<line>Managing department of all DEPARTMENTAL classes of the subject area is also changed to the new department.
+						<line>This also deletes existing class assignments of the affected classes.</line>
+					</line>
+					<line>Instructor assignments of all classes of the subject area are changed as follows:
+						<line>An instructor from the new department is used if there is one with the same external id in the new department,</line>
+						<line>instructor assignment is deleted otherwise.</line>
+					</line>
+					<line>Room, building, room group and room feature preferences of all DEPARTMENTAL classes of the subject area are deleted if
+						<line>Room / building is not shared with the new department</line>
+						<line>Room group / feature is departmental (not global)</line>
+					</line>
+					<line>Ownership of all distribution preferences that are owned by the old department and that have first class/subpart from the subject area are changed to the new department.</line>
+				</line>
+				<line>Hide delete button when a subject area cannot be deleted.</line>
+				<line>Disable department selection when a department cannot be changed (i.e., when there is a committed solution).</line>
+				<line>On delete: added change log message, clear hibernate cache to prevent cache problems (e.g., while displaying departments).</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructional Types</name>
+			<description>
+				<line>Table of instructional types made sortable, some columns were renamed.</line>
+				<line>Added export PDF.</line>
+				<line>Added add/modify/delete itype capabilities.
+					<line>An itype can only be deleted, if it is not used (there is no scheduling subpart with the given itype).</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Timetable Managers</name>
+			<description>
+				<line>Column "External Id" renamed to "External ID".</line>
+				<line>Do not display role icons.</line>
+				<line>Do not display external manager role (there is no such role), display externally managed departments in bold instead.</line>
+				<line>Last Change column: display message of pattern "page (operation) on date" instead of "date by user"
+					<line>
+						This way, it is more clear that the column displays the most recent change made by the manager 
+						(not when and by whom the manager was changed for the last time).
+					</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Edit Timetable Manager</name>
+			<description>
+				<line>Check for existence of another manager with the same External IDs on update as well.</line>
+				<line>Do not display role icons.</line>
+				<line>Do not display external manager role (there is no such role).</line>
+				<line>Display role abbreviations instead of references.</line>
+				<line>If there is only one role selected, it is automatically marked as primary.</line>
+				<line>
+					Only users with Department Schedule Manager role have to have at least one 
+					department associated (administrator and view only users do not need to have a department).
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Users</name>
+			<description>
+				<line>Column "External Id" renamed to "External ID".</line>
+				<line>Fixed problem with changing user name (identifier of an instance of User was altered).</line>
+			</description>
+		</item>
+		<item>
+			<name>Date Patterns</name>
+			<line>Date Patterns screen made more intuitive and consistent with other screens.
+				<line>Either list of date patterns or the add/edit date pattern form are displayed.</line>
+			</line>
+			<line>Column Default removed (default date pattern is printed in bold instead).</line>
+			<line>Column Visible removed (not visible date patterns are printed in gray instead).</line>
+			<line>On save / update / back, the page is scrolled down to the last edited date pattern.</line>
+		</item>
+		<item>
+			<name>Time Patterns</name>
+			<line>Time Patterns screen made more intuitive and consistent with other screens.
+				<line>Either list of time patterns or the add/edit time pattern form are displayed.</line>
+			</line>
+			<line>Column Visible removed (not visible time patterns are printed in gray instead).</line>
+			<line>On save / update / back, the page is scrolled down to the last edited time pattern.</line>
+		</item>
+	</category>
+	<category>
+		<title>SOLVER</title>
+		<item>
+			<name>Database Load</name>
+			<description>
+				<line>Loading of last-like course demand:
+					<line>Use course offering permanent id, if it is set and match with some last-like course demands,</line>
+					<line>use subject area / course number otherwise.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Suggestions</name>
+			<description>
+				<line>
+					Fixed problem with some classes being "mysteriously" unassigned when Suggestion screen 
+					was used on a solution loaded using automated (not-interactive) solver due to:
+					<line>Section Placements of Suggestions screen is used.</line>
+					<line>A wrong class get unassigned during assignment of a suggestion</line>
+				</line>
+				<line>
+					The problem was caused by constraints that returns a set of conflicting constraints 
+					in a non-deterministic way (e.g., spread in time constraint with initial allowance 
+					over 2 classes per a time slot -- e.g., spread of 21 or more classes over 10 
+					possible times). Undo of a tested placement or assignment of a suggestion was done 
+					in a way that did not anticipated a possibility of a different set of conflicting 
+					classes to be returned (different than during assignment of the tested placement / suggestion). 
+					To overcome this problem, all assignments that are to be changed need to be 
+					unassigned first, and then assigned to the new values.
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Solver Configurations</name>
+			<description>
+				<line>Solver Settings screen changed to Solver Configurations.</line>
+				<line>Configuration export operation corrected.</line>
+			</description>
+		</item>
+		<item>
+			<name>Solver Definitions</name>
+			<description>
+				<line>Solver Definition page removed from menu
+					<line>Since every solution info needs to be implemented anyway, it is not desired to change implementation class in the user interface.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Constraint Solver</name>
+			<description>
+				<line>Constraint solver updated, see https://lists.sourceforge.net/lists/listinfo/cpsolver-cvs for more details.</line> 
+				<line>Major changes:
+					<line>On fly student sectioning -- fixed problem with committed student conflict counter.</line>
+					<line>Message level of "Nothing to solve." changed to ERROR (was FATAL).</line>
+				</line>
+			</description> 
+		</item>
+	</category>
+	<category>
+		<title>OTHER</title>
+		<item>
+			<name>Database</name>
+			<description>
+				<line>MySQL: added script blank-data.sql
+					<line>
+						This scripts truncates all the timetabling tables and populates read-only tables 
+						with initial values. It also creates an administrator user (admin/admin) and 
+						an academic session with one department and a solver group.
+					</line>
+				</line>
+				<line>Course permanent ids:
+					<line>Added index on course permanent id column of LASTLIKE_COURSE_DEMAND table.</line>
+					<line>Allow course permanent id of a course offering to be NULL.</line>
+					<line>Set course permanent id to NULL whenever set to -1 for all last-like course requests.</line>
+					<line>Set course permanent id to NULL whenever set to -1 for all course offerings.</line>
+				</line>
+				<line>Added MySQL versions of existing change scripts.</line>
+				<line>Property ItypeDesc.smas_abbv removed, property ItypeDesc.abbv is used instead.</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.0.26</version>
+	<release-date>Fri, 28 Sep 2007</release-date>
+	<category>
+		<title>USER INTERFACE</title>
+		<item>
 			<name>Instructional Offerings</name>
 			<description>
 				<line>PDF Export: Horizontal alignment of the time preference column changed to left (was center).</line>
