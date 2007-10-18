@@ -89,12 +89,23 @@ public class UserEditForm extends ActionForm {
     public void saveOrUpdate(org.hibernate.Session hibSession) throws Exception {
         if ("Update".equals(getOp())) {
             User u = User.findByExternalId(getExternalId());
-            u.setUsername(getName());
-            if (!getPassword().equals(u.getPassword())) {
-                u.setPassword(DbAuthenticateModule.getEncodedPassword(getPassword()));
-                System.out.println("Password changed to "+u.getPassword());
+            if (u.getUsername().equals(getName())) {
+                if (!getPassword().equals(u.getPassword())) {
+                    u.setPassword(DbAuthenticateModule.getEncodedPassword(getPassword()));
+                }
+                hibSession.update(u);
+            } else {
+                User w = new User();
+                w.setExternalUniqueId(u.getExternalUniqueId());
+                w.setUsername(getName());
+                if (getPassword().equals(u.getPassword())) {
+                    w.setPassword(getPassword());
+                } else {
+                    w.setPassword(DbAuthenticateModule.getEncodedPassword(getPassword()));
+                }
+                hibSession.delete(u);
+                hibSession.save(w);
             }
-            hibSession.update(u);
         } else {
             User u = new User();
             u.setExternalUniqueId(getExternalId());
