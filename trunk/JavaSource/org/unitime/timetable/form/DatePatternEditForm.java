@@ -93,7 +93,7 @@ public class DatePatternEditForm extends ActionForm {
 	public void load(DatePattern dp) {
 		if (dp==null) {
 			reset(null, null);
-			iOp = "Add New";
+			iOp = "Save";
 			iVisible = true; iIsUsed = false; iIsDefault = false;
 		} else {
 			setName(dp.getName());

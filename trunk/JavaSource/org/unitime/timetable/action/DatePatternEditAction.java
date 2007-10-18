@@ -116,6 +116,7 @@ public class DatePatternEditAction extends Action {
 
 	        if (op==null) {
 	            myForm.load(null);
+	            myForm.setOp("List");
 	        }
 	        
 	    	User user = Web.getUser(request.getSession());
@@ -134,11 +135,19 @@ public class DatePatternEditAction extends Action {
 	    	request.setAttribute(Department.DEPT_ATTR_NAME, availableDepts);
 	        
 	        // Reset Form
-	        if ("Clear".equals(op)) {
+	        if ("Back".equals(op)) {
+	            if (myForm.getUniqueId()!=null)
+	                request.setAttribute("hash", myForm.getUniqueId());
 	            myForm.load(null);
+	            myForm.setOp("List");
 	        }
 	        
-	        if ("Add Department".equals(op)) {
+            if ("Add Date Pattern".equals(op)) {
+                myForm.load(null);
+                myForm.setOp("Save");
+            }
+
+            if ("Add Department".equals(op)) {
 	            ActionMessages errors = new ActionErrors();
 				if (myForm.getDepartmentId()==null || myForm.getDepartmentId().longValue()<0)
 					errors.add("department", new ActionMessage("errors.generic", "No department selected."));
@@ -152,7 +161,7 @@ public class DatePatternEditAction extends Action {
 	            } else {
 	            	myForm.getDepartmentIds().add(myForm.getDepartmentId());
 	            }
-	            myForm.setOp(myForm.getUniqueId().longValue()<0?"Add New":"Update");
+	            myForm.setOp(myForm.getUniqueId().longValue()<0?"Save":"Update");
 	            mapping.findForward("showDatePatterns");
 	        }
 
@@ -170,16 +179,17 @@ public class DatePatternEditAction extends Action {
 	            } else {
 	            	myForm.getDepartmentIds().remove(myForm.getDepartmentId());
 	            }	
-	            myForm.setOp(myForm.getUniqueId().longValue()<0?"Add New":"Update");
+	            myForm.setOp(myForm.getUniqueId().longValue()<0?"Save":"Update");
 	            mapping.findForward("showDatePatterns");
 	        }
 
 	        // Add / Update
-	        if ("Update".equals(op) || "Add New".equals(op) || "Make Default".equals(op)) {
+	        if ("Update".equals(op) || "Save".equals(op) || "Make Default".equals(op)) {
 	            // Validate input
 	            ActionMessages errors = myForm.validate(mapping, request);
 	            if(errors.size()>0) {
 	                saveErrors(request, errors);
+	                myForm.setOp(myForm.getUniqueId().longValue()<0?"Save":"Update");
 	                mapping.findForward("showDatePatterns");
 	            } else {
 	        		Transaction tx = null;
@@ -201,7 +211,7 @@ public class DatePatternEditAction extends Action {
                                 request, 
                                 dp, 
                                 ChangeLog.Source.DATE_PATTERN_EDIT, 
-                                ("Add New".equals(op)?ChangeLog.Operation.CREATE:ChangeLog.Operation.UPDATE), 
+                                ("Save".equals(op)?ChangeLog.Operation.CREATE:ChangeLog.Operation.UPDATE), 
                                 null, 
                                 null);
 
@@ -211,7 +221,9 @@ public class DatePatternEditAction extends Action {
 	        	    	throw e;
 	        	    }
 
-	                myForm.setOp("Update");
+	                myForm.setOp("List");
+	                if (myForm.getUniqueId()!=null)
+	                    request.setAttribute("hash", myForm.getUniqueId());
 	            }
 	        }
 
@@ -266,7 +278,7 @@ public class DatePatternEditAction extends Action {
 	    	    }
 
 	    	    myForm.load(null);
-	            myForm.setOp("Add New");
+	            myForm.setOp("List");
 	        }
 	        
 	        if ("Fix Generated".equals(op)) {
@@ -419,6 +431,7 @@ public class DatePatternEditAction extends Action {
 	    	    }
 	    	    
 	        	myForm.load(null);
+	        	myForm.setOp("List");
 	        }
 
 	        if ("Push Up".equals(op)) {
@@ -486,6 +499,7 @@ public class DatePatternEditAction extends Action {
 	    	    }
 	    	    
 	        	myForm.load(null);
+	        	myForm.setOp("List");
 	        }
 
 	        if ("Assign Departments".equals(op)) {
@@ -588,6 +602,7 @@ public class DatePatternEditAction extends Action {
 	    	    }
 	    	    
 	        	myForm.load(null);
+	        	myForm.setOp("List");
 	        }
 
 	        if ("Export CSV".equals(op)) {
@@ -689,12 +704,16 @@ public class DatePatternEditAction extends Action {
 	    	    }
 	    	    
 	        	myForm.load(null);
+	        	myForm.setOp("List");
 	        }
 
-	        // Read all existing settings and store in request
-	        getDatePatterns(request);    
+	        if ("List".equals(myForm.getOp())) {
+	            // Read all existing settings and store in request
+	            getDatePatterns(request);
+	        } else {
+	            request.setAttribute("DatePatterns.pattern", myForm.getDatePattern(request).getPatternHtml(true, myForm.getUniqueId()));
+	        }
 	        
-	        request.setAttribute("DatePatterns.pattern", myForm.getDatePattern(request).getPatternHtml(true, myForm.getUniqueId()));
 	        return mapping.findForward("showDatePatterns");
 		} catch (Exception e) {
 			Debug.error(e);
@@ -705,10 +724,10 @@ public class DatePatternEditAction extends Action {
     private void getDatePatterns(HttpServletRequest request) throws Exception {
 		WebTable.setOrder(request.getSession(),"datePatterns.ord",request.getParameter("ord"),1);
 		// Create web table instance 
-        WebTable webTable = new WebTable( 7,
-			    "Date Patterns", "datePatternEdit.do?ord=%%",
-			    new String[] {"Name", "Type", "Visible", "Used", "Default", "Dates", "Departments"},
-			    new String[] {"left", "left", "left","left", "left", "left", "left"},
+        WebTable webTable = new WebTable( 5,
+			    null, "datePatternEdit.do?ord=%%",
+			    new String[] {"Name", "Type", "Used", "Dates", "Departments"},
+			    new String[] {"left", "left", "left", "left", "left"},
 			    null );
         
         Vector patterns = DatePattern.findAll(request, null, null);
@@ -765,19 +784,23 @@ public class DatePatternEditAction extends Action {
             }
         	boolean isUsed = used.contains(pattern);
         	webTable.addLine(onClick, new String[] {
-        			pattern.getName().replaceAll(" ","&nbsp;"),
-        			DatePattern.sTypes[pattern.getType().intValue()].replaceAll(" ","&nbsp;"),
-        			pattern.isVisible().toString(),
-        			(new Boolean(isUsed)).toString(),
-        			(new Boolean(pattern.isDefault())).toString(),
-        			pattStr,
-        			deptStr
+        	        (pattern.isDefault()?"<B>":"")+
+        	        (pattern.isVisible()?"":"<font color='gray'>")+
+        	        "<a name='"+pattern.getUniqueId()+"'>"+
+        	            pattern.getName().replaceAll(" ","&nbsp;")+
+        	        "</a>"+
+        	        (pattern.isVisible()?"":"</font>")+
+        	        (pattern.isDefault()?"</B>":""),
+        	        (pattern.isVisible()?"":"<font color='gray'>")+
+        			    DatePattern.sTypes[pattern.getType().intValue()].replaceAll(" ","&nbsp;")+
+        			(pattern.isVisible()?"":"</font>"),
+        			(isUsed?"<IMG border='0' title='This date pattern is being used.' alt='Default' align='absmiddle' src='images/tick.gif'>":""),
+        			(pattern.isVisible()?"":"<font color='gray'>")+pattStr+(pattern.isVisible()?"":"</font>"),
+        			(pattern.isVisible()?"":"<font color='gray'>")+deptStr+(pattern.isVisible()?"":"</font>")
         		},new Comparable[] {
         			pattern.getName(),
         			pattern.getType(),
-        			(pattern.isVisible().booleanValue()?"1":"0"),
         			(isUsed?"0":"1"),
-        			(pattern.isDefault()?"0":"1"),
         			pattStr,
         			deptCmp
         		});
