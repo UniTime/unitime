@@ -130,7 +130,7 @@ public class TimePatternEditForm extends ActionForm {
 	public void load(TimePattern tp, Long sessionId) {
 		if (tp==null) {
 			reset(null, null);
-			iOp = "Add New";
+			iOp = "Save";
 			iVisible = true; iEditable = true;
 		} else {
 			setName(tp.getName());
