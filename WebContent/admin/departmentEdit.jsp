@@ -144,7 +144,7 @@
 			</TD>
 		</TR>
 		<TR>
-			<TD nowrap>Externally Managed:</TD>
+			<TD nowrap>External Manager:</TD>
 			<TD>
 				<logic:equal name="departmentEditForm" property="canChangeExternalManagement" value="true">
 					<html:checkbox property="isExternal"/>
