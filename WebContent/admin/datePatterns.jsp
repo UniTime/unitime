@@ -23,21 +23,22 @@
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
+<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <tiles:importAttribute />
 
 <html:form action="/datePatternEdit" focus="name">
-<html:hidden property="uniqueId"/><html:errors property="uniqueId"/>
-<html:hidden property="isUsed"/><html:errors property="isUsed"/>
 
 <logic:notEqual name="datePatternEditForm" property="op" value="List">
+	<html:hidden property="uniqueId"/><html:errors property="uniqueId"/>
+	<html:hidden property="isUsed"/><html:errors property="isUsed"/>
 	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD colspan="2">
 				<DIV class="WelcomeRowHead">
-				<logic:equal name="datePatternEditForm" property="op" value="Add New">
+				<logic:equal name="datePatternEditForm" property="op" value="Save">
 				Add
 				</logic:equal>
-				<logic:notEqual name="datePatternEditForm" property="op" value="Add New">
+				<logic:notEqual name="datePatternEditForm" property="op" value="Save">
 				Edit
 				</logic:notEqual>
 				Date Pattern
@@ -118,30 +119,58 @@
 				<html:submit property="op">
 					<bean:write name="datePatternEditForm" property="op" />
 				</html:submit> 
-				<logic:notEqual name="datePatternEditForm" property="op" value="Add New">
-				<logic:equal name="datePatternEditForm" property="isUsed" value="false">
-				<logic:equal name="datePatternEditForm" property="isDefault" value="false">
-					<html:submit property="op" value="Delete"/> 
-				</logic:equal>
-				</logic:equal>
+				<logic:notEqual name="datePatternEditForm" property="op" value="Save">
+					<logic:equal name="datePatternEditForm" property="isUsed" value="false">
+						<logic:equal name="datePatternEditForm" property="isDefault" value="false">
+							<html:submit property="op" value="Delete"/> 
+						</logic:equal>
+					</logic:equal>
 				</logic:notEqual>
 				<logic:equal name="datePatternEditForm" property="isDefault" value="false">
 					<html:submit property="op" value="Make Default"/> 
 				</logic:equal>
-				<html:submit property="op" value="Clear" /> 
-				<html:submit property="op" value="Fix Generated" /> 
-				<html:submit property="op" value="Assign Departments" /> 
-				<html:submit property="op" value="Push Up" /> 
-				<html:submit property="op" value="Export CSV" /> 
+				<html:submit property="op" value="Back" /> 
 			</TD>
 		</TR>
 	</TABLE>
 
 <BR>
 </logic:notEqual>
-
+<logic:equal name="datePatternEditForm" property="op" value="List">
 <TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
-	<%= request.getAttribute("DatePatterns.table") %> 
+	<TR>
+		<TD colspan='5'>
+			<tt:section-header>
+				<tt:section-title>Date Patterns</tt:section-title>
+				<html:submit property="op" value="Add Date Pattern" title="Create a new date pattern"/>
+				<html:submit property="op" value="Fix Generated" title="Fix generated date patterns"/> 
+				<html:submit property="op" value="Assign Departments" title="Assign departments to extended date patterns"/> 
+				<html:submit property="op" value="Push Up" title="Move date patterns from classes to subparts whenever possible"/> 
+				<html:submit property="op" value="Export CSV" title="Export date patterns to CSV"/> 
+			</tt:section-header>
+		</TD>
+	</TR>
+	<%= request.getAttribute("DatePatterns.table") %>
+	<TR>
+		<TD colspan='5'>
+			<tt:section-title/>
+		</TD>
+	</TR>
+	<TR>
+		<TD colspan='5' align="right">
+			<html:submit property="op" value="Add Date Pattern" title="Add a new date pattern"/>
+			<html:submit property="op" value="Fix Generated" title="Fix generated date patterns"/> 
+			<html:submit property="op" value="Assign Departments" title="Assign departments to extended date patterns"/> 
+			<html:submit property="op" value="Push Up" title="Move date patterns from classes to subparts whenever possible"/> 
+			<html:submit property="op" value="Export CSV" title="Export date patterns to CSV"/> 
+		</TD>
+	</TR>
+	<% if (request.getAttribute("hash") != null) { %>
+		<SCRIPT type="text/javascript" language="javascript">
+			location.hash = '<%=request.getAttribute("hash")%>';
+		</SCRIPT>
+	<% } %>
 </TABLE>
+</logic:equal>
 
 </html:form>
