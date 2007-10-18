@@ -23,6 +23,7 @@
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
+<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 
 <tiles:importAttribute />
 
@@ -35,10 +36,10 @@
 		<TR>
 			<TD colspan="2">
 				<DIV class="WelcomeRowHead">
-				<logic:equal name="timePatternEditForm" property="op" value="Add New">
+				<logic:equal name="timePatternEditForm" property="op" value="Save">
 				Add
 				</logic:equal>
-				<logic:notEqual name="timePatternEditForm" property="op" value="Add New">
+				<logic:notEqual name="timePatternEditForm" property="op" value="Save">
 				Edit
 				</logic:notEqual>
 				Time Pattern
@@ -188,26 +189,51 @@
 				<html:submit property="op">
 					<bean:write name="timePatternEditForm" property="op" />
 				</html:submit> 
-				<logic:notEqual name="timePatternEditForm" property="op" value="Add New">
+				<logic:notEqual name="timePatternEditForm" property="op" value="Save">
 				<logic:equal name="timePatternEditForm" property="editable" value="true">
 					<html:submit property="op" value="Delete"/> 
 				</logic:equal>
 				</logic:notEqual>
-				<html:submit property="op" value="Clear" /> 
-				<html:submit property="op" value="Exact Times" /> 
-				<html:submit property="op" value="Assign Departments" /> 
-				<html:submit property="op" value="Export CSV" /> 
-<!-- 				<html:reset /> -->
+				<html:submit property="op" value="Back" /> 
 			</TD>
 		</TR>
 	</TABLE>
 
 <BR>&nbsp;<BR>
 </logic:notEqual>
-
+<logic:equal name="timePatternEditForm" property="op" value="List">
 <TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
-	<%= request.getAttribute("TimePatterns.table") %> 
+	<TR>
+		<TD colspan='10'>
+			<tt:section-header>
+				<tt:section-title>Time Patterns</tt:section-title>
+				<html:submit property="op" value="Add Time Pattern" title="Create a new time pattern"/>
+				<html:submit property="op" value="Assign Departments" title="Assign departments to extended time patterns"/> 
+				<html:submit property="op" value="Exact Times CSV" title="Generate a CSV report with all classes that are using exact times"/> 
+				<html:submit property="op" value="Export CSV" title="Export time patterns to CSV"/> 
+			</tt:section-header>
+		</TD>
+	</TR>
+	<%= request.getAttribute("TimePatterns.table") %>
+	<TR>
+		<TD colspan='10'>
+			<tt:section-title/>
+		</TD>
+	</TR>
+	<TR>
+		<TD colspan='10' align="right">
+			<html:submit property="op" value="Add Time Pattern" title="Create a new time pattern"/>
+			<html:submit property="op" value="Assign Departments" title="Assign departments to extended time patterns"/> 
+			<html:submit property="op" value="Exact Times CSV" title="Generate a CSV report with all classes that are using exact times"/> 
+			<html:submit property="op" value="Export CSV" title="Export time patterns to CSV"/> 
+		</TD>
+	</TR>
+	<% if (request.getAttribute("hash") != null) { %>
+		<SCRIPT type="text/javascript" language="javascript">
+			location.hash = '<%=request.getAttribute("hash")%>';
+		</SCRIPT>
+	<% } %>
 </TABLE>
-
+</logic:equal>
 
 </html:form>
