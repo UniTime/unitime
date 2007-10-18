@@ -166,6 +166,7 @@
 			</TD>
 		</TR>
 
+		<%--
 		<TR>
 			<TD>External Manager: </TD>
 			<TD>
@@ -177,6 +178,7 @@
 				</logic:notEqual>
 			</TD>
 		</TR>
+		--%>
 
 <!-- Departments -->
 		<TR>
@@ -326,7 +328,9 @@
 								onclick="<%= "if(document.getElementById('primaryRole" + ctr + "').checked) { document.getElementById('primaryRole" + ctr + "').value=document.getElementById('role" + ctr + "').value; }; "%>" />
 						</TD>
 						<TD align="left">
-							<IMG src="images/<%= Roles.getRoleIcon(roleRef.toString()) %>" border="0" align="middle">&nbsp;
+							<%--
+								<IMG src="images/<%= Roles.getRoleIcon(roleRef.toString()) %>" border="0" align="middle">&nbsp;
+							--%>
 							<html:hidden styleId="<%= "role" + ctr %>" property="<%= "roles[" + ctr + "]" %>" />
 							<html:hidden property="<%= "roleRefs[" + ctr + "]" %>" />
 							<bean:write name="mgrForm" property="<%= "roleRefs[" + ctr + "]" %>" />
