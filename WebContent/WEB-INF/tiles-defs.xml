@@ -652,4 +652,9 @@
 		<put name="title" type="string" value="Edit Building"/>
 		<put name="body" value="/admin/buildingEdit.jsp" />
   	</definition>
+
+   	<definition	name="itypeDescEditTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Edit Instructional Type"/>
+		<put name="body" value="/admin/itypeDescEdit.jsp" />
+  	</definition>
 </tiles-definitions>

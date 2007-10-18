@@ -26,9 +26,9 @@
 	<class
 		name="ItypeDesc"
 		table="ITYPE_DESC"
-		mutable="false" >
+		 >
 
-		<cache usage="read-only" />
+		<cache include="non-lazy" usage="nonstrict-read-write"/>
 		
         <id
             name="itype"
