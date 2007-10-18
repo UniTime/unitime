@@ -19,8 +19,8 @@
 */
 package org.unitime.timetable.action;
 
+import java.io.File;
 import java.util.Iterator;
-import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -30,11 +30,11 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
-import org.unitime.commons.Debug;
 import org.unitime.commons.web.Web;
-import org.unitime.commons.web.WebTable;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.ItypeDesc;
-import org.unitime.timetable.model.dao.ItypeDescDAO;
+import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.webutil.PdfWebTable;
 
 
 /** 
@@ -75,45 +75,40 @@ public class ItypeDescListAction extends Action {
 	        org.hibernate.Session hibSession = null;
 
 			// Create new table
-		    WebTable webTable = new WebTable( 5,
-		    	    "Instructional Types",
-		    	    new String[] {"ITYPE", "ABBV", "DESCRIPTION", "SIS_REF", "BASIC"},
+		    PdfWebTable webTable = new PdfWebTable( 5,
+		    	    null,
+                    "itypeDescList.do?ord=%%",
+		    	    new String[] {"IType", "Abbreviation", "Name", "Reference", "Type"},
 		    	    new String[] {"left", "left","left","left", "left"},
-		    	    null );
+		    	    new boolean[] {true, true, true, true, false} );
+		    
+	        PdfWebTable.setOrder(request.getSession(),"itypeDescList.ord",request.getParameter("ord"),1);
 
-	        // Loop through ItypeDesc class
-			try {
-				ItypeDescDAO itypeDescDao = new ItypeDescDAO();
-				hibSession = itypeDescDao.getSession();
-				
-				List itypeDescList = hibSession.createCriteria(ItypeDesc.class)
-										.list();
-				Iterator iterItypeDesc = itypeDescList.iterator();
-				
-				while(iterItypeDesc.hasNext()) {
-					ItypeDesc itypeDesc = (ItypeDesc) iterItypeDesc.next();
-					
-				    // Add to web table
-				    webTable.addLine(
-				        null,//"onclick=\"document.location.href='itypeDescEdit.do?op=edit&id=" + itypeDesc.getItype() + "';\"",
+	        for (Iterator i=ItypeDesc.findAll(false).iterator();i.hasNext();) {
+	            ItypeDesc itypeDesc = (ItypeDesc)i.next();
+	            
+	            // Add to web table
+				webTable.addLine(
+				        "onclick=\"document.location='itypeDescEdit.do?op=Edit&id="+itypeDesc.getItype()+"';\"",
 			        	new String[] {itypeDesc.getItype().toString(),
 			        					itypeDesc.getAbbv(), 
 			        					itypeDesc.getDesc(),
-			        					itypeDesc.getSis_ref(),
-			        					itypeDesc.getBasic().toString()},
-			        	null, null);
-				}
+			        					(itypeDesc.getSis_ref()==null?"":itypeDesc.getSis_ref()),
+			        					itypeDesc.getBasicType()},
+			        	new Comparable[] {itypeDesc.getItype(),
+				                        itypeDesc.getAbbv(),
+				                        itypeDesc.getDesc(),
+				                        (itypeDesc.getSis_ref()==null?"":itypeDesc.getSis_ref()),
+				                        itypeDesc.getBasic()});
+	        }
+	        
+	        if ("Export PDF".equals(request.getParameter("op"))) {
+	            File file = ApplicationProperties.getTempFile("itypes", "pdf");
+	            webTable.exportPdf(file, PdfWebTable.getOrder(request.getSession(),"itypeDescList.ord"));
+	            request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
+	        }
 
-	        }
-	        catch (Exception e) {
-				Debug.error(e);
-	            return mapping.findForward("fail");
-	        }
-	        finally {
-	        	//if(hibSession!=null && hibSession.isOpen()) hibSession.close();
-	        }
-
-	        String tblData = webTable.printTable();
+	        String tblData = webTable.printTable(PdfWebTable.getOrder(request.getSession(),"itypeDescList.ord"));
 	        request.setAttribute("itypeDescList", errM + tblData);
 	        return mapping.findForward("success");
 

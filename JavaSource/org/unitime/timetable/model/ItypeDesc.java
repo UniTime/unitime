@@ -19,19 +19,18 @@
 */
 package org.unitime.timetable.model;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Vector;
+import java.util.TreeSet;
 
-import org.unitime.commons.Debug;
 import org.unitime.timetable.model.base.BaseItypeDesc;
 import org.unitime.timetable.model.dao.ItypeDescDAO;
 
 
 
 
-public class ItypeDesc extends BaseItypeDesc {
+public class ItypeDesc extends BaseItypeDesc implements Comparable {
 	private static final long serialVersionUID = 1L;
+
+    public static String[] sBasicTypes = new String[] {"Extended","Basic"}; 
 
 /*[CONSTRUCTOR MARKER BEGIN]*/
 	public ItypeDesc () {
@@ -47,60 +46,29 @@ public class ItypeDesc extends BaseItypeDesc {
 
 /*[CONSTRUCTOR MARKER END]*/
 
-    // Static list of Itypes
-    private static HashMap itypes = null;
-    private static Vector itypesList = null;
-    
     /** Request attribute name for available itypes **/
     public static String ITYPE_ATTR_NAME = "itypesList";
     
     /**
-     * Loads Itypes from SIQ
-     */
-    public static synchronized void load(boolean reload) throws Exception {
-        
-        if(itypes!=null && !reload)
-            return;
-        
-        itypesList = new Vector();
-        itypes = new HashMap();
-	    ItypeDescDAO itypeDao = new ItypeDescDAO();
-	    ItypeDesc itype = null;
-	    
-	    try {
-		    Iterator it = itypeDao.getQuery("FROM ItypeDesc where basic=1").list().iterator();
-	        while (it.hasNext()) {
-	        	itype = (ItypeDesc) it.next();
-	            Integer code = itype.getItype();
-	            
-	            itypes.put(code, itype);
-	            itypesList.addElement(itype);
-	        }
-	        Debug.debug("Loaded " + itypes.size() + " itypes ...");	        
-	    }
-	    catch (Exception e) {	  
-	        Debug.error(e);
-		    throw (e);
-	    }
-    }
-
-    /**
      * @return Returns the itypes.
      */
-    public static HashMap getItypes() throws Exception{
-        load(false);
-        return itypes;
+    public static TreeSet findAll(boolean basic) throws Exception{
+        return new TreeSet(
+                new ItypeDescDAO().
+                getSession().
+                createQuery("select i from ItypeDesc i"+(basic?" where i.basic=1":"")).
+                setCacheable(true).
+                list());
     }
 
-    /**
-     * Retrieves list of itypes
-	 * @param refresh true - refreshes the list from database
-     * @return Collection of Itype Objects
-     * @throws Exception
-     */
-    public static Vector getItypesList(boolean refresh) throws Exception{
-        load(refresh);
-        return itypesList;
+    public String getBasicType() {
+        if (getBasic()>=0 && getBasic()<sBasicTypes.length) return sBasicTypes[getBasic()];
+        return "Unknown";
     }
-
+    
+    public int compareTo(Object o) {
+        if (o==null || !(o instanceof ItypeDesc)) return -1;
+        return getItype().compareTo(((ItypeDesc)o).getItype());
+    }
+    
 }
