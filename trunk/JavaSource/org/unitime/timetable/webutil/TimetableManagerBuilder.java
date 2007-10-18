@@ -149,12 +149,14 @@ public class TimetableManagerBuilder {
 		        roleOrd += title;
 		    }
 		    
+		    /*
 		    if (manager.isExternalManager()) {
                 if (images && html)
                     roleStr += "<IMG height='25' width='25' src='" + request.getContextPath() + "/images/ext-mgr-icon.gif' alt='External Manager' title='External Manager' border='0' align='middle'>";
                 else
                     roleStr += ","+(html?"<br>":"\n")+"External Manager";
 		    }
+		    */
 
 		    Long currentAcadSession = (Long) user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
 		    
@@ -167,11 +169,13 @@ public class TimetableManagerBuilder {
 	            if (deptStr.trim().length()>0) deptStr += ", "+(html?"<br>":"\n");
 	            deptStr += 
                     (html?
-                            "<span title='"+dept.getHtmlTitle()+"'>"+
+                            "<span title='"+dept.getHtmlTitle()+"'>"+(dept.isExternalManager()?"<b>":"")+
                             dept.getDeptCode()+(dept.getAbbreviation()==null?"":": "+dept.getAbbreviation().trim())+
-                            "</span>"
+                            (dept.isExternalManager()?"</b>":"")+"</span>"
                          :
-                             dept.getDeptCode()+(dept.getAbbreviation()==null?"":": "+dept.getAbbreviation().trim())
+                             (dept.isExternalManager()?"@@BOLD ":"")+
+                             dept.getDeptCode()+(dept.getAbbreviation()==null?"":": "+dept.getAbbreviation().trim())+
+                             (dept.isExternalManager()?"@@END_BOLD ":"")
                      );
 		        
 		        // Construct SubjectArea List
