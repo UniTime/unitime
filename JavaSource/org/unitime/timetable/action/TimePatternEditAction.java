@@ -89,6 +89,7 @@ public class TimePatternEditAction extends Action {
 
         if (op==null) {
             myForm.load(null, null);
+            myForm.setOp("List");
         }
         
     	User user = Web.getUser(request.getSession());
@@ -107,8 +108,11 @@ public class TimePatternEditAction extends Action {
     	request.setAttribute(Department.DEPT_ATTR_NAME, availableDepts);
         
         // Reset Form
-        if ("Clear".equals(op)) {
+        if ("Back".equals(op)) {
+            if (myForm.getUniqueId()!=null)
+                request.setAttribute("hash", myForm.getUniqueId());
             myForm.load(null, null);
+            myForm.setOp("List");
         }
         
         if ("Add Department".equals(op)) {
@@ -125,7 +129,7 @@ public class TimePatternEditAction extends Action {
             } else {
             	myForm.getDepartmentIds().add(myForm.getDepartmentId());
             }
-            myForm.setOp(myForm.getUniqueId().longValue()<0?"Add New":"Update");
+            myForm.setOp(myForm.getUniqueId().longValue()<0?"Save":"Update");
             mapping.findForward("showTimePatterns");
         }
 
@@ -143,13 +147,13 @@ public class TimePatternEditAction extends Action {
             } else {
             	myForm.getDepartmentIds().remove(myForm.getDepartmentId());
             }	
-            myForm.setOp(myForm.getUniqueId().longValue()<0?"Add New":"Update");
+            myForm.setOp(myForm.getUniqueId().longValue()<0?"Save":"Update");
             mapping.findForward("showTimePatterns");
         }
         
 
         // Add / Update
-        if ("Update".equals(op) || "Add New".equals(op)) {
+        if ("Update".equals(op) || "Save".equals(op)) {
             // Validate input
             ActionMessages errors = myForm.validate(mapping, request);
             if(errors.size()>0) {
@@ -171,7 +175,9 @@ public class TimePatternEditAction extends Action {
         	    	throw e;
         	    }
 
-                myForm.setOp("Update");
+                if (myForm.getUniqueId()!=null)
+                    request.setAttribute("hash", myForm.getUniqueId());
+                myForm.setOp("List");
             }
         }
 
@@ -214,10 +220,10 @@ public class TimePatternEditAction extends Action {
     	    }
 
     	    myForm.load(null, null);
-            myForm.setOp("Add New");
+    	    myForm.setOp("List");
         }
         
-        if ("Exact Times".equals(op)) {
+        if ("Exact Times CSV".equals(op)) {
     		Transaction tx = null;
     		
     		try {
@@ -285,7 +291,7 @@ public class TimePatternEditAction extends Action {
     	    }
 
     	    myForm.load(null, null);
-            myForm.setOp("Add New");
+    	    myForm.setOp("List");
         }
         
         
@@ -381,7 +387,7 @@ public class TimePatternEditAction extends Action {
     	    }
     	    
     	    myForm.load(null, null);
-            myForm.setOp("Add New");
+    	    myForm.setOp("List");
         }
 
         if ("Export CSV".equals(op)) {
@@ -490,15 +496,22 @@ public class TimePatternEditAction extends Action {
     	    }
     	    
     	    myForm.load(null, null);
-            myForm.setOp("Add New");
+    	    myForm.setOp("List");
         }
 
-        // Read all existing settings and store in request
-        getTimePatterns(request, sessionId);    
-        
-        String example = myForm.getExample();
-        if (example!=null) {
-        	request.setAttribute("TimePatterns.example", example);
+        if ("Add Time Pattern".equals(op)) {
+            myForm.load(null, null);
+            myForm.setOp("Save");
+        }
+
+        if ("List".equals(myForm.getOp())) {
+            // Read all existing settings and store in request
+            getTimePatterns(request, sessionId);
+        } else {
+            String example = myForm.getExample();
+            if (example!=null) {
+                request.setAttribute("TimePatterns.example", example);
+            }
         }
         
         return mapping.findForward("showTimePatterns");
@@ -511,10 +524,10 @@ public class TimePatternEditAction extends Action {
     private void getTimePatterns(HttpServletRequest request, Long sessionId) throws Exception {
 		WebTable.setOrder(request.getSession(),"timePatterns.ord",request.getParameter("ord"),1);
 		// Create web table instance 
-        WebTable webTable = new WebTable( 11,
-			    "Time Patterns", "timePatternEdit.do?ord=%%",
-			    new String[] {"Name", "Type", "Visible", "Used", "NrMtgs", "MinPerMtg", "SlotPerMtg", "Break Time", "Days", "Times", "Departments"},
-			    new String[] {"left", "left", "left","left", "left", "left","left", "left", "left", "left", "left"},
+        WebTable webTable = new WebTable( 10,
+			    null, "timePatternEdit.do?ord=%%",
+			    new String[] {"Name", "Type", "Used", "NrMtgs", "MinPerMtg", "SlotsPerMtg", "Break Time", "Days", "Times", "Departments"},
+			    new String[] {"left", "left", "left", "left", "left","left", "left", "left", "left", "left"},
 			    null );
         
         Vector patterns = TimePattern.findAll(request,null);
@@ -539,21 +552,25 @@ public class TimePatternEditAction extends Action {
         	}
         	boolean isUsed = used.contains(pattern);
         	webTable.addLine(onClick, new String[] {
-        			pattern.getName().replaceAll(" ","&nbsp;"),
-        			TimePattern.sTypes[pattern.getType().intValue()].replaceAll(" ","&nbsp;"),
-        			pattern.isVisible().toString(),
-        			(new Boolean(isUsed)).toString(),
-        			pattern.getNrMeetings().toString(),
-        			pattern.getMinPerMtg().toString(),
-        			pattern.getSlotsPerMtg().toString(),
-        			pattern.getBreakTime().toString(),
-        			TimePatternEditForm.dayCodes2str(pattern.getDays(),", "),
-        			TimePatternEditForm.startSlots2str(pattern.getTimes(),", "),
-        			deptStr
+        	        (pattern.isVisible()?"":"<font color='grey'>")+
+        	            "<a name='"+pattern.getUniqueId()+"'>"+
+        	                pattern.getName().replaceAll(" ","&nbsp;")+
+        	            "</a>"+
+        	        (pattern.isVisible()?"":"</font>"),
+        	        (pattern.isVisible()?"":"<font color='gray'>")+
+        	            TimePattern.sTypes[pattern.getType().intValue()].replaceAll(" ","&nbsp;")+
+        	        (pattern.isVisible()?"":"</font>"),
+        			(isUsed?"<IMG border='0' title='This time pattern is being used.' alt='Default' align='absmiddle' src='images/tick.gif'>":""),
+        			(pattern.isVisible()?"":"<font color='gray'>")+pattern.getNrMeetings().toString()+(pattern.isVisible()?"":"</font>"),
+        			(pattern.isVisible()?"":"<font color='gray'>")+pattern.getMinPerMtg().toString()+(pattern.isVisible()?"":"</font>"),
+        			(pattern.isVisible()?"":"<font color='gray'>")+pattern.getSlotsPerMtg().toString()+(pattern.isVisible()?"":"</font>"),
+        			(pattern.isVisible()?"":"<font color='gray'>")+pattern.getBreakTime().toString()+(pattern.isVisible()?"":"</font>"),
+        			(pattern.isVisible()?"":"<font color='gray'>")+TimePatternEditForm.dayCodes2str(pattern.getDays(),", ")+(pattern.isVisible()?"":"</font>"),
+        			(pattern.isVisible()?"":"<font color='gray'>")+TimePatternEditForm.startSlots2str(pattern.getTimes(),", ")+(pattern.isVisible()?"":"</font>"),
+        			(pattern.isVisible()?"":"<font color='gray'>")+deptStr+(pattern.isVisible()?"":"</font>")
         		},new Comparable[] {
         			pattern.getName(),
         			pattern.getType(),
-        			(pattern.isVisible().booleanValue()?"1":"0"),
         			(isUsed?"0":"1"),
         			pattern.getNrMeetings(),
         			pattern.getMinPerMtg(),
