@@ -19,8 +19,6 @@
 */
 package org.unitime.timetable.form;
 
-import java.util.Iterator;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.struts.action.ActionErrors;
@@ -32,11 +30,8 @@ import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.ChangeLog;
-import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentStatusType;
-import org.unitime.timetable.model.InstructionalOffering;
-import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.util.ReferenceList;
 
@@ -176,6 +171,13 @@ public class DepartmentEditForm extends ActionForm {
 		setCanDelete(Boolean.TRUE);
 		if (department.getSolverGroup()!=null) 
 		    setCanDelete(Boolean.FALSE);
+		if (getCanDelete()) {
+		    int nrOffered = ((Number)new DepartmentDAO().getSession().
+                    createQuery("select count(io) from CourseOffering co inner join co.instructionalOffering io " +
+                    		"where co.subjectArea.department.uniqueId=:deptId and io.notOffered = 0").
+                    setLong("deptId", department.getUniqueId()).uniqueResult()).intValue();
+            if (nrOffered>0) setCanDelete(Boolean.FALSE);
+		}
 		setCanChangeExternalManagement(Boolean.TRUE);
 		if (!department.getSubjectAreas().isEmpty()) {
 		    setCanChangeExternalManagement(Boolean.FALSE);
@@ -187,61 +189,6 @@ public class DepartmentEditForm extends ActionForm {
 		}
         setAllowReqRoom(department.isAllowReqRoom()!=null && department.isAllowReqRoom().booleanValue());
         setAllowReqTime(department.isAllowReqTime()!=null && department.isAllowReqTime().booleanValue());
-	}
-
-	/**
-	 * Test to see if the department can be deleted.
-	 * All of its InstructionalOfferings must be not offered.
-	 * @param department
-	 */
-	private boolean deptHasOfferedCourses(Department department) {
-		Iterator it = department.getSubjectAreas().iterator();
-		while(it.hasNext()) {
-			 SubjectArea subject = (SubjectArea) it.next();
-			 if(subjectAreaHasOfferedCourses(department, subject)) {
-				 return true;
-			 }
-		}
-		return false;
-	}
-
-	/**
-	 * Test whether any InstructionalOfferings for the SubjectArea are offered. 
-	 * @param department
-	 * @param subject
-	 */
-	private boolean subjectAreaHasOfferedCourses(Department department, SubjectArea subject) {
-		Iterator it = subject.getCourseOfferings().iterator();
-		while(it.hasNext()) {
-			CourseOffering courseOffer = (CourseOffering) it.next(); 
-			InstructionalOffering instrOffer = courseOffer.getInstructionalOffering();
-			if(instrOffer.getNotOffered().equals(Boolean.FALSE)) {
-				return true;
-			}
-			if(instrOffer.getCourseOfferings().size() > 1) {
-				checkCourseOfferings(department, instrOffer);
-			}
-		}
-		return false;
-	}
-
-	/**
-	 * If the InstructionalOffering has multiple CourseOfferings, check to see
-	 *  that all the CourseOfferings' SubjectAreas are owned by the Department
-	 *  to be deleted.
-	 * @param department
-	 * @param instrOffer
-	 */
-	private void checkCourseOfferings(Department department, InstructionalOffering instrOffer) {
-		Iterator it = instrOffer.getCourseOfferings().iterator();
-		while(it.hasNext()) {
-			CourseOffering courseOffer = (CourseOffering) it.next();
-			SubjectArea area = courseOffer.getSubjectArea();
-			if(!area.getDepartment().equals(department)) {
-				setCanDelete(Boolean.FALSE);
-				return;
-			}
-		}
 	}
 
 	public void save(User user, HttpServletRequest request) throws Exception {
