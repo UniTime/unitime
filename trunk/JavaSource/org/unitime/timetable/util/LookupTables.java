@@ -92,8 +92,7 @@ public class LookupTables {
      * @throws Exception
      */
     public static void setupItypes(HttpServletRequest request) throws Exception {
-        Vector v = ItypeDesc.getItypesList(false);
-        request.setAttribute(ItypeDesc.ITYPE_ATTR_NAME, v);
+        request.setAttribute(ItypeDesc.ITYPE_ATTR_NAME, ItypeDesc.findAll(true));
     }
  
     /**

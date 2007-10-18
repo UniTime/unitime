@@ -111,6 +111,7 @@
       <form-bean name="userEditForm" type="org.unitime.timetable.form.UserEditForm" />
       <form-bean name="subjectAreaEditForm" type="org.unitime.timetable.form.SubjectAreaEditForm" />
       <form-bean name="buildingEditForm" type="org.unitime.timetable.form.BuildingEditForm" />
+      <form-bean name="itypeDescEditForm" type="org.unitime.timetable.form.ItypeDescEditForm" />
    </form-beans>
 
    <global-exceptions>
@@ -1835,6 +1836,22 @@
        <forward 
        		name="back" 
        		path="/buildingList.do" />
+    </action>
+
+    <action
+       path="/itypeDescEdit"
+       type="org.unitime.timetable.action.ItypeDescEditAction"
+       attribute="itypeDescEditForm"
+       input="itypeDescEditTile"
+       name="itypeDescEditForm"
+       scope="request"
+       validate="false" >
+       <forward 
+       		name="display" 
+       		path="itypeDescEditTile" />
+       <forward 
+       		name="back" 
+       		path="/itypeDescList.do" />
     </action>
 
 	  <action

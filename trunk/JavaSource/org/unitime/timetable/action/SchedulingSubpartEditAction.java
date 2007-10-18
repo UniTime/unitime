@@ -46,6 +46,7 @@ import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.VariableFixedCreditUnitConfig;
 import org.unitime.timetable.model.VariableRangeCreditUnitConfig;
 import org.unitime.timetable.model.dao.DatePatternDAO;
+import org.unitime.timetable.model.dao.ItypeDescDAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
@@ -354,7 +355,7 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
         if (frm.getInstructionalType() == null || frm.getInstructionalType().length() == 0){
         	// do nothing
         } else {
-        	ItypeDesc newItype = (ItypeDesc)ItypeDesc.getItypes().get(new Integer(frm.getInstructionalType()));
+        	ItypeDesc newItype = new ItypeDescDAO().get(new Integer(frm.getInstructionalType()));
         	if (newItype != null){
         		ss.setItype(newItype);
         	}
