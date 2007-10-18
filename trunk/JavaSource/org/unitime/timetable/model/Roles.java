@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.model;
 
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Vector;
 
@@ -138,5 +139,13 @@ public class Roles extends BaseRoles {
         
         return "other-role-icon.gif";
                 
+    }
+    
+    public static Roles getRole(String roleRef) {
+        for (Enumeration e=getRolesList(false).elements();e.hasMoreElements();) {
+            Roles role = (Roles)e.nextElement();
+            if (roleRef.equals(role.getReference())) return role;
+        }
+        return null;
     }
 }
