@@ -77,7 +77,7 @@ public class TimetableManagerListAction extends Action {
 
 		WebTable.setOrder(request.getSession(),"timetableManagerList.ord",request.getParameter("order"),1);
         
-        PdfWebTable table =  new TimetableManagerBuilder().getManagersTable(request,true,true);
+        PdfWebTable table =  new TimetableManagerBuilder().getManagersTable(request,false,true);
         int order = WebTable.getOrder(request.getSession(),"timetableManagerList.ord");
         String tblData = (order>=1?table.printTable(order):table.printTable());
         
