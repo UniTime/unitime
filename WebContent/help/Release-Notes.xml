@@ -93,6 +93,10 @@
 					<line>Ability to display current selection (if used to change current user role / academic session).</line>
 					<line>Department code does not need to be of length 4.</line>
 				</line>
+				<line>Users with "View All" role:
+					<line>If the user has associated one or more departments, he/she can access only academic sessions of these departments.</line>
+					<line>If the user has no department associated, he/she can see all the academic sessions.</line>
+				</line>
 			</description>
 		</item>
 		<item>

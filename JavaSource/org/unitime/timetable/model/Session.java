@@ -131,12 +131,18 @@ public class Session extends BaseSession implements Comparable {
 	public static Session defaultSession() throws HibernateException {
 	    return defaultSession(getAllSessions());
 	}
+	
+	public static Set availableSessions(ManagerRole role) {
+	    if (Roles.ADMIN_ROLE.equals(role.getRole().getReference()))
+	        return getAllSessions();
+	    Set sessions = role.getTimetableManager().sessionsCanManage();
+	    if (Roles.VIEW_ALL_ROLE.equals(role.getRole().getReference()) && sessions.isEmpty())
+	        return getAllSessions();
+	    return sessions;
+	}
 
     public static Session defaultSession(ManagerRole role) throws HibernateException {
-        if (Roles.ADMIN_ROLE.equals(role.getRole().getReference()))
-            return defaultSession(getAllSessions());
-        else
-            return defaultSession(role.getTimetableManager().sessionsCanManage());
+        return defaultSession(availableSessions(role));
     }
 
     public static Session defaultSession(Set sessions) throws HibernateException {
