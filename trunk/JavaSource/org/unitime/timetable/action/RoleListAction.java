@@ -202,7 +202,7 @@ public class RoleListAction extends Action {
 
             boolean currentRole = mr.getRole().getReference().equals(user.getCurrentRole());
  	        
-            Set sessions = (Roles.ADMIN_ROLE.equals(mr.getRole().getReference())?Session.getAllSessions():tm.sessionsCanManage());
+            Set sessions = Session.availableSessions(mr);
             
             for (Iterator j=sessions.iterator();j.hasNext();) {
                 Session  session = (Session)j.next();
@@ -216,7 +216,7 @@ public class RoleListAction extends Action {
                 table.addLine(
                         onClick,
                         new String[] {
-                            mr.getRole().getReference(),
+                            mr.getRole().getAbbv(),
                             session.getAcademicYear()+" "+session.getAcademicTerm(),
                             session.getAcademicInitiative(),
                             (session.getStatusType()==null?"":session.getStatusType().getLabel())}, null)
@@ -264,7 +264,7 @@ public class RoleListAction extends Action {
         if (!tm.getManagerRoles().contains(role)) 
             throw new Exception("Timetable manager "+tm.getName()+" does not have requested role "+role.getRole().getReference()+".");
         
-        if (!Roles.ADMIN_ROLE.equals(role.getRole().getReference()) && !tm.sessionsCanManage().contains(session))
+        if (!Session.availableSessions(role).contains(session))
             throw new Exception("Timetable manager "+tm.getName()+" cannot manage requested academic session "+session.getAcademicYear()+" "+session.getAcademicTerm()+" "+session.getAcademicInitiative()+".");
         
         Constants.resetSessionAttributes(webSession);
