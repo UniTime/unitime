@@ -67,7 +67,7 @@
 		</TR>
 
 		<TR>
-			<TD>Coordinations:</TD>
+			<TD>Coordinates:</TD>
 			<TD>
 				<html:text property="coordX" size="10" maxlength="10"/>,
 				<html:text property="coordY" size="10" maxlength="10"/>
