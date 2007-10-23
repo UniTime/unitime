@@ -169,20 +169,24 @@
 		</item>
 		<item>
 			<name>Date Patterns</name>
-			<line>Date Patterns screen made more intuitive and consistent with other screens.
-				<line>Either list of date patterns or the add/edit date pattern form are displayed.</line>
-			</line>
-			<line>Column Default removed (default date pattern is printed in bold instead).</line>
-			<line>Column Visible removed (not visible date patterns are printed in gray instead).</line>
-			<line>On save / update / back, the page is scrolled down to the last edited date pattern.</line>
+			<description>
+				<line>Date Patterns screen made more intuitive and consistent with other screens.
+					<line>Either list of date patterns or the add/edit date pattern form are displayed.</line>
+				</line>
+				<line>Column Default removed (default date pattern is printed in bold instead).</line>
+				<line>Column Visible removed (not visible date patterns are printed in gray instead).</line>
+				<line>On save / update / back, the page is scrolled down to the last edited date pattern.</line>
+			</description>
 		</item>
 		<item>
 			<name>Time Patterns</name>
-			<line>Time Patterns screen made more intuitive and consistent with other screens.
-				<line>Either list of time patterns or the add/edit time pattern form are displayed.</line>
-			</line>
-			<line>Column Visible removed (not visible time patterns are printed in gray instead).</line>
-			<line>On save / update / back, the page is scrolled down to the last edited time pattern.</line>
+			<description>
+				<line>Time Patterns screen made more intuitive and consistent with other screens.
+					<line>Either list of time patterns or the add/edit time pattern form are displayed.</line>
+				</line>
+				<line>Column Visible removed (not visible time patterns are printed in gray instead).</line>
+				<line>On save / update / back, the page is scrolled down to the last edited time pattern.</line>
+			</description>
 		</item>
 	</category>
 	<category>
