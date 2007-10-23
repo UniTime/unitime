@@ -230,8 +230,8 @@ public class EditRoomForm extends ActionForm {
 
         /*
         if(room && coordX==null || coordX.equalsIgnoreCase("") || coordY==null || coordY.equalsIgnoreCase("")) {
-            errors.add("Coordinations", 
-                    new ActionMessage("errors.required", "Coordinations") );
+            errors.add("Coordinates", 
+                    new ActionMessage("errors.required", "Coordinates") );
         }
         */
         
