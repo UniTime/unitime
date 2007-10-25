@@ -344,6 +344,21 @@ public class TimePattern extends BaseTimePattern implements Comparable {
 	}
 	
 	/**
+	 * Return true, if this time pattern contains the number of meetings and the number of minutes per meeting
+	 *  are the same for both patterns.
+	 * @param other given pattern (the smaller one)
+	 * @param strongComparison if true, both patterns must have the same number of slots per meetings and break times
+	 * @return true if the given pattern is a potential match for the this pattern
+	 */
+	private boolean possibleMatch(TimePattern other, boolean strongComparison) {
+		if (!getNrMeetings().equals(other.getNrMeetings())) return false;
+	    if (!getMinPerMtg().equals(other.getMinPerMtg())) return false;
+	    if (strongComparison && !getBreakTime().equals(other.getBreakTime())) return false;
+	    if (strongComparison && !getSlotsPerMtg().equals(other.getSlotsPerMtg())) return false;
+	    return(true);
+	}
+	
+	/**
 	 * Return true, if this time pattern contains all times and days of the given time pattern 
 	 * and also the number of meetings and the number of minutes per meeting are the same for both patterns.
 	 * @param other given pattern (the smaller one)
@@ -351,10 +366,7 @@ public class TimePattern extends BaseTimePattern implements Comparable {
 	 * @return true if the given pattern can be mapped to this pattern
 	 */
 	public boolean contains(TimePattern other, boolean strongComparison) {
-        if (!getNrMeetings().equals(other.getNrMeetings())) return false;
-        if (!getMinPerMtg().equals(other.getMinPerMtg())) return false;
-        if (strongComparison && !getBreakTime().equals(other.getBreakTime())) return false;
-        if (strongComparison && !getSlotsPerMtg().equals(other.getSlotsPerMtg())) return false;
+	    if (!possibleMatch(other, strongComparison)) return false;
 	    return getDays().containsAll(other.getDays()) && getTimes().containsAll(other.getTimes());
 	}
 
@@ -366,10 +378,7 @@ public class TimePattern extends BaseTimePattern implements Comparable {
      * @return true if the given pattern can be mapped to this pattern
      */
     public boolean match(TimePattern other, boolean strongComparison) {
-        if (!getNrMeetings().equals(other.getNrMeetings())) return false;
-        if (!getMinPerMtg().equals(other.getMinPerMtg())) return false;
-        if (strongComparison && !getBreakTime().equals(other.getBreakTime())) return false;
-        if (strongComparison && !getSlotsPerMtg().equals(other.getSlotsPerMtg())) return false;
+        if (!possibleMatch(other, strongComparison)) return false;
         return getDays().equals(other.getDays()) && getTimes().equals(other.getTimes());
     }
 

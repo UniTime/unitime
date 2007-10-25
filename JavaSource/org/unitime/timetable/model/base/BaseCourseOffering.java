@@ -44,7 +44,7 @@ public abstract class BaseCourseOffering  implements Serializable {
 	public static String PROP_TITLE = "title";
 	public static String PROP_SCHEDULE_BOOK_NOTE = "scheduleBookNote";
 	public static String PROP_EXTERNAL_UNIQUE_ID = "externalUniqueId";
-	public static String PROP_UNIQUE_ID_ROLLED_FORWARD_FROM = "UniqueIdRolledForwardFrom";
+	public static String PROP_UNIQUE_ID_ROLLED_FORWARD_FROM = "uniqueIdRolledForwardFrom";
 
 
 	// constructors
@@ -109,8 +109,8 @@ public abstract class BaseCourseOffering  implements Serializable {
 	private org.unitime.timetable.model.DemandOfferingType demandOfferingType;
 
 	// collections
-	private java.util.Set acadAreaReservations;
 	private java.util.Set courseReservations;
+	private java.util.Set acadAreaReservations;
 
 
 
@@ -392,6 +392,23 @@ public abstract class BaseCourseOffering  implements Serializable {
 
 
 	/**
+	 * Return the value associated with the column: courseReservations
+	 */
+	public java.util.Set getCourseReservations () {
+		return courseReservations;
+	}
+
+	/**
+	 * Set the value related to the column: courseReservations
+	 * @param courseReservations the courseReservations value
+	 */
+	public void setCourseReservations (java.util.Set courseReservations) {
+		this.courseReservations = courseReservations;
+	}
+
+
+
+	/**
 	 * Return the value associated with the column: acadAreaReservations
 	 */
 	public java.util.Set getAcadAreaReservations () {
@@ -407,20 +424,6 @@ public abstract class BaseCourseOffering  implements Serializable {
 	}
 
 
-   /**
-    * Return the value associated with the column: courseReservations
-    */
-   public java.util.Set getCourseReservations () {
-       return courseReservations;
-   }
-
-   /**
-    * Set the value related to the column: courseReservations
-    * @param courseReservations the courseReservations value
-    */
-   public void setCourseReservations (java.util.Set courseReservations) {
-       this.courseReservations = courseReservations;
-   }
 
 
 

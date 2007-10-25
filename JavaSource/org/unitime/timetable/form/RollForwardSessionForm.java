@@ -78,7 +78,9 @@ public class RollForwardSessionForm extends ActionForm {
 	private Boolean rollForwardClassPreferences;
 	private Collection availableClassSubjectAreas;
 	private String[] rollForwardClassPrefsSubjectIds;
-	
+	private Boolean rollForwardClassInstructors;
+	private String[] rollForwardClassInstrSubjectIds;
+
 	/** 
 	 * Method validate
 	 * @param mapping
@@ -88,6 +90,7 @@ public class RollForwardSessionForm extends ActionForm {
 	public ActionErrors validate(ActionMapping mapping,
 			HttpServletRequest request) {
         ActionErrors errors = new ActionErrors();
+        validateSessionToRollForwardTo(errors);
         return errors;
 	}
 	
@@ -195,6 +198,8 @@ public class RollForwardSessionForm extends ActionForm {
 		rollForwardClassPreferences = new Boolean(false);
 		availableClassSubjectAreas = new ArrayList();
 		rollForwardClassPrefsSubjectIds = new String[0];
+		rollForwardClassInstructors = new Boolean(false);
+		rollForwardClassInstrSubjectIds = new String[0];
 
 	}
 
@@ -434,5 +439,26 @@ public class RollForwardSessionForm extends ActionForm {
 	public void setSessionToRollTimePatternsForwardFrom(
 			Long sessionToRollTimePatternsForwardFrom) {
 		this.sessionToRollTimePatternsForwardFrom = sessionToRollTimePatternsForwardFrom;
+	}
+
+
+	public Boolean getRollForwardClassInstructors() {
+		return rollForwardClassInstructors;
+	}
+
+
+	public void setRollForwardClassInstructors(Boolean rollForwardClassInstructors) {
+		this.rollForwardClassInstructors = rollForwardClassInstructors;
+	}
+
+
+	public String[] getRollForwardClassInstrSubjectIds() {
+		return rollForwardClassInstrSubjectIds;
+	}
+
+
+	public void setRollForwardClassInstrSubjectIds(
+			String[] rollForwardClassInstrSubjectIds) {
+		this.rollForwardClassInstrSubjectIds = rollForwardClassInstrSubjectIds;
 	}
 }

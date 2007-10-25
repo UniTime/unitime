@@ -41,7 +41,7 @@ public abstract class BaseInstructionalOffering  implements Serializable {
 	public static String PROP_CTRL_COURSE_ID = "ctrlCourseId";
 	public static String PROP_LIMIT = "limit";
 	public static String PROP_DESIGNATOR_REQUIRED = "designatorRequired";
-	public static String PROP_UNIQUE_ID_ROLLED_FORWARD_FROM = "UniqueIdRolledForwardFrom";
+	public static String PROP_UNIQUE_ID_ROLLED_FORWARD_FROM = "uniqueIdRolledForwardFrom";
 
 
 	// constructors

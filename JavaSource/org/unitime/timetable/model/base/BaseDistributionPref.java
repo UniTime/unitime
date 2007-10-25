@@ -35,6 +35,7 @@ public abstract class BaseDistributionPref extends org.unitime.timetable.model.P
 
 	public static String REF = "DistributionPref";
 	public static String PROP_GROUPING = "grouping";
+	public static String PROP_UNIQUE_ID_ROLLED_FORWARD_FROM = "uniqueIdRolledForwardFrom";
 
 
 	// constructors
@@ -70,6 +71,7 @@ public abstract class BaseDistributionPref extends org.unitime.timetable.model.P
 
 	// fields
 	private java.lang.Integer grouping;
+	private java.lang.Long uniqueIdRolledForwardFrom;
 
 	// many to one
 	private org.unitime.timetable.model.DistributionType distributionType;
@@ -95,6 +97,23 @@ public abstract class BaseDistributionPref extends org.unitime.timetable.model.P
 	 */
 	public void setGrouping (java.lang.Integer grouping) {
 		this.grouping = grouping;
+	}
+
+
+
+	/**
+	 * Return the value associated with the column: UID_ROLLED_FWD_FROM
+	 */
+	public java.lang.Long getUniqueIdRolledForwardFrom () {
+		return uniqueIdRolledForwardFrom;
+	}
+
+	/**
+	 * Set the value related to the column: UID_ROLLED_FWD_FROM
+	 * @param uniqueIdRolledForwardFrom the UID_ROLLED_FWD_FROM value
+	 */
+	public void setUniqueIdRolledForwardFrom (java.lang.Long uniqueIdRolledForwardFrom) {
+		this.uniqueIdRolledForwardFrom = uniqueIdRolledForwardFrom;
 	}
 
 

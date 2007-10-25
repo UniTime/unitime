@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.model;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -729,6 +730,7 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 		if (getInstrOfferingConfigs() != null){
 			getInstrOfferingConfigs().clear();
 		}
+		this.setNotOffered(instrOffrToCloneFrom.getNotOffered());
 		InstrOfferingConfig origIoc = null;
 		InstrOfferingConfig newIoc = null;
 		for (Iterator iocIt = instrOffrToCloneFrom.getInstrOfferingConfigs().iterator(); iocIt.hasNext();){
@@ -749,6 +751,24 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 										&& !c.getManagingDept().getUniqueId().equals(controlDept.getUniqueId()) 
 										&& !c.getManagingDept().isExternalManager().booleanValue()){
 									c.setManagingDept(controlDept);
+									if(c.getClassInstructors() != null && !c.getClassInstructors().isEmpty()){
+										DepartmentalInstructor di = null;
+										ClassInstructor ci = null;
+										List al = new ArrayList();
+										al.addAll(c.getClassInstructors());
+										for (Iterator ciIt = al.iterator(); ciIt.hasNext();){
+											ci = (ClassInstructor) ciIt.next();
+											di = DepartmentalInstructor.findByPuidDepartmentId(ci.getInstructor().getExternalUniqueId(), controlDept.getUniqueId());
+											if (di != null){
+												ci.getInstructor().getClasses().remove(ci);
+												ci.setInstructor(di);
+												di.addToclasses(ci);
+											} else {
+												c.getClassInstructors().remove(ci);
+												ci.setClassInstructing(null);
+											}
+										}
+									}
 								}
 							}
 						}
@@ -758,4 +778,9 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 			this.addToinstrOfferingConfigs(newIoc);
 		}
 	}
+	public void addTocourseOfferingsReservations (org.unitime.timetable.model.CourseOfferingReservation courseOfferingReservation) {
+		if (null == getCourseReservations()) setCourseReservations(new java.util.HashSet());
+		getCourseReservations().add(courseOfferingReservation);
+	}
+
 }

@@ -841,6 +841,16 @@ public class Class_ extends BaseClass_ {
     		setLong("sessionId",sessionId.longValue()).
     		list();
     }
+    
+    public static List findAllForControllingSubjectArea(String subjectAreaAbbv, Long sessionId) {
+    	return (new Class_DAO()).
+    		getSession().
+    		createQuery("select distinct c from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings as co where " +
+    				"co.subjectArea.subjectAreaAbbreviation=:subjectAreaAbbv and c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId=:sessionId and co.isControl=1").
+    		setString("subjectAreaAbbv",subjectAreaAbbv).
+    		setLong("sessionId",sessionId.longValue()).
+    		list();
+    }
 
     public String getDivSecNumber() {
     	if (getParentClass()!=null && getSchedulingSubpart().getItype().equals(getParentClass().getSchedulingSubpart().getItype())) {
@@ -1273,6 +1283,20 @@ public class Class_ extends BaseClass_ {
 					newPref.setOwner(newClass);
 					newClass.addTopreferences(newPref);
 				}
+			}
+		}
+		if (getClassInstructors() != null && !getClassInstructors().isEmpty()){
+			ClassInstructor ci = null;
+			ClassInstructor newCi = null;
+			for (Iterator ciIt = getClassInstructors().iterator(); ciIt.hasNext();){
+				ci = (ClassInstructor) ciIt.next();
+				newCi = new ClassInstructor();
+				newCi.setClassInstructing(newClass);
+				newCi.setInstructor(ci.getInstructor());
+				newCi.setLead(ci.isLead());
+				newCi.setPercentShare(ci.getPercentShare());
+				ci.getInstructor().addToclasses(newCi);
+				newClass.addToclassInstructors(newCi);
 			}
 		}
 		return(newClass);
