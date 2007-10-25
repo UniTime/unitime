@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
+import org.hibernate.Transaction;
 import org.unitime.timetable.model.ExactTimeMins;
 import org.unitime.timetable.model.dao.ExactTimeMinsDAO;
 
@@ -52,13 +53,21 @@ public class ExactTimeEditForm extends ActionForm {
 		Collections.sort(iExactTimeMins);
 	}
 	
-	public void save() {
-		org.hibernate.Session hibSession = (new ExactTimeMinsDAO()).getSession(); 
-		for (Enumeration e=iExactTimeMins.elements();e.hasMoreElements();) {
-			ExactTimeMins ex = (ExactTimeMins)e.nextElement();
-			hibSession.saveOrUpdate(ex);
-		}
-		hibSession.flush();
+	public void save() throws Exception {
+		Transaction tx = null;
+        try {
+            org.hibernate.Session hibSession = (new ExactTimeMinsDAO()).getSession();
+            if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
+                tx = hibSession.beginTransaction();
+            for (Enumeration e=iExactTimeMins.elements();e.hasMoreElements();) {
+                ExactTimeMins ex = (ExactTimeMins)e.nextElement();
+                hibSession.saveOrUpdate(ex);
+            }
+            if (tx!=null) tx.commit();
+        } catch (Exception e) {
+            if (tx!=null) tx.rollback();
+            throw e;
+        }
 	}
 
 	public String getOp() { return iOp; }
