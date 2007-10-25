@@ -40,7 +40,7 @@ public abstract class BaseSchedulingSubpart extends org.unitime.timetable.model.
 	public static String PROP_SCHEDULING_SUBPART_SUFFIX_CACHE = "schedulingSubpartSuffixCache";
 	public static String PROP_COURSE_NAME = "courseName";
 	public static String PROP_LIMIT = "limit";
-	public static String PROP_UNIQUE_ID_ROLLED_FORWARD_FROM = "UniqueIdRolledForwardFrom";
+	public static String PROP_UNIQUE_ID_ROLLED_FORWARD_FROM = "uniqueIdRolledForwardFrom";
 
 
 	// constructors

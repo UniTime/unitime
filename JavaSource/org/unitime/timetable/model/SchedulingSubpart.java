@@ -94,7 +94,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
 				if (d1 == null){
 					d1 = d;
 				}
-				if (!d.getUniqueId().equals(d1.getUniqueId())){
+				if (d1 != null && !d.getUniqueId().equals(d1.getUniqueId())){
 					allSame = false;
 				}
 			}

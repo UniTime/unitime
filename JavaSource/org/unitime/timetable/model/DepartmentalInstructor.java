@@ -413,6 +413,14 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 		}
 	}
 	
+	public DepartmentalInstructor findThisInstructorInSession(Long sessionId){
+		Department newDept = this.getDepartment().findSameDepartmentInSession(sessionId);
+		if (newDept != null){
+			return(findByPuidDepartmentId(this.getExternalUniqueId(), newDept.getUniqueId()));
+		}
+		return(null);
+	}
+	
     public DepartmentalInstructor getNextDepartmentalInstructor(HttpSession session, User user, boolean canEdit, boolean canView) throws Exception {
     	List instructors = DepartmentalInstructor.getInstructorByDept(getDepartment().getSessionId(),getDepartment().getUniqueId());
     	DepartmentalInstructor next = null;

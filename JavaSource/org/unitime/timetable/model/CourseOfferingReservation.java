@@ -20,6 +20,7 @@
 package org.unitime.timetable.model;
 
 import org.unitime.timetable.model.base.BaseCourseOfferingReservation;
+import org.unitime.timetable.model.dao.CourseOfferingReservationDAO;
 
 
 
@@ -66,4 +67,17 @@ public class CourseOfferingReservation extends BaseCourseOfferingReservation {
 		return getCourseOffering().getCourseName();
 	}
 	
+    public Object clone() {
+    	CourseOfferingReservation cor = new CourseOfferingReservation();
+		cor.setCourseOffering(this.getCourseOffering());
+		cor.setOwner(this.getOwner());
+		cor.setOwnerClassId(this.getOwnerClassId());
+		cor.setPriorEnrollment(this.getPriorEnrollment());
+		cor.setPriority(this.getPriority());
+		cor.setProjectedEnrollment(this.getProjectedEnrollment());
+		cor.setRequested(this.getRequested());
+		cor.setReservationType(this.getReservationType());
+		cor.setReserved(this.getReserved());
+    	return cor;
+    }
 }

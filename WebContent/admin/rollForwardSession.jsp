@@ -55,7 +55,7 @@
 		<tr>
 			<td valign="top" nowrap ><b>Session To Roll Foward To: </b>
 			<html:select style="width:200;" property="sessionToRollForwardTo">
-			<html:optionsCollection property="sessions" value="uniqueId" label="label" /></html:select>
+			<html:optionsCollection property="sessions" value="uniqueId" label="label"  /></html:select>
 			</td>			
 		</tr>
 		<tr>
@@ -109,6 +109,37 @@
 			<html:select style="width:200;" property="sessionToRollCourseOfferingsForwardFrom">
 			<html:optionsCollection property="sessions" value="uniqueId" label="label" /></html:select>
 			</td>			
+		</tr>
+		<TR>
+			<TD valign="top">
+			<table><tr><td valign="top">
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;For Subject Areas:
+				</td><td>
+				<html:select size="<%=String.valueOf(Math.min(7,frm.getSubjectAreas().size()))%>" name="<%=frmName%>" styleClass="cmb" property="rollForwardSubjectAreaIds" multiple="true" onfocus="setUp();" onkeypress="return selectSearch(event, this);" onkeydown="return checkKey(event, this);">
+					<html:optionsCollection property="subjectAreas" label="subjectAreaAbbreviation" value="uniqueId" />
+				</html:select>
+			</td></tr></table>
+			</td>
+		</tr>
+		<tr>
+			<td valign="top">
+			<table><tr>	<td valign="top" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardClassPreferences"/> Roll Forward Preferences to the Class Level For Subject Areas: 
+				</td><td>
+				<html:select size="<%=String.valueOf(Math.min(7,frm.getSubjectAreas().size()))%>" name="<%=frmName%>" styleClass="cmb" property="rollForwardClassPrefsSubjectIds" multiple="true" onfocus="setUp();" onkeypress="return selectSearch(event, this);" onkeydown="return checkKey(event, this);">
+					<html:optionsCollection property="subjectAreas" label="subjectAreaAbbreviation" value="uniqueId" />
+				</html:select>
+			</td></tr></table>
+			</td>
+		</tr>
+		<tr>
+			<td valign="top">
+			<table><tr>	<td valign="top" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardClassInstructors"/> Roll Forward Class Instructors For Subject Areas: 
+				</td><td>
+				<html:select size="<%=String.valueOf(Math.min(7,frm.getSubjectAreas().size()))%>" name="<%=frmName%>" styleClass="cmb" property="rollForwardClassInstrSubjectIds" multiple="true" onfocus="setUp();" onkeypress="return selectSearch(event, this);" onkeydown="return checkKey(event, this);">
+					<html:optionsCollection property="subjectAreas" label="subjectAreaAbbreviation" value="uniqueId" />
+				</html:select>
+			</td></tr></table>
+			</td>
 		</tr>
 
 		<tr><td>&nbsp;<br>&nbsp;<br></td></tr>

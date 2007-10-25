@@ -403,12 +403,12 @@ public class Department extends BaseDepartment implements Comparable {
 		d.setStatusType(getStatusType());
 		return d;
 	}
-
-	public Department findSameDepartmentInSession(Session newSession){
-		if (newSession == null){
+	
+	public Department findSameDepartmentInSession(Long newSessionId){
+		if (newSessionId == null){
 			return(null);
 		}
-		Department newDept = Department.findByDeptCode(this.getDeptCode(), newSession.getUniqueId());
+		Department newDept = Department.findByDeptCode(this.getDeptCode(), newSessionId);
 		if (newDept == null && this.getExternalUniqueId() != null){
 			// if a department wasn't found and an external uniqueid exists for this 
 			//   department check to see if the new term has a department that matches 
@@ -417,7 +417,7 @@ public class Department extends BaseDepartment implements Comparable {
 			getSession().
 			createCriteria(Department.class).
 			add(Restrictions.eq("externalUniqueId",this.getExternalUniqueId())).
-			add(Restrictions.eq("session.uniqueId", newSession.getUniqueId())).
+			add(Restrictions.eq("session.uniqueId", newSessionId)).
 			setCacheable(true).list();
 
 			if (l.size() == 1){
@@ -425,5 +425,10 @@ public class Department extends BaseDepartment implements Comparable {
 			}
 		}
 		return(newDept);
+	}
+
+	public Department findSameDepartmentInSession(Session newSession){
+		if (newSession != null) return(findSameDepartmentInSession(newSession.getUniqueId()));
+		else return(null);
 	}
 }
