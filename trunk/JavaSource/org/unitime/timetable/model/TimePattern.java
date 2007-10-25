@@ -351,11 +351,11 @@ public class TimePattern extends BaseTimePattern implements Comparable {
 	 * @return true if the given pattern can be mapped to this pattern
 	 */
 	public boolean contains(TimePattern other, boolean strongComparison) {
-	    if (getNrMeetings()!=other.getNrMeetings()) return false;
-	    if (getMinPerMtg()!=other.getMinPerMtg()) return false;
-	    if (strongComparison && getBreakTime()!=other.getBreakTime()) return false;
-	    if (strongComparison && getSlotsPerMtg()!=other.getSlotsPerMtg()) return false;
-	    return getDays().containsAll(other.getDays()) && getTimes().contains(other.getTimes());
+        if (!getNrMeetings().equals(other.getNrMeetings())) return false;
+        if (!getMinPerMtg().equals(other.getMinPerMtg())) return false;
+        if (strongComparison && !getBreakTime().equals(other.getBreakTime())) return false;
+        if (strongComparison && !getSlotsPerMtg().equals(other.getSlotsPerMtg())) return false;
+	    return getDays().containsAll(other.getDays()) && getTimes().containsAll(other.getTimes());
 	}
 
     /**
@@ -366,10 +366,10 @@ public class TimePattern extends BaseTimePattern implements Comparable {
      * @return true if the given pattern can be mapped to this pattern
      */
     public boolean match(TimePattern other, boolean strongComparison) {
-        if (getNrMeetings()!=other.getNrMeetings()) return false;
-        if (getMinPerMtg()!=other.getMinPerMtg()) return false;
-        if (strongComparison && getBreakTime()!=other.getBreakTime()) return false;
-        if (strongComparison && getSlotsPerMtg()!=other.getSlotsPerMtg()) return false;
+        if (!getNrMeetings().equals(other.getNrMeetings())) return false;
+        if (!getMinPerMtg().equals(other.getMinPerMtg())) return false;
+        if (strongComparison && !getBreakTime().equals(other.getBreakTime())) return false;
+        if (strongComparison && !getSlotsPerMtg().equals(other.getSlotsPerMtg())) return false;
         return getDays().equals(other.getDays()) && getTimes().equals(other.getTimes());
     }
 
@@ -469,7 +469,7 @@ public class TimePattern extends BaseTimePattern implements Comparable {
             newModel.setExactDays(oldModel.getExactDays());
             newModel.setExactStartSlot(oldModel.getExactStartSlot());
         } else {
-            newModel.combineWith(oldModel, false);
+            newModel.combineMatching(oldModel);
         }
         TimePref newTimePref = new TimePref();
         newTimePref.setPrefLevel(timePref.getPrefLevel());
