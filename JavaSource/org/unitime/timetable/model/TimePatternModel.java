@@ -669,6 +669,54 @@ public class TimePatternModel implements RequiredTimeTableModel {
     	if (changed) changeProhibited2Required();
     }
     
+    public void combineMatching(TimePatternModel model) {
+        combineMatching(model, true, sMixAlgMinMax);
+    }
+    
+    /**
+     * Combines preferences of two (different, but matching -- see {@link TimePattern#getMatchingTimePattern(Long, TimePattern)}) time patterns into one.
+     * Unlike {@link TimePatternModel#combineWith(TimePatternModel, boolean, int)}, if the same field (days x time) is present in both time patterns,
+     * its preference is copied from one time pattern to the other. If the field is not present, its preference is computed the same way as in
+     * {@link TimePatternModel#combineWith(TimePatternModel, boolean, int)}.
+     * @param model another model to take preferences from (to put into the current one)
+     * @param clear if true, preferences in current model are cleared first (it transfers preferences from the given model to the current one)
+     * @param alg algorithm that should be used for combining preferences (one of sMixAlgXxx constants)
+     */
+    public void combineMatching(TimePatternModel model, boolean clear, int alg) {
+        for (int t1=0;t1<getNrTimes();t1++) {
+            for (int d1=0;d1<getNrDays();d1++) {
+                int t2=-1,d2=-1;
+                for (int t=0;t<model.getNrTimes();t++) {
+                    for (int d=0;d<model.getNrDays();d++) {
+                        if (getTime(t1)==model.getTime(t) && getDayCode(d1)==model.getDayCode(d)) {
+                            t2=t;d2=d;break;
+                        }
+                    }
+                }
+                if (t2>=0 && d2>=0)
+                    if (clear) {
+                        setPreference(d1,t1,model.getPreference(d2,t2));
+                    } else {
+                        PreferenceCombination com = new MinMaxPreferenceCombination();
+                        com.addPreferenceProlog(getPreference(d1,t1)==null?PreferenceLevel.sNeutral:getPreference(d1,t1));
+                        com.addPreferenceProlog(model.getPreference(d2,t2)==null?PreferenceLevel.sNeutral:getPreference(d2,t2));
+                        setPreference(d1,t1,com.getPreferenceProlog());
+                    }
+                else {
+                    String pref = model.getCombinedPreference(getDayCode(d1), getStartSlot(t1), getSlotsPerMtg(), alg);
+                    if (clear) {
+                        setPreference(d1,t1,pref);
+                    } else {
+                        PreferenceCombination com = new MinMaxPreferenceCombination();
+                        com.addPreferenceProlog(getPreference(d1,t1)==null?PreferenceLevel.sNeutral:getPreference(d1,t1));
+                        com.addPreferenceProlog(pref);
+                        setPreference(d1,t1,com.getPreferenceProlog());
+                    }
+                }
+            }
+        }
+    }
+    
     public void weakenHardPreferences() {
     	for (int d=0;d<getNrDays();d++)
     		for (int t=0;t<getNrTimes();t++) {
