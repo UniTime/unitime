@@ -19,10 +19,8 @@
 */
 package org.unitime.timetable.model;
 
-import java.util.List;
 import java.util.TreeSet;
 
-import org.hibernate.Query;
 import org.unitime.timetable.model.base.BaseItypeDesc;
 import org.unitime.timetable.model.dao.ItypeDescDAO;
 
@@ -61,21 +59,6 @@ public class ItypeDesc extends BaseItypeDesc implements Comparable {
                 createQuery("select i from ItypeDesc i"+(basic?" where i.basic=1":"")).
                 setCacheable(true).
                 list());
-    }
-
-    /**
-     * Returns the ItypeDesc object corresponding to the given itype
-     * @param itype
-     * @return
-     * @throws Exception
-     */
-    public static ItypeDesc find(Integer itype) throws Exception{
-    	Query q = new ItypeDescDAO().
-			        getSession().
-			        createQuery("select i from ItypeDesc i where i.itype=:itype");
-    	q.setInteger("itype", itype);
-        List l = q.setCacheable(true).list();
-        return ((l!=null && l.size()>0) ? (ItypeDesc) l.get(0) : null );
     }
 
     public String getBasicType() {
