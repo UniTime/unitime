@@ -24,6 +24,8 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
+import net.sf.cpsolver.ifs.util.ToolBox;
+
 import org.hibernate.Hibernate;
 import org.hibernate.ObjectNotFoundException;
 import org.hibernate.Query;
@@ -32,8 +34,6 @@ import org.unitime.timetable.model.base.BaseDistributionPref;
 import org.unitime.timetable.model.dao.DistributionPrefDAO;
 import org.unitime.timetable.model.dao.PreferenceGroupDAO;
 import org.unitime.timetable.model.dao._RootDAO;
-
-import net.sf.cpsolver.ifs.util.ToolBox;
 
 public class DistributionPref extends BaseDistributionPref {
 	private static final long serialVersionUID = 1L;
@@ -504,5 +504,16 @@ public class DistributionPref extends BaseDistributionPref {
     			return false;
     	}
     	return true;
+    }
+    
+    public static DistributionPref findByIdRolledForwardFrom(Long uidRolledForwardFrom) {
+        return (DistributionPref)new DistributionPrefDAO().
+            getSession().
+            createQuery(
+                "select dp from DistributionPref dp where "+
+                "dp.uniqueIdRolledForwardFrom=:uidRolledFrom").
+            setLong("uidRolledFrom", uidRolledForwardFrom).
+            setCacheable(true).
+            uniqueResult(); 
     }
 }

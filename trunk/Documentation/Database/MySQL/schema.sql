@@ -789,6 +789,8 @@ CREATE TABLE `timetable`.`distribution_pref` (
   `dist_type_id` DECIMAL(20, 0) NULL,
   `grouping` BIGINT(10) NULL,
   `last_modified_time` DATETIME NULL,
+  `uid_rolled_fwd_from` DECIMAL(20, 0) NULL,
+  
   PRIMARY KEY (`uniqueid`),
   INDEX `idx_distribution_pref_level` (`pref_level_id`),
   INDEX `idx_distribution_pref_owner` (`owner_id`),

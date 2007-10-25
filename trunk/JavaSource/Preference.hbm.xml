@@ -171,13 +171,20 @@
 				lazy="true"
 				cascade="all-delete-orphan"
 			>
-			<cache include="non-lazy" usage="read-write"/>
-			<key column="DIST_PREF_ID"/>
-			<one-to-many class="DistributionObject"/>
-		</set>
-		 	
+			    <cache include="non-lazy" usage="read-write"/>
+			    <key column="DIST_PREF_ID"/>
+			    <one-to-many class="DistributionObject"/>
+			</set>
+		 	<property
+				name="uniqueIdRolledForwardFrom"
+				column="UID_ROLLED_FWD_FROM"
+				type="java.lang.Long"
+				not-null="false"
+				length="20"
+		    />
 		</union-subclass>
-				<union-subclass
+		
+		<union-subclass
 		 	name="RoomGroupPref"
 		 	table="ROOM_GROUP_PREF"
 		 	abstract="false"

@@ -67,7 +67,7 @@ public class VariableRangeCreditUnitConfig extends BaseVariableRangeCreditUnitCo
 		sb.append(this.getCreditUnitType().getLabel());
 		sb.append(" of ");
 		sb.append(this.getCreditType().getLabel());
-		if (this.isFractionalIncrementsAllowed().booleanValue()){
+		if (this.isFractionalIncrementsAllowed() == null || this.isFractionalIncrementsAllowed().booleanValue()){
 			sb.append(" in fractional increments");
 		} else {
 			sb.append(" in whole number increments");

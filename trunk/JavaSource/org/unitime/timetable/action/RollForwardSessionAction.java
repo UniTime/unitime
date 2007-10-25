@@ -19,6 +19,11 @@
 */
 package org.unitime.timetable.action;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -32,7 +37,9 @@ import org.apache.struts.util.MessageResources;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.RollForwardSessionForm;
+import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.util.SessionRollForward;
 
 
@@ -101,16 +108,54 @@ public class RollForwardSessionAction extends Action {
         	if (errors.size() == 0 && rollForwardSessionForm.getRollForwardCourseOfferings().booleanValue()){
         		sessionRollForward.rollCourseOfferingsForward(errors, rollForwardSessionForm);
         	}
+        	if (errors.size() == 0 && rollForwardSessionForm.getRollForwardClassPreferences().booleanValue()){
+        		sessionRollForward.rollClassPreferencesForward(errors, rollForwardSessionForm);
+        	}
+        	if (errors.size() == 0 && rollForwardSessionForm.getRollForwardClassInstructors().booleanValue()){
+        		sessionRollForward.rollClassInstructorsForward(errors, rollForwardSessionForm);
+        	}
             if (errors.size() != 0) {
                 saveErrors(request, errors);
             }
 
         }            
 		rollForwardSessionForm.setAdmin(user.isAdmin());
-		rollForwardSessionForm.setSubjectAreas(Session.getCurrentAcadSession(user).getSubjectAreas());
-		rollForwardSessionForm.setSessions(Session.getAllSessions());
-  		return mapping.findForward("displayRollForwardSessionForm");        
-
+		rollForwardSessionForm.setSubjectAreas(getSubjectAreas(rollForwardSessionForm.getSessionToRollForwardTo()));
+		List sessionList = new ArrayList();
+		sessionList.addAll(Session.getAllSessions());
+		ArrayList reverseSessionList = new ArrayList();
+		for (int i = (sessionList.size() - 1); i >= 0; i--){
+			reverseSessionList.add(sessionList.get(i));
+		}
+		rollForwardSessionForm.setSessions(reverseSessionList);
+  		return mapping.findForward("displayRollForwardSessionForm");
+	}
+	
+	private Set getSubjectAreas(Long selectedSessionId) {
+		Set subjects = new TreeSet();
+		Session session = null;
+		if (selectedSessionId == null){
+			DepartmentStatusType statusType = DepartmentStatusType.findByRef("initial");
+			boolean found = false;
+			TreeSet allSessions = Session.getAllSessions();
+			for (java.util.Iterator it = allSessions.iterator(); (!found && it.hasNext());){
+				session = (Session) it.next();
+				if (session.getStatusType().getUniqueId().equals(statusType.getUniqueId())){
+					found =  true;
+				}
+			}
+			if (!found){
+				session = null;
+				if (allSessions.size() > 0){
+					session = (Session)allSessions.last();
+				}
+			}
+		} else {
+			session = Session.getSessionById(selectedSessionId);
+		}
+		
+		if (session != null) subjects = session.getSubjectAreas();
+		return(subjects);
 	}
 
 }

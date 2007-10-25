@@ -44,7 +44,7 @@ public abstract class BaseClass_ extends org.unitime.timetable.model.PreferenceG
 	public static String PROP_DISPLAY_IN_SCHEDULE_BOOK = "displayInScheduleBook";
 	public static String PROP_MAX_EXPECTED_CAPACITY = "maxExpectedCapacity";
 	public static String PROP_ROOM_RATIO = "roomRatio";
-	public static String PROP_UNIQUE_ID_ROLLED_FORWARD_FROM = "UniqueIdRolledForwardFrom";
+	public static String PROP_UNIQUE_ID_ROLLED_FORWARD_FROM = "uniqueIdRolledForwardFrom";
 
 
 	// constructors

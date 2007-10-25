@@ -77,15 +77,15 @@ public class CourseCatalog extends BaseCourseCatalog {
 		if (courseOffering == null || session == null){
 			return(null);
 		}
-		String query = "select distinct cc.* from CourseCatalog cc";
+		String query = "select distinct cc from CourseCatalog cc";
 		query += " where cc.session.uniqueId=:sessionId";
 		query += "  and ((cc.subject=:subjectAbbv";
 		query += "    and cc.courseNumber=:courseNbr";
-		query += "    and (cc.previousSubject is null or cc.previousSubject = cc.subject";
+		query += "    and (cc.previousSubject is null or cc.previousSubject = cc.subject)";
 		query += "    and (cc.previousCourseNumber is null or cc.previousCourseNumber = cc.courseNumber))";
 		query += "   or (cc.previousSubject=:subjectAbbv";
 		query += "    and cc.previousCourseNumber=:courseNbr))";
-		if (courseOffering.getPermId() != null){
+		if (courseOffering.getPermId() != null && Integer.parseInt(courseOffering.getPermId()) > 0){
 			query += "  and cc.permanentId = '" + courseOffering.getPermId() + "'";
 		}
 		List l = SubjectAreaDAO.getInstance().getQuery(query)

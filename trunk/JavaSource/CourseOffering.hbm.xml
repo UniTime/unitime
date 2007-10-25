@@ -119,7 +119,7 @@
 		/>
 		
 		<property
-			name="UniqueIdRolledForwardFrom"
+			name="uniqueIdRolledForwardFrom"
 			column="UID_ROLLED_FWD_FROM"
 			type="java.lang.Long"
 			not-null="false"
