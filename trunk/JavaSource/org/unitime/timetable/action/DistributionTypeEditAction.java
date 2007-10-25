@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.hibernate.HibernateException;
+import org.hibernate.Transaction;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.unitime.commons.User;
@@ -120,41 +121,52 @@ public class DistributionTypeEditAction extends Action {
 
 	    	if ("Save".equals(op)) {
 				DistributionTypeDAO dao = new DistributionTypeDAO();
-				org.hibernate.Session hibSession = dao.getSession();
-				DistributionType distType = dao.get(myForm.getUniqueId());
-				DistributionType x = (DistributionType) myForm.getRefTableEntry();
-				distType.setAbbreviation(x.getAbbreviation());
-				distType.setAllowedPref(x.getAllowedPref());
-				distType.setDescr(x.getDescr());
-				distType.setInstructorPref(x.isInstructorPref()==null?Boolean.FALSE:x.isInstructorPref());
-				distType.setLabel(x.getLabel());
-				HashSet oldDepts = new HashSet(distType.getDepartments());
-				for (Enumeration e=myForm.getDepartmentIds().elements();e.hasMoreElements();) {
-					Long departmentId = (Long)e.nextElement();
-					Department d = (new DepartmentDAO()).get(departmentId,hibSession);
-					if (d==null) continue;
-					if (oldDepts.remove(d)) {
-						//not changed -> do nothing
-					} else {
-						distType.getDepartments().add(d);
-					}
+				Transaction tx = null;
+				try {
+	                org.hibernate.Session hibSession = dao.getSession();
+				    if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
+                        tx = hibSession.beginTransaction();
+	                DistributionType distType = dao.get(myForm.getUniqueId());
+	                System.out.println("depts:"+distType.getDepartments());
+	                DistributionType x = (DistributionType) myForm.getRefTableEntry();
+	                distType.setAbbreviation(x.getAbbreviation());
+	                distType.setAllowedPref(x.getAllowedPref());
+	                distType.setDescr(x.getDescr());
+	                distType.setInstructorPref(x.isInstructorPref()==null?Boolean.FALSE:x.isInstructorPref());
+	                distType.setLabel(x.getLabel());
+	                HashSet oldDepts = new HashSet(distType.getDepartments());
+	                for (Enumeration e=myForm.getDepartmentIds().elements();e.hasMoreElements();) {
+	                    Long departmentId = (Long)e.nextElement();
+	                    Department d = (new DepartmentDAO()).get(departmentId,hibSession);
+	                    if (d==null) continue;
+	                    if (oldDepts.remove(d)) {
+	                        //not changed -> do nothing
+	                    } else {
+	                        distType.getDepartments().add(d);
+	                    }
+	                }
+	                for (Iterator i=oldDepts.iterator();i.hasNext();) {
+	                    Department d = (Department)i.next();
+	                    if (!d.getSessionId().equals(sessionId)) continue;
+	                    distType.getDepartments().remove(d);
+	                }
+	                System.out.println("depts:"+distType.getDepartments());
+	                hibSession.saveOrUpdate(distType);
+	                ChangeLog.addChange(
+	                        hibSession, 
+	                        request, 
+	                        distType, 
+	                        ChangeLog.Source.DIST_TYPE_EDIT, 
+	                        ChangeLog.Operation.UPDATE, 
+	                        null, 
+	                        null);
+	                
+	                if (tx!=null) tx.commit();
+				} catch (Exception e) {
+				    if (tx!=null) tx.rollback();
+                    throw e;
 				}
-				for (Iterator i=oldDepts.iterator();i.hasNext();) {
-					Department d = (Department)i.next();
-					if (!d.getSessionId().equals(sessionId)) continue;
-					distType.getDepartments().remove(d);
-				}
-				hibSession.saveOrUpdate(distType);
-                ChangeLog.addChange(
-                        hibSession, 
-                        request, 
-                        distType, 
-                        ChangeLog.Source.DIST_TYPE_EDIT, 
-                        ChangeLog.Operation.UPDATE, 
-                        null, 
-                        null);
-                
-				hibSession.flush();
+
 				return mapping.findForward("showDistributionTypeList");
 			}
 			if ("Back".equals(op)) {
