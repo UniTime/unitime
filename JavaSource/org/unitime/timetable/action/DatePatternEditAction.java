@@ -782,7 +782,7 @@ public class DatePatternEditAction extends Action {
                     if (Math.abs(lastDiff)>3 || Math.abs(firstDiff)>3) pattStr += "</b>";
                 }
             }
-        	boolean isUsed = used.contains(pattern);
+        	boolean isUsed = used.contains(pattern) || pattern.isDefault();
         	webTable.addLine(onClick, new String[] {
         	        (pattern.isDefault()?"<B>":"")+
         	        (pattern.isVisible()?"":"<font color='gray'>")+
