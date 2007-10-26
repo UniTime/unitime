@@ -34,6 +34,26 @@
 				<line>Added support for rolling a session forward (Menu: Adiministration / Input Data / Roll Forward Session).</line>
 			</description>
 		</item>
+		<item>
+			<name>Room Detail</name>
+			<description>
+				<line>When a room is deleted, do not delete all assignments that become orphan -- keep the assignments without the room (i.e., keep time assignments).</line>
+			</description>
+		</item>
+		<item>
+			<name>Buildings, Edit Building</name>
+			<description>
+				<line>Added ability to have no coordinates (saved as coordinates [-1,-1], displayed as empty coordinates).</line>
+				<line>Add create/update/delete message to the change log.</line>
+				<line>On delete, for all rooms of the building: make sure that all room assignments and room preferences are deleted.</line>
+			</description>
+		</item>
+		<item>
+			<name>Date Patterns</name>
+			<description>
+				<line>Default date pattern is automatically marked as used.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>DATABASE</title>
