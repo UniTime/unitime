@@ -122,7 +122,6 @@
 			name="assignments"
 			inverse="true"
 			table="ASSIGNED_ROOMS"
-			cascade="all-delete-orphan"
 			>
 	 		<cache include="non-lazy" usage="nonstrict-read-write"/>
 			<key column="ROOM_ID"/>
