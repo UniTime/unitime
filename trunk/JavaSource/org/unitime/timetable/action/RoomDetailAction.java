@@ -42,6 +42,7 @@ import org.hibernate.criterion.Restrictions;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.RoomDetailForm;
+import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
@@ -326,7 +327,13 @@ public class RoomDetailAction extends Action {
 					hibSession.delete(rp);
 					hibSession.saveOrUpdate(rp.getOwner());
 				}
-				hibSession.delete(location);
+                for (Iterator i=location.getAssignments().iterator();i.hasNext();) {
+                    Assignment a = (Assignment)i.next();
+                    a.getRooms().remove(location);
+                    hibSession.saveOrUpdate(a);
+                    i.remove();
+                }
+                hibSession.delete(location);
 			}
 			tx.commit();
 		} catch (Exception e) {
