@@ -120,7 +120,8 @@ public class ChangeLog extends BaseChangeLog implements Comparable {
         DATE_PATTERN_EDIT,
         DIST_TYPE_EDIT,
         MANAGER_EDIT,
-        SUBJECT_AREA_EDIT
+        SUBJECT_AREA_EDIT,
+        BUILDING_EDIT
     }
     
     public static SimpleDateFormat sDF = new SimpleDateFormat("MM/dd/yy hh:mmaa");

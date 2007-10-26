@@ -40,7 +40,7 @@
 <%
     WebTable webTable = new WebTable( 5,
     null, "buildingList.do?ord=%%",
-    new String[] {"Abbreviation", "Name", "External Id", "X-Coordinate", "Y-Coordinate"},
+    new String[] {"Abbreviation", "Name", "External ID", "X-Coordinate", "Y-Coordinate"},
     new String[] {"left", "left","left","right","right"},
     new boolean[] {true,true,true,true,true} );
     WebTable.setOrder(session, "BuildingList.ord", request.getParameter("ord"), 1);
@@ -56,15 +56,15 @@ webTable.addLine(
 		b.getAbbreviation(),
 		b.getName(),
 		b.getExternalUniqueId()==null?"<i>N/A</i>":b.getExternalUniqueId().toString(),
-		df5.format(b.getCoordinateX()),
-		df5.format(b.getCoordinateY()),
+		(b.getCoordinateX()==null || b.getCoordinateX()<0?"":df5.format(b.getCoordinateX())),
+		(b.getCoordinateY()==null || b.getCoordinateY()<0?"":df5.format(b.getCoordinateY()))
 		}, 
 	new Comparable[] {
 		b.getAbbreviation(),
 		b.getName(),
-		b.getExternalUniqueId(),
+		b.getExternalUniqueId()==null?"":b.getExternalUniqueId().toString(),
 		b.getCoordinateX(),
-		b.getCoordinateY(),
+		b.getCoordinateY()
 		});
 %>
 
