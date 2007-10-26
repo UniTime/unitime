@@ -127,7 +127,6 @@ public class DistributionTypeEditAction extends Action {
 				    if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
                         tx = hibSession.beginTransaction();
 	                DistributionType distType = dao.get(myForm.getUniqueId());
-	                System.out.println("depts:"+distType.getDepartments());
 	                DistributionType x = (DistributionType) myForm.getRefTableEntry();
 	                distType.setAbbreviation(x.getAbbreviation());
 	                distType.setAllowedPref(x.getAllowedPref());
@@ -150,7 +149,6 @@ public class DistributionTypeEditAction extends Action {
 	                    if (!d.getSessionId().equals(sessionId)) continue;
 	                    distType.getDepartments().remove(d);
 	                }
-	                System.out.println("depts:"+distType.getDepartments());
 	                hibSession.saveOrUpdate(distType);
 	                ChangeLog.addChange(
 	                        hibSession, 
@@ -160,7 +158,6 @@ public class DistributionTypeEditAction extends Action {
 	                        ChangeLog.Operation.UPDATE, 
 	                        null, 
 	                        null);
-	                
 	                if (tx!=null) tx.commit();
 				} catch (Exception e) {
 				    if (tx!=null) tx.rollback();
