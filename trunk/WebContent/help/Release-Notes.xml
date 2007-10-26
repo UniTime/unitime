@@ -29,6 +29,27 @@
 	<category>
 		<title>USER INTERFACE</title>
 		<item>
+			<name>Roll Forward</name>
+			<description>
+				<line>Added support for rolling a session forward (Menu: Adiministration / Input Data / Roll Forward Session).</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>DATABASE</title>
+		<item>
+			<name>Hibernate Configuration</name>
+			<line>Connection auto-commit (option connection.autocommit) set to true.</line> 
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.0.33</version>
+	<release-date>Sat, 20 Oct 2007</release-date>
+	<category>
+		<title>USER INTERFACE</title>
+		<item>
 			<name>Instructional Offering Config, Multiple Class Setup</name>
 			<description>
 				<line>
