@@ -30,6 +30,7 @@
 	<property name="connection.url">jdbc:mysql://localhost:3306/timetable</property>
 	<property name="connection.username">timetable</property>
 	<property name="connection.password">unitime</property>
+	<property name="connection.autocommit">true</property>
 	<property name="dialect">org.hibernate.dialect.MySQLInnoDBDialect</property>
 	<property name="tmtbl.uniqueid.generator">org.hibernate.id.TableHiLoGenerator</property>
 	<!-- End of MySQL Configuration -->
