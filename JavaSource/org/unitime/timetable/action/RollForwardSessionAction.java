@@ -39,7 +39,6 @@ import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.RollForwardSessionForm;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.util.SessionRollForward;
 
 

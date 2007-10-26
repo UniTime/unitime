@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 import org.unitime.timetable.model.base.BaseCourseOfferingReservation;
-import org.unitime.timetable.model.dao.CourseOfferingReservationDAO;
 
 
 
