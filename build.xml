@@ -174,6 +174,8 @@
 		<replace file="${war.dir}/help/Release-Notes.xml" token="@release.date@" value="${build.date}" />
 		<replace file="${war.dir}/help/Release-Notes.xml" token="@build.number@" value="${build.number}" />
 		<copy todir="${war.dir}/solver" file="${dist.dir}/solver.jar"/>
+		<copy todir="${dist.dir}" file="${war.dir}/help/Release-Notes.xml"/>
+		<copy todir="${dist.dir}" file="${war.dir}/help/Release-Notes.css"/>
 	</target>
 
 	<target name="compile-war" depends="timetable-jar,copy-libs,copy-jsp">
