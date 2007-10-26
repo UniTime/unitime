@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.form;
 
+import java.util.Iterator;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.struts.action.ActionErrors;
@@ -27,7 +29,10 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.Web;
+import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Building;
+import org.unitime.timetable.model.ChangeLog;
+import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.BuildingDAO;
 
@@ -42,7 +47,7 @@ public class BuildingEditForm extends ActionForm {
     private String iExternalId = null;
     private String iName = null;
     private String iAbbreviation = null;
-    private int iCoordX = 0, iCoordY = 0;
+    private String iCoordX = null, iCoordY = null;
 
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
         ActionErrors errors = new ActionErrors();
@@ -84,7 +89,7 @@ public class BuildingEditForm extends ActionForm {
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
         iUniqueId = null; iAbbreviation = null;
 		iOp = null; iExternalId = null; iName = null;
-        iCoordX = 0; iCoordY = 0;
+        iCoordX = null; iCoordY = null;
 	}
 	
 	public String getOp() { return iOp; }
@@ -97,10 +102,10 @@ public class BuildingEditForm extends ActionForm {
     public void setName(String name) { iName = name; }
     public String getAbbreviation() { return iAbbreviation; }
     public void setAbbreviation(String abbreviation) { iAbbreviation = abbreviation; }
-    public int getCoordX() { return iCoordX; }
-    public void setCoordX(int coordX) { iCoordX = coordX; }
-    public int getCoordY() { return iCoordY; }
-    public void setCoordY(int coordY) { iCoordY = coordY; }
+    public String getCoordX() { return iCoordX; }
+    public void setCoordX(String coordX) { iCoordX = coordX; }
+    public String getCoordY() { return iCoordY; }
+    public void setCoordY(String coordY) { iCoordY = coordY; }
     
     public void load(Building building) {
         setOp("Update");
@@ -108,26 +113,58 @@ public class BuildingEditForm extends ActionForm {
         setExternalId(building.getExternalUniqueId());
         setName(building.getName());
         setAbbreviation(building.getAbbreviation());
-        setCoordX(building.getCoordinateX());
-        setCoordY(building.getCoordinateY());
+        setCoordX(building.getCoordinateX()==null || building.getCoordinateX()<0? null: building.getCoordinateX().toString());
+        setCoordY(building.getCoordinateY()==null || building.getCoordinateY()<0? null: building.getCoordinateY().toString());
     }
     
-    public void saveOrUpdate(org.hibernate.Session hibSession, Session session) throws Exception {
+    public void saveOrUpdate(HttpServletRequest request, org.hibernate.Session hibSession, Session session) throws Exception {
         Building building = null;
         if (getUniqueId()!=null) building = new BuildingDAO().get(getUniqueId());
         if (building==null) building = new Building();
         building.setName(getName());
         building.setAbbreviation(getAbbreviation());
         building.setExternalUniqueId(getExternalId()!=null && getExternalId().length()==0?null:getExternalId());
-        building.setCoordinateX(getCoordX());
-        building.setCoordinateY(getCoordY());
+        building.setCoordinateX(getCoordX()==null || getCoordX().length()==0?-1:Integer.parseInt(getCoordX()));
+        building.setCoordinateY(getCoordY()==null || getCoordY().length()==0?-1:Integer.parseInt(getCoordY()));
         building.setSession(session);
         hibSession.saveOrUpdate(building);
+        ChangeLog.addChange(
+                hibSession, 
+                request, 
+                building, 
+                ChangeLog.Source.BUILDING_EDIT, 
+                (getUniqueId()==null?ChangeLog.Operation.CREATE:ChangeLog.Operation.UPDATE), 
+                null, 
+                null);
     }
     
-    public void delete(org.hibernate.Session hibSession) {
+    public void delete(HttpServletRequest request, org.hibernate.Session hibSession) {
         Building building = new BuildingDAO().get(getUniqueId());
-        if (building!=null) hibSession.delete(building);
+        if (building!=null) {
+            for (Iterator i=
+                hibSession.createQuery("select r from Room r where r.building.uniqueId=:buildingId").setLong("buildingId", getUniqueId()).iterate();
+                i.hasNext();) {
+                Room r = (Room)i.next();
+                hibSession.createQuery("delete RoomPref p where p.room.uniqueId=:roomId").setLong("roomId", r.getUniqueId()).executeUpdate();
+                for (Iterator j=r.getAssignments().iterator();j.hasNext();) {
+                    Assignment a = (Assignment)j.next();
+                    a.getRooms().remove(r);
+                    hibSession.saveOrUpdate(a);
+                    j.remove();
+                }
+                hibSession.delete(r);
+            }
+            
+            ChangeLog.addChange(
+                    hibSession, 
+                    request, 
+                    building, 
+                    ChangeLog.Source.BUILDING_EDIT, 
+                    ChangeLog.Operation.DELETE, 
+                    null, 
+                    null);
+            hibSession.delete(building);
+        }
     }
 }
 

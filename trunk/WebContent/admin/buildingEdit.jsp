@@ -17,12 +17,33 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  --%>
 <%@ page language="java" autoFlush="true"%>
+<%@ page import="org.unitime.commons.web.Web" %>
+<%@ page import="org.unitime.timetable.webutil.JavascriptFunctions" %>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
+<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 
 <tiles:importAttribute />
+
+<SCRIPT language="javascript">
+	<!--
+		<%= JavascriptFunctions.getJsConfirm(Web.getUser(session)) %>
+		
+		function confirmDelete() {
+			if (jsConfirm!=null && !jsConfirm)
+				return true;
+
+			if(confirm('The building and all its rooms will be deleted. Continue?')) {
+				return true;
+			}
+			return false;
+		}
+
+	// -->
+</SCRIPT>
+
 
 <html:form action="/buildingEdit">
 	<html:hidden property="uniqueId"/>
@@ -30,15 +51,25 @@
 	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD colspan="2">
-				<DIV class="WelcomeRowHead">
-				<logic:equal name="buildingEditForm" property="op" value="Save">
-				Add
-				</logic:equal>
-				<logic:equal name="buildingEditForm" property="op" value="Update">
-				Edit
-				</logic:equal>
-				Building
-				</DIV>
+			<tt:section-header>
+					<tt:section-title>
+						<logic:equal name="buildingEditForm" property="op" value="Save">
+						Add
+						</logic:equal>
+						<logic:equal name="buildingEditForm" property="op" value="Update">
+						Edit
+						</logic:equal>
+						Building
+					</tt:section-title>
+					<logic:equal name="buildingEditForm" property="op" value="Save">
+						<html:submit property="op" value="Save" title="Save (Alt+S)" accesskey="S"/> 
+					</logic:equal>
+					<logic:equal name="buildingEditForm" property="op" value="Update">
+						<html:submit property="op" value="Update" title="Update (Alt+U)" accesskey="U"/> 
+						<html:submit property="op" value="Delete" title="Delete (Alt+D)" accesskey="D" onclick="return confirmDelete();"/> 
+					</logic:equal>
+					<html:submit property="op" value="Back" title="Back (Alt+B)" accesskey="B"/> 
+				</tt:section-header>
 			</TD>
 		</TR>
 
@@ -59,7 +90,7 @@
 		</TR>
 
 		<TR>
-			<TD>External Id:</TD>
+			<TD>External ID:</TD>
 			<TD>
 				<html:text property="externalId" size="40" maxlength="40"/>
 				&nbsp;<html:errors property="externalId"/>
@@ -74,6 +105,12 @@
 				&nbsp;<html:errors property="coordX"/> <html:errors property="coordy"/>
 			</TD>
 		</TR>
+
+		<tr>
+			<td valign="middle" colspan="2">
+				<tt:section-title/>
+			</td>
+		<tr>
 		
 		<TR>
 			<TD align="right" colspan="2">
@@ -82,7 +119,7 @@
 				</logic:equal>
 				<logic:equal name="buildingEditForm" property="op" value="Update">
 					<html:submit property="op" value="Update" title="Update (Alt+U)" accesskey="U"/> 
-					<html:submit property="op" value="Delete" title="Delete (Alt+D)" accesskey="D"/> 
+					<html:submit property="op" value="Delete" title="Delete (Alt+D)" accesskey="D" onclick="return confirmDelete();"/> 
 				</logic:equal>
 				<html:submit property="op" value="Back" title="Back (Alt+B)" accesskey="B"/> 
 			</TD>

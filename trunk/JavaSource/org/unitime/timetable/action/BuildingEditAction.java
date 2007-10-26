@@ -35,6 +35,7 @@ import org.apache.struts.action.ActionMessages;
 import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
+import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.BuildingEditForm;
@@ -96,7 +97,7 @@ public class BuildingEditAction extends Action {
                 	if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
                 		tx = hibSession.beginTransaction();
                 	
-                	myForm.saveOrUpdate(hibSession, session);
+                	myForm.saveOrUpdate(request, hibSession, session);
                 	
         			if (tx!=null) tx.commit();
         	    } catch (Exception e) {
@@ -136,9 +137,11 @@ public class BuildingEditAction extends Action {
             	if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
             		tx = hibSession.beginTransaction();
             	
-            	myForm.delete(hibSession);
+            	myForm.delete(request, hibSession);
             	
     			tx.commit();
+    			
+    			HibernateUtil.clearCache();
     	    } catch (Exception e) {
     	    	if (tx!=null) tx.rollback();
     	    	throw e;
@@ -151,7 +154,7 @@ public class BuildingEditAction extends Action {
             DecimalFormat df5 = new DecimalFormat("####0");
             PdfWebTable table = new PdfWebTable( 5,
                     "Buildings", null,
-                    new String[] {"Abbreviation", "Name", "External Id", "X-Coordinate", "Y-Coordinate"},
+                    new String[] {"Abbreviation", "Name", "External ID", "X-Coordinate", "Y-Coordinate"},
                     new String[] {"left", "left","left","right","right"},
                     new boolean[] {true,true,true,true,true} );
             for (Iterator i=session.getBldgsFast(null).iterator();i.hasNext();) {
@@ -161,14 +164,14 @@ public class BuildingEditAction extends Action {
                         new String[] {
                             b.getAbbreviation(),
                             b.getName(),
-                            b.getExternalUniqueId()==null?"@@ITALIC N/A":b.getExternalUniqueId().toString(),
-                            df5.format(b.getCoordinateX()),
-                            df5.format(b.getCoordinateY()),
+                            b.getExternalUniqueId()==null?"@@ITALIC N/A @@END_ITALIC ":b.getExternalUniqueId().toString(),
+                            (b.getCoordinateX()==null || b.getCoordinateX()<0?"":df5.format(b.getCoordinateX())),
+                            (b.getCoordinateY()==null || b.getCoordinateY()<0?"":df5.format(b.getCoordinateY())),
                             }, 
                         new Comparable[] {
                             b.getAbbreviation(),
                             b.getName(),
-                            b.getExternalUniqueId(),
+                            b.getExternalUniqueId()==null?"":b.getExternalUniqueId(),
                             b.getCoordinateX(),
                             b.getCoordinateY(),
                             });
