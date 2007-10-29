@@ -119,15 +119,26 @@ public class RollForwardSessionAction extends Action {
 
         }            
 		rollForwardSessionForm.setAdmin(user.isAdmin());
+		setToFromSessionsInForm(rollForwardSessionForm);
 		rollForwardSessionForm.setSubjectAreas(getSubjectAreas(rollForwardSessionForm.getSessionToRollForwardTo()));
+  		return mapping.findForward("displayRollForwardSessionForm");
+	}
+	
+	private void setToFromSessionsInForm(RollForwardSessionForm rollForwardSessionForm){
 		List sessionList = new ArrayList();
 		sessionList.addAll(Session.getAllSessions());
-		ArrayList reverseSessionList = new ArrayList();
+		rollForwardSessionForm.setFromSessions(new ArrayList());
+		rollForwardSessionForm.setToSessions(new ArrayList());
+		DepartmentStatusType statusType = DepartmentStatusType.findByRef("initial");
+		Session session = null;
 		for (int i = (sessionList.size() - 1); i >= 0; i--){
-			reverseSessionList.add(sessionList.get(i));
+			session = (Session)sessionList.get(i);
+			if (session.getStatusType().getUniqueId().equals(statusType.getUniqueId())) {
+				rollForwardSessionForm.getToSessions().add(session);
+			} else {
+				rollForwardSessionForm.getFromSessions().add(session);				
+			}
 		}
-		rollForwardSessionForm.setSessions(reverseSessionList);
-  		return mapping.findForward("displayRollForwardSessionForm");
 	}
 	
 	private Set getSubjectAreas(Long selectedSessionId) {
@@ -137,8 +148,10 @@ public class RollForwardSessionAction extends Action {
 			DepartmentStatusType statusType = DepartmentStatusType.findByRef("initial");
 			boolean found = false;
 			TreeSet allSessions = Session.getAllSessions();
-			for (java.util.Iterator it = allSessions.iterator(); (!found && it.hasNext());){
-				session = (Session) it.next();
+			List sessionList = new ArrayList();
+			sessionList.addAll(Session.getAllSessions());
+			for (int i = (sessionList.size() - 1); i >= 0; i--){
+				session = (Session)sessionList.get(i);
 				if (session.getStatusType().getUniqueId().equals(statusType.getUniqueId())){
 					found =  true;
 				}
