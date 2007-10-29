@@ -32,6 +32,9 @@
 			<name>Roll Forward</name>
 			<description>
 				<line>Added support for rolling a session forward (Menu: Adiministration / Input Data / Roll Forward Session).</line>
+				<line>Modified "Roll Forward to a Session" screen to only show session in "Initial Data Load" status in the to session selection list.</line>
+				<line>Modified "Roll Forward to a Session" screen to refresh when a different "To Session" is selected to ensure the subject area lists display subject areas valid for the session being rolled forward to.</line>
+				<line>Modified "Roll Forward to a Session" screen to remove sessions in "Initial Data Load" status from the from session selection lists.</line>
 			</description>
 		</item>
 		<item>
