@@ -55,7 +55,8 @@ public class RollForwardSessionForm extends ActionForm {
 	private String[] subjectAreaIds; 
 	private String buttonAction;
 	private boolean isAdmin;
-	private Collection sessions;
+	private Collection toSessions;
+	private Collection fromSessions;
 	private Long sessionToRollForwardTo;
 	private Boolean rollForwardDatePatterns;
 	private Long sessionToRollDatePatternsForwardFrom;
@@ -175,7 +176,8 @@ public class RollForwardSessionForm extends ActionForm {
 		subjectAreas = new ArrayList();
 		subjectAreaIds = new String[0];
 		isAdmin = false;
-		sessions = null;
+		fromSessions = null;
+		toSessions = null;
 		sessionToRollForwardTo = null;
 		rollForwardDatePatterns = new Boolean(false);
 		sessionToRollDatePatternsForwardFrom = null;
@@ -412,12 +414,12 @@ public class RollForwardSessionForm extends ActionForm {
 		this.sessionToRollSubjectAreasForwardFrom = sessionToRollSubjectAreasForwardFrom;
 	}
 
-	public Collection getSessions() {
-		return sessions;
+	public Collection getFromSessions() {
+		return fromSessions;
 	}
 
-	public void setSessions(Collection sessions) {
-		this.sessions = sessions;
+	public void setFromSessions(Collection fromSessions) {
+		this.fromSessions = fromSessions;
 	}
 
 
@@ -460,5 +462,15 @@ public class RollForwardSessionForm extends ActionForm {
 	public void setRollForwardClassInstrSubjectIds(
 			String[] rollForwardClassInstrSubjectIds) {
 		this.rollForwardClassInstrSubjectIds = rollForwardClassInstrSubjectIds;
+	}
+
+
+	public Collection getToSessions() {
+		return toSessions;
+	}
+
+
+	public void setToSessions(Collection toSessions) {
+		this.toSessions = toSessions;
 	}
 }

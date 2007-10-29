@@ -21,12 +21,14 @@
 <%@ taglib uri="http://jakarta.apache.org/struts/tags-bean" prefix="bean"%> 
 <%@ taglib uri="http://jakarta.apache.org/struts/tags-html" prefix="html"%>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
+<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
  
 <html> 
 	<head>
 		<title>Roll Forward Session</title>
 	</head>
 	<body>
+<script language="javascript">displayLoading();</script>
 	<%// Get Form 
 			String frmName = "rollForwardSessionForm";
 			RollForwardSessionForm frm = (RollForwardSessionForm) request
@@ -54,8 +56,8 @@
 		
 		<tr>
 			<td valign="top" nowrap ><b>Session To Roll Foward To: </b>
-			<html:select style="width:200;" property="sessionToRollForwardTo">
-			<html:optionsCollection property="sessions" value="uniqueId" label="label"  /></html:select>
+			<html:select style="width:200;" property="sessionToRollForwardTo" onchange="displayElement('loading', true);submit();">
+			<html:optionsCollection property="toSessions" value="uniqueId" label="label"  /></html:select>
 			</td>			
 		</tr>
 		<tr>
@@ -65,49 +67,49 @@
 		<tr>
 			<td valign="top" nowrap ><html:checkbox name="<%=frmName%>" property="rollForwardDatePatterns"/> Roll Date Pattern Data Forward From Session: 
 			<html:select style="width:200;" property="sessionToRollDatePatternsForwardFrom">
-			<html:optionsCollection property="sessions" value="uniqueId" label="label" /></html:select>
+			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
 			</td>			
 		</tr>
 		<tr>
 			<td valign="top" nowrap ><html:checkbox name="<%=frmName%>" property="rollForwardTimePatterns"/> Roll Time Pattern Data Forward From Session: 
 			<html:select style="width:200;" property="sessionToRollTimePatternsForwardFrom">
-			<html:optionsCollection property="sessions" value="uniqueId" label="label" /></html:select>
+			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
 			</td>			
 		</tr>
 		<tr>
 			<td valign="top" nowrap ><html:checkbox name="<%=frmName%>" property="rollForwardDepartments"/> Roll Departments Forward From Session: 
 			<html:select style="width:200;" property="sessionToRollDeptsFowardFrom">
-			<html:optionsCollection property="sessions" value="uniqueId" label="label" /></html:select>
+			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
 			</td>			
 		</tr>
 		<tr>
 			<td valign="top" nowrap ><html:checkbox name="<%=frmName%>" property="rollForwardManagers"/> Roll Manager Data Forward From Session: 
 			<html:select style="width:200;" property="sessionToRollManagersForwardFrom">
-			<html:optionsCollection property="sessions" value="uniqueId" label="label" /></html:select>
+			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
 			</td>			
 		</tr>
 		<tr>
 			<td valign="top" nowrap ><html:checkbox name="<%=frmName%>" property="rollForwardRoomData"/> Roll Building and Room Data Forward From Session: 
 			<html:select style="width:200;" property="sessionToRollRoomDataForwardFrom">
-			<html:optionsCollection property="sessions" value="uniqueId" label="label" /></html:select>
+			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
 			</td>			
 		</tr>
 		<tr>
 			<td valign="top" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardSubjectAreas"/> Roll Subject Areas Forward From Session: 
 			<html:select style="width:200;" property="sessionToRollSubjectAreasForwardFrom">
-			<html:optionsCollection property="sessions" value="uniqueId" label="label" /></html:select>
+			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
 			</td>			
 		</tr>
 		<tr>
 			<td valign="top" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardInstructorData"/> Roll Instructor Data Forward From Session: 
 			<html:select style="width:200;" property="sessionToRollInstructorDataForwardFrom">
-			<html:optionsCollection property="sessions" value="uniqueId" label="label" /></html:select>
+			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
 			</td>			
 		</tr>
 		<tr>
 			<td valign="top" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardCourseOfferings"/> Roll Course Offerings Forward From Session: 
 			<html:select style="width:200;" property="sessionToRollCourseOfferingsForwardFrom">
-			<html:optionsCollection property="sessions" value="uniqueId" label="label" /></html:select>
+			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
 			</td>			
 		</tr>
 		<TR>
@@ -148,7 +150,7 @@
 				&nbsp;&nbsp;&nbsp;
 				<logic:equal name="<%=frmName%>" property="admin" value="true">
 					&nbsp;&nbsp;&nbsp;
-					<html:submit property="op" accesskey="M" styleClass="btn">
+					<html:submit property="op" accesskey="M" styleClass="btn" onclick="displayElement('loading', true);">
 						<bean:message key="button.rollForward" />
 					</html:submit>
 				</logic:equal>
@@ -159,6 +161,7 @@
 		<% } else { %>
 		<b>User must be an administrator to roll foward to a session.</b>
 		<% } %>
+	<script language="javascript">displayElement('loading', false);</script>
 	</body>
 </html>
 
