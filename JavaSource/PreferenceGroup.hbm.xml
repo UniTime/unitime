@@ -657,7 +657,7 @@
 		 	<property
 	            name="academicInitiative"
 	            type="java.lang.String"
-	            length="100"
+	            length="20"
 	            not-null="true"
 	            update="true"
 	            insert="true"
