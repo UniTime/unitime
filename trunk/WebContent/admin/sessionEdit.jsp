@@ -113,7 +113,7 @@
 		<TR>
 			<TD>Academic Initiative:</TD>
 			<TD>
-				<html:text property="academicInitiative" maxlength="100" size="40"/>
+				<html:text property="academicInitiative" maxlength="20" size="20"/>
 			</TD>
 		</TR>
 
