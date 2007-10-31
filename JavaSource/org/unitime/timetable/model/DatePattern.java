@@ -561,5 +561,64 @@ public class DatePattern extends BaseDatePattern implements Comparable {
     public String toString() {
         return getName();
     }
+    
+    public DatePattern findCloseMatchDatePatternInSession(Session session){
+    	Vector allDatePatterns = DatePattern.findAll(session, true, null, null);
+ 		TreeSet days = new TreeSet();
+
+ 		
+		if (days.isEmpty()) {
+			int offset = getPatternOffset();
+			for (int x=0;x<getPattern().length();x++) {
+                if (getPattern().charAt(x)!='1') continue;
+					days.add(new Integer(x+offset));
+			}
+		}
+
+		DatePattern likeDp = null;
+		int likeDiff = 0;
+		
+		for (Iterator j=allDatePatterns.iterator();j.hasNext();) {
+    		DatePattern xdp = (DatePattern)j.next();
+    		if (xdp.getName().startsWith("generated")) continue;
+    		if (getOffset().equals(xdp.getOffset()) && getPattern().equals(xdp.getPattern())) {
+    			likeDp = xdp; likeDiff = 0;
+    			break;
+    		}
+    		TreeSet xdays = new TreeSet();
+			if (xdays.isEmpty()) {
+				int offset = xdp.getPatternOffset();
+				for (int x=0;x<xdp.getPattern().length();x++) {
+					if (xdp.getPattern().charAt(x)!='1') continue;
+					xdays.add(new Integer(x+offset));
+				}
+			}
+
+			int diff = diff(days, xdays);
+    		if (likeDp==null || likeDiff>diff || (likeDiff==diff && xdp.isDefault())) {
+    			likeDp = xdp; likeDiff = diff;
+    		}
+		}
+		
+		if (likeDp!=null) {
+            if (likeDiff<=5) {
+                return(likeDp);
+            }
+		}
+		return(null);
+     }
+    
+	private int diff(Set x, Set y) {
+		int diff = 0;
+		for (Iterator i=x.iterator();i.hasNext();) {
+			Object o = i.next();
+			if (!y.contains(o)) diff++;
+		}
+		for (Iterator i=y.iterator();i.hasNext();) {
+			Object o = i.next();
+			if (!x.contains(o)) diff++;
+		}
+		return diff;
+	}
 	
 }

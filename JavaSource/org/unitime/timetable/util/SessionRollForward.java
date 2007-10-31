@@ -734,6 +734,9 @@ public class SessionRollForward {
 						for (Iterator dpIt = fromDepartment.getDatePatterns().iterator(); dpIt.hasNext();){
 							fromDp = (DatePattern) dpIt.next();
 							toDp = DatePattern.findByName(toSession, fromDp.getName());
+							if (toDp == null){
+								toDp = fromDp.findCloseMatchDatePatternInSession(toSession);
+							}
 							if (toDp != null){
 								if (null == toDepartment.getDatePatterns()){
 									toDepartment.setDatePatterns(new java.util.HashSet());
@@ -748,6 +751,9 @@ public class SessionRollForward {
 						for (Iterator dpIt = fromDepartment.getTimePatterns().iterator(); dpIt.hasNext();){
 							fromTp = (TimePattern) dpIt.next();
 							toTp = TimePattern.findByName(toSession, fromTp.getName());
+							if (toTp == null){
+								toTp = TimePattern.getMatchingTimePattern(toSession.getUniqueId(), fromTp);
+							}
 							if (toTp != null){
 								if (null == toDepartment.getTimePatterns()){
 									toDepartment.setTimePatterns(new java.util.HashSet());
@@ -1155,8 +1161,12 @@ public class SessionRollForward {
 					toDistributionPref.setPrefLevel(fromDistributionPref.getPrefLevel());
 					toDistributionPref.setUniqueIdRolledForwardFrom(fromDistributionPref.getUniqueId());
 					Department toDept = Department.findByDeptCode(((Department)fromDistributionPref.getOwner()).getDeptCode(), toSession.getUniqueId());
-					toDistributionPref.setOwner(toDept);
-					toDept.addTopreferences(toDistributionPref);
+					if (toDept != null){
+						toDistributionPref.setOwner(toDept);
+						toDept.addTopreferences(toDistributionPref);
+					} else {
+						continue;
+					}
 				}
 				toDistObj.setDistributionPref(toDistributionPref);
 				toDistObj.setPrefGroup(toPrefGroup);
