@@ -130,7 +130,6 @@ public class TimePatternEditAction extends Action {
             	myForm.getDepartmentIds().add(myForm.getDepartmentId());
             }
             myForm.setOp(myForm.getUniqueId().longValue()<0?"Save":"Update");
-            mapping.findForward("showTimePatterns");
         }
 
         if ("Remove Department".equals(op)) {
@@ -148,7 +147,6 @@ public class TimePatternEditAction extends Action {
             	myForm.getDepartmentIds().remove(myForm.getDepartmentId());
             }	
             myForm.setOp(myForm.getUniqueId().longValue()<0?"Save":"Update");
-            mapping.findForward("showTimePatterns");
         }
         
 
@@ -158,7 +156,6 @@ public class TimePatternEditAction extends Action {
             ActionMessages errors = myForm.validate(mapping, request);
             if(errors.size()>0) {
                 saveErrors(request, errors);
-                mapping.findForward("showTimePatterns");
             } else {
         		Transaction tx = null;
         		
@@ -188,14 +185,14 @@ public class TimePatternEditAction extends Action {
             if(id==null || id.trim().length()==0) {
                 errors.add("key", new ActionMessage("errors.invalid", "Unique Id : " + id));
                 saveErrors(request, errors);
-                return mapping.findForward("showTimePatterns");
+                return mapping.findForward("list");
             } else {
             	TimePattern pattern = (new TimePatternDAO()).get(new Long(id));
             	
                 if(pattern==null) {
                     errors.add("name", new ActionMessage("errors.invalid", "Unique Id : " + id));
                     saveErrors(request, errors);
-                    return mapping.findForward("showTimePatterns");
+                    return mapping.findForward("list");
                 } else {
                 	myForm.load(pattern, sessionId);
                 }
@@ -507,14 +504,15 @@ public class TimePatternEditAction extends Action {
         if ("List".equals(myForm.getOp())) {
             // Read all existing settings and store in request
             getTimePatterns(request, sessionId);
-        } else {
-            String example = myForm.getExample();
-            if (example!=null) {
-                request.setAttribute("TimePatterns.example", example);
-            }
+            return mapping.findForward("list");
         }
+
+        String example = myForm.getExample();
+        if (example!=null) {
+            request.setAttribute("TimePatterns.example", example);
+        }
+        return mapping.findForward(myForm.getUniqueId().longValue()<0?"add":"edit");
         
-        return mapping.findForward("showTimePatterns");
 		} catch (Exception e) {
 			Debug.error(e);
 			throw e;
