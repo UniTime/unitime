@@ -135,6 +135,9 @@ public class RollForwardSessionAction extends Action {
 			session = (Session)sessionList.get(i);
 			if (session.getStatusType().getUniqueId().equals(statusType.getUniqueId())) {
 				rollForwardSessionForm.getToSessions().add(session);
+				if (rollForwardSessionForm.getSessionToRollForwardTo() == null){
+					rollForwardSessionForm.setSessionToRollForwardTo(session.getUniqueId());
+				}
 			} else {
 				rollForwardSessionForm.getFromSessions().add(session);				
 			}
