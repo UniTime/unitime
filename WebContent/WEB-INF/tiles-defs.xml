@@ -52,12 +52,12 @@
 	<!-- Page Layouts -->
 
 	<definition	name="selectPrimaryRoleTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="User Roles"/>
+		<put name="title" type="string" value="Select User Role"/>
 		<put name="body" value="/selectPrimaryRole.jsp" />
   	</definition>
 
 	<definition	name="selectAcadSessionTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Academic Sessions"/>
+		<put name="title" type="string" value="Select Academic Session"/>
 		<put name="body" value="/selectPrimaryRole.jsp" />
   	</definition>
 
