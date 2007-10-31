@@ -88,7 +88,7 @@ public class BuildingEditAction extends Action {
             ActionMessages errors = myForm.validate(mapping, request);
             if(errors.size()>0) {
                 saveErrors(request, errors);
-                mapping.findForward("display");
+                mapping.findForward("Save".equals(op)?"add":"edit");
             } else {
         		Transaction tx = null;
         		
@@ -116,7 +116,7 @@ public class BuildingEditAction extends Action {
             if(id==null || id.trim().length()==0) {
                 errors.add("externalId", new ActionMessage("errors.invalid", id));
                 saveErrors(request, errors);
-                return mapping.findForward("display");
+                return mapping.findForward("edit");
             } else {
                 Building b = new BuildingDAO().get(Long.valueOf(id));
             	
@@ -187,7 +187,7 @@ public class BuildingEditAction extends Action {
             return mapping.findForward("back");
         }
         
-        return mapping.findForward("display");
+        return mapping.findForward("Save".equals(myForm.getOp())?"add":"edit");
 		} catch (Exception e) {
 			Debug.error(e);
 			throw e;
