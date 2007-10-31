@@ -21,6 +21,7 @@
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
+<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 
 <tiles:importAttribute />
 
@@ -31,15 +32,27 @@
 	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD colspan="2">
-				<DIV class="WelcomeRowHead">
-				<logic:equal name="itypeDescEditForm" property="op" value="Save">
-				Add
-				</logic:equal>
-				<logic:equal name="itypeDescEditForm" property="op" value="Update">
-				Edit
-				</logic:equal>
-				Instructional Type
-				</DIV>
+				<tt:section-header>
+					<tt:section-title>
+						<logic:equal name="itypeDescEditForm" property="op" value="Save">
+							Add
+						</logic:equal>
+						<logic:equal name="itypeDescEditForm" property="op" value="Update">
+							Edit
+						</logic:equal>
+						Instructional Type
+					</tt:section-title>
+					<logic:equal name="itypeDescEditForm" property="op" value="Save">
+						<html:submit property="op" value="Save" title="Save (Alt+S)" accesskey="S"/> 
+					</logic:equal>
+					<logic:equal name="itypeDescEditForm" property="op" value="Update">
+						<html:submit property="op" value="Update" title="Update (Alt+U)" accesskey="U"/>
+						<logic:equal name="itypeDescEditForm" property="canDelete" value="true"> 
+							<html:submit property="op" value="Delete" title="Delete (Alt+D)" accesskey="D"/>
+						</logic:equal> 
+					</logic:equal>
+					<html:submit property="op" value="Back" title="Back (Alt+B)" accesskey="B"/> 
+				</tt:section-header>
 			</TD>
 		</TR>
 
@@ -91,6 +104,12 @@
 			</TD>
 		</TR>
 		
+		<TR>
+			<TD align="right" colspan="2">
+				<tt:section-title/>
+			</TD>
+		</TR>
+
 		<TR>
 			<TD align="right" colspan="2">
 				<logic:equal name="itypeDescEditForm" property="op" value="Save">
