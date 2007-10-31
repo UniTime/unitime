@@ -137,7 +137,7 @@
          type="org.unitime.timetable.action.ajax.CourseNumSuggestAction"
          scope="request"
          validate="false" />
-		
+         
       <action
          path="/sessionEdit"
          attribute="sessionEditForm"
@@ -1865,6 +1865,14 @@
          type="org.unitime.timetable.action.ajax.DistributionPrefsAjax"
          scope="request"
          validate="false" />
+         
+      <action
+      	 path="/buildingCoordsAjax"
+         type="org.unitime.timetable.action.ajax.BuildingCoordsAjax"
+         scope="request"
+         validate="false" 
+      />
+		
     <action
       attribute="rollForwardSessionForm"
       input="rollForwardSessionTile"
