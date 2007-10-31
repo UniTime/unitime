@@ -881,8 +881,14 @@
          scope="request"
          validate="false">
         <forward 
-        	name="distributionPrefs" 
+        	name="list" 
         	path="distributionPrefsTile" />
+        <forward 
+        	name="add" 
+        	path="adddistributionPrefTile" />
+        <forward 
+        	name="edit" 
+        	path="editDistributionPrefTile" />
       </action>
       
       <action
@@ -1034,13 +1040,14 @@
 	    <action
 	      path="/timePatternEdit"
 	      attribute="timePatternEditForm"
-	      input="timePatternEditTile"
+	      input="timePatternsTile"
 	      name="timePatternEditForm"
 	      scope="request"
 	      type="org.unitime.timetable.action.TimePatternEditAction" 
 	      validate="false">
-	      <forward
-	        name="showTimePatterns" path="timePatternEditTile" />
+	      <forward name="list" path="timePatternsTile" />
+	      <forward name="add" path="addTimePatternTile" />
+	      <forward name="edit" path="editTimePatternTile" />
 	    </action>
 	     
 	    <action
@@ -1139,13 +1146,15 @@
 
     <action
       attribute="datePatternEditForm"
-      input="datePatternEditTile"
+      input="datePatternsTile"
       name="datePatternEditForm"
       path="/datePatternEdit"
       scope="request"
       type="org.unitime.timetable.action.DatePatternEditAction" 
       validate="false">
-      <forward name="showDatePatterns" path="datePatternEditTile" />
+      <forward name="list" path="datePatternsTile" />
+      <forward name="add" path="addDatePatternTile" />
+      <forward name="edit" path="editDatePatternTile" />
     </action>
 
     <action
@@ -1402,6 +1411,7 @@
       type="org.unitime.timetable.action.EditRoomAction"
       validate="false">
       <forward name="showEditRoom" path="editRoomTile" />
+      <forward name="showAddRoom" path="addRoomTile" />
       <forward name="showRoomDetail" path="roomDetailTile" />
     </action>
     <action
@@ -1831,8 +1841,11 @@
        scope="request"
        validate="false" >
        <forward 
-       		name="display" 
+       		name="edit" 
        		path="buildingEditTile" />
+       <forward 
+       		name="add" 
+       		path="buildingAddTile" />
        <forward 
        		name="back" 
        		path="/buildingList.do" />
@@ -1847,8 +1860,11 @@
        scope="request"
        validate="false" >
        <forward 
-       		name="display" 
+       		name="edit" 
        		path="itypeDescEditTile" />
+       <forward 
+       		name="add" 
+       		path="itypeDescAddTile" />
        <forward 
        		name="back" 
        		path="/itypeDescList.do" />

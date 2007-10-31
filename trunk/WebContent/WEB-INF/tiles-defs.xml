@@ -152,6 +152,10 @@
 		<put name="title" type="string" value="Edit Room"/>
 		<put name="body" value="/admin/editRoom.jsp" />
   	</definition>
+
+  	<definition	name="addRoomTile" extends="editRoomTile">
+		<put name="title" type="string" value="Add Room"/>
+  	</definition>
   	  	
   	<definition	name="editRoomPrefTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Edit Room Preference"/>
@@ -451,6 +455,14 @@
 		<put name="body" value="/user/distributionPrefs.jsp" />
 		<put name="showNavigation" value="true" />
   	</definition>
+  	
+	<definition	name="adddistributionPrefTile" extends="distributionPrefsTile">
+		<put name="title" type="string" value="Add Distribution Preference"/>
+  	</definition>
+
+	<definition	name="editDistributionPrefTile" extends="distributionPrefsTile">
+		<put name="title" type="string" value="Edit Distribution Preference"/>
+  	</definition>
 
 	<definition	name="hibernateQueryTestTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Test HQL"/>
@@ -497,9 +509,17 @@
 		<put name="showSolverWarnings" value="true" />
   	</definition>
   	
-  	<definition name="timePatternEditTile" extends="pageLayoutDef">
+  	<definition name="timePatternsTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Time Patterns"/>
 		<put name="body" value="/admin/timePatterns.jsp" />
+  	</definition>
+
+  	<definition name="addTimePatternTile" extends="timePatternsTile">
+		<put name="title" type="string" value="Add Time Pattern"/>
+  	</definition>
+
+  	<definition name="editTimePatternTile" extends="timePatternsTile">
+		<put name="title" type="string" value="Edit Time Pattern"/>
   	</definition>
 
   	<definition name="solverGroupEditTile" extends="pageLayoutDef">
@@ -513,9 +533,17 @@
 		<put name="showNavigation" value="true" />
   	</definition>
 
-  	<definition name="datePatternEditTile" extends="pageLayoutDef">
+  	<definition name="datePatternsTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Date Patterns"/>
 		<put name="body" value="/admin/datePatterns.jsp" />
+  	</definition>
+
+  	<definition name="addDatePatternTile" extends="datePatternsTile">
+		<put name="title" type="string" value="Add Date Pattern"/>
+  	</definition>
+
+  	<definition name="editDatePatternTile" extends="datePatternsTile">
+		<put name="title" type="string" value="Edit Date Pattern"/>
   	</definition>
 
   	<definition name="activeSessionsTile" extends="pageLayoutDef">
@@ -653,8 +681,16 @@
 		<put name="body" value="/admin/buildingEdit.jsp" />
   	</definition>
 
+   	<definition	name="buildingAddTile" extends="buildingEditTile">
+		<put name="title" type="string" value="Add Building"/>
+  	</definition>
+
    	<definition	name="itypeDescEditTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Edit Instructional Type"/>
 		<put name="body" value="/admin/itypeDescEdit.jsp" />
+  	</definition>
+
+   	<definition	name="itypeDescAddTile" extends="itypeDescEditTile">
+		<put name="title" type="string" value="Add Instructional Type"/>
   	</definition>
 </tiles-definitions>
