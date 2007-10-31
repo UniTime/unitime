@@ -80,7 +80,7 @@ public class ItypeDescEditAction extends Action {
             ActionMessages errors = myForm.validate(mapping, request);
             if(errors.size()>0) {
                 saveErrors(request, errors);
-                return mapping.findForward("display");
+                return mapping.findForward("Save".equals(op)?"add":"edit");
             } else {
         		Transaction tx = null;
         		
@@ -108,7 +108,7 @@ public class ItypeDescEditAction extends Action {
             if(id==null || id.trim().length()==0) {
                 errors.add("externalId", new ActionMessage("errors.invalid", id));
                 saveErrors(request, errors);
-                return mapping.findForward("display");
+                return mapping.findForward("edit");
             } else {
                 ItypeDesc itype = new ItypeDescDAO().get(Integer.valueOf(id));
             	
@@ -140,7 +140,7 @@ public class ItypeDescEditAction extends Action {
             return mapping.findForward("back");
         }
         
-        return mapping.findForward("display");
+        return mapping.findForward("Save".equals(myForm.getOp())?"add":"edit");
 		} catch (Exception e) {
 			Debug.error(e);
 			throw e;
