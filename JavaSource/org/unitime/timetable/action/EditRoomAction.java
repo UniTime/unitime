@@ -129,7 +129,7 @@ public class EditRoomAction extends Action {
 				saveErrors(request, errors);
                 setupDepartments(user, owner, s.getUniqueId(), request);
                 setBldgs(s, request);
-                return mapping.findForward("showEditRoom");
+                return mapping.findForward(editRoomForm.getId()==null || editRoomForm.getId().length()==0?"showAddRoom":"showEditRoom");
 			}
 		}	
         
@@ -192,7 +192,7 @@ public class EditRoomAction extends Action {
             setBldgs(s, request);
         }
 		
-		return mapping.findForward("showEditRoom");
+		return mapping.findForward(editRoomForm.getId()==null || editRoomForm.getId().length()==0?"showAddRoom":"showEditRoom");
 	}
 	
     public static void setupDepartments(HttpServletRequest request, Location location) throws Exception {
