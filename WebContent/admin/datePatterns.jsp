@@ -34,15 +34,31 @@
 	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD colspan="2">
-				<DIV class="WelcomeRowHead">
-				<logic:equal name="datePatternEditForm" property="op" value="Save">
-				Add
-				</logic:equal>
-				<logic:notEqual name="datePatternEditForm" property="op" value="Save">
-				Edit
-				</logic:notEqual>
-				Date Pattern
-				</DIV>
+				<tt:section-header>
+					<tt:section-title>
+						<logic:equal name="datePatternEditForm" property="op" value="Save">
+							Add
+						</logic:equal>
+						<logic:notEqual name="datePatternEditForm" property="op" value="Save">
+							Edit
+						</logic:notEqual>
+						Date Pattern
+					</tt:section-title>
+					<html:submit property="op">
+						<bean:write name="datePatternEditForm" property="op" />
+					</html:submit> 
+					<logic:notEqual name="datePatternEditForm" property="op" value="Save">
+						<logic:equal name="datePatternEditForm" property="isUsed" value="false">
+							<logic:equal name="datePatternEditForm" property="isDefault" value="false">
+								<html:submit property="op" value="Delete"/> 
+							</logic:equal>
+						</logic:equal>
+					</logic:notEqual>
+					<logic:equal name="datePatternEditForm" property="isDefault" value="false">
+						<html:submit property="op" value="Make Default"/> 
+					</logic:equal>
+					<html:submit property="op" value="Back" /> 
+				</tt:section-header>
 			</TD>
 		</TR>
 
@@ -114,6 +130,12 @@
 			</TD>
 		</TR>
 
+		<TR>
+			<TD align="right" colspan="2">
+				<tt:section-title/>
+			</TD>
+		</TR>
+		
 		<TR>
 			<TD align="right" colspan="2">
 				<html:submit property="op">

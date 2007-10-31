@@ -162,7 +162,6 @@ public class DatePatternEditAction extends Action {
 	            	myForm.getDepartmentIds().add(myForm.getDepartmentId());
 	            }
 	            myForm.setOp(myForm.getUniqueId().longValue()<0?"Save":"Update");
-	            mapping.findForward("showDatePatterns");
 	        }
 
 	        if ("Remove Department".equals(op)) {
@@ -180,7 +179,6 @@ public class DatePatternEditAction extends Action {
 	            	myForm.getDepartmentIds().remove(myForm.getDepartmentId());
 	            }	
 	            myForm.setOp(myForm.getUniqueId().longValue()<0?"Save":"Update");
-	            mapping.findForward("showDatePatterns");
 	        }
 
 	        // Add / Update
@@ -190,7 +188,6 @@ public class DatePatternEditAction extends Action {
 	            if(errors.size()>0) {
 	                saveErrors(request, errors);
 	                myForm.setOp(myForm.getUniqueId().longValue()<0?"Save":"Update");
-	                mapping.findForward("showDatePatterns");
 	            } else {
 	        		Transaction tx = null;
 	        		
@@ -235,7 +232,7 @@ public class DatePatternEditAction extends Action {
 	                errors.add("key", new ActionMessage("errors.invalid", "Unique Id : " + id));
 	                saveErrors(request, errors);
 	                request.setAttribute("DatePatterns.pattern", myForm.getDatePattern(request).getPatternHtml(true, myForm.getUniqueId()));
-	                return mapping.findForward("showDatePatterns");
+	                return mapping.findForward("list");
 	            } else {
 	            	DatePattern pattern = (new DatePatternDAO()).get(new Long(id));
 	            	
@@ -243,7 +240,7 @@ public class DatePatternEditAction extends Action {
 	                    errors.add("name", new ActionMessage("errors.invalid", "Unique Id : " + id));
 	                    saveErrors(request, errors);
 	                    request.setAttribute("DatePatterns.pattern", myForm.getDatePattern(request).getPatternHtml(true, myForm.getUniqueId()));
-	                    return mapping.findForward("showDatePatterns");
+	                    return mapping.findForward("list");
 	                } else {
 	                	myForm.load(pattern);
 	                }
@@ -710,11 +707,12 @@ public class DatePatternEditAction extends Action {
 	        if ("List".equals(myForm.getOp())) {
 	            // Read all existing settings and store in request
 	            getDatePatterns(request);
-	        } else {
-	            request.setAttribute("DatePatterns.pattern", myForm.getDatePattern(request).getPatternHtml(true, myForm.getUniqueId()));
-	        }
+	            return mapping.findForward("list");
+	        } 
 	        
-	        return mapping.findForward("showDatePatterns");
+	        request.setAttribute("DatePatterns.pattern", myForm.getDatePattern(request).getPatternHtml(true, myForm.getUniqueId()));
+	        return mapping.findForward(myForm.getUniqueId().longValue()<0?"add":"edit");
+	        
 		} catch (Exception e) {
 			Debug.error(e);
 			throw e;
