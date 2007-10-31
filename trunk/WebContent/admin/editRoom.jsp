@@ -84,7 +84,7 @@
 			<TR>
 				<TD>Building:</TD>
 				<TD width='100%'>
-					<html:select property="bldgId">
+					<html:select property="bldgId" onchange="javascript: buldingChanged(this.value);">
 						<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
 						<html:options collection="<%=Building.BLDG_LIST_ATTR_NAME%>" property="value" labelProperty="label"/>
 					</html:select>
@@ -246,3 +246,48 @@
 	var frmvalidator  = new Validator("editRoomForm");
 	frmvalidator.addValidation("capacity","numeric");	
 </script>
+
+<SCRIPT type="text/javascript" language="javascript">
+
+	function buldingChanged(id) {
+		var xObj = document.getElementsByName('coordX')[0];
+		var yObj = document.getElementsByName('coordY')[0];
+		
+		if (id=='') {
+			xObj.value='';
+			yObj.value='';
+			return;
+		}
+		
+		// Request initialization
+		if (window.XMLHttpRequest) req = new XMLHttpRequest();
+		else if (window.ActiveXObject) req = new ActiveXObject( "Microsoft.XMLHTTP" );
+
+		// Response
+		req.onreadystatechange = function() {
+			if (req.readyState == 4) {
+				if (req.status == 200) {
+					// Response
+					var xmlDoc = req.responseXML;
+					if (xmlDoc && xmlDoc.documentElement && xmlDoc.documentElement.childNodes && xmlDoc.documentElement.childNodes.length > 0) {
+						var count = xmlDoc.documentElement.childNodes.length;
+						for(i=0; i<count; i++) {
+							var optId = xmlDoc.documentElement.childNodes[i].getAttribute("id");
+							var optVal = xmlDoc.documentElement.childNodes[i].getAttribute("value");
+							if (optId=='x') xObj.value = optVal;
+							if (optId=='y') yObj.value = optVal;
+						}
+					}
+				}
+			}
+		};
+	
+		// Request
+		var vars = "id="+id;
+		req.open( "POST", "buildingCoordsAjax.do", true );
+		req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+		req.setRequestHeader("Content-Length", vars.length);
+		//setTimeout("try { req.send('" + vars + "') } catch(e) {}", 1000);
+		req.send(vars);
+	}
+</SCRIPT>

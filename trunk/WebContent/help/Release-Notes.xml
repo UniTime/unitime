@@ -44,6 +44,12 @@
 			</description>
 		</item>
 		<item>
+			<name>Add Room</name>
+			<description>
+				<line>When a building is selected (or changed), populate room coordinates with building coordinates.</line>
+			</description>
+		</item>
+		<item>
 			<name>Buildings, Edit Building</name>
 			<description>
 				<line>Added ability to have no coordinates (saved as coordinates [-1,-1], displayed as empty coordinates).</line>
