@@ -336,7 +336,9 @@ public class EditRoomAction extends Action {
             Room room = new Room();
                         
             room.setRoomNumber(editRoomForm.getName());
-            room.setBuilding(new BuildingDAO().get(Long.valueOf(editRoomForm.getBldgId())));
+            Building building = new BuildingDAO().get(Long.valueOf(editRoomForm.getBldgId()));
+            room.setBuilding(building);
+            if (building!=null) room.setBuildingAbbv(building.getAbbreviation());
             room.setRoomDepts(new HashSet());
             RoomDept rd = new RoomDept();
             rd.setRoom(room); rd.setDepartment(new DepartmentDAO().get(Long.valueOf(editRoomForm.getControlDept()))); rd.setControl(Boolean.TRUE);
@@ -356,7 +358,7 @@ public class EditRoomAction extends Action {
                     request, 
                     (Location)room, 
                     ChangeLog.Source.ROOM_EDIT, 
-                    ChangeLog.Operation.UPDATE, 
+                    ChangeLog.Operation.CREATE, 
                     null, 
                     room.getControllingDepartment());
 
