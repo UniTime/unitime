@@ -130,7 +130,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
 
         // Set up itypes and subparts
         frm.setOp(op);
-        LookupTables.setupItypes(request);
+        LookupTables.setupItypes(request,true);
         LookupTables.setupExternalDepts(request, (Long)user.getAttribute(Constants.SESSION_ID_ATTR_NAME));
         TimetableManager tm = TimetableManager.getManager(user);
 		if (!user.isAdmin()) {
