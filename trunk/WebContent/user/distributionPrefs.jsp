@@ -75,8 +75,8 @@
 					</logic:notEmpty>
 				
 					<logic:empty name="distributionPrefsForm" property="distPrefId">
-						<html:submit styleClass="btn" property="op" accesskey="A" titleKey="title.addNewDistPref">
-							<bean:message key="button.addNew" />
+						<html:submit styleClass="btn" property="op" accesskey="S" titleKey="title.addNewDistPref">
+							<bean:message key="button.save" />
 						</html:submit>
 				
 					</logic:empty>
@@ -119,45 +119,31 @@
 		</logic:messagesPresent>
 		
 		<TR>
-			<TD nowrap>Distribution Type: <font class="reqField">*</font></TD>
-			<TD>
-				<html:select style="width:300;" property="distType" onchange="op2.value='DistTypeChange';submit();">
+			<TD nowrap valign='top'>Distribution Type: <font class="reqField">*</font></TD>
+			<TD colspan='2' width='95%'>
+				<html:select style="width:300;" property="distType" onchange="javascript: distTypeChanged(this.value);"> <!-- op2.value='DistTypeChange';submit(); -->
 					<html:option value="-">-</html:option>
 					<html:options collection="<%=DistributionType.DIST_TYPE_ATTR_NAME%>" property="uniqueId" labelProperty="label" />
 				</html:select>
+				<span id='distTypeDesc' style='display:block;padding:3px'>
+					<bean:write name="distributionPrefsForm" property="description" filter="false"/>
+				</span>
 			</TD>
-			<TD>&nbsp;</TD>
 		</TR>
 		
-		<logic:notEqual name="distributionPrefsForm" property="description" value="">
-			<TR>
-				<TD>&nbsp;</TD>
-				<TD colspan='2'>
-					<bean:write name="distributionPrefsForm" property="description" filter="false"/>
-				</TD>
-			</TR>
-		</logic:notEqual>
-		
 		<TR>
-			<TD nowrap>Structure: <font class="reqField">*</font></TD>
-			<TD>
-				<html:select property="grouping" onchange="op2.value='GroupingChange';submit();">
+			<TD nowrap valign='top'>Structure: <font class="reqField">*</font></TD>
+			<TD colspan='2'>
+				<html:select property="grouping" onchange="javascript: groupingChanged(this.value);" > <!-- onchange="op2.value='GroupingChange';submit();" -->
 					<html:option value="-">-</html:option>
 					<html:options name="distributionPrefsForm" property="groupings"/>
 				</html:select>
+				<span id='groupingDesc' style='display:block;padding:3px'>
+					<bean:write name="distributionPrefsForm" property="groupingDescription" filter="false"/>
+				</span>
 			</TD>
-			<TD>&nbsp;</TD>
 		</TR>
 		
-		<logic:notEqual name="distributionPrefsForm" property="groupingDescription" value="">
-			<TR>
-				<TD>&nbsp;</TD>
-				<TD colspan='2'>
-					<bean:write name="distributionPrefsForm" property="groupingDescription" filter="false"/>
-				</TD>
-			</TR>
-		</logic:notEqual>
-
 		<TR>
 			<TD>Preference: <font class="reqField">*</font></TD>
 			<TD>
@@ -277,8 +263,8 @@
 				</logic:notEmpty>
 				
 				<logic:empty name="distributionPrefsForm" property="distPrefId">
-					<html:submit styleClass="btn" property="op" accesskey="A" titleKey="title.addNewDistPref">
-						<bean:message key="button.addNew" />
+					<html:submit styleClass="btn" property="op" accesskey="S" titleKey="title.addNewDistPref">
+						<bean:message key="button.save" />
 					</html:submit>
 				</logic:empty>
 				
@@ -473,6 +459,106 @@
 		//setTimeout("try { req.send('" + vars + "') } catch(e) {}", 1000);
 		req.send(vars);
 	}
-</SCRIPT>				
+	
+	function distTypeChanged(id) {
+		var descObj = document.getElementById('distTypeDesc');
+		var prefLevObj = document.getElementsByName('prefLevel')[0];
+		var options = prefLevObj.options;
+		var prefId = prefLevObj.options[prefLevObj.selectedIndex].value;
+		
+		if (id=='-') {
+			descObj.innerHTML='';
+			options.length=1;
+			return;
+		}
+		
+		// Request initialization
+		if (window.XMLHttpRequest) req = new XMLHttpRequest();
+		else if (window.ActiveXObject) req = new ActiveXObject( "Microsoft.XMLHTTP" );
+
+		// Response
+		req.onreadystatechange = function() {
+			if (req.readyState == 4) {
+				if (req.status == 200) {
+					// Response
+					var xmlDoc = req.responseXML;
+					if (xmlDoc && xmlDoc.documentElement && xmlDoc.documentElement.childNodes && xmlDoc.documentElement.childNodes.length > 0) {
+						options.length=1;
+						var count = xmlDoc.documentElement.childNodes.length;
+						if (count>0) {
+							var desc = xmlDoc.documentElement.childNodes[0].getAttribute("value");
+							while (desc.indexOf('@lt@')>=0) desc = desc.replace('@lt@','<');
+							while (desc.indexOf('@gt@')>=0) desc = desc.replace('@gt@','>');
+							while (desc.indexOf('@quot@')>=0) desc = desc.replace('@quot@','"');
+							while (desc.indexOf('@amp@')>=0) desc = desc.replace('@amp@','&');
+							descObj.innerHTML=desc;
+						}
+						for(i=1; i<count; i++) {
+							var optId = xmlDoc.documentElement.childNodes[i].getAttribute("id");
+							var optVal = xmlDoc.documentElement.childNodes[i].getAttribute("value");
+							var optExt = xmlDoc.documentElement.childNodes[i].getAttribute("extra");
+							options[i] = new Option(optVal, optId, (prefId==optId));
+							options[i].style.backgroundColor=optExt;
+						}
+					}
+				}
+			}
+		};
+	
+		// Request
+		var vars = "id="+id+"&type=distType";
+		req.open( "POST", "distributionPrefsAjax.do", true );
+		req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+		req.setRequestHeader("Content-Length", vars.length);
+		//setTimeout("try { req.send('" + vars + "') } catch(e) {}", 1000);
+		req.send(vars);
+	}	
+
+	function groupingChanged(id) {
+		var descObj = document.getElementById('groupingDesc');
+		
+		if (id=='-') {
+			descObj.innerHTML='';
+			return;
+		}
+		
+		// Request initialization
+		if (window.XMLHttpRequest) req = new XMLHttpRequest();
+		else if (window.ActiveXObject) req = new ActiveXObject( "Microsoft.XMLHTTP" );
+
+		// Response
+		req.onreadystatechange = function() {
+			if (req.readyState == 4) {
+				if (req.status == 200) {
+					// Response
+					var xmlDoc = req.responseXML;
+					if (xmlDoc && xmlDoc.documentElement && xmlDoc.documentElement.childNodes && xmlDoc.documentElement.childNodes.length > 0) {
+						var count = xmlDoc.documentElement.childNodes.length;
+						for(i=0; i<count; i++) {
+							var optId = xmlDoc.documentElement.childNodes[i].getAttribute("id");
+							var optVal = xmlDoc.documentElement.childNodes[i].getAttribute("value");
+							if (optId=='desc') {
+								var desc = optVal;
+								while (desc.indexOf('@lt@')>=0) desc = desc.replace('@lt@','<');
+								while (desc.indexOf('@gt@')>=0) desc = desc.replace('@gt@','>');
+								while (desc.indexOf('@quot@')>=0) desc = desc.replace('@quot@','"');
+								while (desc.indexOf('@amp@')>=0) desc = desc.replace('@amp@','&');
+								descObj.innerHTML = desc;
+							}
+						}
+					}
+				}
+			}
+		};
+	
+		// Request
+		var vars = "id="+id+"&type=grouping";
+		req.open( "POST", "distributionPrefsAjax.do", true );
+		req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+		req.setRequestHeader("Content-Length", vars.length);
+		//setTimeout("try { req.send('" + vars + "') } catch(e) {}", 1000);
+		req.send(vars);
+	}	
+</SCRIPT>
 				
 		
