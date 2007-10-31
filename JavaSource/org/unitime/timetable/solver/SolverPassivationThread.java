@@ -60,9 +60,10 @@ public class SolverPassivationThread extends Thread {
 				    break;
                 }
 			}
-            sLog.info("Solver passivation thread finished.");
+            System.out.println("Solver passivation thread finished.");
 		} catch (Exception e) {
-			sLog.error("Solver passivation thread failed, reason: "+e.getMessage(),e);
+			System.err.print("Solver passivation thread failed, reason: "+e.getMessage());
+			e.printStackTrace();
 		}
 	}
 
