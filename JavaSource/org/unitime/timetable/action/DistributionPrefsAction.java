@@ -151,7 +151,7 @@ public class DistributionPrefsAction extends Action {
         Vector subjectAreaList = setupSubjectAreas(request); // Subject Areas
 
         // Add / Update distribution pref
-        if(op.equals(rsc.getMessage("button.addNew"))
+        if(op.equals(rsc.getMessage("button.save"))
                 || op.equals(rsc.getMessage("button.update")) ) {
             Debug.debug("Saving distribution pref ...");
             errors = frm.validate(mapping, request);
@@ -297,6 +297,15 @@ public class DistributionPrefsAction extends Action {
         	frm.setGroupingDescription(DistributionPref.getGroupingDescription(frm.getGroupingInt()));
         }
 
+        if ("export".equals(op) && (frm.getDistPrefId()==null || frm.getDistPrefId().length()==0)) {
+            DistributionPrefsTableBuilder tbl = new DistributionPrefsTableBuilder();
+            File file = tbl.getAllDistPrefsTableForCurrentUserAsPdf(request, frm.getFilterSubjectAreaId(), frm.getFilterCourseNbr());
+            if (file!=null) request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
+            op = "view";
+        }
+        
+        request.setAttribute(DistributionPrefsForm.LIST_SIZE_ATTR, ""+(frm.getSubjectArea().size()-1));
+
         if ("view".equals(op) && (frm.getDistPrefId()==null || frm.getDistPrefId().length()==0)) {
         	DistributionPrefsTableBuilder tbl = new DistributionPrefsTableBuilder();
         	if (frm.getFilterSubjectAreaId()==null) {
@@ -314,18 +323,10 @@ public class DistributionPrefsAction extends Action {
             		"distributionPrefs.do",
             		"Distribution Preferences",
             		true, true);
+            return mapping.findForward("list");
         }
         
-        if ("export".equals(op) && (frm.getDistPrefId()==null || frm.getDistPrefId().length()==0)) {
-        	DistributionPrefsTableBuilder tbl = new DistributionPrefsTableBuilder();
-        	File file = tbl.getAllDistPrefsTableForCurrentUserAsPdf(request, frm.getFilterSubjectAreaId(), frm.getFilterCourseNbr());
-        	if (file!=null)
-        		response.sendRedirect("temp/"+file.getName());
-        }
-        
-        request.setAttribute(DistributionPrefsForm.LIST_SIZE_ATTR, ""+(frm.getSubjectArea().size()-1));
-        
-        return mapping.findForward("distributionPrefs");
+        return mapping.findForward(frm.getDistPrefId()==null || frm.getDistPrefId().length()==0?"add":"edit");
     }
 
     /**
