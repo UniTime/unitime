@@ -28,7 +28,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
-import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.TimetableManager;
@@ -219,11 +218,7 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 		userDeptIds = new String[0];
 		sessionInLLREditStatus = false;
 		
-		try {
-			LookupTables.setupItypes(request);
-		} catch (Exception e) {
-			Debug.error(e);
-		}
+		LookupTables.setupItypes(request,true);
 	}
 
     /**

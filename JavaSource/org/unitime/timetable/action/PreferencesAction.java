@@ -125,7 +125,7 @@ public class PreferencesAction extends Action {
         }
 
 		// Load Combo Box Lists 
-        LookupTables.setupItypes(request);		 // Itypes
+        LookupTables.setupItypes(request,true);		 // Itypes
         //LookupTables.setupTimePatterns(request); // Time Patterns
         LookupTables.setupPrefLevels(request);	 // Preference Levels
         LookupTables.setupInstructorDistribTypes(request); // Distribution Types

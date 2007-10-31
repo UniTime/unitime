@@ -65,6 +65,7 @@ public class SchedulingSubpartEditForm extends PreferencesForm {
     private Boolean unlimitedEnroll;
     private Boolean autoSpreadInTime;
     private Boolean subpartCreditEditAllowed;
+    private boolean itypeBasic;
     
     // --------------------------------------------------------- Methods
 
@@ -93,6 +94,7 @@ public class SchedulingSubpartEditForm extends PreferencesForm {
         creditFormat = null; creditType = null; creditUnitType = null; units = null; maxUnits = null; fractionalIncrementsAllowed = new Boolean(false); creditText = "";
         autoSpreadInTime = Boolean.FALSE;
         subpartCreditEditAllowed =new Boolean(ApplicationProperties.getProperty("tmtbl.subpart.credit.editable", "false").equals("true"));
+        itypeBasic = false;
         instructionalType = null; instructionalTypeLabel = null;
         super.reset(mapping, request);
     }
@@ -296,4 +298,7 @@ public class SchedulingSubpartEditForm extends PreferencesForm {
 	public void setSubpartCreditEditAllowed(Boolean subpartCreditEditAllowed) {
 		this.subpartCreditEditAllowed = subpartCreditEditAllowed;
 	}
+	
+	public boolean getItypeBasic() { return itypeBasic; }
+	public void setItypeBasic(boolean itypeBasic) { this.itypeBasic = itypeBasic; }
 }

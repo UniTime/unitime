@@ -91,8 +91,8 @@ public class LookupTables {
      * @param request
      * @throws Exception
      */
-    public static void setupItypes(HttpServletRequest request) throws Exception {
-        request.setAttribute(ItypeDesc.ITYPE_ATTR_NAME, ItypeDesc.findAll(true));
+    public static void setupItypes(HttpServletRequest request, boolean basic) {
+        request.setAttribute(ItypeDesc.ITYPE_ATTR_NAME, ItypeDesc.findAll(basic));
     }
  
     /**
