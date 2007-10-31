@@ -20,6 +20,7 @@
 package org.unitime.timetable.action.ajax;
 
 import java.io.IOException;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
@@ -33,12 +34,16 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.DistributionPref;
+import org.unitime.timetable.model.DistributionType;
 import org.unitime.timetable.model.Preference;
+import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
+import org.unitime.timetable.model.dao.DistributionTypeDAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 
 /**
@@ -51,10 +56,12 @@ public class DistributionPrefsAjax extends Action {
         
         response.addHeader("Content-Type", "text/xml");
         
-        String word = request.getParameter("word");
+        //System.out.println("type:"+request.getParameter("type")); 
+        //System.out.println("id:  "+request.getParameter("id"));
         
         ServletOutputStream out = response.getOutputStream();
         
+        //System.out.println("response:");
         out.print("<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>\n");
         out.print("<results>");
         coumputeSuggestionList(request, out);
@@ -65,18 +72,50 @@ public class DistributionPrefsAjax extends Action {
     }
     
     protected void print(ServletOutputStream out, String id, String value) throws IOException {
+        //System.out.println("  <result id=\""+id+"\" value=\""+value+"\" />");
         out.print("<result id=\""+id+"\" value=\""+value+"\" />");
     }
     
+    protected void print(ServletOutputStream out, String id, String value, String extra) throws IOException {
+        //System.out.println("  <result id=\""+id+"\" value=\""+value+"\" extra=\""+extra+"\" />");
+        out.print("<result id=\""+id+"\" value=\""+value+"\" extra=\""+extra+"\" />");
+    }
+
     protected void coumputeSuggestionList(HttpServletRequest request, ServletOutputStream out) throws Exception {
         if ("subjectArea".equals(request.getParameter("type"))) {
             coumputeCourseNumbers(request.getParameter("id"),out);
         } else if ("courseNbr".equals(request.getParameter("type"))) {
             coumputeSubparts(request.getParameter("id"),out);
-        } else  if ("itype".equals(request.getParameter("type"))) {
+        } else if ("itype".equals(request.getParameter("type"))) {
             coumputeClasses(request.getParameter("id"),out);
+        } else if ("grouping".equals(request.getParameter("type"))) {
+            coumputeGroupingDesc(request.getParameter("id"),out);
+        } else if ("distType".equals(request.getParameter("type"))) {
+            computePreferenceLevels(request.getParameter("id"),out);
         }
     }
+    
+    protected void coumputeGroupingDesc(String groupingId, ServletOutputStream out) throws Exception {
+        try {
+            for (int i=0;i<DistributionPref.sGroupings.length;i++)
+                if (DistributionPref.sGroupings[i].equals(groupingId))
+                    print(out, "desc", DistributionPref.getGroupingDescription(i).replaceAll("<", "@lt@").replaceAll(">", "@gt@").replaceAll("\"","@quot@").replaceAll("&","@amp@"));
+        } catch (Exception e) {
+            print(out, "desc", "");
+        }
+    }
+    
+    protected void computePreferenceLevels(String distTypeId, ServletOutputStream out) throws Exception {
+        if (distTypeId==null || distTypeId.length()==0 || distTypeId.equals(Preference.BLANK_PREF_VALUE)) return;
+        DistributionType dist = new DistributionTypeDAO().get(Long.valueOf(distTypeId));
+        print(out, "desc", dist.getDescr().replaceAll("<", "@lt@").replaceAll(">", "@gt@").replaceAll("\"","@quot@").replaceAll("&","@amp@"));
+        for (Enumeration e=PreferenceLevel.getPreferenceLevelList(false).elements();e.hasMoreElements();) {
+            PreferenceLevel pref = (PreferenceLevel)e.nextElement();
+            if (dist.isAllowed(pref))
+                print(out, pref.getPrefId().toString(), pref.getPrefName(), pref.prefcolor());
+        }
+    }
+    
     
     protected void coumputeCourseNumbers(String subjectAreaId, ServletOutputStream out) throws Exception {
         if (subjectAreaId==null || subjectAreaId.length()==0 || subjectAreaId.equals(Preference.BLANK_PREF_VALUE)) return;
