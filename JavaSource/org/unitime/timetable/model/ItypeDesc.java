@@ -52,7 +52,7 @@ public class ItypeDesc extends BaseItypeDesc implements Comparable {
     /**
      * @return Returns the itypes.
      */
-    public static TreeSet findAll(boolean basic) throws Exception{
+    public static TreeSet findAll(boolean basic) {
         return new TreeSet(
                 new ItypeDescDAO().
                 getSession().

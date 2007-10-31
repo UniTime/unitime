@@ -1873,6 +1873,13 @@
          validate="false" 
       />
 		
+      <action
+      	 path="/itypesAjax"
+         type="org.unitime.timetable.action.ajax.ITypesAjax"
+         scope="request"
+         validate="false" 
+      />
+
     <action
       attribute="rollForwardSessionForm"
       input="rollForwardSessionTile"

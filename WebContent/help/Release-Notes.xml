@@ -44,6 +44,15 @@
 			</description>
 		</item>
 		<item>
+			<name>Instructional Offering Configuration, Scheduling Subpart Detail, Edit Scheduling Subpart</name>
+			<description>
+				<line>Added possibility to select non-basic instructional type
+					<line>Instructional type list has an option "More Options &gt;&gt;&gt;" that expands into the set of all itypes.</line>
+					<line>If all itypes are displayed, there is an option "&lt;&lt;&lt; Less Options" that collapses the list into just basic itypes.</line>
+				</line>
+			</description>
+		</item>
+		<item>
 			<name>Add Room</name>
 			<description>
 				<line>When a building is selected (or changed), populate room coordinates with building coordinates.</line>

@@ -38,7 +38,6 @@
 	// Get Form 
 	String frmName = "SchedulingSubpartEditForm";
 	SchedulingSubpartEditForm frm = (SchedulingSubpartEditForm) request.getAttribute(frmName);
-
 	String crsNbr = "";
 	if (session.getAttribute(Constants.CRS_NBR_ATTR_NAME)!=null )
 		crsNbr = session.getAttribute(Constants.CRS_NBR_ATTR_NAME).toString();
@@ -134,8 +133,14 @@
 		<TR>
 			<TD>Instructional Type:</TD>
 			<TD>				 
-				<html:select style="width:200;" property="instructionalType">					
+				<html:select style="width:200;" property="instructionalType" onchange="javascript: itypeChanged(this);">
 					<html:options collection="<%=ItypeDesc.ITYPE_ATTR_NAME%>" property="itype" labelProperty="desc" />
+					<logic:equal name="<%=frmName%>" property="itypeBasic" value="true">
+						<html:option value="more" style="background-color:rgb(223,231,242);">More Options &gt;&gt;&gt;</html:option>
+					</logic:equal>
+					<logic:equal name="<%=frmName%>" property="itypeBasic" value="false">
+						<html:option value="less" style="background-color:rgb(223,231,242);">&lt;&lt;&lt; Less Options</html:option>
+					</logic:equal>
 				</html:select>
 				<!-- 
 				<logic:iterate scope="request" name="<%=ItypeDesc.ITYPE_ATTR_NAME%>" id="itp">
@@ -258,4 +263,53 @@
 	<% } %>
 	    self.focus();
   	}
+</SCRIPT>
+
+<SCRIPT type="text/javascript" language="javascript">
+	function itypeChanged(itypeObj) {
+		var options = itypeObj.options;
+		var currentId = itypeObj.options[itypeObj.selectedIndex].value;
+		var basic = true;
+		if (currentId=='more') {
+			basic = false;
+		} else if (currentId=='less') {
+			basic = true;
+		} else return;
+		
+		// Request initialization
+		if (window.XMLHttpRequest) req = new XMLHttpRequest();
+		else if (window.ActiveXObject) req = new ActiveXObject( "Microsoft.XMLHTTP" );
+
+		// Response
+		req.onreadystatechange = function() {
+			if (req.readyState == 4) {
+				if (req.status == 200) {
+					// Response
+					var xmlDoc = req.responseXML;
+					if (xmlDoc && xmlDoc.documentElement && xmlDoc.documentElement.childNodes && xmlDoc.documentElement.childNodes.length > 0) {
+						options.length=1;
+						var count = xmlDoc.documentElement.childNodes.length;
+						for(i=0; i<count; i++) {
+							var optId = xmlDoc.documentElement.childNodes[i].getAttribute("id");
+							var optVal = xmlDoc.documentElement.childNodes[i].getAttribute("value");
+							options[i+1] = new Option(optVal, optId, (currentId==optId));
+						}
+						if (basic)
+							options[count+1] = new Option("More Options >>>","more",false);
+						else
+							options[count+1] = new Option("<<< Less Options","less",false);
+						options[count+1].style.backgroundColor='rgb(223,231,242)';
+					}
+				}
+			}
+		};
+	
+		// Request
+		var vars = "basic="+basic;
+		req.open( "POST", "itypesAjax.do", true );
+		req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+		req.setRequestHeader("Content-Length", vars.length);
+		//setTimeout("try { req.send('" + vars + "') } catch(e) {}", 1000);
+		req.send(vars);
+	}
 </SCRIPT>

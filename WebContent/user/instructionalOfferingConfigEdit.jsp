@@ -183,9 +183,10 @@
 		<TR>
 			<TD>Instructional Type:</TD>
 			<TD>
-				<html:select property="itype">					
+				<html:select property="itype" onchange="javascript: itypeChanged(this);">
 					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
 					<html:options collection="<%=ItypeDesc.ITYPE_ATTR_NAME%>" property="itype" labelProperty="desc" />
+					<html:option value="more" style="background-color:rgb(223,231,242);">More Options &gt;&gt;&gt;</html:option>
 				</html:select>
 				&nbsp;
 				<html:submit property="op" 
@@ -279,5 +280,51 @@
 	// -->
 </SCRIPT>
 
-
+<SCRIPT type="text/javascript" language="javascript">
+	function itypeChanged(itypeObj) {
+		var options = itypeObj.options;
+		var currentId = itypeObj.options[itypeObj.selectedIndex].value;
+		var basic = true;
+		if (currentId=='more') {
+			basic = false;
+		} else if (currentId=='less') {
+			basic = true;
+		} else return;
 		
+		// Request initialization
+		if (window.XMLHttpRequest) req = new XMLHttpRequest();
+		else if (window.ActiveXObject) req = new ActiveXObject( "Microsoft.XMLHTTP" );
+
+		// Response
+		req.onreadystatechange = function() {
+			if (req.readyState == 4) {
+				if (req.status == 200) {
+					// Response
+					var xmlDoc = req.responseXML;
+					if (xmlDoc && xmlDoc.documentElement && xmlDoc.documentElement.childNodes && xmlDoc.documentElement.childNodes.length > 0) {
+						options.length=1;
+						var count = xmlDoc.documentElement.childNodes.length;
+						for(i=0; i<count; i++) {
+							var optId = xmlDoc.documentElement.childNodes[i].getAttribute("id");
+							var optVal = xmlDoc.documentElement.childNodes[i].getAttribute("value");
+							options[i+1] = new Option(optVal, optId, (currentId==optId));
+						}
+						if (basic)
+							options[count+1] = new Option("More Options >>>","more",false);
+						else
+							options[count+1] = new Option("<<< Less Options","less",false);
+						options[count+1].style.backgroundColor='rgb(223,231,242)';
+					}
+				}
+			}
+		};
+	
+		// Request
+		var vars = "basic="+basic;
+		req.open( "POST", "itypesAjax.do", true );
+		req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+		req.setRequestHeader("Content-Length", vars.length);
+		//setTimeout("try { req.send('" + vars + "') } catch(e) {}", 1000);
+		req.send(vars);
+	}
+</SCRIPT>
