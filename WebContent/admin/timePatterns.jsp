@@ -35,15 +35,26 @@
 	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD colspan="2">
-				<DIV class="WelcomeRowHead">
-				<logic:equal name="timePatternEditForm" property="op" value="Save">
-				Add
-				</logic:equal>
-				<logic:notEqual name="timePatternEditForm" property="op" value="Save">
-				Edit
-				</logic:notEqual>
-				Time Pattern
-				</DIV>
+				<tt:section-header>
+					<tt:section-title>
+						<logic:equal name="timePatternEditForm" property="op" value="Save">
+							Add
+						</logic:equal>
+						<logic:notEqual name="timePatternEditForm" property="op" value="Save">
+							Edit
+						</logic:notEqual>
+						Time Pattern
+					</tt:section-title>
+					<html:submit property="op">
+						<bean:write name="timePatternEditForm" property="op" />
+					</html:submit> 
+					<logic:notEqual name="timePatternEditForm" property="op" value="Save">
+					<logic:equal name="timePatternEditForm" property="editable" value="true">
+						<html:submit property="op" value="Delete"/> 
+					</logic:equal>
+					</logic:notEqual>
+					<html:submit property="op" value="Back" /> 
+				</tt:section-header>
 			</TD>
 		</TR>
 
@@ -184,6 +195,12 @@
 	}
 %>		
 
+		<TR>
+			<TD align="right" colspan="2">
+				<tt:section-title/>
+			</TD>
+		</TR>
+		
 		<TR>
 			<TD align="right" colspan="2">
 				<html:submit property="op">
