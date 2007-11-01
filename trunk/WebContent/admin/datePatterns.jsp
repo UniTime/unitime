@@ -165,7 +165,6 @@
 			<tt:section-header>
 				<tt:section-title>Date Patterns</tt:section-title>
 				<html:submit property="op" value="Add Date Pattern" title="Create a new date pattern"/>
-				<html:submit property="op" value="Fix Generated" title="Fix generated date patterns"/> 
 				<html:submit property="op" value="Assign Departments" title="Assign departments to extended date patterns"/> 
 				<html:submit property="op" value="Push Up" title="Move date patterns from classes to subparts whenever possible"/> 
 				<html:submit property="op" value="Export CSV" title="Export date patterns to CSV"/> 
@@ -181,7 +180,6 @@
 	<TR>
 		<TD colspan='5' align="right">
 			<html:submit property="op" value="Add Date Pattern" title="Add a new date pattern"/>
-			<html:submit property="op" value="Fix Generated" title="Fix generated date patterns"/> 
 			<html:submit property="op" value="Assign Departments" title="Assign departments to extended date patterns"/> 
 			<html:submit property="op" value="Push Up" title="Move date patterns from classes to subparts whenever possible"/> 
 			<html:submit property="op" value="Export CSV" title="Export date patterns to CSV"/> 
