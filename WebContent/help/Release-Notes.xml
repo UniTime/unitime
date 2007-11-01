@@ -122,6 +122,10 @@
 			<name>Hibernate Configuration</name>
 			<line>Connection auto-commit (option connection.autocommit) set to true.</line> 
 		</item>
+		<item>
+			<name>Woebegon College Example</name>
+			<line>Include all standard time and date patterns that are being used at Purdue.</line> 
+		</item>
 	</category>
 </release>
 

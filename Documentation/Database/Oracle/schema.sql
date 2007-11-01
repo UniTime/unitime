@@ -3975,7 +3975,7 @@ prompt
 create sequence TIMETABLE.DATE_PATTERN_SEQ
 minvalue 1
 maxvalue 999999999999999999999999999
-start with 470
+start with 853
 increment by 1
 cache 20;
 
@@ -4437,7 +4437,7 @@ prompt
 create sequence TIMETABLE.TIME_PATTERN_DAYS_SEQ
 minvalue 1
 maxvalue 999999999999999999999999999
-start with 1943
+start with 4658
 increment by 1
 cache 20;
 
@@ -4448,7 +4448,7 @@ prompt
 create sequence TIMETABLE.TIME_PATTERN_SEQ
 minvalue 1
 maxvalue 999999999999999999999999999
-start with 791
+start with 1529
 increment by 1
 cache 20;
 
@@ -4459,7 +4459,7 @@ prompt
 create sequence TIMETABLE.TIME_PATTERN_TIMES_SEQ
 minvalue 1
 maxvalue 999999999999999999999999999
-start with 3217
+start with 8861
 increment by 1
 cache 20;
 
