@@ -56,6 +56,8 @@ import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimePattern;
+import org.unitime.timetable.model.TimePatternDays;
+import org.unitime.timetable.model.TimePatternTime;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.TimePatternDAO;
@@ -289,6 +291,129 @@ public class TimePatternEditAction extends Action {
 
     	    myForm.load(null, null);
     	    myForm.setOp("List");
+        }
+        
+        if ("Generate SQL".equals(op)) {
+            PrintWriter out = null;
+            try {
+                File file = ApplicationProperties.getTempFile("tp", "sql");
+                out = new PrintWriter(new FileWriter(file));
+                
+                TreeSet patterns = new TreeSet(TimePattern.findAll(request,null));
+                
+                boolean mysql = false;
+
+                int line = 0;
+                if (mysql) out.println("INSERT INTO `timetable`.`time_pattern`(`uniqueid`, `name`, `mins_pmt`, `slots_pmt`, `nr_mtgs`, `visible`, `type`, `break_time`, `session_id`)");
+                else out.println("prompt Loading TIME_PATTERN...");
+                for (Iterator i=patterns.iterator();i.hasNext();) {
+                    TimePattern tp = (TimePattern)i.next();
+                    
+                    if (tp.getType()==TimePattern.sTypeExtended) continue;
+                    if (!tp.isVisible()) continue;
+                    
+                    if (mysql) {
+                        if (line==0) out.print("VALUES"); else out.println(",");
+                    
+                        out.print(" ("+tp.getUniqueId()+", '"+tp.getName()+"', "+tp.getMinPerMtg()+", "+
+                            tp.getSlotsPerMtg()+", "+tp.getNrMeetings()+", "+(tp.isVisible()?"1":"0")+", "+
+                            tp.getType()+", "+tp.getBreakTime()+", "+sessionId+")");
+                    } else {
+                        out.println("insert into TIME_PATTERN (UNIQUEID, NAME, MINS_PMT, SLOTS_PMT, NR_MTGS, VISIBLE, TYPE, BREAK_TIME, SESSION_ID)");
+                        out.println("values ("+tp.getUniqueId()+", '"+tp.getName()+"', "+tp.getMinPerMtg()+", "+
+                                tp.getSlotsPerMtg()+", "+tp.getNrMeetings()+", "+(tp.isVisible()?"1":"0")+", "+
+                                tp.getType()+", "+tp.getBreakTime()+", "+sessionId+");");
+                    }
+                    
+                    line++;
+                }
+                if (mysql) {
+                    out.println(";");
+                } else {
+                    out.println("commit;");
+                    out.println("prompt "+line+" records loaded");
+                }
+                
+                out.println();
+
+                line = 0;
+                if (mysql) {
+                    out.println("INSERT INTO `timetable`.`time_pattern_days`(`uniqueid`, `day_code`, `time_pattern_id`)");
+                } else {
+                    out.println("prompt Loading TIME_PATTERN_DAYS...");
+                }
+                for (Iterator i=patterns.iterator();i.hasNext();) {
+                    TimePattern tp = (TimePattern)i.next();
+                    
+                    if (tp.getType()==TimePattern.sTypeExtended) continue;
+                    if (!tp.isVisible()) continue;
+                    
+                    for (Iterator j=tp.getDays().iterator();j.hasNext();) {
+                        TimePatternDays d = (TimePatternDays)j.next();
+                        
+                        if (mysql) {
+                            if (line==0) out.print("VALUES"); else out.println(",");
+                            out.print(" ("+d.getUniqueId()+", "+d.getDayCode()+", "+tp.getUniqueId()+")");
+                        } else {
+                            out.println("insert into TIME_PATTERN_DAYS (UNIQUEID, DAY_CODE, TIME_PATTERN_ID)");
+                            out.println("values ("+d.getUniqueId()+", "+d.getDayCode()+", "+tp.getUniqueId()+");");
+                        }
+                                
+                        line++;
+                        
+                    }
+                }
+                if (mysql) {
+                    out.println(";");
+                } else {
+                    out.println("commit;");
+                    out.println("prompt "+line+" records loaded");
+                }
+                out.println();
+                
+                line = 0;
+                if (mysql) {
+                    out.println("INSERT INTO `timetable`.`time_pattern_time`(`uniqueid`, `start_slot`, `time_pattern_id`)");
+                } else {
+                    out.println("prompt Loading TIME_PATTERN_TIME...");
+                }
+                for (Iterator i=patterns.iterator();i.hasNext();) {
+                    TimePattern tp = (TimePattern)i.next();
+                    
+                    if (tp.getType()==TimePattern.sTypeExtended) continue;
+                    if (!tp.isVisible()) continue;
+                    
+                    for (Iterator j=tp.getTimes().iterator();j.hasNext();) {
+                        TimePatternTime t = (TimePatternTime)j.next();
+                        
+                        if (mysql) {
+                            if (line==0) out.print("VALUES"); else out.println(",");
+                            out.print(" ("+t.getUniqueId()+", "+t.getStartSlot()+", "+tp.getUniqueId()+")");
+                        } else {
+                            out.println("insert into TIME_PATTERN_TIME (UNIQUEID, START_SLOT, TIME_PATTERN_ID)");
+                            out.println("values ("+t.getUniqueId()+", "+t.getStartSlot()+", "+tp.getUniqueId()+");");
+                        }
+                                
+                        line++;
+                    }
+                }
+                if (mysql) {
+                    out.println(";");
+                } else {
+                    out.println("commit;");
+                    out.println("prompt "+line+" records loaded");
+                }
+                
+                out.flush(); out.close(); out = null;
+                request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
+            } catch (Exception e) {
+                throw e;
+            } finally {
+                if (out!=null) out.close();
+            }
+            
+            myForm.load(null, null);
+            myForm.setOp("List");
         }
         
         

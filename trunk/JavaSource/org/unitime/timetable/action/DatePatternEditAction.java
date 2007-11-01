@@ -431,6 +431,64 @@ public class DatePatternEditAction extends Action {
 	        	myForm.setOp("List");
 	        }
 
+	        if ("Generate SQL".equals(op)) {
+	            PrintWriter out = null;
+	            try {
+	                File file = ApplicationProperties.getTempFile("tp", "sql");
+	                out = new PrintWriter(new FileWriter(file));
+	                
+	                TreeSet patterns = new TreeSet(DatePattern.findAll(request, null, null));
+	                
+	                boolean mysql = false;
+
+	                int line = 0;
+	                if (mysql) {
+	                    out.println("INSERT INTO `timetable`.`date_pattern`(`uniqueid`, `name`, `pattern`, `offset`, `type`, `visible`, `session_id`)");
+	                } else {
+	                    out.println("prompt Loading DATE_PATTERN...");
+	                }
+	                for (Iterator i=patterns.iterator();i.hasNext();) {
+	                    DatePattern dp = (DatePattern)i.next();
+	                    
+	                    if (dp.getType()==DatePattern.sTypeExtended) continue;
+	                    if (!dp.isVisible()) continue;
+	                    
+	                    if (mysql) {
+	                        if (line==0) out.print("VALUES"); else out.println(",");
+	                    
+	                        out.print(" ("+dp.getUniqueId()+", '"+dp.getName()+"', '"+dp.getPattern()+"', "+
+	                            dp.getOffset()+", "+dp.getType()+", "+(dp.isVisible()?"1":"0")+", "+
+	                            sessionId+")");
+	                    } else {
+	                        out.println("insert into DATE_PATTERN (UNIQUEID, NAME, PATTERN, OFFSET, TYPE, VISIBLE, SESSION_ID)");
+	                        out.println("values ("+dp.getUniqueId()+", '"+dp.getName()+"', '"+dp.getPattern()+"', "+
+                                dp.getOffset()+", "+dp.getType()+", "+(dp.isVisible()?"1":"0")+", "+
+                                sessionId+");");
+	                    }
+	                    
+	                    line++;
+	                }
+	                if (mysql) {
+	                    out.println(";");
+	                } else {
+	                    out.println("commit;");
+	                    out.println("prompt "+line+" records loaded");
+	                }
+	                
+	                out.println();
+
+	                out.flush(); out.close(); out = null;
+	                request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
+	            } catch (Exception e) {
+	                throw e;
+	            } finally {
+	                if (out!=null) out.close();
+	            }
+	            
+	            myForm.load(null);
+	            myForm.setOp("List");
+	        }
+	        
 	        if ("Push Up".equals(op)) {
 	    		Transaction tx = null;
 	    		
