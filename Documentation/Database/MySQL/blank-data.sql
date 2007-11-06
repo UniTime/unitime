@@ -82,7 +82,6 @@ DELETE FROM `timetable`.`non_university_location`;
 DELETE FROM `timetable`.`offr_consent_type`;
 DELETE FROM `timetable`.`offr_group`;
 DELETE FROM `timetable`.`offr_group_offering`;
-DELETE FROM `timetable`.`plan_table`;
 DELETE FROM `timetable`.`pos_acad_area_major`;
 DELETE FROM `timetable`.`pos_acad_area_minor`;
 DELETE FROM `timetable`.`pos_major`;
