@@ -27,6 +27,23 @@
 	<version>3.0.@build.number@</version>
 	<release-date>@release.date@</release-date>
 	<category>
+		<title>SOLVER</title>
+		<item>
+			<name>Constraint Solver</name>
+			<description>
+				<line>Constraint solver updated, see http://sourceforge.net/mailarchive/forum.php?forum_name=unitime-cvs for more details.</line> 
+				<line>Major changes:
+					<line>Added initial implementation of examination timetabling solver.</line>
+				</line>
+			</description> 
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.0.41</version>
+	<release-date>Wed, 7 Nov 2007</release-date>
+	<category>
 		<title>USER INTERFACE</title>
 		<item>
 			<name>Roll Forward</name>
