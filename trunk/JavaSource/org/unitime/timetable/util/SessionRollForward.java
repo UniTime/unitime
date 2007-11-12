@@ -981,16 +981,35 @@ public class SessionRollForward {
 		if (fromPrefGroup.getBuildingPreferences() != null && !fromPrefGroup.getBuildingPreferences().isEmpty()){
 			BuildingPref fromBuildingPref = null;
 			BuildingPref toBuildingPref = null;
+			Department toDepartment = findToManagingDepartmentForPrefGroup(toPrefGroup);
+			if (!getRoomList().containsKey(toDepartment)){
+				getRoomList().put(toDepartment, buildRoomListForDepartment(toDepartment, toSession));
+			} 
 			for (Iterator it = fromPrefGroup.getBuildingPreferences().iterator(); it.hasNext(); ){
 				fromBuildingPref = (BuildingPref) it.next();	
-				Building b = fromBuildingPref.getBuilding().findSameBuildingInSession(toSession);
-				if (b != null){
-					toBuildingPref = new BuildingPref();
-					toBuildingPref.setBuilding(b);
-					toBuildingPref.setPrefLevel(fromBuildingPref.getPrefLevel());
-					toBuildingPref.setDistanceFrom(fromBuildingPref.getDistanceFrom());
-					toBuildingPref.setOwner(toPrefGroup);
-					toPrefGroup.addTopreferences(toBuildingPref);
+				Building toBuilding = fromBuildingPref.getBuilding().findSameBuildingInSession(toSession);
+				if (toBuilding != null){
+					boolean deptHasRoomInBuilding = false;
+					Location loc = null;
+					Room r = null;
+					Iterator rIt = ((Set)getRoomList().get(toDepartment)).iterator();
+					while(rIt.hasNext() && !deptHasRoomInBuilding){
+						loc = (Location)rIt.next();
+						if (loc instanceof Room) {
+							r = (Room) loc;
+							if (r.getBuilding() != null && r.getBuilding().getUniqueId().equals(toBuilding.getUniqueId())){
+								deptHasRoomInBuilding = true;
+							}
+						}
+					}
+					if (deptHasRoomInBuilding){
+						toBuildingPref = new BuildingPref();
+						toBuildingPref.setBuilding(toBuilding);
+						toBuildingPref.setPrefLevel(fromBuildingPref.getPrefLevel());
+						toBuildingPref.setDistanceFrom(fromBuildingPref.getDistanceFrom());
+						toBuildingPref.setOwner(toPrefGroup);
+						toPrefGroup.addTopreferences(toBuildingPref);
+					}
 				}
 			}
 		}		
@@ -1023,7 +1042,7 @@ public class SessionRollForward {
 								}								
 							}
 						}
-						if (toRoom.getBuilding().getExternalUniqueId().equals(fromRoom.getBuilding().getExternalUniqueId()) && toRoom.getRoomNumber().equals(fromRoom.getRoomNumber())){
+						if (toRoom != null && toRoom.getBuilding().getExternalUniqueId().equals(fromRoom.getBuilding().getExternalUniqueId()) && toRoom.getRoomNumber().equals(fromRoom.getRoomNumber())){
 							toRoomPref.setRoom(toRoom);
 							toRoomPref.setPrefLevel(fromRoomPref.getPrefLevel());
 							toRoomPref.setOwner(toPrefGroup);
@@ -1042,7 +1061,7 @@ public class SessionRollForward {
 								}								
 							}
 						}
-						if (toNonUniversityLocation.getName().equals(fromNonUniversityLocation.getName())){
+						if (toNonUniversityLocation != null && toNonUniversityLocation.getName().equals(fromNonUniversityLocation.getName())){
 							toRoomPref.setRoom(toNonUniversityLocation);
 							toRoomPref.setPrefLevel(fromRoomPref.getPrefLevel());
 							toRoomPref.setOwner(toPrefGroup);
@@ -1300,9 +1319,8 @@ public class SessionRollForward {
 		StringBuffer sb = new StringBuffer();
 		sb.append("select l from " + locType + " as l inner join l.roomDepts as rd where l.session.uniqueId = ");
 		sb.append(sess.getUniqueId().toString());
-		sb.append(" and ( rd.department.uniqueId = ");
+		sb.append(" and rd.department.uniqueId = ");
 		sb.append(dept.getUniqueId().toString());
-		sb.append(" or rd.department.externalManager = true ) ");
 		return(sb.toString());
 	}
 	
