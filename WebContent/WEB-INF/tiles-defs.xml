@@ -662,7 +662,7 @@
 		<put name="body" value="/admin/lastChanges.jsp" />
   	</definition>
    	<definition	name="rollForwardSessionTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Roll Forward to a Session"/>
+		<put name="title" type="string" value="Roll Forward Session"/>
 		<put name="body" value="/admin/rollForwardSession.jsp" />
   	</definition>
 
