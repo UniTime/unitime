@@ -596,6 +596,10 @@
             name="showManagerSettings"
             path="managerSettingsTile"
             redirect="true" />      
+         <forward
+            name="editManagerSettings"
+            path="managerSettingsEditTile"
+            redirect="true" />      
       </action>
       
       <action
@@ -1814,9 +1818,9 @@
        name="deptStatusTypeEditForm"
        scope="request"
        validate="false" >
-       <forward 
-       		name="display" 
-       		path="deptStatusTypeEditTile" />
+       <forward name="list" path="deptStatusTypeListTile" />
+       <forward name="add" path="deptStatusTypeAddTile" />
+       <forward name="edit" path="deptStatusTypeEditTile" />
     </action>
 
     <action
@@ -1827,9 +1831,9 @@
        name="userEditForm"
        scope="request"
        validate="false" >
-       <forward 
-       		name="display" 
-       		path="userEditTile" />
+       <forward name="list" path="userListTile" />
+       <forward name="add" path="userAddTile" />
+       <forward name="edit" path="userEditTile" />
     </action>
 
     <action
