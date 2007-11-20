@@ -27,6 +27,37 @@
 	<version>3.0.@build.number@</version>
 	<release-date>@release.date@</release-date>
 	<category>
+		<title>USER INTERFACE</title>
+		<item>
+			<name>Status Types</name>
+			<description>
+				<line>Page split to add/edit status and list of statuses.</line>
+				<line>Page visualization changed to be more consistent with other pages.</line>
+				<line>Order of statuses can now be changed by up and down arrows that are visible in the list of statuses.</line>
+				<line>Page title changed to "Status Types", "Add Status Type", "Edit Status Type" based on the operation.</line>
+				<line>Added delete status confirmation.</line>
+			</description>
+		</item>
+		<item>
+			<name>Users</name>
+			<description>
+				<line>Page split to add/edit user and list users.</line>
+				<line>Page visualization changed to be more consistent with other pages.</line>
+				<line>Page title changed to "Users (Database Authentication)", "Add User", "Edit User" based on the operation.</line>
+				<line>Added delete user confirmation.</line>
+			</description>
+		</item>
+		<item>
+			<name>Manager Settings</name>
+			<description>
+				<line>Page split to edit manager setting and list of manager settings.</line>
+				<line>Page visualization changed to be more consistent with other pages.</line>
+				<line>Page title changed to "Edit Manager Setting" when a setting is being changed.</line>
+				<line>List of manager settings is made sortable.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>SOLVER</title>
 		<item>
 			<name>Constraint Solver</name>
