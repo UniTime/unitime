@@ -17,28 +17,59 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  --%>
 <%@ page language="java" autoFlush="true"%>
+<%@ page import="org.unitime.commons.web.Web" %>
+<%@ page import="org.unitime.timetable.webutil.JavascriptFunctions" %>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
+<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 
 <tiles:importAttribute />
 
+<SCRIPT language="javascript">
+	<!--
+		<%= JavascriptFunctions.getJsConfirm(Web.getUser(session)) %>
+		
+		function confirmDelete() {
+			if (jsConfirm!=null && !jsConfirm)
+				return true;
+
+			if(confirm('The status will be deleted. Continue?')) {
+				return true;
+			}
+			return false;
+		}
+
+	// -->
+</SCRIPT>
+
 <html:form action="/deptStatusTypeEdit">
 <html:hidden property="uniqueId"/><html:errors property="uniqueId"/>
-
+<input type='hidden' name='op2' value=''>
+<logic:notEqual name="deptStatusTypeEditForm" property="op" value="List">
 	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD colspan="2">
-				<DIV class="WelcomeRowHead">
-				<logic:equal name="deptStatusTypeEditForm" property="op" value="Add New">
-				Add
-				</logic:equal>
-				<logic:notEqual name="deptStatusTypeEditForm" property="op" value="Add New">
-				Edit
-				</logic:notEqual>
-				Status
-				</DIV>
+				<tt:section-header>
+					<tt:section-title>
+						<logic:equal name="deptStatusTypeEditForm" property="op" value="Save">
+						Add
+						</logic:equal>
+						<logic:notEqual name="deptStatusTypeEditForm" property="op" value="Save">
+							Edit
+						</logic:notEqual>
+						Status Type
+					</tt:section-title>
+					<logic:equal name="deptStatusTypeEditForm" property="op" value="Save">
+						<html:submit property="op" value="Save" accesskey="S" title="Save Status (Alt+S)"/>
+					</logic:equal>
+					<logic:notEqual name="deptStatusTypeEditForm" property="op" value="Save">
+						<html:submit property="op" value="Update" accesskey="U" title="Update Status (Alt+U)"/>
+						<html:submit property="op" value="Delete" onclick="return confirmDelete();" accesskey="D" title="Delete Status (Alt+D)"/> 
+					</logic:notEqual>
+					<html:submit property="op" value="Back" title="Return to Status Types (Alt+B)" accesskey="B"/>
+				</tt:section-header>
 			</TD>
 		</TR>
 
@@ -78,29 +109,45 @@
 		<TR><TD>Commit:</TD><TD><html:checkbox property="canCommit"/></TD></TR>
 		
 		<TR>
+			<TD colspan='2'>
+				<tt:section-title/>
+			</TD>
+		</TR>
+		<TR>
 			<TD align="right" colspan="2">
-				<html:submit property="op">
-					<bean:write name="deptStatusTypeEditForm" property="op" />
-				</html:submit> 
-				<logic:notEqual name="deptStatusTypeEditForm" property="op" value="Add New">
-					<logic:greaterThan name="deptStatusTypeEditForm" property="order" value="0">
-						<html:submit property="op" value="Move Up"/> 
-					</logic:greaterThan>
-					<logic:lessThan name="deptStatusTypeEditForm" property="order" value="<%=request.getAttribute("DeptStatusType.last").toString()%>">
-						<html:submit property="op" value="Move Down"/> 
-					</logic:lessThan>
-					<html:submit property="op" value="Delete"/> 
+				<logic:equal name="deptStatusTypeEditForm" property="op" value="Save">
+					<html:submit property="op" value="Save" accesskey="S" title="Save Status (Alt+S)"/>
+				</logic:equal>
+				<logic:notEqual name="deptStatusTypeEditForm" property="op" value="Save">
+					<html:submit property="op" value="Update" accesskey="U" title="Update Status (Alt+U)"/>
+					<html:submit property="op" value="Delete" onclick="return confirmDelete();" accesskey="D" title="Delete Status (Alt+D)"/> 
 				</logic:notEqual>
-				<html:submit property="op" value="Clear" /> 
+				<html:submit property="op" value="Back" title="Return to Status Types (Alt+B)" accesskey="B"/>
 			</TD>
 		</TR>
 	</TABLE>
-
-<BR>&nbsp;<BR>
-
-<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
-	<%= request.getAttribute("DeptStatusType.table") %> 
-</TABLE>
-
-
+</logic:notEqual>
+<logic:equal name="deptStatusTypeEditForm" property="op" value="List">
+	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<tr>
+			<td colspan='5'>
+				<tt:section-header>
+					<tt:section-title>Status Types</tt:section-title>
+					<html:submit property="op" value="Add Status Type" accesskey="A" title="Create New Status Type (Alt+A)"/>
+				</tt:section-header>
+			</td>
+		</tr>
+		<%= request.getAttribute("DeptStatusType.table") %> 
+		<tr>
+			<td colspan='5'>
+				<tt:section-title/>
+			</td>
+		</tr>
+		<tr>
+			<td colspan='5' align="right">
+				<html:submit property="op" value="Add Status Type" accesskey="A" title="Create New Status Type (Alt+A)"/>
+			</td>
+		</tr>
+	</TABLE>
+</logic:equal>
 </html:form>
