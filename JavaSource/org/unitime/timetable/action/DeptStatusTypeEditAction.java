@@ -60,29 +60,32 @@ public class DeptStatusTypeEditAction extends Action {
         
         // Read operation to be performed
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
+        
+        if (request.getParameter("op2")!=null && request.getParameter("op2").length()>0)
+            op = request.getParameter("op2");
 
         if (op==null) {
             myForm.reset(mapping, request);
-            myForm.setOp("Add New");
         }
         
     	User user = Web.getUser(request.getSession());
     	Long sessionId = Session.getCurrentAcadSession(user).getSessionId();
 
         // Reset Form
-        if ("Clear".equals(op)) {
+        if ("Back".equals(op)) {
             myForm.reset(mapping, request);
-            myForm.setOp("Add New");
         }
         
+        if ("Add Status Type".equals(op)) {
+            myForm.load(null);
+        }
 
         // Add / Update
-        if ("Update".equals(op) || "Add New".equals(op)) {
+        if ("Update".equals(op) || "Save".equals(op)) {
             // Validate input
             ActionMessages errors = myForm.validate(mapping, request);
             if(errors.size()>0) {
                 saveErrors(request, errors);
-                mapping.findForward("display");
             } else {
         		Transaction tx = null;
         		
@@ -99,7 +102,7 @@ public class DeptStatusTypeEditAction extends Action {
         	    	throw e;
         	    }
 
-                myForm.setOp("Update");
+                myForm.reset(mapping, request);
             }
         }
 
@@ -110,14 +113,12 @@ public class DeptStatusTypeEditAction extends Action {
             if(id==null || id.trim().length()==0) {
                 errors.add("reference", new ActionMessage("errors.invalid", "Unique Id : " + id));
                 saveErrors(request, errors);
-                return mapping.findForward("display");
             } else {
                 DepartmentStatusType s = (new DepartmentStatusTypeDAO()).get(new Long(id));
             	
                 if(s==null) {
                     errors.add("reference", new ActionMessage("errors.invalid", "Unique Id : " + id));
                     saveErrors(request, errors);
-                    return mapping.findForward("display");
                 } else {
                 	myForm.load(s);
                 }
@@ -142,7 +143,6 @@ public class DeptStatusTypeEditAction extends Action {
     	    }
 
     	    myForm.reset(mapping, request);
-            myForm.setOp("Add New");
         }
         
         // Move Up or Down
@@ -193,13 +193,16 @@ public class DeptStatusTypeEditAction extends Action {
                 if (tx!=null) tx.rollback();
                 Debug.error(e);
             }
-            myForm.setOp("Update");
+            myForm.reset(mapping, request);
         }
 
-        // Read all existing settings and store in request
-        getDeptStatusList(request, sessionId);    
+        if ("List".equals(myForm.getOp())) {
+            // Read all existing settings and store in request
+            getDeptStatusList(request, sessionId);
+            return mapping.findForward("list");
+        }
         
-        return mapping.findForward("display");
+        return mapping.findForward("Save".equals(myForm.getOp())?"add":"edit");
 		} catch (Exception e) {
 			Debug.error(e);
 			throw e;
@@ -207,12 +210,13 @@ public class DeptStatusTypeEditAction extends Action {
 	}
 	
     private void getDeptStatusList(HttpServletRequest request, Long sessionId) throws Exception {
-		WebTable.setOrder(request.getSession(),"deptStatusTypes.ord",request.getParameter("ord"),1);
+		WebTable.setOrder(request.getSession(),"deptStatusTypes.ord",request.getParameter("ord"),2);
 		// Create web table instance 
-        WebTable webTable = new WebTable( 4,
-			    "Department/Session Statuses", "deptStatusTypeEdit.do?ord=%%",
-			    new String[] {"Reference", "Label", "Apply", "Rights"},
-			    new String[] {"left", "left", "left","left"},
+        WebTable webTable = new WebTable( 5,
+			    null, "deptStatusTypeEdit.do?ord=%%",
+			    new String[] {
+                "","Reference", "Label", "Apply", "Rights"},
+			    new String[] {"left","left", "left","left", "left"},
 			    null );
         
         TreeSet statuses = DepartmentStatusType.findAll();
@@ -278,16 +282,30 @@ public class DeptStatusTypeEditAction extends Action {
                 if (rights.length()>0) rights+="; ";
                 rights += "commit";
             }
+            String ops = "";
+            if (s.getOrd().intValue()>0) {
+                ops += "<img src='images/arrow_u.gif' border='0' align='absmiddle' title='Move Up' " +
+                		"onclick=\"deptStatusTypeEditForm.op2.value='Move Up';deptStatusTypeEditForm.uniqueId.value='"+s.getUniqueId()+"';deptStatusTypeEditForm.submit(); event.cancelBubble=true;\">";
+            } else
+                ops += "<img src='images/blank.gif' border='0' align='absmiddle'>";
+            if (i.hasNext()) {
+                ops += "<img src='images/arrow_d.gif' border='0' align='absmiddle' title='Move Down' " +
+                		"onclick=\"deptStatusTypeEditForm.op2.value='Move Down';deptStatusTypeEditForm.uniqueId.value='"+s.getUniqueId()+"';deptStatusTypeEditForm.submit(); event.cancelBubble=true;\">";
+            } else
+                ops += "<img src='images/blank.gif' border='0' align='absmiddle'>";
             webTable.addLine(onClick, new String[] {
+                    ops,
                     s.getReference(),
                     s.getLabel(),
                     apply,
-                    rights
+                    rights,
         		},new Comparable[] {
+                    s.getOrd(),
         			s.getOrd(),
                     s.getLabel(),
                     s.getApply(),
-                    s.getStatus()
+                    s.getStatus(),
+                    
         		});
         }
         
