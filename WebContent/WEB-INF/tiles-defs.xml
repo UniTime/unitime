@@ -347,6 +347,10 @@
 		<put name="body" value="/user/managerSettings.jsp" />
   	</definition>
   
+	<definition	name="managerSettingsEditTile" extends="managerSettingsTile">
+		<put name="title" type="string" value="Edit Manager Setting"/>
+  	</definition>
+
 	<definition	name="settingsTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Default Application Settings"/>
 		<put name="body" value="/admin/settings.jsp" />
@@ -666,14 +670,30 @@
 		<put name="body" value="/admin/rollForwardSession.jsp" />
   	</definition>
 
-   	<definition	name="deptStatusTypeEditTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Manage Session/Department Status Types"/>
+   	<definition	name="deptStatusTypeListTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Status Types"/>
 		<put name="body" value="/admin/deptStatusTypeEdit.jsp" />
   	</definition>
   	
-   	<definition	name="userEditTile" extends="pageLayoutDef">
+   	<definition	name="deptStatusTypeAddTile" extends="deptStatusTypeListTile">
+		<put name="title" type="string" value="Add Status Type"/>
+  	</definition>
+
+   	<definition	name="deptStatusTypeEditTile" extends="deptStatusTypeListTile">
+		<put name="title" type="string" value="Edit Status Type"/>
+  	</definition>
+
+   	<definition	name="userListTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Users (Database Authentication)"/>
 		<put name="body" value="/admin/userEdit.jsp" />
+  	</definition>
+
+   	<definition	name="userAddTile" extends="userListTile">
+		<put name="title" type="string" value="Add User"/>
+  	</definition>
+
+   	<definition	name="userEditTile" extends="userListTile">
+		<put name="title" type="string" value="Edit User"/>
   	</definition>
 
    	<definition	name="buildingEditTile" extends="pageLayoutDef">
