@@ -127,6 +127,7 @@ public class ManagerSettingsAction extends Action {
 			    String[] data = Settings.getSettingValue(user.getRole(), uSettings, keyId, s.getDefaultValue());
 			    frm.setValue(data[1]);
             }
+            return mapping.findForward("editManagerSettings");
         }
  
         // Save changes made by the user
@@ -201,11 +202,12 @@ public class ManagerSettingsAction extends Action {
      * @throws Exception
      */
     private void getSettingsList(HttpServletRequest request) throws Exception {
+        WebTable.setOrder(request.getSession(),"managerSettings.ord",request.getParameter("ord"),1);
 		org.hibernate.Session hibSession = null;
 
 		// Create web table instance 
         WebTable webTable = new WebTable( 2,
-			    "Settings List",
+			    "Manager Settings", "managerSettings.do?ord=%%",
 			    new String[] {"Setting", "Value"},
 			    new String[] {"left", "left"},
 			    null );
@@ -240,11 +242,11 @@ public class ManagerSettingsAction extends Action {
     				+ s.getUniqueId() + "&sid=" + data[0] + "';\"";
 			    
 			    webTable.addLine(
-			        	onClick, new String[] {key, data[1]}, null, null );			    
+			        	onClick, new String[] {key, data[1]}, new String[] {key, data[1]} );			    
 			}
 		}
 
-	    request.setAttribute(Settings.SETTINGS_ATTR_NAME, webTable.printTable());
+	    request.setAttribute(Settings.SETTINGS_ATTR_NAME, webTable.printTable(WebTable.getOrder(request.getSession(),"managerSettings.ord")));
     }   
     
 }
