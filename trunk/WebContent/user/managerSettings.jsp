@@ -21,27 +21,31 @@
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
+<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <%@ page import="org.unitime.timetable.model.Settings" %>
 <tiles:importAttribute />
 
+<html:form action="/managerSettings">
+
 <logic:equal name="mgrSettingsForm" property="op" value="Edit">
 
-<html:form action="/managerSettings">
 <html:hidden property="keyId"/><html:errors property="keyId"/>
 <html:hidden property="settingId"/><html:errors property="settingId"/>
 
 	<TABLE width="93%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD>
-				<DIV class="WelcomeRowHead">
-				Update Setting
-				</DIV>
-			</TD>
-		</TR>
-
-		<TR>
-			<TD>
-				<B><bean:write name="mgrSettingsForm" property="key"/></B>
+				<tt:section-header>
+					<tt:section-title>
+						<bean:write name="mgrSettingsForm" property="key"/>
+					</tt:section-title>
+					<html:submit styleClass="btn" property="op" accesskey="U" titleKey="title.updateSetting">
+						<bean:message key="button.updateSetting" />
+					</html:submit>
+					<html:submit styleClass="btn" property="op" accesskey="B" titleKey="title.cancelUpdateSetting"> 
+						<bean:message key="button.cancelUpdateSetting" />
+					</html:submit>
+				</tt:section-header>
 			</TD>
 		</TR>
 
@@ -60,9 +64,7 @@
 
 		<TR>
 			<TD align="right">
-				<DIV class="WelcomeRowHead">
-				&nbsp;
-				</DIV>
+				<tt:section-title/>
 			</TD>
 		</TR>
 
@@ -71,20 +73,18 @@
 				<html:submit styleClass="btn" property="op" accesskey="U" titleKey="title.updateSetting">
 					<bean:message key="button.updateSetting" />
 				</html:submit>
-				<html:submit styleClass="btn" property="op" accesskey="C" titleKey="title.cancelUpdateSetting"> 
+				<html:submit styleClass="btn" property="op" accesskey="B" titleKey="title.cancelUpdateSetting"> 
 					<bean:message key="button.cancelUpdateSetting" />
 				</html:submit>
 			</TD>
 		</TR>
 	</TABLE>
 
-</html:form>
-
 </logic:equal>
+<logic:notEqual name="mgrSettingsForm" property="op" value="Edit">
+	<TABLE width="93%" border="0" cellspacing="0" cellpadding="3">
+		<%= request.getAttribute(Settings.SETTINGS_ATTR_NAME) %>
+	</TABLE>
+</logic:notEqual>
 
-
-<TABLE width="93%" border="0" cellspacing="0" cellpadding="3">
-	<%= request.getAttribute(Settings.SETTINGS_ATTR_NAME) %> 
-</TABLE>
-
-
+</html:form>
