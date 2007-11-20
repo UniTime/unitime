@@ -81,7 +81,7 @@ public class DeptStatusTypeEditForm extends ActionForm {
 	}
 
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
-		iOp = null; iUniqueId = new Long(-1);
+		iOp = "List"; iUniqueId = new Long(-1);
         iReference = null; iLabel = null;
         iApply = 0; iOrder = DepartmentStatusType.findAll().size();
         iCanManagerView         = false;
@@ -161,7 +161,7 @@ public class DeptStatusTypeEditForm extends ActionForm {
 	public void load(DepartmentStatusType s) {
 		if (s==null) {
 			reset(null, null);
-			setOp("Add New");
+			setOp("Save");
 		} else {
             setUniqueId(s.getUniqueId());
             setReference(s.getReference());
