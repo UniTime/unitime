@@ -67,7 +67,7 @@ public class UserEditForm extends ActionForm {
 	}
 
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
-		iOp = null; iExternalId = null; iName = null; iPassword = null;
+		iOp = "List"; iExternalId = null; iName = null; iPassword = null;
 	}
 	
 	public String getOp() { return iOp; }
@@ -80,10 +80,14 @@ public class UserEditForm extends ActionForm {
     public void setPassword(String password) { iPassword = password; }
     
     public void load(User user) {
-        setOp("Update");
-        setExternalId(user.getExternalUniqueId());
-        setName(user.getUsername());
-        setPassword(user.getPassword());
+        if (user==null) {
+            setOp("Save");
+        } else {
+            setOp("Update");
+            setExternalId(user.getExternalUniqueId());
+            setName(user.getUsername());
+            setPassword(user.getPassword());
+        }
     }
     
     public void saveOrUpdate(org.hibernate.Session hibSession) throws Exception {
