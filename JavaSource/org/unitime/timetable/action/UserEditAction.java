@@ -63,26 +63,26 @@ public class UserEditAction extends Action {
 
         if (op==null) {
             myForm.reset(mapping, request);
-            myForm.setOp("Add New");
         }
         
     	User user = Web.getUser(request.getSession());
     	Long sessionId = Session.getCurrentAcadSession(user).getSessionId();
 
         // Reset Form
-        if ("Clear".equals(op)) {
+        if ("Back".equals(op)) {
             myForm.reset(mapping, request);
-            myForm.setOp("Add New");
         }
         
+        if ("Add User".equals(op)) {
+            myForm.load(null);
+        }
 
         // Add / Update
-        if ("Update".equals(op) || "Add New".equals(op)) {
+        if ("Update".equals(op) || "Save".equals(op)) {
             // Validate input
             ActionMessages errors = myForm.validate(mapping, request);
             if(errors.size()>0) {
                 saveErrors(request, errors);
-                mapping.findForward("display");
             } else {
         		Transaction tx = null;
         		
@@ -99,7 +99,7 @@ public class UserEditAction extends Action {
         	    	throw e;
         	    }
 
-                myForm.setOp("Update");
+        	    myForm.reset(mapping, request);
             }
         }
 
@@ -110,14 +110,12 @@ public class UserEditAction extends Action {
             if(id==null || id.trim().length()==0) {
                 errors.add("externalId", new ActionMessage("errors.invalid", id));
                 saveErrors(request, errors);
-                return mapping.findForward("display");
             } else {
                 org.unitime.timetable.model.User u = org.unitime.timetable.model.User.findByExternalId(id);
             	
                 if(u==null) {
                     errors.add("externalId", new ActionMessage("errors.invalid", id));
                     saveErrors(request, errors);
-                    return mapping.findForward("display");
                 } else {
                 	myForm.load(u);
                 }
@@ -142,13 +140,15 @@ public class UserEditAction extends Action {
     	    }
 
     	    myForm.reset(mapping, request);
-            myForm.setOp("Add New");
         }
         
-        // Read all existing settings and store in request
-        getUserList(request, sessionId);    
+        if ("List".equals(myForm.getOp())) {
+            // Read all existing settings and store in request
+            getUserList(request, sessionId);    
+            return mapping.findForward("list");
+        }
         
-        return mapping.findForward("display");
+        return mapping.findForward("Save".equals(myForm.getOp())?"add":"edit");
 		} catch (Exception e) {
 			Debug.error(e);
 			throw e;
@@ -159,7 +159,7 @@ public class UserEditAction extends Action {
 		WebTable.setOrder(request.getSession(),"users.ord",request.getParameter("ord"),1);
 		// Create web table instance 
         WebTable webTable = new WebTable( 4,
-			    "Users", "userEdit.do?ord=%%",
+			    null, "userEdit.do?ord=%%",
 			    new String[] {"External ID", "User Name", "Manager"},
 			    new String[] {"left", "left", "left"},
 			    null );
