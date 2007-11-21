@@ -91,6 +91,39 @@
 				<line>After save/update/back operation, the page is scrolled down to the affected solver group.</line>
 			</description>
 		</item>
+		<item>
+			<name>Application Configuration</name>
+			<description>
+				<line>Page split to add/edit application setting and list of application settings &amp; properties.</line>
+				<line>Page visualization changed to be more consistent with other pages.</line>
+				<line>Page title changed based on the operation (list,add,edit).</line>
+				<line>Application settings/properties tables made sortable.</line>
+			</description>
+		</item>
+		<item>
+			<name>Default Manager Settings</name>
+			<description>
+				<line>Page split to add/edit manager setting and list of manager settings.</line>
+				<line>Page visualization changed to be more consistent with other pages.</line>
+				<line>Page title changed based on the operation (list,add,edit).</line>
+				<line>Manager settings table made sortable.</line>
+			</description>
+		</item>
+		<item>
+			<name>Hibernate Statistics</name>
+			<description>
+				<line>Page visualization changed to be more consistent with other pages.</line>
+				<line>Added ability to enable/disable gathering of hibernate statistics.</line>
+			</description>
+		</item>
+		<item>
+			<name>Test HQL</name>
+			<description>
+				<line>Page visualization changed to be more consistent with other pages.</line>
+				<line>Display query results in a table.</line>
+				<line>Added ability to execute update/delete query as well.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>SOLVER</title>
