@@ -54,7 +54,8 @@
 			not-null="false"
 			length="1000"
 		/>
-							
+						
+		<!-- 	
 		<property
 			name="condition"
 			column="CONDITION"
@@ -62,6 +63,7 @@
 			not-null="false"
 			length="250"
 		/>
+		-->
 
 		<property
 			name="order"
