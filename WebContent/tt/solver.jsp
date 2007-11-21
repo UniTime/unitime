@@ -126,7 +126,7 @@ try {
 <%
 	}
 %>
-	<TR><TD>Status:</TD><TD><%=status%></TD></TR>
+	<TR><TD>Status:</TD><TD><%=status%> <tt:wiki>Solver Status</tt:wiki></TD></TR>
 <%  if (progress!=null) { %>
 		<TR><TD>Progress:</TD><TD><%=progress%></TD></TR>
 <%  } %>
@@ -259,7 +259,7 @@ try {
 				<TR>
 					<TD colspan="2">
 						<DIV class="WelcomeRowHead">
-						Current Timetable - <%=solution.getOwner().getName()%>
+						Current Timetable - <%=solution.getOwner().getName()%> <tt:wiki>Solution Properties</tt:wiki>
 						</DIV>
 					</TD>
 				</TR>
@@ -284,7 +284,7 @@ try {
 					<TR>
 						<TD colspan="2">
 							<DIV class="WelcomeRowHead">
-							Problems
+							Problems <tt:wiki>Solver Warnings</tt:wiki>
 							</DIV>
 						</TD>
 					</TR>
@@ -315,7 +315,7 @@ try {
 			<TR>
 				<TD colspan="2">
 					<DIV class="WelcomeRowHead">
-					Best Timetable Found So Far
+					Best Timetable Found So Far <tt:wiki>Solution Properties</tt:wiki>
 					</DIV>
 				</TD>
 			</TR>
@@ -365,7 +365,7 @@ try {
 		<TR>
 			<TD colspan="2">
 				<DIV class="WelcomeRowHead">
-				Current Timetable
+				Current Timetable <tt:wiki>Solution Properties</tt:wiki>
 				</DIV>
 			</TD>
 		</TR>
@@ -405,7 +405,7 @@ try {
 			<TR>
 				<TD colspan="2">
 					<DIV class="WelcomeRowHead">
-					Problems
+					Problems <tt:wiki>Solver Warnings</tt:wiki>
 					</DIV>
 				</TD>
 			</TR>
