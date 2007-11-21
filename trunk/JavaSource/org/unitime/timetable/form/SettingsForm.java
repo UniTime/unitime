@@ -74,7 +74,7 @@ public class SettingsForm extends ActionForm {
             errors.add("key", new ActionMessage("errors.required", ""));
         else {
             Settings setting = Settings.getSetting(key);
-            if(op.equals("Add New") && setting!=null && setting.getDefaultValue().toString().trim().length()>0)
+            if(op.equals("Save") && setting!=null && setting.getDefaultValue().toString().trim().length()>0)
                 errors.add("key", new ActionMessage("errors.exists", key));
         }
         
@@ -96,7 +96,7 @@ public class SettingsForm extends ActionForm {
      * @param request
      */
     public void reset(ActionMapping mapping, HttpServletRequest request) {
-        op = null;
+        op = "List";
         uniqueId = null;
         key = "";
         defaultValue = "";
