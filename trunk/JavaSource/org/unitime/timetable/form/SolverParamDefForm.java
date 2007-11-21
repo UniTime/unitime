@@ -50,7 +50,7 @@ public class SolverParamDefForm extends ActionForm {
         if(name==null || name.trim().length()==0)
             errors.add("name", new ActionMessage("errors.required", ""));
         else {
-        	if ("Add New".equals(op)) {
+        	if ("Save".equals(op)) {
         		SolverParameterDef def = SolverParameterDef.findByName(name);
         		if (def!=null)
         			errors.add("name", new ActionMessage("errors.exists", name));
@@ -73,7 +73,7 @@ public class SolverParamDefForm extends ActionForm {
 	}
 
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
-		op=null;
+		op="List";
 		uniqueId=null;
 		type="";
 		description="";

@@ -21,25 +21,40 @@
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
+<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 
 <tiles:importAttribute />
 
-<html:form action="/solverParamDef" focus="name">
+
+<html:form action="/solverParamDef">
+<tt:confirm name="confirmDelete">The solver parameter will be deleted. Continue?</tt:confirm>
 <html:hidden property="uniqueId"/><html:errors property="uniqueId"/>
-<html:hidden property="order"/><html:errors property="order"/>
+<input type="hidden" name="op2" value="">
+<logic:notEqual name="solverParamDefForm" property="op" value="List">
+	<html:hidden property="order"/><html:errors property="order"/>
 
 	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD colspan="2">
-				<DIV class="WelcomeRowHead">
-				<logic:equal name="solverParamDefForm" property="op" value="Add New">
-				Add
-				</logic:equal>
-				<logic:notEqual name="solverParamDefForm" property="op" value="Add New">
-				Edit
-				</logic:notEqual>
-				Sovler Parameter Definition
-				</DIV>
+				<tt:section-header>
+					<tt:section-title>
+						<logic:equal name="solverParamDefForm" property="op" value="Save">
+							Add
+						</logic:equal>
+						<logic:notEqual name="solverParamDefForm" property="op" value="Save">
+							Edit
+						</logic:notEqual>
+						Solver Parameter
+					</tt:section-title>
+					<logic:equal name="solverParamDefForm" property="op" value="Save">
+						<html:submit property="op" value="Save" accesskey="S" title="Save Solver Parameter (Alt+S)"/>
+					</logic:equal>
+					<logic:notEqual name="solverParamDefForm" property="op" value="Save">
+						<html:submit property="op" value="Update" accesskey="U" title="Update Solver Parameter (Alt+U)"/>
+						<html:submit property="op" value="Delete" onclick="return confirmDelete();" accesskey="D" title="Delete Solver Parameter (Alt+D)"/> 
+					</logic:notEqual>
+					<html:submit property="op" value="Back" title="Return to Solver Parameters (Alt+B)" accesskey="B"/>
+				</tt:section-header>
 			</TD>
 		</TR>
 
@@ -94,30 +109,34 @@
 		</TR>
 
 		<TR>
+			<TD colspan="2">
+				<tt:section-title/>
+			</TD>
+		</TR>
+
+		<TR>
 			<TD align="right" colspan="2">
-				<html:submit property="op">
-					<bean:write name="solverParamDefForm" property="op" />
-				</html:submit> 
-				<logic:notEqual name="solverParamDefForm" property="op" value="Add New">
-					<logic:greaterThan name="solverParamDefForm" property="order" value="0">
-						<html:submit property="op" value="Move Up"/> 
-					</logic:greaterThan>
-					<logic:lessThan name="solverParamDefForm" property="order" value="<%=request.getAttribute("SolverParameterDef.last").toString()%>">
-						<html:submit property="op" value="Move Down"/> 
-					</logic:lessThan>
-					<html:submit property="op" value="Delete"/> 
+				<logic:equal name="solverParamDefForm" property="op" value="Save">
+					<html:submit property="op" value="Save" accesskey="S" title="Save Solver Parameter (Alt+S)"/>
+				</logic:equal>
+				<logic:notEqual name="solverParamDefForm" property="op" value="Save">
+					<html:submit property="op" value="Update" accesskey="U" title="Update Solver Parameter (Alt+U)"/>
+					<html:submit property="op" value="Delete" onclick="return confirmDelete();" accesskey="D" title="Delete Solver Parameter (Alt+D)"/> 
 				</logic:notEqual>
-				<html:submit property="op" value="Clear" /> 
-<!-- 				<html:reset /> -->
+				<html:submit property="op" value="Back" title="Return to Solver Parameters (Alt+B)" accesskey="B"/>
 			</TD>
 		</TR>
 	</TABLE>
-
-<BR>&nbsp;<BR>
-
-<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
-	<%= request.getAttribute("SolverParameterDef.table") %> 
-</TABLE>
-
-
+</logic:notEqual>
+<logic:equal name="solverParamDefForm" property="op" value="List">
+	<input type="hidden" name="group" value="">
+	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<bean:write scope="request" name="SolverParameterDef.table" filter="false"/>
+	</TABLE>
+	<% if (request.getAttribute("hash") != null) { %>
+		<SCRIPT type="text/javascript" language="javascript">
+			location.hash = '<%=request.getAttribute("hash")%>';
+		</SCRIPT>
+	<% } %>
+</logic:equal>
 </html:form>
