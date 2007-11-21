@@ -31,6 +31,7 @@ import org.unitime.commons.web.htmlgen.Table;
 import org.unitime.commons.web.htmlgen.TableCell;
 import org.unitime.commons.web.htmlgen.TableHeaderCell;
 import org.unitime.commons.web.htmlgen.TableRow;
+import org.unitime.timetable.model.dao._RootDAO;
 
 
 /**
@@ -38,21 +39,11 @@ import org.unitime.commons.web.htmlgen.TableRow;
  * @author Heston Fernandes
  */
 public class StatsProvider {
-
-    /**
-     * Log summary stats with INFO level
-     * @param sessionFactory Hibernate Session Factory
-     */
-    public void logSummary(SessionFactory sessionFactory) {
-        try {
-            // Get statistics
-            Statistics stats = getStats(sessionFactory);
-            stats.logSummary();
-        }
-        catch (Exception e) {            
-        }
-    }
     
+    public static String getStatsHtml(boolean summaryOnly) {
+        return new StatsProvider().getStatsHtml(new _RootDAO().getSession().getSessionFactory(), summaryOnly);
+    }
+
     /**
      * Format statistics in HTML
      * @param sessionFactory Hibernate Session Factory
@@ -65,10 +56,17 @@ public class StatsProvider {
         
         StringBuffer hibStats = new StringBuffer();
         
+        
         try {
             // Get statistics
-            Statistics stats = getStats(sessionFactory);
+            Statistics stats = sessionFactory.getStatistics();
 
+            // Checks statistics enabled
+            if(!stats.isStatisticsEnabled()) {
+                return "<font color='red'><b>Hibernate statistics is not enabled.</b></font>";
+            }
+            
+            
             // Row Color for even numbered rows
             String evenRowColor = "#FAFAFA";
             
@@ -573,29 +571,6 @@ public class StatsProvider {
         }
         
         return hibStats.toString();
-    }
-    
-    /**
-     * Get Hibernate Statistics object
-     * @param sessionFactory Hibernate Session Factory
-     * @return Hibernate Statistics object
-     * @throws Exception
-     */
-    private Statistics getStats(SessionFactory sessionFactory) 
-    	throws Exception {
-        
-        // Check valid session factory
-        if(sessionFactory==null)
-            throw new Exception ("Session Factory null");
-        
-        // Get statistics
-        Statistics stats = sessionFactory.getStatistics();
-        
-        // Checks statistics enabled
-        if(!stats.isStatisticsEnabled())
-            throw new Exception ("Statistics not enabled");
-        
-        return stats;
     }
     
     /**
