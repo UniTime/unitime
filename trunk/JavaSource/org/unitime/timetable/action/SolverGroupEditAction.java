@@ -78,10 +78,12 @@ public class SolverGroupEditAction extends Action {
 
 	        if (op==null || "Back".equals(op)) {
 	            myForm.setOp("List");
+	            if (myForm.getUniqueId()!=null)
+                    request.setAttribute("hash", myForm.getUniqueId());
 	        }
 	        
 	        // Add / Update
-	        if ("Update".equals(op) || "Create".equals(op)) {
+	        if ("Update".equals(op) || "Save".equals(op)) {
 	            // Validate input
 	            ActionMessages errors = myForm.validate(mapping, request);
 	            if(errors.size()>0) {
@@ -97,12 +99,15 @@ public class SolverGroupEditAction extends Action {
 	                	myForm.saveOrUpdate(hibSession, session.getUniqueId(), request);
 	                	
 	        			if (tx!=null) tx.commit();
+	        			
 	        	    } catch (Exception e) {
 	        	    	if (tx!=null) tx.rollback();
 	        	    	throw e;
 	        	    }
 
 	                myForm.setOp("List");
+	                if (myForm.getUniqueId()!=null)
+	                    request.setAttribute("hash", myForm.getUniqueId());
 	            }
 	        }
 
@@ -113,14 +118,14 @@ public class SolverGroupEditAction extends Action {
 	            if(id==null || id.trim().length()==0) {
 	                errors.add("key", new ActionMessage("errors.invalid", "Unique Id : " + id));
 	                saveErrors(request, errors);
-	                return mapping.findForward("showSolverGroups");
+	                return mapping.findForward("edit");
 	            } else {
 	            	SolverGroup group = (new SolverGroupDAO()).get(Long.valueOf(id));
 	            	
 	                if(group==null) {
 	                    errors.add("name", new ActionMessage("errors.invalid", "Unique Id : " + id));
 	                    saveErrors(request, errors);
-	                    return mapping.findForward("showSolverGroups");
+	                    return mapping.findForward("edit");
 	                } else {
 	                	myForm.load(group, session);
 	                }
@@ -147,12 +152,11 @@ public class SolverGroupEditAction extends Action {
 	            myForm.setOp("List");
 	        }
 	        
-	        if ("Add New".equals(op)) {
+	        if ("Add Solver Group".equals(op)) {
 	        	myForm.load(null, session);
 	        }
 	        
 	        if ("Delete All".equals(op)) {
-	        	if ("1".equals(request.getParameter("sure"))) {
 		    		Transaction tx = null;
 		    		
 		            try {
@@ -181,14 +185,12 @@ public class SolverGroupEditAction extends Action {
 		    	    	if (tx!=null) tx.rollback();
 		    	    	throw e;
 		    	    }
-	        	}
 
 	            myForm.setOp("List");
 	        	
 	        }
 	        
 	        if ("Auto Setup".equals(op)) {
-	        	if ("1".equals(request.getParameter("sure"))) {
 		    		Transaction tx = null;
 		    		
 		            try {
@@ -273,7 +275,6 @@ public class SolverGroupEditAction extends Action {
 		    	    	if (tx!=null) tx.rollback();
 		    	    	throw e;
 		    	    }
-	        	}
 	        	
 	            myForm.setOp("List");
 	        }
@@ -290,9 +291,12 @@ public class SolverGroupEditAction extends Action {
 	        if ("List".equals(myForm.getOp())) {
                 PdfWebTable table = getSolverGroups(request, session.getUniqueId(), true);
                 request.setAttribute("SolverGroups.table", table.printTable(WebTable.getOrder(request.getSession(),"solverGroups.ord")));
+                return mapping.findForward("list");
             }
 	        
-	        return mapping.findForward("showSolverGroups");
+	        return mapping.findForward("Save".equals(myForm.getOp())?"add":"edit");
+	        
+	        
 		} catch (Exception e) {
 			Debug.error(e);
 			throw e;
@@ -342,7 +346,7 @@ public class SolverGroupEditAction extends Action {
         		commitDate = group.getCommittedSolution().getCommitDate();
         	
         	webTable.addLine(onClick, new String[] {
-        			(html?group.getAbbv().replaceAll(" ","&nbsp;"):group.getAbbv()),
+        	        "<a name='"+group.getUniqueId()+"'>"+(html?group.getAbbv().replaceAll(" ","&nbsp;"):group.getAbbv())+"</a>",
         			(html?group.getName().replaceAll(" ","&nbsp;"):group.getName()),
         			deptStr,
         			mgrStr,
