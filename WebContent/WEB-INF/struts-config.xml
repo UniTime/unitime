@@ -610,10 +610,9 @@
          name="settingsForm"
          scope="request"
          validate="false">
-         <forward
-            name="showSettings"
-            path="settingsTile"
-            redirect="true" />      
+         <forward name="list" path="settingsTile"/>      
+         <forward name="add" path="settingsAddTile"/>
+         <forward name="edit" path="settingsEditTile"/>
       </action>
       
       <action
@@ -1547,9 +1546,9 @@
        name="applicationConfigForm"
        scope="request"
        validate="false">
-       <forward 
-       		name="displayApplicationConfig" 
-       		path="applicationConfigTile" />
+       <forward name="list" path="applicationConfigTile" />
+       <forward name="add" path="applicationConfigAddTile" />
+       <forward name="edit" path="applicationConfigEditTile" />
     </action>
     
     <action
