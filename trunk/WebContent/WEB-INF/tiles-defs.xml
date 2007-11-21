@@ -361,14 +361,38 @@
 		<put name="body" value="/admin/solverParamGroups.jsp" />
   	</definition>
 
+	<definition	name="solverParamGroupsAddTile" extends="solverParamGroupsTile">
+		<put name="title" type="string" value="Add Solver Parameter Group"/>
+  	</definition>
+
+	<definition	name="solverParamGroupsEditTile" extends="solverParamGroupsTile">
+		<put name="title" type="string" value="Edit Solver Parameter Group"/>
+  	</definition>
+
 	<definition	name="solverParamDefTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Solver Parameter Definitions"/>
+		<put name="title" type="string" value="Solver Parameters"/>
 		<put name="body" value="/admin/solverParamDef.jsp" />
+  	</definition>
+
+	<definition	name="solverParamDefAddTile" extends="solverParamDefTile">
+		<put name="title" type="string" value="Add Solver Parameter"/>
+  	</definition>
+
+	<definition	name="solverParamDefEditTile" extends="solverParamDefTile">
+		<put name="title" type="string" value="Edit Solver Parameter"/>
   	</definition>
 
 	<definition	name="solverSettingsTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Solver Configurations"/>
 		<put name="body" value="/admin/solverSettings.jsp" />
+  	</definition>
+
+	<definition	name="solverSettingsAddTile" extends="solverSettingsTile">
+		<put name="title" type="string" value="Add Solver Configuration"/>
+  	</definition>
+
+	<definition	name="solverSettingsEditTile" extends="solverSettingsTile">
+		<put name="title" type="string" value="Edit Solver Configuration"/>
   	</definition>
 
 	<definition	name="solverInfoDefTile" extends="pageLayoutDef">
@@ -526,9 +550,17 @@
 		<put name="title" type="string" value="Edit Time Pattern"/>
   	</definition>
 
-  	<definition name="solverGroupEditTile" extends="pageLayoutDef">
+  	<definition name="solverGroupTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Solver Groups"/>
 		<put name="body" value="/admin/solverGroups.jsp" />
+  	</definition>
+
+  	<definition name="solverGroupAddTile" extends="solverGroupTile">
+		<put name="title" type="string" value="Add Solver Group"/>
+  	</definition>
+
+  	<definition name="solverGroupEditTile" extends="solverGroupTile">
+		<put name="title" type="string" value="Edit Solver Group"/>
   	</definition>
 
   	<definition name="instructionalOfferingDetailTile" extends="pageLayoutDef">

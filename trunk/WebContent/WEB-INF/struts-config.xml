@@ -21,7 +21,7 @@
 <struts-config>
 
    <display-name>UniTime</display-name>
-   <description>University Course Timetabling &amp; Student Sectioning Application</description>
+   <description>University Course Timetabling Application</description>
    
    <data-sources />
    
@@ -624,11 +624,9 @@
 		name="solverParamGroupsForm"
 		scope="request"
 		validate="false">
-		<forward
-			name="showSolverParamGroups"
-			path="solverParamGroupsTile"
-			redirect="true">
-		</forward>
+		<forward name="list" path="solverParamGroupsTile" />
+		<forward name="edit" path="solverParamGroupsEditTile" />
+		<forward name="add" path="solverParamGroupsAddTile" />
 	  </action>
 	  
 	  <action
@@ -639,10 +637,9 @@
 	  	name="solverParamDefForm"
 	  	scope="request"
 	  	validate="false">
-	  	<forward
-          name="showSolverParamDef"
-          path="solverParamDefTile"
-          redirect="true" />
+		<forward name="list" path="solverParamDefTile" />
+		<forward name="edit" path="solverParamDefEditTile" />
+		<forward name="add" path="solverParamDefAddTile" />
       </action>
       
       <action
@@ -653,10 +650,9 @@
       	name="solverSettingsForm"
       	scope="request"
       	validate="false">
-      	<forward
-          name="showSolverSettings"
-          path="solverSettingsTile"
-          redirect="true" />
+      	<forward name="list" path="solverSettingsTile"/>
+      	<forward name="add" path="solverSettingsAddTile"/>
+      	<forward name="edit" path="solverSettingsEditTile"/>
         </action>
         
         <action
@@ -1057,13 +1053,14 @@
 	    <action
 	      path="/solverGroupEdit"
 	      attribute="solverGroupEditForm"
-	      input="solverGroupEditTile"
+	      input="solverGroupTile"
 	      name="solverGroupEditForm"
 	      scope="request"
 	      type="org.unitime.timetable.action.SolverGroupEditAction" 
 	      validate="false">
-	      <forward
-	        name="showSolverGroups" path="solverGroupEditTile" />
+	      <forward name="list" path="solverGroupTile" />
+	      <forward name="add" path="solverGroupAddTile" />
+	      <forward name="edit" path="solverGroupEditTile" />
 	    </action>
 
       	<action
