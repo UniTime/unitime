@@ -130,7 +130,7 @@
 				<%--
 				leaf_item('Preference Levels','Preference Levels','preferenceLevelList.do');
 				--%>
-				leaf_item('Status Types','Manage Session/Department Status Types','deptStatusTypeEdit.do');
+				leaf_item('Status Types','Manage Status Types','deptStatusTypeEdit.do');
 				leaf_item('Import Data','Import Data','dataImport.do');
 				leaf_item('Roll Forward Session','Roll Forward Session','rollForwardSession.do');
 				leaf_item('Change Log','View Change Log','lastChanges.do');
@@ -138,7 +138,7 @@
 	
 			menu_item('42','Solver','Solver','','<%=expand%>');
 				leaf_item('Parameter Groups', 'Manage Solver Parameter Groups','solverParamGroups.do');
-				leaf_item('Parameters', 'Manage Solver Parameter Definitions','solverParamDef.do');
+				leaf_item('Parameters', 'Manage Solver Parameters','solverParamDef.do');
 				leaf_item('Configurations', 'Manage Solver Configurations','solverSettings.do');
 				// leaf_item('Definitions', 'Manage Solution Info Definitions','solverInfoDef.do');
 				leaf_item('Solver Groups', 'Manage Solver Groups','solverGroupEdit.do');
