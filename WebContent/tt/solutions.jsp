@@ -171,11 +171,11 @@
 		<TR>
 			<TD colspan="2">
 				<DIV class="WelcomeRowHead">
-				Loaded Timetable
+				Loaded Timetable <tt:wiki>Solution Properties</tt:wiki>
 				</DIV>
 			</TD>
 		</TR>
-		<TR><TD>Status:</TD><TD><%=status%></TD></TR>
+		<TR><TD>Status:</TD><TD><%=status%> <tt:wiki>Solver Status</tt:wiki></TD></TR>
 <%  	if (progress!=null) { %>
 			<TR><TD>Progress:</TD><TD><%=progress%></TD></TR>
 <%  	} %>
@@ -230,7 +230,7 @@
 		if (log!=null && log.length()>0) {
 %>
 			<TR>
-				<TD valign="top">Problems:</TD>
+				<TD valign="top">Problems: <tt:wiki>Solver Warnings</tt:wiki></TD>
 				<TD><%=log%></TD>
 			</TR>
 <%
@@ -285,7 +285,7 @@
 		<TR>
 			<TD colspan="2">
 				<DIV class="WelcomeRowHead">
-				Selected Timetable - <bean:write name="sb" property="owner" />
+				Selected Timetable - <bean:write name="sb" property="owner" /> <tt:wiki>Solution Properties</tt:wiki>
 				</DIV>
 			</TD>
 		</TR>
@@ -317,7 +317,7 @@
 		</logic:iterate>
 		<logic:notEmpty name="sb" property="log">
 			<TR>
-				<TD valign="top">Problems:</TD><TD><bean:write name="sb" property="log" filter="false"/></TD>
+				<TD valign="top">Problems: <tt:wiki>Solver Warnings</tt:wiki></TD><TD><bean:write name="sb" property="log" filter="false"/></TD>
 			</TR>
 		</logic:notEmpty>
 		<TR>
