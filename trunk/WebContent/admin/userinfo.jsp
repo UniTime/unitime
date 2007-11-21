@@ -160,7 +160,7 @@
 		</TR>
 	</TBODY>
 </TABLE>
-<TABLE class="UserInfo" width="100%" height='130'  border="0" cellspacing="0" cellpadding="2">
+<TABLE class="UserInfo" width="100%" height='153'  border="0" cellspacing="0" cellpadding="2">
 	<TBODY>
 <% if (tab==0) { %>
 		<TR align="left">
@@ -248,12 +248,12 @@
        ownerName = runnerName+" as "+ownerName;
 %>
 		<TR align="left">
-			<TD valign="top"><FONT color="#000000">&nbsp;Owner</FONT></TD>
-			<TD valign="top"><FONT color="#000040"><I><%=ownerName%></I></FONT></TD>
+			<TD valign="top" height="15"><FONT color="#000000">&nbsp;Owner</FONT></TD>
+			<TD valign="top" height="15"><FONT color="#000040"><I><%=ownerName%></I></FONT></TD>
 		</TR>
 		<TR align="left">
-			<TD valign="top"><FONT color="#000000">&nbsp;Host</FONT></TD>
-			<TD valign="top"><FONT color="#000040"><I><%=solver.getHostLabel()%></I></FONT></TD>
+			<TD valign="top" height="15"><FONT color="#000000">&nbsp;Host</FONT></TD>
+			<TD valign="top" height="15"><FONT color="#000040"><I><%=solver.getHostLabel()%></I></FONT></TD>
 		</TR>
 		<TR align="left">
 			<TD valign="top" height="15"><FONT color="#000000">&nbsp;Solver</FONT></TD>

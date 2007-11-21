@@ -77,7 +77,7 @@
         <frame class="MenuFrameMin" id="__idMenuFrameMin" name="__idMenuFrameMin" src="menumin.jsp" marginwidth="0" marginheight="0" framespacing="0" frameborder="0" scrolling="no"/>
         <frame id="__blankFrame" name="__idBlankFrame" src="empty.html" marginwidth="0" marginheight="0" framespacing="0" frameborder="0" scrolling="no"/>
     </frameset>
-    <frameset class="MenuFrameLeftBorder" id="__idMenuFramesetLeft" name="__idMenuFramesetLeft" rows="22,*,155">
+    <frameset class="MenuFrameLeftBorder" id="__idMenuFramesetLeft" name="__idMenuFramesetLeft" rows="22,*,177">
          <frame class="MenuNavFrame" id="__idMenuNavFrame" name="__idMenuNavFrame" src="menunav.jsp" marginwidth="0" marginheight="0" framespacing="0" frameborder="0" scrolling="no"/>
          <frame id="__idMenuFrame" name="__idMenuFrame" src="menu.jsp" marginwidth="0" marginheight="0" framespacing="0" frameborder="0" scrolling="auto"/>
          <frame class="MenuUserFrame" id="__userFrame" name="__idUserFrame" src="admin/userinfo.jsp" marginwidth="0" marginheight="0" framespacing="0" frameborder="0" scrolling="no"/>
