@@ -36,7 +36,6 @@ public abstract class BaseSolverParameterGroup  implements Serializable {
 	public static String REF = "SolverParameterGroup";
 	public static String PROP_NAME = "name";
 	public static String PROP_DESCRIPTION = "description";
-	public static String PROP_CONDITION = "condition";
 	public static String PROP_ORDER = "order";
 
 
@@ -65,7 +64,6 @@ public abstract class BaseSolverParameterGroup  implements Serializable {
 	// fields
 	private java.lang.String name;
 	private java.lang.String description;
-	private java.lang.String condition;
 	private java.lang.Integer order;
 
 	// collections
@@ -126,24 +124,6 @@ public abstract class BaseSolverParameterGroup  implements Serializable {
 	public void setDescription (java.lang.String description) {
 		this.description = description;
 	}
-
-
-
-	/**
-	 * Return the value associated with the column: CONDITION
-	 */
-	public java.lang.String getCondition () {
-		return condition;
-	}
-
-	/**
-	 * Set the value related to the column: CONDITION
-	 * @param condition the CONDITION value
-	 */
-	public void setCondition (java.lang.String condition) {
-		this.condition = condition;
-	}
-
 
 
 	/**
