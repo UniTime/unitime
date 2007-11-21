@@ -21,27 +21,49 @@
 <%@ page import="java.util.Vector"%>
 <%@ page import="java.util.Collections"%>
 <%@ page import="java.util.regex.Pattern"%>
+<%@page import="org.unitime.commons.web.WebTable"%>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
+<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 
 <tiles:importAttribute />
 
-<html:form action="/applicationConfig" focus="key">
+<tt:confirm name="confirmDelete">The application setting will be deleted. Continue?</tt:confirm>
 
+<html:form action="/applicationConfig">
+<logic:notEqual name="applicationConfigForm" property="op" value="list">
 	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD colspan="2">
-				<DIV class="WelcomeRowHead">
-				<logic:equal name="applicationConfigForm" property="op" value="edit">
-					Edit 
-				</logic:equal>
-				<logic:notEqual name="applicationConfigForm" property="op" value="edit">
-					Add
-				</logic:notEqual>
-				Configuration Setting
-				</DIV>
+				<tt:section-header>
+					<tt:section-title>
+						<logic:equal name="applicationConfigForm" property="op" value="edit">
+							Edit 
+						</logic:equal>
+						<logic:notEqual name="applicationConfigForm" property="op" value="edit">
+							Add
+						</logic:notEqual>
+						Application Setting
+					</tt:section-title>
+					<logic:equal name="applicationConfigForm" property="op" value="edit">
+						<html:submit property="op" styleClass="btn" accesskey="U" titleKey="title.updateAppConfig">
+							<bean:message key="button.updateAppConfig" />
+						</html:submit> 
+						<html:submit property="op" styleClass="btn" accesskey="D" onclick="return confirmDelete();" titleKey="title.deleteAppConfig">
+							<bean:message key="button.deleteAppConfig" />
+						</html:submit> 
+					</logic:equal>
+					<logic:notEqual name="applicationConfigForm" property="op" value="edit">
+						<html:submit property="op" styleClass="btn" accesskey="S" titleKey="title.createAppConfig">
+							<bean:message key="button.createAppConfig" />
+						</html:submit> 
+					</logic:notEqual>
+					<html:submit property="op" styleClass="btn" accesskey="B" titleKey="title.cancelUpdateAppConfig">
+						<bean:message key="button.cancelUpdateAppConfig" />
+					</html:submit> 
+				</tt:section-header>
 			</TD>
 		</TR>
 
@@ -62,14 +84,20 @@
 		<TR>
 			<TD valign="top">Value:</TD>
 			<TD valign="top">
-				<html:textarea property="value" rows="5" cols="70"/>
+				<html:textarea property="value" rows="10" cols="120"/>
 			</TD>
 		</TR>
 
 		<TR>
 			<TD valign="top">Description:</TD>
 			<TD valign="top">
-				<html:textarea property="description" rows="5" cols="70"/>
+				<html:textarea property="description" rows="5" cols="120"/>
+			</TD>
+		</TR>
+
+		<TR>
+			<TD colspan="2">
+				<tt:section-title/>
 			</TD>
 		</TR>
 
@@ -79,7 +107,7 @@
 					<html:submit property="op" styleClass="btn" accesskey="A" titleKey="title.updateAppConfig">
 						<bean:message key="button.updateAppConfig" />
 					</html:submit> 
-					<html:submit property="op" styleClass="btn" accesskey="D" titleKey="title.deleteAppConfig">
+					<html:submit property="op" styleClass="btn" accesskey="D" onclick="return confirmDelete();" titleKey="title.deleteAppConfig">
 						<bean:message key="button.deleteAppConfig" />
 					</html:submit> 
 				</logic:equal>
@@ -95,45 +123,40 @@
 		</TR>
 	</TABLE>
 	
-</html:form>
-
-<BR>&nbsp;<BR>
+</logic:notEqual>
+<logic:equal name="applicationConfigForm" property="op" value="list">
 
 <TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TR>
+		<TD colspan='3'>
+			<tt:section-header>
+				<tt:section-title>Application Settings</tt:section-title>
+				<html:submit property="op" styleClass="btn" accesskey="A" titleKey="title.addAppConfig">
+					<bean:message key="button.addAppConfig" />
+				</html:submit> 
+			</tt:section-header>
+		</TD>
+	</TR>
 	<%= request.getAttribute(org.unitime.timetable.model.ApplicationConfig.APP_CFG_ATTR_NAME) %> 
 </TABLE>
 
 <BR>&nbsp;<BR>
 
 <TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
-	<TR>
-		<TD colspan="2"><div class="WelcomeRowHead">Application Properties</div></TD>
-	</TR>
-	<TR>
-		<TD><div class="WebTableHeader">Key</div></TD>
-		<TD><div class="WebTableHeader">Value</div></TD>
-	</TR>
-	
 	<% 
+		WebTable.setOrder(request.getSession(),"applicationConfig.ord2",request.getParameter("ord2"),1);
 		Vector props = new Vector (ApplicationProperties.getProperties().keySet()); 
 		Collections.sort(props);
 		Pattern pattern = Pattern.compile(ApplicationProperties.getProperty("tmtbl.appConfig.pattern","^tmtbl\\..*$"));
+		WebTable table = new WebTable(2, "Application Properties", "applicationConfig.do?ord2=%%", new String[] {"Key","Value"}, new String[] {"left","left"}, null);
+		table.enableHR("#EFEFEF");
 		for (Object prop: props) {
 			if (!pattern.matcher(prop.toString()).matches()) continue;
 			String value = ApplicationProperties.getProperty(prop.toString());
-			
-	%>
-	<TR>
-		<TD valign="top" class="BottomBorderGray">
-			<%if (prop.toString().startsWith("tmtbl")) { out.println("<font color='navy'>"); } %>
-			<%= prop %>
-			<%if (prop.toString().startsWith("tmtbl")) { out.println("</font>"); } %>
-			<% if (value==null || value.length()==0) { out.println("<font class='errorCell'>&nbsp; *</font>"); } %>
-		</TD>
-		<TD class="BottomBorderGray">&nbsp;<%= value %></TD>
-	</TR>
-	<%			
-		}
+			table.addLine(null, new String[] {prop.toString(), value}, new String[] {prop.toString(), value});
+		}			
+		out.println(table.printTable(WebTable.getOrder(request.getSession(),"applicationConfig.ord2")));
 	%>
 </TABLE>
-
+</logic:equal>
+</html:form>
