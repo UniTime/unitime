@@ -182,6 +182,24 @@
 	</tag>
 	
 	<tag>
+		<name>wiki</name>
+		<tag-class>org.unitime.timetable.tags.Wiki</tag-class>
+		<body-content>JSP</body-content>
+		<attribute>
+			<name>wikiUrl</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<type>java.lang.String</type>
+		</attribute>
+		<attribute>
+			<name>enabled</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<type>java.lang.Boolean</type>
+		</attribute>
+	</tag>
+	
+	<tag>
 		<name>last-change</name>
 		<tag-class>org.unitime.timetable.tags.LastChange</tag-class>
 		<body-content>JSP</body-content>
