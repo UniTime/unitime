@@ -37,6 +37,7 @@ import org.hibernate.MappingException;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.hibernate.engine.SessionFactoryImplementor;
 import org.hibernate.hql.QueryExecutionRequestException;
 import org.hibernate.metadata.ClassMetadata;
@@ -112,10 +113,19 @@ public class HibernateQueryTestAction extends Action {
 	                }
 	                frm.setListSize(String.valueOf(l.size()));
 		        } catch (QueryExecutionRequestException e) {
-		            int i = q.executeUpdate();
+		            Transaction tx = null;
+		            try {
+		                tx = hibSession.beginTransaction();
+		                int i = q.executeUpdate();
+	                    request.setAttribute("result", i+" lines updated.");
+	                    frm.setListSize(String.valueOf(i));
+		                tx.commit();
+		            } catch (Exception ex) {
+		                if (tx!=null && tx.isActive()) tx.rollback();
+		                throw ex;
+		            }
+		            hibSession.flush();
 		            HibernateUtil.clearCache();
-		            request.setAttribute("result", i+" lines updated.");
-		            frm.setListSize(String.valueOf(i));
 		        }
             }
             catch (Exception e) {
