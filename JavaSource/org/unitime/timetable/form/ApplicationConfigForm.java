@@ -77,7 +77,7 @@ public class ApplicationConfigForm extends ActionForm {
      * @param request
      */
     public void reset(ActionMapping mapping, HttpServletRequest request) {
-        op = null;
+        op = "list";
         key = "";
         value = "";
         description = "";
