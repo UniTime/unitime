@@ -62,26 +62,35 @@ public class SolverParamDefAction extends Action {
         // Read operation to be performed
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
 
+        if (request.getParameter("op2")!=null && request.getParameter("op2").length()>0)
+            op = request.getParameter("op2");
+
         if (op==null) {
-            myForm.setOp("Add New");
+            myForm.reset(mapping, request);
             myForm.setVisible(Boolean.TRUE);
-	        op = "list";
         }
         
         // Reset Form
-        if ("Clear".equals(op)) {
+        if ("Back".equals(op)) {
+            if (myForm.getUniqueId()!=null)
+                request.setAttribute("hash", myForm.getUniqueId());
             myForm.reset(mapping, request);
             myForm.setVisible(Boolean.TRUE);
-            myForm.setOp("Add New");
         }
+        
+        if ("Add Solver Parameter".equals(op)) {
+            myForm.reset(mapping, request);
+            myForm.setVisible(Boolean.TRUE);
+            myForm.setOp("Save");
+            myForm.setGroup(request.getParameter("group"));
+        }  
 
         // Add / Update
-        if ("Update".equals(op) || "Add New".equals(op)) {
+        if ("Update".equals(op) || "Save".equals(op)) {
             // Validate input
             ActionMessages errors = myForm.validate(mapping, request);
             if(errors.size()>0) {
                 saveErrors(request, errors);
-                mapping.findForward("showSolverParamDef");
             } else {
             	Transaction tx = null;
             	try {
@@ -91,7 +100,7 @@ public class SolverParamDefAction extends Action {
             			tx = hibSession.beginTransaction();
             		
             		SolverParameterDef def = null;
-            		if(op.equals("Add New"))
+            		if(op.equals("Save"))
             			def = new SolverParameterDef();
             		else
             			def = dao.get(myForm.getUniqueId(), hibSession);
@@ -120,14 +129,16 @@ public class SolverParamDefAction extends Action {
                 	def.setGroup(group);
                 	dao.saveOrUpdate(def,hibSession);
                 	
-                	if (tx!=null) tx.commit();
+                    if (tx!=null) tx.commit();
+                    
+                    hibSession.refresh(def);
+                    request.setAttribute("hash", def.getUniqueId().toString());
         	    } catch (Exception e) {
         	    	if (tx!=null) tx.rollback();
         			Debug.error(e);
         	    }
             	myForm.reset(mapping, request);
             	myForm.setVisible(Boolean.TRUE);
-            	myForm.setOp("Add New");
             }
         }
 
@@ -138,15 +149,12 @@ public class SolverParamDefAction extends Action {
             if(id==null || id.trim().length()==0) {
                 errors.add("key", new ActionMessage("errors.invalid", "Unique Id : " + id));
                 saveErrors(request, errors);
-                mapping.findForward("showSolverParamDef");
-            }
-            else {
+            } else {
             	SolverParameterDefDAO dao = new SolverParameterDefDAO();
             	SolverParameterDef def = dao.get(new Long(id));
                 if(def==null) {
                     errors.add("name", new ActionMessage("errors.invalid", "Unique Id : " + id));
                     saveErrors(request, errors);
-                    mapping.findForward("showSolverParamDef");
                 }
                 else {
                     myForm.setUniqueId(def.getUniqueId());
@@ -189,9 +197,9 @@ public class SolverParamDefAction extends Action {
     	    	if (tx!=null) tx.rollback();
     			Debug.error(e);
     	    }
+            if (myForm.getGroup()!=null) request.setAttribute("hash", myForm.getGroup());
             myForm.reset(mapping, request);
             myForm.setVisible(Boolean.TRUE);
-            myForm.setOp("Add New");
         }
         
         // Move Up or Down
@@ -226,16 +234,21 @@ public class SolverParamDefAction extends Action {
     			}
     			myForm.setOrder(def.getOrder().intValue());
     			
+    			if (myForm.getUniqueId()!=null) request.setAttribute("hash", myForm.getUniqueId());
+    			
     			if (tx!=null) tx.commit();
     	    } catch (Exception e) {
     	    	if (tx!=null) tx.rollback();
     			Debug.error(e);
     	    }
-    	    myForm.setOp("Update");
         }
-        // Read all existing settings and store in request
-        getSolverParameterDefs(request, myForm.getUniqueId());        
-        return mapping.findForward("showSolverParamDef");
+        if ("List".equals(myForm.getOp())) {
+            // Read all existing settings and store in request
+            getSolverParameterDefs(request, myForm.getUniqueId());        
+            return mapping.findForward("list");
+        }
+            
+        return mapping.findForward("Save".equals(myForm.getOp())?"add":"edit");
 	}
 
     private void getSolverParameterDefs(HttpServletRequest request, Long uniqueId) throws Exception {
@@ -254,50 +267,88 @@ public class SolverParamDefAction extends Action {
 			
 			if (groups.isEmpty()) {
 				// Create web table instance 
-		        WebTable webTable = new WebTable( 6,
+		        WebTable webTable = new WebTable( 5,
 					    "Solver Parameters", "solverParamDef.do?ord=%%",
-					    new String[] {"Ord", "Name", "Description", "Type", "Visible", "Default"},
-					    new String[] {"left", "left", "left", "left", "left", "left"},
+					    new String[] {"Order", "Name", "Description", "Type", "Default"},
+					    new String[] {"left", "left", "left", "left", "left"},
 					    null );
 				webTable.addLine(null, new String[] {"No solver parameter group defined."}, null, null );
 				tables.append(webTable.printTable(WebTable.getOrder(request.getSession(),"solverParamDef.ord")));
 			}
 			
 			for (Iterator i=groups.iterator();i.hasNext();) {
-				SolverParameterGroup group = (SolverParameterGroup)i.next();
-				List parameters = hibSession.createCriteria(SolverParameterDef.class).add(Restrictions.eq("group",group)).list();
+			    SolverParameterGroup group = (SolverParameterGroup)i.next();
+			    if (tables.length()>0) tables.append("<TR><TD colspan='5'>&nbsp;</TD></TR>");
+				List parameters = hibSession.createCriteria(SolverParameterDef.class).add(Restrictions.eq("group",group)).addOrder(Order.asc("order")).list();
 				if (parameters.isEmpty()) continue;
-		        WebTable webTable = new WebTable( 6,
-					    group.getDescription(), "solverParamDef.do?ord=%%",
-					    new String[] {"Ord", "Name", "Description", "Type", "Visible", "Default"},
-					    new String[] {"left", "left", "left", "left", "left", "left"},
+				String name = "<table class='BottomBorder' width='100%'><tr><td width='100%' nowrap>"+
+				    "<a name='"+group.getName()+"'>"+
+				    "<DIV class='WelcomeRowHeadNoLine'>"+group.getDescription()+"</DIV>"+
+				    "</a>"+
+				    "</td><td style='padding-bottom: 3px' nowrap>"+
+				    "<input type=\"submit\" name=\"op\" accesskey=\"A\" value=\"Add Solver Parameter\" title=\"Create New Solver Parameter (Alt+A)\"" +
+				    "onclick=\"solverParamDefForm.group.value='"+group.getName()+"';\">"+
+				    "</td></tr></table>";
+		        WebTable webTable = new WebTable( 5,
+		                name, "solverParamDef.do?ord=%%",
+					    new String[] {"Order", "Name", "Description", "Type", "Default"},
+					    new String[] {"left", "left", "left", "left",  "left"},
 					    null );
 		        if (parameters.isEmpty()) {
 		        	webTable.addLine(null, new String[] {"No parameter defined in group <i>"+group.getDescription()+"</i>."}, null, null );
 		        }
 		        for (Iterator j=parameters.iterator();j.hasNext();) {
 		        	SolverParameterDef def= (SolverParameterDef)j.next();
+                    String ops = "";
+                    if (def.getOrder().intValue()>0) {
+                        ops += "<img src='images/arrow_u.gif' border='0' align='absmiddle' title='Move Up' " +
+                                "onclick=\"solverParamDefForm.op2.value='Move Up';solverParamDefForm.uniqueId.value='"+def.getUniqueId()+"';solverParamDefForm.submit(); event.cancelBubble=true;\">";
+                    } else
+                        ops += "<img src='images/blank.gif' border='0' align='absmiddle'>";
+                    if (j.hasNext()) {
+                        ops += "<img src='images/arrow_d.gif' border='0' align='absmiddle' title='Move Down' " +
+                                "onclick=\"solverParamDefForm.op2.value='Move Down';solverParamDefForm.uniqueId.value='"+def.getUniqueId()+"';solverParamDefForm.submit(); event.cancelBubble=true;\">";
+                    } else
+                        ops += "<img src='images/blank.gif' border='0' align='absmiddle'>";
 					String onClick = "onClick=\"document.location='solverParamDef.do?op=Edit&id=" + def.getUniqueId() + "';\"";
 					webTable.addLine(onClick, new String[] {
-							def.getOrder().toString(), 
-							def.getName(), 
-							def.getDescription(),
-							def.getType(),
-							def.isVisible().toString(),
-							def.getDefault()},
+							ops,
+							(def.isVisible()?"":"<font color='gray'>")+
+							    "<a name='"+def.getUniqueId()+"'>"+
+							        def.getName()+
+							    "</a>"+
+							(def.isVisible()?"":"</font>"),
+							(def.isVisible()?"":"<font color='gray'>")+
+							    def.getDescription()+
+							(def.isVisible()?"":"</font>"),
+							(def.isVisible()?"":"<font color='gray'>")+
+							    def.getType().replaceAll(",", ", ")+
+							(def.isVisible()?"":"</font>"),
+							(def.isVisible()?"":"<font color='gray'>")+
+							    (def.getDefault()==null?
+							        "":
+							        def.getDefault().length()>50?
+							            "<span title='"+def.getDefault()+"'>"+def.getDefault().substring(0,50)+"...</span>":
+							            def.getDefault())+
+							(def.isVisible()?"":"</font>")
+					},
 						new Comparable[] {
 							def.getOrder(), 
 							def.getName(), 
 							def.getDescription(),
 							def.getType(),
-							def.isVisible().toString(),
 							def.getDefault()});
 					if (def.getUniqueId().equals(uniqueId))
 						request.setAttribute("SolverParameterDef.last", new Integer(parameters.size()-1));
 		        }
-		        if (tables.length()>0) 
-		        	tables.append("<TR><TD colspan='6'>&nbsp;</TD></TR>");
-				tables.append(webTable.printTable(WebTable.getOrder(request.getSession(),"solverParamDef.ord")));
+		        tables.append(webTable.printTable(WebTable.getOrder(request.getSession(),"solverParamDef.ord")));
+			}
+			
+			if (!groups.isEmpty()) {
+			    tables.append("\n<TR><TD colspan='5'><DIV class='WelcomeRowHeadBlank'>&nbsp;</DIV></TD></TR>");
+			    tables.append("\n<TR><TD colspan='5' align='right'>"+
+			            "<input type=\"submit\" name=\"op\" accesskey=\"A\" value=\"Add Solver Parameter\" title=\"Create New Solver Parameter (Alt+A)\">"+
+			            "</TD></TR>");
 			}
 			
 			if (tx!=null) tx.commit();
