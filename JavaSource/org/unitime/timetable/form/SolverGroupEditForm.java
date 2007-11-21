@@ -117,8 +117,8 @@ public class SolverGroupEditForm extends ActionForm {
 	}
 	
 	public void load(SolverGroup group, Session session) throws Exception {
-		Collection departments = Department.findAllBeingUsed(session.getUniqueId());
-		Collection managers = new TreeSet((new TimetableManagerDAO()).findAll());
+        Collection departments = Department.findAllBeingUsed(session.getUniqueId());
+        Collection managers = new TreeSet((new TimetableManagerDAO()).findAll());
 		iDepartmentIds.clear();
 		iDepartmentNames.clear();
 		iManagerIds.clear();
@@ -129,7 +129,7 @@ public class SolverGroupEditForm extends ActionForm {
 		if (group==null) {
 			iUniqueId = new Long(-1);
 			iName = null; iAbbv = null;
-			iOp = "Create";
+			iOp = "Save";
 			for (Iterator i=departments.iterator();i.hasNext();) {
 				Department d = (Department)i.next();
 				if (d.getSolverGroup()==null) {

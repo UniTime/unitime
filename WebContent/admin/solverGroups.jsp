@@ -27,7 +27,11 @@
 
 <tiles:importAttribute />
 
-<html:form action="/solverGroupEdit" focus="name">
+<tt:confirm name="confirmDelete">The solver group will be deleted. Continue?</tt:confirm>
+<tt:confirm name="confirmDeleteAll">All solver groups will be deleted. Continue?</tt:confirm>
+<tt:confirm name="confirmAutoSetup">New solver groups may be created. Continue?</tt:confirm>
+
+<html:form action="/solverGroupEdit">
 <html:hidden property="uniqueId"/><html:errors property="uniqueId"/>
 <html:hidden property="departmentsEditable"/><html:errors property="departmentsEditable"/>
 
@@ -37,23 +41,24 @@
 			<TD colspan="2">
 				<tt:section-header>
 					<tt:section-title>
-						<logic:equal name="solverGroupEditForm" property="op" value="Create">
+						<logic:equal name="solverGroupEditForm" property="op" value="Save">
 						Add
 						</logic:equal>
-						<logic:notEqual name="solverGroupEditForm" property="op" value="Create">
+						<logic:notEqual name="solverGroupEditForm" property="op" value="Save">
 						Edit
 						</logic:notEqual>
 						Solver Group
 					</tt:section-title>
-				<html:submit property="op">
-					<bean:write name="solverGroupEditForm" property="op" />
-				</html:submit> 
-				<logic:notEqual name="solverGroupEditForm" property="op" value="Create">
-				<logic:equal name="solverGroupEditForm" property="departmentsEditable" value="true">
-					<html:submit property="op" value="Delete"/> 
-				</logic:equal>
-				</logic:notEqual>
-				<html:submit property="op" value="Back" /> 
+					<logic:equal name="solverGroupEditForm" property="op" value="Save">
+						<html:submit property="op" value="Save" accesskey="S" title="Save Solver Group (Alt+S)"/>
+					</logic:equal>
+					<logic:notEqual name="solverGroupEditForm" property="op" value="Save">
+						<html:submit property="op" value="Update" accesskey="U" title="Update Solver Group (Alt+U)"/>
+						<logic:equal name="solverGroupEditForm" property="departmentsEditable" value="true">
+							<html:submit property="op" value="Delete" onclick="return confirmDelete();" accesskey="D" title="Delete Solver Group (Alt+D)"/>
+						</logic:equal> 
+					</logic:notEqual>
+					<html:submit property="op" value="Back" title="Return to Solver Groups (Alt+B)" accesskey="B"/>
 				</tt:section-header>
 			</TD>
 		</TR>
@@ -90,7 +95,7 @@
 		</logic:equal>
 		
 		<logic:equal name="solverGroupEditForm" property="departmentsEditable" value="true">
-			<logic:notEqual name="solverGroupEditForm" property="op" value="Create">
+			<logic:notEqual name="solverGroupEditForm" property="op" value="Save">
 				<TR><TD colspan='2'>&nbsp;</TD></TR>
 				<TR><TD colspan='2'><tt:section-header title="Assigned Departments"/></TD></TR>
 				<logic:iterate name="solverGroupEditForm" property="departmentIds" id="departmentId" indexId="ctr">
@@ -106,7 +111,7 @@
 			</logic:notEqual>
 		</logic:equal>
 
-		<logic:notEqual name="solverGroupEditForm" property="op" value="Create">
+		<logic:notEqual name="solverGroupEditForm" property="op" value="Save">
 			<TR><TD colspan='2'>&nbsp;</TD></TR>
 			<TR><TD colspan='2'><tt:section-header title="Assigned Managers"/></TD></TR>
 			<logic:iterate name="solverGroupEditForm" property="managerIds" id="managerId" indexId="ctr">
@@ -152,21 +157,21 @@
 		<TR><TD colspan='2'><tt:section-header/></TD></TR>
 		<TR>
 			<TD align="right" colspan="2">
-				<html:submit property="op">
-					<bean:write name="solverGroupEditForm" property="op" />
-				</html:submit> 
-				<logic:notEqual name="solverGroupEditForm" property="op" value="Create">
-				<logic:equal name="solverGroupEditForm" property="departmentsEditable" value="true">
-					<html:submit property="op" value="Delete"/> 
+				<logic:equal name="solverGroupEditForm" property="op" value="Save">
+					<html:submit property="op" value="Save" accesskey="S" title="Save Solver Group (Alt+S)"/>
 				</logic:equal>
+				<logic:notEqual name="solverGroupEditForm" property="op" value="Save">
+					<html:submit property="op" value="Update" accesskey="U" title="Update Solver Group (Alt+U)"/>
+					<logic:equal name="solverGroupEditForm" property="departmentsEditable" value="true">
+						<html:submit property="op" value="Delete" onclick="return confirmDelete();" accesskey="D" title="Delete Solver Group (Alt+D)"/>
+					</logic:equal> 
 				</logic:notEqual>
-				<html:submit property="op" value="Back" /> 
+				<html:submit property="op" value="Back" title="Return to Solver Groups (Alt+B)" accesskey="B"/>
 			</TD>
 		</TR>
 	</TABLE>
 </logic:notEqual>
 <logic:equal name="solverGroupEditForm" property="op" value="List">
-	<input type='hidden' name='sure' value='0'/>
 	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD align="right" colspan="5">
@@ -174,10 +179,10 @@
 					<tt:section-title>
 						Solver Groups - <%= Web.getUser(session).getAttribute(Constants.ACAD_YRTERM_LABEL_ATTR_NAME) %>
 					</tt:section-title>
-					<html:submit property="op" value="Add New"/> 
-					<html:submit property="op" onclick="if (confirm('Are you sure?')) sure.value=1;" value="Delete All"/> 
-					<html:submit property="op" onclick="if (confirm('Are you sure?')) sure.value=1;" value="Auto Setup"/> 
-					<html:submit property="op" value="Export PDF"/> 
+				<html:submit property="op" value="Add Solver Group" title="Create New Solver Group (Alt+A)" accesskey="A"/> 
+				<html:submit property="op" onclick="return confirmDeleteAll();" value="Delete All" title="Delete All Solver Groups"/> 
+				<html:submit property="op" onclick="return confirmAutoSetup();" value="Auto Setup" title="Automatically Setup Solver Groups"/> 
+				<html:submit property="op" value="Export PDF" title="Export PDF (Alt+P)" accesskey="P"/> 
 				</tt:section-header>
 			</TD>
 		</TR>
@@ -187,13 +192,18 @@
 		</TR>
 		<TR>
 			<TD align="right" colspan="5">
-				<html:submit property="op" value="Add New"/> 
-				<html:submit property="op" onclick="if (confirm('Are you sure?')) sure.value=1;" value="Delete All"/> 
-				<html:submit property="op" onclick="if (confirm('Are you sure?')) sure.value=1;" value="Auto Setup"/> 
-				<html:submit property="op" value="Export PDF"/> 
+				<html:submit property="op" value="Add Solver Group" title="Create New Solver Group (Alt+A)" accesskey="A"/> 
+				<html:submit property="op" onclick="return confirmDeleteAll();" value="Delete All" title="Delete All Solver Groups"/> 
+				<html:submit property="op" onclick="return confirmAutoSetup();" value="Auto Setup" title="Automatically Setup Solver Groups"/> 
+				<html:submit property="op" value="Export PDF" title="Export PDF (Alt+P)" accesskey="P"/> 
 			</TD>
 		</TR>
 	</TABLE>
+	<% if (request.getAttribute("hash") != null) { %>
+		<SCRIPT type="text/javascript" language="javascript">
+			location.hash = '<%=request.getAttribute("hash")%>';
+		</SCRIPT>
+	<% } %>
 </logic:equal>
 
 </html:form>
