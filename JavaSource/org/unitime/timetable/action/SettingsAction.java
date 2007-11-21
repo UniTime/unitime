@@ -78,31 +78,31 @@ public class SettingsAction extends Action {
         String op = settingsForm.getOp();
         if(op==null) {
             op = request.getParameter("op");
-            if(op==null) {
-	            settingsForm.setOp("Add New");
-	            op = "list";
-            }
+            if (op==null) op = settingsForm.getOp();
         }
         
         // Reset Form
-        if(op.equals("Clear")) {
+        if(op.equals("Back")) {
             settingsForm.reset(mapping, request);
-            settingsForm.setOp("Add New");
+        }
+
+        if(op.equals("Add Setting")) {
+            settingsForm.reset(mapping, request);
+            settingsForm.setOp("Save");
         }
 
         // Add / Update setting
-        if(op.equals("Add New") || op.equals("Update")) {
+        if(op.equals("Save") || op.equals("Update")) {
             // Validate input
             ActionMessages errors = settingsForm.validate(mapping, request);
             if(errors.size()>0) {
                 saveErrors(request, errors);
-                mapping.findForward("showSettings");
             }
             else {
                 SettingsDAO sdao = new SettingsDAO();
                 Settings s = null;
 
-                if(op.equals("Add New"))
+                if(op.equals("Save"))
                     s = new Settings();
                 else 
                     s = sdao.get(settingsForm.getUniqueId());
@@ -114,7 +114,6 @@ public class SettingsAction extends Action {
                 sdao.saveOrUpdate(s);
                 
                 settingsForm.reset(mapping, request);
-                settingsForm.setOp("Add New");
             }
         }
 
@@ -125,7 +124,6 @@ public class SettingsAction extends Action {
             if(id==null || id.trim().length()==0) {
                 errors.add("key", new ActionMessage("errors.invalid", "Unique Id : " + id));
                 saveErrors(request, errors);
-                mapping.findForward("showSettings");
             }
             else {
                 SettingsDAO sdao = new SettingsDAO();
@@ -133,7 +131,6 @@ public class SettingsAction extends Action {
                 if(s==null) {
                     errors.add("key", new ActionMessage("errors.invalid", "Unique Id : " + id));
                     saveErrors(request, errors);
-                    mapping.findForward("showSettings");
                 }
                 else {
                     settingsForm.setUniqueId(s.getUniqueId());
@@ -151,12 +148,15 @@ public class SettingsAction extends Action {
             SettingsDAO sdao = new SettingsDAO();
             sdao.delete(settingsForm.getUniqueId());
             settingsForm.reset(mapping, request);
-            settingsForm.setOp("Add New");
         }
 
-        // Read all existing settings and store in request
-        getSettingsList(request);        
-        return mapping.findForward("showSettings");
+        if ("List".equals(settingsForm.getOp())) {
+            // Read all existing settings and store in request
+            getSettingsList(request);        
+            return mapping.findForward("list");
+        }
+        
+        return mapping.findForward("Save".equals(settingsForm.getOp())?"add":"edit");
     }
 
     /**
@@ -165,11 +165,12 @@ public class SettingsAction extends Action {
      * @throws Exception
      */
     private void getSettingsList(HttpServletRequest request) throws Exception {
+        WebTable.setOrder(request.getSession(),"settings.ord",request.getParameter("ord"),1);
 		org.hibernate.Session hibSession = null;
 
 		// Create web table instance 
         WebTable webTable = new WebTable( 4,
-			    "Settings List",
+			    null, "settings.do?ord=%%",
 			    new String[] {"Key", "Description", "Default Value", "Allowed Values"},
 			    new String[] {"left", "left", "left", "left"},
 			    null );
@@ -200,7 +201,7 @@ public class SettingsAction extends Action {
 	    				+ s.getUniqueId() + "';\"";
 				    
 				    webTable.addLine(
-				        	onClick, new String[] {key, description, defaultValue, allowedValues}, null, null );			    
+				        	onClick, new String[] {key, description, defaultValue, allowedValues}, new String[] {key, description, defaultValue, allowedValues}, null );			    
 				}
 			}
 			
@@ -211,6 +212,6 @@ public class SettingsAction extends Action {
 	    finally {
 	    }
 
-	    request.setAttribute(Settings.SETTINGS_ATTR_NAME, webTable.printTable());
+	    request.setAttribute(Settings.SETTINGS_ATTR_NAME, webTable.printTable(WebTable.getOrder(request.getSession(),"settings.ord")));
     }
 }

@@ -17,46 +17,48 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  --%>
 <%@ page language="java" autoFlush="true"%>
-<%@ page import="org.unitime.commons.web.Web" %>
-<%@ page import="org.unitime.timetable.webutil.JavascriptFunctions" %>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
+<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 
 <tiles:importAttribute />
 
-<SCRIPT language="javascript">
-	<!--
-		<%= JavascriptFunctions.getJsConfirm(Web.getUser(session)) %>
-		
-		function confirmDelete() {
-			if (jsConfirm!=null && !jsConfirm)
-				return true;
-			
-			return confirm('If this setting is used by any user, it will be deleted as well. Continue?')
-		}
-	// -->
-</SCRIPT>
+<tt:confirm name="confirmDelete">The manager setting parameter will be deleted. Continue?</tt:confirm>
 
-
-
-<html:form action="/settings" focus="key">
+<html:form action="/settings">
 <html:hidden property="uniqueId"/><html:errors property="uniqueId"/>
-
+<logic:notEqual name="settingsForm" property="op" value="List">
 	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD colspan="2">
-				<DIV class="WelcomeRowHead">
-				Add User Setting
-				</DIV>
+				<tt:section-header>
+					<tt:section-title>
+						<logic:equal name="settingsForm" property="op" value="Save">
+							Add
+						</logic:equal> 
+						<logic:notEqual name="settingsForm" property="op" value="Save">
+							Edit
+						</logic:notEqual> 
+						Manager Setting
+					</tt:section-title>
+					<logic:equal name="settingsForm" property="op" value="Save">
+						<html:submit property="op" value="Save" title="Save Setting (Alt+S)" accesskey="S"/>
+					</logic:equal>
+					<logic:notEqual name="settingsForm" property="op" value="Save">
+						<html:submit property="op" value="Update" title="Update Setting (Alt+U)" accesskey="U"/>
+						<html:submit property="op" value="Delete" onclick="return confirmDelete();" title="Delete Setting (Alt+D)" accesskey="D"/> 
+					</logic:notEqual>
+					<html:submit property="op" value="Back" title="Back (Alt+B)" accesskey="B"/> 
+				</tt:section-header>
 			</TD>
 		</TR>
 
 		<TR>
 			<TD>Key:</TD>
 			<TD>
-				<html:text property="key" size="15" maxlength="30"/>
+				<html:text property="key" size="30" maxlength="30"/>
 				&nbsp;<html:errors property="key"/>
 			</TD>
 		</TR>
@@ -64,7 +66,7 @@
 		<TR>
 			<TD>Default Value:</TD>
 			<TD>
-				<html:text property="defaultValue" size="15" maxlength="100"/>
+				<html:text property="defaultValue" size="30" maxlength="100"/>
 				&nbsp;<html:errors property="defaultValue"/>
 			</TD>
 		</TR>
@@ -72,7 +74,7 @@
 		<TR>
 			<TD>Allowed Values:</TD>
 			<TD>
-				<html:text property="allowedValues" size="50" maxlength="500"/> Separate multiple values with a comma
+				<html:text property="allowedValues" size="80" maxlength="500"/> <i>(Separate multiple values with a comma)</i>
 				&nbsp;<html:errors property="allowedValues"/>
 			</TD>
 		</TR>
@@ -84,26 +86,53 @@
 				&nbsp;<html:errors property="description"/>
 			</TD>
 		</TR>
+		
+		<TR>
+			<TD colspan='2'>
+				<tt:section-title/>
+			</TD>
+		</TR>
 
 		<TR>
 			<TD align="right" colspan="2">
-				<html:submit property="op">
-					<bean:write name="settingsForm" property="op" />
-				</html:submit> 
-				<logic:notEqual name="settingsForm" property="op" value="Add New">
-					<html:submit property="op" value="Delete" onclick="return(confirmDelete());" /> 
+				<logic:equal name="settingsForm" property="op" value="Save">
+					<html:submit property="op" value="Save" title="Save Setting (Alt+S)" accesskey="S"/>
+				</logic:equal>
+				<logic:notEqual name="settingsForm" property="op" value="Save">
+					<html:submit property="op" value="Update" title="Update Setting (Alt+U)" accesskey="U"/>
+					<html:submit property="op" value="Delete" onclick="return confirmDelete();" title="Delete Setting (Alt+D)" accesskey="D"/> 
 				</logic:notEqual>
-				<html:submit property="op" value="Clear" /> 
-				<html:reset />
+				<html:submit property="op" value="Back" title="Back (Alt+B)" accesskey="B"/> 
 			</TD>
 		</TR>
 	</TABLE>
-
-<BR>&nbsp;<BR>
+</logic:notEqual>
+<logic:equal name="settingsForm" property="op" value="List">
 
 <TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
-	<%= request.getAttribute(org.unitime.timetable.model.Settings.SETTINGS_ATTR_NAME) %> 
+	<TR>
+		<TD colspan='4'>
+			<tt:section-header>
+				<tt:section-title>
+					Manager Settings
+				</tt:section-title>
+				<html:submit property="op" value="Add Setting" title="Create New Manager Setting (Alt+A)" accesskey="A"/>
+			</tt:section-header>
+		</TD>
+	</TR>
+	<%= request.getAttribute(org.unitime.timetable.model.Settings.SETTINGS_ATTR_NAME) %>
+	<TR>
+		<TD colspan='4'>
+			<tt:section-title/>
+		</TD>
+	</TR>
+	<TR>
+		<TD colspan='4' align="right">
+			<html:submit property="op" value="Add Setting" title="Create New Manager Setting (Alt+A)" accesskey="A"/> 
+		</TD>
+	</TR>
+	 
 </TABLE>
 
-
+</logic:equal>
 </html:form>
