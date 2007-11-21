@@ -22,55 +22,77 @@
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
+<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 
 <html:form action="/hibernateQueryTest">
 
 	<TABLE align="left" width="95%">
 		<TR>
-			<TD>
-				<DIV class="WelcomeRowHead">HQL</DIV>
+			<TD colspan='2'>
+				<tt:section-header>
+					<tt:section-title>HQL</tt:section-title>
+					<html:submit property="op" accesskey="S" titleKey="button.submit">
+						<bean:message key="button.submit"/>
+					</html:submit>
+				</tt:section-header>
 			</TD>
 		</TR>
 		
 		<logic:messagesPresent>
 		<TR>
-			<TD align="left" class="errorCell">
-					<B><U>ERRORS</U></B><BR>
-				<BLOCKQUOTE>
-				<UL>
-				    <html:messages id="error">
-				      <LI>
-						${error}
-				      </LI>
-				    </html:messages>
-			    </UL>
-			    </BLOCKQUOTE>
+			<TD valign="top">
+				Errors:
+			</TD>
+			<TD class="errorCell">
+				<html:messages id="error">
+					${error}<br>
+			    </html:messages>
 			</TD>
 		</TR>
 		</logic:messagesPresent>
 
 		<TR>
-			<TD align="center">
-				<html:textarea property="query" rows="7" cols="80"></html:textarea>
+			<TD valign="top">
+				Query:
+			</TD>
+			<TD>
+				<html:textarea property="query" rows="12" cols="120"></html:textarea>
 			</TD>
 		</TR>
-
+		
 		<TR>
-			<TD align="center" class="WelcomeRowHead">
+			<TD colspan='2'>
 				&nbsp;
 			</TD>
 		</TR>
+
+		<logic:notEmpty name="hibernateQueryTestForm" property="listSize">		
+			<TR>
+				<TD colspan='2'>
+					<tt:section-title>Result (<bean:write name="hibernateQueryTestForm" property="listSize" /> lines)</tt:section-title>
+				</TD>
+			</TR>
+		
+			<logic:notEmpty scope="request" name="result">
+				<TR>
+					<TD colspan='2'>
+						<bean:write scope="request" name="result" filter="false"/>
+					</TD>
+				</TR>
+			</logic:notEmpty>
+		</logic:notEmpty>
+		
 		<TR>
-			<TD align="right">
-				<html:submit property="op">
-					<bean:message key="button.submit" />
-				</html:submit>
+			<TD colspan='2'>
+				<tt:section-title/>
 			</TD>
 		</TR>
-
+		
 		<TR>
-			<TD align="center">
-				Resultset Size: <bean:write name="hibernateQueryTestForm" property="listSize" />
+			<TD colspan='2' align="right">
+				<html:submit property="op" accesskey="S" titleKey="button.submit">
+					<bean:message key="button.submit"/>
+				</html:submit>
 			</TD>
 		</TR>
 
