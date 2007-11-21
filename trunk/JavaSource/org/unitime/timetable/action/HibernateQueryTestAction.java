@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.action;
 
+import java.util.Iterator;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -31,9 +32,18 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
+import org.hibernate.EntityMode;
+import org.hibernate.MappingException;
 import org.hibernate.Query;
 import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.engine.SessionFactoryImplementor;
+import org.hibernate.hql.QueryExecutionRequestException;
+import org.hibernate.metadata.ClassMetadata;
+import org.hibernate.type.CollectionType;
+import org.hibernate.type.Type;
 import org.unitime.commons.Debug;
+import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.HibernateQueryTestForm;
 import org.unitime.timetable.model.dao._RootDAO;
@@ -84,8 +94,29 @@ public class HibernateQueryTestAction extends Action {
 		        _RootDAO rdao = new _RootDAO();
 		        Session hibSession = rdao.getSession();	        
 		        Query q = hibSession.createQuery(query);
-		        List l = q.list();
-		        frm.setListSize("" + l.size());
+		        try {
+	                List l = q.list();
+	                StringBuffer s = new StringBuffer();
+	                int line = 0;
+	                for (Iterator i=l.iterator();i.hasNext();line++) {
+	                    if (line>=100) {
+	                        s.append("<tr><td>...</td></tr>"); break;
+	                    }
+	                    Object o = i.next();
+	                    if (s.length()==0) printHeader(s, o);
+	                    printLine(s, o);
+	                }
+	                if (s.length()>0) {
+	                    printFooter(s);
+	                    request.setAttribute("result", s.toString());
+	                }
+	                frm.setListSize(String.valueOf(l.size()));
+		        } catch (QueryExecutionRequestException e) {
+		            int i = q.executeUpdate();
+		            HibernateUtil.clearCache();
+		            request.setAttribute("result", i+" lines updated.");
+		            frm.setListSize(String.valueOf(i));
+		        }
             }
             catch (Exception e) {
                 errors.add("query", 
@@ -97,6 +128,128 @@ public class HibernateQueryTestAction extends Action {
         saveErrors(request, errors);        
         return mapping.findForward("displayQueryForm");
         
+    }
+    
+    private void header(StringBuffer s, int idx, String text) {
+        s.append("<td class='WebTableHeader'><i>");
+        if (text==null || text.length()<=0)
+            s.append("Col "+idx);
+        else {
+            s.append(text.substring(0,1).toUpperCase());
+            if (text.length()>1) s.append(text.substring(1));
+        }
+        s.append("</i></td>");
+    }
+    
+    private boolean skip(Type t, boolean lazy) {
+        try {
+            if (t.isCollectionType()) {
+                if (!lazy) return true;
+                SessionFactory hibSessionFactory = new _RootDAO().getSession().getSessionFactory();
+                Type w = ((CollectionType)t).getElementType((SessionFactoryImplementor)hibSessionFactory);
+                Class ts = w.getReturnedClass().getMethod("toString", new Class[]{}).getDeclaringClass();
+                return (ts.equals(Object.class) || ts.getName().startsWith("org.unitime.timetable.model.base.Base"));
+            }
+        } catch (MappingException e) {
+            return true;
+        } catch (NoSuchMethodException e) {
+            return true;
+        }
+        try {
+            Class ts = t.getReturnedClass().getMethod("toString", new Class[]{}).getDeclaringClass();
+            return (ts.equals(Object.class) || ts.getName().startsWith("org.unitime.timetable.model.base.Base"));
+        } catch (NoSuchMethodException e) {
+            return true;
+        }
+    }
+    
+    public void printHeader(StringBuffer s, Object o) {
+        s.append("<table width='100%' border='0' cellspacing='0' cellpadding='3'>");
+        s.append("<tr align='left'>");
+        SessionFactory hibSessionFactory = new _RootDAO().getSession().getSessionFactory();
+        int idx=1;
+        if (o==null) {
+            header(s,idx++,null);
+        } else if (o instanceof Object[]) {
+            Object[] x = (Object[])o;
+            for (int i=0;i<x.length;i++) {
+                if (x[i]==null) {
+                    header(s,idx++,null);
+                } else {
+                    ClassMetadata meta = hibSessionFactory.getClassMetadata(x[i].getClass());
+                    if (meta==null) {
+                        header(s,idx++,null);
+                    } else {
+                        header(s,idx++,meta.getIdentifierPropertyName());
+                        Object[] val = meta.getPropertyValues(x[i], EntityMode.POJO);
+                        for (int j=0;j<meta.getPropertyNames().length;j++) {
+                            if (!skip(meta.getPropertyTypes()[j], meta.getPropertyLaziness()[j]))
+                                header(s,idx++,meta.getPropertyNames()[j]);
+                        }
+                    }
+                }
+            }
+        } else {
+            ClassMetadata meta = hibSessionFactory.getClassMetadata(o.getClass());
+            if (meta==null) {
+                header(s,idx++,null);
+            } else {
+                Object[] val = meta.getPropertyValues(o, EntityMode.POJO);
+                header(s,idx++,meta.getIdentifierPropertyName());
+                for (int i=0;i<meta.getPropertyNames().length;i++) {
+                    if (!skip(meta.getPropertyTypes()[i], meta.getPropertyLaziness()[i]))
+                        header(s,idx++,meta.getPropertyNames()[i]);
+                }
+            }
+        }
+        s.append("</tr>");
+    }
+    
+    private void line(StringBuffer s, Object text) {
+        s.append("<td>");
+        if (text!=null) s.append(text.toString());
+        s.append("</td>");
+    }
+    
+    
+    public void printLine(StringBuffer s, Object o) {
+        s.append("<tr align='left' onmouseover=\"this.style.backgroundColor='rgb(223,231,242)';\" onmouseout=\"this.style.backgroundColor='transparent';\" >");
+        SessionFactory hibSessionFactory = new _RootDAO().getSession().getSessionFactory();
+        if (o==null) {
+            line(s,null);
+        } else if (o instanceof Object[]) {
+            Object[] x = (Object[])o;
+            for (int i=0;i<x.length;i++) {
+                if (x[i]==null) {
+                    line(s,null);
+                } else {
+                    ClassMetadata meta = hibSessionFactory.getClassMetadata(x[i].getClass());
+                    if (meta==null) {
+                        line(s,x[i]);
+                    } else {
+                        line(s,meta.getIdentifier(x[i], EntityMode.POJO));
+                        for (int j=0;j<meta.getPropertyNames().length;j++) 
+                            if (!skip(meta.getPropertyTypes()[j], meta.getPropertyLaziness()[j]))
+                                line(s,meta.getPropertyValue(x[i], meta.getPropertyNames()[j], EntityMode.POJO));
+                    }
+                }
+            }
+        } else {
+            ClassMetadata meta = hibSessionFactory.getClassMetadata(o.getClass());
+            if (meta==null) {
+                line(s,o);
+            } else {
+                line(s,meta.getIdentifier(o, EntityMode.POJO));
+                for (int i=0;i<meta.getPropertyNames().length;i++) 
+                    if (!skip(meta.getPropertyTypes()[i],meta.getPropertyLaziness()[i]))
+                        line(s,meta.getPropertyValue(o, meta.getPropertyNames()[i], EntityMode.POJO));
+            }
+        }
+        s.append("</tr>");
+    }
+    
+    public void printFooter(StringBuffer s) {
+        s.append("</table>");
     }
 
 }
