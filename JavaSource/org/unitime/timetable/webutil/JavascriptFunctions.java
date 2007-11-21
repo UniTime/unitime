@@ -31,6 +31,11 @@ import org.unitime.timetable.util.Constants;
  */
 public class JavascriptFunctions {
 
+    public static boolean isJsConfirm(User user) {
+        String jsConfirm = Settings.getSettingValue(user, Constants.SETTINGS_JS_DIALOGS);
+        return (jsConfirm==null || !jsConfirm.equals("no")); 
+    }
+
     /**
      * Returns the javascript variable 'jsConfirm' set to true/false depending
      * on the user setting. This function is called from JSPs and is used to
@@ -39,12 +44,7 @@ public class JavascriptFunctions {
      * @return String "var jsConfirm = true;" OR "var jsConfirm = false;"
      */
     public static String getJsConfirm(User user) {
-        String val = "var jsConfirm = true;";
-		String jsConfirm = Settings.getSettingValue(user, Constants.SETTINGS_JS_DIALOGS);
-		if (jsConfirm!=null && jsConfirm.equals("no")) { 
-		    val = "var jsConfirm = false;";
-		}
-		return val;
+        return "var jsConfirm = "+(isJsConfirm(user)?"true":"false")+";";
     }
     
     public static String getInheritInstructorPreferencesCondition(User user) {
