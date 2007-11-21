@@ -35,7 +35,6 @@ public class SolverParamGroupsForm extends ActionForm {
     private String op;
     private Long uniqueId;
 	private String description;
-	private String condition;
 	private String name;
 	private int order;
 
@@ -46,7 +45,7 @@ public class SolverParamGroupsForm extends ActionForm {
         if(name==null || name.trim().length()==0)
             errors.add("name", new ActionMessage("errors.required", ""));
         else {
-        	if ("Add New".equals(op)) {
+        	if ("Save".equals(op)) {
         		SolverParameterGroup gr = SolverParameterGroup.findByName(name);
         		if (gr!=null)
         			errors.add("name", new ActionMessage("errors.exists", name));
@@ -60,11 +59,10 @@ public class SolverParamGroupsForm extends ActionForm {
 	}
 
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
-        op = null;
+        op = "List";
         uniqueId = null;
         name = "";
         description = "";
-        condition = "";
         order = -1;
 	}
 
@@ -74,8 +72,6 @@ public class SolverParamGroupsForm extends ActionForm {
     public void setUniqueId(Long uniqueId) { this.uniqueId = uniqueId; }
 	public String getDescription() { return description; }
 	public void setDescription(String description) { this.description = description; }
-	public String getCondition() { return condition; }
-	public void setCondition(String condition) { this.condition = condition; }
 	public String getName() { return name; }
 	public void setName(String name) { this.name = name; }
     public int getOrder() { return this.order; }

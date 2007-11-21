@@ -17,29 +17,46 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  --%>
 <%@ page language="java" autoFlush="true"%>
+<%@ page import="org.unitime.commons.web.Web" %>
+<%@ page import="org.unitime.timetable.webutil.JavascriptFunctions" %>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
+<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 
 <tiles:importAttribute />
 
-<html:form action="/solverParamGroups" focus="name">
+<tt:confirm name="confirmDelete">The solver parameter group will be deleted. Continue?</tt:confirm>
+
+<html:form action="/solverParamGroups">
+<input type="hidden" name="op2" value="">
 <html:hidden property="uniqueId"/><html:errors property="uniqueId"/>
-<html:hidden property="order"/><html:errors property="order"/>
+<logic:notEqual name="solverParamGroupsForm" property="op" value="List">
+	<html:hidden property="order"/><html:errors property="order"/>
 
 	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD colspan="2">
-				<DIV class="WelcomeRowHead">
-				<logic:equal name="solverParamGroupsForm" property="op" value="Add New">
-				Add
-				</logic:equal>
-				<logic:notEqual name="solverParamGroupsForm" property="op" value="Add New">
-				Edit
-				</logic:notEqual>
-				Sovler Parameter Group
-				</DIV>
+				<tt:section-header>
+					<tt:section-title>
+						<logic:equal name="solverParamGroupsForm" property="op" value="Save">
+							Add
+						</logic:equal>
+						<logic:notEqual name="solverParamGroupsForm" property="op" value="Save">
+							Edit
+						</logic:notEqual>
+						Sovler Parameter Group
+					</tt:section-title>
+					<logic:equal name="solverParamGroupsForm" property="op" value="Save">
+						<html:submit property="op" value="Save" accesskey="S" title="Save Solver Parameter Group (Alt+S)"/>
+					</logic:equal>
+					<logic:notEqual name="solverParamGroupsForm" property="op" value="Save">
+						<html:submit property="op" value="Update" accesskey="U" title="Update Solver Parameter Group (Alt+U)"/>
+						<html:submit property="op" value="Delete" onclick="return confirmDelete();" accesskey="D" title="Delete Solver Parameter Group (Alt+D)"/> 
+					</logic:notEqual>
+					<html:submit property="op" value="Back" title="Return to Solver Parameter Groups (Alt+B)" accesskey="B"/>
+				</tt:section-header>
 			</TD>
 		</TR>
 
@@ -58,40 +75,47 @@
 				&nbsp;<html:errors property="description"/>
 			</TD>
 		</TR>
-<!-- 
 		<TR>
-			<TD>Condition:</TD>
-			<TD>
-				<html:text property="condition" size="50" maxlength="250"/>
-				&nbsp;<html:errors property="condition"/>
+			<TD colspan="2">
+				<tt:section-title/>
 			</TD>
 		</TR>
--->
 		<TR>
 			<TD align="right" colspan="2">
-				<html:submit property="op">
-					<bean:write name="solverParamGroupsForm" property="op" />
-				</html:submit> 
-				<logic:notEqual name="solverParamGroupsForm" property="op" value="Add New">
-					<logic:greaterThan name="solverParamGroupsForm" property="order" value="0">
-						<html:submit property="op" value="Move Up"/> 
-					</logic:greaterThan>
-					<logic:lessThan name="solverParamGroupsForm" property="order" value="<%=request.getAttribute("SolverParameterGroup.last").toString()%>">
-						<html:submit property="op" value="Move Down"/> 
-					</logic:lessThan>
-					<html:submit property="op" value="Delete"/> 
+				<logic:equal name="solverParamGroupsForm" property="op" value="Save">
+					<html:submit property="op" value="Save" accesskey="S" title="Save Solver Parameter Group (Alt+S)"/>
+				</logic:equal>
+				<logic:notEqual name="solverParamGroupsForm" property="op" value="Save">
+					<html:submit property="op" value="Update" accesskey="U" title="Update Solver Parameter Group (Alt+U)"/>
+					<html:submit property="op" value="Delete" onclick="return confirmDelete();" accesskey="D" title="Delete Solver Parameter Group (Alt+D)"/> 
 				</logic:notEqual>
-				<html:submit property="op" value="Clear" /> 
-<!-- 				<html:reset /> -->
+				<html:submit property="op" value="Back" title="Return to Solver Parameter Groups (Alt+B)" accesskey="B"/>
 			</TD>
 		</TR>
 	</TABLE>
 
-<BR>&nbsp;<BR>
-
-<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
-	<%= request.getAttribute("SolverParameterGroup.table") %> 
-</TABLE>
-
-
+</logic:notEqual>
+<logic:equal name="solverParamGroupsForm" property="op" value="List">
+	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<tr>
+			<td colspan='3'>
+				<tt:section-header>
+					<tt:section-title>Solver Groups</tt:section-title>
+					<html:submit property="op" value="Add Solver Parameter Group" accesskey="A" title="Create New Solver Group (Alt+A)"/>
+				</tt:section-header>
+			</td>
+		</tr>
+		<%= request.getAttribute("SolverParameterGroup.table") %> 
+		<tr>
+			<td colspan='3'>
+				<tt:section-title/>
+			</td>
+		</tr>
+		<tr>
+			<td colspan='3' align="right">
+				<html:submit property="op" value="Add Solver Parameter Group" accesskey="A" title="Create New Solver Group (Alt+A)"/>
+			</td>
+		</tr>
+	</TABLE>
+</logic:equal>
 </html:form>

@@ -32,6 +32,7 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.hibernate.Transaction;
+import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.Web;
@@ -58,70 +59,68 @@ public class SolverParamGroupsAction extends Action {
         
         // Read operation to be performed
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
+        
+        if (request.getParameter("op2")!=null && request.getParameter("op2").length()>0)
+            op = request.getParameter("op2");
 
         if (op==null) {
-            myForm.setOp("Add New");
-	        op = "list";
+            myForm.setOp("List");
         }
         
         // Reset Form
-        if ("Clear".equals(op)) {
+        if ("Back".equals(op)) {
             myForm.reset(mapping, request);
-            myForm.setOp("Add New");
+        }
+        
+        if ("Add Solver Parameter Group".equals(op)) {
+            myForm.reset(mapping, request);
+            myForm.setOp("Save");
         }
 
         // Add / Update
-        if ("Update".equals(op) || "Add New".equals(op)) {
+        if ("Update".equals(op) || "Save".equals(op)) {
             // Validate input
             ActionMessages errors = myForm.validate(mapping, request);
             if(errors.size()>0) {
                 saveErrors(request, errors);
-                mapping.findForward("showSolverParamGroups");
             } else {
             	SolverParameterGroupDAO dao = new SolverParameterGroupDAO();
                 SolverParameterGroup group = null;
 
-                if(op.equals("Add New"))
+                if(op.equals("Save"))
                 	group = new SolverParameterGroup();
                 else 
                 	group = dao.get(myForm.getUniqueId());
                 
                 group.setName(myForm.getName());
                 group.setDescription(myForm.getDescription());                
-                group.setCondition(myForm.getCondition());
                 if (myForm.getOrder()<0) {
                 	group.setOrder(new Integer(dao.findAll().size()));
                 }
                 dao.saveOrUpdate(group);
                 
                 myForm.reset(mapping, request);
-                myForm.setOp("Add New");
             }
         }
 
         // Edit
-        if(op.equals("Edit")) {
+        if ("Edit".equals(op)) {
             String id = request.getParameter("id");
             ActionMessages errors = new ActionMessages();
             if(id==null || id.trim().length()==0) {
                 errors.add("key", new ActionMessage("errors.invalid", "Unique Id : " + id));
                 saveErrors(request, errors);
-                mapping.findForward("showSolverParamGroups");
-            }
-            else {
+            } else {
             	SolverParameterGroupDAO dao = new SolverParameterGroupDAO();
             	SolverParameterGroup group = dao.get(new Long(id));
                 if(group==null) {
                     errors.add("name", new ActionMessage("errors.invalid", "Unique Id : " + id));
                     saveErrors(request, errors);
-                    mapping.findForward("showSolverParamGroups");
-                }
-                else {
+                } else {
                     myForm.setUniqueId(group.getUniqueId());
                     myForm.setName(group.getName());
                     myForm.setOrder(group.getOrder().intValue());
                     myForm.setDescription(group.getDescription());
-                    myForm.setCondition(group.getCondition());
                     myForm.setOp("Update");
                 }                
             }
@@ -155,7 +154,6 @@ public class SolverParamGroupsAction extends Action {
     			Debug.error(e);
     	    }
             myForm.reset(mapping, request);
-            myForm.setOp("Add New");
         }
         
         // Move Up or Down
@@ -195,11 +193,16 @@ public class SolverParamGroupsAction extends Action {
     	    	if (tx!=null) tx.rollback();
     			Debug.error(e);
     	    }
-    	    myForm.setOp("Update");
+    	    myForm.reset(mapping, request);
         }
-        // Read all existing settings and store in request
-        getSolverParameterGroups(request);        
-        return mapping.findForward("showSolverParamGroups");
+        
+        if ("List".equals(myForm.getOp())) {
+            //Read all existing settings and store in request
+            getSolverParameterGroups(request);
+            return mapping.findForward("list");
+        }
+            
+        return mapping.findForward("Save".equals(myForm.getOp())?"add":"edit");
 	}
 	
     private void getSolverParameterGroups(HttpServletRequest request) throws Exception {
@@ -208,8 +211,8 @@ public class SolverParamGroupsAction extends Action {
 		WebTable.setOrder(request.getSession(),"solverParamGroups.ord",request.getParameter("ord"),1);
 		// Create web table instance 
         WebTable webTable = new WebTable( 3,
-			    "Solver Parameter Groups", "solverParamGroups.do?ord=%%",
-			    new String[] {"Ord", "Name", "Description"},
+			    null, "solverParamGroups.do?ord=%%",
+			    new String[] {"Order", "Name", "Description"},
 			    new String[] {"left", "left", "left"},
 			    null );
         int size = 0;
@@ -220,7 +223,7 @@ public class SolverParamGroupsAction extends Action {
     		if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
     			tx = hibSession.beginTransaction();
             
-			List list = hibSession.createCriteria(SolverParameterGroup.class).list();
+			List list = hibSession.createCriteria(SolverParameterGroup.class).addOrder(Order.asc("order")).list();
 			size = list.size();
 			
 			if(list.isEmpty()) {
@@ -229,7 +232,18 @@ public class SolverParamGroupsAction extends Action {
 				for (Iterator i=list.iterator();i.hasNext();) {
 					SolverParameterGroup group = (SolverParameterGroup)i.next();
 					String onClick = "onClick=\"document.location='solverParamGroups.do?op=Edit&id=" + group.getUniqueId() + "';\"";
-					webTable.addLine(onClick, new String[] {group.getOrder().toString(), group.getName(), group.getDescription()},
+		            String ops = "";
+		            if (group.getOrder().intValue()>0) {
+		                ops += "<img src='images/arrow_u.gif' border='0' align='absmiddle' title='Move Up' " +
+		                        "onclick=\"solverParamGroupsForm.op2.value='Move Up';solverParamGroupsForm.uniqueId.value='"+group.getUniqueId()+"';solverParamGroupsForm.submit(); event.cancelBubble=true;\">";
+		            } else
+		                ops += "<img src='images/blank.gif' border='0' align='absmiddle'>";
+		            if (i.hasNext()) {
+		                ops += "<img src='images/arrow_d.gif' border='0' align='absmiddle' title='Move Down' " +
+		                        "onclick=\"solverParamGroupsForm.op2.value='Move Down';solverParamGroupsForm.uniqueId.value='"+group.getUniqueId()+"';solverParamGroupsForm.submit(); event.cancelBubble=true;\">";
+		            } else
+		                ops += "<img src='images/blank.gif' border='0' align='absmiddle'>";
+					webTable.addLine(onClick, new String[] {ops, group.getName(), group.getDescription()},
 							new Comparable[] {group.getOrder(), group.getName(), group.getDescription()});
 				}
 			}
