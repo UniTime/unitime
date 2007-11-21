@@ -76,19 +76,18 @@ public class ApplicationConfigAction extends Action {
         
         ApplicationConfigForm frm = (ApplicationConfigForm) form;
         MessageResources rsc = getResources(request);
-        ActionMessages errors = new ActionMessages();
-        String op = frm.getOp();
 
-        if(op==null) {
-            op = request.getParameter("op");
-            if(op==null) {
-	            op = rsc.getMessage("op.view");
-	            frm.setOp(op);
-            }
+        String op = (frm.getOp()!=null?frm.getOp():request.getParameter("op"));
+        
+        if (op==null) {
+            frm.reset(mapping, request);
+            op = frm.getOp();
         }
         
+        ActionMessages errors = new ActionMessages();
+        
         // Edit Config - Load existing config values to be edited
-        if(op.equals(rsc.getMessage("op.edit"))) {
+        if (op.equals("edit")) {
             String id = request.getParameter("id");
             if(id==null || id.trim().length()==0) {
                 errors.add("key", new ActionMessage("errors.invalid", "Key : " + id));
@@ -103,8 +102,13 @@ public class ApplicationConfigAction extends Action {
                     frm.setKey(s.getKey());
                     frm.setValue(s.getValue());
                     frm.setDescription(s.getDescription());
-                }                
+                }
             }
+        }
+        
+        if (op.equals(rsc.getMessage("button.addAppConfig"))) {
+            frm.reset(mapping, request);
+            frm.setOp(rsc.getMessage("button.createAppConfig"));
         }
 
         // Update config
@@ -187,9 +191,13 @@ public class ApplicationConfigAction extends Action {
             frm.reset(mapping, request);
         }
 
-        // Read all existing ApplicationConfig and store in request
-        getApplicationConfigList(request);        
-        return mapping.findForward("displayApplicationConfig");
+        if ("list".equals(frm.getOp())) {
+            //Read all existing ApplicationConfig and store in request
+            getApplicationConfigList(request);        
+            return mapping.findForward("list");
+        }
+        
+        return mapping.findForward(rsc.getMessage("button.createAppConfig").equals(frm.getOp())?"add":"edit");
     }
 
     /**
@@ -198,12 +206,13 @@ public class ApplicationConfigAction extends Action {
      * @throws Exception
      */
     private void getApplicationConfigList(HttpServletRequest request) throws Exception {
+        WebTable.setOrder(request.getSession(),"applicationConfig.ord",request.getParameter("ord"),1);
 		org.hibernate.Session hibSession = null;
         MessageResources rsc = getResources(request);
 
 		// Create web table instance 
         WebTable webTable = new WebTable( 3,
-			    "Application Configuration Settings",
+			    null, "applicationConfig.do?ord=%%",
 			    new String[] {"Key", "Value", "Description"},
 			    new String[] {"left", "left", "left"},
 			    null );
@@ -230,11 +239,11 @@ public class ApplicationConfigAction extends Action {
 				    String value = s.getValue();
 				    String description = s.getDescription();
 				    
-				    String onClick = "onClick=\"document.location='applicationConfig.do?op=" + rsc.getMessage("op.edit") + "&id="
+				    String onClick = "onClick=\"document.location='applicationConfig.do?op=edit&id="
 	    				+ s.getKey() + "';\"";
 				    
 				    webTable.addLine(
-				        	onClick, new String[] {key, value, description}, null, null );			    
+				        	onClick, new String[] {key, value, description}, new String[] {key, value, description}, null );			    
 				}
 			}
 			
@@ -245,7 +254,7 @@ public class ApplicationConfigAction extends Action {
 	    finally {
 	    }
 
-	    request.setAttribute(ApplicationConfig.APP_CFG_ATTR_NAME, webTable.printTable());
+	    request.setAttribute(ApplicationConfig.APP_CFG_ATTR_NAME, webTable.printTable(WebTable.getOrder(request.getSession(),"applicationConfig.ord")));
     }
     
 }
