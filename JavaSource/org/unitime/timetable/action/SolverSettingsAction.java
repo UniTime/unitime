@@ -77,32 +77,31 @@ public class SolverSettingsAction extends Action {
         boolean list = true;
         
         if (op==null) {
-            myForm.setOp("Add New");
+            myForm.setOp("Add Solver Configuration");
 	        op = "list";
 	        myForm.loadDefaults();
         }
         
         // Reset Form
-        if ("Cancel".equals(op)) {
+        if ("Back".equals(op)) {
             myForm.reset(mapping, request);
-            myForm.setOp("Add New");
+            myForm.setOp("Add Solver Configuration");
             myForm.loadDefaults();
         }
         
-        if ("Add New".equals(op)) {
-        	myForm.setOp("Create");
+        if ("Add Solver Configuration".equals(op)) {
+        	myForm.setOp("Save");
         	myForm.loadDefaults();
         	list = false;
         }
         
         // Add / Update
-        if ("Update".equals(op) || "Create".equals(op)) {
+        if ("Update".equals(op) || "Save".equals(op)) {
             // Validate input
             ActionMessages errors = myForm.validate(mapping, request);
             if(errors.size()>0) {
             	list=false;
                 saveErrors(request, errors);
-                mapping.findForward("showSolverSettings");
             } else {
             	Transaction tx = null;
             	try {
@@ -113,7 +112,7 @@ public class SolverSettingsAction extends Action {
                     	tx = hibSession.beginTransaction();
             		SolverPredefinedSetting setting = null;
 
-            		if(op.equals("Create"))
+            		if(op.equals("Save"))
             			setting = new SolverPredefinedSetting();
             		else 
             			setting = dao.get(myForm.getUniqueId(), hibSession);
@@ -168,7 +167,7 @@ public class SolverSettingsAction extends Action {
                 
                 myForm.reset(mapping, request);
                 myForm.loadDefaults();
-                myForm.setOp("Add New");
+                myForm.setOp("Add Solver Configuration");
             }
         }
 
@@ -179,7 +178,6 @@ public class SolverSettingsAction extends Action {
             if(id==null || id.trim().length()==0) {
                 errors.add("key", new ActionMessage("errors.invalid", "Unique Id : " + id));
                 saveErrors(request, errors);
-                mapping.findForward("showSolverSettings");
             } else {
             	Transaction tx = null;
             	try {
@@ -192,7 +190,6 @@ public class SolverSettingsAction extends Action {
             		if(setting==null) {
             			errors.add("name", new ActionMessage("errors.invalid", "Unique Id : " + id));
             			saveErrors(request, errors);
-            			mapping.findForward("showSolverSettings");
             		} else {
             			myForm.reset(mapping, request);
             			myForm.loadDefaults();
@@ -226,7 +223,6 @@ public class SolverSettingsAction extends Action {
             if(id==null || id.trim().length()==0) {
                 errors.add("key", new ActionMessage("errors.invalid", "Unique Id : " + id));
                 saveErrors(request, errors);
-                mapping.findForward("showSolverSettings");
             } else {
                 try {
                     SolverPredefinedSettingDAO dao = new SolverPredefinedSettingDAO();
@@ -237,7 +233,6 @@ public class SolverSettingsAction extends Action {
                     if(setting==null) {
                         errors.add("name", new ActionMessage("errors.invalid", "Unique Id : " + id));
                         saveErrors(request, errors);
-                        mapping.findForward("showSolverSettings");
                     } else {
                         File file = ApplicationProperties.getTempFile(setting.getName(), "txt");
                         PrintWriter pw = new PrintWriter(new FileWriter(file));
@@ -302,12 +297,16 @@ public class SolverSettingsAction extends Action {
     			Debug.error(e);
     	    }
             myForm.reset(mapping, request);
-            myForm.setOp("Add New");
+            myForm.setOp("Add Solver Configuration");
         }
 
-        // Read all existing settings and store in request
-        if (list) getSolverSettingsTable(request);        
-        return mapping.findForward("showSolverSettings");
+        if ("Add Solver Configuration".equals(myForm.getOp())) {
+            // Read all existing settings and store in request
+            if (list) getSolverSettingsTable(request);        
+            return mapping.findForward("list");
+        } 
+        
+        return mapping.findForward("Save".equals(myForm.getOp())?"add":"edit");
 	}
 	
     private void getSolverSettingsTable(HttpServletRequest request) throws Exception {
@@ -316,7 +315,7 @@ public class SolverSettingsAction extends Action {
 		WebTable.setOrder(request.getSession(),"solverSettings.ord",request.getParameter("ord"),1);
 		// Create web table instance 
         WebTable webTable = new WebTable( 4,
-			    "Solver Configurations", "solverSettings.do?ord=%%",
+			    null, "solverSettings.do?ord=%%",
 			    new String[] {"Reference", "Name", "Appearance"},
 			    new String[] {"left", "left", "left"},
 			    null );

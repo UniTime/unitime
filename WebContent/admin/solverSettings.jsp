@@ -35,6 +35,8 @@
 
 <tiles:importAttribute />
 
+<tt:confirm name="confirmDelete">The solver configuration will be deleted. Continue?</tt:confirm>
+
 	<html:form action="/solverSettings">
 <%  try {
 	String frmName = "solverSettingsForm";		
@@ -43,12 +45,25 @@
 %>
 
 	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TR>
+			<TD colspan="4">
+				<tt:section-header>
+					<tt:section-title>
+						Solver Configurations		
+					</tt:section-title>
+					<html:submit property="op" value="Add Solver Configuration" accesskey="A" title="Create New Solver Configuration (Alt+A)"/>
+				</tt:section-header>
+			</TD>
+		</TR>
 		<%= request.getAttribute("SolverSettings.table") %> 
 		<TR>
 			<TD align="right" colspan="4">
-				<html:submit property="op">
-					<bean:write name="solverSettingsForm" property="op" />
-				</html:submit> 
+				<tt:section-title/>
+			</TD>
+		</TR>
+		<TR>
+			<TD align="right" colspan="4">
+				<html:submit property="op" value="Add Solver Configuration" accesskey="A" title="Create New Solver Configuration (Alt+A)"/> 
 			</TD>
 		</TR>
 	</TABLE>
@@ -62,22 +77,23 @@
 			<TD colspan='2'>
 				<tt:section-header>
 					<tt:section-title>
-						<logic:equal name="solverSettingsForm" property="op" value="Create">
+						<logic:equal name="solverSettingsForm" property="op" value="Save">
 						Add
 						</logic:equal>
-						<logic:notEqual name="solverSettingsForm" property="op" value="Create">
+						<logic:notEqual name="solverSettingsForm" property="op" value="Save">
 						Edit
 						</logic:notEqual>
 						Sovler Configuration
 					</tt:section-title>
-					<html:submit property="op">
-						<bean:write name="solverSettingsForm" property="op" />
-					</html:submit> 
-					<logic:notEqual name="solverSettingsForm" property="op" value="Create">
-						<html:submit property="op" value="Delete"/> 
+					<logic:equal name="solverSettingsForm" property="op" value="Save">
+						<html:submit property="op" value="Save" accesskey="S" title="Save Solver Parameter (Alt+S)"/>
+					</logic:equal>
+					<logic:notEqual name="solverSettingsForm" property="op" value="Save">
+						<html:submit property="op" value="Update" accesskey="U" title="Update Solver Parameter (Alt+U)"/>
+						<html:submit property="op" value="Delete" onclick="return confirmDelete();" accesskey="D" title="Delete Solver Parameter (Alt+D)"/> 
 					</logic:notEqual>
-					<html:submit property="op" value="Export" /> 
-					<html:submit property="op" value="Cancel" /> 
+					<html:submit property="op" value="Export" title="Export to Property File (Alt+E)" accesskey="E"/> 
+					<html:submit property="op" value="Back" title="Return to Solver Parameters (Alt+B)" accesskey="B"/> 
 				</tt:section-header>
 			</TD>
 		</TR>
@@ -248,14 +264,15 @@
 		</TR>		
 		<TR>
 			<TD align="right" colspan="2">
-				<html:submit property="op">
-					<bean:write name="solverSettingsForm" property="op" />
-				</html:submit> 
-				<logic:notEqual name="solverSettingsForm" property="op" value="Create">
-					<html:submit property="op" value="Delete"/> 
+				<logic:equal name="solverSettingsForm" property="op" value="Save">
+					<html:submit property="op" value="Save" accesskey="S" title="Save Solver Parameter (Alt+S)"/>
+				</logic:equal>
+				<logic:notEqual name="solverSettingsForm" property="op" value="Save">
+					<html:submit property="op" value="Update" accesskey="U" title="Update Solver Parameter (Alt+U)"/>
+					<html:submit property="op" value="Delete" onclick="return confirmDelete();" accesskey="D" title="Delete Solver Parameter (Alt+D)"/> 
 				</logic:notEqual>
-				<html:submit property="op" value="Export" /> 
-				<html:submit property="op" value="Cancel" /> 
+				<html:submit property="op" value="Export" title="Export to Property File (Alt+E)" accesskey="E"/> 
+				<html:submit property="op" value="Back" title="Return to Solver Parameters (Alt+B)" accesskey="B"/> 
 			</TD>
 		</TR>
 	</TABLE>
