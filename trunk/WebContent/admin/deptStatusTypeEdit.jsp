@@ -17,8 +17,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  --%>
 <%@ page language="java" autoFlush="true"%>
-<%@ page import="org.unitime.commons.web.Web" %>
-<%@ page import="org.unitime.timetable.webutil.JavascriptFunctions" %>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
@@ -27,22 +25,7 @@
 
 <tiles:importAttribute />
 
-<SCRIPT language="javascript">
-	<!--
-		<%= JavascriptFunctions.getJsConfirm(Web.getUser(session)) %>
-		
-		function confirmDelete() {
-			if (jsConfirm!=null && !jsConfirm)
-				return true;
-
-			if(confirm('The status will be deleted. Continue?')) {
-				return true;
-			}
-			return false;
-		}
-
-	// -->
-</SCRIPT>
+<tt:confirm name="confirmDelete">The status will be deleted. Continue?</tt:confirm>
 
 <html:form action="/deptStatusTypeEdit">
 <html:hidden property="uniqueId"/><html:errors property="uniqueId"/>
