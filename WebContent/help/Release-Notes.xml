@@ -56,6 +56,41 @@
 				<line>List of manager settings is made sortable.</line>
 			</description>
 		</item>
+		<item>
+			<name>Solver Parameter Groups</name>
+			<description>
+				<line>Page split to add/edit solver parameter group and list of solver parameter groups.</line>
+				<line>Page visualization changed to be more consistent with other pages.</line>
+				<line>Page title changed based on the operation (list,add,edit).</line>
+				<line>Order of parameter groups can now be changed by up and down arrows that are visible Order column.</line>
+			</description>
+		</item>
+		<item>
+			<name>Solver Parameters</name>
+			<description>
+				<line>Page split to add/edit solver parameter and list of solver parameters.</line>
+				<line>Page visualization changed to be more consistent with other pages.</line>
+				<line>Hidden parameters are now displayed in gray.</line>
+				<line>Page title changed based on the operation (list,add,edit).</line>
+				<line>Order of parameter groups can now be changed by up and down arrows that are visible Order column.</line>
+				<line>After save/update/back/delete operation, the page is scrolled down to the affected parameter (group of parameters in the case of delete).</line>
+			</description>
+		</item>
+		<item>
+			<name>Solver Configurations</name>
+			<description>
+				<line>Page visualization changed to be more consistent with other pages.</line>
+				<line>Page title changed based on the operation (list,add,edit).</line>
+			</description>
+		</item>
+		<item>
+			<name>Solver Groups</name>
+			<description>
+				<line>Page visualization changed to be more consistent with other pages.</line>
+				<line>Page title changed based on the operation (list,add,edit).</line>
+				<line>After save/update/back operation, the page is scrolled down to the affected solver group.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>SOLVER</title>
