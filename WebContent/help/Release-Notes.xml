@@ -124,6 +124,12 @@
 				<line>Added ability to execute update/delete query as well.</line>
 			</description>
 		</item>
+		<item>
+			<name>Instructional Offerings</name>
+			<description>
+				<line>Added export to PDF work-sheets (button Worksheet PDF).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>SOLVER</title>
