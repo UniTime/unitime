@@ -65,6 +65,7 @@ import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.PdfWorksheet;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.pdf.PdfInstructionalOfferingTableBuilder;
 
@@ -79,6 +80,7 @@ public class InstructionalOfferingSearchAction extends LookupDispatchAction {
 	      Map map = new HashMap();
 	      map.put("button.searchInstructionalOfferings", "searchInstructionalOfferings");
 	      map.put("button.exportPDF", "exportPdf");
+	      map.put("button.worksheetPDF", "worksheetPdf");
 	      map.put("button.saveNotOfferedChanges", "saveNotOfferedChanges");
 	      map.put("button.addNew", "addInstructionalOfferings");
 	      map.put("button.update", "updateInstructionalOfferings");
@@ -196,99 +198,68 @@ public class InstructionalOfferingSearchAction extends LookupDispatchAction {
 			ActionForm form,
 			HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
-
-	    	HttpSession httpSession = request.getSession();
-	        if(!Web.isLoggedIn( httpSession )) {
-	            throw new Exception ("Access Denied.");
-	        }
+	    
+        ActionForward fwd = searchInstructionalOfferings(mapping, form, request, response);
         
-	        // Check that a valid subject area is selected
-		    InstructionalOfferingListForm frm = (InstructionalOfferingListForm) form;
-		    ActionMessages errors = null;
-		    errors = frm.validate(mapping, request);
-		    
-		    // Validation fails
-		    if(errors.size()>0) {
-			    saveErrors(request, errors);
-			    frm.setCollections(request, null);
-			    return mapping.findForward("showInstructionalOfferingSearch");
-		    }
+        InstructionalOfferingListForm frm = (InstructionalOfferingListForm) form;
+        
+        if (getErrors(request).isEmpty()) {
+            File pdfFile = 
+                (new PdfInstructionalOfferingTableBuilder())
+                .pdfTableForInstructionalOfferings(
+                        WebSolver.getClassAssignmentProxy(request.getSession()),
+                        frm, 
+                        new Long(frm.getSubjectAreaId()), 
+                        Web.getUser(request.getSession()),  
+                        true, 
+                        frm.getCourseNbr()==null || frm.getCourseNbr().length()==0);
+            
+            if (pdfFile!=null) {
+                request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+pdfFile.getName());
+                //response.sendRedirect("temp/"+pdfFile.getName());
+            } else {
+                getErrors(request).add("searchResult", new ActionMessage("errors.generic", "Unable to create PDF file."));
+            }
+        }
+        
+        return fwd;
+	}
+	
+	
+	public ActionForward worksheetPdf(
+            ActionMapping mapping,
+            ActionForm form,
+            HttpServletRequest request,
+            HttpServletResponse response) throws Exception {
 
-		    // Set Session Variables
-	        httpSession.setAttribute(Constants.SUBJ_AREA_ID_ATTR_NAME, frm.getSubjectAreaId());
-	        httpSession.setAttribute(Constants.CRS_NBR_ATTR_NAME, frm.getCourseNbr());
-	        
-
-		    if ("1".equals(request.getParameter("loadInstrFilter"))) {
-				setupInstrOffrListSpecificFormFilters(httpSession, frm);
-		    } else {
-		    	UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.divSec",frm.getDivSec().booleanValue());
-		    	UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.demand",frm.getDemand().booleanValue());
-		    	UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.projectedDemand",frm.getProjectedDemand().booleanValue());
-		    	UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.minPerWk",frm.getMinPerWk().booleanValue());
-		    	UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.limit",frm.getLimit().booleanValue());
-		    	UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.roomLimit",frm.getRoomLimit().booleanValue());
-		    	UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.manager",frm.getManager().booleanValue());
-			   	UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.datePattern",frm.getDatePattern().booleanValue());
-		    	UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.timePattern",frm.getTimePattern().booleanValue());
-		    	UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.instructor",frm.getInstructor().booleanValue());
-		    	UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.preferences",frm.getPreferences().booleanValue());
-		    	UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.timetable",(frm.getTimetable()==null?false:frm.getTimetable().booleanValue()));
-		    	UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.credit",frm.getCredit().booleanValue());
-		    	UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.subpartCredit",frm.getSubpartCredit().booleanValue());
-		    	UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.schedulePrintNote",frm.getSchedulePrintNote().booleanValue());
-		    	UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.note",frm.getNote().booleanValue());
-		    	UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.title",frm.getTitle().booleanValue());
-		    	UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.consent",frm.getConsent().booleanValue());
-		    	UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.designatorRequired",frm.getDesignatorRequired().booleanValue());
-		    	UserData.setProperty(httpSession,"InstructionalOfferingList.sortBy",frm.getSortBy());
-		    }
-
-	        // Perform Search
-		    frm.setCollections(request, getInstructionalOfferings(request, frm));
-			Collection instrOfferings = frm.getInstructionalOfferings();
-			
-			// No results returned
-			if (instrOfferings.isEmpty()) {
-			    if(errors==null) errors = new ActionMessages();
-			    errors.add("searchResult", new ActionMessage("errors.generic", "No records matching the search criteria were found."));
-			    saveErrors(request, errors);
-			    return mapping.findForward("showInstructionalOfferingSearch");
-			} 
-			else {
-				
-				File pdfFile = 
-					(new PdfInstructionalOfferingTableBuilder())
-					.pdfTableForInstructionalOfferings(
-		    		        WebSolver.getClassAssignmentProxy(request.getSession()),
-		    		        frm, 
-		    		        new Long(frm.getSubjectAreaId()), 
-		    		        Web.getUser(request.getSession()),	
-		    		        true, 
-		    		        frm.getCourseNbr()==null || frm.getCourseNbr().length()==0);
-				
-				if (pdfFile!=null) {
-					request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+pdfFile.getName());
-					//response.sendRedirect("temp/"+pdfFile.getName());
-				} else {
-				    if(errors==null) errors = new ActionMessages();
-				    errors.add("searchResult", new ActionMessage("errors.generic", "Unable to create PDF file."));
-				    saveErrors(request, errors);
-				}
-				
-				BackTracker.markForBack(
-						request, 
-						"instructionalOfferingSearch.do?op=Back&doit=Search&loadInstrFilter=1&subjectAreaId="+frm.getSubjectAreaId()+"&courseNbr="+frm.getCourseNbr(), 
-						"Instructional Offerings ("+
-							(frm.getSubjectAreaAbbv()==null?((new SubjectAreaDAO()).get(new Long(frm.getSubjectAreaId()))).getSubjectAreaAbbreviation():frm.getSubjectAreaAbbv())+
-							(frm.getCourseNbr()==null || frm.getCourseNbr().length()==0?"":" "+frm.getCourseNbr())+
-							")", 
-						true, true);
-				
-				return mapping.findForward("showInstructionalOfferingList");
-				//return mapping.findForward("showInstructionalOfferingSearch");
-			}
-		}
+        ActionForward fwd = searchInstructionalOfferings(mapping, form, request, response);
+        
+        InstructionalOfferingListForm frm = (InstructionalOfferingListForm) form;
+        
+        if (getErrors(request).isEmpty()) {
+            
+            try {
+                File file = ApplicationProperties.getTempFile("worksheet", "pdf");
+            
+                PdfWorksheet.print(file, new SubjectAreaDAO().get(Long.valueOf(frm.getSubjectAreaId())), frm.getCourseNbr());
+            
+                if (file.exists()) 
+                    request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
+                else {
+                    ActionMessages errors = getErrors(request);
+                    errors.add("searchResult", new ActionMessage("errors.generic", "Unable to create worksheet PDF file -- nothing to export."));
+                    saveErrors(request, errors);
+                }
+            } catch (Exception e) {
+                ActionMessages errors = getErrors(request);
+                errors.add("searchResult", new ActionMessage("errors.generic", "Unable to create worksheet PDF file -- "+e.getMessage()+"."));
+                saveErrors(request, errors);
+                Debug.error(e);
+            }
+        }
+        
+        return fwd;
+	}
 	
 	public ActionForward saveNotOfferedChanges(
 			ActionMapping mapping,
