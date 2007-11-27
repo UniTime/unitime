@@ -142,6 +142,23 @@
 				</line>
 			</description> 
 		</item>
+		<item>
+			<name>Minimum available memory limit</name>
+			<description>
+				<line>
+					Minimum amount of available memory (in megabytes) needed to be able to start additional solver instance
+					can be set by application property tmtbl.solver.mem_limit (default is 200).
+					<line>
+						If there is not enough memory on any of the registered solver servers, the following exception is thrown:
+						<line>"Not enough resources to create a solver instance, please try again later."</line>
+					</line>
+					<line>
+						This limit is applicable only on the tomcat side (it is used by WebSolver class), the same limit
+						is used for all solver servers.
+					</line>
+				</line> 
+			</description>
+		</item>
 	</category>
 </release>
 
