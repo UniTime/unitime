@@ -32,6 +32,7 @@ import org.apache.commons.logging.LogFactory;
 import org.hibernate.Transaction;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.SolverParameter;
@@ -58,7 +59,7 @@ public class WebSolver extends TimetableSolver implements ProgressListener {
 	private JspWriter iJspWriter;
 	private static Hashtable sSolvers = new Hashtable();
 	private static SolverPassivationThread sSolverPasivationThread = null;
-	private static long sMemoryLimit = 200*1024*1024; //200 MB
+	private static long sMemoryLimit = Integer.parseInt(ApplicationProperties.getProperty("tmtbl.solver.mem_limit","200"))*1024*1024; //200 MB
 	private static boolean sBackupWhenDone = false;
 	
 	public WebSolver(DataProperties properties) {
@@ -213,6 +214,8 @@ public class WebSolver extends TimetableSolver implements ProgressListener {
 	
 	public static SolverProxy createSolver(Long sessionId, javax.servlet.http.HttpSession session, Long[] ownerId, String solutionIds, Long settingsId, Hashtable extraParams, boolean startSolver, String host) throws Exception {
 		try {
+		    System.out.println("Memory limit is "+sMemoryLimit);
+		    
 		User user = Web.getUser(session);
 		if (user==null) return null;
 		
