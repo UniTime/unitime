@@ -70,21 +70,21 @@
 			'OnFlySectioning.Enabled' as name, 'false' as default_value, 
 			'Enable on fly sectioning (if enabled, students will be resectioned after each iteration)' as description,
 			'boolean' as type, 0 as ord, 1 as visible, 
-			uniqueid as %SCHEMA%.solver_param_group_id from %SCHEMA%.solver_parameter_group where name='OnFlySectioning')
+			uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='OnFlySectioning')
 		</plsql>
 		<plsql>
 			insert into %SCHEMA%.solver_parameter_def (select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
 			'OnFlySectioning.Recursive' as name, 'true' as default_value,
 			'Recursively resection lectures affected by a student swap' as description,
 			'boolean' as type, 1 as ord, 1 as visible,
-			uniqueid as %SCHEMA%.solver_param_group_id from %SCHEMA%.solver_parameter_group where name='OnFlySectioning')
+			uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='OnFlySectioning')
 		</plsql>
 		<plsql>
 			insert into %SCHEMA%.solver_parameter_def (select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
 			'OnFlySectioning.ConfigAsWell' as name, 'false' as default_value,
 			'Resection students between configurations as well' as description,
 			'boolean' as type, 2 as ord, 1 as visible,
-			uniqueid as %SCHEMA%.solver_param_group_id from %SCHEMA%.solver_parameter_group where name='OnFlySectioning')
+			uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='OnFlySectioning')
 		</plsql>
 		<mysql into="ID">
 			select next_hi from %SCHEMA%.hibernate_unique_key			
