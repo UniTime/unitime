@@ -1018,7 +1018,10 @@ CREATE TABLE `timetable`.`itype_desc` (
   `description` VARCHAR(50) BINARY NULL,
   `sis_ref` VARCHAR(20) BINARY NULL,
   `basic` INT(1) NULL,
-  PRIMARY KEY (`itype`)
+  `parent` INT(2),
+  PRIMARY KEY (`itype`),
+  CONSTRAINT `fk_itype_parent` FOREIGN KEY `fk_itype_parent` (`parent`)
+    REFERENCES `timetable`.`itype_desc` (`itype`)
 )
 ENGINE = INNODB;
 

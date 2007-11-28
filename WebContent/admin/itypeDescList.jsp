@@ -22,7 +22,7 @@
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
 	<TR>
-		<TD colspan='5'>
+		<TD colspan='6'>
 			<tt:section-header>
 				<tt:section-title>Instructional Types</tt:section-title>
 				<TABLE align="right" cellspacing="0" cellpadding="2" class="FormWithNoPadding">
@@ -41,12 +41,12 @@
 	</TR>
 	<%=request.getAttribute("itypeDescList")%>
 	<TR>
-		<TD colspan='5'>
+		<TD colspan='6'>
 			<tt:section-title/>
 		</TD>
 	</TR>
 	<TR>
-		<TD colspan='5' align="right">
+		<TD colspan='6' align="right">
 			<TABLE align="right" cellspacing="0" cellpadding="2" class="FormWithNoPadding">
 				<TR><TD nowrap>
 					<html:form action="itypeDescEdit" styleClass="FormWithNoPadding">

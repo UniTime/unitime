@@ -57,6 +57,7 @@ public abstract class BaseItypeDesc  implements Serializable {
 	public static String PROP_DESC = "desc";
 	public static String PROP_SIS_REF = "sis_ref";
 	public static String PROP_BASIC = "basic";
+	public static String PROP_PARENT = "parent";
 
 
 	// constructors
@@ -86,6 +87,7 @@ public abstract class BaseItypeDesc  implements Serializable {
 	private java.lang.String desc;
 	private java.lang.String sis_ref;
 	private java.lang.Integer basic;
+	private org.unitime.timetable.model.ItypeDesc parent;
 
 
 
@@ -176,6 +178,13 @@ public abstract class BaseItypeDesc  implements Serializable {
 		this.basic = basic;
 	}
 
+	public org.unitime.timetable.model.ItypeDesc getParent() {
+	    return parent;
+	}
+	
+	public void setParent(org.unitime.timetable.model.ItypeDesc parent) {
+	    this.parent = parent;
+	}
 
 
 

@@ -68,6 +68,13 @@
 			not-null="false"
 			length="1"
 		/>
-
+		
+		<many-to-one 
+			name="parent" 
+			class="ItypeDesc" 
+			column="PARENT" 
+			not-null="false"
+			foreign-key="FK_ITYPE_PARENT"
+		/>
 	</class>
 </hibernate-mapping>

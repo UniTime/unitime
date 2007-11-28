@@ -17,6 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  --%>
 <%@ page language="java" autoFlush="true"%>
+<%@ page import="org.unitime.timetable.model.ItypeDesc"%>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
@@ -104,6 +105,16 @@
 			</TD>
 		</TR>
 		
+		<TR>
+			<TD>Parent:</TD>
+			<TD>
+				<html:select property="parent">
+					<html:options collection="<%=ItypeDesc.ITYPE_ATTR_NAME%>" property="itype" labelProperty="desc" />
+				</html:select>
+				&nbsp;<html:errors property="parent"/>
+			</TD>
+		</TR>
+
 		<TR>
 			<TD align="right" colspan="2">
 				<tt:section-title/>
