@@ -45,6 +45,7 @@ public class ItypeDescEditForm extends ActionForm {
     private String iAbbreviation = null;
     private int iType = 1;
     private boolean iCanDelete = false;
+    private Integer iParent = null;
 
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
         ActionErrors errors = new ActionErrors();
@@ -106,6 +107,8 @@ public class ItypeDescEditForm extends ActionForm {
     public String[] getTypes() { return ItypeDesc.sBasicTypes; }
     public boolean getCanDelete() { return iCanDelete; }
     public void setCanDelete(boolean canDelete) { iCanDelete = canDelete; }
+    public Integer getParent() { return iParent; }
+    public void setParent(Integer parent) { iParent = parent; }
     
     public void load(ItypeDesc itype) {
         setOp("Update");
@@ -121,6 +124,7 @@ public class ItypeDescEditForm extends ActionForm {
             setInteger("itype", itype.getItype()).
             uniqueResult()).intValue();
         setCanDelete(nrUsed<=0);
+        setParent(itype.getParent()==null?null:itype.getParent().getItype());
     }
     
     public void saveOrUpdate(org.hibernate.Session hibSession, Session session) throws Exception {
@@ -132,6 +136,7 @@ public class ItypeDescEditForm extends ActionForm {
         itype.setDesc(getName());
         itype.setSis_ref(getReference());
         itype.setBasic(getBasicType());
+        itype.setParent(getParent()==null?null:new ItypeDescDAO().get(getParent()));
         hibSession.saveOrUpdate(itype);
     }
     

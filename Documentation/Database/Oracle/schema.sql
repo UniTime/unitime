@@ -408,13 +408,18 @@ create table TIMETABLE.ITYPE_DESC
   ABBV        VARCHAR2(7),
   DESCRIPTION VARCHAR2(50),
   SIS_REF     VARCHAR2(20),
-  BASIC       NUMBER(1)
+  BASIC       NUMBER(1),
+  PARENT       NUMBER(2)
 );
 alter table TIMETABLE.ITYPE_DESC
   add constraint PK_ITYPE_DESC primary key (ITYPE);
 alter table TIMETABLE.ITYPE_DESC
   add constraint NN_ITYPE_DESC_ITYPE
   check ("ITYPE" IS NOT NULL);
+alter table ITYPE_DESC 
+  add constraint FK_ITYPE_PARENT
+  foreign key (PARENT) 
+  references ITYPE_DESC(ITYPE);
 
 prompt
 prompt Creating table SCHEDULING_SUBPART

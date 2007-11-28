@@ -56,6 +56,7 @@ import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.ItypeDesc;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.TimetableManager;
@@ -473,7 +474,13 @@ public class ClassSearchAction extends LookupDispatchAction {
 				*/
 				
 				if (doFilterIType) {
-					if (c.getSchedulingSubpart().getItype()==null || !c.getSchedulingSubpart().getItype().getItype().equals(filterIType)) {
+				    ItypeDesc itype = c.getSchedulingSubpart().getItype();
+				    boolean match=false;
+				    while (!match && itype!=null) {
+				        match = itype.getItype().equals(filterIType);
+				        itype = itype.getParent();
+				    }
+					if (!match) {
 						hibSession.evict(c);
 						continue;
 					}

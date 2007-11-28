@@ -575,8 +575,10 @@ insert into APPLICATION_CONFIG (NAME, VALUE, DESCRIPTION)
 values ('tmtbl.system_message', 'Welcome to Woebegon College test suite.', 'Message displayed to users when they first log in to Timetabling');
 insert into APPLICATION_CONFIG (NAME, VALUE, DESCRIPTION)
 values ('tmtbl.access_level', 'all', 'Access Levels: all | {dept code}(:{dept code})*');
+insert into APPLICATION_CONFIG (NAME,VALUE,DESCRIPTION)
+values ('tmtbl.db.version','9','Timetabling database version (please do not change -- this key is used by automatic database update)'); 
 commit;
-prompt 2 records loaded
+prompt 3 records loaded
 prompt Loading OFFR_CONSENT_TYPE...
 insert into OFFR_CONSENT_TYPE (UNIQUEID, REFERENCE, LABEL)
 values (225, 'instructor', 'Consent of Instructor');
@@ -683,186 +685,186 @@ values (36965, 4, 132330, 0, '1', null, null);
 commit;
 prompt 23 records loaded
 prompt Loading ITYPE_DESC...
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (10, 'Lecture', 'lec', 'Lec  ', 1);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (11, 'Lecture 1', 'lec', 'Lec 1', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (12, 'Lecture 2', 'lec', 'Lec 2', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (13, 'Lecture 3', 'lec', 'Lec 3', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (14, 'Lecture 4', 'lec', 'Lec 4', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (15, 'Lecture 5', 'lec', 'Lec 5', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (16, 'Lecture 6', 'lec', 'Lec 6', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (17, 'Lecture 7', 'lec', 'Lec 7', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (18, 'Lecture 8', 'lec', 'Lec 8', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (19, 'Lecture 9', 'lec', 'Lec 9', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (20, 'Recitation', 'rec', 'Rec  ', 1);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (21, 'Recitation 1', 'rec', 'Rec 1', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (22, 'Recitation 2', 'rec', 'Rec 2', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (23, 'Recitation 3', 'rec', 'Rec 3', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (24, 'Recitation 4', 'rec', 'Rec 4', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (25, 'Presentation', 'prsn', 'Prsn ', 1);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (26, 'Presentation 1', 'prsn', 'Prsn1', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (27, 'Presentation 2', 'prsn', 'Prsn2', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (28, 'Presentation 3 ', 'prsn', 'Prsn3', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (29, 'Presentation 4', 'prsn', 'Prsn4', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (30, 'Laboratory', 'lab', 'Lab  ', 1);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (31, 'Laboratory 1', 'lab', 'Lab 1', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (32, 'Laboratory 2', 'lab', 'Lab 2', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (33, 'Laboratory 3', 'lab', 'Lab 3', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (34, 'Laboratory 4', 'lab', 'Lab 4', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (35, 'Laboratory Preparation', 'labP', 'LabP ', 1);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (36, 'Laboratory Preparation 1', 'labP', 'LabP1', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (37, 'Laboratory Preparation 2', 'labP', 'LabP2', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (38, 'Laboratory Preparation 3', 'labP', 'LabP3', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (39, 'Laboratory Preparation 4', 'labP', 'LabP4', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (40, 'Studio', 'stdo', 'Stdo ', 1);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (41, 'Studio 1', 'stdo', 'Stdo1', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (42, 'Studio 2', 'stdo', 'Stdo2', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (43, 'Studio 3', 'stdo', 'Stdo3', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (44, 'Studio 4', 'stdo', 'Stdo4', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (45, 'Distance Learning', 'dist', 'Dist ', 1);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (46, 'Distance Learning 1', 'dist', 'Dist1', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (47, 'Distance Learning 2', 'dist', 'Dist2', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (48, 'Distance Learning 3', 'dist', 'Dist3', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (49, 'Distance Learning 4', 'dist', 'Dist4', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (50, 'Clinic', 'clin', 'Clin ', 1);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (51, 'Clinic 1', 'clin', 'Clin1', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (52, 'Clinic 2', 'clin', 'Clin2', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (53, 'Clinic 3', 'clin', 'Clin3', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (54, 'Clinic 4', 'clin', 'Clin4', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (55, 'Clinic 5', 'clin', 'Clin5', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (56, 'Clinic 6', 'clin', 'Clin6', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (57, 'Clinic 7', 'clin', 'Clin7', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (58, 'Clinic 8', 'clin', 'Clin8', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (59, 'Clinic 9', 'clin', 'Clin9', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (60, 'Experiential', 'expr', 'Expr ', 1);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (61, 'Experiential 1', 'expr', 'Expr1', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (62, 'Experiential 2', 'expr', 'Expr2', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (63, 'Experiential 3', 'expr', 'Expr3', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (64, 'Experiential 4', 'expr', 'Expr4', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (65, 'Experiential 5', 'expr', 'Expr5', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (66, 'Experiential 6', 'expr', 'Expr6', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (67, 'Experiential 7', 'expr', 'Expr7', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (68, 'Experiential 8', 'expr', 'Expr8', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (69, 'Experiential 9', 'expr', 'Expr9', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (70, 'Research', 'res', 'Res  ', 1);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (71, 'Research 1', 'res', 'Res 1', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (72, 'Research 2', 'res', 'Res 2', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (73, 'Research 3', 'res', 'Res 3', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (74, 'Research 4', 'res', 'Res 4', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (75, 'Research 5', 'res', 'Res 5', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (76, 'Research 6', 'res', 'Res 6', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (77, 'Research 7', 'res', 'Res 7', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (78, 'Research 8', 'res', 'Res 8', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (79, 'Research 9', 'res', 'Res 9', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (80, 'Individual Study', 'ind', 'Ind  ', 1);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (81, 'Individual Study 1', 'ind', 'Ind 1', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (82, 'Individual Study 2', 'ind', 'Ind 2', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (83, 'Individual Study 3', 'ind', 'Ind 3', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (84, 'Individual Study 4', 'ind', 'Ind 4', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (85, 'Individual Study 5', 'ind', 'Ind 5', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (86, 'Individual Study 6', 'ind', 'Ind 6', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (87, 'Individual Study 7', 'ind', 'Ind 7', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (88, 'Individual Study 8', 'ind', 'Ind 8', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (89, 'Individual Study 9', 'ind', 'Ind 9', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (90, 'Practice Study Observation', 'pso', 'Pso  ', 1);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (91, 'Practice Study Observation 1', 'pso', 'Pso 1', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (92, 'Practice Study Observation 2', 'pso', 'Pso 2', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (93, 'Practice Study Observation 3', 'pso', 'Pso 3', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (94, 'Practice Study Observation 4', 'pso', 'Pso 4', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (95, 'Practice Study Observation 5', 'pso', 'Pso 5', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (96, 'Practice Study Observation 6', 'pso', 'Pso 6', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (97, 'Practice Study Observation 7', 'pso', 'Pso 7', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (98, 'Practice Study Observation 8', 'pso', 'Pso 8', 0);
-insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC)
-values (99, 'Practice Study Observation 9', 'pso', 'Pso 9', 0);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (10, 'Lecture', 'lec', 'Lec  ', 1, null);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (11, 'Lecture 1', 'lec', 'Lec 1', 0, 10);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (12, 'Lecture 2', 'lec', 'Lec 2', 0, 10);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (13, 'Lecture 3', 'lec', 'Lec 3', 0, 10);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (14, 'Lecture 4', 'lec', 'Lec 4', 0, 10);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (15, 'Lecture 5', 'lec', 'Lec 5', 0, 10);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (16, 'Lecture 6', 'lec', 'Lec 6', 0, 10);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (17, 'Lecture 7', 'lec', 'Lec 7', 0, 10);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (18, 'Lecture 8', 'lec', 'Lec 8', 0, 10);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (19, 'Lecture 9', 'lec', 'Lec 9', 0, 10);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (20, 'Recitation', 'rec', 'Rec  ', 1, null);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (21, 'Recitation 1', 'rec', 'Rec 1', 0, 20);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (22, 'Recitation 2', 'rec', 'Rec 2', 0, 20);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (23, 'Recitation 3', 'rec', 'Rec 3', 0, 20);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (24, 'Recitation 4', 'rec', 'Rec 4', 0, 20);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (25, 'Presentation', 'prsn', 'Prsn ', 1, null);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (26, 'Presentation 1', 'prsn', 'Prsn1', 0, 25);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (27, 'Presentation 2', 'prsn', 'Prsn2', 0, 25);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (28, 'Presentation 3 ', 'prsn', 'Prsn3', 0, 25);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (29, 'Presentation 4', 'prsn', 'Prsn4', 0, 25);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (30, 'Laboratory', 'lab', 'Lab  ', 1, null);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (31, 'Laboratory 1', 'lab', 'Lab 1', 0, 30);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (32, 'Laboratory 2', 'lab', 'Lab 2', 0, 30);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (33, 'Laboratory 3', 'lab', 'Lab 3', 0, 30);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (34, 'Laboratory 4', 'lab', 'Lab 4', 0, 30);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (35, 'Laboratory Preparation', 'labP', 'LabP ', 1, null);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (36, 'Laboratory Preparation 1', 'labP', 'LabP1', 0, 35);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (37, 'Laboratory Preparation 2', 'labP', 'LabP2', 0, 35);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (38, 'Laboratory Preparation 3', 'labP', 'LabP3', 0, 35);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (39, 'Laboratory Preparation 4', 'labP', 'LabP4', 0, 35);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (40, 'Studio', 'stdo', 'Stdo ', 1, null);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (41, 'Studio 1', 'stdo', 'Stdo1', 0, 40);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (42, 'Studio 2', 'stdo', 'Stdo2', 0, 40);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (43, 'Studio 3', 'stdo', 'Stdo3', 0, 40);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (44, 'Studio 4', 'stdo', 'Stdo4', 0, 40);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (45, 'Distance Learning', 'dist', 'Dist ', 1, null);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (46, 'Distance Learning 1', 'dist', 'Dist1', 0, 45);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (47, 'Distance Learning 2', 'dist', 'Dist2', 0, 45);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (48, 'Distance Learning 3', 'dist', 'Dist3', 0, 45);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (49, 'Distance Learning 4', 'dist', 'Dist4', 0, 45);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (50, 'Clinic', 'clin', 'Clin ', 1, null);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (51, 'Clinic 1', 'clin', 'Clin1', 0, 50);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (52, 'Clinic 2', 'clin', 'Clin2', 0, 50);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (53, 'Clinic 3', 'clin', 'Clin3', 0, 50);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (54, 'Clinic 4', 'clin', 'Clin4', 0, 50);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (55, 'Clinic 5', 'clin', 'Clin5', 0, 50);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (56, 'Clinic 6', 'clin', 'Clin6', 0, 50);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (57, 'Clinic 7', 'clin', 'Clin7', 0, 50);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (58, 'Clinic 8', 'clin', 'Clin8', 0, 50);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (59, 'Clinic 9', 'clin', 'Clin9', 0, 50);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (60, 'Experiential', 'expr', 'Expr ', 1, null);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (61, 'Experiential 1', 'expr', 'Expr1', 0, 60);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (62, 'Experiential 2', 'expr', 'Expr2', 0, 60);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (63, 'Experiential 3', 'expr', 'Expr3', 0, 60);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (64, 'Experiential 4', 'expr', 'Expr4', 0, 60);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (65, 'Experiential 5', 'expr', 'Expr5', 0, 60);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (66, 'Experiential 6', 'expr', 'Expr6', 0, 60);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (67, 'Experiential 7', 'expr', 'Expr7', 0, 60);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (68, 'Experiential 8', 'expr', 'Expr8', 0, 60);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (69, 'Experiential 9', 'expr', 'Expr9', 0, 60);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (70, 'Research', 'res', 'Res  ', 1, null);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (71, 'Research 1', 'res', 'Res 1', 0, 70);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (72, 'Research 2', 'res', 'Res 2', 0, 70);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (73, 'Research 3', 'res', 'Res 3', 0, 70);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (74, 'Research 4', 'res', 'Res 4', 0, 70);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (75, 'Research 5', 'res', 'Res 5', 0, 70);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (76, 'Research 6', 'res', 'Res 6', 0, 70);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (77, 'Research 7', 'res', 'Res 7', 0, 70);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (78, 'Research 8', 'res', 'Res 8', 0, 70);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (79, 'Research 9', 'res', 'Res 9', 0, 70);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (80, 'Individual Study', 'ind', 'Ind  ', 1, null);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (81, 'Individual Study 1', 'ind', 'Ind 1', 0, 80);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (82, 'Individual Study 2', 'ind', 'Ind 2', 0, 80);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (83, 'Individual Study 3', 'ind', 'Ind 3', 0, 80);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (84, 'Individual Study 4', 'ind', 'Ind 4', 0, 80);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (85, 'Individual Study 5', 'ind', 'Ind 5', 0, 80);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (86, 'Individual Study 6', 'ind', 'Ind 6', 0, 80);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (87, 'Individual Study 7', 'ind', 'Ind 7', 0, 80);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (88, 'Individual Study 8', 'ind', 'Ind 8', 0, 80);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (89, 'Individual Study 9', 'ind', 'Ind 9', 0, 80);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (90, 'Practice Study Observation', 'pso', 'Pso  ', 1, null);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (91, 'Practice Study Observation 1', 'pso', 'Pso 1', 0, 90);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (92, 'Practice Study Observation 2', 'pso', 'Pso 2', 0, 90);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (93, 'Practice Study Observation 3', 'pso', 'Pso 3', 0, 90);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (94, 'Practice Study Observation 4', 'pso', 'Pso 4', 0, 90);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (95, 'Practice Study Observation 5', 'pso', 'Pso 5', 0, 90);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (96, 'Practice Study Observation 6', 'pso', 'Pso 6', 0, 90);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (97, 'Practice Study Observation 7', 'pso', 'Pso 7', 0, 90);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (98, 'Practice Study Observation 8', 'pso', 'Pso 8', 0, 90);
+insert into ITYPE_DESC (ITYPE, DESCRIPTION, SIS_REF, ABBV, BASIC, PARENT)
+values (99, 'Practice Study Observation 9', 'pso', 'Pso 9', 0, 90);
 commit;
 prompt 90 records loaded
 prompt Loading SCHEDULING_SUBPART...

@@ -156,4 +156,30 @@
 			alter table %SCHEMA%.distribution_pref add uid_rolled_fwd_from decimal(20,0) null
 		</mysql>
 	</update>
+	<update version="9" date="27-Nov-2007" comment="ItypeDesc parent">
+		<plsql onFail="next">
+			alter table %SCHEMA%.itype_desc add parent number(2)
+		</plsql>
+		<mysql onFail="next">
+			alter table %SCHEMA%.itype_desc add parent int(2)
+		</mysql>
+		<plsql onFail="next">
+			alter table %SCHEMA%.itype_desc add constraint fk_itype_parent foreign key (parent) references %SCHEMA%.itype_desc(itype)
+		</plsql>
+		<mysql onFail="next">
+			alter table %SCHEMA%.itype_desc add constraint fk_itype_parent foreign key fk_itype_parent (parent) references %SCHEMA%.itype_desc(itype)
+		</mysql>
+		<plsql><![CDATA[
+			update %SCHEMA%.itype_desc x set x.parent=(select max(i.itype) from %SCHEMA%.itype_desc i where i.itype<x.itype and i.basic=1) where x.basic=0
+		]]></plsql>
+		<mysql><![CDATA[
+			create table %SCHEMA%.itype_dummy as (select i.itype, max(x.itype) as parent from %SCHEMA%.itype_desc i, %SCHEMA%.itype_desc x where i.basic=0 and x.basic=1 and x.itype<i.itype group by i.itype)
+		]]></mysql>
+		<mysql>
+			update %SCHEMA%.itype_desc i set i.parent=(select x.parent from %SCHEMA%.itype_dummy x where x.itype=i.itype)
+		</mysql>
+		<mysql>
+			drop table %SCHEMA%.itype_dummy
+		</mysql>
+	</update>
 </dbupdate>
