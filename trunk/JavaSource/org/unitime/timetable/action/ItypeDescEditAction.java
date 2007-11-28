@@ -37,6 +37,7 @@ import org.unitime.timetable.model.ItypeDesc;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.ItypeDescDAO;
+import org.unitime.timetable.util.LookupTables;
 
 
 /** 
@@ -139,6 +140,8 @@ public class ItypeDescEditAction extends Action {
 
             return mapping.findForward("back");
         }
+        
+        LookupTables.setupItypes(request, true);
         
         return mapping.findForward("Save".equals(myForm.getOp())?"add":"edit");
 		} catch (Exception e) {
