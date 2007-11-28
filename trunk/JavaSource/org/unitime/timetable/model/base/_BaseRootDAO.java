@@ -35,6 +35,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.criterion.Expression;
 import org.hibernate.criterion.Order;
+import org.unitime.commons.hibernate.util.DatabaseUpdate;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 
 
@@ -73,6 +74,7 @@ public abstract class _BaseRootDAO {
         HibernateUtil.configureHibernateFromRootDAO(configFileName, configuration);
         org.unitime.timetable.model.dao._RootDAO.setSessionFactory(configuration.buildSessionFactory());
         org.unitime.timetable.model.dao._RootDAO.configuration = configuration;
+        DatabaseUpdate.update();
 	}
 
 	/**

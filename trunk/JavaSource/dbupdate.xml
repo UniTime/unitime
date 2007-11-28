@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- 
+ * UniTime 3.0 (University Course Timetabling & Student Sectioning Application)
+ * Copyright (C) 2007, UniTime.org
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ -->
+
+<dbupdate>
+	<dialect type="mysql">org.hibernate.dialect.MySQLInnoDBDialect</dialect>
+	<dialect type="plsql">org.hibernate.dialect.OracleDialect</dialect>
+	<update version="1" date="11-Jun-2007" comment="Package Renames, Column Renames">
+		<sql>
+			update %SCHEMA%.solver_info_def set implementation=replace(implementation,'edu.purdue.smas','org.unitime') where implementation like 'edu.purdue.smas%'
+		</sql>
+		<sql>
+			update %SCHEMA%.solver_parameter_def set default_value=replace(default_value,'edu.purdue.smas','org.unitime') where default_value like 'edu.purdue.smas%'
+		</sql>
+		<sql>
+			update %SCHEMA%.change_log set obj_type=replace(obj_type,'edu.purdue.smas','org.unitime') where obj_type like 'edu.purdue.smas%'
+		</sql>
+		<plsql onFail="done">
+			alter table %SCHEMA%.tmtbl_mgr_to_roles rename column primary to is_primary
+		</plsql>
+		<mysql onFail="done">
+			alter table %SCHEMA%.tmtbl_mgr_to_roles change column `primary` is_primary int(1) null
+		</mysql>
+	</update>
+	<update version="2" date="13-Jul-2007" comment="Room group feature abbv">
+		<plsql onFail="next">
+			alter table %SCHEMA%.room_feature add abbv varchar2(20)
+		</plsql>
+		<plsql onFail="next">
+			alter table %SCHEMA%.room_group add abbv varchar2(20)
+		</plsql>
+		<mysql onFail="next">
+			alter table %SCHEMA%.room_feature add abbv varchar(20) binary null
+		</mysql>
+		<mysql onFail="next">
+			alter table %SCHEMA%.room_group add abbv varchar(20) binary null
+		</mysql>
+	</update>
+	<update version="3" date="13-Jul-2007" comment="On fly student sectioning">
+		<sql onEqual="done" value="1">
+			select count(*) from %SCHEMA%.solver_parameter_group g where g.name='OnFlySectioning'
+		</sql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_group (uniqueid, name, description, ord) values 
+			(%SCHEMA%.solver_parameter_group_seq.nextval, 'OnFlySectioning', 'On Fly Student Sectioning', -1)
+		</plsql>
+		<plsql>
+			update %SCHEMA%.solver_parameter_group g set g.ord = ( select max(x.ord)+1 from %SCHEMA%.solver_parameter_group x )
+			where g.name='OnFlySectioning'
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+			'OnFlySectioning.Enabled' as name, 'false' as default_value, 
+			'Enable on fly sectioning (if enabled, students will be resectioned after each iteration)' as description,
+			'boolean' as type, 0 as ord, 1 as visible, 
+			uniqueid as %SCHEMA%.solver_param_group_id from %SCHEMA%.solver_parameter_group where name='OnFlySectioning')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+			'OnFlySectioning.Recursive' as name, 'true' as default_value,
+			'Recursively resection lectures affected by a student swap' as description,
+			'boolean' as type, 1 as ord, 1 as visible,
+			uniqueid as %SCHEMA%.solver_param_group_id from %SCHEMA%.solver_parameter_group where name='OnFlySectioning')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+			'OnFlySectioning.ConfigAsWell' as name, 'false' as default_value,
+			'Resection students between configurations as well' as description,
+			'boolean' as type, 2 as ord, 1 as visible,
+			uniqueid as %SCHEMA%.solver_param_group_id from %SCHEMA%.solver_parameter_group where name='OnFlySectioning')
+		</plsql>
+		<mysql into="ID">
+			select next_hi from %SCHEMA%.hibernate_unique_key			
+		</mysql>
+		<mysql into="ORD">
+			select max(ord)+1 from %SCHEMA%.solver_parameter_group
+		</mysql>
+		<mysql>
+			insert into %SCHEMA%.solver_parameter_group (uniqueid, name, description, ord) values
+			(%ID%, 'OnFlySectioning', 'On Fly Student Sectioning', %ORD%)
+		</mysql>
+		<mysql>
+			insert into %SCHEMA%.solver_parameter_def
+			(uniqueid, name, default_value, description, type, ord, visible, solver_param_group_id) values
+			(%ID%+1, 'OnFlySectioning.Enabled', 'false', 'Enable on fly sectioning (if enabled, students will be resectioned after each iteration)', 'boolean', 0, 1, %ID%),
+			(%ID%+2, 'OnFlySectioning.Recursive', 'true', 'Recursively resection lectures affected by a student swap', 'boolean', 1, 1, %ID%),
+			(%ID%+3, 'OnFlySectioning.ConfigAsWell', 'false', 'Resection students between configurations as well', 'boolean', 2, 1, %ID%) 
+		</mysql>
+		<mysql>
+			update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+4
+		</mysql>
+	</update>
+	<update version="4" date="22-Aug-2007" comment="Timetable Grid Fix">
+		<sql>
+			update %SCHEMA%.user_data set value='-100' where name='TimetableGridTable.week' and value='-1'
+		</sql>
+	</update>
+	<update version="5" date="04-Sep-2007" comment="Application config name size">
+		<plsql onFail="done">
+			alter table %SCHEMA%.application_config modify name varchar2(512)
+		</plsql>
+		<mysql onFail="done">
+			alter table %SCHEMA%.application_config modify name varchar(512) binary not null
+		</mysql>
+	</update>
+	<update version="6" date="15-Oct-2007" comment="Lastlike course demand permid">
+		<mysql onFail="next">
+			create index idx_ll_course_demand_permid on %SCHEMA%.lastlike_course_demand(course_perm_id)
+		</mysql>
+		<mysql onFail="next">
+			alter table %SCHEMA%.course_offering modify perm_id varchar(20) binary null
+		</mysql>
+		<plsql onFail="next">
+			create index %SCHEMA%.idx_ll_course_demand_permid on %SCHEMA%.lastlike_course_demand(course_perm_id)
+		</plsql>
+		<plsql onFail="next">
+			alter table %SCHEMA%.course_offering drop constraint nn_course_offering_perm_id
+		</plsql>
+		<sql>
+			update %SCHEMA%.lastlike_course_demand set course_perm_id = null where course_perm_id = '-1'
+		</sql>
+		<sql>
+			update %SCHEMA%.course_offering set perm_id = null where perm_id = '-1'
+		</sql>
+	</update>
+	<update version="7" date="16-Oct-2007" comment="IType Abbreviation">
+		<sql onFail="next">
+			update %SCHEMA%.itype_desc set abbv=smas_abbv where trim(abbv) is null or trim(abbv) = ''
+		</sql>
+		<sql onFail="next">
+			alter table %SCHEMA%.itype_desc drop column smas_abbv
+		</sql>
+	</update>
+	<update version="8" date="25-Oct-2007" comment="Distribution Pref add column">
+		<plsql onFail="next">
+			alter table %SCHEMA%.distribution_pref add uid_rolled_fwd_from number(20)
+		</plsql>
+		<mysql onFail="next">
+			alter table %SCHEMA%.distribution_pref add uid_rolled_fwd_from decimal(20,0) null
+		</mysql>
+	</update>
+</dbupdate>

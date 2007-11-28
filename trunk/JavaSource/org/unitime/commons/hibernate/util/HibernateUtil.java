@@ -223,12 +223,15 @@ public class HibernateUtil {
         sSessionFactory = cfg.buildSessionFactory();
         sLog.debug("  -- session factory created");
         (new _BaseRootDAO() {
-    		void setSF(SessionFactory fact) {
+    		void setSF(SessionFactory fact, Configuration cfg) {
     			_BaseRootDAO.sessionFactory = fact;
+    			_BaseRootDAO.configuration = cfg;
     		}
     		protected Class getReferenceClass() { return null; }
-    	}).setSF(sSessionFactory);
+    	}).setSF(sSessionFactory, cfg);
         sLog.debug("  -- session factory set to _BaseRootDAO");
+        
+        DatabaseUpdate.update();
     }
     
     public static void closeHibernate() {
