@@ -130,6 +130,17 @@
 				<line>Added export to PDF work-sheets (button Worksheet PDF).</line>
 			</description>
 		</item>
+		<item>
+			<name>Instructional Types</name>
+			<description>
+				<line>Added parent column (to be used on non-basic itypes to point to the appropriate basic itype, e.g., parent of Lecture 2 is Lecture).</line>
+				<line>Instructional Types page: display parent itype</line>
+				<line>Add Instructional Type, Edit Instructional Type pages: added ability to select/change parent itype</line>
+				<line>Classes, Class Assignments pages: when classes are filtered on (basic) itype, classes with non-basic itypes that points to the selected itype are visible as well
+					<line>For instance, if filtered on Lecture, classes with itypes Lecture 1, Lecture 2, etc. will be present as well.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>SOLVER</title>
@@ -158,6 +169,21 @@
 					</line>
 				</line> 
 			</description>
+		</item>
+	</category>
+	<category>
+		<title>OTHER</title>
+		<item>
+			<name>Automatic Database Update</name>
+			<description>
+				<line>Added ability to automatically update the database during deployment of UniTime application.
+					<line>Current database version is stored in application config, key tmtbl.db.version</line>
+					<line>Updates are stored in dbupdate.xml resource file.
+						<line>Platform-dependent queries can be distinguished based on the used dialect.</line>
+						<line>All existing updates (since the first release of UniTime 3.0) were added, both for MySQL and Oracle.</line>
+					</line>
+				</line> 
+			</description> 
 		</item>
 	</category>
 </release>
