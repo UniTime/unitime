@@ -77,6 +77,20 @@ public class LastLikeCourseDemandImport extends BaseImport {
 	            loadCourses(element, student, session);
 	            flushIfNeeded(true);
 	        }
+	        
+	        flush(true);
+	        
+            getHibSession().createQuery("update CourseOffering c set c.demand="+
+                    "(select count(distinct d.student) from LastLikeCourseDemand d where "+
+                    "(c.subjectArea=d.subjectArea and c.courseNbr=d.courseNbr)) where "+
+                    "c.permId is null and c.subjectArea.uniqueId in (select sa.uniqueId from SubjectArea sa where sa.session.uniqueId=:sessionId)").
+                    setLong("sessionId", session.getUniqueId()).executeUpdate();
+
+            getHibSession().createQuery("update CourseOffering c set c.demand="+
+	                "(select count(distinct d.student) from LastLikeCourseDemand d where "+
+	                "d.student.session=c.subjectArea.session and c.permId=d.coursePermId) where "+
+	                "c.permId is not null and c.subjectArea.uniqueId in (select sa.uniqueId from SubjectArea sa where sa.session.uniqueId=:sessionId)").
+	                setLong("sessionId", session.getUniqueId()).executeUpdate();
             
             commitTransaction();
 		} catch (Exception e) {
