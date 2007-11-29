@@ -182,4 +182,29 @@
 			drop table %SCHEMA%.itype_dummy
 		</mysql>
 	</update>
+	<update version="10" date="29-Nov-2007" comment="Course offering cache number of last-like course demands">
+		<mysql>
+			alter table %SCHEMA%.course_offering add lastlike_demand bigint(10) not null default 0
+		</mysql>
+		<plsql>
+			alter table %SCHEMA%.course_offering add lastlike_demand number(10) default 0
+		</plsql>
+		<plsql>
+			alter table %SCHEMA%.course_offering add constraint nn_course_offering_ll_demand check (lastlike_demand is not null)
+		</plsql>
+		<sql>
+			update %SCHEMA%.course_offering co set co.lastlike_demand = (
+				select count(distinct cod.student_id) from %SCHEMA%.lastlike_course_demand cod
+				where co.subject_area_id=cod.subject_area_id and co.course_nbr=cod.course_nbr
+			) where co.perm_id is null
+		</sql>
+		<sql>
+			update %SCHEMA%.course_offering co
+			set co.lastlike_demand = (
+				select count(distinct cod.student_id) from %SCHEMA%.lastlike_course_demand cod, %SCHEMA%.subject_area sa, %SCHEMA%.student s
+				where co.perm_id=cod.course_perm_id and co.subject_area_id=sa.uniqueid and
+				cod.student_id=s.uniqueid and s.session_id=sa.session_id
+			) where co.perm_id is not null
+		</sql>
+	</update>
 </dbupdate>

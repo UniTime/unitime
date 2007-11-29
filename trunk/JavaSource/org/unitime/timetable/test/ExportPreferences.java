@@ -149,6 +149,7 @@ public class ExportPreferences {
 			x.addAttribute("subjectArea",co.getSubjectAreaAbbv());
 			x.addAttribute("courseNbr",co.getCourseNbr());
 			x.addAttribute("projectedDemand",co.getProjectedDemand().toString());
+			x.addAttribute("demand",co.getDemand().toString());
 			x.addAttribute("isControl",co.getIsControl().toString());
 			if (co.getPermId()!=null)
 			    x.addAttribute("permId",co.getPermId());

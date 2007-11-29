@@ -185,6 +185,15 @@
 				</line> 
 			</description> 
 		</item>
+		<item>
+			<name>Last-like course demands</name>
+			<description>
+				<line>
+					In order to improve loading speed of Instructional Offerings page on MySQL, 
+					number of last-like student enrollments is pre-computed on each course.  
+				</line> 
+			</description> 
+		</item>
 	</category>
 </release>
 
