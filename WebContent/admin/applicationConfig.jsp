@@ -68,7 +68,7 @@
 		</TR>
 
 		<TR>
-			<TD valign="top">Key:</TD>
+			<TD valign="top">Name:</TD>
 			<TD valign="top">
 				<logic:equal name="applicationConfigForm" property="op" value="edit">
 					<bean:write name="applicationConfigForm" property="key"/>
@@ -148,7 +148,7 @@
 		Vector props = new Vector (ApplicationProperties.getProperties().keySet()); 
 		Collections.sort(props);
 		Pattern pattern = Pattern.compile(ApplicationProperties.getProperty("tmtbl.appConfig.pattern","^tmtbl\\..*$"));
-		WebTable table = new WebTable(2, "Application Properties", "applicationConfig.do?ord2=%%", new String[] {"Key","Value"}, new String[] {"left","left"}, null);
+		WebTable table = new WebTable(2, "Application Properties", "applicationConfig.do?ord2=%%", new String[] {"Name","Value"}, new String[] {"left","left"}, null);
 		table.enableHR("#EFEFEF");
 		for (Object prop: props) {
 			if (!pattern.matcher(prop.toString()).matches()) continue;

@@ -90,13 +90,13 @@ public class ApplicationConfigAction extends Action {
         if (op.equals("edit")) {
             String id = request.getParameter("id");
             if(id==null || id.trim().length()==0) {
-                errors.add("key", new ActionMessage("errors.invalid", "Key : " + id));
+                errors.add("key", new ActionMessage("errors.invalid", "Name : " + id));
                 saveErrors(request, errors);
             } else {
                 ApplicationConfigDAO sdao = new ApplicationConfigDAO();
                 ApplicationConfig s = sdao.get(id);
                 if(s==null) {
-                    errors.add("key", new ActionMessage("errors.invalid", "Key : " + id));
+                    errors.add("key", new ActionMessage("errors.invalid", "Name : " + id));
                     saveErrors(request, errors);
                 } else {
                     frm.setKey(s.getKey());
@@ -170,7 +170,7 @@ public class ApplicationConfigAction extends Action {
                     ApplicationConfigDAO sdao = new ApplicationConfigDAO();
                     
                     if (sdao.get(frm.getKey())!=null)
-                        throw new Exception("A property with this key already exists.");
+                        throw new Exception("A property with this name already exists.");
                     
                     ApplicationConfig s = new ApplicationConfig();
                     s.setKey(frm.getKey());
@@ -213,7 +213,7 @@ public class ApplicationConfigAction extends Action {
 		// Create web table instance 
         WebTable webTable = new WebTable( 3,
 			    null, "applicationConfig.do?ord=%%",
-			    new String[] {"Key", "Value", "Description"},
+			    new String[] {"Name", "Value", "Description"},
 			    new String[] {"left", "left", "left"},
 			    null );
         webTable.enableHR("#EFEFEF");
