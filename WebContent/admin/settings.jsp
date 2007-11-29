@@ -56,7 +56,7 @@
 		</TR>
 
 		<TR>
-			<TD>Key:</TD>
+			<TD>Reference:</TD>
 			<TD>
 				<html:text property="key" size="30" maxlength="30"/>
 				&nbsp;<html:errors property="key"/>
