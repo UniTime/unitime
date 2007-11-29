@@ -171,7 +171,7 @@ public class SettingsAction extends Action {
 		// Create web table instance 
         WebTable webTable = new WebTable( 4,
 			    null, "settings.do?ord=%%",
-			    new String[] {"Key", "Description", "Default Value", "Allowed Values"},
+			    new String[] {"Reference", "Description", "Default Value", "Allowed Values"},
 			    new String[] {"left", "left", "left", "left"},
 			    null );
 
