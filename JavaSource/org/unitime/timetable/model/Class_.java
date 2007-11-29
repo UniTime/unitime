@@ -948,7 +948,7 @@ public class Class_ extends BaseClass_ {
         }
 
 
-        float nrLastLikeStudents = (float)offering.getInstructionalOffering().getDemand().intValue();
+        float nrLastLikeStudents = (float)(offering.getInstructionalOffering().getDemand()==null?0:offering.getInstructionalOffering().getDemand().intValue());
         float nrLastLikeStudentsThisOffering = (float)offering.getDemand().intValue();
         boolean canUseLastLikeData = (solutionId!=null && nrLastLikeStudentsThisOffering>0);
         if (canUseLastLikeData) {

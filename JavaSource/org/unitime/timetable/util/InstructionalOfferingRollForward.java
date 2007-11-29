@@ -397,6 +397,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 			toCourseOffering.setIsControl(fromCourseOffering.isIsControl());
 			toCourseOffering.setExternalUniqueId(fromCourseOffering.getExternalUniqueId());
 			toCourseOffering.setNbrExpectedStudents(fromCourseOffering.getNbrExpectedStudents());
+			toCourseOffering.setDemand(fromCourseOffering.getDemand());
 			toCourseOffering.setPermId(fromCourseOffering.getPermId());
 			toCourseOffering.setScheduleBookNote(fromCourseOffering.getScheduleBookNote());
 			toCourseOffering.setTitle(fromCourseOffering.getTitle());
@@ -456,6 +457,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		toCourseOffering.setPermId(courseCatalogEntry.getPermanentId());
 		toCourseOffering.setTitle(courseCatalogEntry.getTitle());
 		toCourseOffering.setNbrExpectedStudents(new Integer(0));
+		toCourseOffering.setDemand(new Integer(0));
 		return(toCourseOffering);
 	}
 	
@@ -480,6 +482,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 				toCourseOffering.setScheduleBookNote(fromCourseOffering.getScheduleBookNote());
 				toCourseOffering.setUniqueIdRolledForwardFrom(fromCourseOffering.getUniqueId());
 				toCourseOffering.setNbrExpectedStudents(fromCourseOffering.getNbrExpectedStudents());
+				toCourseOffering.setDemand(fromCourseOffering.getDemand());
 				toCourseOffering.setInstructionalOffering(toInstructionalOffering);
 				toInstructionalOffering.addTocourseOfferings(toCourseOffering);
 			}

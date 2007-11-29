@@ -141,7 +141,7 @@ DELETE FROM `timetable`.`waitlist`;
 INSERT INTO `timetable`.`application_config`(`name`, `value`, `description`)
 VALUES ('tmtbl.system_message', 'Welcome to Woebegon College test suite.', 'Message displayed to users when they first log in to Timetabling'),
   ('tmtbl.access_level', 'all', 'Access Levels: all | {dept code}(:{dept code})*'),
-  ('tmtbl.db.version','9','Timetabling database version (please do not change -- this key is used by automatic database update)');
+  ('tmtbl.db.version','10','Timetabling database version (please do not change -- this key is used by automatic database update)');
 
 INSERT INTO `timetable`.`assigned_instructors`(`assignment_id`, `instructor_id`, `last_modified_time`)
 VALUES (142137, 226242, NULL),
@@ -5388,5 +5388,19 @@ VALUES ('admin', 'ISMvKXpXpadDiUoOSoAfww==', '1'),
 
 -- Re-enable foreign key checks
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+
+update `timetable`.`course_offering` co 
+	set co.`lastlike_demand` = (
+		select count(distinct cod.`student_id`) 
+		from `timetable`.`lastlike_course_demand` cod 
+		where co.`subject_area_id`=cod.`subject_area_id` and co.`course_nbr`=cod.`course_nbr`
+	) where co.`perm_id` is null;
+
+update `timetable`.`course_offering` co 
+	set co.`lastlike_demand` = (
+		select count(distinct cod.`student_id`) 
+		from `timetable`.`lastlike_course_demand` cod, `timetable`.`subject_area` sa, `timetable`.`student` s
+		where co.`perm_id`=cod.`course_perm_id` and co.`subject_area_id`=sa.`uniqueid` and cod.`student_id`=s.`uniqueid` and s.`session_id`=sa.`session_id`
+	) where co.`perm_id` is not null;
 
 -- End of script

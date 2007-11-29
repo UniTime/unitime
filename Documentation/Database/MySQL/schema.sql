@@ -495,6 +495,7 @@ CREATE TABLE `timetable`.`course_offering` (
   `external_uid` VARCHAR(40) BINARY NULL,
   `last_modified_time` DATETIME NULL,
   `uid_rolled_fwd_from` DECIMAL(20, 0) NULL,
+  `lastlike_demand` BIGINT(10) NOT NULL DEFAULT 0,
   PRIMARY KEY (`uniqueid`),
   INDEX `idx_course_offering_control` (`is_control`),
   INDEX `idx_course_offering_demd_offr` (`demand_offering_id`),

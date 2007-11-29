@@ -197,6 +197,7 @@ public class CourseOffering extends BaseCourseOffering {
 		    co.setSubjectArea(subjArea);
 		    co.setCourseNbr(courseNbr);
 		    co.setProjectedDemand(new Integer(0));
+            co.setDemand(new Integer(0));
 		    co.setNbrExpectedStudents(new Integer(0));
 		    co.setIsControl(new Boolean(true));
 		    co.setPermId(null);

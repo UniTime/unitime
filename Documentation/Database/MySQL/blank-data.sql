@@ -144,7 +144,7 @@ DELETE FROM `timetable`.`waitlist`;
 INSERT INTO `timetable`.`application_config`(`name`, `value`, `description`)
 VALUES ('tmtbl.system_message', '', 'Message displayed to users when they first log in to Timetabling'),
   ('tmtbl.access_level', 'all', 'Access Levels: all | {dept code}(:{dept code})*'),
-  ('tmtbl.db.version','9','Timetabling database version (please do not change -- this key is used by automatic database update)');
+  ('tmtbl.db.version','10','Timetabling database version (please do not change -- this key is used by automatic database update)');
 
 
 INSERT INTO `timetable`.`course_credit_type`(`uniqueid`, `reference`, `label`, `abbreviation`, `legacy_crse_master_code`)
