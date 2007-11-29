@@ -656,6 +656,7 @@ public class ImportPreferences {
 					co.setCourseNbr(x.attributeValue("courseNbr"));
 				}
 				co.setProjectedDemand(Integer.valueOf(x.attributeValue("projectedDemand")));
+				co.setDemand(Integer.valueOf(x.attributeValue("demand","0")));
 				co.setIsControl(new Boolean(x.attributeValue("isControl")));
 				co.setPermId(x.attributeValue("permId"));
 				courseOfferings.add(co);

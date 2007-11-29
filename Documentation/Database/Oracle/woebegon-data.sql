@@ -576,7 +576,7 @@ values ('tmtbl.system_message', 'Welcome to Woebegon College test suite.', 'Mess
 insert into APPLICATION_CONFIG (NAME, VALUE, DESCRIPTION)
 values ('tmtbl.access_level', 'all', 'Access Levels: all | {dept code}(:{dept code})*');
 insert into APPLICATION_CONFIG (NAME,VALUE,DESCRIPTION)
-values ('tmtbl.db.version','9','Timetabling database version (please do not change -- this key is used by automatic database update)'); 
+values ('tmtbl.db.version','10','Timetabling database version (please do not change -- this key is used by automatic database update)'); 
 commit;
 prompt 3 records loaded
 prompt Loading OFFR_CONSENT_TYPE...
@@ -10541,5 +10541,18 @@ insert into SOLVER_PARAMETER
 insert into SETTINGS (UNIQUEID, NAME, DEFAULT_VALUE, ALLOWED_VALUES, DESCRIPTION)
 	values (SETTINGS_SEQ.nextval, 'roomFeaturesInOneColumn', 'yes', 'yes,no', 'Display Room Features In One Column');
 	
+update course_offering co 
+	set co.lastlike_demand = (
+		select count(distinct cod.student_id) 
+		from lastlike_course_demand cod 
+		where co.subject_area_id=cod.subject_area_id and co.course_nbr=cod.course_nbr
+	) where co.perm_id is null;
+
+update course_offering co 
+	set co.lastlike_demand = (
+		select count(distinct cod.student_id) 
+		from lastlike_course_demand cod, subject_area sa, student s
+		where co.perm_id=cod.course_perm_id and co.subject_area_id=sa.uniqueid and cod.student_id=s.uniqueid and s.session_id=sa.session_id
+	) where co.perm_id is not null;
 
 commit;

@@ -72,12 +72,10 @@
 
 		<property
 		    name="demand"
+		    column="LASTLIKE_DEMAND"
 		    type="java.lang.Integer"
-		    formula=" (select count(distinct cod.student_id) from 
-		    	%SCHEMA%.LASTLIKE_COURSE_DEMAND cod, %SCHEMA%.STUDENT s, %SCHEMA%.SUBJECT_AREA sa where
-		    	sa.uniqueid = subject_area_id and sa.session_id=s.session_id and cod.student_id=s.uniqueid and  
-		    	((perm_id is null and cod.subject_area_id = subject_area_id and cod.course_nbr = course_nbr) or 
-		    	(perm_id is not null and cod.course_perm_id = perm_id))) "
+			length="10"
+			not-null="true"
 	    />
 
 		<property
