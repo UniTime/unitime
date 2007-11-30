@@ -26,7 +26,7 @@
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <tiles:importAttribute />
 
-<html:form action="/datePatternEdit" focus="name">
+<html:form action="/datePatternEdit">
 
 <logic:notEqual name="datePatternEditForm" property="op" value="List">
 	<html:hidden property="uniqueId"/><html:errors property="uniqueId"/>

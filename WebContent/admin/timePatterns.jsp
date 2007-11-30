@@ -27,7 +27,7 @@
 
 <tiles:importAttribute />
 
-<html:form action="/timePatternEdit" focus="name">
+<html:form action="/timePatternEdit">
 <html:hidden property="uniqueId"/><html:errors property="uniqueId"/>
 <html:hidden property="editable"/><html:errors property="editable"/>
 
