@@ -91,8 +91,8 @@
 					<logic:notEqual name="solverSettingsForm" property="op" value="Save">
 						<html:submit property="op" value="Update" accesskey="U" title="Update Solver Parameter (Alt+U)"/>
 						<html:submit property="op" value="Delete" onclick="return confirmDelete();" accesskey="D" title="Delete Solver Parameter (Alt+D)"/> 
+						<html:submit property="op" value="Export" title="Export to Property File (Alt+E)" accesskey="E"/> 
 					</logic:notEqual>
-					<html:submit property="op" value="Export" title="Export to Property File (Alt+E)" accesskey="E"/> 
 					<html:submit property="op" value="Back" title="Return to Solver Parameters (Alt+B)" accesskey="B"/> 
 				</tt:section-header>
 			</TD>
@@ -270,8 +270,8 @@
 				<logic:notEqual name="solverSettingsForm" property="op" value="Save">
 					<html:submit property="op" value="Update" accesskey="U" title="Update Solver Parameter (Alt+U)"/>
 					<html:submit property="op" value="Delete" onclick="return confirmDelete();" accesskey="D" title="Delete Solver Parameter (Alt+D)"/> 
+					<html:submit property="op" value="Export" title="Export to Property File (Alt+E)" accesskey="E"/> 
 				</logic:notEqual>
-				<html:submit property="op" value="Export" title="Export to Property File (Alt+E)" accesskey="E"/> 
 				<html:submit property="op" value="Back" title="Return to Solver Parameters (Alt+B)" accesskey="B"/> 
 			</TD>
 		</TR>
