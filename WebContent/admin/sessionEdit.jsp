@@ -88,7 +88,9 @@
 						</html:submit>
 					</logic:notEqual>
 				
-					<html:cancel styleClass="btn" property="doit" accesskey="C" titleKey="title.cancelAddSession" />
+					<html:submit styleClass="btn" property="doit" accesskey="B" titleKey="title.cancelSessionEdit" >
+						<bean:message key="button.cancelSessionEdit" />
+					</html:submit>
 				</tt:section-header>			
 			</TD>
 		</TR>
@@ -218,7 +220,9 @@
 							</html:submit>
 						</logic:notEqual>
 					
-						<html:cancel styleClass="btn" property="doit" accesskey="C" titleKey="title.cancelAddSession" />
+					<html:submit styleClass="btn" property="doit" accesskey="B" titleKey="title.cancelSessionEdit" >
+						<bean:message key="button.cancelSessionEdit" />
+					</html:submit>
 					</TD>
 				</TR>
 				
