@@ -45,6 +45,7 @@ import org.unitime.timetable.model.VariableFixedCreditUnitConfig;
 import org.unitime.timetable.model.VariableRangeCreditUnitConfig;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
+import org.unitime.timetable.model.dao.ItypeDescDAO;
 
 /**
  * 
@@ -67,28 +68,29 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 				rollForwardInstructionalOffering(co.getInstructionalOffering(), fromSession, toSession);
 			}
 		}
-//		if (sessionHasCourseCatalog(toSession)){
-//			query = "select cc2 from CourseCatalog cc2";
-//			query += " where cc2.session.uniqueId=:sessionId";
-//			query += "  and cc2.uniqueId not in ";
-//			query += " (select distinct cc.uniqueId from CourseCatalog cc, CourseOffering co";
-//			query += "  where co.subjectArea.session.uniqueId=:sessionId";
-//			query += "  and co.subjectArea.subjectAreaAbbreviation=:subjectAbbv";
-//			query += "  and cc.session.uniqueId=:sessionId";
-//			query += "  and cc.subject=:subjectAbbv";
-//			query += "  and cc.courseNumber = co.courseNbr)";
-//			l = coDao.getQuery(query)
-//				.setString("subjectAbbv", subjectAreaAbbreviation)
-//				.setLong("sessionId", toSession.getUniqueId())
-//				.list();
-//			if (l != null){
-//				CourseCatalog cc = null;
-//				for (Iterator ccIt = l.iterator(); ccIt.hasNext();){
-//					cc = (CourseCatalog) ccIt.next();
-//					addInstructionalOffering(cc, toSession);
-//				}
-//			}
-//		}
+		if (sessionHasCourseCatalog(toSession)){
+		    String query2 = "select cc2 from CourseCatalog cc2";
+			query2 += " where cc2.session.uniqueId=:sessionId";
+			query2 += "  and cc2.subject = :subjectAbbv";
+			query2 += "  and cc2.uniqueId not in ";
+			query2 += " (select distinct cc.uniqueId from CourseCatalog cc, CourseOffering co";
+			query2 += "  where co.subjectArea.session.uniqueId=:sessionId";
+			query2 += "  and co.subjectArea.subjectAreaAbbreviation=:subjectAbbv";
+			query2 += "  and cc.session.uniqueId=:sessionId";
+			query2 += "  and cc.subject=:subjectAbbv";
+			query2 += "  and cc.courseNumber = co.courseNbr)";
+		    List l2 = coDao.getQuery(query2)
+				.setString("subjectAbbv", subjectAreaAbbreviation)
+				.setLong("sessionId", toSession.getUniqueId())
+				.list();
+			if (l2 != null){
+				CourseCatalog cc = null;
+				for (Iterator ccIt = l2.iterator(); ccIt.hasNext();){
+					cc = (CourseCatalog) ccIt.next();
+					addInstructionalOffering(cc, toSession);
+				}
+			}
+		}
 		coDao.getSession().clear();
 	}
 	
@@ -97,7 +99,13 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		if (instructionalOffering != null){
 			CourseOffering courseOffering = createToCourseOfferingFromCourseCatalog(courseCatalogEntry, toSession);
 			courseOffering.setInstructionalOffering(instructionalOffering);
+			instructionalOffering.setNotOffered(new Boolean(true));
 			instructionalOffering.addTocourseOfferings(courseOffering);
+			InstrOfferingConfig instrOffrConfig = createToInstrOfferingConfigFromCourseCatalog(courseCatalogEntry, toSession);
+			if (instrOffrConfig != null){
+				instructionalOffering.addToinstrOfferingConfigs(instrOffrConfig);
+				instrOffrConfig.setInstructionalOffering(instructionalOffering);
+			}
 			if (instructionalOffering.getInstrOfferingPermId() == null){
 				instructionalOffering.generateInstrOfferingPermId();
 			}
@@ -152,13 +160,17 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 					toInstrOffrConfig.setUniqueIdRolledForwardFrom(fromInstrOffrConfig.getUniqueId());
 					toInstructionalOffering.addToinstrOfferingConfigs(toInstrOffrConfig);
 					hibSession.saveOrUpdate(toInstrOffrConfig);
-					hibSession.saveOrUpdate(toInstructionalOffering);
+					hibSession.update(toInstructionalOffering);
 					rollForwardSchedSubpartsForAConfig(fromInstrOffrConfig, toInstrOffrConfig, hibSession, toSession);
+					hibSession.update(toInstructionalOffering);
 				}
 			}
 			if (trns.isActive()) {
 				trns.commit();
 			}
+			hibSession.flush();
+			hibSession.evict(toInstructionalOffering);
+			hibSession.evict(fromInstructionalOffering);
 		} catch (Exception e){
 			Debug.info(e.getMessage());
 			e.printStackTrace();
@@ -325,9 +337,9 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		rollForwardTimePrefs(fromSubpart, toSubpart, toSession);
 		rollForwardBuildingPrefs(fromSubpart, toSubpart, toSession);
 		rollForwardRoomPrefs(fromSubpart, toSubpart, toSession);
-		rollForwardRoomGroupPrefs(fromSubpart, toSubpart);
-		rollForwardRoomFeaturePrefs(fromSubpart, toSubpart);
-		rollForwardDistributionPrefs(fromSubpart, toSubpart, toSession);
+		rollForwardRoomGroupPrefs(fromSubpart, toSubpart, toSession);
+		rollForwardRoomFeaturePrefs(fromSubpart, toSubpart, toSession);
+		rollForwardDistributionPrefs(fromSubpart, toSubpart, toSession, hibSession);
 		if (fromSubpart.getChildSubparts() != null && fromSubpart.getChildSubparts().size() > 0){
 			SchedulingSubpart childSubpart = null;
 			for(Iterator it = fromSubpart.getChildSubparts().iterator(); it.hasNext();){
@@ -394,7 +406,11 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 			toCourseOffering = new CourseOffering();
 			toCourseOffering.setSubjectArea(fromCourseOffering.getSubjectArea().findSameSubjectAreaInSession(toSession));
 			toCourseOffering.setCourseNbr(fromCourseOffering.getCourseNbr());
-			toCourseOffering.setIsControl(fromCourseOffering.isIsControl());
+			if (fromInstructionalOffering.getCourseOfferings().size() == 1){
+				toCourseOffering.setIsControl(new Boolean(true));
+			} else {
+				toCourseOffering.setIsControl(fromCourseOffering.isIsControl());
+			}
 			toCourseOffering.setExternalUniqueId(fromCourseOffering.getExternalUniqueId());
 			toCourseOffering.setNbrExpectedStudents(fromCourseOffering.getNbrExpectedStudents());
 			toCourseOffering.setDemand(fromCourseOffering.getDemand());
@@ -408,7 +424,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		if (toInstructionalOffering.getInstrOfferingPermId() == null){
 			toInstructionalOffering.generateInstrOfferingPermId();
 		}
-		hibSession.save(toInstructionalOffering); 
+		hibSession.saveOrUpdate(toInstructionalOffering); 
 		return(toInstructionalOffering);
 		
 	}
@@ -444,12 +460,55 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		}
 		return(toInstructionalOffering);
 	}
+	
+	private InstrOfferingConfig createToInstrOfferingConfigFromCourseCatalog(CourseCatalog courseCatalogEntry, Session session){
+		if (courseCatalogEntry == null || session == null){
+			return(null);
+		}
+		InstrOfferingConfig toInstrOfferingConfig = new InstrOfferingConfig();
+		toInstrOfferingConfig.setName("1");
+		toInstrOfferingConfig.setLimit(new Integer(0));
+		toInstrOfferingConfig.setUnlimitedEnrollment(new Boolean(false));
+		if(courseCatalogEntry.getSubparts() != null  && !courseCatalogEntry.getSubparts().isEmpty()){
+			CourseSubpartCredit courseSubpartCredit = null;
+			SchedulingSubpart schedSupart = null;
+			ItypeDescDAO itDao = new ItypeDescDAO();
+			for (Iterator cscIt = courseCatalogEntry.getSubparts().iterator(); cscIt.hasNext();){
+				courseSubpartCredit = (CourseSubpartCredit) cscIt.next();
+				schedSupart = new SchedulingSubpart();
+				schedSupart.setInstrOfferingConfig(toInstrOfferingConfig);
+				toInstrOfferingConfig.addToschedulingSubparts(schedSupart);
+				schedSupart.setMinutesPerWk(new Integer(0));
+				schedSupart.setAutoSpreadInTime(new Boolean(true));
+				schedSupart.setStudentAllowOverlap(new Boolean(false));
+				schedSupart.setItype(itDao.get(new Integer(Integer.parseInt(courseSubpartCredit.getSubpartId()))));
+				CourseCreditUnitConfig ccuc = CourseCreditUnitConfig.createCreditUnitConfigOfFormat(courseSubpartCredit.getCreditFormat(), courseSubpartCredit.getCreditType(), courseSubpartCredit.getCreditUnitType(), courseSubpartCredit.getFixedMinimumCredit(), courseSubpartCredit.getMaximumCredit(), courseSubpartCredit.isFractionalCreditAllowed(), new Boolean(false));
+				if (ccuc instanceof ArrangeCreditUnitConfig) {					
+					ArrangeCreditUnitConfig toAcuc = (ArrangeCreditUnitConfig)ccuc;
+					toAcuc.setOwner(schedSupart);
+					schedSupart.addTocreditConfigs(toAcuc);
+				} else if (ccuc instanceof FixedCreditUnitConfig) {
+					FixedCreditUnitConfig toFcuc = (FixedCreditUnitConfig) ccuc;
+					toFcuc.setOwner(schedSupart);
+					schedSupart.addTocreditConfigs(toFcuc);
+				} else if (ccuc instanceof VariableRangeCreditUnitConfig) {
+					VariableRangeCreditUnitConfig toVrcuc = (VariableRangeCreditUnitConfig) ccuc;
+					toVrcuc.setOwner(schedSupart);
+					schedSupart.addTocreditConfigs(toVrcuc);
+				} else if (ccuc instanceof VariableFixedCreditUnitConfig) {
+					VariableFixedCreditUnitConfig toVfcuc = (VariableFixedCreditUnitConfig) ccuc;
+					toVfcuc.setOwner(schedSupart);
+					schedSupart.addTocreditConfigs(toVfcuc);
+				}
+			}
+		}
+		return(toInstrOfferingConfig);
+	}
 	private CourseOffering createToCourseOfferingFromCourseCatalog(CourseCatalog courseCatalogEntry, Session session){
 		if (courseCatalogEntry == null || session == null){
 			return(null);
 		}
 		CourseOffering toCourseOffering = new CourseOffering();
-		toCourseOffering = new CourseOffering();
 		toCourseOffering.setSubjectArea(SubjectArea.findByAbbv(session.getUniqueId(), courseCatalogEntry.getSubject()));
 		toCourseOffering.setCourseNbr(courseCatalogEntry.getCourseNumber());
 		toCourseOffering.setIsControl(new Boolean(true));
@@ -467,15 +526,18 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		}
 		
 		CourseCatalog controllingCourseCatalogEntry = CourseCatalog.findCourseFromPreviousSessionInCatalogForSession(fromInstructionalOffering.getControllingCourseOffering(), toSession);
+
+		if (controllingCourseCatalogEntry == null){
+			return(null);
+		}
 		InstructionalOffering toInstructionalOffering = createToInstructionalOfferingFromCourseCatalog(controllingCourseCatalogEntry, toSession);
-	
-		SubjectArea sa = SubjectArea.findByAbbv(toSession.getUniqueId(), controllingCourseCatalogEntry.getSubject());
+		toInstructionalOffering.setUniqueIdRolledForwardFrom(fromInstructionalOffering.getUniqueId());
 		CourseOffering fromCourseOffering = null;
 		CourseOffering toCourseOffering = null;
 		CourseCatalog courseCatalogEntry = null;
 		for(Iterator coIt = fromInstructionalOffering.getCourseOfferings().iterator(); coIt.hasNext();){
 			fromCourseOffering = (CourseOffering) coIt.next();
-			courseCatalogEntry = CourseCatalog.findCourseFromPreviousSessionInCatalogForSession(fromInstructionalOffering.getControllingCourseOffering(), toSession);
+			courseCatalogEntry = CourseCatalog.findCourseFromPreviousSessionInCatalogForSession(fromCourseOffering, toSession);
 			if (courseCatalogEntry != null){
 				toCourseOffering = createToCourseOfferingFromCourseCatalog(courseCatalogEntry, toSession);
 				toCourseOffering.setIsControl(fromCourseOffering.isIsControl());
@@ -484,13 +546,18 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 				toCourseOffering.setNbrExpectedStudents(fromCourseOffering.getNbrExpectedStudents());
 				toCourseOffering.setDemand(fromCourseOffering.getDemand());
 				toCourseOffering.setInstructionalOffering(toInstructionalOffering);
+				toCourseOffering.setUniqueIdRolledForwardFrom(fromCourseOffering.getUniqueId());
 				toInstructionalOffering.addTocourseOfferings(toCourseOffering);
 			}
 		}
+		if (toInstructionalOffering.getCourseOfferings().size() == 1){
+			toCourseOffering.setIsControl(new Boolean(true));
+		}
+
 		if (toInstructionalOffering.getInstrOfferingPermId() == null){
 			toInstructionalOffering.generateInstrOfferingPermId();
 		}
-		hibSession.save(toInstructionalOffering); 
+		hibSession.saveOrUpdate(toInstructionalOffering); 
 		return(toInstructionalOffering);		
 	}
 
