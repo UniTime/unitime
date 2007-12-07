@@ -83,8 +83,8 @@ public class CourseCatalogImportDAO extends CourseCatalogDAO {
         for ( Iterator it = root.elementIterator(); it.hasNext(); ) {
             Element element = (Element) it.next();
             CourseCatalog catalog = new CourseCatalog();
-            catalog.setApprovalType("");
             catalog.setCourseNumber(element.attributeValue("courseNumber"));
+            catalog.setApprovalType(element.attributeValue("approvalType"));
             catalog.setDesignatorRequired(Boolean.valueOf(element.attributeValue("designatorRequired")));
             catalog.setExternalUniqueId(element.attributeValue("externalId"));
             catalog.setFractionalCreditAllowed(Boolean.valueOf(element.attributeValue("fractionalCreditAllowed")));
