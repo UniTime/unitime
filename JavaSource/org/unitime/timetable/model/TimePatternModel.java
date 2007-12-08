@@ -670,7 +670,7 @@ public class TimePatternModel implements RequiredTimeTableModel {
     }
     
     public void combineMatching(TimePatternModel model) {
-        combineMatching(model, true, sMixAlgMinMax);
+        combineMatching(model, true, sMixAlgFullCover);
     }
     
     /**
