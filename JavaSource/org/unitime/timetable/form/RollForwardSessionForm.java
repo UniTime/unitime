@@ -81,6 +81,8 @@ public class RollForwardSessionForm extends ActionForm {
 	private String[] rollForwardClassPrefsSubjectIds;
 	private Boolean rollForwardClassInstructors;
 	private String[] rollForwardClassInstrSubjectIds;
+	private Boolean addNewCourseOfferings;
+	private String[] addNewCourseOfferingsSubjectIds;
 
 	/** 
 	 * Method validate
@@ -202,7 +204,8 @@ public class RollForwardSessionForm extends ActionForm {
 		rollForwardClassPrefsSubjectIds = new String[0];
 		rollForwardClassInstructors = new Boolean(false);
 		rollForwardClassInstrSubjectIds = new String[0];
-
+		addNewCourseOfferings = new Boolean(false);
+		addNewCourseOfferingsSubjectIds = new String[0];
 	}
 
 	/** 
@@ -472,5 +475,26 @@ public class RollForwardSessionForm extends ActionForm {
 
 	public void setToSessions(Collection toSessions) {
 		this.toSessions = toSessions;
+	}
+
+
+	public Boolean getAddNewCourseOfferings() {
+		return addNewCourseOfferings;
+	}
+
+
+	public void setAddNewCourseOfferings(Boolean addNewCourseOfferings) {
+		this.addNewCourseOfferings = addNewCourseOfferings;
+	}
+
+
+	public String[] getAddNewCourseOfferingsSubjectIds() {
+		return addNewCourseOfferingsSubjectIds;
+	}
+
+
+	public void setAddNewCourseOfferingsSubjectIds(
+			String[] addNewCourseOfferingsSubjectIds) {
+		this.addNewCourseOfferingsSubjectIds = addNewCourseOfferingsSubjectIds;
 	}
 }
