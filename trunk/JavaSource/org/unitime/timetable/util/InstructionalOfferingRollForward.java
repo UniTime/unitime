@@ -68,24 +68,30 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 				rollForwardInstructionalOffering(co.getInstructionalOffering(), fromSession, toSession);
 			}
 		}
+		coDao.getSession().clear();
+	}
+	
+	public void addNewInstructionalOfferingsForASubjectArea(
+			String subjectAreaAbbreviation, Session toSession) {
+		CourseOfferingDAO coDao = new CourseOfferingDAO();
 		if (sessionHasCourseCatalog(toSession)){
-		    String query2 = "select cc2 from CourseCatalog cc2";
-			query2 += " where cc2.session.uniqueId=:sessionId";
-			query2 += "  and cc2.subject = :subjectAbbv";
-			query2 += "  and cc2.uniqueId not in ";
-			query2 += " (select distinct cc.uniqueId from CourseCatalog cc, CourseOffering co";
-			query2 += "  where co.subjectArea.session.uniqueId=:sessionId";
-			query2 += "  and co.subjectArea.subjectAreaAbbreviation=:subjectAbbv";
-			query2 += "  and cc.session.uniqueId=:sessionId";
-			query2 += "  and cc.subject=:subjectAbbv";
-			query2 += "  and cc.courseNumber = co.courseNbr)";
-		    List l2 = coDao.getQuery(query2)
+		    String query = "select cc2 from CourseCatalog cc2";
+			query += " where cc2.session.uniqueId=:sessionId";
+			query += "  and cc2.subject = :subjectAbbv";
+			query += "  and cc2.uniqueId not in ";
+			query += " (select distinct cc.uniqueId from CourseCatalog cc, CourseOffering co";
+			query += "  where co.subjectArea.session.uniqueId=:sessionId";
+			query += "  and co.subjectArea.subjectAreaAbbreviation=:subjectAbbv";
+			query += "  and cc.session.uniqueId=:sessionId";
+			query += "  and cc.subject=:subjectAbbv";
+			query += "  and cc.courseNumber = co.courseNbr)";
+		    List l = coDao.getQuery(query)
 				.setString("subjectAbbv", subjectAreaAbbreviation)
 				.setLong("sessionId", toSession.getUniqueId())
 				.list();
-			if (l2 != null){
+			if (l != null){
 				CourseCatalog cc = null;
-				for (Iterator ccIt = l2.iterator(); ccIt.hasNext();){
+				for (Iterator ccIt = l.iterator(); ccIt.hasNext();){
 					cc = (CourseCatalog) ccIt.next();
 					addInstructionalOffering(cc, toSession);
 				}
@@ -93,8 +99,9 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		}
 		coDao.getSession().clear();
 	}
-	
+
 	private void addInstructionalOffering(CourseCatalog courseCatalogEntry, Session toSession) {
+		Debug.info("subject_area = '" + courseCatalogEntry.getSubject() + "' crs nbr = '" + courseCatalogEntry.getCourseNumber() +"'");
 		InstructionalOffering instructionalOffering = createToInstructionalOfferingFromCourseCatalog(courseCatalogEntry, toSession);
 		if (instructionalOffering != null){
 			CourseOffering courseOffering = createToCourseOfferingFromCourseCatalog(courseCatalogEntry, toSession);
@@ -109,7 +116,10 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 			if (instructionalOffering.getInstrOfferingPermId() == null){
 				instructionalOffering.generateInstrOfferingPermId();
 			}
-			(new InstructionalOfferingDAO()).saveOrUpdate(instructionalOffering); 
+			InstructionalOfferingDAO ioDao = new InstructionalOfferingDAO();
+			ioDao.saveOrUpdate(instructionalOffering);
+			ioDao.getSession().flush();
+			ioDao.getSession().evict(instructionalOffering);
 		}
 	}
 
@@ -132,6 +142,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 	public void rollForwardInstructionalOffering(InstructionalOffering fromInstructionalOffering, Session fromSession, Session toSession){
 		InstructionalOfferingDAO ioDao = new InstructionalOfferingDAO();
 		org.hibernate.Session hibSession = ioDao.getSession();
+		Debug.info("subj = '" + fromInstructionalOffering.getControllingCourseOffering().getSubjectArea().getSubjectAreaAbbreviation() + "' crs nbr = '" + fromInstructionalOffering.getControllingCourseOffering().getCourseNbr() +"'");
 		Transaction trns = null;
 		try {
 			trns = hibSession.beginTransaction();

@@ -1342,6 +1342,25 @@ public class SessionRollForward {
 		}
 	}
 	
+	public void addNewCourseOfferings(ActionMessages errors,
+			RollForwardSessionForm rollForwardSessionForm) {
+		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
+		ArrayList subjects = new ArrayList();
+		SubjectAreaDAO saDao = new SubjectAreaDAO();
+		for (int i = 0; i <	rollForwardSessionForm.getAddNewCourseOfferingsSubjectIds().length; i++){
+			subjects.add(saDao.get(Long.parseLong(rollForwardSessionForm.getAddNewCourseOfferingsSubjectIds()[i])));
+		}
+		if (toSession.getSubjectAreas() != null) {
+			SubjectArea subjectArea = null;
+			InstructionalOfferingRollForward instrOffrRollFwd = new InstructionalOfferingRollForward();
+			for (Iterator saIt = subjects.iterator(); saIt.hasNext();){
+				subjectArea = (SubjectArea) saIt.next();
+				SubjectArea.loadSubjectAreas(toSession.getUniqueId());
+				instrOffrRollFwd.addNewInstructionalOfferingsForASubjectArea(subjectArea.getSubjectAreaAbbreviation(), toSession);
+			}
+		}
+	}
+
 	private static String buildRoomQueryForDepartment(Department dept, Session sess, String locType){
 		StringBuffer sb = new StringBuffer();
 		sb.append("select l from " + locType + " as l inner join l.roomDepts as rd where l.session.uniqueId = ");
@@ -1868,5 +1887,6 @@ public class SessionRollForward {
 //		cloneCourses(courses2, "PPT 441 ", rollForwardSessionForm);
 
 	}
+
 
 }
