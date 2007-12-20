@@ -346,7 +346,7 @@ public class SolverGroupEditAction extends Action {
         		commitDate = group.getCommittedSolution().getCommitDate();
         	
         	webTable.addLine(onClick, new String[] {
-        	        "<a name='"+group.getUniqueId()+"'>"+(html?group.getAbbv().replaceAll(" ","&nbsp;"):group.getAbbv())+"</a>",
+        	        (html?"<a name='"+group.getUniqueId()+"'>"+(html?group.getAbbv().replaceAll(" ","&nbsp;"):group.getAbbv())+"</a>":group.getAbbv()),
         			(html?group.getName().replaceAll(" ","&nbsp;"):group.getName()),
         			deptStr,
         			mgrStr,
