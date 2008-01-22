@@ -220,8 +220,8 @@ public class ApplicationProperties {
 		File dir = new File(getBasePath());
 		if (!dir.getName().equals("webapps")) dir = dir.getParentFile();
 		dir = dir.getParentFile().getParentFile();
-		dir = new File(dir, "uploaded_files");
-		dir =  new File(dir,"timetabling");
+		dir = new File(dir, "data");
+		dir =  new File(dir,"unitime");
 		dir.mkdirs();
 		return dir;
 	}
