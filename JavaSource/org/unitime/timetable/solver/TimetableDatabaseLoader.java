@@ -1420,7 +1420,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         		} else if (distributionObject.getPrefGroup() instanceof SchedulingSubpart) {
         			SchedulingSubpart subpart = (SchedulingSubpart)distributionObject.getPrefGroup();
         	    	Vector classes = new Vector(subpart.getClasses());
-        	    	Collections.sort(classes,new ClassComparator(ClassComparator.COMPARE_BY_ID));
+        	    	Collections.sort(classes,new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
         	    	for (Enumeration e=classes.elements();e.hasMoreElements();) {
         	    		Class_ clazz = (Class_)e.nextElement();
             			Lecture lecture = getLecture(clazz);
@@ -1445,7 +1445,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         		} else if (distributionObject.getPrefGroup() instanceof SchedulingSubpart) {
         			SchedulingSubpart subpart = (SchedulingSubpart)distributionObject.getPrefGroup();
         	    	Vector classes = new Vector(subpart.getClasses());
-        	    	Collections.sort(classes,new ClassComparator(ClassComparator.COMPARE_BY_ID));
+        	    	Collections.sort(classes,new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
         	    	for (int j=0;j<gc.length;j++) {
         	    		Class_ clazz = null;
         	    		for (Iterator k=gcClasses[j].iterator();k.hasNext() && clazz==null;) {
@@ -1486,7 +1486,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         		} else if (distributionObject.getPrefGroup() instanceof SchedulingSubpart) {
         			SchedulingSubpart subpart = (SchedulingSubpart)distributionObject.getPrefGroup();
         	    	Vector classes = new Vector(subpart.getClasses());
-        	    	Collections.sort(classes,new ClassComparator(ClassComparator.COMPARE_BY_ID));
+        	    	Collections.sort(classes,new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
         	    	for (Enumeration e=classes.elements();e.hasMoreElements();) {
         	    		Class_ clazz = (Class_)e.nextElement();
             			Lecture lecture = getLecture(clazz);
@@ -1534,7 +1534,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         		} else if (distributionObject.getPrefGroup() instanceof SchedulingSubpart) {
         			SchedulingSubpart subpart = (SchedulingSubpart)distributionObject.getPrefGroup();
         	    	Vector classes = new Vector(subpart.getClasses());
-        	    	Collections.sort(classes,new ClassComparator(ClassComparator.COMPARE_BY_ID));
+        	    	Collections.sort(classes,new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
         	    	for (Enumeration e=classes.elements();e.hasMoreElements();) {
         	    		Class_ clazz = (Class_)e.nextElement();
             			Lecture lecture = getLecture(clazz);
