@@ -1,0 +1,101 @@
+<!-- 
+ * UniTime 3.0 (University Course Timetabling & Student Sectioning Application)
+ * Copyright (C) 2007, UniTime.org
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ -->
+
+<!ELEMENT class ( class*, date*, time?, (room|location)*, instructor* ) >
+<!ATTLIST class displayInScheduleBook ( false | true ) #IMPLIED >
+<!ATTLIST class id CDATA #IMPLIED >
+<!ATTLIST class limit NMTOKEN #IMPLIED >
+<!ATTLIST class scheduleNote CDATA #IMPLIED >
+<!ATTLIST class suffix NMTOKEN #REQUIRED >
+<!ATTLIST class type NMTOKEN #REQUIRED >
+
+<!ELEMENT config ( subpart*, class* ) >
+<!ATTLIST config limit NMTOKEN #REQUIRED >
+<!ATTLIST config name CDATA #REQUIRED >
+
+<!ELEMENT consent EMPTY >
+<!ATTLIST consent type CDATA #REQUIRED >
+
+<!ELEMENT course EMPTY >
+<!ATTLIST course id CDATA #IMPLIED >
+<!ATTLIST course controlling ( false | true ) #REQUIRED >
+<!ATTLIST course courseNbr NMTOKEN #REQUIRED >
+<!ATTLIST course scheduleBookNote CDATA #IMPLIED >
+<!ATTLIST course subject CDATA #REQUIRED >
+<!ATTLIST course title CDATA #IMPLIED >
+
+<!ELEMENT courseCredit EMPTY >
+<!ATTLIST courseCredit creditFormat ( arrangeHours | fixedUnit | variableMinMax | variableRange ) #REQUIRED >
+<!ATTLIST courseCredit creditType ( collegiate | equivalent | mastersCredit | phdThesisCredit | continuingEdUnits ) #REQUIRED >
+<!ATTLIST courseCredit creditUnitType CDATA #REQUIRED >
+<!ATTLIST courseCredit fixedCredit CDATA #IMPLIED >
+<!ATTLIST courseCredit fractionalCreditAllowed ( false | true ) #IMPLIED >
+<!ATTLIST courseCredit maximumCredit CDATA #IMPLIED >
+<!ATTLIST courseCredit minimumCredit CDATA #IMPLIED >
+
+<!ELEMENT designatorRequired EMPTY >
+
+<!ELEMENT instructor EMPTY >
+<!ATTLIST instructor fname CDATA #IMPLIED >
+<!ATTLIST instructor id NMTOKEN #REQUIRED >
+<!ATTLIST instructor lead ( false | true ) #IMPLIED >
+<!ATTLIST instructor lname CDATA #IMPLIED >
+<!ATTLIST instructor mname CDATA #IMPLIED >
+<!ATTLIST instructor share NMTOKEN #REQUIRED >
+
+<!ELEMENT offering ( designatorRequired?, consent?, courseCredit*, course+, config* ) >
+<!ATTLIST offering action CDATA #REQUIRED >
+<!ATTLIST offering id NMTOKEN #REQUIRED >
+<!ATTLIST offering offered NMTOKEN #REQUIRED >
+
+<!ELEMENT offerings ( offering* ) >
+<!ATTLIST offerings campus NMTOKEN #REQUIRED >
+<!ATTLIST offerings term NMTOKEN #REQUIRED >
+<!ATTLIST offerings year NMTOKEN #REQUIRED >
+
+<!ELEMENT room EMPTY >
+<!ATTLIST room building NMTOKEN #REQUIRED >
+<!ATTLIST room id CDATA #IMPLIED >
+<!ATTLIST room roomNbr NMTOKEN #REQUIRED >
+
+<!ELEMENT location EMPTY >
+<!ATTLIST location name CDATA #REQUIRED >
+
+<!ELEMENT subpart ( subpartCredit*, subpart* ) >
+<!ATTLIST subpart minPerWeek NMTOKEN #REQUIRED >
+<!ATTLIST subpart suffix CDATA #IMPLIED >
+<!ATTLIST subpart type NMTOKEN #REQUIRED >
+
+<!ELEMENT subpartCredit EMPTY >
+<!ATTLIST subpartCredit creditFormat ( arrangeHours | fixedUnit | variableMinMax | variableRange ) #REQUIRED >
+<!ATTLIST subpartCredit creditType ( collegiate | equivalent | mastersCredit | phdThesisCredit ) #REQUIRED >
+<!ATTLIST subpartCredit creditUnitType CDATA #REQUIRED >
+<!ATTLIST subpartCredit fixedCredit CDATA #IMPLIED >
+<!ATTLIST subpartCredit fractionalCreditAllowed ( false | true ) #IMPLIED >
+<!ATTLIST subpartCredit maximumCredit CDATA #IMPLIED >
+<!ATTLIST subpartCredit minimumCredit CDATA #IMPLIED >
+
+<!ELEMENT time EMPTY >
+<!ATTLIST time days NMTOKEN #REQUIRED >
+<!ATTLIST time endTime NMTOKEN #REQUIRED >
+<!ATTLIST time startTime NMTOKEN #REQUIRED >
+
+<!ELEMENT date EMPTY >
+<!ATTLIST date endDate CDATA #REQUIRED >
+<!ATTLIST date startDate CDATA #REQUIRED >

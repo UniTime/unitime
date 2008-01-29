@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE posMinors PUBLIC "-//UniTime//DTD University Course Timetabling/EN" "http://www.unitime.org/interface/PosMinor.dtd">
+
+<!-- 
+ * UniTime 3.0 (University Course Timetabling & Student Sectioning Application)
+ * Copyright (C) 2007, UniTime.org
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ -->
+
+	<!-- posMinor ==> Required:  code, name, academicArea
+	                  Optional:  externalId
+	-->
+<posMinors campus="puWestLafayetteTrdtn" term="Fal" year="2007">
+	<posMinor externalId="0WF00FY5EEJ0" code="051" name="MATH JR HI/MID SCH TEACH" academicArea="EDU"/>
+	<posMinor externalId="0WF00FX7HEJ0" code="970" name="PRE-COMPUTER SCIENCES"  academicArea="S"/>
+</posMinors>

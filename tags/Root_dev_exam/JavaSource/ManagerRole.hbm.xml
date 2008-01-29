@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC 
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<!-- 
+ * UniTime 3.0 (University Course Timetabling & Student Sectioning Application)
+ * Copyright (C) 2007, UniTime.org
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ -->
+
+<hibernate-mapping package="org.unitime.timetable.model">
+	<class
+		name="ManagerRole"
+		abstract="false"
+		table="TMTBL_MGR_TO_ROLES">
+		<id 
+            name="uniqueId"
+            column="UNIQUEID" 
+            type="java.lang.Long">            
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+				<param name="sequence">TMTBL_MGR_TO_ROLES_SEQ</param>
+			</generator>
+            
+        </id>
+        
+		<property
+			name="primary"
+			column="IS_PRIMARY"
+			type="java.lang.Boolean"
+			not-null="false"
+		/>
+			
+		<many-to-one
+			name="role"
+			class="Roles"
+			column="ROLE_ID"
+			not-null="true"
+			foreign-key="FK_TMTBL_ROLE_ROLE"
+		/>
+		
+		<many-to-one
+			name="timetableManager"
+			class="TimetableManager"
+			column="MANAGER_ID"
+			not-null="true"
+			foreign-key="FK_TMTBL_MGR_MANAGER"
+		/>
+					
+	</class>	
+</hibernate-mapping>

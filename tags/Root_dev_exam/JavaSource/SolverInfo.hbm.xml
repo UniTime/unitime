@@ -1,0 +1,109 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC 
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<!-- 
+ * UniTime 3.0 (University Course Timetabling & Student Sectioning Application)
+ * Copyright (C) 2007, UniTime.org
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ -->
+
+<hibernate-mapping package="org.unitime.timetable.model">
+	<class
+		name="SolverInfo"
+		table="SOLVER_INFO"
+		discriminator-value="0"
+		abstract="true">
+		
+ 		<cache include="non-lazy" usage="read-write"/>
+
+        <id
+            name="uniqueId"
+            column="UNIQUEID"
+            type="java.lang.Long"
+        >
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">SOLVER_INFO_SEQ</param>
+            </generator>
+        </id>
+		
+		<discriminator
+			column="TYPE"
+			type="java.lang.Integer"
+			not-null="true"
+			length="3"
+		/>
+
+		<property
+			name="value"
+			column="VALUE"
+			type="org.unitime.commons.hibernate.blob.XmlBlobType"
+			not-null="true"
+			length="65535"
+		/>
+
+		<property
+			name="opt"
+			column="OPT"
+			type="java.lang.String"
+			not-null="false"
+			length="250"
+		/>
+		
+		<many-to-one 
+			name="definition" 
+			class="SolverInfoDef" 
+			column="SOLVER_INFO_DEF_ID" 
+			not-null="false"
+			foreign-key="FK_SOLVER_INFO_DEF"
+			 />
+			 
+       <subclass name="SolutionInfo" discriminator-value="1">
+       		<many-to-one 
+				name="solution" 
+				class="Solution" 
+				column="SOLUTION_ID" 
+				foreign-key="FK_SOLUTION_INFO"
+				 />			 
+		</subclass>
+
+       <subclass name="AssignmentInfo" discriminator-value="2">
+			<many-to-one 
+				name="assignment" 
+				class="Assignment" 
+				column="ASSIGNMENT_ID" 
+				foreign-key="FK_ASSIGNMENT_INFO"
+			 />			 
+       </subclass>
+
+       <subclass name="ConstraintInfo" discriminator-value="3">
+       		<set
+				name="assignments"
+				table="CONSTRAINT_INFO"
+				>
+		 		<cache include="non-lazy" usage="read-write"/>
+				<key column="SOLVER_INFO_ID"/>
+				<many-to-many 
+					class="Assignment"
+					column="ASSIGNMENT_ID"
+					foreign-key="FK_CONSTRAINT_INFO_ASSIGNMENT"
+				/>
+			</set>
+		</subclass>
+			 
+	</class>	
+</hibernate-mapping>

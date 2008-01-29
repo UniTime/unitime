@@ -1,0 +1,571 @@
+/*
+ * UniTime 3.0 (University Course Timetabling & Student Sectioning Application)
+ * Copyright (C) 2007, UniTime.org, and individual contributors
+ * as indicated by the @authors tag.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
+package org.unitime.timetable.form;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
+import javax.servlet.http.HttpServletRequest;
+
+import net.sf.cpsolver.coursett.model.TimeLocation.IntEnumeration;
+
+import org.apache.struts.Globals;
+import org.apache.struts.action.ActionErrors;
+import org.apache.struts.action.ActionForm;
+import org.apache.struts.action.ActionMapping;
+import org.apache.struts.action.ActionMessage;
+import org.apache.struts.util.MessageResources;
+import org.hibernate.Transaction;
+import org.unitime.commons.Debug;
+import org.unitime.timetable.model.Assignment;
+import org.unitime.timetable.model.ClassInstructor;
+import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.Preference;
+import org.unitime.timetable.model.comparators.InstructorComparator;
+import org.unitime.timetable.model.dao.Class_DAO;
+import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
+import org.unitime.timetable.solver.ClassAssignmentProxy;
+import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
+import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.DynamicList;
+import org.unitime.timetable.util.DynamicListObjectFactory;
+
+
+public class ClassInstructorAssignmentForm extends ActionForm {
+
+    private static String disabledColor = "gray";
+
+	private String op;
+    private Integer subjectAreaId;
+	private Long instrOfferingId;
+    private String instrOfferingName;
+	private Integer instrOffrConfigLimit;
+	private Long instrOffrConfigId;
+	private String deletedInstrRowNum;
+    private String nextId;
+    private String previousId;
+	private ClassAssignmentProxy proxy;
+	private String addInstructorId;
+
+	private List classIds;
+	private List classLabels;
+	private List classLabelIndents;
+	private List instructorUids;
+	private List percentShares;
+	private List leadFlags;
+	private List displayFlags;
+	private List times;
+	private List rooms;
+	private List allowDeletes;
+	private List readOnlyClasses;
+	private List classHasErrors;
+	private List showDisplay;
+  
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -203441190483028649L;
+	/**
+	 * 
+	 */
+
+    // --------------------------------------------------------- Classes
+
+    /** Factory to create dynamic list element for Course Offerings */
+    protected DynamicListObjectFactory factoryClasses = new DynamicListObjectFactory() {
+        public Object create() {
+            return new String(Preference.BLANK_PREF_VALUE);
+        }
+    };
+		
+	public void reset(ActionMapping arg0, HttpServletRequest arg1) {
+		op = "";
+        nextId = previousId = null;
+        subjectAreaId = new Integer(0);
+    	instrOfferingId = new Long(0);
+        instrOfferingName = null;
+    	instrOffrConfigLimit = new Integer(0);
+    	instrOffrConfigId = new Long(0);
+    	deletedInstrRowNum = null;
+    	proxy = null;	
+    	resetLists();
+	}
+
+	private void resetLists() {
+    	classIds = DynamicList.getInstance(new ArrayList(), factoryClasses);
+    	classLabels = DynamicList.getInstance(new ArrayList(), factoryClasses);
+    	classLabelIndents = DynamicList.getInstance(new ArrayList(), factoryClasses);
+    	instructorUids = DynamicList.getInstance(new ArrayList(), factoryClasses);
+    	percentShares = DynamicList.getInstance(new ArrayList(), factoryClasses);
+    	leadFlags = DynamicList.getInstance(new ArrayList(), factoryClasses);
+    	displayFlags = DynamicList.getInstance(new ArrayList(), factoryClasses);
+    	times = DynamicList.getInstance(new ArrayList(), factoryClasses);
+    	rooms = DynamicList.getInstance(new ArrayList(), factoryClasses);
+    	allowDeletes = DynamicList.getInstance(new ArrayList(), factoryClasses);
+    	readOnlyClasses = DynamicList.getInstance(new ArrayList(), factoryClasses);
+    	classHasErrors = DynamicList.getInstance(new ArrayList(), factoryClasses);
+    	showDisplay = DynamicList.getInstance(new ArrayList(), factoryClasses);
+	}
+
+	public ActionErrors validate(ActionMapping arg0, HttpServletRequest arg1) {
+		ActionErrors errors = new ActionErrors();
+
+        // Get Message Resources
+        MessageResources rsc = 
+            (MessageResources) super.getServlet()
+            	.getServletContext().getAttribute(Globals.MESSAGES_KEY);
+
+        if(op.equals(rsc.getMessage("button.classInstrUpdate")) || op.equals(rsc.getMessage("button.nextInstructionalOffering")) || op.equals(rsc.getMessage("button.previousInstructionalOffering"))) {	
+            // Check Added Instructors
+	        for (int i = 0; i < classIds.size(); i++) {
+	        	String classId = (String) classIds.get(i);
+	        	String instrUid = (String) instructorUids.get(i);
+	        	for (int j = i + 1; j < classIds.size(); j++) {
+	        		if (((String) instructorUids.get(j)).length() > 0) {
+		        		if(classIds.get(j).equals(classId) && instructorUids.get(j).equals(instrUid)) {
+		        			errors.add("duplicateInstructor", new ActionMessage("errors.generic", "Duplicate instructor for class"));
+		        		}
+	        		}
+	        	}
+	        }
+        }
+        return errors;
+	}
+
+	public void addToClasses(Class_ cls, Boolean isReadOnly, String indent){
+		ArrayList instructors = new ArrayList(cls.getClassInstructors());
+		Collections.sort(instructors, new InstructorComparator());
+		ClassInstructor instructor = null;
+		int i = 0;
+		do {
+			if(instructors.size() > 0) {
+				instructor = (ClassInstructor) instructors.get(i);
+			}
+			// Only display the class name and display flag for the first instructor
+			if(i == 0) {
+				this.classLabels.add(cls.htmlLabel());
+				this.showDisplay.add(new Boolean(true));
+				this.times.add(buildAssignedTime(cls, true));
+				this.rooms.add(buildAssignedRoom(cls, true));
+			}
+			else {
+				this.classLabels.add("");
+				this.showDisplay.add(new Boolean(false));
+				this.times.add("");
+				this.rooms.add("");
+			}
+			this.classLabelIndents.add(indent);
+			this.classIds.add(cls.getUniqueId().toString());
+			this.readOnlyClasses.add(isReadOnly.toString());
+			this.classHasErrors.add(new Boolean(false));
+			this.displayFlags.add(cls.isDisplayInstructor());
+	
+			if(instructors.size() > 0) {
+				this.instructorUids.add(instructor.getInstructor().getUniqueId().toString());
+				this.percentShares.add(instructor.getPercentShare().toString());
+				this.leadFlags.add(instructor.isLead());
+			}
+			else {
+				this.instructorUids.add("");
+				this.percentShares.add("100");
+				this.leadFlags.add(new Boolean(true));
+			}
+			
+			this.allowDeletes.add(new Boolean(instructors.size() > 1));
+		} while (++i < instructors.size());
+	}
+
+    private String buildAssignedTime(Class_ aClass, boolean isEditable){
+    		Assignment a = null;
+    		AssignmentPreferenceInfo info = null;
+			StringBuffer sb = new StringBuffer();
+    		try {
+    			a = getProxy().getAssignment(aClass);
+    			info = getProxy().getAssignmentInfo(aClass);
+    		} catch (Exception e) {
+    			Debug.error(e);
+    		}
+    		if (a!=null) {
+   				IntEnumeration e = a.getTimeLocation().getDays();
+   				while (e.hasMoreElements()){
+   					sb.append(Constants.DAY_NAMES_SHORT[(int)e.nextInt()]);
+   				}
+   				sb.append(" ");
+   				sb.append(a.getTimeLocation().getStartTimeHeader());
+   				sb.append("-");
+   				sb.append(a.getTimeLocation().getEndTimeHeader());
+    		} else {
+    			sb.append("");
+    		}
+        return(sb.toString());
+    }
+
+    private String buildAssignedRoom(Class_ aClass, boolean isEditable){
+		Assignment a = null;
+		AssignmentPreferenceInfo info = null;
+		StringBuffer sb = new StringBuffer();
+		try {
+			a= getProxy().getAssignment(aClass);
+			info = getProxy().getAssignmentInfo(aClass);
+		} catch (Exception e) {
+			Debug.error(e);
+		}
+		if (a!=null) {
+    		Iterator it2 = a.getRooms().iterator();
+    		while (it2.hasNext()){
+    			Location room = (Location)it2.next();
+    			sb.append(room.getLabel());
+    		}	
+		} else {
+			sb.append("");
+		}
+        return(sb.toString());
+    }
+
+	public void deleteInstructor() {
+		int index = Integer.parseInt(deletedInstrRowNum);
+		int firstIndex = index;
+		while (firstIndex>0 && classIds.get(firstIndex-1).equals(classIds.get(index)))
+			firstIndex--;
+		int lastIndex = index;
+		while (lastIndex+1<classIds.size() && classIds.get(lastIndex+1).equals(classIds.get(index)))
+			lastIndex++;
+		classIds.remove(index);
+		classLabels.remove(index==firstIndex?index+1:index);
+		classLabelIndents.remove(index==firstIndex?index+1:index);
+		classHasErrors.remove(index);
+		instructorUids.remove(index);
+		percentShares.remove(index);
+		if (index<leadFlags.size())
+			leadFlags.remove(index);
+		times.remove(index==firstIndex?index+1:index);
+		rooms.remove(index==firstIndex?index+1:index);
+		allowDeletes.remove(index);
+		if (firstIndex+1==lastIndex) {
+			allowDeletes.set(firstIndex, Boolean.FALSE);
+		}
+		if ((index==firstIndex?index+1:index)<displayFlags.size())
+			displayFlags.remove(index==firstIndex?index+1:index);
+		showDisplay.remove(index==firstIndex?index+1:index);
+		readOnlyClasses.remove(index);
+	}
+
+	public void addInstructor() {
+		int pos = new Integer(this.getAddInstructorId()).intValue();
+		this.classLabels.add(pos + 1, "");
+		this.showDisplay.add(pos + 1, Boolean.FALSE);
+		this.times.add(pos + 1, "");
+		this.rooms.add(pos + 1, "");
+		this.classLabelIndents.add(pos + 1, this.classLabelIndents.get(pos));
+		this.classIds.add(pos + 1, this.classIds.get(pos));
+		this.readOnlyClasses.add(pos + 1, this.readOnlyClasses.get(pos));
+		this.classHasErrors.add(pos + 1, Boolean.FALSE);
+		this.displayFlags.add(pos + 1, this.displayFlags.get(pos));
+		this.instructorUids.add(pos + 1, "");
+		this.percentShares.add(pos + 1, "0");
+		this.allowDeletes.set(pos, Boolean.TRUE);
+		this.allowDeletes.add(pos + 1, Boolean.TRUE);
+	}
+
+	public void updateClasses() throws Exception {
+	    Class_DAO cdao = new Class_DAO();
+	    for (int i = 0; i < classIds.size(); ) {
+	    	if ("true".equals(getReadOnlyClasses().get(i))) {
+	    		i++;
+	    		continue;
+	    	}
+	    	
+			String classId = (String) classIds.get(i);
+		    Class_ c = cdao.get(new Long(classId));
+
+		    org.hibernate.Session hibSession = cdao.getSession();
+        	Transaction tx = hibSession.beginTransaction();
+
+            // Class all instructors
+            Set classInstrs = c.getClassInstructors();
+            for (Iterator iter=classInstrs.iterator(); iter.hasNext() ;) {
+                ClassInstructor ci = (ClassInstructor) iter.next();
+                DepartmentalInstructor instr = ci.getInstructor();
+                instr.getClasses().remove(ci);
+                hibSession.saveOrUpdate(instr);
+                hibSession.delete(ci);
+            }
+            
+            classInstrs.clear();
+
+            c.setDisplayInstructor(new Boolean("on".equals(getDisplayFlags().get(i))));
+
+            // Save instructor data to class
+            for ( ; i < classIds.size(); i++) {
+            	boolean sameClass = ((String) classIds.get(i)).equals(classId);
+            	if (!sameClass)	{
+            		break;
+            	}
+                String instrId = (String) getInstructorUids().get(i);
+                if (instrId.length() > 0  && !("-".equals(instrId))) {
+	                String pctShare = (String) getPercentShares().get(i);
+	                Boolean lead = new Boolean("on".equals(getLeadFlags().get(i)));
+	                
+	                DepartmentalInstructor deptInstr =  new DepartmentalInstructorDAO().get(new Long(instrId));
+	                ClassInstructor classInstr = new ClassInstructor();
+	                classInstr.setClassInstructing(c);
+	                classInstr.setInstructor(deptInstr);
+	                classInstr.setLead(lead);
+	                classInstr.setPercentShare(new Integer(pctShare));
+	                
+	                deptInstr.getClasses().add(classInstr);
+	                hibSession.saveOrUpdate(deptInstr);
+	                
+	                classInstrs.add(classInstr);
+	            };
+            };
+            
+            c.setClassInstructors(classInstrs);
+
+        	try {
+                hibSession.saveOrUpdate(c);
+	            tx.commit();
+        	} catch (Exception e) {
+        		tx.rollback(); throw e;
+        	}
+		}
+	}
+
+	public void unassignAllInstructors() throws Exception {
+	    Class_DAO cdao = new Class_DAO();
+	    for (int i = 0; i < classIds.size(); i++ ) {
+	    	if ("true".equals(getReadOnlyClasses().get(i))) {
+	    		i++;
+	    		continue;
+	    	}
+	    	
+			String classId = (String) classIds.get(i);
+		    Class_ c = cdao.get(new Long(classId));
+
+		    org.hibernate.Session hibSession = cdao.getSession();
+        	Transaction tx = hibSession.beginTransaction();
+        	try {
+    		    c.deleteClassInstructors(hibSession);
+                hibSession.saveOrUpdate(c);
+	            tx.commit();
+        	} catch (Exception e) {
+        		tx.rollback(); throw e;
+        	}
+		}
+	    this.getInstructorUids().clear();
+	}
+
+	public String getOp() {
+		return op;
+	}
+
+	public void setOp(String op) {
+		this.op = op;
+	}
+
+	public List getAllowDeletes() {
+		return allowDeletes;
+	}
+
+	public void setAllowDeletes(List allowDeletes) {
+		this.allowDeletes = allowDeletes;
+	}
+
+	public List getClassIds() {
+		return classIds;
+	}
+
+	public void setClassIds(List classIds) {
+		this.classIds = classIds;
+	}
+
+	public List getClassLabelIndents() {
+		return classLabelIndents;
+	}
+
+	public void setClassLabelIndents(List classLabelIndents) {
+		this.classLabelIndents = classLabelIndents;
+	}
+
+	public List getClassLabels() {
+		return classLabels;
+	}
+
+	public void setClassLabels(List classLabels) {
+		this.classLabels = classLabels;
+	}
+
+	public List getDisplayFlags() {
+		return displayFlags;
+	}
+
+	public void setDisplayFlags(List displayFlags) {
+		this.displayFlags = displayFlags;
+	}
+
+	public List getInstructorUids() {
+		return instructorUids;
+	}
+
+	public void setInstructorUids(List instructorUids) {
+		this.instructorUids = instructorUids;
+	}
+
+	public List getLeadFlags() {
+		return leadFlags;
+	}
+
+	public void setLeadFlags(List leadFlags) {
+		this.leadFlags = leadFlags;
+	}
+
+	public List getPercentShares() {
+		return percentShares;
+	}
+
+	public void setPercentShares(List percentShares) {
+		this.percentShares = percentShares;
+	}
+
+	public List getRooms() {
+		return rooms;
+	}
+
+	public void setRooms(List rooms) {
+		this.rooms = rooms;
+	}
+
+	public List getTimes() {
+		return times;
+	}
+
+	public void setTimes(List times) {
+		this.times = times;
+	}
+
+	public Long getInstrOfferingId() {
+		return instrOfferingId;
+	}
+
+	public void setInstrOfferingId(Long instrOfferingId) {
+		this.instrOfferingId = instrOfferingId;
+	}
+
+	public String getInstrOfferingName() {
+		return instrOfferingName;
+	}
+
+	public void setInstrOfferingName(String instrOfferingName) {
+		this.instrOfferingName = instrOfferingName;
+	}
+
+	public Long getInstrOffrConfigId() {
+		return instrOffrConfigId;
+	}
+
+	public void setInstrOffrConfigId(Long instrOffrConfigId) {
+		this.instrOffrConfigId = instrOffrConfigId;
+	}
+
+	public Integer getInstrOffrConfigLimit() {
+		return instrOffrConfigLimit;
+	}
+
+	public void setInstrOffrConfigLimit(Integer instrOffrConfigLimit) {
+		this.instrOffrConfigLimit = instrOffrConfigLimit;
+	}
+
+	public List getReadOnlyClasses() {
+		return readOnlyClasses;
+	}
+
+	public void setReadOnlyClasses(List readOnlyClasses) {
+		this.readOnlyClasses = readOnlyClasses;
+	}
+
+	public List getClassHasErrors() {
+		return classHasErrors;
+	}
+
+	public void setClassHasErrors(List classHasErrors) {
+		this.classHasErrors = classHasErrors;
+	}
+
+	public Integer getSubjectAreaId() {
+		return subjectAreaId;
+	}
+
+	public void setSubjectAreaId(Integer subjectAreaId) {
+		this.subjectAreaId = subjectAreaId;
+	}
+
+	public ClassAssignmentProxy getProxy() {
+		return proxy;
+	}
+
+	public void setProxy(ClassAssignmentProxy proxy) {
+		this.proxy = proxy;
+	}
+
+	public String getNextId() {
+		return nextId;
+	}
+
+	public void setNextId(String nextId) {
+		this.nextId = nextId;
+	}
+
+	public String getPreviousId() {
+		return previousId;
+	}
+
+	public void setPreviousId(String previousId) {
+		this.previousId = previousId;
+	}
+
+	public String getDeletedInstrRowNum() {
+		return deletedInstrRowNum;
+	}
+
+	public void setDeletedInstrRowNum(String deletedInstrRowNum) {
+		this.deletedInstrRowNum = deletedInstrRowNum;
+	}
+
+	public List getShowDisplay() {
+		return showDisplay;
+	}
+
+	public void setShowDisplay(List showDisplay) {
+		this.showDisplay = showDisplay;
+	}
+
+	public String getAddInstructorId() {
+		return addInstructorId;
+	}
+
+	public void setAddInstructorId(String addInstructorId) {
+		this.addInstructorId = addInstructorId;
+	}
+}
