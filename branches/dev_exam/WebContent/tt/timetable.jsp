@@ -1,0 +1,189 @@
+<%--
+ * UniTime 3.0 (University Course Timetabling & Student Sectioning Application)
+ * Copyright (C) 2007, UniTime.org
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+--%>
+<%@ page language="java" autoFlush="true"%>
+<%@ page import="org.unitime.timetable.webutil.timegrid.TimetableGridTable" %>
+<%@ page import="org.unitime.commons.Debug" %>
+<%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
+<%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
+<%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
+<%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
+<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<script language="JavaScript" type="text/javascript" src="scripts/block.js"></script>
+<tiles:importAttribute />
+<html:form action="/timetable">
+<%
+try {
+%>
+	<script language="JavaScript">blToggleHeader('Filter','dispFilter');blStart('dispFilter');</script>
+	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TR>
+			<TD>Week:</TD>
+			<TD>
+				<html:select property="week">
+					<html:optionsCollection name="timetableForm" property="weeks" label="value" value="id"/>
+				</html:select>
+			</TD>
+		</TR>
+		<TR>
+			<TD>Resource:</TD>
+			<TD>
+				<html:select property="resource">
+					<html:options name="timetableForm" property="resources"/>
+				</html:select>
+			</TD>
+		</TR>
+		<TR>
+			<TD>Filter:</TD>
+			<TD>
+				<html:text property="find" maxlength="1000" size="40"/>
+			</TD>
+		</TR>
+		<TR>
+			<TD>Day:</TD>
+			<TD>
+				<html:select property="day">
+					<html:options name="timetableForm" property="days"/>
+				</html:select>
+			</TD>
+		</TR>
+		<TR>
+			<TD>Daytime/Evening:</TD>
+			<TD>
+				<html:select property="dayMode">
+					<html:options name="timetableForm" property="dayModes"/>
+				</html:select>
+			</TD>
+		</TR>
+		<TR>
+			<TD>Display Mode:</TD>
+			<TD>
+				<html:select property="dispMode">
+					<html:options name="timetableForm" property="dispModes"/>
+				</html:select>
+			</TD>
+		</TR>
+		<TR>
+			<TD>Background:</TD>
+			<TD>
+				<html:select property="bgColor">
+					<html:options name="timetableForm" property="bgColors"/>
+				</html:select>
+			</TD>
+		</TR>
+		<TR>
+			<TD>Show discouraged free times:</TD>
+			<TD>
+				<html:checkbox property="showUselessTimes"/>
+			</TD>
+		</TR>
+		<TR>
+			<TD>Order By:</TD>
+			<TD>
+				<html:select property="orderBy">
+					<html:options name="timetableForm" property="orderBys"/>
+				</html:select>
+			</TD>
+		</TR>
+		<TR>
+			<TD colspan='2' align='right'>
+				<html:submit onclick="displayLoading();" property="op" value="Change"/>
+				<html:submit onclick="displayLoading();" property="op" value="Export PDF"/>
+				<html:submit onclick="displayLoading();" property="op" accesskey="R" value="Refresh"/>
+			</TD>
+		</TR>
+	</TABLE>
+	<script language="JavaScript">blEnd('dispFilter');blStartCollapsed('dispFilter');</script>
+		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+			<TR>
+				<TD colspan='2' align='right'>
+					<html:submit onclick="displayLoading();" property="op" value="Export PDF"/>
+					<html:submit onclick="displayLoading();" property="op" accesskey="R" value="Refresh"/>
+				</TD>
+			</TR>
+		</TABLE>
+	<script language="JavaScript">blEndCollapsed('dispFilter');</script>
+	
+	<br><br>
+	<a name='timetable'/>
+	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TR>
+			<TD colspan="2">
+				<tt:section-header>
+					<tt:section-title>
+						Timetable
+					</tt:section-title>
+					<A class="l7" href="#legend">Legend</A>&nbsp;
+				</tt:section-header>
+			</TD>
+		</TR>
+		<logic:equal name="timetableForm" property="loaded" value="false">
+				<TR>
+					<TD>
+						<i>Neither a solver is started nor solution is selected.</i>
+					</TD>
+				</TR>
+		</logic:equal>
+		<logic:equal name="timetableForm" property="loaded" value="true">	
+<%
+			TimetableGridTable table = (TimetableGridTable)session.getAttribute("Timetable.table");
+			if (table.models().isEmpty()) { 
+%>
+				<TR>
+					<TD>
+						<i>No resource matches the above criteria (or there is no resource at all).</i>
+					</TD>
+				</TR>
+			</TABLE>
+<%
+			} else {
+%>
+			</TABLE>
+<%
+
+				table.printToHtml(out);
+			}
+%>
+		
+	<BR>
+	<a name='legend'/>
+	<TABLE width="90%" border="0" >
+		<TR>
+			<TD colspan="3">
+				<tt:section-header>
+					<tt:section-title>
+						Legend
+					</tt:section-title>
+					<A class="l7" href="#timetable">Timetable</A>&nbsp;
+				</tt:section-header>
+			</TD>
+		</TR>
+<%
+			table.printLegend(out);
+%>
+		</logic:equal>
+	</TABLE>
+<%
+} catch (Exception e) {
+	Debug.error(e);
+%>		
+		<font color='red'><B>ERROR:<%=e.getMessage()%></B></font>
+<%
+}
+%>
+</html:form>

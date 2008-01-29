@@ -1,0 +1,764 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE tiles-definitions
+			PUBLIC
+			"-//Apache Software Foundation//DTD Tiles Configuration 1.1//EN"
+			"http://struts.apache.org/dtds/tiles-config_1_1.dtd" >
+<!-- 
+ * UniTime 3.0 (University Course Timetabling & Student Sectioning Application)
+ * Copyright (C) 2007, UniTime.org
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ -->
+<tiles-definitions>
+
+	<!-- Base Layouts -->
+
+	<definition
+  		name="defaultLayoutDef"
+  		id="timetable.defaultLayout"
+  		page="/layouts/defaultLayout.jsp">
+
+		<put name="header" value="/header.jsp" />
+		<put name="menu" value="/menu.jsp" />
+		<put name="body" value="" />
+  	</definition>
+
+	<definition
+  		name="pageLayoutDef"
+  		id="timetable.pageLayout"
+  		page="/layouts/pageLayout.jsp">
+		<put name="onLoadFunction" type="string" value="onLoad='doLoad()'" />
+		<put name="title" type="string" value="Timetabling Application" />
+		<put name="header" value="/header.jsp" />
+		<put name="body" value="" />
+ 		<put name="body2" value="" />
+ 		<put name="showNavigation" value="false" />
+		<put name="showSolverWarnings" value="false" />
+ 		<put name="helpFile" value="" />
+  	</definition>
+
+	<!-- Page Layouts -->
+
+	<definition	name="selectPrimaryRoleTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Select User Role"/>
+		<put name="body" value="/selectPrimaryRole.jsp" />
+  	</definition>
+
+	<definition	name="selectAcadSessionTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Select Academic Session"/>
+		<put name="body" value="/selectPrimaryRole.jsp" />
+  	</definition>
+
+	<definition	name="timetableManagerEditTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Edit Timetable Manager"/>
+		<put name="body" value="/admin/timetableManagerEdit.jsp" />
+  	</definition>
+
+	<definition	name="timetableManagerAddTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Add Timetable Manager"/>
+		<put name="body" value="/admin/timetableManagerEdit.jsp" />
+  	</definition>
+
+	<definition	name="timetableManagerListTile" extends="pageLayoutDef">
+		<put name="onLoadFunction" type="string" value="onLoad='jumpToAnchor()'" />
+		<put name="title" type="string" value="Timetable Managers"/>
+		<put name="body" value="/admin/timetableManagerList.jsp" />
+  	</definition>
+
+  	<definition	name="loginRequiredTile" extends="pageLayoutDef">
+		<put name="header" value="/loginRequired.jsp" />
+  	</definition>
+
+	<definition	name="distributionTypeListTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Distribution Types"/>
+		<put name="body" value="/admin/distributionTypeList.jsp" />
+  	</definition>
+
+	<definition	name="distributionTypeEditTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Edit Distribution Type"/>
+		<put name="body" value="/admin/distributionTypeEdit.jsp" />
+  	</definition>
+
+	<definition	name="sessionListTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Academic Sessions"/>
+		<put name="body" value="/admin/sessionList.jsp" />
+  	</definition>
+
+	<definition	name="sessionEditTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Edit Academic Session"/>
+		<put name="body" value="/admin/sessionEdit.jsp" />
+  	</definition>
+
+	<definition	name="sessionAddTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Add Academic Session"/>
+		<put name="body" value="/admin/sessionEdit.jsp" />
+  	</definition>
+  	
+	<definition	name="buildingListTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Buildings"/>
+		<put name="body" value="/admin/buildingList.jsp" />
+  	</definition>
+
+	<definition	name="subjectListTile" extends="pageLayoutDef">
+		<put name="onLoadFunction" type="string" value="onLoad='jumpToAnchor()'" />
+		<put name="title" type="string" value="Subject Areas"/>
+		<put name="body" value="/admin/subjectList.jsp" />
+  	</definition>
+
+	<definition	name="subjectAreaAddTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Add Subject Area"/>
+		<put name="body" value="/admin/subjectAreaEdit.jsp" />
+  	</definition>
+
+	<definition	name="subjectAreaEditTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Edit Subject Area"/>
+		<put name="body" value="/admin/subjectAreaEdit.jsp" />
+  	</definition>
+
+	<definition	name="departmentListTile" extends="pageLayoutDef">
+		<put name="onLoadFunction" type="string" value="onLoad='jumpToAnchor()'" />
+		<put name="title" type="string" value="Departments"/>
+		<put name="body" value="/admin/departmentList.jsp" />
+  	</definition>
+
+  	<definition	name="roomSearchTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Rooms"/>
+		<put name="body" value="/admin/roomSearch.jsp" />
+  	</definition>
+
+	<definition	name="roomListTile" extends="roomSearchTile">
+		<put name="body2" value="/admin/roomList.jsp"/>
+		<put name="action2" value="roomChange"/>
+  	</definition>
+  	
+  	<definition	name="roomDetailTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Room Detail"/>
+		<put name="body" value="/admin/roomDetail.jsp" />
+  	</definition>
+  	
+  	<definition	name="editRoomTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Edit Room"/>
+		<put name="body" value="/admin/editRoom.jsp" />
+  	</definition>
+
+  	<definition	name="addRoomTile" extends="editRoomTile">
+		<put name="title" type="string" value="Add Room"/>
+  	</definition>
+  	  	
+  	<definition	name="editRoomPrefTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Edit Room Preference"/>
+		<put name="body" value="/admin/setUpRoomPref.jsp" />
+  	</definition>
+  	
+  	<definition	name="editRoomFeatureTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Edit Room Features"/>
+		<put name="body" value="/admin/editRoomFeature.jsp" />
+  	</definition>
+  	
+  	<definition	name="editRoomDeptTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Edit Room Availability"/>
+		<put name="body" value="/admin/editRoomDept.jsp" />
+  	</definition>
+  	
+  	<definition	name="editRoomGroupTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Edit Room Groups"/>
+		<put name="body" value="/admin/editRoomGroup.jsp" />
+  	</definition>
+  	
+ 	<definition	name="instructorSearchTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Instructors"/>
+		<put name="body" value="/user/instructorSearch.jsp" />
+  	</definition>
+
+	<definition	name="instructorListTile" extends="instructorSearchTile">
+		<put name="body2" value="/user/instructorList.jsp" />
+		<put name="action2" value="instructorChange"/>
+  	</definition>
+  	
+  	<definition	name="instructorDetailTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Instructor Detail"/>
+		<put name="body" value="/user/instructorDetail.jsp" />
+		<put name="showNavigation" value="true" />
+  	</definition>
+  	
+  	<definition	name="instructorInfoEditTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Edit Instructor"/>
+		<put name="body" value="/user/instructorInfoEdit.jsp" />
+		<put name="showNavigation" value="true" />
+  	</definition>  
+  	
+  	<definition	name="instructorAddTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Add Instructor"/>
+		<put name="body" value="/user/instructorAdd.jsp" />
+  	</definition> 
+  	
+  	<definition	name="instructorPrefsEditTile" extends="pageLayoutDef">
+	  	<put name="onLoadFunction" type="string" value="onLoad='jumpToAnchor()'" />
+		<put name="title" type="string" value="Instructor Preferences"/>
+		<put name="body" value="/user/instructorPrefsEdit.jsp" />
+		<put name="showNavigation" value="true" />
+  	</definition>	
+  	
+	<definition	name="instructorListUpdateTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Manage Instructor List"/>
+		<put name="body" value="/user/instructorListUpdate.jsp" />
+  	</definition>
+  	
+  	<definition	name="roomFeatureListTile" extends="roomFeatureSearchTile">
+		<put name="body2" value="/admin/roomFeatureList.jsp"/>
+		<put name="action2" value="roomFeatureChange" />
+  	</definition>
+  	
+  	<definition	name="roomFeatureSearchTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Room Features"/>
+		<put name="body" value="/admin/roomFeatureSearch.jsp" />
+  	</definition>
+
+  	<definition	name="roomFeatureEditTile" extends="pageLayoutDef">
+  		<put name="title" type="string" value="Edit Room Feature"/>
+		<put name="body" value="/admin/roomFeatureEdit.jsp" />
+  	</definition>
+  	
+  	<definition	name="roomFeatureAddTile" extends="pageLayoutDef">
+  		<put name="title" type="string" value="Add Room Feature"/>
+		<put name="body" value="/admin/roomFeatureAdd.jsp" />
+  	</definition>
+  	
+  	<definition	name="roomGroupSearchTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Room Groups"/>
+		<put name="body" value="/admin/roomGroupSearch.jsp" />
+  	</definition>
+  	
+  	<definition	name="roomGroupListTile" extends="roomGroupSearchTile">
+		<put name="body2" value="/admin/roomGroupList.jsp"/>
+		<put name="action2" value="roomGroupChange" />
+  	</definition>
+  	
+  	<definition	name="roomGroupAddTile" extends="pageLayoutDef">
+  		<put name="title" type="string" value="Add Room Group"/>
+		<put name="body" value="/admin/roomGroupAdd.jsp" />
+  	</definition>
+
+  	<definition	name="roomGroupEditTile" extends="pageLayoutDef">
+  		<put name="title" type="string" value="Edit Room Group"/>
+		<put name="body" value="/admin/roomGroupEdit.jsp" />
+  	</definition>
+
+  	<definition	name="globalRoomFeatureEditTile" extends="roomFeatureEditTile">
+		<put name="title" type="string" value="Global Room Feature"/>
+		<put name="body2" value="/admin/globalRoomFeatureEdit.jsp" />
+		<put name="action2" value="globalRoomFeatureEdit" />
+  	</definition>
+
+  	<definition	name="managerRoomFeatureEditTile" extends="roomFeatureEditTile">
+		<put name="title" type="string" value="Manager Room Feature"/>
+		<put name="body2" value="/admin/managerRoomFeatureEdit.jsp" />
+		<put name="action2" value="managerRoomFeatureEdit" />
+		
+  	</definition>
+  	  	<definition	name="roomDeptListTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Room Availability &amp; Sharing"/>
+		<put name="body" value="/admin/roomDeptList.jsp" />
+  	</definition>
+
+  	<definition	name="roomDeptEditTile" extends="pageLayoutDef">
+  		<put name="title" type="string" value="Edit Room Departments"/>
+		<put name="body" value="/admin/roomDeptEdit.jsp" />
+  	</definition>
+   	
+	<definition name="nonUnivLocationAddTile" extends="pageLayoutDef">
+  		<put name="title" type="string" value="Add Non-University Location"/>
+		<put name="body" value="/admin/addNonUnivLocation.jsp" />
+  	</definition>
+  	
+  	<definition name="specialUseRoomAddTile" extends="pageLayoutDef">
+  		<put name="title" type="string" value="Add Special Use Room"/>
+		<put name="body" value="/admin/addSpecialUseRoom.jsp" />
+  	</definition>
+
+  	<definition	name="instructionalOfferingSearchTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Instructional Offerings"/>
+		<put name="body" value="/user/instructionalOfferingSearch.jsp" />
+		<put name="action" value="instructionalOfferingSearch" />
+		<put name="showNavigation" value="true" />
+  	</definition>
+  	
+  	<definition	name="instructionalOfferingListTile" extends="instructionalOfferingSearchTile">
+		<put name="body2" value="/user/instructionalOfferingList.jsp" />
+		<put name="action2" value="instructionalOfferingChange" />
+  	</definition>
+
+  	<definition	name="crossListsModifyTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Instructional Offering Cross Lists"/>
+		<put name="body" value="/user/crossListsModify.jsp" />
+		<put name="showNavigation" value="true" />
+  	</definition>
+  	
+   	<definition	name="instructionalOfferingModifyTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Multiple Class Setup"/>
+		<put name="body" value="/user/instructionalOfferingModify.jsp" />
+		<put name="showNavigation" value="true" />
+  	</definition>
+ 
+  	<definition	name="instructionalOfferingConfigEditTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Instructional Offering Configuration"/>
+		<put name="body" value="/user/instructionalOfferingConfigEdit.jsp" />
+		<put name="showNavigation" value="true" />
+  	</definition>
+
+  	<definition	name="schedulingSubpartEditTile" extends="pageLayoutDef">
+		<put name="onLoadFunction" type="string" value="onLoad='jumpToAnchor()'" />
+		<put name="title" type="string" value="Edit Scheduling Subpart"/>
+		<put name="body" value="/user/schedulingSubpartEdit.jsp" />
+		<put name="showNavigation" value="true" />
+  	</definition>
+  	
+  	<definition	name="schedulingSubpartDetailTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Scheduling Subpart Detail"/>
+		<put name="body" value="/user/schedulingSubpartDetail.jsp" />
+		<put name="showNavigation" value="true" />
+  	</definition>
+  	
+  	<definition	name="preferenceLevelListTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Preference Levels"/>
+		<put name="body" value="/admin/prefsLevelList.jsp" />
+  	</definition>
+  	
+  	<definition	name="itypeDescListTile" extends="pageLayoutDef">
+	<put name="title" type="string" value="Instructional Types"/>
+	<put name="body" value="/admin/itypeDescList.jsp" />
+  	</definition>
+	
+  
+	<definition	name="managerSettingsTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Manager Settings"/>
+		<put name="body" value="/user/managerSettings.jsp" />
+  	</definition>
+  
+	<definition	name="managerSettingsEditTile" extends="managerSettingsTile">
+		<put name="title" type="string" value="Edit Manager Setting"/>
+  	</definition>
+
+	<definition	name="settingsTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Default Manager Settings"/>
+		<put name="body" value="/admin/settings.jsp" />
+  	</definition>
+
+	<definition	name="settingsAddTile" extends="settingsTile">
+		<put name="title" type="string" value="Add Default Manager Setting"/>
+  	</definition>
+
+	<definition	name="settingsEditTile" extends="settingsTile">
+		<put name="title" type="string" value="Edit Default Manager Setting"/>
+  	</definition>
+  
+	<definition	name="solverParamGroupsTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Solver Parameter Groups"/>
+		<put name="body" value="/admin/solverParamGroups.jsp" />
+  	</definition>
+
+	<definition	name="solverParamGroupsAddTile" extends="solverParamGroupsTile">
+		<put name="title" type="string" value="Add Solver Parameter Group"/>
+  	</definition>
+
+	<definition	name="solverParamGroupsEditTile" extends="solverParamGroupsTile">
+		<put name="title" type="string" value="Edit Solver Parameter Group"/>
+  	</definition>
+
+	<definition	name="solverParamDefTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Solver Parameters"/>
+		<put name="body" value="/admin/solverParamDef.jsp" />
+  	</definition>
+
+	<definition	name="solverParamDefAddTile" extends="solverParamDefTile">
+		<put name="title" type="string" value="Add Solver Parameter"/>
+  	</definition>
+
+	<definition	name="solverParamDefEditTile" extends="solverParamDefTile">
+		<put name="title" type="string" value="Edit Solver Parameter"/>
+  	</definition>
+
+	<definition	name="solverSettingsTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Solver Configurations"/>
+		<put name="body" value="/admin/solverSettings.jsp" />
+  	</definition>
+
+	<definition	name="solverSettingsAddTile" extends="solverSettingsTile">
+		<put name="title" type="string" value="Add Solver Configuration"/>
+  	</definition>
+
+	<definition	name="solverSettingsEditTile" extends="solverSettingsTile">
+		<put name="title" type="string" value="Edit Solver Configuration"/>
+  	</definition>
+
+	<definition	name="solverInfoDefTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Solution Information Definitions"/>
+		<put name="body" value="/admin/solverInfoDef.jsp" />
+  	</definition>
+  	
+	<definition	name="listSolutionsTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Timetables"/>
+		<put name="body" value="/tt/solutions.jsp" />
+		<put name="showSolverWarnings" value="true" />
+  	</definition>
+
+	<definition	name="solverLogTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Solver Log"/>
+		<put name="body" value="/tt/log.jsp" />
+		<put name="showSolverWarnings" value="true" />
+  	</definition>
+
+	<definition	name="solverTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Solver"/>
+		<put name="body" value="/tt/solver.jsp" />
+		<put name="showSolverWarnings" value="true" />
+  	</definition>
+  	
+	<definition	name="manageSolversTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Manage Solvers"/>
+		<put name="body" value="/tt/manageSolvers.jsp" />
+  	</definition>
+
+	<definition	name="cbsTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Conflict-Based Statistics"/>
+		<put name="body" value="/tt/cbs.jsp" />
+		<put name="showSolverWarnings" value="true" />
+  	</definition>
+
+	<definition	name="timetableTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Timetable"/>
+		<put name="body" value="/tt/timetable.jsp" />
+		<put name="showSolverWarnings" value="true" />
+  	</definition>
+  	
+	<definition	name="unassignedTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Not-Assigned Classes"/>
+		<put name="body" value="/tt/unassigned.jsp" />
+		<put name="showSolverWarnings" value="true" />
+  	</definition>
+
+	<definition	name="suggestionsTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Suggestions"/>
+		<put name="body" value="/tt/suggestions.jsp" />
+		<put name="showSolverWarnings" value="true" />
+  	</definition>
+
+	<definition	name="statsTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Hibernate Statistics"/>
+		<put name="body" value="/admin/hibernateStats.jsp" />
+  	</definition>
+  	
+  	<definition	name="classDetailTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Class Detail"/>
+		<put name="body" value="/user/classDetail.jsp" />
+		<put name="showNavigation" value="true" />
+  	</definition>
+
+  	<definition	name="classEditTile" extends="pageLayoutDef">
+		<put name="onLoadFunction" type="string" value="onLoad='jumpToAnchor()'"/>
+		<put name="title" type="string" value="Edit Class"/>
+		<put name="body" value="/user/classEdit.jsp" />
+		<put name="showNavigation" value="true" />
+  	</definition>
+  	
+  	<definition	name="classSearchTile" extends="pageLayoutDef">
+	  	<put name="onLoadFunction" type="string" value="onLoad='jumpToAnchor()'" />
+		<put name="title" type="string" value="Classes"/>
+		<put name="body" value="/user/classSearch.jsp" />
+		<put name="action" value="classSearch" />
+		<put name="showNavigation" value="true" />
+  	</definition>
+  	
+  	<definition	name="classListTile" extends="classSearchTile">
+		<put name="body2" value="/user/classList.jsp" />
+		<put name="action2" value="classChange" />
+  	</definition>
+  	
+	<definition	name="distributionPrefsTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Distribution Preferences"/>
+		<put name="body" value="/user/distributionPrefs.jsp" />
+		<put name="showNavigation" value="true" />
+  	</definition>
+  	
+	<definition	name="adddistributionPrefTile" extends="distributionPrefsTile">
+		<put name="title" type="string" value="Add Distribution Preference"/>
+  	</definition>
+
+	<definition	name="editDistributionPrefTile" extends="distributionPrefsTile">
+		<put name="title" type="string" value="Edit Distribution Preference"/>
+  	</definition>
+
+	<definition	name="hibernateQueryTestTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Test HQL"/>
+		<put name="body" value="/admin/hibernateQueryTest.jsp" />
+  	</definition>
+
+	<definition	name="classOwnerChangeTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Change Class Owner"/>
+		<put name="body" value="/admin/classOwnerChange.jsp" />
+  	</definition>
+  	<definition	name="classAssignmentsReportSearchTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Class Assignments"/>
+		<put name="body" value="/user/classAssignmentsReportSearch.jsp" />
+		<put name="action" value="classAssignmentsReportSearch" />
+		<put name="showNavigation" value="true" />
+  	</definition>
+  	
+  	<definition	name="classAssignmentsReportListTile" extends="classAssignmentsReportSearchTile">
+		<put name="body2" value="/user/classAssignmentsReportList.jsp" />
+		<put name="action2" value="classAssignmentsReportChange" />
+  	</definition>
+  	
+	<definition	name="assignmentHistoryTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Assignment History"/>
+		<put name="body" value="/tt/history.jsp" />
+		<put name="showSolverWarnings" value="true" />
+  	</definition>
+  	
+  	<definition name="solutionChangesTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Changes"/>
+		<put name="body" value="/tt/changes.jsp" />
+		<put name="showSolverWarnings" value="true" />
+  	</definition>
+
+  	<definition name="assignedClassesTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Assigned Classes"/>
+		<put name="body" value="/tt/assigned.jsp" />
+		<put name="showSolverWarnings" value="true" />
+  	</definition>
+
+  	<definition name="solutionReportTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Solution Reports"/>
+		<put name="body" value="/tt/solutionReport.jsp" />
+		<put name="showSolverWarnings" value="true" />
+  	</definition>
+  	
+  	<definition name="timePatternsTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Time Patterns"/>
+		<put name="body" value="/admin/timePatterns.jsp" />
+  	</definition>
+
+  	<definition name="addTimePatternTile" extends="timePatternsTile">
+		<put name="title" type="string" value="Add Time Pattern"/>
+  	</definition>
+
+  	<definition name="editTimePatternTile" extends="timePatternsTile">
+		<put name="title" type="string" value="Edit Time Pattern"/>
+  	</definition>
+
+  	<definition name="solverGroupTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Solver Groups"/>
+		<put name="body" value="/admin/solverGroups.jsp" />
+  	</definition>
+
+  	<definition name="solverGroupAddTile" extends="solverGroupTile">
+		<put name="title" type="string" value="Add Solver Group"/>
+  	</definition>
+
+  	<definition name="solverGroupEditTile" extends="solverGroupTile">
+		<put name="title" type="string" value="Edit Solver Group"/>
+  	</definition>
+
+  	<definition name="instructionalOfferingDetailTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Instructional Offering Detail"/>
+		<put name="body" value="/user/instructionalOfferingDetail.jsp" />
+		<put name="showNavigation" value="true" />
+  	</definition>
+
+  	<definition name="datePatternsTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Date Patterns"/>
+		<put name="body" value="/admin/datePatterns.jsp" />
+  	</definition>
+
+  	<definition name="addDatePatternTile" extends="datePatternsTile">
+		<put name="title" type="string" value="Add Date Pattern"/>
+  	</definition>
+
+  	<definition name="editDatePatternTile" extends="datePatternsTile">
+		<put name="title" type="string" value="Edit Date Pattern"/>
+  	</definition>
+
+  	<definition name="activeSessionsTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Active User Sessions"/>
+		<put name="body" value="/admin/activeSessions.jsp" />
+  	</definition>
+  	
+  	<definition name="courseOfferingEditTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Edit Course Offering"/>
+		<put name="body" value="/user/courseOfferingEdit.jsp" />
+  	</definition>
+  	
+  	<definition name="designatorListTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Designator List"/>
+		<put name="body" value="/user/designatorList.jsp" />
+  	</definition>
+  	
+  	<definition name="designatorAddTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Add Designator"/>
+		<put name="body" value="/user/designatorEdit.jsp" />
+  	</definition>
+  	
+  	<definition name="designatorEditTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Edit Designator"/>
+		<put name="body" value="/user/designatorEdit.jsp" />
+  	</definition>
+  	
+  	<definition name="applicationConfigTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Application Configuration"/>
+		<put name="body" value="/admin/applicationConfig.jsp" />
+  	</definition>
+
+  	<definition name="applicationConfigAddTile" extends="applicationConfigTile">
+		<put name="title" type="string" value="Add Application Setting"/>
+  	</definition>
+
+  	<definition name="applicationConfigEditTile" extends="applicationConfigTile">
+		<put name="title" type="string" value="Edit Application Setting"/>
+  	</definition>
+
+  	<definition name="reservationListTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Reservations"/>
+		<put name="body" value="/user/reservationList.jsp" />
+  	</definition>
+  	
+  	<definition name="reservationAddTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Add Reservation"/>
+		<put name="body" value="/user/reservationEdit.jsp" />
+  	</definition>
+  	
+  	<definition name="reservationEditTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Edit Reservation"/>
+		<put name="body" value="/user/reservationEdit.jsp" />
+  	</definition>
+  	
+  	<definition name="courseReservationEditTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Course Reservations"/>
+		<put name="body" value="/user/courseReservationEdit.jsp" />
+  	</definition>
+  	
+  	<definition name="academicAreaReservationEditTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Academic Area Reservations"/>
+		<put name="body" value="/user/academicAreaReservationEdit.jsp" />
+  	</definition>
+  	
+  	<definition name="posReservationEditTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Program of Study Reservations"/>
+		<put name="body" value="/user/posReservationEdit.jsp" />
+  	</definition>
+  	
+  	<definition name="individualReservationEditTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Individual Reservations"/>
+		<put name="body" value="/user/individualReservationEdit.jsp" />
+  	</definition>
+  	
+  	<definition name="studentGroupReservationEditTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Student Group Reservations"/>
+		<put name="body" value="/user/studentGroupReservationEdit.jsp" />
+  	</definition>
+  	
+  	<definition name="departmentAddTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Add Department"/>
+		<put name="body" value="/admin/departmentEdit.jsp" />
+  	</definition>
+
+  	<definition name="departmentEditTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Edit Department"/>
+		<put name="body" value="/admin/departmentEdit.jsp" />
+  	</definition>
+
+   	<definition	name="classInstructorAssignmentTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Assign Instructors"/>
+		<put name="body" value="/user/classInstructorAssignment.jsp" />
+		<put name="showNavigation" value="true" />
+  	</definition>
+
+   	<definition	name="chameleonTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Chameleon"/>
+		<put name="body" value="/admin/chameleon.jsp" />
+  	</definition>
+ 
+   	<definition	name="sectioningDemoTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Student Sectioning Demo"/>
+		<put name="body" value="/admin/sectioningDemo.jsp" />
+  	</definition>
+ 
+   	<definition	name="inquiryTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Contact Us"/>
+		<put name="body" value="/user/inquiry.jsp" />
+  	</definition>
+  	
+   	<definition	name="dataImportTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Data Import"/>
+		<put name="body" value="/admin/dataImport.jsp" />
+  	</definition>
+  	
+   	<definition	name="exactTimeEditTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Exact Time Pattern"/>
+		<put name="body" value="/admin/exactTimeEdit.jsp" />
+  	</definition>
+
+   	<definition	name="lastChangesTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Last Changes"/>
+		<put name="body" value="/admin/lastChanges.jsp" />
+  	</definition>
+   	<definition	name="rollForwardSessionTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Roll Forward Session"/>
+		<put name="body" value="/admin/rollForwardSession.jsp" />
+  	</definition>
+
+   	<definition	name="deptStatusTypeListTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Status Types"/>
+		<put name="body" value="/admin/deptStatusTypeEdit.jsp" />
+  	</definition>
+  	
+   	<definition	name="deptStatusTypeAddTile" extends="deptStatusTypeListTile">
+		<put name="title" type="string" value="Add Status Type"/>
+  	</definition>
+
+   	<definition	name="deptStatusTypeEditTile" extends="deptStatusTypeListTile">
+		<put name="title" type="string" value="Edit Status Type"/>
+  	</definition>
+
+   	<definition	name="userListTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Users (Database Authentication)"/>
+		<put name="body" value="/admin/userEdit.jsp" />
+  	</definition>
+
+   	<definition	name="userAddTile" extends="userListTile">
+		<put name="title" type="string" value="Add User"/>
+  	</definition>
+
+   	<definition	name="userEditTile" extends="userListTile">
+		<put name="title" type="string" value="Edit User"/>
+  	</definition>
+
+   	<definition	name="buildingEditTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Edit Building"/>
+		<put name="body" value="/admin/buildingEdit.jsp" />
+  	</definition>
+
+   	<definition	name="buildingAddTile" extends="buildingEditTile">
+		<put name="title" type="string" value="Add Building"/>
+  	</definition>
+
+   	<definition	name="itypeDescEditTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Edit Instructional Type"/>
+		<put name="body" value="/admin/itypeDescEdit.jsp" />
+  	</definition>
+
+   	<definition	name="itypeDescAddTile" extends="itypeDescEditTile">
+		<put name="title" type="string" value="Add Instructional Type"/>
+  	</definition>
+</tiles-definitions>

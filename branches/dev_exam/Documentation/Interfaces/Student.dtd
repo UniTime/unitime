@@ -1,0 +1,60 @@
+<!-- 
+ * UniTime 3.0 (University Course Timetabling & Student Sectioning Application)
+ * Copyright (C) 2007, UniTime.org
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ -->
+
+<!ELEMENT acadAreaClass EMPTY >
+<!ATTLIST acadAreaClass academicArea CDATA #REQUIRED >
+<!ATTLIST acadAreaClass academicClass CDATA #REQUIRED >
+
+<!ELEMENT major EMPTY >
+<!ATTLIST major academicArea CDATA #REQUIRED >
+<!ATTLIST major code CDATA #REQUIRED >
+
+<!ELEMENT minor EMPTY >
+<!ATTLIST minor academicArea CDATA #REQUIRED >
+<!ATTLIST minor code CDATA #REQUIRED >
+
+<!ELEMENT studentGroup EMPTY >
+<!ATTLIST studentGroup group CDATA #REQUIRED >
+
+<!ELEMENT studentAccomodation EMPTY >
+<!ATTLIST studentAccomodation accomodation CDATA #REQUIRED >
+
+<!ELEMENT student ( studentAcadAreaClass, studentMajors, studentMinors?, studentGroups?, studentAccomodations? ) >
+<!ATTLIST student externalId CDATA #REQUIRED >
+<!ATTLIST student firstName CDATA #REQUIRED >
+<!ATTLIST student lastName CDATA #REQUIRED >
+<!ATTLIST student middleName CDATA #IMPLIED >
+<!ATTLIST student email CDATA #IMPLIED >
+
+<!ELEMENT studentAcadAreaClass ( acadAreaClass+ ) >
+
+<!ELEMENT studentMajors ( major+ ) >
+
+<!ELEMENT studentMinors ( minor* ) >
+
+<!ELEMENT studentGroups ( studentGroup* ) >
+
+<!ELEMENT studentAccomodations ( studentAccomodation* ) >
+
+<!ELEMENT students ( student+ ) >
+<!ATTLIST students campus CDATA #REQUIRED >
+<!ATTLIST students term CDATA #REQUIRED >
+<!ATTLIST students year CDATA #REQUIRED >
+
+
