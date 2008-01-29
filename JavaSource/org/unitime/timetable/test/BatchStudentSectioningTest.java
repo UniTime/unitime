@@ -30,6 +30,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeSet;
 
+import net.sf.cpsolver.ifs.heuristics.BacktrackNeighbourSelection;
 import net.sf.cpsolver.ifs.model.Neighbour;
 import net.sf.cpsolver.ifs.model.Value;
 import net.sf.cpsolver.ifs.model.Variable;
@@ -49,6 +50,8 @@ import net.sf.cpsolver.studentsct.report.DistanceConflictTable;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 
 
@@ -214,12 +217,13 @@ public class BatchStudentSectioningTest {
             cfg.putAll(System.getProperties());
             
             if (args.length>=2) {
-                File logFile = new File(ToolBox.configureLogging(args[1], null, true, false));
+                File logFile = new File(ToolBox.configureLogging(args[1], cfg, true, false));
                 cfg.setProperty("General.Output", logFile.getParentFile().getAbsolutePath());
             } else {
                 ToolBox.configureLogging();
                 cfg.setProperty("General.Output", System.getProperty("user.home", ".")+File.separator+"Sectioning-Test");
             }
+            Logger.getLogger(BacktrackNeighbourSelection.class).setLevel(cfg.getPropertyBoolean("Debug.BacktrackNeighbourSelection",false)?Level.DEBUG:Level.INFO);
             
             HibernateUtil.configureHibernate(cfg);
             
