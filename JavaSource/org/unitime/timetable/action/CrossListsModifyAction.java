@@ -348,6 +348,7 @@ public class CrossListsModifyAction extends Action {
 		                if ( (ids.size()>1 && resv.getCourseOffering().getUniqueId().equals(co1.getUniqueId()))
 		                      || ids.size()==1  ) {
 	                        Debug.debug("Removing course offering from course offering reservations");
+	                        resv.getCourseOffering().getCourseReservations().remove(resv);
 		                    iterR.remove();
 		                    hibSession.delete(resv);
 		                }
@@ -362,6 +363,7 @@ public class CrossListsModifyAction extends Action {
 			                CourseOfferingReservation resv = (CourseOfferingReservation) iterR.next();
 			                if ( (ids.size()>1 && resv.getCourseOffering().getUniqueId().equals(co1.getUniqueId()))
 			                      || ids.size()==1  ) {
+			                    resv.getCourseOffering().getCourseReservations().remove(resv);
 			                    iterR.remove();
 			                    hibSession.delete(resv);
 			                }
@@ -381,6 +383,7 @@ public class CrossListsModifyAction extends Action {
 					                CourseOfferingReservation resv = (CourseOfferingReservation) iterR.next();
 					                if ( (ids.size()>1 && resv.getCourseOffering().getUniqueId().equals(co1.getUniqueId()))
 					                      || ids.size()==1  ) {
+					                    resv.getCourseOffering().getCourseReservations().remove(resv);
 					                    iterR.remove();
 					                    hibSession.delete(resv);
 					                }
