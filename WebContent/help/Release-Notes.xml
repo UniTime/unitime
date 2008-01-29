@@ -29,6 +29,57 @@
 	<category>
 		<title>USER INTERFACE</title>
 		<item>
+			<name>Instructional Offering Cross Lists</name>
+			<description>
+				<line>Fixed "deleted object would be re-saved by cascade problem (CourseOfferingReservation)" 
+				thrown while un-cross listing an offering with two courses.</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructional Offering Configuration Edit</name>
+			<description>
+				<line>Fixed problem "Configuration could not be updated. If possible, split your configuration 
+				change into 2 or more separate operations." that occurred while a class with an instructor 
+				assignment was about to be deleted.</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>SOLVER</title>
+		<item>
+			<name>Database Load</name>
+			<description>
+				<line>Load of distribution constraints: order classes within a subpart by section 
+				numbers not by unique ids (due to the roll forward these two no longer match).</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>OTHER</title>
+		<item>
+			<name>Roll Forward</name>
+			<description>
+				<line>Added the ability to use the course catalog to add new course offerings to the set of 
+					course offerings for the term being rolled forward.
+					<line>This is should only be used after all course offerings for all subject areas have been rolled forward 
+					because it will cause problems with courses that are cross-listed across subject areas.</line>
+					<line>This is only useful if you have loaded the course catalog table for the term you are rolling forward.</line>
+					<line>If course subpart table is populated this will use that information to set up a default instructional 
+					offering configuration with the appropriate subparts.</line>
+					<line>All course offerings created will be marked as not offered.</line>
+				</line>
+				<line>Various bug fixed to roll forward process.</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.0.54</version>
+	<release-date>Sun, 2 Dec 2007</release-date>
+	<category>
+		<title>USER INTERFACE</title>
+		<item>
 			<name>Status Types</name>
 			<description>
 				<line>Page split to add/edit status and list of statuses.</line>
