@@ -1840,6 +1840,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
         }
 
         Debug.debug("Deleting class (3) ... " +  c.getClassLabel() + " - " + c.getUniqueId());
+        c.deleteAllDependentObjects(hibSession, false);
         hibSession.delete(c);
         //hibSession.flush();
     }
