@@ -112,6 +112,8 @@
       <form-bean name="subjectAreaEditForm" type="org.unitime.timetable.form.SubjectAreaEditForm" />
       <form-bean name="buildingEditForm" type="org.unitime.timetable.form.BuildingEditForm" />
       <form-bean name="itypeDescEditForm" type="org.unitime.timetable.form.ItypeDescEditForm" />
+      <form-bean name="examPeriodEditForm" type="org.unitime.timetable.form.ExamPeriodEditForm" />
+      <form-bean name="editRoomPerPrefForm" type="org.unitime.timetable.form.EditRoomPerPrefForm" />
    </form-beans>
 
    <global-exceptions>
@@ -1248,6 +1250,7 @@
       <forward name="showEditRoomDept" path="/editRoomDept.do" />
       <forward name="showEditRoom" path="/editRoom.do" />
       <forward name="showRoomDetail" path="roomDetailTile" />
+      <forward name="showEditRoomPeriodPref" path="/editRoomPerPref.do" />
     </action>
 
     <action
@@ -1911,6 +1914,31 @@
        		name="submit" 
        		path="/rollForwardSession.do" />
       </action>
+
+    <action
+      attribute="examPeriodEditForm"
+      input="examPeriodsTile"
+      name="examPeriodEditForm"
+      path="/examPeriodEdit"
+      scope="request"
+      type="org.unitime.timetable.action.ExamPeriodEditAction" 
+      validate="false">
+      <forward name="list" path="examPeriodsTile" />
+      <forward name="add" path="addExamPeriodTile" />
+      <forward name="edit" path="editExamPeriodTile" />
+    </action>
+
+    <action
+      attribute="editRoomPerPrefForm"
+      input="/admin/editRoomPerPref.jsp"
+      name="editRoomPerPrefForm"
+      path="/editRoomPerPref"
+      scope="request"
+      type="org.unitime.timetable.action.EditRoomPerPrefAction"
+      validate="false">
+      <forward name="back" path="/roomDetail.do" />
+      <forward name="edit" path="editRoomPerPrefTile" />
+    </action>
 
    </action-mappings>
 
