@@ -95,6 +95,12 @@
 		 		type="java.lang.Boolean"
 		 		not-null="true"
 		 		/>
+		 	<property
+		 		name="examPref"
+		 		column="EXAM_PREF"
+		 		type="java.lang.Boolean"
+		 		not-null="true"
+		 		/>
 			<set name="departments" table="DIST_TYPE_DEPT" inverse="false">
 				<cache include="non-lazy" usage="read-write"/>
 				<key column="DIST_TYPE_ID"/> 

@@ -205,11 +205,11 @@ public class LookupTables {
      * @throws Exception
      */
     public static void setupDistribTypes(HttpServletRequest request) throws Exception {
-        request.setAttribute(DistributionType.DIST_TYPE_ATTR_NAME, DistributionType.findApplicable(request, false));
+        request.setAttribute(DistributionType.DIST_TYPE_ATTR_NAME, DistributionType.findApplicable(request, false, false));
     }
     
     public static void setupInstructorDistribTypes(HttpServletRequest request) throws Exception {
-        request.setAttribute(DistributionType.DIST_TYPE_ATTR_NAME, DistributionType.findApplicable(request, true));
+        request.setAttribute(DistributionType.DIST_TYPE_ATTR_NAME, DistributionType.findApplicable(request, true, false));
     }
 
     public static void setupRoomGroups(HttpServletRequest request, PreferenceGroup pg) throws Exception {

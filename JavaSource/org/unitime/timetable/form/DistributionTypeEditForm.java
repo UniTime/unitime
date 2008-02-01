@@ -104,6 +104,12 @@ public class DistributionTypeEditForm extends RefTableEntryEditForm {
 	public void setInstructorPref(boolean instructorPref) {
 		((DistributionType)refTableEntry).setInstructorPref(new Boolean(instructorPref));
 	}
+    public boolean isExamPref() {
+        return (((DistributionType)refTableEntry).isExamPref()==null?false:((DistributionType)refTableEntry).isExamPref().booleanValue());
+    }
+    public void setExamPref(boolean examPref) {
+        ((DistributionType)refTableEntry).setExamPref(new Boolean(examPref));
+    }
 	public String getAllowedPref() {
 		return ((DistributionType)refTableEntry).getAllowedPref();
 	}

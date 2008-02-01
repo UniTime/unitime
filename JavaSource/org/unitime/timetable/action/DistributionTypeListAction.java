@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.action;
 
+import java.util.Vector;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -59,7 +61,10 @@ public class DistributionTypeListAction extends Action {
 		HttpServletRequest request,
 		HttpServletResponse response) throws HibernateException {
 		DistributionTypeListForm distributionTypeListForm = (DistributionTypeListForm) form;
-		distributionTypeListForm.setRefTableEntries(DistributionType.findAll());
+		Vector distTypes = new Vector();
+		distTypes.addAll(DistributionType.findAll(false,false));
+		distTypes.addAll(DistributionType.findAll(false,true));
+		distributionTypeListForm.setRefTableEntries(distTypes);
 		return mapping.findForward("showDistributionTypeList");
 		
 	}
