@@ -153,6 +153,8 @@ public class EditRoomAction extends Action {
                 editRoomForm.setExternalId(null);
             }
             editRoomForm.setCapacity(location.getCapacity().toString());
+            editRoomForm.setExamCapacity(location.getExamCapacity().toString());
+            editRoomForm.setExamEnabled(location.isExamEnabled());
             editRoomForm.setIgnoreTooFar(location.isIgnoreTooFar());
             editRoomForm.setIgnoreRoomCheck(location.isIgnoreRoomCheck());
             editRoomForm.setCoordX(location.getCoordinateX()==null || location.getCoordinateX().intValue()<0?null:location.getCoordinateX().toString());
@@ -273,6 +275,12 @@ public class EditRoomAction extends Action {
 			if (editRoomForm.getCapacity() != null && !editRoomForm.getCapacity().trim().equalsIgnoreCase("")) {
 				location.setCapacity(Integer.valueOf(editRoomForm.getCapacity().trim()));
 			}
+			
+            if (editRoomForm.getExamCapacity() != null && !editRoomForm.getExamCapacity().trim().equalsIgnoreCase("")) {
+                location.setExamCapacity(Integer.valueOf(editRoomForm.getExamCapacity().trim()));
+            }
+
+            location.setExamEnabled(editRoomForm.getExamEnabled());
 				
 			if (editRoomForm.isIgnoreTooFar() == null || !editRoomForm.isIgnoreTooFar().booleanValue()) {
 				location.setIgnoreTooFar(Boolean.FALSE);
@@ -344,6 +352,8 @@ public class EditRoomAction extends Action {
             rd.setRoom(room); rd.setDepartment(new DepartmentDAO().get(Long.valueOf(editRoomForm.getControlDept()))); rd.setControl(Boolean.TRUE);
             room.getRoomDepts().add(rd);
             room.setCapacity(Integer.valueOf(editRoomForm.getCapacity().trim()));
+            room.setExamCapacity(Integer.valueOf(editRoomForm.getExamCapacity().trim()));
+            room.setExamEnabled(editRoomForm.getExamEnabled());
             room.setIgnoreTooFar(Boolean.FALSE);
             room.setIgnoreRoomCheck(editRoomForm.isIgnoreRoomCheck()!=null && editRoomForm.isIgnoreRoomCheck().booleanValue());
             room.setExternalUniqueId(editRoomForm.getExternalId());

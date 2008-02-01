@@ -144,6 +144,11 @@ public class RoomDetailAction extends Action {
 					|| doit.equals(rsc.getMessage("button.addRoomPreference"))) {
 				return mapping.findForward("showEditRoomPref");
 			}
+			
+            //modify room departments
+            if(doit.equals(rsc.getMessage("button.modifyRoomPeriodPreferences"))) {
+                return mapping.findForward("showEditRoomPeriodPref");
+            }
 		}
 		
 		if (request.getParameter("id")==null && roomDetailForm.getId()==null)
@@ -206,6 +211,9 @@ public class RoomDetailAction extends Action {
 		LookupTables.setupPrefLevels(request);
 		
 		//set location information in form
+		roomDetailForm.setExamEnabled(location.isExamEnabled());
+		roomDetailForm.setExamCapacity(location.getExamCapacity());
+		roomDetailForm.setExamPref(location.getExamPreferencesHtml());
 		roomDetailForm.setCapacity(location.getCapacity());
 		roomDetailForm.setCoordinateX(location.getCoordinateX());
 		roomDetailForm.setCoordinateY(location.getCoordinateY());

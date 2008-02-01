@@ -213,6 +213,25 @@
 			</TD>
 		</TR>
 		
+		<% if (admin) { %>
+		<TR>
+			<TD nowrap>Examination Room:</TD>
+			<TD>
+				<html:checkbox property="examEnabled"/>
+			</TD>
+		</TR>
+
+		<TR>
+			<TD nowrap>Exam Seating Capacity:</TD>
+			<TD>
+				<html:text property="examCapacity" maxlength="15" size="10"/>
+			</TD>
+		</TR>
+		<% } else { %>
+			<html:hidden property="examEnabled"/>
+			<html:hidden property="examCapacity"/>
+		<% } %>
+		
 		<TR>
 			<TD colspan='2'>
 				<tt:section-title/>

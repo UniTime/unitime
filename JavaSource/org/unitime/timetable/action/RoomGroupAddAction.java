@@ -222,7 +222,8 @@ public class RoomGroupAddAction extends Action {
         if (!isAdmin && (departments.size() == 1)) {
         	Department d = (Department) departments.iterator().next();
         	roomGroupEditForm.setDeptCode(d.getDeptCode());
-        } else if (webSession.getAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME) != null && !"All".equalsIgnoreCase((String)webSession.getAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME))) {
+        } else if (webSession.getAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME) != null && !"All".equalsIgnoreCase((String)webSession.getAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME))
+                && !"Exam".equalsIgnoreCase((String)webSession.getAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME))) {
         	roomGroupEditForm.setDeptCode(webSession.getAttribute(
 					Constants.DEPT_CODE_ATTR_ROOM_NAME).toString());
 		}

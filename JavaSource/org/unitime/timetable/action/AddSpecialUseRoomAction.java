@@ -297,6 +297,8 @@ public class AddSpecialUseRoomAction extends Action {
 			room.setCoordinateX(extRoom.getCoordinateX());
 			room.setCoordinateY(extRoom.getCoordinateY());
 			room.setCapacity(extRoom.getCapacity());
+			room.setExamCapacity(0);
+			room.setExamEnabled(Boolean.FALSE);
 			room.setRoomNumber(roomNum);
 			room.setScheduledRoomType("specialUse");
 			room.setExternalUniqueId(extRoom.getExternalUniqueId());
