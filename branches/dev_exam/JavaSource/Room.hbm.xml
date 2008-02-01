@@ -104,6 +104,29 @@
 		/>
 			 
 		<property
+			name="examEnabled"
+			column="EXAM_ENABLE"
+			type="java.lang.Boolean"
+			not-null="false"
+		/>
+
+		<property
+			name="examCapacity"
+			column="EXAM_CAPACITY"
+			type="java.lang.Integer"
+			not-null="false"
+			length="10"
+		/>
+
+		<property
+			name="examPref"
+			column="EXAM_Pref"
+			type="java.lang.String"
+			not-null="false"
+			length="1000"
+		/>
+
+		<property
 			name="displayName"
 			column="DISPLAY_NAME"
 			type="java.lang.String"

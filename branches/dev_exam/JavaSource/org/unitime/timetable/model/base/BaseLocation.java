@@ -42,6 +42,9 @@ public abstract class BaseLocation  implements Serializable {
 	public static String PROP_MANAGER_IDS = "managerIds";
 	public static String PROP_PATTERN = "pattern";
 	public static String PROP_DISPLAY_NAME = "displayName";
+	public static String PROP_EXAM_ENABLE = "examEnabled";
+	public static String PROP_EXAM_CAPACITY = "examCapacity";
+	public static String PROP_EXAM_PREF = "examPref";
 
 
 	// constructors
@@ -95,6 +98,9 @@ public abstract class BaseLocation  implements Serializable {
 	private java.lang.String managerIds;
 	private java.lang.String pattern;
 	private java.lang.String displayName;
+	private java.lang.Boolean examEnabled;
+	private java.lang.Integer examCapacity;
+	private java.lang.String examPref;
 
 	// many to one
 	private org.unitime.timetable.model.Session session;
@@ -353,9 +359,29 @@ public abstract class BaseLocation  implements Serializable {
 		getRoomDepts().add(roomDept);
 	}
 
+	public java.lang.Boolean isExamEnabled() {
+	    return examEnabled;
+	}
+	
+	public void setExamEnabled(java.lang.Boolean examEnabled) {
+	    this.examEnabled = examEnabled;
+	}
 
-
-
+	public java.lang.Integer getExamCapacity() {
+	    return examCapacity;
+	}
+	
+	public void setExamCapacity(java.lang.Integer examCapacity) {
+	    this.examCapacity = examCapacity;
+	}
+	
+	public java.lang.String getExamPref() {
+	    return examPref;
+	}
+	
+	public void setExamPref(java.lang.String examPref) {
+	    this.examPref = examPref;
+	}
 
 	public boolean equals (Object obj) {
 		if (null == obj) return false;

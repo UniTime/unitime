@@ -45,6 +45,7 @@
 					onkeydown="return checkKey(event, this);" >
 					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
 					<html:option value="<%=Constants.ALL_OPTION_LABEL%>">All Managed</html:option>
+					<html:option value="Exam">All Examination Rooms</html:option>
 					<html:options collection="<%=Department.DEPT_ATTR_NAME%>" 
 						property="value" labelProperty="label"/>
 					</html:select>

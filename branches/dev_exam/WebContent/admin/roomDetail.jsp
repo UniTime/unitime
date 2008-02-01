@@ -98,6 +98,12 @@
 							>
 							<bean:message key="button.modifyRoomFeatures" />
 					</html:submit>
+					<logic:equal name="<%=frmName%>" property="examEnabled" value="true">
+						&nbsp;
+						<html:submit property="doit"  styleClass="btn" accesskey="X" titleKey="title.modifyRoomPeriodPreferences">
+							<bean:message key="button.modifyRoomPeriodPreferences" />
+						</html:submit>
+					</logic:equal>
 					<% if (admin || (frm.isDeleteFlag() && frm.isOwner())) {%>
 						&nbsp;
 						<html:submit property="doit"  styleClass="btn" accesskey="D" titleKey="title.removeRoom" onclick="confirmDelete();">
@@ -139,6 +145,14 @@
 		<TR>
 			<TD>Capacity:</TD><TD width='100%'><%=frm.getCapacity()%></TD>
 		</TR>
+		
+		<logic:equal name="<%=frmName%>" property="examEnabled" value="true">
+			<TR>
+				<TD nowrap>Exam Seating Capacity:</TD><TD width='100%'>
+					<bean:write name="<%=frmName%>" property="examCapacity"/>
+				</TD>
+			</TR>
+		</logic:equal>
 		
 		<logic:notEmpty name="<%=frmName%>" property="control"> 
 			<TR>
@@ -234,6 +248,17 @@
 			</TR>
 		</logic:notEmpty>
 		
+		<logic:equal name="<%=frmName%>" property="examEnabled" value="true">
+			<logic:notEmpty name="<%=frmName%>" property="examPref">
+				<TR>
+					<TD nowrap valign="top">Period Preferences:</TD>
+					<TD>
+						<bean:write name="<%=frmName%>" property="examPref" filter="false"/>
+					</TD>
+				</TR>
+			</logic:notEmpty>
+		</logic:equal>
+
 		<TR>
 			<TD colspan='2'>&nbsp;</TD>
 		</TR>
@@ -304,6 +329,12 @@
 							>
 							<bean:message key="button.modifyRoomFeatures" />
 					</html:submit>
+					<logic:equal name="<%=frmName%>" property="examEnabled" value="true">
+						&nbsp;
+						<html:submit property="doit"  styleClass="btn" accesskey="X" titleKey="title.modifyRoomPeriodPreferences">
+							<bean:message key="button.modifyRoomPeriodPreferences" />
+						</html:submit>
+					</logic:equal>
 					<% if (admin || (frm.isDeleteFlag() && frm.isOwner())) {%>
 						&nbsp;
 						<html:submit property="doit"  styleClass="btn" accesskey="D" titleKey="title.removeRoom" onclick="confirmDelete();">

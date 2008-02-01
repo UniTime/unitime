@@ -58,6 +58,8 @@ public class EditRoomForm extends ActionForm {
     private String type;
 	private boolean owner;
 	private boolean room;
+    private Boolean examEnabled;
+    private String examCapacity;
 	
 	// --------------------------------------------------------- Methods
 
@@ -228,6 +230,11 @@ public class EditRoomForm extends ActionForm {
                     new ActionMessage("errors.required", "Capacity") );
         }
 
+        if(examCapacity==null || examCapacity.equalsIgnoreCase("")) {
+            errors.add("examCapacity", 
+                    new ActionMessage("errors.required", "Examination Seating Capacity") );
+        }
+
         /*
         if(room && coordX==null || coordX.equalsIgnoreCase("") || coordY==null || coordY.equalsIgnoreCase("")) {
             errors.add("Coordinates", 
@@ -247,6 +254,23 @@ public class EditRoomForm extends ActionForm {
         bldgName=null; capacity=null; coordX=null; coordY=null; doit=null;
         externalId=null; id=null; name=null; owner=false; room=true; type=null; bldgId = null;
 		ignoreTooFar=Boolean.FALSE; ignoreRoomCheck=Boolean.FALSE;
+		examEnabled=Boolean.FALSE; examCapacity=null;
+	}
+	
+	public Boolean getExamEnabled() {
+	    return examEnabled;
+	}
+	
+	public void setExamEnabled(Boolean examEnabled) {
+	    this.examEnabled = examEnabled;
+	}
+	
+	public String getExamCapacity() {
+	    return examCapacity;
+	}
+	
+	public void setExamCapacity(String examCapacity) {
+	    this.examCapacity = examCapacity;
 	}
     
 }

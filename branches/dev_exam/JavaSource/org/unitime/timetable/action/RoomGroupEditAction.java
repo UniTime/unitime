@@ -206,7 +206,9 @@ public class RoomGroupEditAction extends LookupDispatchAction {
 		String fixedHeading[][] = { 
 				{ "Room", "left", "true" },
 				{ "Type", "left", "true" },
-				{ "Capacity", "right", "false" } };
+				{ "Capacity", "right", "false" },
+				{ "Exam Capacity", "right", "false" }
+				};
 		
 		String heading[] = new String[fixedHeading.length
 				+ roomFeatures.size()];

@@ -92,7 +92,7 @@ public class RoomSearchAction extends Action {
 		if (dc != null ) {
 			deptCode = dc.toString();
 			roomListForm.setDeptCodeX(deptCode);
-			if (!roomListForm.getDeptCodeX().equalsIgnoreCase("All")) {
+			if (!roomListForm.getDeptCodeX().equalsIgnoreCase("All") && !roomListForm.getDeptCodeX().equalsIgnoreCase("Exam")) {
 				if (Session.getCurrentAcadSession(user).getRoomsFast(new String[] {roomListForm.getDeptCodeX()}).size() == 0) {
 					ActionMessages errors = new ActionMessages();
 					errors.add("searchResult", new ActionMessage("errors.generic", "No rooms for the selected department were found."));
@@ -101,7 +101,8 @@ public class RoomSearchAction extends Action {
 			}
 			
 			if ("Export PDF".equals(request.getParameter("op"))) {
-				RoomListAction.buildPdfWebTable(request, roomListForm, "yes".equals(Settings.getSettingValue(user, Constants.SETTINGS_ROOMS_FEATURES_ONE_COLUMN)));
+				RoomListAction.buildPdfWebTable(request, roomListForm, "yes".equals(Settings.getSettingValue(user, Constants.SETTINGS_ROOMS_FEATURES_ONE_COLUMN)),
+				        "Exam".equals(roomListForm.getDeptCodeX()));
 			}
 			
 			return mapping.findForward("roomList");
