@@ -125,6 +125,7 @@
 				menu_item('411','Time Patterns','Manage Time Patterns','timePatternEdit.do','<%=expand%>');
 					leaf_item('Exact Time','Exact Time Pattern','exactTimeEdit.do');
 				enditem(); //411
+				leaf_item('Exam Periods','Manage Examination Periods','examPeriodEdit.do');
 				leaf_item('Distribution Types','Manage Distribution Types','distributionTypeList.do');
 				leaf_item('Instructional Types','Manage Instructional Types','itypeDescList.do');
 				<%--
