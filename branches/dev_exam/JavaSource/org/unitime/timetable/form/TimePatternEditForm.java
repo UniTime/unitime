@@ -416,7 +416,7 @@ public class TimePatternEditForm extends ActionForm {
 					throw new Exception("Invalid time '"+token+"' -- hour ("+hour+") must be between 0 and 23.");
 				if (min>=60)
 					throw new Exception("Invalid time '"+token+"' -- minute ("+min+") must be between 0 and 59.");
-				if ((Constants.SLOT_LENGTH_MIN%5)!=0)
+				if ((min%Constants.SLOT_LENGTH_MIN)!=0)
 					throw new Exception("Invalid time '"+token+"' -- minute ("+min+") must be divisible by "+Constants.SLOT_LENGTH_MIN+".");
 				try {
 					int endTime = hour*60+min+Integer.parseInt(getSlotsPerMtg());
