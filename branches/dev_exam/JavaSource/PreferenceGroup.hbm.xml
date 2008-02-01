@@ -714,6 +714,16 @@
 	            column="SESSION_END_DATE_TIME"
 	            not-null="true"
 	        />
+	        
+	       <property
+	            name="examBeginDate"
+	            type="java.sql.Timestamp"
+	            update="true"
+	            insert="true"
+	            access="property"
+	            column="EXAM_BEGIN_DATE"
+	            not-null="true"
+	        />
 	
 	       <many-to-one
 	            name="statusType"

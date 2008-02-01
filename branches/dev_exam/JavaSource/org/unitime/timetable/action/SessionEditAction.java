@@ -120,7 +120,8 @@ public class SessionEditAction extends LookupDispatchAction {
 		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
 		sessionEditForm.setSessionStart(sdf.format(acadSession.getSessionBeginDateTime()));
 		sessionEditForm.setSessionEnd(sdf.format(acadSession.getSessionEndDateTime()));
-		sessionEditForm.setClassesEnd(sdf.format(acadSession.getClassesEndDateTime()));		
+		sessionEditForm.setClassesEnd(sdf.format(acadSession.getClassesEndDateTime()));
+		sessionEditForm.setExamStart(sdf.format(acadSession.getExamBeginDate()));
 		
         Session sessn = Session.getSessionById(id);
 		LookupTables.setupDatePatterns(request, sessn, false, Constants.BLANK_OPTION_LABEL, null, null, null);
@@ -279,6 +280,7 @@ public class SessionEditAction extends LookupDispatchAction {
 		sessn.setSessionBeginDateTime(sdf.parse(sessionEditForm.getSessionStart()));
 		sessn.setSessionEndDateTime(sdf.parse(sessionEditForm.getSessionEnd()));
 		sessn.setClassesEndDateTime(sdf.parse(sessionEditForm.getClassesEnd()));
+		sessn.setExamBeginDate(sdf.parse(sessionEditForm.getExamStart()));
 		sessn.setHolidays(request);
 	}
 

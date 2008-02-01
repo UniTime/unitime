@@ -704,13 +704,14 @@ public class Session extends BaseSession implements Comparable {
 	}
 
 	public String getHolidaysHtml(boolean editable) {
-		return getHolidaysHtml(getSessionBeginDateTime(), getSessionEndDateTime(), getClassesEndDateTime(),  getYear(), getHolidays(), editable);
+		return getHolidaysHtml(getSessionBeginDateTime(), getSessionEndDateTime(), getClassesEndDateTime(), getExamBeginDate(),  getYear(), getHolidays(), editable);
 	}
 
 	public static String getHolidaysHtml(
 			Date sessionBeginTime, 
 			Date sessionEndTime, 
 			Date classesEndTime,
+			Date examBeginTime,
 			int acadYear, 
 			String holidays,
 			boolean editable) {
@@ -739,7 +740,10 @@ public class Session extends BaseSession implements Comparable {
 		Calendar classesEndDate = Calendar.getInstance(Locale.US);
 		classesEndDate.setTime(classesEndTime);
 
-		int startMonth = DateUtils.getStartMonth(sessionBeginTime, acadYear, sNrExcessDays);
+        Calendar examBeginDate = Calendar.getInstance(Locale.US);
+        examBeginDate.setTime(examBeginTime);
+
+        int startMonth = DateUtils.getStartMonth(sessionBeginTime, acadYear, sNrExcessDays);
 		int endMonth = DateUtils.getEndMonth(sessionEndTime, acadYear, sNrExcessDays);
 		
 		for (int m = startMonth; m <= endMonth; m++) {
@@ -765,6 +769,9 @@ public class Session extends BaseSession implements Comparable {
 				else if (d == classesEndDate.get(Calendar.DAY_OF_MONTH)
 						&& m == classesEndDate.get(Calendar.MONTH))
 					borderArray.append("'#339933 2px solid'");
+                else if (d == examBeginDate.get(Calendar.DAY_OF_MONTH)
+                        && m == examBeginDate.get(Calendar.MONTH))
+                    borderArray.append("'#999933 2px solid'");
 				else
 					borderArray.append("null");
 			}
