@@ -62,12 +62,30 @@
 			</td>
 		</tr>
 		<tr>
-			<td>Allow Instructor Preference:</td>
+			<td>Type:</td>
 			<td>
-				<html:checkbox property="instructorPref"/>
-				<html:errors property="instructorPref"/>
+				<logic:equal name="distributionTypeEditForm" property="examPref" value="false">
+					Course
+				</logic:equal>
+				<logic:equal name="distributionTypeEditForm" property="examPref" value="true">
+					Examination
+				</logic:equal>
+				<html:hidden property="examPref"/>
+				<html:errors property="examPref"/>
 			</td>
 		</tr>
+		<logic:equal name="distributionTypeEditForm" property="examPref" value="false">
+			<tr>
+				<td>Allow Instructor Preference:</td>
+				<td>
+					<html:checkbox property="instructorPref"/>
+					<html:errors property="instructorPref"/>
+				</td>
+			</tr>
+		</logic:equal>
+		<logic:equal name="distributionTypeEditForm" property="examPref" value="true">
+			<html:hidden property="instructorPref"/>			
+		</logic:equal>
 		<tr>
 			<td>Sequencing Required:</td>
 			<td>
