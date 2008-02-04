@@ -60,6 +60,17 @@
 			<key column="PREF_GROUP_ID"/>
 			<one-to-many class="DistributionObject"/>
 		</set>
+		
+		<set
+			name="exams"
+			table="EXAM_OWNER"
+			lazy="true"
+			inverse="true"
+			>
+			<cache include="non-lazy" usage="read-write"/>
+			<key column="OWNER_ID"/>
+			<many-to-many class="Exam" column="EXAM_ID" foreign-key="FK_EXAM_OWNER_EXAM"/>
+		</set>	
 
 		<union-subclass
 		 	name="SchedulingSubpart"
@@ -950,6 +961,92 @@
 				type="java.lang.Boolean"
 				not-null="true"
 			/>
+	 	</union-subclass>
+	 	
+	 	<union-subclass name="Exam" table="EXAM">
+			        
+			<many-to-one 
+				name="session" 
+				class="Session" 
+				column="SESSION_ID"
+				not-null="true"
+				foreign-key="FK_EXAM_SESSION" 
+			/>				
+
+			<property
+				name="name"
+				column="NAME"
+				type="java.lang.String"
+				not-null="false"
+				length="100"
+			/>
+	
+			<property
+				name="note"
+				column="NOTE"
+				type="java.lang.String"
+				not-null="false"
+				length="1000"
+			/>
+
+			<property
+				name="length"
+				column="LENGTH"
+				type="java.lang.Integer"
+				not-null="true"
+				length="10"
+			/>
+			
+			<property
+				name="maxNbrRooms"
+				column="MAX_NBR_ROOMS"
+				type="java.lang.Integer"
+				not-null="true"
+				length="10"
+			/>
+			
+			<property
+				name="seatingType"
+				column="SEATING_TYPE"
+				type="java.lang.Integer"
+				not-null="true"
+				length="10"
+			/>
+			
+			<many-to-one 
+				name="assignedPeriod" 
+				class="ExamPeriod" 
+				column="ASSIGNED_PERIOD"
+				foreign-key="FK_EXAM_PERIOD"
+				not-null="false"
+			/>
+			
+			<set
+				name="owners"
+				lazy="true" 
+				table="EXAM_OWNER"
+				>
+				<cache include="non-lazy" usage="read-write"/>
+				<key column="EXAM_ID" foreign-key="FK_EXAM_OWNER_EXAM"/>
+				<many-to-many 
+					class="PreferenceGroup"
+					column="OWNER_ID"
+					
+				/>
+			</set>			
+			
+			<set
+				name="assignedRooms"
+				lazy="true" 
+				table="EXAM_ROOM_ASSIGNMENT"
+				>
+				<cache include="non-lazy" usage="read-write"/>
+				<key column="EXAM_ID" foreign-key="FK_EXAM_ROOM_EXAM"/>
+				<many-to-many 
+					class="Location"
+					column="LOCATION_ID"
+				/>
+			</set>			
 	 	</union-subclass>
 	 					
 	</class>	

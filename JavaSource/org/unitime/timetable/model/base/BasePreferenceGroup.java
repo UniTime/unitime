@@ -61,6 +61,7 @@ public abstract class BasePreferenceGroup  implements Serializable {
 	// collections
 	private java.util.Set preferences;
 	private java.util.Set distributionObjects;
+	private java.util.Set exams;
 
 
 
@@ -128,9 +129,13 @@ public abstract class BasePreferenceGroup  implements Serializable {
 		getDistributionObjects().add(distributionObject);
 	}
 
-
-
-
+	public java.util.Set getExams () {
+	    return exams;
+	}
+	
+	public void setExams(java.util.Set exams) {
+	    this.exams = exams;
+	}
 
 	public boolean equals (Object obj) {
 		if (null == obj) return false;
