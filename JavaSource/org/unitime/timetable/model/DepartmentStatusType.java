@@ -39,6 +39,9 @@ public class DepartmentStatusType extends BaseDepartmentStatusType implements Co
 	public static final int sCanAudit				= 64;
 	public static final int sCanTimetable			= 128;
 	public static final int sCanCommit				= 256;
+	public static final int sCanExamView            = 512;
+	public static final int sCanExamEdit            = 1024;
+	public static final int sCanExamTimetable       = 2048;
 	
 	public static final int sApplySession    = 1;
 	public static final int sApplyDepartment = 2;
@@ -159,7 +162,19 @@ public class DepartmentStatusType extends BaseDepartmentStatusType implements Co
 		return can(sCanCommit);
 	}
 	
-	public boolean apply(int apply) {
+	public boolean canExamView() {
+	    return can(sCanExamView);
+	}
+	
+    public boolean canExamEdit() {
+        return can(sCanExamEdit);
+    }
+
+    public boolean canExamTimetable() {
+        return can(sCanExamTimetable);
+    }
+
+    public boolean apply(int apply) {
 		return (getApply().intValue() & apply) == apply;
 	}
 	
