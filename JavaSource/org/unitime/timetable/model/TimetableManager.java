@@ -197,8 +197,49 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
 		}
 		return false;
 	}
+	
+	public boolean canEditExams(Session session, User user) {
+        //admin
+        if (Roles.ADMIN_ROLE.equals(user.getCurrentRole())) 
+            return true;
+        
+        //timetable manager 
+        if (Roles.DEPT_SCHED_MGR_ROLE.equals(user.getCurrentRole()))
+            return session.getStatusType().canExamEdit();
+        
+        //exam manager
+        if (Roles.EXAM_MGR_ROLE.equals(user.getCurrentRole()))
+            return session.getStatusType().canExamTimetable();
+        
+        return false;
+	}
+	
+	public boolean canSeeExams(Session session, User user) {
+        //can edit -> can view
+        if (canEditExams(session, user)) return true;
+        
+        //admin or exam manager
+        if (Roles.ADMIN_ROLE.equals(user.getCurrentRole()) || Roles.EXAM_MGR_ROLE.equals(user.getCurrentRole())) 
+            return true;
+        
+        //timetable manager or view all 
+        if (Roles.DEPT_SCHED_MGR_ROLE.equals(user.getCurrentRole()) || Roles.VIEW_ALL_ROLE.equals(user.getCurrentRole()))
+            return session.getStatusType().canExamView();
+        
+        return false;
+    }
 
-	public boolean hasASolverGroup(Session session, User user) {
+    public boolean canTimetableExams(Session session, User user) {
+        if (Roles.ADMIN_ROLE.equals(user.getCurrentRole())) 
+            return true;
+        
+        if (Roles.EXAM_MGR_ROLE.equals(user.getCurrentRole()))
+            return session.getStatusType().canExamTimetable();
+        
+        return false;
+    }
+
+    public boolean hasASolverGroup(Session session, User user) {
 		if (user.isAdmin() || user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE)) {
 			return !SolverGroup.findBySessionId(session.getUniqueId()).isEmpty();
 		} else {
