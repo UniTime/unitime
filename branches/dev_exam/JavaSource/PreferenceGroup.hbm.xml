@@ -61,17 +61,6 @@
 			<one-to-many class="DistributionObject"/>
 		</set>
 		
-		<set
-			name="exams"
-			table="EXAM_OWNER"
-			lazy="true"
-			inverse="true"
-			>
-			<cache include="non-lazy" usage="read-write"/>
-			<key column="OWNER_ID"/>
-			<many-to-many class="Exam" column="EXAM_ID" foreign-key="FK_EXAM_OWNER_EXAM"/>
-		</set>	
-
 		<union-subclass
 		 	name="SchedulingSubpart"
 		 	table="SCHEDULING_SUBPART"
@@ -1023,16 +1012,13 @@
 			
 			<set
 				name="owners"
-				lazy="true" 
-				table="EXAM_OWNER"
+				lazy="true"
+				cascade="all-delete-orphan" 
+				inverse="true"
 				>
 				<cache include="non-lazy" usage="read-write"/>
 				<key column="EXAM_ID" foreign-key="FK_EXAM_OWNER_EXAM"/>
-				<many-to-many 
-					class="PreferenceGroup"
-					column="OWNER_ID"
-					
-				/>
+				<one-to-many class="ExamOwner"/>
 			</set>			
 			
 			<set
@@ -1045,6 +1031,20 @@
 				<many-to-many 
 					class="Location"
 					column="LOCATION_ID"
+				/>
+			</set>			
+
+			<set
+				name="instructors"
+				lazy="true" 
+				table="EXAM_INSTRUCTOR"
+				>
+				<cache include="non-lazy" usage="read-write"/>
+				<key column="EXAM_ID" foreign-key="FK_EXAM_INSTRUCTOR_EXAM"/>
+				<many-to-many 
+					class="DepartmentalInstructor" 
+					column="INSTRUCTOR_ID"
+					foreign-key="FK_EXAM_INSTRUCTOR_INSTRUCTOR"
 				/>
 			</set>			
 	 	</union-subclass>
