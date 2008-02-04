@@ -78,4 +78,12 @@ public class ExamPeriodPref extends BaseExamPeriodPref {
 	public String preferenceTitle() {
 		return getPrefLevel().getPrefName()+" "+getExamPeriod().getName();
 	}
+	
+	public int compareTo(Object o) {
+	    if (o==null || !(o instanceof ExamPeriodPref)) return super.compareTo(o);
+	    ExamPeriodPref p = (ExamPeriodPref)o;
+	    int cmp = getExamPeriod().compareTo(p.getExamPeriod());
+	    if (cmp!=0) return cmp;
+	    return super.compareTo(o);
+	}
 }

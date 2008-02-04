@@ -180,5 +180,6 @@
 	<mapping resource="ExternalRoomDepartment.hbm.xml" />
 	<mapping resource="ExternalRoomFeature.hbm.xml" />
 	<mapping resource="ExamPeriod.hbm.xml" />
+	<mapping resource="ExamOwner.hbm.xml" />
 </session-factory>
 </hibernate-configuration>

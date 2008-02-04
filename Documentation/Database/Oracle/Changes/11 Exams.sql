@@ -186,20 +186,26 @@ alter table exam
  
 
 /*
- * Create table exam_owner (relation exam - class/course/...)
+ * Create relation between exams and other objects (classes, configs, courses etc.)
  */
 
 create table exam_owner (
+	uniqueid number(20,0) constraint nn_exam_owner_unique_id not null,
 	exam_id number(20,0) constraint nn_exam_owner_exam_id not null,
-	owner_id number(20,0) constraint nn_exam_owner_owner_id not null
+	owner_id number(20,0) constraint nn_exam_owner_owner_id not null,
+	owner_type number(10,0) constraint nn_exam_owner_owner_type not null
 );
 
 alter table exam_owner
-  add constraint pk_exam_owner primary key (exam_id, owner_id);
+  add constraint pk_exam_owner primary key (uniqueid);
   
 alter table exam_owner
   add constraint fk_exam_owner_exam foreign key (exam_id)
   references exam (uniqueid) on delete cascade;
+
+create index idx_exam_owner_exam on exam_owner(exam_id);
+
+create index idx_exam_owner_owner on exam_owner(owner_id, owner_type);
 
 /*
  * Create table exam_room_assignment (relation exam - location)
@@ -239,6 +245,26 @@ alter table exam_period_pref
   add constraint fk_exam_period_pref_period foreign key (period_id)
   references exam_period (uniqueid) on delete cascade;
   
+/*
+ * Instructor assignment
+ */
+ 
+create table exam_instructor (
+	exam_id number(20,0) constraint nn_exam_instructor_exam not null,
+	instructor_id number(20,0) constraint nn_exam_instructor_instructor not null
+);
+
+alter table exam_instructor
+  add constraint pk_exam_instructor primary key (exam_id, instructor_id);
+
+alter table exam_instructor
+  add constraint fk_exam_instructor_exam foreign key (exam_id)
+  references exam (uniqueid) on delete cascade;
+  
+alter table exam_instructor
+  add constraint fk_exam_instructor_instructor foreign key (instructor_id)
+  references departmental_instructor (uniqueid) on delete cascade;
+
 /*
  * Update database version
  */
