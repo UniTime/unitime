@@ -150,4 +150,99 @@ alter table non_university_location add exam_enable number(1) default 0;
 alter table non_university_location add exam_capacity number(10) default 0;
 alter table non_university_location add exam_pref varchar2(1000);
 
+
+/*
+ * Create exam manager role
+ */
+
+insert into roles (role_id, reference, abbv) values
+	(ROLE_SEQ.nextval, 'Exam Mgr', 'Examination Timetabling Manager');
+
+/*
+ * Create table exam
+ */
+
+create table exam (
+	uniqueid number(20,0) constraint nn_exam_uniqueid not null,
+	session_id number(20,0) constraint nn_exam_session not null,
+	name varchar2(100),
+	note varchar2(1000),
+	length number(10,0) constraint nn_exam_length not null,
+	max_nbr_rooms number(10,0) default 1 constraint nn_exam_nbr_rooms not null,
+	seating_type number(10,0) constraint nn_exam_seating not null,
+	assigned_period number (20,0)
+);
+
+alter table exam
+  add constraint pk_exam primary key (uniqueid);
+  
+alter table exam
+  add constraint fk_exam_session foreign key (session_id)
+  references sessions (uniqueid) on delete cascade;
+
+alter table exam
+  add constraint fk_exam_period foreign key (assigned_period)
+  references exam_period (uniqueid) on delete cascade;
+ 
+
+/*
+ * Create table exam_owner (relation exam - class/course/...)
+ */
+
+create table exam_owner (
+	exam_id number(20,0) constraint nn_exam_owner_exam_id not null,
+	owner_id number(20,0) constraint nn_exam_owner_owner_id not null
+);
+
+alter table exam_owner
+  add constraint pk_exam_owner primary key (exam_id, owner_id);
+  
+alter table exam_owner
+  add constraint fk_exam_owner_exam foreign key (exam_id)
+  references exam (uniqueid) on delete cascade;
+
+/*
+ * Create table exam_room_assignment (relation exam - location)
+ */
+
+create table exam_room_assignment (
+	exam_id number(20,0) constraint nn_exam_room_exam_id not null,
+	location_id number(20,0) constraint nn_exam_room_location_id not null
+);
+
+alter table exam_room_assignment
+  add constraint pk_exam_room_assignment primary key (exam_id, location_id);
+  
+alter table exam_room_assignment
+  add constraint fk_exam_room_exam foreign key (exam_id)
+  references exam (uniqueid) on delete cascade;
+
+/*
+ * Added exam period preferences
+ */
+
+create table exam_period_pref (
+	uniqueid number(20,0) constraint nn_exam_period_pref_uniqueid not null,
+	owner_id number(20,0) constraint nn_exam_period_pref_owner not null,
+	pref_level_id number(20,0) constraint nn_exam_period_pref_pref not null,
+	period_id number(20,0) constraint nn_exam_period_pref_period not null
+);
+
+alter table exam_period_pref
+  add constraint pk_exam_period_pref primary key (uniqueid);
+  
+alter table exam_period_pref
+  add constraint fk_exam_period_pref_pref foreign key (pref_level_id)
+  references preference_level (uniqueid) on delete cascade;
+
+alter table exam_period_pref
+  add constraint fk_exam_period_pref_period foreign key (period_id)
+  references exam_period (uniqueid) on delete cascade;
+  
+/*
+ * Update database version
+ */
+
+update application_config set value='11' where name='tmtbl.db.version';
+
 commit;
