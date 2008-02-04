@@ -65,6 +65,8 @@ public class PreferencesForm extends ActionForm {
     protected List availableTimePatterns;
     protected List distPrefs;
     protected List distPrefLevels;
+    protected List periodPrefs;
+    protected List periodPrefLevels;
     
     private String nextId;
     private String previousId;
@@ -190,6 +192,22 @@ public class PreferencesForm extends ActionForm {
                     		"Invalid distribution preference level.") );
         }            
 
+        lst = getPeriodPrefs();
+        if(!checkPrefs(lst)) {
+            errors.add("periodPrefs", 
+                    new ActionMessage(
+                            "errors.generic", 
+                            "Invalid examination period preference: Check for duplicate / blank selection. ") );
+        }
+
+        if(!checkPrefLevels(getPeriodPrefLevels(), lst))
+        {
+            errors.add("periodPrefs", 
+                    new ActionMessage(
+                            "errors.generic", 
+                            "Invalid examination period preference level.") );
+        }            
+
         for (int i=0;i<getTimePatterns().size();i++) {
         	if (request.getParameter("p"+i+"_hour")!=null) {
         		boolean daySelected = false;
@@ -250,6 +268,8 @@ public class PreferencesForm extends ActionForm {
         roomGroupLevels = DynamicList.getInstance(new ArrayList(), factoryPrefLevel);
         distPrefs = DynamicList.getInstance(new ArrayList(), factoryPref);
         distPrefLevels = DynamicList.getInstance(new ArrayList(), factoryPrefLevel);
+        periodPrefs = DynamicList.getInstance(new ArrayList(), factoryPref);
+        periodPrefLevels = DynamicList.getInstance(new ArrayList(), factoryPrefLevel);
         nextId = previousId = null;
         allowHardPrefs = true; editable = false;
         addBlankPrefRows();
@@ -457,6 +477,31 @@ public class PreferencesForm extends ActionForm {
     }
 
     /**
+     * @return Returns the periodPrefs.
+     */
+    public List getPeriodPrefs() {
+        return periodPrefs;
+    }
+    /**
+     * @return Returns the periodPrefs.
+     */
+    public String getPeriodPrefs(int key) {
+        return periodPrefs.get(key).toString();
+    }
+    /**
+     * @param periodPrefs The periodPrefs to set.
+     */
+    public void setPeriodPrefs(int key, Object value) {
+        this.periodPrefs.set(key, value);
+    }
+    /**
+     * @param periodPrefs The periodPrefs to set.
+     */
+    public void setPeriodPrefs(List periodPrefs) {
+        this.periodPrefs = periodPrefs;
+    }
+
+    /**
      * @return Returns the roomPrefs.
      */
     public List getRoomPrefs() {
@@ -584,6 +629,31 @@ public class PreferencesForm extends ActionForm {
     }
 
     /**
+     * @return Returns the periodPrefLevels.
+     */
+    public List getPeriodPrefLevels() {
+        return periodPrefLevels;
+    }
+    /**
+     * @return Returns the periodPrefLevels.
+     */
+    public String getPeriodPrefLevels(int key) {
+        return periodPrefLevels.get(key).toString();
+    }
+    /**
+     * @param periodPrefs The periodPrefLevels to set.
+     */
+    public void setPeriodPrefLevels(int key, Object value) {
+        this.periodPrefLevels.set(key, value);
+    }
+    /**
+     * @param periodPrefs The periodPrefLevels to set.
+     */
+    public void setPeriodPrefLevels(List periodPrefLevels) {
+        this.periodPrefLevels = periodPrefLevels;
+    }
+    
+    /**
      * @return Returns the roomFeaturePrefLevels.
      */
     public List getRoomFeaturePrefLevels() {
@@ -658,6 +728,15 @@ public class PreferencesForm extends ActionForm {
         this.distPrefLevels.add(level);
     }
 
+    /** Add a period preference to the existing list
+    * @param periodPref Period pref Id
+    * @param level Preference Level
+    */
+   public void addToPeriodPrefs(String periodPref, String level) {
+       this.periodPrefs.add(periodPref);
+       this.periodPrefLevels.add(level);
+   }
+
     public void addBlankPrefRows() {
         for (int i=0; i<PREF_ROWS_ADDED; i++) {
 	        addToBldgPrefs(Preference.BLANK_PREF_VALUE, Preference.BLANK_PREF_VALUE);
@@ -665,6 +744,7 @@ public class PreferencesForm extends ActionForm {
 	        addToRoomFeatPrefs(Preference.BLANK_PREF_VALUE, Preference.BLANK_PREF_VALUE);
 	        addToRoomGroups(Preference.BLANK_PREF_VALUE, Preference.BLANK_PREF_VALUE);
 	        addToDistPrefs(Preference.BLANK_PREF_VALUE, Preference.BLANK_PREF_VALUE);
+	        addToPeriodPrefs(Preference.BLANK_PREF_VALUE, Preference.BLANK_PREF_VALUE);
         }
     }
     
@@ -678,6 +758,8 @@ public class PreferencesForm extends ActionForm {
         this.bldgPrefLevels.clear();
         this.distPrefs.clear();
         this.distPrefLevels.clear();
+        this.periodPrefs.clear();
+        this.periodPrefLevels.clear();
         this.roomPrefs.clear();
         this.roomPrefLevels.clear();
         this.roomFeaturePrefs.clear();

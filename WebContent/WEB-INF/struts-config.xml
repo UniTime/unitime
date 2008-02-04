@@ -115,6 +115,7 @@
       <form-bean name="examPeriodEditForm" type="org.unitime.timetable.form.ExamPeriodEditForm" />
       <form-bean name="editRoomPerPrefForm" type="org.unitime.timetable.form.EditRoomPerPrefForm" />
       <form-bean name="examListForm" type="org.unitime.timetable.form.ExamListForm" />
+      <form-bean name="examEditForm" type="org.unitime.timetable.form.ExamEditForm" />
    </form-beans>
 
    <global-exceptions>
@@ -1950,6 +1951,17 @@
       type="org.unitime.timetable.action.ExamListAction"
       validate="false">
       <forward name="list" path="examListTile" />
+    </action>
+
+    <action
+      attribute="examEditForm"
+      input="/user/examDetail.jsp"
+      name="examEditForm"
+      path="/examDetail"
+      scope="request"
+      type="org.unitime.timetable.action.ExamDetailAction"
+      validate="false">
+      <forward name="showExamDetail" path="examDetailTile" />
     </action>
 
    </action-mappings>
