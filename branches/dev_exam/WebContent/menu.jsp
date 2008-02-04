@@ -60,6 +60,9 @@
 		enditem(); //11
 		leaf_item('Distribution Preferences','Manage Distribution Preferences','distributionPrefs.do');
 		leaf_item('Reservations','Manage Reservations','reservationList.do');
+		<%  if (manager.canSeeExams(acadSession, user)) { %>
+			leaf_item('Examinations','View/Edit Examinations','examList.do');
+		<% } %>
 		<%  if (manager.canSeeTimetable(acadSession, user)) { %>
 			leaf_item('Class Assignments','Class Assignment Report','classAssignmentsReportShowSearch.do');
 		<%  } %>

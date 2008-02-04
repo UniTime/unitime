@@ -21,6 +21,7 @@ package org.unitime.timetable.model;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
@@ -257,5 +258,16 @@ public class Exam extends BaseExam {
                 .setLong("examId", getUniqueId())
                 .setCacheable(true)
                 .list();
+    }
+    
+    public Set effectivePreferences(Class type) {
+        if (DistributionPref.class.equals(type)) {
+            TreeSet prefs = new TreeSet();
+            for (Iterator j=getDistributionObjects().iterator();j.hasNext();) {
+                DistributionPref p = ((DistributionObject)j.next()).getDistributionPref();
+                prefs.add(p);
+            }
+            return prefs;
+        } else return super.effectivePreferences(type);
     }
 }
