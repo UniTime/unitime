@@ -381,4 +381,12 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
     public Set getAvailableRoomGroups() {
     	return new TreeSet(RoomGroup.getAllGlobalRoomGroups());
     }
+    
+    public Set getExamPeriodPreferences(){
+        return getPreferences(ExamPeriodPref.class);
+    }
+    
+    public Set getEffectiveExamPeriodPreferences(){
+        return effectivePreferences(ExamPeriodPref.class);
+    }
 }
