@@ -67,6 +67,8 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
 	}
 
 /*[CONSTRUCTOR MARKER END]*/
+	
+	public static String PERIOD_ATTR_NAME = "periodList";
 
 	public Date getStartDate() {
 	    Calendar c = Calendar.getInstance(Locale.US);

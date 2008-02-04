@@ -19,11 +19,14 @@
 */
 package org.unitime.timetable.model;
 
+import java.util.List;
+
 import org.unitime.timetable.model.base.BaseExamOwner;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
+import org.unitime.timetable.model.dao.ExamOwnerDAO;
 import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 
@@ -126,6 +129,25 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
         }
            
         return getOwnerId().compareTo(owner.getOwnerId());
+    }
+    
+    public List getStudents() {
+        return new ExamOwnerDAO().getSession().createQuery(
+                "select distinct e.student from " +
+                "StudentClassEnrollment e inner join e.clazz c " +
+                "inner join c.schedulingSubpart.instrOfferingConfig ioc " +
+                "inner join ioc.instructionalOffering io " +
+                "inner join io.courseOfferings co, " +
+                "ExamOwner o "+
+                "where o.uniqueId=:examOwnerId and ("+
+                "(o.ownerType="+ExamOwner.sOwnerTypeCourse+" and o.ownerId=co.uniqueId) or "+
+                "(o.ownerType="+ExamOwner.sOwnerTypeOffering+" and o.ownerId=io.uniqueId) or "+
+                "(o.ownerType="+ExamOwner.sOwnerTypeConfig+" and o.ownerId=ioc.uniqueId) or "+
+                "(o.ownerType="+ExamOwner.sOwnerTypeClass+" and o.ownerId=c.uniqueId) "+
+                ")")
+                .setLong("examOwnerId", getUniqueId())
+                .setCacheable(true)
+                .list();
     }
     
 }

@@ -529,4 +529,8 @@ public class WebTable {
         orderInfo.put(code,Integer.valueOf(order));
     }
     
+    
+    public Vector getLines() {
+        return iLines;
+    }
 }

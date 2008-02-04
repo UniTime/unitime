@@ -36,7 +36,10 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.webutil.BackTracker;
+import org.unitime.timetable.webutil.Navigation;
 import org.unitime.timetable.webutil.PdfWebTable;
 
 public class ExamListAction extends Action {
@@ -82,12 +85,27 @@ public class ExamListAction extends Action {
             PdfWebTable table = getExamTable(user, manager, session, myForm, true);
             if (table!=null) {
                 request.setAttribute("ExamList.table", table.printTable(WebTable.getOrder(request.getSession(), "ExamList.ord")));
+                Navigation.set(request.getSession(), Navigation.sInstructionalOfferingLevel, table.getLines());
             } else {
                 ActionMessages errors = new ActionMessages();
                 errors.add("exams", new ActionMessage("errors.generic", "No examination matching the above criteria was found."));
                 saveErrors(request, errors);
             }
         }
+        
+        String subjectAreaName = "";
+        try {
+            subjectAreaName = new SubjectAreaDAO().get(new Long(myForm.getSubjectAreaId())).getSubjectAreaAbbreviation();
+        } catch (Exception e) {}
+
+        BackTracker.markForBack(
+                request, 
+                "examList.do?op=Search&subjectAreaId="+myForm.getSubjectAreaId()+"&courseNbr="+myForm.getCourseNbr(), 
+                "Exams ("+subjectAreaName+
+                    (myForm.getCourseNbr()==null || myForm.getCourseNbr().length()==0?"":" "+myForm.getCourseNbr())+
+                    ")", 
+                true, true);
+
         return mapping.findForward("list");
     }
     
@@ -185,7 +203,7 @@ public class ExamListAction extends Action {
             int nrStudents = exam.getStudents().size();
             
             table.addLine(
-                    "onClick=\"document.location='examDetail.do?id="+exam.getUniqueId()+"';\"",
+                    "onClick=\"document.location='examDetail.do?examId="+exam.getUniqueId()+"';\"",
                     new String[] {
                         objects,
                         exam.getLength().toString(),
@@ -211,7 +229,8 @@ public class ExamListAction extends Action {
                         distPref,
                         (exam.getAssignedPeriod()==null?new Date(0):exam.getAssignedPeriod().getStartTime()),
                         rooms
-                    });
+                    },
+                    exam.getUniqueId().toString());
         }
         
         return table;

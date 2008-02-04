@@ -47,6 +47,7 @@ import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionType;
+import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.ItypeDesc;
 import org.unitime.timetable.model.OfferingConsentType;
 import org.unitime.timetable.model.PosMajor;
@@ -59,6 +60,7 @@ import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.RoomGroup;
+import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimePattern;
@@ -212,6 +214,10 @@ public class LookupTables {
         request.setAttribute(DistributionType.DIST_TYPE_ATTR_NAME, DistributionType.findApplicable(request, true, false));
     }
 
+    public static void setupExaminationPeriods(HttpServletRequest request) throws Exception {
+        request.setAttribute(ExamPeriod.PERIOD_ATTR_NAME, ExamPeriod.findAll(request));
+    }
+
     public static void setupRoomGroups(HttpServletRequest request, PreferenceGroup pg) throws Exception {
         request.setAttribute(RoomGroup.GROUP_LIST_ATTR_NAME, pg.getAvailableRoomGroups());
     }
@@ -302,7 +308,7 @@ public class LookupTables {
      * @throws Exception
      */
     private static void getInstructors(HttpServletRequest request, StringBuffer clause) throws Exception {
-        
+        String instructorNameFormat = Settings.getSettingValue(Web.getUser(request.getSession()), Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT);
         
         String acadSessionId = getAcademicSessionId(request);
 
@@ -325,7 +331,7 @@ public class LookupTables {
         Vector h = new Vector(result.size());
 	    for (Iterator i=result.iterator();i.hasNext();) {
             DepartmentalInstructor di = (DepartmentalInstructor)i.next();
-            String name = di.nameLastNameFirst();
+            String name = di.getName(instructorNameFormat);
             v.addElement(new ComboBoxLookup(name, di.getUniqueId().toString()));
             if (di.hasPreferences())
                 h.add(di.getUniqueId());

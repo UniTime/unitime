@@ -49,6 +49,8 @@ public class Exam extends BaseExam {
 	public static final int sSeatingTypeNormal = 0;
 	public static final int sSeatingTypeExam = 1;
 	
+	public static final String sSeatingTypes[] = new String[] {"Normal","Exam"};
+	
 	protected boolean canUserEdit(User user) {
         //admin
         if (Roles.ADMIN_ROLE.equals(user.getCurrentRole())) 
@@ -269,5 +271,9 @@ public class Exam extends BaseExam {
             }
             return prefs;
         } else return super.effectivePreferences(type);
+    }
+    
+    public Set getAvailableRooms() {
+        return Location.findAllExamLocations(getSession().getUniqueId());
     }
 }
