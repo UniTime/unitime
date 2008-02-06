@@ -91,7 +91,7 @@ public class ExamEditForm extends PreferencesForm {
         name = null;
         note = null;
         maxNbrRooms = 1;
-        length = 120;
+        length = null;
         seatingType = Exam.sSeatingTypes[Exam.sSeatingTypeExam];
         instructors = DynamicList.getInstance(new ArrayList(), factory);
         subjectArea = DynamicList.getInstance(new ArrayList(), idfactory);

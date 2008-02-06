@@ -87,6 +87,10 @@ public class ExamListAction extends Action {
             }
         }
         
+        if ("Add Examination".equals(op)) {
+            return mapping.findForward("addExam");
+        }
+        
         myForm.setSubjectAreas(new TreeSet(SubjectArea.getSubjectAreaList(session.getUniqueId())));
         
         if (myForm.getSubjectAreaId()!=null && myForm.getSubjectAreaId().length()!=0) {

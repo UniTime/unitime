@@ -53,7 +53,11 @@ public class ExamDetailAction extends PreferencesAction {
             ActionMessages errors = new ActionMessages();
             
             //Read parameters
-            String examId = (request.getParameter("examId")==null) ? (request.getAttribute("instructorId")==null) ? null : request.getAttribute("examId").toString() : request.getParameter("examId");
+            String examId = null;
+            if (request.getParameter("examId")!=null && request.getParameter("examId").trim().length()!=0)
+                examId = request.getParameter("examId");
+            if (examId==null && request.getAttribute("examId")!=null && request.getAttribute("examId").toString().trim().length()!=0)
+                examId = request.getAttribute("examId").toString();
             
             String op = frm.getOp();
             

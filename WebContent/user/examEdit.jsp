@@ -37,6 +37,7 @@
 		<%= JavascriptFunctions.getJsConfirm(Web.getUser(session)) %>
 	// -->
 </SCRIPT>
+<tt:confirm name="confirmDelete">The examination will be deleted. Continue?</tt:confirm>
 
 <html:form action="examEdit">
 	<html:hidden property="examId"/>
@@ -51,22 +52,39 @@
 					<tt:section-title>
 						<bean:write name='<%=frmName%>' property='label'/>
 					</tt:section-title>
-				<html:submit property="op" 
-					styleClass="btn" accesskey="U" titleKey="title.updatePrefs" >
-					<bean:message key="button.updatePrefs" />
-				</html:submit> 
+				<logic:notEmpty name="<%=frmName%>" property="examId">
+					<html:submit property="op" 
+						styleClass="btn" accesskey="U" titleKey="title.updateExam" >
+						<bean:message key="button.updateExam" />
+					</html:submit> 
+					&nbsp;
+					<html:submit property="op" 
+						onclick="javascript: if (confirmDelete()) doDel('exam', '-1');  else return false;"
+						styleClass="btn" titleKey="title.deleteExam" >
+						<bean:message key="button.deleteExam" />
+					</html:submit> 
+				</logic:notEmpty>
+				<logic:empty name="<%=frmName%>" property="examId">
+					<html:submit property="op" 
+						styleClass="btn" accesskey="S" titleKey="title.saveExam" >
+						<bean:message key="button.saveExam" />
+					</html:submit> 
+				</logic:empty>
 				<logic:greaterEqual name="<%=frmName%>" property="previousId" value="0">
+					&nbsp;
 					<html:submit property="op" 
 							styleClass="btn" accesskey="P" titleKey="title.previousExam">
 						<bean:message key="button.previousExam" />
 					</html:submit> 
 				</logic:greaterEqual>
 				<logic:greaterEqual name="<%=frmName%>" property="nextId" value="0">
+					&nbsp;
 					<html:submit property="op" 
 						styleClass="btn" accesskey="N" titleKey="title.nextExam">
 						<bean:message key="button.nextExam" />
 					</html:submit> 
 				</logic:greaterEqual>
+				&nbsp;
 				<html:submit property="op" 
 					styleClass="btn" accesskey="B" titleKey="title.returnToDetail">
 					<bean:message key="button.returnToDetail" />
