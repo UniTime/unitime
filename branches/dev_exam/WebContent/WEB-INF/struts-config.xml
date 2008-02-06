@@ -1951,6 +1951,7 @@
       type="org.unitime.timetable.action.ExamListAction"
       validate="false">
       <forward name="list" path="examListTile" />
+      <forward name="addExam" path="/examEdit.do" redirect="true"/>
     </action>
 
     <action
@@ -1972,8 +1973,10 @@
       scope="request"
       type="org.unitime.timetable.action.ExamEditAction"
       validate="false">
+      <forward name="showAdd" path="examAddTile" />
       <forward name="showEdit" path="examEditTile" />
       <forward name="showDetail" path="/examDetail.do" />
+      <forward name="showList" path="/examList.do" redirect="true" />
     </action>
 
 	  <action

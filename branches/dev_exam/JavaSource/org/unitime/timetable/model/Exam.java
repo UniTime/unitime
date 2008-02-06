@@ -265,6 +265,7 @@ public class Exam extends BaseExam {
     public Set effectivePreferences(Class type) {
         if (DistributionPref.class.equals(type)) {
             TreeSet prefs = new TreeSet();
+            if (getDistributionObjects()==null) return prefs;
             for (Iterator j=getDistributionObjects().iterator();j.hasNext();) {
                 DistributionPref p = ((DistributionObject)j.next()).getDistributionPref();
                 prefs.add(p);
@@ -291,5 +292,9 @@ public class Exam extends BaseExam {
             return owner.getCourse().getDepartment();
         }
         return null;
+    }
+    
+    public String toString() {
+        return getName();
     }
 }

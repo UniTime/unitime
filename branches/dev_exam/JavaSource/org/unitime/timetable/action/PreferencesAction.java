@@ -775,8 +775,9 @@ public class PreferencesAction extends Action {
             Exam exam, 
             String op, 
             boolean timeVertical, boolean editable) throws Exception {
-        PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession());
-        px.load(exam);
+        
+        PeriodPreferenceModel px = new PeriodPreferenceModel(exam==null?Session.getCurrentAcadSession(Web.getUser(request.getSession())):exam.getSession());
+        if (exam!=null) px.load(exam);
         RequiredTimeTable rtt = new RequiredTimeTable(px);
         rtt.setName("PeriodPref");
         if(!op.equals("init")) 
@@ -929,6 +930,11 @@ public class PreferencesAction extends Action {
     		User user,
             PreferencesForm frm,
             PreferenceGroup pg, Vector leadInstructors, boolean addBlankRows) {
+        
+        if (pg==null) {
+            if (addBlankRows) frm.addBlankPrefRows();
+            return;
+        }
         
     	// Room Prefs
     	frm.setEditable(pg.isEditableBy(user));

@@ -21,10 +21,13 @@ import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.ExamEditForm;
 import org.unitime.timetable.model.ChangeLog;
+import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamOwner;
+import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Preference;
+import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.ExamDAO;
@@ -65,10 +68,13 @@ public class ExamEditAction extends PreferencesAction {
                     || op.equals(rsc.getMessage("button.addDistPref")) 
                     || op.equals(rsc.getMessage("button.addRoomGroupPref"))
                     || op.equals(rsc.getMessage("button.addInstructor"))
-                    || op.equals(rsc.getMessage("button.updatePrefs")) 
+                    || op.equals(rsc.getMessage("button.updateExam")) 
                     || op.equals(rsc.getMessage("button.cancel")) 
                     || op.equals(rsc.getMessage("button.clearExamPrefs"))                 
                     || op.equals(rsc.getMessage("button.delete"))
+                    || op.equals(rsc.getMessage("button.saveExam"))
+                    || op.equals(rsc.getMessage("button.deleteExam"))
+                    || op.equals(rsc.getMessage("button.addExam"))
                     || op.equals(rsc.getMessage("button.returnToDetail"))
                     || op.equals(rsc.getMessage("button.nextExam"))
                     || op.equals(rsc.getMessage("button.previousExam"))) {
@@ -86,22 +92,21 @@ public class ExamEditAction extends PreferencesAction {
             if(op==null || op.trim()=="") 
                 throw new Exception ("Null Operation not supported.");
             
-            //Check instructor exists
-            if(examId==null || examId.trim()=="") 
-                throw new Exception ("Examination id not supplied.");
-            
-            Exam exam = new ExamDAO().get(Long.valueOf(examId));
+            Exam exam = (examId==null || examId.trim().length()==0 ? null: new ExamDAO().get(Long.valueOf(examId)));
             
             // Cancel - Go back to Instructors Detail Screen
-            if(op.equals(rsc.getMessage("button.returnToDetail")) && examId!=null && examId.trim()!="") {
-                request.setAttribute("examId", examId);
-                request.setAttribute("fromChildScreen", "true");
-                //response.sendRedirect(response.encodeURL("examDetail.do?examId="+examId));
-                return mapping.findForward("showDetail");
+            if(op.equals(rsc.getMessage("button.returnToDetail"))) {
+                if (examId!=null && examId.trim()!="") {
+                    request.setAttribute("examId", examId);
+                    request.setAttribute("fromChildScreen", "true");
+                    return mapping.findForward("showDetail");
+                } else {
+                    return mapping.findForward("showList");
+                }
             }
             
             // Clear all preferences
-            if(op.equals(rsc.getMessage("button.clearExamPrefs"))) { 
+            if(exam!=null && op.equals(rsc.getMessage("button.clearExamPrefs"))) { 
                 Set s = exam.getPreferences();
                 s.clear();
                 exam.setPreferences(s);            
@@ -128,7 +133,7 @@ public class ExamEditAction extends PreferencesAction {
                 doLoad(request, frm, exam);
             }
             
-            frm.setLabel(exam.getLabel());
+            frm.setLabel(exam==null?"New Exam":exam.getLabel());
             
             if (op.equals(rsc.getMessage("button.addInstructor"))) {
                 List lst = frm.getInstructors();
@@ -153,11 +158,22 @@ public class ExamEditAction extends PreferencesAction {
                 frm.getInstructors().remove(deleteId);
             } else if ("objects".equals(deleteType)  && deleteId>=0) {
                 frm.deleteExamOwner(deleteId);
+            } else if ("exam".equals(deleteType) && exam!=null) {
+                ChangeLog.addChange(
+                        null, 
+                        request,
+                        exam, 
+                        ChangeLog.Source.EXAM_EDIT, 
+                        ChangeLog.Operation.DELETE, 
+                        exam.firstSubjectArea(), 
+                        exam.firstDepartment());
+                new ExamDAO().delete(exam);
+                return mapping.findForward("showList");
             }
             
-            if(op.equals(rsc.getMessage("button.update")) 
+            if(op.equals(rsc.getMessage("button.updateExam")) ||  op.equals(rsc.getMessage("button.saveExam"))
                      || op.equals(rsc.getMessage("button.nextExam")) || op.equals(rsc.getMessage("button.previousExam"))
-                    || op.equals(rsc.getMessage("button.updatePrefs")) ) {  
+                    ) {  
                 // Validate input prefs
                 errors = frm.validate(mapping, request);
                 
@@ -165,7 +181,7 @@ public class ExamEditAction extends PreferencesAction {
                 if(errors.size()==0) {
                     doUpdate(request, frm, exam);
                     
-                    request.setAttribute("examId", examId);
+                    request.setAttribute("examId", frm.getExamId());
                     request.setAttribute("fromChildScreen", "true");
                     
                     if (op.equals(rsc.getMessage("button.nextExam")))
@@ -196,20 +212,30 @@ public class ExamEditAction extends PreferencesAction {
             
             setupInstructors(request, frm, exam);
             
-            LookupTables.setupRooms(request, exam);      // Room Prefs
-            LookupTables.setupBldgs(request, exam);      // Building Prefs
-            LookupTables.setupRoomFeatures(request, exam); // Preference Levels
-            LookupTables.setupRoomGroups(request, exam);   // Room Groups
+            if (exam!=null) {
+                LookupTables.setupRooms(request, exam);      // Room Prefs
+                LookupTables.setupBldgs(request, exam);      // Building Prefs
+                LookupTables.setupRoomFeatures(request, exam); // Preference Levels
+                LookupTables.setupRoomGroups(request, exam);   // Room Groups
+            } else {
+                Exam dummy = new Exam(); dummy.setSession(Session.getCurrentAcadSession(user));
+                LookupTables.setupRooms(request, dummy);      // Room Prefs
+                LookupTables.setupBldgs(request, dummy);      // Building Prefs
+                LookupTables.setupRoomFeatures(request, dummy); // Preference Levels
+                LookupTables.setupRoomGroups(request, dummy);   // Room Groups
+            }
             
             frm.setSubjectAreas(TimetableManager.getSubjectAreas(user));
         
-            BackTracker.markForBack(
+            if (exam!=null) {
+                BackTracker.markForBack(
                     request,
                     "examDetail.do?examId="+frm.getExamId(),
                     "Exam ("+ (frm.getName()==null || frm.getName().length()==0?frm.getLabel().trim():frm.getName().trim()) +")",
                     true, false);
+            }
 
-            return mapping.findForward("showEdit");
+            return (exam==null?mapping.findForward("showAdd"):mapping.findForward("showEdit"));
             
         } catch (Exception e) {
             Debug.error(e);
@@ -218,32 +244,41 @@ public class ExamEditAction extends PreferencesAction {
     }
     
     protected void doLoad(HttpServletRequest request, ExamEditForm frm, Exam exam) {
-        frm.setExamId(exam.getUniqueId().toString());
-        
-        frm.setName(exam.getName());
-        frm.setNote(exam.getNote());
-        frm.setLength(exam.getLength());
-        frm.setSeatingType(Exam.sSeatingTypes[exam.getSeatingType()]);
-        frm.setMaxNbrRooms(exam.getMaxNbrRooms());
-        
-        TreeSet instructors = new TreeSet(exam.getInstructors());
+        if (exam!=null) {
+            frm.setExamId(exam.getUniqueId().toString());
+            
+            frm.setName(exam.getName());
+            frm.setNote(exam.getNote());
+            frm.setLength(exam.getLength());
+            frm.setSeatingType(Exam.sSeatingTypes[exam.getSeatingType()]);
+            frm.setMaxNbrRooms(exam.getMaxNbrRooms());
+            
+            TreeSet instructors = new TreeSet(exam.getInstructors());
 
-        for (Iterator i = instructors.iterator(); i.hasNext(); ) {
-            DepartmentalInstructor instr = (DepartmentalInstructor)i.next();
-            frm.getInstructors().add(instr.getUniqueId().toString());
+            for (Iterator i = instructors.iterator(); i.hasNext(); ) {
+                DepartmentalInstructor instr = (DepartmentalInstructor)i.next();
+                frm.getInstructors().add(instr.getUniqueId().toString());
+            }
+            
+            User user = Web.getUser(request.getSession());
+
+            frm.setEditable(exam.isEditableBy(user));
+
+            Long nextId = Navigation.getNext(request.getSession(), Navigation.sInstructionalOfferingLevel, exam.getUniqueId());
+            Long prevId = Navigation.getPrevious(request.getSession(), Navigation.sInstructionalOfferingLevel, exam.getUniqueId());
+            frm.setPreviousId(prevId==null?null:prevId.toString());
+            frm.setNextId(nextId==null?null:nextId.toString());
+            
+            for (Iterator i=new TreeSet(exam.getOwners()).iterator();i.hasNext();)
+                frm.addExamOwner((ExamOwner)i.next());
+        } else {
+            try {
+                TreeSet periods = ExamPeriod.findAll(request);
+                if (!periods.isEmpty())
+                    frm.setLength(Constants.SLOT_LENGTH_MIN*((ExamPeriod)periods.first()).getLength());
+            } catch (Exception e) {}
         }
         
-        User user = Web.getUser(request.getSession());
-
-        frm.setEditable(exam.isEditableBy(user));
-
-        Long nextId = Navigation.getNext(request.getSession(), Navigation.sInstructionalOfferingLevel, exam.getUniqueId());
-        Long prevId = Navigation.getPrevious(request.getSession(), Navigation.sInstructionalOfferingLevel, exam.getUniqueId());
-        frm.setPreviousId(prevId==null?null:prevId.toString());
-        frm.setNextId(nextId==null?null:nextId.toString());
-        
-        for (Iterator i=new TreeSet(exam.getOwners()).iterator();i.hasNext();)
-            frm.addExamOwner((ExamOwner)i.next());
         for (int i=0;i<frm.PREF_ROWS_ADDED;i++) {
             frm.addExamOwner(null);
             frm.getInstructors().add(Constants.BLANK_OPTION_VALUE);
@@ -257,13 +292,26 @@ public class ExamEditAction extends PreferencesAction {
         
         HashSet deptIds = new HashSet();
         
-        for (Iterator i = exam.getInstructors().iterator(); i.hasNext(); ) {
-            DepartmentalInstructor instr = (DepartmentalInstructor)i.next();
-            deptIds.add(instr.getDepartment().getUniqueId());
-        }
-        for (Iterator i = exam.getOwners().iterator(); i.hasNext(); ) {
-            ExamOwner own = (ExamOwner)i.next();
-            deptIds.add(own.getCourse().getDepartment().getUniqueId());
+        if (exam!=null) {
+            for (Iterator i = exam.getInstructors().iterator(); i.hasNext(); ) {
+                DepartmentalInstructor instr = (DepartmentalInstructor)i.next();
+                deptIds.add(instr.getDepartment().getUniqueId());
+            }
+            for (Iterator i = exam.getOwners().iterator(); i.hasNext(); ) {
+                ExamOwner own = (ExamOwner)i.next();
+                deptIds.add(own.getCourse().getDepartment().getUniqueId());
+            }
+        } else {
+            for (int i=0;i<frm.getSubjectAreaList().size();i++) {
+                ExamOwner own = frm.getExamOwner(i);
+                if (own!=null) deptIds.add(own.getCourse().getDepartment().getUniqueId());
+            }
+            if (deptIds.isEmpty()) {
+                for (Iterator i = TimetableManager.getManager(Web.getUser(request.getSession())).getDepartments().iterator();i.hasNext();) {
+                    Department dept = (Department)i.next();
+                    deptIds.add(dept.getUniqueId());
+                }
+            }
         }
         
         Long[] deptsIdsArray = new Long[deptIds.size()]; int idx = 0;
@@ -280,7 +328,15 @@ public class ExamEditAction extends PreferencesAction {
     }
     
     protected void doUpdate(HttpServletRequest request, ExamEditForm frm, Exam exam) throws Exception {
+        boolean add = false;
+        if (exam==null) {
+            add = true;
+            exam = new Exam();
+            exam.setSession(Session.getCurrentAcadSession(Web.getUser(request.getSession())));
+        }
+        
         Set s = exam.getPreferences();
+        if (s==null) s = new HashSet();
         
         // Clear all old prefs
         s.clear();                
@@ -293,6 +349,7 @@ public class ExamEditAction extends PreferencesAction {
         exam.setLength(Integer.valueOf(frm.getLength()));
         exam.setMaxNbrRooms(Integer.valueOf(frm.getMaxNbrRooms()));
         
+        if (exam.getInstructors()==null) exam.setInstructors(new HashSet());
         exam.getInstructors().clear();
         for (Iterator i=frm.getInstructors().iterator();i.hasNext();) {
             String instructorId = (String)i.next();
@@ -304,15 +361,17 @@ public class ExamEditAction extends PreferencesAction {
         
         frm.setExamOwners(exam);
         
+        new ExamDAO().saveOrUpdate(exam);
+
         ChangeLog.addChange(
                 null, 
                 request,
                 exam, 
                 ChangeLog.Source.EXAM_EDIT, 
-                ChangeLog.Operation.UPDATE, 
+                (add?ChangeLog.Operation.CREATE:ChangeLog.Operation.UPDATE), 
                 exam.firstSubjectArea(), 
                 exam.firstDepartment());
 
-        new ExamDAO().saveOrUpdate(exam);
+        if (add) frm.setExamId(exam.getUniqueId().toString());
     }
 }

@@ -34,7 +34,6 @@ public class PeriodPreferenceModel implements RequiredTimeTableModel {
             iStarts.add(period.getStartSlot());
             iDates.add(period.getDateOffset());
         }
-        System.out.println("MODEL[init]:"+iPreferences);
     }
     
     public void load(PreferenceGroup pg) {
@@ -42,7 +41,6 @@ public class PeriodPreferenceModel implements RequiredTimeTableModel {
             ExamPeriodPref pref = (ExamPeriodPref)i.next();
             iPreferences.put(pref.getExamPeriod(), pref.getPrefLevel().getPrefProlog());
         }
-        System.out.println("MODEL[load]:"+iPreferences);
     }
     
     public void save(Set preferences, PreferenceGroup pg) {
@@ -125,7 +123,6 @@ public class PeriodPreferenceModel implements RequiredTimeTableModel {
     }
     
     public void setPreference(int day, int time, String pref) {
-        System.out.println("set("+day+","+time+","+pref+")");
         Integer dateOffset = (Integer)iDates.toArray()[day];
         Integer slot = (Integer)iStarts.toArray()[time];
         for (Enumeration e=iPreferences.keys();e.hasMoreElements();) {
@@ -134,7 +131,6 @@ public class PeriodPreferenceModel implements RequiredTimeTableModel {
                 iPreferences.put(p, pref); return;
             }
         }
-        System.out.println("MODEL[set]:"+iPreferences);
     }
     
     public String getPreference(int day, int time) {

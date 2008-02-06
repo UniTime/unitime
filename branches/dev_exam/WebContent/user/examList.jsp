@@ -55,11 +55,19 @@
 				</html:submit> 
 			</TD>
 			<TD valign="top">
-				&nbsp;&nbsp;&nbsp;
+				&nbsp;
 				<html:submit
 					accesskey="P" styleClass="btn" titleKey="title.exportPDF" property="op"
 					onclick="displayLoading();">
 					<bean:message key="button.exportPDF" />
+				</html:submit> 
+			</TD>
+			<TD valign="top">
+				&nbsp;
+				<html:submit
+					accesskey="A" styleClass="btn" titleKey="title.addExam" property="op"
+					onclick="displayLoading();">
+					<bean:message key="button.addExam" />
 				</html:submit> 
 			</TD>
 		</TR>
