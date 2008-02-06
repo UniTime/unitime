@@ -216,6 +216,7 @@ public class RoomDetailAction extends Action {
 		roomDetailForm.setExamCapacity(location.getExamCapacity());
 		
         PeriodPreferenceModel px = new PeriodPreferenceModel(location.getSession());
+        px.setAllowRequired(false);
         px.load(location);
         RequiredTimeTable rttPx = new RequiredTimeTable(px);
         rttPx.setName("PeriodPrefs");

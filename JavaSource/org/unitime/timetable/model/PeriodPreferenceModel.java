@@ -21,6 +21,7 @@ public class PeriodPreferenceModel implements RequiredTimeTableModel {
     private TreeSet iPeriods = null;
     private Date iFirstDate = null;
     private boolean iAllowHard = true;
+    private boolean iAllowRequired = true;
     
     public static SimpleDateFormat sDF = new SimpleDateFormat("EEE MM/dd");
 
@@ -79,6 +80,8 @@ public class PeriodPreferenceModel implements RequiredTimeTableModel {
     }
 
     public void setAllowHard(boolean allowHard) { iAllowHard = allowHard; }
+    
+    public void setAllowRequired(boolean allowReq) { iAllowRequired = allowReq; }
     
     public String getName() {
         return null;
@@ -203,13 +206,15 @@ public class PeriodPreferenceModel implements RequiredTimeTableModel {
     public String[] getPreferenceNames() {
         Vector prefs = PreferenceLevel.getPreferenceLevelList(false);
         boolean hasNotAvailable = (iPreferences.size()<iDates.size()*iStarts.size());
-        String[] ret = new String[prefs.size()+(hasNotAvailable?1:0)];
+        String[] ret = new String[prefs.size()+(hasNotAvailable?1:0)+(iAllowRequired?0:-1)];
         int idx=0;
-        for (Enumeration e=prefs.elements();e.hasMoreElements();idx++) {
-            ret[idx]=((PreferenceLevel)e.nextElement()).getPrefProlog();
+        for (Enumeration e=prefs.elements();e.hasMoreElements();) {
+            PreferenceLevel pref = (PreferenceLevel)e.nextElement();
+            if (!iAllowRequired && PreferenceLevel.sRequired.equals(pref.getPrefProlog())) continue;
+            ret[idx++]=pref.getPrefProlog();
         }
         if (hasNotAvailable)
-            ret[prefs.size()] = "@";
+            ret[idx++] = "@";
         return ret;
     }
     

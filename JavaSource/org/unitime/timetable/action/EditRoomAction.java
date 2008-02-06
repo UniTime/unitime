@@ -165,6 +165,7 @@ public class EditRoomAction extends Action {
             
             PeriodPreferenceModel px = new PeriodPreferenceModel(location.getSession());
             px.load(location);
+            px.setAllowRequired(false);
             RequiredTimeTable rttPx = new RequiredTimeTable(px);
             rttPx.setName("PeriodPrefs");
             request.setAttribute("PeriodPrefs", rttPx.print(true, RequiredTimeTable.getTimeGridVertical(user))); 
