@@ -54,25 +54,13 @@
 	</logic:notEmpty>
 	
 <!--  Period Preferences -->
-	<logic:notEmpty name="<%=frmName%>" property="periodPrefs">
+	<logic:notEmpty scope="request" name="ExamPeriodGrid">
 		<TR>
 			<TD valign="top">Examination Periods:</TD>
 			<TD>
-				<logic:iterate name="<%=frmName%>" property="periodPrefs" id="periodPref" indexId="ctr">
-					<% PreferenceLevel preference = null; %>
-					<logic:iterate scope="request" name="<%=PreferenceLevel.PREF_LEVEL_ATTR_NAME%>" id="prLevel">
-						<logic:equal name="<%=frmName%>" property="<%="periodPrefLevels["+ctr+"]"%>" value="<%=((PreferenceLevel)prLevel).getUniqueId().toString()%>">
-							<% preference = (PreferenceLevel)prLevel; %>
-						</logic:equal>
-					</logic:iterate>
-					<logic:iterate scope="request" name="<%=ExamPeriod.PERIOD_ATTR_NAME%>" id="xp">
-						<logic:equal name="xp" property="uniqueId" value="<%=(String)periodPref%>">
-							<div style='color:<%=preference.prefcolor()%>' title='<%=preference.getPrefName()%>: <%=((ExamPeriod)xp).getName()%>'><B><%=((ExamPeriod)xp).getName()%></B></div>
-						</logic:equal>
-					</logic:iterate>
-	   			</logic:iterate>
-		   	</TD>
-	   	</TR>
+				<bean:write scope="request" name="ExamPeriodGrid" filter="false"/>
+			</TD>
+		</TR>
 	</logic:notEmpty>
 	
 <!-- Room Group -->

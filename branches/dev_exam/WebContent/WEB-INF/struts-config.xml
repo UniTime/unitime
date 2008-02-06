@@ -1964,6 +1964,23 @@
       <forward name="showExamDetail" path="examDetailTile" />
     </action>
 
+    <action
+      attribute="examEditForm"
+      input="/user/examEdit.jsp"
+      name="examEditForm"
+      path="/examEdit"
+      scope="request"
+      type="org.unitime.timetable.action.ExamEditAction"
+      validate="false">
+      <forward name="showEdit" path="examEditTile" />
+      <forward name="showDetail" path="/examDetail.do" />
+    </action>
+
+	  <action
+         path="/examEditAjax"
+         type="org.unitime.timetable.action.ajax.ExamEditAjax"
+         scope="request"
+         validate="false" />
    </action-mappings>
 
 	<!-- Struts Layout Controller -->

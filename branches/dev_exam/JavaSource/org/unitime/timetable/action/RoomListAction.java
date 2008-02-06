@@ -58,6 +58,7 @@ import org.unitime.timetable.model.ExternalRoom;
 import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.NonUniversityLocation;
+import org.unitime.timetable.model.PeriodPreferenceModel;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Room;
@@ -547,7 +548,24 @@ public class RoomListAction extends Action {
 	                idx++;
 
 	                if (location.isExamEnabled()) {
-	                    text[idx] = location.getExamPreferencesAbbreviationHtml();
+	                    if (gridAsText)
+	                        text[idx] = location.getExamPreferencesAbbreviationHtml();
+	                    else {
+	                        PeriodPreferenceModel px = new PeriodPreferenceModel(location.getSession());
+	                        px.load(location);
+	                        RequiredTimeTable rtt = new RequiredTimeTable(px);
+	                        File imageFileName = null;
+	                        try {
+	                            imageFileName = rtt.createImage(timeVertical);
+	                        } catch (IOException ex) {
+	                            ex.printStackTrace();
+	                        }
+	                        String title = rtt.getModel().toString();
+	                        if (imageFileName!=null)
+	                            text[idx] = "<img border='0' src='temp/"+(imageFileName.getName())+"' title='"+title+"'>";
+	                        else
+	                            text[idx] = location.getExamPreferencesAbbreviationHtml();
+	                    }
 	                    comp[idx] = null;
 	                } else {
 	                    text[idx] = "";

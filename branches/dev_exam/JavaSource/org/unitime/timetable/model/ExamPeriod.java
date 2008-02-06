@@ -160,4 +160,8 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
                 setInteger("dateOffset", dateOffset).
                 setInteger("startSlot", startSlot).setCacheable(true).uniqueResult();
     }
+    
+    public String toString() {
+        return getAbbreviation();
+    }
 }

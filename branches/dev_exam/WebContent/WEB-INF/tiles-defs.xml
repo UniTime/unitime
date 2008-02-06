@@ -791,4 +791,10 @@
 		<put name="body" value="/user/examDetail.jsp" />
 		<put name="showNavigation" value="true" />
   	</definition>
+
+  	<definition name="examEditTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Examination Edit"/>
+		<put name="body" value="/user/examEdit.jsp" />
+		<put name="showNavigation" value="true" />
+  	</definition>
 </tiles-definitions>

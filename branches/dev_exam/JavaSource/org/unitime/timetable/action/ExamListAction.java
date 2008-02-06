@@ -1,6 +1,7 @@
 package org.unitime.timetable.action;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
@@ -32,6 +33,7 @@ import org.unitime.timetable.model.ExamPeriodPref;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.PeriodPreferenceModel;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.RoomFeaturePref;
@@ -46,6 +48,7 @@ import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.Navigation;
 import org.unitime.timetable.webutil.PdfWebTable;
+import org.unitime.timetable.webutil.RequiredTimeTable;
 
 public class ExamListAction extends Action {
 
@@ -129,6 +132,9 @@ public class ExamListAction extends Action {
         
         String nl = (html?"<br>":"\n");
         
+        boolean timeVertical = RequiredTimeTable.getTimeGridVertical(user);
+        boolean timeText = RequiredTimeTable.getTimeGridAsText(user);
+        
         PdfWebTable table = new PdfWebTable(
                 11,
                 "Examinations", "examList.do?ord=%%",
@@ -171,7 +177,24 @@ public class ExamListAction extends Action {
                 if (roomPref.length()>0) roomPref+=nl;
                 roomPref += exam.getEffectivePrefHtmlForPrefType(RoomGroupPref.class);
                 if (roomPref.endsWith(nl)) roomPref = roomPref.substring(0, roomPref.length()-nl.length());
-                perPref += exam.getEffectivePrefHtmlForPrefType(ExamPeriodPref.class);
+                if (timeText) {
+                    perPref += exam.getEffectivePrefHtmlForPrefType(ExamPeriodPref.class);
+                } else {
+                    PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession());
+                    px.load(exam);
+                    RequiredTimeTable rtt = new RequiredTimeTable(px);
+                    File imageFileName = null;
+                    try {
+                        imageFileName = rtt.createImage(timeVertical);
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                    String title = rtt.getModel().toString();
+                    if (imageFileName!=null)
+                        perPref = "<img border='0' src='temp/"+(imageFileName.getName())+"' title='"+title+"'>";
+                    else
+                        perPref += exam.getEffectivePrefHtmlForPrefType(ExamPeriodPref.class);
+                }
                 distPref += exam.getEffectivePrefHtmlForPrefType(DistributionPref.class);
             } else {
                 for (Iterator j=exam.effectivePreferences(RoomPref.class).iterator();j.hasNext();) {

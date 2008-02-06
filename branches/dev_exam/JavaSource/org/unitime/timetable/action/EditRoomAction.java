@@ -47,6 +47,7 @@ import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.NonUniversityLocation;
+import org.unitime.timetable.model.PeriodPreferenceModel;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomDept;
@@ -57,6 +58,7 @@ import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.webutil.RequiredTimeTable;
 
 
 /** 
@@ -160,6 +162,12 @@ public class EditRoomAction extends Action {
             editRoomForm.setCoordX(location.getCoordinateX()==null || location.getCoordinateX().intValue()<0?null:location.getCoordinateX().toString());
             editRoomForm.setCoordY(location.getCoordinateY()==null || location.getCoordinateY().intValue()<0?null:location.getCoordinateY().toString());
             editRoomForm.setControlDept(null);
+            
+            PeriodPreferenceModel px = new PeriodPreferenceModel(location.getSession());
+            px.load(location);
+            RequiredTimeTable rttPx = new RequiredTimeTable(px);
+            rttPx.setName("PeriodPrefs");
+            request.setAttribute("PeriodPrefs", rttPx.print(true, RequiredTimeTable.getTimeGridVertical(user))); 
 
             Set ownedDepts = owner.departmentsForSession(s.getUniqueId());
             boolean controls = false;
@@ -254,7 +262,8 @@ public class EditRoomAction extends Action {
 	private void doUpdate(EditRoomForm editRoomForm, HttpServletRequest request) throws Exception {
 		HttpSession webSession = request.getSession();
 		User user = Web.getUser(webSession);
-		Long sessionId = Session.getCurrentAcadSession(user).getSessionId();
+		Session session = Session.getCurrentAcadSession(user);
+		Long sessionId = session.getSessionId();
         
         Long id = Long.valueOf(editRoomForm.getId());
 		LocationDAO ldao = new LocationDAO();
@@ -301,6 +310,12 @@ public class EditRoomAction extends Action {
 			
 			location.setCoordinateX(editRoomForm.getCoordX()==null || editRoomForm.getCoordX().length()==0 ? new Integer(-1) : Integer.valueOf(editRoomForm.getCoordX()));
 			location.setCoordinateY(editRoomForm.getCoordY()==null || editRoomForm.getCoordY().length()==0 ? new Integer(-1) : Integer.valueOf(editRoomForm.getCoordY()));
+			
+            PeriodPreferenceModel px = new PeriodPreferenceModel(session);
+            RequiredTimeTable rttPx = new RequiredTimeTable(px);
+            rttPx.setName("PeriodPrefs");
+            rttPx.update(request);
+            px.save(location); 
 			
 			for (Iterator i=location.getRoomDepts().iterator();i.hasNext();) {
 				RoomDept rd = (RoomDept)i.next();
@@ -361,6 +376,13 @@ public class EditRoomAction extends Action {
             room.setCoordinateX(editRoomForm.getCoordX()==null || editRoomForm.getCoordX().length()==0 ? new Integer(-1) : Integer.valueOf(editRoomForm.getCoordX()));
             room.setCoordinateY(editRoomForm.getCoordY()==null || editRoomForm.getCoordY().length()==0 ? new Integer(-1) : Integer.valueOf(editRoomForm.getCoordY()));
             room.setSession(session);
+
+            PeriodPreferenceModel px = new PeriodPreferenceModel(session);
+            RequiredTimeTable rttPx = new RequiredTimeTable(px);
+            rttPx.setName("PeriodPrefs");
+            rttPx.update(request);
+            px.save(room);
+
             hibSession.saveOrUpdate(room);
             
             ChangeLog.addChange(

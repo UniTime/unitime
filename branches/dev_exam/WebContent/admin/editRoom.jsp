@@ -232,6 +232,15 @@
 			<html:hidden property="examCapacity"/>
 		<% } %>
 		
+		<logic:notEmpty scope="request" name="PeriodPrefs">
+			<TR>
+				<TD nowrap valign="top">Periods Preferences:</TD>
+				<TD>
+					<bean:write scope="request" name="PeriodPrefs" filter="false"/>
+				</TD>
+			</TR>
+		</logic:notEmpty>
+		
 		<TR>
 			<TD colspan='2'>
 				<tt:section-title/>
