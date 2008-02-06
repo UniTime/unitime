@@ -68,6 +68,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
 	public static final int sOwnerTypeConfig = 2;
 	public static final int sOwnerTypeCourse = 1;
 	public static final int sOwnerTypeOffering = 0;
+	public static String[] sOwnerTypes = new String[] {"Offering", "Course", "Config", "Class"};
 	
 	public Object getOwnerObject() {
 	    switch (getOwnerType()) {

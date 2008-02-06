@@ -276,4 +276,20 @@ public class Exam extends BaseExam {
     public Set getAvailableRooms() {
         return Location.findAllExamLocations(getSession().getUniqueId());
     }
+    
+    public SubjectArea firstSubjectArea() {
+        for (Iterator i=new TreeSet(getOwners()).iterator();i.hasNext();) {
+            ExamOwner owner = (ExamOwner)i.next();
+            return owner.getCourse().getSubjectArea();
+        }
+        return null;
+    }
+
+    public Department firstDepartment() {
+        for (Iterator i=new TreeSet(getOwners()).iterator();i.hasNext();) {
+            ExamOwner owner = (ExamOwner)i.next();
+            return owner.getCourse().getDepartment();
+        }
+        return null;
+    }
 }

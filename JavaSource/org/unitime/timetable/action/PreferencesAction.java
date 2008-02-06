@@ -180,7 +180,7 @@ public class PreferencesAction extends Action {
         
         if(op.equals(rsc.getMessage("button.addTimePattern"))) 
             addTimePattern(request, frm, errors);
-
+        
         // Delete single preference
         if(op.equals(rsc.getMessage("button.delete")))
             doDelete(request, frm);

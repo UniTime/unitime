@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.TreeSet;
+import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -22,10 +23,14 @@ import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ExamListForm;
 import org.unitime.timetable.model.BuildingPref;
+import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriodPref;
+import org.unitime.timetable.model.InstrOfferingConfig;
+import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceLevel;
@@ -85,7 +90,12 @@ public class ExamListAction extends Action {
             PdfWebTable table = getExamTable(user, manager, session, myForm, true);
             if (table!=null) {
                 request.setAttribute("ExamList.table", table.printTable(WebTable.getOrder(request.getSession(), "ExamList.ord")));
-                Navigation.set(request.getSession(), Navigation.sInstructionalOfferingLevel, table.getLines());
+                Vector ids = new Vector();
+                for (Enumeration e=table.getLines().elements();e.hasMoreElements();) {
+                    WebTable.WebTableLine line = (WebTable.WebTableLine)e.nextElement();
+                    ids.add(Long.parseLong(line.getUniqueId()));
+                }
+                Navigation.set(request.getSession(), Navigation.sInstructionalOfferingLevel, ids);
             } else {
                 ActionMessages errors = new ActionMessages();
                 errors.add("exams", new ActionMessage("errors.generic", "No examination matching the above criteria was found."));
@@ -97,7 +107,10 @@ public class ExamListAction extends Action {
         try {
             subjectAreaName = new SubjectAreaDAO().get(new Long(myForm.getSubjectAreaId())).getSubjectAreaAbbreviation();
         } catch (Exception e) {}
-
+        
+        if (request.getParameter("backId")!=null)
+            request.setAttribute("hash", request.getParameter("backId"));
+        
         BackTracker.markForBack(
                 request, 
                 "examList.do?op=Search&subjectAreaId="+myForm.getSubjectAreaId()+"&courseNbr="+myForm.getCourseNbr(), 
@@ -137,7 +150,16 @@ public class ExamListAction extends Action {
             for (Enumeration e=exam.getOwnerObjects().elements();e.hasMoreElements();) {
                 Object object = e.nextElement();
                 if (objects.length()>0) objects+=nl;
-                objects += object.toString();
+                if (object instanceof Class_)
+                    objects += ((Class_)object).getClassLabel();
+                else if (object instanceof InstrOfferingConfig)
+                    objects += ((InstrOfferingConfig)object).toString();
+                else if (object instanceof InstructionalOffering)
+                    objects += ((InstructionalOffering)object).getCourseName();
+                else if (object instanceof CourseOffering)
+                    objects += ((CourseOffering)object).getCourseName();
+                else
+                    objects += object.toString();
             }
             
             if (html) {
@@ -205,11 +227,11 @@ public class ExamListAction extends Action {
             table.addLine(
                     "onClick=\"document.location='examDetail.do?examId="+exam.getUniqueId()+"';\"",
                     new String[] {
-                        objects,
+                        "<a name='"+exam.getUniqueId()+"'>"+objects+"</a>",
                         exam.getLength().toString(),
                         (Exam.sSeatingTypeNormal==exam.getSeatingType()?"Normal":"Exam"),
                         String.valueOf(nrStudents),
-                        (exam.getMaxNbrRooms()!=1?exam.getMaxNbrRooms().toString():""),
+                        exam.getMaxNbrRooms().toString(),
                         instructors,
                         perPref,
                         roomPref,

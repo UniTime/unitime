@@ -55,18 +55,17 @@ public class ExamDetailAction extends PreferencesAction {
             String examId = (request.getParameter("examId")==null) ? (request.getAttribute("instructorId")==null) ? null : request.getAttribute("examId").toString() : request.getParameter("examId");
             
             String op = frm.getOp();
-            String deleteType = request.getParameter("deleteType");
             
             if (request.getParameter("op2")!=null && request.getParameter("op2").length()>0)
                 op = request.getParameter("op2");
             
-            if (request.getAttribute("fromChildScreen")!=null && request.getAttribute("fromChildScreen").toString().equals("true") ) {
+            if (request.getAttribute("fromChildScreen")!=null
+                    && request.getAttribute("fromChildScreen").toString().equals("true") ) {
                 op = "";
                 frm.setOp(op);
             }
-            
-            // Read instructor id from form
-            if (op.equals(rsc.getMessage("button.editInfo")) || op.equals(rsc.getMessage("button.next")) || op.equals(rsc.getMessage("button.previous"))) {
+            // Read exam id from form
+            if (op.equals(rsc.getMessage("button.editExam")) || op.equals(rsc.getMessage("button.addDistPref")) || op.equals(rsc.getMessage("button.nextExam")) || op.equals(rsc.getMessage("button.previousExam"))) {
                 examId = frm.getExamId();
             } else {
                 frm.reset(mapping, request);
@@ -81,28 +80,21 @@ public class ExamDetailAction extends PreferencesAction {
             //Check exam exists
             if (examId==null || examId.trim()=="") throw new Exception ("Exam Info not supplied.");
             
-            // Cancel - Go back to Instructors List Screen
-            if(op.equals(rsc.getMessage("button.back")) && examId!=null && examId.trim()!="") {
-                response.sendRedirect(response.encodeURL("examList.do"));
-                request.setAttribute("hash", examId);
-                return null;
-            }
-            
             Exam exam = new ExamDAO().get(Long.valueOf(examId));
             
             //Edit Information - Redirect to info edit screen
-            if (op.equals(rsc.getMessage("button.edit")) && examId!=null && examId.trim()!="") {
+            if (op.equals(rsc.getMessage("button.editExam")) && examId!=null && examId.trim()!="") {
                 response.sendRedirect( response.encodeURL("examEdit.do?examId="+examId) );
                 return null;
             }
             
-            if (op.equals(rsc.getMessage("button.next"))) {
+            if (op.equals(rsc.getMessage("button.nextExam"))) {
                 response.sendRedirect(response.encodeURL("examDetail.do?examId="+frm.getNextId()));
                 return null;
             }
             
-            if (op.equals(rsc.getMessage("button.previous"))) {
-                response.sendRedirect(response.encodeURL("examDetail.do?instructorId="+frm.getPreviousId()));
+            if (op.equals(rsc.getMessage("button.previousExam"))) {
+                response.sendRedirect(response.encodeURL("examDetail.do?examId="+frm.getPreviousId()));
                 return null;
             }
             
@@ -111,7 +103,7 @@ public class ExamDetailAction extends PreferencesAction {
             
             // Display distribution Prefs
             DistributionPrefsTableBuilder tbl = new DistributionPrefsTableBuilder();
-            String html = tbl.getDistPrefsTableForExam(request, exam, true);
+            String html = tbl.getDistPrefsTableForExam(request, exam, exam.isEditableBy(user));
             if (html!=null)
                 request.setAttribute(DistributionPref.DIST_PREF_REQUEST_ATTR, html);
             
@@ -192,11 +184,6 @@ public class ExamDetailAction extends PreferencesAction {
             LookupTables.setupRoomFeatures(request, exam); // Preference Levels
             LookupTables.setupRoomGroups(request, exam);   // Room Groups
             
-            Long nextId = Navigation.getNext(request.getSession(), Navigation.sInstructionalOfferingLevel, exam.getUniqueId());
-            Long prevId = Navigation.getPrevious(request.getSession(), Navigation.sInstructionalOfferingLevel, exam.getUniqueId());
-            frm.setPreviousId(prevId==null?null:prevId.toString());
-            frm.setNextId(nextId==null?null:nextId.toString());
-            
             return mapping.findForward("showExamDetail");
             
         } catch (Exception e) {
@@ -205,12 +192,12 @@ public class ExamDetailAction extends PreferencesAction {
         }
     }
     
-    private void doLoad(HttpServletRequest request, ExamEditForm frm, Exam exam) {
+    protected void doLoad(HttpServletRequest request, ExamEditForm frm, Exam exam) {
         frm.setExamId(exam.getUniqueId().toString());
         
         frm.setLabel(exam.getLabel());
         frm.setName(exam.getName());
-        frm.setNote(exam.getNote());
+        frm.setNote(exam.getNote()==null?null:exam.getNote().replaceAll("\n", "<br>"));
         frm.setLength(exam.getLength());
         frm.setSeatingType(Exam.sSeatingTypes[exam.getSeatingType()]);
         frm.setMaxNbrRooms(exam.getMaxNbrRooms());
@@ -225,6 +212,11 @@ public class ExamDetailAction extends PreferencesAction {
         User user = Web.getUser(request.getSession());
 
         frm.setEditable(exam.isEditableBy(user));
+
+        Long nextId = Navigation.getNext(request.getSession(), Navigation.sInstructionalOfferingLevel, exam.getUniqueId());
+        Long prevId = Navigation.getPrevious(request.getSession(), Navigation.sInstructionalOfferingLevel, exam.getUniqueId());
+        frm.setPreviousId(prevId==null?null:prevId.toString());
+        frm.setNextId(nextId==null?null:nextId.toString());
     }
 
     protected void setupInstructors(HttpServletRequest request, ExamEditForm frm, Exam exam) throws Exception {
@@ -244,7 +236,7 @@ public class ExamDetailAction extends PreferencesAction {
         }
         
         Long[] deptsIdsArray = new Long[deptIds.size()]; int idx = 0;
-        for (Iterator i=deptIds.iterator();i.hasNext();idx++)
+        for (Iterator i=deptIds.iterator();i.hasNext();)
             deptsIdsArray[idx++]=(Long)i.next();
 
         LookupTables.setupInstructors(request, deptsIdsArray);
