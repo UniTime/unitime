@@ -185,7 +185,7 @@ public class DistributionPrefsTableBuilder {
         String ownerId = (String) user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
         TimetableManager manager = new TimetableManagerDAO().get(new Long(ownerId));
 
-        return toHtmlTable(request, exam.getSession(), (isAdmin?null:manager), null, prefs, manager.canEditExams(exam.getSession(), user), false); 
+        return toHtmlTable(request, exam.getSession(), (isAdmin?null:manager), null, prefs, editable, editable); 
     }
 
     public String getDistPrefsTableForSchedulingSubpart(HttpServletRequest request, SchedulingSubpart subpart, boolean editable) {

@@ -21,11 +21,13 @@ package org.unitime.timetable.model.comparators;
 
 import java.util.Comparator;
 
+import org.unitime.commons.NaturalOrderComparator;
 import org.unitime.timetable.model.InstrOfferingConfig;
 
 
 public class InstrOfferingConfigComparator implements Comparator {
 	private Long subjectUID;
+	private Comparator iCmp = new NaturalOrderComparator();
 	
     public InstrOfferingConfigComparator(Long subjectUID) {
         this.subjectUID = subjectUID;
@@ -38,6 +40,8 @@ public class InstrOfferingConfigComparator implements Comparator {
 			Comparator cmp = new InstructionalOfferingComparator(subjectUID);
 			return cmp.compare(ic1.getInstructionalOffering(),ic2.getInstructionalOffering());
 		}
+		int cmp = iCmp.compare(ic1.getName(), ic2.getName());
+		if (cmp!=0) return cmp;
 		return ic1.getUniqueId().compareTo(ic2.getUniqueId());
 	}
 
