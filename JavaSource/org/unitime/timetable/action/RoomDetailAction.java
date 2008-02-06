@@ -48,6 +48,7 @@ import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.NonUniversityLocation;
+import org.unitime.timetable.model.PeriodPreferenceModel;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomDept;
@@ -213,7 +214,14 @@ public class RoomDetailAction extends Action {
 		//set location information in form
 		roomDetailForm.setExamEnabled(location.isExamEnabled());
 		roomDetailForm.setExamCapacity(location.getExamCapacity());
-		roomDetailForm.setExamPref(location.getExamPreferencesHtml());
+		
+        PeriodPreferenceModel px = new PeriodPreferenceModel(location.getSession());
+        px.load(location);
+        RequiredTimeTable rttPx = new RequiredTimeTable(px);
+        rttPx.setName("PeriodPrefs");
+        if (!location.getExamPreferences().isEmpty())
+            roomDetailForm.setExamPref(rttPx.print(false, timeVertical, true, false));
+		
 		roomDetailForm.setCapacity(location.getCapacity());
 		roomDetailForm.setCoordinateX(location.getCoordinateX());
 		roomDetailForm.setCoordinateY(location.getCoordinateY());

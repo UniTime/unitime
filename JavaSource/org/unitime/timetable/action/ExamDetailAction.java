@@ -35,6 +35,7 @@ import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.DistributionPrefsTableBuilder;
 import org.unitime.timetable.webutil.Navigation;
+import org.unitime.timetable.webutil.RequiredTimeTable;
 
 public class ExamDetailAction extends PreferencesAction {
     
@@ -173,6 +174,8 @@ public class ExamDetailAction extends PreferencesAction {
             // Initialize Preferences for initial load
             frm.setAvailableTimePatterns(null);
             initPrefs(user, frm, exam, null, false);
+            boolean timeVertical = RequiredTimeTable.getTimeGridVertical(Web.getUser(httpSession));
+            generateExamPeriodGrid(request, frm, exam, "init", timeVertical, false);
             
             // Process Preferences Action
             processPrefAction(request, frm, errors);

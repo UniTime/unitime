@@ -23,6 +23,7 @@
 <%@ page import="org.unitime.timetable.model.RoomFeature" %>
 <%@ page import="org.unitime.timetable.model.PreferenceLevel" %>
 <%@ page import="org.unitime.timetable.model.RoomGroup" %>
+<%@ page import="org.unitime.timetable.model.ExamPeriod" %>
 <%@ page import="org.unitime.commons.Debug" %>
 <%@ page import="org.unitime.timetable.model.DistributionType" %>
 <%@ page import="org.unitime.timetable.model.Preference" %>
@@ -32,6 +33,7 @@
 	<html:hidden property="previousId"/>
 
 <!-- Time Preferences -->
+	<% if (!timePrefDisabled) { %>
 		<TR><TD colspan='2'>&nbsp;</TD></TR>
 		<TR>
 			<TD valign="middle" colspan='2'>
@@ -75,7 +77,23 @@
 			</TR>
 			<% idx++; %>
 		</logic:iterate>
+	<% } %>
 		
+<!-- Period Preferences -->
+	<logic:notEmpty scope="request" name="ExamPeriodGrid">
+		<TR><TD colspan='2'>&nbsp;</TD></TR>
+		<TR>
+			<TD valign="middle" colspan='2'>
+				<tt:section-title><A name='PeriodPref'>Examination Period Preferences</A></tt:section-title>
+			</TD>
+		</TR>
+		<TR>
+			<TD colspan='2'>
+				<bean:write scope="request" name="ExamPeriodGrid" filter="false"/>
+			</TD>
+		</TR>
+	</logic:notEmpty>
+	
 <!-- Room Group -->
 	<% PreferenceLevel pr = null; %>
 	<% if (!roomGroupDisabled) { %>
@@ -473,6 +491,22 @@
 							<bean:message key="button.nextInstructor" />
 						</html:submit> 
 					</logic:notEmpty>
+				<% } 
+
+				   if (frmName.equals("examEditForm")) {%>
+					<logic:greaterEqual name="<%=frmName%>" property="previousId" value="0">
+						<html:submit property="op" 
+								styleClass="btn" accesskey="P" titleKey="title.previous">
+							<bean:message key="button.previousExam" />
+						</html:submit> 
+					</logic:greaterEqual>
+					&nbsp;
+					<logic:greaterEqual name="<%=frmName%>" property="nextId" value="0">
+						<html:submit property="op" 
+							styleClass="btn" accesskey="N" titleKey="title.next">
+							<bean:message key="button.nextExam" />
+						</html:submit> 
+					</logic:greaterEqual>
 				<% } %>
 
 				&nbsp;

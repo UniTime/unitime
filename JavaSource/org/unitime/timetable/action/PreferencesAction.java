@@ -50,10 +50,10 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.DistributionType;
-import org.unitime.timetable.model.ExamPeriod;
-import org.unitime.timetable.model.ExamPeriodPref;
+import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.PeriodPreferenceModel;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.PreferenceLevel;
@@ -69,7 +69,6 @@ import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.BuildingDAO;
 import org.unitime.timetable.model.dao.DistributionTypeDAO;
-import org.unitime.timetable.model.dao.ExamPeriodDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.RoomFeatureDAO;
 import org.unitime.timetable.model.dao.RoomGroupDAO;
@@ -170,10 +169,6 @@ public class PreferencesAction extends Action {
         if(op.equals(rsc.getMessage("button.addDistPref"))) 
             addDistPref(request, frm, errors);
 
-        // Add Period Preference row
-        if(op.equals(rsc.getMessage("button.addPeriodPref"))) 
-            addPeriodPref(request, frm, errors);
-
         // Add Room Feature Preference row
         if(op.equals(rsc.getMessage("button.addRoomFeaturePref"))) 
             addRoomFeatPref(request, frm, errors);
@@ -256,29 +251,6 @@ public class PreferencesAction extends Action {
                        new ActionMessage(
                                "errors.generic", 
                                "Invalid distribution preference: Check for duplicate / blank selection. ") );
-            saveErrors(request, errors);
-        }
-    }
-
-    protected void addPeriodPref(
-            HttpServletRequest request, 
-            PreferencesForm frm,
-            ActionMessages errors ) {
- 
-        List lst = frm.getPeriodPrefs();
-        if(frm.checkPrefs(lst)) {
-            for (int i=0; i<frm.PREF_ROWS_ADDED; i++) {
-                frm.addToPeriodPrefs(
-                        Preference.BLANK_PREF_VALUE, 
-                        Preference.BLANK_PREF_VALUE );
-            }
-            request.setAttribute(HASH_ATTR, HASH_PERIOD_PREF);
-        }
-        else {
-            errors.add("periodPrefs", 
-                       new ActionMessage(
-                               "errors.generic", 
-                               "Invalid examination period preference: Check for duplicate / blank selection. ") );
             saveErrors(request, errors);
         }
     }
@@ -456,15 +428,6 @@ public class PreferencesAction extends Action {
                 frm.setDistPrefLevels(lstL);
                 request.setAttribute(HASH_ATTR, HASH_DIST_PREF);
             }
-            if(deleteType.equals("periodPref")) {
-                List lst = frm.getPeriodPrefs();
-                List lstL = frm.getPeriodPrefLevels();
-                lst.remove(deleteId);
-                lstL.remove(deleteId);
-                frm.setPeriodPrefs(lst);
-                frm.setPeriodPrefLevels(lstL);
-                request.setAttribute(HASH_ATTR, HASH_PERIOD_PREF);
-            }
             if(deleteType.equals("roomFeaturePref")) {
                 List lst = frm.getRoomFeaturePrefs();
                 List lstL = frm.getRoomFeaturePrefLevels();
@@ -630,6 +593,7 @@ public class PreferencesAction extends Action {
         }
 
         // Period Prefs
+        /*
         lst = frm.getPeriodPrefs();
         lstL = frm.getPeriodPrefLevels();
         
@@ -650,8 +614,17 @@ public class PreferencesAction extends Action {
             xp.setExamPeriod(period);
 
             s.add(xp);
+        }*/
+        if (pg instanceof Exam) { 
+            Exam exam = (Exam)pg;
+            PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession());
+            px.load(exam);
+            RequiredTimeTable rtt = new RequiredTimeTable(px);
+            rtt.setName("PeriodPref");
+            rtt.update(request);
+            px.save(s, exam);
         }
-
+        
         // Room Feature Prefs
         lst = frm.getRoomFeaturePrefs();
         lstL = frm.getRoomFeaturePrefLevels();
@@ -795,6 +768,20 @@ public class PreferencesAction extends Action {
 		
 		if (sameParentTimePref==null)
 			prefs.add(tp);
+    }
+    
+    protected void generateExamPeriodGrid(HttpServletRequest request,
+            PreferencesForm frm,
+            Exam exam, 
+            String op, 
+            boolean timeVertical, boolean editable) throws Exception {
+        PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession());
+        px.load(exam);
+        RequiredTimeTable rtt = new RequiredTimeTable(px);
+        rtt.setName("PeriodPref");
+        if(!op.equals("init")) 
+            rtt.update(request);
+        request.setAttribute("ExamPeriodGrid", rtt.print(editable, timeVertical, editable, false));
     }
     
     /**
@@ -997,6 +984,7 @@ public class PreferencesAction extends Action {
         }
 
         // Period Prefs
+        /*
         frm.getPeriodPrefs().clear();
         frm.getPeriodPrefLevels().clear();
         Set periodPrefs = pg.effectivePreferences(ExamPeriodPref.class, leadInstructors);
@@ -1008,7 +996,8 @@ public class PreferencesAction extends Action {
                     xp.getExamPeriod().getUniqueId().toString(), 
                     xp.getPrefLevel().getUniqueId().toString() );
         }
-
+        */
+        
         // Room group Prefs
     	frm.getRoomGroups().clear();
     	frm.getRoomGroupLevels().clear();

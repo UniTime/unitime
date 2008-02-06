@@ -53,22 +53,25 @@
 					</tt:section-title>
 				<logic:equal name="<%=frmName%>" property="editable" value="true">
 					<html:submit property="op" 
-						styleClass="btn" accesskey="E" titleKey="title.edit" >
-						<bean:message key="button.edit" />
+						styleClass="btn" accesskey="E" titleKey="title.editExam" >
+						<bean:message key="button.editExam" />
 					</html:submit> 
+					<html:submit property="op" styleClass="btn" accesskey="A" titleKey="title.addDistPref" >
+						<bean:message key="button.addDistPref" />
+					</html:submit>
 				</logic:equal>
-				<logic:notEmpty name="<%=frmName%>" property="previousId">
+				<logic:greaterEqual name="<%=frmName%>" property="previousId" value="0">
 					<html:submit property="op" 
-							styleClass="btn" accesskey="P" titleKey="title.previous">
-						<bean:message key="button.previous" />
+							styleClass="btn" accesskey="P" titleKey="title.previousExam">
+						<bean:message key="button.previousExam" />
 					</html:submit> 
-				</logic:notEmpty>
-				<logic:notEmpty name="<%=frmName%>" property="nextId">
+				</logic:greaterEqual>
+				<logic:greaterEqual name="<%=frmName%>" property="nextId" value="0">
 					<html:submit property="op" 
-						styleClass="btn" accesskey="N" titleKey="title.next">
-						<bean:message key="button.next" />
+						styleClass="btn" accesskey="N" titleKey="title.nextExam">
+						<bean:message key="button.nextExam" />
 					</html:submit> 
-				</logic:notEmpty>
+				</logic:greaterEqual>
 				<tt:back styleClass="btn" name="Back" title="Return to %% (Alt+B)" accesskey="B" type="PreferenceGroup">
 					<bean:write name="<%=frmName%>" property="examId"/>
 				</tt:back>
@@ -115,14 +118,18 @@
 		<logic:notEmpty name="<%=frmName%>" property="instructors">
 			<TR>
 				<TD valign="top">Instructors:</TD>
-				<TD>	
+				<TD>
+					<table border='0'>
 					<logic:iterate name="<%=frmName%>" property="instructors" id="instructor" indexId="ctr">
 						<logic:iterate scope="request" name="<%=DepartmentalInstructor.INSTR_LIST_ATTR_NAME%>" id="instr">
 							<logic:equal name="instr" property="value" value="<%=(String)instructor%>">
-								<bean:write name="instr" property="label"/><br>
+								<tr><td>
+									<bean:write name="instr" property="label"/>
+								</td></tr>
 							</logic:equal>
 						</logic:iterate>
 	   				</logic:iterate>
+	   				</table>
 			   	</TD>
 		   	</TR>
 		</logic:notEmpty>
@@ -140,7 +147,7 @@
 			</TD>
 		</TR>
 		<TR>
-			<TD colspan='2'> <bean:write name="<%=frmName%>" property="note" /></TD>
+			<TD colspan='2'> <bean:write name="<%=frmName%>" property="note" filter="false"/></TD>
 		</TR>
 		</logic:notEmpty>
 
@@ -213,22 +220,25 @@
 			<TD valign="middle" colspan='2'>
 			<logic:equal name="<%=frmName%>" property="editable" value="true">
 				<html:submit property="op" 
-					styleClass="btn" accesskey="E" titleKey="title.edit" >
-					<bean:message key="button.edit" />
-				</html:submit> 
+					styleClass="btn" accesskey="E" titleKey="title.editExam" >
+					<bean:message key="button.editExam" />
+				</html:submit>
+				<html:submit property="op" styleClass="btn" accesskey="A" titleKey="title.addDistPref" >
+					<bean:message key="button.addDistPref" />
+				</html:submit>
 			</logic:equal>
-				<logic:notEmpty name="<%=frmName%>" property="previousId">
+				<logic:greaterEqual name="<%=frmName%>" property="previousId" value="0">
 					<html:submit property="op" 
 							styleClass="btn" accesskey="P" titleKey="title.previous">
-						<bean:message key="button.previous" />
+						<bean:message key="button.previousExam" />
 					</html:submit> 
-				</logic:notEmpty>
-				<logic:notEmpty name="<%=frmName%>" property="nextId">
+				</logic:greaterEqual>
+				<logic:greaterEqual name="<%=frmName%>" property="nextId" value="0">
 					<html:submit property="op" 
 						styleClass="btn" accesskey="N" titleKey="title.next">
-						<bean:message key="button.next" />
+						<bean:message key="button.nextExam" />
 					</html:submit> 
-				</logic:notEmpty>
+				</logic:greaterEqual>
 				<tt:back styleClass="btn" name="Back" title="Return to %% (Alt+B)" accesskey="B" type="PreferenceGroup">
 					<bean:write name="<%=frmName%>" property="examId"/>
 				</tt:back>

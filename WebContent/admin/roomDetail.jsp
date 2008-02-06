@@ -98,12 +98,14 @@
 							>
 							<bean:message key="button.modifyRoomFeatures" />
 					</html:submit>
+					<%--
 					<logic:equal name="<%=frmName%>" property="examEnabled" value="true">
 						&nbsp;
 						<html:submit property="doit"  styleClass="btn" accesskey="X" titleKey="title.modifyRoomPeriodPreferences">
 							<bean:message key="button.modifyRoomPeriodPreferences" />
 						</html:submit>
 					</logic:equal>
+					--%>
 					<% if (admin || (frm.isDeleteFlag() && frm.isOwner())) {%>
 						&nbsp;
 						<html:submit property="doit"  styleClass="btn" accesskey="D" titleKey="title.removeRoom" onclick="confirmDelete();">
@@ -329,12 +331,14 @@
 							>
 							<bean:message key="button.modifyRoomFeatures" />
 					</html:submit>
+					<%--
 					<logic:equal name="<%=frmName%>" property="examEnabled" value="true">
 						&nbsp;
 						<html:submit property="doit"  styleClass="btn" accesskey="X" titleKey="title.modifyRoomPeriodPreferences">
 							<bean:message key="button.modifyRoomPeriodPreferences" />
 						</html:submit>
 					</logic:equal>
+					--%>
 					<% if (admin || (frm.isDeleteFlag() && frm.isOwner())) {%>
 						&nbsp;
 						<html:submit property="doit"  styleClass="btn" accesskey="D" titleKey="title.removeRoom" onclick="confirmDelete();">
