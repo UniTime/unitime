@@ -56,14 +56,16 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
 	        org.unitime.timetable.model.Session session,
 	        java.lang.Integer dateOffset,
 	        java.lang.Integer startSlot,
-	        java.lang.Integer length) {
+	        java.lang.Integer length,
+	        org.unitime.timetable.model.PreferenceLevel prefLevel) {
 
 		super (
 			uniqueId,
 			session,
 			dateOffset,
 			startSlot,
-			length);
+			length,
+			prefLevel);
 	}
 
 /*[CONSTRUCTOR MARKER END]*/

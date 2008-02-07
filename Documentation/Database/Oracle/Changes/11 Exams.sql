@@ -55,7 +55,8 @@ create table exam_period (
 	session_id number(20,0) constraint nn_exam_period_session not null,
 	date_ofs number(10,0)  constraint nn_exam_period_date_ofs not null,
 	start_slot number(10,0)  constraint nn_exam_period_start_slot not null,
-	length number(10,0)  constraint nn_exam_period_length not null
+	length number(10,0)  constraint nn_exam_period_length not null,
+	pref_level_id number(20,0) constraint nn_exam_period_pref not null
 );
 
 alter table exam_period
@@ -65,73 +66,76 @@ alter table exam_period
   add constraint fk_exam_period_session foreign key (session_id)
   references sessions (uniqueid) on delete cascade;
   
+alter table exam_period
+  add constraint fk_exam_period_pref foreign key (pref_level_id)
+  references preference_level (uniqueid) on delete cascade;
  
 begin
 	for s in (select * from sessions) loop
   
-      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length) 
-             values (pref_group_seq.nextval, s.uniqueid, 0, 96, 24);
-      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length) 
-             values (pref_group_seq.nextval, s.uniqueid, 0, 124, 24);
-      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length) 
-             values (pref_group_seq.nextval, s.uniqueid, 0, 156, 24);
-      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length) 
-             values (pref_group_seq.nextval, s.uniqueid, 0, 184, 24);
-      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length) 
-             values (pref_group_seq.nextval, s.uniqueid, 0, 228, 24);
+      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length, pref_level_id) 
+             values (pref_group_seq.nextval, s.uniqueid, 0, 96, 24, 4);
+      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length, pref_level_id) 
+             values (pref_group_seq.nextval, s.uniqueid, 0, 124, 24, 4);
+      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length, pref_level_id) 
+             values (pref_group_seq.nextval, s.uniqueid, 0, 156, 24, 4);
+      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length, pref_level_id) 
+             values (pref_group_seq.nextval, s.uniqueid, 0, 184, 24, 4);
+      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length, pref_level_id) 
+             values (pref_group_seq.nextval, s.uniqueid, 0, 228, 24, 4);
 
-      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length) 
-             values (pref_group_seq.nextval, s.uniqueid, 1, 96, 24);
-      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length) 
-             values (pref_group_seq.nextval, s.uniqueid, 1, 124, 24);
-      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length) 
-             values (pref_group_seq.nextval, s.uniqueid, 1, 156, 24);
-      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length) 
-             values (pref_group_seq.nextval, s.uniqueid, 1, 184, 24);
-      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length) 
-             values (pref_group_seq.nextval, s.uniqueid, 1, 228, 24);
+      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length, pref_level_id) 
+             values (pref_group_seq.nextval, s.uniqueid, 1, 96, 24, 4);
+      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length, pref_level_id) 
+             values (pref_group_seq.nextval, s.uniqueid, 1, 124, 24, 4);
+      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length, pref_level_id) 
+             values (pref_group_seq.nextval, s.uniqueid, 1, 156, 24, 4);
+      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length, pref_level_id) 
+             values (pref_group_seq.nextval, s.uniqueid, 1, 184, 24, 4);
+      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length, pref_level_id) 
+             values (pref_group_seq.nextval, s.uniqueid, 1, 228, 24, 4);
 
-      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length) 
-             values (pref_group_seq.nextval, s.uniqueid, 2, 96, 24);
-      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length) 
-             values (pref_group_seq.nextval, s.uniqueid, 2, 124, 24);
-      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length) 
-             values (pref_group_seq.nextval, s.uniqueid, 2, 156, 24);
-      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length) 
-             values (pref_group_seq.nextval, s.uniqueid, 2, 184, 24);
-      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length) 
-             values (pref_group_seq.nextval, s.uniqueid, 2, 228, 24);
+      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length, pref_level_id) 
+             values (pref_group_seq.nextval, s.uniqueid, 2, 96, 24, 4);
+      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length, pref_level_id) 
+             values (pref_group_seq.nextval, s.uniqueid, 2, 124, 24, 4);
+      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length, pref_level_id) 
+             values (pref_group_seq.nextval, s.uniqueid, 2, 156, 24, 4);
+      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length, pref_level_id) 
+             values (pref_group_seq.nextval, s.uniqueid, 2, 184, 24, 4);
+      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length, pref_level_id) 
+             values (pref_group_seq.nextval, s.uniqueid, 2, 228, 24, 4);
 
-      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length) 
-             values (pref_group_seq.nextval, s.uniqueid, 3, 96, 24);
-      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length) 
-             values (pref_group_seq.nextval, s.uniqueid, 3, 124, 24);
-      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length) 
-             values (pref_group_seq.nextval, s.uniqueid, 3, 156, 24);
-      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length) 
-             values (pref_group_seq.nextval, s.uniqueid, 3, 184, 24);
-      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length) 
-             values (pref_group_seq.nextval, s.uniqueid, 3, 228, 24);
+      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length, pref_level_id) 
+             values (pref_group_seq.nextval, s.uniqueid, 3, 96, 24, 4);
+      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length, pref_level_id) 
+             values (pref_group_seq.nextval, s.uniqueid, 3, 124, 24, 4);
+      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length, pref_level_id) 
+             values (pref_group_seq.nextval, s.uniqueid, 3, 156, 24, 4);
+      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length, pref_level_id) 
+             values (pref_group_seq.nextval, s.uniqueid, 3, 184, 24, 4);
+      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length, pref_level_id) 
+             values (pref_group_seq.nextval, s.uniqueid, 3, 228, 24, 4);
 
-      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length) 
-             values (pref_group_seq.nextval, s.uniqueid, 4, 96, 24);
-      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length) 
-             values (pref_group_seq.nextval, s.uniqueid, 4, 124, 24);
-      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length) 
-             values (pref_group_seq.nextval, s.uniqueid, 4, 156, 24);
-      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length) 
-             values (pref_group_seq.nextval, s.uniqueid, 4, 184, 24);
-      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length) 
-             values (pref_group_seq.nextval, s.uniqueid, 4, 228, 24);
+      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length, pref_level_id) 
+             values (pref_group_seq.nextval, s.uniqueid, 4, 96, 24, 4);
+      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length, pref_level_id) 
+             values (pref_group_seq.nextval, s.uniqueid, 4, 124, 24, 4);
+      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length, pref_level_id) 
+             values (pref_group_seq.nextval, s.uniqueid, 4, 156, 24, 4);
+      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length, pref_level_id) 
+             values (pref_group_seq.nextval, s.uniqueid, 4, 184, 24, 4);
+      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length, pref_level_id) 
+             values (pref_group_seq.nextval, s.uniqueid, 4, 228, 24, 4);
 
-      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length) 
-             values (pref_group_seq.nextval, s.uniqueid, 5, 96, 24);
-      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length) 
-             values (pref_group_seq.nextval, s.uniqueid, 5, 124, 24);
-      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length) 
-             values (pref_group_seq.nextval, s.uniqueid, 5, 156, 24);
-      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length) 
-             values (pref_group_seq.nextval, s.uniqueid, 5, 184, 24);
+      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length, pref_level_id) 
+             values (pref_group_seq.nextval, s.uniqueid, 5, 96, 24, 4);
+      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length, pref_level_id) 
+             values (pref_group_seq.nextval, s.uniqueid, 5, 124, 24, 4);
+      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length, pref_level_id) 
+             values (pref_group_seq.nextval, s.uniqueid, 5, 156, 24, 4);
+      insert into exam_period(uniqueid, session_id, date_ofs, start_slot, length, pref_level_id) 
+             values (pref_group_seq.nextval, s.uniqueid, 5, 184, 24, 4);
   end loop;
 end;
 /
