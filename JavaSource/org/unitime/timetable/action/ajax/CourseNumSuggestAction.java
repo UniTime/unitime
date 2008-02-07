@@ -68,7 +68,8 @@ public class CourseNumSuggestAction extends MultipleSuggestAction {
 
         // Read form variables -- Instructional Offerings Screen, Reservations Screen
         if(map.get("subjectAreaId")!=null && map.get("courseNbr")!=null 
-        		&& map.get("subjectAreaId").toString().length()>0 ) {
+        		&& map.get("subjectAreaId").toString().length()>0 && 
+        		!Constants.ALL_OPTION_VALUE.equals(map.get("subjectAreaId"))) {
             
 	        StringBuffer query = new StringBuffer();
 	        query.append("select distinct co.courseNbr ");
