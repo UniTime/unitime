@@ -151,4 +151,15 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                 .list();
     }
     
+    public String getLabel() {
+        switch (getOwnerType()) {
+            case sOwnerTypeClass : return new Class_DAO().get(getOwnerId()).getClassLabel();
+            case sOwnerTypeConfig : return new InstrOfferingConfigDAO().get(getOwnerId()).toString();
+            case sOwnerTypeCourse : return new CourseOfferingDAO().get(getOwnerId()).getCourseName();
+            case sOwnerTypeOffering : return new InstructionalOfferingDAO().get(getOwnerId()).getCourseName();
+            default : throw new RuntimeException("Unknown owner type "+getOwnerType());
+        }
+    }
+
+    
 }

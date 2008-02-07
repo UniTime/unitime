@@ -578,7 +578,10 @@ public class InstructionalOfferingModifyAction extends Action {
 					}
 					c.getSchedulingSubpart().getClasses().remove(c);
 					if (c.getPreferences() != null)
-						c.getPreferences().removeAll(c.getPreferences());
+					    c.getPreferences().removeAll(c.getPreferences());
+					
+					c.deleteAllDependentObjects(hibSession, false);
+					
 					hibSession.delete(c);
 	        	}
 	        }

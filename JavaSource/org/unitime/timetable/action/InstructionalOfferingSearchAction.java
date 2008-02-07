@@ -54,6 +54,7 @@ import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.SchedulingSubpart;
@@ -601,6 +602,7 @@ public class InstructionalOfferingSearchAction extends LookupDispatchAction {
 								    io.setCourseOfferings(null);
 								    co.setIsControl(new Boolean(false));
 								    co.setInstructionalOffering(null);
+								    Exam.deleteFromExams(hibSession, io);
 								    idao.delete(io);
 								    
 			                        CourseOffering co2 = cdao.get(new Long(ctrCrsOffrId));
@@ -697,13 +699,16 @@ public class InstructionalOfferingSearchAction extends LookupDispatchAction {
     	    Transaction tx = hibSession.beginTransaction();
     	    
     	    try {
-    	        if(co.isIsControl().booleanValue())
+                Exam.deleteFromExams(hibSession, co);
+                
+    	        if(co.isIsControl().booleanValue()) {
+    	            Exam.deleteFromExams(hibSession, io);
     	            idao.delete(io);
-    	        else {
+    	        } else {
     	            io.removeCourseOffering(co);
     	            idao.save(io);
     	        }
-    	            
+    	        
 		        tx.commit();
     	    }	            
 		    catch (Exception e) {
