@@ -121,8 +121,8 @@ public class ExamListAction extends Action {
         BackTracker.markForBack(
                 request, 
                 "examList.do?op=Search&subjectAreaId="+myForm.getSubjectAreaId()+"&courseNbr="+myForm.getCourseNbr(), 
-                "Exams ("+subjectAreaName+
-                    (myForm.getCourseNbr()==null || myForm.getCourseNbr().length()==0?"":" "+myForm.getCourseNbr())+
+                "Exams ("+(Constants.ALL_OPTION_VALUE.equals(myForm.getSubjectAreaId())?"All":subjectAreaName+
+                    (myForm.getCourseNbr()==null || myForm.getCourseNbr().length()==0?"":" "+myForm.getCourseNbr()))+
                     ")", 
                 true, true);
 
@@ -130,7 +130,7 @@ public class ExamListAction extends Action {
     }
     
     public PdfWebTable getExamTable(User user, TimetableManager manager, Session session, ExamListForm form, boolean html) {
-        Collection exams = Exam.findExamsOfCourse(Long.valueOf(form.getSubjectAreaId()), form.getCourseNbr());
+        Collection exams = (Constants.ALL_OPTION_VALUE.equals(form.getSubjectAreaId())?Exam.findAll(session.getUniqueId()):Exam.findExamsOfCourse(Long.valueOf(form.getSubjectAreaId()), form.getCourseNbr()));
         
         if (exams.isEmpty()) return null;
         
@@ -254,7 +254,7 @@ public class ExamListAction extends Action {
             table.addLine(
                     "onClick=\"document.location='examDetail.do?examId="+exam.getUniqueId()+"';\"",
                     new String[] {
-                        "<a name='"+exam.getUniqueId()+"'>"+objects+"</a>",
+                        (html?"<a name='"+exam.getUniqueId()+"'>":"")+objects+(html?"</a>":""),
                         exam.getLength().toString(),
                         (Exam.sSeatingTypeNormal==exam.getSeatingType()?"Normal":"Exam"),
                         String.valueOf(nrStudents),
