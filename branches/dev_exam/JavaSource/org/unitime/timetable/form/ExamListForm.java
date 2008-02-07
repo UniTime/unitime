@@ -18,7 +18,10 @@ public class ExamListForm extends ActionForm {
     public String getSubjectAreaId() { return iSubjectAreaId; }
     public void setSubjectAreaId(String subjectAreaId) { iSubjectAreaId = subjectAreaId; }
     public String getCourseNbr() { return iCourseNbr; }
-    public void setCourseNbr(String courseNbr) { iCourseNbr = courseNbr; }
+    public void setCourseNbr(String courseNbr) { 
+        iCourseNbr = courseNbr;
+        if ("null".equals(iCourseNbr)) iCourseNbr = "";
+    }
     public String getOp() { return iOp; }
     public void setOp(String op) { iOp = op; }
     public Collection getSubjectAreas() { return iSubjectAreas; }

@@ -34,6 +34,7 @@
 					onkeypress="return selectSearch(event, this);" 
 					onkeydown="return checkKey(event, this);" >
 					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
+					<html:option value="<%=Constants.ALL_OPTION_VALUE%>"><%=Constants.ALL_OPTION_LABEL%></html:option>
 					<html:optionsCollection property="subjectAreas"	label="subjectAreaAbbreviation" value="uniqueId" />
 				</html:select>
 			</TD>
