@@ -23,6 +23,7 @@ import org.unitime.timetable.form.ExamEditForm;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.ExamPeriod;
@@ -73,7 +74,6 @@ public class ExamEditAction extends PreferencesAction {
                     || op.equals(rsc.getMessage("button.clearExamPrefs"))                 
                     || op.equals(rsc.getMessage("button.delete"))
                     || op.equals(rsc.getMessage("button.saveExam"))
-                    || op.equals(rsc.getMessage("button.deleteExam"))
                     || op.equals(rsc.getMessage("button.addExam"))
                     || op.equals(rsc.getMessage("button.returnToDetail"))
                     || op.equals(rsc.getMessage("button.nextExam"))
@@ -158,17 +158,6 @@ public class ExamEditAction extends PreferencesAction {
                 frm.getInstructors().remove(deleteId);
             } else if ("objects".equals(deleteType)  && deleteId>=0) {
                 frm.deleteExamOwner(deleteId);
-            } else if ("exam".equals(deleteType) && exam!=null) {
-                ChangeLog.addChange(
-                        null, 
-                        request,
-                        exam, 
-                        ChangeLog.Source.EXAM_EDIT, 
-                        ChangeLog.Operation.DELETE, 
-                        exam.firstSubjectArea(), 
-                        exam.firstDepartment());
-                new ExamDAO().delete(exam);
-                return mapping.findForward("showList");
             }
             
             if(op.equals(rsc.getMessage("button.updateExam")) ||  op.equals(rsc.getMessage("button.saveExam"))
@@ -339,7 +328,13 @@ public class ExamEditAction extends PreferencesAction {
         if (s==null) s = new HashSet();
         
         // Clear all old prefs
-        s.clear();                
+        for (Iterator i=s.iterator();i.hasNext();) {
+            Preference p = (Preference)i.next();
+            if (p instanceof DistributionPref) {
+                //skip distribution preferences
+            } else
+                i.remove();
+        }
 
         super.doUpdate(request, frm, exam, s, false);
         

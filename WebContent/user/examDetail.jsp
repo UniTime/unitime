@@ -37,6 +37,7 @@
 		<%= JavascriptFunctions.getJsConfirm(Web.getUser(session)) %>
 	// -->
 </SCRIPT>
+<tt:confirm name="confirmDelete">The examination will be deleted. Continue?</tt:confirm>
 
 <html:form action="examDetail">
 	<html:hidden property="examId"/>
@@ -58,6 +59,9 @@
 					</html:submit> 
 					<html:submit property="op" styleClass="btn" accesskey="A" titleKey="title.addDistPref" >
 						<bean:message key="button.addDistPref" />
+					</html:submit>
+					<html:submit property="op" styleClass="btn" accesskey="D" titleKey="title.deleteExam" onclick="return confirmDelete();">
+						<bean:message key="button.deleteExam" />
 					</html:submit>
 				</logic:equal>
 				<logic:greaterEqual name="<%=frmName%>" property="previousId" value="0">
@@ -225,6 +229,9 @@
 				</html:submit>
 				<html:submit property="op" styleClass="btn" accesskey="A" titleKey="title.addDistPref" >
 					<bean:message key="button.addDistPref" />
+				</html:submit>
+				<html:submit property="op" styleClass="btn" accesskey="D" titleKey="title.deleteExam" onclick="return confirmDelete();">
+					<bean:message key="button.deleteExam" />
 				</html:submit>
 			</logic:equal>
 				<logic:greaterEqual name="<%=frmName%>" property="previousId" value="0">

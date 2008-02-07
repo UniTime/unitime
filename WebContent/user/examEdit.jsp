@@ -37,7 +37,6 @@
 		<%= JavascriptFunctions.getJsConfirm(Web.getUser(session)) %>
 	// -->
 </SCRIPT>
-<tt:confirm name="confirmDelete">The examination will be deleted. Continue?</tt:confirm>
 
 <html:form action="examEdit">
 	<html:hidden property="examId"/>
@@ -56,12 +55,6 @@
 					<html:submit property="op" 
 						styleClass="btn" accesskey="U" titleKey="title.updateExam" >
 						<bean:message key="button.updateExam" />
-					</html:submit> 
-					&nbsp;
-					<html:submit property="op" 
-						onclick="javascript: if (confirmDelete()) doDel('exam', '-1');  else return false;"
-						styleClass="btn" titleKey="title.deleteExam" >
-						<bean:message key="button.deleteExam" />
 					</html:submit> 
 				</logic:notEmpty>
 				<logic:empty name="<%=frmName%>" property="examId">

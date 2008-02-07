@@ -509,12 +509,6 @@
 							styleClass="btn" accesskey="U" titleKey="title.updateExam" >
 							<bean:message key="button.updateExam" />
 						</html:submit> 
-						&nbsp;
-						<html:submit property="op" 
-							onclick="javascript: if (confirmDelete()) doDel('exam', '-1'); else return false;"
-							styleClass="btn" titleKey="title.deleteExam" >
-							<bean:message key="button.deleteExam" />
-						</html:submit> 
 					</logic:notEmpty>
 					<logic:empty name="<%=frmName%>" property="examId">
 						<html:submit property="op" 

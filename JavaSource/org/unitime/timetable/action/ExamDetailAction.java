@@ -15,11 +15,13 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.MessageResources;
+import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.form.ExamEditForm;
+import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DepartmentalInstructor;
@@ -33,7 +35,7 @@ import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
-import org.unitime.timetable.webutil.DistributionPrefsTableBuilder;
+import org.unitime.timetable.webutil.ExamDistributionPrefsTableBuilder;
 import org.unitime.timetable.webutil.Navigation;
 import org.unitime.timetable.webutil.RequiredTimeTable;
 
@@ -103,12 +105,43 @@ public class ExamDetailAction extends PreferencesAction {
                 return null;
             }
             
+            if (op.equals(rsc.getMessage("button.deleteExam"))) {
+                org.hibernate.Session hibSession = new ExamDAO().getSession();
+                Transaction tx = null;
+                try {
+                    tx = hibSession.beginTransaction();
+                    ChangeLog.addChange(
+                            hibSession, 
+                            request,
+                            exam, 
+                            ChangeLog.Source.EXAM_EDIT, 
+                            ChangeLog.Operation.DELETE, 
+                            exam.firstSubjectArea(), 
+                            exam.firstDepartment());
+                    exam.deleteDependentObjects(hibSession, false);
+                    hibSession.delete(exam);
+                    tx.commit();
+                } catch (Exception e) {
+                    if (tx!=null) tx.rollback();
+                    throw e;
+                }
+                return mapping.findForward("showList");
+            }
+
+            
+            // Add Distribution Preference - Redirect to dist prefs screen
+            if(op.equals(rsc.getMessage("button.addDistPref"))) {
+                request.setAttribute("examId", examId);
+                return mapping.findForward("addDistributionPrefs");
+            }
+
+            
             // Load form attributes that are constant
             doLoad(request, frm, exam);
             
             // Display distribution Prefs
-            DistributionPrefsTableBuilder tbl = new DistributionPrefsTableBuilder();
-            String html = tbl.getDistPrefsTableForExam(request, exam, exam.isEditableBy(user));
+            ExamDistributionPrefsTableBuilder tbl = new ExamDistributionPrefsTableBuilder();
+            String html = tbl.getDistPrefsTable(request, exam);
             if (html!=null)
                 request.setAttribute(DistributionPref.DIST_PREF_REQUEST_ATTR, html);
             
