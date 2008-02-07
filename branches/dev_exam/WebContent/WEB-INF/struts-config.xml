@@ -116,6 +116,7 @@
       <form-bean name="editRoomPerPrefForm" type="org.unitime.timetable.form.EditRoomPerPrefForm" />
       <form-bean name="examListForm" type="org.unitime.timetable.form.ExamListForm" />
       <form-bean name="examEditForm" type="org.unitime.timetable.form.ExamEditForm" />
+      <form-bean name="examDistributionPrefsForm" type="org.unitime.timetable.form.ExamDistributionPrefsForm" />
    </form-beans>
 
    <global-exceptions>
@@ -1963,6 +1964,8 @@
       type="org.unitime.timetable.action.ExamDetailAction"
       validate="false">
       <forward name="showExamDetail" path="examDetailTile" />
+      <forward name="addDistributionPrefs" path="/examDistributionPrefs.do" />
+      <forward name="showList" path="/examList.do" redirect="true" />
     </action>
 
     <action
@@ -1984,6 +1987,27 @@
          type="org.unitime.timetable.action.ajax.ExamEditAjax"
          scope="request"
          validate="false" />
+
+
+         <action
+         path="/examDistributionPrefs"
+         type="org.unitime.timetable.action.ExamDistributionPrefsAction"
+         attribute="examDistributionPrefsForm"
+         input="examDistributionPrefsTile"
+         name="examDistributionPrefsForm"
+         scope="request"
+         validate="false">
+        <forward 
+        	name="list" 
+        	path="examDistributionPrefsTile" />
+        <forward 
+        	name="add" 
+        	path="examAdddistributionPrefTile" />
+        <forward 
+        	name="edit" 
+        	path="examEditDistributionPrefTile" />
+      </action>
+   
    </action-mappings>
 
 	<!-- Struts Layout Controller -->

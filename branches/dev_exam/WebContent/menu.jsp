@@ -61,7 +61,9 @@
 		leaf_item('Distribution Preferences','Manage Distribution Preferences','distributionPrefs.do');
 		leaf_item('Reservations','Manage Reservations','reservationList.do');
 		<%  if (manager.canSeeExams(acadSession, user)) { %>
-			leaf_item('Examinations','View/Edit Examinations','examList.do');
+			menu_item('12','Examinations','View/Edit Examinations','examList.do','collapse');
+				leaf_item('Distribution Prefs','Manage Examination Distribution Preferences','examDistributionPrefs.do');
+			enditem();
 		<% } %>
 		<%  if (manager.canSeeTimetable(acadSession, user)) { %>
 			leaf_item('Class Assignments','Class Assignment Report','classAssignmentsReportShowSearch.do');
