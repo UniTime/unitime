@@ -289,6 +289,10 @@
 							options[i]=new Option(optVal, optId, false);
 						}
 					}
+					if (options.length==1) {
+						options[0].selected=true;
+						if (next!=null) doAjax(next,idx);
+					}
 				}
 			}
 		};
