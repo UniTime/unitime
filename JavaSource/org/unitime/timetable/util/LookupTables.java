@@ -210,6 +210,10 @@ public class LookupTables {
         request.setAttribute(DistributionType.DIST_TYPE_ATTR_NAME, DistributionType.findApplicable(request, false, false));
     }
     
+    public static void setupExamDistribTypes(HttpServletRequest request) throws Exception {
+        request.setAttribute(DistributionType.DIST_TYPE_ATTR_NAME, DistributionType.findApplicable(request, false, true));
+    }
+
     public static void setupInstructorDistribTypes(HttpServletRequest request) throws Exception {
         request.setAttribute(DistributionType.DIST_TYPE_ATTR_NAME, DistributionType.findApplicable(request, true, false));
     }

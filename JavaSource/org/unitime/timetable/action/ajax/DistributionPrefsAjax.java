@@ -36,6 +36,7 @@ import org.apache.struts.action.ActionMapping;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.DistributionType;
+import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.SchedulingSubpart;
@@ -72,7 +73,7 @@ public class DistributionPrefsAjax extends Action {
     }
     
     protected void print(ServletOutputStream out, String id, String value) throws IOException {
-        //System.out.println("  <result id=\""+id+"\" value=\""+value+"\" />");
+        System.out.println("  <result id=\""+id+"\" value=\""+value+"\" />");
         out.print("<result id=\""+id+"\" value=\""+value+"\" />");
     }
     
@@ -92,6 +93,8 @@ public class DistributionPrefsAjax extends Action {
             coumputeGroupingDesc(request.getParameter("id"),out);
         } else if ("distType".equals(request.getParameter("type"))) {
             computePreferenceLevels(request.getParameter("id"),out);
+        } else if ("exam".equals(request.getParameter("type"))) {
+            coumputeExams(request.getParameter("id"),out);
         }
     }
     
@@ -180,5 +183,15 @@ public class DistributionPrefsAjax extends Action {
         }
     }
    
+    protected void coumputeExams(String courseOfferingId, ServletOutputStream out) throws Exception {
+        if (courseOfferingId==null || courseOfferingId.length()==0 || courseOfferingId.equals(Preference.BLANK_PREF_VALUE)) return;
+        TreeSet exams = new TreeSet(Exam.findExamsOfCourseOffering(Long.valueOf(courseOfferingId)));
+        if (exams.size()>1 || exams.isEmpty())
+            print(out, "-1", "-");
+        for (Iterator i=exams.iterator();i.hasNext();) {
+            Exam exam = (Exam)i.next();
+            print(out, exam.getUniqueId().toString(), exam.getLabel().replaceAll("&","@amp@")); 
+        }
+    }
 
 }

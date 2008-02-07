@@ -801,4 +801,18 @@
   	<definition name="examAddTile" extends="examEditTile">
 		<put name="title" type="string" value="Add Examination"/>
   	</definition>
+
+	<definition	name="examDistributionPrefsTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Examination Distribution Preferences"/>
+		<put name="body" value="/user/examDistributionPrefs.jsp" />
+		<put name="showNavigation" value="true" />
+  	</definition>
+  	
+	<definition	name="examAdddistributionPrefTile" extends="examDistributionPrefsTile">
+		<put name="title" type="string" value="Add Examination Distribution Preference"/>
+  	</definition>
+
+	<definition	name="examEditDistributionPrefTile" extends="examDistributionPrefsTile">
+		<put name="title" type="string" value="Edit Examination Distribution Preference"/>
+  	</definition>
 </tiles-definitions>
