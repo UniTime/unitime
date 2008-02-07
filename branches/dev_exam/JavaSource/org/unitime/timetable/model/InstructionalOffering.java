@@ -383,6 +383,8 @@ public class InstructionalOffering extends BaseInstructionalOffering {
                         instr.removeClassInstructor(ci);
                         hibSession.delete(ci);
                     }
+                    
+                    Exam.deleteFromExams(hibSession, c);
 
                     // Delete class
                     hibSession.delete(c);
@@ -391,6 +393,8 @@ public class InstructionalOffering extends BaseInstructionalOffering {
                 // Delete set of classes
                 tSp.getClasses().clear();
             }
+            
+            Exam.deleteFromExams(hibSession, tIoc);
         }
     }
 
@@ -719,6 +723,7 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 	public void deleteAllCourses(Session hibSession) {
         for (Iterator i = getCourseOfferings().iterator(); i.hasNext(); ) {
         	CourseOffering co = (CourseOffering) i.next();
+            Exam.deleteFromExams(hibSession, co);
         	hibSession.delete(co);
         }
 	}

@@ -25,11 +25,13 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import org.hibernate.ObjectNotFoundException;
 import org.unitime.commons.User;
 import org.unitime.timetable.model.base.BaseExam;
 import org.unitime.timetable.model.dao.ExamDAO;
+import org.unitime.timetable.model.dao._RootDAO;
 
-public class Exam extends BaseExam {
+public class Exam extends BaseExam implements Comparable<Exam> {
 	private static final long serialVersionUID = 1L;
 
 /*[CONSTRUCTOR MARKER BEGIN]*/
@@ -265,10 +267,18 @@ public class Exam extends BaseExam {
     public Set effectivePreferences(Class type) {
         if (DistributionPref.class.equals(type)) {
             TreeSet prefs = new TreeSet();
-            if (getDistributionObjects()==null) return prefs;
-            for (Iterator j=getDistributionObjects().iterator();j.hasNext();) {
-                DistributionPref p = ((DistributionObject)j.next()).getDistributionPref();
-                prefs.add(p);
+            try {
+                if (getDistributionObjects()==null) return prefs;
+                for (Iterator j=getDistributionObjects().iterator();j.hasNext();) {
+                    DistributionPref p = ((DistributionObject)j.next()).getDistributionPref();
+                    prefs.add(p);
+                }
+            } catch (ObjectNotFoundException e) {
+                new _RootDAO().getSession().refresh(this);
+                for (Iterator j=getDistributionObjects().iterator();j.hasNext();) {
+                    DistributionPref p = ((DistributionObject)j.next()).getDistributionPref();
+                    prefs.add(p);
+                }
             }
             return prefs;
         } else return super.effectivePreferences(type);
@@ -286,6 +296,14 @@ public class Exam extends BaseExam {
         return null;
     }
 
+    public CourseOffering firstCourseOffering() {
+        for (Iterator i=new TreeSet(getOwners()).iterator();i.hasNext();) {
+            ExamOwner owner = (ExamOwner)i.next();
+            return owner.getCourse();
+        }
+        return null;
+    }
+
     public Department firstDepartment() {
         for (Iterator i=new TreeSet(getOwners()).iterator();i.hasNext();) {
             ExamOwner owner = (ExamOwner)i.next();
@@ -295,6 +313,86 @@ public class Exam extends BaseExam {
     }
     
     public String toString() {
-        return getName();
+        return getLabel();
+    }
+    
+    public int compareTo(Exam exam) {
+        Iterator i1 = new TreeSet(getOwners()).iterator();
+        Iterator i2 = new TreeSet(exam.getOwners()).iterator();
+        while (i1.hasNext() && i2.hasNext()) {
+            ExamOwner o1 = (ExamOwner)i1.next();
+            ExamOwner o2 = (ExamOwner)i2.next();
+            int cmp = o1.compareTo(o2);
+            if (cmp!=0) return cmp;
+        }
+        return (i1.hasNext()?1:i2.hasNext()?-1:getUniqueId().compareTo(exam.getUniqueId()));
+    }
+    
+    public void deleteDependentObjects(org.hibernate.Session hibSession, boolean updateExam) {
+        boolean deleted = false;
+        if (getDistributionObjects()==null) return;
+        for (Iterator i=getDistributionObjects().iterator();i.hasNext();) {
+            DistributionObject relatedObject = (DistributionObject)i.next();
+            DistributionPref distributionPref = relatedObject.getDistributionPref();
+            distributionPref.getDistributionObjects().remove(relatedObject);
+            Integer seqNo = relatedObject.getSequenceNumber();
+            hibSession.delete(relatedObject);
+            deleted = true;
+            if (distributionPref.getDistributionObjects().isEmpty()) {
+                PreferenceGroup owner = distributionPref.getOwner();
+                owner.getPreferences().remove(distributionPref);
+                getPreferences().remove(distributionPref);
+                hibSession.saveOrUpdate(owner);
+                hibSession.delete(distributionPref);
+            } else {
+                if (seqNo!=null) {
+                    for (Iterator j=distributionPref.getDistributionObjects().iterator();j.hasNext();) {
+                        DistributionObject dObj = (DistributionObject)j.next();
+                        if (seqNo.compareTo(dObj.getSequenceNumber())<0) {
+                            dObj.setSequenceNumber(new Integer(dObj.getSequenceNumber().intValue()-1));
+                            hibSession.saveOrUpdate(dObj);
+                        }
+                    }
+                }
+
+                if (updateExam)
+                    hibSession.saveOrUpdate(distributionPref);
+            }
+            i.remove();
+        }
+
+        if (deleted && updateExam)
+            hibSession.saveOrUpdate(this);
+    }
+    
+    public static void deleteFromExams(org.hibernate.Session hibSession, Integer ownerType, Long ownerId) {
+        for (Iterator i=hibSession.createQuery("select o from Exam x inner join x.owners o where "+
+                "o.ownerType=:ownerType and o.ownerId=:ownerId")
+                .setInteger("ownerType", ownerType)
+                .setLong("ownerId", ownerId).iterate();i.hasNext();) {
+            ExamOwner owner = (ExamOwner)i.next();
+            Exam exam = owner.getExam();
+            exam.getOwners().remove(owner);
+            hibSession.delete(owner);
+            if (exam.getOwners().isEmpty()) {
+                exam.deleteDependentObjects(hibSession, false);
+                hibSession.delete(exam);
+            } else {
+                hibSession.saveOrUpdate(exam);
+            }
+        }
+    }
+    
+    public static void deleteFromExams(org.hibernate.Session hibSession, Class_ clazz) {
+        deleteFromExams(hibSession, ExamOwner.sOwnerTypeClass, clazz.getUniqueId());
+    }
+    public static void deleteFromExams(org.hibernate.Session hibSession, InstrOfferingConfig config) {
+        deleteFromExams(hibSession, ExamOwner.sOwnerTypeConfig, config.getUniqueId());
+    }
+    public static void deleteFromExams(org.hibernate.Session hibSession, InstructionalOffering offering) {
+        deleteFromExams(hibSession, ExamOwner.sOwnerTypeOffering, offering.getUniqueId());
+    }
+    public static void deleteFromExams(org.hibernate.Session hibSession, CourseOffering course) {
+        deleteFromExams(hibSession, ExamOwner.sOwnerTypeCourse, course.getUniqueId());
     }
 }

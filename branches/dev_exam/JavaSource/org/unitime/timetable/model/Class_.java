@@ -1185,6 +1185,7 @@ public class Class_ extends BaseClass_ {
 		deleteClassInstructors(hibSession);
 		deleteAssignments(hibSession);
 		deleteReservations(hibSession);
+		Exam.deleteFromExams(hibSession, this);
 
 		// Add more collection deletes if needed
 
