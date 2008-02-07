@@ -40,6 +40,7 @@ import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.form.ExamPeriodEditForm;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.ExamPeriod;
+import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.ExamPeriodDAO;
@@ -204,8 +205,8 @@ public class ExamPeriodEditAction extends Action {
 		// Create web table instance 
         WebTable webTable = new WebTable( 4,
 			    null, "examPeriodEdit.do?ord=%%",
-			    new String[] {"Date", "Start Time", "End Time", "Length"},
-			    new String[] {"left", "left", "left", "left"},
+			    new String[] {"Date", "Start Time", "End Time", "Length", "Preference"},
+			    new String[] {"left", "left", "left", "left", "left"},
 			    null );
         
         TreeSet periods = ExamPeriod.findAll(request);
@@ -227,9 +228,11 @@ public class ExamPeriodEditAction extends Action {
         	        "<a name='"+ep.getUniqueId()+"'>"+sdf.format(ep.getStartDate())+"</a>",
         	        stf.format(ep.getStartTime()),
         	        stf.format(ep.getEndTime()),
-        	        String.valueOf(Constants.SLOT_LENGTH_MIN*ep.getLength())},
+        	        String.valueOf(Constants.SLOT_LENGTH_MIN*ep.getLength()),
+        	        (PreferenceLevel.sNeutral.equals(ep.getPrefLevel().getPrefProlog())?"":
+        	        "<font color='"+PreferenceLevel.prolog2color(ep.getPrefLevel().getPrefProlog())+"'>"+ep.getPrefLevel().getPrefName()+"</font>")},
         	        new Comparable[] {
-        	        ep.getStartDate(), ep.getStartSlot(), ep.getStartSlot()+ep.getLength(), ep.getLength()});
+        	        ep.getStartDate(), ep.getStartSlot(), ep.getStartSlot()+ep.getLength(), ep.getLength(), ep.getPrefLevel().getPrefId()});
         }
         
 	    request.setAttribute("ExamPeriods.table", webTable.printTable(WebTable.getOrder(request.getSession(),"examPeriods.ord")));

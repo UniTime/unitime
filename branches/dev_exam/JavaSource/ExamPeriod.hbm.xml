@@ -71,5 +71,11 @@
 			length="10"
 			not-null="true"
 		/>
+
+		<many-to-one name="prefLevel"
+			class="PreferenceLevel"
+			column="PREF_LEVEL_ID"
+			not-null="true"
+			/>
 	</class>	
 </hibernate-mapping>

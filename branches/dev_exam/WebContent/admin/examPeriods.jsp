@@ -78,6 +78,16 @@
 		</TR>
 
 		<TR>
+			<TD>Preference:</TD>
+			<TD>
+			<html:select property="prefLevel">
+				<html:optionsCollection property="prefLevels" label="prefName" value="uniqueId"/>
+			</html:select>
+			&nbsp;<html:errors property="prefLevel"/>
+			</TD>
+		</TR>
+
+		<TR>
 			<TD align="right" colspan="2">
 				<tt:section-title/>
 			</TD>
