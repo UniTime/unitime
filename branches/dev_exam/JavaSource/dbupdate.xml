@@ -207,4 +207,213 @@
 			) where co.perm_id is not null
 		</sql>
 	</update>
+	<update version="11" date="07-Feb-2008" comment="Examination timetabling">
+		<!-- Table DISTRIBUTION_TYPE, add column exam_pref (boolean) -->
+		<plsql>alter table %SCHEMA%.distribution_type add exam_pref number(1) default 0</plsql>
+		<mysql>alter table %SCHEMA%.distribution_type add exam_pref int(1) default 0</mysql>
+		<!-- Added few exam distribution types (same period, same room, precedence) -->
+		<plsql><![CDATA[
+			insert into %SCHEMA%.distribution_type (uniqueid, reference, label, sequencing_required, req_id, allowed_pref, description, abbreviation, instructor_pref, exam_pref) values
+			(%SCHEMA%.ref_table_seq.nextval, 'EX_SAME_PER', 'Same Period', 0, 36, 'P43210R', 'Exams are to be placed at the same period. <BR>When prohibited or (strongly) discouraged: exams are to be placed at different periods.', 'Same Per', 0, 1)
+		]]></plsql>
+		<plsql><![CDATA[
+			insert into %SCHEMA%.distribution_type (uniqueid, reference, label, sequencing_required, req_id, allowed_pref, description, abbreviation, instructor_pref, exam_pref) values
+			(%SCHEMA%.ref_table_seq.nextval, 'EX_SAME_ROOM', 'Same Room', 0, 37, 'P43210R', 'Exams are to be placed at the same room(s). <BR>When prohibited or (strongly) discouraged: exams are to be placed at different rooms.', 'Same Room', 0, 1);
+		]]></plsql>
+		 <plsql><![CDATA[
+		 	insert into %SCHEMA%.distribution_type (uniqueid, reference, label, sequencing_required, req_id, allowed_pref, description, abbreviation, instructor_pref, exam_pref) values
+		 	(%SCHEMA%.ref_table_seq.nextval, 'EX_PRECEDENCE', 'Precedence', 1, 38, 'P43210R', 'Exams are to be placed in the given order. <BR>When prohibited or (strongly) discouraged: exams are to be placed in the order reverse to the given one.', 'Precede', 0, 1);
+		 ]]></plsql>
+		<mysql into="ID">
+			select next_hi from %SCHEMA%.hibernate_unique_key			
+		</mysql>
+		<mysql> <![CDATA[
+			insert into %SCHEMA%.distribution_type (uniqueid, reference, label, sequencing_required, req_id, allowed_pref, description, abbreviation, instructor_pref, exam_pref) values 
+			(%ID%, 'EX_SAME_PER', 'Same Period', 0, 36, 'P43210R', 'Exams are to be placed at the same period. <BR>When prohibited or (strongly) discouraged: exams are to be placed at different periods.', 'Same Per', 0, 1), 
+			(%ID%+1, 'EX_SAME_ROOM', 'Same Room', 0, 37, 'P43210R', 'Exams are to be placed at the same room(s). <BR>When prohibited or (strongly) discouraged: exams are to be placed at different rooms.', 'Same Room', 0, 1), 
+			(%ID%+2, 'EX_PRECEDENCE', 'Precedence', 1, 38, 'P43210R', 'Exams are to be placed in the given order. <BR>When prohibited or (strongly) discouraged: exams are to be placed in the order reverse to the given one.', 'Precede', 0, 1); 
+		 ]]></mysql>
+		<!-- Add exam start date to sessions -->	
+		<plsql>alter table %SCHEMA%.sessions add exam_begin_date date</plsql>
+		<plsql>update %SCHEMA%.sessions set exam_begin_date = session_begin_date_time+112</plsql>
+		<mysql>alter table %SCHEMA%.sessions add exam_begin_date datetime</mysql>
+		<mysql>update %SCHEMA%.sessions set exam_begin_date = adddate(session_begin_date_time,112)</mysql>	
+		<sql>alter table %SCHEMA%.sessions add constraint nn_sessions_exam_begin_date check (exam_begin_date is not null)</sql>
+		<!-- Create table exam_period -->
+		<plsql>
+			create table %SCHEMA%.exam_period (
+				uniqueid number(20,0) constraint nn_exam_period_uniqueid not null,
+				session_id number(20,0) constraint nn_exam_period_session not null,
+				date_ofs number(10,0)  constraint nn_exam_period_date_ofs not null,
+				start_slot number(10,0)  constraint nn_exam_period_start_slot not null,
+				length number(10,0)  constraint nn_exam_period_length not null,
+				pref_level_id number(20,0) constraint nn_exam_period_pref not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.exam_period add constraint pk_exam_period primary key (uniqueid)</plsql>
+		<mysql>
+			create table %SCHEMA%.exam_period (
+				uniqueid decimal(20,0) primary key not null,
+				session_id decimal(20,0) not null,
+				date_ofs bigint(10)  not null,
+				start_slot bigint(10)  not null,
+				length bigint(10)  not null,
+				pref_level_id decimal(20,0) not null
+			)
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.exam_period add constraint fk_exam_period_session foreign key (session_id)
+			references %SCHEMA%.sessions (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.exam_period add constraint fk_exam_period_pref foreign key (pref_level_id)
+			references %SCHEMA%.preference_level (uniqueid) on delete cascade
+		</sql>
+		<!-- Rooms, and non-university locations - added columns exam_enable (boolean), exam_capacity (exam seating capacity, int), exam_pref (exam period preferences) -->
+		<plsql>alter table %SCHEMA%.room add exam_enable number(1) default 0</plsql>
+		<plsql>alter table %SCHEMA%.room add exam_capacity number(10) default 0</plsql>
+		<plsql>alter table %SCHEMA%.room add exam_pref varchar2(1000)</plsql>
+		<plsql>update %SCHEMA%.room set exam_capacity = capacity /2</plsql>
+		<plsql>alter table %SCHEMA%.non_university_location add exam_enable number(1) default 0</plsql>
+		<plsql>alter table %SCHEMA%.non_university_location add exam_capacity number(10) default 0</plsql>
+		<plsql>alter table %SCHEMA%.non_university_location add exam_pref varchar2(1000)</plsql>
+		<mysql>alter table %SCHEMA%.room add exam_enable int(1) default 0</mysql>
+		<mysql>alter table %SCHEMA%.room add exam_capacity bigint(10) default 0</mysql>
+		<mysql>alter table %SCHEMA%.room add exam_pref varchar(1000)</mysql>
+		<mysql>update %SCHEMA%.room set exam_capacity = capacity /2</mysql>
+		<mysql>alter table %SCHEMA%.non_university_location add exam_enable int(1) default 0</mysql>
+		<mysql>alter table %SCHEMA%.non_university_location add exam_capacity bigint(10) default 0</mysql>
+		<mysql>alter table %SCHEMA%.non_university_location add exam_pref varchar(1000)</mysql>
+		<!-- Create exam manager role -->
+		<plsql>insert into %SCHEMA%.roles (role_id, reference, abbv) values (%SCHEMA%.ROLE_SEQ.nextval, 'Exam Mgr', 'Examination Timetabling Manager')</plsql>
+		<mysql>insert into %SCHEMA%.roles (role_id, reference, abbv) values (%ID%+3, 'Exam Mgr', 'Examination Timetabling Manager')</mysql>
+		<mysql>update %SCHEMA%.hibernate_unique_key set next_hi=%ID%+4</mysql>
+		<!-- Create table exam -->
+		<plsql>
+			create table %SCHEMA%.exam (
+				uniqueid number(20,0) constraint nn_exam_uniqueid not null,
+				session_id number(20,0) constraint nn_exam_session not null,
+				name varchar2(100),
+				note varchar2(1000),
+				length number(10,0) constraint nn_exam_length not null,
+				max_nbr_rooms number(10,0) default 1 constraint nn_exam_nbr_rooms not null,
+				seating_type number(10,0) constraint nn_exam_seating not null,
+				assigned_period number (20,0)
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.exam add constraint pk_exam primary key (uniqueid)</plsql>
+		<mysql>
+			create table %SCHEMA%.exam (
+				uniqueid decimal(20,0) primary key not null,
+				session_id decimal(20,0) not null,
+				name varchar(100),
+				note varchar(1000),
+				length bigint(10) not null,
+				max_nbr_rooms bigint(10) default 1 not null,
+				seating_type bigint(10) not null,
+				assigned_period decimal(20,0)
+			)
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.exam add constraint fk_exam_session foreign key (session_id)
+			references %SCHEMA%.sessions (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.exam add constraint fk_exam_period foreign key (assigned_period)
+			references %SCHEMA%.exam_period (uniqueid) on delete cascade
+		</sql>
+		<!-- Create relation between exams and other objects (classes, configs, courses etc.) -->
+		<plsql>
+			create table %SCHEMA%.exam_owner (
+				uniqueid number(20,0) constraint nn_exam_owner_unique_id not null,
+				exam_id number(20,0) constraint nn_exam_owner_exam_id not null,
+				owner_id number(20,0) constraint nn_exam_owner_owner_id not null,
+				owner_type number(10,0) constraint nn_exam_owner_owner_type not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.exam_owner add constraint pk_exam_owner primary key (uniqueid)</plsql>
+		<mysql>
+			create table %SCHEMA%.exam_owner (
+				uniqueid decimal(20,0) primary key not null,
+				exam_id decimal(20,0) not null,
+				owner_id decimal(20,0) not null,
+				owner_type bigint(10) not null
+			)
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.exam_owner add constraint fk_exam_owner_exam foreign key (exam_id)
+			references %SCHEMA%.exam (uniqueid) on delete cascade;
+		</sql>
+		<plsql>create index %SCHEMA%.idx_exam_owner_exam on %SCHEMA%.exam_owner(exam_id)</plsql>
+		<plsql>create index %SCHEMA%.idx_exam_owner_owner on %SCHEMA%.exam_owner(owner_id, owner_type)</plsql>
+		<mysql>create index idx_exam_owner_exam on %SCHEMA%.exam_owner(exam_id)</mysql>
+		<mysql>create index idx_exam_owner_owner on %SCHEMA%.exam_owner(owner_id, owner_type)</mysql>
+		<!-- Create table exam_room_assignment (relation exam - location) -->
+		<plsql>
+			create table %SCHEMA%.exam_room_assignment (
+				exam_id number(20,0) constraint nn_exam_room_exam_id not null,
+				location_id number(20,0) constraint nn_exam_room_location_id not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.exam_room_assignment add constraint pk_exam_room_assignment primary key (exam_id, location_id)</plsql>
+		<mysql>
+			create table %SCHEMA%.exam_room_assignment (
+				exam_id decimal(20,0) not null,
+				location_id decimal(20,0) not null,
+				primary key (exam_id, location_id)
+			)
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.exam_room_assignment add constraint fk_exam_room_exam foreign key (exam_id)
+			references %SCHEMA%.exam (uniqueid) on delete cascade
+		</sql>
+		<!-- Added exam period preferences -->
+		<plsql>
+			create table %SCHEMA%.exam_period_pref (
+				uniqueid number(20,0) constraint nn_exam_period_pref_uniqueid not null,
+				owner_id number(20,0) constraint nn_exam_period_pref_owner not null,
+				pref_level_id number(20,0) constraint nn_exam_period_pref_pref not null,
+				period_id number(20,0) constraint nn_exam_period_pref_period not nul
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.exam_period_pref add constraint pk_exam_period_pref primary key (uniqueid)</plsql>
+		<mysql>
+			create table %SCHEMA%.exam_period_pref (
+				uniqueid decimal(20,0) primary key not null,
+				owner_id decimal(20,0) not null,
+				pref_level_id decimal(20,0) not null,
+				period_id decimal(20,0) not null
+			)
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.exam_period_pref add constraint fk_exam_period_pref_pref foreign key (pref_level_id)
+			references %SCHEMA%.preference_level (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.exam_period_pref add constraint fk_exam_period_pref_period foreign key (period_id)
+			references %SCHEMA%.exam_period (uniqueid) on delete cascade
+		</sql>
+		<!-- Instructor assignment -->
+		<plsql>
+			create table %SCHEMA%.exam_instructor (
+				exam_id number(20,0) constraint nn_exam_instructor_exam not null,
+				instructor_id number(20,0) constraint nn_exam_instructor_instructor not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.exam_instructor add constraint pk_exam_instructor primary key (exam_id, instructor_id)</plsql>
+		<mysql>
+			create table %SCHEMA%.exam_instructor (
+				exam_id decimal(20,0) primary key not null,
+				instructor_id decimal(20,0) not null
+			)
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.exam_instructor add constraint fk_exam_instructor_exam foreign key (exam_id)
+			references %SCHEMA%.exam (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.exam_instructor add constraint fk_exam_instructor_instructor foreign key (instructor_id)
+			references %SCHEMA%.departmental_instructor (uniqueid) on delete cascade
+		</sql>
+	</update>
 </dbupdate>
