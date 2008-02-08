@@ -416,4 +416,12 @@
 			references %SCHEMA%.departmental_instructor (uniqueid) on delete cascade
 		</sql>
 	</update>
+	<update version="12" date="08-Feb-2008" comment="Add course offering id to StudentClassEnrollment table">
+		<plsql>alter table %SCHEMA%.student_class_enrl add course_offering_id number(20,0)</plsql>
+		<mysql>alter table %SCHEMA%.student_class_enrl add course_offering_id decimal(20,0)</mysql>
+		<sql>
+			alter table %SCHEMA%.student_class_enrl add constraint fk_student_class_enrl_course foreign key (course_offering_id)
+			references %SCHEMA%.course_offering (uniqueid) on delete cascade
+		</sql>
+	</update>
 </dbupdate>
