@@ -351,7 +351,7 @@ public class Department extends BaseDepartment implements Comparable {
 
 	public static String[] getDeptCodesForUser(User user, boolean includeExternal) throws Exception {
 		boolean isAdmin = user.getRole().equals(Roles.ADMIN_ROLE);
-		boolean isViewAll = user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE);
+		boolean isViewAll = user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE) || user.getCurrentRole().equals(Roles.EXAM_MGR_ROLE);
 		Long sessionId = Session.getCurrentAcadSession(user).getUniqueId();
 		
 		String mgrId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);

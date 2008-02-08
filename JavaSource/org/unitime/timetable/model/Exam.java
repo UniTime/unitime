@@ -59,8 +59,15 @@ public class Exam extends BaseExam implements Comparable<Exam> {
             return true;
         
         //timetable manager 
-        if (Roles.DEPT_SCHED_MGR_ROLE.equals(user.getCurrentRole()))
-            return getSession().getStatusType().canExamEdit();
+        if (Roles.DEPT_SCHED_MGR_ROLE.equals(user.getCurrentRole())) {
+            if (!getSession().getStatusType().canExamEdit())
+                return false;
+            for (Iterator i=getOwners().iterator();i.hasNext();) {
+                ExamOwner owner = (ExamOwner)i.next();
+                if (!owner.getCourse().getDepartment().canUserEdit(user)) return false;
+            }
+            return true;
+        }
         
         //exam manager
         if (Roles.EXAM_MGR_ROLE.equals(user.getCurrentRole()))

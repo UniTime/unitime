@@ -348,7 +348,7 @@ public class ListSolutionsAction extends Action {
        		*/
         }
 
-        getSolutions(request, Web.hasRole(request.getSession(), Roles.getAdminRoles()) || user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE), user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE), myForm);
+        getSolutions(request, Web.hasRole(request.getSession(), Roles.getAdminRoles()) || user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE) || user.getCurrentRole().equals(Roles.EXAM_MGR_ROLE), user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE) || user.getCurrentRole().equals(Roles.EXAM_MGR_ROLE), myForm);
         myForm.setSolver(WebSolver.getSolver(request.getSession()));
         return mapping.findForward("showSolutions");
 	}

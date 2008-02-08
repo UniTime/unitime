@@ -101,7 +101,7 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
 	public static Set getSubjectAreas(User user) throws Exception {
 	    Set saList = new TreeSet();
 	    Session session = Session.getCurrentAcadSession(user);
-	    if (user.isAdmin() || user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE)){
+	    if (user.isAdmin() || user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE) || user.getCurrentRole().equals(Roles.EXAM_MGR_ROLE)){
 	    	return(session.getSubjectAreas());
 	    }
 		TimetableManager tm = TimetableManager.getManager(user);
@@ -164,6 +164,7 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
 	public boolean canAudit(Session session, User user) {
 		if (user.isAdmin()) return true;
 		if (user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE)) return false;
+		if (user.getCurrentRole().equals(Roles.EXAM_MGR_ROLE)) return false;
 		for (Iterator i=getSolverGroups().iterator();i.hasNext();) {
 			SolverGroup solverGroup = (SolverGroup)i.next();
 			if (!solverGroup.getSession().equals(session)) continue;
@@ -175,6 +176,7 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
 	public boolean canSeeTimetable(Session session, User user) {
 		if (user.isAdmin()) return true;
 		if (user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE)) return true;
+		if (user.getCurrentRole().equals(Roles.EXAM_MGR_ROLE)) return true;
 		if (canDoTimetable(session, user)) return true;
 		for (Iterator i=getDepartments().iterator();i.hasNext();) {
 			Department department = (Department)i.next();
@@ -190,6 +192,7 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
 	public boolean canDoTimetable(Session session, User user) {
 		if (user.isAdmin()) return true;
 		if (user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE)) return false;
+		if (user.getCurrentRole().equals(Roles.EXAM_MGR_ROLE)) return false;
 		for (Iterator i=getSolverGroups().iterator();i.hasNext();) {
 			SolverGroup solverGroup = (SolverGroup)i.next();
 			if (!solverGroup.getSession().equals(session)) continue;
@@ -240,7 +243,7 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
     }
 
     public boolean hasASolverGroup(Session session, User user) {
-		if (user.isAdmin() || user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE)) {
+		if (user.isAdmin() || user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE) || user.getCurrentRole().equals(Roles.EXAM_MGR_ROLE)) {
 			return !SolverGroup.findBySessionId(session.getUniqueId()).isEmpty();
 		} else {
 			return !getSolverGroups(session).isEmpty();
