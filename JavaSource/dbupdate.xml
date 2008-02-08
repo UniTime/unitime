@@ -218,11 +218,11 @@
 		]]></plsql>
 		<plsql><![CDATA[
 			insert into %SCHEMA%.distribution_type (uniqueid, reference, label, sequencing_required, req_id, allowed_pref, description, abbreviation, instructor_pref, exam_pref) values
-			(%SCHEMA%.ref_table_seq.nextval, 'EX_SAME_ROOM', 'Same Room', 0, 37, 'P43210R', 'Exams are to be placed at the same room(s). <BR>When prohibited or (strongly) discouraged: exams are to be placed at different rooms.', 'Same Room', 0, 1);
+			(%SCHEMA%.ref_table_seq.nextval, 'EX_SAME_ROOM', 'Same Room', 0, 37, 'P43210R', 'Exams are to be placed at the same room(s). <BR>When prohibited or (strongly) discouraged: exams are to be placed at different rooms.', 'Same Room', 0, 1)
 		]]></plsql>
 		 <plsql><![CDATA[
 		 	insert into %SCHEMA%.distribution_type (uniqueid, reference, label, sequencing_required, req_id, allowed_pref, description, abbreviation, instructor_pref, exam_pref) values
-		 	(%SCHEMA%.ref_table_seq.nextval, 'EX_PRECEDENCE', 'Precedence', 1, 38, 'P43210R', 'Exams are to be placed in the given order. <BR>When prohibited or (strongly) discouraged: exams are to be placed in the order reverse to the given one.', 'Precede', 0, 1);
+		 	(%SCHEMA%.ref_table_seq.nextval, 'EX_PRECEDENCE', 'Precedence', 1, 38, 'P43210R', 'Exams are to be placed in the given order. <BR>When prohibited or (strongly) discouraged: exams are to be placed in the order reverse to the given one.', 'Precede', 0, 1)
 		 ]]></plsql>
 		<mysql into="ID">
 			select next_hi from %SCHEMA%.hibernate_unique_key			
@@ -231,7 +231,7 @@
 			insert into %SCHEMA%.distribution_type (uniqueid, reference, label, sequencing_required, req_id, allowed_pref, description, abbreviation, instructor_pref, exam_pref) values 
 			(%ID%, 'EX_SAME_PER', 'Same Period', 0, 36, 'P43210R', 'Exams are to be placed at the same period. <BR>When prohibited or (strongly) discouraged: exams are to be placed at different periods.', 'Same Per', 0, 1), 
 			(%ID%+1, 'EX_SAME_ROOM', 'Same Room', 0, 37, 'P43210R', 'Exams are to be placed at the same room(s). <BR>When prohibited or (strongly) discouraged: exams are to be placed at different rooms.', 'Same Room', 0, 1), 
-			(%ID%+2, 'EX_PRECEDENCE', 'Precedence', 1, 38, 'P43210R', 'Exams are to be placed in the given order. <BR>When prohibited or (strongly) discouraged: exams are to be placed in the order reverse to the given one.', 'Precede', 0, 1); 
+			(%ID%+2, 'EX_PRECEDENCE', 'Precedence', 1, 38, 'P43210R', 'Exams are to be placed in the given order. <BR>When prohibited or (strongly) discouraged: exams are to be placed in the order reverse to the given one.', 'Precede', 0, 1) 
 		 ]]></mysql>
 		<!-- Add exam start date to sessions -->	
 		<plsql>alter table %SCHEMA%.sessions add exam_begin_date date</plsql>
@@ -342,7 +342,7 @@
 		</mysql>
 		<sql>
 			alter table %SCHEMA%.exam_owner add constraint fk_exam_owner_exam foreign key (exam_id)
-			references %SCHEMA%.exam (uniqueid) on delete cascade;
+			references %SCHEMA%.exam (uniqueid) on delete cascade
 		</sql>
 		<plsql>create index %SCHEMA%.idx_exam_owner_exam on %SCHEMA%.exam_owner(exam_id)</plsql>
 		<plsql>create index %SCHEMA%.idx_exam_owner_owner on %SCHEMA%.exam_owner(owner_id, owner_type)</plsql>
@@ -373,7 +373,7 @@
 				uniqueid number(20,0) constraint nn_exam_period_pref_uniqueid not null,
 				owner_id number(20,0) constraint nn_exam_period_pref_owner not null,
 				pref_level_id number(20,0) constraint nn_exam_period_pref_pref not null,
-				period_id number(20,0) constraint nn_exam_period_pref_period not nul
+				period_id number(20,0) constraint nn_exam_period_pref_period not null
 			)
 		</plsql>
 		<plsql>alter table %SCHEMA%.exam_period_pref add constraint pk_exam_period_pref primary key (uniqueid)</plsql>
