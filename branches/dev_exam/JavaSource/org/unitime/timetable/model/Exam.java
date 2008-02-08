@@ -251,7 +251,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 "StudentClassEnrollment e inner join e.clazz c " +
                 "inner join c.schedulingSubpart.instrOfferingConfig ioc " +
                 "inner join ioc.instructionalOffering io " +
-                "inner join io.courseOfferings co, " +
+                "inner join e.courseOffering co, "+
                 "Exam x inner join x.owners o "+
                 "where x.uniqueId=:examId and ("+
                 "(o.ownerType="+ExamOwner.sOwnerTypeCourse+" and o.ownerId=co.uniqueId) or "+
