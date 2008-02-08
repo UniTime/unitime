@@ -317,7 +317,7 @@ public class ExamEditAction extends PreferencesAction {
                 InstructionalOffering offering = new InstructionalOfferingDAO().get(firstId);
                 frm.getSubjectArea().add(offering.getControllingCourseOffering().getSubjectArea().getUniqueId());
                 frm.getCourseNbr().add(offering.getControllingCourseOffering().getUniqueId());
-                frm.getItype().add(Long.MIN_VALUE-1);
+                frm.getItype().add(Long.MIN_VALUE+1);
                 frm.getClassNumber().add(new Long(-1));
             } else if ("CourseOffering".equals(firstType)) {
                 CourseOffering course = new CourseOfferingDAO().get(firstId);

@@ -117,7 +117,7 @@ public class ExamEditAjax extends Action {
             print(out, "0", "N/A");
             return;
         }
-        if (course.isIsControl()) print(out,String.valueOf(Long.MIN_VALUE-1),"Offering");
+        if (course.isIsControl()) print(out,String.valueOf(Long.MIN_VALUE+1),"Offering");
         print(out, String.valueOf(Long.MIN_VALUE), "Course");
         if (!course.isIsControl()) return;
         TreeSet configs = new TreeSet(new InstrOfferingConfigComparator(null));
@@ -141,14 +141,14 @@ public class ExamEditAjax extends Action {
             setLong("courseOfferingId", course.getUniqueId()).
             list());
         if (!configs.isEmpty()) {
-            print(out, String.valueOf(Long.MIN_VALUE-2),"-- Configurations --");
+            print(out, String.valueOf(Long.MIN_VALUE+2),"-- Configurations --");
             for (Iterator i=configs.iterator();i.hasNext();) {
                 InstrOfferingConfig c = (InstrOfferingConfig)i.next();
                 print(out,String.valueOf(-c.getUniqueId()), c.getName());
             }
         }
         if (!configs.isEmpty() && !subparts.isEmpty())
-            print(out,String.valueOf(Long.MIN_VALUE-2),"-- Subparts --");
+            print(out,String.valueOf(Long.MIN_VALUE+2),"-- Subparts --");
         for (Iterator i=subparts.iterator();i.hasNext();) {
             SchedulingSubpart s = (SchedulingSubpart)i.next();
             String id = s.getUniqueId().toString();
