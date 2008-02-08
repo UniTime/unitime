@@ -254,6 +254,14 @@
 %>
 			</TD>
 		</TR>
+		
+		<TR>
+			<TD colspan="2">
+				<tt:exams type='SchedulingSubpart' add='true'>
+					<bean:write name="<%=frmName%>" property="schedulingSubpartId"/>
+				</tt:exams>
+			</TD>
+		</TR>
 
 
 <!-- Buttons -->

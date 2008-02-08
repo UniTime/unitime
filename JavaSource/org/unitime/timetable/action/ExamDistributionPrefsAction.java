@@ -55,6 +55,7 @@ import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.DistributionPrefDAO;
@@ -78,8 +79,8 @@ public class ExamDistributionPrefsAction extends Action {
         TimetableManager manager = (user==null?null:TimetableManager.getManager(user)); 
         Session session = (user==null?null:Session.getCurrentAcadSession(user));
         if (user==null || session==null || !manager.canSeeExams(session, user)) throw new Exception ("Access Denied.");
-
-		MessageResources rsc = getResources(request);
+        
+        		MessageResources rsc = getResources(request);
 		ActionMessages errors = new ActionMessages();
         ExamDistributionPrefsForm frm = (ExamDistributionPrefsForm) form;
         
@@ -252,6 +253,12 @@ public class ExamDistributionPrefsAction extends Action {
         request.setAttribute(DistributionPrefsForm.LIST_SIZE_ATTR, ""+(frm.getSubjectArea().size()-1));
         
         frm.setFilterSubjectAreas(TimetableManager.getSubjectAreas(user));
+        if (frm.getFilterSubjectAreas().size()==1) {
+            SubjectArea firstSubjectArea = (SubjectArea)frm.getFilterSubjectAreas().iterator().next();
+            frm.setFilterSubjectAreaId(firstSubjectArea.getUniqueId().toString());
+        }
+        
+        frm.setCanAdd(manager.canEditExams(session, user));
         
         if ("view".equals(op) && (frm.getDistPrefId()==null || frm.getDistPrefId().length()==0)) {
             ExamDistributionPrefsTableBuilder tbl = new ExamDistributionPrefsTableBuilder();

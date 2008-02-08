@@ -71,6 +71,8 @@ public class PreferencesForm extends ActionForm {
     
     protected boolean allowHardPrefs;
     protected boolean editable;
+    
+    private boolean hasNotAvailable;
 
     // --------------------------------------------------------- Classes
 
@@ -253,6 +255,7 @@ public class PreferencesForm extends ActionForm {
         distPrefLevels = DynamicList.getInstance(new ArrayList(), factoryPrefLevel);
         nextId = previousId = null;
         allowHardPrefs = true; editable = false;
+        hasNotAvailable = false;
         addBlankPrefRows();
     }
 
@@ -694,5 +697,8 @@ public class PreferencesForm extends ActionForm {
     public void setAllowHardPrefs(boolean allowHardPrefs) { this.allowHardPrefs = allowHardPrefs; }
     public boolean isEditable() { return editable; }
     public void setEditable(boolean editable) { this.editable = editable; }
+    
+    public boolean getHasNotAvailable() { return hasNotAvailable; }
+    public void setHasNotAvailable(boolean hasNotAvailable) { this.hasNotAvailable = hasNotAvailable; }
     
 }

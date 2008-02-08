@@ -395,4 +395,83 @@ public class Exam extends BaseExam implements Comparable<Exam> {
     public static void deleteFromExams(org.hibernate.Session hibSession, CourseOffering course) {
         deleteFromExams(hibSession, ExamOwner.sOwnerTypeCourse, course.getUniqueId());
     }
+    
+    public static List findAllRelated(String type, Long id) {
+        if ("Class_".equals(type)) {
+            return new ExamDAO().getSession().createQuery(
+                    "select distinct x from Exam x inner join x.owners o, "+
+                    "CourseOffering co " +
+                    "left outer join co.instructionalOffering io "+
+                    "left outer join io.instrOfferingConfigs ioc " +
+                    "left outer join ioc.schedulingSubparts ss "+
+                    "left outer join ss.classes c where "+
+                    "c.uniqueId=:classId and ("+
+                    "(o.ownerType="+ExamOwner.sOwnerTypeCourse+" and o.ownerId=co.uniqueId) or "+
+                    "(o.ownerType="+ExamOwner.sOwnerTypeOffering+" and o.ownerId=io.uniqueId) or "+
+                    "(o.ownerType="+ExamOwner.sOwnerTypeConfig+" and o.ownerId=ioc.uniqueId) or "+
+                    "(o.ownerType="+ExamOwner.sOwnerTypeClass+" and o.ownerId=c.uniqueId) "+
+                    ")").
+                    setLong("classId", id).setCacheable(true).list();
+        } else if ("SchedulingSubpart".equals(type)) {
+            return new ExamDAO().getSession().createQuery(
+                    "select distinct x from Exam x inner join x.owners o, "+
+                    "CourseOffering co " +
+                    "left outer join co.instructionalOffering io "+
+                    "left outer join io.instrOfferingConfigs ioc " +
+                    "left outer join ioc.schedulingSubparts ss "+
+                    "left outer join ss.classes c where "+
+                    "ss.uniqueId=:subpartId and ("+
+                    "(o.ownerType="+ExamOwner.sOwnerTypeCourse+" and o.ownerId=co.uniqueId) or "+
+                    "(o.ownerType="+ExamOwner.sOwnerTypeOffering+" and o.ownerId=io.uniqueId) or "+
+                    "(o.ownerType="+ExamOwner.sOwnerTypeConfig+" and o.ownerId=ioc.uniqueId) or "+
+                    "(o.ownerType="+ExamOwner.sOwnerTypeClass+" and o.ownerId=c.uniqueId) "+
+                    ")").
+                    setLong("subpartId", id).setCacheable(true).list();
+        } else if ("CourseOffering".equals(type)) {
+            return new ExamDAO().getSession().createQuery(
+                    "select distinct x from Exam x inner join x.owners o, "+
+                    "CourseOffering co " +
+                    "left outer join co.instructionalOffering io "+
+                    "left outer join io.instrOfferingConfigs ioc " +
+                    "left outer join ioc.schedulingSubparts ss "+
+                    "left outer join ss.classes c where "+
+                    "co.uniqueId=:courseOfferingId and ("+
+                    "(o.ownerType="+ExamOwner.sOwnerTypeCourse+" and o.ownerId=co.uniqueId) or "+
+                    "(o.ownerType="+ExamOwner.sOwnerTypeOffering+" and o.ownerId=io.uniqueId) or "+
+                    "(o.ownerType="+ExamOwner.sOwnerTypeConfig+" and o.ownerId=ioc.uniqueId) or "+
+                    "(o.ownerType="+ExamOwner.sOwnerTypeClass+" and o.ownerId=c.uniqueId) "+
+                    ")").
+                    setLong("courseOfferingId", id).setCacheable(true).list();
+        } else if ("InstructionalOffering".equals(type)) {
+            return new ExamDAO().getSession().createQuery(
+                    "select distinct x from Exam x inner join x.owners o, "+
+                    "CourseOffering co " +
+                    "left outer join co.instructionalOffering io "+
+                    "left outer join io.instrOfferingConfigs ioc " +
+                    "left outer join ioc.schedulingSubparts ss "+
+                    "left outer join ss.classes c where "+
+                    "io.uniqueId=:instructionalOfferingId and ("+
+                    "(o.ownerType="+ExamOwner.sOwnerTypeCourse+" and o.ownerId=co.uniqueId) or "+
+                    "(o.ownerType="+ExamOwner.sOwnerTypeOffering+" and o.ownerId=io.uniqueId) or "+
+                    "(o.ownerType="+ExamOwner.sOwnerTypeConfig+" and o.ownerId=ioc.uniqueId) or "+
+                    "(o.ownerType="+ExamOwner.sOwnerTypeClass+" and o.ownerId=c.uniqueId) "+
+                    ")").
+                    setLong("instructionalOfferingId", id).setCacheable(true).list();
+        } else if ("InstrOfferingConfig".equals(type)) {
+            return new ExamDAO().getSession().createQuery(
+                    "select distinct x from Exam x inner join x.owners o, "+
+                    "CourseOffering co " +
+                    "left outer join co.instructionalOffering io "+
+                    "left outer join io.instrOfferingConfigs ioc " +
+                    "left outer join ioc.schedulingSubparts ss "+
+                    "left outer join ss.classes c where "+
+                    "ioc.uniqueId=:instrOfferingConfigId and ("+
+                    "(o.ownerType="+ExamOwner.sOwnerTypeCourse+" and o.ownerId=co.uniqueId) or "+
+                    "(o.ownerType="+ExamOwner.sOwnerTypeOffering+" and o.ownerId=io.uniqueId) or "+
+                    "(o.ownerType="+ExamOwner.sOwnerTypeConfig+" and o.ownerId=ioc.uniqueId) or "+
+                    "(o.ownerType="+ExamOwner.sOwnerTypeClass+" and o.ownerId=c.uniqueId) "+
+                    ")").
+                    setLong("instrOfferingConfigId", id).setCacheable(true).list();
+        } else throw new RuntimeException("Unsupported type "+type);
+    }
 }

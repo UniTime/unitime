@@ -21,17 +21,28 @@ import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.ExamEditForm;
 import org.unitime.timetable.model.ChangeLog;
+import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.ExamPeriod;
+import org.unitime.timetable.model.InstrOfferingConfig;
+import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Preference;
+import org.unitime.timetable.model.Roles;
+import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.model.dao.Class_DAO;
+import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.ExamDAO;
+import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
+import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
+import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
@@ -96,6 +107,10 @@ public class ExamEditAction extends PreferencesAction {
             
             // Cancel - Go back to Instructors Detail Screen
             if(op.equals(rsc.getMessage("button.returnToDetail"))) {
+                if (BackTracker.hasBack(request, 1)) {
+                    BackTracker.doBack(request, response);
+                    return null;
+                }
                 if (examId!=null && examId.trim()!="") {
                     request.setAttribute("examId", examId);
                     request.setAttribute("fromChildScreen", "true");
@@ -133,7 +148,7 @@ public class ExamEditAction extends PreferencesAction {
                 doLoad(request, frm, exam);
             }
             
-            frm.setLabel(exam==null?"New Exam":exam.getLabel());
+            frm.setLabel(exam==null?"New Examination":exam.getLabel());
             
             if (op.equals(rsc.getMessage("button.addInstructor"))) {
                 List lst = frm.getInstructors();
@@ -180,6 +195,12 @@ public class ExamEditAction extends PreferencesAction {
                         response.sendRedirect(response.encodeURL("examEdit.do?examId="+frm.getPreviousId()));
                     
                     //response.sendRedirect(response.encodeURL("examDetail.do?examId="+examId));
+                    if (op.equals(rsc.getMessage("button.saveExam")) && BackTracker.hasBack(request, 2)) {
+                        request.setAttribute("backType", "PreferenceGroup");
+                        request.setAttribute("backId", frm.getExamId());
+                        BackTracker.doBack(request, response);
+                        return null;
+                    }
                     
                     return mapping.findForward("showDetail");
                 }
@@ -214,6 +235,8 @@ public class ExamEditAction extends PreferencesAction {
                 LookupTables.setupRoomGroups(request, dummy);   // Room Groups
             }
             
+            frm.setAllowHardPrefs(user.isAdmin() || user.hasRole(Roles.EXAM_MGR_ROLE));
+            
             frm.setSubjectAreas(TimetableManager.getSubjectAreas(user));
         
             if (exam!=null) {
@@ -231,7 +254,7 @@ public class ExamEditAction extends PreferencesAction {
             throw e;
         }
     }
-    
+        
     protected void doLoad(HttpServletRequest request, ExamEditForm frm, Exam exam) {
         if (exam!=null) {
             frm.setExamId(exam.getUniqueId().toString());
@@ -266,6 +289,43 @@ public class ExamEditAction extends PreferencesAction {
                 if (!periods.isEmpty())
                     frm.setLength(Constants.SLOT_LENGTH_MIN*((ExamPeriod)periods.first()).getLength());
             } catch (Exception e) {}
+        }
+        
+        if (request.getParameter("firstType")!=null && request.getParameter("firstId")!=null) {
+            String firstType = request.getParameter("firstType");
+            Long firstId = Long.valueOf(request.getParameter("firstId"));
+            if ("Class_".equals(firstType)) {
+                Class_ clazz = new Class_DAO().get(firstId);
+                frm.getSubjectArea().add(clazz.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea().getUniqueId());
+                frm.getCourseNbr().add(clazz.getSchedulingSubpart().getControllingCourseOffering().getUniqueId());
+                frm.getItype().add(clazz.getSchedulingSubpart().getUniqueId());
+                frm.getClassNumber().add(clazz.getUniqueId());
+            } else if ("SchedulingSubpart".equals(firstType)) {
+                SchedulingSubpart subpart = new SchedulingSubpartDAO().get(firstId);
+                InstrOfferingConfig config = subpart.getInstrOfferingConfig();
+                frm.getSubjectArea().add(config.getControllingCourseOffering().getSubjectArea().getUniqueId());
+                frm.getCourseNbr().add(config.getControllingCourseOffering().getUniqueId());
+                frm.getItype().add(-config.getUniqueId());
+                frm.getClassNumber().add(new Long(-1));
+            } else if ("InstrOfferingConfig".equals(firstType)) {
+                InstrOfferingConfig config = new InstrOfferingConfigDAO().get(firstId);
+                frm.getSubjectArea().add(config.getControllingCourseOffering().getSubjectArea().getUniqueId());
+                frm.getCourseNbr().add(config.getControllingCourseOffering().getUniqueId());
+                frm.getItype().add(-config.getUniqueId());
+                frm.getClassNumber().add(new Long(-1));
+            } else if ("InstructionalOffering".equals(firstType)) {
+                InstructionalOffering offering = new InstructionalOfferingDAO().get(firstId);
+                frm.getSubjectArea().add(offering.getControllingCourseOffering().getSubjectArea().getUniqueId());
+                frm.getCourseNbr().add(offering.getControllingCourseOffering().getUniqueId());
+                frm.getItype().add(Long.MIN_VALUE-1);
+                frm.getClassNumber().add(new Long(-1));
+            } else if ("CourseOffering".equals(firstType)) {
+                CourseOffering course = new CourseOfferingDAO().get(firstId);
+                frm.getSubjectArea().add(course.getSubjectArea().getUniqueId());
+                frm.getCourseNbr().add(course.getUniqueId());
+                frm.getItype().add(Long.MIN_VALUE);
+                frm.getClassNumber().add(new Long(-1));
+            }
         }
         
         for (int i=0;i<frm.PREF_ROWS_ADDED;i++) {

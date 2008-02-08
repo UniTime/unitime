@@ -57,6 +57,7 @@ import org.unitime.timetable.model.PeriodPreferenceModel;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.PreferenceLevel;
+import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.RoomFeaturePref;
 import org.unitime.timetable.model.RoomGroup;
@@ -778,6 +779,9 @@ public class PreferencesAction extends Action {
         
         PeriodPreferenceModel px = new PeriodPreferenceModel(exam==null?Session.getCurrentAcadSession(Web.getUser(request.getSession())):exam.getSession());
         if (exam!=null) px.load(exam);
+        User user = Web.getUser(request.getSession());
+        px.setAllowHard(user.isAdmin() || user.hasRole(Roles.EXAM_MGR_ROLE));
+        frm.setHasNotAvailable(px.hasNotAvailable());
         RequiredTimeTable rtt = new RequiredTimeTable(px);
         rtt.setName("PeriodPref");
         if(!op.equals("init")) 

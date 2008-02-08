@@ -150,21 +150,21 @@ public class ExamEditForm extends PreferencesForm {
                 InstrOfferingConfig config = (InstrOfferingConfig)owner.getOwnerObject();
                 getSubjectArea().add(config.getControllingCourseOffering().getSubjectArea().getUniqueId());
                 getCourseNbr().add(config.getControllingCourseOffering().getUniqueId());
-                getItype().add(config.getUniqueId());
+                getItype().add(-config.getUniqueId());
                 getClassNumber().add(new Long(-1));
                 break;
             case ExamOwner.sOwnerTypeCourse :
                 CourseOffering course = (CourseOffering)owner.getOwnerObject();
                 getSubjectArea().add(course.getSubjectArea().getUniqueId());
                 getCourseNbr().add(course.getUniqueId());
-                getItype().add(new Long(-1));
+                getItype().add(Long.MIN_VALUE);
                 getClassNumber().add(new Long(-1));
                 break;
             case ExamOwner.sOwnerTypeOffering :
                 InstructionalOffering offering = (InstructionalOffering)owner.getOwnerObject();
                 getSubjectArea().add(offering.getControllingCourseOffering().getSubjectArea().getUniqueId());
                 getCourseNbr().add(offering.getControllingCourseOffering().getUniqueId());
-                getItype().add(new Long(-1));
+                getItype().add(Long.MIN_VALUE-1);
                 getClassNumber().add(new Long(-1));
                 break;
             }
