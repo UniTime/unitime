@@ -164,7 +164,7 @@ public class ExamEditForm extends PreferencesForm {
                 InstructionalOffering offering = (InstructionalOffering)owner.getOwnerObject();
                 getSubjectArea().add(offering.getControllingCourseOffering().getSubjectArea().getUniqueId());
                 getCourseNbr().add(offering.getControllingCourseOffering().getUniqueId());
-                getItype().add(Long.MIN_VALUE-1);
+                getItype().add(Long.MIN_VALUE+1);
                 getClassNumber().add(new Long(-1));
                 break;
             }
@@ -204,7 +204,7 @@ public class ExamEditForm extends PreferencesForm {
         if (getCourseNbr(idx)>=0) {
             CourseOffering course = new CourseOfferingDAO().get(getCourseNbr(idx));
             if (course.isIsControl())
-                ret.add(new IdValue(Long.MIN_VALUE-1,"Offering"));
+                ret.add(new IdValue(Long.MIN_VALUE+1,"Offering"));
             ret.add(new IdValue(Long.MIN_VALUE,"Course"));
             if (!course.isIsControl()) {
                 setItype(idx, Long.MIN_VALUE);
@@ -221,7 +221,7 @@ public class ExamEditForm extends PreferencesForm {
                 setLong("courseOfferingId", course.getUniqueId()).
                 list());
             if (!configs.isEmpty()) {
-                ret.add(new IdValue(Long.MIN_VALUE-2,"-- Configurations --"));
+                ret.add(new IdValue(Long.MIN_VALUE+2,"-- Configurations --"));
                 for (Iterator i=configs.iterator();i.hasNext();) {
                     InstrOfferingConfig c = (InstrOfferingConfig)i.next();
                     if (c.getUniqueId().equals(getItype(idx))) contains = true;
@@ -239,7 +239,7 @@ public class ExamEditForm extends PreferencesForm {
                 setLong("courseOfferingId", course.getUniqueId()).
                 list());
             if (!configs.isEmpty() && !subparts.isEmpty())
-                ret.add(new IdValue(Long.MIN_VALUE-2,"-- Subparts --"));
+                ret.add(new IdValue(Long.MIN_VALUE+2,"-- Subparts --"));
             for (Iterator i=subparts.iterator();i.hasNext();) {
                 SchedulingSubpart s = (SchedulingSubpart)i.next();
                 Long sid = s.getUniqueId();
@@ -251,7 +251,7 @@ public class ExamEditForm extends PreferencesForm {
                 }
                 if (s.getInstrOfferingConfig().getInstructionalOffering().getInstrOfferingConfigs().size()>1)
                     name += " ["+s.getInstrOfferingConfig().getName()+"]";
-                if (s.getUniqueId().equals(getItype(idx))) contains = true;
+                if (sid.equals(getItype(idx))) contains = true;
                 ret.add(new IdValue(sid, name+(sufix==null || sufix.length()==0?"":" ("+sufix+")")));
             }
         } else {
@@ -269,7 +269,7 @@ public class ExamEditForm extends PreferencesForm {
             ExamOwner owner = new ExamOwner();
             owner.setOwner(course);
             return owner;
-        } else if (getItype(idx)==Long.MIN_VALUE-1 || getItype(idx)==Long.MIN_VALUE-2) { //offering
+        } else if (getItype(idx)==Long.MIN_VALUE+1 || getItype(idx)==Long.MIN_VALUE+2) { //offering
             ExamOwner owner = new ExamOwner();
             owner.setOwner(course.getInstructionalOffering());
             return owner;
