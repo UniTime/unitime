@@ -242,6 +242,7 @@ public class ExamEditForm extends PreferencesForm {
                 ret.add(new IdValue(Long.MIN_VALUE-2,"-- Subparts --"));
             for (Iterator i=subparts.iterator();i.hasNext();) {
                 SchedulingSubpart s = (SchedulingSubpart)i.next();
+                Long sid = s.getUniqueId();
                 String name = s.getItype().getAbbv();
                 String sufix = s.getSchedulingSubpartSuffix();
                 while (s.getParentSubpart()!=null) {
@@ -251,7 +252,7 @@ public class ExamEditForm extends PreferencesForm {
                 if (s.getInstrOfferingConfig().getInstructionalOffering().getInstrOfferingConfigs().size()>1)
                     name += " ["+s.getInstrOfferingConfig().getName()+"]";
                 if (s.getUniqueId().equals(getItype(idx))) contains = true;
-                ret.add(new IdValue(s.getUniqueId(), name+(sufix==null || sufix.length()==0?"":" ("+sufix+")")));
+                ret.add(new IdValue(sid, name+(sufix==null || sufix.length()==0?"":" ("+sufix+")")));
             }
         } else {
             ret.addElement(new IdValue(0L,"N/A"));
