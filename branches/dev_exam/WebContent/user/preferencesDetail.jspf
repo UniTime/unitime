@@ -195,7 +195,12 @@
 	
 		<TR>
 			<TD valign="middle" colspan='3' align='left'>
-				<tt:displayPrefLevelLegend/>
+				<logic:equal name="<%=frmName%>" property="hasNotAvailable" value="false">
+					<tt:displayPrefLevelLegend/>
+				</logic:equal>
+				<logic:equal name="<%=frmName%>" property="hasNotAvailable" value="true">
+					<tt:displayPrefLevelLegend notAvailable="true"/>
+				</logic:equal>
 			</TD>
 		</TR>
 

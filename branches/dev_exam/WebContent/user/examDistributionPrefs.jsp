@@ -21,8 +21,6 @@
 <%@ page import="org.unitime.timetable.model.DistributionPref" %>
 <%@ page import="org.unitime.timetable.model.DistributionType" %>
 <%@ page import="org.unitime.timetable.model.PreferenceLevel" %>
-<%@ page import="org.unitime.timetable.model.Roles" %>
-<%@ page import="org.unitime.commons.web.Web" %>
 <%@ page import="org.unitime.timetable.util.Constants" %>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
@@ -67,10 +65,10 @@
 					</logic:notEmpty>
 				
 					<logic:empty name="examDistributionPrefsForm" property="distPrefId">
+						&nbsp;
 						<html:submit styleClass="btn" property="op" accesskey="S" titleKey="title.addNewDistPref">
 							<bean:message key="button.save" />
 						</html:submit>
-				
 					</logic:empty>
 
 					<!-- 
@@ -233,6 +231,7 @@
 				</logic:notEmpty>
 				
 				<logic:empty name="examDistributionPrefsForm" property="distPrefId">
+					&nbsp;
 					<html:submit styleClass="btn" property="op" accesskey="S" titleKey="title.addNewDistPref">
 						<bean:message key="button.save" />
 					</html:submit>
@@ -308,11 +307,13 @@
 				<TD colspan="2">
 					<tt:section-header>
 						<tt:section-title>Examination Distribution Preferences</tt:section-title>
-						<TD colspan="2" align="right">
-							<html:submit property="op" styleClass="btn" accesskey="A" title="Add New Distribution Preference (Alt+A)" >
-								<bean:message key="button.addDistPref" />
-							</html:submit>
-						</TD>
+						<logic:equal name="examDistributionPrefsForm" property="canAdd" value="true">
+							<TD colspan="2" align="right">
+								<html:submit property="op" styleClass="btn" accesskey="A" title="Add New Distribution Preference (Alt+A)" >
+									<bean:message key="button.addDistPref" />
+								</html:submit>
+							</TD>
+						</logic:equal>
 					</tt:section-header>
 				</TD>
 			</TR>		
@@ -334,9 +335,11 @@
 			</TR>
 			<TR>
 				<TD colspan="2" align="right">
-					<html:submit property="op" styleClass="btn" accesskey="A" title="Add New Distribution Preference (Alt+A)" >
-						<bean:message key="button.addDistPref" />
-					</html:submit>
+					<logic:equal name="examDistributionPrefsForm" property="canAdd" value="true">
+						<html:submit property="op" styleClass="btn" accesskey="A" title="Add New Distribution Preference (Alt+A)" >
+							<bean:message key="button.addDistPref" />
+						</html:submit>
+					</logic:equal>
 				</TD>
 			</TR>
 		<% } %>

@@ -405,6 +405,14 @@
 			</TR>
 		<% } %>
 		
+		<TR>
+			<TD colspan="2">
+				<tt:exams type='InstructionalOffering' add='true'>
+					<bean:write name="<%=frmName%>" property="instrOfferingId"/>
+				</tt:exams>
+			</TD>
+		</TR>
+		
 		<tt:last-change type='InstructionalOffering'>
 			<bean:write name="<%=frmName%>" property="instrOfferingId"/>
 		</tt:last-change>		

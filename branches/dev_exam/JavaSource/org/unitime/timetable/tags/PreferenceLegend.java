@@ -35,11 +35,14 @@ import org.unitime.timetable.model.dao.PreferenceLevelDAO;
  * @author Tomas Muller
  */
 public class PreferenceLegend extends TagSupport {
-	
+	private boolean iNotAvailable = false;
 	private String iSeparator = "top";
 	
 	public String getSeparator() { return iSeparator; }
 	public void setSeparator(String separator) { iSeparator = separator; }
+	
+	public void setNotAvailable(boolean notAvailable) { iNotAvailable = notAvailable; }
+	public boolean isNotAvailable() { return iNotAvailable; }
 
     public int doEndTag() throws JspException {
 		return EVAL_PAGE;
@@ -69,6 +72,13 @@ public class PreferenceLegend extends TagSupport {
 				"<img border='0' align='absmiddle'src='images/pref"+pl.getUniqueId()+".png'>"+
 				"&nbsp;" + pl.getPrefName() + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+
 				"</td>");
+        }
+        if (isNotAvailable()) {
+            html.append(
+                    "<td style='font-size: 80%;'>"+
+                    "<img border='0' align='absmiddle'src='images/prefna.png'>"+
+                    "&nbsp;Not Available&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+
+                    "</td>");
         }
         
         html.append("</tr></table>");

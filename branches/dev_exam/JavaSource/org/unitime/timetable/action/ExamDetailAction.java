@@ -89,6 +89,16 @@ public class ExamDetailAction extends PreferencesAction {
             
             Exam exam = new ExamDAO().get(Long.valueOf(examId));
             
+            //After delete -> one more back
+            if (exam==null && BackTracker.hasBack(request, 1)) {
+                if (request.getParameter("backType")!=null)
+                    request.setAttribute("backType", request.getParameter("backType"));
+                if (request.getParameter("backId")!=null)
+                    request.setAttribute("backId", request.getParameter("backId"));
+                BackTracker.doBack(request, response);
+                return null;
+            }
+
             //Edit Information - Redirect to info edit screen
             if (op.equals(rsc.getMessage("button.editExam")) && examId!=null && examId.trim()!="") {
                 response.sendRedirect( response.encodeURL("examEdit.do?examId="+examId) );
@@ -124,6 +134,12 @@ public class ExamDetailAction extends PreferencesAction {
                 } catch (Exception e) {
                     if (tx!=null) tx.rollback();
                     throw e;
+                }
+                if (BackTracker.hasBack(request, 1)) {
+                    request.setAttribute("backType", "Exam");
+                    request.setAttribute("backId", "-1");
+                    BackTracker.doBack(request, response);
+                    return null;
                 }
                 return mapping.findForward("showList");
             }

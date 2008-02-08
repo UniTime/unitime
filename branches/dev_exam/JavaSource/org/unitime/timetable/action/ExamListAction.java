@@ -91,7 +91,11 @@ public class ExamListAction extends Action {
             return mapping.findForward("addExam");
         }
         
-        myForm.setSubjectAreas(new TreeSet(SubjectArea.getSubjectAreaList(session.getUniqueId())));
+        myForm.setSubjectAreas(TimetableManager.getSubjectAreas(user));
+        if (myForm.getSubjectAreas().size()==1) {
+            SubjectArea firstSubjectArea = (SubjectArea)myForm.getSubjectAreas().iterator().next();
+            myForm.setSubjectAreaId(firstSubjectArea.getUniqueId().toString());
+        }
         
         if (myForm.getSubjectAreaId()!=null && myForm.getSubjectAreaId().length()!=0) {
             PdfWebTable table = getExamTable(user, manager, session, myForm, true);

@@ -2,6 +2,7 @@ package org.unitime.timetable.model;
 
 import java.awt.Color;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -199,19 +200,29 @@ public class PeriodPreferenceModel implements RequiredTimeTableModel {
         return null;
     }
     
+    public boolean hasPreference(String pref) {
+        for (Iterator i=iPreferences.values().iterator();i.hasNext();)
+            if (pref.equals(i.next())) return true;
+        return false;
+    }
+    
+    public boolean hasNotAvailable() {
+        return iPreferences.size()<iDates.size()*iStarts.size();
+    }
+    
     public String[] getPreferenceNames() {
         Vector prefs = PreferenceLevel.getPreferenceLevelList(false);
-        boolean hasNotAvailable = (iPreferences.size()<iDates.size()*iStarts.size());
-        String[] ret = new String[prefs.size()+(hasNotAvailable?1:0)+(iAllowRequired?0:-1)];
+        ArrayList<String> ret = new ArrayList<String>();
         int idx=0;
         for (Enumeration e=prefs.elements();e.hasMoreElements();) {
             PreferenceLevel pref = (PreferenceLevel)e.nextElement();
             if (!iAllowRequired && PreferenceLevel.sRequired.equals(pref.getPrefProlog())) continue;
-            ret[idx++]=pref.getPrefProlog();
+            if (!iAllowHard && pref.isHard() && !hasPreference(pref.getPrefProlog())) continue;
+            ret.add(pref.getPrefProlog());
         }
-        if (hasNotAvailable)
-            ret[idx++] = "@";
-        return ret;
+        if (hasNotAvailable())
+            ret.add("@");
+        return ret.toArray(new String[ret.size()]);
     }
     
     public Color getPreferenceColor(String pref) {

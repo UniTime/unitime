@@ -57,6 +57,8 @@ public class ExamDistributionPrefsForm extends ActionForm {
 	private String filterSubjectAreaId;
 	private Collection filterSubjectAreas;
 	private String filterCourseNbr;
+	
+	private boolean canAdd;
     
 
     protected DynamicListObjectFactory factory = new DynamicListObjectFactory() {
@@ -110,6 +112,7 @@ public class ExamDistributionPrefsForm extends ActionForm {
         filterSubjectAreaId = (String)request.getSession().getAttribute(Constants.SUBJ_AREA_ID_ATTR_NAME);
         filterCourseNbr = (String)request.getSession().getAttribute(Constants.CRS_NBR_ATTR_NAME); 
         filterSubjectAreas = new ArrayList();
+        canAdd = false;
     }
 
     
@@ -137,6 +140,9 @@ public class ExamDistributionPrefsForm extends ActionForm {
     public Long getExam(int key) { return (Long)exam.get(key); }
     public void setExam(int key, Long value) { this.exam.set(key, value); }
     public void setExam(List itype) { this.exam = itype; }
+    
+    public boolean getCanAdd() { return canAdd; }
+    public void setCanAdd(boolean canAdd) { this.canAdd = canAdd; }
 
     public void deleteExam(int key) {
         subjectArea.remove(key);
