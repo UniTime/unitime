@@ -31,6 +31,11 @@ import org.unitime.commons.web.htmlgen.TableCell;
 import org.unitime.commons.web.htmlgen.TableStream;
 import org.unitime.timetable.form.ClassListForm;
 import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.ExamOwner;
+import org.unitime.timetable.model.InstrOfferingConfig;
+import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
@@ -39,6 +44,7 @@ import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.UserData;
 import org.unitime.timetable.model.comparators.ClassComparator;
+import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.solver.CachedClassAssignmentProxy;
@@ -109,6 +115,9 @@ public class WebClassListTableBuilder extends
     		setDisplayTimetable(hasTimetable);
     	}
         setUserSettings(user);
+        
+        if (isShowExam())
+            setShowExamTimetable(Exam.hasTimetable((Long)user.getAttribute(Constants.SESSION_ID_ATTR_NAME)));
 
 		Class_ c = null;
         TableStream table = null;
@@ -256,4 +265,28 @@ public class WebClassListTableBuilder extends
 	        this.htmlTableForClasses(classAssignment, ts, ss.getControllingCourseOffering().getSubjectArea().getUniqueId(), user, outputStream);
     	}
     }
+    
+    protected TreeSet getExams(Class_ clazz) {
+        //exams directly attached to the given class
+        TreeSet ret = new TreeSet(Exam.findAll(ExamOwner.sOwnerTypeClass, clazz.getUniqueId()));
+        //check whether the given class is of the first subpart of the config
+        SchedulingSubpart subpart = clazz.getSchedulingSubpart();
+        if (subpart.getParentSubpart()!=null) return ret; 
+        InstrOfferingConfig config = subpart.getInstrOfferingConfig();
+        SchedulingSubpartComparator cmp = new SchedulingSubpartComparator();
+        for (Iterator i=config.getSchedulingSubparts().iterator();i.hasNext();) {
+            SchedulingSubpart s = (SchedulingSubpart)i.next();
+            if (cmp.compare(s,subpart)<0) return ret;
+        }
+        InstructionalOffering offering = config.getInstructionalOffering();
+        //check passed -- add config/offering/course exams to the class exams
+        ret.addAll(Exam.findAll(ExamOwner.sOwnerTypeConfig, config.getUniqueId()));
+        ret.addAll(Exam.findAll(ExamOwner.sOwnerTypeOffering, offering.getUniqueId()));
+        for (Iterator i=offering.getCourseOfferings().iterator();i.hasNext();) {
+            CourseOffering co = (CourseOffering)i.next();
+            ret.addAll(Exam.findAll(ExamOwner.sOwnerTypeCourse, co.getUniqueId()));
+        }
+        return ret;
+    }
+
 }

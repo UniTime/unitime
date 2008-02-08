@@ -58,7 +58,9 @@ import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.SchedulingSubpart;
+import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Solution;
+import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.UserData;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
@@ -148,6 +150,8 @@ public class InstructionalOfferingSearchAction extends LookupDispatchAction {
 		    	UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.schedulePrintNote",frm.getSchedulePrintNote().booleanValue());
 		    	UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.note",frm.getNote().booleanValue());
 		    	UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.title",frm.getTitle().booleanValue());
+                if (frm.getCanSeeExams())
+                    UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.exams",frm.getExams().booleanValue());
 		    	UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.consent",frm.getConsent().booleanValue());
 		    	UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.designatorRequired",frm.getDesignatorRequired().booleanValue());
 		    	UserData.setProperty(httpSession,"InstructionalOfferingList.sortBy",frm.getSortBy());
@@ -747,6 +751,17 @@ public class InstructionalOfferingSearchAction extends LookupDispatchAction {
 		form.setConsent(new Boolean(UserData.getPropertyBoolean(httpSession,"InstructionalOfferingList.consent", false)));
 		form.setDesignatorRequired(new Boolean(UserData.getPropertyBoolean(httpSession,"InstructionalOfferingList.designatorRequired", false)));
 		form.setSortBy(UserData.getProperty(httpSession,"InstructionalOfferingList.sortBy",ClassListForm.sSortByName));
+        try {
+            User user = Web.getUser(httpSession);
+            TimetableManager manager = TimetableManager.getManager(user);
+            Session session = Session.getCurrentAcadSession(user);
+            if (manager.canSeeExams(session, user)) {
+                form.setCanSeeExams(Boolean.TRUE);
+                form.setExams(new Boolean(UserData.getPropertyBoolean(httpSession,"InstructionalOfferingList.exams", false)));
+            } else {
+                form.setCanSeeExams(Boolean.FALSE);
+            }
+        } catch (Exception e) {}
 	}
 
 }

@@ -147,6 +147,8 @@ public class ClassSearchAction extends LookupDispatchAction {
 		    	UserData.setPropertyBoolean(httpSession,"ClassList.timetable",(classListForm.getTimetable()==null?false:classListForm.getTimetable().booleanValue()));
 		    	UserData.setPropertyBoolean(httpSession,"ClassList.schedulePrintNote",classListForm.getSchedulePrintNote().booleanValue());
 		    	UserData.setPropertyBoolean(httpSession,"ClassList.note",classListForm.getNote().booleanValue());
+		    	if (classListForm.getCanSeeExams())
+		    	    UserData.setPropertyBoolean(httpSession,"ClassList.exams",classListForm.getExams().booleanValue());
 		    	UserData.setProperty(httpSession,"ClassList.sortBy", classListForm.getSortBy());
 		    	UserData.setProperty(httpSession,"ClassList.filterAssignedRoom", classListForm.getFilterAssignedRoom());		    	
 		    	UserData.setProperty(httpSession,"ClassList.filterInstructor", classListForm.getFilterInstructor());		    	
@@ -259,6 +261,17 @@ public class ClassSearchAction extends LookupDispatchAction {
 		form.setFilterInstructor(UserData.getProperty(httpSession, "ClassList.filterInstructor", ""));
 		form.setSchedulePrintNote(new Boolean(UserData.getPropertyBoolean(httpSession,"ClassList.schedulePrintNote", true)));
 		form.setNote(new Boolean(UserData.getPropertyBoolean(httpSession,"ClassList.note", false)));
+		try {
+		    User user = Web.getUser(httpSession);
+		    TimetableManager manager = TimetableManager.getManager(user);
+		    Session session = Session.getCurrentAcadSession(user);
+		    if (manager.canSeeExams(session, user)) {
+		        form.setCanSeeExams(Boolean.TRUE);
+		        form.setExams(new Boolean(UserData.getPropertyBoolean(httpSession,"ClassList.exams", false)));
+		    } else {
+		        form.setCanSeeExams(Boolean.FALSE);
+		    }
+		} catch (Exception e) {}
 	}
 	
     public static Set getClasses(ClassListFormInterface form, ClassAssignmentProxy classAssignmentProxy) {

@@ -90,9 +90,9 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         for (Iterator i=new TreeSet(getOwners()).iterator();i.hasNext();) {
             ExamOwner owner = (ExamOwner)i.next();
             Object ownerObject = owner.getOwnerObject();
-            if (prev!=null && prev.getCourse().getSubjectArea().equals(owner.getCourse().getSubjectArea()) && prev.getOwnerType().equals(owner.getOwnerType())) {
+            if (prev!=null && prev.getCourse().getSubjectArea().equals(owner.getCourse().getSubjectArea())) {
                 //same subject area
-                if (prev.getCourse().equals(owner.getCourse())) {
+                if (prev.getCourse().equals(owner.getCourse()) && prev.getOwnerType().equals(owner.getOwnerType())) {
                     //same course number
                     switch (owner.getOwnerType()) {
                     case ExamOwner.sOwnerTypeConfig :
@@ -109,7 +109,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                     }
                 } else {
                     //different course number
-                    sb.append(", "+owner.getCourse().getCourseNbr());
+                    sb.append("; "+owner.getCourse().getCourseNbr());
                     switch (owner.getOwnerType()) {
                     case ExamOwner.sOwnerTypeConfig :
                         sb.append(" ["+((InstrOfferingConfig)ownerObject).getName()+"]");
@@ -122,7 +122,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 }
             } else {
                 //different subject area
-                if (prev!=null) sb.append(", ");
+                if (prev!=null) sb.append("; ");
                 switch (owner.getOwnerType()) {
                 case ExamOwner.sOwnerTypeConfig :
                     InstrOfferingConfig config = (InstrOfferingConfig)ownerObject;
@@ -396,6 +396,16 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         deleteFromExams(hibSession, ExamOwner.sOwnerTypeCourse, course.getUniqueId());
     }
     
+    public static List findAll(int ownerType, Long ownerId) {  
+        return new ExamDAO().getSession().createQuery(
+                "select distinct x from Exam x inner join x.owners o where "+
+                "o.ownerType=:ownerType and o.ownerId=:ownerId").
+                setInteger("ownerType", ownerType).
+                setLong("ownerId", ownerId).
+                setCacheable(true).list();
+    }
+    
+    
     public static List findAllRelated(String type, Long id) {
         if ("Class_".equals(type)) {
             return new ExamDAO().getSession().createQuery(
@@ -473,5 +483,13 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                     ")").
                     setLong("instrOfferingConfigId", id).setCacheable(true).list();
         } else throw new RuntimeException("Unsupported type "+type);
+    }
+    
+    public static boolean hasTimetable(Long sessionId) {
+        return ((Number)new ExamDAO().getSession().
+                createQuery("select count(x) from Exam x " +
+                		"where x.session.uniqueId=:sessionId and " +
+                		"x.assignedPeriod!=null").
+                setLong("sessionId",sessionId).uniqueResult()).longValue()>0;
     }
 }
