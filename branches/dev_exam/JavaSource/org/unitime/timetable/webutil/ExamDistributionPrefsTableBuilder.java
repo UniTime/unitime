@@ -144,6 +144,7 @@ public class ExamDistributionPrefsTableBuilder {
         Session session = Session.getCurrentAcadSession(user);
         boolean editable = manager.canEditExams(session, user);
         boolean isAdmin = user.getCurrentRole().equals(Roles.ADMIN_ROLE);
+        boolean isExamMgr = user.getCurrentRole().equals(Roles.EXAM_MGR_ROLE);
     	
     	String backId = ("PreferenceGroup".equals(request.getParameter("backType"))?request.getParameter("backId"):null);
         
@@ -175,7 +176,7 @@ public class ExamDistributionPrefsTableBuilder {
                 examStr += dO.preferenceText();
                 for (Iterator i3=exam.getOwners().iterator();i3.hasNext();) {
                     ExamOwner owner = (ExamOwner)i3.next();
-                    if (prefEditable && !isAdmin) {
+                    if (prefEditable && !isAdmin && !isExamMgr) {
                         Department dept = owner.getCourse().getDepartment();
                         if (manager.getDepartments().contains(dept)) {
                             if (dept.isExternalManager().booleanValue()) {

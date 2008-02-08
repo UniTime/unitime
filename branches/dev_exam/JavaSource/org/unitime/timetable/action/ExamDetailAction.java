@@ -169,7 +169,8 @@ public class ExamDetailAction extends PreferencesAction {
                     switch (owner.getOwnerType()) {
                         case ExamOwner.sOwnerTypeClass :
                             Class_ clazz = (Class_)owner.getOwnerObject();
-                            onclick = "onClick=\"document.location='classDetail.do?cid="+clazz.getUniqueId()+"';\"";
+                            if (clazz.isViewableBy(user))
+                                onclick = "onClick=\"document.location='classDetail.do?cid="+clazz.getUniqueId()+"';\"";
                             name = clazz.getClassLabel();
                             type = "Class";
                             manager = clazz.getManagingDept().getShortLabel();
@@ -178,21 +179,24 @@ public class ExamDetailAction extends PreferencesAction {
                             break;
                         case ExamOwner.sOwnerTypeConfig :
                             InstrOfferingConfig config = (InstrOfferingConfig)owner.getOwnerObject();
-                            onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+config.getInstructionalOffering().getUniqueId()+"';\"";;
+                            if (config.isViewableBy(user))
+                                onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+config.getInstructionalOffering().getUniqueId()+"';\"";;
                             name = config.getCourseName()+" ["+config.getName()+"]";
                             type = "Configuration";
                             manager = config.getInstructionalOffering().getControllingCourseOffering().getDepartment().getShortLabel();
                             break;
                         case ExamOwner.sOwnerTypeOffering :
                             InstructionalOffering offering = (InstructionalOffering)owner.getOwnerObject();
-                            onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+offering.getUniqueId()+"';\"";;
+                            if (offering.isViewableBy(user))
+                                onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+offering.getUniqueId()+"';\"";;
                             name = offering.getCourseName();
                             type = "Offering";
                             manager = offering.getControllingCourseOffering().getDepartment().getShortLabel();
                             break;
                         case ExamOwner.sOwnerTypeCourse :
                             CourseOffering course = (CourseOffering)owner.getOwnerObject();
-                            onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+course.getInstructionalOffering().getUniqueId()+"';\"";;
+                            if (course.isViewableBy(user))
+                                onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+course.getInstructionalOffering().getUniqueId()+"';\"";;
                             name = course.getCourseName();
                             type = "Course";
                             manager = course.getDepartment().getShortLabel();

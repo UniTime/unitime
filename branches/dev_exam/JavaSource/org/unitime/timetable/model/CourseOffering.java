@@ -312,6 +312,8 @@ public class CourseOffering extends BaseCourseOffering {
     	if (user.isAdmin()) return true;
 		if (getDepartment()==null) return false;
 		if (isEditableBy(user)) return true;
+        if (user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE) || user.getCurrentRole().equals(Roles.EXAM_MGR_ROLE))
+            return true;
 		
     	if (getInstructionalOffering()!=null) {
     		for (Iterator i1=getInstructionalOffering().getInstrOfferingConfigs().iterator();i1.hasNext();) {

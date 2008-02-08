@@ -73,7 +73,7 @@ public class DistributionPrefsAjax extends Action {
     }
     
     protected void print(ServletOutputStream out, String id, String value) throws IOException {
-        System.out.println("  <result id=\""+id+"\" value=\""+value+"\" />");
+        //System.out.println("  <result id=\""+id+"\" value=\""+value+"\" />");
         out.print("<result id=\""+id+"\" value=\""+value+"\" />");
     }
     

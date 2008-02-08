@@ -221,6 +221,8 @@ public class InstructionalOffering extends BaseInstructionalOffering {
     	if (isEditableBy(user)){
     		return(true);
     	}
+        if (user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE) || user.getCurrentRole().equals(Roles.EXAM_MGR_ROLE))
+            return true;
     	if(this.getCourseOfferings() != null && this.getCourseOfferings().size() > 0){
     		Iterator it = this.getCourseOfferings().iterator();
     		CourseOffering co = null;

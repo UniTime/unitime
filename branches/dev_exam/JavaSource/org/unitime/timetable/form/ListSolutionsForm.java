@@ -102,7 +102,7 @@ public class ListSolutionsForm extends ActionForm {
 		iHostEmpty = iHost;
 		iHosts.clear();
 		User user = Web.getUser(request.getSession());
-		iViewOnly = user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE);
+		iViewOnly = user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE) || user.getCurrentRole().equals(Roles.EXAM_MGR_ROLE);
 		if (user.isAdmin()) {
             Set servers = SolverRegisterService.getInstance().getServers();
             synchronized (servers) {

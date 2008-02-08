@@ -80,7 +80,7 @@ public class DistributionPrefsTableBuilder {
         User user = Web.getUser(request.getSession());
 		Session session = Session.getCurrentAcadSession(user);
 		boolean isAdmin = user.getCurrentRole().equals(Roles.ADMIN_ROLE);
-		boolean isViewAll = user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE);
+		boolean isViewAll = user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE) || user.getCurrentRole().equals(Roles.EXAM_MGR_ROLE);
 		
 		if (subjectAreaId.equals(Constants.BLANK_OPTION_VALUE))
 		    return "";
@@ -114,7 +114,7 @@ public class DistributionPrefsTableBuilder {
         User user = Web.getUser(request.getSession());
 		Session session = Session.getCurrentAcadSession(user);
 		boolean isAdmin = user.getCurrentRole().equals(Roles.ADMIN_ROLE);
-		boolean isViewAll = user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE);
+		boolean isViewAll = user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE) || user.getCurrentRole().equals(Roles.EXAM_MGR_ROLE);
 		
         if (subjectAreaId.equals(Constants.BLANK_OPTION_VALUE))
             subjectAreaId = null;

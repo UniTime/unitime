@@ -138,6 +138,8 @@ public class Session extends BaseSession implements Comparable {
 	    Set sessions = role.getTimetableManager().sessionsCanManage();
 	    if (Roles.VIEW_ALL_ROLE.equals(role.getRole().getReference()) && sessions.isEmpty())
 	        return getAllSessions();
+        if (Roles.EXAM_MGR_ROLE.equals(role.getRole().getReference()) && sessions.isEmpty())
+            return getAllSessions();
 	    return sessions;
 	}
 

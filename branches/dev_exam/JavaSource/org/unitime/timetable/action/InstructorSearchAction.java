@@ -148,7 +148,7 @@ public class InstructorSearchAction extends Action {
 		User user = Web.getUser(request.getSession());
 		Long sessionId = (Long) user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
 
-		if (user.isAdmin() || user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE)) {
+		if (user.isAdmin() || user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE) || user.getCurrentRole().equals(Roles.EXAM_MGR_ROLE)) {
 		    mgrDepts = Department.findAllBeingUsed(sessionId);
 		}
 		else {
