@@ -43,6 +43,8 @@ import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DistributionPref;
+import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Location;
@@ -167,6 +169,10 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	if (isShowCredit()) ret+=1;
     	if (isShowSchedulePrintNote()) ret+=1;
     	if (isShowNote()) ret+=1;
+    	if (isShowExam()) {
+    	    if (isShowExamName()) ret+=1;
+    	    if (isShowExamTimetable()) ret+=2;
+    	}
     	return ret;
 	}
 	
@@ -213,6 +219,13 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	if (isShowCredit()) width[idx++] = 100f;
     	if (isShowSchedulePrintNote()) width[idx++] = 150f;
     	if (isShowNote()) width[idx++] = 300f;
+        if (isShowExam()) {
+            if (isShowExamName()) width[idx++] = 200f;
+            if (isShowExamTimetable()) {
+                width[idx++] = 100f;
+                width[idx++] = 60f;
+            }
+        }
     	return width;
 	}
 	
@@ -317,6 +330,12 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     		addText(c, NOTE, true, Element.ALIGN_LEFT);
     		iPdfTable.addCell(c);
     	}
+    	if (isShowExam()) {
+    	    PdfPCell c = createCell();
+    	    c.setColspan((isShowExamName()?1:0)+(isShowExamTimetable()?2:0));
+            addText(c, "--------" + EXAM + "--------", true, Element.ALIGN_CENTER);
+            iPdfTable.addCell(c);
+    	}
     	
     	//second line
     	if (isShowLabel()) {
@@ -420,6 +439,24 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     		c.setBorderWidthBottom(1);
     		iPdfTable.addCell(c);
     	}
+        if (isShowExam()) {
+            if (isShowExamName()) {
+                PdfPCell c = createCell();
+                c.setBorderWidthBottom(1);
+                addText(c, EXAM_NAME, true, Element.ALIGN_LEFT);
+                iPdfTable.addCell(c);
+            }
+            if (isShowExamTimetable()) {
+                PdfPCell c = createCell();
+                c.setBorderWidthBottom(1);
+                addText(c, EXAM_PER, true, Element.ALIGN_LEFT);
+                iPdfTable.addCell(c);
+                c = createCell();
+                c.setBorderWidthBottom(1);
+                addText(c, EXAM_ROOM, true, Element.ALIGN_LEFT);
+                iPdfTable.addCell(c);
+            }
+        }
     	iPdfTable.setHeaderRows(2);
    }
 
@@ -884,6 +921,50 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	return cell;
     }
     
+    private PdfPCell pdfBuildExamName(TreeSet exams, boolean isEditable) {
+        StringBuffer sb = new StringBuffer();
+        for (Iterator i=exams.iterator();i.hasNext();) {
+            Exam exam = (Exam)i.next();
+            sb.append(exam.getLabel());
+            if (i.hasNext()) sb.append("\n");
+        }
+        Color color = (isEditable?sEnableColor:sDisableColor);
+        PdfPCell cell = createCell();
+        addText(cell, sb.toString(), false, false, Element.ALIGN_LEFT, color, true);
+        return cell;
+    }
+
+    private PdfPCell pdfBuildExamPeriod(TreeSet exams, boolean isEditable) {
+        StringBuffer sb = new StringBuffer();
+        for (Iterator i=exams.iterator();i.hasNext();) {
+            Exam exam = (Exam)i.next();
+            sb.append(exam.getAssignedPeriod()==null?"":exam.getAssignedPeriod().getAbbreviation());
+            if (i.hasNext()) sb.append("\n");
+        }
+        Color color = (isEditable?sEnableColor:sDisableColor);
+        PdfPCell cell = createCell();
+        addText(cell, sb.toString(), false, false, Element.ALIGN_LEFT, color, true);
+        return cell;
+    }
+
+    private PdfPCell pdfBuildExamRoom(TreeSet exams, boolean isEditable) {
+        StringBuffer sb = new StringBuffer();
+        for (Iterator i=exams.iterator();i.hasNext();) {
+            Exam exam = (Exam)i.next();
+            for (Iterator j=new TreeSet(exam.getAssignedRooms()).iterator();j.hasNext();) {
+                Location location = (Location)j.next();
+                sb.append(location.getLabel());
+                if (j.hasNext()) sb.append(", ");
+            }
+            if (i.hasNext()) sb.append("\n");
+        }
+        Color color = (isEditable?sEnableColor:sDisableColor);
+        PdfPCell cell = createCell();
+        addText(cell, sb.toString(), false, false, Element.ALIGN_LEFT, color, true);
+        return cell;
+    }
+
+    
     //NOTE: if changing column order column order must be changed in
     //		buildTableHeader, addInstrOffrRowsToTable, buildClassOrSubpartRow, and buildConfigRow
     protected void pdfBuildClassOrSubpartRow(ClassAssignmentProxy classAssignment, PreferenceGroup prefGroup, String indentSpaces, boolean isEditable, String prevLabel){
@@ -970,6 +1051,20 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	if (isShowNote()){
     		iPdfTable.addCell(pdfBuildNote(prefGroup, isEditable));     		
     	}
+        if (isShowExam()) {
+            TreeSet exams = new TreeSet();
+            if (prefGroup instanceof Class_) {
+                exams = getExams((Class_)prefGroup);
+            }
+            if (isShowExamName()) {
+                iPdfTable.addCell(pdfBuildExamName(exams, isEditable));
+            }
+            if (isShowExamTimetable()) {
+                iPdfTable.addCell(pdfBuildExamPeriod(exams, isEditable));
+                iPdfTable.addCell(pdfBuildExamRoom(exams, isEditable));
+            }
+        }
+    	
     }
     
     private void pdfBuildSchedulingSubpartRow(ClassAssignmentProxy classAssignment, SchedulingSubpart ss, String indentSpaces, User user){
@@ -1099,7 +1194,18 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         	if (isShowNote()){
         	    iPdfTable.addCell(createCell());
         	}
-	        
+
+            if (isShowExam()) {
+                TreeSet exams = new TreeSet(Exam.findAll(ExamOwner.sOwnerTypeConfig,ioc.getUniqueId()));
+                if (isShowExamName()) {
+                    iPdfTable.addCell(pdfBuildExamName(exams, isEditable));
+                }
+                if (isShowExamTimetable()) {
+                    iPdfTable.addCell(pdfBuildExamPeriod(exams, isEditable));
+                    iPdfTable.addCell(pdfBuildExamRoom(exams, isEditable));
+                }
+            }
+
 	        hasConfig = true;
 		}
 		
@@ -1278,6 +1384,26 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	if (isShowNote()){
     		iPdfTable.addCell(createCell());     		
     	}
+        if (isShowExam()) {
+            TreeSet exams = new TreeSet(Exam.findAll(ExamOwner.sOwnerTypeOffering,io.getUniqueId()));
+            for (Iterator i=io.getCourseOfferings().iterator();i.hasNext();) {
+                CourseOffering cox = (CourseOffering)i.next();
+                exams.addAll(Exam.findAll(ExamOwner.sOwnerTypeCourse,cox.getUniqueId()));
+            }
+            if (io.getInstrOfferingConfigs().size()==1) {
+                for (Iterator i=io.getInstrOfferingConfigs().iterator();i.hasNext();) {
+                    InstrOfferingConfig ioc = (InstrOfferingConfig)i.next();
+                    exams.addAll(Exam.findAll(ExamOwner.sOwnerTypeConfig,ioc.getUniqueId()));
+                }
+            }
+            if (isShowExamName()) {
+                iPdfTable.addCell(pdfBuildExamName(exams, isEditable));
+            }
+            if (isShowExamTimetable()) {
+                iPdfTable.addCell(pdfBuildExamPeriod(exams, isEditable));
+                iPdfTable.addCell(pdfBuildExamRoom(exams, isEditable));
+            }
+        }
 
         if (io.getInstrOfferingConfigs() != null & !io.getInstrOfferingConfigs().isEmpty()){
         	TreeSet configs = new TreeSet(new InstrOfferingConfigComparator(io.getControllingCourseOffering().getSubjectArea().getUniqueId()));
@@ -1385,6 +1511,9 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     			} catch (Exception e) {}
     			setDisplayTimetable(hasTimetable);
     	}
+    	
+        if (isShowExam())
+            setShowExamTimetable(Exam.hasTimetable((Long)user.getAttribute(Constants.SESSION_ID_ATTR_NAME)));
 
         ArrayList notOfferedOfferings = new ArrayList();
         ArrayList offeredOfferings = new ArrayList();

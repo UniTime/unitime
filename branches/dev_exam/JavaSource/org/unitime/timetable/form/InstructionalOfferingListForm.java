@@ -111,6 +111,10 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 	
 	private Boolean title;
 	
+	private Boolean exams;
+	
+	private Boolean canSeeExams;
+	
 	private String sortBy;
 		
 	/**
@@ -257,6 +261,8 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 		title = new Boolean(false);
 		consent = new Boolean(false);
 		designatorRequired = new Boolean(false);
+		exams = new Boolean(false);
+		canSeeExams = new Boolean(false);
 		sortBy = ClassListForm.sSortByName;
 	}
 
@@ -504,6 +510,19 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
         this.title = title;
     }
     
+    public Boolean getExams() {
+        return exams;
+    }
+    public void setExams(Boolean exams) {
+        this.exams = exams;
+    }
+    public Boolean getCanSeeExams() {
+        return canSeeExams;
+    }
+    public void setCanSeeExams(Boolean canSeeExams) {
+        this.canSeeExams = canSeeExams;
+    }
+
     protected void finalize() throws Throwable {
         Debug.debug("!!! Finalizing InstructionalOfferingListForm ... ");
         instructionalOfferings=null;

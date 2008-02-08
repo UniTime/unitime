@@ -32,6 +32,7 @@ import org.unitime.commons.web.htmlgen.TableStream;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ClassAssignmentsReportForm;
 import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimetableManager;
@@ -90,6 +91,12 @@ public class PdfClassAssignmentReportListTableBuilder extends PdfClassListTableB
             	setDisplayTimetable(hasTimetable);
             }
             setUserSettings(user);
+            
+            if (Exam.hasTimetable((Long)user.getAttribute(Constants.SESSION_ID_ATTR_NAME))) {
+                setShowExam(true);
+                setShowExamTimetable(true);
+                setShowExamName(false);
+            }
             
             File file = ApplicationProperties.getTempFile("classassign", "pdf");
 	    	
