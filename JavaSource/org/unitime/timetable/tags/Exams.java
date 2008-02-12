@@ -193,7 +193,7 @@ public class Exams extends BodyTagSupport {
                         instructors += instructor.getName(instructorNameFormat);
                     }
                     
-                    int nrStudents = exam.getStudents().size();
+                    int nrStudents = exam.countStudents();
                     
                     if (exam.getUniqueId().toString().equals(backId)) {
                         objects = "<A name='examHash'>"+objects+"</A>";

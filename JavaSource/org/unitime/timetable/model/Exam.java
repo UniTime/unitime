@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.model;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -188,20 +189,8 @@ public class Exam extends BaseExam implements Comparable<Exam> {
 	
     public static List findExamsOfSubjectArea(Long subjectAreaId) {
         return new ExamDAO().getSession().createQuery(
-                "select distinct x from SubjectArea sa inner join sa.courseOfferings co " +
-                "left outer join co.instructionalOffering.instrOfferingConfigs ioc " +
-                "left outer join ioc.schedulingSubparts ss "+
-                "left outer join ss.classes c, "+
-                "Exam x inner join x.owners o where " +
-                "sa.uniqueId=:subjectAreaId and "+
-                "x.session.uniqueId=sa.session.uniqueId and " +
-                "ioc.instructionalOffering=co.instructionalOffering and "+
-                "("+
-                "(o.ownerType="+ExamOwner.sOwnerTypeCourse+" and o.ownerId=co.uniqueId) or "+
-                "(o.ownerType="+ExamOwner.sOwnerTypeOffering+" and o.ownerId=co.instructionalOffering.uniqueId) or "+
-                "(o.ownerType="+ExamOwner.sOwnerTypeConfig+" and o.ownerId=ioc.uniqueId) or "+
-                "(o.ownerType="+ExamOwner.sOwnerTypeClass+" and o.ownerId=c.uniqueId) "+
-                ")")
+                "select distinct x from Exam x inner join x.owners o where " +
+                "o.course.subjectArea.uniqueId=:subjectAreaId")
                 .setLong("subjectAreaId", subjectAreaId)
                 .setCacheable(true)
                 .list();
@@ -209,20 +198,8 @@ public class Exam extends BaseExam implements Comparable<Exam> {
     
     public static List findExamsOfCourseOffering(Long courseOfferingId) {
         return new ExamDAO().getSession().createQuery(
-                "select distinct x from CourseOffering co " +
-                "left outer join co.instructionalOffering.instrOfferingConfigs ioc " +
-                "left outer join ioc.schedulingSubparts ss "+
-                "left outer join ss.classes c, "+
-                "Exam x inner join x.owners o where " +
-                "co.uniqueId=:courseOfferingId and "+
-                "x.session.uniqueId=co.subjectArea.session.uniqueId and " +
-                "ioc.instructionalOffering=co.instructionalOffering and "+
-                "("+
-                "(o.ownerType="+ExamOwner.sOwnerTypeCourse+" and o.ownerId=co.uniqueId) or "+
-                "(o.ownerType="+ExamOwner.sOwnerTypeOffering+" and o.ownerId=co.instructionalOffering.uniqueId) or "+
-                "(o.ownerType="+ExamOwner.sOwnerTypeConfig+" and o.ownerId=ioc.uniqueId) or "+
-                "(o.ownerType="+ExamOwner.sOwnerTypeClass+" and o.ownerId=c.uniqueId) "+
-                ")")
+                "select distinct x from Exam x inner join x.owners o where " +
+                "o.course.uniqueId=:courseOfferingId")
                 .setLong("courseOfferingId", courseOfferingId)
                 .setCacheable(true)
                 .list();
@@ -231,34 +208,27 @@ public class Exam extends BaseExam implements Comparable<Exam> {
     public static List findExamsOfCourse(Long subjectAreaId, String courseNbr) {
         if (courseNbr==null || courseNbr.trim().length()==0) return findExamsOfSubjectArea(subjectAreaId);
         return new ExamDAO().getSession().createQuery(
-                "select distinct x from CourseOffering co " +
-                "left outer join co.instructionalOffering.instrOfferingConfigs ioc " +
-                "left outer join ioc.schedulingSubparts ss "+
-                "left outer join ss.classes c, "+
-                "Exam x inner join x.owners o where " +
-                (courseNbr.indexOf('*')>=0?"co.courseNbr like :courseNbr":"co.courseNbr=:courseNbr")+
-                " and co.subjectArea.uniqueId=:subjectAreaId and "+
-                "x.session.uniqueId=co.subjectArea.session.uniqueId and " +
-                "ioc.instructionalOffering=co.instructionalOffering and "+
-                "("+
-                "(o.ownerType="+ExamOwner.sOwnerTypeCourse+" and o.ownerId=co.uniqueId) or "+
-                "(o.ownerType="+ExamOwner.sOwnerTypeOffering+" and o.ownerId=co.instructionalOffering.uniqueId) or "+
-                "(o.ownerType="+ExamOwner.sOwnerTypeConfig+" and o.ownerId=ioc.uniqueId) or "+
-                "(o.ownerType="+ExamOwner.sOwnerTypeClass+" and o.ownerId=c.uniqueId) "+
-                ")")
+                "select distinct x from Exam x inner join x.owners o where " +
+                "o.course.subjectArea.uniqueId=:subjectAreaId and "+
+                (courseNbr.indexOf('*')>=0?"o.course.courseNbr like :courseNbr":"o.course.courseNbr=:courseNbr"))
                 .setLong("subjectAreaId", subjectAreaId)
                 .setString("courseNbr", courseNbr.trim().replaceAll("\\*", "%"))
                 .setCacheable(true)
                 .list();
     }
     
-    public List getStudents() {
+    public Set getStudents() {
+        HashSet students = new HashSet();
+        for (Iterator i=getOwners().iterator();i.hasNext();)
+            students.addAll(((ExamOwner)i.next()).getStudents());
+        return students;
+        /*
         return new ExamDAO().getSession().createQuery(
                 "select distinct e.student from " +
                 "StudentClassEnrollment e inner join e.clazz c " +
                 "inner join c.schedulingSubpart.instrOfferingConfig ioc " +
-                "inner join ioc.instructionalOffering io " +
-                "inner join e.courseOffering co, "+
+                "inner join e.courseOffering co "+
+                "inner join co.instructionalOffering io, " +
                 "Exam x inner join x.owners o "+
                 "where x.uniqueId=:examId and ("+
                 "(o.ownerType="+ExamOwner.sOwnerTypeCourse+" and o.ownerId=co.uniqueId) or "+
@@ -269,6 +239,32 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 .setLong("examId", getUniqueId())
                 .setCacheable(true)
                 .list();
+                */
+    }
+    
+    public int countStudents() {
+        int nrStudents = 0;
+        for (Iterator i=getOwners().iterator();i.hasNext();)
+            nrStudents += ((ExamOwner)i.next()).countStudents();
+        return nrStudents;
+        /*
+        return ((Number)new ExamDAO().getSession().createQuery(
+                "select count(distinct e.student) from " +
+                "StudentClassEnrollment e inner join e.clazz c " +
+                "inner join c.schedulingSubpart.instrOfferingConfig ioc " +
+                "inner join e.courseOffering co "+
+                "inner join co.instructionalOffering io, " +
+                "Exam x inner join x.owners o "+
+                "where x.uniqueId=:examId and ("+
+                "(o.ownerType="+ExamOwner.sOwnerTypeCourse+" and o.ownerId=co.uniqueId) or "+
+                "(o.ownerType="+ExamOwner.sOwnerTypeOffering+" and o.ownerId=io.uniqueId) or "+
+                "(o.ownerType="+ExamOwner.sOwnerTypeConfig+" and o.ownerId=ioc.uniqueId) or "+
+                "(o.ownerType="+ExamOwner.sOwnerTypeClass+" and o.ownerId=c.uniqueId) "+
+                ")")
+                .setLong("examId", getUniqueId())
+                .setCacheable(true)
+                .uniqueResult()).intValue();
+                */
     }
     
     public Set effectivePreferences(Class type) {
@@ -416,12 +412,11 @@ public class Exam extends BaseExam implements Comparable<Exam> {
     public static List findAllRelated(String type, Long id) {
         if ("Class_".equals(type)) {
             return new ExamDAO().getSession().createQuery(
-                    "select distinct x from Exam x inner join x.owners o, "+
-                    "CourseOffering co " +
-                    "left outer join co.instructionalOffering io "+
-                    "left outer join io.instrOfferingConfigs ioc " +
-                    "left outer join ioc.schedulingSubparts ss "+
-                    "left outer join ss.classes c where "+
+                    "select distinct x from Exam x inner join x.owners o inner join o.course co "+
+                    "inner join co.instructionalOffering io "+
+                    "inner join io.instrOfferingConfigs ioc " +
+                    "inner join ioc.schedulingSubparts ss "+
+                    "inner join ss.classes c where "+
                     "c.uniqueId=:classId and ("+
                     "(o.ownerType="+ExamOwner.sOwnerTypeCourse+" and o.ownerId=co.uniqueId) or "+
                     "(o.ownerType="+ExamOwner.sOwnerTypeOffering+" and o.ownerId=io.uniqueId) or "+
@@ -431,11 +426,10 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                     setLong("classId", id).setCacheable(true).list();
         } else if ("SchedulingSubpart".equals(type)) {
             return new ExamDAO().getSession().createQuery(
-                    "select distinct x from Exam x inner join x.owners o, "+
-                    "CourseOffering co " +
-                    "left outer join co.instructionalOffering io "+
-                    "left outer join io.instrOfferingConfigs ioc " +
-                    "left outer join ioc.schedulingSubparts ss "+
+                    "select distinct x from Exam x inner join x.owners o inner join o.course co "+
+                    "inner join co.instructionalOffering io "+
+                    "inner join io.instrOfferingConfigs ioc " +
+                    "inner join ioc.schedulingSubparts ss "+
                     "left outer join ss.classes c where "+
                     "ss.uniqueId=:subpartId and ("+
                     "(o.ownerType="+ExamOwner.sOwnerTypeCourse+" and o.ownerId=co.uniqueId) or "+
@@ -446,8 +440,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                     setLong("subpartId", id).setCacheable(true).list();
         } else if ("CourseOffering".equals(type)) {
             return new ExamDAO().getSession().createQuery(
-                    "select distinct x from Exam x inner join x.owners o, "+
-                    "CourseOffering co " +
+                    "select distinct x from Exam x inner join x.owners o inner join o.course co "+
                     "left outer join co.instructionalOffering io "+
                     "left outer join io.instrOfferingConfigs ioc " +
                     "left outer join ioc.schedulingSubparts ss "+
@@ -461,9 +454,8 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                     setLong("courseOfferingId", id).setCacheable(true).list();
         } else if ("InstructionalOffering".equals(type)) {
             return new ExamDAO().getSession().createQuery(
-                    "select distinct x from Exam x inner join x.owners o, "+
-                    "CourseOffering co " +
-                    "left outer join co.instructionalOffering io "+
+                    "select distinct x from Exam x inner join x.owners o inner join o.course co "+
+                    "inner join co.instructionalOffering io "+
                     "left outer join io.instrOfferingConfigs ioc " +
                     "left outer join ioc.schedulingSubparts ss "+
                     "left outer join ss.classes c where "+
@@ -476,10 +468,9 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                     setLong("instructionalOfferingId", id).setCacheable(true).list();
         } else if ("InstrOfferingConfig".equals(type)) {
             return new ExamDAO().getSession().createQuery(
-                    "select distinct x from Exam x inner join x.owners o, "+
-                    "CourseOffering co " +
-                    "left outer join co.instructionalOffering io "+
-                    "left outer join io.instrOfferingConfigs ioc " +
+                    "select distinct x from Exam x inner join x.owners o inner join o.course co "+
+                    "inner join co.instructionalOffering io "+
+                    "inner join io.instrOfferingConfigs ioc " +
                     "left outer join ioc.schedulingSubparts ss "+
                     "left outer join ss.classes c where "+
                     "ioc.uniqueId=:instrOfferingConfigId and ("+
