@@ -253,7 +253,7 @@ public class ExamListAction extends Action {
                 rooms += location.getLabel();
             }
             
-            int nrStudents = exam.getStudents().size();
+            int nrStudents = exam.countStudents();
             
             table.addLine(
                     "onClick=\"document.location='examDetail.do?examId="+exam.getUniqueId()+"';\"",

@@ -52,13 +52,15 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
 	        java.lang.Long uniqueId,
 	        org.unitime.timetable.model.Exam exam,
 	        java.lang.Long ownerId,
-	        java.lang.Integer ownerType) {
+	        java.lang.Integer ownerType,
+	        org.unitime.timetable.model.CourseOffering course) {
 
 		super (
 			uniqueId,
 			exam,
 			ownerId,
-			ownerType);
+			ownerType,
+			course);
 	}
 
 /*[CONSTRUCTOR MARKER END]*/
@@ -70,12 +72,22 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
 	public static final int sOwnerTypeOffering = 0;
 	public static String[] sOwnerTypes = new String[] {"Offering", "Course", "Config", "Class"};
 	
+	private Object iOwnerObject = null;
 	public Object getOwnerObject() {
+	    if (iOwnerObject!=null) return iOwnerObject;
 	    switch (getOwnerType()) {
-	        case sOwnerTypeClass : return new Class_DAO().get(getOwnerId());
-	        case sOwnerTypeConfig : return new InstrOfferingConfigDAO().get(getOwnerId());
-	        case sOwnerTypeCourse : return new CourseOfferingDAO().get(getOwnerId());
-	        case sOwnerTypeOffering : return new InstructionalOfferingDAO().get(getOwnerId());
+	        case sOwnerTypeClass : 
+	            iOwnerObject = new Class_DAO().get(getOwnerId());
+	            return iOwnerObject;
+	        case sOwnerTypeConfig : 
+	            iOwnerObject = new InstrOfferingConfigDAO().get(getOwnerId());
+	            return iOwnerObject;
+	        case sOwnerTypeCourse : 
+	            iOwnerObject = new CourseOfferingDAO().get(getOwnerId());
+	            return iOwnerObject;
+	        case sOwnerTypeOffering : 
+	            iOwnerObject = new InstructionalOfferingDAO().get(getOwnerId());
+	            return iOwnerObject;
 	        default : throw new RuntimeException("Unknown owner type "+getOwnerType());
 	    }
 	}
@@ -83,29 +95,38 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
     public void setOwner(Class_ clazz) {
         setOwnerId(clazz.getUniqueId());
         setOwnerType(sOwnerTypeClass);
+        setCourse(clazz.getSchedulingSubpart().getInstrOfferingConfig().getControllingCourseOffering());
     }
 
     public void setOwner(InstrOfferingConfig config) {
         setOwnerId(config.getUniqueId());
         setOwnerType(sOwnerTypeConfig);
+        setCourse(config.getControllingCourseOffering());
     }
 
     public void setOwner(CourseOffering course) {
         setOwnerId(course.getUniqueId());
         setOwnerType(sOwnerTypeCourse);
+        setCourse(course);
     }
 
     public void setOwner(InstructionalOffering offering) {
         setOwnerId(offering.getUniqueId());
         setOwnerType(sOwnerTypeOffering);
+        setCourse(offering.getControllingCourseOffering());
     }
     
-    public CourseOffering getCourse() {
+    public CourseOffering computeCourse() {
+        Object owner = getOwnerObject();
         switch (getOwnerType()) {
-            case sOwnerTypeClass : return new Class_DAO().get(getOwnerId()).getSchedulingSubpart().getControllingCourseOffering();
-            case sOwnerTypeConfig : return new InstrOfferingConfigDAO().get(getOwnerId()).getControllingCourseOffering();
-            case sOwnerTypeCourse : return new CourseOfferingDAO().get(getOwnerId());
-            case sOwnerTypeOffering : return new InstructionalOfferingDAO().get(getOwnerId()).getControllingCourseOffering();
+            case sOwnerTypeClass : 
+                return ((Class_)owner).getSchedulingSubpart().getControllingCourseOffering();
+            case sOwnerTypeConfig : 
+                return ((InstrOfferingConfig)owner).getControllingCourseOffering();
+            case sOwnerTypeCourse : 
+                return (CourseOffering)owner;
+            case sOwnerTypeOffering : 
+                return ((InstructionalOffering)owner).getControllingCourseOffering();
             default : throw new RuntimeException("Unknown owner type "+getOwnerType());
         }
     }
@@ -133,30 +154,92 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
     }
     
     public List getStudents() {
-        return new ExamOwnerDAO().getSession().createQuery(
-                "select distinct e.student from " +
-                "StudentClassEnrollment e inner join e.clazz c " +
-                "inner join c.schedulingSubpart.instrOfferingConfig ioc " +
-                "inner join ioc.instructionalOffering io " +
-                "inner join e.courseOffering co, " +
-                "ExamOwner o "+
-                "where o.uniqueId=:examOwnerId and ("+
-                "(o.ownerType="+ExamOwner.sOwnerTypeCourse+" and o.ownerId=co.uniqueId) or "+
-                "(o.ownerType="+ExamOwner.sOwnerTypeOffering+" and o.ownerId=io.uniqueId) or "+
-                "(o.ownerType="+ExamOwner.sOwnerTypeConfig+" and o.ownerId=ioc.uniqueId) or "+
-                "(o.ownerType="+ExamOwner.sOwnerTypeClass+" and o.ownerId=c.uniqueId) "+
-                ")")
-                .setLong("examOwnerId", getUniqueId())
-                .setCacheable(true)
-                .list();
+        switch (getOwnerType()) {
+        case sOwnerTypeClass : 
+            return new ExamOwnerDAO().getSession().createQuery(
+                    "select distinct e.student from " +
+                    "StudentClassEnrollment e inner join e.clazz c  " +
+                    "where c.uniqueId = :examOwnerId")
+                    .setLong("examOwnerId", getOwnerId())
+                    .setCacheable(true)
+                    .list();
+        case sOwnerTypeConfig : 
+            return new ExamOwnerDAO().getSession().createQuery(
+                    "select distinct e.student from " +
+                    "StudentClassEnrollment e inner join e.clazz c  " +
+                    "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :examOwnerId")
+                    .setLong("examOwnerId", getOwnerId())
+                    .setCacheable(true)
+                    .list();
+        case sOwnerTypeCourse : 
+            return new ExamOwnerDAO().getSession().createQuery(
+                    "select distinct e.student from " +
+                    "StudentClassEnrollment e inner join e.courseOffering co  " +
+                    "where co.uniqueId = :examOwnerId")
+                    .setLong("examOwnerId", getOwnerId())
+                    .setCacheable(true)
+                    .list();
+        case sOwnerTypeOffering : 
+            return new ExamOwnerDAO().getSession().createQuery(
+                    "select distinct e.student from " +
+                    "StudentClassEnrollment e inner join e.courseOffering co  " +
+                    "where co.instructionalOffering.uniqueId = :examOwnerId")
+                    .setLong("examOwnerId", getOwnerId())
+                    .setCacheable(true)
+                    .list();
+        default : throw new RuntimeException("Unknown owner type "+getOwnerType());
+        }
+    }
+    
+    public int countStudents() {
+        switch (getOwnerType()) {
+        case sOwnerTypeClass : 
+            return ((Number)new ExamOwnerDAO().getSession().createQuery(
+                    "select count(distinct e.student) from " +
+                    "StudentClassEnrollment e inner join e.clazz c  " +
+                    "where c.uniqueId = :examOwnerId")
+                    .setLong("examOwnerId", getOwnerId())
+                    .setCacheable(true)
+                    .uniqueResult()).intValue();
+        case sOwnerTypeConfig : 
+            return ((Number)new ExamOwnerDAO().getSession().createQuery(
+                    "select count(distinct e.student) from " +
+                    "StudentClassEnrollment e inner join e.clazz c  " +
+                    "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :examOwnerId")
+                    .setLong("examOwnerId", getOwnerId())
+                    .setCacheable(true)
+                    .uniqueResult()).intValue();
+        case sOwnerTypeCourse : 
+            return ((Number)new ExamOwnerDAO().getSession().createQuery(
+                    "select count(distinct e.student) from " +
+                    "StudentClassEnrollment e inner join e.courseOffering co  " +
+                    "where co.uniqueId = :examOwnerId")
+                    .setLong("examOwnerId", getOwnerId())
+                    .setCacheable(true)
+                    .uniqueResult()).intValue();
+        case sOwnerTypeOffering : 
+            return ((Number)new ExamOwnerDAO().getSession().createQuery(
+                    "select count(distinct e.student) from " +
+                    "StudentClassEnrollment e inner join e.courseOffering co  " +
+                    "where co.instructionalOffering.uniqueId = :examOwnerId")
+                    .setLong("examOwnerId", getOwnerId())
+                    .setCacheable(true)
+                    .uniqueResult()).intValue();
+        default : throw new RuntimeException("Unknown owner type "+getOwnerType());
+        }
     }
     
     public String getLabel() {
+        Object owner = getOwnerObject();
         switch (getOwnerType()) {
-            case sOwnerTypeClass : return new Class_DAO().get(getOwnerId()).getClassLabel();
-            case sOwnerTypeConfig : return new InstrOfferingConfigDAO().get(getOwnerId()).toString();
-            case sOwnerTypeCourse : return new CourseOfferingDAO().get(getOwnerId()).getCourseName();
-            case sOwnerTypeOffering : return new InstructionalOfferingDAO().get(getOwnerId()).getCourseName();
+            case sOwnerTypeClass : 
+                return ((Class_)owner).getClassLabel();
+            case sOwnerTypeConfig : 
+                return ((InstrOfferingConfig)owner).toString();
+            case sOwnerTypeCourse : 
+                return ((CourseOffering)owner).getCourseName();
+            case sOwnerTypeOffering : 
+                return ((InstructionalOffering)owner).getCourseName();
             default : throw new RuntimeException("Unknown owner type "+getOwnerType());
         }
     }

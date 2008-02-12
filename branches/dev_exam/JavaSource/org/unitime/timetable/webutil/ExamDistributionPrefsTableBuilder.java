@@ -69,22 +69,12 @@ public class ExamDistributionPrefsTableBuilder {
 	    
 	    Query q = new DistributionPrefDAO().getSession().createQuery(
 	            "select distinct dp from DistributionPref dp " +
-	            "inner join dp.distributionObjects do, Exam x inner join x.owners o, "+
-	            "CourseOffering co left outer join co.instructionalOffering.instrOfferingConfigs ioc " +
-	            "left outer join ioc.schedulingSubparts ss "+
-	            "left outer join ss.classes c where "+
-	            (courseNbr==null || courseNbr.trim().length()==0?"":courseNbr.indexOf('*')>=0?"co.courseNbr like :courseNbr and ":"co.courseNbr=:courseNbr and")+
-	            (subjectAreaId==null?"":" co.subjectArea.uniqueId=:subjectAreaId and ")+
+	            "inner join dp.distributionObjects do, Exam x inner join x.owners o " +
+	            "where "+
+	            (courseNbr==null || courseNbr.trim().length()==0?"":courseNbr.indexOf('*')>=0?"o.course.courseNbr like :courseNbr and ":"o.course.courseNbr=:courseNbr and")+
+	            (subjectAreaId==null?"":" o.course.subjectArea.uniqueId=:subjectAreaId and ")+
 	            "dp.distributionType.examPref = true and "+
-	            "do.prefGroup = x and x.session.uniqueId=:sessionId and "+
-	            "x.session.uniqueId=co.subjectArea.session.uniqueId and " +
-	            "ioc.instructionalOffering=co.instructionalOffering and "+
-	            "("+
-	            "(o.ownerType="+ExamOwner.sOwnerTypeCourse+" and o.ownerId=co.uniqueId) or "+
-	            "(o.ownerType="+ExamOwner.sOwnerTypeOffering+" and o.ownerId=co.instructionalOffering.uniqueId) or "+
-	            "(o.ownerType="+ExamOwner.sOwnerTypeConfig+" and o.ownerId=ioc.uniqueId) or "+
-	            "(o.ownerType="+ExamOwner.sOwnerTypeClass+" and o.ownerId=c.uniqueId) "+
-	            ")")
+	            "do.prefGroup = x and x.session.uniqueId=:sessionId")
 	            .setLong("sessionId", session.getUniqueId());
 	    if (subjectAreaId!=null)
 	        q.setLong("subjectAreaId", subjectAreaId);
@@ -100,22 +90,12 @@ public class ExamDistributionPrefsTableBuilder {
         
         Query q = new DistributionPrefDAO().getSession().createQuery(
                 "select distinct dp from DistributionPref dp " +
-                "inner join dp.distributionObjects do, Exam x inner join x.owners o, "+
-                "CourseOffering co left outer join co.instructionalOffering.instrOfferingConfigs ioc " +
-                "left outer join ioc.schedulingSubparts ss "+
-                "left outer join ss.classes c where "+
-                (courseNbr==null || courseNbr.trim().length()==0?"":courseNbr.indexOf('*')>=0?"co.courseNbr like :courseNbr and ":"co.courseNbr=:courseNbr and")+
-                (subjectAreaId==null?"":" co.subjectArea.uniqueId=:subjectAreaId and ")+
+                "inner join dp.distributionObjects do, Exam x inner join x.owners o " +
+                "where "+
+                (courseNbr==null || courseNbr.trim().length()==0?"":courseNbr.indexOf('*')>=0?"o.course.courseNbr like :courseNbr and ":"o.course.courseNbr=:courseNbr and")+
+                (subjectAreaId==null?"":" o.course.subjectArea.uniqueId=:subjectAreaId and ")+
                 "dp.distributionType.examPref = true and "+
-                "do.prefGroup = x and x.session.uniqueId=:sessionId and "+
-                "x.session.uniqueId=co.subjectArea.session.uniqueId and " +
-                "ioc.instructionalOffering=co.instructionalOffering and "+
-                "("+
-                "(o.ownerType="+ExamOwner.sOwnerTypeCourse+" and o.ownerId=co.uniqueId) or "+
-                "(o.ownerType="+ExamOwner.sOwnerTypeOffering+" and o.ownerId=co.instructionalOffering.uniqueId) or "+
-                "(o.ownerType="+ExamOwner.sOwnerTypeConfig+" and o.ownerId=ioc.uniqueId) or "+
-                "(o.ownerType="+ExamOwner.sOwnerTypeClass+" and o.ownerId=c.uniqueId) "+
-                ")")
+                "do.prefGroup = x and x.session.uniqueId=:sessionId")
                 .setLong("sessionId", session.getUniqueId());
         if (subjectAreaId!=null)
             q.setLong("subjectAreaId", subjectAreaId);

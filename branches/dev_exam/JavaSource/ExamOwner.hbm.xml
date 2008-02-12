@@ -64,5 +64,13 @@
 			length="10"
 			not-null="true"
 		/>
+		
+		<many-to-one 
+			name="course" 
+			class="CourseOffering" 
+			column="COURSE_ID" 
+			foreign-key="FK_EXAM_OWNER_COURSE"
+			not-null="true"
+		/>
 	</class>	
 </hibernate-mapping>

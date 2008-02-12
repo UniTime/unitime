@@ -165,7 +165,7 @@ public class ExamDetailAction extends PreferencesAction {
                 WebTable table = new WebTable(4, null, new String[] {"Object", "Type", "Manager", "Students", "Assignment"}, new String[] {"left", "center", "left", "center", "left"}, new boolean[] {true, true, true, true, true});
                 for (Iterator i=new TreeSet(exam.getOwners()).iterator();i.hasNext();) {
                     ExamOwner owner = (ExamOwner)i.next();
-                    String onclick = null, name = null, type = null, students = String.valueOf(owner.getStudents().size()), manager = null, assignment = null;
+                    String onclick = null, name = null, type = null, students = String.valueOf(owner.countStudents()), manager = null, assignment = null;
                     switch (owner.getOwnerType()) {
                         case ExamOwner.sOwnerTypeClass :
                             Class_ clazz = (Class_)owner.getOwnerObject();

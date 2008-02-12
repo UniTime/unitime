@@ -46,12 +46,14 @@ public abstract class BaseExamOwner implements Serializable {
 		java.lang.Long uniqueId,
 		org.unitime.timetable.model.Exam exam,
 		java.lang.Long ownerId,
-		java.lang.Integer ownerType) {
+		java.lang.Integer ownerType,
+		org.unitime.timetable.model.CourseOffering course) {
 
 	    this.setUniqueId(uniqueId);
         this.setExam(exam);
         this.setOwnerId(ownerId);
         this.setOwnerType(ownerType);
+        this.setCourse(course);
         initialize();
 	}
 
@@ -66,6 +68,7 @@ public abstract class BaseExamOwner implements Serializable {
 	private org.unitime.timetable.model.Exam exam;
 	private java.lang.Long ownerId;
 	private java.lang.Integer ownerType;
+	private org.unitime.timetable.model.CourseOffering course;
 
     public java.lang.Long getUniqueId () {
         return uniqueId;
@@ -98,6 +101,14 @@ public abstract class BaseExamOwner implements Serializable {
 	
 	public java.lang.Integer getOwnerType() {
 	    return ownerType;
+	}
+	
+	public org.unitime.timetable.model.CourseOffering getCourse() {
+	    return course;
+	}
+	
+	public void setCourse(org.unitime.timetable.model.CourseOffering course) {
+	    this.course = course;
 	}
 
 	public boolean equals (Object obj) {
