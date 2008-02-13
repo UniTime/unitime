@@ -151,6 +151,7 @@
 				</logic:equal>
 				<logic:equal name="departmentEditForm" property="canChangeExternalManagement" value="false">
 					<html:checkbox property="isExternal" disabled="true"/>
+					<html:hidden property="isExternal"/>
 				</logic:equal>
 			</TD>
 		</TR>
