@@ -165,7 +165,7 @@ public class InstructorListAction extends Action {
 		if (deptId!=null) {
 			Department d = (new DepartmentDAO()).get(Long.valueOf(deptId));
 			if (d!=null) {
-				instructorSearchForm.setEditable(d.isEditableBy(user));
+				instructorSearchForm.setEditable(d.isEditableBy(user) || d.isLimitedEditableBy(user));
 				BackTracker.markForBack(
 						request,
 						"instructorList.do?deptId="+d.getUniqueId(),
@@ -176,7 +176,7 @@ public class InstructorListAction extends Action {
 		} else if (httpSession.getAttribute(Constants.DEPT_ID_ATTR_NAME) != null) {
 			Department d = (new DepartmentDAO()).get(Long.valueOf(httpSession.getAttribute(Constants.DEPT_ID_ATTR_NAME).toString()));
 			if (d!=null) {
-				instructorSearchForm.setEditable(d.isEditableBy(user));
+				instructorSearchForm.setEditable(d.isEditableBy(user)|| d.isLimitedEditableBy(user));
 				BackTracker.markForBack(
 						request,
 						"instructorList.do?deptId="+d.getUniqueId(),

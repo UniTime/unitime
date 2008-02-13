@@ -65,11 +65,13 @@
 					</html:submit> 
 				<% } %>
 --%>
-				<logic:equal name="<%=frmName%>" property="editable" value="true">
+				<logic:equal name="<%=frmName%>" property="limitedEditable" value="true">
 					<html:submit property="op" 
 						styleClass="btn" accesskey="I" titleKey="title.editInstructorInfo" >
 						<bean:message key="button.editInstructorInfo" />
-					</html:submit> 
+					</html:submit>
+				</logic:equal>
+				<logic:equal name="<%=frmName%>" property="editable" value="true">
 					<html:submit property="op" 
 						styleClass="btn" accesskey="P" titleKey="title.editInstructorPref" >
 						<bean:message key="button.editInstructorPref" />
@@ -146,7 +148,7 @@
 						Designator List
 					</tt:section-title>
 					
-				<logic:equal name="<%=frmName%>" property="editable" value="true">
+				<logic:equal name="<%=frmName%>" property="limitedEditable" value="true">
 					<html:submit property="op" 
 						styleClass="btn" accesskey="A" titleKey="title.addDesignator2" >
 						<bean:message key="button.addDesignator2" />
@@ -254,11 +256,13 @@
 				</html:submit> 
 			<% } %>
 --%>
-			<logic:equal name="<%=frmName%>" property="editable" value="true">
+			<logic:equal name="<%=frmName%>" property="limitedEditable" value="true">
 				<html:submit property="op" 
 					styleClass="btn" accesskey="I" titleKey="title.editInstructorInfo" >
 					<bean:message key="button.editInstructorInfo" />
 				</html:submit> 
+			</logic:equal>
+			<logic:equal name="<%=frmName%>" property="editable" value="true">
 				<html:submit property="op" 
 					styleClass="btn" accesskey="P" titleKey="title.editInstructorPref" >
 					<bean:message key="button.editInstructorPref" />
