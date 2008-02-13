@@ -431,4 +431,19 @@ public class Department extends BaseDepartment implements Comparable {
 		if (newSession != null) return(findSameDepartmentInSession(newSession.getUniqueId()));
 		else return(null);
 	}
+	
+    public boolean isLimitedEditableBy(User user){
+        if (user==null) return false;
+        if (user.isAdmin()) return true;
+        
+        TimetableManager tm = TimetableManager.getManager(user);
+        if (tm==null) return false;
+
+        if (!tm.getDepartments().contains(this)) return false;
+        
+        if (!effectiveStatusType().canOwnerLimitedEdit()) return false;
+
+        return true;
+    }
+
 }
