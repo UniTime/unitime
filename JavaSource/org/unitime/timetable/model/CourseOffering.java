@@ -307,6 +307,21 @@ public class CourseOffering extends BaseCourseOffering {
     	return true;
     }
     
+    public boolean isLimitedEditableBy(User user){
+        if (user==null) return false;
+        if (user.isAdmin()) return true;
+        if (getDepartment()==null) return false;
+        
+        TimetableManager tm = TimetableManager.getManager(user);
+        if (tm==null) return false;
+
+        if (!tm.getDepartments().contains(getDepartment())) return false;
+        
+        if (!getDepartment().effectiveStatusType().canOwnerLimitedEdit()) return false;
+
+        return true;
+    }
+
     public boolean isViewableBy(User user){
     	if (user==null) return false;
     	if (user.isAdmin()) return true;
