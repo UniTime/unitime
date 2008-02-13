@@ -337,7 +337,7 @@ public class ClassDetailAction extends PreferencesAction {
 		    }
 
 	        ReservationsTableBuilder resvTbl = new ReservationsTableBuilder();
-	        String resvHtml = resvTbl.htmlTableForReservations(c.effectiveReservations(true, true, true, true, true), true, c.isEditableBy(user));
+	        String resvHtml = resvTbl.htmlTableForReservations(c.effectiveReservations(true, true, true, true, true), true, c.isEditableBy(user), c.getSchedulingSubpart().getInstrOfferingConfig().getControllingCourseOffering().isLimitedEditableBy(user));
 	        if (resvHtml!=null)
 	        	request.setAttribute(Reservation.RESV_REQUEST_ATTR, resvHtml);
 
