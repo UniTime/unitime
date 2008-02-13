@@ -120,7 +120,7 @@ public class DesignatorListAction extends Action {
 	            Debug.debug("Exactly 1 subject area found ... ");
 	            SubjectArea sa = (SubjectArea) s.iterator().next(); 
 	            frm.setSubjectAreaId(sa.getUniqueId().toString());
-	            frm.setEditable(sa.getDepartment().isEditableBy(user));
+	            frm.setEditable(sa.getDepartment().isEditableBy(user) || sa.getDepartment().isLimitedEditableBy(user));
 	            String html = new DesignatorListBuilder().htmlTableForSubjectArea(request, frm.getSubjectAreaId(), WebTable.getOrder(request.getSession(),"designatorList.ord"));
 	            request.setAttribute("designatorList", html);
 	            httpSession.setAttribute(Constants.SUBJ_AREA_ID_ATTR_NAME, frm.getSubjectAreaId());

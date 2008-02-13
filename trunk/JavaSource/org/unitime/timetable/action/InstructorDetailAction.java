@@ -451,6 +451,7 @@ public class InstructorDetailAction extends PreferencesAction {
         User user = Web.getUser(request.getSession());
 
 		frm.setEditable(inst.isEditableBy(user));
+		frm.setLimitedEditable(frm.isEditable() || inst.getDepartment().isLimitedEditableBy(user));
 
 
 		request.getSession().setAttribute(Constants.DEPT_ID_ATTR_NAME, inst.getDepartment().getUniqueId().toString());
