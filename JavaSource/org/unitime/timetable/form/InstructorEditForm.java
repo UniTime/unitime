@@ -85,6 +85,7 @@ public class InstructorEditForm extends PreferencesForm  {
     
     private boolean ignoreDist;
 	private Boolean lookupEnabled;
+    protected boolean limitedEditable;
 	
 	// --------------------------------------------------------- Methods
     
@@ -173,6 +174,7 @@ public class InstructorEditForm extends PreferencesForm  {
         setPosType(request);
         prevId = nextId = null;
         ignoreDist = false;
+        limitedEditable = false;
 	}
 	
 	/**
@@ -358,6 +360,8 @@ public class InstructorEditForm extends PreferencesForm  {
 		this.lookupEnabled = lookupEnabled;
 	}
     
+    public boolean isLimitedEditable() { return limitedEditable; }
+    public void setLimitedEditable(boolean limitedEditable) { this.limitedEditable = limitedEditable; }
     
 }
 
