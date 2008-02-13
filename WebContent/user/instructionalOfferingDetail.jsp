@@ -245,7 +245,8 @@
 							<% 
 								String courseOfferingId = ((CourseOffering)co).getUniqueId().toString();
 								boolean isEditableBy = ((CourseOffering)co).isEditableBy(Web.getUser(session));
-								if (isEditableBy) {
+								boolean isLimitEditableBy = ((CourseOffering)co).isLimitedEditableBy(Web.getUser(session));
+								if (isEditableBy || isLimitEditableBy) {
 							%>
 							
 							<html:form action="/courseOfferingEdit" styleClass="FormWithNoPadding">
@@ -257,11 +258,12 @@
 									<bean:message key="button.addReservation" />
 								</html:submit>
 								<!-- End -->
-							
+								<% if (isEditableBy) { %>
 								<html:submit property="op" 
 									styleClass="btn" titleKey="title.editCourseOffering">
 									<bean:message key="button.editCourseOffering" />
 								</html:submit>
+								<% } %>
 							</html:form>
 							<%
 								}

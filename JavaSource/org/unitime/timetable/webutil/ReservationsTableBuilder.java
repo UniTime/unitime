@@ -372,7 +372,7 @@ public class ReservationsTableBuilder {
     public String htmlTableForReservations(
             Collection reservations,
             boolean displayHeader,
-            boolean isEditable ) {
+            boolean isEditable, boolean isLimitedEditable ) {
 
         String ownerId = null;
         String ownerClassId = null;
@@ -393,7 +393,7 @@ public class ReservationsTableBuilder {
 		    if (ownerId==null) {
 		        ownerId = resv.getOwner().toString();
 		        ownerClassId = resv.getOwnerClassId();
-				if (isEditable) {
+				if (isEditable || (isLimitedEditable && resv instanceof AcadAreaReservation)) {
 				    onClick = "onClick=\"document.location='reservationEdit.do"
 				        		+ "?op=Submit&addBlankRow=false&ownerId=" + ownerId + "&ownerType=" + ownerClassId + "&reservationClass=";
 				    endOnClick = "';\"";
@@ -571,7 +571,7 @@ public class ReservationsTableBuilder {
 	    Collection ioResvs = io.getReservations(includeIndividual, includeStuGroup, includeAcadArea, includePos, includeCourse);
 
 	    if (displayIo)
-	        ioResvTbl = htmlTableForReservations(ioResvs, false, io.isEditableBy(user));
+	        ioResvTbl = htmlTableForReservations(ioResvs, false, io.isEditableBy(user), io.getControllingCourseOffering().isLimitedEditableBy(user));
 
 	    if (ioResvTbl!=null) {
 	        if (displayIoHeader)
@@ -596,7 +596,7 @@ public class ReservationsTableBuilder {
 	            CourseOffering co = (CourseOffering) iterCourses.next();
 		        String coResvTbl = null;
 
-		        coResvTbl = htmlTableForReservations(co.effectiveReservations(includeAcadArea), false, co.isEditableBy(user));
+		        coResvTbl = htmlTableForReservations(co.effectiveReservations(includeAcadArea), false, co.isEditableBy(user), co.isLimitedEditableBy(user));
 			    if (coResvTbl!=null) {
 				    if (!ioHeader) {
 				        if (displayIoHeader)
@@ -647,7 +647,7 @@ public class ReservationsTableBuilder {
 			    if (displayConfig)
 			        cfgResvTbl = htmlTableForReservations(
 			                config.getReservations(includeIndividual, includeStuGroup, includeAcadArea, includePos, includeCourse),
-			                false, config.isEditableBy(user));
+			                false, config.isEditableBy(user), config.getControllingCourseOffering().isLimitedEditableBy(user));
 
 			    if (cfgResvTbl!=null) {
 				    if (!ioHeader) {
@@ -683,7 +683,7 @@ public class ReservationsTableBuilder {
 			            Class_ cls = (Class_) iterClasses.next();
 				        String clsResvTbl = htmlTableForReservations(
 				                	cls.getReservations(includeIndividual, includeStuGroup, includeAcadArea, includePos, includeCourse),
-				                	false, cls.isEditableBy(user) );
+				                	false, cls.isEditableBy(user), cls.getSchedulingSubpart().getInstrOfferingConfig().getControllingCourseOffering().isLimitedEditableBy(user));
 
 					    if (clsResvTbl!=null) {
 						    if (!ioHeader) {
