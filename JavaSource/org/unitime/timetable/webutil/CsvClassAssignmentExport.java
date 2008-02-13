@@ -36,6 +36,7 @@ import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.util.Constants;
 
 import net.sf.cpsolver.coursett.model.Placement;
+import net.sf.cpsolver.coursett.model.RoomLocation;
 import net.sf.cpsolver.ifs.util.CSVFile;
 import net.sf.cpsolver.ifs.util.CSVFile.CSVField;
 
@@ -125,30 +126,50 @@ public class CsvClassAssignmentExport {
         file.setSeparator(",");
         file.setQuotationMark("\"");
         file.setHeader(new CSVField[] {
-                new CSVField("CLASS"),
-                new CSVField("DIV-SEC"),
+                new CSVField("ID"),
+                new CSVField("COURSE"),
+                new CSVField("DIVSEC"),
+                new CSVField("TITLEOFFHR"),
                 new CSVField("DATE_PATTERN"),
-                new CSVField("DAY"),
+                new CSVField("DAYS"),
                 new CSVField("TIME"),
+                new CSVField("BUILDING"),
                 new CSVField("ROOM"),
-                new CSVField("INSTRUCTOR"),
-                new CSVField("INSTRUCTOR_RANK"),
-                new CSVField("CROSS_LIST"),
-                new CSVField("TITLE"),
+                new CSVField("LASTNAME"),
+                new CSVField("FIRSTNAME"),
+                new CSVField("MIDINITIAL"),
+                new CSVField("INITIALS"),
+                new CSVField("RANK"),
                 new CSVField("NOTES"),
+                new CSVField("SUBJECT"),
+                new CSVField("INSTR_TYPE"),
+                new CSVField("CROSS_LIST")
             });
         
+        int idx = 1;
         for (Iterator i=classes.iterator();i.hasNext();) {
             Class_ clazz = (Class_)i.next();
             Vector leads = clazz.getLeadInstructors();
-            StringBuffer leadsSb = new StringBuffer();
+            StringBuffer lastNameSb = new StringBuffer();
+            StringBuffer firstNameSb = new StringBuffer();
+            StringBuffer midNameSb = new StringBuffer();
+            StringBuffer iniSb = new StringBuffer();
             StringBuffer rankSb = new StringBuffer();
             for (Enumeration e=leads.elements();e.hasMoreElements();) {
                 DepartmentalInstructor instructor = (DepartmentalInstructor)e.nextElement();
-                leadsSb.append(instructor.getName(instructorFormat));
+                lastNameSb.append(instructor.getLastName()==null?"":instructor.getLastName().trim().substring(0,1)+instructor.getLastName().trim().substring(1).toLowerCase());
+                firstNameSb.append(instructor.getFirstName()==null?"":instructor.getFirstName().trim().substring(0,1)+instructor.getFirstName().trim().substring(1).toLowerCase());
+                midNameSb.append(instructor.getMiddleName()==null?"":instructor.getMiddleName().trim());
+                iniSb.append(instructor.getFirstName()==null || instructor.getFirstName().length()==0?"":instructor.getFirstName().substring(0,1));
+                iniSb.append(instructor.getMiddleName()==null || instructor.getMiddleName().length()==0?"":" "+instructor.getMiddleName().substring(0,1));
                 rankSb.append(instructor.getPositionType().getLabel());
-                if (e.hasMoreElements()) leadsSb.append("\n");
-                if (e.hasMoreElements()) rankSb.append("\n");
+                if (e.hasMoreElements()) {
+                    lastNameSb.append("\n");
+                    firstNameSb.append("\n");
+                    midNameSb.append("\n");
+                    iniSb.append("\n");
+                    rankSb.append("\n");
+                }
             }
             StringBuffer noteSb = new StringBuffer();
             if (clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering().getScheduleBookNote()!=null)
@@ -185,33 +206,65 @@ public class CsvClassAssignmentExport {
             }
             if (assignment!=null) {
                 Placement placement = assignment.getPlacement();
+                StringBuffer roomSb = new StringBuffer();
+                StringBuffer bldgSb = new StringBuffer();
+                if (placement.isMultiRoom()) {
+                    for (Enumeration e=placement.getRoomLocations().elements();e.hasMoreElements();) {
+                        RoomLocation r = (RoomLocation)e.nextElement();
+                        String room = (placement.getRoomLocation()==null?"":placement.getRoomLocation().getName());
+                        bldgSb.append(room.substring(0,room.lastIndexOf(' ')));
+                        roomSb.append(room.substring(room.lastIndexOf(' ')+1));
+                        if (e.hasMoreElements()) {
+                            roomSb.append('\n');
+                            bldgSb.append('\n');
+                        }
+                    }
+                } else {
+                    String room = (placement.getRoomLocation()==null?"":placement.getRoomLocation().getName());
+                    bldgSb.append(room.substring(0,room.lastIndexOf(' ')));
+                    roomSb.append(room.substring(room.lastIndexOf(' ')+1));
+                }
                 file.addLine(new CSVField[] {
-                        new CSVField(clazz.getClassLabel()),
-                        new CSVField(divSec),
+                        new CSVField(idx++),
+                        new CSVField(clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering().getCourseNbr()),
+                        new CSVField(divSec.substring(1,3)+divSec.substring(5,7)),
+                        new CSVField(titleSb),
                         new CSVField(clazz.effectiveDatePattern().getName()),
                         new CSVField(placement.getTimeLocation().getDayHeader()),
                         new CSVField(placement.getTimeLocation().getStartTimeHeader()+" - "+placement.getTimeLocation().getEndTimeHeader()),
-                        new CSVField(placement.getRoomName("\n")),
-                        new CSVField(leadsSb),
+                        new CSVField(bldgSb),
+                        new CSVField(roomSb),
+                        new CSVField(lastNameSb),
+                        new CSVField(firstNameSb),
+                        new CSVField(midNameSb),
+                        new CSVField(iniSb),
                         new CSVField(rankSb),
-                        new CSVField(crossListSb),
-                        new CSVField(titleSb),
-                        new CSVField(noteSb)
+                        new CSVField(noteSb),
+                        new CSVField(clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering().getSubjectAreaAbbv()),
+                        new CSVField(clazz.getSchedulingSubpart().getItypeDesc().trim().toUpperCase()),
+                        new CSVField(crossListSb)
                 });
             } else {
                 int arrHrs = Math.round(clazz.getSchedulingSubpart().getMinutesPerWk().intValue()/50f);
                 file.addLine(new CSVField[] {
-                        new CSVField(clazz.getClassLabel()),
-                        new CSVField(divSec),
+                        new CSVField(idx++),
+                        new CSVField(clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering().getCourseNbr()),
+                        new CSVField(divSec.substring(1,3)+divSec.substring(5,7)),
+                        new CSVField(titleSb),
                         new CSVField(clazz.effectiveDatePattern().getName()),
                         new CSVField(""),
                         new CSVField("Arr "+(arrHrs<=0?"":arrHrs+" ")+"Hrs"),
                         new CSVField(""),
-                        new CSVField(leadsSb),
+                        new CSVField(""),
+                        new CSVField(lastNameSb),
+                        new CSVField(firstNameSb),
+                        new CSVField(midNameSb),
+                        new CSVField(iniSb),
                         new CSVField(rankSb),
-                        new CSVField(crossListSb),
-                        new CSVField(titleSb),
-                        new CSVField(noteSb)
+                        new CSVField(noteSb),
+                        new CSVField(clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering().getSubjectAreaAbbv()),
+                        new CSVField(clazz.getSchedulingSubpart().getItypeDesc().trim().toUpperCase()),
+                        new CSVField(crossListSb)
                 });
             }
         }
