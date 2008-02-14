@@ -134,7 +134,7 @@ public class DesignatorListAction extends Action {
             	if (subjectAreaId!=null && subjectAreaId.trim().length()>0) {
     	            frm.setSubjectAreaId(subjectAreaId);
     	            SubjectArea sa = (new SubjectAreaDAO()).get(Long.valueOf(subjectAreaId));
-    	            frm.setEditable(sa==null?false:sa.getDepartment().isEditableBy(user));
+    	            frm.setEditable(sa==null?false:sa.getDepartment().isEditableBy(user) || sa.getDepartment().isLimitedEditableBy(user));
     	            String html = new DesignatorListBuilder().htmlTableForSubjectArea(request, frm.getSubjectAreaId(), WebTable.getOrder(request.getSession(),"designatorList.ord"));
     	            request.setAttribute("designatorList", html);
     	            httpSession.setAttribute(Constants.SUBJ_AREA_ID_ATTR_NAME, frm.getSubjectAreaId());
@@ -162,7 +162,7 @@ public class DesignatorListAction extends Action {
             
         	if (frm.getSubjectAreaId()!=null && frm.getSubjectAreaId().trim().length()>0) {
 	            SubjectArea sa = (new SubjectAreaDAO()).get(Long.valueOf(frm.getSubjectAreaId()));
-	            frm.setEditable(sa==null?false:sa.getDepartment().isEditableBy(user));
+	            frm.setEditable(sa==null?false:sa.getDepartment().isEditableBy(user) || sa.getDepartment().isLimitedEditableBy(user));
         	} else {
         		frm.setEditable(false);
         	}
