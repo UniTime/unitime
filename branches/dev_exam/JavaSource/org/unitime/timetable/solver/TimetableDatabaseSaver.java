@@ -370,6 +370,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     				}
         			Assignment assignment = new Assignment();
         			assignment.setClazz(clazz);
+        			assignment.setClassId(clazz.getUniqueId());
         			assignment.setClassName(lecture.getName());
         			assignment.setDays(new Integer(placement.getTimeLocation().getDayCode()));
         			assignment.setStartSlot(new Integer(placement.getTimeLocation().getStartSlot()));
