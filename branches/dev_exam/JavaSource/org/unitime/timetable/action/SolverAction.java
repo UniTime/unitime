@@ -20,6 +20,7 @@
 package org.unitime.timetable.action;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.util.Hashtable;
 
 import javax.servlet.http.HttpServletRequest;
@@ -73,6 +74,18 @@ public class SolverAction extends Action {
         }
         
         SolverProxy solver = WebSolver.getSolver(request.getSession());
+        
+        if ("Export XML".equals(op)) {
+            if (solver==null) throw new Exception("Solver is not started.");
+            if (solver.isWorking()) throw new Exception("Solver is working, stop it first.");
+            solver.restoreBest();
+            byte[] buf = solver.exportXml();
+            File file = ApplicationProperties.getTempFile("solution", "xml");
+            FileOutputStream fos = new FileOutputStream(file);
+            fos.write(buf);
+            fos.flush();fos.close();
+            request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
+        }
         
         if ("Restore From Best".equals(op)) {
         	if (solver==null) throw new Exception("Solver is not started.");
