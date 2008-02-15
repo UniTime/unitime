@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.solver;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -41,6 +42,7 @@ import org.apache.commons.logging.LogFactory;
 import org.dom4j.Element;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Department;
@@ -51,6 +53,7 @@ import org.unitime.timetable.model.SolverGroup;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
+import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SolutionDAO;
 import org.unitime.timetable.model.dao.SolverGroupDAO;
 import org.unitime.timetable.model.dao.TimePatternDAO;
@@ -1363,6 +1366,56 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
                 iCurrentSolution.restoreBest();
                 fixCompleteSolution(startTime);
             }
+        }
+    }
+    
+    public byte[] exportXml() throws Exception {
+        File folder = new File(ApplicationProperties.getProperty("tmtbl.solver.export.folder",System.getProperty("user.home")+File.separator+"solver"+File.separator+"export"));
+        folder.mkdirs();
+        if (currentSolution()==null) return null;
+        synchronized (currentSolution()) {
+            Long sessionId = getProperties().getPropertyLong("General.SessionId",-1);
+            org.unitime.timetable.model.Session session = new SessionDAO().get(sessionId); 
+            Long[] solverGroupIds = getProperties().getPropertyLongArry("General.SolverGroupId", new Long[]{});
+            String name = "pu-"+session.getAcademicTerm()+session.getYear();
+            for (int i=0;i<solverGroupIds.length;i++) {
+                SolverGroup sg = new SolverGroupDAO().get(solverGroupIds[i]);
+                name+="-"+sg.getAbbv();
+            }
+            if ("true".equals(ApplicationProperties.getProperty("tmtbl.solver.export.id-conv","true"))) {
+                getProperties().setProperty("Xml.ConvertIds", "true");
+                getProperties().setProperty("Xml.SaveBest", "false");
+                getProperties().setProperty("Xml.SaveInitial", "false");
+                getProperties().setProperty("Xml.SaveCurrent", "true");
+                getProperties().setProperty("Xml.ExportStudentSectioning", "true");
+                getProperties().setProperty("Xml.ShowNames", "false");
+                getProperties().setProperty("Xml.IdConv",folder+File.separator+"id-conv.xml");
+                //System.setProperty("IdConvertor.File",getProperties().getProperty("Xml.IdConv"));
+            }
+            TimetableXMLSaver saver = new TimetableXMLSaver(this);
+            File outXmlFile = new File(folder,name+".xml");
+            ByteArrayOutputStream ret = new ByteArrayOutputStream();
+            try {
+                saver.save(outXmlFile);
+                FileInputStream fis = new FileInputStream(outXmlFile);
+                byte[] buf = new byte[16*1024]; int read = 0;
+                while ((read=fis.read(buf, 0, buf.length))>0)
+                    ret.write(buf,0,read);
+                ret.flush();ret.close();
+            } catch (Exception e) {
+                sLog.error(e.getMessage(),e);
+                if (outXmlFile.exists()) outXmlFile.delete();
+            }
+            if ("true".equals(ApplicationProperties.getProperty("tmtbl.solver.export.id-conv","true"))) {
+                getProperties().setProperty("Xml.ConvertIds", "false");
+                getProperties().remove("Xml.SaveBest");
+                getProperties().remove("Xml.SaveInitial");
+                getProperties().remove("Xml.SaveCurrent");
+                getProperties().remove("Xml.ExportStudentSectioning");
+                getProperties().remove("Xml.ShowNames");
+                getProperties().remove("Xml.IdConv");
+            }
+            return ret.toByteArray();
         }
     }
 }
