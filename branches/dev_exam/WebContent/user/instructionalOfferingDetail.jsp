@@ -360,6 +360,7 @@
 		ioTableBuilder.htmlConfigTablesForInstructionalOffering(
 									session,
 				    		        WebSolver.getClassAssignmentProxy(session),
+				    		        WebSolver.getExamSolver(session),
 				    		        frm.getInstrOfferingId(), 
 				    		        Web.getUser(session), out,
 				    		        request.getParameter("backType"),

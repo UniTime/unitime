@@ -27,6 +27,8 @@
 <%@ page import="org.unitime.timetable.model.TimePatternModel" %>
 <%@ page import="org.unitime.timetable.webutil.RequiredTimeTable" %>
 <%@ page import="org.unitime.timetable.form.SolverSettingsForm" %>
+<%@page import="org.unitime.timetable.model.SolverParameter"%>
+<%@page import="org.unitime.timetable.model.SolverPredefinedSetting"%>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
@@ -43,7 +45,6 @@
 	SolverSettingsForm frm = (SolverSettingsForm)request.getAttribute(frmName);
 	if (request.getAttribute("SolverSettings.table")!=null) {
 %>
-
 	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD colspan="4">
@@ -71,6 +72,7 @@
 <% 
 	} else { %>
 	<html:hidden property="uniqueId"/><html:errors property="uniqueId"/>
+	<input type='hidden' name='op2' value=''>
 
 	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
@@ -116,7 +118,7 @@
 		<TR>
 			<TD>Appearance:</TD>
 			<TD>
-				<html:select property="appearance">
+				<html:select property="appearance" onchange="op2.value='Refresh'; submit();">
 					<html:options name="solverSettingsForm" property="appearances"/>
 				</html:select>
 				&nbsp;<html:errors property="appearance"/>
@@ -129,6 +131,12 @@
 		for (Iterator i=groups.iterator();i.hasNext();) {
 			SolverParameterGroup group = (SolverParameterGroup)i.next();
 			boolean groupVisible = false;
+			boolean correctType = true;
+			if (frm.getAppearanceIdx()==SolverPredefinedSetting.APPEARANCE_EXAM_SOLVER) {
+				if (group.getType()!=SolverParameterGroup.sTypeExam) correctType=false;
+			} else {
+				if (group.getType()!=SolverParameterGroup.sTypeCourse) correctType=false;
+			}
 			List defs = SolverParameterDef.findByGroup(group);
 			for (Iterator j=defs.iterator();j.hasNext();) {
 				SolverParameterDef def = (SolverParameterDef)j.next();
@@ -137,6 +145,7 @@
 				}
 			}
 			if (!groupVisible) continue;
+			if (correctType) {
 %>
 		<TR>
 			<TD colspan="2">
@@ -146,9 +155,18 @@
 			</TD>
 		</TR>
 <%
-			for (Iterator j=defs.iterator();j.hasNext();) {
+			}
+			defs: for (Iterator j=defs.iterator();j.hasNext();) {
 				SolverParameterDef def = (SolverParameterDef)j.next();
 				if (!def.isVisible().booleanValue()) continue;
+				if (!correctType) {
+%>
+			<html:hidden property="<%="useDefault["+def.getUniqueId()+"]"%>" />
+			<html:hidden property="<%="parameter["+def.getUniqueId()+"]"%>" />
+<%
+				
+					continue defs;
+				}
 %>
  		<TR>
 			<TD>

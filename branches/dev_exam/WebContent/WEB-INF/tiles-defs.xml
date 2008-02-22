@@ -815,4 +815,14 @@
 	<definition	name="examEditDistributionPrefTile" extends="examDistributionPrefsTile">
 		<put name="title" type="string" value="Edit Examination Distribution Preference"/>
   	</definition>
+  	
+  	<definition	name="examSolverTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Examination Solver"/>
+		<put name="body" value="/exam/examSolver.jsp" />
+  	</definition>
+
+	<definition	name="examSolverLogTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Examination Solver Log"/>
+		<put name="body" value="/exam/examLog.jsp" />
+  	</definition>
 </tiles-definitions>

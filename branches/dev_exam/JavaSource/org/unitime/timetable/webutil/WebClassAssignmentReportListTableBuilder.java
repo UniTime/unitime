@@ -37,6 +37,7 @@ import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.solver.CachedClassAssignmentProxy;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
+import org.unitime.timetable.solver.exam.ExamAssignmentProxy;
 import org.unitime.timetable.util.Constants;
 
 
@@ -58,7 +59,7 @@ public class WebClassAssignmentReportListTableBuilder extends WebClassListTableB
 		return(" Room Assignments");
 	}
 
-    public void htmlTableForClasses(HttpSession session, ClassAssignmentProxy classAssignment, ClassAssignmentsReportForm form, User user, JspWriter outputStream, String backType, String backId){
+    public void htmlTableForClasses(HttpSession session, ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, ClassAssignmentsReportForm form, User user, JspWriter outputStream, String backType, String backId){
         
         this.setVisibleColumns(form);
         setBackType(backType);
@@ -88,7 +89,7 @@ public class WebClassAssignmentReportListTableBuilder extends WebClassListTableB
         }
         setUserSettings(user);
         
-        if (Exam.hasTimetable((Long)user.getAttribute(Constants.SESSION_ID_ATTR_NAME))) {
+        if (examAssignment!=null || Exam.hasTimetable((Long)user.getAttribute(Constants.SESSION_ID_ATTR_NAME))) {
             setShowExam(true);
             setShowExamTimetable(true);
             setShowExamName(false);
@@ -122,7 +123,7 @@ public class WebClassAssignmentReportListTableBuilder extends WebClassListTableB
 		    }
 		        
             
-            this.buildClassRow(classAssignment,++ct, table, c, "", user, prevLabel);
+            this.buildClassRow(classAssignment,examAssignment, ++ct, table, c, "", user, prevLabel);
             prevLabel = c.getClassLabel();
         }  
         if(table != null)

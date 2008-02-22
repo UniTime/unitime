@@ -101,6 +101,12 @@
 		enditem(); //2
 <% }} %>
 
+<%  if (manager.canTimetableExams(acadSession, user)) { %>		
+		menu_item('6','Examination Solver','Examination Solver','examSolver.do','collapse');
+			leaf_item('Log','Examination Solver Log','examSolverLog.do');
+		enditem(); //6
+<% } %>
+
 <% if (user!=null
 		&& user.getRole().equals(Roles.ADMIN_ROLE)) { %>
 	leaf_item('Sectioning','Student Sectioning','sectioningDemo.do');

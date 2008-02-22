@@ -133,6 +133,14 @@ public class SolverSettingsForm extends ActionForm {
 			useDefaults.put(def.getUniqueId(),Boolean.TRUE);
 		}
 	}
+    public void loadDefaults(HttpServletRequest request) {
+        for (Iterator i=(new SolverParameterDefDAO()).findAll().iterator();i.hasNext();) {
+            SolverParameterDef def = (SolverParameterDef)i.next();
+            if (!def.isVisible().booleanValue()) continue;
+            params.put(def.getUniqueId(),(request.getParameter("parameter["+def.getUniqueId()+"]")==null?def.getDefault():request.getParameter("parameter["+def.getUniqueId()+"]")));
+            useDefaults.put(def.getUniqueId(),(request.getParameter("useDefault["+def.getUniqueId()+"]")==null || "false".equals(request.getParameter("useDefault["+def.getUniqueId()+"]"))?Boolean.FALSE:Boolean.TRUE));
+        }
+    }
 
 	public String getOp() { return op; }
 	public void setOp(String op) { this.op = op;}

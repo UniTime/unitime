@@ -49,6 +49,7 @@ import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.solver.CachedClassAssignmentProxy;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
+import org.unitime.timetable.solver.exam.ExamAssignmentProxy;
 import org.unitime.timetable.util.Constants;
 
 
@@ -87,7 +88,7 @@ public class WebClassListTableBuilder extends
 	}
 	
 	
-	public void htmlTableForClasses(HttpSession session, ClassAssignmentProxy classAssignment, ClassListForm form, User user, JspWriter outputStream, String backType, String backId){
+	public void htmlTableForClasses(HttpSession session, ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, ClassListForm form, User user, JspWriter outputStream, String backType, String backId){
         
         this.setVisibleColumns(form);
         setBackType(backType);
@@ -117,7 +118,7 @@ public class WebClassListTableBuilder extends
         setUserSettings(user);
         
         if (isShowExam())
-            setShowExamTimetable(Exam.hasTimetable((Long)user.getAttribute(Constants.SESSION_ID_ATTR_NAME)));
+            setShowExamTimetable(examAssignment!=null || Exam.hasTimetable((Long)user.getAttribute(Constants.SESSION_ID_ATTR_NAME)));
 
 		Class_ c = null;
         TableStream table = null;
@@ -145,7 +146,7 @@ public class WebClassListTableBuilder extends
 				}
 		        table = this.initTable(outputStream);
 		    }		        
-            this.buildClassRow(classAssignment,++ct, table, c, "", user, prevLabel);
+            this.buildClassRow(classAssignment,examAssignment, ++ct, table, c, "", user, prevLabel);
             prevLabel = c.getClassLabel();
         }  
         table.tableComplete();
@@ -184,7 +185,7 @@ public class WebClassListTableBuilder extends
         }     
     }
 	
-    public void htmlTableForClasses(ClassAssignmentProxy classAssignment, TreeSet classes, Long subjectAreaId, User user, JspWriter outputStream){
+    public void htmlTableForClasses(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, TreeSet classes, Long subjectAreaId, User user, JspWriter outputStream){
          String[] columns = {LABEL,
 			LIMIT,
 			ROOM_RATIO,
@@ -227,7 +228,7 @@ public class WebClassListTableBuilder extends
         int ct = 0;
         while (it.hasNext()){
             cls = (Class_) it.next();
-            this.buildClassRow(classAssignment, ++ct, table, cls, "", user, prevLabel);
+            this.buildClassRow(classAssignment, examAssignment, ++ct, table, cls, "", user, prevLabel);
             prevLabel = cls.getClassLabel();
         }     
         table.tableComplete();
@@ -237,6 +238,7 @@ public class WebClassListTableBuilder extends
     public void htmlTableForSubpartClasses(
     		HttpSession session,
     		ClassAssignmentProxy classAssignment, 
+    		ExamAssignmentProxy examAssignment,
     		Long schedulingSubpartId,
     		User user, 
     		JspWriter outputStream,
@@ -262,7 +264,7 @@ public class WebClassListTableBuilder extends
 	        
 	 		ts.addAll(ss.getClasses());
 	 		Navigation.set(session, Navigation.sClassLevel, ts);
-	        this.htmlTableForClasses(classAssignment, ts, ss.getControllingCourseOffering().getSubjectArea().getUniqueId(), user, outputStream);
+	        this.htmlTableForClasses(classAssignment, examAssignment, ts, ss.getControllingCourseOffering().getSubjectArea().getUniqueId(), user, outputStream);
     	}
     }
     

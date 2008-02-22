@@ -46,6 +46,7 @@ import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.solver.CachedClassAssignmentProxy;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
+import org.unitime.timetable.solver.exam.ExamAssignmentProxy;
 import org.unitime.timetable.util.Constants;
 
 
@@ -143,6 +144,7 @@ public class WebInstrOfferingConfigTableBuilder extends
     public void htmlTableForInstructionalOfferingConfig(
     		Vector subpartIds,
     		ClassAssignmentProxy classAssignment, 
+    		ExamAssignmentProxy examAssignment,
             Long instrOfferingConfigId, 
             User user,
             JspWriter outputStream){
@@ -151,13 +153,14 @@ public class WebInstrOfferingConfigTableBuilder extends
 	        InstrOfferingConfigDAO iocDao = new InstrOfferingConfigDAO();
 	        InstrOfferingConfig ioc = iocDao.get(instrOfferingConfigId);
 	        
-	        this.htmlTableForInstructionalOfferingConfig(subpartIds, classAssignment, ioc, user, outputStream);
+	        this.htmlTableForInstructionalOfferingConfig(subpartIds, classAssignment, examAssignment, ioc, user, outputStream);
     	}
     }
     
     private void htmlTableForInstructionalOfferingConfig(
     		Vector subpartIds,
-    		ClassAssignmentProxy classAssignment, 
+    		ClassAssignmentProxy classAssignment,
+    		ExamAssignmentProxy examAssignment,
             InstrOfferingConfig ioc, 
             User user,
             JspWriter outputStream){
@@ -234,7 +237,7 @@ public class WebInstrOfferingConfigTableBuilder extends
 	        
 	        setVisibleColumns(COLUMNS);
         	TableStream configTable = this.initTable(outputStream);
-        	this.buildConfigRow(subpartIds, classAssignment, configTable, ioc, user, !getDisplayConfigOpButtons(), true);
+        	this.buildConfigRow(subpartIds, classAssignment, examAssignment,  configTable, ioc, user, !getDisplayConfigOpButtons(), true);
         	configTable.tableComplete();
 	    }
     }
@@ -244,6 +247,7 @@ public class WebInstrOfferingConfigTableBuilder extends
     public void htmlConfigTablesForInstructionalOffering(
     		HttpSession session,
     		ClassAssignmentProxy classAssignment, 
+    		ExamAssignmentProxy examAssignment,
             Long instructionalOffering, 
             User user,
             JspWriter outputStream,
@@ -283,7 +287,7 @@ public class WebInstrOfferingConfigTableBuilder extends
 	        				outputStream.println("<br>");
 	        			} catch (IOException e) {}
 	        		}
-	        		this.htmlTableForInstructionalOfferingConfig(subpartIds, classAssignment, ioc, user, outputStream);
+	        		this.htmlTableForInstructionalOfferingConfig(subpartIds, classAssignment, examAssignment, ioc, user, outputStream);
 	        	}
 	        }
 			

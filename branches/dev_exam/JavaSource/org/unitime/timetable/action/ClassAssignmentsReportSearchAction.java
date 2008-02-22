@@ -202,7 +202,7 @@ public class ClassAssignmentsReportSearchAction extends LookupDispatchAction {
 						true, true);
 			} else if ("exportPdf".equals(action)) {
 				PdfClassAssignmentReportListTableBuilder tb = new PdfClassAssignmentReportListTableBuilder();
-				File outFile = tb.pdfTableForClasses(WebSolver.getClassAssignmentProxy(httpSession), classListForm, user);
+				File outFile = tb.pdfTableForClasses(WebSolver.getClassAssignmentProxy(httpSession), WebSolver.getExamSolver(httpSession), classListForm, user);
 				//if (outFile!=null) response.sendRedirect("temp/"+outFile.getName());
 				if (outFile!=null) request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+outFile.getName());
 				BackTracker.markForBack(
