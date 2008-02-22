@@ -12,6 +12,9 @@ import java.util.Vector;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import net.sf.cpsolver.exam.model.ExamPlacement;
+import net.sf.cpsolver.exam.model.ExamRoom;
+
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
@@ -44,6 +47,8 @@ import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
+import org.unitime.timetable.solver.WebSolver;
+import org.unitime.timetable.solver.exam.ExamAssignmentProxy;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.Navigation;
@@ -77,7 +82,7 @@ public class ExamListAction extends Action {
             }
             
             if ("Export PDF".equals(op)) {
-                PdfWebTable table = getExamTable(user, manager, session, myForm, false);
+                PdfWebTable table = getExamTable(WebSolver.getExamSolver(request.getSession()), user, manager, session, myForm, false);
                 if (table!=null) {
                     File file = ApplicationProperties.getTempFile("exams", "pdf");
                     table.exportPdf(file, WebTable.getOrder(request.getSession(), "ExamList.ord"));
@@ -98,7 +103,7 @@ public class ExamListAction extends Action {
         }
         
         if (myForm.getSubjectAreaId()!=null && myForm.getSubjectAreaId().length()!=0) {
-            PdfWebTable table = getExamTable(user, manager, session, myForm, true);
+            PdfWebTable table = getExamTable(WebSolver.getExamSolver(request.getSession()), user, manager, session, myForm, true);
             if (table!=null) {
                 request.setAttribute("ExamList.table", table.printTable(WebTable.getOrder(request.getSession(), "ExamList.ord")));
                 Vector ids = new Vector();
@@ -133,7 +138,7 @@ public class ExamListAction extends Action {
         return mapping.findForward("list");
     }
     
-    public PdfWebTable getExamTable(User user, TimetableManager manager, Session session, ExamListForm form, boolean html) {
+    public PdfWebTable getExamTable(ExamAssignmentProxy examAssignment, User user, TimetableManager manager, Session session, ExamListForm form, boolean html) {
         Collection exams = (Constants.ALL_OPTION_VALUE.equals(form.getSubjectAreaId())?Exam.findAll(session.getUniqueId()):Exam.findExamsOfCourse(Long.valueOf(form.getSubjectAreaId()), form.getCourseNbr()));
         
         if (exams.isEmpty()) return null;
@@ -243,14 +248,28 @@ public class ExamListAction extends Action {
                 instructors += instructor.getName(instructorNameFormat);
             }
             
-            if (exam.getAssignedPeriod()!=null) {
-                per = exam.getAssignedPeriod().getAbbreviation();
-            }
-            
-            for (Iterator j=new TreeSet(exam.getAssignedRooms()).iterator();j.hasNext();) {
-                Location location = (Location)j.next();
-                if (rooms.length()>0) rooms+=nl;
-                rooms += location.getLabel();
+            if (examAssignment!=null) {
+                ExamPlacement placement = null;
+                try {
+                    placement = examAssignment.getPlacement(exam.getUniqueId()); 
+                } catch (Exception e){}
+                if (placement!=null) {
+                    per = placement.getPeriod().toString();
+                    for (Iterator j=new TreeSet(placement.getRooms()).iterator();j.hasNext();) {
+                        ExamRoom room = (ExamRoom)j.next();
+                        if (rooms.length()>0) rooms+=nl;
+                        rooms += room.getName();
+                    }
+                }
+            } else { 
+                if (exam.getAssignedPeriod()!=null) {
+                    per = exam.getAssignedPeriod().getAbbreviation();
+                }
+                for (Iterator j=new TreeSet(exam.getAssignedRooms()).iterator();j.hasNext();) {
+                    Location location = (Location)j.next();
+                    if (rooms.length()>0) rooms+=nl;
+                    rooms += location.getLabel();
+                }
             }
             
             int nrStudents = exam.countStudents();

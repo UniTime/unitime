@@ -195,6 +195,7 @@ public class ClassSearchAction extends LookupDispatchAction {
 						(new PdfClassListTableBuilder())
 						.pdfTableForClasses(
 			    		        WebSolver.getClassAssignmentProxy(request.getSession()),
+			    		        WebSolver.getExamSolver(request.getSession()),
 			    		        classListForm, 
 			    		        Web.getUser(request.getSession()));
 					if (pdfFile!=null) request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+pdfFile.getName());

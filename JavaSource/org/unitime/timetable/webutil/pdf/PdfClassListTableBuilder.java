@@ -44,6 +44,7 @@ import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.solver.CachedClassAssignmentProxy;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
+import org.unitime.timetable.solver.exam.ExamAssignmentProxy;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.PdfEventHandler;
 
@@ -79,7 +80,7 @@ public class PdfClassListTableBuilder extends PdfInstructionalOfferingTableBuild
 	}
 	
 	
-	public File pdfTableForClasses(ClassAssignmentProxy classAssignment, ClassListForm form, User user) {
+	public File pdfTableForClasses(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, ClassListForm form, User user) {
 		FileOutputStream out = null;
 		try {
 			setVisibleColumns(form);
@@ -106,7 +107,7 @@ public class PdfClassListTableBuilder extends PdfInstructionalOfferingTableBuild
 			setUserSettings(user);
 			
 	        if (isShowExam())
-	            setShowExamTimetable(Exam.hasTimetable((Long)user.getAttribute(Constants.SESSION_ID_ATTR_NAME)));
+	            setShowExamTimetable(examAssignment!=null || Exam.hasTimetable((Long)user.getAttribute(Constants.SESSION_ID_ATTR_NAME)));
         
 			File file = ApplicationProperties.getTempFile("classes", "pdf");
     	
@@ -148,7 +149,7 @@ public class PdfClassListTableBuilder extends PdfInstructionalOfferingTableBuild
 					iDocument.add(new Paragraph(" "));
 					pdfBuildTableHeader();
 				}
-				pdfBuildClassRow(classAssignment,++ct, c, "", user, prevLabel);
+				pdfBuildClassRow(classAssignment, examAssignment, ++ct, c, "", user, prevLabel);
 				prevLabel = c.getClassLabel();
 			}
 		

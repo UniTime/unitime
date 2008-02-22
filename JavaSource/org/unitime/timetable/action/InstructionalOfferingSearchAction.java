@@ -213,6 +213,7 @@ public class InstructionalOfferingSearchAction extends LookupDispatchAction {
                 (new PdfInstructionalOfferingTableBuilder())
                 .pdfTableForInstructionalOfferings(
                         WebSolver.getClassAssignmentProxy(request.getSession()),
+                        WebSolver.getExamSolver(request.getSession()),
                         frm, 
                         new Long(frm.getSubjectAreaId()), 
                         Web.getUser(request.getSession()),  

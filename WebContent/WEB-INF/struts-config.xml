@@ -117,6 +117,8 @@
       <form-bean name="examListForm" type="org.unitime.timetable.form.ExamListForm" />
       <form-bean name="examEditForm" type="org.unitime.timetable.form.ExamEditForm" />
       <form-bean name="examDistributionPrefsForm" type="org.unitime.timetable.form.ExamDistributionPrefsForm" />
+      <form-bean name="examSolverForm" type="org.unitime.timetable.form.ExamSolverForm" />
+	  <form-bean name="examSolverLogForm" type="org.unitime.timetable.form.ExamSolverLogForm" />
    </form-beans>
 
    <global-exceptions>
@@ -2007,6 +2009,34 @@
         	name="edit" 
         	path="examEditDistributionPrefTile" />
       </action>
+
+    <action
+    	path="/examSolver"
+    	type="org.unitime.timetable.action.ExamSolverAction"
+    	attribute="examSolverForm"
+    	input="examSolverTile"
+    	name="examSolverForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+    		name="showSolver"
+    		path="examSolverTile"
+	        redirect="true" />
+    </action>
+    
+    <action
+    	path="/examSolverLog"
+    	type="org.unitime.timetable.action.ExamSolverLogAction"
+    	attribute="examSolverLogForm"
+    	input="examSolverLogTile"
+    	name="examSolverLogForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+    		name="showLog"
+    		path="examSolverLogTile"
+    		redirect="true" />
+    </action>
    
    </action-mappings>
 

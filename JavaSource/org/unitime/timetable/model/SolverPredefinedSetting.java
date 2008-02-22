@@ -32,9 +32,10 @@ import org.unitime.timetable.model.dao.SolverPredefinedSettingDAO;
 
 public class SolverPredefinedSetting extends BaseSolverPredefinedSetting {
 	private static final long serialVersionUID = 1L;
-	public static String[] sAppearances = new String[] {"Timetables","Solver"};
+	public static String[] sAppearances = new String[] {"Timetables","Solver","Examination Solver"};
 	public static Integer APPEARANCE_TIMETABLES = new Integer(0);
 	public static Integer APPEARANCE_SOLVER = new Integer(1);
+	public static Integer APPEARANCE_EXAM_SOLVER = new Integer(2);
 
 
 /*[CONSTRUCTOR MARKER BEGIN]*/

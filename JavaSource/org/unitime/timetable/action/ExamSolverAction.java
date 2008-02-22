@@ -19,8 +19,6 @@
 */
 package org.unitime.timetable.action;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.util.Hashtable;
 
 import javax.servlet.http.HttpServletRequest;
@@ -34,23 +32,21 @@ import org.apache.struts.action.ActionMessages;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
-import org.unitime.timetable.ApplicationProperties;
-import org.unitime.timetable.form.SolverForm;
+import org.unitime.timetable.form.ExamSolverForm;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SolverParameterGroup;
-import org.unitime.timetable.solver.SolverProxy;
+import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.remote.SolverRegisterService;
-import org.unitime.timetable.util.Constants;
 
 
 /** 
  * @author Tomas Muller
  */
-public class SolverAction extends Action {
+public class ExamSolverAction extends Action {
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
-		SolverForm myForm = (SolverForm) form;
+		ExamSolverForm myForm = (ExamSolverForm) form;
 		
         // Check Access
         if (!Web.isLoggedIn( request.getSession() )) {
@@ -66,27 +62,12 @@ public class SolverAction extends Action {
         // Read operation to be performed
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
 
-        if ("n".equals(request.getParameter("confirm")))
-        	op = null;
-        
         if (op==null) {
         	myForm.init();
         	return mapping.findForward("showSolver");
         }
         
-        SolverProxy solver = WebSolver.getSolver(request.getSession());
-        
-        if ("Export XML".equals(op)) {
-            if (solver==null) throw new Exception("Solver is not started.");
-            if (solver.isWorking()) throw new Exception("Solver is working, stop it first.");
-            solver.restoreBest();
-            byte[] buf = solver.exportXml();
-            File file = ApplicationProperties.getTempFile("solution", "xml");
-            FileOutputStream fos = new FileOutputStream(file);
-            fos.write(buf);
-            fos.flush();fos.close();
-            request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
-        }
+        ExamSolverProxy solver = WebSolver.getExamSolver(request.getSession());
         
         if ("Restore From Best".equals(op)) {
         	if (solver==null) throw new Exception("Solver is not started.");
@@ -104,14 +85,14 @@ public class SolverAction extends Action {
         	if (solver==null) throw new Exception("Solver is not started.");
         	if (solver.isWorking()) throw new Exception("Solver is working, stop it first.");
         	solver.restoreBest();
-        	WebSolver.saveSolution(request.getSession(), op.indexOf("As New")>=0, op.indexOf("Commit")>=0);
+        	solver.save();
         	myForm.setChangeTab(true);
         }
         
         if ("Unload".equals(op)) {
         	if (solver==null) throw new Exception("Solver is not started.");
         	if (solver.isWorking()) throw new Exception("Solver is working, stop it first.");
-        	WebSolver.removeSolver(request.getSession());
+        	WebSolver.removeExamSolver(request.getSession());
         	myForm.reset(mapping, request);
         	myForm.init();
         }
@@ -125,7 +106,7 @@ public class SolverAction extends Action {
                 saveErrors(request, errors);
                 return mapping.findForward("showSolver");
             }
-        	WebSolver.reload(request.getSession(), myForm.getSetting(), new Hashtable(myForm.getParameterValues()));
+        	WebSolver.reloadExamSolver(request.getSession(), myForm.getSetting(), new Hashtable(myForm.getParameterValues()));
         	myForm.setChangeTab(true);
         }
         
@@ -142,18 +123,10 @@ public class SolverAction extends Action {
             Long settingsId = myForm.getSetting();
         	Long[] ownerId = null;
         	Hashtable extra = new Hashtable(myForm.getParameterValues());
-        	String solutionId = (String)request.getSession().getAttribute("Solver.selectedSolutionId");
-        	if (myForm.getSelectOwner())
-        		ownerId = myForm.getOwner();
-        	else if (!myForm.getOwners().isEmpty()) {
-        		ownerId = new Long[myForm.getOwners().size()];
-        		for (int i=0;i<myForm.getOwners().size();i++)
-        			ownerId[i] = ((SolverForm.LongIdValue)myForm.getOwners().elementAt(i)).getId();
-        	}
     	    if (solver == null) {
-        		solver = WebSolver.createSolver(sessionId,request.getSession(),ownerId,(solutionId==null?null:solutionId),settingsId,extra,start,myForm.getHost());
+        		solver = WebSolver.createExamSolver(sessionId,request.getSession(),settingsId,extra,start,myForm.getHost());
         	} else if (start) {
-        		solver.setProperties(WebSolver.createProperties(settingsId, extra, SolverParameterGroup.sTypeCourse));
+        		solver.setProperties(WebSolver.createProperties(settingsId, extra, SolverParameterGroup.sTypeExam));
         		solver.start();
         	}
     	    myForm.setChangeTab(true);
@@ -171,25 +144,6 @@ public class SolverAction extends Action {
         	myForm.init();
         }
         
-        if ("Student Sectioning".equals(op)) {
-        	if (solver==null) throw new Exception("Solver is not started.");
-        	if (solver.isWorking()) throw new Exception("Solver is working, stop it first.");
-        	solver.finalSectioning();
-        	myForm.setChangeTab(true);
-        }
-        
-        if ("Export Solution".equals(op)) {
-        	if (solver==null) throw new Exception("Solver is not started.");
-        	if (solver.isWorking()) throw new Exception("Solver is working, stop it first.");
-        	File file = ApplicationProperties.getTempFile("solution", "csv");
-       		solver.export().save(file);
-       		request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
-       		/*
-       		response.sendRedirect("temp/"+file.getName());
-       		response.setContentType("text/csv");
-       		*/
-        }
-
 		return mapping.findForward("showSolver");
 	}
 

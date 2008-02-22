@@ -93,7 +93,8 @@ public class SolverParamGroupsAction extends Action {
                 	group = dao.get(myForm.getUniqueId());
                 
                 group.setName(myForm.getName());
-                group.setDescription(myForm.getDescription());                
+                group.setDescription(myForm.getDescription());     
+                group.setType(myForm.getType());
                 if (myForm.getOrder()<0) {
                 	group.setOrder(new Integer(dao.findAll().size()));
                 }
@@ -120,6 +121,7 @@ public class SolverParamGroupsAction extends Action {
                     myForm.setUniqueId(group.getUniqueId());
                     myForm.setName(group.getName());
                     myForm.setOrder(group.getOrder().intValue());
+                    myForm.setType(group.getType());
                     myForm.setDescription(group.getDescription());
                     myForm.setOp("Update");
                 }                
@@ -212,8 +214,8 @@ public class SolverParamGroupsAction extends Action {
 		// Create web table instance 
         WebTable webTable = new WebTable( 3,
 			    null, "solverParamGroups.do?ord=%%",
-			    new String[] {"Order", "Name", "Description"},
-			    new String[] {"left", "left", "left"},
+			    new String[] {"Order", "Name", "Type", "Description"},
+			    new String[] {"left", "left", "left", "left"},
 			    null );
         int size = 0;
 
@@ -243,8 +245,8 @@ public class SolverParamGroupsAction extends Action {
 		                        "onclick=\"solverParamGroupsForm.op2.value='Move Down';solverParamGroupsForm.uniqueId.value='"+group.getUniqueId()+"';solverParamGroupsForm.submit(); event.cancelBubble=true;\">";
 		            } else
 		                ops += "<img src='images/blank.gif' border='0' align='absmiddle'>";
-					webTable.addLine(onClick, new String[] {ops, group.getName(), group.getDescription()},
-							new Comparable[] {group.getOrder(), group.getName(), group.getDescription()});
+					webTable.addLine(onClick, new String[] {ops, group.getName(), (group.getType()==SolverParameterGroup.sTypeCourse?"course":"exam"), group.getDescription()},
+							new Comparable[] {group.getOrder(), group.getName(), group.getType(), group.getDescription()});
 				}
 			}
 			

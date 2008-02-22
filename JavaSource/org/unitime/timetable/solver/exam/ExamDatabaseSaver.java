@@ -30,7 +30,7 @@ public class ExamDatabaseSaver extends ExamSaver {
         iSessionId = getModel().getProperties().getPropertyLong("General.SessionId",(Long)null);
     }
     
-    public void save() throws Exception {
+    public void save() {
         org.hibernate.Session hibSession = new ExamDAO().getSession();
         Transaction tx = null;
         try {
@@ -40,7 +40,6 @@ public class ExamDatabaseSaver extends ExamSaver {
         } catch (Exception e) {
             if (tx!=null) tx.rollback();
             iProgress.fatal("Unable to save a solution, reason: "+e.getMessage(),e);
-            throw e;
         }
     }
     

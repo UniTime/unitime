@@ -39,6 +39,7 @@ import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.solver.CachedClassAssignmentProxy;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
+import org.unitime.timetable.solver.exam.ExamAssignmentProxy;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.PdfEventHandler;
 
@@ -64,7 +65,7 @@ public class PdfClassAssignmentReportListTableBuilder extends PdfClassListTableB
 		return(" Room Assignments");
 	}
 
-    public File pdfTableForClasses(ClassAssignmentProxy classAssignment, ClassAssignmentsReportForm form, User user){
+    public File pdfTableForClasses(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, ClassAssignmentsReportForm form, User user){
     	FileOutputStream out = null;
     	try {
             setVisibleColumns(form);
@@ -92,7 +93,7 @@ public class PdfClassAssignmentReportListTableBuilder extends PdfClassListTableB
             }
             setUserSettings(user);
             
-            if (Exam.hasTimetable((Long)user.getAttribute(Constants.SESSION_ID_ATTR_NAME))) {
+            if (examAssignment!=null || Exam.hasTimetable((Long)user.getAttribute(Constants.SESSION_ID_ATTR_NAME))) {
                 setShowExam(true);
                 setShowExamTimetable(true);
                 setShowExamName(false);
@@ -139,7 +140,7 @@ public class PdfClassAssignmentReportListTableBuilder extends PdfClassListTableB
 					pdfBuildTableHeader();
 				}
                 
-                pdfBuildClassRow(classAssignment,++ct, c, "", user, prevLabel);
+                pdfBuildClassRow(classAssignment, examAssignment, ++ct, c, "", user, prevLabel);
                 prevLabel = c.getClassLabel();
             }  
             
