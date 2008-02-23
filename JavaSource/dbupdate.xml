@@ -465,4 +465,430 @@
 			create index idx_exam_owner_course on %SCHEMA%.exam_owner(course_id)
 		</mysql>
 	</update>
+	<update version="14" date="22-Feb-2008" comment="Exam solver parameters">
+		<plsql>alter table %SCHEMA%.solver_parameter_group add param_type number(10) default 0</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_group
+				(uniqueid, name, description, condition, ord, param_type) values 
+				(%SCHEMA%.solver_parameter_group_seq.nextval, 'ExamBasic', 'Basic Parameters', '', -1,1)
+		</plsql>
+		<plsql>
+			update %SCHEMA%.solver_parameter_group g set g.ord = ( select max(x.ord)+1 from %SCHEMA%.solver_parameter_group x )
+				where g.name='ExamBasic'
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'ExamBasic.Mode' as name, 
+				'Initial' as default_value, 
+				'Solver mode' as description, 
+				'enum(Initial,MPP)' as type, 
+				0 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamBasic')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'ExamBasic.WhenFinished' as name, 
+				'No Action' as default_value, 
+				'When finished' as description, 
+				'enum(No Action,Save,Save and Unload)' as type, 
+				1 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamBasic')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_group
+				(uniqueid, name, description, condition, ord, param_type) values
+				(%SCHEMA%.solver_parameter_group_seq.nextval, 'ExamWeights', 'Examination Weights', '', -1,1)
+		</plsql>
+		<plsql>
+			update %SCHEMA%.solver_parameter_group g set g.ord = ( select max(x.ord)+1 from %SCHEMA%.solver_parameter_group x)
+				where g.name='ExamWeights'
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Exams.MaxRooms' as name, 
+				'4' as default_value, 
+				'Default number of room splits per exam' as description, 
+				'integer' as type, 
+				0 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'Exams.IsDayBreakBackToBack' as name, 
+				'false' as default_value, 
+				'Consider back-to-back over day break' as description, 
+				'boolean' as type, 
+				1 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'Exams.DirectConflictWeight' as name, 
+				'1000.0' as default_value, 
+				'Direct conflict weight' as description, 
+				'double' as type, 
+				2 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'Exams.MoreThanTwoADayWeight' as name, 
+				'100.0' as default_value, 
+				'Three or more exams a day conflict weight' as description, 
+				'double' as type, 
+				3 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'Exams.BackToBackConflictWeight' as name, 
+				'10.0' as default_value, 
+				'Back-to-back conflict weight' as description, 
+				'double' as type, 
+				4 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'Exams.DistanceBackToBackConflictWeight' as name, 
+				'25.0' as default_value, 
+				'Distance back-to-back conflict weight' as description, 
+				'double' as type, 
+				5 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'Exams.BackToBackDistance' as name, 
+				'-1' as default_value, 
+				'Back-to-back distance (-1 means disabled)' as description, 
+				'double' as type, 
+				6 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'Exams.PeriodWeight' as name, 
+				'1.0' as default_value, 
+				'Period preference weight' as description, 
+				'double' as type, 
+				7 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'Exams.RoomWeight' as name, 
+				'1.0' as default_value, 
+				'Room preference weight' as description, 
+				'double' as type, 
+				8 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'Exams.DistributionWeight' as name, 
+				'1.0' as default_value, 
+				'Distribution preference weight' as description, 
+				'double' as type, 
+				9 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def 
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'Exams.RoomSplitWeight' as name, 
+				'10.0' as default_value, 
+				'Room split weight' as description, 
+				'double' as type, 
+				10 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'Exams.RoomSizeWeight' as name, 
+				'0.001' as default_value, 
+				'Excessive room size weight' as description, 
+				'double' as type, 
+				11 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'Exams.NotOriginalRoomWeight' as name, 
+				'1.0' as default_value, 
+				'Not original room weight' as description, 
+				'double' as type, 
+				12 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'Exams.RotationWeight' as name, 
+				'0.001' as default_value, 
+				'Exam rotation weight' as description, 
+				'double' as type, 
+				13 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_group 
+			(uniqueid, name, description, condition, ord, param_type) values 
+			(%SCHEMA%.solver_parameter_group_seq.nextval, 'Exam', 'General Parameters', '', -1,1)
+		</plsql>
+		<plsql>
+			update %SCHEMA%.solver_parameter_group g set g.ord = ( select max(x.ord)+1 from %SCHEMA%.solver_parameter_group x )
+				where g.name='Exam'
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'Neighbour.Class' as name, 
+				'net.sf.cpsolver.exam.heuristics.ExamNeighbourSelection' as default_value, 
+				'Examination timetabling neighbour selection class' as description, 
+				'text' as type, 
+				0 as ord, 
+				0 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='Exam')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'Termination.TimeOut' as name, 
+				'1800' as default_value, 
+				'Maximal solver time (in sec)' as description, 
+				'integer' as type, 
+				1 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='Exam')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'Exam.Algorithm' as name, 
+				'Great Deluge' as default_value, 
+				'Used heuristics' as description, 
+				'enum(Great Deluge,Simulated Annealing)' as type, 
+				2 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='Exam')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'HillClimber.MaxIdle' as name, 
+				'25000' as default_value, 
+				'Hill Climber: maximal idle iteration' as description, 
+				'integer' as type, 
+				3 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='Exam')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'Termination.StopWhenComplete' as name, 
+				'false' as default_value, 
+				'Stop when a complete solution if found' as description, 
+				'boolean' as type, 
+				4 as ord, 
+				0 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='Exam')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'General.SaveBestUnassigned' as name, 
+				'-1' as default_value, 
+				'Save best when x unassigned' as description, 
+				'integer' as type, 
+				5 as ord, 
+				0 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='Exam')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_group 
+			(uniqueid, name, description, condition, ord, param_type) values 
+			(%SCHEMA%.solver_parameter_group_seq.nextval, 'ExamGD', 'Great Deluge Parameters', '', -1,1)
+		</plsql>
+		<plsql>
+			update %SCHEMA%.solver_parameter_group g set g.ord = ( select max(x.ord)+1 from %SCHEMA%.solver_parameter_group x )
+			where g.name='ExamGD'
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'GreatDeluge.CoolRate' as name, 
+				'0.99999995' as default_value, 
+				'Cooling rate' as description, 
+				'double' as type, 
+				0 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamGD')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'GreatDeluge.UpperBoundRate' as name, 
+				'1.05' as default_value, 
+				'Upper bound rate' as description, 
+				'double' as type, 
+				1 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamGD')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'GreatDeluge.LowerBoundRate' as name, 
+				'0.95' as default_value, 
+				'Lower bound rate' as description, 
+				'double' as type, 
+				2 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamGD')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_group 
+			(uniqueid, name, description, condition, ord, param_type) values 
+			(%SCHEMA%.solver_parameter_group_seq.nextval, 'ExamSA', 'Simulated Annealing Parameters', '', -1,1)
+		</plsql>
+		<plsql>
+			update %SCHEMA%.solver_parameter_group g set g.ord = ( select max(x.ord)+1 from %SCHEMA%.solver_parameter_group x )
+			where g.name='ExamSA'
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'SimulatedAnnealing.InitialTemperature' as name, 
+				'1.5' as default_value, 
+				'Initial temperature' as description, 
+				'double' as type, 
+				0 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamSA')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'SimulatedAnnealing.CoolingRate' as name, 
+				'0.95' as default_value, 
+				'Cooling rate' as description, 
+				'double' as type, 
+				1 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamSA')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'SimulatedAnnealing.TemperatureLength' as name, 
+				'25000' as default_value, 
+				'Temperature length' as description, 
+				'integer' as type, 
+				2 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamSA')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'SimulatedAnnealing.ReheatLengthCoef' as name, 
+				'5' as default_value, 
+				'Reheat length coefficient' as description, 
+				'double' as type, 
+				3 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamSA')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_predef_setting (uniqueid, name, description, appearance)
+			values(%SCHEMA%.solver_predef_setting_seq.nextval, 'Exam.Default', 'Default', 2)
+		</plsql>
+		<mysql>alter table %SCHEMA%.solver_parameter_group add param_type bigint(10) default 0</mysql>
+		<mysql into="ID">
+			select next_hi from %SCHEMA%.hibernate_unique_key			
+		</mysql>
+		<mysql into="ORD">
+			select max(ord)+1 from %SCHEMA%.solver_parameter_group
+		</mysql>
+		<mysql>
+			insert into %SCHEMA%.solver_parameter_group (uniqueid, name, description, ord, param_type) values
+			(%ID%, 'ExamBasic', 'Basic Parameters', %ORD%, 1),
+			(%ID%+1, 'ExamWeights', 'Examination Weights', %ORD%+1, 1),
+			(%ID%+2, 'Exam', 'General Parameters', %ORD%+2, 1),
+			(%ID%+3, 'ExamGD', 'Great Deluge Parameters', %ORD%+3, 1),
+			(%ID%+4, 'ExamSA', 'Simulated Annealing Parameters', %ORD%+4, 1)
+		</mysql>
+		<mysql>
+			insert into %SCHEMA%.solver_parameter_def
+			(uniqueid, name, default_value, description, type, ord, visible, solver_param_group_id) values
+			(%ID%+5, 'ExamBasic.Mode', 'Initial', 'Solver mode', 'enum(Initial,MPP)', 0, 1, %ID%),
+			(%ID%+6, 'ExamBasic.WhenFinished', 'No Action', 'When finished', 'enum(No Action,Save,Save and Unload)', 1, 1, %ID%),
+			(%ID%+7, 'Exams.MaxRooms', '4', 'Default number of room splits per exam', 'integer', 0, 1, %ID%+1),
+			(%ID%+8, 'Exams.IsDayBreakBackToBack', 'false', 'Consider back-to-back over day break', 'boolean', 1, 1, %ID%+1),
+			(%ID%+9, 'Exams.DirectConflictWeight', '1000.0', 'Direct conflict weight', 'double', 2, 1, %ID%+1),
+			(%ID%+10, 'Exams.MoreThanTwoADayWeight', '100.0', 'Three or more exams a day conflict weight', 'double', 3, 1, %ID%+1),
+			(%ID%+11, 'Exams.BackToBackConflictWeight', '10.0', 'Back-to-back conflict weight', 'double', 4, 1, %ID%+1),
+			(%ID%+12, 'Exams.DistanceBackToBackConflictWeight', '25.0', 'Distance back-to-back conflict weight', 'double', 5, 1, %ID%+1),
+			(%ID%+13, 'Exams.BackToBackDistance', '-1', 'Back-to-back distance (-1 means disabled)', 'double', 6, 1, %ID%+1),
+			(%ID%+14, 'Exams.PeriodWeight', '1.0', 'Period preference weight', 'double', 7, 1, %ID%+1),
+			(%ID%+15, 'Exams.RoomWeight', '1.0', 'Room preference weight', 'double', 8, 1, %ID%+1),
+			(%ID%+16, 'Exams.DistributionWeight', '1.0', 'Distribution preference weight', 'double', 9, 1, %ID%+1),
+			(%ID%+17, 'Exams.RoomSplitWeight', '10.0', 'Room split weight', 'double', 10, 1, %ID%+1),
+			(%ID%+18, 'Exams.RoomSizeWeight', '0.001', 'Excessive room size weight', 'double', 11, 1, %ID%+1),
+			(%ID%+19, 'Exams.NotOriginalRoomWeight', '1.0', 'Not original room weight', 'double', 12, 1, %ID%+1),
+			(%ID%+20, 'Exams.RotationWeight', '0.001', 'Exam rotation weight', 'double', 13, 1, %ID%+1),
+			(%ID%+21, 'Neighbour.Class', 'net.sf.cpsolver.exam.heuristics.ExamNeighbourSelection', 'Examination timetabling neighbour selection class', 'text', 0, 0, %ID%+2),
+			(%ID%+22, 'Termination.TimeOut', '1800', 'Maximal solver time (in sec)', 'integer', 1, 1, %ID%+2),
+			(%ID%+23, 'Exam.Algorithm', 'Great Deluge', 'Used heuristics', 'enum(Great Deluge,Simulated Annealing)', 2, 1, %ID%+2),
+			(%ID%+24, 'HillClimber.MaxIdle', '25000', 'Hill Climber: maximal idle iteration', 'integer', 3, 1, %ID%+2),
+			(%ID%+25, 'Termination.StopWhenComplete', 'false', 'Stop when a complete solution if found', 'boolean', 4, 0, %ID%+2),
+			(%ID%+26, 'General.SaveBestUnassigned', '-1', 'Save best when x unassigned', 'integer', 5, 0, %ID%+2),
+			(%ID%+27, 'GreatDeluge.CoolRate', '0.99999995', 'Cooling rate', 'double', 0, 1, %ID%+3),
+			(%ID%+28, 'GreatDeluge.UpperBoundRate', '1.05', 'Upper bound rate', 'double', 1, 1, %ID%+3),
+			(%ID%+29, 'GreatDeluge.LowerBoundRate', '0.95', 'Lower bound rate', 'double', 2, 1, %ID%+3),
+			(%ID%+30, 'SimulatedAnnealing.InitialTemperature', '1.5', 'Initial temperature', 'double', 0, 1, %ID%+4),
+			(%ID%+31, 'SimulatedAnnealing.CoolingRate', '0.95', 'Cooling rate', 'double', 1, 1, %ID%+4),
+			(%ID%+32, 'SimulatedAnnealing.TemperatureLength', '25000', 'Temperature length', 'integer', 2, 1, %ID%+4),
+			(%ID%+33, 'SimulatedAnnealing.ReheatLengthCoef', '5', 'Reheat length coefficient', 'double', 3, 1, %ID%+4)
+		</mysql>
+		<mysql>
+			insert into %SCHEMA%.solver_predef_setting (uniqueid, name, description, appearance) values 
+			(%ID%+34, 'Exam.Default', 'Default', 2)
+		</mysql>
+		<mysql>
+			update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+35
+		</mysql>
+	</update>
 </dbupdate>

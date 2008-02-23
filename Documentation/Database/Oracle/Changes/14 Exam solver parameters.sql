@@ -206,7 +206,7 @@ insert into SOLVER_PARAMETER_DEF
 	(select SOLVER_PARAMETER_DEF_SEQ.nextval as UNIQUEID, 
 		'Neighbour.Class' as NAME, 
 		'net.sf.cpsolver.exam.heuristics.ExamNeighbourSelection' as DEFAULT_VALUE, 
-		'Recursively resection lectures affected by a student swap' as DESCRIPTION, 
+		'Examination timetabling neighbour selection class' as DESCRIPTION, 
 		'text' as TYPE, 
 		0 as ORD, 
 		0 as VISIBLE, 
@@ -214,7 +214,7 @@ insert into SOLVER_PARAMETER_DEF
 
 insert into SOLVER_PARAMETER_DEF
 	(select SOLVER_PARAMETER_DEF_SEQ.nextval as UNIQUEID, 
-		'Termination.Timeout' as NAME, 
+		'Termination.TimeOut' as NAME, 
 		'1800' as DEFAULT_VALUE, 
 		'Maximal solver time (in sec)' as DESCRIPTION, 
 		'integer' as TYPE, 
