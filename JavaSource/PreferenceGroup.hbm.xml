@@ -1047,6 +1047,21 @@
 					foreign-key="FK_EXAM_INSTRUCTOR_INSTRUCTOR"
 				/>
 			</set>			
+
+			<set
+				name="conflicts"
+				lazy="true" 
+				table="XCONFLICT_EXAM"
+				cascade="all-delete-orphan"
+				>
+				<cache include="non-lazy" usage="read-write"/>
+				<key column="EXAM_ID" foreign-key="FK_XCONFLICT_EX_CONF_EXAM"/>
+				<many-to-many 
+					class="ExamConflict"
+					column="CONFLICT_ID"
+					foreign-key="FK_XCONFLICT_EX_CONF"
+				/>
+			</set>			
 	 	</union-subclass>
 	 					
 	</class>	
