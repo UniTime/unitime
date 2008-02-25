@@ -699,6 +699,18 @@ public class WebSolver extends TimetableSolver implements ProgressListener {
 				File file = files[i];
 				String puid = file.getName().substring(0,file.getName().indexOf('.'));
 				
+                if ("exam".equals(puid)) {
+                    ExamSolver solver = new ExamSolver(new DataProperties(), new ExamSolverDisposeListener() {
+                        public void onDispose() {
+                            sExamSolver = null;
+                        }
+                    });
+                    if (solver.restore(folder)) {
+                        sExamSolver = solver;
+                    }
+                    continue;
+                }
+                
 				WebSolver solver = new WebSolver(new DataProperties());
 				if (solver.restore(folder,puid)) {
 					if (passivateFolder!=null)
@@ -706,6 +718,9 @@ public class WebSolver extends TimetableSolver implements ProgressListener {
 					sSolvers.put(puid,solver);
 				} 
 			}
+            if (sExamSolver!=null) {
+                sExamSolver.backup(folder);
+            }
 		}
 	}
 	
