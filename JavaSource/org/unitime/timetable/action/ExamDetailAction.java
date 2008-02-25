@@ -10,9 +10,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import net.sf.cpsolver.exam.model.ExamPlacement;
-import net.sf.cpsolver.exam.model.ExamRoom;
-
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
@@ -36,6 +33,7 @@ import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.solver.WebSolver;
+import org.unitime.timetable.solver.exam.ExamAssignment;
 import org.unitime.timetable.solver.exam.ExamAssignmentProxy;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
@@ -215,19 +213,12 @@ public class ExamDetailAction extends PreferencesAction {
             
             ExamAssignmentProxy examAssignment = WebSolver.getExamSolver(request.getSession());
             if (examAssignment!=null) {
-                ExamPlacement placement = null;
-                try {
-                    placement = examAssignment.getPlacement(exam.getUniqueId()); 
-                } catch (Exception e){}
-                if (placement!=null) {
-                    String assignment = "<tr><td>Examination Period:</td><td>"+placement.getPeriod().toString()+"</td></tr>";
-                    if (!exam.getAssignedRooms().isEmpty()) {
-                        assignment += "<tr><td>Room"+(exam.getAssignedRooms().size()>1?"s":"")+":</td><td>";
-                        for (Iterator j=new TreeSet(placement.getRooms()).iterator();j.hasNext();) {
-                            ExamRoom room = (ExamRoom)j.next();
-                            assignment += room.getName();
-                            if (j.hasNext()) assignment+="<br>";
-                        }
+                ExamAssignment ea = examAssignment.getAssignment(exam.getUniqueId()); 
+                if (ea!=null) {
+                    String assignment = "<tr><td>Examination Period:</td><td>"+ea.getPeriodNameWithPref()+"</td></tr>";
+                    if (!ea.getRoomIds().isEmpty()) {
+                        assignment += "<tr><td>Room"+(ea.getRoomIds().size()>1?"s":"")+":</td><td>";
+                        assignment += ea.getRoomsNameWithPref("<br>");
                         assignment += "</td></tr>";
                     }
                     request.setAttribute("ExamDetail.assignment",assignment);

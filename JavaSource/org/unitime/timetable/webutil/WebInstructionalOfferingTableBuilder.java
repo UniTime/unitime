@@ -70,13 +70,12 @@ import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.solver.CachedClassAssignmentProxy;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
+import org.unitime.timetable.solver.exam.ExamAssignment;
 import org.unitime.timetable.solver.exam.ExamAssignmentProxy;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
 import org.unitime.timetable.util.Constants;
 
 import net.sf.cpsolver.coursett.model.TimeLocation.IntEnumeration;
-import net.sf.cpsolver.exam.model.ExamPlacement;
-import net.sf.cpsolver.exam.model.ExamRoom;
 
 
 /**
@@ -849,11 +848,8 @@ public class WebInstructionalOfferingTableBuilder {
         for (Iterator i=exams.iterator();i.hasNext();) {
             Exam exam = (Exam)i.next();
             if (examAssignment!=null) {
-                ExamPlacement placement = null;
-                try {
-                    placement = examAssignment.getPlacement(exam.getUniqueId());
-                } catch (Exception e){}
-                sb.append(placement==null?"":placement.getPeriod().toString());
+                ExamAssignment ea = examAssignment.getAssignment(exam.getUniqueId());
+                sb.append(ea==null?"":ea.getPeriodAbbreviationWithPref());
             } else 
                 sb.append(exam.getAssignedPeriod()==null?"":exam.getAssignedPeriod().getAbbreviation());
             if (i.hasNext()) sb.append("<br>");
@@ -868,17 +864,8 @@ public class WebInstructionalOfferingTableBuilder {
         for (Iterator i=exams.iterator();i.hasNext();) {
             Exam exam = (Exam)i.next();
             if (examAssignment!=null) {
-                ExamPlacement placement = null;
-                try {
-                    placement = examAssignment.getPlacement(exam.getUniqueId());
-                } catch (Exception e){}
-                if (placement!=null) {
-                    for (Iterator j=new TreeSet(placement.getRooms()).iterator();j.hasNext();) {
-                        ExamRoom room = (ExamRoom)j.next();
-                        sb.append(room.getName());
-                        if (j.hasNext()) sb.append(", ");
-                    }
-                }
+                ExamAssignment ea = examAssignment.getAssignment(exam.getUniqueId());
+                sb.append(ea==null?"":ea.getRoomsNameWithPref(", "));
             } else { 
                 for (Iterator j=new TreeSet(exam.getAssignedRooms()).iterator();j.hasNext();) {
                     Location location = (Location)j.next();
