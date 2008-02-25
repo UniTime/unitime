@@ -519,7 +519,7 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
                 Exam exam = (Exam)e.nextElement();
                 if (exam.getAssignment()!=null) exam.unassign(0);
             }
-            currentSolution().getModel().clearBest();
+            currentSolution().clearBest();
         }    
     }
 
