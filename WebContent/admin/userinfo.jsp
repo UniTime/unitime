@@ -151,7 +151,7 @@
 				class="UserInfoTabRight"
 				onclick="document.location='userinfo.jsp?tab=1';"
 				title="Show Solver Status">
-				&nbsp;Exam Solver Status&nbsp;</TD>
+				&nbsp;Examination Solver&nbsp;</TD>
 	<% } else { %>
 			<TD valign="top" nowrap 
 				class="UserInfoTabDisabled">
@@ -163,7 +163,7 @@
 				class="UserInfoTabSelect"
 				onclick="document.location='userinfo.jsp?tab=1';"
 				title="Refresh Solver Status">
-				&nbsp;<%=examSolver!=null?"Exam ":""%>Solver Status&nbsp;</TD>
+				&nbsp;<%=examSolver!=null?"Examination Solver":"Solver Status"%>&nbsp;</TD>
 <% } %>
 			<TD width='50%' bgcolor="#e4e4e4" class="UserInfoTabBg">&nbsp;</TD>
 		</TR>
