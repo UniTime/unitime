@@ -517,7 +517,7 @@ public class WebSolver extends TimetableSolver implements ProgressListener {
         solver.reload(properties);
         
         if (solver instanceof ExamSolver) {
-            Progress p = Progress.getInstance(((WebSolver)solver).currentSolution().getModel());
+            Progress p = Progress.getInstance(((ExamSolver)solver).currentSolution().getModel());
             p.clearProgressListeners();
             p.addProgressListener((WebSolver)solver);
             sSolvers.put(user.getId(),solver);
