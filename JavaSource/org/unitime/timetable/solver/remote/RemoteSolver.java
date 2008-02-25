@@ -192,6 +192,10 @@ public class RemoteSolver extends TimetableSolver implements TimetableInfoFilePr
 				RemoteSolver solver =(RemoteSolver)entry.getValue();
 				solver.backup(folder, puid);
 			}
+			
+			if (sExamSolver!=null) {
+			    sExamSolver.backup(folder);
+			}
 		}
 	}
 	
@@ -207,6 +211,18 @@ public class RemoteSolver extends TimetableSolver implements TimetableInfoFilePr
 			for (int i=0;i<files.length;i++) {
 				File file = files[i];
 				String puid = file.getName().substring(0,file.getName().indexOf('.'));
+				
+				if ("exam".equals(puid)) {
+				    ExamSolver solver = new ExamSolver(new DataProperties(), new ExamSolverDisposeListener() {
+                        public void onDispose() {
+                            sExamSolver = null;
+                        }
+                    });
+				    if (solver.restore(folder)) {
+				        sExamSolver = solver;
+				    }
+				    continue;
+				}
 				
 				RemoteSolver solver = new RemoteSolver(new DataProperties());
 				if (solver.restore(folder,puid)) {
