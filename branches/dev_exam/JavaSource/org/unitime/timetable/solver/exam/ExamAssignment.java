@@ -11,25 +11,31 @@ import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
+import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.model.dao.ExamPeriodDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 
 import net.sf.cpsolver.exam.model.ExamPlacement;
 import net.sf.cpsolver.exam.model.ExamRoom;
 
-public class ExamAssignment implements Serializable {
-    private Long iPeriodId = null;
-    private Vector iRoomIds = null;
-    private String iPeriodPref = null;
-    private Hashtable iRoomPrefs = null;
-    private transient ExamPeriod iPeriod = null;
-    private transient TreeSet iRooms = null;
+public class ExamAssignment implements Serializable, Comparable {
+    protected Long iPeriodId = null;
+    protected Vector iRoomIds = null;
+    protected String iPeriodPref = null;
+    protected Hashtable iRoomPrefs = null;
+    protected String iExamLabel = null;
+    protected Long iExamId = null;
+    protected transient ExamPeriod iPeriod = null;
+    protected transient TreeSet iRooms = null;
+    protected transient Exam iExam = null; 
     
     public ExamAssignment(ExamPlacement placement) {
         iPeriodId = placement.getPeriod().getId();
         iRoomIds = new Vector(placement.getRooms()==null?0:placement.getRooms().size());
         iPeriodPref = PreferenceLevel.int2prolog(placement.getPeriodPenalty());
         iRoomPrefs = new Hashtable();
+        iExamId = ((net.sf.cpsolver.exam.model.Exam)placement.variable()).getId();
+        iExamLabel = ((net.sf.cpsolver.exam.model.Exam)placement.variable()).getName();
         if (placement.getRooms()!=null)
             for (Iterator i=placement.getRooms().iterator();i.hasNext();) {
                 ExamRoom room = (ExamRoom)i.next();
@@ -43,6 +49,9 @@ public class ExamAssignment implements Serializable {
         iPeriodId = exam.getAssignedPeriod().getUniqueId();
         iRooms = new TreeSet();
         iRoomIds = new Vector(exam.getAssignedRooms().size());
+        iExamId = exam.getUniqueId();
+        iExam = exam;
+        iExamLabel = exam.getLabel();
         for (Iterator i=exam.getAssignedRooms().iterator();i.hasNext();) {
             Location location = (Location)i.next();
             iRooms.add(location);
@@ -126,5 +135,36 @@ public class ExamAssignment implements Serializable {
             }
         }
         return rooms;
+    }
+    
+    public Long getExamId() {
+        return iExamId;
+    }
+    
+    public Exam getExam() {
+        if (iExam==null)
+            iExam = new ExamDAO().get(iExamId);
+        return iExam;
+    }
+    
+    public String getExamName() {
+        return (iExamLabel==null?getExam().getLabel():iExamLabel);
+    }
+    
+    public int hashCode() {
+        return getExamId().hashCode();
+    }
+    
+    public boolean equals(Object o) {
+        if (o==null || !(o instanceof ExamAssignment)) return false;
+        return ((ExamAssignment)o).getExamId().equals(getExamId());
+    }
+    
+    public int compareTo(Object o) {
+        if (o==null || !(o instanceof ExamAssignment)) return -1;
+        ExamAssignment a = (ExamAssignment)o;
+        int cmp = getExamName().compareTo(a.getExamName());
+        if (cmp!=0) return cmp;
+        return getExamId().compareTo(a.getExamId());
     }
 }

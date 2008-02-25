@@ -33,7 +33,7 @@ import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.solver.WebSolver;
-import org.unitime.timetable.solver.exam.ExamAssignment;
+import org.unitime.timetable.solver.exam.ExamAssignmentInfo;
 import org.unitime.timetable.solver.exam.ExamAssignmentProxy;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
@@ -213,12 +213,17 @@ public class ExamDetailAction extends PreferencesAction {
             
             ExamAssignmentProxy examAssignment = WebSolver.getExamSolver(request.getSession());
             if (examAssignment!=null) {
-                ExamAssignment ea = examAssignment.getAssignment(exam.getUniqueId()); 
+                ExamAssignmentInfo ea = examAssignment.getAssignmentInfo(exam.getUniqueId()); 
                 if (ea!=null) {
                     String assignment = "<tr><td>Examination Period:</td><td>"+ea.getPeriodNameWithPref()+"</td></tr>";
                     if (!ea.getRoomIds().isEmpty()) {
                         assignment += "<tr><td>Room"+(ea.getRoomIds().size()>1?"s":"")+":</td><td>";
                         assignment += ea.getRoomsNameWithPref("<br>");
+                        assignment += "</td></tr>";
+                    }
+                    if (ea.hasConflicts()) {
+                        assignment += "<tr><td>Conflicts</td><td>";
+                        assignment += ea.getConflictTable(true);
                         assignment += "</td></tr>";
                     }
                     request.setAttribute("ExamDetail.assignment",assignment);
