@@ -12,9 +12,6 @@ import java.util.Vector;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.sf.cpsolver.exam.model.ExamPlacement;
-import net.sf.cpsolver.exam.model.ExamRoom;
-
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
@@ -48,6 +45,7 @@ import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.solver.WebSolver;
+import org.unitime.timetable.solver.exam.ExamAssignment;
 import org.unitime.timetable.solver.exam.ExamAssignmentProxy;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.BackTracker;
@@ -249,17 +247,10 @@ public class ExamListAction extends Action {
             }
             
             if (examAssignment!=null) {
-                ExamPlacement placement = null;
-                try {
-                    placement = examAssignment.getPlacement(exam.getUniqueId()); 
-                } catch (Exception e){}
-                if (placement!=null) {
-                    per = placement.getPeriod().toString();
-                    for (Iterator j=new TreeSet(placement.getRooms()).iterator();j.hasNext();) {
-                        ExamRoom room = (ExamRoom)j.next();
-                        if (rooms.length()>0) rooms+=nl;
-                        rooms += room.getName();
-                    }
+                ExamAssignment ea = examAssignment.getAssignment(exam.getUniqueId()); 
+                if (ea!=null) {
+                    per = (html?ea.getPeriodAbbreviationWithPref():ea.getPeriodAbbreviation());
+                    rooms = (html?ea.getRoomsNameWithPref(nl):ea.getRoomsName(nl));
                 }
             } else { 
                 if (exam.getAssignedPeriod()!=null) {
