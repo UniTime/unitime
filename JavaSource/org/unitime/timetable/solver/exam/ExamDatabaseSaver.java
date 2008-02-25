@@ -31,6 +31,7 @@ public class ExamDatabaseSaver extends ExamSaver {
     }
     
     public void save() {
+        iProgress.setStatus("Saving solution ...");
         org.hibernate.Session hibSession = new ExamDAO().getSession();
         Transaction tx = null;
         try {
