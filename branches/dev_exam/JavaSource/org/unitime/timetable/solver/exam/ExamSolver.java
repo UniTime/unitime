@@ -151,6 +151,21 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
         }
     }
     
+    public ExamAssignmentInfo getAssignmentInfo(long examId) {
+        synchronized (super.currentSolution()) {
+            for (Enumeration e=currentSolution().getModel().variables().elements();e.hasMoreElements();) {
+                Exam exam = (Exam)e.nextElement();
+                if (exam.getId()==examId) {
+                    if (exam.getAssignment()!=null)
+                        return new ExamAssignmentInfo((ExamPlacement)exam.getAssignment());
+                    else
+                        return null;
+                }
+            }
+            return null;
+        }
+    }
+
     public Hashtable currentSolutionInfo() {
         synchronized (super.currentSolution()) {
             return super.currentSolution().getInfo();
@@ -496,6 +511,16 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
         }
         
         return false;
+    }
+    
+    public void clear() {
+        synchronized (currentSolution()) {
+            for (Enumeration e=currentSolution().getModel().variables().elements();e.hasMoreElements();) {
+                Exam exam = (Exam)e.nextElement();
+                if (exam.getAssignment()!=null) exam.unassign(0);
+            }
+            currentSolution().getModel().clearBest();
+        }    
     }
 
 }
