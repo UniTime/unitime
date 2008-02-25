@@ -23,6 +23,7 @@ public interface ExamSolverProxy extends ExamAssignmentProxy {
     public void stopSolver() throws Exception;
     public void restoreBest() throws Exception;
     public void saveBest() throws Exception;
+    public void clear() throws Exception;
     public Hashtable currentSolutionInfo() throws Exception;
     public Hashtable bestSolutionInfo() throws Exception;
     public boolean isWorking() throws Exception;

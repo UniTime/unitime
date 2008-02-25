@@ -97,6 +97,13 @@ public class ExamSolverAction extends Action {
         	myForm.init();
         }
         
+        if ("Clear".equals(op)) {
+            if (solver==null) throw new Exception("Solver is not started.");
+            if (solver.isWorking()) throw new Exception("Solver is working, stop it first.");
+            solver.clear();
+            myForm.setChangeTab(true);
+        }
+
         // Reload
         if ("Reload Input Data".equals(op)) {
         	if (solver==null) throw new Exception("Solver is not started.");

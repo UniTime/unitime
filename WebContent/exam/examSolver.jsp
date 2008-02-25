@@ -41,6 +41,7 @@
 
 <tt:back-mark back="true" clear="true" title="Examination Solver" uri="examSolver.do"/>
 <tt:confirm name="confirmUnload">Do you really want to unload your current timetable? You may lose this timetable if you did not save it.</tt:confirm>
+<tt:confirm name="confirmClear">Do you really want to clear your current timetable? You may lose this timetable if you did not save it.</tt:confirm>
 <tt:confirm name="confirmSave">Do you really want to save your current timetable? This will overwrite your previous solution.</tt:confirm>
 <tt:confirm name="confirmSaveAsNew">Do you really want to save your current timetable?</tt:confirm>
 <tiles:importAttribute />
@@ -161,6 +162,7 @@ try {
    if (solver!=null && !solver.isWorking()) { %>
 			<html:submit onclick="displayLoading();" property="op" value="Reload Input Data"/>
 			<html:submit onclick="if (!confirmUnload()) return false; displayLoading();" property="op" value="Unload"/>
+			<html:submit onclick="if (!confirmClear()) return false; displayLoading();" property="op" value="Clear"/>
 <% } %>
 			<html:submit onclick="displayLoading();" property="op" accesskey="R" value="Refresh"/>
 		</TD>
