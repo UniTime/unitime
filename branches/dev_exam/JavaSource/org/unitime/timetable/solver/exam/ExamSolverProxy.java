@@ -1,5 +1,6 @@
 package org.unitime.timetable.solver.exam;
 
+import java.io.File;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.Map;
@@ -39,4 +40,7 @@ public interface ExamSolverProxy extends ExamAssignmentProxy {
     public String getLog(int level, boolean includeDate) throws Exception;
     public String getLog(int level, boolean includeDate, String fromStage) throws Exception;
     
+    public boolean backup(File folder) throws Exception;
+    public boolean restore(File folder) throws Exception;
+    public boolean restore(File folder, boolean removeFiles) throws Exception;
 }

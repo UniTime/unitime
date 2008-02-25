@@ -1,5 +1,9 @@
 package org.unitime.timetable.solver.exam;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
@@ -12,6 +16,10 @@ import java.util.Vector;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.dom4j.io.OutputFormat;
+import org.dom4j.io.SAXReader;
+import org.dom4j.io.XMLWriter;
+import org.unitime.timetable.solver.remote.BackupFileFilter;
 import org.unitime.timetable.util.Constants;
 
 import net.sf.cpsolver.exam.model.Exam;
@@ -128,11 +136,16 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
         return getClass().getMethod((String)cmd[0],types).invoke(this, args);
     }
     
-    public ExamPlacement getPlacement(long examId) {
+    public ExamAssignment getAssignment(long examId) {
         synchronized (super.currentSolution()) {
             for (Enumeration e=currentSolution().getModel().variables().elements();e.hasMoreElements();) {
                 Exam exam = (Exam)e.nextElement();
-                if (exam.getId()==examId) return (ExamPlacement)exam.getAssignment();
+                if (exam.getId()==examId) {
+                    if (exam.getAssignment()!=null)
+                        return new ExamAssignment((ExamPlacement)exam.getAssignment());
+                    else
+                        return null;
+                }
             }
             return null;
         }
@@ -254,9 +267,12 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
             iSolutionId = getProperties().getProperty("General.SolutionId");
             for (Enumeration e=currentSolution().getModel().variables().elements();e.hasMoreElements();) {
                 Exam exam = (Exam)e.nextElement();
-                iCurrentAssignmentTable.put(exam.getId(),exam.getAssignment());
-                iBestAssignmentTable.put(exam.getId(),exam.getBestAssignment());
-                iInitialAssignmentTable.put(exam.getId(),exam.getInitialAssignment());
+                if (exam.getAssignment()!=null)
+                    iCurrentAssignmentTable.put(exam.getId(),exam.getAssignment());
+                if (exam.getBestAssignment()!=null)
+                    iBestAssignmentTable.put(exam.getId(),exam.getBestAssignment());
+                if (exam.getInitialAssignment()!=null)
+                    iInitialAssignmentTable.put(exam.getId(),exam.getInitialAssignment());
             }
         }
         private Exam getExam(long examId) {
@@ -390,4 +406,96 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
     public static interface ExamSolverDisposeListener {
         public void onDispose();
     }
+    
+    public boolean backup(File folder) {
+        folder.mkdirs();
+        if (currentSolution()==null) return false;
+        synchronized (currentSolution()) {
+            File outXmlFile = new File(folder,"exam"+BackupFileFilter.sXmlExtension);
+            File outPropertiesFile = new File(folder,"exam"+BackupFileFilter.sPropertiesExtension);
+            try {
+                getProperties().setProperty("Xml.SaveConflictTable", "false");
+                FileOutputStream fos = null;
+                try {
+                    fos = new FileOutputStream(outXmlFile);
+                    (new XMLWriter(fos,OutputFormat.createPrettyPrint())).write(((ExamModel)currentSolution().getModel()).save());
+                    fos.flush(); fos.close(); fos=null;
+                } finally {
+                    try {
+                        if (fos!=null) fos.close();
+                    } catch (IOException e) {}
+                }
+                for (Iterator i=getProperties().entrySet().iterator();i.hasNext();) {
+                    Map.Entry entry = (Map.Entry)i.next();
+                    if (!(entry.getKey() instanceof String)) {
+                        sLog.error("Configuration key "+entry.getKey()+" is not of type String ("+entry.getKey().getClass()+")");
+                        i.remove();
+                    } else if (!(entry.getValue() instanceof String)) {
+                        sLog.error("Value of configuration key "+entry.getKey()+" is not of type String ("+entry.getValue()+" is of type "+entry.getValue().getClass()+")");
+                        i.remove();
+                    }
+                }
+                try {
+                    fos = new FileOutputStream(outPropertiesFile);
+                    getProperties().store(fos,"Backup file");
+                    fos.flush(); fos.close(); fos=null;
+                } finally {
+                    try {
+                        if (fos!=null) fos.close();
+                    } catch (IOException e) {}
+                }
+                return true;
+            } catch (Exception e) {
+                sLog.error(e.getMessage(),e);
+                if (outXmlFile.exists()) outXmlFile.delete();
+                if (outPropertiesFile.exists()) outPropertiesFile.delete();
+            }
+        }
+        return false;
+    }
+    
+    public boolean restore(File folder) {
+        return restore(folder, false);
+    }
+    
+    public boolean restore(File folder, boolean removeFiles) {
+        sLog.debug("restore(folder="+folder+",exam)");
+        File inXmlFile = new File(folder,"exam"+BackupFileFilter.sXmlExtension);
+        File inPropertiesFile = new File(folder,"exam"+BackupFileFilter.sPropertiesExtension);
+        
+        ExamModel model = null;
+        try {
+            if (isRunning()) stopSolver();
+            this.disposeNoInherit();
+            FileInputStream fis = null;
+            try {
+                fis = new FileInputStream(inPropertiesFile);
+                getProperties().load(fis);
+            } finally {
+                if (fis!=null) fis.close();
+            }
+            
+            model = new ExamModel(getProperties());
+            Progress.getInstance(model).addProgressListener(new ProgressWriter(System.out));
+            setInitalSolution(model);
+            initSolver();
+
+            model.load((new SAXReader()).read(inXmlFile));
+            
+            Progress.getInstance(model).setStatus("Awaiting commands ...");
+            
+            if (removeFiles) {
+                inXmlFile.delete();
+                inPropertiesFile.delete();
+            }
+            
+            return true;
+        } catch (Exception e) {
+            sLog.error(e.getMessage(),e);
+            if (model!=null) Progress.removeInstance(model);
+        }
+        
+        return false;
+    }
+
 }
