@@ -58,6 +58,7 @@ public abstract class BaseExam extends org.unitime.timetable.model.PreferenceGro
     private java.util.Set owners;
     private java.util.Set assignedRooms;
     private java.util.Set instructors;
+    private java.util.Set conflicts;
 
 	public java.lang.String getName() { return name; }
 	public void setName(java.lang.String name) { this.name = name; }
@@ -88,6 +89,9 @@ public abstract class BaseExam extends org.unitime.timetable.model.PreferenceGro
 	
 	public java.util.Set getInstructors() { return instructors; }
 	public void setInstructors(java.util.Set instructors) { this.instructors = instructors; }
+	
+	public java.util.Set getConflicts() { return conflicts; }
+	public void setConflicts(java.util.Set conflicts) { this.conflicts = conflicts; }
 
 	public boolean equals (Object obj) {
 		if (null == obj) return false;
