@@ -522,5 +522,29 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
             currentSolution().clearBest();
         }    
     }
+    
+    public Collection<ExamAssignmentInfo> getAssignedExams() {
+        synchronized (currentSolution()) {
+            Vector<ExamAssignmentInfo> ret = new Vector<ExamAssignmentInfo>();
+            for (Enumeration e=currentSolution().getModel().variables().elements();e.hasMoreElements();) {
+                Exam exam = (Exam)e.nextElement();
+                if (exam.getAssignment()!=null)
+                    ret.add(new ExamAssignmentInfo((ExamPlacement)exam.getAssignment()));
+            }
+            return ret;
+        }
+    }
+    public Collection<ExamInfo> getUnassignedExams() {
+        synchronized (currentSolution()) {
+            Vector<ExamInfo> ret = new Vector<ExamInfo>();
+            for (Enumeration e=currentSolution().getModel().variables().elements();e.hasMoreElements();) {
+                Exam exam = (Exam)e.nextElement();
+                if (exam.getAssignment()==null)
+                    ret.add(new ExamInfo(exam));
+            }
+            return ret;
+        }
+    }
+
 
 }

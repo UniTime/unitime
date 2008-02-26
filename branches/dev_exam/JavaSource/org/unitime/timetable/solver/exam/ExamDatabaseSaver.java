@@ -116,10 +116,10 @@ public class ExamDatabaseSaver extends ExamSaver {
             ExamAssignmentInfo info = new ExamAssignmentInfo(placement);
             for (Iterator i=info.getDirectConflicts().iterator();i.hasNext();) {
                 ExamAssignmentInfo.DirectConflict dc = (ExamAssignmentInfo.DirectConflict)i.next();
-                if (examVar.getId()<dc.getOtherExam().getExamId().longValue()) {
-                    org.unitime.timetable.model.Exam otherExam = (org.unitime.timetable.model.Exam)examTable.get(dc.getOtherExam().getExamId());
+                if (examVar.getId()<dc.getOtherExam().getExam().getExamId().longValue()) {
+                    org.unitime.timetable.model.Exam otherExam = (org.unitime.timetable.model.Exam)examTable.get(dc.getOtherExam().getExam().getExamId());
                     if (otherExam==null) {
-                        iProgress.warn("Exam "+dc.getOtherExam().getExamName()+" (id:"+dc.getOtherExam().getExamId()+") not found.");
+                        iProgress.warn("Exam "+dc.getOtherExam().getExam().getExamName()+" (id:"+dc.getOtherExam().getExam().getExamId()+") not found.");
                         continue;
                     }
                     ExamConflict conf = new ExamConflict();
@@ -134,10 +134,10 @@ public class ExamDatabaseSaver extends ExamSaver {
             }
             for (Iterator i=info.getBackToBackConflicts().iterator();i.hasNext();) {
                 ExamAssignmentInfo.BackToBackConflict btb = (ExamAssignmentInfo.BackToBackConflict)i.next();
-                if (examVar.getId()<btb.getOtherExam().getExamId().longValue()) {
-                    org.unitime.timetable.model.Exam otherExam = (org.unitime.timetable.model.Exam)examTable.get(btb.getOtherExam().getExamId());
+                if (examVar.getId()<btb.getOtherExam().getExam().getExamId().longValue()) {
+                    org.unitime.timetable.model.Exam otherExam = (org.unitime.timetable.model.Exam)examTable.get(btb.getOtherExam().getExam().getExamId());
                     if (otherExam==null) {
-                        iProgress.warn("Exam "+btb.getOtherExam().getExamName()+" (id:"+btb.getOtherExam().getExamId()+") not found.");
+                        iProgress.warn("Exam "+btb.getOtherExam().getExam().getExamName()+" (id:"+btb.getOtherExam().getExam().getExamId()+") not found.");
                         continue;
                     }
                     ExamConflict conf = new ExamConflict();
@@ -157,10 +157,10 @@ public class ExamDatabaseSaver extends ExamSaver {
                 confExams.add(exam);
                 for (Iterator j=m2d.getOtherExams().iterator();j.hasNext();) {
                     ExamAssignment otherExamAsg = (ExamAssignment)j.next();
-                    if (examVar.getId()>=otherExamAsg.getExamId().longValue()) continue m2d;
-                    org.unitime.timetable.model.Exam otherExam = (org.unitime.timetable.model.Exam)examTable.get(otherExamAsg.getExamId());
+                    if (examVar.getId()>=otherExamAsg.getExam().getExamId().longValue()) continue m2d;
+                    org.unitime.timetable.model.Exam otherExam = (org.unitime.timetable.model.Exam)examTable.get(otherExamAsg.getExam().getExamId());
                     if (otherExam==null) {
-                        iProgress.warn("Exam "+otherExamAsg.getExamName()+" (id:"+otherExamAsg.getExamId()+") not found.");
+                        iProgress.warn("Exam "+otherExamAsg.getExam().getExamName()+" (id:"+otherExamAsg.getExam().getExamId()+") not found.");
                         continue;
                     }
                     confExams.add(otherExam);

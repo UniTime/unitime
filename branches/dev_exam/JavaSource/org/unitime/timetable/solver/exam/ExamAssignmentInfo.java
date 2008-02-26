@@ -215,7 +215,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             ret += "<td style='font-weight:bold;color:"+PreferenceLevel.prolog2color("P")+";'>";
             ret += "Direct";
             ret += "</td>";
-            ret += "<td>"+getOtherExam().getExamName()+"</td>";
+            ret += "<td>"+getOtherExam().getExam().getExamName()+"</td>";
             ret += "<td>"+getOtherExam().getPeriodAbbreviationWithPref()+"</td>";
             ret += "<td>"+getOtherExam().getRoomsNameWithPref(", ")+"</td>";
             ret += "</tr>";
@@ -276,7 +276,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             ret += "Back-To-Back";
             if (isDistance()) ret+="<br>("+Math.round(10.0*getDistance())+" m)";
             ret += "</td>";
-            ret += "<td>"+getOtherExam().getExamName()+"</td>";
+            ret += "<td>"+getOtherExam().getExam().getExamName()+"</td>";
             ret += "<td>"+getOtherExam().getPeriodAbbreviationWithPref()+"</td>";
             ret += "<td>"+getOtherExam().getRoomsNameWithPref(", ")+"</td>";
             ret += "</tr>";
@@ -329,7 +329,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             String id = "";
             for (Iterator i=getOtherExams().iterator();i.hasNext();) {
                 ExamAssignment a = (ExamAssignment)i.next();
-                id+=a.getExamId(); 
+                id+=a.getExam().getExamId(); 
                 if (i.hasNext()) id+=":";
             }
             int idx = 0;
@@ -348,7 +348,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             ret += "</td>";
             for (Iterator i=getOtherExams().iterator();i.hasNext();idx++) {
                 ExamAssignment a = (ExamAssignment)i.next();
-                ret += "<td>"+a.getExamName()+"</td>";
+                ret += "<td>"+a.getExam().getExamName()+"</td>";
                 ret += "<td>"+a.getPeriodAbbreviationWithPref()+"</td>";
                 ret += "<td>"+a.getRoomsNameWithPref(", ")+"</td>";
                 ret += "</tr>";
