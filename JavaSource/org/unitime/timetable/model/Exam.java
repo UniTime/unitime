@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.model;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -31,6 +32,8 @@ import org.unitime.commons.User;
 import org.unitime.timetable.model.base.BaseExam;
 import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.model.dao._RootDAO;
+import org.unitime.timetable.solver.exam.ExamAssignmentInfo;
+import org.unitime.timetable.solver.exam.ExamInfo;
 
 public class Exam extends BaseExam implements Comparable<Exam> {
 	private static final long serialVersionUID = 1L;
@@ -490,4 +493,31 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 		"x.assignedPeriod!=null").
                 setLong("sessionId",sessionId).uniqueResult()).longValue()>0;
     }
+    
+    public static Collection<ExamAssignmentInfo> findAssignedExams(Long sessionId) {
+        Vector<ExamAssignmentInfo> ret = new Vector<ExamAssignmentInfo>();
+        for (Iterator i=new ExamDAO().getSession().createQuery(
+                "select x from Exam x where "+
+                "x.session.uniqueId=:sessionId and x.assignedPeriod!=null").
+                setLong("sessionId", sessionId).
+                setCacheable(true).iterate();i.hasNext();) {
+            Exam exam = (Exam)i.next();
+            ret.add(new ExamAssignmentInfo(exam));
+        } 
+        return ret;
+    }
+    
+    public static Collection<ExamInfo> findUnassignedExams(Long sessionId) {
+        Vector<ExamInfo> ret = new Vector<ExamInfo>();
+        for (Iterator i=new ExamDAO().getSession().createQuery(
+                "select x from Exam x where "+
+                "x.session.uniqueId=:sessionId and x.assignedPeriod==null").
+                setLong("sessionId", sessionId).
+                setCacheable(true).iterate();i.hasNext();) {
+            Exam exam = (Exam)i.next();
+            ret.add(new ExamInfo(exam));
+        } 
+        return ret;
+    }
+
 }
