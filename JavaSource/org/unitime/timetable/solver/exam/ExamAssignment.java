@@ -167,4 +167,8 @@ public class ExamAssignment implements Serializable, Comparable {
         if (cmp!=0) return cmp;
         return getExamId().compareTo(a.getExamId());
     }
+    
+    public String toString() {
+        return getExamName();
+    }
 }

@@ -6,7 +6,9 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.Vector;
 
+import org.unitime.timetable.model.ExamConflict;
 import org.unitime.timetable.model.PreferenceLevel;
 
 import net.sf.cpsolver.exam.model.Exam;
@@ -34,6 +36,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                     dc = new DirectConflict(new ExamAssignment((ExamPlacement)other.getAssignment()));
                     directs.put(other, dc);
                 } else dc.incNrStudents();
+                dc.getStudents().add(student.getId());
             }
         }
         iDirects.addAll(directs.values());
@@ -46,12 +49,14 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                     Set exams = student.getExams(placement.getPeriod().prev());
                     for (Iterator i=exams.iterator();i.hasNext();) {
                         Exam other = (Exam)i.next();
+                        double distance = placement.getDistance((ExamPlacement)other.getAssignment());
                         BackToBackConflict btb = (BackToBackConflict)backToBacks.get(other);
                         if (btb==null) {
                             btb = new BackToBackConflict(new ExamAssignment((ExamPlacement)other.getAssignment()),
-                                    (btbDist<0?false:placement.getDistance((ExamPlacement)other.getAssignment())>btbDist));
-                            directs.put(other, btb);
+                                    (btbDist<0?false:distance>btbDist), distance/5.0);
+                            backToBacks.put(other, btb);
                         } else btb.incNrStudents();
+                        btb.getStudents().add(student.getId());
                     }
                 }
             }
@@ -61,11 +66,13 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                     for (Iterator i=exams.iterator();i.hasNext();) {
                         Exam other = (Exam)i.next();
                         BackToBackConflict btb = (BackToBackConflict)backToBacks.get(other);
+                        double distance = placement.getDistance((ExamPlacement)other.getAssignment());
                         if (btb==null) {
                             btb = new BackToBackConflict(new ExamAssignment((ExamPlacement)other.getAssignment()),
-                                    (btbDist<0?false:placement.getDistance((ExamPlacement)other.getAssignment())>btbDist));
-                            directs.put(other, btb);
+                                    (btbDist<0?false:distance>btbDist), distance);
+                            backToBacks.put(other, btb);
                         } else btb.incNrStudents();
+                        btb.getStudents().add(student.getId());
                     }
                 }
             }
@@ -88,9 +95,48 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             MoreThanTwoADayConflict m2d = (MoreThanTwoADayConflict)m2ds.get(examIds.toString());
             if (m2d==null) {
                 m2d = new MoreThanTwoADayConflict(otherExams);
+                m2ds.put(examIds.toString(), m2d);
             } else m2d.incNrStudents();
+            m2d.getStudents().add(student.getId());
         }
         iMoreThanTwoADays.addAll(m2ds.values());
+    }
+    
+    public ExamAssignmentInfo(org.unitime.timetable.model.Exam exam) {
+        super(exam);
+        if (exam.getConflicts()!=null) {
+            for (Iterator i=exam.getConflicts().iterator();i.hasNext();) {
+                ExamConflict conf = (ExamConflict)i.next();
+                if (conf.isDirectConflict()) {
+                    ExamAssignment other = null;
+                    for (Iterator j=conf.getExams().iterator();j.hasNext();) {
+                        org.unitime.timetable.model.Exam x = (org.unitime.timetable.model.Exam)j.next();
+                        if (x.equals(exam)) continue;
+                        if (x.getAssignedPeriod()!=null) other = new ExamAssignment(x);
+                    }
+                    if (other==null) continue;
+                    iDirects.add(new DirectConflict(other, conf.getNrStudents()));
+                } else if (conf.isBackToBackConflict()) {
+                    ExamAssignment other = null;
+                    for (Iterator j=conf.getExams().iterator();j.hasNext();) {
+                        org.unitime.timetable.model.Exam x = (org.unitime.timetable.model.Exam)j.next();
+                        if (x.equals(exam)) continue;
+                        if (x.getAssignedPeriod()!=null) other = new ExamAssignment(x);
+                    }
+                    if (other==null) continue;
+                    iBackToBacks.add(new BackToBackConflict(other, conf.getNrStudents(), conf.isDistanceBackToBackConflict(), conf.getDistance()));
+                } else if (conf.isMoreThanTwoADayConflict()) {
+                    TreeSet other = new TreeSet();
+                    for (Iterator j=conf.getExams().iterator();j.hasNext();) {
+                        org.unitime.timetable.model.Exam x = (org.unitime.timetable.model.Exam)j.next();
+                        if (x.equals(exam)) continue;
+                        if (x.getAssignedPeriod()!=null) other.add(new ExamAssignment(x));
+                    }
+                    if (other.size()<2) continue;
+                    iMoreThanTwoADays.add(new MoreThanTwoADayConflict(other, conf.getNrStudents()));
+                }
+            }
+        }
     }
     
     public TreeSet getDirectConflicts() {
@@ -122,9 +168,9 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         }
         for (Iterator i=getDirectConflicts().iterator();i.hasNext();)
             ret += i.next().toString();
-        for (Iterator i=getBackToBackConflicts().iterator();i.hasNext();)
-            ret += i.next().toString();
         for (Iterator i=getMoreThanTwoADaysConflicts().iterator();i.hasNext();)
+            ret += i.next().toString();
+        for (Iterator i=getBackToBackConflicts().iterator();i.hasNext();)
             ret += i.next().toString();
         ret += "</table>";
         return ret;
@@ -133,15 +179,23 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
     public static class DirectConflict implements Serializable, Comparable {
         protected ExamAssignment iOtherExam;
         protected int iNrStudents = 1;
+        protected transient Vector iStudents = new Vector();
         
         protected DirectConflict(ExamAssignment otherExam) {
             iOtherExam = otherExam;
+        }
+        protected DirectConflict(ExamAssignment otherExam, int nrStudents) {
+            iOtherExam = otherExam;
+            iNrStudents = nrStudents;
         }
         protected void incNrStudents() {
             iNrStudents++;
         }
         public int getNrStudents() {
             return iNrStudents;
+        }
+        public Vector getStudents() {
+            return iStudents;
         }
         public ExamAssignment getOtherExam() {
             return iOtherExam;
@@ -173,10 +227,19 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         protected ExamAssignment iOtherExam;
         protected int iNrStudents = 1;
         protected boolean iIsDistance = false; 
+        protected transient Vector iStudents = new Vector();
+        protected double iDistance = 0;
         
-        protected BackToBackConflict(ExamAssignment otherExam, boolean isDistance) {
+        protected BackToBackConflict(ExamAssignment otherExam, boolean isDistance, double distance) {
             iOtherExam = otherExam;
             iIsDistance = isDistance;
+            iDistance = distance;
+        }
+        protected BackToBackConflict(ExamAssignment otherExam, int nrStudents, boolean isDistance, double distance) {
+            iOtherExam = otherExam;
+            iNrStudents = nrStudents;
+            iIsDistance = isDistance;
+            iDistance = distance;
         }
         protected void incNrStudents() {
             iNrStudents++;
@@ -190,6 +253,12 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         public ExamAssignment getOtherExam() {
             return iOtherExam;
         }
+        public Vector getStudents() {
+            return iStudents;
+        }
+        public double getDistance() {
+            return iDistance;
+        }
         public int compareTo(Object o) {
             BackToBackConflict c = (BackToBackConflict)o;
             int cmp = -Double.compare(getNrStudents(), c.getNrStudents());
@@ -200,12 +269,12 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         public String toString() {
             String ret = "";
             ret += "<tr onmouseover=\"this.style.backgroundColor='rgb(223,231,242)';\" onmouseout=\"this.style.backgroundColor='transparent';\">";
-            ret += "<td style='font-weight:bold;color:"+PreferenceLevel.prolog2color("2")+";'>";
+            ret += "<td style='font-weight:bold;color:"+PreferenceLevel.prolog2color("1")+";'>";
             ret += String.valueOf(getNrStudents());
             ret += "</td>";
-            ret += "<td style='font-weight:bold;color:"+PreferenceLevel.prolog2color("2")+";'>";
-            if (isDistance()) ret+="Distance ";
+            ret += "<td style='font-weight:bold;color:"+PreferenceLevel.prolog2color("1")+";'>";
             ret += "Back-To-Back";
+            if (isDistance()) ret+="<br>("+Math.round(10.0*getDistance())+" m)";
             ret += "</td>";
             ret += "<td>"+getOtherExam().getExamName()+"</td>";
             ret += "<td>"+getOtherExam().getPeriodAbbreviationWithPref()+"</td>";
@@ -218,15 +287,23 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
     public static class MoreThanTwoADayConflict implements Serializable, Comparable {
         protected TreeSet iOtherExams;
         protected int iNrStudents = 1;
+        protected transient Vector iStudents = new Vector();
         
         protected MoreThanTwoADayConflict(TreeSet otherExams) {
             iOtherExams = otherExams;
+        }
+        protected MoreThanTwoADayConflict(TreeSet otherExams, int nrStudents) {
+            iOtherExams = otherExams;
+            iNrStudents = nrStudents;
         }
         protected void incNrStudents() {
             iNrStudents++;
         }
         public int getNrStudents() {
             return iNrStudents;
+        }
+        public Vector getStudents() {
+            return iStudents;
         }
         public TreeSet getOtherExams() {
             return iOtherExams;
@@ -247,20 +324,36 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         }
         public String toString() {
             String ret = "";
-            ret += "<tr onmouseover=\"this.style.backgroundColor='rgb(223,231,242)';\" onmouseout=\"this.style.backgroundColor='transparent';\">";
-            ret += "<td colspan='"+getOtherExams().size()+"' style='font-weight:bold;color:"+PreferenceLevel.prolog2color("1")+";'>";
+            String mouseOver = "";
+            String mouseOut = "";
+            String id = "";
+            for (Iterator i=getOtherExams().iterator();i.hasNext();) {
+                ExamAssignment a = (ExamAssignment)i.next();
+                id+=a.getExamId(); 
+                if (i.hasNext()) id+=":";
+            }
+            int idx = 0;
+            for (Iterator i=getOtherExams().iterator();i.hasNext();idx++) {
+                ExamAssignment a = (ExamAssignment)i.next();
+                mouseOver += "document.getElementById('"+id+":"+idx+"').style.backgroundColor='rgb(223,231,242)';";
+                mouseOut += "document.getElementById('"+id+":"+idx+"').style.backgroundColor='transparent';";
+            }
+            idx = 0;
+            ret += "<tr id='"+id+":"+idx+"' onmouseover=\""+mouseOver+"\" onmouseout=\""+mouseOut+"\">";
+            ret += "<td valign='top' rowspan='"+getOtherExams().size()+"' style='font-weight:bold;color:"+PreferenceLevel.prolog2color("2")+";'>";
             ret += String.valueOf(getNrStudents());
             ret += "</td>";
-            ret += "<td colspan='"+getOtherExams().size()+"' style='font-weight:bold;color:"+PreferenceLevel.prolog2color("1")+";'>";
+            ret += "<td valign='top' rowspan='"+getOtherExams().size()+"' style='font-weight:bold;color:"+PreferenceLevel.prolog2color("2")+";'>";
             ret += "&gt;2 A Day";
             ret += "</td>";
-            for (Iterator i=getOtherExams().iterator();i.hasNext();) {
+            for (Iterator i=getOtherExams().iterator();i.hasNext();idx++) {
                 ExamAssignment a = (ExamAssignment)i.next();
                 ret += "<td>"+a.getExamName()+"</td>";
                 ret += "<td>"+a.getPeriodAbbreviationWithPref()+"</td>";
                 ret += "<td>"+a.getRoomsNameWithPref(", ")+"</td>";
                 ret += "</tr>";
-                if (i.hasNext()) ret += "<tr>";
+                if (i.hasNext()) 
+                    ret += "<tr id='"+id+":"+(1+idx)+"' onmouseover=\""+mouseOver+"\" onmouseout=\""+mouseOut+"\">";
             }
             return ret;
         }

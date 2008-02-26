@@ -30,7 +30,6 @@ import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
-import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ExamAssignmentInfo;
@@ -211,32 +210,24 @@ public class ExamDetailAction extends PreferencesAction {
                 request.setAttribute("ExamDetail.table",table.printTable());
             }
             
+            ExamAssignmentInfo ea = null;
+            
             ExamAssignmentProxy examAssignment = WebSolver.getExamSolver(request.getSession());
             if (examAssignment!=null) {
-                ExamAssignmentInfo ea = examAssignment.getAssignmentInfo(exam.getUniqueId()); 
-                if (ea!=null) {
-                    String assignment = "<tr><td>Examination Period:</td><td>"+ea.getPeriodNameWithPref()+"</td></tr>";
-                    if (!ea.getRoomIds().isEmpty()) {
-                        assignment += "<tr><td>Room"+(ea.getRoomIds().size()>1?"s":"")+":</td><td>";
-                        assignment += ea.getRoomsNameWithPref("<br>");
-                        assignment += "</td></tr>";
-                    }
-                    if (ea.hasConflicts()) {
-                        assignment += "<tr><td>Conflicts</td><td>";
-                        assignment += ea.getConflictTable(true);
-                        assignment += "</td></tr>";
-                    }
-                    request.setAttribute("ExamDetail.assignment",assignment);
+                ea = examAssignment.getAssignmentInfo(exam.getUniqueId());
+            } else if (exam.getAssignedPeriod()!=null)
+                ea = new ExamAssignmentInfo(exam);
+            
+            if (ea!=null) {
+                String assignment = "<tr><td>Examination Period:</td><td>"+ea.getPeriodNameWithPref()+"</td></tr>";
+                if (!ea.getRoomIds().isEmpty()) {
+                    assignment += "<tr><td>Room"+(ea.getRoomIds().size()>1?"s":"")+":</td><td>";
+                    assignment += ea.getRoomsNameWithPref("<br>");
+                    assignment += "</td></tr>";
                 }
-            } else if (exam.getAssignedPeriod()!=null) {
-                String assignment = "<tr><td>Examination Period:</td><td>"+exam.getAssignedPeriod().getName()+"</td></tr>";
-                if (!exam.getAssignedRooms().isEmpty()) {
-                    assignment += "<tr><td>Room"+(exam.getAssignedRooms().size()>1?"s":"")+":</td><td>";
-                    for (Iterator i=new TreeSet(exam.getAssignedRooms()).iterator();i.hasNext();) {
-                        Location location = (Location)i.next();
-                        assignment += location.getLabel();
-                        if (i.hasNext()) assignment+="<br>";
-                    }
+                if (ea.hasConflicts()) {
+                    assignment += "<tr><td>Conflicts</td><td>";
+                    assignment += ea.getConflictTable(true);
                     assignment += "</td></tr>";
                 }
                 request.setAttribute("ExamDetail.assignment",assignment);
