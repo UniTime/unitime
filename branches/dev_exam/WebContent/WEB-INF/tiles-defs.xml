@@ -825,4 +825,15 @@
 		<put name="title" type="string" value="Examination Solver Log"/>
 		<put name="body" value="/exam/examLog.jsp" />
   	</definition>
+
+	<definition	name="assignedExamsTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Assigned Examinations"/>
+		<put name="body" value="/exam/assigned.jsp" />
+  	</definition>
+
+	<definition	name="unassignedExamsTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Not-Assigned Examinations"/>
+		<put name="body" value="/exam/unassigned.jsp" />
+  	</definition>
+
 </tiles-definitions>
