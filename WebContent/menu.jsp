@@ -103,6 +103,8 @@
 
 <%  if (manager.canTimetableExams(acadSession, user)) { %>		
 		menu_item('6','Examination Solver','Examination Solver','examSolver.do','collapse');
+			leaf_item('Assigned','Assigned Examinations','assignedExams.do');
+			leaf_item('Not-assigned','Not-Assigned Examinations','unassignedExams.do');
 			leaf_item('Log','Examination Solver Log','examSolverLog.do');
 		enditem(); //6
 <% } %>

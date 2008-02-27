@@ -72,6 +72,16 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
 	public static final int sOwnerTypeOffering = 0;
 	public static String[] sOwnerTypes = new String[] {"Offering", "Course", "Config", "Class"};
 	
+	public static ExamOwner findByOwnerIdType(Long ownerId, Integer ownerType) {
+	    return (ExamOwner)new ExamOwnerDAO().
+	        getSession().
+	        createQuery("select o from ExamOwner o where o.ownerId=:ownerId and o.ownerType=:ownerType").
+	        setLong("ownerId", ownerId).
+	        setInteger("ownerType", ownerType).
+	        setCacheable(true).uniqueResult();
+	}
+	
+	
 	private Object iOwnerObject = null;
 	public Object getOwnerObject() {
 	    if (iOwnerObject!=null) return iOwnerObject;

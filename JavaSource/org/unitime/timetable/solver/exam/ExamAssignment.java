@@ -17,21 +17,23 @@ import org.unitime.timetable.model.dao.LocationDAO;
 import net.sf.cpsolver.exam.model.ExamPlacement;
 import net.sf.cpsolver.exam.model.ExamRoom;
 
-public class ExamAssignment implements Serializable, Comparable {
+public class ExamAssignment extends ExamInfo implements Serializable, Comparable {
     protected Long iPeriodId = null;
     protected Vector iRoomIds = null;
     protected String iPeriodPref = null;
+    protected int iPeriodIdx = -1;
     protected Hashtable iRoomPrefs = null;
     protected transient ExamPeriod iPeriod = null;
     protected transient TreeSet iRooms = null;
     protected ExamInfo iExam = null;
     
     public ExamAssignment(ExamPlacement placement) {
+        super((net.sf.cpsolver.exam.model.Exam)placement.variable());
         iPeriodId = placement.getPeriod().getId();
+        iPeriodIdx = placement.getPeriod().getIndex();
         iRoomIds = new Vector(placement.getRooms()==null?0:placement.getRooms().size());
         iPeriodPref = PreferenceLevel.int2prolog(placement.getPeriodPenalty());
         iRoomPrefs = new Hashtable();
-        iExam = new ExamInfo((net.sf.cpsolver.exam.model.Exam)placement.variable());
         if (placement.getRooms()!=null)
             for (Iterator i=placement.getRooms().iterator();i.hasNext();) {
                 ExamRoom room = (ExamRoom)i.next();
@@ -41,11 +43,11 @@ public class ExamAssignment implements Serializable, Comparable {
     }
     
     public ExamAssignment(Exam exam) {
+        super(exam);
         iPeriod = exam.getAssignedPeriod();
         iPeriodId = exam.getAssignedPeriod().getUniqueId();
         iRooms = new TreeSet();
         iRoomIds = new Vector(exam.getAssignedRooms().size());
-        iExam = new ExamInfo(exam);
         for (Iterator i=exam.getAssignedRooms().iterator();i.hasNext();) {
             Location location = (Location)i.next();
             iRooms.add(location);
@@ -63,6 +65,11 @@ public class ExamAssignment implements Serializable, Comparable {
         return iPeriod;
     }
     
+    public Comparable getPeriodOrd() {
+        if (iPeriodIdx>=0) return new Integer(iPeriodIdx);
+        else return iPeriod;
+    }
+
     public String getPeriodName() {
         ExamPeriod period = getPeriod();
         return period==null?"":period.getName();
@@ -131,26 +138,7 @@ public class ExamAssignment implements Serializable, Comparable {
         return rooms;
     }
     
-    public ExamInfo getExam() {
-        return iExam;
-    }
-
-    public int hashCode() {
-        return getExam().hashCode();
-    }
-    
-    public boolean equals(Object o) {
-        if (o==null || !(o instanceof ExamAssignment)) return false;
-        return ((ExamAssignment)o).getExam().equals(getExam());
-    }
-    
-    public int compareTo(Object o) {
-        if (o==null || !(o instanceof ExamAssignment)) return -1;
-        ExamAssignment a = (ExamAssignment)o;
-        return getExam().compareTo(a.getExam());
-    }
-    
     public String toString() {
-        return getExam().getExamName()+" "+getPeriodAbbreviation()+" "+getRoomsName(",");
+        return getExamName()+" "+getPeriodAbbreviation()+" "+getRoomsName(",");
     }
 }

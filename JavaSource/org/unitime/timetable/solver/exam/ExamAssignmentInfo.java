@@ -151,6 +151,43 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         return iMoreThanTwoADays;
     }
     
+    public int countDirectConflicts() {
+        int ret = 0;
+        for (Iterator i=iDirects.iterator();i.hasNext();) {
+            DirectConflict dc = (DirectConflict)i.next();
+            ret += dc.getNrStudents();
+        }
+        return ret;
+    }
+
+    public int countBackToBackConflicts() {
+        int ret = 0;
+        for (Iterator i=iBackToBacks.iterator();i.hasNext();) {
+            BackToBackConflict btb = (BackToBackConflict)i.next();
+            ret += btb.getNrStudents();
+        }
+        return ret;
+    }
+    
+    public int countDistanceBackToBackConflicts() {
+        int ret = 0;
+        for (Iterator i=iBackToBacks.iterator();i.hasNext();) {
+            BackToBackConflict btb = (BackToBackConflict)i.next();
+            if (btb.isDistance())
+                ret += btb.getNrStudents();
+        }
+        return ret;
+    }
+
+    public int countMoreThanTwoConflicts() {
+        int ret = 0;
+        for (Iterator i=iMoreThanTwoADays.iterator();i.hasNext();) {
+            MoreThanTwoADayConflict m2d = (MoreThanTwoADayConflict)i.next();
+            ret += m2d.getNrStudents();
+        }
+        return ret;
+    }
+
     public boolean hasConflicts() {
         return !getDirectConflicts().isEmpty() || !getBackToBackConflicts().isEmpty() || !getMoreThanTwoADaysConflicts().isEmpty();
     }
@@ -215,7 +252,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             ret += "<td style='font-weight:bold;color:"+PreferenceLevel.prolog2color("P")+";'>";
             ret += "Direct";
             ret += "</td>";
-            ret += "<td>"+getOtherExam().getExam().getExamName()+"</td>";
+            ret += "<td>"+getOtherExam().getExamName()+"</td>";
             ret += "<td>"+getOtherExam().getPeriodAbbreviationWithPref()+"</td>";
             ret += "<td>"+getOtherExam().getRoomsNameWithPref(", ")+"</td>";
             ret += "</tr>";
@@ -276,7 +313,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             ret += "Back-To-Back";
             if (isDistance()) ret+="<br>("+Math.round(10.0*getDistance())+" m)";
             ret += "</td>";
-            ret += "<td>"+getOtherExam().getExam().getExamName()+"</td>";
+            ret += "<td>"+getOtherExam().getExamName()+"</td>";
             ret += "<td>"+getOtherExam().getPeriodAbbreviationWithPref()+"</td>";
             ret += "<td>"+getOtherExam().getRoomsNameWithPref(", ")+"</td>";
             ret += "</tr>";
@@ -329,7 +366,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             String id = "";
             for (Iterator i=getOtherExams().iterator();i.hasNext();) {
                 ExamAssignment a = (ExamAssignment)i.next();
-                id+=a.getExam().getExamId(); 
+                id+=a.getExamId(); 
                 if (i.hasNext()) id+=":";
             }
             int idx = 0;
@@ -348,7 +385,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             ret += "</td>";
             for (Iterator i=getOtherExams().iterator();i.hasNext();idx++) {
                 ExamAssignment a = (ExamAssignment)i.next();
-                ret += "<td>"+a.getExam().getExamName()+"</td>";
+                ret += "<td>"+a.getExamName()+"</td>";
                 ret += "<td>"+a.getPeriodAbbreviationWithPref()+"</td>";
                 ret += "<td>"+a.getRoomsNameWithPref(", ")+"</td>";
                 ret += "</tr>";

@@ -496,11 +496,12 @@ public class Exam extends BaseExam implements Comparable<Exam> {
     
     public static Collection<ExamAssignmentInfo> findAssignedExams(Long sessionId) {
         Vector<ExamAssignmentInfo> ret = new Vector<ExamAssignmentInfo>();
-        for (Iterator i=new ExamDAO().getSession().createQuery(
+        List exams = new ExamDAO().getSession().createQuery(
                 "select x from Exam x where "+
                 "x.session.uniqueId=:sessionId and x.assignedPeriod!=null").
                 setLong("sessionId", sessionId).
-                setCacheable(true).iterate();i.hasNext();) {
+                setCacheable(true).list();
+        for (Iterator i=exams.iterator();i.hasNext();) {
             Exam exam = (Exam)i.next();
             ret.add(new ExamAssignmentInfo(exam));
         } 
@@ -509,11 +510,46 @@ public class Exam extends BaseExam implements Comparable<Exam> {
     
     public static Collection<ExamInfo> findUnassignedExams(Long sessionId) {
         Vector<ExamInfo> ret = new Vector<ExamInfo>();
-        for (Iterator i=new ExamDAO().getSession().createQuery(
+        List exams = new ExamDAO().getSession().createQuery(
                 "select x from Exam x where "+
-                "x.session.uniqueId=:sessionId and x.assignedPeriod==null").
+                "x.session.uniqueId=:sessionId and x.assignedPeriod=null").
                 setLong("sessionId", sessionId).
-                setCacheable(true).iterate();i.hasNext();) {
+                setCacheable(true).list();
+        for (Iterator i=exams.iterator();i.hasNext();) {
+            Exam exam = (Exam)i.next();
+            ret.add(new ExamInfo(exam));
+        } 
+        return ret;
+    }
+    
+    public static Collection<ExamAssignmentInfo> findAssignedExams(Long sessionId, Long subjectAreaId) {
+        if (subjectAreaId==null || subjectAreaId<0) return findAssignedExams(sessionId);
+        Vector<ExamAssignmentInfo> ret = new Vector<ExamAssignmentInfo>();
+        List exams = new ExamDAO().getSession().createQuery(
+                "select distinct x from Exam x inner join x.owners o where " +
+                "o.course.subjectArea.uniqueId=:subjectAreaId and "+
+                "x.session.uniqueId=:sessionId and x.assignedPeriod!=null").
+                setLong("sessionId", sessionId).
+                setLong("subjectAreaId", subjectAreaId).
+                setCacheable(true).list();
+        for (Iterator i=exams.iterator();i.hasNext();) {
+            Exam exam = (Exam)i.next();
+            ret.add(new ExamAssignmentInfo(exam));
+        } 
+        return ret;
+    }
+    
+    public static Collection<ExamInfo> findUnassignedExams(Long sessionId, Long subjectAreaId) {
+        if (subjectAreaId==null || subjectAreaId<0) return findUnassignedExams(sessionId);
+        Vector<ExamInfo> ret = new Vector<ExamInfo>();
+        List exams = new ExamDAO().getSession().createQuery(
+                "select distinct x from Exam x inner join x.owners o where " +
+                "o.course.subjectArea.uniqueId=:subjectAreaId and "+
+                "x.session.uniqueId=:sessionId and x.assignedPeriod=null").
+                setLong("sessionId", sessionId).
+                setLong("subjectAreaId", subjectAreaId).
+                setCacheable(true).list();
+        for (Iterator i=exams.iterator();i.hasNext();) {
             Exam exam = (Exam)i.next();
             ret.add(new ExamInfo(exam));
         } 

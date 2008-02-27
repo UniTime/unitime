@@ -17,11 +17,15 @@ import org.apache.commons.logging.LogFactory;
 import org.hibernate.Transaction;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.BuildingPref;
+import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionObject;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.ExamPeriodPref;
+import org.unitime.timetable.model.InstrOfferingConfig;
+import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Room;
@@ -37,6 +41,7 @@ import net.sf.cpsolver.coursett.preference.MinMaxPreferenceCombination;
 import net.sf.cpsolver.coursett.preference.PreferenceCombination;
 import net.sf.cpsolver.coursett.preference.SumPreferenceCombination;
 import net.sf.cpsolver.exam.model.Exam;
+import net.sf.cpsolver.exam.model.ExamCourseSection;
 import net.sf.cpsolver.exam.model.ExamDistributionConstraint;
 import net.sf.cpsolver.exam.model.ExamInstructor;
 import net.sf.cpsolver.exam.model.ExamModel;
@@ -52,6 +57,7 @@ public class ExamDatabaseLoader extends ExamLoader {
     private static Log sLog = LogFactory.getLog(ExamDatabaseLoader.class);
     private Long iSessionId;
     private boolean iLoadSolution;
+    private String iInstructorFormat;
     private Progress iProgress = null;
     private Hashtable iPeriods = new Hashtable();
     private Hashtable iRooms = new Hashtable();
@@ -65,6 +71,7 @@ public class ExamDatabaseLoader extends ExamLoader {
         iProgress = Progress.getInstance(model);
         iSessionId = model.getProperties().getPropertyLong("General.SessionId",(Long)null);
         iLoadSolution = model.getProperties().getPropertyBoolean("General.LoadSolution", true);
+        iInstructorFormat = getModel().getProperties().getProperty("General.InstructorFormat", DepartmentalInstructor.sNameFormatLastFist);
     }
     
     private String getExamLabel(org.unitime.timetable.model.Exam exam) {
@@ -162,27 +169,27 @@ public class ExamDatabaseLoader extends ExamLoader {
                     exam.getMaxNbrRooms());
             iExams.put(exam.getUniqueId(), x);
             getModel().addVariable(x);
-            /*
-            for (Iterator j=exam.getOwnerObjects().iterator();j.hasNext();) {
-                Object owner = j.next();
-                if (owner instanceof Class_) {
-                    Class_ clazz = (Class_)owner;
-                    ExamCourseSection cs = new ExamCourseSection(x, clazz.getUniqueId(), clazz.getClassLabel(), true);
+            for (Iterator j=new TreeSet(exam.getOwners()).iterator();j.hasNext();) {
+                ExamOwner owner = (ExamOwner)j.next();
+                Object ownerObject = owner.getOwnerObject();
+                if (ownerObject instanceof Class_) {
+                    Class_ clazz = (Class_)ownerObject;
+                    ExamCourseSection cs = new ExamCourseSection(x, owner.getUniqueId(), clazz.getClassLabel(), true);
                     x.getCourseSections().add(cs);
-                } else if (owner instanceof InstrOfferingConfig) {
-                    InstrOfferingConfig config = (InstrOfferingConfig)owner;
-                    ExamCourseSection cs = new ExamCourseSection(x, config.getUniqueId(), config.toString(), false);
+                } else if (ownerObject instanceof InstrOfferingConfig) {
+                    InstrOfferingConfig config = (InstrOfferingConfig)ownerObject;
+                    ExamCourseSection cs = new ExamCourseSection(x, owner.getUniqueId(), config.toString(), false);
                     x.getCourseSections().add(cs);
-                } else if (owner instanceof CourseOffering) {
-                    CourseOffering course = (CourseOffering)owner;
-                    ExamCourseSection cs = new ExamCourseSection(x, course.getUniqueId(), course.getCourseName(), false);
+                } else if (ownerObject instanceof CourseOffering) {
+                    CourseOffering course = (CourseOffering)ownerObject;
+                    ExamCourseSection cs = new ExamCourseSection(x, owner.getUniqueId(), course.getCourseName(), false);
                     x.getCourseSections().add(cs);
-                } else if (owner instanceof InstructionalOffering) {
-                    InstructionalOffering offering = (InstructionalOffering)owner;
-                    ExamCourseSection cs = new ExamCourseSection(x, offering.getUniqueId(), offering.getCourseName(), false);
+                } else if (ownerObject instanceof InstructionalOffering) {
+                    InstructionalOffering offering = (InstructionalOffering)ownerObject;
+                    ExamCourseSection cs = new ExamCourseSection(x, owner.getUniqueId(), offering.getCourseName(), false);
                     x.getCourseSections().add(cs);
                 }
-            }*/
+            }
             boolean hasReqPeriod = false;
             for (Iterator j=exam.getPreferences(ExamPeriodPref.class).iterator();j.hasNext();) {
                 ExamPeriodPref periodPref = (ExamPeriodPref)j.next();
@@ -258,7 +265,7 @@ public class ExamDatabaseLoader extends ExamLoader {
         if (instructor.getExternalUniqueId()!=null && instructor.getExternalUniqueId().trim().length()>0) {
             ExamInstructor i = (ExamInstructor)iInstructors.get(instructor.getExternalUniqueId());
             if (i==null) {
-                i = new ExamInstructor(getModel(), instructor.getUniqueId(), instructor.nameLastNameFirst());
+                i = new ExamInstructor(getModel(), instructor.getUniqueId(), instructor.getName(iInstructorFormat));
                 iInstructors.put(instructor.getExternalUniqueId(), i);
                 getModel().addConstraint(i);
                 getModel().getInstructors().add(i);
@@ -267,7 +274,7 @@ public class ExamDatabaseLoader extends ExamLoader {
         } else {
             ExamInstructor i = (ExamInstructor)iInstructors.get(instructor.getUniqueId());
             if (i==null) {
-                i = new ExamInstructor(getModel(), instructor.getUniqueId(), instructor.nameLastNameFirst());
+                i = new ExamInstructor(getModel(), instructor.getUniqueId(), instructor.getName(iInstructorFormat));
                 iInstructors.put(instructor.getUniqueId(), i);
                 getModel().addConstraint(i);
                 getModel().getInstructors().add(i);

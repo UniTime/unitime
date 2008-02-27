@@ -19,10 +19,12 @@ import org.apache.commons.logging.LogFactory;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
+import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.solver.remote.BackupFileFilter;
 import org.unitime.timetable.util.Constants;
 
 import net.sf.cpsolver.exam.model.Exam;
+import net.sf.cpsolver.exam.model.ExamCourseSection;
 import net.sf.cpsolver.exam.model.ExamModel;
 import net.sf.cpsolver.exam.model.ExamPeriod;
 import net.sf.cpsolver.exam.model.ExamPlacement;
@@ -546,5 +548,41 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
         }
     }
 
+    public Collection<ExamAssignmentInfo> getAssignedExams(Long subjectAreaId) {
+        if (subjectAreaId==null || subjectAreaId<0) return getAssignedExams();
+        String sa = new SubjectAreaDAO().get(subjectAreaId).getSubjectAreaAbbreviation()+" ";
+        synchronized (currentSolution()) {
+            Vector<ExamAssignmentInfo> ret = new Vector<ExamAssignmentInfo>();
+            for (Enumeration e=currentSolution().getModel().variables().elements();e.hasMoreElements();) {
+                Exam exam = (Exam)e.nextElement();
+                boolean hasSubjectArea = false;
+                for (Enumeration f=exam.getCourseSections().elements();!hasSubjectArea && f.hasMoreElements();) {
+                    ExamCourseSection ecs = (ExamCourseSection)f.nextElement();
+                    hasSubjectArea = ecs.getName().startsWith(sa);
+                }
+                if (hasSubjectArea && exam.getAssignment()!=null)
+                    ret.add(new ExamAssignmentInfo((ExamPlacement)exam.getAssignment()));
+            }
+            return ret;
+        }
+    }
+    public Collection<ExamInfo> getUnassignedExams(Long subjectAreaId) {
+        if (subjectAreaId==null || subjectAreaId<0) return getUnassignedExams();
+        String sa = new SubjectAreaDAO().get(subjectAreaId).getSubjectAreaAbbreviation()+" ";
+        synchronized (currentSolution()) {
+            Vector<ExamInfo> ret = new Vector<ExamInfo>();
+            for (Enumeration e=currentSolution().getModel().variables().elements();e.hasMoreElements();) {
+                Exam exam = (Exam)e.nextElement();
+                boolean hasSubjectArea = false;
+                for (Enumeration f=exam.getCourseSections().elements();!hasSubjectArea && f.hasMoreElements();) {
+                    ExamCourseSection ecs = (ExamCourseSection)f.nextElement();
+                    hasSubjectArea = ecs.getName().startsWith(sa);
+                }
+                if (hasSubjectArea && exam.getAssignment()==null)
+                    ret.add(new ExamInfo(exam));
+            }
+            return ret;
+        }
+    }
 
 }
