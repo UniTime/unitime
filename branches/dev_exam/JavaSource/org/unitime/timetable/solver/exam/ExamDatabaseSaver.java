@@ -9,14 +9,18 @@ import java.util.Iterator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Transaction;
+import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.ExamConflict;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Student;
+import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.model.dao.ExamPeriodDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
+import org.unitime.timetable.solver.exam.ui.ExamAssignment;
+import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
 
 import net.sf.cpsolver.exam.model.Exam;
 import net.sf.cpsolver.exam.model.ExamPlacement;
@@ -68,6 +72,7 @@ public class ExamDatabaseSaver extends ExamSaver {
             iProgress.incProgress();
             org.unitime.timetable.model.Exam exam = (org.unitime.timetable.model.Exam)i.next();
             exam.setAssignedPeriod(null);
+            exam.setAssignedPreference(null);
             exam.getAssignedRooms().clear();
             for (Iterator j=exam.getConflicts().iterator();j.hasNext();) {
                 ExamConflict conf = (ExamConflict)j.next();
@@ -104,6 +109,7 @@ public class ExamDatabaseSaver extends ExamSaver {
                 }
                 exam.getAssignedRooms().add(location);
             }
+            exam.setAssignedPreference(new ExamAssignment(placement).getAssignedPreferenceString());
             hibSession.saveOrUpdate(exam);
         }
         iProgress.setPhase("Saving conflicts...", getModel().assignedVariables().size());
@@ -176,6 +182,69 @@ public class ExamDatabaseSaver extends ExamSaver {
                     iProgress.debug("More than 2 a day conflict of "+m2d.getStudents().size()+" students between "+exam.getLabel()+" and "+m2d.getOtherExams());
                 }
             }
+
+            for (Iterator i=info.getInstructorDirectConflicts().iterator();i.hasNext();) {
+                ExamAssignmentInfo.DirectConflict dc = (ExamAssignmentInfo.DirectConflict)i.next();
+                if (examVar.getId()<dc.getOtherExam().getExamId().longValue()) {
+                    org.unitime.timetable.model.Exam otherExam = (org.unitime.timetable.model.Exam)examTable.get(dc.getOtherExam().getExamId());
+                    if (otherExam==null) {
+                        iProgress.warn("Exam "+dc.getOtherExam().getExamName()+" (id:"+dc.getOtherExam().getExamId()+") not found.");
+                        continue;
+                    }
+                    ExamConflict conf = new ExamConflict();
+                    conf.setConflictType(ExamConflict.sConflictTypeDirect);
+                    conf.setInstructors(getInstructors(hibSession, dc.getStudents()));
+                    conf.setNrInstructors(conf.getInstructors().size());
+                    hibSession.save(conf);
+                    exam.getConflicts().add(conf);
+                    otherExam.getConflicts().add(conf);
+                    iProgress.debug("Direct conflict of "+dc.getStudents().size()+" instructors between "+exam.getLabel()+" and "+otherExam.getLabel());
+                }
+            }
+            for (Iterator i=info.getInstructorBackToBackConflicts().iterator();i.hasNext();) {
+                ExamAssignmentInfo.BackToBackConflict btb = (ExamAssignmentInfo.BackToBackConflict)i.next();
+                if (examVar.getId()<btb.getOtherExam().getExamId().longValue()) {
+                    org.unitime.timetable.model.Exam otherExam = (org.unitime.timetable.model.Exam)examTable.get(btb.getOtherExam().getExamId());
+                    if (otherExam==null) {
+                        iProgress.warn("Exam "+btb.getOtherExam().getExamName()+" (id:"+btb.getOtherExam().getExamId()+") not found.");
+                        continue;
+                    }
+                    ExamConflict conf = new ExamConflict();
+                    conf.setConflictType(btb.isDistance()?ExamConflict.sConflictTypeBackToBackDist:ExamConflict.sConflictTypeBackToBack);
+                    conf.setDistance(btb.getDistance());
+                    conf.setInstructors(getInstructors(hibSession, btb.getStudents()));
+                    conf.setNrInstructors(conf.getInstructors().size());
+                    exam.getConflicts().add(conf);
+                    otherExam.getConflicts().add(conf);
+                    hibSession.save(conf);
+                    iProgress.debug("Back-to-back conflict of "+btb.getStudents().size()+" instructors between "+exam.getLabel()+" and "+otherExam.getLabel());
+                }
+            }
+            m2d: for (Iterator i=info.getInstructorMoreThanTwoADaysConflicts().iterator();i.hasNext();) {
+                ExamAssignmentInfo.MoreThanTwoADayConflict m2d = (ExamAssignmentInfo.MoreThanTwoADayConflict)i.next();
+                HashSet confExams = new HashSet();
+                confExams.add(exam);
+                for (Iterator j=m2d.getOtherExams().iterator();j.hasNext();) {
+                    ExamAssignment otherExamAsg = (ExamAssignment)j.next();
+                    if (examVar.getId()>=otherExamAsg.getExamId().longValue()) continue m2d;
+                    org.unitime.timetable.model.Exam otherExam = (org.unitime.timetable.model.Exam)examTable.get(otherExamAsg.getExamId());
+                    if (otherExam==null) {
+                        iProgress.warn("Exam "+otherExamAsg.getExamName()+" (id:"+otherExamAsg.getExamId()+") not found.");
+                        continue;
+                    }
+                    confExams.add(otherExam);
+                }
+                if (confExams.size()>=3) {
+                    ExamConflict conf = new ExamConflict();
+                    conf.setConflictType(ExamConflict.sConflictTypeMoreThanTwoADay);
+                    conf.setInstructors(getInstructors(hibSession, m2d.getStudents()));
+                    conf.setNrInstructors(conf.getInstructors().size());
+                    hibSession.save(conf);
+                    for (Iterator j=confExams.iterator();j.hasNext();)
+                        ((org.unitime.timetable.model.Exam)j.next()).getConflicts().add(conf);
+                    iProgress.debug("More than 2 a day conflict of "+m2d.getStudents().size()+" instructors between "+exam.getLabel()+" and "+m2d.getOtherExams());
+                }
+            }
         }
         for (Iterator i=exams.iterator();i.hasNext();) {
             org.unitime.timetable.model.Exam exam = (org.unitime.timetable.model.Exam)i.next();
@@ -192,5 +261,16 @@ public class ExamDatabaseSaver extends ExamSaver {
             if (student!=null) students.add(student);
         }
         return students;
+    }
+
+    protected HashSet getInstructors(org.hibernate.Session hibSession, Collection instructorIds) {
+        HashSet instructors = new HashSet();
+        if (instructorIds==null || instructorIds.isEmpty()) return instructors;
+        for (Iterator i=instructorIds.iterator();i.hasNext();) {
+            Long instructorId = (Long)i.next();
+            DepartmentalInstructor instructor = new DepartmentalInstructorDAO().get(instructorId, hibSession);
+            if (instructor!=null) instructors.add(instructor);
+        }
+        return instructors;
     }
 }
