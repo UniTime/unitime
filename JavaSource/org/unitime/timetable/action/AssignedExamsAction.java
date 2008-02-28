@@ -39,8 +39,8 @@ import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.solver.WebSolver;
-import org.unitime.timetable.solver.exam.ExamAssignmentInfo;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
+import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.PdfWebTable;
 

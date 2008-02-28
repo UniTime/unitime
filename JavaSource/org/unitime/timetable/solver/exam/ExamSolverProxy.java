@@ -6,6 +6,9 @@ import java.util.Date;
 import java.util.Hashtable;
 import java.util.Map;
 
+import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
+import org.unitime.timetable.solver.exam.ui.ExamInfo;
+
 import net.sf.cpsolver.ifs.util.DataProperties;
 
 public interface ExamSolverProxy extends ExamAssignmentProxy {

@@ -1,9 +1,10 @@
-package org.unitime.timetable.solver.exam;
+package org.unitime.timetable.solver.exam.ui;
 
 import java.io.Serializable;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.Vector;
 
@@ -15,8 +16,10 @@ import org.unitime.timetable.model.dao.ExamPeriodDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 
 import net.sf.cpsolver.coursett.preference.MinMaxPreferenceCombination;
+import net.sf.cpsolver.exam.model.ExamDistributionConstraint;
 import net.sf.cpsolver.exam.model.ExamPlacement;
 import net.sf.cpsolver.exam.model.ExamRoom;
+import net.sf.cpsolver.ifs.util.ToolBox;
 
 public class ExamAssignment extends ExamInfo implements Serializable, Comparable {
     protected Long iPeriodId = null;
@@ -27,6 +30,8 @@ public class ExamAssignment extends ExamInfo implements Serializable, Comparable
     protected transient ExamPeriod iPeriod = null;
     protected transient TreeSet iRooms = null;
     protected ExamInfo iExam = null;
+    protected String iDistPref = null;
+
     
     public ExamAssignment(ExamPlacement placement) {
         super((net.sf.cpsolver.exam.model.Exam)placement.variable());
@@ -41,6 +46,13 @@ public class ExamAssignment extends ExamInfo implements Serializable, Comparable
                 iRoomIds.add(room.getId());
                 iRoomPrefs.put(room.getId(),PreferenceLevel.int2prolog(((net.sf.cpsolver.exam.model.Exam)placement.variable()).getWeight(room)));
             }
+        MinMaxPreferenceCombination pc = new MinMaxPreferenceCombination();
+        for (Enumeration e=((net.sf.cpsolver.exam.model.Exam)placement.variable()).getDistributionConstraints().elements();e.hasMoreElements();) {
+            ExamDistributionConstraint dc = (ExamDistributionConstraint)e.nextElement();
+            if (dc.isHard() || dc.isSatisfied()) continue;
+            pc.addPreferenceInt(dc.getWeight());
+        }
+        iDistPref = pc.getPreferenceProlog(); 
     }
     
     public ExamAssignment(Exam exam) {
@@ -54,6 +66,27 @@ public class ExamAssignment extends ExamInfo implements Serializable, Comparable
             iRooms.add(location);
             iRoomIds.add(location.getUniqueId());
         }
+        if (exam.getAssignedPreference()!=null && exam.getAssignedPreference().length()>0) {
+            iRoomPrefs = new Hashtable();
+            StringTokenizer stk = new StringTokenizer(exam.getAssignedPreference(),":");
+            if (stk.hasMoreTokens())
+                iPeriodPref = stk.nextToken();
+            if (stk.hasMoreTokens())
+                iDistPref = stk.nextToken();
+            for (Enumeration e=ToolBox.sortEnumeration(iRoomIds.elements());e.hasMoreElements() && stk.hasMoreTokens();) {
+                Long roomId = (Long)e.nextElement();
+                iRoomPrefs.put(roomId, stk.nextToken());
+            }
+        }
+    }
+    
+    public String getAssignedPreferenceString() {
+        String ret = getPeriodPref()+":"+getDistributionPref();
+        for (Enumeration e=ToolBox.sortEnumeration(iRoomIds.elements());e.hasMoreElements();) {
+            Long roomId = (Long)e.nextElement();
+            ret += ":"+getRoomPref(roomId);
+        }
+        return ret;
     }
 
     public Long getPeriodId() {
@@ -144,12 +177,17 @@ public class ExamAssignment extends ExamInfo implements Serializable, Comparable
     }
     
     public String getPeriodPref() {
-        return iPeriodPref;
+        return (iPeriodPref==null?PreferenceLevel.sNeutral:iPeriodPref);
     }
     
     public String getRoomPref(Long roomId) {
-        if (iRoomPrefs==null) return null;
-        return (String)iRoomPrefs.get(roomId);
+        if (iRoomPrefs==null) return PreferenceLevel.sNeutral;
+        String pref = (String)iRoomPrefs.get(roomId);
+        return (pref==null?PreferenceLevel.sNeutral:pref);
+    }
+
+    public String getDistributionPref() {
+        return (iDistPref==null?PreferenceLevel.sNeutral:iDistPref);
     }
 
     public String getRoomPref() {
