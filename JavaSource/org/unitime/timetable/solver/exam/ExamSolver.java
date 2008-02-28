@@ -25,6 +25,7 @@ import org.unitime.timetable.util.Constants;
 
 import net.sf.cpsolver.exam.model.Exam;
 import net.sf.cpsolver.exam.model.ExamCourseSection;
+import net.sf.cpsolver.exam.model.ExamInstructor;
 import net.sf.cpsolver.exam.model.ExamModel;
 import net.sf.cpsolver.exam.model.ExamPeriod;
 import net.sf.cpsolver.exam.model.ExamPlacement;
@@ -584,5 +585,49 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
             return ret;
         }
     }
+    
+    public Collection<ExamAssignmentInfo> getAssignedExamsOfRoom(Long roomId) throws Exception {
+        synchronized (currentSolution()) {
+            ExamRoom room = null;
+            for (Enumeration e=((ExamModel)currentSolution().getModel()).getRooms().elements();e.hasMoreElements();) {
+                ExamRoom r = (ExamRoom)e.nextElement();
+                if (r.getId()==roomId) {
+                    room = r; break;
+                }
+            }
+            if (room==null) return null;
+            Vector<ExamAssignmentInfo> ret = new Vector<ExamAssignmentInfo>();
+            for (Enumeration e=((ExamModel)currentSolution().getModel()).getPeriods().elements();e.hasMoreElements();) {
+                ExamPeriod period = (ExamPeriod)e.nextElement();
+                ExamPlacement placement = room.getPlacement(period);
+                if (placement!=null)
+                    ret.add(new ExamAssignmentInfo(placement));
+            }
+            return ret;
+        }
+    }
 
+    public Collection<ExamAssignmentInfo> getAssignedExamsOfInstructor(Long instructorId) throws Exception {
+        synchronized (currentSolution()) {
+            ExamInstructor instructor = null;
+            for (Enumeration e=((ExamModel)currentSolution().getModel()).getRooms().elements();e.hasMoreElements();) {
+                ExamInstructor i = (ExamInstructor)e.nextElement();
+                if (i.getId()==instructorId) {
+                    instructor = i; break;
+                }
+            }
+            if (instructor==null) return null;
+            Vector<ExamAssignmentInfo> ret = new Vector<ExamAssignmentInfo>();
+            for (Enumeration e=((ExamModel)currentSolution().getModel()).getPeriods().elements();e.hasMoreElements();) {
+                ExamPeriod period = (ExamPeriod)e.nextElement();
+                Set exams = instructor.getExams(period);
+                if (exams!=null)
+                    for (Iterator i=exams.iterator();i.hasNext();) {
+                        Exam exam = (Exam)i.next();
+                        ret.add(new ExamAssignmentInfo((ExamPlacement)exam.getAssignment()));                        
+                    }
+            }
+            return ret;
+        }
+    }
 }
