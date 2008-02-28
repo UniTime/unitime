@@ -20,6 +20,9 @@ import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
+import org.unitime.timetable.solver.exam.ui.ExamAssignment;
+import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
+import org.unitime.timetable.solver.exam.ui.ExamInfo;
 import org.unitime.timetable.solver.remote.BackupFileFilter;
 import org.unitime.timetable.util.Constants;
 

@@ -49,6 +49,9 @@ import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.solver.WebSolver;
+import org.unitime.timetable.solver.exam.ExamSolverProxy;
+import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.RequiredTimeTable;
 
@@ -170,7 +173,13 @@ public class Exams extends BodyTagSupport {
                     if (timeText) {
                         perPref += exam.getEffectivePrefHtmlForPrefType(ExamPeriodPref.class);
                     } else {
-                        PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession());
+                        ExamSolverProxy solver = WebSolver.getExamSolver(pageContext.getSession());
+                        ExamAssignment assignment = null;
+                        if (solver!=null)
+                            assignment = solver.getAssignment(exam.getUniqueId());
+                        else if (exam.getAssignedPeriod()!=null)
+                            assignment = new ExamAssignment(exam);
+                        PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession(), assignment);
                         px.load(exam);
                         RequiredTimeTable rtt = new RequiredTimeTable(px);
                         File imageFileName = null;

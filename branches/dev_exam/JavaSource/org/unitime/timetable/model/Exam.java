@@ -32,8 +32,8 @@ import org.unitime.commons.User;
 import org.unitime.timetable.model.base.BaseExam;
 import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.model.dao._RootDAO;
-import org.unitime.timetable.solver.exam.ExamAssignmentInfo;
-import org.unitime.timetable.solver.exam.ExamInfo;
+import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
+import org.unitime.timetable.solver.exam.ui.ExamInfo;
 
 public class Exam extends BaseExam implements Comparable<Exam> {
 	private static final long serialVersionUID = 1L;

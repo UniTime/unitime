@@ -1,4 +1,4 @@
-package org.unitime.timetable.solver.exam;
+package org.unitime.timetable.solver.exam.ui;
 
 import java.io.Serializable;
 import java.util.Enumeration;
