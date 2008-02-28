@@ -32,6 +32,7 @@
 <%@ page import="org.unitime.timetable.model.Session" %>
 <jsp:directive.page import="org.unitime.timetable.model.Roles"/>
 <%@page import="org.unitime.timetable.solver.exam.ExamSolverProxy"%>
+<%@page import="org.unitime.timetable.model.dao.SessionDAO"%>
 <%@ include file="../checkLogin.jspf" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 
@@ -56,7 +57,7 @@
 <%=Web.metaExpireNow()%>
 <% 
 	SolverProxy solver = WebSolver.getSolver(session);
-	ExamSolverProxy examSolver = (solver==null?WebSolver.getExamSolver(session):null);  
+	ExamSolverProxy examSolver = (solver==null?WebSolver.getExamSolverNoSessionCheck():null);  
 	int tab = 0;
 	if (session.getAttribute("UserInfo.tab")!=null)
 		tab = ((Integer)session.getAttribute("UserInfo.tab")).intValue();
@@ -284,8 +285,12 @@
 			</I></FONT></TD>
 		</TR>
 		<TR align="left">
-			<TD valign="top"><FONT color="#000000">&nbsp;Version</FONT></TD>
-			<TD valign="top" colspan='2'><FONT color="#000040"><I><%=version%></I></FONT></TD>
+			<TD valign="top" height="15"><FONT color="#000000">&nbsp;Version</FONT></TD>
+			<TD valign="top" height="15"><FONT color="#000040"><I><%=version%></I></FONT></TD>
+		</TR>
+		<TR align="left">
+			<TD valign="top" height="15"><FONT color="#000000">&nbsp;Session</FONT></TD>
+			<TD valign="top" height="15"><FONT color="#000040"><I><%=new SessionDAO().get((examSolver!=null?examSolver.getProperties():solver.getProperties()).getPropertyLong("General.SessionId",null)).getLabel()%></I></FONT></TD>
 		</TR>
 <% } catch (Exception e) { Debug.error(e); %>
 <script language="JavaScript">
