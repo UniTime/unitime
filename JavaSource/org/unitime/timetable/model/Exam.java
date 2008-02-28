@@ -555,5 +555,33 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         } 
         return ret;
     }
-
+    
+    public static Collection<ExamAssignmentInfo> findAssignedExamsOfLocation(Long locationId) throws Exception {
+        Vector<ExamAssignmentInfo> ret = new Vector<ExamAssignmentInfo>();
+        List exams = new ExamDAO().getSession().createQuery(
+                "select distinct x from Exam x inner join x.assignedRooms r where " +
+                "r.uniqueId=:locationId and x.assignedPeriod!=null").
+                setLong("locationId", locationId).
+                setCacheable(true).list();
+        for (Iterator i=exams.iterator();i.hasNext();) {
+            Exam exam = (Exam)i.next();
+            ret.add(new ExamAssignmentInfo(exam));
+        } 
+        return ret;
+    }
+    
+    public static Collection<ExamAssignmentInfo> findAssignedExamsOfInstructor(Long instructorId) throws Exception {
+        Vector<ExamAssignmentInfo> ret = new Vector<ExamAssignmentInfo>();
+        List exams = new ExamDAO().getSession().createQuery(
+                "select distinct x from Exam x inner join x.instructors i where " +
+                "i.uniqueId=:instructorId and x.assignedPeriod!=null").
+                setLong("instructorId", instructorId).
+                setCacheable(true).list();
+        for (Iterator i=exams.iterator();i.hasNext();) {
+            Exam exam = (Exam)i.next();
+            ret.add(new ExamAssignmentInfo(exam));
+        } 
+        return ret;
+    }
+    
 }
