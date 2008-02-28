@@ -14,6 +14,7 @@ import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.dao.ExamPeriodDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 
+import net.sf.cpsolver.coursett.preference.MinMaxPreferenceCombination;
 import net.sf.cpsolver.exam.model.ExamPlacement;
 import net.sf.cpsolver.exam.model.ExamRoom;
 
@@ -140,5 +141,23 @@ public class ExamAssignment extends ExamInfo implements Serializable, Comparable
     
     public String toString() {
         return getExamName()+" "+getPeriodAbbreviation()+" "+getRoomsName(",");
+    }
+    
+    public String getPeriodPref() {
+        return iPeriodPref;
+    }
+    
+    public String getRoomPref(Long roomId) {
+        if (iRoomPrefs==null) return null;
+        return (String)iRoomPrefs.get(roomId);
+    }
+
+    public String getRoomPref() {
+        if (iRoomPrefs==null) return null;
+        MinMaxPreferenceCombination c = new MinMaxPreferenceCombination();
+        for (Enumeration e=iRoomPrefs.elements();e.hasMoreElements();) {
+            c.addPreferenceProlog((String)e.nextElement());
+        }
+        return c.getPreferenceProlog();
     }
 }

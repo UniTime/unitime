@@ -836,4 +836,8 @@
 		<put name="body" value="/exam/unassigned.jsp" />
   	</definition>
 
+	<definition	name="examGridTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Examination Timetable"/>
+		<put name="body" value="/exam/examGrid.jsp" />
+  	</definition>
 </tiles-definitions>

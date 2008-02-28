@@ -1,0 +1,207 @@
+package org.unitime.timetable.form;
+
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.TreeSet;
+import java.util.Vector;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import org.apache.struts.action.ActionForm;
+import org.apache.struts.action.ActionMapping;
+import org.unitime.commons.web.Web;
+import org.unitime.timetable.model.ExamPeriod;
+import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.UserData;
+import org.unitime.timetable.util.ComboBoxLookup;
+import org.unitime.timetable.webutil.timegrid.ExamGridTable;
+
+public class ExamGridForm extends ActionForm {
+    private Long iSessionId;
+    private TreeSet iPeriods;
+    private Date iExamBeginDate;
+    
+    private String iOp = null;
+    private int iDate = -1;
+    private int iStartTime = -1;
+    private int iEndTime = -1;
+    private int iResource = ExamGridTable.sResourceRoom;
+    private int iBackground = ExamGridTable.sBgNone;
+    private String iFilter = null;
+    private int iDispMode = ExamGridTable.sDispModePerWeekVertical;
+    private int iOrder = ExamGridTable.sOrderByNameAsc;
+    private boolean iBgPreferences = false;
+    
+    public int getDate() { return iDate; }
+    public void setDate(int date) { iDate = date; }
+    public boolean isAllDates() { return iDate == Integer.MIN_VALUE; }
+    public int getStartTime() { return iStartTime; }
+    public void setStartTime(int startTime) { iStartTime = startTime; }
+    public int getEndTime() { return iEndTime; }
+    public void setEndTime(int endTime) { iEndTime = endTime; }
+    public int getResource() { return iResource; }
+    public void setResource(int resource) { iResource = resource; }
+    public int getBackground() { return iBackground; }
+    public void setBackground(int background) { iBackground = background; }
+    public String getFilter() { return iFilter; }
+    public void setFilter(String filter) { iFilter = filter; }
+    public int getDispMode() { return iDispMode; }
+    public void setDispMode(int dispMode) { iDispMode = dispMode; }
+    public int getOrder() { return iOrder; }
+    public void setOrder(int order) { iOrder = order; }
+    public boolean getBgPreferences() { return iBgPreferences; }
+    public void setBgPreferences(boolean bgPreferences) { iBgPreferences = bgPreferences; }
+    public String getOp() { return iOp; }
+    public void setOp(String op) { iOp = op; }
+    
+    public void reset(ActionMapping mapping, HttpServletRequest request) {
+        iDate = -1;
+        iStartTime = -1;
+        iEndTime = -1;
+        iResource = ExamGridTable.sResourceRoom;
+        iBackground = ExamGridTable.sBgNone;
+        iFilter = null;
+        iDispMode = ExamGridTable.sDispModePerWeekVertical;
+        iOrder = ExamGridTable.sOrderByNameAsc;
+        iBgPreferences = false;
+        iOp = null;
+    }
+    
+    public Long getSessionId() { return iSessionId; }
+    public Date getExamBeginDate() { return iExamBeginDate; }
+    public TreeSet getPeriods() { return iPeriods; }
+    
+    public void load(HttpSession httpSession) throws Exception {
+        Session session = Session.getCurrentAcadSession(Web.getUser(httpSession));
+        iSessionId = session.getUniqueId();
+        iExamBeginDate = session.getExamBeginDate();
+        iPeriods = ExamPeriod.findAll(session.getUniqueId());
+        setDate(UserData.getPropertyInt(httpSession,"ExamGrid.date",Integer.MIN_VALUE));
+        setStartTime(UserData.getPropertyInt(httpSession,"ExamGrid.start",getFirstStart()));
+        setEndTime(UserData.getPropertyInt(httpSession,"ExamGrid.end",getLastEnd()));
+        setResource(UserData.getPropertyInt(httpSession,"ExamGrid.resource",ExamGridTable.sResourceRoom));
+        setBackground(UserData.getPropertyInt(httpSession,"ExamGrid.background",ExamGridTable.sBgNone));
+        setFilter(UserData.getProperty(httpSession,"ExamGrid.filter"));
+        setDispMode(UserData.getPropertyInt(httpSession,"ExamGrid.dispMode",ExamGridTable.sDispModePerWeekVertical));
+        setOrder(UserData.getPropertyInt(httpSession,"ExamGrid.order",ExamGridTable.sOrderByNameAsc));
+        setBgPreferences(UserData.getPropertyBoolean(httpSession,"ExamGrid.bgPref",false));
+    }
+    
+    public void save(HttpSession httpSession) throws Exception {
+        UserData.setPropertyInt(httpSession, "ExamGrid.date", getDate());
+        UserData.setPropertyInt(httpSession, "ExamGrid.start", getStartTime());
+        UserData.setPropertyInt(httpSession, "ExamGrid.end", getEndTime());
+        UserData.setPropertyInt(httpSession, "ExamGrid.resource", getResource());
+        UserData.setPropertyInt(httpSession, "ExamGrid.background", getBackground());
+        UserData.setProperty(httpSession, "ExamGrid.filter", getFilter());
+        UserData.setPropertyInt(httpSession, "ExamGrid.dispMode", getDispMode());
+        UserData.setPropertyInt(httpSession, "ExamGrid.order", getOrder());
+        UserData.setPropertyBoolean(httpSession, "ExamGrid.bgPref", getBgPreferences());
+    }
+
+    public Vector<ComboBoxLookup> getDates() {
+        Vector<ComboBoxLookup> ret = new Vector<ComboBoxLookup>();
+        ret.addElement(new ComboBoxLookup("All Dates", String.valueOf(Integer.MIN_VALUE)));
+        HashSet added = new HashSet();
+        for (Iterator i=iPeriods.iterator();i.hasNext();) {
+            ExamPeriod period = (ExamPeriod)i.next();
+            if (added.add(period.getDateOffset())) {
+                ret.addElement(new ComboBoxLookup(ExamGridTable.sDF.format(period.getStartDate()),period.getDateOffset().toString()));
+            }
+        }
+        return ret;
+    }
+    
+    public int getFirstDate() {
+        int startDate = Integer.MAX_VALUE;
+        for (Iterator i=iPeriods.iterator();i.hasNext();) {
+            ExamPeriod period = (ExamPeriod)i.next();
+            startDate = Math.min(startDate, period.getDateOffset());
+        }
+        return startDate;
+    }
+    
+    public int getLastDate() {
+        int endDate = Integer.MIN_VALUE;
+        for (Iterator i=iPeriods.iterator();i.hasNext();) {
+            ExamPeriod period = (ExamPeriod)i.next();
+            endDate = Math.max(endDate, period.getDateOffset());
+        }
+        return endDate;
+    }
+
+    
+    public int getFirstStart() {
+        int startSlot = -1;
+        for (Iterator i=iPeriods.iterator();i.hasNext();) {
+            ExamPeriod period = (ExamPeriod)i.next();
+            if (startSlot<0) startSlot = period.getStartSlot();
+            else startSlot = Math.min(startSlot, period.getStartSlot());
+        }
+        return startSlot;
+    }
+    
+    public int getLastEnd() {
+        int endSlot = -1;
+        for (Iterator i=iPeriods.iterator();i.hasNext();) {
+            ExamPeriod period = (ExamPeriod)i.next();
+            if (endSlot<0) endSlot = period.getEndSlot();
+            else endSlot = Math.max(endSlot, period.getEndSlot());
+        }
+        return endSlot;
+    }
+
+    public Vector<ComboBoxLookup> getStartTimes() {
+        Vector<ComboBoxLookup> ret = new Vector<ComboBoxLookup>();
+        HashSet added = new HashSet();
+        for (Iterator i=iPeriods.iterator();i.hasNext();) {
+            ExamPeriod period = (ExamPeriod)i.next();
+            if (added.add(period.getStartSlot())) {
+                ret.addElement(new ComboBoxLookup(ExamGridTable.sTF.format(period.getStartTime()), period.getStartSlot().toString()));
+            }
+        }
+        return ret;
+    }
+    
+    public Vector<ComboBoxLookup> getEndTimes() {
+        Vector<ComboBoxLookup> ret = new Vector<ComboBoxLookup>();
+        HashSet added = new HashSet();
+        for (Iterator i=iPeriods.iterator();i.hasNext();) {
+            ExamPeriod period = (ExamPeriod)i.next();
+            if (added.add(period.getEndSlot())) {
+                ret.addElement(new ComboBoxLookup(ExamGridTable.sTF.format(period.getEndTime()), String.valueOf(period.getEndSlot())));
+            }
+        }
+        return ret;
+    }
+    
+    public Vector<ComboBoxLookup> getResources() {
+        Vector<ComboBoxLookup> ret = new Vector<ComboBoxLookup>();
+        for (int i=0;i<ExamGridTable.sResources.length;i++)
+            ret.addElement(new ComboBoxLookup(ExamGridTable.sResources[i], String.valueOf(i)));
+        return ret;
+    }
+
+    public Vector<ComboBoxLookup> getBackgrounds() {
+        Vector<ComboBoxLookup> ret = new Vector<ComboBoxLookup>();
+        for (int i=0;i<ExamGridTable.sBackgrounds.length;i++)
+            ret.addElement(new ComboBoxLookup(ExamGridTable.sBackgrounds[i], String.valueOf(i)));
+        return ret;
+    }
+
+    public Vector<ComboBoxLookup> getDispModes() {
+        Vector<ComboBoxLookup> ret = new Vector<ComboBoxLookup>();
+        for (int i=0;i<ExamGridTable.sDispModes.length;i++)
+            ret.addElement(new ComboBoxLookup(ExamGridTable.sDispModes[i], String.valueOf(i)));
+        return ret;
+    }
+
+    public Vector<ComboBoxLookup> getOrders() {
+        Vector<ComboBoxLookup> ret = new Vector<ComboBoxLookup>();
+        for (int i=0;i<ExamGridTable.sOrders.length;i++)
+            ret.addElement(new ComboBoxLookup(ExamGridTable.sOrders[i], String.valueOf(i)));
+        return ret;
+    }
+}
