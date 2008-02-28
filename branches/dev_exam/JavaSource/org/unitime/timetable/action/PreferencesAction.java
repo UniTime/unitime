@@ -78,6 +78,8 @@ import org.unitime.timetable.model.dao.TimePatternDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.solver.WebSolver;
+import org.unitime.timetable.solver.exam.ExamSolverProxy;
+import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.interactive.ClassAssignmentDetails;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
@@ -618,7 +620,13 @@ public class PreferencesAction extends Action {
         }*/
         if (pg instanceof Exam) { 
             Exam exam = (Exam)pg;
-            PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession());
+            ExamSolverProxy solver = WebSolver.getExamSolver(request.getSession());
+            ExamAssignment assignment = null;
+            if (solver!=null)
+                assignment = solver.getAssignment(exam.getUniqueId());
+            else if (exam.getAssignedPeriod()!=null)
+                assignment = new ExamAssignment(exam);
+            PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession(), assignment);
             px.load(exam);
             RequiredTimeTable rtt = new RequiredTimeTable(px);
             rtt.setName("PeriodPref");
@@ -777,7 +785,13 @@ public class PreferencesAction extends Action {
             String op, 
             boolean timeVertical, boolean editable) throws Exception {
         
-        PeriodPreferenceModel px = new PeriodPreferenceModel(exam==null?Session.getCurrentAcadSession(Web.getUser(request.getSession())):exam.getSession());
+        ExamSolverProxy solver = WebSolver.getExamSolver(request.getSession());
+        ExamAssignment assignment = null;
+        if (solver!=null)
+            assignment = solver.getAssignment(exam.getUniqueId());
+        else if (exam.getAssignedPeriod()!=null)
+            assignment = new ExamAssignment(exam);
+        PeriodPreferenceModel px = new PeriodPreferenceModel(exam==null?Session.getCurrentAcadSession(Web.getUser(request.getSession())):exam.getSession(), assignment);
         if (exam!=null) px.load(exam);
         User user = Web.getUser(request.getSession());
         px.setAllowHard(user.isAdmin() || user.hasRole(Roles.EXAM_MGR_ROLE));

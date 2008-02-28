@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Iterator;
-import java.util.TreeSet;
 import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
@@ -26,13 +25,11 @@ import org.unitime.timetable.form.ExamListForm;
 import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
-import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriodPref;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
-import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PeriodPreferenceModel;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceLevel;
@@ -45,8 +42,9 @@ import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.solver.WebSolver;
-import org.unitime.timetable.solver.exam.ExamAssignment;
 import org.unitime.timetable.solver.exam.ExamAssignmentProxy;
+import org.unitime.timetable.solver.exam.ui.ExamAssignment;
+import org.unitime.timetable.solver.exam.ui.ExamInfo;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.Navigation;
@@ -162,7 +160,7 @@ public class ExamListAction extends Action {
         
         for (Iterator i=exams.iterator();i.hasNext();) {
             Exam exam = (Exam)i.next();
-            String objects = "", instructors = "", perPref = "", roomPref = "", distPref = "", per = "", rooms = "";
+            String objects = "", perPref = "", roomPref = "", distPref = "", per = "", rooms = "";
             
             for (Enumeration e=exam.getOwnerObjects().elements();e.hasMoreElements();) {
                 Object object = e.nextElement();
@@ -179,6 +177,12 @@ public class ExamListAction extends Action {
                     objects += object.toString();
             }
             
+            ExamAssignment ea = (examAssignment!=null?examAssignment.getAssignment(exam.getUniqueId()):exam.getAssignedPeriod()!=null?new ExamAssignment(exam):null);
+            if (ea!=null) {
+                per = (html?ea.getPeriodAbbreviationWithPref():ea.getPeriodAbbreviation());
+                rooms = (html?ea.getRoomsNameWithPref(nl):ea.getRoomsName(nl));
+            }
+            
             if (html) {
                 roomPref += exam.getEffectivePrefHtmlForPrefType(RoomPref.class);
                 if (roomPref.length()>0) roomPref+=nl;
@@ -191,7 +195,7 @@ public class ExamListAction extends Action {
                 if (timeText) {
                     perPref += exam.getEffectivePrefHtmlForPrefType(ExamPeriodPref.class);
                 } else {
-                    PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession());
+                    PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession(), ea);
                     px.load(exam);
                     RequiredTimeTable rtt = new RequiredTimeTable(px);
                     File imageFileName = null;
@@ -240,30 +244,9 @@ public class ExamListAction extends Action {
                 }
             }
             
-            for (Iterator j=new TreeSet(exam.getInstructors()).iterator();j.hasNext();) {
-                DepartmentalInstructor instructor = (DepartmentalInstructor)j.next();
-                if (instructors.length()>0) instructors+=nl;
-                instructors += instructor.getName(instructorNameFormat);
-            }
-            
-            if (examAssignment!=null) {
-                ExamAssignment ea = examAssignment.getAssignment(exam.getUniqueId()); 
-                if (ea!=null) {
-                    per = (html?ea.getPeriodAbbreviationWithPref():ea.getPeriodAbbreviation());
-                    rooms = (html?ea.getRoomsNameWithPref(nl):ea.getRoomsName(nl));
-                }
-            } else { 
-                if (exam.getAssignedPeriod()!=null) {
-                    per = exam.getAssignedPeriod().getAbbreviation();
-                }
-                for (Iterator j=new TreeSet(exam.getAssignedRooms()).iterator();j.hasNext();) {
-                    Location location = (Location)j.next();
-                    if (rooms.length()>0) rooms+=nl;
-                    rooms += location.getLabel();
-                }
-            }
-            
-            int nrStudents = exam.countStudents();
+            ExamInfo ei = (ea==null?new ExamInfo(exam):ea);
+            int nrStudents = ei.getNrStudents();
+            String instructors = ei.getInstructorName(nl, instructorNameFormat);
             
             table.addLine(
                     "onClick=\"document.location='examDetail.do?examId="+exam.getUniqueId()+"';\"",

@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.RequiredTimeTableModel;
 
@@ -24,9 +25,16 @@ public class PeriodPreferenceModel implements RequiredTimeTableModel {
     private boolean iAllowHard = true;
     private boolean iAllowRequired = true;
     
+    private ExamPeriod iPeriod = null;
+    
     public static SimpleDateFormat sDF = new SimpleDateFormat("EEE MM/dd");
-
+    
     public PeriodPreferenceModel(Session session) {
+        this(session, null);
+    }
+
+    public PeriodPreferenceModel(Session session, ExamAssignment assignment) {
+        iPeriod = (assignment==null?null:assignment.getPeriod());
         iFirstDate = session.getExamBeginDate();
         iPeriods = ExamPeriod.findAll(session.getUniqueId());
         for (Iterator i=iPeriods.iterator();i.hasNext();) {
@@ -120,7 +128,7 @@ public class PeriodPreferenceModel implements RequiredTimeTableModel {
     }
     
     public String getFileName() {
-        return "PPx"+getPreferences();
+        return "PPx"+getPreferences()+(iPeriod==null?"":"_"+iPeriod.getUniqueId());
     }
     
     public void setPreference(int day, int time, String pref) {
@@ -197,6 +205,12 @@ public class PeriodPreferenceModel implements RequiredTimeTableModel {
     }
     
     public Color getBorder(int day, int time) {
+        if (iPeriod!=null) {
+            Integer slot = (Integer)iStarts.toArray()[time];
+            Integer dateOffset = (Integer)iDates.toArray()[day];
+            if (iPeriod.getStartSlot().equals(slot) && iPeriod.getDateOffset().equals(dateOffset))
+                return new Color(0,0,242);
+        }
         return null;
     }
     
