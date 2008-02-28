@@ -61,6 +61,12 @@
 			formula="(select count(*) from %SCHEMA%.xconflict_student x where x.conflict_id = uniqueid)"
 		/>
 
+		<property
+			name="nrInstructors"
+			type="java.lang.Integer"
+			formula="(select count(*) from %SCHEMA%.xconflict_instructor x where x.conflict_id = uniqueid)"
+		/>
+
 		<set
 			name="exams"
 			table="XCONFLICT_EXAM"
@@ -84,6 +90,18 @@
 				class="Student"
 				column="STUDENT_ID"
 				foreign-key="FK_XCONFLICT_ST_STUDENT"/>
+		</set>
+
+		<set
+			name="instructors"
+			table="XCONFLICT_INSTRUCTOR"
+			lazy="true">
+			<cache include="non-lazy" usage="read-write"/>
+			<key column="CONFLICT_ID" foreign-key="FK_XCONFLICT_IN_CONF"/>
+			<many-to-many
+				class="DepartmentalInstructor"
+				column="INSTRUCTOR_ID"
+				foreign-key="FK_XCONFLICT_IN_INSTRUCTOR"/>
 		</set>
 	</class>
 </hibernate-mapping>
