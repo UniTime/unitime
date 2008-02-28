@@ -273,9 +273,12 @@ try {
 %>
 						<html:submit onclick="if (!confirmSave()) return false; displayLoading();" property="op" value="Save"/>
 <%
-				}
+				} else {
 %>
 						<html:submit onclick="if (!confirmSaveAsNew()) return false; displayLoading();" property="op" value="Save As New"/>
+<%
+				}
+%>
 					</TD>
 				</TR>
 			</logic:equal>
