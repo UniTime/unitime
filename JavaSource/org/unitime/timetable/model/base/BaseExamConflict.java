@@ -61,11 +61,13 @@ public abstract class BaseExamConflict implements Serializable {
     // fields
 	private java.lang.Integer conflictType;
 	private java.lang.Integer nrStudents;
+	private java.lang.Integer nrInstructors;
 	private java.lang.Double distance;
 	
 	// sets
 	private java.util.Set exams;
 	private java.util.Set students;
+	private java.util.Set instructors;
 
     public java.lang.Long getUniqueId () {
         return uniqueId;
@@ -92,6 +94,14 @@ public abstract class BaseExamConflict implements Serializable {
         return nrStudents;
     }
     
+    public void setNrInstructors(java.lang.Integer nrInstructors) {
+        this.nrInstructors = nrInstructors;
+    }
+    
+    public java.lang.Integer getNrInstructors() {
+        return nrInstructors;
+    }
+
     public void setDistance(java.lang.Double distance) {
         this.distance = distance;
     }
@@ -114,6 +124,14 @@ public abstract class BaseExamConflict implements Serializable {
     
     public java.util.Set getStudents() {
         return students;
+    }
+    
+    public void setInstructors(java.util.Set instructors) {
+        this.instructors = instructors;
+    }
+    
+    public java.util.Set getInstructors() {
+        return instructors;
     }
 
 	public boolean equals (Object obj) {

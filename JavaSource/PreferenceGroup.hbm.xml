@@ -1010,6 +1010,14 @@
 				not-null="false"
 			/>
 			
+			<property
+				name="assignedPreference"
+				column="ASSIGNED_PREF"
+				type="java.lang.String"
+				not-null="false"
+				length="100"
+			/>
+			
 			<set
 				name="owners"
 				lazy="true"

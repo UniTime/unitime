@@ -49,6 +49,7 @@ public abstract class BaseExam extends org.unitime.timetable.model.PreferenceGro
 	private java.lang.Integer length;
 	private java.lang.Integer maxNbrRooms;
 	private java.lang.Integer seatingType;
+	private java.lang.String assignedPreference;
 
 	// many to one
 	private org.unitime.timetable.model.Session session;
@@ -74,6 +75,9 @@ public abstract class BaseExam extends org.unitime.timetable.model.PreferenceGro
 	
 	public java.lang.Integer getSeatingType() { return seatingType; }
 	public void setSeatingType(java.lang.Integer seatingType) { this.seatingType = seatingType; }
+	
+	public java.lang.String getAssignedPreference() { return assignedPreference; }
+	public void setAssignedPreference(java.lang.String assignedPreference) { this.assignedPreference = assignedPreference; }
 	
 	public org.unitime.timetable.model.Session getSession() { return session; }
 	public void setSession(org.unitime.timetable.model.Session session) { this.session = session; }

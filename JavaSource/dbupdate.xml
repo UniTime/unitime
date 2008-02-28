@@ -966,4 +966,39 @@
   			create index idx_xconflict_exam on %SCHEMA%.xconflict_exam(exam_id)
   		</mysql>
 	</update>
+	<update version="16" date="28-Feb-2008" comment="Exam instructor conflicts">
+		<plsql>
+			create table %SCHEMA%.xconflict_instructor (
+				conflict_id number(20,0) constraint nn_xconflict_in_conf  not null,
+				instructor_id number(20,0) constraint nn_xconflict_in_student  not null
+			)
+		</plsql>
+		<plsql>
+			alter table %SCHEMA%.xconflict_instructor
+  			add constraint pk_xconflict_instructor primary key (conflict_id, instructor_id)
+  		</plsql>
+  		<mysql>
+  			create table %SCHEMA%.xconflict_instructor (
+				conflict_id decimal(20,0) not null,
+				instructor_id decimal(20,0) not null,
+				primary key(conflict_id, instructor_id)
+			)
+  		</mysql>
+  		<sql>
+			alter table %SCHEMA%.xconflict_instructor
+  			add constraint fk_xconflict_in_conf foreign key (conflict_id)
+  			references %SCHEMA%.xconflict (uniqueid) on delete cascade
+  		</sql>
+  		<sql>
+  			alter table %SCHEMA%.xconflict_instructor
+  			add constraint fk_xconflict_in_instructor foreign key (instructor_id)
+  			references %SCHEMA%.departmental_instructor (uniqueid) on delete cascade
+  		</sql>
+  		<plsql>
+  			alter table %SCHEMA%.exam add assigned_pref varchar2(100)
+  		</plsql>
+  		<mysql>
+  			alter table %SCHEMA%.exam add assigned_pref varchar(100)
+  		</mysql>
+	</update>
 </dbupdate>
