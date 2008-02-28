@@ -27,6 +27,24 @@
 	<version>3.0.@build.number@</version>
 	<release-date>@release.date@</release-date>
 	<category>
+		<title>OTHER</title>
+		<item>
+			<name>User Rights</name>
+			<description>
+				<line>When the session/department status has on owner limited edit right, scheduling managers can:
+					<line>Assign classes to instructors (using Assign Instructors page)</line>
+					<line>Edit academic area reservations</line>
+					<line>Edit instructors and their designator numbers (but not instructor preferences)</line> 
+				</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.0.61</version>
+	<release-date>Thu, 31 Jan 2008</release-date>
+	<category>
 		<title>USER INTERFACE</title>
 		<item>
 			<name>Instructional Offering Cross Lists</name>
