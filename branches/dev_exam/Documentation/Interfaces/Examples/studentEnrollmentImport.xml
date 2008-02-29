@@ -1,3 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE studentEnrollments PUBLIC "-//UniTime//DTD University Course Timetabling/EN" "http://www.unitime.org/interface/StudentEnrollment.dtd">
+
 <!-- 
  * UniTime 3.0 (University Timetabling Application)
  * Copyright (C) 2007, UniTime.org
@@ -17,18 +20,17 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  -->
 
-<!ELEMENT staff ( staffMember+ ) >
-<!ATTLIST staff campus CDATA #REQUIRED >
-<!ATTLIST staff term CDATA #REQUIRED >
-<!ATTLIST staff year CDATA #REQUIRED >
-
-<!ELEMENT staffMember EMPTY >
-<!ATTLIST staffMember department CDATA #REQUIRED >
-<!ATTLIST staffMember externalId CDATA #REQUIRED >
-<!ATTLIST staffMember firstName CDATA #IMPLIED >
-<!ATTLIST staffMember lastName CDATA #REQUIRED >
-<!ATTLIST staffMember middleName CDATA #IMPLIED >
-<!ATTLIST staffMember positionCode CDATA #REQUIRED >
-<!ATTLIST staffMember email CDATA #IMPLIED >
-
-
+<studentEnrollments campus="puWestLafayetteTrdtn" term="Fal" year="2007">
+ 	<student externalId="9999111110">
+ 		<class externalId="123124"/>
+ 		<class externalId="123412"/>
+ 		<class externalId="123674"/>
+ 	</student>
+ 	<student externalId="9999111111">
+		<class externalId="423675"/>
+  		<class externalId="998543"/>
+  		<class externalId="129854"/>
+  		<!-- ... -->
+ 	</student>
+ 	<!-- ... -->
+</studentEnrollments>

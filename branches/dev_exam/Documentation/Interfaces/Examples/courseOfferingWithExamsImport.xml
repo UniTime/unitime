@@ -21,30 +21,23 @@
  -->
 
 <offerings campus="PuWL" year="2006" term="Fall">
-	<offering id="10234" offered="true" action="update|delete|insert">
-		<designatorRequired/>
-		<consent type="department|instructor"/>
-		<courseCredit creditType="collegiate" creditUnitType="semesterHours" creditFormat="fixedUnit" fixedCredit="3"/>
-		<course subject="A&amp;AE" courseNbr="101" controlling="true" title="" scheduleBookNote=""/>
-		<course subject="A&amp;AE" courseNbr="101H" controlling="false" title="" scheduleBookNote=""/>
+	<offering id="10234" offered="true" action="update"> <!-- IDs are "external/banner IDs" for import, default action is update -->
+		<course id="10234" subject="A&amp;AE" courseNbr="101" controlling="true" title=""/>
+		<course id="10235" subject="A&amp;AE" courseNbr="101H" controlling="false" title=""/>
 		<config name="1" limit="20">
 			<subpart type="Lec" suffix="" minPerWeek="100">
-			  		<subpartCredit creditType="collegiate" creditUnitType="semesterHours" creditFormat="fixedUnit" fixedCredit="1"/>
-				<subpart type="Rec" suffix="" minPerWeek="50">
-			  		<subpartCredit creditType="collegiate" creditUnitType="semesterHours" creditFormat="fixedUnit" fixedCredit="1"/>
-				</subpart>
+				<subpart type="Rec" suffix="" minPerWeek="50"/>
 				<subpart type="Lab" suffix="" minPerWeek="100">
- 			  		<subpartCredit creditType="collegiate" creditUnitType="semesterHours" creditFormat="fixedUnit" fixedCredit="1"/>
 					<subpart type="Lab" suffix="a" minPerWeek="50"/>
 				</subpart>
 			</subpart>
 			<subpart type="Lab" suffix="" minPerWeek="150"/>
-			<class id="" type="Lec" suffix="1" limit="20" scheduleNote="" displayInScheduleBook="true">
-				<class id="" type="Rec" suffix="1" limit="10">
-					<class id="" type="Rec" suffix="1a" limit="10"/>
+			<class id="1001" type="Lec" suffix="1" limit="20" scheduleNote="">
+				<class id="1002" type="Rec" suffix="1" limit="10">
+					<class id="1003" type="Rec" suffix="1a" limit="10"/>
 				</class>
-				<class id="" type="Rec" suffix="2" limit="10">
-					<class id="" type="Rec" suffix="2a" limit="10"/>
+				<class id="1004" type="Rec" suffix="2" limit="10">
+					<class id="1005" type="Rec" suffix="2a" limit="10"/>
 				</class>
 				<date startDate="08/20" endDate="09/22"/> <!-- non-default date pattern -->
 				<time days="MWF" startTime="0730" endTime="0820"/>
@@ -53,17 +46,24 @@
 				<instructor id="23344" lname="" mname="" fname="" share="0.8" lead="true"/> <!-- only instructors that are allowed to be printed are included -->
 				<instructor id="23435" lname="" mname="" fname="" share="0.2"/>
 			</class>
-			<class id="" type="Lab" suffix="1" limit="15"/>
-			<class id="" type="Lab" suffix="2" limit="5"/>
+			<class id="1006" type="Lab" suffix="1" limit="15"/>
+			<class id="1007" type="Lab" suffix="2" limit="5"/>
 		</config>
 		<config name="2" limit="inf">
-			<subpart type="Lec" suffix="" minPerWeek="100">
-			  		<subpartCredit creditType="collegiate" creditUnitType="semesterHours" creditFormat="fixedUnit" fixedCredit="1"/>
-			</subpart>
-			<class id="" type="Lec" suffix="2">
+			<subpart type="Lec" suffix="" minPerWeek="100"/>
+			<class id="1008" type="Lec" suffix="2">
 				<!-- arrange hours class: no time element-->
 				<location name="PIZZA HUT"/> <!-- non-university location -->
 			</class>
 		</config>
+		<exam id="1223" seatingType="exam" length="120" type="final"> <!-- an exam for the whole course -->
+			<!-- seatingType defaults to exam, length defaults to 120 for final, 60 for evening, type is required (either final or exam) -->
+			<instructor id="23344"/> <!-- instructor is optional -->
+		</exam>
+		<exam id="1224" seatingType="exam" length="60" type="evening"> <!-- an evening exam for two sections -->
+			<class id="1001" type="Lec" suffix="1"/>
+			<class id="1008" type="Lec" suffix="2"/>
+		</exam>
+		<!-- multiple exams may be present -->
 	</offering>
 </offerings>
