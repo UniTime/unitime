@@ -29,13 +29,9 @@
 	<category>
 		<title>OTHER</title>
 		<item>
-			<name>User Rights</name>
+			<name>Examination Timetabling</name>
 			<description>
-				<line>When the session/department status has on owner limited edit right, scheduling managers can:
-					<line>Assign classes to instructors (using Assign Instructors page)</line>
-					<line>Edit academic area reservations</line>
-					<line>Edit instructors and their designator numbers (but not instructor preferences)</line> 
-				</line>
+				<line>First release of examination timetabling.</line>
 			</description>
 		</item>
 	</category>
