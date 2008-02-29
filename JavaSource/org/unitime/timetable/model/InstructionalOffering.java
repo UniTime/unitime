@@ -221,6 +221,8 @@ public class InstructionalOffering extends BaseInstructionalOffering {
     	if (isEditableBy(user)){
     		return(true);
     	}
+        if (user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE) || user.getCurrentRole().equals(Roles.EXAM_MGR_ROLE))
+            return true;
     	if(this.getCourseOfferings() != null && this.getCourseOfferings().size() > 0){
     		Iterator it = this.getCourseOfferings().iterator();
     		CourseOffering co = null;
@@ -383,6 +385,8 @@ public class InstructionalOffering extends BaseInstructionalOffering {
                         instr.removeClassInstructor(ci);
                         hibSession.delete(ci);
                     }
+                    
+                    Exam.deleteFromExams(hibSession, c);
 
                     // Delete class
                     hibSession.delete(c);
@@ -391,6 +395,8 @@ public class InstructionalOffering extends BaseInstructionalOffering {
                 // Delete set of classes
                 tSp.getClasses().clear();
             }
+            
+            Exam.deleteFromExams(hibSession, tIoc);
         }
     }
 
@@ -719,6 +725,7 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 	public void deleteAllCourses(Session hibSession) {
         for (Iterator i = getCourseOfferings().iterator(); i.hasNext(); ) {
         	CourseOffering co = (CourseOffering) i.next();
+            Exam.deleteFromExams(hibSession, co);
         	hibSession.delete(co);
         }
 	}

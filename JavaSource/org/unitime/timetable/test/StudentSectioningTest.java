@@ -625,6 +625,7 @@ public class StudentSectioningTest {
                             s.getClassEnrollments().add(sce);
                             clazz.getStudentEnrollments().add(sce);
                             sce.setCourseRequest(crq);
+                            sce.setCourseOffering(crq.getCourseOffering());
                             sce.setTimestamp(new Date());
                             hibSession.save(sce);
                         }

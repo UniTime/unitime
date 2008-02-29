@@ -54,6 +54,9 @@ public class DeptStatusTypeEditForm extends ActionForm {
     private boolean iCanAudit               = false;
     private boolean iCanTimetable           = false;
     private boolean iCanCommit              = false;
+    private boolean iCanExamView            = false;
+    private boolean iCanExamEdit            = false;
+    private boolean iCanExamTimetable       = false;
     
 
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
@@ -93,6 +96,9 @@ public class DeptStatusTypeEditForm extends ActionForm {
         iCanAudit               = false;
         iCanTimetable           = false;
         iCanCommit              = false;
+        iCanExamView            = false;
+        iCanExamEdit            = false;
+        iCanExamTimetable       = false;
 	}
     
     public void setOp(String op) { iOp = op; }
@@ -133,6 +139,12 @@ public class DeptStatusTypeEditForm extends ActionForm {
     public boolean getCanTimetable() { return iCanTimetable; }
     public void setCanCommit(boolean canCommit) { iCanCommit = canCommit; }
     public boolean getCanCommit() { return iCanCommit; }
+    public boolean getCanExamView() { return iCanExamView; }
+    public void setCanExamView(boolean canExamView) { iCanExamView = canExamView; }
+    public boolean getCanExamEdit() { return iCanExamEdit; }
+    public void setCanExamEdit(boolean canExamEdit) { iCanExamEdit = canExamEdit; }
+    public boolean getCanExamTimetable() { return iCanExamTimetable; }
+    public void setCanExamTimetable(boolean canExamTimetable) { iCanExamTimetable = canExamTimetable; }
     public int getRights() {
         int rights = 0;
         if (getCanManagerView()) rights += DepartmentStatusType.sCanManagerView;
@@ -144,6 +156,9 @@ public class DeptStatusTypeEditForm extends ActionForm {
         if (getCanAudit()) rights += DepartmentStatusType.sCanAudit;
         if (getCanTimetable()) rights += DepartmentStatusType.sCanTimetable;
         if (getCanCommit()) rights += DepartmentStatusType.sCanCommit;
+        if (getCanExamView()) rights += DepartmentStatusType.sCanExamView;
+        if (getCanExamEdit()) rights += DepartmentStatusType.sCanExamEdit;
+        if (getCanExamTimetable()) rights += DepartmentStatusType.sCanExamTimetable;
         return rights;
     }
     public void setRights(int rights) {
@@ -156,6 +171,9 @@ public class DeptStatusTypeEditForm extends ActionForm {
         setCanAudit((rights&DepartmentStatusType.sCanAudit)==DepartmentStatusType.sCanAudit);
         setCanTimetable((rights&DepartmentStatusType.sCanTimetable)==DepartmentStatusType.sCanTimetable);
         setCanCommit((rights&DepartmentStatusType.sCanCommit)==DepartmentStatusType.sCanCommit);
+        setCanExamView((rights&DepartmentStatusType.sCanExamView)==DepartmentStatusType.sCanExamView);
+        setCanExamEdit((rights&DepartmentStatusType.sCanExamEdit)==DepartmentStatusType.sCanExamEdit);
+        setCanExamTimetable((rights&DepartmentStatusType.sCanExamTimetable)==DepartmentStatusType.sCanExamTimetable);
     }
 	
 	public void load(DepartmentStatusType s) {

@@ -73,6 +73,14 @@
 			length="4"
 		/>
 		
+		<property
+			name="type"
+			column="PARAM_TYPE"
+			type="java.lang.Integer"
+			not-null="false"
+			length="10"
+		/>
+
 		<set
 			name="parameters"
 			inverse="true"

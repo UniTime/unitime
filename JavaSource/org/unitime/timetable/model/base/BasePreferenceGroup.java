@@ -128,10 +128,6 @@ public abstract class BasePreferenceGroup  implements Serializable {
 		getDistributionObjects().add(distributionObject);
 	}
 
-
-
-
-
 	public boolean equals (Object obj) {
 		if (null == obj) return false;
 		if (!(obj instanceof org.unitime.timetable.model.PreferenceGroup)) return false;

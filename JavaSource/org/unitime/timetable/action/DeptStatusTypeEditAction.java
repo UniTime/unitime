@@ -282,6 +282,23 @@ public class DeptStatusTypeEditAction extends Action {
                 if (rights.length()>0) rights+="; ";
                 rights += "commit";
             }
+            if (s.canExamView() || s.canExamEdit() || s.canExamTimetable()) {
+                if (rights.length()>0) rights+="; ";
+                rights += "exam ";
+                if (s.canExamEdit() && s.canExamTimetable())
+                    rights += "do all";
+                else {
+                    if (s.canExamView())
+                        rights += "view";
+                    if (s.canExamEdit()) {
+                        if (!rights.endsWith(" ")) rights+=" and ";
+                        rights += "edit";
+                    } else if (s.canExamTimetable()) {
+                        if (!rights.endsWith(" ")) rights+=" and ";
+                        rights += "timetable";
+                    }
+                }
+            }
             String ops = "";
             if (s.getOrd().intValue()>0) {
                 ops += "<img src='images/arrow_u.gif' border='0' align='absmiddle' title='Move Up' " +

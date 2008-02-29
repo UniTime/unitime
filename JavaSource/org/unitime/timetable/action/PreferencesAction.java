@@ -50,11 +50,14 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.DistributionType;
+import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.PeriodPreferenceModel;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.PreferenceLevel;
+import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.RoomFeaturePref;
 import org.unitime.timetable.model.RoomGroup;
@@ -75,6 +78,8 @@ import org.unitime.timetable.model.dao.TimePatternDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.solver.WebSolver;
+import org.unitime.timetable.solver.exam.ExamSolverProxy;
+import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.interactive.ClassAssignmentDetails;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
@@ -102,6 +107,7 @@ public class PreferencesAction extends Action {
     public final String HASH_RM_FEAT_PREF = "RoomFeatPref";
     public final String HASH_BLDG_PREF = "BldgPref";
     public final String HASH_DIST_PREF = "DistPref";
+    public final String HASH_PERIOD_PREF = "PeriodPref";
     
     // --------------------------------------------------------- Methods
 
@@ -129,6 +135,7 @@ public class PreferencesAction extends Action {
         //LookupTables.setupTimePatterns(request); // Time Patterns
         LookupTables.setupPrefLevels(request);	 // Preference Levels
         LookupTables.setupInstructorDistribTypes(request); // Distribution Types
+        LookupTables.setupExaminationPeriods(request); // Examination Periods
         
         return mapping.findForward(mapping.getInput());
     }
@@ -171,7 +178,7 @@ public class PreferencesAction extends Action {
         
         if(op.equals(rsc.getMessage("button.addTimePattern"))) 
             addTimePattern(request, frm, errors);
-
+        
         // Delete single preference
         if(op.equals(rsc.getMessage("button.delete")))
             doDelete(request, frm);
@@ -246,7 +253,7 @@ public class PreferencesAction extends Action {
             errors.add("distPrefs", 
                        new ActionMessage(
                                "errors.generic", 
-                               "Invalid building preference: Check for duplicate / blank selection. ") );
+                               "Invalid distribution preference: Check for duplicate / blank selection. ") );
             saveErrors(request, errors);
         }
     }
@@ -433,9 +440,6 @@ public class PreferencesAction extends Action {
                 frm.setRoomFeaturePrefLevels(lstL);
                 request.setAttribute(HASH_ATTR, HASH_RM_FEAT_PREF);
             }
-            if(deleteType.equals("distPref")) {
-                request.setAttribute(HASH_ATTR, HASH_DIST_PREF);
-            }
             if(deleteType.equals("timePattern")) {
             	List tps = frm.getTimePatterns();
             	tps.remove(deleteId);
@@ -591,6 +595,45 @@ public class PreferencesAction extends Action {
             s.add(dp);
         }
 
+        // Period Prefs
+        /*
+        lst = frm.getPeriodPrefs();
+        lstL = frm.getPeriodPrefLevels();
+        
+        for(int i=0; i<lst.size(); i++) {
+            String id = (String)lst.get(i);
+            if (id==null || id.equals(Preference.BLANK_PREF_VALUE))
+                continue;
+            
+            String pref = (String) lstL.get(i);
+            Debug.debug("Period: " + id + ": " + pref);
+
+            ExamPeriodDAO pdao = new ExamPeriodDAO();
+            ExamPeriod period = pdao.get(new Long(id));
+            
+            ExamPeriodPref xp = new ExamPeriodPref();
+            xp.setOwner(pg);
+            xp.setPrefLevel(PreferenceLevel.getPreferenceLevel(Integer.parseInt(pref)));
+            xp.setExamPeriod(period);
+
+            s.add(xp);
+        }*/
+        if (pg instanceof Exam) { 
+            Exam exam = (Exam)pg;
+            ExamSolverProxy solver = WebSolver.getExamSolver(request.getSession());
+            ExamAssignment assignment = null;
+            if (solver!=null)
+                assignment = solver.getAssignment(exam.getUniqueId());
+            else if (exam.getAssignedPeriod()!=null)
+                assignment = new ExamAssignment(exam);
+            PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession(), assignment);
+            px.load(exam);
+            RequiredTimeTable rtt = new RequiredTimeTable(px);
+            rtt.setName("PeriodPref");
+            rtt.update(request);
+            px.save(s, exam);
+        }
+        
         // Room Feature Prefs
         lst = frm.getRoomFeaturePrefs();
         lstL = frm.getRoomFeaturePrefLevels();
@@ -734,6 +777,30 @@ public class PreferencesAction extends Action {
 		
 		if (sameParentTimePref==null)
 			prefs.add(tp);
+    }
+    
+    protected void generateExamPeriodGrid(HttpServletRequest request,
+            PreferencesForm frm,
+            Exam exam, 
+            String op, 
+            boolean timeVertical, boolean editable) throws Exception {
+        
+        ExamSolverProxy solver = WebSolver.getExamSolver(request.getSession());
+        ExamAssignment assignment = null;
+        if (solver!=null)
+            assignment = solver.getAssignment(exam.getUniqueId());
+        else if (exam.getAssignedPeriod()!=null)
+            assignment = new ExamAssignment(exam);
+        PeriodPreferenceModel px = new PeriodPreferenceModel(exam==null?Session.getCurrentAcadSession(Web.getUser(request.getSession())):exam.getSession(), assignment);
+        if (exam!=null) px.load(exam);
+        User user = Web.getUser(request.getSession());
+        px.setAllowHard(user.isAdmin() || user.hasRole(Roles.EXAM_MGR_ROLE));
+        frm.setHasNotAvailable(px.hasNotAvailable());
+        RequiredTimeTable rtt = new RequiredTimeTable(px);
+        rtt.setName("PeriodPref");
+        if(!op.equals("init")) 
+            rtt.update(request);
+        request.setAttribute("ExamPeriodGrid", rtt.print(editable, timeVertical, editable, false));
     }
     
     /**
@@ -882,6 +949,11 @@ public class PreferencesAction extends Action {
             PreferencesForm frm,
             PreferenceGroup pg, Vector leadInstructors, boolean addBlankRows) {
         
+        if (pg==null) {
+            if (addBlankRows) frm.addBlankPrefRows();
+            return;
+        }
+        
     	// Room Prefs
     	frm.setEditable(pg.isEditableBy(user));
     	frm.getRoomPrefs().clear();
@@ -935,6 +1007,21 @@ public class PreferencesAction extends Action {
                     dp.getPrefLevel().getUniqueId().toString() );
         }
 
+        // Period Prefs
+        /*
+        frm.getPeriodPrefs().clear();
+        frm.getPeriodPrefLevels().clear();
+        Set periodPrefs = pg.effectivePreferences(ExamPeriodPref.class, leadInstructors);
+        iter = periodPrefs.iterator();
+        while (iter.hasNext()){
+            ExamPeriodPref xp = (ExamPeriodPref) iter.next();
+            Debug.debug("Adding period pref ... " + xp.getExamPeriod().getUniqueId().toString());
+            frm.addToPeriodPrefs(
+                    xp.getExamPeriod().getUniqueId().toString(), 
+                    xp.getPrefLevel().getUniqueId().toString() );
+        }
+        */
+        
         // Room group Prefs
     	frm.getRoomGroups().clear();
     	frm.getRoomGroupLevels().clear();

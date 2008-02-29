@@ -134,6 +134,7 @@
 						<logic:notEmpty name="<%=frmName%>" property="assignedRooms">
 						<TR align="center">
 							<TD> &nbsp;</TD><TD align="left"><I>Room</I></TD><TD align="left"><I>Type</I></TD><TD align="right"><I>&nbsp;&nbsp;&nbsp;Capacity</I></TD>
+							<TD align="right"><I>&nbsp;&nbsp;&nbsp;Exam Capacity</I></TD>
 						</TR>
 							
 						<logic:iterate name="<%=frmName%>" property="assignedRooms" id="room" indexId="ctr">
@@ -161,6 +162,12 @@
 								<TD align="right">
 									<%=r1.getCapacity()%>
 								</TD>
+
+							<% if (r1.isExamEnabled()) { %>
+								<TD align="center"><%=r1.getExamCapacity()%>
+							<% } else { %>
+								<TD></TD>
+							<% } %>
 						
 						</TR>
 						</logic:iterate>
@@ -187,6 +194,7 @@
 						
 						<TR align="center">
 							<TD> &nbsp;</TD><TD align="left"><I>Room</I></TD><TD align="left"><I>Type</I></TD><TD align="right"><I>&nbsp;&nbsp;&nbsp;Capacity</I></TD>
+							<TD align="right"><I>&nbsp;&nbsp;&nbsp;Exam Capacity</I></TD>
 						</TR>
 							
 						<logic:iterate name="<%=frmName%>" property="notAssignedRooms" id="room" indexId="ctr">
@@ -216,6 +224,11 @@
 								<%=r2.getCapacity()%>
 							</TD>
 							
+							<% if (r2.isExamEnabled()) { %>
+								<TD align="center"><%=r2.getExamCapacity()%>
+							<% } else { %>
+								<TD></TD>
+							<% } %>
 						</TR>
 						
 						</logic:iterate>

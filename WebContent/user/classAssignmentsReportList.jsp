@@ -40,6 +40,6 @@
 <%
 	session.setAttribute("callingPage", "");
 %>
-<% new WebClassAssignmentReportListTableBuilder().htmlTableForClasses(session, WebSolver.getClassAssignmentProxy(session),frm, user, out, request.getParameter("backType"), request.getParameter("backId"));%>
+<% new WebClassAssignmentReportListTableBuilder().htmlTableForClasses(session, WebSolver.getClassAssignmentProxy(session),WebSolver.getExamSolver(session),frm, user, out, request.getParameter("backType"), request.getParameter("backId"));%>
 </html:form>
  

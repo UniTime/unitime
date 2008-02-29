@@ -201,7 +201,24 @@
 		 		fetch="join"
 		 	/>
 		</union-subclass>
-
+		
+		<union-subclass
+		 	name="ExamPeriodPref"
+		 	table="EXAM_PERIOD_PREF"
+		 	abstract="false"
+		 	>
+		 	<many-to-one
+		 		name="examPeriod"
+		 		class="ExamPeriod"
+		 		column="PERIOD_ID"
+		 		not-null="true"
+		 		insert="true"
+		 		update="true"
+		 		lazy="false"
+		 		fetch="join"
+		 		foreign-key="FK_EXAM_PERIOD_PREF_PERIOD"
+		 	/>
+		</union-subclass>
 		
 	</class>	
 </hibernate-mapping>

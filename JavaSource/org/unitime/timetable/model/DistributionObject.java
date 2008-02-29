@@ -60,6 +60,9 @@ public class DistributionObject extends BaseDistributionObject implements Compar
 		} else if (prefGroup instanceof Class_) {
 			Class_ c = (Class_)prefGroup;
 			return c.getClassLabel();
+		} else if (prefGroup instanceof Exam) {
+		    Exam x = (Exam)prefGroup;
+		    return x.getLabel();
 		} else {
 			return " unknown "+prefGroup.getClass().getName();
 		}

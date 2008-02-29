@@ -40,6 +40,7 @@ public abstract class BaseSession extends org.unitime.timetable.model.Preference
 	public static String PROP_SESSION_BEGIN_DATE_TIME = "sessionBeginDateTime";
 	public static String PROP_CLASSES_END_DATE_TIME = "classesEndDateTime";
 	public static String PROP_SESSION_END_DATE_TIME = "sessionEndDateTime";
+	public static String PROP_EXAM_BEGIN_DATE = "examBeginDate";
 	public static String PROP_HOLIDAYS = "holidays";
 
 
@@ -67,6 +68,7 @@ public abstract class BaseSession extends org.unitime.timetable.model.Preference
 	private java.util.Date sessionBeginDateTime;
 	private java.util.Date classesEndDateTime;
 	private java.util.Date sessionEndDateTime;
+	private java.util.Date examBeginDate;
 	private java.lang.String holidays;
 
 	// many to one
@@ -185,7 +187,13 @@ public abstract class BaseSession extends org.unitime.timetable.model.Preference
 		this.sessionEndDateTime = sessionEndDateTime;
 	}
 
+    public java.util.Date getExamBeginDate() {
+        return examBeginDate;
+    }
 
+    public void setExamBeginDate (java.util.Date examBeginDate) {
+        this.examBeginDate = examBeginDate;
+    }
 
 	/**
 	 * Return the value associated with the column: HOLIDAYS

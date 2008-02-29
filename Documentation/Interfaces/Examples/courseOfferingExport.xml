@@ -2,8 +2,8 @@
 <!DOCTYPE offerings PUBLIC "-//UniTime//DTD University Course Timetabling/EN" "http://www.unitime.org/interface/CourseOfferingExport.dtd">
 
 <!-- 
- * UniTime 3.0 (University Course Timetabling & Student Sectioning Application)
- * Copyright (C) 2007, UniTime.org
+ * UniTime 3.1 (University Timetabling Application)
+ * Copyright (C) 2008, UniTime.org
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,8 +22,8 @@
 
 <offerings campus="PuWL" year="2006" term="Fall">
 	<offering id="10234" offered="true" action="update|delete|insert">
-		<designatorRequired/> <!-- DO WE NEED THIS?  -->
-		<consent type="department|instructor"/> <!-- DO WE NEED THIS?  -->
+		<designatorRequired/>
+		<consent type="department|instructor"/>
 		<courseCredit creditType="collegiate" creditUnitType="semesterHours" creditFormat="fixedUnit" fixedCredit="3"/>
 		<course subject="A&amp;AE" courseNbr="101" controlling="true" title="" scheduleBookNote=""/>
 		<course subject="A&amp;AE" courseNbr="101H" controlling="false" title="" scheduleBookNote=""/>

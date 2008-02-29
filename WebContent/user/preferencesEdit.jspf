@@ -23,6 +23,7 @@
 <%@ page import="org.unitime.timetable.model.RoomFeature" %>
 <%@ page import="org.unitime.timetable.model.PreferenceLevel" %>
 <%@ page import="org.unitime.timetable.model.RoomGroup" %>
+<%@ page import="org.unitime.timetable.model.ExamPeriod" %>
 <%@ page import="org.unitime.commons.Debug" %>
 <%@ page import="org.unitime.timetable.model.DistributionType" %>
 <%@ page import="org.unitime.timetable.model.Preference" %>
@@ -32,6 +33,7 @@
 	<html:hidden property="previousId"/>
 
 <!-- Time Preferences -->
+	<% if (!timePrefDisabled) { %>
 		<TR><TD colspan='2'>&nbsp;</TD></TR>
 		<TR>
 			<TD valign="middle" colspan='2'>
@@ -75,7 +77,23 @@
 			</TR>
 			<% idx++; %>
 		</logic:iterate>
+	<% } %>
 		
+<!-- Period Preferences -->
+	<logic:notEmpty scope="request" name="ExamPeriodGrid">
+		<TR><TD colspan='2'>&nbsp;</TD></TR>
+		<TR>
+			<TD valign="middle" colspan='2'>
+				<tt:section-title><A name='PeriodPref'>Examination Period Preferences</A></tt:section-title>
+			</TD>
+		</TR>
+		<TR>
+			<TD colspan='2'>
+				<bean:write scope="request" name="ExamPeriodGrid" filter="false"/>
+			</TD>
+		</TR>
+	</logic:notEmpty>
+	
 <!-- Room Group -->
 	<% PreferenceLevel pr = null; %>
 	<% if (!roomGroupDisabled) { %>
@@ -387,11 +405,6 @@
 				<INPUT type="hidden" name="reloadCause" id="reloadCause" value="">
 				<INPUT type="hidden" name="doit" value="Cancel">
 
-				<html:submit property="op" 
-					styleClass="btn" accesskey="U" titleKey="title.updatePrefs" >
-					<bean:message key="button.updatePrefs" />
-				</html:submit> 
-				
 				<!-- 
 				&nbsp;
 				<html:submit property="op" styleClass="btn" styleId="reload" accesskey="E" title="Discard Changes. Reload preferences from database">
@@ -405,6 +418,11 @@
 				-->				
 				  
 				<% if (frmName.equals("SchedulingSubpartEditForm")) { %>  
+				
+				<html:submit property="op" 
+					styleClass="btn" accesskey="U" titleKey="title.updatePrefs" >
+					<bean:message key="button.updatePrefs" />
+				</html:submit> 
 				
 				&nbsp;
 				<html:submit property="op" 
@@ -430,6 +448,11 @@
 				
 				   if (frmName.equals("ClassEditForm")) {%>
 
+				<html:submit property="op" 
+					styleClass="btn" accesskey="U" titleKey="title.updatePrefs" >
+					<bean:message key="button.updatePrefs" />
+				</html:submit> 
+				
 				&nbsp;
 				<html:submit property="op" 
 					styleClass="btn" accesskey="C" titleKey="title.clearClassPrefs">
@@ -453,6 +476,11 @@
 				<% } 
 
 				   if (frmName.equals("instructorEditForm")) {%>
+				<html:submit property="op" 
+					styleClass="btn" accesskey="U" titleKey="title.updatePrefs" >
+					<bean:message key="button.updatePrefs" />
+				</html:submit> 
+				
 				&nbsp;
 				<html:submit property="op" 
 					styleClass="btn" accesskey="C" titleKey="title.clearInstrPrefs" >
@@ -473,6 +501,35 @@
 							<bean:message key="button.nextInstructor" />
 						</html:submit> 
 					</logic:notEmpty>
+				<% } 
+
+				   if (frmName.equals("examEditForm")) {%>
+					<logic:notEmpty name="<%=frmName%>" property="examId">
+						<html:submit property="op" 
+							styleClass="btn" accesskey="U" titleKey="title.updateExam" >
+							<bean:message key="button.updateExam" />
+						</html:submit> 
+					</logic:notEmpty>
+					<logic:empty name="<%=frmName%>" property="examId">
+						<html:submit property="op" 
+							styleClass="btn" accesskey="S" titleKey="title.saveExam" >
+							<bean:message key="button.saveExam" />
+						</html:submit> 
+					</logic:empty>
+					<logic:greaterEqual name="<%=frmName%>" property="previousId" value="0">
+						&nbsp;
+						<html:submit property="op" 
+								styleClass="btn" accesskey="P" titleKey="title.previousExam">
+							<bean:message key="button.previousExam" />
+						</html:submit> 
+					</logic:greaterEqual>
+					<logic:greaterEqual name="<%=frmName%>" property="nextId" value="0">
+						&nbsp;
+						<html:submit property="op" 
+							styleClass="btn" accesskey="N" titleKey="title.nextExam">
+							<bean:message key="button.nextExam" />
+						</html:submit> 
+					</logic:greaterEqual>
 				<% } %>
 
 				&nbsp;

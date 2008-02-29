@@ -108,6 +108,8 @@
 			boolean roomFeaturePrefDisabled = false;
 			boolean distPrefDisabled = false;
 			boolean restorePrefsDisabled = true;
+			boolean timePrefDisabled = false;
+			boolean periodPrefDisabled = true;
 		%>
 		<%@ include file="preferencesEdit.jspf" %>
 		

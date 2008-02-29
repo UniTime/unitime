@@ -102,7 +102,7 @@ public class ListSolutionsForm extends ActionForm {
 		iHostEmpty = iHost;
 		iHosts.clear();
 		User user = Web.getUser(request.getSession());
-		iViewOnly = user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE);
+		iViewOnly = user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE) || user.getCurrentRole().equals(Roles.EXAM_MGR_ROLE);
 		if (user.isAdmin()) {
             Set servers = SolverRegisterService.getInstance().getServers();
             synchronized (servers) {
@@ -187,8 +187,20 @@ public class ListSolutionsForm extends ActionForm {
 			sInfoKeys.add("Useless half-hours");
 			sInfoKeys.add("Same subpart balancing penalty");
 			sInfoKeys.add("Department balancing penalty");
+            sInfoKeys.add("Direct Conflicts");
+            sInfoKeys.add("More Than 2 A Day Conflicts");
+            sInfoKeys.add("Back-To-Back Conflicts");
+            sInfoKeys.add("Distance Back-To-Back Conflicts");
+            sInfoKeys.add("Period Penalty");
+            sInfoKeys.add("Exam Rotation Penalty");
+            sInfoKeys.add("Room Penalty");
+            sInfoKeys.add("Room Split Penalty");
+            sInfoKeys.add("Room Size Penalty");
+            sInfoKeys.add("Not-Original Room Penalty");
+            sInfoKeys.add("Distribution Penalty");
 			sInfoKeys.add("Perturbation penalty");
 			sInfoKeys.add("Perturbation variables");
+			sInfoKeys.add("Perturbations: Total penalty");
 			sInfoKeys.add("Time");
 			sInfoKeys.add("Iteration");
 			sInfoKeys.add("Memory usage");

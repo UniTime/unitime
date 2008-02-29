@@ -349,6 +349,14 @@
 			</TR>
 		<% } %>
 		
+		<TR>
+			<TD colspan="2">
+				<tt:exams type='Class_' add='true'>
+					<bean:write name="<%=frmName%>" property="classId"/>
+				</tt:exams>
+			</TD>
+		</TR>
+		
 
 <!-- Buttons -->
 		<TR>

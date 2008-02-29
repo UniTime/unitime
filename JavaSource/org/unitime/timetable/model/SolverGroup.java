@@ -173,6 +173,7 @@ public class SolverGroup extends BaseSolverGroup implements Comparable {
     public boolean canCommit(User user) {
         if (user.isAdmin()) return true;
         if (user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE)) return false;
+        if (user.getCurrentRole().equals(Roles.EXAM_MGR_ROLE)) return false;
         return canCommit();
     }
 

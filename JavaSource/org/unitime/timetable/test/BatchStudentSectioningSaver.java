@@ -119,6 +119,7 @@ public class BatchStudentSectioningSaver extends StudentSectioningSaver {
                         sce.setStudent(s);
                         sce.setClazz(new Class_DAO().get(new Long(section.getId())));
                         sce.setCourseRequest(cr);
+                        sce.setCourseOffering(cr.getCourseOffering());
                         sce.setTimestamp(new Date());
                         hibSession.save(sce);
                     }
