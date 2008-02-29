@@ -17,18 +17,13 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  -->
 
-<!ELEMENT staff ( staffMember+ ) >
-<!ATTLIST staff campus CDATA #REQUIRED >
-<!ATTLIST staff term CDATA #REQUIRED >
-<!ATTLIST staff year CDATA #REQUIRED >
+<!ELEMENT studentEnrollments ( student+ ) >
+<!ATTLIST studentEnrollments campus CDATA #REQUIRED >
+<!ATTLIST studentEnrollments term CDATA #REQUIRED >
+<!ATTLIST studentEnrollments year CDATA #REQUIRED >
 
-<!ELEMENT staffMember EMPTY >
-<!ATTLIST staffMember department CDATA #REQUIRED >
-<!ATTLIST staffMember externalId CDATA #REQUIRED >
-<!ATTLIST staffMember firstName CDATA #IMPLIED >
-<!ATTLIST staffMember lastName CDATA #REQUIRED >
-<!ATTLIST staffMember middleName CDATA #IMPLIED >
-<!ATTLIST staffMember positionCode CDATA #REQUIRED >
-<!ATTLIST staffMember email CDATA #IMPLIED >
+<!ELEMENT student ( class+ ) >
+<!ATTLIST student externalId CDATA #REQUIRED >
 
-
+<!ELEMENT class EMPTY >
+<!ATTLIST class externalId CDATA #REQUIRED >

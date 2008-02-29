@@ -39,12 +39,12 @@
 				</subpart>
 			</subpart>
 			<subpart type="Lab" suffix="" minPerWeek="150"/>
-			<class id="" type="Lec" suffix="1" limit="20" scheduleNote="" displayInScheduleBook="true">
-				<class id="" type="Rec" suffix="1" limit="10">
-					<class id="" type="Rec" suffix="1a" limit="10"/>
+			<class id="1001" type="Lec" suffix="1" limit="20" scheduleNote="" displayInScheduleBook="true">
+				<class id="1002" type="Rec" suffix="1" limit="10">
+					<class id="1003" type="Rec" suffix="1a" limit="10"/>
 				</class>
-				<class id="" type="Rec" suffix="2" limit="10">
-					<class id="" type="Rec" suffix="2a" limit="10"/>
+				<class id="1004" type="Rec" suffix="2" limit="10">
+					<class id="1005" type="Rec" suffix="2a" limit="10"/>
 				</class>
 				<date startDate="08/20" endDate="09/22"/> <!-- non-default date pattern -->
 				<time days="MWF" startTime="0730" endTime="0820"/>
@@ -53,17 +53,30 @@
 				<instructor id="23344" lname="" mname="" fname="" share="0.8" lead="true"/> <!-- only instructors that are allowed to be printed are included -->
 				<instructor id="23435" lname="" mname="" fname="" share="0.2"/>
 			</class>
-			<class id="" type="Lab" suffix="1" limit="15"/>
-			<class id="" type="Lab" suffix="2" limit="5"/>
+			<class id="1006" type="Lab" suffix="1" limit="15"/>
+			<class id="1007" type="Lab" suffix="2" limit="5"/>
 		</config>
 		<config name="2" limit="inf">
 			<subpart type="Lec" suffix="" minPerWeek="100">
 			  		<subpartCredit creditType="collegiate" creditUnitType="semesterHours" creditFormat="fixedUnit" fixedCredit="1"/>
 			</subpart>
-			<class id="" type="Lec" suffix="2">
+			<class id="1008" type="Lec" suffix="2">
 				<!-- arrange hours class: no time element-->
 				<location name="PIZZA HUT"/> <!-- non-university location -->
 			</class>
 		</config>
+		<exam id="1223" seatingType="exam" length="120" type="final"> <!-- an exam for the whole course -->
+			<instructor id="23344" lname="Doe" mname="" fname="Joe"/>
+			<period date="08/21" startTime="0800" endTime="1000"/>
+			<room id="" building="REC" roomNbr="101"/>
+			<room id="" building="REC" roomNbr="102"/>
+		</exam>
+		<exam id="1224" seatingType="exam" length="60" type="evening"> <!-- an evening exam for two sections -->
+			<class id="1001" type="Lec" suffix="1"/>
+			<class id="1008" type="Lec" suffix="2"/>
+			<period date="07/20" startTime="1830" endTime="1930"/>
+			<room id="" building="REC" roomNbr="101"/>
+		</exam>
+		<!-- multiple exams may be present -->
 	</offering>
 </offerings>
