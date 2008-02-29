@@ -761,4 +761,83 @@
    	<definition	name="itypeDescAddTile" extends="itypeDescEditTile">
 		<put name="title" type="string" value="Add Instructional Type"/>
   	</definition>
+
+  	<definition name="examPeriodsTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Examination Periods"/>
+		<put name="body" value="/admin/examPeriods.jsp" />
+  	</definition>
+
+  	<definition name="addExamPeriodTile" extends="examPeriodsTile">
+		<put name="title" type="string" value="Add Examination Period"/>
+  	</definition>
+
+  	<definition name="editExamPeriodTile" extends="examPeriodsTile">
+		<put name="title" type="string" value="Edit Examination Period"/>
+  	</definition>
+
+  	<definition	name="editRoomPerPrefTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Edit Room Examination Period Preference"/>
+		<put name="body" value="/admin/editRoomPerPref.jsp" />
+  	</definition>
+  	
+  	<definition name="examListTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Examinations"/>
+		<put name="body" value="/user/examList.jsp" />
+		<put name="showNavigation" value="true" />
+  	</definition>
+
+  	<definition name="examDetailTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Examination Detail"/>
+		<put name="body" value="/user/examDetail.jsp" />
+		<put name="showNavigation" value="true" />
+  	</definition>
+
+  	<definition name="examEditTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Examination Edit"/>
+		<put name="body" value="/user/examEdit.jsp" />
+		<put name="showNavigation" value="true" />
+  	</definition>
+
+  	<definition name="examAddTile" extends="examEditTile">
+		<put name="title" type="string" value="Add Examination"/>
+  	</definition>
+
+	<definition	name="examDistributionPrefsTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Examination Distribution Preferences"/>
+		<put name="body" value="/user/examDistributionPrefs.jsp" />
+		<put name="showNavigation" value="true" />
+  	</definition>
+  	
+	<definition	name="examAdddistributionPrefTile" extends="examDistributionPrefsTile">
+		<put name="title" type="string" value="Add Examination Distribution Preference"/>
+  	</definition>
+
+	<definition	name="examEditDistributionPrefTile" extends="examDistributionPrefsTile">
+		<put name="title" type="string" value="Edit Examination Distribution Preference"/>
+  	</definition>
+  	
+  	<definition	name="examSolverTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Examination Solver"/>
+		<put name="body" value="/exam/examSolver.jsp" />
+  	</definition>
+
+	<definition	name="examSolverLogTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Examination Solver Log"/>
+		<put name="body" value="/exam/examLog.jsp" />
+  	</definition>
+
+	<definition	name="assignedExamsTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Assigned Examinations"/>
+		<put name="body" value="/exam/assigned.jsp" />
+  	</definition>
+
+	<definition	name="unassignedExamsTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Not-Assigned Examinations"/>
+		<put name="body" value="/exam/unassigned.jsp" />
+  	</definition>
+
+	<definition	name="examGridTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Examination Timetable"/>
+		<put name="body" value="/exam/examGrid.jsp" />
+  	</definition>
 </tiles-definitions>

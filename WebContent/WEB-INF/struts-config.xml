@@ -112,6 +112,15 @@
       <form-bean name="subjectAreaEditForm" type="org.unitime.timetable.form.SubjectAreaEditForm" />
       <form-bean name="buildingEditForm" type="org.unitime.timetable.form.BuildingEditForm" />
       <form-bean name="itypeDescEditForm" type="org.unitime.timetable.form.ItypeDescEditForm" />
+      <form-bean name="examPeriodEditForm" type="org.unitime.timetable.form.ExamPeriodEditForm" />
+      <form-bean name="editRoomPerPrefForm" type="org.unitime.timetable.form.EditRoomPerPrefForm" />
+      <form-bean name="examListForm" type="org.unitime.timetable.form.ExamListForm" />
+      <form-bean name="examEditForm" type="org.unitime.timetable.form.ExamEditForm" />
+      <form-bean name="examDistributionPrefsForm" type="org.unitime.timetable.form.ExamDistributionPrefsForm" />
+      <form-bean name="examSolverForm" type="org.unitime.timetable.form.ExamSolverForm" />
+	  <form-bean name="examSolverLogForm" type="org.unitime.timetable.form.ExamSolverLogForm" />
+	  <form-bean name="examReportForm" type="org.unitime.timetable.form.ExamReportForm" />
+	  <form-bean name="examGridForm" type="org.unitime.timetable.form.ExamGridForm" />
    </form-beans>
 
    <global-exceptions>
@@ -1248,6 +1257,7 @@
       <forward name="showEditRoomDept" path="/editRoomDept.do" />
       <forward name="showEditRoom" path="/editRoom.do" />
       <forward name="showRoomDetail" path="roomDetailTile" />
+      <forward name="showEditRoomPeriodPref" path="/editRoomPerPref.do" />
     </action>
 
     <action
@@ -1912,6 +1922,165 @@
        		path="/rollForwardSession.do" />
       </action>
 
+    <action
+      attribute="examPeriodEditForm"
+      input="examPeriodsTile"
+      name="examPeriodEditForm"
+      path="/examPeriodEdit"
+      scope="request"
+      type="org.unitime.timetable.action.ExamPeriodEditAction" 
+      validate="false">
+      <forward name="list" path="examPeriodsTile" />
+      <forward name="add" path="addExamPeriodTile" />
+      <forward name="edit" path="editExamPeriodTile" />
+    </action>
+
+    <action
+      attribute="editRoomPerPrefForm"
+      input="/admin/editRoomPerPref.jsp"
+      name="editRoomPerPrefForm"
+      path="/editRoomPerPref"
+      scope="request"
+      type="org.unitime.timetable.action.EditRoomPerPrefAction"
+      validate="false">
+      <forward name="back" path="/roomDetail.do" />
+      <forward name="edit" path="editRoomPerPrefTile" />
+    </action>
+
+    <action
+      attribute="examListForm"
+      input="/user/examList.jsp"
+      name="examListForm"
+      path="/examList"
+      scope="request"
+      type="org.unitime.timetable.action.ExamListAction"
+      validate="false">
+      <forward name="list" path="examListTile" />
+      <forward name="addExam" path="/examEdit.do" redirect="true"/>
+    </action>
+
+    <action
+      attribute="examEditForm"
+      input="/user/examDetail.jsp"
+      name="examEditForm"
+      path="/examDetail"
+      scope="request"
+      type="org.unitime.timetable.action.ExamDetailAction"
+      validate="false">
+      <forward name="showExamDetail" path="examDetailTile" />
+      <forward name="addDistributionPrefs" path="/examDistributionPrefs.do" />
+      <forward name="showList" path="/examList.do" redirect="true" />
+    </action>
+
+    <action
+      attribute="examEditForm"
+      input="/user/examEdit.jsp"
+      name="examEditForm"
+      path="/examEdit"
+      scope="request"
+      type="org.unitime.timetable.action.ExamEditAction"
+      validate="false">
+      <forward name="showAdd" path="examAddTile" />
+      <forward name="showEdit" path="examEditTile" />
+      <forward name="showDetail" path="/examDetail.do" />
+      <forward name="showList" path="/examList.do" redirect="true" />
+    </action>
+
+	  <action
+         path="/examEditAjax"
+         type="org.unitime.timetable.action.ajax.ExamEditAjax"
+         scope="request"
+         validate="false" />
+
+
+         <action
+         path="/examDistributionPrefs"
+         type="org.unitime.timetable.action.ExamDistributionPrefsAction"
+         attribute="examDistributionPrefsForm"
+         input="examDistributionPrefsTile"
+         name="examDistributionPrefsForm"
+         scope="request"
+         validate="false">
+        <forward 
+        	name="list" 
+        	path="examDistributionPrefsTile" />
+        <forward 
+        	name="add" 
+        	path="examAdddistributionPrefTile" />
+        <forward 
+        	name="edit" 
+        	path="examEditDistributionPrefTile" />
+      </action>
+
+    <action
+    	path="/examSolver"
+    	type="org.unitime.timetable.action.ExamSolverAction"
+    	attribute="examSolverForm"
+    	input="examSolverTile"
+    	name="examSolverForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+    		name="showSolver"
+    		path="examSolverTile"
+	        redirect="true" />
+    </action>
+    
+    <action
+    	path="/examSolverLog"
+    	type="org.unitime.timetable.action.ExamSolverLogAction"
+    	attribute="examSolverLogForm"
+    	input="examSolverLogTile"
+    	name="examSolverLogForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+    		name="showLog"
+    		path="examSolverLogTile"
+    		redirect="true" />
+    </action>
+   
+    <action
+    	path="/assignedExams"
+    	type="org.unitime.timetable.action.AssignedExamsAction"
+    	attribute="examReportForm"
+    	input="assignedExamsTile"
+    	name="examReportForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+    		name="showReport"
+    		path="assignedExamsTile"
+    		redirect="true" />
+    </action>
+
+    <action
+    	path="/unassignedExams"
+    	type="org.unitime.timetable.action.UnassignedExamsAction"
+    	attribute="examReportForm"
+    	input="unassignedExamsTile"
+    	name="examReportForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+    		name="showReport"
+    		path="unassignedExamsTile"
+    		redirect="true" />
+    </action>
+
+    <action
+    	path="/examGrid"
+    	type="org.unitime.timetable.action.ExamGridAction"
+    	attribute="examGridForm"
+    	input="examGridTile"
+    	name="examGridForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+    		name="showGrid"
+    		path="examGridTile"
+    		redirect="true" />
+    </action>
    </action-mappings>
 
 	<!-- Struts Layout Controller -->

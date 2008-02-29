@@ -103,7 +103,8 @@ function tpCheckRequired(tpName, time, day, pref) {
 	if (reqUsed=='1' && pref!='R' && pref!='0') {
 		for (var xt=0;xt<tpGetNrTimes(tpName);xt++) {
 			for (var xd=0;xd<tpGetNrDays(tpName);xd++) {
-				tpSetPreferenceNoCheck(tpName, xt, xd, '0');
+				if (tpGetPreference(tpName,xt,xd)!='@')
+					tpSetPreferenceNoCheck(tpName, xt, xd, '0');
 			}
 		}
 		document.getElementById(tpName+"_reqUsed").value='0';
@@ -111,7 +112,8 @@ function tpCheckRequired(tpName, time, day, pref) {
 	if (reqUsed=='0' && pref=='R') {
 		for (var xt=0;xt<tpGetNrTimes(tpName);xt++) {
 			for (var xd=0;xd<tpGetNrDays(tpName);xd++) {
-				tpSetPreferenceNoCheck(tpName, xt, xd, '0');
+				if (tpGetPreference(tpName,xt,xd)!='@')
+					tpSetPreferenceNoCheck(tpName, xt, xd, '0');
 			}
 		}
 		document.getElementById(tpName+"_reqUsed").value='1';

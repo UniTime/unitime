@@ -20,6 +20,7 @@
 package org.unitime.timetable.action;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.util.Hashtable;
 
 import javax.servlet.http.HttpServletRequest;
@@ -36,6 +37,7 @@ import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.SolverForm;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.SolverParameterGroup;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.remote.SolverRegisterService;
@@ -73,6 +75,18 @@ public class SolverAction extends Action {
         }
         
         SolverProxy solver = WebSolver.getSolver(request.getSession());
+        
+        if ("Export XML".equals(op)) {
+            if (solver==null) throw new Exception("Solver is not started.");
+            if (solver.isWorking()) throw new Exception("Solver is working, stop it first.");
+            solver.restoreBest();
+            byte[] buf = solver.exportXml();
+            File file = ApplicationProperties.getTempFile("solution", "xml");
+            FileOutputStream fos = new FileOutputStream(file);
+            fos.write(buf);
+            fos.flush();fos.close();
+            request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
+        }
         
         if ("Restore From Best".equals(op)) {
         	if (solver==null) throw new Exception("Solver is not started.");
@@ -139,7 +153,7 @@ public class SolverAction extends Action {
     	    if (solver == null) {
         		solver = WebSolver.createSolver(sessionId,request.getSession(),ownerId,(solutionId==null?null:solutionId),settingsId,extra,start,myForm.getHost());
         	} else if (start) {
-        		solver.setProperties(WebSolver.createProperties(settingsId, extra));
+        		solver.setProperties(WebSolver.createProperties(settingsId, extra, SolverParameterGroup.sTypeCourse));
         		solver.start();
         	}
     	    myForm.setChangeTab(true);

@@ -1,6 +1,6 @@
 <!-- 
- * UniTime 3.0 (University Course Timetabling & Student Sectioning Application)
- * Copyright (C) 2007, UniTime.org
+ * UniTime 3.1 (University Timetabling Application)
+ * Copyright (C) 2008, UniTime.org
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -57,10 +57,10 @@
 <!ATTLIST instructor lead ( false | true ) #IMPLIED >
 <!ATTLIST instructor lname CDATA #IMPLIED >
 <!ATTLIST instructor mname CDATA #IMPLIED >
-<!ATTLIST instructor share NMTOKEN #REQUIRED >
+<!ATTLIST instructor share NMTOKEN #IMPLIED >
 
-<!ELEMENT offering ( designatorRequired?, consent?, courseCredit*, course+, config* ) >
-<!ATTLIST offering action CDATA #REQUIRED >
+<!ELEMENT offering ( designatorRequired?, consent?, courseCredit*, course+, config*, exam* ) >
+<!ATTLIST offering action CDATA #IMPLIED >
 <!ATTLIST offering id NMTOKEN #REQUIRED >
 <!ATTLIST offering offered NMTOKEN #REQUIRED >
 
@@ -99,3 +99,15 @@
 <!ELEMENT date EMPTY >
 <!ATTLIST date endDate CDATA #REQUIRED >
 <!ATTLIST date startDate CDATA #REQUIRED >
+
+<!ELEMENT exam ( class*, instructor*, (period, room*)?) >
+<!ATTLIST exam id CDATA #REQUIRED >
+<!ATTLIST exam length NMTOKEN #IMPLIED >
+<!ATTLIST exam seatingType ( normal | exam) #IMPLIED >
+<!ATTLIST exam type ( final | evening) #REQUIRED >
+
+<!ELEMENT period EMPTY >
+<!ATTLIST period date CDATA #REQUIRED >
+<!ATTLIST period startTime NMTOKEN #REQUIRED >
+<!ATTLIST period endTime NMTOKEN #REQUIRED >
+

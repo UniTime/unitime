@@ -181,6 +181,12 @@
 								<%=r1.getCapacity()%>
 							</TD>
 							
+							<% if (r1.isExamEnabled()) { %>
+								<TD align="center"><%=r1.getExamCapacity()%>
+							<% } else { %>
+								<TD></TD>
+							<% } %>
+							
 							<logic:iterate name="<%=frmName%>" property="roomFeatures" id="roomFeature">
 							<% 
 								RoomFeature rf1 = (RoomFeature) roomFeature; 
@@ -251,6 +257,12 @@
 								<%=r2.getCapacity()%>
 							</TD>
 							
+							<% if (r2.isExamEnabled()) { %>
+								<TD align="center"><%=r2.getExamCapacity()%>
+							<% } else { %>
+								<TD></TD>
+							<% } %>
+
 							<logic:iterate name="<%=frmName%>" property="roomFeatures" id="roomFeature">
 							<% 
 								RoomFeature rf2 = (RoomFeature) roomFeature; 

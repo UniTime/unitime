@@ -101,7 +101,7 @@ public class RoomFeatureSearchAction extends Action {
 		
 		// No session attribute found - Load dept code
 		else {
-			if (user.getRole().equals(Roles.ADMIN_ROLE) || user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE)) {
+			if (user.getRole().equals(Roles.ADMIN_ROLE) || user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE) || user.getCurrentRole().equals(Roles.EXAM_MGR_ROLE)) {
 				//set departments
 				LookupTables.setupDeptsForUser(request, user, sessionId, true);
 				return mapping.findForward("showRoomFeatureSearch");

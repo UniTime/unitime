@@ -42,6 +42,6 @@
 	User user = Web.getUser(session);
 	session.setAttribute("callingPage", "classSearch");
 %>
-	<%new WebClassListTableBuilder().htmlTableForClasses(session, WebSolver.getClassAssignmentProxy(session),frm, user, out, request.getParameter("backType"), request.getParameter("backId"));%>
+	<%new WebClassListTableBuilder().htmlTableForClasses(session, WebSolver.getClassAssignmentProxy(session),WebSolver.getExamSolver(session),frm, user, out, request.getParameter("backType"), request.getParameter("backId"));%>
 </html:form>
 

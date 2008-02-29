@@ -123,7 +123,7 @@ public class RoomFeatureEditAction extends LookupDispatchAction {
         if (roomFeatureEditForm.getAbbv()==null || roomFeatureEditForm.getAbbv().length()==0)
             roomFeatureEditForm.setAbbv(rf.getAbbv());
 		
-		//get rooms		
+        //get rooms		
 		Collection assigned = getAssignedRooms(user, rf, roomFeatureEditForm);
 		Collection available = getAvailableRooms(user, rf, roomFeatureEditForm);
 
@@ -389,7 +389,7 @@ public class RoomFeatureEditAction extends LookupDispatchAction {
 		Collection rooms = Session.getCurrentAcadSession(user).getRoomsFast(depts);	
 		Collection available = new HashSet();
 		
-		for (Iterator iter = rooms.iterator(); iter.hasNext();)  {
+        for (Iterator iter = rooms.iterator(); iter.hasNext();)  {
 			Location r = (Location) iter.next();
 			if (!r.hasFeature(rf))  available.add(r);
 		}
@@ -416,7 +416,8 @@ public class RoomFeatureEditAction extends LookupDispatchAction {
 		}
 
 		//get rooms owned by user
-		Collection rooms = Session.getCurrentAcadSession(user).getRoomsFast(depts);	
+		Collection rooms = Session.getCurrentAcadSession(user).getRoomsFast(depts);
+		
 		Collection assigned = new HashSet();
 		
 		for (Iterator iter = rooms.iterator(); iter.hasNext();)  {

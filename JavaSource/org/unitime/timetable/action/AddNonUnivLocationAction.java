@@ -175,6 +175,8 @@ public class AddNonUnivLocationAction extends Action {
 			nonUniv.setAssignments(new HashSet());
 			nonUniv.setRoomGroups(new HashSet());
 			nonUniv.setRoomDepts(new HashSet());
+			nonUniv.setExamEnabled(Boolean.FALSE);
+			nonUniv.setExamCapacity(0);
 			
 			hibSession.saveOrUpdate(nonUniv);
 			

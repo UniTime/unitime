@@ -62,6 +62,8 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 	private Boolean divSec;
 	private Boolean schedulePrintNote;
 	private Boolean note;
+	private Boolean exams;
+	private Boolean canSeeExams;
 	
 	private String sortBy;
 	private String filterAssignedRoom;
@@ -193,6 +195,8 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 		divSec = new Boolean(false);
 		schedulePrintNote = new Boolean(false);
 		note = new Boolean(false);
+		exams = new Boolean(false);
+		canSeeExams = new Boolean(false);
 		
 		sortBy = sSortByName;
 		filterInstructor = "";
@@ -550,6 +554,18 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 	public void setNote(Boolean note) {
 		this.note = note;
 	}
+    public Boolean getExams() {
+        return exams;
+    }
+    public void setExams(Boolean exams) {
+        this.exams = exams;
+    }
+    public Boolean getCanSeeExams() {
+        return canSeeExams;
+    }
+    public void setCanSeeExams(Boolean canSeeExams) {
+        this.canSeeExams = canSeeExams;
+    }
     public Boolean getConsent() {
 		return (new Boolean(false));
     }

@@ -123,10 +123,12 @@ public class DistributionPref extends BaseDistributionPref {
     	StringBuffer sb = new StringBuffer();
     	if (abbv) {
     		sb.append(getDistributionType().getAbbreviation().replaceAll("<","&lt;").replaceAll(">","&gt;"));
-    		sb.append(sGroupingsSufixShort[getGrouping()==null?0:getGrouping().intValue()]);
+    		if (!new Integer(-1).equals(getGrouping()))
+    		    sb.append(sGroupingsSufixShort[getGrouping()==null?0:getGrouping().intValue()]);
     	} else {
     		sb.append(getDistributionType().getLabel());
-    		sb.append(sGroupingsSufix[getGrouping()==null?0:getGrouping().intValue()]);
+    		if (!new Integer(-1).equals(getGrouping()))
+    		    sb.append(sGroupingsSufix[getGrouping()==null?0:getGrouping().intValue()]);
     	}
     	if (includeDistrObjects) {
     		if (getDistributionObjects()!=null && !getDistributionObjects().isEmpty()) {
@@ -259,9 +261,11 @@ public class DistributionPref extends BaseDistributionPref {
     }
     
     public String getGroupingName() {
+        if (new Integer(-1).equals(getGrouping())) return null;
     	return sGroupings[getGrouping()==null?0:getGrouping().intValue()];
     }
     public String getGroupingSufix() {
+        if (new Integer(-1).equals(getGrouping())) return null;
     	return sGroupingsSufix[getGrouping()==null?0:getGrouping().intValue()];
     }
     
@@ -382,8 +386,8 @@ public class DistributionPref extends BaseDistributionPref {
     }
     
     public boolean isEditable(Session session, TimetableManager manager) {
-    	if (manager == null) return false;
-    	
+        if (manager == null) return false;
+        
     	Department d = null;
     	if (getOwner() instanceof DepartmentalInstructor) {
     		d = ((DepartmentalInstructor)getOwner()).getDepartment();

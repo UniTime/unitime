@@ -299,7 +299,7 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
     	if (user.isAdmin()){
     		return(true);
     	}
-    	if (user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE))
+    	if (user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE) || user.getCurrentRole().equals(Roles.EXAM_MGR_ROLE))
     		return true;
     	if (this.canUserEdit(user)){
     		return(true);
@@ -380,5 +380,13 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
     }
     public Set getAvailableRoomGroups() {
     	return new TreeSet(RoomGroup.getAllGlobalRoomGroups());
+    }
+    
+    public Set getExamPeriodPreferences(){
+        return getPreferences(ExamPeriodPref.class);
+    }
+    
+    public Set getEffectiveExamPeriodPreferences(){
+        return effectivePreferences(ExamPeriodPref.class);
     }
 }

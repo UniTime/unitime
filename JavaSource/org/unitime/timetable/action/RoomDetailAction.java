@@ -48,6 +48,7 @@ import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.NonUniversityLocation;
+import org.unitime.timetable.model.PeriodPreferenceModel;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomDept;
@@ -144,6 +145,11 @@ public class RoomDetailAction extends Action {
 					|| doit.equals(rsc.getMessage("button.addRoomPreference"))) {
 				return mapping.findForward("showEditRoomPref");
 			}
+			
+            //modify room departments
+            if(doit.equals(rsc.getMessage("button.modifyRoomPeriodPreferences"))) {
+                return mapping.findForward("showEditRoomPeriodPref");
+            }
 		}
 		
 		if (request.getParameter("id")==null && roomDetailForm.getId()==null)
@@ -206,6 +212,17 @@ public class RoomDetailAction extends Action {
 		LookupTables.setupPrefLevels(request);
 		
 		//set location information in form
+		roomDetailForm.setExamEnabled(location.isExamEnabled());
+		roomDetailForm.setExamCapacity(location.getExamCapacity());
+		
+        PeriodPreferenceModel px = new PeriodPreferenceModel(location.getSession());
+        px.setAllowRequired(false);
+        px.load(location);
+        RequiredTimeTable rttPx = new RequiredTimeTable(px);
+        rttPx.setName("PeriodPrefs");
+        if (!location.getExamPreferences().isEmpty())
+            roomDetailForm.setExamPref(rttPx.print(false, timeVertical, true, false));
+		
 		roomDetailForm.setCapacity(location.getCapacity());
 		roomDetailForm.setCoordinateX(location.getCoordinateX());
 		roomDetailForm.setCoordinateY(location.getCoordinateY());

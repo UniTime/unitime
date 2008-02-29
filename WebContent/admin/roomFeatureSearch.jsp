@@ -24,7 +24,7 @@
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
-
+<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <%
 	// Get Form 
 	String frmName = "roomFeatureListForm";	
@@ -45,6 +45,9 @@
 					onkeydown="return checkKey(event, this);" >
 					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
 					<html:option value="<%=Constants.ALL_OPTION_LABEL%>">All Managed</html:option>
+					<tt:canSeeExams>
+						<html:option value="Exam">All Examination Rooms</html:option>
+					</tt:canSeeExams>
 					<html:options collection="<%=Department.DEPT_ATTR_NAME%>" 
 						property="value" labelProperty="label"/>
 					</html:select>

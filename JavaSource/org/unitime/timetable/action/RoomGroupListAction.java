@@ -197,6 +197,8 @@ public class RoomGroupListAction extends Action {
 			} else {
 				depts = Department.findAllOwned(sessionId, manager, false);
 			}
+		} else if (roomGroupListForm.getDeptCodeX().equalsIgnoreCase("Exam")) {
+		    depts = new HashSet(0);
 		} else {
 			depts = new HashSet(1);
 			depts.add(Department.findByDeptCode(roomGroupListForm.getDeptCodeX(),sessionId));
@@ -223,6 +225,7 @@ public class RoomGroupListAction extends Action {
 						if (depts.contains(rg.getDepartment()) || isAdmin) {
 							departmentRoomGroups.add(rg);
 						}
+					} else if (roomGroupListForm.getDeptCodeX().equalsIgnoreCase("Exam")) {
 					} else if (rg.getDepartment().getDeptCode().equalsIgnoreCase(roomGroupListForm.getDeptCodeX())) {
 						departmentRoomGroups.add(rg);
 					}					
@@ -246,7 +249,9 @@ public class RoomGroupListAction extends Action {
 				new String[] { "left", "left", "left", "left", "left" }, 
 				new boolean[] { true, true, true, true, true} );
 
-		boolean haveGlobalRoomGroup = false;
+        boolean exam = roomGroupListForm.getDeptCodeX().equalsIgnoreCase("exam");
+
+        boolean haveGlobalRoomGroup = false;
 		for (Iterator it = globalRoomGroups.iterator(); it.hasNext();) {
 			RoomGroup rg = (RoomGroup) it.next();
 			Collection rs = new TreeSet(rg.getRooms());
@@ -257,14 +262,18 @@ public class RoomGroupListAction extends Action {
 			for (Iterator iter = rs.iterator();iter.hasNext();) {
 				Location r = (Location) iter.next();
 				if (!sessionId.equals(r.getSession().getUniqueId())) continue;
-				if (!showAll) {
-					boolean skip = true;
-					for (Iterator j=r.getRoomDepts().iterator();j.hasNext();) {
-						RoomDept rd = (RoomDept)j.next();
-						if (depts.contains(rd.getDepartment())) { skip=false; break; }
-						
-					}
-					if (skip) continue;
+				if (exam) {
+				    if (!r.isExamEnabled()) continue;
+				} else {
+	                if (!showAll) {
+	                    boolean skip = true;
+	                    for (Iterator j=r.getRoomDepts().iterator();j.hasNext();) {
+	                        RoomDept rd = (RoomDept)j.next();
+	                        if (depts.contains(rd.getDepartment())) { skip=false; break; }
+	                        
+	                    }
+	                    if (skip) continue;
+	                }
 				}
 				if (assignedRoom.length() > 0) 
 					assignedRoom.append(", ");
@@ -293,7 +302,7 @@ public class RoomGroupListAction extends Action {
 		
 			haveGlobalRoomGroup = true;
 		}
-
+		
 		for (Iterator it = departmentRoomGroups.iterator(); it.hasNext();) {
 			RoomGroup rg = (RoomGroup) it.next();
 			Collection rs = new TreeSet(rg.getRooms());
@@ -316,9 +325,13 @@ public class RoomGroupListAction extends Action {
 			for (Iterator iter = rs.iterator();iter.hasNext();) {
 				Location r = (Location) iter.next();
                 boolean skip = true;
-                for (Iterator j=r.getRoomDepts().iterator();j.hasNext();) {
-                    RoomDept rd = (RoomDept)j.next();
-                    if (rg.getDepartment().equals(rd.getDepartment())) { skip=false; break; }
+                if (exam) {
+                    if (!r.isExamEnabled()) continue;
+                } else {
+                    for (Iterator j=r.getRoomDepts().iterator();j.hasNext();) {
+                        RoomDept rd = (RoomDept)j.next();
+                        if (rg.getDepartment().equals(rd.getDepartment())) { skip=false; break; }
+                    }
                 }
                 if (skip) continue;
 				if (assignedRoom.length() > 0) 
@@ -382,6 +395,8 @@ public class RoomGroupListAction extends Action {
     			} else {
     				depts = Department.findAllOwned(sessionId, manager, false);
     			}
+    		} else if (roomGroupListForm.getDeptCodeX().equalsIgnoreCase("exam")) {
+    		    depts = new HashSet(0);
     		} else {
     			depts = new HashSet(1);
     			depts.add(Department.findByDeptCode(roomGroupListForm.getDeptCodeX(),sessionId));
@@ -409,6 +424,7 @@ public class RoomGroupListAction extends Action {
     						if (depts.contains(rg.getDepartment()) || isAdmin) {
     							departmentRoomGroups.add(rg);
     						}
+    					} else if (roomGroupListForm.getDeptCodeX().equalsIgnoreCase("Exam")) {
     					} else if (rg.getDepartment().getDeptCode().equalsIgnoreCase(roomGroupListForm.getDeptCodeX())) {
     						departmentRoomGroups.add(rg);
     					}					
@@ -428,6 +444,8 @@ public class RoomGroupListAction extends Action {
     				"Name", "Abbreviation", "Department ", "Rooms", "Description" },
     				new String[] { "left", "left", "left", "left", "left" }, 
     				new boolean[] { true, true, true, true, true} );
+    		
+    		boolean exam = roomGroupListForm.getDeptCodeX().equalsIgnoreCase("exam");
 
     		boolean haveGlobalRoomGroup = false;
     		for (Iterator it = globalRoomGroups.iterator(); it.hasNext();) {
@@ -441,14 +459,18 @@ public class RoomGroupListAction extends Action {
     			for (Iterator iter = rs.iterator();iter.hasNext();) {
     				Location r = (Location) iter.next();
     				if (!sessionId.equals(r.getSession().getUniqueId())) continue;
-    				if (!showAll) {
-    					boolean skip = true;
-    					for (Iterator j=r.getRoomDepts().iterator();j.hasNext();) {
-    						RoomDept rd = (RoomDept)j.next();
-    						if (depts.contains(rd.getDepartment())) { skip=false; break; }
-    						
-    					}
-    					if (skip) continue;
+    				if (exam) {
+    				    if (!r.isExamEnabled()) continue;
+    				} else {
+                        if (!showAll) {
+                            boolean skip = true;
+                            for (Iterator j=r.getRoomDepts().iterator();j.hasNext();) {
+                                RoomDept rd = (RoomDept)j.next();
+                                if (depts.contains(rd.getDepartment())) { skip=false; break; }
+                                
+                            }
+                            if (skip) continue;
+                        }
     				}
     				if (assignedRoom.length() > 0) assignedRoom.append(", ");
     				if (PdfWebTable.getWidthOfLastLine(assignedRoom.toString(),false,false)>500) {
@@ -503,11 +525,15 @@ public class RoomGroupListAction extends Action {
     			for (Iterator iter = rs.iterator();iter.hasNext();) {
     				Location r = (Location) iter.next();
                     boolean skip = true;
-                    for (Iterator j=r.getRoomDepts().iterator();j.hasNext();) {
-                        RoomDept rd = (RoomDept)j.next();
-                        if (rg.getDepartment().equals(rd.getDepartment())) { skip=false; break; }
+                    if (exam) {
+                        if (!r.isExamEnabled()) continue;
+                    } else {
+                        for (Iterator j=r.getRoomDepts().iterator();j.hasNext();) {
+                            RoomDept rd = (RoomDept)j.next();
+                            if (rg.getDepartment().equals(rd.getDepartment())) { skip=false; break; }
+                        }
+                        if (skip) continue;
                     }
-                    if (skip) continue;
     				if (assignedRoom.length() > 0) assignedRoom.append(", ");
     				if (PdfWebTable.getWidthOfLastLine(assignedRoom.toString(),false,false)>500)
     					assignedRoom.append("\n");

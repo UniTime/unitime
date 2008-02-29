@@ -88,5 +88,15 @@ public class ExternalRoom extends BaseExternalRoom {
                 setCacheable(true).
                 list();
     }
+    
+    public static ExternalRoom findByBldgAbbvRoomNbr(Long sessionId, String bldgAbbv, String roomNbr) {
+        return (ExternalRoom)new ExternalRoomDAO().getSession().createQuery(
+                "select r from ExternalRoom r where r.building.session.uniqueId=:sessionId and " +
+                "r.building.abbreviation=:bldgAbbv and r.roomNumber=:roomNbr").
+                setLong("sessionId", sessionId).
+                setString("bldgAbbv", bldgAbbv).
+                setString("roomNbr", roomNbr).
+                uniqueResult();
+    }
 	
 }

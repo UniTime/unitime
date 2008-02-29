@@ -74,7 +74,9 @@ public class SolverSettingsAction extends Action {
         
         // Read operation to be performed
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
+        if (op==null) op = request.getParameter("op2");
         boolean list = true;
+        
         
         if (op==null) {
             myForm.setOp("Add Solver Configuration");
@@ -93,6 +95,12 @@ public class SolverSettingsAction extends Action {
         	myForm.setOp("Save");
         	myForm.loadDefaults();
         	list = false;
+        }
+        
+        if ("Refresh".equals(op)) {
+            myForm.setOp(myForm.getUniqueId()==null || myForm.getUniqueId()<=0?"Save":"Update");
+            myForm.loadDefaults(request);
+            list = false;
         }
         
         // Add / Update
@@ -193,9 +201,9 @@ public class SolverSettingsAction extends Action {
             		} else {
             			myForm.reset(mapping, request);
             			myForm.loadDefaults();
-            			myForm.setUniqueId(setting.getUniqueId());
-            			myForm.setName(setting.getName());
-            			myForm.setDescription(setting.getDescription());
+                        myForm.setUniqueId(setting.getUniqueId());
+                        myForm.setName(setting.getName());
+                        myForm.setDescription(setting.getDescription());
             			myForm.setAppearanceIdx(setting.getAppearance().intValue());
             			myForm.setOp("Update");
             			for (Iterator i=setting.getParameters().iterator();i.hasNext();) {
@@ -236,13 +244,19 @@ public class SolverSettingsAction extends Action {
                     } else {
                         File file = ApplicationProperties.getTempFile(setting.getName(), "txt");
                         PrintWriter pw = new PrintWriter(new FileWriter(file));
-                        DataProperties properties = WebSolver.createProperties(setting.getUniqueId(), null);
+                        DataProperties properties = WebSolver.createProperties(setting.getUniqueId(), null,
+                                myForm.getAppearanceIdx()==SolverPredefinedSetting.APPEARANCE_EXAM_SOLVER?SolverParameterGroup.sTypeExam:SolverParameterGroup.sTypeCourse);
                         pw.println("## Solver Configuration File");
                         pw.println("## Name: "+setting.getDescription());
                         pw.println("## Date: "+new Date());
                         pw.println("######################################");
                         for (Iterator i=hibSession.createQuery("select g from SolverParameterGroup g order by g.order").iterate();i.hasNext();) {
                             SolverParameterGroup g = (SolverParameterGroup)i.next();
+                            if (myForm.getAppearanceIdx()==SolverPredefinedSetting.APPEARANCE_EXAM_SOLVER) {
+                                if (g.getType()!=SolverParameterGroup.sTypeExam) continue;
+                            } else {
+                                if (g.getType()!=SolverParameterGroup.sTypeCourse) continue;
+                            }
                             pw.println();
                             pw.println("## "+g.getDescription().replaceAll("<br>", "\n#"));
                             pw.println("######################################");

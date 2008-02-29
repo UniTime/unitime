@@ -352,6 +352,10 @@ try {
 %>
 						<html:submit onclick="confirmSaveAsNewAndCommit();displayLoading();" property="op" value="Save As New & Commit"/>
 					</logic:equal>
+
+					<tt:propertyEquals name="tmtbl.solver.export" value="true">
+						<html:submit property="op" value="Export XML"/>
+					</tt:propertyEquals>
 					</TD>
 				</TR>
 			</logic:equal>

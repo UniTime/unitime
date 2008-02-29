@@ -42,6 +42,7 @@
 				    		.htmlTableForInstructionalOfferings(
 				    				session,
 				    		        WebSolver.getClassAssignmentProxy(session),
+				    		        WebSolver.getExamSolver(session),
 				    		        frm, 
 				    		        new Long(frm.getSubjectAreaId()), 
 				    		        Web.getUser(session),	

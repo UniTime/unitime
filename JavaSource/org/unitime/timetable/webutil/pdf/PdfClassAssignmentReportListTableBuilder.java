@@ -32,12 +32,14 @@ import org.unitime.commons.web.htmlgen.TableStream;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ClassAssignmentsReportForm;
 import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.solver.CachedClassAssignmentProxy;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
+import org.unitime.timetable.solver.exam.ExamAssignmentProxy;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.PdfEventHandler;
 
@@ -63,7 +65,7 @@ public class PdfClassAssignmentReportListTableBuilder extends PdfClassListTableB
 		return(" Room Assignments");
 	}
 
-    public File pdfTableForClasses(ClassAssignmentProxy classAssignment, ClassAssignmentsReportForm form, User user){
+    public File pdfTableForClasses(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, ClassAssignmentsReportForm form, User user){
     	FileOutputStream out = null;
     	try {
             setVisibleColumns(form);
@@ -90,6 +92,12 @@ public class PdfClassAssignmentReportListTableBuilder extends PdfClassListTableB
             	setDisplayTimetable(hasTimetable);
             }
             setUserSettings(user);
+            
+            if (examAssignment!=null || Exam.hasTimetable((Long)user.getAttribute(Constants.SESSION_ID_ATTR_NAME))) {
+                setShowExam(true);
+                setShowExamTimetable(true);
+                setShowExamName(false);
+            }
             
             File file = ApplicationProperties.getTempFile("classassign", "pdf");
 	    	
@@ -132,7 +140,7 @@ public class PdfClassAssignmentReportListTableBuilder extends PdfClassListTableB
 					pdfBuildTableHeader();
 				}
                 
-                pdfBuildClassRow(classAssignment,++ct, c, "", user, prevLabel);
+                pdfBuildClassRow(classAssignment, examAssignment, ++ct, c, "", user, prevLabel);
                 prevLabel = c.getClassLabel();
             }  
             

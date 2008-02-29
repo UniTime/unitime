@@ -47,6 +47,7 @@ import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionType;
+import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.ItypeDesc;
 import org.unitime.timetable.model.OfferingConsentType;
 import org.unitime.timetable.model.PosMajor;
@@ -59,6 +60,7 @@ import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.RoomGroup;
+import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimePattern;
@@ -130,7 +132,7 @@ public class LookupTables {
 		TimetableManagerDAO tdao = new TimetableManagerDAO();
         TimetableManager owner = tdao.get(new Long(mgrId));
 
-		if (user.getRole().equals(Roles.ADMIN_ROLE) || user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE)) {
+		if (user.getRole().equals(Roles.ADMIN_ROLE) || user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE) || user.getCurrentRole().equals(Roles.EXAM_MGR_ROLE)) {
 			depts = Department.findAllBeingUsed(sessionId);
 		} else {
 			depts = Department.findAllOwned(sessionId, owner, includeExternal);
@@ -205,11 +207,19 @@ public class LookupTables {
      * @throws Exception
      */
     public static void setupDistribTypes(HttpServletRequest request) throws Exception {
-        request.setAttribute(DistributionType.DIST_TYPE_ATTR_NAME, DistributionType.findApplicable(request, false));
+        request.setAttribute(DistributionType.DIST_TYPE_ATTR_NAME, DistributionType.findApplicable(request, false, false));
     }
     
+    public static void setupExamDistribTypes(HttpServletRequest request) throws Exception {
+        request.setAttribute(DistributionType.DIST_TYPE_ATTR_NAME, DistributionType.findApplicable(request, false, true));
+    }
+
     public static void setupInstructorDistribTypes(HttpServletRequest request) throws Exception {
-        request.setAttribute(DistributionType.DIST_TYPE_ATTR_NAME, DistributionType.findApplicable(request, true));
+        request.setAttribute(DistributionType.DIST_TYPE_ATTR_NAME, DistributionType.findApplicable(request, true, false));
+    }
+
+    public static void setupExaminationPeriods(HttpServletRequest request) throws Exception {
+        request.setAttribute(ExamPeriod.PERIOD_ATTR_NAME, ExamPeriod.findAll(request));
     }
 
     public static void setupRoomGroups(HttpServletRequest request, PreferenceGroup pg) throws Exception {
@@ -302,7 +312,7 @@ public class LookupTables {
      * @throws Exception
      */
     private static void getInstructors(HttpServletRequest request, StringBuffer clause) throws Exception {
-        
+        String instructorNameFormat = Settings.getSettingValue(Web.getUser(request.getSession()), Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT);
         
         String acadSessionId = getAcademicSessionId(request);
 
@@ -325,7 +335,7 @@ public class LookupTables {
         Vector h = new Vector(result.size());
 	    for (Iterator i=result.iterator();i.hasNext();) {
             DepartmentalInstructor di = (DepartmentalInstructor)i.next();
-            String name = di.nameLastNameFirst();
+            String name = di.getName(instructorNameFormat);
             v.addElement(new ComboBoxLookup(name, di.getUniqueId().toString()));
             if (di.hasPreferences())
                 h.add(di.getUniqueId());

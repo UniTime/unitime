@@ -64,24 +64,24 @@ public class DistributionType extends BaseDistributionType implements Comparable
 /*[CONSTRUCTOR MARKER END]*/
 	
 	public static Set findAll()  throws HibernateException {
-		return findAll(false);
+		return findAll(false,false);
 	}
 
-	public static Set findAll(boolean instructorPrefOnly) throws HibernateException {
+	public static Set findAll(boolean instructorPrefOnly, boolean examPref) throws HibernateException {
     	return new TreeSet((new DistributionTypeDAO()).
 			getSession().
-			createQuery("select t from DistributionType t"+(instructorPrefOnly?" where t.instructorPref=true":"")).
+			createQuery("select t from DistributionType t where t.examPref="+examPref+(instructorPrefOnly?" and t.instructorPref=true":"")).
 			setCacheable(true).
 			list());
 	}
 	
-	public static Set findApplicable(HttpServletRequest request, boolean instructorPrefOnly) throws Exception {
+	public static Set findApplicable(HttpServletRequest request, boolean instructorPrefOnly, boolean examPref) throws Exception {
     	User user = Web.getUser(request.getSession());
     	Session session = Session.getCurrentAcadSession(user);
     	TimetableManager mgr = TimetableManager.getManager(user);
-    	if (user.isAdmin()) return findAll(instructorPrefOnly);
+    	if (user.isAdmin()) return findAll(instructorPrefOnly, examPref);
     	TreeSet ret = new TreeSet();
-    	for (Iterator i=findAll(instructorPrefOnly).iterator();i.hasNext();) {
+    	for (Iterator i=findAll(instructorPrefOnly,examPref).iterator();i.hasNext();) {
     		DistributionType dt = (DistributionType)i.next();
     		Set depts = dt.getDepartments(session.getUniqueId());
     		if (depts.isEmpty()) {
@@ -99,10 +99,10 @@ public class DistributionType extends BaseDistributionType implements Comparable
     	return ret;
     }
 
-	public static Set findApplicable(Department dept, boolean instructorPrefOnly) throws Exception {
-		if (dept==null) return findAll(instructorPrefOnly);
+	public static Set findApplicable(Department dept, boolean instructorPrefOnly, boolean examPref) throws Exception {
+		if (dept==null) return findAll(instructorPrefOnly, examPref);
 		TreeSet ret = new TreeSet();
-    	for (Iterator i=findAll(instructorPrefOnly).iterator();i.hasNext();) {
+    	for (Iterator i=findAll(instructorPrefOnly, examPref).iterator();i.hasNext();) {
     		DistributionType dt = (DistributionType)i.next();
     		Set depts = dt.getDepartments(dept.getSession().getUniqueId());
     		if (depts.isEmpty() || depts.contains(dept))

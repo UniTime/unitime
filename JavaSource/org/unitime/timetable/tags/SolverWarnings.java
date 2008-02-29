@@ -55,6 +55,7 @@ public class SolverWarnings extends TagSupport {
 			User user = Web.getUser(session);
 			if (user==null) return null;
 			if (user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE)) return null;
+			if (user.getCurrentRole().equals(Roles.EXAM_MGR_ROLE)) return null;
 			TimetableManager manager = TimetableManager.getManager(user);
 			if (manager==null) return null;
 			Session acadSession = Session.getCurrentAcadSession(user);
@@ -124,6 +125,7 @@ public class SolverWarnings extends TagSupport {
 	
 	public String getSolverWarningCheckSolution(User user, Session session, TimetableManager manager) {
 		if (user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE)) return null;
+		if (user.getCurrentRole().equals(Roles.EXAM_MGR_ROLE)) return null;
 		try {
 			SolverProxy proxy = WebSolver.getSolver(pageContext.getSession());
 			if (proxy!=null) {

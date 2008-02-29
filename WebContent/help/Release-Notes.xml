@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="ISO-8859-1" ?>
 <?xml-stylesheet type="text/css" href="Release-Notes.css"?>
 <!-- 
- * UniTime 3.0 (University Course Timetabling & Student Sectioning Application)
- * Copyright (C) 2007, UniTime.org
+ * UniTime 3.1 (University Timetabling Application)
+ * Copyright (C) 2008, UniTime.org
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,8 +24,26 @@
 <doc-title>Timetabling - Release Notes</doc-title>
 
 <release>
-	<version>3.0.@build.number@</version>
+	<version>3.1.@build.number@</version>
 	<release-date>@release.date@</release-date>
+	<category>
+		<title>OTHER</title>
+		<item>
+			<name>User Rights</name>
+			<description>
+				<line>When the session/department status has on owner limited edit right, scheduling managers can:
+					<line>Assign classes to instructors (using Assign Instructors page)</line>
+					<line>Edit academic area reservations</line>
+					<line>Edit instructors and their designator numbers (but not instructor preferences)</line> 
+				</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.0.63</version>
+	<release-date>Thu, 28 Feb 2008</release-date>
 	<category>
 		<title>OTHER</title>
 		<item>

@@ -43,6 +43,7 @@ import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionObject;
 import org.unitime.timetable.model.DistributionPref;
+import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.PreferenceGroup;
@@ -79,7 +80,7 @@ public class DistributionPrefsTableBuilder {
         User user = Web.getUser(request.getSession());
 		Session session = Session.getCurrentAcadSession(user);
 		boolean isAdmin = user.getCurrentRole().equals(Roles.ADMIN_ROLE);
-		boolean isViewAll = user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE);
+		boolean isViewAll = user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE) || user.getCurrentRole().equals(Roles.EXAM_MGR_ROLE);
 		
 		if (subjectAreaId.equals(Constants.BLANK_OPTION_VALUE))
 		    return "";
@@ -113,7 +114,7 @@ public class DistributionPrefsTableBuilder {
         User user = Web.getUser(request.getSession());
 		Session session = Session.getCurrentAcadSession(user);
 		boolean isAdmin = user.getCurrentRole().equals(Roles.ADMIN_ROLE);
-		boolean isViewAll = user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE);
+		boolean isViewAll = user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE) || user.getCurrentRole().equals(Roles.EXAM_MGR_ROLE);
 		
         if (subjectAreaId.equals(Constants.BLANK_OPTION_VALUE))
             subjectAreaId = null;
@@ -176,7 +177,18 @@ public class DistributionPrefsTableBuilder {
 		return toHtmlTable(request, clazz.getSession(), (isAdmin?null:manager), depts, prefs, editable, false); 
 	}
 
-	public String getDistPrefsTableForSchedulingSubpart(HttpServletRequest request, SchedulingSubpart subpart, boolean editable) {
+    public String getDistPrefsTableForExam(HttpServletRequest request, Exam exam, boolean editable) {
+        Set prefs = exam.effectivePreferences(DistributionPref.class); 
+
+        User user = Web.getUser(request.getSession());
+        boolean isAdmin = user.getCurrentRole().equals(Roles.ADMIN_ROLE);
+        String ownerId = (String) user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
+        TimetableManager manager = new TimetableManagerDAO().get(new Long(ownerId));
+
+        return toHtmlTable(request, exam.getSession(), (isAdmin?null:manager), null, prefs, editable, editable); 
+    }
+
+    public String getDistPrefsTableForSchedulingSubpart(HttpServletRequest request, SchedulingSubpart subpart, boolean editable) {
 		if (subpart.getManagingDept()==null) return null;
 		
 		

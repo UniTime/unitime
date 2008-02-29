@@ -69,6 +69,16 @@
 		</TR>
 
 		<TR>
+			<TD>Type:</TD>
+			<TD>
+				<html:select property="type">
+					<html:optionsCollection name="solverParamGroupsForm" property="types" value="id" label="value"/>
+				</html:select>
+				&nbsp;<html:errors property="type"/>
+			</TD>
+		</TR>
+
+		<TR>
 			<TD>Description:</TD>
 			<TD>
 				<html:text property="description" size="50" maxlength="1000"/>
@@ -98,7 +108,7 @@
 <logic:equal name="solverParamGroupsForm" property="op" value="List">
 	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
 		<tr>
-			<td colspan='3'>
+			<td colspan='4'>
 				<tt:section-header>
 					<tt:section-title>Solver Groups</tt:section-title>
 					<html:submit property="op" value="Add Solver Parameter Group" accesskey="A" title="Create New Solver Group (Alt+A)"/>
@@ -107,12 +117,12 @@
 		</tr>
 		<%= request.getAttribute("SolverParameterGroup.table") %> 
 		<tr>
-			<td colspan='3'>
+			<td colspan='4'>
 				<tt:section-title/>
 			</td>
 		</tr>
 		<tr>
-			<td colspan='3' align="right">
+			<td colspan='4' align="right">
 				<html:submit property="op" value="Add Solver Parameter Group" accesskey="A" title="Create New Solver Group (Alt+A)"/>
 			</td>
 		</tr>
