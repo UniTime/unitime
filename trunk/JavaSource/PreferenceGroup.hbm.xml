@@ -60,7 +60,7 @@
 			<key column="PREF_GROUP_ID"/>
 			<one-to-many class="DistributionObject"/>
 		</set>
-
+		
 		<union-subclass
 		 	name="SchedulingSubpart"
 		 	table="SCHEDULING_SUBPART"
@@ -714,6 +714,16 @@
 	            column="SESSION_END_DATE_TIME"
 	            not-null="true"
 	        />
+	        
+	       <property
+	            name="examBeginDate"
+	            type="java.sql.Timestamp"
+	            update="true"
+	            insert="true"
+	            access="property"
+	            column="EXAM_BEGIN_DATE"
+	            not-null="true"
+	        />
 	
 	       <many-to-one
 	            name="statusType"
@@ -940,6 +950,126 @@
 				type="java.lang.Boolean"
 				not-null="true"
 			/>
+	 	</union-subclass>
+	 	
+	 	<union-subclass name="Exam" table="EXAM">
+			        
+			<many-to-one 
+				name="session" 
+				class="Session" 
+				column="SESSION_ID"
+				not-null="true"
+				foreign-key="FK_EXAM_SESSION" 
+			/>				
+
+			<property
+				name="name"
+				column="NAME"
+				type="java.lang.String"
+				not-null="false"
+				length="100"
+			/>
+	
+			<property
+				name="note"
+				column="NOTE"
+				type="java.lang.String"
+				not-null="false"
+				length="1000"
+			/>
+
+			<property
+				name="length"
+				column="LENGTH"
+				type="java.lang.Integer"
+				not-null="true"
+				length="10"
+			/>
+			
+			<property
+				name="maxNbrRooms"
+				column="MAX_NBR_ROOMS"
+				type="java.lang.Integer"
+				not-null="true"
+				length="10"
+			/>
+			
+			<property
+				name="seatingType"
+				column="SEATING_TYPE"
+				type="java.lang.Integer"
+				not-null="true"
+				length="10"
+			/>
+			
+			<many-to-one 
+				name="assignedPeriod" 
+				class="ExamPeriod" 
+				column="ASSIGNED_PERIOD"
+				foreign-key="FK_EXAM_PERIOD"
+				not-null="false"
+			/>
+			
+			<property
+				name="assignedPreference"
+				column="ASSIGNED_PREF"
+				type="java.lang.String"
+				not-null="false"
+				length="100"
+			/>
+			
+			<set
+				name="owners"
+				lazy="true"
+				cascade="all-delete-orphan" 
+				inverse="true"
+				>
+				<cache include="non-lazy" usage="read-write"/>
+				<key column="EXAM_ID" foreign-key="FK_EXAM_OWNER_EXAM"/>
+				<one-to-many class="ExamOwner"/>
+			</set>			
+			
+			<set
+				name="assignedRooms"
+				lazy="true" 
+				table="EXAM_ROOM_ASSIGNMENT"
+				>
+				<cache include="non-lazy" usage="read-write"/>
+				<key column="EXAM_ID" foreign-key="FK_EXAM_ROOM_EXAM"/>
+				<many-to-many 
+					class="Location"
+					column="LOCATION_ID"
+				/>
+			</set>			
+
+			<set
+				name="instructors"
+				lazy="true" 
+				table="EXAM_INSTRUCTOR"
+				>
+				<cache include="non-lazy" usage="read-write"/>
+				<key column="EXAM_ID" foreign-key="FK_EXAM_INSTRUCTOR_EXAM"/>
+				<many-to-many 
+					class="DepartmentalInstructor" 
+					column="INSTRUCTOR_ID"
+					foreign-key="FK_EXAM_INSTRUCTOR_INSTRUCTOR"
+				/>
+			</set>			
+
+			<set
+				name="conflicts"
+				lazy="true" 
+				table="XCONFLICT_EXAM"
+				cascade="all-delete-orphan"
+				>
+				<cache include="non-lazy" usage="read-write"/>
+				<key column="EXAM_ID" foreign-key="FK_XCONFLICT_EX_CONF_EXAM"/>
+				<many-to-many 
+					class="ExamConflict"
+					column="CONFLICT_ID"
+					foreign-key="FK_XCONFLICT_EX_CONF"
+				/>
+			</set>			
 	 	</union-subclass>
 	 					
 	</class>	

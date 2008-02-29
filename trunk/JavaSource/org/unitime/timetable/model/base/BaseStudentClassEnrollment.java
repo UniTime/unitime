@@ -82,6 +82,7 @@ public abstract class BaseStudentClassEnrollment  implements Serializable {
 	private org.unitime.timetable.model.Student student;
 	private org.unitime.timetable.model.CourseRequest courseRequest;
 	private org.unitime.timetable.model.Class_ clazz;
+	private org.unitime.timetable.model.CourseOffering courseOffering;
 
 
 
@@ -173,6 +174,13 @@ public abstract class BaseStudentClassEnrollment  implements Serializable {
 		this.clazz = clazz;
 	}
 
+	public org.unitime.timetable.model.CourseOffering getCourseOffering() {
+	    return courseOffering;
+	}
+	
+	public void setCourseOffering(org.unitime.timetable.model.CourseOffering courseOffering) {
+	    this.courseOffering = courseOffering;
+	}
 
 
 

@@ -49,6 +49,7 @@ import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.ItypeDesc;
@@ -780,7 +781,8 @@ public class InstructionalOfferingConfigEditAction extends Action {
                     ChangeLog.Operation.DELETE,
                     io.getControllingCourseOffering().getSubjectArea(),
                     null);
-
+            
+            Exam.deleteFromExams(hibSession, ioc);
             hibSession.delete(ioc);
 	        hibSession.saveOrUpdate(io);
 

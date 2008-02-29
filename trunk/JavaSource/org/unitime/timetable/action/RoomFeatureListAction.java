@@ -173,6 +173,7 @@ public class RoomFeatureListAction extends Action {
 					if (departments.contains(rf.getDepartment()) || isAdmin) {
 						departmentRoomFeatures.add(rf);
 					}
+				} else if (roomFeatureListForm.getDeptCodeX().equalsIgnoreCase("Exam")) {
 				} else if (rf.getDeptCode().equalsIgnoreCase(roomFeatureListForm.getDeptCodeX())) {
 					departmentRoomFeatures.add(rf);
 				}
@@ -252,6 +253,7 @@ public class RoomFeatureListAction extends Action {
 		boolean isAdmin = user.getRole().equals(Roles.ADMIN_ROLE);
 		boolean showAll = false;
 		Set depts = null;
+		boolean exam = roomFeatureListForm.getDeptCodeX().equalsIgnoreCase("Exam");
 		if (roomFeatureListForm.getDeptCodeX().equalsIgnoreCase("All")) {
 			if (isAdmin) {
 				showAll = true;
@@ -259,6 +261,8 @@ public class RoomFeatureListAction extends Action {
 			} else {
 				depts = Department.findAllOwned(sessionId, owner, false);
 			}
+		} else if (roomFeatureListForm.getDeptCodeX().equalsIgnoreCase("Exam")) {
+		    depts = new HashSet(0);
 		} else {
 			depts = new HashSet(1);
 			depts.add(Department.findByDeptCode(roomFeatureListForm.getDeptCodeX(),sessionId));
@@ -280,13 +284,17 @@ public class RoomFeatureListAction extends Action {
 			for (Iterator iter = rs.iterator();iter.hasNext();) {
 				Location r = (Location) iter.next();
 				if (!sessionId.equals(r.getSession().getUniqueId())) continue;
-				if (!showAll) {
-					boolean skip = true;
-					for (Iterator j=r.getRoomDepts().iterator();j.hasNext();) {
-						RoomDept rd = (RoomDept)j.next();
-						if (depts.contains(rd.getDepartment())) { skip=false; break; }
-					}
-					if (skip) continue;
+				if (exam) {
+				    if (!r.isExamEnabled()) continue;
+				} else {
+	                if (!showAll) {
+	                    boolean skip = true;
+	                    for (Iterator j=r.getRoomDepts().iterator();j.hasNext();) {
+	                        RoomDept rd = (RoomDept)j.next();
+	                        if (depts.contains(rd.getDepartment())) { skip=false; break; }
+	                    }
+	                    if (skip) continue;
+	                }
 				}
 				if (assignedRoom.length() > 0) assignedRoom.append(", ");
 				assignedRoom.append(r.getLabel().replaceAll(" ","&nbsp;"));
@@ -336,12 +344,16 @@ public class RoomFeatureListAction extends Action {
 			
 			for (Iterator iter = rs.iterator();iter.hasNext();) {
 				Location r = (Location) iter.next();
-                boolean skip = true;
-                for (Iterator j=r.getRoomDepts().iterator();j.hasNext();) {
-                    RoomDept rd = (RoomDept)j.next();
-                    if (drf.getDepartment().equals(rd.getDepartment())) { skip=false; break; }
+                if (exam) {
+                    if (!r.isExamEnabled()) continue;
+                } else {
+                    boolean skip = true;
+                    for (Iterator j=r.getRoomDepts().iterator();j.hasNext();) {
+                        RoomDept rd = (RoomDept)j.next();
+                        if (drf.getDepartment().equals(rd.getDepartment())) { skip=false; break; }
+                    }
+                    if (skip) continue;
                 }
-                if (skip) continue;
 				if (assignedRoom.length() > 0) assignedRoom.append(", ");
 				assignedRoom.append(r.getLabel().replaceAll(" ","&nbsp;"));
 			}
@@ -435,10 +447,13 @@ public class RoomFeatureListAction extends Action {
     			} else {
     				depts = Department.findAllOwned(sessionId, owner, false);
     			}
+    		} else if (roomFeatureListForm.getDeptCodeX().equalsIgnoreCase("Exam")) {
     		} else {
     			depts = new HashSet(1);
     			depts.add(Department.findByDeptCode(roomFeatureListForm.getDeptCodeX(),sessionId));
     		}
+    		
+    		boolean exam = roomFeatureListForm.getDeptCodeX().equalsIgnoreCase("Exam");
     		
     		boolean splitRows = false;
     		
@@ -457,14 +472,18 @@ public class RoomFeatureListAction extends Action {
     			for (Iterator iter = rs.iterator();iter.hasNext();) {
     				Location r = (Location) iter.next();
     				if (!sessionId.equals(r.getSession().getUniqueId())) continue;
-    				if (!showAll) {
-    					boolean skip = true;
-    					for (Iterator j=r.getRoomDepts().iterator();j.hasNext();) {
-    						RoomDept rd = (RoomDept)j.next();
-    						if (depts.contains(rd.getDepartment())) { skip=false; break; }
-    					}
-    					if (skip) continue;
-    				}
+                    if (exam) {
+                        if (!r.isExamEnabled()) continue;
+                    } else {
+                        if (!showAll) {
+                            boolean skip = true;
+                            for (Iterator j=r.getRoomDepts().iterator();j.hasNext();) {
+                                RoomDept rd = (RoomDept)j.next();
+                                if (depts.contains(rd.getDepartment())) { skip=false; break; }
+                            }
+                            if (skip) continue;
+                        }
+                    }
     				if (assignedRoom.length()>0) assignedRoom.append(", ");
     				if (PdfWebTable.getWidthOfLastLine(assignedRoom.toString(),false,false)>750) {
     					assignedRoom.append("\n");
@@ -516,12 +535,16 @@ public class RoomFeatureListAction extends Action {
     			
     			for (Iterator iter = rs.iterator();iter.hasNext();) {
     				Location r = (Location) iter.next();
-                    boolean skip = true;
-                    for (Iterator j=r.getRoomDepts().iterator();j.hasNext();) {
-                        RoomDept rd = (RoomDept)j.next();
-                        if (drf.getDepartment().equals(rd.getDepartment())) { skip=false; break; }
+                    if (exam) {
+                        if (!r.isExamEnabled()) continue;
+                    } else {
+                        boolean skip = true;
+                        for (Iterator j=r.getRoomDepts().iterator();j.hasNext();) {
+                            RoomDept rd = (RoomDept)j.next();
+                            if (drf.getDepartment().equals(rd.getDepartment())) { skip=false; break; }
+                        }
+                        if (skip) continue;
                     }
-                    if (skip) continue;
     				if (assignedRoom.length() > 0) assignedRoom.append(", ");
     				if (PdfWebTable.getWidthOfLastLine(assignedRoom.toString(),false,false)>750)
     					assignedRoom.append("\n");

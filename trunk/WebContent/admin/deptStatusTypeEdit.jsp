@@ -90,6 +90,9 @@
 		<TR><TD>Audit:</TD><TD><html:checkbox property="canAudit"/></TD></TR>
 		<TR><TD>Timetable:</TD><TD><html:checkbox property="canTimetable"/></TD></TR>
 		<TR><TD>Commit:</TD><TD><html:checkbox property="canCommit"/></TD></TR>
+		<TR><TD>Exam View:</TD><TD><html:checkbox property="canExamView"/></TD></TR>
+		<TR><TD>Exam Edit:</TD><TD><html:checkbox property="canExamEdit"/></TD></TR>
+		<TR><TD>Exam Timetable:</TD><TD><html:checkbox property="canExamTimetable"/></TD></TR>
 		
 		<TR>
 			<TD colspan='2'>

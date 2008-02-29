@@ -40,6 +40,7 @@ public abstract class BaseDistributionType extends org.unitime.timetable.model.R
 	public static String PROP_DESCR = "descr";
 	public static String PROP_ABBREVIATION = "abbreviation";
 	public static String PROP_INSTRUCTOR_PREF = "instructorPref";
+	public static String PROP_EXAM_PREF = "examPref";
 
 
 	// constructors
@@ -78,6 +79,7 @@ public abstract class BaseDistributionType extends org.unitime.timetable.model.R
 	private java.lang.String descr;
 	private java.lang.String abbreviation;
 	private java.lang.Boolean instructorPref;
+	private java.lang.Boolean examPref;
 
 	// collections
 	private java.util.Set departments;
@@ -187,6 +189,13 @@ public abstract class BaseDistributionType extends org.unitime.timetable.model.R
 		this.instructorPref = instructorPref;
 	}
 
+    public java.lang.Boolean isExamPref () {
+        return examPref;
+    }
+
+    public void setExamPref (java.lang.Boolean examPref) {
+        this.examPref = examPref;
+    }
 
 
 	/**

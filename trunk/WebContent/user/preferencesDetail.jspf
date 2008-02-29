@@ -24,6 +24,7 @@
 <%@ page import="org.unitime.timetable.model.PreferenceLevel" %>
 <%@ page import="org.unitime.timetable.model.DistributionPref" %>
 <%@ page import="org.unitime.timetable.model.RoomGroup" %>
+<%@ page import="org.unitime.timetable.model.ExamPeriod" %>
 <%@ page import="org.unitime.commons.Debug" %>
 <%@ page import="org.unitime.timetable.model.Location" %>
 <%@ page import="org.unitime.timetable.model.DistributionType" %>
@@ -51,7 +52,17 @@
 		</TD>
 		</TR>
 	</logic:notEmpty>
-		
+	
+<!--  Period Preferences -->
+	<logic:notEmpty scope="request" name="ExamPeriodGrid">
+		<TR>
+			<TD valign="top">Examination Periods:</TD>
+			<TD>
+				<bean:write scope="request" name="ExamPeriodGrid" filter="false"/>
+			</TD>
+		</TR>
+	</logic:notEmpty>
+	
 <!-- Room Group -->
 	<% if (!roomGroupDisabled) { %>
 		<logic:notEmpty name="<%=frmName%>" property="roomGroups">
@@ -184,7 +195,12 @@
 	
 		<TR>
 			<TD valign="middle" colspan='3' align='left'>
-				<tt:displayPrefLevelLegend/>
+				<logic:equal name="<%=frmName%>" property="hasNotAvailable" value="false">
+					<tt:displayPrefLevelLegend/>
+				</logic:equal>
+				<logic:equal name="<%=frmName%>" property="hasNotAvailable" value="true">
+					<tt:displayPrefLevelLegend notAvailable="true"/>
+				</logic:equal>
 			</TD>
 		</TR>
 

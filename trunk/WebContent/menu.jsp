@@ -60,6 +60,11 @@
 		enditem(); //11
 		leaf_item('Distribution Preferences','Manage Distribution Preferences','distributionPrefs.do');
 		leaf_item('Reservations','Manage Reservations','reservationList.do');
+		<%  if (manager.canSeeExams(acadSession, user)) { %>
+			menu_item('12','Examinations','View/Edit Examinations','examList.do','collapse');
+				leaf_item('Distribution Prefs','Manage Examination Distribution Preferences','examDistributionPrefs.do');
+			enditem();
+		<% } %>
 		<%  if (manager.canSeeTimetable(acadSession, user)) { %>
 			leaf_item('Class Assignments','Class Assignment Report','classAssignmentsReportShowSearch.do');
 		<%  } %>
@@ -96,6 +101,15 @@
 		enditem(); //2
 <% }} %>
 
+<%  if (manager.canTimetableExams(acadSession, user)) { %>		
+		menu_item('6','Examination Solver','Examination Solver','examSolver.do','collapse');
+			leaf_item('Timetable','Examination Timetable Grid','examGrid.do');
+			leaf_item('Assigned','Assigned Examinations','assignedExams.do');
+			leaf_item('Not-assigned','Not-Assigned Examinations','unassignedExams.do');
+			leaf_item('Log','Examination Solver Log','examSolverLog.do');
+		enditem(); //6
+<% } %>
+
 <% if (user!=null
 		&& user.getRole().equals(Roles.ADMIN_ROLE)) { %>
 	leaf_item('Sectioning','Student Sectioning','sectioningDemo.do');
@@ -125,6 +139,7 @@
 				menu_item('411','Time Patterns','Manage Time Patterns','timePatternEdit.do','<%=expand%>');
 					leaf_item('Exact Time','Exact Time Pattern','exactTimeEdit.do');
 				enditem(); //411
+				leaf_item('Exam Periods','Manage Examination Periods','examPeriodEdit.do');
 				leaf_item('Distribution Types','Manage Distribution Types','distributionTypeList.do');
 				leaf_item('Instructional Types','Manage Instructional Types','itypeDescList.do');
 				<%--

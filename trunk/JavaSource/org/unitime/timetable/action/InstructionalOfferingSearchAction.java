@@ -54,10 +54,13 @@ import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.SchedulingSubpart;
+import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Solution;
+import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.UserData;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
@@ -147,6 +150,8 @@ public class InstructionalOfferingSearchAction extends LookupDispatchAction {
 		    	UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.schedulePrintNote",frm.getSchedulePrintNote().booleanValue());
 		    	UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.note",frm.getNote().booleanValue());
 		    	UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.title",frm.getTitle().booleanValue());
+                if (frm.getCanSeeExams())
+                    UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.exams",frm.getExams().booleanValue());
 		    	UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.consent",frm.getConsent().booleanValue());
 		    	UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.designatorRequired",frm.getDesignatorRequired().booleanValue());
 		    	UserData.setProperty(httpSession,"InstructionalOfferingList.sortBy",frm.getSortBy());
@@ -208,6 +213,7 @@ public class InstructionalOfferingSearchAction extends LookupDispatchAction {
                 (new PdfInstructionalOfferingTableBuilder())
                 .pdfTableForInstructionalOfferings(
                         WebSolver.getClassAssignmentProxy(request.getSession()),
+                        WebSolver.getExamSolver(request.getSession()),
                         frm, 
                         new Long(frm.getSubjectAreaId()), 
                         Web.getUser(request.getSession()),  
@@ -601,6 +607,7 @@ public class InstructionalOfferingSearchAction extends LookupDispatchAction {
 								    io.setCourseOfferings(null);
 								    co.setIsControl(new Boolean(false));
 								    co.setInstructionalOffering(null);
+								    Exam.deleteFromExams(hibSession, io);
 								    idao.delete(io);
 								    
 			                        CourseOffering co2 = cdao.get(new Long(ctrCrsOffrId));
@@ -697,13 +704,16 @@ public class InstructionalOfferingSearchAction extends LookupDispatchAction {
     	    Transaction tx = hibSession.beginTransaction();
     	    
     	    try {
-    	        if(co.isIsControl().booleanValue())
+                Exam.deleteFromExams(hibSession, co);
+                
+    	        if(co.isIsControl().booleanValue()) {
+    	            Exam.deleteFromExams(hibSession, io);
     	            idao.delete(io);
-    	        else {
+    	        } else {
     	            io.removeCourseOffering(co);
     	            idao.save(io);
     	        }
-    	            
+    	        
 		        tx.commit();
     	    }	            
 		    catch (Exception e) {
@@ -742,6 +752,17 @@ public class InstructionalOfferingSearchAction extends LookupDispatchAction {
 		form.setConsent(new Boolean(UserData.getPropertyBoolean(httpSession,"InstructionalOfferingList.consent", false)));
 		form.setDesignatorRequired(new Boolean(UserData.getPropertyBoolean(httpSession,"InstructionalOfferingList.designatorRequired", false)));
 		form.setSortBy(UserData.getProperty(httpSession,"InstructionalOfferingList.sortBy",ClassListForm.sSortByName));
+        try {
+            User user = Web.getUser(httpSession);
+            TimetableManager manager = TimetableManager.getManager(user);
+            Session session = Session.getCurrentAcadSession(user);
+            if (manager.canSeeExams(session, user)) {
+                form.setCanSeeExams(Boolean.TRUE);
+                form.setExams(new Boolean(UserData.getPropertyBoolean(httpSession,"InstructionalOfferingList.exams", false)));
+            } else {
+                form.setCanSeeExams(Boolean.FALSE);
+            }
+        } catch (Exception e) {}
 	}
 
 }

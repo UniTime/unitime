@@ -51,6 +51,14 @@
 		/>
 
 		<many-to-one 
+			name="courseOffering" 
+			class="CourseOffering" 
+			column="COURSE_OFFERING_ID" 
+			foreign-key="FK_STUDENT_CLASS_ENRL_COURSE"
+			not-null="false"
+		/>
+
+		<many-to-one 
 			name="clazz" 
 			class="Class_" 
 			column="CLASS_ID" 

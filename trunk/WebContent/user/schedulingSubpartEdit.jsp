@@ -244,6 +244,8 @@
 			boolean roomFeaturePrefDisabled = false;
 			boolean distPrefDisabled = true;
 			boolean restorePrefsDisabled = false;
+			boolean timePrefDisabled = false;
+			boolean periodPrefDisabled = true;
 			
 			if (frm.getUnlimitedEnroll().booleanValue()) {
 				roomGroupDisabled = true;

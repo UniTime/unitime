@@ -46,11 +46,13 @@
 			var ss = document.forms[0].sessionStart.value;
 			var se = document.forms[0].sessionEnd.value;
 			var ce = document.forms[0].classesEnd.value;
+			var es = document.forms[0].examStart.value;
 			var year = document.forms[0].academicYear.value;
 			
 			if (ss!=null && trim(ss)!=''
 				 && se!=null && trim(se)!=''
 				 && ce!=null && trim(ce)!=''
+				 && es!=null && trim(es)!=''
 				 && year!=null && trim(year)!='' && !isNaN(year)) {
 				document.forms[0].refresh.value='1';
 				var btn = document.getElementById('save');
@@ -167,6 +169,13 @@
 			</TD>
 		</TR>
 		<TR>
+			<TD>Examination Start Date:</TD>
+			<TD>
+				<html:text property="examStart" onchange="doRefresh();" style="border: #999933 2px solid;" styleId="exam_start" maxlength="10" size="10"/>
+				<img style="cursor: pointer;" src="scripts/jscalendar/calendar_1.gif" border="0" id="show_exam_start">
+			</TD>
+		</TR>
+		<TR>
 			<TD>Session End Date:</TD>
 			<TD>
 				<html:text property="sessionEnd" onchange="doRefresh();" style="border: #333399 2px solid;" styleId="session_end" maxlength="10" size="10"/>
@@ -273,6 +282,18 @@
 	    date		: <%=request.getParameter("classesEnd")%>,
 	    <% }%>
 		button     : "show_classes_end" 	// ID of the button
+	} );
+
+	Calendar.setup( {
+		cache      : true, 					// Single object used for all calendars
+		electric   : false, 				// Changes date only when calendar is closed
+		inputField : "exam_start",		// ID of the input field
+	    ifFormat   : "%m/%d/%Y", 			// Format of the input field
+	    showOthers : true,					// Show overlap of dates from other months	    
+	    <% if (request.getParameter("examStart")!=null && request.getParameter("examStart").length()>=10) { %>
+	    date		: <%=request.getParameter("examStart")%>,
+	    <% }%>
+		button     : "show_exam_start"	// ID of the button
 	} );
 
 </script>

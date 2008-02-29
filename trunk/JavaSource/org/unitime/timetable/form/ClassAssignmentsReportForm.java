@@ -450,4 +450,11 @@ public class ClassAssignmentsReportForm extends ActionForm implements ClassListF
     public void setIsAdmin(boolean isAdmin) {
         this.isAdmin = isAdmin;
     }
+    
+    public Boolean getExams() {
+        return Boolean.FALSE;
+    }
+    public Boolean getCanSeeExams() {
+        return Boolean.FALSE;
+    }
 }

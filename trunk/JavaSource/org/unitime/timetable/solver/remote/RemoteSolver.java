@@ -34,6 +34,8 @@ import org.unitime.timetable.model.base._BaseRootDAO;
 import org.unitime.timetable.solver.SolverPassivationThread;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.TimetableSolver;
+import org.unitime.timetable.solver.exam.ExamSolver;
+import org.unitime.timetable.solver.exam.ExamSolver.ExamSolverDisposeListener;
 import org.unitime.timetable.solver.remote.core.RemoteSolverServer;
 import org.unitime.timetable.solver.remote.core.SolverTray;
 import org.unitime.timetable.solver.ui.TimetableInfo;
@@ -57,6 +59,7 @@ public class RemoteSolver extends TimetableSolver implements TimetableInfoFilePr
 	private static Date sStartTime = new Date();
 	private static Hashtable sSolvers = new Hashtable();
 	private static SolverPassivationThread sSolverPassivationThread = null;
+	private static ExamSolver sExamSolver = null;
 	
 	public RemoteSolver(DataProperties properties) {
 		super(properties);
@@ -96,6 +99,27 @@ public class RemoteSolver extends TimetableSolver implements TimetableInfoFilePr
 			if (cmd==null) return null;
 			if (cmd instanceof Object[]) {
 				Object[] arr = (Object[]) cmd;
+                if ("hasExamSolver".equals(arr[0])) {
+                    return new Boolean(sExamSolver!=null);
+                }
+                if ("createExamSolver".equals(arr[0])) {
+                    if (sExamSolver!=null) sExamSolver.dispose();
+                    sExamSolver = new ExamSolver((DataProperties)arr[1], new ExamSolverDisposeListener() {
+                        public void onDispose() {
+                            sExamSolver = null;
+                        }
+                    });
+                    return null;
+                }
+                if (arr.length>=2 && "EXAM".equals(arr[1])) {
+                    if ("exists".equals(arr[0])) {
+                        return new Boolean(sExamSolver!=null);
+                    }
+                    if (sExamSolver!=null) 
+                        return sExamSolver.exec(arr);
+                    else
+                        return null;
+                }
 				RemoteSolver solver = null;
 				String puid = null;
 				if (arr.length>1) {
@@ -134,9 +158,11 @@ public class RemoteSolver extends TimetableSolver implements TimetableInfoFilePr
 				}
                 if ("stopUsing".equals(arr[0])) {
                     sUsageBase = 1000;
+                    return null;
                 }
                 if ("startUsing".equals(arr[0])) {
                     sUsageBase = 0;
+                    return null;
                 }
 				if (solver!=null)
 					return solver.exec(arr);
@@ -166,6 +192,10 @@ public class RemoteSolver extends TimetableSolver implements TimetableInfoFilePr
 				RemoteSolver solver =(RemoteSolver)entry.getValue();
 				solver.backup(folder, puid);
 			}
+			
+			if (sExamSolver!=null) {
+			    sExamSolver.backup(folder);
+			}
 		}
 	}
 	
@@ -181,6 +211,18 @@ public class RemoteSolver extends TimetableSolver implements TimetableInfoFilePr
 			for (int i=0;i<files.length;i++) {
 				File file = files[i];
 				String puid = file.getName().substring(0,file.getName().indexOf('.'));
+				
+				if ("exam".equals(puid)) {
+				    ExamSolver solver = new ExamSolver(new DataProperties(), new ExamSolverDisposeListener() {
+                        public void onDispose() {
+                            sExamSolver = null;
+                        }
+                    });
+				    if (solver.restore(folder)) {
+				        sExamSolver = solver;
+				    }
+				    continue;
+				}
 				
 				RemoteSolver solver = new RemoteSolver(new DataProperties());
 				if (solver.restore(folder,puid)) {

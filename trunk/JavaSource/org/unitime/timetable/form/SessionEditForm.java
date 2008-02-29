@@ -55,6 +55,7 @@ public class SessionEditForm extends ActionForm {
 	String sessionStart;
 	String sessionEnd;
 	String classesEnd;
+	String examStart;
 	String defaultDatePatternId;
 	String defaultDatePatternLabel;
 	
@@ -125,10 +126,14 @@ public class SessionEditForm extends ActionForm {
 						errors.add("classesEnd", new ActionMessage("errors.invalidDate", "Classes End Date"));
 					else {
 						Date d3 = CalendarUtils.getDate(classesEnd, df);
-						if (!d3.after(d1)) 
+						if (!d3.after(d1)) {
 							errors.add("classesEnd", new ActionMessage("errors.generic", "Classes End Date must occur AFTER Session Start Date"));
-						if (!(d3.before(d2) || d3.equals(d2))) 
+						} else if (!(d3.before(d2) || d3.equals(d2))) { 
 							errors.add("classesEnd", new ActionMessage("errors.generic", "Classes End Date must occur ON or BEFORE Session End Date"));
+						} else {
+						    if (!CalendarUtils.isValidDate(examStart, df))
+						        errors.add("examStart", new ActionMessage("errors.invalidDate", "Examinations Start Date"));
+						}
 					}
 				}
 			}
@@ -275,5 +280,11 @@ public class SessionEditForm extends ActionForm {
 	public void setSessionStart(String sessionStart) {
 		this.sessionStart = sessionStart;
 	}
+    public String getExamStart() {
+        return examStart;
+    }
+    public void setExamStart(String examStart) {
+        this.examStart = examStart;
+    }
     
 }

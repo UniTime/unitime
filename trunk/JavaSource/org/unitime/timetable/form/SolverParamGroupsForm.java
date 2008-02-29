@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.form;
 
+import java.util.Vector;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.struts.action.ActionErrors;
@@ -26,6 +28,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.unitime.timetable.model.SolverParameterGroup;
+import org.unitime.timetable.util.IdValue;
 
 
 /** 
@@ -37,6 +40,7 @@ public class SolverParamGroupsForm extends ActionForm {
 	private String description;
 	private String name;
 	private int order;
+	private int type;
 
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 
@@ -64,6 +68,7 @@ public class SolverParamGroupsForm extends ActionForm {
         name = "";
         description = "";
         order = -1;
+        type = 0;
 	}
 
     public String getOp() { return op; }
@@ -76,5 +81,12 @@ public class SolverParamGroupsForm extends ActionForm {
 	public void setName(String name) { this.name = name; }
     public int getOrder() { return this.order; }
     public void setOrder(int order) { this.order = order; }
+    public int getType() { return this.type; }
+    public void setType(int type) { this.type = type; }
+    public Vector getTypes() {
+        Vector ret = new Vector(2);
+        ret.add(new IdValue(new Long(SolverParameterGroup.sTypeCourse), "Course Timetabling"));
+        ret.add(new IdValue(new Long(SolverParameterGroup.sTypeExam), "Examination Timetabling"));
+        return ret;
+    }
 }
-

@@ -179,5 +179,8 @@
 	<mapping resource="ExternalRoom.hbm.xml" />
 	<mapping resource="ExternalRoomDepartment.hbm.xml" />
 	<mapping resource="ExternalRoomFeature.hbm.xml" />
+	<mapping resource="ExamPeriod.hbm.xml" />
+	<mapping resource="ExamOwner.hbm.xml" />
+	<mapping resource="ExamConflict.hbm.xml" />
 </session-factory>
 </hibernate-configuration>

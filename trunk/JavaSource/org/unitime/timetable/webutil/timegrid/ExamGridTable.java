@@ -1,0 +1,884 @@
+/*
+ * UniTime 3.0 (University Course Timetabling & Student Sectioning Application)
+ * Copyright (C) 2007, UniTime.org, and individual contributors
+ * as indicated by the @authors tag.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
+package org.unitime.timetable.webutil.timegrid;
+
+import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Locale;
+import java.util.StringTokenizer;
+import java.util.TreeSet;
+import java.util.Vector;
+
+import javax.servlet.http.HttpSession;
+import javax.servlet.jsp.JspWriter;
+
+import org.unitime.commons.web.Web;
+import org.unitime.timetable.form.ExamGridForm;
+import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.ExamPeriod;
+import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.PreferenceLevel;
+import org.unitime.timetable.model.Settings;
+import org.unitime.timetable.model.SubjectArea;
+import org.unitime.timetable.model.dao.LocationDAO;
+import org.unitime.timetable.solver.WebSolver;
+import org.unitime.timetable.solver.exam.ExamSolverProxy;
+import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
+import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamInstructorInfo;
+import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.webutil.timegrid.ExamGridTable.ExamGridModel.ExamGridCell;
+
+/**
+ * @author Tomas Muller
+ */
+public class ExamGridTable {
+    public static SimpleDateFormat sDF = new SimpleDateFormat("EEE MM/dd");
+    public static SimpleDateFormat sTF = new SimpleDateFormat("hh:mmaa");
+
+    public static final int sResourceRoom = 0;
+    public static final int sResourceInstructor = 1;
+    public static final int sResourceSubject = 2;
+    public static final String[] sResources = new String[] {"Room", "Instructor", "Subject Area"};
+    public static final int sBgNone = 0;
+    public static final int sBgStudentConfs = 1;
+    public static final int sBgDirectStudentConfs = 2;
+    public static final int sBgMoreThanTwoADayStudentConfs = 3;
+    public static final int sBgBackToBackStudentConfs = 4;
+    public static final int sBgInstructorConfs = 5;
+    public static final int sBgDirectInstructorConfs = 6;
+    public static final int sBgMoreThanTwoADayInstructorConfs = 7;
+    public static final int sBgBackToBackInstructorConfs = 8;
+    public static final int sBgPeriodPref = 9;
+    public static final int sBgRoomPref = 10;
+    public static final int sBgDistPref = 11;
+    public static final String[] sBackgrounds = new String[] {
+        "No Background",
+        "Student Conflicts",
+        "Student Direct Conflicts",
+        "Student >2 A Day Conlicts",
+        "Student Back-To-Back Conlicts",
+        "Instructor Conflicts",
+        "Instructor Direct Conflicts",
+        "Instructor >2 A Day Conlicts",
+        "Instructor Back-To-Back Conlicts",
+        "Period Preferences",
+        "Room Preferences",
+        "Distribution Preferences"
+    };
+    public static final int sDispModeInRow   = 0;
+    public static final int sDispModePerWeekHorizontal = 1;
+    public static final int sDispModePerWeekVertical = 2;
+    public static String[] sDispModes = new String[] {
+        "In Row [horizontal]",
+        "Per Week [horizontal]",
+        "Per Week [vertical]",
+    };
+    public static final int sOrderByNameAsc = 0;
+    public static final int sOrderByNameDesc = 1;
+    public static final int sOrderBySizeAsc = 2;
+    public static final int sOrderBySizeDesc = 3;
+    public static String[] sOrders = new String[] {
+        "name [asc]", "name [desc]", "size [asc]", "size [desc]"
+    };
+
+    public static String sBgColorEmpty = "rgb(255,255,255)";
+    public static String sBgColorRequired = "rgb(80,80,200)";
+    public static String sBgColorStronglyPreferred = "rgb(40,180,60)"; 
+    public static String sBgColorPreferred = "rgb(170,240,60)";
+    public static String sBgColorNeutral = "rgb(240,240,240)";
+    public static String sBgColorDiscouraged = "rgb(240,210,60)";
+    public static String sBgColorStronglyDiscouraged = "rgb(240,120,60)";
+    public static String sBgColorProhibited = "rgb(220,50,40)";
+    public static String sBgColorNotAvailable = "rgb(200,200,200)";
+    public static String sBgColorNotAvailableButAssigned = sBgColorProhibited;
+
+    Vector<ExamGridModel> iModels = new Vector<ExamGridModel>();
+    ExamGridForm iForm = null;
+    TreeSet<Integer> iDates = new TreeSet();
+    TreeSet<Integer> iStartsSlots = new TreeSet();
+    Hashtable<Integer,Hashtable<Integer,ExamPeriod>> iPeriods = new Hashtable();
+
+	public ExamGridTable(ExamGridForm form, HttpSession session) throws Exception {
+	    iForm = form;
+	    for (Iterator i=iForm.getPeriods().iterator();i.hasNext();) {
+	        ExamPeriod period = (ExamPeriod)i.next();
+	        iDates.add(period.getDateOffset());
+	        iStartsSlots.add(period.getStartSlot());
+	        Hashtable<Integer,ExamPeriod> periodsThisDay = iPeriods.get(period.getDateOffset());
+	        if (periodsThisDay==null) {
+	            periodsThisDay = new Hashtable<Integer,ExamPeriod>();
+	            iPeriods.put(period.getDateOffset(), periodsThisDay);
+	        }
+	        periodsThisDay.put(period.getStartSlot(), period);
+	    }
+	    ExamSolverProxy solver = WebSolver.getExamSolver(session);
+	    if (iForm.getResource()==sResourceRoom) {
+	        for (Iterator i=Location.findAllExamLocations(iForm.getSessionId()).iterator();i.hasNext();) {
+	            Location location = (Location)i.next();
+	            if (match(location.getLabel())) {
+	                if (solver!=null)
+	                    iModels.add(new ExamGridModel(
+	                            location.getUniqueId(),
+	                            location.getLabel(),
+	                            location.getCapacity(),
+	                            solver.getAssignedExamsOfRoom(location.getUniqueId())));
+	                else
+                        iModels.add(new ExamGridModel(
+                                location.getUniqueId(),
+                                location.getLabel(),
+                                location.getCapacity(),
+                                Exam.findAssignedExamsOfLocation(location.getUniqueId())));
+	            }
+	        }
+	    } else if (iForm.getResource()==sResourceInstructor) {
+	        String instructorNameFormat = Settings.getSettingValue(Web.getUser(session), Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT);
+	        Hashtable<String,ExamGridModel> models = new Hashtable<String,ExamGridModel> ();
+            for (Iterator i=DepartmentalInstructor.findAllExamInstructors(iForm.getSessionId()).iterator();i.hasNext();) {
+                DepartmentalInstructor instructor = (DepartmentalInstructor)i.next();
+                if (match(instructor.getName(instructorNameFormat))) {
+                    Collection<ExamAssignmentInfo> assignments = null;
+                    if (solver!=null)
+                        assignments = solver.getAssignedExamsOfInstructor(instructor.getUniqueId());
+                    else
+                        assignments = Exam.findAssignedExamsOfInstructor(instructor.getUniqueId());
+                    if (instructor.getExternalUniqueId()==null) {
+                        iModels.add(new ExamGridModel(
+                                instructor.getUniqueId(),
+                                instructor.getName(instructorNameFormat),
+                                -1,
+                                assignments));
+                    } else {
+                        ExamGridModel m = models.get(instructor.getExternalUniqueId());
+                        if (m==null) {
+                            m = new ExamGridModel(
+                                    instructor.getUniqueId(),
+                                    instructor.getName(instructorNameFormat),
+                                    -1,
+                                    assignments);
+                            iModels.add(m);
+                            models.put(instructor.getExternalUniqueId(),m);
+                        } else
+                            m.addAssignments(assignments);
+                    }
+                }
+            }
+	    } else if (iForm.getResource()==sResourceSubject) {
+	        for (Iterator i=SubjectArea.getSubjectAreaList(iForm.getSessionId()).iterator();i.hasNext();) {
+	            SubjectArea subject = (SubjectArea)i.next();
+	            if (match(subject.getSubjectAreaAbbreviation())) {
+                    if (solver!=null)
+                        iModels.add(new ExamGridModel(
+                                subject.getUniqueId(),
+                                subject.getSubjectAreaAbbreviation(),
+                                -1,
+                                solver.getAssignedExams(subject.getUniqueId())));
+                    else
+                        iModels.add(new ExamGridModel(
+                                subject.getUniqueId(),
+                                subject.getSubjectAreaAbbreviation(),
+                                -1,
+                                Exam.findAssignedExams(iForm.getSessionId(),subject.getUniqueId()))); 
+	                
+	            }
+	        }
+	    }
+	    Collections.sort(iModels);
+	}
+	
+	public ExamPeriod getPeriod(int day, Integer time) {
+	    if (time==null) return null;
+	    Hashtable<Integer,ExamPeriod>  periods = iPeriods.get(day);
+	    return (periods==null?null:periods.get(time));
+	}
+
+	public void printToHtml(JspWriter jsp) {
+		PrintWriter out = new PrintWriter(jsp);
+		printToHtml(out);
+		out.flush();
+	}
+	
+	public void printToHtml(PrintWriter out) {
+        out.println("<table border='0' cellpadding='2' cellspacing='0'>");
+        int rowNumber=0; 
+        for (Enumeration e = iModels.elements(); e.hasMoreElements(); rowNumber++) {
+        	printToHtml(out,(ExamGridModel)e.nextElement(),rowNumber);
+        }
+        out.println("</table>");		
+	}
+	
+	public boolean isDispModePerWeekVertical() {
+		return iForm.getDispMode() == sDispModePerWeekVertical;
+	}
+	
+	public boolean isDispModePerWeekHorizontal() {
+		return iForm.getDispMode() == sDispModePerWeekHorizontal;
+	}
+
+	public boolean isDispModePerWeek() {
+		return isDispModePerWeekHorizontal() || isDispModePerWeekVertical();
+	}
+
+	public boolean isDispModeInRow() {
+		return iForm.getDispMode() == sDispModeInRow;
+	}
+	
+    public int getMaxIdx(ExamGridModel model, int startDay, int endDay, int firstSlot, int lastSlot) {
+        int max = 0;
+        for (Iterator i=iForm.getPeriods().iterator();i.hasNext();) {
+            ExamPeriod period = (ExamPeriod)i.next();
+            if (period.getDateOffset()<startDay || period.getDateOffset()>endDay) continue;
+            if (period.getStartSlot()<firstSlot || period.getStartSlot()>lastSlot) continue;
+            max = Math.max(max, model.getAssignments(period).size()-1);
+        }
+        return max;
+    }
+    
+    public String getDayName(int day) {
+        Calendar c = Calendar.getInstance(Locale.US);
+        c.setTime(iForm.getExamBeginDate());
+        c.add(Calendar.DAY_OF_YEAR, day);
+        return sDF.format(c.getTime());
+    }
+
+    public void printHeader(PrintWriter out, ExamGridModel model, int rowNumber) {
+		String sfx2 = "";
+		if (isDispModePerWeekVertical())
+			sfx2 += "Vertical";
+		out.println("<tr valign='top'>");
+		out.println("<th nowrap class='Timetable"+(rowNumber==0?"Head":"")+"Cell"+sfx2+"'>");
+		if (isDispModePerWeek())
+			out.println(model.getName()+(model.getSize()>0?" ("+model.getSize()+")":""));
+		out.println("</th>");
+		TreeSet<Integer> days = days(), slots = slots();
+		if (isDispModePerWeekVertical()) {
+			for (Integer day : days) {
+				boolean eol = (day==days.last());
+				out.println("<th nowrap width='130' height='40' class='TimetableHeadCellVertical"+(eol?"EOL":"")+"'>");
+				out.println(getDayName(day));
+				out.println("</th>");
+			}
+		} else { //isDispModeInRow() || isDispModePerWeekVertical()
+		    for (Integer day : days) {
+		        if (isDispModePerWeek() && day!=days.first()) break;
+				for (Integer slot : slots()) {
+					int time = slot*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
+					int hour = time/60;
+					int min = time%60;
+					boolean eod = (slot==slots.last());
+					boolean eol = (eod && (isDispModePerWeek() || day==days.last()));
+					out.println("<th nowrap width='130' height='40' class='Timetable" + (rowNumber==0?"Head":"") + "Cell" + (eol?"EOL":eod?"EOD":"") + "'>");
+					if (isDispModeInRow())
+						out.println(getDayName(day)+"<br>");
+					out.println((hour>12?hour-12:hour)+":"+(min<10?"0":"")+min+(hour>=12?"p":"a"));
+					out.println("</th>");
+				}
+			}
+        }
+		out.println("</tr>");
+	}
+	
+    private void getMouseOverAndMouseOut(StringBuffer onMouseOver, StringBuffer onMouseOut, ExamGridCell cell, String bgColor, boolean changeMouse) {
+    	if (cell==null) return;
+    	onMouseOver.append(" onmouseover=\"");
+        onMouseOut.append(" onmouseout=\"");
+        ExamAssignmentInfo info = cell.getInfo();
+        if (iForm.getResource()==sResourceRoom) {
+            for (Enumeration e=info.getRoomIds().elements();e.hasMoreElements();) {
+                Long roomId = (Long)e.nextElement();
+                onMouseOver.append("if (document.getElementById('"+info.getExamId()+"."+roomId+"')!=null) document.getElementById('"+info.getExamId()+"."+roomId+"').style.backgroundColor='rgb(223,231,242)';");
+                onMouseOut.append("if (document.getElementById('"+info.getExamId()+"."+roomId+"')!=null) document.getElementById('"+info.getExamId()+"."+roomId+"').style.backgroundColor='"+(bgColor==null?"transparent":bgColor)+"';");
+            }
+        } else if (iForm.getResource()==sResourceInstructor) {
+            for (Enumeration e=info.getInstructors().elements();e.hasMoreElements();) {
+                Long instructorId = ((ExamInstructorInfo)e.nextElement()).getId();
+                onMouseOver.append("if (document.getElementById('"+info.getExamId()+"."+instructorId+"')!=null) document.getElementById('"+info.getExamId()+"."+instructorId+"').style.backgroundColor='rgb(223,231,242)';");
+                onMouseOut.append("if (document.getElementById('"+info.getExamId()+"."+instructorId+"')!=null) document.getElementById('"+info.getExamId()+"."+instructorId+"').style.backgroundColor='"+(bgColor==null?"transparent":bgColor)+"';");
+            }
+        } else {
+            onMouseOver.append("if (document.getElementById('"+info.getExamId()+"')!=null) document.getElementById('"+info.getExamId()+"').style.backgroundColor='rgb(223,231,242)';");
+            onMouseOut.append("if (document.getElementById('"+info.getExamId()+"')!=null) document.getElementById('"+info.getExamId()+"').style.backgroundColor='"+(bgColor==null?"transparent":bgColor)+"';");
+        }
+        if (changeMouse)
+        	onMouseOver.append("this.style.cursor='hand';this.style.cursor='pointer';");
+        onMouseOver.append("\" ");
+        onMouseOut.append("\" ");
+    }
+    
+    public TreeSet<Integer> days() {
+        TreeSet<Integer> days = new TreeSet();
+        for (Integer day:iDates) {
+            if (!iForm.isAllDates() && day!=iForm.getDate()) continue;
+            days.add(day);
+        }
+        return days;
+    }
+	
+    public TreeSet<Integer> slots() {
+        TreeSet<Integer> slots = new TreeSet();
+        for (Integer slot:iStartsSlots) {
+            if (slot<iForm.getStartTime() || slot>iForm.getEndTime()) continue;
+            slots.add(slot);
+        }
+        return slots;
+    }
+    
+    public Integer prev(int slot) {
+        Integer prev = null;
+        for (Integer s:iStartsSlots) {
+            if (s<iForm.getStartTime() || s>=slot) continue;
+            if (prev==null) prev = s;
+            else prev = Math.max(prev,s);
+        }
+        return prev;
+    }
+    
+    public Integer next(int slot) {
+        Integer next = null;
+        for (Integer s:iStartsSlots) {
+            if (s<=slot || s>iForm.getEndTime()) continue;
+            if (next==null) next = s;
+            else next = Math.min(next,s);
+        }
+        return next;
+    }
+
+	
+	public void printToHtml(PrintWriter out, ExamGridModel model, int rowNumber) {
+		if (isDispModePerWeek() || rowNumber%10==0)
+			printHeader(out, model, rowNumber);
+		out.println("<tr valign='top'>");
+		TreeSet<Integer> days = days(), slots = slots();
+		if (isDispModeInRow()) {
+			int maxIdx = getMaxIdx(model, days.first(),days.last(),slots.first(),slots.last());
+			out.println("<th nowrap width='130' height='40' rowspan='"+(1+maxIdx)+"' class='Timetable" + (rowNumber%10==0?"Head":"") + "Cell'>");
+			out.println(model.getName()+(model.getSize()>0?" ("+model.getSize()+")":""));
+			out.println("</th>");
+			for (int idx=0;idx<=maxIdx;idx++) {
+				if (idx>0)
+					out.println("</tr><tr valign='top'>");
+				for (Integer day:days) {
+				    for (Integer slot:slots) {
+				        ExamPeriod period = getPeriod(day, slot);
+				        ExamGridCell cell = model.getAssignment(period,idx);
+						if (cell==null) {
+							String bgColor = model.getBackground(period);
+							if (bgColor==null && !model.isAvailable(period))
+								bgColor=sBgColorNotAvailable;
+							boolean eod = (slot == slots.last());
+							boolean eol = (eod && (isDispModePerWeek() || day==days.last()));
+                            if (idx>0 && model.getAssignment(day, slot, idx-1)==null) continue;
+                            int rowspan = 1 + maxIdx - idx;
+							out.println("<td rowspan='"+rowspan+"' class='TimetableCell" + (eol?"EOL":eod?"EOD":"") + "' "+(bgColor==null?"":"style='background-color:"+bgColor+"'")+">&nbsp;</td>");
+						} else {
+							String bgColor = cell.getBackground();
+	                		if (iForm.getBackground()==sBgNone && !sBgColorNotAvailable.equals(bgColor)) {
+	                		    if (!model.isAvailable(period))
+	                		        bgColor = sBgColorNotAvailableButAssigned;
+	                		}
+							boolean eod = (slot==slots.last());
+							boolean eol = (eod && (isDispModePerWeek() || day==days.last()));
+							StringBuffer onMouseOver = new StringBuffer();
+							StringBuffer onMouseOut = new StringBuffer();
+							getMouseOverAndMouseOut(onMouseOver, onMouseOut, cell, bgColor, cell.getOnClick()!=null);
+							out.println("<td nowrap "+(bgColor==null?"":"style='background-color:"+bgColor+"' ")+
+									" class='TimetableCell"+(eol?"EOL":eod?"EOD":"")+"' "+
+									"align='center' "+
+									(cell.getOnClick()==null?"":"onclick=\""+cell.getOnClick()+"\" ")+
+									(cell.getId()!=null?"id='"+cell.getId()+"' ":"")+
+									onMouseOver + 
+									onMouseOut +
+									(cell.getTitle()==null?"":"title=\""+cell.getTitle()+"\" ")+
+	                    			">");
+							out.print(cell.getName());
+							if (iForm.getResource()!=sResourceRoom)
+								out.print("<BR>"+cell.getRoomName());
+							else
+								out.print(cell.getShortComment()==null?"":"<BR>"+cell.getShortComment());
+							out.println("</td>");
+						}
+					}
+				}
+			}			
+		} else  if (isDispModePerWeekHorizontal()) {
+		    for (Integer day:days) {
+				if (day!=days.first())
+					out.println("</tr><tr valign='top'>");
+				int maxIdx = getMaxIdx(model, day, day,slots.first(),slots.last());
+				out.println("<th nowrap width='130' height='40' rowspan='"+(1+maxIdx)+"' class='TimetableCell'>"+getDayName(day)+"</th>");
+				for (int idx=0;idx<=maxIdx;idx++) {
+					if (idx>0) out.println("</tr><tr valign='top'>");
+					for (Integer slot:slots) {
+                        ExamPeriod period = getPeriod(day, slot);
+                        ExamGridCell cell = model.getAssignment(period,idx);
+						if (cell==null) {
+							String bgColor = model.getBackground(period);
+							if (bgColor==null && !model.isAvailable(period))
+								bgColor=sBgColorNotAvailable;
+							boolean eod = (slot == slots.last());
+							boolean eol = (eod && (isDispModePerWeek() || day==days.last()));
+                            if (idx>0 && model.getAssignment(day, slot, idx-1)==null) continue;
+                            int rowspan = 1 + maxIdx - idx;
+							out.println("<td rowspan='"+rowspan+"' class='TimetableCell" + (eol?"EOL":eod?"EOD":"") + "' "+(bgColor==null?"":"style='background-color:"+bgColor+"'")+">&nbsp;</td>");
+						} else {
+							String bgColor = cell.getBackground();
+                            if (iForm.getBackground()==sBgNone && !sBgColorNotAvailable.equals(bgColor)) {
+                                if (!model.isAvailable(period))
+                                    bgColor = sBgColorNotAvailableButAssigned;
+                            }
+							boolean eod = (slot==slots.last());
+							boolean eol = (eod && (isDispModePerWeek() || day==days.last()));
+							StringBuffer onMouseOver = new StringBuffer();
+							StringBuffer onMouseOut = new StringBuffer();
+							getMouseOverAndMouseOut(onMouseOver, onMouseOut, cell, bgColor, cell.getOnClick()!=null);
+							out.println("<td nowrap "+(bgColor==null?"":"style='background-color:"+bgColor+"' ")+
+									" class='TimetableCell"+(eol?"EOL":eod?"EOD":"")+"' "+
+									"align='center' "+
+									(cell.getOnClick()==null?"":"onclick=\""+cell.getOnClick()+"\" ")+
+									(cell.getId()!=null?"id='"+cell.getId()+"' ":"")+
+									onMouseOver + 
+									onMouseOut +
+									(cell.getTitle()==null?"":"title=\""+cell.getTitle()+"\" ")+
+	                    			">");
+							out.print(cell.getName());
+							if (iForm.getResource()!=sResourceRoom)
+								out.print("<BR>"+cell.getRoomName());
+							else
+								out.print(cell.getShortComment()==null?"":"<BR>"+cell.getShortComment());
+							out.println("</td>");
+						}
+					}
+				}
+			}
+		} else { //isDispModePerWeekVertical
+			for (Integer slot:slots) {
+				int time = slot * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
+				int hour = time/60;
+				int min = time%60;
+				int maxIdx = getMaxIdx(model, days.first(), days.last(), slot, slot);
+				out.println("<th nowrap width='130' height='40' rowspan='"+(1+maxIdx)+"' class='TimetableHeadCell"+(maxIdx>0?"":"In")+"Vertical'>" + (hour>12?hour-12:hour) + ":" + (min<10?"0":"") + min + (hour>=12?"p":"a") + "</th>");
+                for (int idx=0;idx<=maxIdx;idx++) {
+                    if (idx>0) out.println("</tr><tr valign='top'>");
+                    for (Integer day:days) {
+                	    ExamPeriod period = getPeriod(day, slot);
+                    	ExamGridCell cell = model.getAssignment(period, idx);
+                    	if (cell==null) {
+							String bgColor = model.getBackground(period);
+							if (bgColor==null && !model.isAvailable(period))
+								bgColor=sBgColorNotAvailable;
+                            boolean eol = (day==days.last());
+                            if (idx>0 && model.getAssignment(day, slot, idx-1)==null) continue;
+                            int rowspan = 1 + maxIdx - idx;
+                            out.println("<td rowspan='"+rowspan+"' class='TimetableCell"+(idx==0&&maxIdx>0?"":"In")+"Vertical"+(eol?"EOL":"")+ "' "+(bgColor==null?"":"style='background-color:"+bgColor+"'")+">&nbsp;</td>");
+                    	} else {
+                    		String bgColor = cell.getBackground();
+                            if (iForm.getBackground()==sBgNone && !sBgColorNotAvailable.equals(bgColor)) {
+                                if (!model.isAvailable(period))
+                                    bgColor = sBgColorNotAvailableButAssigned;
+                            }
+                    		StringBuffer onMouseOver = new StringBuffer();
+                    		StringBuffer onMouseOut = new StringBuffer();
+                    		getMouseOverAndMouseOut(onMouseOver, onMouseOut, cell, bgColor, cell.getOnClick()!=null);
+                    		boolean eol = (day==days.last());
+                    		out.println("<td nowrap "+
+                    				(bgColor==null?"":"style='background-color:"+bgColor+"' ")+
+                    				"class='TimetableCell"+(idx==0&&maxIdx>0?"":"In")+"Vertical" + (eol?"EOL":"")+ "' align='center' "+
+                    				(cell.getOnClick()==null?"":"onclick=\""+cell.getOnClick()+"\" ")+
+                    				(cell.getId()!=null?"id='"+cell.getId()+"' ":"")+
+                    				onMouseOver + onMouseOut +
+                    				(cell.getTitle()==null?"":"title=\""+cell.getTitle()+"\" ")+
+                            		">");
+							out.print(cell.getName());
+							if (iForm.getResource()!=sResourceRoom)
+								out.print("<BR>"+cell.getRoomName());
+							else
+								out.print(cell.getShortComment()==null?"":"<BR>"+cell.getShortComment());
+                    		out.println("</td>");
+                    	}
+                    }
+                }
+                out.println("</tr><tr valign='top'>");
+                if (slot==slots.last())
+                	out.println("<td>&nbsp;</td>");
+			}
+		}
+	}
+	
+	private boolean match(String name) {
+		if (iForm.getFilter()==null || iForm.getFilter().trim().length()==0) return true;
+        String n = name.toUpperCase();
+		StringTokenizer stk1 = new StringTokenizer(iForm.getFilter().toUpperCase(),";");
+		while (stk1.hasMoreTokens()) {
+		    StringTokenizer stk2 = new StringTokenizer(stk1.nextToken()," ,");
+		    boolean match = true;
+		    while (match && stk2.hasMoreTokens()) {
+		        String token = stk2.nextToken().trim();
+		        if (token.length()==0) continue;
+		        if (n.indexOf(token)<0) match = false;
+		    }
+		    if (match) return true;
+		}
+		return false;
+	}
+	
+	public void printLegend(JspWriter jsp) {
+		PrintWriter out = new PrintWriter(jsp);
+		printLegend(out);
+		out.flush();
+	}
+
+	public void printLegend(PrintWriter out) {
+		if (iForm.getBackground()!=sBgNone) {
+			out.println("<tr><td colspan='2'>Assigned classes:</td></tr>");
+		}
+        if (iForm.getBackground()==sBgPeriodPref) {
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sRequired)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Required period</td><td></td></tr>");
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sStronglyPreferred)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Strongly preferred period</td><td></td></tr>");
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sPreferred)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Preferred period</td><td></td></tr>");
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sNeutral)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>No period preference</td><td></td></tr>");
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Discouraged period</td><td></td></tr>");
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sStronglyDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Strongly discouraged period</td><td></td></tr>");
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sProhibited)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Prohibited period</td><td></td></tr>");
+        } else if (iForm.getBackground()==sBgRoomPref) {
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sRequired)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Required room</td><td></td></tr>");
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sStronglyPreferred)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Strongly preferred room</td><td></td></tr>");
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sPreferred)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Preferred room</td><td></td></tr>");
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sNeutral)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>No room preference</td><td></td></tr>");
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Discouraged room</td><td></td></tr>");
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sStronglyDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Strongly discouraged room</td><td></td></tr>");
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sProhibited)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Prohibited room</td><td></td></tr>");
+        } else if (iForm.getBackground()==sBgInstructorConfs) {
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sNeutral)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>No instructor conflict</td><td></td></tr>");
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>One or more instructor back-to-back conflicts</td><td></td></tr>");
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sStronglyDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>One or more instructor three or more exams a day conflicts</td><td></td></tr>");
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sProhibited)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>One or more instructor direct conflicts</td><td></td></tr>");
+        } else if (iForm.getBackground()==sBgStudentConfs) {
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sNeutral)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>No student conflict</td><td></td></tr>");
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>One or more student back-to-back conflicts</td><td></td></tr>");
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sStronglyDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>One or more student three or more exams a day student conflicts</td><td></td></tr>");
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sProhibited)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>One or more student direct conflicts</td><td></td></tr>");
+        } else if (iForm.getBackground()==sBgDirectInstructorConfs) {
+            for (int nrConflicts=0;nrConflicts<=6;nrConflicts++) {
+                String color = lessConflicts2color(nrConflicts);
+                out.println("<tr><td width=40 style='background-color:"+color+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+nrConflicts+" "+(nrConflicts==6?"or more ":"")+"instructor direct conflicts</td><td></td></tr>");
+            }
+        } else if (iForm.getBackground()==sBgMoreThanTwoADayInstructorConfs) {
+            for (int nrConflicts=0;nrConflicts<=15;nrConflicts++) {
+                String color = conflicts2color(nrConflicts);
+                out.println("<tr><td width=40 style='background-color:"+color+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+nrConflicts+" "+(nrConflicts==15?"or more ":"")+"instructor more than two exams a day conflicts</td><td></td></tr>");
+            }
+        } else if (iForm.getBackground()==sBgBackToBackInstructorConfs) {
+            for (int nrConflicts=0;nrConflicts<=15;nrConflicts++) {
+                String color = conflicts2color(nrConflicts);
+                out.println("<tr><td width=40 style='background-color:"+color+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+nrConflicts+" "+(nrConflicts==15?"or more ":"")+"instructor back to back conflicts</td><td></td></tr>");
+            }
+        } else if (iForm.getBackground()==sBgDirectStudentConfs) {
+            for (int nrConflicts=0;nrConflicts<=6;nrConflicts++) {
+                String color = lessConflicts2color(nrConflicts);
+                out.println("<tr><td width=40 style='background-color:"+color+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+nrConflicts+" "+(nrConflicts==6?"or more ":"")+"student direct conflicts</td><td></td></tr>");
+            }
+        } else if (iForm.getBackground()==sBgMoreThanTwoADayStudentConfs) {
+            for (int nrConflicts=0;nrConflicts<=15;nrConflicts++) {
+                String color = conflicts2color(nrConflicts);
+                out.println("<tr><td width=40 style='background-color:"+color+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+nrConflicts+" "+(nrConflicts==15?"or more ":"")+"student more than two exams a day conflicts</td><td></td></tr>");
+            }
+        } else if (iForm.getBackground()==sBgBackToBackStudentConfs) {
+            for (int nrConflicts=0;nrConflicts<=15;nrConflicts++) {
+                String color = conflicts2color(nrConflicts);
+                out.println("<tr><td width=40 style='background-color:"+color+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+nrConflicts+" "+(nrConflicts==15?"or more ":"")+"student back to back conflicts</td><td></td></tr>");
+            }
+        } else if (iForm.getBackground()==sBgDistPref) {
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sNeutral)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>No violated constraint<i>(distance=0)</i></td><td></td></tr>");
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Discouraged/preferred constraint violated</td><td></td></tr>");
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sStronglyDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Strongly discouraged/preferred constraint violated</i></td><td></td></tr>");
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sProhibited)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Required/prohibited constraint violated</i></td><td></td></tr>");
+        }
+        out.println("<tr><td colspan='2'>Free times:</td></tr>");
+        out.println("<tr><td width=40 style='background-color:"+sBgColorNotAvailable+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Period not available</td><td></td></tr>");
+        if (iForm.getBgPreferences() && iForm.getBackground()==sBgPeriodPref) {
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sStronglyPreferred)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Strongly preferred period</td><td></td></tr>");
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sPreferred)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Preferred period</td><td></td></tr>");
+        }
+        out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sNeutral)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>No period preference</td><td></td></tr>");
+        if (iForm.getBgPreferences() && iForm.getBackground()==sBgPeriodPref) {
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Discouraged period</td><td></td></tr>");
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sStronglyDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Strongly discouraged period</td><td></td></tr>");
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sProhibited)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Prohibited period</td><td></td></tr>");
+        }
+    }
+	
+    public static String pref2color(String pref) {
+        if (pref==null) return null;
+        return PreferenceLevel.prolog2bgColor(pref);
+    }
+    
+    public static String pref2color(int pref) {
+        return PreferenceLevel.prolog2bgColor(PreferenceLevel.int2prolog(pref));
+    }
+    
+    public static String conflicts2color(int nrConflicts) {
+        if (nrConflicts>15) nrConflicts = 15;
+        String color = null;
+        if (nrConflicts==0) {
+            color = "rgb(240,240,240)";
+        } else if (nrConflicts<5) {
+            color = "rgb(240,"+(240-(30*nrConflicts/5))+","+(240-(180*nrConflicts/5))+")";
+        } else if (nrConflicts<10) {
+            color = "rgb(240,"+(210-(90*(nrConflicts-5)/5))+",60)";
+        } else {
+            color = "rgb("+(240-(20*(nrConflicts-10)/5))+","+(120-(70*(nrConflicts-10)/5))+","+(60-(20*(nrConflicts-10)/5))+")";
+        }
+        return color;
+    }
+
+    public static String lessConflicts2color(int nrConflicts) {
+        if (nrConflicts>6) nrConflicts = 6;
+        String color = null;
+        if (nrConflicts==0) {
+            color = "rgb(240,240,240)";
+        } else if (nrConflicts<2) {
+            color = "rgb(240,"+(240-(30*nrConflicts/2))+","+(240-(180*nrConflicts/2))+")";
+        } else if (nrConflicts<4) {
+            color = "rgb(240,"+(210-(90*(nrConflicts-2)/2))+",60)";
+        } else {
+            color = "rgb("+(240-(20*(nrConflicts-4)/2))+","+(120-(70*(nrConflicts-4)/2))+","+(60-(20*(nrConflicts-4)/2))+")";
+        }
+        return color;
+    }
+	
+	public class ExamGridModel implements Comparable<ExamGridModel>{
+	    private Long iId = null;
+	    private String iName = null;
+	    private int iSize = 0;
+	    private int iNrAssignments = 0;
+	    private Hashtable<ExamPeriod, Vector<ExamAssignmentInfo>> iAssignments = new Hashtable<ExamPeriod, Vector<ExamAssignmentInfo>>();
+	    
+	    ExamGridModel(Long id, String name, int size, Collection<ExamAssignmentInfo> assignments) {
+	        iId = id;
+	        iName = name;
+	        iSize = size;
+	        for (Iterator i=assignments.iterator();i.hasNext();) {
+	            ExamAssignmentInfo exam = (ExamAssignmentInfo)i.next();
+	            Vector<ExamAssignmentInfo> a = iAssignments.get(exam.getPeriod());
+	            if (a==null) {
+	                a = new Vector<ExamAssignmentInfo>();
+	                iAssignments.put(exam.getPeriod(), a);
+	            }
+	            a.add(exam); iNrAssignments++;
+	        }
+	    }
+	    
+	    public void addAssignments(Collection<ExamAssignmentInfo> assignments) {
+            for (Iterator i=assignments.iterator();i.hasNext();) {
+                ExamAssignmentInfo exam = (ExamAssignmentInfo)i.next();
+                Vector<ExamAssignmentInfo> a = iAssignments.get(exam.getPeriodId());
+                if (a==null) {
+                    a = new Vector<ExamAssignmentInfo>();
+                    iAssignments.put(exam.getPeriod(), a);
+                }
+                a.add(exam); iNrAssignments++;
+            }
+	    }
+	    
+	    public Long getId() {
+	        return iId;
+	    }
+	    
+	    public int getSize() {
+            if (iSize<0) return iNrAssignments++;
+	        return iSize;
+	    }
+	    
+	    public String getName() {
+	        return iName;
+	    }
+	    
+	    public Vector<ExamAssignmentInfo> getAssignments(ExamPeriod period) {
+	        if (period==null) return new Vector<ExamAssignmentInfo>();
+	        Vector<ExamAssignmentInfo> ret = iAssignments.get(period);
+	        return (ret==null?new Vector<ExamAssignmentInfo>():ret);
+	    }
+	    
+	    public ExamGridCell getAssignment(int day, int slot, int idx) {
+	        return getAssignment(getPeriod(day, slot), idx);
+	    }
+
+	    public ExamGridCell getAssignment(ExamPeriod period, int idx) {
+	        if (period==null) return null;
+	        Vector<ExamAssignmentInfo> assignments = iAssignments.get(period);
+	        if (assignments==null || assignments.size()<=idx) return null;
+	        ExamAssignmentInfo info = assignments.elementAt(idx);
+	        return info==null?null:new ExamGridCell(info);
+	    }
+	    
+	    public boolean isAvailable(ExamPeriod period) {
+	        return period!=null && !PreferenceLevel.sProhibited.equals(period.getPrefLevel().getPrefProlog());
+	    }
+	    
+	    public String getBackground(ExamPeriod period) {
+	        if (iForm.getBgPreferences() && iForm.getBackground()==sBgPeriodPref) {
+	            if (period.getPrefLevel()!=null && !PreferenceLevel.sNeutral.equals(period.getPrefLevel().getPrefProlog()))
+	                return pref2color(period.getPrefLevel().getPrefProlog());
+	        }
+	        return null;
+	    }
+	    
+	    public int compareTo(ExamGridModel model) {
+            switch (iForm.getOrder()) {
+            case sOrderByNameAsc :
+                return getName().compareTo(model.getName());
+            case sOrderByNameDesc :
+                return -getName().compareTo(model.getName());
+            case sOrderBySizeAsc:
+                return Double.compare(getSize(), model.getSize());
+            case sOrderBySizeDesc :
+                return -Double.compare(getSize(), model.getSize());
+            }
+            return getId().compareTo(model.getId());
+	    }
+
+
+	    public class ExamGridCell {
+	        private ExamAssignmentInfo iInfo = null;
+	        public ExamGridCell(ExamAssignmentInfo info) {
+	            iInfo = info;
+	        }
+	        public ExamAssignmentInfo getInfo() {
+	            return iInfo;
+	        }
+	        public String getBackground() {
+	            switch (iForm.getBackground()) {
+	            case sBgPeriodPref :
+	                return pref2color(getInfo().getPeriodPref());
+                case sBgRoomPref :
+                    if (iForm.getResource()==sResourceRoom)
+                        return pref2color(getInfo().getRoomPref(ExamGridModel.this.getId()));
+                    else
+                        return pref2color(getInfo().getRoomPref());
+                case sBgDistPref :
+                    return pref2color(getInfo().getDistributionPref());
+                case sBgStudentConfs :
+                    if (getInfo().countDirectConflicts()>0)
+                        return pref2color(PreferenceLevel.sProhibited);
+                    if (getInfo().countMoreThanTwoConflicts()>0)
+                        return pref2color(PreferenceLevel.sStronglyDiscouraged);
+                    if (getInfo().countBackToBackConflicts()>0)
+                        return pref2color(PreferenceLevel.sDiscouraged);
+                    return pref2color(PreferenceLevel.sNeutral);
+                case sBgDirectStudentConfs :
+                    return lessConflicts2color(getInfo().countDirectConflicts());
+                case sBgMoreThanTwoADayStudentConfs :
+                    return conflicts2color(getInfo().countMoreThanTwoConflicts());
+                case sBgBackToBackStudentConfs :
+                    return conflicts2color(getInfo().countBackToBackConflicts());
+                case sBgInstructorConfs :
+                    if (getInfo().countInstructorDirectConflicts()>0)
+                        return pref2color(PreferenceLevel.sProhibited);
+                    if (getInfo().countInstructorMoreThanTwoConflicts()>0)
+                        return pref2color(PreferenceLevel.sStronglyDiscouraged);
+                    if (getInfo().countInstructorBackToBackConflicts()>0)
+                        return pref2color(PreferenceLevel.sDiscouraged);
+                    return pref2color(PreferenceLevel.sNeutral);
+                case sBgDirectInstructorConfs :
+                    return lessConflicts2color(getInfo().countInstructorDirectConflicts());
+                case sBgMoreThanTwoADayInstructorConfs :
+                    return conflicts2color(getInfo().countInstructorMoreThanTwoConflicts());
+                case sBgBackToBackInstructorConfs :
+                    return conflicts2color(getInfo().countInstructorBackToBackConflicts());
+	            }
+	            return null;
+	        }
+
+	        public String getOnClick() {
+	            return "window.open('examDetail.do?examId="+getInfo().getExamId()+"','exams','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no');";
+	        }
+	        
+	        public String getId() {
+	            String id = getInfo().getExamId().toString();
+	            if (iForm.getResource()==sResourceRoom || iForm.getResource()==sResourceInstructor)
+	                id += "."+ExamGridModel.this.getId();
+	            return id;
+	        }
+	        
+	        public String getTitle() {
+	            return getInfo().toString();
+	        }
+	        
+	        public String getName() {
+	            return getInfo().getSectionName("<br>");
+	        }
+	        
+	        public String getRoomName() {
+	            return getInfo().getRoomsName(",");
+	        }
+	        
+            public String getShortComment() {
+                int dc = getInfo().countDirectConflicts();
+                int m2d = getInfo().countMoreThanTwoConflicts();
+                int btb = getInfo().countBackToBackConflicts();
+                return
+                    "<font color='"+(dc>0?PreferenceLevel.prolog2color("P"):"gray")+"'>"+dc+"</font>, "+
+                    "<font color='"+(m2d>0?PreferenceLevel.prolog2color("1"):"gray")+"'>"+m2d+"</font>, "+
+                    "<font color='"+(btb>0?PreferenceLevel.prolog2color("2"):"gray")+"'>"+btb+"</font>";
+            }
+	    }
+	}
+	
+	public class RoomExamGridModel extends ExamGridModel {
+	    private Hashtable iExamPrefs = new Hashtable();
+	    
+	    RoomExamGridModel(Long id, String name, int size, Collection<ExamAssignmentInfo> assignments) {
+	        super(id, name, size, assignments);
+	        iExamPrefs = new LocationDAO().get(id).getExamPreferences();
+	    }
+	    
+	    public PreferenceLevel getPreference(ExamPeriod period) {
+	        return (PreferenceLevel)iExamPrefs.get(period);
+	    }
+
+        public boolean isAvailable(ExamPeriod period) {
+            if (!super.isAvailable(period)) return false;
+            PreferenceLevel pref = getPreference(period);
+            return (pref==null || !PreferenceLevel.sProhibited.equals(pref.getPrefProlog()));
+        }
+        
+        public String getBackground(ExamPeriod period) {
+            if (iForm.getBgPreferences() && iForm.getBackground()==sBgPeriodPref) {
+                PreferenceLevel pref = getPreference(period);
+                if (pref!=null && !PreferenceLevel.sNeutral.equals(pref.getPrefProlog()))
+                    return pref2color(pref.getPrefProlog());
+                if (period.getPrefLevel()!=null && !PreferenceLevel.sNeutral.equals(period.getPrefLevel().getPrefProlog()))
+                    return pref2color(period.getPrefLevel().getPrefProlog());
+            }
+            return null;
+        }
+
+	}
+	
+	public Vector<ExamGridModel> models() {
+	    return iModels;
+	}
+}

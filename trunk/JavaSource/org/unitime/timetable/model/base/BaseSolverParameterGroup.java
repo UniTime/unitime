@@ -37,6 +37,7 @@ public abstract class BaseSolverParameterGroup  implements Serializable {
 	public static String PROP_NAME = "name";
 	public static String PROP_DESCRIPTION = "description";
 	public static String PROP_ORDER = "order";
+	public static String PROP_PARAM_TYPE = "type";
 
 
 	// constructors
@@ -65,6 +66,7 @@ public abstract class BaseSolverParameterGroup  implements Serializable {
 	private java.lang.String name;
 	private java.lang.String description;
 	private java.lang.Integer order;
+	private java.lang.Integer type;
 
 	// collections
 	private java.util.Set parameters;
@@ -141,6 +143,13 @@ public abstract class BaseSolverParameterGroup  implements Serializable {
 		this.order = order;
 	}
 
+    public java.lang.Integer getType() {
+        return type;
+    }
+    
+    public void setType(java.lang.Integer type) {
+        this.type = type;
+    }
 
 
 	/**

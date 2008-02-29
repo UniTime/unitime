@@ -32,6 +32,8 @@ import java.util.Vector;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.unitime.timetable.solver.SolverProxy;
+import org.unitime.timetable.solver.exam.ExamSolverProxy;
+import org.unitime.timetable.solver.exam.ExamSolverProxyFactory;
 import org.unitime.timetable.solver.remote.SolverRegisterService.SolverConnection;
 import org.unitime.timetable.solver.remote.core.ConnectionFactory;
 import org.unitime.timetable.solver.remote.core.RemoteIo;
@@ -195,7 +197,18 @@ public class RemoteSolverServerProxy {
 		return solvers;
 	}
 	
-	public String getVersion() throws Exception {
+	public ExamSolverProxy getExamSolver() throws Exception {
+	    if (((Boolean)query(new Object[] {"hasExamSolver"})).booleanValue()) {
+	        return ExamSolverProxyFactory.create(this);
+	    } else return null;
+	}
+	
+    public ExamSolverProxy createExamSolver(DataProperties properties) throws Exception {
+        query(new Object[] {"createExamSolver", properties});
+        return ExamSolverProxyFactory.create(this);
+    }
+
+    public String getVersion() throws Exception {
 		return (String)query(new Object[] {"getVersion"});
 	}
 	

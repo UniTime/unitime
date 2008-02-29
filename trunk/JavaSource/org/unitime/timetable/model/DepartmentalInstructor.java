@@ -479,4 +479,10 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 		newDepartmentalInstructor.setPositionType(getPositionType());
 		return(newDepartmentalInstructor);
 	}
+	
+    public static List findAllExamInstructors(Long sessionId) {
+        return (new DepartmentalInstructorDAO()).getSession()
+                .createQuery("select distinct i from Exam x inner join x.instructors i where x.session.uniqueId=:sessionId")
+                .setLong("sessionId", sessionId).setCacheable(true).list();
+    }
 }

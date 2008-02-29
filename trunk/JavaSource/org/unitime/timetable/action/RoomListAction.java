@@ -58,6 +58,7 @@ import org.unitime.timetable.model.ExternalRoom;
 import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.NonUniversityLocation;
+import org.unitime.timetable.model.PeriodPreferenceModel;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Room;
@@ -188,18 +189,20 @@ public class RoomListAction extends Action {
 			}
 		}
 
-		if (!roomListForm.getDeptCodeX().equalsIgnoreCase("All")) {
-			roomListForm.setRooms(Session.getCurrentAcadSession(user).getRoomsFast(new String[] {roomListForm.getDeptCodeX()}));
+		if (roomListForm.getDeptCodeX().equalsIgnoreCase("All")) {
+            roomListForm.setRooms(Session.getCurrentAcadSession(user).getRoomsFast(Department.getDeptCodesForUser(user, false)));
+		} else if (roomListForm.getDeptCodeX().equalsIgnoreCase("Exam")) {
+		    roomListForm.setRooms(Location.findAllExamLocations(sessionId));
 		} else {
-			roomListForm.setRooms(Session.getCurrentAcadSession(user).getRoomsFast(Department.getDeptCodesForUser(user, false)));
+		    roomListForm.setRooms(Session.getCurrentAcadSession(user).getRoomsFast(new String[] {roomListForm.getDeptCodeX()}));
 		}
 		
 		if ("Export PDF".equals(request.getParameter("op"))) {
-			buildPdfWebTable(request, roomListForm, "yes".equals(Settings.getSettingValue(user, Constants.SETTINGS_ROOMS_FEATURES_ONE_COLUMN)));
+			buildPdfWebTable(request, roomListForm, "yes".equals(Settings.getSettingValue(user, Constants.SETTINGS_ROOMS_FEATURES_ONE_COLUMN)), "Exam".equals(roomListForm.getDeptCodeX()));
 		}
 		
 		// build web table for university locations
-		buildWebTable(request, roomListForm, "yes".equals(Settings.getSettingValue(user, Constants.SETTINGS_ROOMS_FEATURES_ONE_COLUMN)));
+		buildWebTable(request, roomListForm, "yes".equals(Settings.getSettingValue(user, Constants.SETTINGS_ROOMS_FEATURES_ONE_COLUMN)), "Exam".equals(roomListForm.getDeptCodeX()));
 		
 		//set request attribute for department
 		LookupTables.setupDeptsForUser(request, user, sessionId, true);
@@ -214,7 +217,7 @@ public class RoomListAction extends Action {
 	 * @param roomListForm
 	 * @throws Exception 
 	 */
-	private void buildWebTable(HttpServletRequest request, RoomListForm roomListForm, boolean featuresOneColumn) throws Exception {
+	private void buildWebTable(HttpServletRequest request, RoomListForm roomListForm, boolean featuresOneColumn, boolean periodPrefs ) throws Exception {
 		
 		MessageResources rsc = getResources(request);
 		ActionMessages errors = new ActionMessages();
@@ -248,6 +251,8 @@ public class RoomListAction extends Action {
 				} else {
 					depts = Department.findAllOwned(sessionId, owner, false);
 				}
+			} else if (roomListForm.getDeptCodeX().equalsIgnoreCase("Exam")) {
+			    depts = new HashSet(0);
 			} else {
 				depts = new HashSet(1);
 				depts.add(Department.findByDeptCode(roomListForm.getDeptCodeX(),sessionId));
@@ -285,6 +290,8 @@ public class RoomListAction extends Action {
 								"d.session.uniqueId=:sessionId order by f.label").
 								setLong("sessionId",sessionId.longValue()).
 								list());						
+				} else if (roomListForm.getDeptCodeX().equalsIgnoreCase("Exam")) {
+				    
 				} else {
 					deptRoomFeatures.addAll(hibSession.
 						createQuery(
@@ -302,23 +309,41 @@ public class RoomListAction extends Action {
 	
 			//build headings for university rooms
 			String fixedHeading1[][] =
-				(featuresOneColumn? new String[][]
-					{ { "Bldg", "left", "true" },
-					{ "Room", "left", "true" },
-					{ "Capacity", "right", "false" },
-					{ "Availability", "left", "true" },
-					{ "Departments", "left", "true" },
-					{ "Control", "left", "true" },
-					{ "Groups", "left", "true" },
-					{ "Features", "left", "true" } } 
-				: new String[][]
-					{ { "Bldg", "left", "true" },
-					{ "Room", "left", "true" },
-					{ "Capacity", "right", "false" },
-					{ "Availability", "left", "true" },
-					{ "Departments", "left", "true" },
-					{ "Control", "left", "true" },
-					{ "Groups", "left", "true" } });					
+			    (periodPrefs?
+		                (featuresOneColumn? new String[][]
+		                                                 { { "Bldg", "left", "true" },
+		                                                 { "Room", "left", "true" },
+		                                                 { "Capacity", "right", "false" },
+		                                                 { "Exam Capacity", "right", "false" },
+		                                                 { "Period Preferences", "center", "false" },
+		                                                 { "Groups", "left", "true" },
+		                                                 { "Features", "left", "true" } } 
+		                                             : new String[][]
+		                                                 { { "Bldg", "left", "true" },
+		                                                 { "Room", "left", "true" },
+		                                                 { "Capacity", "right", "false" },
+		                                                 { "Exam Capacity", "right", "false" },
+		                                                 { "Period Preferences", "center", "false" },
+		                                                 { "Groups", "left", "true" } })                    
+			    :
+	                (featuresOneColumn? new String[][]
+	                                                 { { "Bldg", "left", "true" },
+	                                                 { "Room", "left", "true" },
+	                                                 { "Capacity", "right", "false" },
+	                                                 { "Availability", "left", "true" },
+	                                                 { "Departments", "left", "true" },
+	                                                 { "Control", "left", "true" },
+	                                                 { "Groups", "left", "true" },
+	                                                 { "Features", "left", "true" } } 
+	                                             : new String[][]
+	                                                 { { "Bldg", "left", "true" },
+	                                                 { "Room", "left", "true" },
+	                                                 { "Capacity", "right", "false" },
+	                                                 { "Availability", "left", "true" },
+	                                                 { "Departments", "left", "true" },
+	                                                 { "Control", "left", "true" },
+	                                                 { "Groups", "left", "true" } })                    
+			    );
 	
 			String heading1[] = new String[fixedHeading1.length
 					+ (featuresOneColumn?0:(globalRoomFeatures.size() + deptRoomFeatures.size()))];
@@ -357,30 +382,45 @@ public class RoomListAction extends Action {
 			
 			
 			//build headings for non-univ locations
-			String fixedHeading2[][] = 
-				( featuresOneColumn ? new String[][]
-						{{ "Location", "left", "true" },
-						{ "Capacity", "right", "false" },
-						{ "IgnTooFar", "center", "true" },
-						{ "IgnChecks", "center", "true" },
-						{ "Availability", "left", "true" },
-						{ "Departments", "left", "true" },
-						{ "Control", "left", "true" },
-						{ "Groups", "left", "true" },
-						{ "Features", "left", "true" }}
-				: new String[][]
-						{{ "Location", "left", "true" },
-						{ "Capacity", "right", "false" },
-						{ "IgnTooFar", "center", "true" },
-						{ "IgnChecks", "center", "true" },
-						{ "Availability", "left", "true" },
-						{ "Departments", "left", "true" },
-						{ "Control", "left", "true" },
-						{ "Groups", "left", "true" } });
-				               
+			String fixedHeading2[][] =
+			    ( periodPrefs ?
+		                ( featuresOneColumn ? new String[][]
+		                                                   {{ "Location", "left", "true" },
+		                                                   { "Capacity", "right", "false" },
+		                                                   { "Exam Capacity", "right", "false" },
+		                                                   { "Period Preferences", "center", "false" },
+		                                                   { "Groups", "left", "true" },
+		                                                   { "Features", "left", "true" }}
+		                                           : new String[][]
+		                                                   {{ "Location", "left", "true" },
+		                                                   { "Capacity", "right", "false" },
+		                                                   { "Exam Capacity", "right", "false" },
+		                                                   { "Period Preferences", "center", "false" },
+		                                                   { "Groups", "left", "true" } })
+			     :
+	                ( featuresOneColumn ? new String[][]
+	                                                   {{ "Location", "left", "true" },
+	                                                   { "Capacity", "right", "false" },
+	                                                   { "IgnTooFar", "center", "true" },
+	                                                   { "IgnChecks", "center", "true" },
+	                                                   { "Availability", "left", "true" },
+	                                                   { "Departments", "left", "true" },
+	                                                   { "Control", "left", "true" },
+	                                                   { "Groups", "left", "true" },
+	                                                   { "Features", "left", "true" }}
+	                                           : new String[][]
+	                                                   {{ "Location", "left", "true" },
+	                                                   { "Capacity", "right", "false" },
+	                                                   { "IgnTooFar", "center", "true" },
+	                                                   { "IgnChecks", "center", "true" },
+	                                                   { "Availability", "left", "true" },
+	                                                   { "Departments", "left", "true" },
+	                                                   { "Control", "left", "true" },
+	                                                   { "Groups", "left", "true" } })
+	        );
 			
 			String heading2[] = new String[fixedHeading2.length
-			        + globalRoomFeatures.size() + deptRoomFeatures.size()];
+			                               + (featuresOneColumn?0:(globalRoomFeatures.size() + deptRoomFeatures.size()))];
 			String alignment2[] = new String[heading2.length];
 			boolean sorted2[] = new boolean[heading2.length];
 			
@@ -470,8 +510,8 @@ public class RoomListAction extends Action {
 				Room room = (location instanceof Room ? (Room)location : null);
 				Building bldg = (room==null?null:room.getBuilding());
 				DecimalFormat df5 = new DecimalFormat("####0");
-				String text[] = new String[heading2.length];
-				Comparable comp[] = new Comparable[heading2.length];
+				String text[] = new String[Math.max(heading1.length,heading2.length)];
+				Comparable comp[] = new Comparable[text.length];
 				int idx = 0;
 				if (bldg!=null) {
 					text[idx] = 
@@ -497,104 +537,140 @@ public class RoomListAction extends Action {
 				comp[idx] = new Long(location.getCapacity().intValue());
 				idx++;
 				
-				PreferenceLevel roomPref = location.getRoomPreferenceLevel(dept);
-				if (editable && roomPref!=null && !PreferenceLevel.sNeutral.equals(roomPref.getPrefProlog())) {
-					if (room==null) {
-						text[0] =
-							(location.isIgnoreRoomCheck().booleanValue()?"<i>":"")+
-							"<span style='color:"+roomPref.prefcolor()+";font-weight:bold;' title='"+roomPref.getPrefName()+" "+location.getLabel()+"'>"+location.getLabel()+"</span>"+
-							(location.isIgnoreRoomCheck().booleanValue()?"</i>":"");
-					} else {
-						text[0] = 
-							(location.isIgnoreRoomCheck().booleanValue()?"<i>":"")+
-							"<span style='color:"+roomPref.prefcolor()+";font-weight:bold;' title='"+roomPref.getPrefName()+" "+location.getLabel()+"'>"+(bldg==null?"":bldg.getAbbreviation())+"</span>"+
-							(location.isIgnoreRoomCheck().booleanValue()?"</i>":"");
-						text[1] = 
-							(location.isIgnoreRoomCheck().booleanValue()?"<i>":"")+
-							"<span style='color:"+roomPref.prefcolor()+";font-weight:bold;' title='"+roomPref.getPrefName()+" "+location.getLabel()+"'>"+room.getRoomNumber()+"</span>"+
-							(location.isIgnoreRoomCheck().booleanValue()?"</i>":"");
-					}
+				if (periodPrefs) {
+	                if (location.isExamEnabled()) {
+	                    text[idx] = (editable?"":"<font color='gray'>")+df5.format(location.getExamCapacity())+(editable?"":"</font>");
+	                    comp[idx] = location.getExamCapacity();
+	                } else {
+	                    text[idx] = "&nbsp;";
+	                    comp[idx] = new Integer(0);
+	                }
+	                idx++;
+
+	                if (location.isExamEnabled()) {
+	                    if (gridAsText)
+	                        text[idx] = location.getExamPreferencesAbbreviationHtml();
+	                    else {
+	                        PeriodPreferenceModel px = new PeriodPreferenceModel(location.getSession());
+	                        px.load(location);
+	                        RequiredTimeTable rtt = new RequiredTimeTable(px);
+	                        File imageFileName = null;
+	                        try {
+	                            imageFileName = rtt.createImage(timeVertical);
+	                        } catch (IOException ex) {
+	                            ex.printStackTrace();
+	                        }
+	                        String title = rtt.getModel().toString();
+	                        if (imageFileName!=null)
+	                            text[idx] = "<img border='0' src='temp/"+(imageFileName.getName())+"' title='"+title+"'>";
+	                        else
+	                            text[idx] = location.getExamPreferencesAbbreviationHtml();
+	                    }
+	                    comp[idx] = null;
+	                } else {
+	                    text[idx] = "";
+                        comp[idx] = null;
+	                }
+                    idx++;
+				} else {
+	                PreferenceLevel roomPref = location.getRoomPreferenceLevel(dept);
+	                if (editable && roomPref!=null && !PreferenceLevel.sNeutral.equals(roomPref.getPrefProlog())) {
+	                    if (room==null) {
+	                        text[0] =
+	                            (location.isIgnoreRoomCheck().booleanValue()?"<i>":"")+
+	                            "<span style='color:"+roomPref.prefcolor()+";font-weight:bold;' title='"+roomPref.getPrefName()+" "+location.getLabel()+"'>"+location.getLabel()+"</span>"+
+	                            (location.isIgnoreRoomCheck().booleanValue()?"</i>":"");
+	                    } else {
+	                        text[0] = 
+	                            (location.isIgnoreRoomCheck().booleanValue()?"<i>":"")+
+	                            "<span style='color:"+roomPref.prefcolor()+";font-weight:bold;' title='"+roomPref.getPrefName()+" "+location.getLabel()+"'>"+(bldg==null?"":bldg.getAbbreviation())+"</span>"+
+	                            (location.isIgnoreRoomCheck().booleanValue()?"</i>":"");
+	                        text[1] = 
+	                            (location.isIgnoreRoomCheck().booleanValue()?"<i>":"")+
+	                            "<span style='color:"+roomPref.prefcolor()+";font-weight:bold;' title='"+roomPref.getPrefName()+" "+location.getLabel()+"'>"+room.getRoomNumber()+"</span>"+
+	                            (location.isIgnoreRoomCheck().booleanValue()?"</i>":"");
+	                    }
+	                }
+
+	                //ignore too far
+	                if (location instanceof NonUniversityLocation) {
+	                    boolean itf = (location.isIgnoreTooFar()==null?false:location.isIgnoreTooFar().booleanValue());
+	                    text[idx] = (itf?"<IMG border='0' title='Ignore too far distances' alt='true' align='absmiddle' src='images/tick.gif'>":"&nbsp;");
+	                    comp[idx] = new Integer(itf?1:0);
+	                    idx++;
+	                    boolean con = (location.isIgnoreRoomCheck()==null?true:location.isIgnoreRoomCheck().booleanValue());
+	                    text[idx] = (con?"<IMG border='0' title='Create Constraint' alt='true' align='absmiddle' src='images/tick.gif'>":"&nbsp;");
+	                    comp[idx] = new Integer(con?1:0);
+	                    idx++;
+	                }
+	    
+	                // get pattern column
+	                RequiredTimeTable rtt = location.getRoomSharingTable();
+	                rtt.getModel().setDefaultSelection(timeGridSize);
+	                if (gridAsText) {
+	                    text[idx] = rtt.getModel().toString().replaceAll(", ","<br>");;
+	                } else {
+	                    File imageFileName = null;
+	                    try {
+	                        imageFileName = rtt.createImage(timeVertical);
+	                    } catch (IOException ex) {
+	                        ex.printStackTrace();
+	                    }
+	                    if (imageFileName!=null){
+	                        text[idx] = ("<img border='0' title='"+rtt.getModel().toString()+"' src='temp/"+(imageFileName.getName())+"'>&nbsp;");
+	                    } else {
+	                        text[idx] = rtt.getModel().toString().replaceAll(", ","<br>");;
+	                    }
+	                }
+	                comp[idx]=null;
+	                idx++;
+	    
+	                // get departments column
+	                Department controlDept = null;
+	                text[idx] = "";
+	                Set rds = location.getRoomDepts();
+	                Set departments = new HashSet();
+	                for (Iterator iterRds = rds.iterator(); iterRds.hasNext();) {
+	                    RoomDept rd = (RoomDept) iterRds.next();
+	                    Department d = rd.getDepartment();
+	                    if (rd.isControl().booleanValue()) controlDept = d;
+	                    departments.add(d);
+	                }
+	                TreeSet ts = new TreeSet(new DepartmentNameComparator());
+	                ts.addAll(departments);
+	                for (Iterator it = ts.iterator(); it.hasNext();) {
+	                    Department d = (Department) it.next();
+	                    if (text[idx].length() > 0)
+	                        text[idx] = text[idx] + "<br>";
+	                    else
+	                        comp[idx] = d.getDeptCode();
+	                    text[idx] = text[idx] + d.htmlShortLabel(); 
+	                }
+	                idx++;
+	                
+	                //control column
+	                if (!roomListForm.getDeptCodeX().equalsIgnoreCase("All") && !roomListForm.getDeptCodeX().equalsIgnoreCase("Exam")) {
+	                    if (controlDept!=null && controlDept.getDeptCode().equals(roomListForm.getDeptCodeX())) {
+	                        text[idx] = "<IMG border='0' title='Selected department is controlling this room.' alt='true' align='absmiddle' src='images/tick.gif'>";
+	                        comp[idx] = new Integer(1);
+	                    } else {
+	                        text[idx] = "";
+	                        comp[idx] = new Integer(0);
+	                    }
+	                } else {
+	                    if (controlDept!=null) {
+	                        text[idx] = controlDept.htmlShortLabel();
+	                        comp[idx] = controlDept.getDeptCode();
+	                    } else {
+	                        text[idx] = "";
+	                        comp[idx] = "";
+	                    }
+	                }
+	                idx++;
 				}
 				
 				text[0] += "<A name=\"A"+location.getUniqueId()+"\"></A>";
 				
-				//ignore too far
-				if (location instanceof NonUniversityLocation) {
-					boolean itf = (location.isIgnoreTooFar()==null?false:location.isIgnoreTooFar().booleanValue());
-					text[idx] = (itf?"<IMG border='0' title='Ignore too far distances' alt='true' align='absmiddle' src='images/tick.gif'>":"&nbsp;");
-					comp[idx] = new Integer(itf?1:0);
-					idx++;
-					boolean con = (location.isIgnoreRoomCheck()==null?true:location.isIgnoreRoomCheck().booleanValue());
-					text[idx] = (con?"<IMG border='0' title='Create Constraint' alt='true' align='absmiddle' src='images/tick.gif'>":"&nbsp;");
-					comp[idx] = new Integer(con?1:0);
-					idx++;
-				}
-	
-				// get pattern column
-				RequiredTimeTable rtt = location.getRoomSharingTable();
-				rtt.getModel().setDefaultSelection(timeGridSize);
-				if (gridAsText) {
-					text[idx] = rtt.getModel().toString().replaceAll(", ","<br>");;
-				} else {
-					File imageFileName = null;
-					try {
-						imageFileName = rtt.createImage(timeVertical);
-					} catch (IOException ex) {
-						ex.printStackTrace();
-					}
-					if (imageFileName!=null){
-						text[idx] = ("<img border='0' title='"+rtt.getModel().toString()+"' src='temp/"+(imageFileName.getName())+"'>&nbsp;");
-					} else {
-						text[idx] = rtt.getModel().toString().replaceAll(", ","<br>");;
-					}
-				}
-			    comp[idx]=null;
-			    idx++;
-	
-				// get departments column
-			    Department controlDept = null;
-				text[idx] = "";
-				Set rds = location.getRoomDepts();
-				Set departments = new HashSet();
-				for (Iterator iterRds = rds.iterator(); iterRds.hasNext();) {
-					RoomDept rd = (RoomDept) iterRds.next();
-					Department d = rd.getDepartment();
-					if (rd.isControl().booleanValue()) controlDept = d;
-					departments.add(d);
-				}
-				TreeSet ts = new TreeSet(new DepartmentNameComparator());
-				ts.addAll(departments);
-				for (Iterator it = ts.iterator(); it.hasNext();) {
-					Department d = (Department) it.next();
-					if (text[idx].length() > 0)
-						text[idx] = text[idx] + "<br>";
-					else
-						comp[idx] = d.getDeptCode();
-					text[idx] = text[idx] + d.htmlShortLabel(); 
-				}
-				idx++;
-				
-				//control column
-				if (!roomListForm.getDeptCodeX().equalsIgnoreCase("All")) {
-					if (controlDept!=null && controlDept.getDeptCode().equals(roomListForm.getDeptCodeX())) {
-						text[idx] = "<IMG border='0' title='Selected department is controlling this room.' alt='true' align='absmiddle' src='images/tick.gif'>";
-						comp[idx] = new Integer(1);
-					} else {
-						text[idx] = "";
-						comp[idx] = new Integer(0);
-					}
-				} else {
-					if (controlDept!=null) {
-						text[idx] = controlDept.htmlShortLabel();
-						comp[idx] = controlDept.getDeptCode();
-					} else {
-						text[idx] = "";
-						comp[idx] = "";
-					}
-				}
-				idx++;
-				
-	
 				// get groups column
 				text[idx] = "";
                 comp[idx] = "";
@@ -687,7 +763,7 @@ public class RoomListAction extends Action {
 				if (location instanceof NonUniversityLocation) {
 					nonUnivSize++;
 					nonUnivTable.addLine(
-							"onClick=\"document.location='roomDetail.do?id="+ location.getUniqueId() + "';\"",
+					        (editable?"onClick=\"document.location='roomDetail.do?id="+ location.getUniqueId() + "';\"":null),
 							text, 
 							comp);
 				}
@@ -723,7 +799,7 @@ public class RoomListAction extends Action {
 		}
 	}
 	
-	public static void buildPdfWebTable(HttpServletRequest request, RoomListForm roomListForm, boolean featuresOneColumn) throws Exception {
+	public static void buildPdfWebTable(HttpServletRequest request, RoomListForm roomListForm, boolean featuresOneColumn, boolean periodPrefs) throws Exception {
     	FileOutputStream out = null;
     	try {
     		File file = ApplicationProperties.getTempFile("rooms", "pdf");
@@ -751,6 +827,8 @@ public class RoomListAction extends Action {
 				} else {
 					depts = Department.findAllOwned(sessionId, owner, false);
 				}
+			} else if (roomListForm.getDeptCodeX().equalsIgnoreCase("Exam")) {
+			    depts = new HashSet();
 			} else {
 				depts = new HashSet(1);
 				depts.add(Department.findByDeptCode(roomListForm.getDeptCodeX(),sessionId));
@@ -786,7 +864,8 @@ public class RoomListAction extends Action {
 								"select distinct f from DepartmentRoomFeature f inner join f.department d where " +
 								"d.session.uniqueId=:sessionId order by f.label").
 								setLong("sessionId",sessionId.longValue()).
-								list());						
+								list());
+				} else if (roomListForm.getDeptCodeX().equalsIgnoreCase("Exam")) {
 				} else {
 					deptRoomFeatures.addAll(hibSession.
 						createQuery(
@@ -802,23 +881,40 @@ public class RoomListAction extends Action {
 	
 			//build headings for university rooms
 			String fixedHeading1[][] =
-				(featuresOneColumn? new String[][]
-					{ { "Bldg", "left", "true" },
-					{ "Room", "left", "true" },
-					{ "Capacity", "right", "false" },
-					{ "Availability", "left", "true" },
-					{ "Departments", "left", "true" },
-					{ "Control", "left", "true" },
-					{ "Groups", "left", "true" },
-					{ "Features", "left", "true" } } 
-				: new String[][]
-					{ { "Bldg", "left", "true" },
-					{ "Room", "left", "true" },
-					{ "Capacity", "right", "false" },
-					{ "Availability", "left", "true" },
-					{ "Departments", "left", "true" },
-					{ "Control", "left", "true" },
-					{ "Groups", "left", "true" } });					
+			    (periodPrefs?
+			            (featuresOneColumn? new String[][]
+			                                             { { "Bldg", "left", "true" },
+			                                             { "Room", "left", "true" },
+			                                             { "Capacity", "right", "false" },
+			                                             { "Exam Capacity", "right", "false" },
+			                                             { "Period Preferences", "center", "true" },
+			                                             { "Groups", "left", "true" },
+			                                             { "Features", "left", "true" } } 
+			                                         : new String[][]
+			                                             { { "Bldg", "left", "true" },
+			                                             { "Room", "left", "true" },
+			                                             { "Capacity", "right", "false" },
+			                                             { "Exam Capacity", "right", "false" },
+			                                             { "Period Preferences", "center", "true" },
+			                                             { "Groups", "left", "true" } })			    
+                :
+                    (featuresOneColumn? new String[][]
+                                                     { { "Bldg", "left", "true" },
+                                                     { "Room", "left", "true" },
+                                                     { "Capacity", "right", "false" },
+                                                     { "Availability", "left", "true" },
+                                                     { "Departments", "left", "true" },
+                                                     { "Control", "left", "true" },
+                                                     { "Groups", "left", "true" },
+                                                     { "Features", "left", "true" } } 
+                                                 : new String[][]
+                                                     { { "Bldg", "left", "true" },
+                                                     { "Room", "left", "true" },
+                                                     { "Capacity", "right", "false" },
+                                                     { "Availability", "left", "true" },
+                                                     { "Departments", "left", "true" },
+                                                     { "Control", "left", "true" },
+                                                     { "Groups", "left", "true" } }));                   
 	
 			String heading1[] = new String[fixedHeading1.length
 					+ globalRoomFeatures.size() + deptRoomFeatures.size()];
@@ -858,25 +954,41 @@ public class RoomListAction extends Action {
 			
 			//build headings for non-univ locations
 			String fixedHeading2[][] = 
-				( featuresOneColumn ? new String[][]
-						{{ "Location", "left", "true" },
-						{ "Capacity", "right", "false" },
-						{ "IgnTooFar", "center", "true" },
-						{ "IgnChecks", "center", "true" },
-						{ "Availability", "left", "true" },
-						{ "Departments", "left", "true" },
-						{ "Control", "left", "true" },
-						{ "Groups", "left", "true" },
-						{ "Features", "left", "true" }}
-				: new String[][]
-						{{ "Location", "left", "true" },
-						{ "Capacity", "right", "false" },
-						{ "IgnTooFar", "center", "true" },
-						{ "IgnChecks", "center", "true" },
-						{ "Availability", "left", "true" },
-						{ "Departments", "left", "true" },
-						{ "Control", "left", "true" },
-						{ "Groups", "left", "true" } });
+			    (periodPrefs ?
+		                ( featuresOneColumn ? new String[][]
+		                                                   {{ "Location", "left", "true" },
+		                                                   { "Capacity", "right", "false" },
+		                                                   { "Exam Capacity", "right", "false" },
+		                                                   { "Period Preferences", "center", "true" },
+		                                                   { "Groups", "left", "true" },
+		                                                   { "Features", "left", "true" }}
+		                                           : new String[][]
+		                                                   {{ "Location", "left", "true" },
+		                                                   { "Capacity", "right", "false" },
+		                                                   { "Period Preferences", "center", "true" },
+		                                                   { "Groups", "left", "true" } })
+			    :
+	                ( featuresOneColumn ? new String[][]
+	                                                   {{ "Location", "left", "true" },
+	                                                   { "Capacity", "right", "false" },
+	                                                   { "IgnTooFar", "center", "true" },
+	                                                   { "IgnChecks", "center", "true" },
+	                                                   { "Availability", "left", "true" },
+	                                                   { "Departments", "left", "true" },
+	                                                   { "Control", "left", "true" },
+	                                                   { "Groups", "left", "true" },
+	                                                   { "Features", "left", "true" }}
+	                                           : new String[][]
+	                                                   {{ "Location", "left", "true" },
+	                                                   { "Capacity", "right", "false" },
+	                                                   { "Exam Capacity", "right", "false" },
+	                                                   { "IgnTooFar", "center", "true" },
+	                                                   { "IgnChecks", "center", "true" },
+	                                                   { "Availability", "left", "true" },
+	                                                   { "Departments", "left", "true" },
+	                                                   { "Control", "left", "true" },
+	                                                   { "Groups", "left", "true" } })
+			    );
 			
 			String heading2[] = new String[fixedHeading2.length
 			        + globalRoomFeatures.size() + deptRoomFeatures.size()];
@@ -967,8 +1079,8 @@ public class RoomListAction extends Action {
 				}				
 				
 				DecimalFormat df5 = new DecimalFormat("####0");
-				String text[] = new String[heading2.length];
-				Comparable comp[] = new Comparable[heading2.length];
+                String text[] = new String[Math.max(heading1.length,heading2.length)];
+                Comparable comp[] = new Comparable[text.length];
 				int idx = 0;
 				if (bldg!=null) {
 					text[idx] = 
@@ -990,98 +1102,117 @@ public class RoomListAction extends Action {
 				comp[idx] = new Long(location.getCapacity().intValue());
 				idx++;
 				
-				PreferenceLevel roomPref = location.getRoomPreferenceLevel(dept);
-				if (editable && roomPref!=null && !PreferenceLevel.sNeutral.equals(roomPref.getPrefProlog())) {
-					if (room==null) {
-						text[0] =
-							(location.isIgnoreRoomCheck().booleanValue()?"@@ITALIC ":"")+
-							location.getLabel()+" ("+PreferenceLevel.prolog2abbv(roomPref.getPrefProlog())+")"+
-							(location.isIgnoreRoomCheck().booleanValue()?"@@END_ITALIC ":"");
-					} else {
-						text[0] = 
-							(location.isIgnoreRoomCheck().booleanValue()?"@@ITALIC ":"")+
-							(bldg==null?"":bldg.getAbbreviation())+
-							(location.isIgnoreRoomCheck().booleanValue()?"@@END_ITALIC ":"");
-						text[1] = 
-							(location.isIgnoreRoomCheck().booleanValue()?"@@ITALIC ":"")+
-							room.getRoomNumber()+" ("+PreferenceLevel.prolog2abbv(roomPref.getPrefProlog())+")"+
-							(location.isIgnoreRoomCheck().booleanValue()?"@@END_ITALIC ":"");
-					}
-				}
-				
-				//ignore too far
-				if (location instanceof NonUniversityLocation) {
-					boolean itf = (location.isIgnoreTooFar()==null?false:location.isIgnoreTooFar().booleanValue());
-					text[idx] = (itf?"Yes":"No");
-					comp[idx] = new Integer(itf?1:0);
-					idx++;
-					boolean con = (location.isIgnoreRoomCheck()==null?true:location.isIgnoreRoomCheck().booleanValue());
-					text[idx] = (con?"YES":"No");
-					comp[idx] = new Integer(con?1:0);
-					idx++;
-				}
-	
-				// get pattern column
-				RequiredTimeTable rtt = location.getRoomSharingTable();
-				if (gridAsText) {
-					text[idx] = rtt.getModel().toString().replaceAll(", ","\n");
+				if (periodPrefs) {
+	                if (location.isExamEnabled()) {
+	                    text[idx] = df5.format(location.getExamCapacity());
+	                    comp[idx] = location.getExamCapacity();
+	                } else {
+	                    text[idx] = "";
+	                    comp[idx] = new Integer(0);
+	                }
+	                idx++;
+
+	                if (location.isExamEnabled()) {
+	                    text[idx] = location.getExamPreferencesAbbreviation();
+	                    comp[idx] = null;
+	                } else {
+	                    text[idx] = "";
+	                    comp[idx] = null;
+	                }
+	                idx++;
 				} else {
-					rtt.getModel().setDefaultSelection(timeGridSize);
-					Image image = rtt.createBufferedImage(timeVertical);
-					if (image!=null){
-						table.addImage(location.getUniqueId().toString(), image);
-						text[idx] = ("@@IMAGE "+location.getUniqueId().toString()+" ");
-					} else {
-						text[idx] = rtt.getModel().toString().replaceAll(", ","\n");
-					}
+	                PreferenceLevel roomPref = location.getRoomPreferenceLevel(dept);
+	                if (editable && roomPref!=null && !PreferenceLevel.sNeutral.equals(roomPref.getPrefProlog())) {
+	                    if (room==null) {
+	                        text[0] =
+	                            (location.isIgnoreRoomCheck().booleanValue()?"@@ITALIC ":"")+
+	                            location.getLabel()+" ("+PreferenceLevel.prolog2abbv(roomPref.getPrefProlog())+")"+
+	                            (location.isIgnoreRoomCheck().booleanValue()?"@@END_ITALIC ":"");
+	                    } else {
+	                        text[0] = 
+	                            (location.isIgnoreRoomCheck().booleanValue()?"@@ITALIC ":"")+
+	                            (bldg==null?"":bldg.getAbbreviation())+
+	                            (location.isIgnoreRoomCheck().booleanValue()?"@@END_ITALIC ":"");
+	                        text[1] = 
+	                            (location.isIgnoreRoomCheck().booleanValue()?"@@ITALIC ":"")+
+	                            room.getRoomNumber()+" ("+PreferenceLevel.prolog2abbv(roomPref.getPrefProlog())+")"+
+	                            (location.isIgnoreRoomCheck().booleanValue()?"@@END_ITALIC ":"");
+	                    }
+	                }
+	                
+	                //ignore too far
+	                if (location instanceof NonUniversityLocation) {
+	                    boolean itf = (location.isIgnoreTooFar()==null?false:location.isIgnoreTooFar().booleanValue());
+	                    text[idx] = (itf?"Yes":"No");
+	                    comp[idx] = new Integer(itf?1:0);
+	                    idx++;
+	                    boolean con = (location.isIgnoreRoomCheck()==null?true:location.isIgnoreRoomCheck().booleanValue());
+	                    text[idx] = (con?"YES":"No");
+	                    comp[idx] = new Integer(con?1:0);
+	                    idx++;
+	                }
+	    
+	                // get pattern column
+	                RequiredTimeTable rtt = location.getRoomSharingTable();
+	                if (gridAsText) {
+	                    text[idx] = rtt.getModel().toString().replaceAll(", ","\n");
+	                } else {
+	                    rtt.getModel().setDefaultSelection(timeGridSize);
+	                    Image image = rtt.createBufferedImage(timeVertical);
+	                    if (image!=null){
+	                        table.addImage(location.getUniqueId().toString(), image);
+	                        text[idx] = ("@@IMAGE "+location.getUniqueId().toString()+" ");
+	                    } else {
+	                        text[idx] = rtt.getModel().toString().replaceAll(", ","\n");
+	                    }
+	                }
+	                comp[idx]=null;
+	                idx++;
+	    
+	                // get departments column
+	                Department controlDept = null;
+	                text[idx] = "";
+	                Set rds = location.getRoomDepts();
+	                Set departments = new HashSet();
+	                for (Iterator iterRds = rds.iterator(); iterRds.hasNext();) {
+	                    RoomDept rd = (RoomDept) iterRds.next();
+	                    Department d = rd.getDepartment();
+	                    if (rd.isControl().booleanValue()) controlDept = d;
+	                    departments.add(d);
+	                }
+	                TreeSet ts = new TreeSet(new DepartmentNameComparator());
+	                ts.addAll(departments);
+	                for (Iterator it = ts.iterator(); it.hasNext();) {
+	                    Department d = (Department) it.next();
+	                    if (text[idx].length() > 0)
+	                        text[idx] = text[idx] + "\n";
+	                    else
+	                        comp[idx] = d.getDeptCode();
+	                    text[idx] = text[idx] + "@@COLOR "+d.getRoomSharingColor(null)+" "+d.getShortLabel(); 
+	                }
+	                idx++;
+	                
+	                //control column
+	                if (!roomListForm.getDeptCodeX().equalsIgnoreCase("All") && !roomListForm.getDeptCodeX().equalsIgnoreCase("Exam")) {
+	                    if (controlDept!=null && controlDept.getDeptCode().equals(roomListForm.getDeptCodeX())) {
+	                        text[idx] = "Yes";
+	                        comp[idx] = new Integer(1);
+	                    } else {
+	                        text[idx] = "No";
+	                        comp[idx] = new Integer(0);
+	                    }
+	                } else {
+	                    if (controlDept!=null) {
+	                        text[idx] = "@@COLOR "+controlDept.getRoomSharingColor(null)+" "+controlDept.getShortLabel();
+	                        comp[idx] = controlDept.getDeptCode();
+	                    } else {
+	                        text[idx] = "";
+	                        comp[idx] = "";
+	                    }
+	                }
+	                idx++;
 				}
-			    comp[idx]=null;
-			    idx++;
-	
-				// get departments column
-			    Department controlDept = null;
-				text[idx] = "";
-				Set rds = location.getRoomDepts();
-				Set departments = new HashSet();
-				for (Iterator iterRds = rds.iterator(); iterRds.hasNext();) {
-					RoomDept rd = (RoomDept) iterRds.next();
-					Department d = rd.getDepartment();
-					if (rd.isControl().booleanValue()) controlDept = d;
-					departments.add(d);
-				}
-				TreeSet ts = new TreeSet(new DepartmentNameComparator());
-				ts.addAll(departments);
-				for (Iterator it = ts.iterator(); it.hasNext();) {
-					Department d = (Department) it.next();
-					if (text[idx].length() > 0)
-						text[idx] = text[idx] + "\n";
-					else
-						comp[idx] = d.getDeptCode();
-					text[idx] = text[idx] + "@@COLOR "+d.getRoomSharingColor(null)+" "+d.getShortLabel(); 
-				}
-				idx++;
 				
-				//control column
-				if (!roomListForm.getDeptCodeX().equalsIgnoreCase("All")) {
-					if (controlDept!=null && controlDept.getDeptCode().equals(roomListForm.getDeptCodeX())) {
-						text[idx] = "Yes";
-						comp[idx] = new Integer(1);
-					} else {
-						text[idx] = "No";
-						comp[idx] = new Integer(0);
-					}
-				} else {
-					if (controlDept!=null) {
-						text[idx] = "@@COLOR "+controlDept.getRoomSharingColor(null)+" "+controlDept.getShortLabel();
-						comp[idx] = controlDept.getDeptCode();
-					} else {
-						text[idx] = "";
-						comp[idx] = "";
-					}
-				}
-				idx++;
-				
-	
 				// get groups column
 				text[idx] = "";
 				for (Iterator it = new TreeSet(location.getRoomGroups()).iterator(); it.hasNext();) {
@@ -1170,7 +1301,7 @@ public class RoomListAction extends Action {
 				if (location instanceof NonUniversityLocation) {
 					nonUnivSize++;
 					nonUnivTable.addLine(
-							"onClick=\"document.location='roomDetail.do?id="+ location.getUniqueId() + "';\"",
+					        (editable?"onClick=\"document.location='roomDetail.do?id="+ location.getUniqueId() + "';\"":null),
 							text, 
 							comp);
 				}

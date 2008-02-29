@@ -31,12 +31,12 @@
 
 <table width="90%" border="0" cellspacing="0" cellpadding="3">
 <%
-    WebTable webTable = new WebTable( 9,
+    WebTable webTable = new WebTable( 10,
     "Distribution Types",
     "distributionTypeList.do?ord=%%",
-    new String[] {"Id", "Reference", "Abbreviation", "Name", "Allow Instructor Preference", "Sequencing Required", "Allow Preferences", "Departments", "Description"},
-    new String[] {"left", "left", "left", "left", "center", "center", "center", "left", "left"}, 
-    new boolean[] {true, true, true, true, true, true, true, true} );
+    new String[] {"Id", "Reference", "Abbreviation", "Name", "Type", "Allow Instructor Preference", "Sequencing Required", "Allow Preferences", "Departments", "Description"},
+    new String[] {"left", "left", "left", "left", "center", "center", "center", "center", "left", "left"}, 
+    new boolean[] {true, true, true, true, true, true, true, true, true, true} );
    	Long sessionId = Session.getCurrentAcadSession(Web.getUser(request.getSession())).getSessionId();
 %>    
 
@@ -79,7 +79,8 @@ webTable.addLine(
 		d.getReference(),
 		d.getAbbreviation(),
 		d.getLabel(),
-		d.isInstructorPref().booleanValue()?"Yes":"No",
+		d.isExamPref().booleanValue()?"Examination":"Course",
+		d.isExamPref().booleanValue()?"N/A":d.isInstructorPref().booleanValue()?"Yes":"No",
 		d.isSequencingRequired()?"Yes":"No",
 		allowPref,
 		(deptStr.length()==0?"<i>All</i>":deptStr),
@@ -90,6 +91,7 @@ webTable.addLine(
 		d.getReference(),
 		d.getAbbreviation(),
 		d.getLabel(),
+		new Integer(d.isExamPref().booleanValue()?1:0),
 		new Integer(d.isInstructorPref().booleanValue()?1:0),
 		new Integer(d.isSequencingRequired()?1:0),
 		null,
@@ -104,7 +106,7 @@ webTable.addLine(
 <%-- print out the add link --%>
 <br><br>
 <tr>
-<td colspan="8" align="center">
+<td colspan="10" align="center">
 <%--
 	<html:form action="distributionTypeEdit">
 		<html:hidden property="do" value="addDistributionType"/>

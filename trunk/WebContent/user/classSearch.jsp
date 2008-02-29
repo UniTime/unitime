@@ -120,6 +120,16 @@
 							<%=WebInstructionalOfferingTableBuilder.NOTE%>
 						</TD>
 					</TR>
+					<logic:equal name="classListForm" property="canSeeExams" value="true">
+						<TR>
+							<TD></TD>
+							<TD>
+								<html:checkbox property="exams" />
+								Examinations
+							</TD>
+						</TR>
+					</logic:equal>
+					<html:hidden property="canSeeExams"/>
 					<TR>
 						<TD>
 							<B>Manager:</B>
