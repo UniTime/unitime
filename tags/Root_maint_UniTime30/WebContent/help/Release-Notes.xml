@@ -1,0 +1,1100 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<?xml-stylesheet type="text/css" href="Release-Notes.css"?>
+<!-- 
+ * UniTime 3.0 (University Course Timetabling & Student Sectioning Application)
+ * Copyright (C) 2007, UniTime.org
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ -->
+
+<release-history>
+
+<doc-title>Timetabling - Release Notes</doc-title>
+
+<release>
+	<version>3.0.@build.number@</version>
+	<release-date>@release.date@</release-date>
+	<category>
+		<title>OTHER</title>
+		<item>
+			<name>User Rights</name>
+			<description>
+				<line>When the session/department status has on owner limited edit right, scheduling managers can:
+					<line>Assign classes to instructors (using Assign Instructors page)</line>
+					<line>Edit academic area reservations</line>
+					<line>Edit instructors and their designator numbers (but not instructor preferences)</line> 
+				</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.0.61</version>
+	<release-date>Thu, 31 Jan 2008</release-date>
+	<category>
+		<title>USER INTERFACE</title>
+		<item>
+			<name>Instructional Offering Cross Lists</name>
+			<description>
+				<line>Fixed "deleted object would be re-saved by cascade problem (CourseOfferingReservation)" 
+				thrown while un-cross listing an offering with two courses.</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructional Offering Configuration Edit</name>
+			<description>
+				<line>Fixed problem "Configuration could not be updated. If possible, split your configuration 
+				change into 2 or more separate operations." that occurred while a class with an instructor 
+				assignment was about to be deleted.</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>SOLVER</title>
+		<item>
+			<name>Database Load</name>
+			<description>
+				<line>Load of distribution constraints: order classes within a subpart by section 
+				numbers not by unique ids (due to the roll forward these two no longer match).</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>OTHER</title>
+		<item>
+			<name>Roll Forward</name>
+			<description>
+				<line>Added the ability to use the course catalog to add new course offerings to the set of 
+					course offerings for the term being rolled forward.
+					<line>This is should only be used after all course offerings for all subject areas have been rolled forward 
+					because it will cause problems with courses that are cross-listed across subject areas.</line>
+					<line>This is only useful if you have loaded the course catalog table for the term you are rolling forward.</line>
+					<line>If course subpart table is populated this will use that information to set up a default instructional 
+					offering configuration with the appropriate subparts.</line>
+					<line>All course offerings created will be marked as not offered.</line>
+				</line>
+				<line>Various bug fixed to roll forward process.</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.0.54</version>
+	<release-date>Sun, 2 Dec 2007</release-date>
+	<category>
+		<title>USER INTERFACE</title>
+		<item>
+			<name>Status Types</name>
+			<description>
+				<line>Page split to add/edit status and list of statuses.</line>
+				<line>Page visualization changed to be more consistent with other pages.</line>
+				<line>Order of statuses can now be changed by up and down arrows that are visible in the list of statuses.</line>
+				<line>Page title changed to "Status Types", "Add Status Type", "Edit Status Type" based on the operation.</line>
+				<line>Added delete status confirmation.</line>
+			</description>
+		</item>
+		<item>
+			<name>Users</name>
+			<description>
+				<line>Page split to add/edit user and list users.</line>
+				<line>Page visualization changed to be more consistent with other pages.</line>
+				<line>Page title changed to "Users (Database Authentication)", "Add User", "Edit User" based on the operation.</line>
+				<line>Added delete user confirmation.</line>
+			</description>
+		</item>
+		<item>
+			<name>Manager Settings</name>
+			<description>
+				<line>Page split to edit manager setting and list of manager settings.</line>
+				<line>Page visualization changed to be more consistent with other pages.</line>
+				<line>Page title changed to "Edit Manager Setting" when a setting is being changed.</line>
+				<line>List of manager settings is made sortable.</line>
+			</description>
+		</item>
+		<item>
+			<name>Solver Parameter Groups</name>
+			<description>
+				<line>Page split to add/edit solver parameter group and list of solver parameter groups.</line>
+				<line>Page visualization changed to be more consistent with other pages.</line>
+				<line>Page title changed based on the operation (list,add,edit).</line>
+				<line>Order of parameter groups can now be changed by up and down arrows that are visible Order column.</line>
+			</description>
+		</item>
+		<item>
+			<name>Solver Parameters</name>
+			<description>
+				<line>Page split to add/edit solver parameter and list of solver parameters.</line>
+				<line>Page visualization changed to be more consistent with other pages.</line>
+				<line>Hidden parameters are now displayed in gray.</line>
+				<line>Page title changed based on the operation (list,add,edit).</line>
+				<line>Order of parameter groups can now be changed by up and down arrows that are visible Order column.</line>
+				<line>After save/update/back/delete operation, the page is scrolled down to the affected parameter (group of parameters in the case of delete).</line>
+			</description>
+		</item>
+		<item>
+			<name>Solver Configurations</name>
+			<description>
+				<line>Page visualization changed to be more consistent with other pages.</line>
+				<line>Page title changed based on the operation (list,add,edit).</line>
+			</description>
+		</item>
+		<item>
+			<name>Solver Groups</name>
+			<description>
+				<line>Page visualization changed to be more consistent with other pages.</line>
+				<line>Page title changed based on the operation (list,add,edit).</line>
+				<line>After save/update/back operation, the page is scrolled down to the affected solver group.</line>
+			</description>
+		</item>
+		<item>
+			<name>Application Configuration</name>
+			<description>
+				<line>Page split to add/edit application setting and list of application settings &amp; properties.</line>
+				<line>Page visualization changed to be more consistent with other pages.</line>
+				<line>Page title changed based on the operation (list,add,edit).</line>
+				<line>Application settings/properties tables made sortable.</line>
+			</description>
+		</item>
+		<item>
+			<name>Default Manager Settings</name>
+			<description>
+				<line>Page split to add/edit manager setting and list of manager settings.</line>
+				<line>Page visualization changed to be more consistent with other pages.</line>
+				<line>Page title changed based on the operation (list,add,edit).</line>
+				<line>Manager settings table made sortable.</line>
+			</description>
+		</item>
+		<item>
+			<name>Hibernate Statistics</name>
+			<description>
+				<line>Page visualization changed to be more consistent with other pages.</line>
+				<line>Added ability to enable/disable gathering of hibernate statistics.</line>
+			</description>
+		</item>
+		<item>
+			<name>Test HQL</name>
+			<description>
+				<line>Page visualization changed to be more consistent with other pages.</line>
+				<line>Display query results in a table.</line>
+				<line>Added ability to execute update/delete query as well.</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructional Offerings</name>
+			<description>
+				<line>Added export to PDF work-sheets (button Worksheet PDF).</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructional Types</name>
+			<description>
+				<line>Added parent column (to be used on non-basic itypes to point to the appropriate basic itype, e.g., parent of Lecture 2 is Lecture).</line>
+				<line>Instructional Types page: display parent itype</line>
+				<line>Add Instructional Type, Edit Instructional Type pages: added ability to select/change parent itype</line>
+				<line>Classes, Class Assignments pages: when classes are filtered on (basic) itype, classes with non-basic itypes that points to the selected itype are visible as well
+					<line>For instance, if filtered on Lecture, classes with itypes Lecture 1, Lecture 2, etc. will be present as well.</line>
+				</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>SOLVER</title>
+		<item>
+			<name>Constraint Solver</name>
+			<description>
+				<line>Constraint solver updated, see http://sourceforge.net/mailarchive/forum.php?forum_name=unitime-cvs for more details.</line> 
+				<line>Major changes:
+					<line>Added initial implementation of examination timetabling solver.</line>
+				</line>
+			</description> 
+		</item>
+		<item>
+			<name>Minimum available memory limit</name>
+			<description>
+				<line>
+					Minimum amount of available memory (in megabytes) needed to be able to start additional solver instance
+					can be set by application property tmtbl.solver.mem_limit (default is 200).
+					<line>
+						If there is not enough memory on any of the registered solver servers, the following exception is thrown:
+						<line>"Not enough resources to create a solver instance, please try again later."</line>
+					</line>
+					<line>
+						This limit is applicable only on the tomcat side (it is used by WebSolver class), the same limit
+						is used for all solver servers.
+					</line>
+				</line> 
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>OTHER</title>
+		<item>
+			<name>Automatic Database Update</name>
+			<description>
+				<line>Added ability to automatically update the database during deployment of UniTime application.
+					<line>Current database version is stored in application config, key tmtbl.db.version</line>
+					<line>Updates are stored in dbupdate.xml resource file.
+						<line>Platform-dependent queries can be distinguished based on the used dialect.</line>
+						<line>All existing updates (since the first release of UniTime 3.0) were added, both for MySQL and Oracle.</line>
+					</line>
+				</line> 
+			</description> 
+		</item>
+		<item>
+			<name>Last-like course demands</name>
+			<description>
+				<line>
+					In order to improve loading speed of Instructional Offerings page on MySQL, 
+					number of last-like student enrollments is pre-computed on each course.  
+				</line> 
+			</description> 
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.0.41</version>
+	<release-date>Wed, 7 Nov 2007</release-date>
+	<category>
+		<title>USER INTERFACE</title>
+		<item>
+			<name>Roll Forward</name>
+			<description>
+				<line>Added support for rolling a session forward (Menu: Administration / Input Data / Roll Forward Session).</line>
+				<line>Modified "Roll Forward to a Session" screen to only show session in "Initial Data Load" status in the to session selection list.</line>
+				<line>Modified "Roll Forward to a Session" screen to refresh when a different "To Session" is selected to ensure the subject area lists display subject areas valid for the session being rolled forward to.</line>
+				<line>Modified "Roll Forward to a Session" screen to remove sessions in "Initial Data Load" status from the from session selection lists.</line>
+			</description>
+		</item>
+		<item>
+			<name>Room Detail</name>
+			<description>
+				<line>When a room is deleted, do not delete all assignments that become orphan -- keep the assignments without the room (i.e., keep time assignments).</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructional Offering Configuration, Scheduling Subpart Detail, Edit Scheduling Subpart</name>
+			<description>
+				<line>Added possibility to select non-basic instructional type
+					<line>Instructional type list has an option "More Options &gt;&gt;&gt;" that expands into the set of all itypes.</line>
+					<line>If all itypes are displayed, there is an option "&lt;&lt;&lt; Less Options" that collapses the list into just basic itypes.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Add Room</name>
+			<description>
+				<line>When a building is selected (or changed), populate room coordinates with building coordinates.</line>
+				<line>Change log message corrected: operation is create (was update); building abbreviation was null.</line>
+				<line>Change page title to "Add Room"</line>
+			</description>
+		</item>
+		<item>
+			<name>Buildings, Edit Building</name>
+			<description>
+				<line>Added ability to have no coordinates (saved as coordinates [-1,-1], displayed as empty coordinates).</line>
+				<line>Add create/update/delete message to the change log.</line>
+				<line>On delete, for all rooms of the building: make sure that all room assignments and room preferences are deleted.</line>
+				<line>If a new building is being added, change page title to "Add Building".</line>
+			</description>
+		</item>
+		<item>
+			<name>Date Patterns</name>
+			<description>
+				<line>Default date pattern is automatically marked as used.</line>
+				<line>If a new pattern is being added, change page title to "Add Date Pattern".</line>
+				<line>If an existing pattern is being edited, change page title to "Edit Date Pattern".</line>
+				<line>Add/edit pattern: display buttons at the top of the page as well.</line>
+			</description>
+		</item>
+		<item>
+			<name>Time Patterns</name>
+			<description>
+				<line>If a new pattern is being added, change page title to "Add Time Pattern".</line>
+				<line>If an existing pattern is being edited, change page title to "Edit Time Pattern".</line>
+				<line>Add/edit pattern: display buttons at the top of the page as well.</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructional Types</name>
+			<description>
+				<line>If a new itype is being added, change page title to "Add Instructional Type".</line>
+				<line>Display buttons at the top of the page as well.</line>
+			</description>
+		</item>
+		<item>
+			<name>Select User Role</name>
+			<description>
+				<line>To avoid having two pages entitled Academic Sessions (list of academic sessions, select user role), title of select user role was renamed as follows:
+					<line>"Academic Sessions" -> "Select Academic Session" (the case when there is only one role available for the user),</line>
+					<line>"User Roles" -> "Select User Role" (multiple roles available for the user).</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Distribution Preferences</name>
+			<description>
+				<line>Use AJAX to update the following properties without reloading the page:
+					<line>distribution constraint type description,</line>
+					<line>allowed preference levels,</line>
+					<line>constraint structure (grouping) description.</line>
+				</line>
+				<line>Button "Add New" changed to "Save".</line>
+				<line>Page title changed to "Add Distribution Preference" and "Edit Distribution Preference" when a distribution preference is being added / edited.</line>
+				<line>Export PDF: open PDF in a new window, display note with link</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>DATABASE</title>
+		<item>
+			<name>Hibernate Configuration</name>
+			<line>Connection auto-commit (option connection.autocommit) set to true.</line> 
+		</item>
+		<item>
+			<name>Woebegon College Example</name>
+			<line>Include all standard time and date patterns that are being used at Purdue.</line> 
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.0.33</version>
+	<release-date>Sat, 20 Oct 2007</release-date>
+	<category>
+		<title>USER INTERFACE</title>
+		<item>
+			<name>Instructional Offering Config, Multiple Class Setup</name>
+			<description>
+				<line>
+					Default room group might not be set; in such a case, create no default room group 
+					preference rather than throwing an exception.
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Edit Academic Session</name>
+			<description>
+				<line>Fixed some database/hibernate issues with a deletion of an academic session.</line>
+				<line>Added check so that a user cannot delete the very last one academic session.</line>
+			</description>
+		</item>
+		<item>
+			<name>Departments</name>
+			<description>
+				<line>
+					Added toggle: Show all departments (including departments with no manager and no subject area) 
+					that allows a user to see all departments (by default, only departments that are being used 
+					for timetabling are displayed).
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Edit Department</name>
+			<description>
+				<line>Column Externally Managed renamed to External Manager.</line>
+				<line>External Manager flag cannot be changed if:
+					<line>There is one or more subject areas associated with the department.</line>
+					<line>The department is marked as external manager, and there are classes that are managed by the department.</line>
+				</line>
+				<line>Added delete department functionality.
+					<line>A department cannot be deleted if there is a solver group associated with it,</line>
+					<line>or if there is course that is offered in one of its subject areas.</line>
+					<line>
+						If an externally managed department is about to be deleted, all classes that 
+						are managed by the department are changed to be departmental (old room and 
+						distribution preferences are deleted)
+					</line>
+				</line>
+				<line>Delete department: display confirmation
+					<line>The department and all associated data will be deleted. Continue?</line>
+				</line>
+				<line>On delete: added change log message, clear hibernate cache to prevent cache problems (e.g., while displaying timetabling managers).</line>
+			</description>
+		</item>
+		<item>
+			<name>Timetables</name>
+			<description>
+				<line>Fixed MySQL problem in solution delete.</line>
+			</description>
+		</item>
+		<item>
+			<name>Select User Role</name>
+			<description>
+				<line>Selection of user role and academic session redesigned in order to tackle the following problems:
+					<line>Academic initiative was not considered at all (can become a problem if the application is to be used for more than one campus).</line>
+					<line>Ordering of listed sessions was inconsistent (e.g., it was different for Administrator role and other roles).</line>
+					<line>Ability to display additional session information (e.g., academic initiative, session status).</line>
+					<line>Ability to display current selection (if used to change current user role / academic session).</line>
+					<line>Department code does not need to be of length 4.</line>
+				</line>
+				<line>Users with "View All" role:
+					<line>If the user has associated one or more departments, he/she can access only academic sessions of these departments.</line>
+					<line>If the user has no department associated, he/she can see all the academic sessions.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Edit Subject Area</name>
+			<description>
+				<line>A subject area can only be associated with a department that is not marked as external manager.</line>
+				<line>When a department of a subject area is changed:
+					<line>Managing department of all DEPARTMENTAL classes of the subject area is also changed to the new department.
+						<line>This also deletes existing class assignments of the affected classes.</line>
+					</line>
+					<line>Instructor assignments of all classes of the subject area are changed as follows:
+						<line>An instructor from the new department is used if there is one with the same external id in the new department,</line>
+						<line>instructor assignment is deleted otherwise.</line>
+					</line>
+					<line>Room, building, room group and room feature preferences of all DEPARTMENTAL classes of the subject area are deleted if
+						<line>Room / building is not shared with the new department</line>
+						<line>Room group / feature is departmental (not global)</line>
+					</line>
+					<line>Ownership of all distribution preferences that are owned by the old department and that have first class/subpart from the subject area are changed to the new department.</line>
+				</line>
+				<line>Hide delete button when a subject area cannot be deleted.</line>
+				<line>Disable department selection when a department cannot be changed (i.e., when there is a committed solution).</line>
+				<line>On delete: added change log message, clear hibernate cache to prevent cache problems (e.g., while displaying departments).</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructional Types</name>
+			<description>
+				<line>Table of instructional types made sortable, some columns were renamed.</line>
+				<line>Added export PDF.</line>
+				<line>Added add/modify/delete itype capabilities.
+					<line>An itype can only be deleted, if it is not used (there is no scheduling subpart with the given itype).</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Timetable Managers</name>
+			<description>
+				<line>Column "External Id" renamed to "External ID".</line>
+				<line>Do not display role icons.</line>
+				<line>Do not display external manager role (there is no such role), display externally managed departments in bold instead.</line>
+				<line>Last Change column: display message of pattern "page (operation) on date" instead of "date by user"
+					<line>
+						This way, it is more clear that the column displays the most recent change made by the manager 
+						(not when and by whom the manager was changed for the last time).
+					</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Edit Timetable Manager</name>
+			<description>
+				<line>Check for existence of another manager with the same External IDs on update as well.</line>
+				<line>Do not display role icons.</line>
+				<line>Do not display external manager role (there is no such role).</line>
+				<line>Display role abbreviations instead of references.</line>
+				<line>If there is only one role selected, it is automatically marked as primary.</line>
+				<line>
+					Only users with Department Schedule Manager role have to have at least one 
+					department associated (administrator and view only users do not need to have a department).
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Users</name>
+			<description>
+				<line>Column "External Id" renamed to "External ID".</line>
+				<line>Fixed problem with changing user name (identifier of an instance of User was altered).</line>
+			</description>
+		</item>
+		<item>
+			<name>Date Patterns</name>
+			<description>
+				<line>Date Patterns screen made more intuitive and consistent with other screens.
+					<line>Either list of date patterns or the add/edit date pattern form are displayed.</line>
+				</line>
+				<line>Column Default removed (default date pattern is printed in bold instead).</line>
+				<line>Column Visible removed (not visible date patterns are printed in gray instead).</line>
+				<line>On save / update / back, the page is scrolled down to the last edited date pattern.</line>
+			</description>
+		</item>
+		<item>
+			<name>Time Patterns</name>
+			<description>
+				<line>Time Patterns screen made more intuitive and consistent with other screens.
+					<line>Either list of time patterns or the add/edit time pattern form are displayed.</line>
+				</line>
+				<line>Column Visible removed (not visible time patterns are printed in gray instead).</line>
+				<line>On save / update / back, the page is scrolled down to the last edited time pattern.</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>SOLVER</title>
+		<item>
+			<name>Database Load</name>
+			<description>
+				<line>Loading of last-like course demand:
+					<line>Use course offering permanent id, if it is set and match with some last-like course demands,</line>
+					<line>use subject area / course number otherwise.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Suggestions</name>
+			<description>
+				<line>
+					Fixed problem with some classes being "mysteriously" unassigned when Suggestion screen 
+					was used on a solution loaded using automated (not-interactive) solver due to:
+					<line>Section Placements of Suggestions screen is used.</line>
+					<line>A wrong class get unassigned during assignment of a suggestion</line>
+				</line>
+				<line>
+					The problem was caused by constraints that returns a set of conflicting constraints 
+					in a non-deterministic way (e.g., spread in time constraint with initial allowance 
+					over 2 classes per a time slot -- e.g., spread of 21 or more classes over 10 
+					possible times). Undo of a tested placement or assignment of a suggestion was done 
+					in a way that did not anticipated a possibility of a different set of conflicting 
+					classes to be returned (different than during assignment of the tested placement / suggestion). 
+					To overcome this problem, all assignments that are to be changed need to be 
+					unassigned first, and then assigned to the new values.
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Solver Configurations</name>
+			<description>
+				<line>Solver Settings screen changed to Solver Configurations.</line>
+				<line>Configuration export operation corrected.</line>
+			</description>
+		</item>
+		<item>
+			<name>Solver Definitions</name>
+			<description>
+				<line>Solver Definition page removed from menu
+					<line>Since every solution info needs to be implemented anyway, it is not desired to change implementation class in the user interface.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Constraint Solver</name>
+			<description>
+				<line>Constraint solver updated, see https://lists.sourceforge.net/lists/listinfo/cpsolver-cvs for more details.</line> 
+				<line>Major changes:
+					<line>On fly student sectioning -- fixed problem with committed student conflict counter.</line>
+					<line>Message level of "Nothing to solve." changed to ERROR (was FATAL).</line>
+				</line>
+			</description> 
+		</item>
+	</category>
+	<category>
+		<title>OTHER</title>
+		<item>
+			<name>Database</name>
+			<description>
+				<line>MySQL: added script blank-data.sql
+					<line>
+						This scripts truncates all the timetabling tables and populates read-only tables 
+						with initial values. It also creates an administrator user (admin/admin) and 
+						an academic session with one department and a solver group.
+					</line>
+				</line>
+				<line>Course permanent ids:
+					<line>Added index on course permanent id column of LASTLIKE_COURSE_DEMAND table.</line>
+					<line>Allow course permanent id of a course offering to be NULL.</line>
+					<line>Set course permanent id to NULL whenever set to -1 for all last-like course requests.</line>
+					<line>Set course permanent id to NULL whenever set to -1 for all course offerings.</line>
+				</line>
+				<line>Added MySQL versions of existing change scripts.</line>
+				<line>Property ItypeDesc.smas_abbv removed, property ItypeDesc.abbv is used instead.</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.0.26</version>
+	<release-date>Fri, 28 Sep 2007</release-date>
+	<category>
+		<title>USER INTERFACE</title>
+		<item>
+			<name>Instructional Offerings</name>
+			<description>
+				<line>PDF Export: Horizontal alignment of the time preference column changed to left (was center).</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructional Offering Detail</name>
+			<description>
+				<line>Fix bug in IE: external link should open in a new window.</line>
+			</description>
+		</item>
+		<item>
+			<name>Edit Course Offering</name>
+			<description>
+				<line>
+					Fixed problem "The course cannot be renamed. A course with the same course number already exists." when a course offering edit 
+					screen was used on a non-controlling cross-listed course of a different subject area than the controlling course but with the 
+					same course number as the controlling course.
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructional Offering Cross Lists</name>
+			<description>
+				<line>
+					Fixed bug: When the change in cross-list results in a change of controlling department of an instructional offering, 
+					all departmental classes (i.e., classes that are managed by the controlling department) have to have their managing 
+					department changed to the new controlling department.
+				</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Solver</title>
+		<item>
+			<name>Database Load</name>
+			<description>
+				<line>
+					Property General.DepartmentIds was not correctly computed in the case when multiple solver groups were loaded together 
+					-- it did contain only departments of the first solver group.
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Other</name>
+			<description>
+				<line>Constraint solver updated, see https://lists.sourceforge.net/lists/listinfo/cpsolver-cvs for more details.</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>OTHER</title>
+		<item>
+			<name>Data Import</name>
+			<description>
+				<line>Import of Academic Area Reservations: Skip over a reservation if the academic area is not found.</line>
+			</description>
+		</item>
+		<item>
+			<name>Database</name>
+			<description>
+				<line>Fixed problems with creation of the database schema for certain versions of MySQL (table APPLICATION_CONFIG).
+					<line>Fixed problem ERROR 1071 (specified key was too long) on table application_config.</line>
+					<line>Fixed problem ERROR 1170 (BLOB/TEXT column 'name' used in key specification without a key length) that occurred on MySQL 4.1.</line> 
+				</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.0.25</version>
+	<release-date>Tue, 4 Sep 2007</release-date>
+	<category>
+		<title>USER INTERFACE</title>
+		<item>
+			<name>Edit Course Offering</name>
+			<description>
+				<line>Fix parse exception caused by non numeric io limit.</line>
+			</description>
+		</item>
+		<item>
+			<name>Reservations</name>
+			<description>
+				<line>Print instructional offering limit.</line>
+				<line>Course Reservations (on a class):
+					<line>Fixed problem: The instructional offering limit is not displayed.</line>
+					<line>Fixed problem: If there are two courses listed in a reservation on a class and the user wants to delete the first one (clicks on the Delete button next to the first one), the second course is deleted instead.</line></line>
+				<line>Fix parse exception cause by non numeric io limit.</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructional Offering Cross Lists</name>
+			<description>
+				<line>Fixed hibernate exception.</line>
+			</description>
+		</item>
+		<item>
+			<name>Multiple Class Setup</name>
+			<description>
+				<line>Updated display of schedule subpart limits</line>
+				<line>Added ability to mark all classes of a subpart as display instructors.</line>
+				<line>Added ability to mark all classes of a subpart as display in schedule.</line>
+				<line>Fixed bug with Display All Instructors and Display All in Schedule.</line>
+				<line>Changed <i>Display Instructors</i> and <i>Display in Schedule</i> to show the checkmark icon (tick.gif) when they are true and the schedule deputy does not have permission to edit the field.  Used to display the word <i>true</i> or <i>false</i>.  This applies to both the subpart rows and then class rows.</line>
+				<line>Added change in row background color when mousing over a subpart row.  Class rows did this already.</line>
+				<line>Cleaned up alignment of scheduling subpart limit labels.</line>
+				<line>Fixed Javascript Errors with subtotals in IE.</line>
+				<line>Fixed Javascript Error that prevented min/max limit from being syncronized.</line>
+				<line>Fixed Button alignment on bottom of screen.</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructional Offering Configuration Edit</name>
+			<description>
+				<line>Fix bug that deleted instr offering when a configuration was deleted.</line>
+			</description>
+		</item>
+		<item>
+			<name>Not-assigned Classes</name>
+			<description>
+				<line>Column Name renamed to Class.</line>
+			</description>
+		</item>
+		<item>
+			<name>Timetable Grid</name>
+			<description>
+				<line>Use NaturalOrderComparator for ordering cells in a timetable grid (the case when two or more classes overlap in time).</line>
+				<line>Week -1 can represent the last week of the previous year (visible, e.g., for Spring 2008 term), value of selection 'All weeks' changed to -100 (was -1).</line>
+				<line>Visualisation of the weeks of the previous year corrected (former reasoning "week &lt; 0 implies all weeks" was wrong in this case).</line>
+			</description>
+		</item>
+		<item>
+			<name>Application Configuration</name>
+			<description>
+				<line>Only display application properties that starts with <u>tmtbl.</u>
+					<line>This feature is customizable by property <u>tmtbl.appConfig.pattern</u>, default is the regular expression <u>^tmtbl\..*$</u></line>
+				</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Solver</title>
+		<item>
+			<name>Solver Warnings</name>
+			<description>
+				<line>With every class, estimate the number of possible placements and
+					<line>refuse to load a class if the number of placements exceed 1 000 000, the following error is printed:
+						<line>
+							Class C has too many possible placements (X).
+							The class was not loaded in order to prevent out of memory exception.
+							Please restrict the number of available rooms and/or times for this class.
+						</line>
+						<line>
+							( where C is the name of the class, and X is the estimated number of placements )
+						</line>
+					</line>
+					<line>otherwise, print the following warning if the number of placements exceed 10 000:
+						<line>
+							Class C has quite a lot of possible placements (X).
+							Solver may run too slow.
+							If possible, please restrict the number of available rooms and/or times for this class.
+						</line>
+						<line>
+							( where C is the name of the class, and X is the estimated number of placements )
+						</line>
+					</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Remote Solver</name>
+			<description>
+				<line>Ask web server for its application properties before constructing a database connection.</line>
+			</description>
+		</item>
+		<item>
+			<name>Other</name>
+			<description>
+				<line>Constraint solver updated, see https://lists.sourceforge.net/lists/listinfo/cpsolver-cvs for more details.</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>OTHER</title>
+		<item>
+			<name>Hibernate Configuration</name>
+			<description>
+				<line>Propagate application property default_schema into the hibernate configuration, if it is set.</line>
+			</description>
+		</item>
+		<item>
+			<name>Database</name>
+			<description>
+				<line>Size of column APPLICATION_CONFIG.NAME changed to match the hibernate configuration.</line>
+				<line>Woebegon College Example: In table APPLICATION_CONFIG, property systemAccessLevel changed to tmtbl.access_level, systemMessage changed to tmtbl.system_message.</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.0.24</version>
+	<release-date>Mon, 23 Jul 2007</release-date>
+	<category>
+		<title>USER INTERFACE</title>
+		<item>
+			<name>Cross-lists</name>
+			<description>
+				<line>Fixed exception that occurs when course has no configurations and hence no instructional offering limit.</line>
+				<line>Fix display of error message regarding mismatch in limits if the screen loads without any pre-existing reservations.</line>
+				<line>Suppress display of mimatch limits if there are any blank values in the reserved spaces field.</line>
+			</description>
+		</item>
+		<item>
+			<name>Reservations</name>
+			<description>
+				<line>For reservations on class: check that the number of reservation does not exceed the number of courses in the offering.</line>
+				<line>Allow deletion of course reservations on class.</line>
+				<line>Fix exceptions caused when inst offering limit and/or course offering limits are null.</line>
+				<line>Course Reservations: On screen load - Do not add blank row if no. of reservations >= no. of courses in the offering.</line>
+			</description>
+		</item>
+		<item>
+			<name>Room Features and Groups</name>
+			<description>
+				<line>For global room features/groups: only display rooms from the current academic session.</line>
+				<line>For departmental room features/groups: do not display rooms that are no longer shared by the feature's/group's department.</line>
+			</description>
+		</item>
+		<title>OTHER</title>
+		<item>
+			<name>Data Export</name>
+			<description>
+				<line>Course offering and course timetable export added
+					<line>DTDs CourseOfferingExport.dtd and CourseTimetable.dtd updated</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Custom Properties</name>
+			<description>
+				<line>Location of custom properties can be redefined by tmtbl.custom.properties property.
+					<line>It can also be passed to JVM as a system property, e.g., -Dtmtbl.custom.properties=~/my.properties.</line></line>
+			</description>
+		</item>
+		<item>
+			<name>Other</name>
+			<description>
+				<line>Macromedia image files imported from the old Timetabling project.</line>
+				<line>Constraint solver updated, see https://lists.sourceforge.net/lists/listinfo/cpsolver-cvs for more details.</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.0.23</version>
+	<release-date>Fri, 13 Jul 2007</release-date>
+	<category>
+		<title>USER INTERFACE</title>
+		<item>
+			<name>Rooms</name>
+			<description>
+				<line>For external manager with only one department (e.g., LAB) -- display the rooms of the department right away.</line>
+				<line>Fixed display problem of departmental room features (sometimes, multiple features were displayed in a single row).</line>
+				<line>Table ordering corrected (each table can be ordered separately, but only ordering of the class rooms table was actually used).</line>
+			</description>
+		</item>
+		<item>
+			<name>Rooms, Room Features, Room Groups</name>
+			<description>
+				<line>For external manager with only one department (e.g., LAB) -- display Export PDF button next to other buttons (Search/Export PDF component is not present).</line>
+			</description>
+		</item>
+		<item>
+			<name>Reservations</name>
+			<description>
+				<line>Removed color coding of total.</line>
+				<line>Made changes pertaining to display of totals.</line>
+				<line>Hide 'Add New' button as it is not useful</line>
+			</description>
+		</item>
+		<item>
+			<name>Cross-lists</name>
+			<description>
+				<line>Removed color coding of total.</line>
+				<line>Made changes pertaining to display of totals.</line>
+				<line>Fixed bug deleted object will be resaved ...</line>
+			</description>
+		</item>
+		<item>
+			<name>Departments</name>
+			<description>
+				<line>Fixed bug that makes abbv column un-sortable if any one value is null.</line>
+			</description>
+		</item>
+		<item>
+			<name>Subject Areas</name>
+			<description>
+				<line>Validate that subject area has no offered courses when delete operation is selected.</line>
+			</description>
+		</item>
+		<item>
+			<name>Menu</name>
+			<description>
+				<line>Use settings value to determine if menus are expanded on user login. By default it is not.</line>
+			</description>
+		</item>
+		<title>SOLVER</title>
+		<item>
+			<name>Course Timetabling</name>
+			<description>
+				<line>Added (optional) on fly student sectioning
+					<line>In this mode, students are resectioned after each iteration, but only between classes that are affected by the iteration.</line>
+					<line>This slows down the solver, but it can dramatically improve results in the case when there is more stress put on student conflicts (e.g., Woebegon College example).</line></line>
+			</description>
+		</item>
+		<item>
+			<name>Student Sectioning</name>
+			<description>
+				<line>Various fixes and improvements, see https://lists.sourceforge.net/lists/listinfo/cpsolver-cvs for more details.</line>
+			</description>
+		</item>
+		<title>OTHER</title>
+		<item>
+			<name>Data Import</name>
+			<description>
+				<line>StudentImport and LastLikeCourseDemandImport are now inherited from BaseImport.</line>
+				<line>StudentImport: speed improved by not using StudentDAO.save(student); all students for given academic session are deleted first</line>
+				<line>LastLikeCourseDemandImport: all last-like course demands for given academic session are deleted first</line>
+				<line>Data Import page now uploads the selected file (using Struts file upload).</line>
+			</description>
+		</item>
+		<item>
+			<name>Documentation</name>
+			<description>
+				<line>Added SQL scripts to create timetable schema and populate it with Woebegon College test suite for Oracle.</line>
+				<line>Offline copy of UniTime wiki (http://www.unitime.org/wiki) added into the distribution.</line>
+			</description>
+		</item>
+		<item>
+			<name>Woebegon College test suite</name>
+			<description>
+				<line>Added on fly student sectioning solver parameters.</line>
+				<line>Enabled on fly student sectioning in Default solver configuration.</line>
+				<line>Enabled load of student enrollments for commited solutions in Default solver configuration.</line>
+				<line>Added roomFeaturesInOneColumn user setting.</line>
+			</description>
+		</item>
+		<item>
+			<name>Other</name>
+			<description>
+				<line>Added methods for cloning of instructional offerings and all underlaying objects (configurations, subparts, classes, etc).</line>
+				<line>ApplicationProperties: Removed shutdown hook since InitServlet.destroy() shuts the listener down; removed encoding from messages</line>
+				<line>Changed timetabling banner to make consistent with the one used inside the application</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.0.22</version>
+	<release-date>Wed, 27 Jun 2007</release-date>
+	<category>
+		<title>USER INTERFACE</title>
+		<item>
+			<name>Rooms</name>
+			<description>
+				<line>Room Features, Room Groups: Abbreviation column added</line>
+				<line>Room Detail, Room Edit: Administrator can see and change external id.</line>
+				<line>Room Detail, Room Edit: Administrator can change room type (property Room.scheduledRoomType).</line>
+				<line>Allow Add Special Use Room only when external rooms are populated for the given session.</line>
+				<line>Added add any room capability (administrator only).</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructional Offering Cross Lits</name>
+			<description>
+				<line>Made screen more intuitive.</line>
+			</description>
+		</item>
+		<item>
+			<name>Date Patterns</name>
+			<description>
+				<line>Display of the selected date pattern corrected.</line>
+				<line>Fix Generated feature improved
+					<line>replace the generated date pattern with an existing one if the difference is not more than 5 days</line>
+					<line>otherwise rename the generated date pattern to "generated start - end" where start and end are start and end days in MM/dd format</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Administration</name>
+			<description>
+				<line>Subject Areas: Struts configuration corrected.</line>
+				<line>Buildings: Add/update/delete functions added.</line>
+				<line>Buildings, Timetable Managers, Departments, Subject Areas, Solver Groups: Export PDF function added.</line>
+				<line>Application Config: Display all effective properties set for the application.</line>
+			</description>
+		</item>
+		<item>
+			<name>Menu</name>
+			<description>
+				<line>FAQ and Tips &amp; Tricks pages moved to wiki.</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructors</name>
+			<description>
+				<line>Instructor Lookup: Fixed problem with I2A2 lookup (No getter method for property: "puid" of bean: "i2a2") -- User object has no longer method getPuid(), but it has getId().</line>
+				<line>Instructor Delete: Fixed hibernate problem (deleted object would be re-saved by cascade) when an instructor with some class assignments was deleted.</line>
+			</description>
+		</item>
+		<item>
+			<name>Distribution Preferences</name>
+			<description>
+				<line>Distribution preferences that are set on instructors were not filtered by course number, this is now corrected.</line>
+				<line>Add/Edit Distribution Preference: Compare classes using ClassComparator, not by their unique ids.</line>
+			</description>
+		</item>
+		<title>SOLVER</title>
+		<item>
+			<name>Student Sectioning</name>
+			<description>
+				<line>Load academic areas, classifications, majors, and minors</line>
+				<line>Solver update, https://lists.sourceforge.net/lists/listinfo/cpsolver-cvs for more details.</line>
+			</description>
+		</item>
+		<title>OTHER</title>
+		<item>
+			<name>Database</name>
+			<description>
+				<line>Database connection properties can be set in custom.property file</line>
+				<line>Buildings: Minor change to remove non-existent building as part of update process.</line>
+				<line>Major Import: Create empty set for academic areas if null.</line>
+				<line>Configuration Edit: Fixed org.hibernate.PropertyAccessException (Exception occurred inside setter of org.unitime.timetable.model.Class_.managingDept)</line>
+				<line>ChangeLog: queries made cacheable.</line>
+				<line>Last-like Course Demands Import: speed up -- cache the SubjectAreas and CourseOfferings.</line>
+			</description>
+		</item>
+		<item>
+			<name>Other</name>
+			<description>
+				<line>Timetabling CSS: Fixed a bug.</line>
+				<line>WebTable: Removed italic tag and instead depend on css to do all formatting</line>
+				<line>Changed logos to remove SMAS and put unitime.org.</line>
+				<line>File footer.jsp removed -- it is not used.</line>
+				<line>Tags propertyEquals and propertyNotEquals added.</line>
+				<line>Use property tags instead of using ApplicationProperties class directly in JSPs.</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.0.19</version>
+	<release-date>Wed, 13 Jun 2007</release-date>
+	<category>
+		<title>ALL MODULES</title>
+		<item>
+			<name>First Open Source Release</name>
+			<description>
+				<line>This is a first Open Source release of this application.</line>
+				<line>See http://www.unitime.org for more details.</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+</release-history>

@@ -1,0 +1,134 @@
+<!-- 
+ * UniTime 3.0 (University Course Timetabling & Student Sectioning Application)
+ * Copyright (C) 2007, UniTime.org
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ -->
+
+<!ELEMENT acadArea ( major*, minor* ) >
+<!ATTLIST acadArea abbv NMTOKEN #REQUIRED >
+<!ATTLIST acadArea classification NMTOKEN #REQUIRED >
+
+<!ELEMENT acknowledgement ( message* ) >
+<!ATTLIST acknowledgement result ( ok | fail ) #REQUIRED >
+
+<!ELEMENT alternative EMPTY >
+<!ATTLIST alternative courseNumber NMTOKEN #REQUIRED >
+<!ATTLIST alternative subjectArea NMTOKEN #REQUIRED >
+
+<!ELEMENT cancelStudent EMPTY >
+
+<!ELEMENT choice ( depends* ) >
+<!ATTLIST choice available ( false | true ) #IMPLIED >
+<!ATTLIST choice date CDATA #IMPLIED >
+<!ATTLIST choice days NMTOKEN #IMPLIED >
+<!ATTLIST choice endTime NMTOKEN #IMPLIED >
+<!ATTLIST choice id NMTOKEN #REQUIRED >
+<!ATTLIST choice instructor CDATA #IMPLIED >
+<!ATTLIST choice selection ( select | wait ) #IMPLIED >
+<!ATTLIST choice startTime NMTOKEN #IMPLIED >
+<!ATTLIST choice time CDATA #IMPLIED >
+
+<!ELEMENT class ( choice* ) >
+<!ATTLIST class assignmentId NMTOKEN #REQUIRED >
+<!ATTLIST class date CDATA #IMPLIED >
+<!ATTLIST class days NMTOKEN #IMPLIED >
+<!ATTLIST class endTime NMTOKEN #IMPLIED >
+<!ATTLIST class id NMTOKEN #REQUIRED >
+<!ATTLIST class instructor CDATA #IMPLIED >
+<!ATTLIST class location CDATA #IMPLIED >
+<!ATTLIST class name NMTOKEN #IMPLIED >
+<!ATTLIST class note CDATA #IMPLIED >
+<!ATTLIST class parent NMTOKEN #IMPLIED >
+<!ATTLIST class startTime NMTOKEN #IMPLIED >
+<!ATTLIST class time CDATA #IMPLIED >
+
+<!ELEMENT courseOffering ( alternative | class )* >
+<!ATTLIST courseOffering alternative ( false | true ) #IMPLIED >
+<!ATTLIST courseOffering courseNumber NMTOKEN #REQUIRED >
+<!ATTLIST courseOffering credit NMTOKEN #IMPLIED >
+<!ATTLIST courseOffering subjectArea NMTOKEN #REQUIRED >
+<!ATTLIST courseOffering waitlist ( false | true ) #IMPLIED >
+
+<!ELEMENT courseRequests ( courseOffering | freeTime )* >
+<!ATTLIST courseRequests distribution ( dense | spread ) #REQUIRED >
+
+<!ELEMENT depends ( depends* ) >
+<!ATTLIST depends choice NMTOKEN #REQUIRED >
+<!ATTLIST depends class NMTOKEN #REQUIRED >
+<!ATTLIST depends selection ( select | wait ) #IMPLIED >
+
+<!ELEMENT disability EMPTY >
+<!ATTLIST disability code CDATA #REQUIRED >
+
+<!ELEMENT email EMPTY >
+<!ATTLIST email value CDATA #REQUIRED >
+
+<!ELEMENT freeTime EMPTY >
+<!ATTLIST freeTime days NMTOKEN #REQUIRED >
+<!ATTLIST freeTime endTime NMTOKEN #REQUIRED >
+<!ATTLIST freeTime length NMTOKEN #IMPLIED >
+<!ATTLIST freeTime startTime NMTOKEN #REQUIRED >
+<!ATTLIST freeTime time CDATA #IMPLIED >
+
+<!ELEMENT groupAffiliation EMPTY >
+<!ATTLIST groupAffiliation code NMTOKEN #REQUIRED >
+
+<!ELEMENT major EMPTY >
+<!ATTLIST major code NMTOKEN #REQUIRED >
+
+<!ELEMENT message ( #PCDATA ) >
+<!ATTLIST message type NMTOKEN #REQUIRED >
+
+<!ELEMENT minor EMPTY >
+<!ATTLIST minor code NMTOKEN #REQUIRED >
+
+<!ELEMENT name EMPTY >
+<!ATTLIST name first NMTOKEN #REQUIRED >
+<!ATTLIST name last NMTOKEN #REQUIRED >
+<!ATTLIST name middle NMTOKEN #REQUIRED >
+
+<!ELEMENT notification ( student ) >
+<!ATTLIST notification campus NMTOKEN #REQUIRED >
+<!ATTLIST notification year NMTOKEN #REQUIRED >
+<!ATTLIST notification term NMTOKEN #REQUIRED >
+
+<!ELEMENT request ( student ) >
+<!ATTLIST request campus NMTOKEN #REQUIRED >
+<!ATTLIST request year NMTOKEN #REQUIRED >
+<!ATTLIST request term NMTOKEN #REQUIRED >
+
+<!ELEMENT requestSchedule ( courseOffering )* >
+<!ATTLIST requestSchedule type ( commit | query ) #REQUIRED >
+
+<!ELEMENT response ( student ) >
+<!ATTLIST response campus NMTOKEN #REQUIRED >
+<!ATTLIST response year NMTOKEN #REQUIRED >
+<!ATTLIST response term NMTOKEN #REQUIRED >
+
+<!ELEMENT retrieveCourseRequests EMPTY >
+
+<!ELEMENT schedule ( courseOffering | freeTime )* >
+<!ATTLIST schedule type ( actual | proposed ) #REQUIRED >
+
+<!ELEMENT student ( updateDemographics?, updateCourseRequests?, requestSchedule?, retrieveCourseRequests?, cancelStudent?, acknowledgement?, courseRequests?, schedule?, message* ) >
+<!ATTLIST student key NMTOKEN #REQUIRED >
+
+<!ELEMENT updateCourseRequests ( courseOffering | freeTime )* >
+<!ATTLIST updateCourseRequests commit ( false | true ) #REQUIRED >
+<!ATTLIST updateCourseRequests distribution ( dense | spread ) #REQUIRED >
+
+<!ELEMENT updateDemographics ( name, email?, acadArea+, major*, minor*, disability*, groupAffiliation* ) >
+

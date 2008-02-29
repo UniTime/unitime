@@ -1,0 +1,201 @@
+<%--
+ * UniTime 3.0 (University Course Timetabling & Student Sectioning Application)
+ * Copyright (C) 2007, UniTime.org
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+--%>
+		<TR>
+			<TD valign="middle" colspan='2'>
+				<tt:section-header>		
+					<tt:section-title>&nbsp;</tt:section-title>
+
+					<% if (operation.equals("add")) { %>
+						<html:submit property="op" 
+							styleClass="btn" accesskey="S" titleKey="title.saveInstructor" >
+							<bean:message key="button.saveInstructor" />
+						</html:submit> 
+					<% } %>
+
+					<% if (operation.equals("update")) { %>
+						<html:submit property="op" 
+							styleClass="btn" accesskey="U" titleKey="title.updateInstructor" >
+							<bean:message key="button.update" />
+						</html:submit> 					
+						<html:submit property="op" 
+							styleClass="btn" accesskey="D" titleKey="title.deleteInstructor" 
+							onclick="return(confirmDelete());">
+							<bean:message key="button.deleteInstructor" />
+						</html:submit> 
+					<% } %>
+					
+					<html:submit property="op" 
+						styleClass="btn" accesskey="L" titleKey="title.checkPuId" >
+						<bean:message key="button.checkPuId" />
+					</html:submit> 
+					<logic:notEmpty name="<%=frmName%>" property="previousId">
+						<html:submit property="op" 
+								styleClass="btn" accesskey="P" titleKey="title.previousInstructorWithUpdate">
+							<bean:message key="button.previousInstructor" />
+						</html:submit> 
+					</logic:notEmpty>
+					<logic:notEmpty name="<%=frmName%>" property="nextId">
+						<html:submit property="op" 
+							styleClass="btn" accesskey="N" titleKey="title.nextInstructorWithUpdate">
+							<bean:message key="button.nextInstructor" />
+						</html:submit> 
+					</logic:notEmpty>
+					<html:submit property="op" 
+						styleClass="btn" accesskey="B" titleKey="title.returnToDetail">
+						<bean:message key="button.returnToDetail" />
+					</html:submit>
+				</tt:section-header>
+			</TD>
+		</TR>
+
+		<logic:messagesPresent>
+		<TR>
+			<TD colspan="2" align="left" class="errorCell">
+					<B><U>ERRORS</U></B><BR>
+				<BLOCKQUOTE>
+				<UL>
+				    <html:messages id="error">
+				      <LI>
+						${error}
+				      </LI>
+				    </html:messages>
+			    </UL>
+			    </BLOCKQUOTE>
+			</TD>
+		</TR>
+		</logic:messagesPresent>
+		
+		<TR>
+			<TD>ID:</TD>
+			<TD>
+				<bean:write name="<%=frmName%>"  property="puId" />	
+				<html:hidden name="<%=frmName%>"  property="puId" />
+			<TD>
+		</TR>
+		
+		<TR>
+			<TD>Career Account:</TD>
+			<TD>
+				<html:text property="careerAcct" maxlength="20" size="20" /> 
+			<TD>
+		</TR>
+		
+		<TR>
+			<TD>First Name:</TD>
+			<TD>
+				<html:text property="fname" maxlength="20" size="20" />
+			<TD>
+		</TR>	
+		
+		<TR>
+			<TD>Middle Name:</TD>
+			<TD>
+				<html:text property="mname" maxlength="20" size="20" />
+			<TD>
+		</TR>	
+		
+		<TR>
+			<TD>Last Name: <font class="reqField">*</font></TD>
+			<TD>
+				<html:text property="lname" maxlength="26" size="26" />
+			<TD>
+		</TR>
+		
+		<TR>
+			<TD>Department:</TD>
+			<TD>
+				<bean:write name="<%=frmName%>" property="deptName" />
+			</TD>
+		</TR>
+				
+		<TR>
+			<TD>Position:</TD>
+			<TD>
+				<html:select property="posType" size="1">  
+					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
+					<html:options collection="<%=PositionType.POSTYPE_ATTR_NAME%>" 
+						property="value" labelProperty="label"/>
+				</html:select>
+			</TD>
+		</TR>
+		
+		<TR>
+			<TD>Notes:</TD>
+			<TD>
+				<html:text property="note" maxlength="20" size="20" />
+			</TD>
+		</TR>
+		
+		<TR>
+			<TD>Ignore Too Far:</TD>
+			<TD>
+				<html:checkbox property="ignoreDist" />
+			</TD>
+		</TR>
+
+		<TR>
+			<TD valign="middle" colspan='2' class='WelcomeRowHead'>
+			&nbsp;
+			</TD>
+		</TR>
+		
+		<TR>
+			<TD valign="middle" colspan='2' align='right'>
+				<% if (operation.equals("add")) { %>
+					<html:submit property="op" 
+						styleClass="btn" accesskey="S" titleKey="title.saveInstructor" >
+						<bean:message key="button.saveInstructor" />
+					</html:submit> 
+				<% } %>
+
+				<% if (operation.equals("update")) { %>
+					<html:submit property="op" 
+						styleClass="btn" accesskey="U" titleKey="title.updateInstructor" >
+						<bean:message key="button.update" />
+					</html:submit> 					
+					<html:submit property="op" 
+						styleClass="btn" accesskey="D" titleKey="title.deleteInstructor" 
+						onclick="return(confirmDelete());" >
+						<bean:message key="button.deleteInstructor" />
+					</html:submit> 
+				<% } %>
+				
+				<html:submit property="op" 
+					styleClass="btn" accesskey="L" titleKey="title.checkPuId" >
+					<bean:message key="button.checkPuId" />
+				</html:submit> 
+				<logic:notEmpty name="<%=frmName%>" property="previousId">
+					<html:submit property="op" 
+							styleClass="btn" accesskey="P" titleKey="title.previousInstructorWithUpdate">
+						<bean:message key="button.previousInstructor" />
+					</html:submit> 
+				</logic:notEmpty>
+				<logic:notEmpty name="<%=frmName%>" property="nextId">
+					<html:submit property="op" 
+						styleClass="btn" accesskey="N" titleKey="title.nextInstructorWithUpdate">
+						<bean:message key="button.nextInstructor" />
+					</html:submit> 
+				</logic:notEmpty>
+				<html:submit property="op" 
+					styleClass="btn" accesskey="B" titleKey="title.returnToDetail">
+					<bean:message key="button.returnToDetail" />
+				</html:submit>
+			</TD>
+		</TR>
+		
