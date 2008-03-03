@@ -218,8 +218,8 @@ public class LookupTables {
         request.setAttribute(DistributionType.DIST_TYPE_ATTR_NAME, DistributionType.findApplicable(request, true, false));
     }
 
-    public static void setupExaminationPeriods(HttpServletRequest request) throws Exception {
-        request.setAttribute(ExamPeriod.PERIOD_ATTR_NAME, ExamPeriod.findAll(request));
+    public static void setupExaminationPeriods(HttpServletRequest request, Integer examType) throws Exception {
+        request.setAttribute(ExamPeriod.PERIOD_ATTR_NAME, ExamPeriod.findAll(request, examType));
     }
 
     public static void setupRoomGroups(HttpServletRequest request, PreferenceGroup pg) throws Exception {

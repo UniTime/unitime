@@ -39,6 +39,7 @@ import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.form.ExamPeriodEditForm;
 import org.unitime.timetable.model.ChangeLog;
+import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Roles;
@@ -96,12 +97,19 @@ public class ExamPeriodEditAction extends Action {
                 myForm.setOp("Save");
             }
 
-	        // Add / Update
+            if ("Evening Periods".equals(op) && myForm.getCanAutoSetup()) {
+            	myForm.setAutoSetup(true);
+            	myForm.setExamType(Exam.sExamTypes[Exam.sExamTypeEvening]);
+                myForm.setOp("Save");
+            }
+
+            // Add / Update
 	        if ("Update".equals(op) || "Save".equals(op)) {
 	            // Validate input
 	            ActionMessages errors = myForm.validate(mapping, request);
 	            if(errors.size()>0) {
 	                saveErrors(request, errors);
+	                if (myForm.getAutoSetup()) myForm.setDays(request);
 	                myForm.setOp(myForm.getUniqueId().longValue()<0?"Save":"Update");
 	            } else {
 	        		Transaction tx = null;
@@ -113,7 +121,8 @@ public class ExamPeriodEditAction extends Action {
 	                	
 	                	ExamPeriod ep = myForm.saveOrUpdate(request, hibSession);
 	                	
-                        ChangeLog.addChange(
+	                	if (ep!=null) {
+	                		ChangeLog.addChange(
                                 hibSession, 
                                 request, 
                                 ep, 
@@ -121,6 +130,7 @@ public class ExamPeriodEditAction extends Action {
                                 ("Save".equals(op)?ChangeLog.Operation.CREATE:ChangeLog.Operation.UPDATE), 
                                 null, 
                                 null);
+	                	}
 
                         if (tx!=null) tx.commit();
 	        	    } catch (Exception e) {
@@ -205,11 +215,11 @@ public class ExamPeriodEditAction extends Action {
 		// Create web table instance 
         WebTable webTable = new WebTable( 4,
 			    null, "examPeriodEdit.do?ord=%%",
-			    new String[] {"Date", "Start Time", "End Time", "Length", "Preference"},
-			    new String[] {"left", "left", "left", "left", "left"},
+			    new String[] {"Type","Date", "Start Time", "End Time", "Length", "Preference"},
+			    new String[] {"left","left", "left", "left", "left", "left"},
 			    null );
         
-        TreeSet periods = ExamPeriod.findAll(request);
+        TreeSet periods = ExamPeriod.findAll(request, null);
 		if(periods.isEmpty()) {
 		    webTable.addLine(null, new String[] {"No exan period defined for this session."}, null, null );			    
 		}
@@ -225,6 +235,7 @@ public class ExamPeriodEditAction extends Action {
         	String deptStr = "";
         	String deptCmp = "";
         	webTable.addLine(onClick, new String[] {
+        			Exam.sExamTypes[ep.getExamType()],
         	        "<a name='"+ep.getUniqueId()+"'>"+sdf.format(ep.getStartDate())+"</a>",
         	        stf.format(ep.getStartTime()),
         	        stf.format(ep.getEndTime()),
@@ -232,7 +243,7 @@ public class ExamPeriodEditAction extends Action {
         	        (PreferenceLevel.sNeutral.equals(ep.getPrefLevel().getPrefProlog())?"":
         	        "<font color='"+PreferenceLevel.prolog2color(ep.getPrefLevel().getPrefProlog())+"'>"+ep.getPrefLevel().getPrefName()+"</font>")},
         	        new Comparable[] {
-        	        ep.getStartDate(), ep.getStartSlot(), ep.getStartSlot()+ep.getLength(), ep.getLength(), ep.getPrefLevel().getPrefId()});
+        			ep.getExamType(),ep.getStartDate(), ep.getStartSlot(), ep.getStartSlot()+ep.getLength(), ep.getLength(), ep.getPrefLevel().getPrefId()});
         }
         
 	    request.setAttribute("ExamPeriods.table", webTable.printTable(WebTable.getOrder(request.getSession(),"examPeriods.ord")));

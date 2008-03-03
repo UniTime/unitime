@@ -94,7 +94,7 @@ public class DistributionPrefsAjax extends Action {
         } else if ("distType".equals(request.getParameter("type"))) {
             computePreferenceLevels(request.getParameter("id"),out);
         } else if ("exam".equals(request.getParameter("type"))) {
-            coumputeExams(request.getParameter("id"),out);
+            coumputeExams(request.getParameter("id"), Integer.valueOf(request.getParameter("examType")),out);
         }
     }
     
@@ -183,9 +183,9 @@ public class DistributionPrefsAjax extends Action {
         }
     }
    
-    protected void coumputeExams(String courseOfferingId, ServletOutputStream out) throws Exception {
+    protected void coumputeExams(String courseOfferingId, Integer examType, ServletOutputStream out) throws Exception {
         if (courseOfferingId==null || courseOfferingId.length()==0 || courseOfferingId.equals(Preference.BLANK_PREF_VALUE)) return;
-        TreeSet exams = new TreeSet(Exam.findExamsOfCourseOffering(Long.valueOf(courseOfferingId)));
+        TreeSet exams = new TreeSet(Exam.findExamsOfCourseOffering(Long.valueOf(courseOfferingId),examType));
         if (exams.size()>1 || exams.isEmpty())
             print(out, "-1", "-");
         for (Iterator i=exams.iterator();i.hasNext();) {

@@ -113,7 +113,10 @@ public class ExamSolverAction extends Action {
                 saveErrors(request, errors);
                 return mapping.findForward("showSolver");
             }
-        	WebSolver.reloadExamSolver(request.getSession(), myForm.getSetting(), new Hashtable(myForm.getParameterValues()));
+            Hashtable extra = new Hashtable(myForm.getParameterValues());
+            extra.put("Exam.Type", myForm.getExamType());
+            request.getSession().setAttribute("Exam.Type", myForm.getExamType());
+        	WebSolver.reloadExamSolver(request.getSession(), myForm.getSetting(), extra);
         	myForm.setChangeTab(true);
         }
         
@@ -130,6 +133,8 @@ public class ExamSolverAction extends Action {
             Long settingsId = myForm.getSetting();
         	Long[] ownerId = null;
         	Hashtable extra = new Hashtable(myForm.getParameterValues());
+        	extra.put("Exam.Type", myForm.getExamType());
+        	request.getSession().setAttribute("Exam.Type", myForm.getExamType());
     	    if (solver == null) {
         		solver = WebSolver.createExamSolver(sessionId,request.getSession(),settingsId,extra,start,myForm.getHost());
         	} else if (start) {

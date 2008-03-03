@@ -28,6 +28,93 @@
 
 <logic:notEqual name="examPeriodEditForm" property="op" value="List">
 	<html:hidden property="uniqueId"/><html:errors property="uniqueId"/>
+	<html:hidden property="autoSetup"/>
+	<logic:equal name="examPeriodEditForm" property="autoSetup" value="true">
+	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TR>
+			<TD colspan="2">
+				<tt:section-header>
+					<tt:section-title>
+						Setup Evening Examination Periods
+					</tt:section-title>
+					<html:submit property="op">
+						<bean:write name="examPeriodEditForm" property="op" />
+					</html:submit> 
+					<html:submit property="op" value="Back" /> 
+				</tt:section-header>
+			</TD>
+		</TR>
+		
+		<TR>
+			<TD>Type:</TD>
+			<TD>
+				<html:select property="examType" disabled="true">
+					<html:options property="examTypes"/>
+				</html:select>
+				<html:hidden property="examType"/>
+			</TD>
+		</TR>
+		
+
+		<TR>
+			<TD>First Period Start Time:</TD>
+			<TD>
+			<html:text property="start" size="4" maxlength="4"/> (in military format)
+			&nbsp;<html:errors property="start"/>
+			</TD>
+		</TR>
+
+		<TR>
+			<TD>First Period Length:</TD>
+			<TD>
+			<html:text property="length" size="4" maxlength="4"/> (in minutes)
+			&nbsp;<html:errors property="length"/>
+			</TD>
+		</TR>
+
+		<TR>
+			<TD>Second Period Start Time:</TD>
+			<TD>
+			<html:text property="start2" size="4" maxlength="4"/> (in military format)
+			&nbsp;<html:errors property="start2"/>
+			</TD>
+		</TR>
+
+		<TR>
+			<TD>Second Period Length:</TD>
+			<TD>
+			<html:text property="length2" size="4" maxlength="4"/> (in minutes)
+			&nbsp;<html:errors property="length2"/>
+			</TD>
+		</TR>
+
+		<TR>
+			<TD rowspan='2'>Dates:</TD>
+		</TR>
+		
+		<TR>
+			<TD rowspan='2'>
+				<bean:write name="examPeriodEditForm" property="patternHtml" filter="false"/>
+			</TD>
+		</TR>
+
+		<TR>
+			<TD align="right" colspan="2">
+				<tt:section-title/>
+			</TD>
+		</TR>
+		
+		<TR>
+			<TD align="right" colspan="2">
+				<html:submit property="op">
+					<bean:write name="examPeriodEditForm" property="op" />
+				</html:submit> 
+				<html:submit property="op" value="Back" /> 
+			</TD>
+		</TR>
+	</TABLE>
+	</logic:equal>
+	<logic:equal name="examPeriodEditForm" property="autoSetup" value="false">
 	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD colspan="2">
@@ -39,7 +126,7 @@
 						<logic:notEqual name="examPeriodEditForm" property="op" value="Save">
 							Edit
 						</logic:notEqual>
-						Date Pattern
+						Examination Period
 					</tt:section-title>
 					<html:submit property="op">
 						<bean:write name="examPeriodEditForm" property="op" />
@@ -51,6 +138,16 @@
 				</tt:section-header>
 			</TD>
 		</TR>
+		
+		<TR>
+			<TD>Type:</TD>
+			<TD>
+				<html:select property="examType">
+					<html:options property="examTypes"/>
+				</html:select>
+			</TD>
+		</TR>
+		
 
 		<TR>
 			<TD>Date:</TD>
@@ -105,9 +202,7 @@
 			</TD>
 		</TR>
 	</TABLE>
-
-<BR>
-<script type="text/javascript" language="javascript">
+	<script type="text/javascript" language="javascript">
 	
 	Calendar.setup( {
 		cache      : true, 					// Single object used for all calendars
@@ -121,27 +216,35 @@
 		button     : "show_date"	// ID of the button
 	} );
 
-</script>
+	</script>
+	</logic:equal>
+<BR>
 </logic:notEqual>
 <logic:equal name="examPeriodEditForm" property="op" value="List">
 <TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
 	<TR>
-		<TD colspan='5'>
+		<TD colspan='6'>
 			<tt:section-header>
 				<tt:section-title>Examination Periods</tt:section-title>
 				<html:submit property="op" value="Add Period" title="Create a new examination period"/>
+				<logic:equal name="examPeriodEditForm" property="canAutoSetup" value="true">
+					<html:submit property="op" value="Evening Periods" title="Setup periods for evening exams"/>
+				</logic:equal>
 			</tt:section-header>
 		</TD>
 	</TR>
 	<%= request.getAttribute("ExamPeriods.table") %>
 	<TR>
-		<TD colspan='5'>
+		<TD colspan='6'>
 			<tt:section-title/>
 		</TD>
 	</TR>
 	<TR>
-		<TD colspan='5' align="right">
+		<TD colspan='6' align="right">
 			<html:submit property="op" value="Add Period" title="Create a new examination period"/>
+			<logic:equal name="examPeriodEditForm" property="canAutoSetup" value="true">
+				<html:submit property="op" value="Evening Periods" title="Setup periods for evening exams"/>
+			</logic:equal>
 		</TD>
 	</TR>
 	<% if (request.getAttribute("hash") != null) { %>

@@ -21,6 +21,7 @@ package org.unitime.timetable.form;
 
 import java.util.Collection;
 import java.util.TreeSet;
+import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -29,10 +30,14 @@ import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.unitime.commons.web.Web;
+import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.UserData;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
+import org.unitime.timetable.solver.WebSolver;
+import org.unitime.timetable.solver.exam.ExamSolverProxy;
+import org.unitime.timetable.util.ComboBoxLookup;
 
 
 /** 
@@ -46,6 +51,7 @@ public class ExamReportForm extends ActionForm {
 	private String iTable = null;
 	private int iNrColumns;
 	private int iNrRows;
+	private int iExamType;
 
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
         ActionErrors errors = new ActionErrors();
@@ -58,6 +64,12 @@ public class ExamReportForm extends ActionForm {
 		iShowSections = false;
 		iTable = null;
 		iNrRows = iNrColumns = 0;
+		iExamType = Exam.sExamTypeFinal;
+		ExamSolverProxy solver = WebSolver.getExamSolver(request.getSession());
+		try {
+			if (solver!=null)
+				iExamType = solver.getProperties().getPropertyInt("Exam.Type", iExamType);
+		} catch (Exception e) {}
 	}
 	
 	public String getOp() { return iOp; }
@@ -77,6 +89,7 @@ public class ExamReportForm extends ActionForm {
 	    try {
 	        iSubjectAreas = new TreeSet(SubjectArea.getSubjectAreaList(Session.getCurrentAcadSession(Web.getUser(session)).getUniqueId()));
 	    } catch (Exception e) {}
+	    setExamType(session.getAttribute("Exam.Type")==null?iExamType:(Integer)session.getAttribute("Exam.Type"));
 	}
 	    
     public void save(HttpSession session) {
@@ -85,6 +98,7 @@ public class ExamReportForm extends ActionForm {
             session.removeAttribute("ExamReport.subjectArea");
         else
             session.setAttribute("ExamReport.subjectArea", getSubjectArea());
+        session.setAttribute("Exam.Type", getExamType());
     }
     
     public void setTable(String table, int cols, int rows) {
@@ -94,6 +108,13 @@ public class ExamReportForm extends ActionForm {
     public String getTable() { return iTable; }
     public int getNrRows() { return iNrRows; }
     public int getNrColumns() { return iNrColumns; }
-
+    public int getExamType() { return iExamType; }
+    public void setExamType(int type) { iExamType = type; }
+    public Collection getExamTypes() {
+    	Vector ret = new Vector(Exam.sExamTypes.length);
+    	for (int i=0;i<Exam.sExamTypes.length;i++)
+    		ret.add(new ComboBoxLookup(Exam.sExamTypes[i], String.valueOf(i)));
+    	return ret;
+    }
 }
 

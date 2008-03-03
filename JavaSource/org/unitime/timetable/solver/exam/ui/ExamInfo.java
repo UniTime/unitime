@@ -8,6 +8,7 @@ import java.util.Vector;
 
 import net.sf.cpsolver.exam.model.ExamCourseSection;
 import net.sf.cpsolver.exam.model.ExamInstructor;
+import net.sf.cpsolver.exam.model.ExamModel;
 import net.sf.cpsolver.ifs.model.Constraint;
 
 import org.unitime.timetable.model.DepartmentalInstructor;
@@ -21,6 +22,7 @@ public class ExamInfo implements Serializable, Comparable {
     protected String iExamLabel = null;
     protected Long iExamId = null;
     protected transient Exam iExam = null;
+    protected int iExamType;
     protected int iNrStudents;
     protected int iLength;
     protected int iMaxRooms;
@@ -29,6 +31,7 @@ public class ExamInfo implements Serializable, Comparable {
     protected Vector iInstructors = null;
     
     public ExamInfo(net.sf.cpsolver.exam.model.Exam exam) {
+    	iExamType = ((ExamModel)exam.getModel()).getProperties().getPropertyInt("Exam.Type", Exam.sExamTypeFinal);
         iExamId = exam.getId();
         iExamLabel = exam.getName();
         iLength = exam.getLength();
@@ -53,6 +56,7 @@ public class ExamInfo implements Serializable, Comparable {
     }
 
     public ExamInfo(Exam exam) {
+    	iExamType = exam.getExamType();
         iExamId = exam.getUniqueId();
         iExamLabel = exam.getLabel();
         iMaxRooms = exam.getMaxNbrRooms();
@@ -60,6 +64,10 @@ public class ExamInfo implements Serializable, Comparable {
         iLength = exam.getLength();
         iNrStudents = exam.countStudents();
         iSeatingType = exam.getSeatingType().intValue();
+    }
+    
+    public int getExamType() {
+    	return iExamType;
     }
     
     public Long getExamId() {

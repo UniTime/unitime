@@ -45,6 +45,7 @@ import org.unitime.timetable.form.EditRoomForm;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.NonUniversityLocation;
 import org.unitime.timetable.model.PeriodPreferenceModel;
@@ -163,7 +164,7 @@ public class EditRoomAction extends Action {
             editRoomForm.setCoordY(location.getCoordinateY()==null || location.getCoordinateY().intValue()<0?null:location.getCoordinateY().toString());
             editRoomForm.setControlDept(null);
             
-            PeriodPreferenceModel px = new PeriodPreferenceModel(location.getSession());
+            PeriodPreferenceModel px = new PeriodPreferenceModel(location.getSession(), Exam.sExamTypeFinal);
             px.load(location);
             px.setAllowRequired(false);
             RequiredTimeTable rttPx = new RequiredTimeTable(px);
@@ -312,7 +313,7 @@ public class EditRoomAction extends Action {
 			location.setCoordinateX(editRoomForm.getCoordX()==null || editRoomForm.getCoordX().length()==0 ? new Integer(-1) : Integer.valueOf(editRoomForm.getCoordX()));
 			location.setCoordinateY(editRoomForm.getCoordY()==null || editRoomForm.getCoordY().length()==0 ? new Integer(-1) : Integer.valueOf(editRoomForm.getCoordY()));
 			
-            PeriodPreferenceModel px = new PeriodPreferenceModel(session);
+            PeriodPreferenceModel px = new PeriodPreferenceModel(session, Exam.sExamTypeFinal);
             RequiredTimeTable rttPx = new RequiredTimeTable(px);
             rttPx.setName("PeriodPrefs");
             rttPx.update(request);
@@ -378,7 +379,7 @@ public class EditRoomAction extends Action {
             room.setCoordinateY(editRoomForm.getCoordY()==null || editRoomForm.getCoordY().length()==0 ? new Integer(-1) : Integer.valueOf(editRoomForm.getCoordY()));
             room.setSession(session);
 
-            PeriodPreferenceModel px = new PeriodPreferenceModel(session);
+            PeriodPreferenceModel px = new PeriodPreferenceModel(session, Exam.sExamTypeFinal);
             RequiredTimeTable rttPx = new RequiredTimeTable(px);
             rttPx.setName("PeriodPrefs");
             rttPx.update(request);

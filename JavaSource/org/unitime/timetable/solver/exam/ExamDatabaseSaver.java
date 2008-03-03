@@ -31,12 +31,14 @@ import net.sf.cpsolver.ifs.util.Progress;
 public class ExamDatabaseSaver extends ExamSaver {
     private static Log sLog = LogFactory.getLog(ExamDatabaseLoader.class);
     private Long iSessionId;
+    private int iExamType;
     private Progress iProgress = null;
 
     public ExamDatabaseSaver(Solver solver) {
         super(solver);
         iProgress = Progress.getInstance(getModel());
         iSessionId = getModel().getProperties().getPropertyLong("General.SessionId",(Long)null);
+        iExamType = getModel().getProperties().getPropertyInt("Exam.Type",org.unitime.timetable.model.Exam.sExamTypeFinal);
     }
     
     public void save() {
@@ -65,7 +67,7 @@ public class ExamDatabaseSaver extends ExamSaver {
             .setLong("sessionId", iSessionId)
             .executeUpdate();
             */
-        Collection exams = org.unitime.timetable.model.Exam.findAll(iSessionId);
+        Collection exams = org.unitime.timetable.model.Exam.findAll(iSessionId, iExamType);
         iProgress.setPhase("Saving assignments...", exams.size());
         Hashtable examTable = new Hashtable();
         for (Iterator i=exams.iterator();i.hasNext();) {

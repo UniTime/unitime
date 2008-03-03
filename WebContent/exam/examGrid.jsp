@@ -33,6 +33,14 @@ try {
 	<script language="JavaScript">blToggleHeader('Filter','dispFilter');blStart('dispFilter');</script>
 	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
+  			<TD nowrap>Examination Problem:</TD>
+			<TD>
+				<html:select property="examType" onchange="javascript: showDates(this.value);">
+					<html:optionsCollection property="examTypes" label="label" value="value"/>
+				</html:select>
+			</TD>
+		</TR>
+		<TR>
 			<TD>Resource:</TD>
 			<TD>
 				<html:select property="resource">
@@ -46,26 +54,41 @@ try {
 				<html:text property="filter" maxlength="1000" size="40"/>
 			</TD>
 		</TR>
-		<TR>
-			<TD>Date:</TD>
-			<TD>
-				<html:select property="date">
-					<html:optionsCollection name="examGridForm" property="dates" label="label" value="value"/>
-				</html:select>
-			</TD>
-		</TR>
-		<TR>
-			<TD>Time:</TD>
-			<TD>
-				<html:select property="startTime">
-					<html:optionsCollection name="examGridForm" property="startTimes" label="label" value="value"/>
-				</html:select>
-				-
-				<html:select property="endTime">
-					<html:optionsCollection name="examGridForm" property="endTimes" label="label" value="value"/>
-				</html:select>
-			</TD>
-		</TR>
+		<logic:iterate name="examGridForm" property="examTypes" id="et">
+			<bean:define name="et" property="value" id="examType"/>
+			<TR id="<%="daterow."+examType%>">
+				<TD>Date:</TD>
+				<TD>
+					<html:select property="<%="date["+examType+"]"%>">
+						<html:optionsCollection name="examGridForm" property="<%="dates["+examType+"]"%>" label="label" value="value"/>
+					</html:select>
+				</TD>
+			</TR>
+			<TR id="<%="timerow."+examType%>">
+				<TD>Time:</TD>
+				<TD>
+					<html:select property="<%="startTime["+examType+"]"%>">
+						<html:optionsCollection name="examGridForm" property="<%="startTimes["+examType+"]"%>" label="label" value="value"/>
+					</html:select>
+					-
+					<html:select property="<%="endTime["+examType+"]"%>">
+						<html:optionsCollection name="examGridForm" property="<%="endTimes["+examType+"]"%>" label="label" value="value"/>
+					</html:select>
+				</TD>
+			</TR>
+		</logic:iterate>
+		<script language="JavaScript" type="text/javascript">
+			function showDates(examType) {
+				var idx = 0;
+				while (document.getElementById("daterow."+idx)!=null) {
+					var disp = (idx==examType?null:"none");
+					document.getElementById("daterow."+idx).style.display=disp;
+					document.getElementById("timerow."+idx).style.display=disp;
+					idx++;
+				}
+			}
+			showDates(document.getElementsByName('examType')[0].value);
+		</script>
 		<TR>
 			<TD>Display Mode:</TD>
 			<TD>

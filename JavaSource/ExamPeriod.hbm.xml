@@ -72,6 +72,14 @@
 			not-null="true"
 		/>
 
+		<property
+			name="examType"
+			column="EXAM_TYPE"
+			type="java.lang.Integer"
+			length="10"
+			not-null="true"
+		/>
+
 		<many-to-one name="prefLevel"
 			class="PreferenceLevel"
 			column="PREF_LEVEL_ID"

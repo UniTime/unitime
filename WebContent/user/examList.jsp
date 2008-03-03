@@ -27,6 +27,12 @@
 <html:form action="/examList">
 	<TABLE border='0'>
 		<TR>
+			<TH valign="top">Type:</TH>
+			<TD valign="top">
+				<html:select name="examListForm" property="examType">
+					<html:optionsCollection property="examTypes" label="label" value="value" />
+				</html:select>
+			</TD>
 			<TH valign="top">Subject:</TH>
 			<TD valign="top">
 				<html:select name="examListForm" property="subjectAreaId"
