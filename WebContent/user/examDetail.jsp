@@ -111,6 +111,16 @@
 			</TD>
 		</TR>
 		<TR>
+			<TD>Type:</TD><TD>
+				<logic:iterate name="<%=frmName%>" property="examTypes" id="et">
+					<bean:define name="et" property="value" id="examType"/>
+					<logic:equal name="<%=frmName%>" property="examType" value="<%=(String)examType%>">
+						<bean:write name="et" property="label"/>			
+					</logic:equal>
+				</logic:iterate>
+			 </TD>
+		</TR>
+		<TR>
 			<TD>Length:</TD><TD> <bean:write name="<%=frmName%>" property="length" /></TD>
 		</TR>
 		<TR>

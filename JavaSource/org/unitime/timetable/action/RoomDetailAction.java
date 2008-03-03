@@ -46,6 +46,7 @@ import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
+import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.NonUniversityLocation;
 import org.unitime.timetable.model.PeriodPreferenceModel;
@@ -145,11 +146,6 @@ public class RoomDetailAction extends Action {
 					|| doit.equals(rsc.getMessage("button.addRoomPreference"))) {
 				return mapping.findForward("showEditRoomPref");
 			}
-			
-            //modify room departments
-            if(doit.equals(rsc.getMessage("button.modifyRoomPeriodPreferences"))) {
-                return mapping.findForward("showEditRoomPeriodPref");
-            }
 		}
 		
 		if (request.getParameter("id")==null && roomDetailForm.getId()==null)
@@ -215,7 +211,7 @@ public class RoomDetailAction extends Action {
 		roomDetailForm.setExamEnabled(location.isExamEnabled());
 		roomDetailForm.setExamCapacity(location.getExamCapacity());
 		
-        PeriodPreferenceModel px = new PeriodPreferenceModel(location.getSession());
+        PeriodPreferenceModel px = new PeriodPreferenceModel(location.getSession(), Exam.sExamTypeFinal);
         px.setAllowRequired(false);
         px.load(location);
         RequiredTimeTable rttPx = new RequiredTimeTable(px);

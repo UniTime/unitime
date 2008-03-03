@@ -42,7 +42,7 @@ public class ExamGridAction extends Action {
         if (!Web.isLoggedIn( request.getSession() )) {
             throw new Exception ("Access Denied.");
         }
-		
+        
         // Read operation to be performed
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
         if (op==null && request.getParameter("resource")!=null) op="Change";

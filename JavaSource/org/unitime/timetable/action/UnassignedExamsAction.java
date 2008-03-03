@@ -81,10 +81,10 @@ public class UnassignedExamsAction extends Action {
         ExamSolverProxy solver = WebSolver.getExamSolver(request.getSession());
         Collection<ExamInfo> unassignedExams = null;
         if (myForm.getSubjectArea()!=null && myForm.getSubjectArea()!=0) {
-            if (solver!=null)
+            if (solver!=null && solver.getExamType()==myForm.getExamType())
                 unassignedExams = solver.getUnassignedExams(myForm.getSubjectArea());
             else
-                unassignedExams = Exam.findUnassignedExams(Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId(), myForm.getSubjectArea());
+                unassignedExams = Exam.findUnassignedExams(Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId(), myForm.getSubjectArea(),myForm.getExamType());
         }
         
         WebTable.setOrder(request.getSession(),"unassignedExams.ord",request.getParameter("ord"),1);
@@ -138,7 +138,7 @@ public class UnassignedExamsAction extends Action {
                     if (timeText) {
                         perPref += exam.getExam().getEffectivePrefHtmlForPrefType(ExamPeriodPref.class);
                     } else {
-                        PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getExam().getSession());
+                        PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getExam().getSession(), exam.getExamType());
                         px.load(exam.getExam());
                         RequiredTimeTable rtt = new RequiredTimeTable(px);
                         File imageFileName = null;

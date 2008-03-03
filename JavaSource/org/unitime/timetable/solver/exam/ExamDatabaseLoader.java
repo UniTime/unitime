@@ -56,6 +56,7 @@ import net.sf.cpsolver.ifs.util.ToolBox;
 public class ExamDatabaseLoader extends ExamLoader {
     private static Log sLog = LogFactory.getLog(ExamDatabaseLoader.class);
     private Long iSessionId;
+    private int iExamType;
     private boolean iLoadSolution;
     private String iInstructorFormat;
     private Progress iProgress = null;
@@ -70,6 +71,7 @@ public class ExamDatabaseLoader extends ExamLoader {
         super(model);
         iProgress = Progress.getInstance(model);
         iSessionId = model.getProperties().getPropertyLong("General.SessionId",(Long)null);
+        iExamType = model.getProperties().getPropertyInt("Exam.Type",org.unitime.timetable.model.Exam.sExamTypeFinal);
         iLoadSolution = model.getProperties().getPropertyBoolean("General.LoadSolution", true);
         iInstructorFormat = getModel().getProperties().getProperty("General.InstructorFormat", DepartmentalInstructor.sNameFormatLastFist);
     }
@@ -111,7 +113,7 @@ public class ExamDatabaseLoader extends ExamLoader {
     }
     
     protected void loadPeriods() {
-        Set periods = org.unitime.timetable.model.ExamPeriod.findAll(iSessionId);
+        Set periods = org.unitime.timetable.model.ExamPeriod.findAll(iSessionId, iExamType);
         iProgress.setPhase("Loading periods...", periods.size());
         SimpleDateFormat dateFormat = new SimpleDateFormat("EEE MM/dd");
         SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mmaa");
@@ -155,7 +157,7 @@ public class ExamDatabaseLoader extends ExamLoader {
     }
     
     protected void loadExams() {
-        Collection exams = org.unitime.timetable.model.Exam.findAll(iSessionId);
+        Collection exams = org.unitime.timetable.model.Exam.findAll(iSessionId, iExamType);
         iProgress.setPhase("Loading exams...", exams.size());
         for (Iterator i=exams.iterator();i.hasNext();) {
             iProgress.incProgress();

@@ -164,6 +164,7 @@ public class ExamDistributionPrefsAction extends Action {
 	            frm.setExam(0, exam.getUniqueId());
 	            frm.setSubjectArea(0, exam.firstSubjectArea().getUniqueId());
                 frm.setCourseNbr(0, exam.firstCourseOffering().getUniqueId());
+                frm.setExamType(exam.getExamType());
 	        }
             frm.getSubjectArea().add(new Long(-1));
             frm.getCourseNbr().add(new Long(-1));
@@ -189,6 +190,7 @@ public class ExamDistributionPrefsAction extends Action {
         	    request.getSession().setAttribute(Constants.CRS_NBR_ATTR_NAME, courseNbr);
         	else
         	    request.getSession().removeAttribute(Constants.CRS_NBR_ATTR_NAME);
+        	request.getSession().setAttribute("Exam.Type", frm.getExamType());
         	if (op.equals(rsc.getMessage("button.exportPDF")))
         		op="export"; 
         	else 
@@ -245,7 +247,7 @@ public class ExamDistributionPrefsAction extends Action {
         
         if ("export".equals(op) && (frm.getDistPrefId()==null || frm.getDistPrefId().length()==0)) {
             ExamDistributionPrefsTableBuilder tbl = new ExamDistributionPrefsTableBuilder();
-            File file = tbl.getDistPrefsTableAsPdf(request, (Constants.ALL_OPTION_VALUE.equals(frm.getFilterSubjectAreaId())?null:Long.valueOf(frm.getFilterSubjectAreaId())), frm.getFilterCourseNbr());
+            File file = tbl.getDistPrefsTableAsPdf(request, (Constants.ALL_OPTION_VALUE.equals(frm.getFilterSubjectAreaId())?null:Long.valueOf(frm.getFilterSubjectAreaId())), frm.getFilterCourseNbr(), frm.getExamType());
             if (file!=null) request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
             op = "view";
         }
@@ -270,7 +272,7 @@ public class ExamDistributionPrefsAction extends Action {
         	}
         	
         	if (frm.getFilterSubjectAreaId()!=null && frm.getFilterSubjectAreaId().length()>0) {
-        	    String html = tbl.getDistPrefsTable(request, (Constants.ALL_OPTION_VALUE.equals(frm.getFilterSubjectAreaId())?null:Long.valueOf(frm.getFilterSubjectAreaId())), frm.getFilterCourseNbr());
+        	    String html = tbl.getDistPrefsTable(request, (Constants.ALL_OPTION_VALUE.equals(frm.getFilterSubjectAreaId())?null:Long.valueOf(frm.getFilterSubjectAreaId())), frm.getFilterCourseNbr(), frm.getExamType());
         	    if (html!=null)
         	        request.setAttribute(DistributionPref.DIST_PREF_REQUEST_ATTR, html);
         	} else {

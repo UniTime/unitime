@@ -124,7 +124,7 @@ public class ExamGridTable {
 
 	public ExamGridTable(ExamGridForm form, HttpSession session) throws Exception {
 	    iForm = form;
-	    for (Iterator i=iForm.getPeriods().iterator();i.hasNext();) {
+	    for (Iterator i=iForm.getPeriods(iForm.getExamType()).iterator();i.hasNext();) {
 	        ExamPeriod period = (ExamPeriod)i.next();
 	        iDates.add(period.getDateOffset());
 	        iStartsSlots.add(period.getStartSlot());
@@ -140,7 +140,7 @@ public class ExamGridTable {
 	        for (Iterator i=Location.findAllExamLocations(iForm.getSessionId()).iterator();i.hasNext();) {
 	            Location location = (Location)i.next();
 	            if (match(location.getLabel())) {
-	                if (solver!=null)
+	                if (solver!=null && solver.getExamType()==iForm.getExamType())
 	                    iModels.add(new ExamGridModel(
 	                            location.getUniqueId(),
 	                            location.getLabel(),
@@ -151,20 +151,20 @@ public class ExamGridTable {
                                 location.getUniqueId(),
                                 location.getLabel(),
                                 location.getCapacity(),
-                                Exam.findAssignedExamsOfLocation(location.getUniqueId())));
+                                Exam.findAssignedExamsOfLocation(location.getUniqueId(), iForm.getExamType())));
 	            }
 	        }
 	    } else if (iForm.getResource()==sResourceInstructor) {
 	        String instructorNameFormat = Settings.getSettingValue(Web.getUser(session), Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT);
 	        Hashtable<String,ExamGridModel> models = new Hashtable<String,ExamGridModel> ();
-            for (Iterator i=DepartmentalInstructor.findAllExamInstructors(iForm.getSessionId()).iterator();i.hasNext();) {
+            for (Iterator i=DepartmentalInstructor.findAllExamInstructors(iForm.getSessionId(), iForm.getExamType()).iterator();i.hasNext();) {
                 DepartmentalInstructor instructor = (DepartmentalInstructor)i.next();
                 if (match(instructor.getName(instructorNameFormat))) {
                     Collection<ExamAssignmentInfo> assignments = null;
-                    if (solver!=null)
+                    if (solver!=null  && solver.getExamType()==iForm.getExamType())
                         assignments = solver.getAssignedExamsOfInstructor(instructor.getUniqueId());
                     else
-                        assignments = Exam.findAssignedExamsOfInstructor(instructor.getUniqueId());
+                        assignments = Exam.findAssignedExamsOfInstructor(instructor.getUniqueId(), iForm.getExamType());
                     if (instructor.getExternalUniqueId()==null) {
                         iModels.add(new ExamGridModel(
                                 instructor.getUniqueId(),
@@ -190,7 +190,7 @@ public class ExamGridTable {
 	        for (Iterator i=SubjectArea.getSubjectAreaList(iForm.getSessionId()).iterator();i.hasNext();) {
 	            SubjectArea subject = (SubjectArea)i.next();
 	            if (match(subject.getSubjectAreaAbbreviation())) {
-                    if (solver!=null)
+                    if (solver!=null && solver.getExamType()==iForm.getExamType())
                         iModels.add(new ExamGridModel(
                                 subject.getUniqueId(),
                                 subject.getSubjectAreaAbbreviation(),
@@ -201,7 +201,7 @@ public class ExamGridTable {
                                 subject.getUniqueId(),
                                 subject.getSubjectAreaAbbreviation(),
                                 -1,
-                                Exam.findAssignedExams(iForm.getSessionId(),subject.getUniqueId()))); 
+                                Exam.findAssignedExams(iForm.getSessionId(),subject.getUniqueId(),iForm.getExamType()))); 
 	                
 	            }
 	        }
@@ -248,7 +248,7 @@ public class ExamGridTable {
 	
     public int getMaxIdx(ExamGridModel model, int startDay, int endDay, int firstSlot, int lastSlot) {
         int max = 0;
-        for (Iterator i=iForm.getPeriods().iterator();i.hasNext();) {
+        for (Iterator i=iForm.getPeriods(iForm.getExamType()).iterator();i.hasNext();) {
             ExamPeriod period = (ExamPeriod)i.next();
             if (period.getDateOffset()<startDay || period.getDateOffset()>endDay) continue;
             if (period.getStartSlot()<firstSlot || period.getStartSlot()>lastSlot) continue;
@@ -331,7 +331,7 @@ public class ExamGridTable {
     public TreeSet<Integer> days() {
         TreeSet<Integer> days = new TreeSet();
         for (Integer day:iDates) {
-            if (!iForm.isAllDates() && day!=iForm.getDate()) continue;
+            if (!iForm.isAllDates(iForm.getExamType()) && day!=iForm.getDate(iForm.getExamType())) continue;
             days.add(day);
         }
         return days;
@@ -340,7 +340,7 @@ public class ExamGridTable {
     public TreeSet<Integer> slots() {
         TreeSet<Integer> slots = new TreeSet();
         for (Integer slot:iStartsSlots) {
-            if (slot<iForm.getStartTime() || slot>iForm.getEndTime()) continue;
+            if (slot<iForm.getStartTime(iForm.getExamType()) || slot>iForm.getEndTime(iForm.getExamType())) continue;
             slots.add(slot);
         }
         return slots;
@@ -349,7 +349,7 @@ public class ExamGridTable {
     public Integer prev(int slot) {
         Integer prev = null;
         for (Integer s:iStartsSlots) {
-            if (s<iForm.getStartTime() || s>=slot) continue;
+            if (s<iForm.getStartTime(iForm.getExamType()) || s>=slot) continue;
             if (prev==null) prev = s;
             else prev = Math.max(prev,s);
         }
@@ -359,7 +359,7 @@ public class ExamGridTable {
     public Integer next(int slot) {
         Integer next = null;
         for (Integer s:iStartsSlots) {
-            if (s<=slot || s>iForm.getEndTime()) continue;
+            if (s<=slot || s>iForm.getEndTime(iForm.getExamType())) continue;
             if (next==null) next = s;
             else next = Math.min(next,s);
         }

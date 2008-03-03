@@ -57,6 +57,11 @@ public class Exam extends BaseExam implements Comparable<Exam> {
 	
 	public static final String sSeatingTypes[] = new String[] {"Normal","Exam"};
 	
+	public static final int sExamTypeFinal = 0;
+	public static final int sExamTypeEvening = 1;
+	
+	public static final String sExamTypes[] = new String[] {"Final", "Evening"};
+	
 	protected boolean canUserEdit(User user) {
         //admin
         if (Roles.ADMIN_ROLE.equals(user.getCurrentRole())) 
@@ -181,41 +186,45 @@ public class Exam extends BaseExam implements Comparable<Exam> {
 	    return ret;
 	}
 	
-	public static List findAll(Long sessionId) {
+	public static List findAll(Long sessionId, Integer examType) {
 	    return new ExamDAO().getSession().createQuery(
-	            "select x from Exam x where x.session.uniqueId=:sessionId"
+	            "select x from Exam x where x.session.uniqueId=:sessionId and x.examType=:examType"
 	            )
 	            .setLong("sessionId", sessionId)
+	            .setInteger("examType", examType)
 	            .setCacheable(true)
 	            .list();
 	}
 	
-    public static List findExamsOfSubjectArea(Long subjectAreaId) {
+    public static List findExamsOfSubjectArea(Long subjectAreaId, Integer examType) {
         return new ExamDAO().getSession().createQuery(
                 "select distinct x from Exam x inner join x.owners o where " +
-                "o.course.subjectArea.uniqueId=:subjectAreaId")
+                "o.course.subjectArea.uniqueId=:subjectAreaId and x.examType=:examType")
                 .setLong("subjectAreaId", subjectAreaId)
+                .setInteger("examType", examType)
                 .setCacheable(true)
                 .list();
     }
     
-    public static List findExamsOfCourseOffering(Long courseOfferingId) {
+    public static List findExamsOfCourseOffering(Long courseOfferingId, Integer examType) {
         return new ExamDAO().getSession().createQuery(
                 "select distinct x from Exam x inner join x.owners o where " +
-                "o.course.uniqueId=:courseOfferingId")
+                "o.course.uniqueId=:courseOfferingId and x.examType=:examType")
                 .setLong("courseOfferingId", courseOfferingId)
+                .setInteger("examType", examType)
                 .setCacheable(true)
                 .list();
     }
     
-    public static List findExamsOfCourse(Long subjectAreaId, String courseNbr) {
-        if (courseNbr==null || courseNbr.trim().length()==0) return findExamsOfSubjectArea(subjectAreaId);
+    public static List findExamsOfCourse(Long subjectAreaId, String courseNbr, Integer examType) {
+        if (courseNbr==null || courseNbr.trim().length()==0) return findExamsOfSubjectArea(subjectAreaId, examType);
         return new ExamDAO().getSession().createQuery(
                 "select distinct x from Exam x inner join x.owners o where " +
-                "o.course.subjectArea.uniqueId=:subjectAreaId and "+
+                "o.course.subjectArea.uniqueId=:subjectAreaId and x.examType=:examType and "+
                 (courseNbr.indexOf('*')>=0?"o.course.courseNbr like :courseNbr":"o.course.courseNbr=:courseNbr"))
                 .setLong("subjectAreaId", subjectAreaId)
                 .setString("courseNbr", courseNbr.trim().replaceAll("\\*", "%"))
+                .setInteger("examType", examType)
                 .setCacheable(true)
                 .list();
     }
@@ -486,6 +495,15 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         } else throw new RuntimeException("Unsupported type "+type);
     }
     
+    public static boolean hasTimetable(Long sessionId, Integer examType) {
+    	if (examType==null) return hasTimetable(sessionId);
+        return ((Number)new ExamDAO().getSession().
+                createQuery("select count(x) from Exam x " +
+                		"where x.session.uniqueId=:sessionId and " +
+                		"x.assignedPeriod!=null and x.examType=:examType").
+                setLong("sessionId",sessionId).uniqueResult()).longValue()>0;
+    }
+    
     public static boolean hasTimetable(Long sessionId) {
         return ((Number)new ExamDAO().getSession().
                 createQuery("select count(x) from Exam x " +
@@ -493,13 +511,22 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 		"x.assignedPeriod!=null").
                 setLong("sessionId",sessionId).uniqueResult()).longValue()>0;
     }
+
+    public static boolean hasEveningExams(Long sessionId) {
+    	return ((Number)new ExamDAO().getSession().
+    			createQuery("select count(p) from ExamPeriod p " +
+    					"where p.session.uniqueId=:sessionId and "+
+    					"p.examType = "+sExamTypeEvening).
+    			setLong("sessionId", sessionId).uniqueResult()).longValue()>0;
+    }
     
-    public static Collection<ExamAssignmentInfo> findAssignedExams(Long sessionId) {
+    public static Collection<ExamAssignmentInfo> findAssignedExams(Long sessionId, Integer examType) {
         Vector<ExamAssignmentInfo> ret = new Vector<ExamAssignmentInfo>();
         List exams = new ExamDAO().getSession().createQuery(
                 "select x from Exam x where "+
-                "x.session.uniqueId=:sessionId and x.assignedPeriod!=null").
+                "x.session.uniqueId=:sessionId and x.assignedPeriod!=null and x.examType=:examType").
                 setLong("sessionId", sessionId).
+                setInteger("examType", examType).
                 setCacheable(true).list();
         for (Iterator i=exams.iterator();i.hasNext();) {
             Exam exam = (Exam)i.next();
@@ -508,12 +535,13 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         return ret;
     }
     
-    public static Collection<ExamInfo> findUnassignedExams(Long sessionId) {
+    public static Collection<ExamInfo> findUnassignedExams(Long sessionId, Integer examType) {
         Vector<ExamInfo> ret = new Vector<ExamInfo>();
         List exams = new ExamDAO().getSession().createQuery(
                 "select x from Exam x where "+
-                "x.session.uniqueId=:sessionId and x.assignedPeriod=null").
+                "x.session.uniqueId=:sessionId and x.assignedPeriod=null and x.examType=:examType").
                 setLong("sessionId", sessionId).
+                setInteger("examType", examType).
                 setCacheable(true).list();
         for (Iterator i=exams.iterator();i.hasNext();) {
             Exam exam = (Exam)i.next();
@@ -522,14 +550,16 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         return ret;
     }
     
-    public static Collection<ExamAssignmentInfo> findAssignedExams(Long sessionId, Long subjectAreaId) {
-        if (subjectAreaId==null || subjectAreaId<0) return findAssignedExams(sessionId);
+    public static Collection<ExamAssignmentInfo> findAssignedExams(Long sessionId, Long subjectAreaId, Integer examType) {
+        if (subjectAreaId==null || subjectAreaId<0) return findAssignedExams(sessionId, examType);
         Vector<ExamAssignmentInfo> ret = new Vector<ExamAssignmentInfo>();
         List exams = new ExamDAO().getSession().createQuery(
                 "select distinct x from Exam x inner join x.owners o where " +
                 "o.course.subjectArea.uniqueId=:subjectAreaId and "+
+                "x.examType=:examType and "+
                 "x.session.uniqueId=:sessionId and x.assignedPeriod!=null").
                 setLong("sessionId", sessionId).
+                setLong("examType", examType).
                 setLong("subjectAreaId", subjectAreaId).
                 setCacheable(true).list();
         for (Iterator i=exams.iterator();i.hasNext();) {
@@ -539,14 +569,16 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         return ret;
     }
     
-    public static Collection<ExamInfo> findUnassignedExams(Long sessionId, Long subjectAreaId) {
-        if (subjectAreaId==null || subjectAreaId<0) return findUnassignedExams(sessionId);
+    public static Collection<ExamInfo> findUnassignedExams(Long sessionId, Long subjectAreaId, Integer examType) {
+        if (subjectAreaId==null || subjectAreaId<0) return findUnassignedExams(sessionId,examType);
         Vector<ExamInfo> ret = new Vector<ExamInfo>();
         List exams = new ExamDAO().getSession().createQuery(
                 "select distinct x from Exam x inner join x.owners o where " +
                 "o.course.subjectArea.uniqueId=:subjectAreaId and "+
+                "x.examType=:examType and "+
                 "x.session.uniqueId=:sessionId and x.assignedPeriod=null").
                 setLong("sessionId", sessionId).
+                setLong("examType", examType).
                 setLong("subjectAreaId", subjectAreaId).
                 setCacheable(true).list();
         for (Iterator i=exams.iterator();i.hasNext();) {
@@ -556,12 +588,14 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         return ret;
     }
     
-    public static Collection<ExamAssignmentInfo> findAssignedExamsOfLocation(Long locationId) throws Exception {
+    public static Collection<ExamAssignmentInfo> findAssignedExamsOfLocation(Long locationId, Integer examType) throws Exception {
         Vector<ExamAssignmentInfo> ret = new Vector<ExamAssignmentInfo>();
         List exams = new ExamDAO().getSession().createQuery(
                 "select distinct x from Exam x inner join x.assignedRooms r where " +
-                "r.uniqueId=:locationId and x.assignedPeriod!=null").
+                "r.uniqueId=:locationId and x.assignedPeriod!=null and "+
+                "x.examType=:examType").
                 setLong("locationId", locationId).
+                setInteger("examType", examType).
                 setCacheable(true).list();
         for (Iterator i=exams.iterator();i.hasNext();) {
             Exam exam = (Exam)i.next();
@@ -570,12 +604,14 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         return ret;
     }
     
-    public static Collection<ExamAssignmentInfo> findAssignedExamsOfInstructor(Long instructorId) throws Exception {
+    public static Collection<ExamAssignmentInfo> findAssignedExamsOfInstructor(Long instructorId, Integer examType) throws Exception {
         Vector<ExamAssignmentInfo> ret = new Vector<ExamAssignmentInfo>();
         List exams = new ExamDAO().getSession().createQuery(
                 "select distinct x from Exam x inner join x.instructors i where " +
-                "i.uniqueId=:instructorId and x.assignedPeriod!=null").
+                "i.uniqueId=:instructorId and x.assignedPeriod!=null and "+
+                "x.examType=:examType").
                 setLong("instructorId", instructorId).
+                setInteger("examType", examType).
                 setCacheable(true).list();
         for (Iterator i=exams.iterator();i.hasNext();) {
             Exam exam = (Exam)i.next();
@@ -583,5 +619,4 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         } 
         return ret;
     }
-    
 }

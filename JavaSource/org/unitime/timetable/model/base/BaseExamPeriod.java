@@ -48,7 +48,8 @@ public abstract class BaseExamPeriod implements Serializable {
 		java.lang.Integer dateOffset,
 		java.lang.Integer startSlot,
 		java.lang.Integer length,
-		org.unitime.timetable.model.PreferenceLevel prefLevel) {
+		org.unitime.timetable.model.PreferenceLevel prefLevel,
+		java.lang.Integer examType) {
 
 	    this.setUniqueId(uniqueId);
         this.setSession(session);
@@ -56,6 +57,7 @@ public abstract class BaseExamPeriod implements Serializable {
         this.setStartSlot(startSlot);
         this.setLength(length);
         this.setPrefLevel(prefLevel);
+        this.setExamType(examType);
         initialize();
 	}
 
@@ -72,6 +74,7 @@ public abstract class BaseExamPeriod implements Serializable {
 	private java.lang.Integer startSlot;
 	private java.lang.Integer length;
 	private org.unitime.timetable.model.PreferenceLevel prefLevel;
+	private java.lang.Integer examType;
 
     public java.lang.Long getUniqueId () {
         return uniqueId;
@@ -120,6 +123,14 @@ public abstract class BaseExamPeriod implements Serializable {
 	
 	public void setPrefLevel(org.unitime.timetable.model.PreferenceLevel prefLevel) {
 	    this.prefLevel = prefLevel;
+	}
+	
+	public java.lang.Integer getExamType() {
+		return examType;
+	}
+	
+	public void setExamType(java.lang.Integer examType) {
+		this.examType = examType;
 	}
 
     public boolean equals (Object obj) {

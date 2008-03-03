@@ -28,6 +28,7 @@ import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
+import org.unitime.timetable.util.ComboBoxLookup;
 import org.unitime.timetable.util.DynamicList;
 import org.unitime.timetable.util.DynamicListObjectFactory;
 import org.unitime.timetable.util.IdValue;
@@ -51,6 +52,8 @@ public class ExamEditForm extends PreferencesForm {
     private List classNumber;
     private List messages;
     private Collection subjectAreas;
+    
+    private Integer examType;
     
     public String getExamId() { return examId; }
     public void setExamId(String examId) { this.examId = examId; }
@@ -98,6 +101,9 @@ public class ExamEditForm extends PreferencesForm {
         courseNbr = DynamicList.getInstance(new ArrayList(), idfactory);
         itype = DynamicList.getInstance(new ArrayList(), idfactory);
         classNumber = DynamicList.getInstance(new ArrayList(), idfactory);
+        examType = Exam.sExamTypeFinal;
+        if (request.getSession().getAttribute("Exam.Type")!=null)
+        	examType = (Integer)request.getSession().getAttribute("Exam.Type");
         super.reset(mapping, request);
     }
 
@@ -366,6 +372,15 @@ public class ExamEditForm extends PreferencesForm {
     
     public void addBlankPrefRows() {
         super.addBlankPrefRows();
+    }
+    
+    public Integer getExamType() { return examType; }
+    public void setExamType(Integer examType) { this.examType = examType; }
+    public Collection getExamTypes() {
+    	Vector ret = new Vector(Exam.sExamTypes.length);
+    	for (int i=0;i<Exam.sExamTypes.length;i++)
+    		ret.add(new ComboBoxLookup(Exam.sExamTypes[i], String.valueOf(i)));
+    	return ret;
     }
 
 }

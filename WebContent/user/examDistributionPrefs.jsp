@@ -40,7 +40,7 @@
 
 	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
 		<% if (request.getAttribute(DistributionPref.DIST_PREF_REQUEST_ATTR)==null) { %>	
-		
+		<html:hidden property="examType"/>
 		<TR>
 			<TD valign="middle" colspan='3'>
 				<tt:section-header>
@@ -142,7 +142,16 @@
 		<TR><TD colspan='3'>&nbsp;</TD></TR>
 		<TR>
 			<TD valign="middle" colspan='3'>
-				<tt:section-header title='Examinations in Distribution'>
+				<tt:section-header>
+					<tt:section-title>
+						<logic:iterate name="examDistributionPrefsForm" property="examTypes" id="et">
+							<bean:define name="et" property="value" id="examType"/>
+							<logic:equal name="examDistributionPrefsForm" property="examType" value="<%=(String)examType%>">
+								<bean:write name="et" property="label"/>			
+							</logic:equal>
+						</logic:iterate>
+						Examinations in Distribution
+					</tt:section-title>
 					<html:submit styleClass="btn" property="op" accesskey="A" titleKey="title.addExam" >
 						<bean:message key="button.addExam" />
 					</html:submit>
@@ -267,6 +276,10 @@
 		<% } else { %>
 			<TR>
 				<TD colspan="2">
+					<B>Type: </B>
+					<html:select name="examDistributionPrefsForm" property="examType">
+						<html:optionsCollection property="examTypes" label="label" value="value" />
+					</html:select>
 					<B>Subject: </B>
 					<html:select name="examDistributionPrefsForm" property="filterSubjectAreaId"
 						onfocus="setUp();" 
@@ -306,7 +319,15 @@
 			<TR>
 				<TD colspan="2">
 					<tt:section-header>
-						<tt:section-title>Examination Distribution Preferences</tt:section-title>
+						<tt:section-title>
+							<logic:iterate name="examDistributionPrefsForm" property="examTypes" id="et">
+								<bean:define name="et" property="value" id="examType"/>
+								<logic:equal name="examDistributionPrefsForm" property="examType" value="<%=(String)examType%>">
+									<bean:write name="et" property="label"/>			
+								</logic:equal>
+							</logic:iterate>
+							Examination Distribution Preferences
+						</tt:section-title>
 						<logic:equal name="examDistributionPrefsForm" property="canAdd" value="true">
 							<TD colspan="2" align="right">
 								<html:submit property="op" styleClass="btn" accesskey="A" title="Add New Distribution Preference (Alt+A)" >
@@ -377,6 +398,7 @@
 		var subjAreaObj = document.getElementById('subjectArea'+idx);
 		var courseNbrObj = document.getElementById('courseNbr'+idx);
 		var examObj = document.getElementById('exam'+idx);
+		var examType = document.getElementsByName('examType')[0].value;
 
 		var id = null;
 		var options = null;
@@ -425,7 +447,7 @@
 		};
 	
 		// Request
-		var vars = "id="+id+"&type="+type;
+		var vars = "id="+id+"&examType="+examType+"&type="+type;
 		req.open( "POST", "distributionPrefsAjax.do", true );
 		req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 		req.setRequestHeader("Content-Length", vars.length);

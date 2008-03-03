@@ -26,17 +26,19 @@ public class PeriodPreferenceModel implements RequiredTimeTableModel {
     private boolean iAllowRequired = true;
     
     private ExamPeriod iPeriod = null;
+    private Integer iExamType = null;
     
     public static SimpleDateFormat sDF = new SimpleDateFormat("EEE MM/dd");
     
-    public PeriodPreferenceModel(Session session) {
-        this(session, null);
+    public PeriodPreferenceModel(Session session, Integer examType) {
+        this(session, null, examType);
     }
 
-    public PeriodPreferenceModel(Session session, ExamAssignment assignment) {
+    public PeriodPreferenceModel(Session session, ExamAssignment assignment, Integer examType) {
         iPeriod = (assignment==null?null:assignment.getPeriod());
         iFirstDate = session.getExamBeginDate();
-        iPeriods = ExamPeriod.findAll(session.getUniqueId());
+        iPeriods = ExamPeriod.findAll(session.getUniqueId(), examType);
+        iExamType = examType;
         for (Iterator i=iPeriods.iterator();i.hasNext();) {
             ExamPeriod period = (ExamPeriod)i.next();
             iPreferences.put(period, PreferenceLevel.sNeutral);

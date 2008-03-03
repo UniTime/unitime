@@ -57,7 +57,8 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
 	        java.lang.Integer dateOffset,
 	        java.lang.Integer startSlot,
 	        java.lang.Integer length,
-	        org.unitime.timetable.model.PreferenceLevel prefLevel) {
+	        org.unitime.timetable.model.PreferenceLevel prefLevel,
+	        java.lang.Integer examType) {
 
 		super (
 			uniqueId,
@@ -65,7 +66,8 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
 			dateOffset,
 			startSlot,
 			length,
-			prefLevel);
+			prefLevel,
+			examType);
 	}
 
 /*[CONSTRUCTOR MARKER END]*/
@@ -135,22 +137,32 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
     }
 
     public int compareTo(ExamPeriod period) {
-	    int cmp = getDateOffset().compareTo(period.getDateOffset());
+    	int cmp = getExamType().compareTo(period.getExamType());
+    	if (cmp!=0) return cmp;
+	    cmp = getDateOffset().compareTo(period.getDateOffset());
 	    if (cmp!=0) return cmp;
 	    return getStartSlot().compareTo(period.getStartSlot());
 	}
     
-    public static TreeSet findAll(HttpServletRequest request) throws Exception {
-        return findAll(Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId());
+    public static TreeSet findAll(HttpServletRequest request, Integer type) throws Exception {
+        return findAll(Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId(), type);
     }
     
-    public static TreeSet findAll(Long sessionId) {
-        TreeSet ret = new TreeSet();
-        ret.addAll(new ExamPeriodDAO().getSession().
+    public static TreeSet findAll(Long sessionId, Integer type) {
+    	TreeSet ret = new TreeSet();
+    	if (type==null)
+    		ret.addAll(new ExamPeriodDAO().getSession().
                 createQuery("select ep from ExamPeriod ep where ep.session.uniqueId=:sessionId").
                 setLong("sessionId", sessionId).
                 setCacheable(true).
                 list());
+    	else
+    		ret.addAll(new ExamPeriodDAO().getSession().
+                    createQuery("select ep from ExamPeriod ep where ep.session.uniqueId=:sessionId and ep.examType=:type").
+                    setLong("sessionId", sessionId).
+                    setInteger("type", type).
+                    setCacheable(true).
+                    list());
         return ret;
     }
     

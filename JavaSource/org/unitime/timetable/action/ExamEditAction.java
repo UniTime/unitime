@@ -96,7 +96,10 @@ public class ExamEditAction extends PreferencesAction {
             if(op==null || op.trim().length()==0 
                     || ( op.equals(rsc.getMessage("button.reload")) 
                          && (reloadCause==null || reloadCause.trim().length()==0) )) {
-                op = "init";
+            	if (deleteType!=null && deleteType.length()>0)
+            		op = "delete";
+            	else
+            		op = "init";
             }
             
             // Check op exists
@@ -171,6 +174,8 @@ public class ExamEditAction extends PreferencesAction {
            
             if ("instructor".equals(deleteType)  && deleteId>=0) {
                 frm.getInstructors().remove(deleteId);
+            } else if ("examType".equals(deleteType)  && deleteId>=0) {
+                frm.setExamType(deleteId);
             } else if ("objects".equals(deleteType)  && deleteId>=0) {
                 frm.deleteExamOwner(deleteId);
             }
@@ -258,6 +263,7 @@ public class ExamEditAction extends PreferencesAction {
     protected void doLoad(HttpServletRequest request, ExamEditForm frm, Exam exam) {
         if (exam!=null) {
             frm.setExamId(exam.getUniqueId().toString());
+            frm.setExamType(exam.getExamType());
             
             frm.setName(exam.getName());
             frm.setNote(exam.getNote());
@@ -285,7 +291,7 @@ public class ExamEditAction extends PreferencesAction {
                 frm.addExamOwner((ExamOwner)i.next());
         } else {
             try {
-                TreeSet periods = ExamPeriod.findAll(request);
+                TreeSet periods = ExamPeriod.findAll(request, Exam.sExamTypeFinal);
                 if (!periods.isEmpty())
                     frm.setLength(Constants.SLOT_LENGTH_MIN*((ExamPeriod)periods.first()).getLength());
             } catch (Exception e) {}
@@ -398,6 +404,7 @@ public class ExamEditAction extends PreferencesAction {
 
         super.doUpdate(request, frm, exam, s, false);
         
+        exam.setExamType(frm.getExamType());
         exam.setName(frm.getName()==null || frm.getName().trim().length()==0?null:frm.getName().trim());
         exam.setNote(frm.getNote());
         exam.setSeatingType(frm.getSeatingTypeIdx());

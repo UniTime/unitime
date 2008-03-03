@@ -1018,6 +1018,14 @@
 				length="100"
 			/>
 			
+			<property
+				name="examType"
+				column="EXAM_TYPE"
+				type="java.lang.Integer"
+				length="10"
+				not-null="true"
+			/>
+
 			<set
 				name="owners"
 				lazy="true"

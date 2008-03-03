@@ -54,6 +54,7 @@ import org.unitime.timetable.form.RoomListForm;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
+import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExternalRoom;
 import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.Location;
@@ -551,7 +552,7 @@ public class RoomListAction extends Action {
 	                    if (gridAsText)
 	                        text[idx] = location.getExamPreferencesAbbreviationHtml();
 	                    else {
-	                        PeriodPreferenceModel px = new PeriodPreferenceModel(location.getSession());
+	                        PeriodPreferenceModel px = new PeriodPreferenceModel(location.getSession(), Exam.sExamTypeFinal);
 	                        px.load(location);
 	                        RequiredTimeTable rtt = new RequiredTimeTable(px);
 	                        File imageFileName = null;
