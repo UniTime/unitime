@@ -63,7 +63,7 @@ import com.lowagie.text.pdf.PdfWriter;
  */
 public class ExamDistributionPrefsTableBuilder {
 	
-	public String getDistPrefsTable(HttpServletRequest request, Long subjectAreaId, String courseNbr) throws Exception {
+	public String getDistPrefsTable(HttpServletRequest request, Long subjectAreaId, String courseNbr, Integer examType) throws Exception {
 	    User user = Web.getUser(request.getSession());
 	    Session session = Session.getCurrentAcadSession(user);
 	    
@@ -74,8 +74,9 @@ public class ExamDistributionPrefsTableBuilder {
 	            (courseNbr==null || courseNbr.trim().length()==0?"":courseNbr.indexOf('*')>=0?"o.course.courseNbr like :courseNbr and ":"o.course.courseNbr=:courseNbr and")+
 	            (subjectAreaId==null?"":" o.course.subjectArea.uniqueId=:subjectAreaId and ")+
 	            "dp.distributionType.examPref = true and "+
-	            "do.prefGroup = x and x.session.uniqueId=:sessionId")
-	            .setLong("sessionId", session.getUniqueId());
+	            "do.prefGroup = x and x.session.uniqueId=:sessionId and x.examType=:examType")
+	            .setLong("sessionId", session.getUniqueId())
+	    		.setInteger("examType", examType);
 	    if (subjectAreaId!=null)
 	        q.setLong("subjectAreaId", subjectAreaId);
 	    if (courseNbr!=null && courseNbr.trim().length()!=0)
@@ -84,7 +85,7 @@ public class ExamDistributionPrefsTableBuilder {
 		return toHtmlTable(request, distPrefs, null); 
 	}
 
-    public File getDistPrefsTableAsPdf(HttpServletRequest request, Long subjectAreaId, String courseNbr) throws Exception {
+    public File getDistPrefsTableAsPdf(HttpServletRequest request, Long subjectAreaId, String courseNbr, Integer examType) throws Exception {
         User user = Web.getUser(request.getSession());
         Session session = Session.getCurrentAcadSession(user);
         
@@ -95,15 +96,16 @@ public class ExamDistributionPrefsTableBuilder {
                 (courseNbr==null || courseNbr.trim().length()==0?"":courseNbr.indexOf('*')>=0?"o.course.courseNbr like :courseNbr and ":"o.course.courseNbr=:courseNbr and")+
                 (subjectAreaId==null?"":" o.course.subjectArea.uniqueId=:subjectAreaId and ")+
                 "dp.distributionType.examPref = true and "+
-                "do.prefGroup = x and x.session.uniqueId=:sessionId")
-                .setLong("sessionId", session.getUniqueId());
+                "do.prefGroup = x and x.session.uniqueId=:sessionId and x.examType=:examType")
+                .setLong("sessionId", session.getUniqueId())
+                .setInteger("examType", examType);
         if (subjectAreaId!=null)
             q.setLong("subjectAreaId", subjectAreaId);
         if (courseNbr!=null && courseNbr.trim().length()!=0)
             q.setString("courseNbr", courseNbr.trim().replaceAll("\\*", "%"));
         List distPrefs = q.setCacheable(true).list();
 
-        return toPdfTable(request, distPrefs); 
+        return toPdfTable(request, distPrefs, examType); 
     }
 
     public String getDistPrefsTable(HttpServletRequest request, Exam exam) throws Exception {
@@ -212,13 +214,13 @@ public class ExamDistributionPrefsTableBuilder {
         return tbl.printTable(WebTable.getOrder(request.getSession(),"examDistPrefsTable.ord"));
     }
 
-    public File toPdfTable(HttpServletRequest request, Collection distPrefs) {
+    public File toPdfTable(HttpServletRequest request, Collection distPrefs, int examType) {
         String backId = ("PreferenceGroup".equals(request.getParameter("backType"))?request.getParameter("backId"):null);
         
         WebTable.setOrder(request.getSession(),"examDistPrefsTable.ord",request.getParameter("order"),4);
         
         PdfWebTable tbl = new PdfWebTable(4, 
-                "Examination Distribution Preferences",  
+                Exam.sExamTypes[examType]+" Examination Distribution Preferences",  
                 null,
                 new String[] {" Preference ", " Type ", " Exam ", " Class/Course " },
                 new String[] { "left", "left", "left", "left"},

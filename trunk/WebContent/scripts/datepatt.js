@@ -73,16 +73,24 @@ function calGenDayHeader(year, month, day, editable) {
 			d.setDate(d.getDate()+1);
 		}
 		do {
-			onclick += "calSetPreference(new Date("+d.getFullYear()+","+d.getMonth()+","+d.getDate()+"),calGetCurrentPreference());";
+			if (calGetPreference(d)!='@')
+				onclick += "calSetPreference(new Date("+d.getFullYear()+","+d.getMonth()+","+d.getDate()+"),calGetCurrentPreference());";
 			d.setDate(d.getDate()+7);
 		} while (d.getMonth()==month);
-		document.writeln("<th width='20' height='20' "+
- 	  	"style=\"border:rgb(100,100,100) 1px solid;background-color:"+(day==0||day==6?"rgb(200,200,200);":"rgb(220,220,220);")+"\" "+
- 			"onmouseover=\"this.style.border='rgb(0,0,242) 1px solid';this.style.cursor='pointer';\" "+
- 			"onmouseout=\"this.style.border='rgb(100,100,100) 1px solid';\" "+
- 			"onclick=\""+onclick+"\">"+
- 			"<font size=1>"+CAL_WEEKDAYS[day]+"</font>"+
- 			"</th>");
+		if (onclick.length>0) {
+			document.writeln("<th width='20' height='20' "+
+ 	  		"style=\"border:rgb(100,100,100) 1px solid;background-color:"+(day==0||day==6?"rgb(200,200,200);":"rgb(220,220,220);")+"\" "+
+ 				"onmouseover=\"this.style.border='rgb(0,0,242) 1px solid';this.style.cursor='pointer';\" "+
+ 				"onmouseout=\"this.style.border='rgb(100,100,100) 1px solid';\" "+
+ 				"onclick=\""+onclick+"\">"+
+ 				"<font size=1>"+CAL_WEEKDAYS[day]+"</font>"+
+ 				"</th>");
+ 		} else {
+			document.writeln("<th width='20' height='20' "+
+ 	  		"style=\"border:rgb(100,100,100) 1px solid;background-color:"+(day==0||day==6?"rgb(200,200,200);":"rgb(220,220,220);")+"\" "+
+ 				"<font size=1>"+CAL_WEEKDAYS[day]+"</font>"+
+	 			"</th>");
+ 		}
  	} else {
 		document.writeln("<th width='20' height='20' "+
  	  	"style=\"border:rgb(100,100,100) 1px solid;background-color:"+(day==0||day==6?"rgb(200,200,200);":"rgb(220,220,220);")+"\" "+
@@ -96,16 +104,24 @@ function calGenDayHeaderBlank(year, month, editable) {
 		var onclick = "";
 		var d = new Date(year,month,1);
 		do {
-			onclick += "calSetPreference(new Date("+d.getFullYear()+","+d.getMonth()+","+d.getDate()+"),calGetCurrentPreference());";
+			if (calGetPreference(d)!='@')
+				onclick += "calSetPreference(new Date("+d.getFullYear()+","+d.getMonth()+","+d.getDate()+"),calGetCurrentPreference());";
 			d.setDate(d.getDate()+1);
 		} while (d.getMonth()==month);
-		document.writeln("<th width='20' height='20' "+
- 	  	"style=\"border:rgb(100,100,100) 1px solid;background-color:rgb(220,220,220);\" "+
- 			"onmouseover=\"this.style.border='rgb(0,0,242) 1px solid';this.style.cursor='pointer';\" "+
- 			"onmouseout=\"this.style.border='rgb(100,100,100) 1px solid';\" "+
- 			"onclick=\""+onclick+"\">"+
- 			"<font size=1>&nbsp;</font>"+
- 			"</th>");
+		if (onclick.length>0) {
+			document.writeln("<th width='20' height='20' "+
+ 	  		"style=\"border:rgb(100,100,100) 1px solid;background-color:rgb(220,220,220);\" "+
+	 			"onmouseover=\"this.style.border='rgb(0,0,242) 1px solid';this.style.cursor='pointer';\" "+
+ 				"onmouseout=\"this.style.border='rgb(100,100,100) 1px solid';\" "+
+ 				"onclick=\""+onclick+"\">"+
+ 				"<font size=1>&nbsp;</font>"+
+ 				"</th>");
+ 		} else {
+			document.writeln("<th width='20' height='20' "+
+	 	  	"style=\"border:rgb(100,100,100) 1px solid;background-color:rgb(220,220,220);\" "+
+ 				"<font size=1>&nbsp;</font>"+
+	 			"</th>");
+ 		}
  	} else {
 		document.writeln("<th width='20' height='20' "+
  	  	"style=\"border:rgb(100,100,100) 1px solid;background-color:rgb(220,220,220);\" "+
@@ -119,16 +135,24 @@ function calGenWeekHeader(date, editable) {
 		var onclick = "";
 		var d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
 		do {
-			onclick += "calSetPreference(new Date("+d.getFullYear()+","+d.getMonth()+","+d.getDate()+"),calGetCurrentPreference());";
+			if (calGetPreference(d)!='@')
+				onclick += "calSetPreference(new Date("+d.getFullYear()+","+d.getMonth()+","+d.getDate()+"),calGetCurrentPreference());";
 			d.setDate(d.getDate()+1);
 		} while (d.getDay()!=0 && d.getMonth()==date.getMonth());
-		document.writeln("<th width='20' height='20' "+
- 	  	"style=\"border:rgb(100,100,100) 1px solid;background-color:rgb(220,220,220);\" "+
- 			"onmouseover=\"this.style.border='rgb(0,0,242) 1px solid';this.style.cursor='pointer';\" "+
- 			"onmouseout=\"this.style.border='rgb(100,100,100) 1px solid';\" "+
- 			"onclick=\""+onclick+"\">"+
- 			"<font size=1>"+calGetWeekNumber(date)+"</font>"+
- 			"</th>");
+		if (onclick.length>0) {
+			document.writeln("<th width='20' height='20' "+
+ 	  		"style=\"border:rgb(100,100,100) 1px solid;background-color:rgb(220,220,220);\" "+
+ 				"onmouseover=\"this.style.border='rgb(0,0,242) 1px solid';this.style.cursor='pointer';\" "+
+ 				"onmouseout=\"this.style.border='rgb(100,100,100) 1px solid';\" "+
+ 				"onclick=\""+onclick+"\">"+
+ 				"<font size=1>"+calGetWeekNumber(date)+"</font>"+
+ 				"</th>");
+ 		} else {
+			document.writeln("<th width='20' height='20' "+
+ 		  	"style=\"border:rgb(100,100,100) 1px solid;background-color:rgb(220,220,220);\" "+
+ 				"<font size=1>"+calGetWeekNumber(date)+"</font>"+
+	 			"</th>");
+ 		}
  	} else {
 		document.writeln("<th width='20' height='20' "+
  	  	"style=\"border:rgb(100,100,100) 1px solid;background-color:rgb(220,220,220);\" "+
@@ -148,7 +172,7 @@ function calGenHeader(year, month, editable) {
 function calGenField(monthIdx, date, highlight, editable) {
 	var border = (highlight==null || highlight[monthIdx][date.getDate()-1]==null?'rgb(100,100,100) 1px solid':highlight[monthIdx][date.getDate()-1]);
 	var borderSelect = (highlight==null || highlight[monthIdx][date.getDate()-1]==null?'rgb(0,0,242) 1px solid':'rgb(0,0,242) 2px solid');
-	if (editable)
+	if (editable && calGetPreference(date)!='@')
 		document.writeln("<td align='center' width='20' height='20' id='cal_"+date.getMonth()+"_"+date.getDate()+"' "+
  		  	"style=\"border:"+border+";background-color:"+calPref2Color(calGetPreference(date))+";\" "+
  			"onmouseover=\"this.style.border='"+borderSelect+"';this.style.cursor='pointer';\" "+
@@ -229,7 +253,7 @@ function calGetMonth(year, month, monthIdx, highlight, editable) {
 }
 
 function calGenPreference(pref, title, editable) {
-	if (editable)
+	if (editable && pref!='@')
 		document.writeln("<tr align=left "+
 			"onmouseover=\"this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='pointer';\" "+
 			"onclick=\"calPrefSelected('"+pref+"');\" "+

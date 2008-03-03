@@ -272,6 +272,7 @@ public class ExamDetailAction extends PreferencesAction {
         frm.setLength(exam.getLength());
         frm.setSeatingType(Exam.sSeatingTypes[exam.getSeatingType()]);
         frm.setMaxNbrRooms(exam.getMaxNbrRooms());
+        frm.setExamType(exam.getExamType());
         
         TreeSet instructors = new TreeSet(exam.getInstructors());
 

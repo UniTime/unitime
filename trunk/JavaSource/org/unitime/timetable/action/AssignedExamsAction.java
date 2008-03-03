@@ -70,10 +70,10 @@ public class AssignedExamsAction extends Action {
         ExamSolverProxy solver = WebSolver.getExamSolver(request.getSession());
         Collection<ExamAssignmentInfo> assignedExams = null;
         if (myForm.getSubjectArea()!=null && myForm.getSubjectArea()!=0) {
-            if (solver!=null)
+            if (solver!=null && solver.getExamType()==myForm.getExamType())
                 assignedExams = solver.getAssignedExams(myForm.getSubjectArea());
             else
-                assignedExams = Exam.findAssignedExams(Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId(),myForm.getSubjectArea());
+                assignedExams = Exam.findAssignedExams(Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId(),myForm.getSubjectArea(),myForm.getExamType());
         }
         
         WebTable.setOrder(request.getSession(),"assignedExams.ord",request.getParameter("ord"),1);

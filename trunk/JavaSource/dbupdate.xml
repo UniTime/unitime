@@ -1001,4 +1001,18 @@
   			alter table %SCHEMA%.exam add assigned_pref varchar(100)
   		</mysql>
 	</update>
+	<update version="17" date="3-Mar-2008" comment="Evening exams">
+		<plsql>
+			alter table exam add exam_type number(10,0) default 0
+		</plsql>
+		<plsql>
+			alter table exam_period add exam_type number(10,0) default 0
+		</plsql>
+		<mysql>
+			alter table exam add exam_type bigint(10) default 0
+		</mysql>
+		<mysql>
+		alter table exam_period add exam_type bigint(10) default 0
+		</mysql>
+	</update>
 </dbupdate>

@@ -41,6 +41,7 @@ import org.apache.struts.util.MessageResources;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
+import org.unitime.timetable.form.ExamEditForm;
 import org.unitime.timetable.form.InstructionalOfferingListForm;
 import org.unitime.timetable.form.PreferencesForm;
 import org.unitime.timetable.model.Assignment;
@@ -50,6 +51,7 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.DistributionType;
+import org.unitime.timetable.model.EveningPeriodPreferenceModel;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Location;
@@ -135,7 +137,6 @@ public class PreferencesAction extends Action {
         //LookupTables.setupTimePatterns(request); // Time Patterns
         LookupTables.setupPrefLevels(request);	 // Preference Levels
         LookupTables.setupInstructorDistribTypes(request); // Distribution Types
-        LookupTables.setupExaminationPeriods(request); // Examination Periods
         
         return mapping.findForward(mapping.getInput());
     }
@@ -626,12 +627,28 @@ public class PreferencesAction extends Action {
                 assignment = solver.getAssignment(exam.getUniqueId());
             else if (exam.getAssignedPeriod()!=null)
                 assignment = new ExamAssignment(exam);
-            PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession(), assignment);
-            px.load(exam);
-            RequiredTimeTable rtt = new RequiredTimeTable(px);
-            rtt.setName("PeriodPref");
-            rtt.update(request);
-            px.save(s, exam);
+            if (Exam.sExamTypeEvening==exam.getExamType()) {
+            	EveningPeriodPreferenceModel epx = new EveningPeriodPreferenceModel(exam.getSession(), assignment);
+            	if (epx.canDo()) {
+            		epx.load(exam);
+            		epx.load(request);
+            		epx.save(s, exam);
+            	} else {
+                	PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession(), assignment, exam.getExamType());
+                	px.load(exam);
+                	RequiredTimeTable rtt = new RequiredTimeTable(px);
+                	rtt.setName("PeriodPref");
+                	rtt.update(request);
+                	px.save(s, exam);
+                }
+            } else {
+            	PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession(), assignment, exam.getExamType());
+            	px.load(exam);
+            	RequiredTimeTable rtt = new RequiredTimeTable(px);
+            	rtt.setName("PeriodPref");
+            	rtt.update(request);
+            	px.save(s, exam);
+            }
         }
         
         // Room Feature Prefs
@@ -789,9 +806,19 @@ public class PreferencesAction extends Action {
         ExamAssignment assignment = null;
         if (solver!=null)
             assignment = solver.getAssignment(exam.getUniqueId());
-        else if (exam.getAssignedPeriod()!=null)
+        else if (exam!=null && exam.getAssignedPeriod()!=null)
             assignment = new ExamAssignment(exam);
-        PeriodPreferenceModel px = new PeriodPreferenceModel(exam==null?Session.getCurrentAcadSession(Web.getUser(request.getSession())):exam.getSession(), assignment);
+        if (Exam.sExamTypeEvening==((ExamEditForm)frm).getExamType()) {
+        	EveningPeriodPreferenceModel epx = new EveningPeriodPreferenceModel(exam==null?Session.getCurrentAcadSession(Web.getUser(request.getSession())):exam.getSession(), assignment);
+        	if (epx.canDo()) {
+        		if (exam!=null) epx.load(exam);
+        		frm.setHasNotAvailable(true);
+        		if (!op.equals("init")) epx.load(request);
+        		request.setAttribute("ExamPeriodGrid", epx.print(editable));
+        		return;
+        	}
+        }
+        PeriodPreferenceModel px = new PeriodPreferenceModel(exam==null?Session.getCurrentAcadSession(Web.getUser(request.getSession())):exam.getSession(), assignment, ((ExamEditForm)frm).getExamType());
         if (exam!=null) px.load(exam);
         User user = Web.getUser(request.getSession());
         px.setAllowHard(user.isAdmin() || user.hasRole(Roles.EXAM_MGR_ROLE));

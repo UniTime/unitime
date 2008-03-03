@@ -633,4 +633,8 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
             return ret;
         }
     }
+    
+    public int getExamType() {
+    	return getProperties().getPropertyInt("Exam.Type", org.unitime.timetable.model.Exam.sExamTypeFinal);
+    }
 }

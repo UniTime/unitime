@@ -38,6 +38,7 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionPref;
+import org.unitime.timetable.model.EveningPeriodPreferenceModel;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriodPref;
 import org.unitime.timetable.model.InstrOfferingConfig;
@@ -122,12 +123,12 @@ public class Exams extends BodyTagSupport {
                     "<input type=\"button\" onclick=\"document.location='examEdit.do?firstType="+getType()+"&firstId="+objectId+"';\" class=\"btn\" accesskey='X' title='Add Examination (Alt+X)' value=\"Add Examination\">"+
                     "</td></tr></table>";
             
-            WebTable table = new WebTable(9, title,
-                    new String[] {"Classes / Courses", "Length", "Seating<br>Type", "Students", "Max<br>Rooms", 
+            WebTable table = new WebTable(10, title,
+                    new String[] { "Classes / Courses", "Type", "Length", "Seating<br>Type", "Students", "Max<br>Rooms", 
                         "Instructor", "Period<br>Preferences", "Room<br>Preferences", "Distribution<br>Preferences"},
-                    new String[] {"left", "right", "center", "right", "right", "left", 
+                    new String[] {"left", "left", "right", "center", "right", "right", "left", 
                         "left", "left", "left"},
-                        new boolean[] {true, true, true, true, true, true, true, true}
+                        new boolean[] {true, true, true, true, true, true, true, true, true}
                     );
 
             boolean timeVertical = RequiredTimeTable.getTimeGridVertical(user);
@@ -170,8 +171,18 @@ public class Exams extends BodyTagSupport {
                     if (roomPref.length()>0) roomPref+="<br>";
                     roomPref += exam.getEffectivePrefHtmlForPrefType(RoomGroupPref.class);
                     if (roomPref.endsWith("<br>")) roomPref = roomPref.substring(0, roomPref.length()-"<br>".length());
-                    if (timeText) {
-                        perPref += exam.getEffectivePrefHtmlForPrefType(ExamPeriodPref.class);
+                    if (timeText || Exam.sExamTypeEvening==exam.getExamType()) {
+                    	if (Exam.sExamTypeEvening==exam.getExamType()) {
+                        	EveningPeriodPreferenceModel epx = new EveningPeriodPreferenceModel(exam.getSession(), null);
+                        	if (epx.canDo()) {
+                        		epx.load(exam);
+                        		perPref+=epx.toString();
+                        	} else {
+                        		perPref += exam.getEffectivePrefHtmlForPrefType(ExamPeriodPref.class);
+                        	}
+                    	} else {
+                    		perPref += exam.getEffectivePrefHtmlForPrefType(ExamPeriodPref.class);
+                    	}
                     } else {
                         ExamSolverProxy solver = WebSolver.getExamSolver(pageContext.getSession());
                         ExamAssignment assignment = null;
@@ -179,7 +190,7 @@ public class Exams extends BodyTagSupport {
                             assignment = solver.getAssignment(exam.getUniqueId());
                         else if (exam.getAssignedPeriod()!=null)
                             assignment = new ExamAssignment(exam);
-                        PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession(), assignment);
+                        PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession(), assignment, exam.getExamType());
                         px.load(exam);
                         RequiredTimeTable rtt = new RequiredTimeTable(px);
                         File imageFileName = null;
@@ -213,6 +224,7 @@ public class Exams extends BodyTagSupport {
                             "onClick=\"document.location='examDetail.do?examId="+exam.getUniqueId()+"';\"",
                             new String[] {
                                 objects,
+                                Exam.sExamTypes[exam.getExamType()],
                                 exam.getLength().toString(),
                                 (Exam.sSeatingTypeNormal==exam.getSeatingType()?"Normal":"Exam"),
                                 String.valueOf(nrStudents),

@@ -37,6 +37,7 @@ import org.apache.struts.util.MessageResources;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
+import org.unitime.timetable.util.ComboBoxLookup;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DynamicList;
 import org.unitime.timetable.util.DynamicListObjectFactory;
@@ -53,6 +54,7 @@ public class ExamDistributionPrefsForm extends ActionForm {
     private List subjectArea;
     private List courseNbr;
     private List exam;
+    private int iExamType;
     
 	private String filterSubjectAreaId;
 	private Collection filterSubjectAreas;
@@ -112,6 +114,9 @@ public class ExamDistributionPrefsForm extends ActionForm {
         filterSubjectAreaId = (String)request.getSession().getAttribute(Constants.SUBJ_AREA_ID_ATTR_NAME);
         filterCourseNbr = (String)request.getSession().getAttribute(Constants.CRS_NBR_ATTR_NAME); 
         filterSubjectAreas = new ArrayList();
+        iExamType = Exam.sExamTypeFinal;
+        if (request.getSession().getAttribute("Exam.Type")!=null)
+        	iExamType = (Integer)request.getSession().getAttribute("Exam.Type");
         canAdd = false;
     }
 
@@ -202,7 +207,7 @@ public class ExamDistributionPrefsForm extends ActionForm {
         Vector ret = new Vector();
         boolean contains = false;
         if (getCourseNbr(idx)>=0) {
-            TreeSet exams = new TreeSet(Exam.findExamsOfCourseOffering(getCourseNbr(idx))); 
+            TreeSet exams = new TreeSet(Exam.findExamsOfCourseOffering(getCourseNbr(idx),getExamType())); 
             for (Iterator i=exams.iterator();i.hasNext();) {
                 Exam exam = (Exam)i.next();
                 ret.add(new IdValue(exam.getUniqueId(),exam.getLabel()));
@@ -214,4 +219,14 @@ public class ExamDistributionPrefsForm extends ActionForm {
         else ret.insertElementAt(new IdValue(-1L,"-"), 0);
         return ret;
     }
+    
+    public int getExamType() { return iExamType; }
+    public void setExamType(int type) { iExamType = type; }
+    public Collection getExamTypes() {
+    	Vector ret = new Vector(Exam.sExamTypes.length);
+    	for (int i=0;i<Exam.sExamTypes.length;i++)
+    		ret.add(new ComboBoxLookup(Exam.sExamTypes[i], String.valueOf(i)));
+    	return ret;
+    }
+    
 }

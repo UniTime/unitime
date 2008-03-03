@@ -91,6 +91,14 @@ try {
 <%  
 	boolean disabled = (solver!=null && solver.isWorking());
 %>
+   	<TR><TD>Examination Problem:</TD>
+		<TD>
+			<html:select property="examType" disabled="<%=solver!=null%>">
+				<html:optionsCollection name="examSolverForm" property="examTypes" label="label" value="value"/>
+			</html:select>
+			&nbsp;<html:errors property="examType"/>
+		</TD>
+	</TR>
    	<TR><TD>Solver configuration:</TD>
 		<TD>
 			<html:select property="setting" onchange="submit();" disabled="<%=disabled%>">

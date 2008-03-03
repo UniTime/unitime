@@ -26,6 +26,7 @@ import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DistributionPref;
+import org.unitime.timetable.model.EveningPeriodPreferenceModel;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriodPref;
 import org.unitime.timetable.model.InstrOfferingConfig;
@@ -68,13 +69,17 @@ public class ExamListAction extends Action {
             myForm.setSubjectAreaId((String)request.getSession().getAttribute(Constants.SUBJ_AREA_ID_ATTR_NAME));
             myForm.setCourseNbr((String)request.getSession().getAttribute(Constants.CRS_NBR_ATTR_NAME));
         }
-
+        if (op==null && request.getSession().getAttribute("Exam.Type")!=null) {
+        	myForm.setExamType((Integer)request.getSession().getAttribute("Exam.Type"));
+        }
+        
         WebTable.setOrder(request.getSession(), "ExamList.ord", request.getParameter("ord"), 1);
 
         if ("Search".equals(op) || "Export PDF".equals(op)) {
             if (myForm.getSubjectAreaId()!=null) {
                 request.getSession().setAttribute(Constants.SUBJ_AREA_ID_ATTR_NAME, myForm.getSubjectAreaId());
                 request.getSession().setAttribute(Constants.CRS_NBR_ATTR_NAME, myForm.getCourseNbr());
+                request.getSession().setAttribute("Exam.Type", myForm.getExamType());
             }
             
             if ("Export PDF".equals(op)) {
@@ -125,8 +130,8 @@ public class ExamListAction extends Action {
         
         BackTracker.markForBack(
                 request, 
-                "examList.do?op=Search&subjectAreaId="+myForm.getSubjectAreaId()+"&courseNbr="+myForm.getCourseNbr(), 
-                "Exams ("+(Constants.ALL_OPTION_VALUE.equals(myForm.getSubjectAreaId())?"All":subjectAreaName+
+                "examList.do?op=Search&examType="+myForm.getExamType()+"&subjectAreaId="+myForm.getSubjectAreaId()+"&courseNbr="+myForm.getCourseNbr(),
+                Exam.sExamTypes[myForm.getExamType()]+" Exams ("+(Constants.ALL_OPTION_VALUE.equals(myForm.getSubjectAreaId())?"All":subjectAreaName+
                     (myForm.getCourseNbr()==null || myForm.getCourseNbr().length()==0?"":" "+myForm.getCourseNbr()))+
                     ")", 
                 true, true);
@@ -135,7 +140,7 @@ public class ExamListAction extends Action {
     }
     
     public PdfWebTable getExamTable(ExamAssignmentProxy examAssignment, User user, TimetableManager manager, Session session, ExamListForm form, boolean html) {
-        Collection exams = (Constants.ALL_OPTION_VALUE.equals(form.getSubjectAreaId())?Exam.findAll(session.getUniqueId()):Exam.findExamsOfCourse(Long.valueOf(form.getSubjectAreaId()), form.getCourseNbr()));
+        Collection exams = (Constants.ALL_OPTION_VALUE.equals(form.getSubjectAreaId())?Exam.findAll(session.getUniqueId(),form.getExamType()):Exam.findExamsOfCourse(Long.valueOf(form.getSubjectAreaId()), form.getCourseNbr(),form.getExamType()));
         
         if (exams.isEmpty()) return null;
         
@@ -146,7 +151,7 @@ public class ExamListAction extends Action {
         
         PdfWebTable table = new PdfWebTable(
                 11,
-                "Examinations", "examList.do?ord=%%",
+                Exam.sExamTypes[form.getExamType()]+" Examinations", "examList.do?ord=%%",
                 new String[] {"Classes / Courses", "Length", "Seating"+nl+"Type", "Students", "Max"+nl+"Rooms", 
                         "Instructor", "Period"+nl+"Preferences", "Room"+nl+"Preferences", "Distribution"+nl+"Preferences",
                         "Assigned"+nl+"Period", "Assigned"+nl+"Room"},
@@ -192,10 +197,20 @@ public class ExamListAction extends Action {
                 if (roomPref.length()>0) roomPref+=nl;
                 roomPref += exam.getEffectivePrefHtmlForPrefType(RoomGroupPref.class);
                 if (roomPref.endsWith(nl)) roomPref = roomPref.substring(0, roomPref.length()-nl.length());
-                if (timeText) {
-                    perPref += exam.getEffectivePrefHtmlForPrefType(ExamPeriodPref.class);
+                if (timeText || Exam.sExamTypeEvening==exam.getExamType()) {
+                	if (Exam.sExamTypeEvening==exam.getExamType()) {
+                    	EveningPeriodPreferenceModel epx = new EveningPeriodPreferenceModel(exam.getSession(), null);
+                    	if (epx.canDo()) {
+                    		epx.load(exam);
+                    		perPref+=epx.toString();
+                    	} else {
+                    		perPref += exam.getEffectivePrefHtmlForPrefType(ExamPeriodPref.class);
+                    	}
+                	} else {
+                		perPref += exam.getEffectivePrefHtmlForPrefType(ExamPeriodPref.class);
+                	}
                 } else {
-                    PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession(), ea);
+                    PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession(), ea, exam.getExamType());
                     px.load(exam);
                     RequiredTimeTable rtt = new RequiredTimeTable(px);
                     File imageFileName = null;

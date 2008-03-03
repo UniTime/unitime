@@ -55,4 +55,6 @@ public interface ExamSolverProxy extends ExamAssignmentProxy {
     public Collection<ExamInfo> getUnassignedExams(Long subjectAreaId) throws Exception;
     public Collection<ExamAssignmentInfo> getAssignedExamsOfRoom(Long roomId) throws Exception;
     public Collection<ExamAssignmentInfo> getAssignedExamsOfInstructor(Long instructorId) throws Exception;
+    
+    public int getExamType();
 }

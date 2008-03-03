@@ -1,12 +1,15 @@
 package org.unitime.timetable.form;
 
 import java.util.Collection;
+import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
+import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.util.ComboBoxLookup;
 
 public class ExamListForm extends ActionForm {
     private static final long serialVersionUID = 0L;
@@ -14,6 +17,7 @@ public class ExamListForm extends ActionForm {
     private String iCourseNbr = null;
     private String iOp = null;
     private Collection iSubjectAreas = null;
+    private int iExamType = 0;
     
     public String getSubjectAreaId() { return iSubjectAreaId; }
     public void setSubjectAreaId(String subjectAreaId) { iSubjectAreaId = subjectAreaId; }
@@ -29,10 +33,21 @@ public class ExamListForm extends ActionForm {
     
     public void reset(ActionMapping mapping, HttpServletRequest request) {
         iSubjectAreaId = null; iCourseNbr = null; iOp = null;
+        iExamType = Exam.sExamTypeFinal;
     }
     
     public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
         ActionErrors errors = new ActionErrors();
         return errors;
     }
+    
+    public int getExamType() { return iExamType; }
+    public void setExamType(int type) { iExamType = type; }
+    public Collection getExamTypes() {
+    	Vector ret = new Vector(Exam.sExamTypes.length);
+    	for (int i=0;i<Exam.sExamTypes.length;i++)
+    		ret.add(new ComboBoxLookup(Exam.sExamTypes[i], String.valueOf(i)));
+    	return ret;
+    }
+
 }

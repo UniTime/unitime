@@ -103,8 +103,17 @@
 		</TR>
 		</logic:messagesPresent>
 		
+		<!-- 
 		<TR>
 			<TD>Name:</TD><TD><html:text property="name" size="50" maxlength="100"/></TD>
+		</TR>
+		-->
+		<TR>
+			<TD>Type:</TD><TD>
+				<html:select property="examType" onchange="javascript: doDel('examType', this.value); submit();">
+					<html:optionsCollection name="<%=frmName%>" property="examTypes"/>
+				</html:select>
+			</TD>
 		</TR>
 		<TR>
 			<TD>Length:</TD><TD><html:text property="length" size="5" maxlength="5"/></TD>

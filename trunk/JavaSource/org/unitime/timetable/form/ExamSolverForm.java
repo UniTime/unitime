@@ -43,6 +43,7 @@ import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SolverParameter;
 import org.unitime.timetable.model.SolverParameterDef;
@@ -53,6 +54,7 @@ import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.remote.RemoteSolverServerProxy;
 import org.unitime.timetable.solver.remote.SolverRegisterService;
+import org.unitime.timetable.util.ComboBoxLookup;
 import org.unitime.timetable.util.Constants;
 
 
@@ -73,6 +75,7 @@ public class ExamSolverForm extends ActionForm {
 	private String iHost = null;
 	private boolean iCanDo = true;
 	private boolean iChangeTab = false;
+	private int iExamType = 0;
 
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
         ActionErrors errors = new ActionErrors();
@@ -106,6 +109,8 @@ public class ExamSolverForm extends ActionForm {
 		} catch (Exception e){}
 		Long managerId = (user==null?null:Long.valueOf((String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME)));
 		ExamSolverProxy solver = WebSolver.getExamSolver(request.getSession());
+		iExamType = Exam.sExamTypeFinal;
+		if (solver!=null) iExamType = solver.getExamType();
 		Transaction tx = null;
 		iParams.clear(); iDefaults.clear(); iParamValues.clear();
 		try {
@@ -317,5 +322,13 @@ public class ExamSolverForm extends ActionForm {
 	public boolean getCanDo() { return iCanDo; }
     public boolean isChangeTab() { return iChangeTab;}
     public void setChangeTab(boolean changeTab) { iChangeTab = changeTab; }
+    public int getExamType() { return iExamType; }
+    public void setExamType(int type) { iExamType = type; }
+    public Collection getExamTypes() {
+    	Vector ret = new Vector(Exam.sExamTypes.length);
+    	for (int i=0;i<Exam.sExamTypes.length;i++)
+    		ret.add(new ComboBoxLookup(Exam.sExamTypes[i], String.valueOf(i)));
+    	return ret;
+    }
 }
 
