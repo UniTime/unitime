@@ -2438,7 +2438,8 @@ create table TIMETABLE.NON_UNIVERSITY_LOCATION
   MANAGER_IDS       VARCHAR2(200),
   PATTERN           VARCHAR2(350),
   IGNORE_ROOM_CHECK NUMBER(1) default (0),
-  DISPLAY_NAME      VARCHAR2(100)
+  DISPLAY_NAME      VARCHAR2(100),
+  PERMANENT_ID        NUMBER(20)
 );
 alter table TIMETABLE.NON_UNIVERSITY_LOCATION
   add constraint PK_NON_UNIV_LOC primary key (UNIQUEID);
@@ -2469,6 +2470,9 @@ alter table TIMETABLE.NON_UNIVERSITY_LOCATION
 alter table TIMETABLE.NON_UNIVERSITY_LOCATION
   add constraint NN_NON_UNIV_LOC_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
+alter table TIMETABLE.ROOM
+  add constraint NN_NON_UNIV_LOC_PERMANENT_ID
+  check ("PERMANENT_ID" IS NOT NULL);
 create index TIMETABLE.IDX_NON_UNIV_LOC_SESSION on TIMETABLE.NON_UNIVERSITY_LOCATION (SESSION_ID);
 
 prompt
@@ -2824,7 +2828,8 @@ create table TIMETABLE.ROOM
   PATTERN             VARCHAR2(350),
   IGNORE_ROOM_CHECK   NUMBER(1) default (0),
   CLASSIFICATION      VARCHAR2(20),
-  DISPLAY_NAME        VARCHAR2(100)
+  DISPLAY_NAME        VARCHAR2(100),
+  PERMANENT_ID        NUMBER(20)
 );
 alter table TIMETABLE.ROOM
   add constraint PK_ROOM primary key (UNIQUEID)
@@ -2868,6 +2873,9 @@ alter table TIMETABLE.ROOM
 alter table TIMETABLE.ROOM
   add constraint NN_ROOM_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
+alter table TIMETABLE.ROOM
+  add constraint NN_ROOM_PERMANENT_ID
+  check ("PERMANENT_ID" IS NOT NULL);
 create index TIMETABLE.IDX_ROOM_BUILDING on TIMETABLE.ROOM (BUILDING_ID);
 
 prompt
@@ -4494,6 +4502,16 @@ start with 944
 increment by 1
 cache 20;
 
+prompt
+prompt Creating sequence loc_perm_id_seq
+prompt ===================================
+prompt
+create sequence TIMETABLE.loc_perm_id_seq
+minvalue 1
+maxvalue 99999999999999999999
+start with 1
+increment by 1
+cache 20;
 commit;
 
 prompt

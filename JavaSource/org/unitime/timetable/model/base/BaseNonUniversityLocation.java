@@ -54,6 +54,7 @@ public abstract class BaseNonUniversityLocation extends org.unitime.timetable.mo
 	 */
 	public BaseNonUniversityLocation (
 		java.lang.Long uniqueId,
+		java.lang.Long permanentId,
 		java.lang.Integer capacity,
 		java.lang.Integer coordinateX,
 		java.lang.Integer coordinateY,
@@ -62,6 +63,7 @@ public abstract class BaseNonUniversityLocation extends org.unitime.timetable.mo
 
 		super (
 			uniqueId,
+			permanentId,
 			capacity,
 			coordinateX,
 			coordinateY,

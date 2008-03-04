@@ -57,6 +57,7 @@ public abstract class Location extends BaseLocation implements Comparable {
 	 */
 	public Location (
 		java.lang.Long uniqueId,
+		java.lang.Long permanentId,
 		java.lang.Integer capacity,
 		java.lang.Integer coordinateX,
 		java.lang.Integer coordinateY,
@@ -65,6 +66,7 @@ public abstract class Location extends BaseLocation implements Comparable {
 
 		super (
 			uniqueId,
+			permanentId,
 			capacity,
 			coordinateX,
 			coordinateY,

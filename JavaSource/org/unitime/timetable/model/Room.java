@@ -46,6 +46,7 @@ public class Room extends BaseRoom {
 	 */
 	public Room (
 		java.lang.Long uniqueId,
+		java.lang.Long permanentId,
 		java.lang.Integer capacity,
 		java.lang.Integer coordinateX,
 		java.lang.Integer coordinateY,
@@ -54,6 +55,7 @@ public class Room extends BaseRoom {
 
 		super (
 			uniqueId,
+			permanentId,
 			capacity,
 			coordinateX,
 			coordinateY,
