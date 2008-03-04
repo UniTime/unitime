@@ -775,6 +775,10 @@
 		<put name="title" type="string" value="Edit Examination Period"/>
   	</definition>
 
+  	<definition name="eveningExamPeriodTile" extends="examPeriodsTile">
+		<put name="title" type="string" value="Evening Examination Periods"/>
+  	</definition>
+
   	<definition name="examListTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Examinations"/>
 		<put name="body" value="/user/examList.jsp" />
