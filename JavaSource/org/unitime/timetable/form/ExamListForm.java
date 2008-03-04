@@ -8,7 +8,9 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
+import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.Session;
 import org.unitime.timetable.util.ComboBoxLookup;
 
 public class ExamListForm extends ActionForm {
@@ -18,6 +20,7 @@ public class ExamListForm extends ActionForm {
     private String iOp = null;
     private Collection iSubjectAreas = null;
     private int iExamType = 0;
+    private boolean iHasEveningExams = false;
     
     public String getSubjectAreaId() { return iSubjectAreaId; }
     public void setSubjectAreaId(String subjectAreaId) { iSubjectAreaId = subjectAreaId; }
@@ -34,6 +37,9 @@ public class ExamListForm extends ActionForm {
     public void reset(ActionMapping mapping, HttpServletRequest request) {
         iSubjectAreaId = null; iCourseNbr = null; iOp = null;
         iExamType = Exam.sExamTypeFinal;
+        try {
+            iHasEveningExams = Exam.hasEveningExams(Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId());
+        } catch (Exception e) {}
     }
     
     public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
@@ -45,8 +51,10 @@ public class ExamListForm extends ActionForm {
     public void setExamType(int type) { iExamType = type; }
     public Collection getExamTypes() {
     	Vector ret = new Vector(Exam.sExamTypes.length);
-    	for (int i=0;i<Exam.sExamTypes.length;i++)
+    	for (int i=0;i<Exam.sExamTypes.length;i++) {
+    	    if (i==Exam.sExamTypeEvening && !iHasEveningExams) continue;
     		ret.add(new ComboBoxLookup(Exam.sExamTypes[i], String.valueOf(i)));
+    	}
     	return ret;
     }
 

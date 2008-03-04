@@ -34,8 +34,10 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.util.MessageResources;
+import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Preference;
+import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.util.ComboBoxLookup;
 import org.unitime.timetable.util.Constants;
@@ -55,6 +57,7 @@ public class ExamDistributionPrefsForm extends ActionForm {
     private List courseNbr;
     private List exam;
     private int iExamType;
+    private boolean iHasEveningExams = false;
     
 	private String filterSubjectAreaId;
 	private Collection filterSubjectAreas;
@@ -118,6 +121,9 @@ public class ExamDistributionPrefsForm extends ActionForm {
         if (request.getSession().getAttribute("Exam.Type")!=null)
         	iExamType = (Integer)request.getSession().getAttribute("Exam.Type");
         canAdd = false;
+        try {
+            iHasEveningExams = Exam.hasEveningExams(Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId());
+        } catch (Exception e) {}
     }
 
     
@@ -224,8 +230,10 @@ public class ExamDistributionPrefsForm extends ActionForm {
     public void setExamType(int type) { iExamType = type; }
     public Collection getExamTypes() {
     	Vector ret = new Vector(Exam.sExamTypes.length);
-    	for (int i=0;i<Exam.sExamTypes.length;i++)
+    	for (int i=0;i<Exam.sExamTypes.length;i++) {
+            if (i==Exam.sExamTypeEvening && !iHasEveningExams) continue;
     		ret.add(new ComboBoxLookup(Exam.sExamTypes[i], String.valueOf(i)));
+    	}
     	return ret;
     }
     

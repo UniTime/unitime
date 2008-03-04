@@ -38,6 +38,7 @@ public class ExamGridForm extends ActionForm {
     private int iDispMode = ExamGridTable.sDispModePerWeekVertical;
     private int iOrder = ExamGridTable.sOrderByNameAsc;
     private boolean iBgPreferences = false;
+    private boolean iHasEveningExams = false;
     
     public int getDate(int examType) { return iDate[examType]; }
     public void setDate(int examType, int date) { iDate[examType] = date; }
@@ -80,7 +81,9 @@ public class ExamGridForm extends ActionForm {
 			if (solver!=null)
 				iExamType = solver.getProperties().getPropertyInt("Exam.Type", iExamType);
 		} catch (Exception e) {}
-
+        try {
+            iHasEveningExams = Exam.hasEveningExams(Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId());
+        } catch (Exception e) {}
     }
     
     public Long getSessionId() { return iSessionId; }
@@ -230,8 +233,10 @@ public class ExamGridForm extends ActionForm {
     public void setExamType(int type) { iExamType = type; }
     public Collection getExamTypes() {
     	Vector ret = new Vector(Exam.sExamTypes.length);
-    	for (int i=0;i<Exam.sExamTypes.length;i++)
-    		ret.add(new ComboBoxLookup(Exam.sExamTypes[i], String.valueOf(i)));
+        for (int i=0;i<Exam.sExamTypes.length;i++) {
+            if (i==Exam.sExamTypeEvening && !iHasEveningExams) continue;
+            ret.add(new ComboBoxLookup(Exam.sExamTypes[i], String.valueOf(i)));
+        }
     	return ret;
     }
 }
