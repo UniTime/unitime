@@ -181,7 +181,7 @@ alter table event_note
  * Update database version
  */
 
-update application_config set value='18' where name='tmtbl.db.version';
+update application_config set value='19' where name='tmtbl.db.version';
 
 
 commit;
