@@ -63,7 +63,7 @@ alter table non_university_location modify permanent_id not null;
  * Update database version
  */
 
-update application_config set value='17' where name='tmtbl.db.version';
+update application_config set value='18' where name='tmtbl.db.version';
 
 commit;
   
