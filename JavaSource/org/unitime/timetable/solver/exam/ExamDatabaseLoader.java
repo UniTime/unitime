@@ -91,6 +91,7 @@ public class ExamDatabaseLoader extends ExamLoader {
             loadExams();
             loadStudents();
             loadDistributions();
+            getModel().init();
             assignInitial();
             tx.commit();
         } catch (Exception e) {
@@ -465,9 +466,9 @@ public class ExamDatabaseLoader extends ExamLoader {
                 "select x.uniqueId, e.student.uniqueId from "+
                 "Exam x inner join x.owners o, "+
                 "StudentClassEnrollment e inner join e.clazz c "+
-                "where x.session.uniqueId=:sessionId and "+
+                "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
                 "o.ownerType="+ExamOwner.sOwnerTypeClass+" and "+
-                "o.ownerId=c.uniqueId").setLong("sessionId", iSessionId).list(),
+                "o.ownerId=c.uniqueId").setLong("sessionId", iSessionId).setInteger("examType", iExamType).list(),
                 "class");
         loadStudents(
                 new ExamDAO().getSession().createQuery(
@@ -475,27 +476,27 @@ public class ExamDatabaseLoader extends ExamLoader {
                 "Exam x inner join x.owners o, "+
                 "StudentClassEnrollment e inner join e.clazz c " +
                 "inner join c.schedulingSubpart.instrOfferingConfig ioc " +
-                "where x.session.uniqueId=:sessionId and "+
+                "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
                 "o.ownerType="+ExamOwner.sOwnerTypeConfig+" and "+
-                "o.ownerId=ioc.uniqueId").setLong("sessionId", iSessionId).list(),
+                "o.ownerId=ioc.uniqueId").setLong("sessionId", iSessionId).setInteger("examType", iExamType).list(),
                 "config");
         loadStudents(
                 new ExamDAO().getSession().createQuery(
                 "select x.uniqueId, e.student.uniqueId from "+
                 "Exam x inner join x.owners o, "+
                 "StudentClassEnrollment e inner join e.courseOffering co " +
-                "where x.session.uniqueId=:sessionId and "+
+                "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
                 "o.ownerType="+ExamOwner.sOwnerTypeCourse+" and "+
-                "o.ownerId=co.uniqueId").setLong("sessionId", iSessionId).list(),
+                "o.ownerId=co.uniqueId").setLong("sessionId", iSessionId).setInteger("examType", iExamType).list(),
                 "course");
         loadStudents(
                 new ExamDAO().getSession().createQuery(
                 "select x.uniqueId, e.student.uniqueId from "+
                 "Exam x inner join x.owners o, "+
                 "StudentClassEnrollment e inner join e.courseOffering.instructionalOffering io " +
-                "where x.session.uniqueId=:sessionId and "+
+                "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
                 "o.ownerType="+ExamOwner.sOwnerTypeOffering+" and "+
-                "o.ownerId=io.uniqueId").setLong("sessionId", iSessionId).list(),
+                "o.ownerId=io.uniqueId").setLong("sessionId", iSessionId).setInteger("examType", iExamType).list(),
                 "offering");
     }
     
