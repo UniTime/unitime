@@ -14,12 +14,14 @@ import java.util.Vector;
 import javax.servlet.http.HttpServletRequest;
 
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
+import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
 
 public class EveningPeriodPreferenceModel {
     private TreeSet<Integer> iDates = new TreeSet<Integer>();
     private Vector<Integer> iStarts = new Vector<Integer>();
     private Hashtable<Integer,Integer> iPreferences = new Hashtable<Integer,Integer>();
+    private Hashtable<Integer,Integer> iLength = new Hashtable<Integer,Integer>();
     private TreeSet iPeriods = null;
     private Date iFirstDate = null, iLastDate = null;
     private boolean iLocation = false;
@@ -41,8 +43,10 @@ public class EveningPeriodPreferenceModel {
         iPeriods = ExamPeriod.findAll(session.getUniqueId(), Exam.sExamTypeEvening);
         for (Iterator i=iPeriods.iterator();i.hasNext();) {
             ExamPeriod period = (ExamPeriod)i.next();
-            if (!iStarts.contains(period.getStartSlot()))
+            if (!iStarts.contains(period.getStartSlot())) {
             	iStarts.add(period.getStartSlot());
+            	iLength.put(period.getStartSlot(), period.getLength());
+            }
             iDates.add(period.getDateOffset());
             iPreferences.put(period.getDateOffset(),0);
             if (iFirstDate==null) {
@@ -213,6 +217,19 @@ public class EveningPeriodPreferenceModel {
 		}
 		border.append("]");
 		pattern.append("]");
+        Calendar firstStart = Calendar.getInstance(Locale.US);
+        firstStart.set(Calendar.HOUR, (Constants.SLOT_LENGTH_MIN*iStarts.firstElement()+Constants.FIRST_SLOT_TIME_MIN) / 60);
+        firstStart.set(Calendar.MINUTE, (Constants.SLOT_LENGTH_MIN*iStarts.firstElement()+Constants.FIRST_SLOT_TIME_MIN) % 60);
+        Calendar firstEnd = Calendar.getInstance(Locale.US);
+        firstEnd.set(Calendar.HOUR, (Constants.SLOT_LENGTH_MIN*(iStarts.firstElement()+iLength.get(iStarts.firstElement()))+Constants.FIRST_SLOT_TIME_MIN) / 60);
+        firstEnd.set(Calendar.MINUTE, (Constants.SLOT_LENGTH_MIN*(iStarts.firstElement()+iLength.get(iStarts.firstElement()))+Constants.FIRST_SLOT_TIME_MIN) % 60);
+        Calendar lastStart = Calendar.getInstance(Locale.US);
+        lastStart.set(Calendar.HOUR, (Constants.SLOT_LENGTH_MIN*iStarts.lastElement()+Constants.FIRST_SLOT_TIME_MIN) / 60);
+        lastStart.set(Calendar.MINUTE, (Constants.SLOT_LENGTH_MIN*iStarts.lastElement()+Constants.FIRST_SLOT_TIME_MIN) % 60);
+        Calendar lastEnd = Calendar.getInstance(Locale.US);
+        lastEnd.set(Calendar.HOUR, (Constants.SLOT_LENGTH_MIN*(iStarts.lastElement()+iLength.get(iStarts.lastElement()))+Constants.FIRST_SLOT_TIME_MIN) / 60);
+        lastEnd.set(Calendar.MINUTE, (Constants.SLOT_LENGTH_MIN*(iStarts.lastElement()+iLength.get(iStarts.lastElement()))+Constants.FIRST_SLOT_TIME_MIN) % 60);
+        SimpleDateFormat df = new SimpleDateFormat("h:mmaa");
 		StringBuffer sb = new StringBuffer(); 
         sb.append("<script language='JavaScript' type='text/javascript' src='scripts/datepatt.js'></script>");
 		sb.append("<script language='JavaScript'>");
@@ -222,7 +239,16 @@ public class EveningPeriodPreferenceModel {
 				getEndMonth()+","+
 				pattern+","+
 				"['3','2','1','0','@'],"+
-				(iLocation?"['Not Available','Available Erly Period Only','Available Late Priod Only','Available','No Period'],":"['Both Periods','Late Period','Early Priod','Not Available','No Period'],")+
+				(iLocation?"[" +
+						"'Not Available'," +
+						"'Available Erly Period Only ("+df.format(firstStart.getTime())+" - "+df.format(firstEnd.getTime())+")'," +
+						"'Available Late Priod Only ("+df.format(lastStart.getTime())+" - "+df.format(lastEnd.getTime())+")'," +
+						"'Available','No Period'],":
+						"[" +
+						"'Both Periods'," +
+						"'Late Period ("+df.format(lastStart.getTime())+" - "+df.format(lastEnd.getTime())+")'," +
+						"'Early Period  ("+df.format(firstStart.getTime())+" - "+df.format(firstEnd.getTime())+")'," +
+				        "'Not Available','No Period'],")+
 				"['"+getColor(3)+"','"+getColor(2)+"','"+getColor(1)+"','"+getColor(0)+"','rgb(150,150,150)'],"+
 				"'3',"+
 				border+","+editable+","+true+");");
