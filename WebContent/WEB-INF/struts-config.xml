@@ -1931,6 +1931,7 @@
       <forward name="list" path="examPeriodsTile" />
       <forward name="add" path="addExamPeriodTile" />
       <forward name="edit" path="editExamPeriodTile" />
+      <forward name="evening" path="eveningExamPeriodTile" />
     </action>
 
     <action

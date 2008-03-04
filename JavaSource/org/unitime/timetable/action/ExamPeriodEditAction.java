@@ -202,7 +202,7 @@ public class ExamPeriodEditAction extends Action {
 	            return mapping.findForward("list");
 	        } 
 	        
-	        return mapping.findForward(myForm.getUniqueId().longValue()<0?"add":"edit");
+	        return mapping.findForward(myForm.getAutoSetup()?"evening":myForm.getUniqueId().longValue()<0?"add":"edit");
 	        
 		} catch (Exception e) {
 			Debug.error(e);
