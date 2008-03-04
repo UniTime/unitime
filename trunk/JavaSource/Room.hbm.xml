@@ -38,6 +38,14 @@
                 <param name="sequence">Room_seq</param>
             </generator>
         </id>
+        
+		<property
+			name="permanentId"
+			column="PERMANENT_ID"
+			type="java.lang.Long"
+			not-null="true"
+			length="20"
+		/>			
 					
 		<property
 			name="capacity"

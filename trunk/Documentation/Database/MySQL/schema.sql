@@ -1108,6 +1108,7 @@ CREATE TABLE `timetable`.`non_university_location` (
   `pattern` VARCHAR(350) BINARY NULL,
   `ignore_room_check` INT(1) NULL DEFAULT 0,
   `display_name` VARCHAR(100) BINARY NULL,
+  `permanent_id` decimal(20,0) NOT NULL,
   PRIMARY KEY (`uniqueid`),
   INDEX `idx_non_univ_loc_session` (`session_id`),
   CONSTRAINT `fk_non_univ_loc_session` FOREIGN KEY `fk_non_univ_loc_session` (`session_id`)
@@ -1337,6 +1338,7 @@ CREATE TABLE `timetable`.`room` (
   `ignore_room_check` INT(1) NULL DEFAULT 0,
   `classification` VARCHAR(20) BINARY NULL,
   `display_name` VARCHAR(100) BINARY NULL,
+  `permanent_id` decimal(20,0) NOT NULL,
   PRIMARY KEY (`uniqueid`),
   INDEX `idx_room_building` (`building_id`),
   UNIQUE INDEX `uk_room` (`session_id`, `building_id`, `room_number`(10)),

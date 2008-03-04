@@ -58,6 +58,7 @@ public abstract class BaseRoom extends org.unitime.timetable.model.Location  imp
 	 */
 	public BaseRoom (
 		java.lang.Long uniqueId,
+		java.lang.Long permanentId,
 		java.lang.Integer capacity,
 		java.lang.Integer coordinateX,
 		java.lang.Integer coordinateY,
@@ -66,6 +67,7 @@ public abstract class BaseRoom extends org.unitime.timetable.model.Location  imp
 
 		super (
 			uniqueId,
+			permanentId,
 			capacity,
 			coordinateX,
 			coordinateY,

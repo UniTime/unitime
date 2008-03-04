@@ -1015,4 +1015,92 @@
 		alter table exam_period add exam_type bigint(10) default 0
 		</mysql>
 	</update>
+	<update version="18" date="03-Mar-2008" comment="Location permanent id">
+		<plsql>
+			alter table %SCHEMA%.room add permanent_id number(20)
+		</plsql>
+		<mysql>
+			alter table %SCHEMA%.room add permanent_id decimal(20,0)
+		</mysql>
+		<plsql>
+			alter table %SCHEMA%.non_university_location add permanent_id number(20)
+		</plsql>
+		<mysql>
+			alter table %SCHEMA%.non_university_location add permanent_id decimal(20,0)
+		</mysql>
+		<plsql>
+			create table %SCHEMA%.temp_perm_id
+				(
+				  external_uid varchar(40) not null,
+				  perm_id      number(20) not null
+				)
+		</plsql>
+		<mysql>
+			create table %SCHEMA%.temp_perm_id
+				(
+				  external_uid varchar(40) not null,
+				  perm_id      decimal(20,0) not null
+				)
+		</mysql>
+		<plsql>
+			create sequence %SCHEMA%.loc_perm_id_seq
+				minvalue 1
+				maxvalue 99999999999999999999
+				start with 1
+				increment by 1
+				cache 20
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.temp_perm_id tpi
+				select s.eid, %SCHEMA%.loc_perm_id_seq.nextval from (select distinct r.external_uid as eid 
+				from %SCHEMA%.room r
+				where r.external_uid is not null
+				order by r.external_uid) s
+		</plsql>
+		<plsql>
+			update %SCHEMA%.room r
+				set r.permanent_id = (select tpi.perm_id from %SCHEMA%.temp_perm_id tpi where tpi.external_uid = r.external_uid)
+				where r.external_uid is not null
+		</plsql>
+		<plsql>
+			update %SCHEMA%.room r
+				set r.permanent_id = %SCHEMA%.loc_perm_id_seq.nextval
+				where r.external_uid is null
+		</plsql>
+		<plsql>
+			update %SCHEMA%.non_university_location nul
+				set nul.permanent_id = %SCHEMA%.loc_perm_id_seq.nextval
+		</plsql>
+		<mysql>
+			insert into %SCHEMA%.temp_perm_id tpi
+				select s.eid, rownum from (select distinct r.external_uid as eid 
+				from %SCHEMA%.room r
+				where r.external_uid is not null
+				union (select distinct to_char(r1.uniqueid) as eid from %SCHEMA%.room r1 where r1.external_uid is null)
+				union (select distinct to_char(nul.uniqueid) as eid from %SCHEMA%.non_university_location nul)) s
+		</mysql>
+		<mysql>
+			update %SCHEMA%.room r
+				set r.permanent_id = (select tpi.perm_id from %SCHEMA%.temp_perm_id tpi where tpi.external_uid = r.external_uid)
+				where r.external_uid is not null
+		</mysql>
+		<mysql>
+			update %SCHEMA%.room r
+				set r.permanent_id = (select tpi.perm_id from %SCHEMA%.temp_perm_id tpi where tpi.external_uid = to_char(r.uniqueid))
+				where r.external_uid is null
+		</mysql>
+		<mysql>
+			update %SCHEMA%.non_university_location nul
+				set nul.permanent_id = (select tpi.perm_id from %SCHEMA%.temp_perm_id tpi where tpi.external_uid = to_char(nul.uniqueid));
+		</mysql>
+		<sql>
+			drop table %SCHEMA%.temp_perm_id
+		</sql>
+		<sql>
+			alter table %SCHEMA%.room modify permanent_id not null
+		</sql>
+		<sql>
+			alter table %SCHEMA%.non_university_location modify permanent_id not null
+		</sql>
+	</update>
 </dbupdate>
