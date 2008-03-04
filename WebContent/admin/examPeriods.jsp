@@ -89,11 +89,11 @@
 		</TR>
 
 		<TR>
-			<TD rowspan='2'>Dates:</TD>
+			<TD colspan='2'><br>Examination Dates:</TD>
 		</TR>
 		
 		<TR>
-			<TD rowspan='2'>
+			<TD colspan='2'>
 				<bean:write name="examPeriodEditForm" property="patternHtml" filter="false"/>
 			</TD>
 		</TR>
