@@ -402,9 +402,10 @@ public class ExamEditAction extends PreferencesAction {
                 i.remove();
         }
 
+        exam.setExamType(frm.getExamType());
+
         super.doUpdate(request, frm, exam, s, false);
         
-        exam.setExamType(frm.getExamType());
         exam.setName(frm.getName()==null || frm.getName().trim().length()==0?null:frm.getName().trim());
         exam.setNote(frm.getNote());
         exam.setSeatingType(frm.getSeatingTypeIdx());
