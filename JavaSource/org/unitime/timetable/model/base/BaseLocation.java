@@ -34,6 +34,7 @@ import java.io.Serializable;
 public abstract class BaseLocation  implements Serializable {
 
 	public static String REF = "Location";
+	public static String PROP_PERMANENT_ID = "permanentId";
 	public static String PROP_CAPACITY = "capacity";
 	public static String PROP_COORDINATE_X = "coordinateX";
 	public static String PROP_COORDINATE_Y = "coordinateY";
@@ -41,10 +42,10 @@ public abstract class BaseLocation  implements Serializable {
 	public static String PROP_IGNORE_ROOM_CHECK = "ignoreRoomCheck";
 	public static String PROP_MANAGER_IDS = "managerIds";
 	public static String PROP_PATTERN = "pattern";
-	public static String PROP_DISPLAY_NAME = "displayName";
-	public static String PROP_EXAM_ENABLE = "examEnabled";
+	public static String PROP_EXAM_ENABLED = "examEnabled";
 	public static String PROP_EXAM_CAPACITY = "examCapacity";
 	public static String PROP_EXAM_PREF = "examPref";
+	public static String PROP_DISPLAY_NAME = "displayName";
 
 
 	// constructors
@@ -65,6 +66,7 @@ public abstract class BaseLocation  implements Serializable {
 	 */
 	public BaseLocation (
 		java.lang.Long uniqueId,
+		java.lang.Long permanentId,
 		java.lang.Integer capacity,
 		java.lang.Integer coordinateX,
 		java.lang.Integer coordinateY,
@@ -72,6 +74,7 @@ public abstract class BaseLocation  implements Serializable {
 		java.lang.Boolean ignoreRoomCheck) {
 
 		this.setUniqueId(uniqueId);
+		this.setPermanentId(permanentId);
 		this.setCapacity(capacity);
 		this.setCoordinateX(coordinateX);
 		this.setCoordinateY(coordinateY);
@@ -90,6 +93,7 @@ public abstract class BaseLocation  implements Serializable {
 	private java.lang.Long uniqueId;
 
 	// fields
+	private java.lang.Long permanentId;
 	private java.lang.Integer capacity;
 	private java.lang.Integer coordinateX;
 	private java.lang.Integer coordinateY;
@@ -97,10 +101,10 @@ public abstract class BaseLocation  implements Serializable {
 	private java.lang.Boolean ignoreRoomCheck;
 	private java.lang.String managerIds;
 	private java.lang.String pattern;
-	private java.lang.String displayName;
 	private java.lang.Boolean examEnabled;
 	private java.lang.Integer examCapacity;
 	private java.lang.String examPref;
+	private java.lang.String displayName;
 
 	// many to one
 	private org.unitime.timetable.model.Session session;
@@ -132,6 +136,23 @@ public abstract class BaseLocation  implements Serializable {
 		this.hashCode = Integer.MIN_VALUE;
 	}
 
+
+
+
+	/**
+	 * Return the value associated with the column: PERMANENT_ID
+	 */
+	public java.lang.Long getPermanentId () {
+		return permanentId;
+	}
+
+	/**
+	 * Set the value related to the column: PERMANENT_ID
+	 * @param permanentId the PERMANENT_ID value
+	 */
+	public void setPermanentId (java.lang.Long permanentId) {
+		this.permanentId = permanentId;
+	}
 
 
 
@@ -255,6 +276,57 @@ public abstract class BaseLocation  implements Serializable {
 
 
 	/**
+	 * Return the value associated with the column: EXAM_ENABLE
+	 */
+	public java.lang.Boolean isExamEnabled () {
+		return examEnabled;
+	}
+
+	/**
+	 * Set the value related to the column: EXAM_ENABLE
+	 * @param examEnabled the EXAM_ENABLE value
+	 */
+	public void setExamEnabled (java.lang.Boolean examEnabled) {
+		this.examEnabled = examEnabled;
+	}
+
+
+
+	/**
+	 * Return the value associated with the column: EXAM_CAPACITY
+	 */
+	public java.lang.Integer getExamCapacity () {
+		return examCapacity;
+	}
+
+	/**
+	 * Set the value related to the column: EXAM_CAPACITY
+	 * @param examCapacity the EXAM_CAPACITY value
+	 */
+	public void setExamCapacity (java.lang.Integer examCapacity) {
+		this.examCapacity = examCapacity;
+	}
+
+
+
+	/**
+	 * Return the value associated with the column: EXAM_Pref
+	 */
+	public java.lang.String getExamPref () {
+		return examPref;
+	}
+
+	/**
+	 * Set the value related to the column: EXAM_Pref
+	 * @param examPref the EXAM_Pref value
+	 */
+	public void setExamPref (java.lang.String examPref) {
+		this.examPref = examPref;
+	}
+
+
+
+	/**
 	 * Return the value associated with the column: DISPLAY_NAME
 	 */
 	public java.lang.String getDisplayName () {
@@ -359,29 +431,9 @@ public abstract class BaseLocation  implements Serializable {
 		getRoomDepts().add(roomDept);
 	}
 
-	public java.lang.Boolean isExamEnabled() {
-	    return examEnabled;
-	}
-	
-	public void setExamEnabled(java.lang.Boolean examEnabled) {
-	    this.examEnabled = examEnabled;
-	}
 
-	public java.lang.Integer getExamCapacity() {
-	    return examCapacity;
-	}
-	
-	public void setExamCapacity(java.lang.Integer examCapacity) {
-	    this.examCapacity = examCapacity;
-	}
-	
-	public java.lang.String getExamPref() {
-	    return examPref;
-	}
-	
-	public void setExamPref(java.lang.String examPref) {
-	    this.examPref = examPref;
-	}
+
+
 
 	public boolean equals (Object obj) {
 		if (null == obj) return false;

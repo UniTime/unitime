@@ -47,6 +47,7 @@ public class NonUniversityLocation extends BaseNonUniversityLocation {
 	 */
 	public NonUniversityLocation (
 		java.lang.Long uniqueId,
+		java.lang.Long permanent_id,
 		java.lang.Integer capacity,
 		java.lang.Integer coordinateX,
 		java.lang.Integer coordinateY,
@@ -55,6 +56,7 @@ public class NonUniversityLocation extends BaseNonUniversityLocation {
 
 		super (
 			uniqueId,
+			permanent_id,
 			capacity,
 			coordinateX,
 			coordinateY,
