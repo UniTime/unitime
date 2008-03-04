@@ -76,6 +76,7 @@ public class ExamSolverForm extends ActionForm {
 	private boolean iCanDo = true;
 	private boolean iChangeTab = false;
 	private int iExamType = 0;
+    private boolean iHasEveningExams = false;
 
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
         ActionErrors errors = new ActionErrors();
@@ -219,7 +220,10 @@ public class ExamSolverForm extends ActionForm {
 			if (ApplicationProperties.isLocalSolverEnabled())
 				iHosts.insertElementAt("local",0);
 			iHosts.insertElementAt("auto",0);
-		}		
+		}	
+        try {
+            iHasEveningExams = Exam.hasEveningExams(Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId());
+        } catch (Exception e) {}
 	}
 	
 	public void init() {
@@ -326,8 +330,10 @@ public class ExamSolverForm extends ActionForm {
     public void setExamType(int type) { iExamType = type; }
     public Collection getExamTypes() {
     	Vector ret = new Vector(Exam.sExamTypes.length);
-    	for (int i=0;i<Exam.sExamTypes.length;i++)
-    		ret.add(new ComboBoxLookup(Exam.sExamTypes[i], String.valueOf(i)));
+        for (int i=0;i<Exam.sExamTypes.length;i++) {
+            if (i==Exam.sExamTypeEvening && !iHasEveningExams) continue;
+            ret.add(new ComboBoxLookup(Exam.sExamTypes[i], String.valueOf(i)));
+        }
     	return ret;
     }
 }
