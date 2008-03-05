@@ -63,8 +63,8 @@ alter table event_contact
 create table event
 (
   uniqueid       number(20) not null,
-  type           number(20) not null,
-  name           varchar2(100),
+  event_type           number(20) not null,
+  event_name           varchar2(100),
   min_capacity   number(10),
   max_capacity   number(10),
   sponsoring_org number(20),
@@ -75,7 +75,7 @@ create table event
 alter table event
   add constraint pk_event_uniqueid primary key (UNIQUEID);
 alter table event
-  add constraint fk_event_event_type foreign key (TYPE)
+  add constraint fk_event_event_type foreign key (EVENT_TYPE)
   references event_type (UNIQUEID) on delete cascade;
 alter table event
   add constraint fk_event_main_contact foreign key (MAIN_CONTACT_ID)
