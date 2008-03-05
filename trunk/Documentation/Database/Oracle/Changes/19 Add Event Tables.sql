@@ -144,13 +144,13 @@ create table STANDARD_EVENT_NOTE
 (
   UNIQUEID  NUMBER(20),
   REFERENCE VARCHAR2(20),
-  LABEL     VARCHAR2(60)
+  NOTE     VARCHAR2(1000)
 );
 alter table STANDARD_EVENT_NOTE
   add constraint PK_STANDARD_EVENT_NOTE primary key (UNIQUEID);
 alter table STANDARD_EVENT_NOTE
-  add constraint NN_STD_EVENT_NOTE_LABEL
-  check ("LABEL" IS NOT NULL);
+  add constraint NN_STD_EVENT_NOTE_NOTE
+  check ("NOTE" IS NOT NULL);
 alter table STANDARD_EVENT_NOTE
   add constraint NN_STD_EVENT_NOTE_REFERENCE
   check ("REFERENCE" IS NOT NULL);
