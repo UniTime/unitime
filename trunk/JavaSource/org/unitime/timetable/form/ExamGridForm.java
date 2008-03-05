@@ -1,9 +1,12 @@
 package org.unitime.timetable.form;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.TreeSet;
 import java.util.Vector;
 
@@ -25,6 +28,8 @@ import org.unitime.timetable.webutil.timegrid.ExamGridTable;
 public class ExamGridForm extends ActionForm {
     private Long iSessionId;
     private TreeSet[] iPeriods;
+    private int iSessionBeginWeek;
+    private Date iSessionBeginDate;
     private Date iExamBeginDate;
     
     private String iOp = null;
@@ -93,6 +98,10 @@ public class ExamGridForm extends ActionForm {
     public void load(HttpSession httpSession) throws Exception {
         Session session = Session.getCurrentAcadSession(Web.getUser(httpSession));
         iSessionId = session.getUniqueId();
+        Calendar cal = Calendar.getInstance(Locale.US);
+        cal.setTime(session.getSessionBeginDateTime());
+        iSessionBeginWeek = cal.get(Calendar.WEEK_OF_YEAR);
+        iSessionBeginDate = session.getSessionBeginDateTime();
         iExamBeginDate = session.getExamBeginDate();
         iPeriods = new TreeSet[Exam.sExamTypes.length];
         for (int i=0;i<Exam.sExamTypes.length;i++) {
@@ -129,6 +138,22 @@ public class ExamGridForm extends ActionForm {
         Vector<ComboBoxLookup> ret = new Vector<ComboBoxLookup>();
         ret.addElement(new ComboBoxLookup("All Dates", String.valueOf(Integer.MIN_VALUE)));
         HashSet added = new HashSet();
+        SimpleDateFormat df = new SimpleDateFormat("MM/dd");
+        for (Iterator i=iPeriods[examType].iterator();i.hasNext();) {
+            ExamPeriod period = (ExamPeriod)i.next();
+            Calendar cal = Calendar.getInstance(Locale.US);
+            cal.setTime(period.getStartDate());
+            int week = 1+cal.get(Calendar.WEEK_OF_YEAR)-iSessionBeginWeek;
+            if (added.add(1000+week)) {
+                while (cal.get(Calendar.DAY_OF_WEEK)!=Calendar.MONDAY) cal.add(Calendar.DAY_OF_YEAR, -1);
+                String first = df.format(cal.getTime());
+                while (cal.get(Calendar.DAY_OF_WEEK)!=Calendar.SUNDAY) cal.add(Calendar.DAY_OF_YEAR, 1);
+                String end = df.format(cal.getTime());
+                ret.addElement(new ComboBoxLookup(
+                        "Week "+week+" ("+first+" - "+end+")",
+                        String.valueOf(1000+week)));
+            }
+        }
         for (Iterator i=iPeriods[examType].iterator();i.hasNext();) {
             ExamPeriod period = (ExamPeriod)i.next();
             if (added.add(period.getDateOffset())) {
@@ -239,4 +264,7 @@ public class ExamGridForm extends ActionForm {
         }
     	return ret;
     }
+    
+    public int getSessionBeginWeek() { return iSessionBeginWeek; }
+    public Date getSessionBeginDate() { return iSessionBeginDate; }
 }

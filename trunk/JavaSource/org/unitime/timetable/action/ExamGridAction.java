@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.action;
 
+import java.io.File;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -27,8 +29,10 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.unitime.commons.web.Web;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ExamGridForm;
-import org.unitime.timetable.webutil.timegrid.ExamGridTable;
+import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.webutil.timegrid.PdfExamGridTable;
 
 
 /** 
@@ -53,18 +57,15 @@ public class ExamGridAction extends Action {
         
         myForm.load(request.getSession());
         
-        ExamGridTable table = new ExamGridTable(myForm, request.getSession());
+        PdfExamGridTable table = new PdfExamGridTable(myForm, request.getSession());
         
         request.setAttribute("table", table);
 
-		/*
         if ("Export PDF".equals(op)) {
         	File file = ApplicationProperties.getTempFile("timetable", "pdf");
-        	PdfTimetableGridTable.export2Pdf(table, file);
+        	table.export(file);
         	request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
-       		//response.sendRedirect("temp/"+file.getName());
         }
-        */
 
         myForm.setOp("Change");
         return mapping.findForward("showGrid");
