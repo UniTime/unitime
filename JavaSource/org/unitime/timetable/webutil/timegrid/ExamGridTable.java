@@ -89,13 +89,19 @@ public class ExamGridTable {
         "Room Preferences",
         "Distribution Preferences"
     };
-    public static final int sDispModeInRow   = 0;
-    public static final int sDispModePerWeekHorizontal = 1;
-    public static final int sDispModePerWeekVertical = 2;
+    public static final int sDispModeInRowHorizontal   = 0;
+    public static final int sDispModeInRowVertical   = 1;
+    public static final int sDispModePerDayHorizontal = 2;
+    public static final int sDispModePerDayVertical = 3;
+    public static final int sDispModePerWeekHorizontal = 4;
+    public static final int sDispModePerWeekVertical = 5;
     public static String[] sDispModes = new String[] {
         "In Row [horizontal]",
+        "In Row [vertical]",
+        "Per Day [horizontal]",
+        "Per Day [vertical]",
         "Per Week [horizontal]",
-        "Per Week [vertical]",
+        "Per Week [vertical]"
     };
     public static final int sOrderByNameAsc = 0;
     public static final int sOrderByNameDesc = 1;
@@ -221,31 +227,6 @@ public class ExamGridTable {
 		out.flush();
 	}
 	
-	public void printToHtml(PrintWriter out) {
-        out.println("<table border='0' cellpadding='2' cellspacing='0'>");
-        int rowNumber=0; 
-        for (Enumeration e = iModels.elements(); e.hasMoreElements(); rowNumber++) {
-        	printToHtml(out,(ExamGridModel)e.nextElement(),rowNumber);
-        }
-        out.println("</table>");		
-	}
-	
-	public boolean isDispModePerWeekVertical() {
-		return iForm.getDispMode() == sDispModePerWeekVertical;
-	}
-	
-	public boolean isDispModePerWeekHorizontal() {
-		return iForm.getDispMode() == sDispModePerWeekHorizontal;
-	}
-
-	public boolean isDispModePerWeek() {
-		return isDispModePerWeekHorizontal() || isDispModePerWeekVertical();
-	}
-
-	public boolean isDispModeInRow() {
-		return iForm.getDispMode() == sDispModeInRow;
-	}
-	
     public int getMaxIdx(ExamGridModel model, int startDay, int endDay, int firstSlot, int lastSlot) {
         int max = 0;
         for (Iterator i=iForm.getPeriods(iForm.getExamType()).iterator();i.hasNext();) {
@@ -257,47 +238,124 @@ public class ExamGridTable {
         return max;
     }
     
+    public int getMaxIdx(ExamGridModel model, int dayOfWeek, int firstSlot, int lastSlot) {
+        int max = 0;
+        for (Iterator i=iForm.getPeriods(iForm.getExamType()).iterator();i.hasNext();) {
+            ExamPeriod period = (ExamPeriod)i.next();
+            if (getDayOfWeek(period.getDateOffset())!=dayOfWeek) continue;
+            if (period.getStartSlot()<firstSlot || period.getStartSlot()>lastSlot) continue;
+            max = Math.max(max, model.getAssignments(period).size()-1);
+        }
+        return max;
+    }
+
+    public int getMaxIdx(ExamGridModel model, int week, int slot) {
+        int max = 0;
+        for (Iterator i=iForm.getPeriods(iForm.getExamType()).iterator();i.hasNext();) {
+            ExamPeriod period = (ExamPeriod)i.next();
+            if (getWeek(period.getDateOffset())!=week) continue;
+            if (period.getStartSlot()!=slot) continue;
+            max = Math.max(max, model.getAssignments(period).size()-1);
+        }
+        return max;
+    }
+
+    public int getMaxIdx(int day, int time) {
+        int max = 0;
+        ExamPeriod period = getPeriod(day, time);
+        if (period==null) return max;
+        for (ExamGridModel model : models()) {
+            max = Math.max(max, model.getAssignments(period).size()-1);
+        }
+        return max;
+    }
+
     public String getDayName(int day) {
         Calendar c = Calendar.getInstance(Locale.US);
         c.setTime(iForm.getExamBeginDate());
         c.add(Calendar.DAY_OF_YEAR, day);
         return sDF.format(c.getTime());
     }
-
-    public void printHeader(PrintWriter out, ExamGridModel model, int rowNumber) {
-		String sfx2 = "";
-		if (isDispModePerWeekVertical())
-			sfx2 += "Vertical";
+    
+    public String getDayOfWeekName(int dayOfWeek) {
+        Calendar c = Calendar.getInstance(Locale.US);
+        c.set(Calendar.DAY_OF_WEEK, dayOfWeek);
+        return new SimpleDateFormat("EEE").format(c.getTime());
+    }
+    
+    public String getWeekName(int week) {
+        Calendar c = Calendar.getInstance(Locale.US);
+        c.setTime(iForm.getSessionBeginDate());
+        c.setLenient(true);
+        c.add(Calendar.WEEK_OF_YEAR, week);
+        SimpleDateFormat df = new SimpleDateFormat("MM/dd");
+        while (c.get(Calendar.DAY_OF_WEEK)!=Calendar.MONDAY) c.add(Calendar.DAY_OF_YEAR, -1);
+        String first = df.format(c.getTime());
+        while (c.get(Calendar.DAY_OF_WEEK)!=Calendar.SUNDAY) c.add(Calendar.DAY_OF_YEAR, 1);
+        String end = df.format(c.getTime());
+        return "Week "+week+"<br>"+first+" - "+end;
+    }
+    
+    public String getSlotName(int slot) {
+        int time = slot*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
+        int hour = time/60;
+        int min = time%60;
+        return (hour>12?hour-12:hour)+":"+(min<10?"0":"")+min+(hour>=12?"p":"a");
+    }
+    
+    public void printHeaderCell(PrintWriter out, String name, boolean vertical, boolean eod, boolean eol) {
+        String style = "TimetableHead" + "Cell" + (eol?"EOL":eod?"EOD":"");
+        out.println("<th nowrap width='130' height='40' class='"+style+"'>");
+        out.println(name==null?"":name);
+        out.println("</th>");
+    }
+    
+    public boolean isVertical() {
+        return (iForm.getDispMode()==sDispModeInRowVertical || iForm.getDispMode()==sDispModePerDayVertical || iForm.getDispMode()==sDispModePerWeekVertical);
+    }
+    
+    public void printHeader(PrintWriter out, String name) {
 		out.println("<tr valign='top'>");
-		out.println("<th nowrap class='Timetable"+(rowNumber==0?"Head":"")+"Cell"+sfx2+"'>");
-		if (isDispModePerWeek())
-			out.println(model.getName()+(model.getSize()>0?" ("+model.getSize()+")":""));
-		out.println("</th>");
-		TreeSet<Integer> days = days(), slots = slots();
-		if (isDispModePerWeekVertical()) {
-			for (Integer day : days) {
-				boolean eol = (day==days.last());
-				out.println("<th nowrap width='130' height='40' class='TimetableHeadCellVertical"+(eol?"EOL":"")+"'>");
-				out.println(getDayName(day));
-				out.println("</th>");
-			}
-		} else { //isDispModeInRow() || isDispModePerWeekVertical()
+		boolean vertical = isVertical();
+		printHeaderCell(out, name, vertical, false, false);
+		TreeSet<Integer> days = days(), slots = slots(), weeks = weeks(), daysOfWeek = daysOfWeek();
+		if (iForm.getDispMode()==sDispModeInRowHorizontal) {
 		    for (Integer day : days) {
-		        if (isDispModePerWeek() && day!=days.first()) break;
-				for (Integer slot : slots()) {
-					int time = slot*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
-					int hour = time/60;
-					int min = time%60;
-					boolean eod = (slot==slots.last());
-					boolean eol = (eod && (isDispModePerWeek() || day==days.last()));
-					out.println("<th nowrap width='130' height='40' class='Timetable" + (rowNumber==0?"Head":"") + "Cell" + (eol?"EOL":eod?"EOD":"") + "'>");
-					if (isDispModeInRow())
-						out.println(getDayName(day)+"<br>");
-					out.println((hour>12?hour-12:hour)+":"+(min<10?"0":"")+min+(hour>=12?"p":"a"));
-					out.println("</th>");
-				}
-			}
-        }
+		        for (Integer slot : slots()) {
+	                boolean eod = (slot==slots.last());
+	                boolean eol = (eod && day==days.last());
+	                printHeaderCell(out, getDayName(day)+"<br>"+getSlotName(slot), vertical, eod, eol);
+		        }
+		    }
+		} else if (iForm.getDispMode()==sDispModeInRowVertical) {
+		    for (ExamGridModel m : models()) {
+                boolean eol = m.equals(models().lastElement());
+                printHeaderCell(out, m.getName()+(m.getSize()>0?" ("+m.getSize()+")":""), vertical, false, eol);
+		    }
+		} else if (iForm.getDispMode()==sDispModePerDayHorizontal) {
+            for (Integer slot : slots()) {
+                boolean eol = (slot==slots.last());
+                printHeaderCell(out, getSlotName(slot), vertical, false, eol);
+            }
+		} else if (iForm.getDispMode()==sDispModePerDayVertical) {
+            for (Integer day : days) {
+                boolean eol = (day==days.last());
+                printHeaderCell(out, getDayName(day), vertical, false, eol);
+            }
+		} else if (iForm.getDispMode()==sDispModePerWeekHorizontal) {
+		    for (Integer week : weeks) {
+		        for (Integer slot : slots) {
+		            boolean eod = (slot==slots.last());
+		            boolean eol = eod && (week==weeks.last());
+		            printHeaderCell(out, getWeekName(week)+"<br>"+getSlotName(slot), vertical, eod, eol);
+		        }
+            }
+		} else if (iForm.getDispMode()==sDispModePerWeekVertical) {
+		    for (Integer dow : daysOfWeek) {
+                boolean eol = (dow==daysOfWeek.last());
+                printHeaderCell(out, getDayOfWeekName(dow), vertical, false, eol);
+		    }
+		}
 		out.println("</tr>");
 	}
 	
@@ -328,15 +386,71 @@ public class ExamGridTable {
         onMouseOut.append("\" ");
     }
     
+    public int getWeek(int day) {
+        Calendar cal = Calendar.getInstance(Locale.US);
+        cal.setTime(iForm.getExamBeginDate());
+        cal.setLenient(true);
+        cal.add(Calendar.DAY_OF_YEAR, day);
+        return 1+cal.get(Calendar.WEEK_OF_YEAR)-iForm.getSessionBeginWeek();
+    }
+    
+    public int getDayOfWeek(int day) {
+        Calendar cal = Calendar.getInstance(Locale.US);
+        cal.setTime(iForm.getExamBeginDate());
+        cal.setLenient(true);
+        cal.add(Calendar.DAY_OF_YEAR, day);
+        return cal.get(Calendar.DAY_OF_WEEK);
+    }
+    
+    public int getDay(int week, int dayOfWeek) {
+        Calendar c = Calendar.getInstance(Locale.US);
+        c.setTime(iForm.getSessionBeginDate());
+        c.setLenient(true);
+        c.add(Calendar.WEEK_OF_YEAR, week-1);
+        c.add(Calendar.DAY_OF_WEEK, dayOfWeek - c.get(Calendar.DAY_OF_WEEK));
+        Calendar ec = Calendar.getInstance(Locale.US);
+        ec.setTime(iForm.getExamBeginDate());
+        return c.get(Calendar.DAY_OF_YEAR)-ec.get(Calendar.DAY_OF_YEAR);
+    }
+    
     public TreeSet<Integer> days() {
+        if (iForm.isAllDates(iForm.getExamType())) return iDates;
         TreeSet<Integer> days = new TreeSet();
-        for (Integer day:iDates) {
-            if (!iForm.isAllDates(iForm.getExamType()) && day!=iForm.getDate(iForm.getExamType())) continue;
-            days.add(day);
+        if (iForm.getDate(iForm.getExamType())>500) {
+            for (Integer day:iDates) {
+                if (1000+getWeek(day)==iForm.getDate(iForm.getExamType())) days.add(day);
+            }
+        } else {
+            days.add(iForm.getDate(iForm.getExamType()));
         }
         return days;
     }
 	
+    public TreeSet<Integer> daysOfWeek() {
+        TreeSet<Integer> daysOfWeek = new TreeSet();
+        for (Integer day:days()) {
+            daysOfWeek.add(getDayOfWeek(day));
+        }
+        return daysOfWeek;
+    }
+
+    public TreeSet<Integer> weeks() {
+        TreeSet<Integer> weeks = new TreeSet();
+        for (Integer day:days()) {
+            weeks.add(getWeek(day));
+        }
+        return weeks;
+    }
+
+    public TreeSet<Integer> days(int week) {
+        TreeSet<Integer> days= new TreeSet();
+        for (Integer day:days()) {
+            if (getWeek(day)==week)
+                days.add(day);
+        }
+        return days;
+    }
+
     public TreeSet<Integer> slots() {
         TreeSet<Integer> slots = new TreeSet();
         for (Integer slot:iStartsSlots) {
@@ -365,168 +479,221 @@ public class ExamGridTable {
         }
         return next;
     }
-
-	
-	public void printToHtml(PrintWriter out, ExamGridModel model, int rowNumber) {
-		if (isDispModePerWeek() || rowNumber%10==0)
-			printHeader(out, model, rowNumber);
-		out.println("<tr valign='top'>");
-		TreeSet<Integer> days = days(), slots = slots();
-		if (isDispModeInRow()) {
-			int maxIdx = getMaxIdx(model, days.first(),days.last(),slots.first(),slots.last());
-			out.println("<th nowrap width='130' height='40' rowspan='"+(1+maxIdx)+"' class='Timetable" + (rowNumber%10==0?"Head":"") + "Cell'>");
-			out.println(model.getName()+(model.getSize()>0?" ("+model.getSize()+")":""));
-			out.println("</th>");
-			for (int idx=0;idx<=maxIdx;idx++) {
-				if (idx>0)
-					out.println("</tr><tr valign='top'>");
-				for (Integer day:days) {
-				    for (Integer slot:slots) {
-				        ExamPeriod period = getPeriod(day, slot);
-				        ExamGridCell cell = model.getAssignment(period,idx);
-						if (cell==null) {
-							String bgColor = model.getBackground(period);
-							if (bgColor==null && !model.isAvailable(period))
-								bgColor=sBgColorNotAvailable;
-							boolean eod = (slot == slots.last());
-							boolean eol = (eod && (isDispModePerWeek() || day==days.last()));
-                            if (idx>0 && model.getAssignment(day, slot, idx-1)==null) continue;
-                            int rowspan = 1 + maxIdx - idx;
-							out.println("<td rowspan='"+rowspan+"' class='TimetableCell" + (eol?"EOL":eod?"EOD":"") + "' "+(bgColor==null?"":"style='background-color:"+bgColor+"'")+">&nbsp;</td>");
-						} else {
-							String bgColor = cell.getBackground();
-	                		if (iForm.getBackground()==sBgNone && !sBgColorNotAvailable.equals(bgColor)) {
-	                		    if (!model.isAvailable(period))
-	                		        bgColor = sBgColorNotAvailableButAssigned;
-	                		}
-							boolean eod = (slot==slots.last());
-							boolean eol = (eod && (isDispModePerWeek() || day==days.last()));
-							StringBuffer onMouseOver = new StringBuffer();
-							StringBuffer onMouseOut = new StringBuffer();
-							getMouseOverAndMouseOut(onMouseOver, onMouseOut, cell, bgColor, cell.getOnClick()!=null);
-							out.println("<td nowrap "+(bgColor==null?"":"style='background-color:"+bgColor+"' ")+
-									" class='TimetableCell"+(eol?"EOL":eod?"EOD":"")+"' "+
-									"align='center' "+
-									(cell.getOnClick()==null?"":"onclick=\""+cell.getOnClick()+"\" ")+
-									(cell.getId()!=null?"id='"+cell.getId()+"' ":"")+
-									onMouseOver + 
-									onMouseOut +
-									(cell.getTitle()==null?"":"title=\""+cell.getTitle()+"\" ")+
-	                    			">");
-							out.print(cell.getName());
-							if (iForm.getResource()!=sResourceRoom)
-								out.print("<BR>"+cell.getRoomName());
-							else
-								out.print(cell.getShortComment()==null?"":"<BR>"+cell.getShortComment());
-							out.println("</td>");
-						}
-					}
-				}
-			}			
-		} else  if (isDispModePerWeekHorizontal()) {
-		    for (Integer day:days) {
-				if (day!=days.first())
-					out.println("</tr><tr valign='top'>");
-				int maxIdx = getMaxIdx(model, day, day,slots.first(),slots.last());
-				out.println("<th nowrap width='130' height='40' rowspan='"+(1+maxIdx)+"' class='TimetableCell'>"+getDayName(day)+"</th>");
-				for (int idx=0;idx<=maxIdx;idx++) {
-					if (idx>0) out.println("</tr><tr valign='top'>");
-					for (Integer slot:slots) {
-                        ExamPeriod period = getPeriod(day, slot);
-                        ExamGridCell cell = model.getAssignment(period,idx);
-						if (cell==null) {
-							String bgColor = model.getBackground(period);
-							if (bgColor==null && !model.isAvailable(period))
-								bgColor=sBgColorNotAvailable;
-							boolean eod = (slot == slots.last());
-							boolean eol = (eod && (isDispModePerWeek() || day==days.last()));
-                            if (idx>0 && model.getAssignment(day, slot, idx-1)==null) continue;
-                            int rowspan = 1 + maxIdx - idx;
-							out.println("<td rowspan='"+rowspan+"' class='TimetableCell" + (eol?"EOL":eod?"EOD":"") + "' "+(bgColor==null?"":"style='background-color:"+bgColor+"'")+">&nbsp;</td>");
-						} else {
-							String bgColor = cell.getBackground();
-                            if (iForm.getBackground()==sBgNone && !sBgColorNotAvailable.equals(bgColor)) {
-                                if (!model.isAvailable(period))
-                                    bgColor = sBgColorNotAvailableButAssigned;
+    
+    public void printCell(PrintWriter out, ExamGridModel model, int day, int slot, int idx, int maxIdx, boolean head, boolean vertical, boolean in, boolean eod, boolean eol) {
+        ExamPeriod period = getPeriod(day, slot);
+        ExamGridCell cell = model.getAssignment(period,idx);
+        String style = "Timetable"+(head || (!in && !vertical) ? "Head":"")+"Cell" + (!head && in && vertical?"In":"") + (vertical?"Vertical":"") + (eol?"EOL":eod?"EOD":"");
+        if (cell==null) {
+            String bgColor = model.getBackground(period);
+            if (bgColor==null && !model.isAvailable(period)) bgColor=sBgColorNotAvailable;
+            if (period==null) bgColor=sBgColorNotAvailable;
+            if (idx>0 && model.getAssignment(day, slot, idx-1)==null) return;
+            int rowspan = 1 + maxIdx - idx;
+            out.println("<td rowspan='"+rowspan+"' class='"+style+"' "+(bgColor==null?"":"style='background-color:"+bgColor+"'")+">&nbsp;</td>");
+        } else {
+            String bgColor = cell.getBackground();
+            if (iForm.getBackground()==sBgNone && !sBgColorNotAvailable.equals(bgColor)) {
+                if (!model.isAvailable(period))
+                    bgColor = sBgColorNotAvailableButAssigned;
+            }
+            StringBuffer onMouseOver = new StringBuffer();
+            StringBuffer onMouseOut = new StringBuffer();
+            getMouseOverAndMouseOut(onMouseOver, onMouseOut, cell, bgColor, cell.getOnClick()!=null);
+            out.println("<td nowrap "+(bgColor==null?"":"style='background-color:"+bgColor+"' ")+
+                    " class='"+style+"' align='center' "+
+                    (cell.getOnClick()==null?"":"onclick=\""+cell.getOnClick()+"\" ")+
+                    (cell.getId()!=null?"id='"+cell.getId()+"' ":"")+
+                    onMouseOver + 
+                    onMouseOut +
+                    (cell.getTitle()==null?"":"title=\""+cell.getTitle()+"\" ")+
+                    ">");
+            out.print(cell.getName());
+            if (iForm.getResource()!=sResourceRoom)
+                out.print("<BR>"+cell.getRoomName());
+            else
+                out.print(cell.getShortComment()==null?"":"<BR>"+cell.getShortComment());
+            out.println("</td>");            
+        }
+    }
+    
+    public String getModelName(ExamGridModel model) {
+        return model.getName()+(model.getSize()>0?" ("+model.getSize()+")":"");
+    }
+    
+    public void printRowHeaderCell(PrintWriter out, String name, int maxIdx, boolean vertical, boolean head, boolean in) {
+        String style = "Timetable"+(head || (!in && !vertical)?"Head":"")+"Cell"+(!head && in && vertical?"In":"")+(vertical?"Vertical":"");
+        out.println("<th nowrap width='130' height='40' rowspan='"+(1+maxIdx)+"' class='"+style+"'>");
+        out.println(name);
+        out.println("</th>");
+        
+    }
+    
+    public void printToHtml(PrintWriter out) {
+        boolean vertical = isVertical();
+        out.println("<table border='0' cellpadding='2' cellspacing='0'>");
+        TreeSet<Integer> days = days(), slots = slots(), weeks = weeks(), daysOfWeek = daysOfWeek();
+        int rowNumber=0; 
+        if (iForm.getDispMode()==sDispModeInRowVertical) {
+            int globalMaxIdx = 0;
+            for (Integer day:days) 
+                for (Integer slot:slots) {
+                    globalMaxIdx = Math.max(globalMaxIdx,getMaxIdx(day, slot));
+                }
+            int week = -1;
+            for (Integer day:days) {
+                boolean head = false;
+                if (week!=getWeek(day)) {
+                    week = getWeek(day);
+                    head = true;
+                    printHeader(out, getWeekName(week));
+                }
+                for (Integer slot:slots) {
+                    if (getPeriod(day, slot)==null) continue;
+                    out.println("<tr valign='top'>");
+                    int maxIdx = getMaxIdx(day, slot);
+                    printRowHeaderCell(out, getDayName(day)+"<br>"+getSlotName(slot), maxIdx, vertical, head && slot==slots.first(), globalMaxIdx==0);
+                    for (int idx=0;idx<=maxIdx;idx++) {
+                        if (idx>0) out.println("</tr><tr valign='top'>");
+                        boolean eod = (slot==slots.last());
+                        boolean eol = (eod && day==days.last());
+                        for (ExamGridModel model : models()) {
+                            printCell(out,
+                                    model,
+                                    day,
+                                    slot,
+                                    idx, maxIdx,
+                                    head && slot==slots.first() && idx==0, vertical, globalMaxIdx==0 || idx>0,
+                                    false, model.equals(models().lastElement()));
+                        }
+                    }
+                    out.println("</tr>");
+                    rowNumber++;
+                }
+            }
+        } else {
+            int tmx = 0;
+            for (ExamGridModel m : models())
+                tmx = Math.max(tmx,getMaxIdx(m, days.first(),days.last(),slots.first(),slots.last()));
+            for (ExamGridModel model : models()) {
+                if (iForm.getDispMode()==sDispModeInRowHorizontal) {
+                    if (rowNumber%10==0) printHeader(out, null);
+                    int maxIdx = getMaxIdx(model, days.first(),days.last(),slots.first(),slots.last());
+                    out.println("<tr valign='top'>");
+                    printRowHeaderCell(out, model.getName()+(model.getSize()>0?" ("+model.getSize()+")":""), maxIdx, vertical, (rowNumber%10==0), tmx==0);
+                    for (int idx=0;idx<=maxIdx;idx++) {
+                        if (idx>0) out.println("</tr><tr valign='top'>");
+                        for (Integer day:days) {
+                            for (Integer slot:slots) {
+                                boolean eod = (slot==slots.last());
+                                boolean eol = (eod && day==days.last());
+                                printCell(out,
+                                        model,
+                                        day,
+                                        slot,
+                                        idx, maxIdx,
+                                        rowNumber%10==0 && idx==0, vertical, tmx==0 || idx>0,
+                                        eod, eol);
                             }
-							boolean eod = (slot==slots.last());
-							boolean eol = (eod && (isDispModePerWeek() || day==days.last()));
-							StringBuffer onMouseOver = new StringBuffer();
-							StringBuffer onMouseOut = new StringBuffer();
-							getMouseOverAndMouseOut(onMouseOver, onMouseOut, cell, bgColor, cell.getOnClick()!=null);
-							out.println("<td nowrap "+(bgColor==null?"":"style='background-color:"+bgColor+"' ")+
-									" class='TimetableCell"+(eol?"EOL":eod?"EOD":"")+"' "+
-									"align='center' "+
-									(cell.getOnClick()==null?"":"onclick=\""+cell.getOnClick()+"\" ")+
-									(cell.getId()!=null?"id='"+cell.getId()+"' ":"")+
-									onMouseOver + 
-									onMouseOut +
-									(cell.getTitle()==null?"":"title=\""+cell.getTitle()+"\" ")+
-	                    			">");
-							out.print(cell.getName());
-							if (iForm.getResource()!=sResourceRoom)
-								out.print("<BR>"+cell.getRoomName());
-							else
-								out.print(cell.getShortComment()==null?"":"<BR>"+cell.getShortComment());
-							out.println("</td>");
-						}
-					}
-				}
-			}
-		} else { //isDispModePerWeekVertical
-			for (Integer slot:slots) {
-				int time = slot * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
-				int hour = time/60;
-				int min = time%60;
-				int maxIdx = getMaxIdx(model, days.first(), days.last(), slot, slot);
-				out.println("<th nowrap width='130' height='40' rowspan='"+(1+maxIdx)+"' class='TimetableHeadCell"+(maxIdx>0?"":"In")+"Vertical'>" + (hour>12?hour-12:hour) + ":" + (min<10?"0":"") + min + (hour>=12?"p":"a") + "</th>");
-                for (int idx=0;idx<=maxIdx;idx++) {
-                    if (idx>0) out.println("</tr><tr valign='top'>");
+                        }
+                    }
+                    out.println("</tr>");
+                } else if (iForm.getDispMode()==sDispModePerDayVertical) {
+                    printHeader(out, getModelName(model));
+                    int gmx = getMaxIdx(model, days.first(),days.last(),slots.first(),slots.last());
+                    for (Integer slot:slots) {
+                        out.println("<tr valign='top'>");
+                        int maxIdx = getMaxIdx(model, days.first(), days.last(), slot, slot);
+                        printRowHeaderCell(out, getSlotName(slot), maxIdx, vertical, slot==slots.first(), gmx==0);
+                        for (int idx=0;idx<=maxIdx;idx++) {
+                            if (idx>0) out.println("</tr><tr valign='top'>");
+                            for (Integer day:days) {
+                                printCell(out,
+                                        model,
+                                        day,
+                                        slot,
+                                        idx, maxIdx,
+                                        slot==slots.first() && idx==0, vertical, gmx==0 || idx>0,
+                                        false, (day==days.last()));
+                            }
+                        }
+                        out.println("</tr>");
+                    }
+                } else if (iForm.getDispMode()==sDispModePerDayHorizontal) {
+                    printHeader(out, getModelName(model));
+                    int gmx = getMaxIdx(model, days.first(),days.last(),slots.first(),slots.last());
                     for (Integer day:days) {
-                	    ExamPeriod period = getPeriod(day, slot);
-                    	ExamGridCell cell = model.getAssignment(period, idx);
-                    	if (cell==null) {
-							String bgColor = model.getBackground(period);
-							if (bgColor==null && !model.isAvailable(period))
-								bgColor=sBgColorNotAvailable;
-                            boolean eol = (day==days.last());
-                            if (idx>0 && model.getAssignment(day, slot, idx-1)==null) continue;
-                            int rowspan = 1 + maxIdx - idx;
-                            out.println("<td rowspan='"+rowspan+"' class='TimetableCell"+(idx==0&&maxIdx>0?"":"In")+"Vertical"+(eol?"EOL":"")+ "' "+(bgColor==null?"":"style='background-color:"+bgColor+"'")+">&nbsp;</td>");
-                    	} else {
-                    		String bgColor = cell.getBackground();
-                            if (iForm.getBackground()==sBgNone && !sBgColorNotAvailable.equals(bgColor)) {
-                                if (!model.isAvailable(period))
-                                    bgColor = sBgColorNotAvailableButAssigned;
+                        out.println("<tr valign='top'>");
+                        int maxIdx = getMaxIdx(model, day, day,slots.first(),slots.last());
+                        printRowHeaderCell(out, getDayName(day), maxIdx, vertical, day==days.first(), gmx==0);
+                        for (int idx=0;idx<=maxIdx;idx++) {
+                            if (idx>0) out.println("</tr><tr valign='top'>");
+                            for (Integer slot:slots) {
+                                printCell(out,
+                                        model,
+                                        day,
+                                        slot,
+                                        idx, maxIdx,
+                                        day==days.first() && idx==0, vertical, gmx==0 || idx>0,
+                                        false, (slot==slots.last()));
                             }
-                    		StringBuffer onMouseOver = new StringBuffer();
-                    		StringBuffer onMouseOut = new StringBuffer();
-                    		getMouseOverAndMouseOut(onMouseOver, onMouseOut, cell, bgColor, cell.getOnClick()!=null);
-                    		boolean eol = (day==days.last());
-                    		out.println("<td nowrap "+
-                    				(bgColor==null?"":"style='background-color:"+bgColor+"' ")+
-                    				"class='TimetableCell"+(idx==0&&maxIdx>0?"":"In")+"Vertical" + (eol?"EOL":"")+ "' align='center' "+
-                    				(cell.getOnClick()==null?"":"onclick=\""+cell.getOnClick()+"\" ")+
-                    				(cell.getId()!=null?"id='"+cell.getId()+"' ":"")+
-                    				onMouseOver + onMouseOut +
-                    				(cell.getTitle()==null?"":"title=\""+cell.getTitle()+"\" ")+
-                            		">");
-							out.print(cell.getName());
-							if (iForm.getResource()!=sResourceRoom)
-								out.print("<BR>"+cell.getRoomName());
-							else
-								out.print(cell.getShortComment()==null?"":"<BR>"+cell.getShortComment());
-                    		out.println("</td>");
-                    	}
+                        }
+                        out.println("</tr>");
+                    }
+                } else if (iForm.getDispMode()==sDispModePerWeekHorizontal) {
+                    printHeader(out, getModelName(model));
+                    int gmx = getMaxIdx(model, days.first(), days.last(), slots.first(),slots.last());
+                    for (Integer dow:daysOfWeek()) {
+                        out.println("<tr valign='top'>");
+                        int maxIdx = getMaxIdx(model, dow,slots.first(),slots.last());
+                        printRowHeaderCell(out, getDayOfWeekName(dow), maxIdx, vertical, dow==daysOfWeek.first(), gmx==0);
+                        for (int idx=0;idx<=maxIdx;idx++) {
+                            if (idx>0) out.println("</tr><tr valign='top'>");
+                            for (Integer week : weeks) {
+                                for (Integer slot:slots) {
+                                    printCell(out,
+                                            model,
+                                            getDay(week,dow),
+                                            slot,
+                                            idx, maxIdx,
+                                            dow==daysOfWeek.first() && idx==0, vertical, gmx==0 || idx>0,
+                                            (slot==slots.last()), (slot==slots.last() && week==weeks.last()));
+                                }
+                            }
+                        }
+                        out.println("</tr>");    
+                     }
+                } else if (iForm.getDispMode()==sDispModePerWeekVertical) {
+                    printHeader(out, getModelName(model));
+                    int gmx = getMaxIdx(model, days.first(), days.last(), slots.first(),slots.last());
+                    for (Integer week : weeks) {
+                        for (Integer slot:slots) {
+                            out.println("<tr valign='top'>");
+                            int maxIdx = getMaxIdx(model, week,slot);
+                            printRowHeaderCell(out, getWeekName(week) +"<br>"+ getSlotName(slot), maxIdx, vertical, slot==slots.first(), gmx==0);
+                            for (int idx=0;idx<=maxIdx;idx++) {
+                                if (idx>0) out.println("</tr><tr valign='top'>");
+                                for (Integer dow : daysOfWeek) {
+                                    printCell(out, 
+                                            model, 
+                                            getDay(week,dow), 
+                                            slot, 
+                                            idx, 
+                                            maxIdx, 
+                                            slot==slots.first() && idx==0, vertical, gmx==0 || idx>0, 
+                                            false, (dow==daysOfWeek.last()));
+                                }
+                            }                            
+                            out.println("</tr>");
+                        }
                     }
                 }
-                out.println("</tr><tr valign='top'>");
-                if (slot==slots.last())
-                	out.println("<td>&nbsp;</td>");
-			}
-		}
-	}
-	
+                rowNumber++;
+            }
+        }
+        out.println("</table>");
+    }
+
 	private boolean match(String name) {
 		if (iForm.getFilter()==null || iForm.getFilter().trim().length()==0) return true;
         String n = name.toUpperCase();
@@ -552,7 +719,7 @@ public class ExamGridTable {
 
 	public void printLegend(PrintWriter out) {
 		if (iForm.getBackground()!=sBgNone) {
-			out.println("<tr><td colspan='2'>Assigned classes:</td></tr>");
+			out.println("<tr><td colspan='2'>Assigned examinations:</td></tr>");
 		}
         if (iForm.getBackground()==sBgPeriodPref) {
             out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sRequired)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Required period</td><td></td></tr>");
@@ -708,7 +875,7 @@ public class ExamGridTable {
 	    }
 	    
 	    public int getSize() {
-            if (iSize<0) return iNrAssignments++;
+            if (iSize<0) return iNrAssignments;
 	        return iSize;
 	    }
 	    
@@ -739,6 +906,7 @@ public class ExamGridTable {
 	    }
 	    
 	    public String getBackground(ExamPeriod period) {
+	        if (period==null) return null;
 	        if (iForm.getBgPreferences() && iForm.getBackground()==sBgPeriodPref) {
 	            if (period.getPrefLevel()!=null && !PreferenceLevel.sNeutral.equals(period.getPrefLevel().getPrefProlog()))
 	                return pref2color(period.getPrefLevel().getPrefProlog());
@@ -844,6 +1012,13 @@ public class ExamGridTable {
                     "<font color='"+(m2d>0?PreferenceLevel.prolog2color("1"):"gray")+"'>"+m2d+"</font>, "+
                     "<font color='"+(btb>0?PreferenceLevel.prolog2color("2"):"gray")+"'>"+btb+"</font>";
             }
+            
+            public String getShortCommentNoColors() {
+                int dc = getInfo().countDirectConflicts();
+                int m2d = getInfo().countMoreThanTwoConflicts();
+                int btb = getInfo().countBackToBackConflicts();
+                return dc+", "+m2d+", "+btb;
+            }
 	    }
 	}
 	
@@ -880,5 +1055,9 @@ public class ExamGridTable {
 	
 	public Vector<ExamGridModel> models() {
 	    return iModels;
+	}
+	
+	public ExamGridForm getForm() {
+	    return iForm;
 	}
 }
