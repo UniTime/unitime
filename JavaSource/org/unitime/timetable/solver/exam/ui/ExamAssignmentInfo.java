@@ -24,166 +24,171 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
     private TreeSet iInstructorDirects = new TreeSet();
     private TreeSet iInstructorBackToBacks = new TreeSet();
     private TreeSet iInstructorMoreThanTwoADays = new TreeSet();
-
+    
     public ExamAssignmentInfo(ExamPlacement placement) {
-        super(placement);
-        Exam exam = (Exam)placement.variable();
-        ExamModel model = (ExamModel)exam.getModel();
-        Hashtable directs = new Hashtable();
-        for (Enumeration e=exam.getStudents().elements();e.hasMoreElements();) {
-            ExamStudent student = (ExamStudent)e.nextElement();
-            for (Iterator i=student.getExams(placement.getPeriod()).iterator();i.hasNext();) {
-                Exam other = (Exam)i.next();
-                if (other.equals(exam)) continue;
-                DirectConflict dc = (DirectConflict)directs.get(other);
-                if (dc==null) {
-                    dc = new DirectConflict(new ExamAssignment((ExamPlacement)other.getAssignment()));
-                    directs.put(other, dc);
-                } else dc.incNrStudents();
-                dc.getStudents().add(student.getId());
-            }
-        }
-        iDirects.addAll(directs.values());
-        int btbDist = model.getBackToBackDistance();
-        Hashtable backToBacks = new Hashtable();
-        for (Enumeration e=exam.getStudents().elements();e.hasMoreElements();) {
-            ExamStudent student = (ExamStudent)e.nextElement();
-            if (placement.getPeriod().prev()!=null) {
-                if (model.isDayBreakBackToBack() || placement.getPeriod().prev().getDay()==placement.getPeriod().getDay()) {
-                    Set exams = student.getExams(placement.getPeriod().prev());
-                    for (Iterator i=exams.iterator();i.hasNext();) {
-                        Exam other = (Exam)i.next();
-                        double distance = placement.getDistance((ExamPlacement)other.getAssignment());
-                        BackToBackConflict btb = (BackToBackConflict)backToBacks.get(other);
-                        if (btb==null) {
-                            btb = new BackToBackConflict(new ExamAssignment((ExamPlacement)other.getAssignment()),
-                                    (btbDist<0?false:distance>btbDist), distance/5.0);
-                            backToBacks.put(other, btb);
-                        } else btb.incNrStudents();
-                        btb.getStudents().add(student.getId());
-                    }
-                }
-            }
-            if (placement.getPeriod().next()!=null) {
-                if (model.isDayBreakBackToBack() || placement.getPeriod().next().getDay()==placement.getPeriod().getDay()) {
-                    Set exams = student.getExams(placement.getPeriod().next());
-                    for (Iterator i=exams.iterator();i.hasNext();) {
-                        Exam other = (Exam)i.next();
-                        BackToBackConflict btb = (BackToBackConflict)backToBacks.get(other);
-                        double distance = placement.getDistance((ExamPlacement)other.getAssignment());
-                        if (btb==null) {
-                            btb = new BackToBackConflict(new ExamAssignment((ExamPlacement)other.getAssignment()),
-                                    (btbDist<0?false:distance>btbDist), distance);
-                            backToBacks.put(other, btb);
-                        } else btb.incNrStudents();
-                        btb.getStudents().add(student.getId());
-                    }
-                }
-            }
-        }
-        iBackToBacks.addAll(backToBacks.values());
-        Hashtable m2ds = new Hashtable();
-        for (Enumeration e=exam.getStudents().elements();e.hasMoreElements();) {
-            ExamStudent student = (ExamStudent)e.nextElement();
-            Set exams = student.getExamsADay(placement.getPeriod());
-            int nrExams = exams.size() + (exams.contains(exam)?0:1);
-            if (nrExams<=2) continue;
-            TreeSet examIds = new TreeSet();
-            TreeSet otherExams = new TreeSet();
-            for (Iterator i=exams.iterator();i.hasNext();) {
-                Exam other = (Exam)i.next();
-                if (other.equals(exam)) continue;
-                examIds.add(other.getId());
-                otherExams.add(new ExamAssignment((ExamPlacement)other.getAssignment()));
-            }
-            MoreThanTwoADayConflict m2d = (MoreThanTwoADayConflict)m2ds.get(examIds.toString());
-            if (m2d==null) {
-                m2d = new MoreThanTwoADayConflict(otherExams);
-                m2ds.put(examIds.toString(), m2d);
-            } else m2d.incNrStudents();
-            m2d.getStudents().add(student.getId());
-        }
-        iMoreThanTwoADays.addAll(m2ds.values());
+        this((Exam)placement.variable(),placement);
+    }
 
-        Hashtable idirects = new Hashtable();
-        for (Enumeration e=exam.getInstructors().elements();e.hasMoreElements();) {
-            ExamInstructor instructor = (ExamInstructor)e.nextElement();
-            for (Iterator i=instructor.getExams(placement.getPeriod()).iterator();i.hasNext();) {
-                Exam other = (Exam)i.next();
-                if (other.equals(exam)) continue;
-                DirectConflict dc = (DirectConflict)idirects.get(other);
-                if (dc==null) {
-                    dc = new DirectConflict(new ExamAssignment((ExamPlacement)other.getAssignment()));
-                    idirects.put(other, dc);
-                } else dc.incNrStudents();
-                dc.getStudents().add(instructor.getId());
+    public ExamAssignmentInfo(Exam exam, ExamPlacement placement) {
+        super(exam, placement);
+        if (placement!=null) {
+            ExamModel model = (ExamModel)exam.getModel();
+            Hashtable directs = new Hashtable();
+            for (Enumeration e=exam.getStudents().elements();e.hasMoreElements();) {
+                ExamStudent student = (ExamStudent)e.nextElement();
+                for (Iterator i=student.getExams(placement.getPeriod()).iterator();i.hasNext();) {
+                    Exam other = (Exam)i.next();
+                    if (other.equals(exam)) continue;
+                    DirectConflict dc = (DirectConflict)directs.get(other);
+                    if (dc==null) {
+                        dc = new DirectConflict(new ExamAssignment((ExamPlacement)other.getAssignment()));
+                        directs.put(other, dc);
+                    } else dc.incNrStudents();
+                    dc.getStudents().add(student.getId());
+                }
             }
-        }
-        iInstructorDirects.addAll(idirects.values());
-        Hashtable ibackToBacks = new Hashtable();
-        for (Enumeration e=exam.getInstructors().elements();e.hasMoreElements();) {
-            ExamInstructor instructor = (ExamInstructor)e.nextElement();
-            if (placement.getPeriod().prev()!=null) {
-                if (model.isDayBreakBackToBack() || placement.getPeriod().prev().getDay()==placement.getPeriod().getDay()) {
-                    Set exams = instructor.getExams(placement.getPeriod().prev());
-                    for (Iterator i=exams.iterator();i.hasNext();) {
-                        Exam other = (Exam)i.next();
-                        double distance = placement.getDistance((ExamPlacement)other.getAssignment());
-                        BackToBackConflict btb = (BackToBackConflict)ibackToBacks.get(other);
-                        if (btb==null) {
-                            btb = new BackToBackConflict(new ExamAssignment((ExamPlacement)other.getAssignment()),
-                                    (btbDist<0?false:distance>btbDist), distance/5.0);
-                            ibackToBacks.put(other, btb);
-                        } else btb.incNrStudents();
-                        btb.getStudents().add(instructor.getId());
+            iDirects.addAll(directs.values());
+            int btbDist = model.getBackToBackDistance();
+            Hashtable backToBacks = new Hashtable();
+            for (Enumeration e=exam.getStudents().elements();e.hasMoreElements();) {
+                ExamStudent student = (ExamStudent)e.nextElement();
+                if (placement.getPeriod().prev()!=null) {
+                    if (model.isDayBreakBackToBack() || placement.getPeriod().prev().getDay()==placement.getPeriod().getDay()) {
+                        Set exams = student.getExams(placement.getPeriod().prev());
+                        for (Iterator i=exams.iterator();i.hasNext();) {
+                            Exam other = (Exam)i.next();
+                            double distance = placement.getDistance((ExamPlacement)other.getAssignment());
+                            BackToBackConflict btb = (BackToBackConflict)backToBacks.get(other);
+                            if (btb==null) {
+                                btb = new BackToBackConflict(new ExamAssignment((ExamPlacement)other.getAssignment()),
+                                        (btbDist<0?false:distance>btbDist), distance/5.0);
+                                backToBacks.put(other, btb);
+                            } else btb.incNrStudents();
+                            btb.getStudents().add(student.getId());
+                        }
+                    }
+                }
+                if (placement.getPeriod().next()!=null) {
+                    if (model.isDayBreakBackToBack() || placement.getPeriod().next().getDay()==placement.getPeriod().getDay()) {
+                        Set exams = student.getExams(placement.getPeriod().next());
+                        for (Iterator i=exams.iterator();i.hasNext();) {
+                            Exam other = (Exam)i.next();
+                            BackToBackConflict btb = (BackToBackConflict)backToBacks.get(other);
+                            double distance = placement.getDistance((ExamPlacement)other.getAssignment());
+                            if (btb==null) {
+                                btb = new BackToBackConflict(new ExamAssignment((ExamPlacement)other.getAssignment()),
+                                        (btbDist<0?false:distance>btbDist), distance);
+                                backToBacks.put(other, btb);
+                            } else btb.incNrStudents();
+                            btb.getStudents().add(student.getId());
+                        }
                     }
                 }
             }
-            if (placement.getPeriod().next()!=null) {
-                if (model.isDayBreakBackToBack() || placement.getPeriod().next().getDay()==placement.getPeriod().getDay()) {
-                    Set exams = instructor.getExams(placement.getPeriod().next());
-                    for (Iterator i=exams.iterator();i.hasNext();) {
-                        Exam other = (Exam)i.next();
-                        BackToBackConflict btb = (BackToBackConflict)ibackToBacks.get(other);
-                        double distance = placement.getDistance((ExamPlacement)other.getAssignment());
-                        if (btb==null) {
-                            btb = new BackToBackConflict(new ExamAssignment((ExamPlacement)other.getAssignment()),
-                                    (btbDist<0?false:distance>btbDist), distance);
-                            ibackToBacks.put(other, btb);
-                        } else btb.incNrStudents();
-                        btb.getStudents().add(instructor.getId());
+            iBackToBacks.addAll(backToBacks.values());
+            Hashtable m2ds = new Hashtable();
+            for (Enumeration e=exam.getStudents().elements();e.hasMoreElements();) {
+                ExamStudent student = (ExamStudent)e.nextElement();
+                Set exams = student.getExamsADay(placement.getPeriod());
+                int nrExams = exams.size() + (exams.contains(exam)?0:1);
+                if (nrExams<=2) continue;
+                TreeSet examIds = new TreeSet();
+                TreeSet otherExams = new TreeSet();
+                for (Iterator i=exams.iterator();i.hasNext();) {
+                    Exam other = (Exam)i.next();
+                    if (other.equals(exam)) continue;
+                    examIds.add(other.getId());
+                    otherExams.add(new ExamAssignment((ExamPlacement)other.getAssignment()));
+                }
+                MoreThanTwoADayConflict m2d = (MoreThanTwoADayConflict)m2ds.get(examIds.toString());
+                if (m2d==null) {
+                    m2d = new MoreThanTwoADayConflict(otherExams);
+                    m2ds.put(examIds.toString(), m2d);
+                } else m2d.incNrStudents();
+                m2d.getStudents().add(student.getId());
+            }
+            iMoreThanTwoADays.addAll(m2ds.values());
+
+            Hashtable idirects = new Hashtable();
+            for (Enumeration e=exam.getInstructors().elements();e.hasMoreElements();) {
+                ExamInstructor instructor = (ExamInstructor)e.nextElement();
+                for (Iterator i=instructor.getExams(placement.getPeriod()).iterator();i.hasNext();) {
+                    Exam other = (Exam)i.next();
+                    if (other.equals(exam)) continue;
+                    DirectConflict dc = (DirectConflict)idirects.get(other);
+                    if (dc==null) {
+                        dc = new DirectConflict(new ExamAssignment((ExamPlacement)other.getAssignment()));
+                        idirects.put(other, dc);
+                    } else dc.incNrStudents();
+                    dc.getStudents().add(instructor.getId());
+                }
+            }
+            iInstructorDirects.addAll(idirects.values());
+            Hashtable ibackToBacks = new Hashtable();
+            for (Enumeration e=exam.getInstructors().elements();e.hasMoreElements();) {
+                ExamInstructor instructor = (ExamInstructor)e.nextElement();
+                if (placement.getPeriod().prev()!=null) {
+                    if (model.isDayBreakBackToBack() || placement.getPeriod().prev().getDay()==placement.getPeriod().getDay()) {
+                        Set exams = instructor.getExams(placement.getPeriod().prev());
+                        for (Iterator i=exams.iterator();i.hasNext();) {
+                            Exam other = (Exam)i.next();
+                            double distance = placement.getDistance((ExamPlacement)other.getAssignment());
+                            BackToBackConflict btb = (BackToBackConflict)ibackToBacks.get(other);
+                            if (btb==null) {
+                                btb = new BackToBackConflict(new ExamAssignment((ExamPlacement)other.getAssignment()),
+                                        (btbDist<0?false:distance>btbDist), distance/5.0);
+                                ibackToBacks.put(other, btb);
+                            } else btb.incNrStudents();
+                            btb.getStudents().add(instructor.getId());
+                        }
+                    }
+                }
+                if (placement.getPeriod().next()!=null) {
+                    if (model.isDayBreakBackToBack() || placement.getPeriod().next().getDay()==placement.getPeriod().getDay()) {
+                        Set exams = instructor.getExams(placement.getPeriod().next());
+                        for (Iterator i=exams.iterator();i.hasNext();) {
+                            Exam other = (Exam)i.next();
+                            BackToBackConflict btb = (BackToBackConflict)ibackToBacks.get(other);
+                            double distance = placement.getDistance((ExamPlacement)other.getAssignment());
+                            if (btb==null) {
+                                btb = new BackToBackConflict(new ExamAssignment((ExamPlacement)other.getAssignment()),
+                                        (btbDist<0?false:distance>btbDist), distance);
+                                ibackToBacks.put(other, btb);
+                            } else btb.incNrStudents();
+                            btb.getStudents().add(instructor.getId());
+                        }
                     }
                 }
             }
-        }
-        iInstructorBackToBacks.addAll(ibackToBacks.values());
-        Hashtable im2ds = new Hashtable();
-        for (Enumeration e=exam.getInstructors().elements();e.hasMoreElements();) {
-            ExamInstructor instructor = (ExamInstructor)e.nextElement();
-            Set exams = instructor.getExamsADay(placement.getPeriod());
-            int nrExams = exams.size() + (exams.contains(exam)?0:1);
-            if (nrExams<=2) continue;
-            TreeSet examIds = new TreeSet();
-            TreeSet otherExams = new TreeSet();
-            for (Iterator i=exams.iterator();i.hasNext();) {
-                Exam other = (Exam)i.next();
-                if (other.equals(exam)) continue;
-                examIds.add(other.getId());
-                otherExams.add(new ExamAssignment((ExamPlacement)other.getAssignment()));
+            iInstructorBackToBacks.addAll(ibackToBacks.values());
+            Hashtable im2ds = new Hashtable();
+            for (Enumeration e=exam.getInstructors().elements();e.hasMoreElements();) {
+                ExamInstructor instructor = (ExamInstructor)e.nextElement();
+                Set exams = instructor.getExamsADay(placement.getPeriod());
+                int nrExams = exams.size() + (exams.contains(exam)?0:1);
+                if (nrExams<=2) continue;
+                TreeSet examIds = new TreeSet();
+                TreeSet otherExams = new TreeSet();
+                for (Iterator i=exams.iterator();i.hasNext();) {
+                    Exam other = (Exam)i.next();
+                    if (other.equals(exam)) continue;
+                    examIds.add(other.getId());
+                    otherExams.add(new ExamAssignment((ExamPlacement)other.getAssignment()));
+                }
+                MoreThanTwoADayConflict m2d = (MoreThanTwoADayConflict)im2ds.get(examIds.toString());
+                if (m2d==null) {
+                    m2d = new MoreThanTwoADayConflict(otherExams);
+                    im2ds.put(examIds.toString(), m2d);
+                } else m2d.incNrStudents();
+                m2d.getStudents().add(instructor.getId());
             }
-            MoreThanTwoADayConflict m2d = (MoreThanTwoADayConflict)im2ds.get(examIds.toString());
-            if (m2d==null) {
-                m2d = new MoreThanTwoADayConflict(otherExams);
-                im2ds.put(examIds.toString(), m2d);
-            } else m2d.incNrStudents();
-            m2d.getStudents().add(instructor.getId());
+            iInstructorMoreThanTwoADays.addAll(im2ds.values());
         }
-        iInstructorMoreThanTwoADays.addAll(im2ds.values());
     }
     
     public ExamAssignmentInfo(org.unitime.timetable.model.Exam exam) {
         super(exam);
-        if (exam.getConflicts()!=null) {
+        if (exam.getConflicts()!=null && !exam.getConflicts().isEmpty()) {
             for (Iterator i=exam.getConflicts().iterator();i.hasNext();) {
                 ExamConflict conf = (ExamConflict)i.next();
                 if (conf.isDirectConflict()) {

@@ -40,6 +40,7 @@ import net.sf.cpsolver.ifs.util.Callback;
 import net.sf.cpsolver.ifs.util.DataProperties;
 import net.sf.cpsolver.ifs.util.Progress;
 import net.sf.cpsolver.ifs.util.ProgressWriter;
+import net.sf.cpsolver.ifs.util.ToolBox;
 
 public class ExamSolver extends Solver implements ExamSolverProxy {
     private static Log sLog = LogFactory.getLog(ExamSolver.class);
@@ -636,5 +637,53 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
     
     public int getExamType() {
     	return getProperties().getPropertyInt("Exam.Type", org.unitime.timetable.model.Exam.sExamTypeFinal);
+    }
+    
+    public Collection<ExamAssignmentInfo[]> getChangesToInitial(Long subjectAreaId) {
+        String sa = (subjectAreaId!=null && subjectAreaId>=0 ? new SubjectAreaDAO().get(subjectAreaId).getSubjectAreaAbbreviation()+" ":null);
+        Vector<ExamAssignmentInfo[]> changes = new Vector<ExamAssignmentInfo[]>();
+        synchronized (currentSolution()) {
+            for (Enumeration e=currentSolution().getModel().variables().elements();e.hasMoreElements();) {
+                Exam exam = (Exam)e.nextElement();
+                if (sa!=null) {
+                    boolean hasSubjectArea = false;
+                    for (Enumeration f=exam.getCourseSections().elements();!hasSubjectArea && f.hasMoreElements();) {
+                        ExamCourseSection ecs = (ExamCourseSection)f.nextElement();
+                        hasSubjectArea = ecs.getName().startsWith(sa);
+                    }
+                    if (!hasSubjectArea) continue;
+                }
+                if (!ToolBox.equals(exam.getInitialAssignment(),exam.getAssignment())) {
+                    changes.add(new ExamAssignmentInfo[] {
+                            new ExamAssignmentInfo(exam,(ExamPlacement)exam.getInitialAssignment()),
+                            new ExamAssignmentInfo(exam,(ExamPlacement)exam.getAssignment())});
+                }
+            }
+        }
+        return changes;
+    }
+    
+    public Collection<ExamAssignmentInfo[]> getChangesToBest(Long subjectAreaId) {
+        String sa = (subjectAreaId!=null && subjectAreaId>=0 ? new SubjectAreaDAO().get(subjectAreaId).getSubjectAreaAbbreviation()+" ":null);
+        Vector<ExamAssignmentInfo[]> changes = new Vector<ExamAssignmentInfo[]>();
+        synchronized (currentSolution()) {
+            for (Enumeration e=currentSolution().getModel().variables().elements();e.hasMoreElements();) {
+                Exam exam = (Exam)e.nextElement();
+                if (sa!=null) {
+                    boolean hasSubjectArea = false;
+                    for (Enumeration f=exam.getCourseSections().elements();!hasSubjectArea && f.hasMoreElements();) {
+                        ExamCourseSection ecs = (ExamCourseSection)f.nextElement();
+                        hasSubjectArea = ecs.getName().startsWith(sa);
+                    }
+                    if (!hasSubjectArea) continue;
+                }
+                if (!ToolBox.equals(exam.getBestAssignment(),exam.getAssignment())) {
+                    changes.add(new ExamAssignmentInfo[] {
+                            new ExamAssignmentInfo(exam,(ExamPlacement)exam.getInitialAssignment()),
+                            new ExamAssignmentInfo(exam,(ExamPlacement)exam.getAssignment())});
+                }
+            }
+        }
+        return changes;
     }
 }
