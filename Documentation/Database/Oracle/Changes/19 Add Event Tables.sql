@@ -52,7 +52,7 @@ create table event_contact
   phone       varchar2(10)  constraint nn_event_contact_phone not null,
   firstName   varchar2(20),
   middleName  varchar2(20),
-  lastName    varchar2(20)
+  lastName    varchar2(30)
 )
 ;
 -- Create/Recreate primary, unique and foreign key constraints 
