@@ -120,6 +120,7 @@
 	  <form-bean name="examSolverLogForm" type="org.unitime.timetable.form.ExamSolverLogForm" />
 	  <form-bean name="examReportForm" type="org.unitime.timetable.form.ExamReportForm" />
 	  <form-bean name="examGridForm" type="org.unitime.timetable.form.ExamGridForm" />
+	  <form-bean name="examChangesForm" type="org.unitime.timetable.form.ExamChangesForm" />
    </form-beans>
 
    <global-exceptions>
@@ -2066,6 +2067,20 @@
     	<forward
     		name="showGrid"
     		path="examGridTile"
+    		redirect="true" />
+    </action>
+
+    <action
+    	path="/examChanges"
+    	type="org.unitime.timetable.action.ExamChangesAction"
+    	attribute="examChangesForm"
+    	input="examChangesTile"
+    	name="examChangesForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+    		name="showReport"
+    		path="examChangesTile"
     		redirect="true" />
     </action>
    </action-mappings>
