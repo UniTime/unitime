@@ -4494,16 +4494,6 @@ start with 944
 increment by 1
 cache 20;
 
-prompt
-prompt Creating sequence loc_perm_id_seq
-prompt ===================================
-prompt
-create sequence TIMETABLE.loc_perm_id_seq
-minvalue 1
-maxvalue 99999999999999999999
-start with 1
-increment by 1
-cache 20;
 commit;
 
 prompt
