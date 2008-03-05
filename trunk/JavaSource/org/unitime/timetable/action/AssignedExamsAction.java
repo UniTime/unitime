@@ -88,7 +88,7 @@ public class AssignedExamsAction extends Action {
         }
         
         if (table!=null)
-            myForm.setTable(table.printTable(WebTable.getOrder(request.getSession(),"assignedExams.ord")), 10, assignedExams.size());
+            myForm.setTable(table.printTable(WebTable.getOrder(request.getSession(),"assignedExams.ord")), 9, assignedExams.size());
 		
         if (request.getParameter("backId")!=null)
             request.setAttribute("hash", request.getParameter("backId"));
@@ -101,7 +101,7 @@ public class AssignedExamsAction extends Action {
         String instructorNameFormat = Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT);
         String nl = (html?"<br>":"\n");
 		PdfWebTable table =
-            new PdfWebTable( 10,
+            new PdfWebTable( 9,
                     "Assigned Examinations", "assignedExams.do?ord=%%",
                     new String[] {(form.getShowSections()?"Classes / Courses":"Examination"), "Period", "Room", "Seating"+nl+"Type", "Students", "Instructor", "Direct", ">2 A Day", "Back-To-Back"},
        				new String[] {"left", "left", "left", "center", "right", "left", "right", "right", "right"},

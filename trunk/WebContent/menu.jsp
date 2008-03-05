@@ -106,6 +106,7 @@
 			leaf_item('Timetable','Examination Timetable Grid','examGrid.do');
 			leaf_item('Assigned','Assigned Examinations','assignedExams.do');
 			leaf_item('Not-assigned','Not-Assigned Examinations','unassignedExams.do');
+			leaf_item('Changes','Examination Assignment Changes','examChanges.do');
 			leaf_item('Log','Examination Solver Log','examSolverLog.do');
 		enditem(); //6
 <% } %>

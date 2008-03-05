@@ -38,6 +38,7 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ExamReportForm;
 import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.DistributionPref;
+import org.unitime.timetable.model.EveningPeriodPreferenceModel;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriodPref;
 import org.unitime.timetable.model.PeriodPreferenceModel;
@@ -138,20 +139,43 @@ public class UnassignedExamsAction extends Action {
                     if (timeText) {
                         perPref += exam.getExam().getEffectivePrefHtmlForPrefType(ExamPeriodPref.class);
                     } else {
-                        PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getExam().getSession(), exam.getExamType());
-                        px.load(exam.getExam());
-                        RequiredTimeTable rtt = new RequiredTimeTable(px);
-                        File imageFileName = null;
-                        try {
-                            imageFileName = rtt.createImage(timeVertical);
-                        } catch (IOException ex) {
-                            ex.printStackTrace();
+                        if (exam.getExamType()==Exam.sExamTypeEvening) {
+                            EveningPeriodPreferenceModel epx = new EveningPeriodPreferenceModel(exam.getExam().getSession());
+                            if (epx.canDo()) {
+                                epx.load(exam.getExam());
+                                perPref += epx.toString();
+                            } else {
+                                PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getExam().getSession(), exam.getExamType());
+                                px.load(exam.getExam());
+                                RequiredTimeTable rtt = new RequiredTimeTable(px);
+                                File imageFileName = null;
+                                try {
+                                    imageFileName = rtt.createImage(timeVertical);
+                                } catch (IOException ex) {
+                                    ex.printStackTrace();
+                                }
+                                String title = rtt.getModel().toString();
+                                if (imageFileName!=null)
+                                    perPref = "<img border='0' src='temp/"+(imageFileName.getName())+"' title='"+title+"'>";
+                                else
+                                    perPref += exam.getExam().getEffectivePrefHtmlForPrefType(ExamPeriodPref.class);
+                            }
+                        } else {
+                            PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getExam().getSession(), exam.getExamType());
+                            px.load(exam.getExam());
+                            RequiredTimeTable rtt = new RequiredTimeTable(px);
+                            File imageFileName = null;
+                            try {
+                                imageFileName = rtt.createImage(timeVertical);
+                            } catch (IOException ex) {
+                                ex.printStackTrace();
+                            }
+                            String title = rtt.getModel().toString();
+                            if (imageFileName!=null)
+                                perPref = "<img border='0' src='temp/"+(imageFileName.getName())+"' title='"+title+"'>";
+                            else
+                                perPref += exam.getExam().getEffectivePrefHtmlForPrefType(ExamPeriodPref.class);
                         }
-                        String title = rtt.getModel().toString();
-                        if (imageFileName!=null)
-                            perPref = "<img border='0' src='temp/"+(imageFileName.getName())+"' title='"+title+"'>";
-                        else
-                            perPref += exam.getExam().getEffectivePrefHtmlForPrefType(ExamPeriodPref.class);
                     }
                     distPref += exam.getExam().getEffectivePrefHtmlForPrefType(DistributionPref.class);
                 } else {
@@ -175,10 +199,24 @@ public class UnassignedExamsAction extends Action {
                         if (roomPref.length()>0) roomPref+=nl;
                         roomPref += PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText();
                     }
-                    for (Iterator j=exam.getExam().effectivePreferences(ExamPeriodPref.class).iterator();j.hasNext();) {
-                        Preference pref = (Preference)j.next();
-                        if (perPref.length()>0) perPref+=nl;
-                        perPref += PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText();
+                    if (exam.getExamType()==Exam.sExamTypeEvening) {
+                        EveningPeriodPreferenceModel epx = new EveningPeriodPreferenceModel(exam.getExam().getSession());
+                        if (epx.canDo()) {
+                            epx.load(exam.getExam());
+                            perPref += epx.toString();
+                        } else {
+                            for (Iterator j=exam.getExam().effectivePreferences(ExamPeriodPref.class).iterator();j.hasNext();) {
+                                Preference pref = (Preference)j.next();
+                                if (perPref.length()>0) perPref+=nl;
+                                perPref += PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText();
+                            }
+                        }
+                    } else {
+                        for (Iterator j=exam.getExam().effectivePreferences(ExamPeriodPref.class).iterator();j.hasNext();) {
+                            Preference pref = (Preference)j.next();
+                            if (perPref.length()>0) perPref+=nl;
+                            perPref += PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText();
+                        }
                     }
                     for (Iterator j=exam.getExam().effectivePreferences(DistributionPref.class).iterator();j.hasNext();) {
                         DistributionPref pref = (DistributionPref)j.next();

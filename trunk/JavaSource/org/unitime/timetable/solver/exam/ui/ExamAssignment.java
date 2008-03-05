@@ -32,50 +32,57 @@ public class ExamAssignment extends ExamInfo implements Serializable, Comparable
     protected ExamInfo iExam = null;
     protected String iDistPref = null;
 
-    
     public ExamAssignment(ExamPlacement placement) {
-        super((net.sf.cpsolver.exam.model.Exam)placement.variable());
-        iPeriodId = placement.getPeriod().getId();
-        iPeriodIdx = placement.getPeriod().getIndex();
-        iRoomIds = new Vector(placement.getRooms()==null?0:placement.getRooms().size());
-        iPeriodPref = PreferenceLevel.int2prolog(placement.getPeriodPenalty());
-        iRoomPrefs = new Hashtable();
-        if (placement.getRooms()!=null)
-            for (Iterator i=placement.getRooms().iterator();i.hasNext();) {
-                ExamRoom room = (ExamRoom)i.next();
-                iRoomIds.add(room.getId());
-                iRoomPrefs.put(room.getId(),PreferenceLevel.int2prolog(((net.sf.cpsolver.exam.model.Exam)placement.variable()).getWeight(room)));
+        this((net.sf.cpsolver.exam.model.Exam)placement.variable(), placement);
+    }
+    
+    public ExamAssignment(net.sf.cpsolver.exam.model.Exam exam, ExamPlacement placement) {
+        super(exam);
+        if (placement!=null) {
+            iPeriodId = placement.getPeriod().getId();
+            iPeriodIdx = placement.getPeriod().getIndex();
+            iRoomIds = new Vector(placement.getRooms()==null?0:placement.getRooms().size());
+            iPeriodPref = PreferenceLevel.int2prolog(placement.getPeriodPenalty());
+            iRoomPrefs = new Hashtable();
+            if (placement.getRooms()!=null)
+                for (Iterator i=placement.getRooms().iterator();i.hasNext();) {
+                    ExamRoom room = (ExamRoom)i.next();
+                    iRoomIds.add(room.getId());
+                    iRoomPrefs.put(room.getId(),PreferenceLevel.int2prolog(((net.sf.cpsolver.exam.model.Exam)placement.variable()).getWeight(room)));
+                }
+            MinMaxPreferenceCombination pc = new MinMaxPreferenceCombination();
+            for (Enumeration e=((net.sf.cpsolver.exam.model.Exam)placement.variable()).getDistributionConstraints().elements();e.hasMoreElements();) {
+                ExamDistributionConstraint dc = (ExamDistributionConstraint)e.nextElement();
+                if (dc.isHard() || dc.isSatisfied()) continue;
+                pc.addPreferenceInt(dc.getWeight());
             }
-        MinMaxPreferenceCombination pc = new MinMaxPreferenceCombination();
-        for (Enumeration e=((net.sf.cpsolver.exam.model.Exam)placement.variable()).getDistributionConstraints().elements();e.hasMoreElements();) {
-            ExamDistributionConstraint dc = (ExamDistributionConstraint)e.nextElement();
-            if (dc.isHard() || dc.isSatisfied()) continue;
-            pc.addPreferenceInt(dc.getWeight());
+            iDistPref = pc.getPreferenceProlog(); 
         }
-        iDistPref = pc.getPreferenceProlog(); 
     }
     
     public ExamAssignment(Exam exam) {
         super(exam);
-        iPeriod = exam.getAssignedPeriod();
-        iPeriodId = exam.getAssignedPeriod().getUniqueId();
-        iRooms = new TreeSet();
-        iRoomIds = new Vector(exam.getAssignedRooms().size());
-        for (Iterator i=exam.getAssignedRooms().iterator();i.hasNext();) {
-            Location location = (Location)i.next();
-            iRooms.add(location);
-            iRoomIds.add(location.getUniqueId());
-        }
-        if (exam.getAssignedPreference()!=null && exam.getAssignedPreference().length()>0) {
-            iRoomPrefs = new Hashtable();
-            StringTokenizer stk = new StringTokenizer(exam.getAssignedPreference(),":");
-            if (stk.hasMoreTokens())
-                iPeriodPref = stk.nextToken();
-            if (stk.hasMoreTokens())
-                iDistPref = stk.nextToken();
-            for (Enumeration e=ToolBox.sortEnumeration(iRoomIds.elements());e.hasMoreElements() && stk.hasMoreTokens();) {
-                Long roomId = (Long)e.nextElement();
-                iRoomPrefs.put(roomId, stk.nextToken());
+        if (exam.getAssignedPeriod()!=null) {
+            iPeriod = exam.getAssignedPeriod();
+            iPeriodId = exam.getAssignedPeriod().getUniqueId();
+            iRooms = new TreeSet();
+            iRoomIds = new Vector(exam.getAssignedRooms().size());
+            for (Iterator i=exam.getAssignedRooms().iterator();i.hasNext();) {
+                Location location = (Location)i.next();
+                iRooms.add(location);
+                iRoomIds.add(location.getUniqueId());
+            }
+            if (exam.getAssignedPreference()!=null && exam.getAssignedPreference().length()>0) {
+                iRoomPrefs = new Hashtable();
+                StringTokenizer stk = new StringTokenizer(exam.getAssignedPreference(),":");
+                if (stk.hasMoreTokens())
+                    iPeriodPref = stk.nextToken();
+                if (stk.hasMoreTokens())
+                    iDistPref = stk.nextToken();
+                for (Enumeration e=ToolBox.sortEnumeration(iRoomIds.elements());e.hasMoreElements() && stk.hasMoreTokens();) {
+                    Long roomId = (Long)e.nextElement();
+                    iRoomPrefs.put(roomId, stk.nextToken());
+                }
             }
         }
     }
