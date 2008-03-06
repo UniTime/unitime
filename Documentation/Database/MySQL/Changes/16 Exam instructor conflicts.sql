@@ -29,9 +29,6 @@ create table xconflict_instructor (
 );
 
 alter table xconflict_instructor
-  add constraint pk_xconflict_instructor primary key (conflict_id, instructor_id);
-
-alter table xconflict_instructor
   add constraint fk_xconflict_in_conf foreign key (conflict_id)
   references xconflict (uniqueid) on delete cascade;
 
