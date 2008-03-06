@@ -140,8 +140,8 @@ public class DatabaseUpdate {
                     }
                 } catch (Exception e) {
                     sLog.warn("Query '"+query+"' failed, "+e.getMessage());
-                    if (e.getCause()!=null && e.getCause().getMessage()!=null);
-                    sLog.warn("Cause: "+e.getCause().getMessage());
+                    if (e.getCause()!=null && e.getCause().getMessage()!=null)
+                        sLog.warn("Cause: "+e.getCause().getMessage());
                     if ("fail".equals(condition)) {
                         if ("next".equals(action)) continue;
                         if ("done".equals(action)) break;
