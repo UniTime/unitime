@@ -69,7 +69,7 @@
 					<logic:equal name="<%=frmName%>" property="editable" value="true">
 					<% if (admin || (frm.isNonUniv() && frm.isOwner())) { %>
 						<html:submit property="doit" 
-								accesskey="P" styleClass="btn" titleKey="title.modifyRoom"
+								accesskey="R" styleClass="btn" titleKey="title.modifyRoom"
 								>
 								<bean:message key="button.modifyRoom" />
 						</html:submit>						
