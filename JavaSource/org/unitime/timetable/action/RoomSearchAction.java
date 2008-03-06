@@ -86,6 +86,11 @@ public class RoomSearchAction extends Action {
 		
 		// Check if dept code saved to session
 		Object dc = httpSession.getAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME);
+		if (dc==null) {
+		    dc = request.getParameter("default");
+		    if (dc!=null)
+		        httpSession.setAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME, dc);
+		}
 		String deptCode = "";
 		
 		// Dept code is saved to the session - go to instructor list
