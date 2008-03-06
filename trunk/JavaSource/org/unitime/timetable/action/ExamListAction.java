@@ -38,7 +38,6 @@ import org.unitime.timetable.model.RoomFeaturePref;
 import org.unitime.timetable.model.RoomGroupPref;
 import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
@@ -160,8 +159,6 @@ public class ExamListAction extends Action {
                 new boolean[] {true, true, true, true, true, true, true, true, true, true}
                 );
         
-        String instructorNameFormat = Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT);
-
         
         for (Iterator i=exams.iterator();i.hasNext();) {
             Exam exam = (Exam)i.next();
@@ -261,7 +258,7 @@ public class ExamListAction extends Action {
             
             ExamInfo ei = (ea==null?new ExamInfo(exam):ea);
             int nrStudents = ei.getNrStudents();
-            String instructors = ei.getInstructorName(nl, instructorNameFormat);
+            String instructors = ei.getInstructorName(nl);
             
             table.addLine(
                     "onClick=\"document.location='examDetail.do?examId="+exam.getUniqueId()+"';\"",

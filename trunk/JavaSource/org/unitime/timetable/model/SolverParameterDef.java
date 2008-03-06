@@ -106,7 +106,7 @@ public class SolverParameterDef extends BaseSolverParameterDef implements Compar
 		SolverParameterDef def = null;
 		
         try {
-			List list = hibSession.createCriteria(SolverParameterDef.class).add(Restrictions.eq("name", name)).list();
+			List list = hibSession.createCriteria(SolverParameterDef.class).add(Restrictions.eq("name", name)).setCacheable(true).list();
 
 			if (!list.isEmpty())
 				def = (SolverParameterDef)list.get(0);

@@ -48,7 +48,6 @@ import org.unitime.timetable.model.RoomFeaturePref;
 import org.unitime.timetable.model.RoomGroupPref;
 import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.exam.ui.ExamInfo;
@@ -112,7 +111,6 @@ public class UnassignedExamsAction extends Action {
         if (exams==null || exams.isEmpty()) return null;
         boolean timeVertical = RequiredTimeTable.getTimeGridVertical(user);
         boolean timeText = RequiredTimeTable.getTimeGridAsText(user);
-        String instructorNameFormat = Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT);
         
         String nl = (html?"<br>":"\n");
 		PdfWebTable table =
@@ -225,10 +223,10 @@ public class UnassignedExamsAction extends Action {
                     }
                 }
                 
-                String instructors = exam.getInstructorName(", ", instructorNameFormat);
+                String instructors = exam.getInstructorName(", ");
                 
         	    table.addLine(
-                        "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"",
+        	            "onClick=\"window.open('examInfo.do?examId="+exam.getExamId()+"','exams','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no');\"",
                         new String[] {
                             (html?"<a name='"+exam.getExamId()+"'>":"")+(form.getShowSections()?exam.getSectionName(nl):exam.getExamName())+(html?"</a>":""),
                             String.valueOf(exam.getLength()),

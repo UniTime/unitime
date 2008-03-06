@@ -636,4 +636,40 @@ public abstract class Location extends BaseLocation implements Comparable {
                 .createQuery("select room from Location as room where room.session.uniqueId = :sessionId and room.examEnabled = true")
                 .setLong("sessionId", sessionId).setCacheable(true).list());
     }
+    
+    public static TreeSet findNotAvailableExamLocations(Long periodId) {
+        return new TreeSet(
+                (new LocationDAO()).getSession()
+                .createQuery("select distinct r from Exam x inner join x.assignedRooms r where x.assignedPeriod.uniqueId=:periodId")
+                .setLong("periodId",periodId)
+                .setCacheable(true).list());
+    }
+    
+    public static TreeSet findAllAvailableExamLocations(ExamPeriod period) {
+        TreeSet locations = findAllExamLocations(period.getSession().getUniqueId());
+        locations.removeAll(findNotAvailableExamLocations(period.getUniqueId()));
+        return locations;
+    }
+
+    public static double getDistance(Collection rooms1, Collection rooms2) {
+        if (rooms1==null || rooms1.isEmpty() || rooms2==null || rooms2.isEmpty()) return 0;
+        double maxDistance = 0;
+        for (Iterator i1=rooms1.iterator();i1.hasNext();) {
+            Location r1 = (Location)i1.next();
+            for (Iterator i2=rooms2.iterator();i2.hasNext();) {
+                Location r2 = (Location)i2.next();
+                maxDistance = Math.max(maxDistance, r1.getDistance(r2));
+            }
+        }
+        return maxDistance;
+    }
+    
+    public List getExams(Long periodId) {
+        return new LocationDAO().getSession().createQuery(
+                "select x from Exam x inner join x.assignedRooms r where "+
+                "x.assignedPeriod.uniqueId=:periodId and r.uniqueId=:locationId")
+                .setLong("periodId",periodId)
+                .setLong("locationId",getUniqueId())
+                .setCacheable(true).list();
+    }
 }

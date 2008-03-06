@@ -220,12 +220,12 @@ public class ExamDetailAction extends PreferencesAction {
             
             if (ea!=null) {
                 String assignment = "<tr><td>Examination Period:</td><td>"+ea.getPeriodNameWithPref()+"</td></tr>";
-                if (!ea.getRoomIds().isEmpty()) {
-                    assignment += "<tr><td>Room"+(ea.getRoomIds().size()>1?"s":"")+":</td><td>";
+                if (!ea.getRooms().isEmpty()) {
+                    assignment += "<tr><td>Room"+(ea.getRooms().size()>1?"s":"")+":</td><td>";
                     assignment += ea.getRoomsNameWithPref("<br>");
                     assignment += "</td></tr>";
                 }
-                if (ea.hasConflicts()) {
+                if (ea.getHasConflicts()) {
                     assignment += "<tr><td>Conflicts</td><td>";
                     assignment += ea.getConflictTable(true);
                     assignment += "</td></tr>";
