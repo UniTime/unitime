@@ -1039,8 +1039,8 @@
 			create table %SCHEMA%.temp_perm_id
 				(
 				  external_uid varchar(40) not null,
-				  perm_id      decimal(20,0) not null
-				)
+				  perm_id      bigint(10) not null auto_increment primary key
+				) engine memory
 		</mysql>
 		<plsql>
 			create sequence %SCHEMA%.loc_perm_id_seq
@@ -1071,13 +1071,22 @@
 			update %SCHEMA%.non_university_location nul
 				set nul.permanent_id = %SCHEMA%.loc_perm_id_seq.nextval
 		</plsql>
+		<mysql into="ID">
+			select next_hi from %SCHEMA%.hibernate_unique_key
+		</mysql>
 		<mysql>
-			insert into %SCHEMA%.temp_perm_id tpi
-				select s.eid, rownum from (select distinct r.external_uid as eid 
+			insert into temp_perm_id (external_uid, perm_id) values ('DUMMY', %ID%-1)
+		</mysql>
+		<mysql>
+			insert into %SCHEMA%.temp_perm_id ( external_uid )
+				select s.eid from (select distinct r.external_uid as eid 
 				from %SCHEMA%.room r
 				where r.external_uid is not null
-				union (select distinct to_char(r1.uniqueid) as eid from %SCHEMA%.room r1 where r1.external_uid is null)
-				union (select distinct to_char(nul.uniqueid) as eid from %SCHEMA%.non_university_location nul)) s
+				union (select distinct cast(r1.uniqueid as char) as eid from %SCHEMA%.room r1 where r1.external_uid is null)
+				union (select distinct cast(nul.uniqueid as char) as eid from %SCHEMA%.non_university_location nul)) s
+		</mysql>
+		<mysql>
+			update %SCHEMA%.hibernate_unique_key set next_hi = (select max(perm_id)+1 from %SCHEMA%.temp_perm_id)
 		</mysql>
 		<mysql>
 			update %SCHEMA%.room r
@@ -1086,22 +1095,28 @@
 		</mysql>
 		<mysql>
 			update %SCHEMA%.room r
-				set r.permanent_id = (select tpi.perm_id from %SCHEMA%.temp_perm_id tpi where tpi.external_uid = to_char(r.uniqueid))
+				set r.permanent_id = (select tpi.perm_id from %SCHEMA%.temp_perm_id tpi where tpi.external_uid = cast(r.uniqueid as char))
 				where r.external_uid is null
 		</mysql>
 		<mysql>
 			update %SCHEMA%.non_university_location nul
-				set nul.permanent_id = (select tpi.perm_id from %SCHEMA%.temp_perm_id tpi where tpi.external_uid = to_char(nul.uniqueid))
+				set nul.permanent_id = (select tpi.perm_id from %SCHEMA%.temp_perm_id tpi where tpi.external_uid = cast(nul.uniqueid as char))
 		</mysql>
 		<sql>
 			drop table %SCHEMA%.temp_perm_id
 		</sql>
-		<sql>
+		<plsql>
 			alter table %SCHEMA%.room modify permanent_id not null
-		</sql>
-		<sql>
+		</plsql>
+		<plsql>
 			alter table %SCHEMA%.non_university_location modify permanent_id not null
-		</sql>
+		</plsql>
+		<mysql>
+			alter table %SCHEMA%.room modify permanent_id decimal(20,0) not null
+		</mysql>
+		<mysql>
+			alter table %SCHEMA%.non_university_location modify permanent_id decimal(20,0) not null
+		</mysql>
 	</update>
 	<update version="19" date="05-Mar-2008" comment="Add event tables">
 		<plsql>
@@ -1162,12 +1177,12 @@
 		</mysql>
 		<mysql>
 			insert into %SCHEMA%.event_type (uniqueid, reference, label) values
-				(@id, 'class', 'Class'),
-				(@id+1, 'final', 'Final Exam'),
-				(@id+2, 'evening', 'Evening Exam'),
-				(@id+3, 'otherWithConflict', 'Other Course Event with Conflict Checking'),
-				(@id+4, 'otherNoConflict', 'Other Course Event with No Conflict Checking'),
-				(@id+5, 'special', 'Special Event')
+				(%ID%, 'class', 'Class'),
+				(%ID%+1, 'final', 'Final Exam'),
+				(%ID%+2, 'evening', 'Evening Exam'),
+				(%ID%+3, 'otherWithConflict', 'Other Course Event with Conflict Checking'),
+				(%ID%+4, 'otherNoConflict', 'Other Course Event with No Conflict Checking'),
+				(%ID%+5, 'special', 'Special Event')
 		</mysql>
 		<mysql>
 			update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+6
