@@ -22,6 +22,7 @@ package org.unitime.timetable.model;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.Locale;
 import java.util.TreeSet;
 
@@ -177,5 +178,15 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
     
     public String toString() {
         return getAbbreviation();
+    }
+    
+    public boolean isBackToBack(ExamPeriod period, boolean isDayBreakBackToBack) {
+        if (!isDayBreakBackToBack && !period.getDateOffset().equals(getDateOffset())) return false;
+        for (Iterator i=findAll(getSession().getUniqueId(), getExamType()).iterator();i.hasNext();) {
+            ExamPeriod p = (ExamPeriod)i.next();
+            if (compareTo(p)<0 && p.compareTo(period)<0) return false;
+            if (compareTo(p)>0 && p.compareTo(period)>0) return false;
+        }
+        return true;
     }
 }

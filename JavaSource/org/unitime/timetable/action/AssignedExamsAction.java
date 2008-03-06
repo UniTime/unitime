@@ -37,7 +37,6 @@ import org.unitime.timetable.form.ExamReportForm;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
@@ -98,7 +97,6 @@ public class AssignedExamsAction extends Action {
 	
     public PdfWebTable getTable(org.unitime.commons.User user, boolean html, ExamReportForm form, Collection<ExamAssignmentInfo> exams) {
         if (exams==null || exams.isEmpty()) return null;
-        String instructorNameFormat = Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT);
         String nl = (html?"<br>":"\n");
 		PdfWebTable table =
             new PdfWebTable( 9,
@@ -111,24 +109,24 @@ public class AssignedExamsAction extends Action {
         try {
         	for (ExamAssignmentInfo exam : exams) {
 
-        	    int dc = exam.countDirectConflicts();
+        	    int dc = exam.getNrDirectConflicts();
                 String dcStr = (dc<=0?"":html?"<font color='"+PreferenceLevel.prolog2color("P")+"'>"+dc+"</font>":String.valueOf(dc));
-                int m2d = exam.countMoreThanTwoConflicts();
+                int m2d = exam.getNrMoreThanTwoConflicts();
                 String m2dStr = (m2d<=0?"":html?"<font color='"+PreferenceLevel.prolog2color("2")+"'>"+m2d+"</font>":String.valueOf(m2d));
-                int btb = exam.countBackToBackConflicts();
-                int dbtb = exam.countDistanceBackToBackConflicts();
+                int btb = exam.getNrBackToBackConflicts();
+                int dbtb = exam.getNrDistanceBackToBackConflicts();
                 String btbStr = (btb<=0 && dbtb<=0?"":html?"<font color='"+PreferenceLevel.prolog2color("1")+"'>"+btb+(dbtb>0?" (d:"+dbtb+")":"")+"</font>":btb+(dbtb>0?" (d:"+dbtb+")":""));
                 String dbtbStr = (dbtb<=0?"":html?"<font color='"+PreferenceLevel.prolog2color("1")+"'>"+dbtb+"</font>":String.valueOf(dbtb));
                 
         	    table.addLine(
-                        "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"",
+        	            "onClick=\"window.open('examInfo.do?examId="+exam.getExamId()+"','exams','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no');\"",
                         new String[] {
                             (html?"<a name='"+exam.getExamId()+"'>":"")+(form.getShowSections()?exam.getSectionName(nl):exam.getExamName())+(html?"</a>":""),
                             (html?exam.getPeriodAbbreviationWithPref():exam.getPeriodAbbreviation()),
                             (html?exam.getRoomsNameWithPref(", "):exam.getRoomsName(", ")),
                             (Exam.sSeatingTypeNormal==exam.getSeatingType()?"Normal":"Exam"),
                             String.valueOf(exam.getNrStudents()),
-                            exam.getInstructorName(", ", instructorNameFormat),
+                            exam.getInstructorName(", "),
                             dcStr,
                             m2dStr,
                             btbStr
@@ -139,7 +137,7 @@ public class AssignedExamsAction extends Action {
                             exam.getRoomsName(":"),
                             exam.getSeatingType(),
                             exam.getNrStudents(),
-                            exam.getInstructorName(":", instructorNameFormat),
+                            exam.getInstructorName(":"),
                             dc,
                             m2d,
                             btb

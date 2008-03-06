@@ -1,6 +1,6 @@
 /*
- * UniTime 3.0 (University Course Timetabling & Student Sectioning Application)
- * Copyright (C) 2007, UniTime.org, and individual contributors
+ * UniTime 3.1 (University Timetabling Application)
+ * Copyright (C) 2008, UniTime.org, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -24,7 +24,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
 import org.unitime.timetable.solver.remote.RemoteSolverServerProxy;
-
 
 /**
  * @author Tomas Muller

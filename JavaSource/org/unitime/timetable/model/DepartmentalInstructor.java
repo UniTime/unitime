@@ -487,4 +487,25 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
                 .setInteger("examType", examType)
                 .setCacheable(true).list();
     }
+    
+    public List getExams(Integer examType) {
+        if (getExternalUniqueId()!=null) {
+            return (new DepartmentalInstructorDAO()).getSession()
+                .createQuery("select distinct x from Exam x inner join x.instructors i where " +
+                		"(i.uniqueId=:instructorId or (i.externalUniqueId=:externalId and i.department.session.uniqueId=:sessionId)) " +
+                		"and x.examType=:examType")
+                .setLong("instructorId", getUniqueId())
+                .setLong("sessionId", getDepartment().getSession().getUniqueId())
+                .setString("externalId", getExternalUniqueId())
+                .setInteger("examType", examType)
+                .setCacheable(true).list();
+        } else {
+            return (new DepartmentalInstructorDAO()).getSession()
+            .createQuery("select distinct x from Exam x inner join x.instructors i where i.uniqueId=:instructorId and x.examType=:examType")
+            .setLong("instructorId", getUniqueId())
+            .setInteger("examType", examType)
+            .setCacheable(true).list();
+            
+        }
+    }
 }

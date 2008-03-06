@@ -48,6 +48,7 @@ import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
+import org.unitime.timetable.solver.exam.ui.ExamRoomInfo;
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamInstructorInfo;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.timegrid.ExamGridTable.ExamGridModel.ExamGridCell;
@@ -365,8 +366,8 @@ public class ExamGridTable {
         onMouseOut.append(" onmouseout=\"");
         ExamAssignmentInfo info = cell.getInfo();
         if (iForm.getResource()==sResourceRoom) {
-            for (Enumeration e=info.getRoomIds().elements();e.hasMoreElements();) {
-                Long roomId = (Long)e.nextElement();
+            for (ExamRoomInfo room : info.getRooms()) {
+                Long roomId = room.getLocationId();
                 onMouseOver.append("if (document.getElementById('"+info.getExamId()+"."+roomId+"')!=null) document.getElementById('"+info.getExamId()+"."+roomId+"').style.backgroundColor='rgb(223,231,242)';");
                 onMouseOut.append("if (document.getElementById('"+info.getExamId()+"."+roomId+"')!=null) document.getElementById('"+info.getExamId()+"."+roomId+"').style.backgroundColor='"+(bgColor==null?"transparent":bgColor)+"';");
             }
@@ -949,39 +950,39 @@ public class ExamGridTable {
                 case sBgDistPref :
                     return pref2color(getInfo().getDistributionPref());
                 case sBgStudentConfs :
-                    if (getInfo().countDirectConflicts()>0)
+                    if (getInfo().getNrDirectConflicts()>0)
                         return pref2color(PreferenceLevel.sProhibited);
-                    if (getInfo().countMoreThanTwoConflicts()>0)
+                    if (getInfo().getNrMoreThanTwoConflicts()>0)
                         return pref2color(PreferenceLevel.sStronglyDiscouraged);
-                    if (getInfo().countBackToBackConflicts()>0)
+                    if (getInfo().getNrBackToBackConflicts()>0)
                         return pref2color(PreferenceLevel.sDiscouraged);
                     return pref2color(PreferenceLevel.sNeutral);
                 case sBgDirectStudentConfs :
-                    return lessConflicts2color(getInfo().countDirectConflicts());
+                    return lessConflicts2color(getInfo().getNrDirectConflicts());
                 case sBgMoreThanTwoADayStudentConfs :
-                    return conflicts2color(getInfo().countMoreThanTwoConflicts());
+                    return conflicts2color(getInfo().getNrMoreThanTwoConflicts());
                 case sBgBackToBackStudentConfs :
-                    return conflicts2color(getInfo().countBackToBackConflicts());
+                    return conflicts2color(getInfo().getNrBackToBackConflicts());
                 case sBgInstructorConfs :
-                    if (getInfo().countInstructorDirectConflicts()>0)
+                    if (getInfo().getNrInstructorDirectConflicts()>0)
                         return pref2color(PreferenceLevel.sProhibited);
-                    if (getInfo().countInstructorMoreThanTwoConflicts()>0)
+                    if (getInfo().getNrInstructorMoreThanTwoConflicts()>0)
                         return pref2color(PreferenceLevel.sStronglyDiscouraged);
-                    if (getInfo().countInstructorBackToBackConflicts()>0)
+                    if (getInfo().getNrInstructorBackToBackConflicts()>0)
                         return pref2color(PreferenceLevel.sDiscouraged);
                     return pref2color(PreferenceLevel.sNeutral);
                 case sBgDirectInstructorConfs :
-                    return lessConflicts2color(getInfo().countInstructorDirectConflicts());
+                    return lessConflicts2color(getInfo().getNrInstructorDirectConflicts());
                 case sBgMoreThanTwoADayInstructorConfs :
-                    return conflicts2color(getInfo().countInstructorMoreThanTwoConflicts());
+                    return conflicts2color(getInfo().getNrInstructorMoreThanTwoConflicts());
                 case sBgBackToBackInstructorConfs :
-                    return conflicts2color(getInfo().countInstructorBackToBackConflicts());
+                    return conflicts2color(getInfo().getNrInstructorBackToBackConflicts());
 	            }
 	            return null;
 	        }
 
 	        public String getOnClick() {
-	            return "window.open('examDetail.do?examId="+getInfo().getExamId()+"','exams','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no');";
+	            return "window.open('examInfo.do?examId="+getInfo().getExamId()+"','exams','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no');";
 	        }
 	        
 	        public String getId() {
@@ -1004,9 +1005,9 @@ public class ExamGridTable {
 	        }
 	        
             public String getShortComment() {
-                int dc = getInfo().countDirectConflicts();
-                int m2d = getInfo().countMoreThanTwoConflicts();
-                int btb = getInfo().countBackToBackConflicts();
+                int dc = getInfo().getNrDirectConflicts();
+                int m2d = getInfo().getNrMoreThanTwoConflicts();
+                int btb = getInfo().getNrBackToBackConflicts();
                 return
                     "<font color='"+(dc>0?PreferenceLevel.prolog2color("P"):"gray")+"'>"+dc+"</font>, "+
                     "<font color='"+(m2d>0?PreferenceLevel.prolog2color("1"):"gray")+"'>"+m2d+"</font>, "+
@@ -1014,9 +1015,9 @@ public class ExamGridTable {
             }
             
             public String getShortCommentNoColors() {
-                int dc = getInfo().countDirectConflicts();
-                int m2d = getInfo().countMoreThanTwoConflicts();
-                int btb = getInfo().countBackToBackConflicts();
+                int dc = getInfo().getNrDirectConflicts();
+                int m2d = getInfo().getNrMoreThanTwoConflicts();
+                int btb = getInfo().getNrBackToBackConflicts();
                 return dc+", "+m2d+", "+btb;
             }
 	    }

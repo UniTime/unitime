@@ -1,3 +1,22 @@
+/*
+ * UniTime 3.1 (University Timetabling Application)
+ * Copyright (C) 2008, UniTime.org, and individual contributors
+ * as indicated by the @authors tag.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
 package org.unitime.timetable.solver.exam;
 
 import java.io.File;
@@ -23,6 +42,7 @@ import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
 import org.unitime.timetable.solver.exam.ui.ExamInfo;
+import org.unitime.timetable.solver.exam.ui.ExamRoomInfo;
 import org.unitime.timetable.solver.remote.BackupFileFilter;
 import org.unitime.timetable.util.Constants;
 
@@ -42,6 +62,9 @@ import net.sf.cpsolver.ifs.util.Progress;
 import net.sf.cpsolver.ifs.util.ProgressWriter;
 import net.sf.cpsolver.ifs.util.ToolBox;
 
+/**
+ * @author Tomas Muller
+ */
 public class ExamSolver extends Solver implements ExamSolverProxy {
     private static Log sLog = LogFactory.getLog(ExamSolver.class);
     private int iDebugLevel = Progress.MSGLEVEL_INFO;
@@ -143,34 +166,80 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
         return getClass().getMethod((String)cmd[0],types).invoke(this, args);
     }
     
-    public ExamAssignment getAssignment(long examId) {
+    public Exam getExam(long examId) {
         synchronized (super.currentSolution()) {
             for (Enumeration e=currentSolution().getModel().variables().elements();e.hasMoreElements();) {
                 Exam exam = (Exam)e.nextElement();
-                if (exam.getId()==examId) {
-                    if (exam.getAssignment()!=null)
-                        return new ExamAssignment((ExamPlacement)exam.getAssignment());
-                    else
-                        return null;
-                }
+                if (exam.getId()==examId) return exam;
             }
             return null;
+        }
+    }
+
+    public ExamInfo getInfo(long examId) {
+        synchronized (super.currentSolution()) {
+            Exam exam = getExam(examId);
+            return (exam==null?null: new ExamInfo(exam));
+        }
+    }
+    
+    public ExamAssignment getAssignment(long examId) {
+        synchronized (super.currentSolution()) {
+            Exam exam = getExam(examId);
+            return (exam==null || exam.getAssignment()==null?null:new ExamAssignment((ExamPlacement)exam.getAssignment()));
         }
     }
     
     public ExamAssignmentInfo getAssignmentInfo(long examId) {
         synchronized (super.currentSolution()) {
-            for (Enumeration e=currentSolution().getModel().variables().elements();e.hasMoreElements();) {
-                Exam exam = (Exam)e.nextElement();
-                if (exam.getId()==examId) {
-                    if (exam.getAssignment()!=null)
-                        return new ExamAssignmentInfo((ExamPlacement)exam.getAssignment());
-                    else
-                        return null;
-                }
-            }
-            return null;
+            Exam exam = getExam(examId);
+            return (exam==null || exam.getAssignment()==null?null:new ExamAssignmentInfo((ExamPlacement)exam.getAssignment()));
         }
+    }
+    
+    
+    public Collection<ExamAssignmentInfo> getPeriods(long examId) {
+        synchronized (super.currentSolution()) {
+            Exam exam = getExam(examId);
+            if (exam==null) return null;
+            Vector<ExamAssignmentInfo> periods = new Vector<ExamAssignmentInfo>();
+            for (Enumeration e=exam.getPeriods().elements();e.hasMoreElements();) {
+                ExamPeriod period = (ExamPeriod)e.nextElement();
+                Set rooms = exam.findBestAvailableRooms(period);
+                if (rooms==null) continue;
+                if (!exam.checkDistributionConstraints(period)) continue;
+                periods.add(new ExamAssignmentInfo(new ExamPlacement(exam, period, rooms)));
+            }
+            return periods;
+        }
+    }
+    
+    public Collection<ExamRoomInfo> getRooms(long examId, long periodId) {
+        synchronized (super.currentSolution()) {
+            Exam exam = getExam(examId);
+            if (exam==null) return null;
+            ExamPeriod period = null;
+            for (Enumeration e=exam.getPeriods().elements();e.hasMoreElements();) {
+                ExamPeriod p = (ExamPeriod)e.nextElement();
+                if (periodId==p.getId()) { period = p; break; }
+            }
+            if (period==null) return null;
+            Vector<ExamRoomInfo> rooms = new Vector<ExamRoomInfo>();
+            if (exam.getMaxRooms()==0) return rooms;
+            for (Enumeration e=exam.getRooms().elements();e.hasMoreElements();) {
+                ExamRoom room = (ExamRoom)e.nextElement();
+                
+                int cap = (exam.isSectionExam()?room.getAltSize():room.getSize());
+                if (cap<exam.getStudents().size()/exam.getMaxRooms()) continue;
+                if (cap>2*exam.getStudents().size()) continue;
+
+                if (!room.isAvailable(period)) continue;
+                if (!exam.checkDistributionConstraints(room)) continue;
+                if (room.getPlacement(period)!=null && !room.getPlacement(period).variable().equals(exam)) continue;
+                rooms.add(new ExamRoomInfo(room, exam.getWeight(room)));
+            }
+            return rooms;
+        }        
     }
 
     public Hashtable currentSolutionInfo() {

@@ -1,3 +1,22 @@
+/*
+ * UniTime 3.1 (University Timetabling Application)
+ * Copyright (C) 2008, UniTime.org, and individual contributors
+ * as indicated by the @authors tag.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
 package org.unitime.timetable.solver.exam.ui;
 
 import java.io.Serializable;
@@ -18,6 +37,9 @@ import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.model.dao.ExamOwnerDAO;
 
+/**
+ * @author Tomas Muller
+ */
 public class ExamInfo implements Serializable, Comparable {
     protected String iExamLabel = null;
     protected Long iExamId = null;
@@ -70,6 +92,10 @@ public class ExamInfo implements Serializable, Comparable {
     	return iExamType;
     }
     
+    public String getExamTypeLabel() {
+        return Exam.sExamTypes[iExamType];
+    }
+    
     public Long getExamId() {
         return iExamId;
     }
@@ -84,6 +110,14 @@ public class ExamInfo implements Serializable, Comparable {
         return (iExamLabel==null?getExam().getLabel():iExamLabel);
     }
     
+    public String getExamNameHtml() {
+        String name = getExamName();
+        if (name.length()>50)
+            return "<span title='"+name+"'>"+name.substring(0,50)+"...</span>";
+        else
+            return name;
+    }
+
     public int getNrStudents() {
         return iNrStudents;
     }
@@ -92,6 +126,10 @@ public class ExamInfo implements Serializable, Comparable {
         return iSeatingType;
     }
     
+    public String getSeatingTypeLabel() {
+        return Exam.sSeatingTypes[iSeatingType];
+    }
+
     public int getLength() {
         return iLength;
     }
@@ -128,11 +166,11 @@ public class ExamInfo implements Serializable, Comparable {
         return iInstructors;
     }
     
-    public String getInstructorName(String delim, String instructorNameFormat) {
+    public String getInstructorName(String delim) {
         String name = "";
         for (Enumeration e=getInstructors().elements();e.hasMoreElements();) {
             ExamInstructorInfo info = (ExamInstructorInfo)e.nextElement();
-            name += info.getName(instructorNameFormat);
+            name += info.getName();
             if (e.hasMoreElements()) name += delim;
         }
         return name;
@@ -203,14 +241,11 @@ public class ExamInfo implements Serializable, Comparable {
         }
         public ExamInstructorInfo(DepartmentalInstructor instructor) {
             iId = instructor.getUniqueId();
+            iName = instructor.getNameLastFirst();
             iInstructor = instructor;
         }
         public Long getId() { return iId; }
         public String getName() { return iName; }
-        public String getName(String format) { 
-            if (iName==null) return iInstructor.getName(format);
-            return iName;
-        }
         public DepartmentalInstructor getInstructor() {
             if (iInstructor==null)
                 iInstructor = new DepartmentalInstructorDAO().get(getId());
