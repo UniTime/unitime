@@ -67,6 +67,7 @@ insert into solver_predef_setting (uniqueid, name, description, appearance) valu
 
 update hibernate_unique_key set next_hi=next_hi+35
 
+/*
  * Update database version
  */
 
