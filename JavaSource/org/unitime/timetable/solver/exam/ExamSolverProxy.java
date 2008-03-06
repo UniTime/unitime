@@ -1,3 +1,22 @@
+/*
+ * UniTime 3.1 (University Timetabling Application)
+ * Copyright (C) 2008, UniTime.org, and individual contributors
+ * as indicated by the @authors tag.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
 package org.unitime.timetable.solver.exam;
 
 import java.io.File;
@@ -8,9 +27,13 @@ import java.util.Map;
 
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
 import org.unitime.timetable.solver.exam.ui.ExamInfo;
+import org.unitime.timetable.solver.exam.ui.ExamRoomInfo;
 
 import net.sf.cpsolver.ifs.util.DataProperties;
 
+/**
+ * @author Tomas Muller
+ */
 public interface ExamSolverProxy extends ExamAssignmentProxy {
 
     public String getHost();
@@ -55,6 +78,9 @@ public interface ExamSolverProxy extends ExamAssignmentProxy {
     public Collection<ExamInfo> getUnassignedExams(Long subjectAreaId) throws Exception;
     public Collection<ExamAssignmentInfo> getAssignedExamsOfRoom(Long roomId) throws Exception;
     public Collection<ExamAssignmentInfo> getAssignedExamsOfInstructor(Long instructorId) throws Exception;
+    
+    public Collection<ExamAssignmentInfo> getPeriods(long examId);
+    public Collection<ExamRoomInfo> getRooms(long examId, long periodId);
     
     public int getExamType();
     

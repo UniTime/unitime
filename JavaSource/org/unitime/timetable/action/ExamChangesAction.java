@@ -38,7 +38,6 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ExamChangesForm;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.PreferenceLevel;
-import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
@@ -102,7 +101,6 @@ public class ExamChangesAction extends Action {
 	
     public PdfWebTable getTable(org.unitime.commons.User user, boolean html, ExamChangesForm form, Collection<ExamAssignmentInfo[]> changes) {
         if (changes==null || changes.isEmpty()) return null;
-        String instructorNameFormat = Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT);
         String nl = (html?"<br>":"\n");
 		PdfWebTable table =
             new PdfWebTable( 9,
@@ -134,7 +132,7 @@ public class ExamChangesAction extends Action {
         	    }
         	    
         	    String room = "";
-        	    if (ToolBox.equals(old.getRoomIds(),exam.getRoomIds())) {
+        	    if (ToolBox.equals(old.getRooms(),exam.getRooms())) {
         	        room = (html?exam.getRoomsNameWithPref(", "):exam.getRoomsName(", "));
         	    } else if (exam.getMaxRooms()>0) {
                     if (html) {
@@ -150,9 +148,9 @@ public class ExamChangesAction extends Action {
                     }
         	    }
         	        
-        	    int xdc = exam.countDirectConflicts();
-                int dc = xdc-old.countDirectConflicts();
-                String dcStr = (xdc<=0?"":html?"<font color='"+PreferenceLevel.prolog2color("P")+"'>"+xdc+"</font>":String.valueOf(dc));
+        	    int xdc = exam.getNrDirectConflicts();
+                int dc = xdc-old.getNrDirectConflicts();
+                String dcStr = (xdc<=0?"":html?"<font color='"+PreferenceLevel.prolog2color("P")+"'>"+xdc+"</font>":String.valueOf(xdc));
                 if (html && dc<0)
                     dcStr += "<font color='"+PreferenceLevel.prolog2color("R")+"'> ("+dc+")</font>";
                 if (html && dc>0)
@@ -162,8 +160,8 @@ public class ExamChangesAction extends Action {
                 if (!html && dc>0)
                     dcStr += " (+"+dc+")";
                 
-                int xm2d = exam.countMoreThanTwoConflicts();
-                int m2d = exam.countMoreThanTwoConflicts()-old.countMoreThanTwoConflicts();
+                int xm2d = exam.getNrMoreThanTwoConflicts();
+                int m2d = exam.getNrMoreThanTwoConflicts()-old.getNrMoreThanTwoConflicts();
                 String m2dStr = (xm2d<=0?"":html?"<font color='"+PreferenceLevel.prolog2color("2")+"'>"+xm2d+"</font>":String.valueOf(xm2d));
                 if (html && m2d<0)
                     m2dStr += "<font color='"+PreferenceLevel.prolog2color("-2")+"'> ("+m2d+")</font>";
@@ -174,9 +172,9 @@ public class ExamChangesAction extends Action {
                 if (!html && m2d>0)
                     m2dStr += " (+"+m2d+")";
 
-                int xbtb = exam.countBackToBackConflicts();
-                int btb = exam.countBackToBackConflicts() - old.countBackToBackConflicts();
-                int dbtb = exam.countDistanceBackToBackConflicts() - old.countDistanceBackToBackConflicts();
+                int xbtb = exam.getNrBackToBackConflicts();
+                int btb = exam.getNrBackToBackConflicts() - old.getNrBackToBackConflicts();
+                int dbtb = exam.getNrDistanceBackToBackConflicts() - old.getNrDistanceBackToBackConflicts();
                 String btbStr = (xbtb<=0?"":html?"<font color='"+PreferenceLevel.prolog2color("1")+"'>"+xbtb+"</font>":String.valueOf(xbtb));
                 if (html) {
                     if (btb<0) btbStr += "<font color='"+PreferenceLevel.prolog2color("-1")+"'> ("+btb+"</font>";
@@ -199,14 +197,14 @@ public class ExamChangesAction extends Action {
                 }
                 
         	    table.addLine(
-                        "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"",
+                        "onClick=\"window.open('examInfo.do?examId="+exam.getExamId()+"','exams','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no');\"",
                         new String[] {
                             (html?"<a name='"+exam.getExamId()+"'>":"")+(form.getShowSections()?exam.getSectionName(nl):exam.getExamName())+(html?"</a>":""),
                             period,
                             room,
                             (Exam.sSeatingTypeNormal==exam.getSeatingType()?"Normal":"Exam"),
                             String.valueOf(exam.getNrStudents()),
-                            exam.getInstructorName(", ", instructorNameFormat),
+                            exam.getInstructorName(", "),
                             dcStr,
                             m2dStr,
                             btbStr
@@ -217,7 +215,7 @@ public class ExamChangesAction extends Action {
                             (exam.getPeriodId()==null?"0"+old.getRoomsName(":"):exam.getRoomsName(":")),
                             exam.getSeatingType(),
                             exam.getNrStudents(),
-                            exam.getInstructorName(":", instructorNameFormat),
+                            exam.getInstructorName(":"),
                             dc,
                             m2d,
                             btb

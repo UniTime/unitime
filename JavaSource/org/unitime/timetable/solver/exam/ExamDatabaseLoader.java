@@ -1,3 +1,22 @@
+/*
+ * UniTime 3.1 (University Timetabling Application)
+ * Copyright (C) 2008, UniTime.org, and individual contributors
+ * as indicated by the @authors tag.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
 package org.unitime.timetable.solver.exam;
 
 import java.text.SimpleDateFormat;
@@ -53,6 +72,9 @@ import net.sf.cpsolver.ifs.model.Constraint;
 import net.sf.cpsolver.ifs.util.Progress;
 import net.sf.cpsolver.ifs.util.ToolBox;
 
+/**
+ * @author Tomas Muller
+ */
 public class ExamDatabaseLoader extends ExamLoader {
     private static Log sLog = LogFactory.getLog(ExamDatabaseLoader.class);
     private Long iSessionId;
@@ -66,6 +88,7 @@ public class ExamDatabaseLoader extends ExamLoader {
     private Hashtable iInstructors = new Hashtable();
     private Hashtable iStudents = new Hashtable();
     private Set iAllRooms = null;
+    private Set iProhibitedPeriods = new HashSet(); 
 
     public ExamDatabaseLoader(ExamModel model) {
         super(model);
@@ -122,8 +145,9 @@ public class ExamDatabaseLoader extends ExamLoader {
             iProgress.incProgress();
             org.unitime.timetable.model.ExamPeriod period = (org.unitime.timetable.model.ExamPeriod)i.next();
             String pref = period.getPrefLevel().getPrefProlog();
-            if (PreferenceLevel.sProhibited.equals(pref)) continue;
+            //if (PreferenceLevel.sProhibited.equals(pref)) continue;
             ExamPeriod p = getModel().addPeriod(period.getUniqueId(),dateFormat.format(period.getStartDate()), timeFormat.format(period.getStartTime()), Constants.SLOT_LENGTH_MIN*period.getLength(), pref2weight(pref));
+            if (PreferenceLevel.sProhibited.equals(pref)) iProhibitedPeriods.add(p);
             iPeriods.put(period.getUniqueId(),p);
         }
     }
@@ -194,6 +218,10 @@ public class ExamDatabaseLoader extends ExamLoader {
                 }
             }
             boolean hasReqPeriod = false;
+            for (Iterator j=iProhibitedPeriods.iterator();j.hasNext();) {
+                ExamPeriod period = (ExamPeriod)j.next();
+                x.setAvailable(period.getIndex(), false);
+            }
             for (Iterator j=exam.getPreferences(ExamPeriodPref.class).iterator();j.hasNext();) {
                 ExamPeriodPref periodPref = (ExamPeriodPref)j.next();
                 ExamPeriod period = (ExamPeriod)iPeriods.get(periodPref.getExamPeriod().getUniqueId());
@@ -211,8 +239,10 @@ public class ExamDatabaseLoader extends ExamLoader {
                 if (!hasReqPeriod) {
                     if (PreferenceLevel.sProhibited.equals(pref)) {
                         x.setAvailable(period.getIndex(), false);
-                    } else 
+                    } else {
+                        x.setAvailable(period.getIndex(), true);
                         x.setWeight(period.getIndex(), pref2weight(pref));
+                    }
                 }
             }
             x.setRoomWeights(findRooms(exam, false));

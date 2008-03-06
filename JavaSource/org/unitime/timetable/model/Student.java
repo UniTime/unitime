@@ -19,7 +19,9 @@
 */
 package org.unitime.timetable.model;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.unitime.timetable.model.base.BaseStudent;
 import org.unitime.timetable.model.dao.StudentDAO;
@@ -92,5 +94,42 @@ public class Student extends BaseStudent {
             setString("externalId",externalId).
             setCacheable(true).
             uniqueResult();
+    }
+    
+    public Set getExams(Integer examType) {
+        HashSet exams = new HashSet();
+        exams.addAll(new StudentDAO().getSession().createQuery(
+                "select distinct o.exam from ExamOwner o, StudentClassEnrollment e "+
+                "where e.student.uniqueId=:studentId and o.ownerType=:ownerType and o.ownerId=e.clazz.uniqueId and o.exam.examType=:examType")
+                .setLong("studentId", getUniqueId())
+                .setInteger("ownerType", ExamOwner.sOwnerTypeClass)
+                .setInteger("examType", examType)
+                .setCacheable(true)
+                .list());
+        exams.addAll(new StudentDAO().getSession().createQuery(
+                "select distinct o.exam from ExamOwner o, StudentClassEnrollment e "+
+                "where e.student.uniqueId=:studentId and o.ownerType=:ownerType and o.ownerId=e.clazz.schedulingSubpart.instrOfferingConfig.uniqueId and o.exam.examType=:examType")
+                .setLong("studentId", getUniqueId())
+                .setInteger("ownerType", ExamOwner.sOwnerTypeConfig)
+                .setInteger("examType", examType)
+                .setCacheable(true)
+                .list());
+        exams.addAll(new StudentDAO().getSession().createQuery(
+                "select distinct o.exam from ExamOwner o, StudentClassEnrollment e "+
+                "where e.student.uniqueId=:studentId and o.ownerType=:ownerType and o.ownerId=e.courseOffering.uniqueId and o.exam.examType=:examType")
+                .setLong("studentId", getUniqueId())
+                .setInteger("ownerType", ExamOwner.sOwnerTypeCourse)
+                .setInteger("examType", examType)
+                .setCacheable(true)
+                .list());
+        exams.addAll(new StudentDAO().getSession().createQuery(
+                "select distinct o.exam from ExamOwner o, StudentClassEnrollment e "+
+                "where e.student.uniqueId=:studentId and o.ownerType=:ownerType and o.ownerId=e.courseOffering.instructionalOffering.uniqueId and o.exam.examType=:examType")
+                .setLong("studentId", getUniqueId())
+                .setInteger("ownerType", ExamOwner.sOwnerTypeOffering)
+                .setInteger("examType", examType)
+                .setCacheable(true)
+                .list());
+        return exams;
     }
 }
