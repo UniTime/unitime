@@ -28,12 +28,17 @@ import java.util.TreeSet;
 import java.util.Vector;
 
 import org.hibernate.ObjectNotFoundException;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.unitime.commons.User;
 import org.unitime.timetable.model.base.BaseExam;
+import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.ExamDAO;
+import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
 import org.unitime.timetable.solver.exam.ui.ExamInfo;
+import org.unitime.timetable.solver.exam.ui.ExamRoomInfo;
 
 public class Exam extends BaseExam implements Comparable<Exam> {
 	private static final long serialVersionUID = 1L;
@@ -619,4 +624,145 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         } 
         return ret;
     }
+    
+    public String assign(ExamAssignmentInfo assignment, Session hibSession) {
+        Transaction tx = null;
+        try {
+            tx = hibSession.beginTransaction();
+            
+            setAssignedPeriod(assignment.getPeriod(hibSession));
+            if (getAssignedRooms()==null) setAssignedRooms(new HashSet());
+            getAssignedRooms().clear();
+            for (ExamRoomInfo room : assignment.getRooms())
+                getAssignedRooms().add(room.getLocation(hibSession));
+            setAssignedPreference(assignment.getAssignedPreferenceString());
+            
+            HashSet otherExams = new HashSet();
+            
+            for (Iterator j=getConflicts().iterator();j.hasNext();) {
+                ExamConflict conf = (ExamConflict)j.next();
+                for (Iterator i=conf.getExams().iterator();i.hasNext();) {
+                    Exam x = (Exam)i.next();
+                    if (!x.equals(this)) {
+                        x.getConflicts().remove(conf);
+                        otherExams.add(x);
+                    }
+                }
+                hibSession.delete(conf);
+                j.remove();
+            }
+
+            for (Iterator i=assignment.getDirectConflicts().iterator();i.hasNext();) {
+                ExamAssignmentInfo.DirectConflict dc = (ExamAssignmentInfo.DirectConflict)i.next();
+                ExamConflict conf = new ExamConflict();
+                conf.setConflictType(ExamConflict.sConflictTypeDirect);
+                conf.setStudents(getStudents(hibSession, dc.getStudents()));
+                conf.setNrStudents(conf.getStudents().size());
+                hibSession.save(conf);
+                getConflicts().add(conf);
+                Exam other = dc.getOtherExam().getExam(hibSession);
+                other.getConflicts().add(conf);
+                otherExams.add(other);
+            }
+            for (Iterator i=assignment.getBackToBackConflicts().iterator();i.hasNext();) {
+                ExamAssignmentInfo.BackToBackConflict btb = (ExamAssignmentInfo.BackToBackConflict)i.next();
+                ExamConflict conf = new ExamConflict();
+                conf.setConflictType(btb.isDistance()?ExamConflict.sConflictTypeBackToBackDist:ExamConflict.sConflictTypeBackToBack);
+                conf.setDistance(btb.getDistance());
+                conf.setStudents(getStudents(hibSession, btb.getStudents()));
+                conf.setNrStudents(conf.getStudents().size());
+                hibSession.save(conf);
+                getConflicts().add(conf);
+                Exam other = btb.getOtherExam().getExam(hibSession);
+                other.getConflicts().add(conf);
+                otherExams.add(other);
+            }
+            for (Iterator i=assignment.getMoreThanTwoADaysConflicts().iterator();i.hasNext();) {
+                ExamAssignmentInfo.MoreThanTwoADayConflict m2d = (ExamAssignmentInfo.MoreThanTwoADayConflict)i.next();
+                ExamConflict conf = new ExamConflict();
+                conf.setConflictType(ExamConflict.sConflictTypeMoreThanTwoADay);
+                conf.setStudents(getStudents(hibSession, m2d.getStudents()));
+                conf.setNrStudents(conf.getStudents().size());
+                hibSession.save(conf);
+                getConflicts().add(conf);
+                for (Iterator j=m2d.getOtherExams().iterator();j.hasNext();) {
+                    Exam otherExam = (Exam)((ExamInfo)j.next()).getExam(hibSession);
+                    otherExam.getConflicts().add(conf);
+                    otherExams.add(otherExam);
+                }
+            }
+            for (Iterator i=assignment.getInstructorDirectConflicts().iterator();i.hasNext();) {
+                ExamAssignmentInfo.DirectConflict dc = (ExamAssignmentInfo.DirectConflict)i.next();
+                ExamConflict conf = new ExamConflict();
+                conf.setConflictType(ExamConflict.sConflictTypeDirect);
+                conf.setStudents(getInstructors(hibSession, dc.getStudents()));
+                conf.setNrStudents(conf.getStudents().size());
+                hibSession.save(conf);
+                getConflicts().add(conf);
+                Exam other = dc.getOtherExam().getExam(hibSession);
+                other.getConflicts().add(conf);
+                otherExams.add(other);
+            }
+            for (Iterator i=assignment.getInstructorBackToBackConflicts().iterator();i.hasNext();) {
+                ExamAssignmentInfo.BackToBackConflict btb = (ExamAssignmentInfo.BackToBackConflict)i.next();
+                ExamConflict conf = new ExamConflict();
+                conf.setConflictType(btb.isDistance()?ExamConflict.sConflictTypeBackToBackDist:ExamConflict.sConflictTypeBackToBack);
+                conf.setDistance(btb.getDistance());
+                conf.setStudents(getInstructors(hibSession, btb.getStudents()));
+                conf.setNrStudents(conf.getStudents().size());
+                hibSession.save(conf);
+                getConflicts().add(conf);
+                Exam other = btb.getOtherExam().getExam(hibSession);
+                other.getConflicts().add(conf);
+                otherExams.add(other);
+            }
+            for (Iterator i=assignment.getInstructorMoreThanTwoADaysConflicts().iterator();i.hasNext();) {
+                ExamAssignmentInfo.MoreThanTwoADayConflict m2d = (ExamAssignmentInfo.MoreThanTwoADayConflict)i.next();
+                ExamConflict conf = new ExamConflict();
+                conf.setConflictType(ExamConflict.sConflictTypeMoreThanTwoADay);
+                conf.setStudents(getInstructors(hibSession, m2d.getStudents()));
+                conf.setNrStudents(conf.getStudents().size());
+                hibSession.save(conf);
+                getConflicts().add(conf);
+                for (Iterator j=m2d.getOtherExams().iterator();j.hasNext();) {
+                    Exam otherExam = (Exam)((ExamInfo)j.next()).getExam(hibSession);
+                    otherExam.getConflicts().add(conf);
+                    otherExams.add(otherExam);
+                }
+            }
+            
+            hibSession.update(this);
+            for (Iterator i=otherExams.iterator();i.hasNext();)
+                hibSession.update((Exam)i.next());
+
+            tx.commit();
+            return null;
+        } catch (Exception e) {
+            if (tx!=null) tx.rollback();
+            e.printStackTrace();
+            return "Assignment failed, reason: "+e.getMessage();
+        }
+    }
+    
+    protected HashSet getStudents(org.hibernate.Session hibSession, Collection studentIds) {
+        HashSet students = new HashSet();
+        if (studentIds==null || studentIds.isEmpty()) return students;
+        for (Iterator i=studentIds.iterator();i.hasNext();) {
+            Long studentId = (Long)i.next();
+            Student student = new StudentDAO().get(studentId, hibSession);
+            if (student!=null) students.add(student);
+        }
+        return students;
+    }
+
+    protected HashSet getInstructors(org.hibernate.Session hibSession, Collection instructorIds) {
+        HashSet instructors = new HashSet();
+        if (instructorIds==null || instructorIds.isEmpty()) return instructors;
+        for (Iterator i=instructorIds.iterator();i.hasNext();) {
+            Long instructorId = (Long)i.next();
+            DepartmentalInstructor instructor = new DepartmentalInstructorDAO().get(instructorId, hibSession);
+            if (instructor!=null) instructors.add(instructor);
+        }
+        return instructors;
+    }    
 }

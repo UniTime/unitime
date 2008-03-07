@@ -33,6 +33,7 @@ import org.unitime.timetable.solver.exam.ui.ExamInfoModel;
 public class ExamInfoForm extends ActionForm {
     private String iOp;
     private ExamInfoModel iModel;
+    private String iMessage;
     
     public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
         ActionErrors errors = new ActionErrors();
@@ -42,6 +43,7 @@ public class ExamInfoForm extends ActionForm {
     public void reset(ActionMapping mapping, HttpServletRequest request) {
         iOp = null;
         iModel = null;
+        iMessage = null;
     }
     
     public void load(HttpSession session) {}
@@ -52,4 +54,6 @@ public class ExamInfoForm extends ActionForm {
     public void setOp(String op) { iOp = op; }
     public ExamInfoModel getModel() { return iModel; }
     public void setModel(ExamInfoModel model) { iModel = model; }
+    public String getMessage() { return iMessage; }
+    public void setMessage(String message) { iMessage = message; }
 }

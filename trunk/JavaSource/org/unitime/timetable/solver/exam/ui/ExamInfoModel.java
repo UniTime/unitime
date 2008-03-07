@@ -44,6 +44,7 @@ import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.RoomFeaturePref;
 import org.unitime.timetable.model.RoomGroupPref;
 import org.unitime.timetable.model.RoomPref;
+import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 
 /**
@@ -74,6 +75,27 @@ public class ExamInfoModel implements Serializable {
     }
     public boolean isExamAssigned() {
         return getExamAssignment()!=null && getExamAssignment().getPeriodId()!=null; 
+    }
+    
+    public String assign() {
+        if (getSolver()!=null && getSolver().getExamType()==getExam().getExamType()) {
+            return getSolver().assign(iExamAssignment);
+        } else {
+            org.hibernate.Session hibSession = new ExamDAO().getSession();
+            return getExam().getExam(hibSession).assign(iExamAssignment, hibSession);
+        }
+    }
+    
+    public boolean getCanAssign() {
+        return iExamAssignment!=null && iExamAssignment.isValid();
+    }
+    
+    public String getAssignConfirm() {
+        if (getSolver()!=null && getSolver().getExamType()==getExam().getExamType()) {
+            return "";
+        } else {
+            return "The selected assignment will be done directly in the database. Are you sure?";
+        }
     }
     
     public void setExam(Exam exam) {
@@ -422,6 +444,8 @@ public class ExamInfoModel implements Serializable {
         ret += "    }";
         ret += "    roomOut(id);";
         ret += "    if (sCap>="+getExam().getNrStudents()+") document.location='examInfo.do?op=Select&room='+sRooms;";
+        ret += "    var c = document.getElementById('roomCapacityCounter');";
+        ret += "    if (c!=null) c.innerHtml = (sCap<"+getExam().getNrStudents()+"?'<font color=\\\'red\\\'>'+sCap+'</font>':''+sCap);";
         ret += "}";
         ret += "</script>";
         ret += "<table border='0' cellspacing='0' cellpadding='3'>";
@@ -468,5 +492,11 @@ public class ExamInfoModel implements Serializable {
             }
         }
         return iRooms;
+    }
+    
+    public int getRoomSize() {
+        if (iExamAssignment!=null) return iExamAssignment.getRoomSize();
+        if (isExamAssigned()) return getExamAssignment().getRoomSize();
+        return 0;
     }
 }
