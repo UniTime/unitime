@@ -85,6 +85,7 @@ public class NonUniversityLocation extends BaseNonUniversityLocation {
 		l.setIgnoreTooFar(isIgnoreTooFar());
 		l.setPattern(getPattern());
 		l.setSession(getSession());
+		l.setPermanentId(getPermanentId());
 		return l;
 	}
 	
