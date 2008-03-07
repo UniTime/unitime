@@ -60,6 +60,7 @@ import org.unitime.timetable.model.dao.BuildingDAO;
 import org.unitime.timetable.model.dao.RoomDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.LocationPermIdGenerator;
 
 
 /** 
@@ -304,7 +305,7 @@ public class AddSpecialUseRoomAction extends Action {
 			room.setExternalUniqueId(extRoom.getExternalUniqueId());
 			room.setClassification(extRoom.getClassification());
 			room.setDisplayName(extRoom.getDisplayName());
-						
+			
 			String mgrId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
 			room.setManagerIds(mgrId);
 				        
@@ -317,6 +318,8 @@ public class AddSpecialUseRoomAction extends Action {
 			room.setAssignments(new HashSet());
 			room.setRoomGroups(new HashSet());
 			room.setRoomDepts(new HashSet());
+			
+			LocationPermIdGenerator.setPermanentId(room);
 
 			hibSession.saveOrUpdate(room);
 			

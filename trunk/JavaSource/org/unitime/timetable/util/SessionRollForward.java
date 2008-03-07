@@ -274,6 +274,7 @@ public class SessionRollForward {
 					toRoom.setPattern(fromRoom.getPattern());
 					toRoom.setRoomNumber(toExternalRoom.getRoomNumber());
 					toRoom.setScheduledRoomType(toExternalRoom.getScheduledRoomType());
+					LocationPermIdGenerator.setPermanentId(toRoom);
 				} else {
 					return;
 				}
@@ -593,6 +594,7 @@ public class SessionRollForward {
 					r.setRoomNumber(er.getRoomNumber());
 					r.setScheduledRoomType(er.getScheduledRoomType());
 					r.setSession(toSession);
+					LocationPermIdGenerator.setPermanentId(r);
 					if (er.getRoomFeatures() != null){
 						ExternalRoomFeature erf = null;
 						GlobalRoomFeature grf = null;

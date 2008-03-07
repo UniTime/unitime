@@ -23,12 +23,14 @@ import java.util.Properties;
 
 import org.hibernate.HibernateException;
 import org.hibernate.dialect.Dialect;
+import org.hibernate.engine.SessionImplementor;
 import org.hibernate.id.IdentifierGenerator;
 import org.hibernate.id.PersistentIdentifierGenerator;
 import org.hibernate.id.SequenceGenerator;
 import org.hibernate.type.LongType;
 import org.hibernate.type.Type;
 import org.unitime.commons.hibernate.id.UniqueIdGenerator;
+import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao._RootDAO;
 
@@ -59,5 +61,9 @@ public class LocationPermIdGenerator {
         } catch (Exception e) {
             throw new HibernateException(e);
         }
+    }
+    
+    public static void setPermanentId(Location location) {
+        location.setPermanentId(((Number)getGenerator().generate((SessionImplementor)new _RootDAO().getSession(), location)).longValue());
     }
 }
