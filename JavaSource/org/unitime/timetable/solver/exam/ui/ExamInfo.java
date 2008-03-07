@@ -106,6 +106,10 @@ public class ExamInfo implements Serializable, Comparable {
         return iExam;
     }
     
+    public Exam getExam(org.hibernate.Session hibSession) {
+        return new ExamDAO().get(iExamId, hibSession);
+    }
+    
     public String getExamName() {
         return (iExamLabel==null?getExam().getLabel():iExamLabel);
     }
