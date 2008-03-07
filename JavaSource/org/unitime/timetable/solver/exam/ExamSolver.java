@@ -241,6 +241,41 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
             return rooms;
         }        
     }
+    
+    public String assign(ExamAssignmentInfo assignment) {
+        synchronized (super.currentSolution()) {
+            Exam exam = getExam(assignment.getExamId());
+            if (exam==null) return "Examination "+assignment.getExamName()+" not found.";
+            ExamPeriod period = null;
+            for (Enumeration e=exam.getPeriods().elements();e.hasMoreElements();) {
+                ExamPeriod p = (ExamPeriod)e.nextElement();
+                if (p.getId()==assignment.getPeriodId()) { period = p; break; }
+            }
+            if (period==null) return "Examination period "+assignment.getPeriodName()+" not found.";
+            if (!exam.isAvailable(period)) return "Examination period "+assignment.getPeriodName()+" is not available for examination "+assignment.getExamName()+".";
+            HashSet rooms = new HashSet();
+            for (Iterator i=assignment.getRooms().iterator();i.hasNext();) {
+                ExamRoomInfo ri = (ExamRoomInfo)i.next();
+                ExamRoom room = null;
+                for (Enumeration e=exam.getRooms().elements();e.hasMoreElements();) {
+                    ExamRoom r = (ExamRoom)e.nextElement();
+                    if (r.getId()==ri.getLocationId()) { room = r; break; }
+                }
+                if (room==null) return "Examination room "+ri.getName()+" not found.";
+                if (!room.isAvailable(period)) return "Examination room "+ri.getName()+" is not available at "+assignment.getPeriodName()+".";
+                rooms.add(room);
+            }
+            ExamPlacement p = new ExamPlacement(exam, period, rooms);
+            Set conflicts = super.currentSolution().getModel().conflictValues(p);
+            if (conflicts.isEmpty()) {
+                exam.assign(0, p);
+                return null;
+            } else {
+                ExamPlacement other = (ExamPlacement)conflicts.iterator().next();
+                return "Selected placement "+p.getName()+" is in conflict with exam "+other.variable().getName()+" that is assigned to "+other.getName()+"."; 
+            }
+        }
+    }
 
     public Hashtable currentSolutionInfo() {
         synchronized (super.currentSolution()) {

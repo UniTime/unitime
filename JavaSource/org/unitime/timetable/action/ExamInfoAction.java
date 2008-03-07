@@ -84,10 +84,17 @@ public class ExamInfoAction extends Action {
             if (request.getParameter("room")!=null)
                 model.setRooms(request.getParameter("room"));
         }
+        
+        if ("Assign".equals(op)) {
+            String message = model.assign();
+            if (message==null) {
+                myForm.setOp("Close");
+            } else {
+                myForm.setMessage(message);
+            }
+        }
 
         if ("Close".equals(op)) {
-            request.setAttribute("backType", "Exam");
-            request.setAttribute("backId", model.getExam().getExamId().toString());
         }
         
         BackTracker.markForBack(

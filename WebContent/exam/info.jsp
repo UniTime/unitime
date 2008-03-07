@@ -27,6 +27,22 @@
 <html:form action="/examInfo">
 	<bean:define id="model" name="examInfoForm" property="model"/>
 	<bean:define id="exam" name="model" property="exam"/>
+	<bean:define id="examId" name="exam" property="examId"/>
+	<logic:notEmpty name="examInfoForm" property="message">
+		<bean:define id="message" name="examInfoForm" property="message"/>
+		<script language="JavaScript" type="text/javascript">
+			alert('<%=message%>');
+		</script>
+	</logic:notEmpty>
+	<logic:equal name="examInfoForm" property="op" value="Close">
+		<script language="JavaScript" type="text/javascript">
+			if (document.parentWindow && document.parentWindow.frames[5]) { 
+				document.parentWindow.frames[5].location = document.parentWindow.frames[5].location+'?backId=<%=examId%>&backType=Exam';
+			}
+			window.close();
+		</script>
+	</logic:equal>
+	<tt:confirm name="confirmAssign"><bean:write name="model" property="assignConfirm"/></tt:confirm>
 	<table border='0' width='95%'>
 		<tr><td colspan='2'>
 			<tt:section-header>
@@ -57,7 +73,7 @@
 			</logic:notEmpty>
 			<logic:equal name="assignment" property="valid" value="true">
 				<tr><td colspan='2' align="right">
-					<html:submit property="op" value="Assign"/>
+					<html:submit property="op" value="Assign" onclick="return confirmAssign();"/>
 				</td></tr>
 			</logic:equal>
 			<logic:equal name="assignment" property="hasConflicts" value="true">
@@ -92,7 +108,10 @@
 			</table></td></tr>
 		</logic:notEmpty>
 		<logic:notEmpty name="model" property="rooms">
-			<tr><td colspan='2'><tt:section-title><br>Available Rooms</tt:section-title></td></tr>
+			<tr><td colspan='2'><tt:section-title>
+				<br>Available Rooms
+				(selected size: <span id='roomCapacityCounter'><bean:write name="model" property="roomSize"/></span>) 
+			</tt:section-title></td></tr>
 			<tr><td colspan='2'>
 				<bean:write name="model" property="roomTable" filter="false"/>
 			</td></tr>

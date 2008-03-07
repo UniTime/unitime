@@ -44,6 +44,10 @@ public class ExamRoomInfo implements Serializable, Comparable<ExamRoomInfo>{
         if (iLocation==null) iLocation = new LocationDAO().get(getLocationId());
         return iLocation;
     }
+    public Location getLocation(org.hibernate.Session hibSession) {
+        return new LocationDAO().get(getLocationId(), hibSession);
+    }
+    
     
     public String toString() {
         return "<span style='color:"+PreferenceLevel.prolog2color(PreferenceLevel.int2prolog(getPreference()))+";' " +

@@ -139,6 +139,10 @@ public class ExamAssignment extends ExamInfo implements Serializable, Comparable
         return iPeriod;
     }
     
+    public ExamPeriod getPeriod(org.hibernate.Session hibSession) {
+        return new ExamPeriodDAO().get(getPeriodId(), hibSession);
+    }
+
     public Comparable getPeriodOrd() {
         if (iPeriodIdx>=0) return new Integer(iPeriodIdx);
         else return iPeriod;
@@ -223,5 +227,13 @@ public class ExamAssignment extends ExamInfo implements Serializable, Comparable
     public boolean isValid() {
         if (getMaxRooms()>0 && (getRooms()==null || getRooms().isEmpty())) return false;
         return true;
+    }
+    
+    public int getRoomSize() {
+        if (getRooms()==null) return 0;
+        int roomSize = 0;
+        for (ExamRoomInfo room : getRooms())
+            roomSize += room.getCapacity(this);
+        return roomSize;
     }
 }
