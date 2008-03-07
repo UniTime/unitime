@@ -59,6 +59,7 @@ import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.LocationPermIdGenerator;
 import org.unitime.timetable.webutil.RequiredTimeTable;
 
 
@@ -378,6 +379,8 @@ public class EditRoomAction extends Action {
             room.setCoordinateX(editRoomForm.getCoordX()==null || editRoomForm.getCoordX().length()==0 ? new Integer(-1) : Integer.valueOf(editRoomForm.getCoordX()));
             room.setCoordinateY(editRoomForm.getCoordY()==null || editRoomForm.getCoordY().length()==0 ? new Integer(-1) : Integer.valueOf(editRoomForm.getCoordY()));
             room.setSession(session);
+            
+            LocationPermIdGenerator.setPermanentId(room);
 
             PeriodPreferenceModel px = new PeriodPreferenceModel(session, Exam.sExamTypeFinal);
             RequiredTimeTable rttPx = new RequiredTimeTable(px);

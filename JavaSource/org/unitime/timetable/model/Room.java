@@ -105,6 +105,7 @@ public class Room extends BaseRoom {
 		r.setRoomNumber(getRoomNumber());
 		r.setScheduledRoomType(getScheduledRoomType());
 		r.setSession(getSession());
+		r.setPermanentId(getPermanentId());
 		return r;
 	}
 	

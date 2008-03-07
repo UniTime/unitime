@@ -51,6 +51,7 @@ import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.NonUniversityLocationDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.LocationPermIdGenerator;
 
 
 /** 
@@ -177,6 +178,8 @@ public class AddNonUnivLocationAction extends Action {
 			nonUniv.setRoomDepts(new HashSet());
 			nonUniv.setExamEnabled(Boolean.FALSE);
 			nonUniv.setExamCapacity(0);
+			
+			LocationPermIdGenerator.setPermanentId(nonUniv);
 			
 			hibSession.saveOrUpdate(nonUniv);
 			
