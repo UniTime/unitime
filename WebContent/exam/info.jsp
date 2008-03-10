@@ -76,6 +76,10 @@
 					<html:submit property="op" value="Assign" onclick="return confirmAssign();"/>
 				</td></tr>
 			</logic:equal>
+			<logic:greaterThan name="assignment" property="nrDistributionConflicts" value="0">
+				<tr><td colspan='2'><tt:section-title><br>Violated Distribution Preferences (<bean:write name="assignment" property="periodAbbreviation" filter="false"/>)</tt:section-title></td></tr>
+				<tr><td colspan='2'><bean:write name="assignment" property="distributionConflictTable" filter="false"/></td></tr>
+			</logic:greaterThan>
 			<logic:equal name="assignment" property="hasConflicts" value="true">
 				<tr><td colspan='2'><tt:section-title><br>Student Conflicts (<bean:write name="assignment" property="periodAbbreviation" filter="false"/>)</tt:section-title></td></tr>
 				<tr><td colspan='2'><bean:write name="assignment" property="conflictTable" filter="false"/></td></tr>
@@ -92,6 +96,10 @@
 				<logic:notEmpty name="assignment" property="rooms">
 					<tr><td>Room:</td><td><bean:write name="assignment" property="roomsNameWithPref(', ')" filter="false"/></td></tr>
 				</logic:notEmpty>
+				<logic:greaterThan name="assignment" property="nrDistributionConflicts" value="0">
+					<tr><td colspan='2'><tt:section-title><br>Violated Distribution Preferences</tt:section-title></td></tr>
+					<tr><td colspan='2'><bean:write name="assignment" property="distributionConflictTable" filter="false"/></td></tr>
+				</logic:greaterThan>
 				<logic:equal name="assignment" property="hasConflicts" value="true">
 					<tr><td colspan='2'><tt:section-title><br>Student Conflicts</tt:section-title></td></tr>
 					<tr><td colspan='2'><bean:write name="assignment" property="conflictTable" filter="false"/></td></tr>
@@ -109,8 +117,16 @@
 		</logic:notEmpty>
 		<logic:notEmpty name="model" property="rooms">
 			<tr><td colspan='2'><tt:section-title>
-				<br>Available Rooms
-				(selected size: <span id='roomCapacityCounter'><bean:write name="model" property="roomSize"/></span>) 
+				<bean:define id="nrStudents" name="assignment" property="nrStudents"/>
+				<br>Available Rooms &nbsp;&nbsp;
+				( selected size: <span id='roomCapacityCounter'>
+					<logic:lessThan name="model" property="roomSize" value="<%=String.valueOf(nrStudents)%>">
+						<font color='red'><bean:write name="model" property="roomSize"/></font>
+					</logic:lessThan>
+					<logic:greaterEqual name="model" property="roomSize" value="<%=String.valueOf(nrStudents)%>">
+						<bean:write name="model" property="roomSize"/>
+					</logic:greaterEqual>
+					</span> ) 
 			</tt:section-title></td></tr>
 			<tr><td colspan='2'>
 				<bean:write name="model" property="roomTable" filter="false"/>
