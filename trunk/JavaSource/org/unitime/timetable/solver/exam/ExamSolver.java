@@ -230,8 +230,8 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
                 ExamRoom room = (ExamRoom)e.nextElement();
                 
                 int cap = (exam.isSectionExam()?room.getAltSize():room.getSize());
-                if (cap<exam.getStudents().size()/exam.getMaxRooms()) continue;
-                if (cap>2*exam.getStudents().size()) continue;
+                if (cap<exam.getStudents().size()/(exam.getMaxRooms()==1?1:2*exam.getMaxRooms())) continue;
+                if (cap>Math.max(20,3*exam.getStudents().size())) continue;
 
                 if (!room.isAvailable(period)) continue;
                 if (!exam.checkDistributionConstraints(room)) continue;
@@ -240,6 +240,30 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
             }
             return rooms;
         }        
+    }
+    
+    public ExamAssignmentInfo getAssignment(Long examId, Long periodId, Collection<Long> roomIds) {
+        synchronized (super.currentSolution()) {
+            Exam exam = getExam(examId);
+            if (exam==null) return null;
+            ExamPeriod period = null;
+            for (Enumeration e=exam.getPeriods().elements();e.hasMoreElements();) {
+                ExamPeriod p = (ExamPeriod)e.nextElement();
+                if (p.getId()==periodId) { period = p; break; }
+            }
+            if (period==null) return null;
+            HashSet rooms = new HashSet();
+            for (Iterator i=roomIds.iterator();i.hasNext();) {
+                Long roomId = (Long)i.next();
+                ExamRoom room = null;
+                for (Enumeration e=exam.getRooms().elements();e.hasMoreElements();) {
+                    ExamRoom r = (ExamRoom)e.nextElement();
+                    if (r.getId()==roomId) { room = r; break; }
+                }
+                if (room!=null) rooms.add(room);
+            }
+            return new ExamAssignmentInfo(exam, new ExamPlacement(exam, period, rooms));
+        }
     }
     
     public String assign(ExamAssignmentInfo assignment) {

@@ -117,7 +117,7 @@ public class ExamAssignment extends ExamInfo implements Serializable, Comparable
         iPeriodId = period.getUniqueId();
         iRooms = new TreeSet();
         if (rooms!=null)
-            iRooms.addAll(iRooms);
+            iRooms.addAll(rooms);
         //TODO: distribution preference
     }
 
