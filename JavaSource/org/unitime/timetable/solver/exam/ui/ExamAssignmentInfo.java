@@ -21,7 +21,9 @@ package org.unitime.timetable.solver.exam.ui;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Set;
@@ -29,6 +31,8 @@ import java.util.TreeSet;
 import java.util.Vector;
 
 import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.DistributionObject;
+import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.ExamConflict;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Location;
@@ -37,6 +41,7 @@ import org.unitime.timetable.model.SolverParameterDef;
 import org.unitime.timetable.model.Student;
 
 import net.sf.cpsolver.exam.model.Exam;
+import net.sf.cpsolver.exam.model.ExamDistributionConstraint;
 import net.sf.cpsolver.exam.model.ExamInstructor;
 import net.sf.cpsolver.exam.model.ExamModel;
 import net.sf.cpsolver.exam.model.ExamPlacement;
@@ -52,6 +57,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
     private TreeSet iInstructorDirects = new TreeSet();
     private TreeSet iInstructorBackToBacks = new TreeSet();
     private TreeSet iInstructorMoreThanTwoADays = new TreeSet();
+    private TreeSet iDistributions = new TreeSet();
     
     public ExamAssignmentInfo(ExamPlacement placement) {
         this((Exam)placement.variable(),placement);
@@ -212,6 +218,16 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             }
             iInstructorMoreThanTwoADays.addAll(im2ds.values());
         }
+        for (Enumeration e=exam.getDistributionConstraints().elements();e.hasMoreElements();) {
+            ExamDistributionConstraint dc = (ExamDistributionConstraint)e.nextElement();
+            if (dc.isHard()) {
+                if (dc.inConflict(placement))
+                    iDistributions.add(new DistributionConflict(dc,exam));
+            } else {
+                if (!dc.isSatisfied(placement))
+                    iDistributions.add(new DistributionConflict(dc,exam));
+            }
+        }
     }
     
     public ExamAssignmentInfo(org.unitime.timetable.model.Exam exam) {
@@ -258,6 +274,102 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                 }
             }
         }
+        for (Iterator i=exam.getDistributionObjects().iterator();i.hasNext();) {
+            DistributionObject dObj = (DistributionObject)i.next();
+            DistributionPref pref = dObj.getDistributionPref();
+            if (!check(pref, exam, getPeriod(), getRooms()))
+                iDistributions.add(new DistributionConflict(pref, exam));
+        }
+    }
+    
+    public boolean check(DistributionPref pref, org.unitime.timetable.model.Exam exam, ExamPeriod assignedPeriod, Collection<ExamRoomInfo> assignedRooms) {
+        if (PreferenceLevel.sNeutral.equals(pref.getPrefLevel().getPrefProlog())) return true;
+        boolean positive = 
+            PreferenceLevel.sRequired.equals(pref.getPrefLevel().getPrefProlog()) ||
+            PreferenceLevel.sStronglyPreferred.equals(pref.getPrefLevel().getPrefProlog()) ||
+            PreferenceLevel.sPreferred.equals(pref.getPrefLevel().getPrefProlog());
+        if ("EX_SAME_PER".equals(pref.getDistributionType().getReference())) {
+            if (positive) { //same period
+                ExamPeriod period = null;
+                for (Iterator i=pref.getDistributionObjects().iterator();i.hasNext();) {
+                    org.unitime.timetable.model.Exam x = (org.unitime.timetable.model.Exam)((DistributionObject)i.next()).getPrefGroup();
+                    ExamPeriod p = x.getAssignedPeriod();
+                    if (x.equals(exam)) p = assignedPeriod;
+                    if (p==null) continue;
+                    if (period==null) period = p;
+                    else if (!period.equals(p)) return false;
+                }
+                return true;
+            } else { //different period
+                HashSet periods = new HashSet();
+                for (Iterator i=pref.getDistributionObjects().iterator();i.hasNext();) {
+                    org.unitime.timetable.model.Exam x = (org.unitime.timetable.model.Exam)((DistributionObject)i.next()).getPrefGroup();
+                    ExamPeriod p = x.getAssignedPeriod();
+                    if (x.equals(exam)) p = assignedPeriod;
+                    if (p==null) continue;
+                    if (!periods.add(p)) return false;
+                }
+                return true;
+            }
+        } else if ("EX_PRECEDENCE".equals(pref.getDistributionType().getReference())) {
+            TreeSet distObjects = new TreeSet(
+                    positive?new Comparator<DistributionObject>() {
+                        public int compare(DistributionObject d1, DistributionObject d2) {
+                            return d1.getSequenceNumber().compareTo(d2.getSequenceNumber());
+                        }
+                    }:new Comparator<DistributionObject>() {
+                        public int compare(DistributionObject d1, DistributionObject d2) {
+                            return d2.getSequenceNumber().compareTo(d1.getSequenceNumber());
+                        }
+                    });
+            distObjects.addAll(pref.getDistributionObjects());
+            ExamPeriod prev = null;
+            for (Iterator i=distObjects.iterator();i.hasNext();) {
+                org.unitime.timetable.model.Exam x = (org.unitime.timetable.model.Exam)((DistributionObject)i.next()).getPrefGroup();
+                ExamPeriod p = x.getAssignedPeriod();
+                if (x.equals(exam)) p = assignedPeriod;
+                if (p==null) continue;
+                if (prev!=null && prev.compareTo(p)>=0) return false;
+                prev = p;
+            }
+            return true;
+        } else if ("EX_SAME_ROOM".equals(pref.getDistributionType().getReference())) {
+            if (positive) { //same room
+                Collection<ExamRoomInfo> rooms = null;
+                for (Iterator i=pref.getDistributionObjects().iterator();i.hasNext();) {
+                    org.unitime.timetable.model.Exam x = (org.unitime.timetable.model.Exam)((DistributionObject)i.next()).getPrefGroup();
+                    Collection<ExamRoomInfo> r = null;
+                    if (x.equals(exam)) {
+                        r = assignedRooms;
+                    } else {
+                        if (x.getAssignedPeriod()==null) continue;
+                        r = new ExamAssignment(x).getRooms();
+                    }
+                    if (r==null) continue;
+                    if (rooms==null) rooms = r;
+                    else if (!rooms.containsAll(r) || !r.containsAll(rooms)) return false;
+                }
+                return true;
+            } else { //different room
+                Collection<ExamRoomInfo> allRooms = new HashSet();
+                for (Iterator i=pref.getDistributionObjects().iterator();i.hasNext();) {
+                    org.unitime.timetable.model.Exam x = (org.unitime.timetable.model.Exam)((DistributionObject)i.next()).getPrefGroup();
+                    Collection<ExamRoomInfo> r = null;
+                    if (x.equals(exam)) {
+                        r = assignedRooms;
+                    } else {
+                        if (x.getAssignedPeriod()==null) continue;
+                        r = new ExamAssignment(x).getRooms();
+                    }
+                    if (r==null) continue;
+                    for (ExamRoomInfo room : r) {
+                        if (!allRooms.add(room)) return false;
+                    }
+                }
+                return true;
+            }
+        }
+        return false;
     }
     
     public ExamAssignmentInfo(org.unitime.timetable.model.Exam exam, ExamPeriod period, Collection<ExamRoomInfo> rooms) throws Exception {
@@ -369,6 +481,13 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         iInstructorDirects.addAll(idirects.values());
         iInstructorBackToBacks.addAll(ibackToBacks.values());
         iInstructorMoreThanTwoADays.addAll(im2ds.values());   
+
+        for (Iterator i=exam.getDistributionObjects().iterator();i.hasNext();) {
+            DistributionObject dObj = (DistributionObject)i.next();
+            DistributionPref pref = dObj.getDistributionPref();
+            if (!check(pref, exam, period, rooms))
+                iDistributions.add(new DistributionConflict(pref, exam));
+        }
     }
     
     public TreeSet getDirectConflicts() {
@@ -419,7 +538,35 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         }
         return ret;
     }
+    
+    public TreeSet getDistributionConflicts() {
+        return iDistributions;
+    }
+    
+    public String getDistributionConflictsHtml(String delim) {
+        String ret = "";
+        for (Iterator i=iDistributions.iterator();i.hasNext();) {
+            DistributionConflict dc = (DistributionConflict)i.next();
+            if (ret.length()>0) ret+=delim;
+            ret+=dc.getTypeHtml();
+        }
+        return ret;
+    }
+    
+    public String getDistributionConflictsList(String delim) {
+        String ret = "";
+        for (Iterator i=iDistributions.iterator();i.hasNext();) {
+            DistributionConflict dc = (DistributionConflict)i.next();
+            if (ret.length()>0) ret+=delim;
+            ret+=PreferenceLevel.prolog2abbv(dc.getPreference())+" "+dc.getType();
+        }
+        return ret;
+    }
 
+    public int getNrDistributionConflicts() {
+        return iDistributions.size();
+    }
+    
     public boolean getHasConflicts() {
         return !getDirectConflicts().isEmpty() || !getBackToBackConflicts().isEmpty() || !getMoreThanTwoADaysConflicts().isEmpty();
     }
@@ -444,6 +591,27 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         for (Iterator i=getMoreThanTwoADaysConflicts().iterator();i.hasNext();)
             ret += i.next().toString();
         for (Iterator i=getBackToBackConflicts().iterator();i.hasNext();)
+            ret += i.next().toString();
+        ret += "</table>";
+        return ret;
+    }
+    
+    public String getDistributionConflictTable() {
+        return getDistributionConflictTable(true);
+    }
+    
+    public String getDistributionConflictTable(boolean header) {
+        String ret = "<table border='0' width='95%' cellspacing='0' cellpadding='3'>";
+        if (header) {
+            ret += "<tr>";
+            ret += "<td><i>Preference</i></td>";
+            ret += "<td><i>Distribution</i></td>";
+            ret += "<td><i>Exam</i></td>";
+            ret += "<td><i>Period</i></td>";
+            ret += "<td><i>Room</i></td>";
+            ret += "</tr>";
+        }
+        for (Iterator i=getDistributionConflicts().iterator();i.hasNext();)
             ret += i.next().toString();
         ret += "</table>";
         return ret;
@@ -709,5 +877,110 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             }
             return ret;
         }
+    }
+    
+    public static class DistributionConflict implements Serializable, Comparable {
+        protected TreeSet iOtherExams;
+        protected String iPreference;
+        protected Long iId;
+        protected String iType;
+        protected transient DistributionPref iPref = null;
+        protected DistributionConflict(Long id, String type, TreeSet otherExams, String preference) {
+            iId = id;
+            iType = type;
+            iOtherExams = otherExams;
+            iPreference = preference;
+        }
+        protected DistributionConflict(ExamDistributionConstraint dc, Exam exclude) {
+            iId = dc.getId();
+            iType = dc.getTypeString();
+            iOtherExams = new TreeSet();
+            for (Enumeration e=dc.variables().elements();e.hasMoreElements();) {
+                Exam exam = (Exam)e.nextElement();
+                if (exam.equals(exclude)) continue;
+                iOtherExams.add(exam.getAssignment()==null?new ExamInfo(exam):new ExamAssignment(exam,(ExamPlacement)exam.getAssignment()));
+            }
+            iPreference = (dc.isHard()?"R":dc.getWeight()>=2?"-2":"-1");
+        }
+        protected DistributionConflict(DistributionPref pref, org.unitime.timetable.model.Exam exclude) {
+            iPref = pref;
+            iId = pref.getUniqueId();
+            iType = pref.getDistributionType().getLabel();
+            iOtherExams = new TreeSet();
+            for (Iterator i=pref.getDistributionObjects().iterator();i.hasNext();) {
+                DistributionObject dObj = (DistributionObject)i.next();
+                org.unitime.timetable.model.Exam exam = (org.unitime.timetable.model.Exam)dObj.getPrefGroup();
+                if (exam.equals(exclude)) continue;
+                iOtherExams.add(exam.getAssignedPeriod()==null?new ExamInfo(exam):new ExamAssignment(exam));
+            }
+            iPreference = pref.getPrefLevel().getPrefProlog(); 
+        }
+        public Long getId() {
+            return iId;
+        }
+        public String getType() {
+            return iType;
+        }
+        public String getTypeHtml() {
+            String title = PreferenceLevel.prolog2string(getPreference())+" "+getType()+" with ";
+            for (Iterator i=getOtherExams().iterator();i.hasNext();) {
+                ExamAssignment a = (ExamAssignment)i.next();
+                title += a.getExamName();
+                if (i.hasNext()) title += " and ";
+            }
+            return "<span style='font-weight:bold;color:"+PreferenceLevel.prolog2color(getPreference())+";' title='"+title+"'>"+iType+"</span>";
+        }
+        public String getPreference() {
+            return iPreference;
+        }
+        public TreeSet getOtherExams() {
+            return iOtherExams;
+        }
+        public int compareTo(Object o) {
+            DistributionConflict c = (DistributionConflict)o;
+            Iterator i1 = getOtherExams().iterator(), i2 = c.getOtherExams().iterator();
+            while (i1.hasNext()) {
+                ExamAssignment a1 = (ExamAssignment)i1.next();
+                ExamAssignment a2 = (ExamAssignment)i2.next();
+                if (!a1.equals(a2)) return a1.compareTo(a2);
+            }
+            return getId().compareTo(c.getId());
+        }
+        public String toString() {
+            String ret = "";
+            String mouseOver = "";
+            String mouseOut = "";
+            String id = "";
+            for (Iterator i=getOtherExams().iterator();i.hasNext();) {
+                ExamAssignment a = (ExamAssignment)i.next();
+                id+=a.getExamId(); 
+                if (i.hasNext()) id+=":";
+            }
+            int idx = 0;
+            for (Iterator i=getOtherExams().iterator();i.hasNext();idx++) {
+                ExamAssignment a = (ExamAssignment)i.next();
+                mouseOver += "document.getElementById('"+id+":"+idx+"').style.backgroundColor='rgb(223,231,242)';";
+                mouseOut += "document.getElementById('"+id+":"+idx+"').style.backgroundColor='transparent';";
+            }
+            idx = 0;
+            ret += "<tr id='"+id+":"+idx+"' onmouseover=\""+mouseOver+"\" onmouseout=\""+mouseOut+"\">";
+            ret += "<td valign='top' rowspan='"+getOtherExams().size()+"' style='font-weight:bold;color:"+PreferenceLevel.prolog2color(getPreference())+";'>";
+            ret += PreferenceLevel.prolog2string(getPreference());
+            ret += "</td>";
+            ret += "<td valign='top' rowspan='"+getOtherExams().size()+"' style='font-weight:bold;color:"+PreferenceLevel.prolog2color(getPreference())+";'>";
+            ret += getType();
+            ret += "</td>";
+            for (Iterator i=getOtherExams().iterator();i.hasNext();idx++) {
+                ExamAssignment a = (ExamAssignment)i.next();
+                ret += "<td>"+a.getExamNameHtml()+"</td>";
+                ret += "<td>"+a.getPeriodAbbreviationWithPref()+"</td>";
+                ret += "<td>"+a.getRoomsNameWithPref(", ")+"</td>";
+                ret += "</tr>";
+                if (i.hasNext()) 
+                    ret += "<tr id='"+id+":"+(1+idx)+"' onmouseover=\""+mouseOver+"\" onmouseout=\""+mouseOut+"\">";
+            }
+            return ret;
+        }
+        
     }
 }

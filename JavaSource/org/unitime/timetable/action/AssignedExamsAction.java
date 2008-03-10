@@ -87,7 +87,7 @@ public class AssignedExamsAction extends Action {
         }
         
         if (table!=null)
-            myForm.setTable(table.printTable(WebTable.getOrder(request.getSession(),"assignedExams.ord")), 9, assignedExams.size());
+            myForm.setTable(table.printTable(WebTable.getOrder(request.getSession(),"assignedExams.ord")), 10, assignedExams.size());
 		
         if (request.getParameter("backId")!=null)
             request.setAttribute("hash", request.getParameter("backId"));
@@ -99,11 +99,11 @@ public class AssignedExamsAction extends Action {
         if (exams==null || exams.isEmpty()) return null;
         String nl = (html?"<br>":"\n");
 		PdfWebTable table =
-            new PdfWebTable( 9,
+            new PdfWebTable( 10,
                     "Assigned Examinations", "assignedExams.do?ord=%%",
-                    new String[] {(form.getShowSections()?"Classes / Courses":"Examination"), "Period", "Room", "Seating"+nl+"Type", "Students", "Instructor", "Direct", ">2 A Day", "Back-To-Back"},
-       				new String[] {"left", "left", "left", "center", "right", "left", "right", "right", "right"},
-       				new boolean[] {true, true, true, true, false, true, false, false, false} );
+                    new String[] {(form.getShowSections()?"Classes / Courses":"Examination"), "Period", "Room", "Seating"+nl+"Type", "Students", "Instructor", "Violated"+nl+"Distributions", "Direct", ">2 A Day", "Back-To-Back"},
+       				new String[] {"left", "left", "left", "center", "right", "left", "left", "right", "right", "right"},
+       				new boolean[] {true, true, true, true, false, true, true, false, false, false} );
 		table.setRowStyle("white-space:nowrap");
 		
         try {
@@ -127,6 +127,7 @@ public class AssignedExamsAction extends Action {
                             (Exam.sSeatingTypeNormal==exam.getSeatingType()?"Normal":"Exam"),
                             String.valueOf(exam.getNrStudents()),
                             exam.getInstructorName(", "),
+                            (html?exam.getDistributionConflictsHtml(", "):exam.getDistributionConflictsList(", ")),
                             dcStr,
                             m2dStr,
                             btbStr
@@ -138,6 +139,7 @@ public class AssignedExamsAction extends Action {
                             exam.getSeatingType(),
                             exam.getNrStudents(),
                             exam.getInstructorName(":"),
+                            exam.getDistributionConflictsList(", "),
                             dc,
                             m2d,
                             btb
