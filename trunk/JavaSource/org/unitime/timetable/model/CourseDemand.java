@@ -19,9 +19,10 @@
 */
 package org.unitime.timetable.model;
 
+import java.util.List;
+
 import org.unitime.timetable.model.base.BaseCourseDemand;
-
-
+import org.unitime.timetable.model.dao.CourseDemandDAO;
 
 public class CourseDemand extends BaseCourseDemand implements Comparable {
 	private static final long serialVersionUID = 1L;
@@ -69,5 +70,12 @@ public class CourseDemand extends BaseCourseDemand implements Comparable {
         if (cmp!=0) return cmp;
         return getUniqueId().compareTo(cd.getUniqueId());
     }
-
+    
+    public static List findAll(Long sessionId) {
+        return new CourseDemandDAO().
+            getSession().
+            createQuery("select c from CourseDemand c where c.student.session.uniqueId=:sessionId").
+            setLong("sessionId", sessionId.longValue()).
+            list(); 
+    }
 }
