@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
@@ -130,7 +131,7 @@ public class ExamInfoModel implements Serializable {
         iExamAssignment = null;
     }
     
-    public void setRooms(String rooms) {
+    public void setRooms(String rooms) throws Exception {
         if (iExamAssignment==null) {
             if (isExamAssigned()) {
                 for (ExamAssignmentInfo period : getPeriods()) {
@@ -142,17 +143,29 @@ public class ExamInfoModel implements Serializable {
             }
         }
         if (iExamAssignment==null) return;
-        iExamAssignment.getRooms().clear();
-        for (StringTokenizer stk=new StringTokenizer(rooms,":");stk.hasMoreTokens();) {
-            String token = stk.nextToken();
-            if (token.trim().length()==0) continue;
-            Long roomId = Long.valueOf(token.substring(0, token.indexOf('@')));
-            ExamRoomInfo room = null;
-            for (ExamRoomInfo r : getRooms()) {
-                if (r.getLocationId().equals(roomId)) { room = r; break; }
+        if (getSolver()!=null && getSolver().getExamType()==getExam().getExamType()) {
+            Vector<Long> assignedRooms = new Vector();
+            for (StringTokenizer stk=new StringTokenizer(rooms,":");stk.hasMoreTokens();) {
+                String token = stk.nextToken();
+                if (token.trim().length()==0) continue;
+                assignedRooms.add(Long.valueOf(token.substring(0, token.indexOf('@'))));
             }
-            if (room!=null) iExamAssignment.getRooms().add(room);
+            iExamAssignment = getSolver().getAssignment(getExam().getExamId(), iExamAssignment.getPeriodId(), assignedRooms);
+        } else {
+            TreeSet<ExamRoomInfo> assignedRooms = new TreeSet();
+            for (StringTokenizer stk=new StringTokenizer(rooms,":");stk.hasMoreTokens();) {
+                String token = stk.nextToken();
+                if (token.trim().length()==0) continue;
+                Long roomId = Long.valueOf(token.substring(0, token.indexOf('@')));
+                ExamRoomInfo room = null;
+                for (ExamRoomInfo r : getRooms()) {
+                    if (r.getLocationId().equals(roomId)) { room = r; break; }
+                }
+                if (room!=null) assignedRooms.add(room);
+            }
+            iExamAssignment = new ExamAssignmentInfo(getExam().getExam(), iExamAssignment.getPeriod(), assignedRooms);
         }
+        System.out.println("rooms:"+iExamAssignment.getRoomsName(","));
     }
     
     public void apply(HttpServletRequest request) {
@@ -209,18 +222,19 @@ public class ExamInfoModel implements Serializable {
         }
         return ret;
     }
-
+    
     public String getPeriodsTable() {
-        WebTable table = new WebTable(7, "Available Periods", "examInfo.do?op=Reorder&pord=%%", 
-                new String[] {"Available<br>Period", "Student<br>Direct", "Student<br>&gt; 2 A Day","Student<br>Back-To-Back", "Instructor<br>Direct", "Instructor<br>&gt; 2 A Day", "Instructor<br>Back-To-Back"},
-                new String[] {"left", "right", "right", "right", "right", "right", "right", "right"},
-                new boolean[] { true, true, true, true, true, true, true});
+        WebTable table = new WebTable(8, "Available Periods", "examInfo.do?op=Reorder&pord=%%", 
+                new String[] {"Available<br>Period","Violated<br>Distributions", "Student<br>Direct", "Student<br>&gt; 2 A Day","Student<br>Back-To-Back", "Instructor<br>Direct", "Instructor<br>&gt; 2 A Day", "Instructor<br>Back-To-Back"},
+                new String[] {"left", "left", "right", "right", "right", "right", "right", "right", "right"},
+                new boolean[] { true, true, true, true, true, true, true, true});
         ExamAssignmentInfo current = getExamAssignment();
         for (ExamAssignmentInfo period : getPeriods()) {
             WebTable.WebTableLine line = table.addLine(
                "onClick=\"document.location='examInfo.do?op=Select&period="+period.getPeriodId()+"';\"",
                new String[] {
                     period.getPeriodAbbreviationWithPref(),
+                    period.getDistributionConflictsHtml("<br>"),
                     dc2html(true, period.getNrDirectConflicts(), (current==null?0:period.getNrDirectConflicts()-current.getNrDirectConflicts())),
                     m2d2html(true, period.getNrMoreThanTwoConflicts(), (current==null?0:period.getNrMoreThanTwoConflicts()-current.getNrMoreThanTwoConflicts())),
                     btb2html(true, period.getNrBackToBackConflicts(), (current==null?0:period.getNrBackToBackConflicts()-current.getNrBackToBackConflicts()), 
@@ -231,6 +245,7 @@ public class ExamInfoModel implements Serializable {
                             period.getNrInstructorDistanceBackToBackConflicts(), (current==null?0:period.getNrInstructorDistanceBackToBackConflicts()-current.getNrInstructorDistanceBackToBackConflicts()))
                 }, new Comparable[] {
                     period.getPeriodOrd(),
+                    period.getDistributionConflictsList(":"),
                     period.getNrDirectConflicts(),
                     period.getNrMoreThanTwoConflicts(),
                     period.getNrBackToBackConflicts(),
@@ -254,7 +269,7 @@ public class ExamInfoModel implements Serializable {
                 for (Iterator i=ExamPeriod.findAll(getExam().getExam().getSession().getUniqueId(), getExam().getExamType()).iterator();i.hasNext();) {
                     ExamPeriod period = (ExamPeriod)i.next();
                     try {
-                        iPeriods.add(new ExamAssignmentInfo(getExam().getExam(), period, new Vector<ExamRoomInfo>()));
+                        iPeriods.add(new ExamAssignmentInfo(getExam().getExam(), period, null));
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -279,8 +294,8 @@ public class ExamInfoModel implements Serializable {
             Location room = (Location)i1.next();
             
             int cap = (getExam().getSeatingType()==Exam.sSeatingTypeExam?room.getExamCapacity():room.getCapacity());
-            if (cap<getExam().getNrStudents()/getExam().getMaxRooms()) continue;
-            if (cap>2*getExam().getNrStudents()) continue;
+            if (cap<getExam().getNrStudents()/(getExam().getMaxRooms()==1?1:2*getExam().getMaxRooms())) continue;
+            if (cap>Math.max(20,3*getExam().getNrStudents())) continue;
             
             if (PreferenceLevel.sProhibited.equals(room.getExamPreference(period).getPrefProlog())) continue;
             
@@ -445,7 +460,7 @@ public class ExamInfoModel implements Serializable {
         ret += "    roomOut(id);";
         ret += "    if (sCap>="+getExam().getNrStudents()+") document.location='examInfo.do?op=Select&room='+sRooms;";
         ret += "    var c = document.getElementById('roomCapacityCounter');";
-        ret += "    if (c!=null) c.innerHtml = (sCap<"+getExam().getNrStudents()+"?'<font color=\\\'red\\\'>'+sCap+'</font>':''+sCap);";
+        ret += "    if (c!=null) c.innerHTML = (sCap<"+getExam().getNrStudents()+"?'<font color=\"red\">'+sCap+'</font>':''+sCap);";
         ret += "}";
         ret += "</script>";
         ret += "<table border='0' cellspacing='0' cellpadding='3'>";

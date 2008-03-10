@@ -225,9 +225,19 @@ public class ExamDetailAction extends PreferencesAction {
                     assignment += ea.getRoomsNameWithPref("<br>");
                     assignment += "</td></tr>";
                 }
+                if (ea.getNrDistributionConflicts()>0) {
+                    assignment += "<tr><td>Violated Distributions:</td><td>";
+                    assignment += ea.getDistributionConflictTable();
+                    assignment += "</td></tr>";
+                }
                 if (ea.getHasConflicts()) {
-                    assignment += "<tr><td>Conflicts</td><td>";
-                    assignment += ea.getConflictTable(true);
+                    assignment += "<tr><td>Student Conflicts</td><td>";
+                    assignment += ea.getConflictTable();
+                    assignment += "</td></tr>";
+                }
+                if (ea.getHasInstructorConflicts()) {
+                    assignment += "<tr><td>Instructor Conflicts</td><td>";
+                    assignment += ea.getInstructorConflictTable();
                     assignment += "</td></tr>";
                 }
                 request.setAttribute("ExamDetail.assignment",assignment);

@@ -33,6 +33,7 @@ import org.hibernate.HibernateException;
 import org.unitime.commons.User;
 import org.unitime.timetable.model.base.BaseLocation;
 import org.unitime.timetable.model.dao.LocationDAO;
+import org.unitime.timetable.solver.exam.ui.ExamRoomInfo;
 import org.unitime.timetable.webutil.RequiredTimeTable;
 
 
@@ -655,9 +656,19 @@ public abstract class Location extends BaseLocation implements Comparable {
         if (rooms1==null || rooms1.isEmpty() || rooms2==null || rooms2.isEmpty()) return 0;
         double maxDistance = 0;
         for (Iterator i1=rooms1.iterator();i1.hasNext();) {
-            Location r1 = (Location)i1.next();
+            Object o1 = i1.next();
+            Location r1 = null;
+            if (o1 instanceof ExamRoomInfo)
+                r1 = ((ExamRoomInfo)o1).getLocation();
+            else
+                r1 = (Location)o1;
             for (Iterator i2=rooms2.iterator();i2.hasNext();) {
-                Location r2 = (Location)i2.next();
+                Object o2 = i2.next();
+                Location r2 = null;
+                if (o2 instanceof ExamRoomInfo)
+                    r2 = ((ExamRoomInfo)o2).getLocation();
+                else
+                    r2 = (Location)o2;
                 maxDistance = Math.max(maxDistance, r1.getDistance(r2));
             }
         }
