@@ -21,6 +21,7 @@ package org.unitime.timetable.test;
 
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.Hashtable;
 import java.util.Iterator;
 
 import org.apache.commons.logging.Log;
@@ -28,15 +29,12 @@ import org.apache.commons.logging.LogFactory;
 import org.hibernate.Transaction;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
+import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.SectioningInfo;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.WaitList;
-import org.unitime.timetable.model.dao.Class_DAO;
-import org.unitime.timetable.model.dao.CourseDemandDAO;
-import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.model.dao.StudentDAO;
 
 import net.sf.cpsolver.ifs.solver.Solver;
 import net.sf.cpsolver.studentsct.StudentSectioningSaver;
@@ -60,6 +58,12 @@ public class BatchStudentSectioningSaver extends StudentSectioningSaver {
     private String iInitiative = null;
     private String iTerm = null;
     private String iYear = null;
+    private Hashtable<Long,org.unitime.timetable.model.Student> iStudents = null;
+    private Hashtable<Long,CourseOffering> iCourses = null;
+    private Hashtable<Long,Class_> iClasses = null;
+    private Hashtable<String,org.unitime.timetable.model.CourseRequest> iRequests = null;
+    
+    private int iInsert = 0;
 
     public BatchStudentSectioningSaver(Solver solver) {
         super(solver);
@@ -78,8 +82,25 @@ public class BatchStudentSectioningSaver extends StudentSectioningSaver {
         save(session);
     }
     
-    public static void saveStudent(org.hibernate.Session hibSession, Student student) {
-        org.unitime.timetable.model.Student s = new StudentDAO().get(new Long(student.getId()));
+    public void flushIfNeeded(org.hibernate.Session hibSession) {
+        iInsert++;
+        if ((iInsert%1000)==0) {
+            hibSession.flush(); hibSession.clear();
+        }
+    }
+    
+    public void flush(org.hibernate.Session hibSession) {
+        hibSession.flush(); hibSession.clear();
+        iInsert=0;
+    }
+
+    
+    public void saveStudent(org.hibernate.Session hibSession, Student student) {
+        org.unitime.timetable.model.Student s = iStudents.get(student.getId());
+        if (s==null) {
+            sLog.warn("Student "+student.getId()+" not found.");
+            return;
+        }
         for (Iterator i=s.getClassEnrollments().iterator();i.hasNext();) {
             StudentClassEnrollment sce = (StudentClassEnrollment)i.next();
             hibSession.delete(sce); i.remove();
@@ -97,27 +118,19 @@ public class BatchStudentSectioningSaver extends StudentSectioningSaver {
                     if (courseRequest.isWaitlist() && student.canAssign(courseRequest)) {
                         WaitList wl = new WaitList();
                         wl.setStudent(s);
-                        wl.setCourseOffering(new CourseOfferingDAO().get(new Long(((Course)courseRequest.getCourses().firstElement()).getId())));
+                        wl.setCourseOffering(iCourses.get(((Course)courseRequest.getCourses().firstElement()).getId()));
                         wl.setTimestamp(new Date());
                         wl.setType(new Integer(0));
                         hibSession.save(wl);
                     }
                 } else {
-                    CourseDemand cd = new CourseDemandDAO().get(new Long(request.getId()));
-                    org.unitime.timetable.model.CourseRequest cr = null;
-                    if (cd!=null) {
-                        for (Iterator j=cd.getCourseRequests().iterator();j.hasNext();) {
-                            org.unitime.timetable.model.CourseRequest x = (org.unitime.timetable.model.CourseRequest)j.next();
-                            if (enrollment.getOffering().getId()==x.getCourseOffering().getInstructionalOffering().getUniqueId().longValue()) {
-                                cr = x; break;
-                            }
-                        }
-                    }
+                    org.unitime.timetable.model.CourseRequest cr = iRequests.get(request.getId()+":"+enrollment.getOffering().getId());
+                    if (cr==null) continue;
                     for (Iterator i=enrollment.getAssignments().iterator();i.hasNext();) {
                         Section section = (Section)i.next();
                         StudentClassEnrollment sce = new StudentClassEnrollment();
                         sce.setStudent(s);
-                        sce.setClazz(new Class_DAO().get(new Long(section.getId())));
+                        sce.setClazz(iClasses.get(section.getId()));
                         sce.setCourseRequest(cr);
                         sce.setCourseOffering(cr.getCourseOffering());
                         sce.setTimestamp(new Date());
@@ -132,12 +145,31 @@ public class BatchStudentSectioningSaver extends StudentSectioningSaver {
         org.hibernate.Session hibSession = new SessionDAO().getSession();
         Transaction tx = hibSession.beginTransaction();
         try {
+            iClasses = new Hashtable<Long, Class_>();
+            for (Iterator i=Class_.findAll(session.getUniqueId()).iterator();i.hasNext();) {
+                Class_ clazz = (Class_)i.next();
+                iClasses.put(clazz.getUniqueId(),clazz);
+            }
             if (iIncludeCourseDemands) {
+                iStudents = new Hashtable();
+                iCourses = new Hashtable();
+                iRequests = new Hashtable();
+                for (Iterator i=CourseDemand.findAll(session.getUniqueId()).iterator();i.hasNext();) {
+                    CourseDemand demand = (CourseDemand)i.next();
+                    iStudents.put(demand.getStudent().getUniqueId(), demand.getStudent());
+                    for (Iterator j=demand.getCourseRequests().iterator();j.hasNext();) {
+                        org.unitime.timetable.model.CourseRequest request = (org.unitime.timetable.model.CourseRequest)j.next();
+                        iRequests.put(demand.getUniqueId()+":"+request.getCourseOffering().getInstructionalOffering().getUniqueId(), request);
+                        iCourses.put(request.getCourseOffering().getUniqueId(), request.getCourseOffering());
+                    }
+                }
                 for (Enumeration e=getModel().getStudents().elements();e.hasMoreElements();) {
                     Student student = (Student)e.nextElement();
                     if (student.isDummy()) continue;
                     saveStudent(hibSession, student);
+                    flushIfNeeded(hibSession);
                 }
+                flush(hibSession);
             }
             
             if (iIncludeLastLikeStudents) {
@@ -151,7 +183,8 @@ public class BatchStudentSectioningSaver extends StudentSectioningSaver {
                             Subpart subpart = (Subpart)g.nextElement();
                             for (Enumeration h=subpart.getSections().elements();h.hasMoreElements();) {
                                 Section section = (Section)h.nextElement();
-                                Class_ clazz = new Class_DAO().get(new Long(section.getId()));
+                                Class_ clazz = iClasses.get(section.getId());
+                                if (clazz==null) continue;
                                 SectioningInfo info = clazz.getSectioningInfo();
                                 if (info==null) {
                                     info = new SectioningInfo();
@@ -161,7 +194,7 @@ public class BatchStudentSectioningSaver extends StudentSectioningSaver {
                                 info.setNbrHoldingStudents(section.getSpaceHeld());
                                 sLog.debug("  -- "+info.getClazz().getClassLabel()+" expects "+info.getNbrExpectedStudents()+", holds "+info.getNbrHoldingStudents()+" of "+section.getLimit());
                                 hibSession.saveOrUpdate(info);
-                                
+                                flushIfNeeded(hibSession);
                             }
                         }
                     }
