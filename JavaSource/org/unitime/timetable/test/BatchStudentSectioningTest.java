@@ -145,17 +145,6 @@ public class BatchStudentSectioningTest {
         
         new SectionLimitCheck((StudentSectioningModel)solution.getModel()).check();
         
-        try {
-            new BatchStudentSectioningSaver(solver).save();
-        } catch (Exception e) {
-            sLog.error("Unable to save solution, reason: "+e.getMessage(),e);
-        }
-        
-        try {
-            new StudentSectioningXMLSaver(solver).save(new File(new File(cfg.getProperty("General.Output",".")),"solution.xml"));
-        } catch (Exception e) {
-            sLog.error("Unable to save solution, reason: "+e.getMessage(),e);
-        }
         
         sLog.info("Best solution found after "+solution.getBestTime()+" seconds ("+solution.getBestIteration()+" iterations).");
         sLog.info("Number of assigned variables is "+solution.getModel().assignedVariables().size());
@@ -187,6 +176,19 @@ public class BatchStudentSectioningTest {
         } finally {
             if (pw!=null) pw.close();
         }
+
+        try {
+            new StudentSectioningXMLSaver(solver).save(new File(new File(cfg.getProperty("General.Output",".")),"solution.xml"));
+        } catch (Exception e) {
+            sLog.error("Unable to save solution, reason: "+e.getMessage(),e);
+        }
+        
+        try {
+            new BatchStudentSectioningSaver(solver).save();
+        } catch (Exception e) {
+            sLog.error("Unable to save solution, reason: "+e.getMessage(),e);
+        }
+
     }
     
     
