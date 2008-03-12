@@ -144,7 +144,7 @@ public class ExamGridTable {
 	    }
 	    ExamSolverProxy solver = WebSolver.getExamSolver(session);
 	    if (iForm.getResource()==sResourceRoom) {
-	        for (Iterator i=Location.findAllExamLocations(iForm.getSessionId()).iterator();i.hasNext();) {
+	        for (Iterator i=Location.findAllExamLocations(iForm.getSessionId(), iForm.getExamType()).iterator();i.hasNext();) {
 	            Location location = (Location)i.next();
 	            if (match(location.getLabel())) {
 	                if (solver!=null && solver.getExamType()==iForm.getExamType())
@@ -1028,7 +1028,7 @@ public class ExamGridTable {
 	    
 	    RoomExamGridModel(Long id, String name, int size, Collection<ExamAssignmentInfo> assignments) {
 	        super(id, name, size, assignments);
-	        iExamPrefs = new LocationDAO().get(id).getExamPreferences();
+	        iExamPrefs = new LocationDAO().get(id).getExamPreferences(iForm.getExamType());
 	    }
 	    
 	    public PreferenceLevel getPreference(ExamPeriod period) {

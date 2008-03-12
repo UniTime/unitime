@@ -153,7 +153,7 @@ public class ExamDatabaseLoader extends ExamLoader {
     }
     
     protected void loadRooms() {
-        iAllRooms = Location.findAllExamLocations(iSessionId);
+        iAllRooms = Location.findAllExamLocations(iSessionId,org.unitime.timetable.model.Exam.sExamTypeFinal);
         iProgress.setPhase("Loading rooms...", iAllRooms.size());
         for (Iterator i=iAllRooms.iterator();i.hasNext();) {
             iProgress.incProgress();
@@ -168,7 +168,7 @@ public class ExamDatabaseLoader extends ExamLoader {
             getModel().addConstraint(room);
             getModel().getRooms().add(room);
             iRooms.put(new Long(room.getId()),room);
-            for (Iterator j=location.getExamPreferences().entrySet().iterator();j.hasNext();) {
+            for (Iterator j=location.getExamPreferences(iExamType).entrySet().iterator();j.hasNext();) {
                 Map.Entry entry = (Map.Entry)j.next();
                 ExamPeriod period = (ExamPeriod)iPeriods.get(((org.unitime.timetable.model.ExamPeriod)entry.getKey()).getUniqueId());
                 String pref = ((PreferenceLevel)entry.getValue()).getPrefProlog();
@@ -245,7 +245,7 @@ public class ExamDatabaseLoader extends ExamLoader {
                     }
                 }
             }
-            x.setRoomWeights(findRooms(exam, false));
+            x.setRoomWeights(findRooms(exam));
             
             for (Iterator j=exam.getInstructors().iterator();j.hasNext();)
                 loadInstructor((DepartmentalInstructor)j.next()).addVariable(x);
@@ -317,7 +317,7 @@ public class ExamDatabaseLoader extends ExamLoader {
         }
     }
     
-    protected Hashtable findRooms(org.unitime.timetable.model.Exam exam, boolean interactiveMode) {
+    protected Hashtable findRooms(org.unitime.timetable.model.Exam exam) {
         Hashtable rooms = new Hashtable();
         boolean reqRoom = false;
         boolean reqBldg = false;
@@ -344,30 +344,13 @@ public class ExamDatabaseLoader extends ExamLoader {
                     groupPref.addPreferenceProlog(p.getPrefLevel().getPrefProlog());
             }
             
-            if (groupPref.getPreferenceProlog().equals(PreferenceLevel.sProhibited)) {
-                if (interactiveMode)
-                    pref.addPreferenceProlog(PreferenceLevel.sProhibited);
-                else
-                    add=false;
-            }
+            if (groupPref.getPreferenceProlog().equals(PreferenceLevel.sProhibited)) add=false;
             
-            if (reqGroup && !groupPref.getPreferenceProlog().equals(PreferenceLevel.sRequired)) {
-                if (interactiveMode)
-                    pref.addPreferenceProlog(PreferenceLevel.sProhibited);
-                else
-                    add=false;
-            }
+            if (reqGroup && !groupPref.getPreferenceProlog().equals(PreferenceLevel.sRequired)) add=false;
             
             if (!reqGroup && (groupPref.getPreferenceProlog().equals(PreferenceLevel.sRequired))) {
                 reqGroup=true; 
-                if (interactiveMode) {
-                    for (Iterator i2=new Vector(rooms.entrySet()).iterator();i2.hasNext();) {
-                        Map.Entry entry = (Map.Entry)i2.next();
-                        ExamRoom r = (ExamRoom)entry.getKey();
-                        Integer weight = (Integer)entry.getValue();
-                        rooms.put(r, weight+100);
-                    }
-                } else rooms.clear();
+                rooms.clear();
             }
 
             if (!groupPref.getPreferenceProlog().equals(PreferenceLevel.sProhibited) && !groupPref.getPreferenceProlog().equals(PreferenceLevel.sRequired))
@@ -385,33 +368,17 @@ public class ExamDatabaseLoader extends ExamLoader {
                 }
             }
             
-            if (roomPref!=null && roomPref.equals(PreferenceLevel.sProhibited)) {
-                if (interactiveMode)
-                    pref.addPreferenceProlog(PreferenceLevel.sProhibited);
-                else
-                    add=false;
-            }
+            if (roomPref!=null && roomPref.equals(PreferenceLevel.sProhibited)) add=false;
             
-            if (reqRoom && (roomPref==null || !roomPref.equals(PreferenceLevel.sRequired))) {
-                if (interactiveMode)
-                    pref.addPreferenceProlog(PreferenceLevel.sProhibited);
-                else
-                    add=false;
-            }
+            if (reqRoom && (roomPref==null || !roomPref.equals(PreferenceLevel.sRequired))) add=false;
             
             if (!reqRoom && (roomPref!=null && roomPref.equals(PreferenceLevel.sRequired))) {
                 reqRoom=true; 
-                if (interactiveMode) {
-                    for (Iterator i2=new Vector(rooms.entrySet()).iterator();i2.hasNext();) {
-                        Map.Entry entry = (Map.Entry)i2.next();
-                        ExamRoom r = (ExamRoom)entry.getKey();
-                        Integer weight = (Integer)entry.getValue();
-                        rooms.put(r, weight+100);
-                    }
-                } else rooms.clear();
+                rooms.clear();
             }
             
-            if (roomPref!=null && !roomPref.equals(PreferenceLevel.sProhibited) && !roomPref.equals(PreferenceLevel.sRequired)) pref.addPreferenceProlog(roomPref);
+            if (roomPref!=null && !roomPref.equals(PreferenceLevel.sProhibited) && !roomPref.equals(PreferenceLevel.sRequired)) 
+                pref.addPreferenceProlog(roomPref);
 
             // --- building preference ------------
             Building bldg = (room instanceof Room ? ((Room)room).getBuilding() : null);
@@ -425,33 +392,17 @@ public class ExamDatabaseLoader extends ExamLoader {
                 }
             }
             
-            if (bldgPref!=null && bldgPref.equals(PreferenceLevel.sProhibited)) {
-                if (interactiveMode)
-                    pref.addPreferenceProlog(PreferenceLevel.sProhibited);
-                else
-                    add=false;
-            }
+            if (bldgPref!=null && bldgPref.equals(PreferenceLevel.sProhibited)) add=false;
             
-            if (reqBldg && (bldgPref==null || !bldgPref.equals(PreferenceLevel.sRequired))) {
-                if (interactiveMode)
-                    pref.addPreferenceProlog(PreferenceLevel.sProhibited);
-                else
-                    add=false;
-            }
+            if (reqBldg && (bldgPref==null || !bldgPref.equals(PreferenceLevel.sRequired))) add=false;
             
             if (!reqBldg && (bldgPref!=null && bldgPref.equals(PreferenceLevel.sRequired))) {
                 reqBldg = true;
-                if (interactiveMode) {
-                    for (Iterator i2=new Vector(rooms.entrySet()).iterator();i2.hasNext();) {
-                        Map.Entry entry = (Map.Entry)i2.next();
-                        ExamRoom r = (ExamRoom)entry.getKey();
-                        Integer weight = (Integer)entry.getValue();
-                        rooms.put(r, weight+100);
-                    }
-                } else rooms.clear();
+                rooms.clear();
             }
 
-            if (bldgPref!=null && !bldgPref.equals(PreferenceLevel.sProhibited) && !bldgPref.equals(PreferenceLevel.sRequired)) pref.addPreferenceProlog(bldgPref);
+            if (bldgPref!=null && !bldgPref.equals(PreferenceLevel.sProhibited) && !bldgPref.equals(PreferenceLevel.sRequired)) 
+                pref.addPreferenceProlog(bldgPref);
             
             // --- room features preference --------  
             boolean acceptableFeatures = true;
@@ -473,17 +424,18 @@ public class ExamDatabaseLoader extends ExamLoader {
             }
             pref.addPreferenceInt(featurePref.getPreferenceInt());
             
-            if (!acceptableFeatures) {
-                if (interactiveMode)
-                    pref.addPreferenceProlog(PreferenceLevel.sProhibited);
-                else
-                    add=false;
-            }
-            
+            if (!acceptableFeatures) add=false;
             
             int prefInt = pref.getPreferenceInt();
             
             if (!add) continue;
+            
+            boolean canBeUsed = false;
+            for (Enumeration e=getModel().getPeriods().elements();!canBeUsed && e.hasMoreElements();) {
+                ExamPeriod period = (ExamPeriod)e.nextElement();
+                if (roomEx.isAvailable(period) && (roomPref!=null || roomEx.getWeight(period)!=4)) canBeUsed=true;
+            }
+            if (!canBeUsed) continue;
             
             rooms.put(roomEx, prefInt);
         }
