@@ -35,6 +35,7 @@ import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.RoomListForm;
 import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.TimetableManager;
@@ -97,7 +98,7 @@ public class RoomSearchAction extends Action {
 		if (dc != null ) {
 			deptCode = dc.toString();
 			roomListForm.setDeptCodeX(deptCode);
-			if (!roomListForm.getDeptCodeX().equalsIgnoreCase("All") && !roomListForm.getDeptCodeX().equalsIgnoreCase("Exam")) {
+			if (!roomListForm.getDeptCodeX().equalsIgnoreCase("All") && !roomListForm.getDeptCodeX().equalsIgnoreCase("Exam") && !roomListForm.getDeptCodeX().equalsIgnoreCase("EExam")) {
 				if (Session.getCurrentAcadSession(user).getRoomsFast(new String[] {roomListForm.getDeptCodeX()}).size() == 0) {
 					ActionMessages errors = new ActionMessages();
 					errors.add("searchResult", new ActionMessage("errors.generic", "No rooms for the selected department were found."));
@@ -105,9 +106,13 @@ public class RoomSearchAction extends Action {
 				}
 			}
 			
+			int examType = -1;
+			if ("Exam".equals(roomListForm.getDeptCodeX())) examType = Exam.sExamTypeFinal;
+			if ("EExam".equals(roomListForm.getDeptCodeX())) examType = Exam.sExamTypeEvening;
+			
 			if ("Export PDF".equals(request.getParameter("op"))) {
 				RoomListAction.buildPdfWebTable(request, roomListForm, "yes".equals(Settings.getSettingValue(user, Constants.SETTINGS_ROOMS_FEATURES_ONE_COLUMN)),
-				        "Exam".equals(roomListForm.getDeptCodeX()));
+				        examType);
 			}
 			
 			return mapping.findForward("roomList");

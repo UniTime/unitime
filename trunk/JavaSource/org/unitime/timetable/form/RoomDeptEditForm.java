@@ -19,15 +19,15 @@
 */
 package org.unitime.timetable.form;
 
-import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
-import org.unitime.timetable.model.Location;
 
 
 /** 
@@ -39,148 +39,47 @@ import org.unitime.timetable.model.Location;
  */
 public class RoomDeptEditForm extends ActionForm {
 
-	// --------------------------------------------------------- Instance Variables
+    private String iOp = null;
+    private String iTable = null;
+    private String iName = null;
+	private Long iId = null;
+	private int iExamType = -1;
+	private Set<Long> iAssigned = new HashSet<Long>();
 
-	private String id;
-	private String deptAbbv;
-	private String deptCode;
-	private Collection assignedRooms;
-	private Collection notAssignedRooms;
-	private String[] assigned;
-	private String[] notAssigned;
-	private String[] assignedSelected = {};
-	private String[] notAssignedSelected = {};
-	
-	// --------------------------------------------------------- Methods
-
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 5225503750129395914L;
 
-	/** 
-	 * Method validate
-	 * @param mapping
-	 * @param request
-	 * @return ActionErrors
-	 */
-	public ActionErrors validate(
-		ActionMapping mapping,
-		HttpServletRequest request) {
+	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 		ActionErrors errors = new ActionErrors();
 		return errors;
 	}
-
-	/** 
-	 * Method reset
-	 * @param mapping
-	 * @param request
-	 */
-	public void reset(ActionMapping mapping, HttpServletRequest request) {
-		
-		// TODO Auto-generated method stub
-	}
-
-	public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
-
-	public Collection getAssignedRooms() {
-		return assignedRooms;
-	}
-
-	public void setAssignedRooms(Collection assignedRooms) {
-		this.assignedRooms = assignedRooms;
-	}
-
-	public Collection getNotAssignedRooms() {
-		return notAssignedRooms;
-	}
-
-	public void setNotAssignedRooms(Collection notAssignedRooms) {
-		this.notAssignedRooms = notAssignedRooms;
-	}
 	
-	public void setRooms() {
-		int i = 0;
-		Iterator iter = null;
-
-		if (assignedRooms != null) {
-			String[] assignedSelection = new String[assignedRooms.size()];
-			assigned = new String[assignedRooms.size()];
-			for (iter = assignedRooms.iterator(); iter.hasNext();) {
-				Location r = (Location) iter.next();
-				assignedSelection[i] = r.getUniqueId().toString();
-
-				assigned[i] = r.getUniqueId().toString();
-				i++;
-			}
-			assignedSelected = assignedSelection;
-		}
-
-		i = 0;
-		if (notAssignedRooms != null) {
-			notAssigned = new String[notAssignedRooms.size()];
-			for (iter = notAssignedRooms.iterator(); iter.hasNext();) {
-				Location r = (Location) iter.next();
-				notAssigned[i] = r.getUniqueId().toString();
-				i++;
-			}
-		}
-
+	public void reset(ActionMapping mapping, HttpServletRequest request) {
+	    iOp = null; iId = null; iExamType = -1; iAssigned.clear();
 	}
 
-	public String[] getAssigned() {
-		return assigned;
+	public String getOp() { return iOp; }
+	public void setOp(String op) { iOp = op; }
+	public Long getId() { return iId; }
+	public void setId(Long id) { iId = id;}
+	public int getExamType() { return iExamType; }
+	public void setExamType(int examType) { iExamType = examType; }
+	public Set<Long> getAssignedSet() { return iAssigned; }
+	public String[] getAssigned() { 
+	    String[] ret = new String[iAssigned.size()];
+	    int idx = 0;
+	    for (Iterator i=iAssigned.iterator();i.hasNext();) {
+	        ret[idx]=i.next().toString();
+	    }
+	    return ret;
 	}
-
 	public void setAssigned(String[] assigned) {
-		this.assigned = assigned;
+	    iAssigned.clear();
+	    for (int i=0;i<assigned.length;i++)
+	        iAssigned.add(Long.valueOf(assigned[i]));
 	}
-
-	public String[] getNotAssigned() {
-		return notAssigned;
-	}
-
-	public void setNotAssigned(String[] notAssigned) {
-		this.notAssigned = notAssigned;
-	}
-
-	public String[] getAssignedSelected() {
-		return assignedSelected;
-	}
-
-	public void setAssignedSelected(String[] assignedSelected) {
-		this.assignedSelected = assignedSelected;
-	}
-
-	public String[] getNotAssignedSelected() {
-		return notAssignedSelected;
-	}
-
-	public void setNotAssignedSelected(String[] notAssignedSelected) {
-		this.notAssignedSelected = notAssignedSelected;
-	}
-
-	public String getDeptAbbv() {
-		return deptAbbv;
-	}
-
-	public void setDeptAbbv(String deptAbbv) {
-		this.deptAbbv = deptAbbv;
-	}
-
-	public String getDeptCode() {
-		return deptCode;
-	}
-
-	public void setDeptCode(String deptCode) {
-		this.deptCode = deptCode;
-	}
-
+	public void setTable(String table) { iTable = table; }
+	public String getTable() { return iTable; }
+	public void setName(String name) { iName = name; }
+	public String getName() { return iName; }
 }
 

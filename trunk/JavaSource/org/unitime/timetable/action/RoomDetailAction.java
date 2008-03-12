@@ -46,6 +46,7 @@ import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
+import org.unitime.timetable.model.EveningPeriodPreferenceModel;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.NonUniversityLocation;
@@ -208,16 +209,34 @@ public class RoomDetailAction extends Action {
 		LookupTables.setupPrefLevels(request);
 		
 		//set location information in form
-		roomDetailForm.setExamEnabled(location.isExamEnabled());
+		roomDetailForm.setExamEnabled(location.isExamEnabled(Exam.sExamTypeFinal));
+		roomDetailForm.setExamEEnabled(location.isExamEnabled(Exam.sExamTypeEvening));
 		roomDetailForm.setExamCapacity(location.getExamCapacity());
 		
-        PeriodPreferenceModel px = new PeriodPreferenceModel(location.getSession(), Exam.sExamTypeFinal);
-        px.setAllowRequired(false);
-        px.load(location);
-        RequiredTimeTable rttPx = new RequiredTimeTable(px);
-        rttPx.setName("PeriodPrefs");
-        if (!location.getExamPreferences().isEmpty())
+        if (location.isExamEnabled(Exam.sExamTypeFinal) && !location.getExamPreferences(Exam.sExamTypeFinal).isEmpty()) {
+            PeriodPreferenceModel px = new PeriodPreferenceModel(location.getSession(), Exam.sExamTypeFinal);
+            px.setAllowRequired(false);
+            px.load(location);
+            RequiredTimeTable rttPx = new RequiredTimeTable(px);
+            rttPx.setName("PeriodPrefs");
             roomDetailForm.setExamPref(rttPx.print(false, timeVertical, true, false));
+        }
+        
+        if (Exam.hasEveningExams(location.getSession().getUniqueId()) && location.isExamEnabled(Exam.sExamTypeEvening) && !location.getExamPreferences(Exam.sExamTypeEvening).isEmpty()) {
+            EveningPeriodPreferenceModel epx = new EveningPeriodPreferenceModel(location.getSession());
+            if (epx.canDo()) {
+                epx.load(location);
+                roomDetailForm.setExamEPref(epx.print(false));
+            } else {
+                PeriodPreferenceModel px = new PeriodPreferenceModel(location.getSession(), Exam.sExamTypeEvening);
+                px.setAllowRequired(false);
+                px.load(location);
+                RequiredTimeTable rttPx = new RequiredTimeTable(px);
+                rttPx.setName("PeriodEPrefs");
+                if (!location.getExamPreferences(Exam.sExamTypeEvening).isEmpty())
+                    roomDetailForm.setExamEPref(rttPx.print(false, timeVertical, true, false));
+            }
+        } 
 		
 		roomDetailForm.setCapacity(location.getCapacity());
 		roomDetailForm.setCoordinateX(location.getCoordinateX());
