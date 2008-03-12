@@ -217,7 +217,10 @@
 		<TR>
 			<TD nowrap>Examination Room:</TD>
 			<TD>
-				<html:checkbox property="examEnabled"/>
+				Final: <html:checkbox property="examEnabled" onchange="document.getElementById('finPref').style.display=(this.checked?null:'none');"/>
+				<tt:hasEveningExams>
+				, Evening: <html:checkbox property="examEEnabled" onchange="document.getElementById('evenPref').style.display=(this.checked?null:'none');"/>
+				</tt:hasEveningExams>
 			</TD>
 		</TR>
 
@@ -233,10 +236,29 @@
 		<% } %>
 		
 		<logic:notEmpty scope="request" name="PeriodPrefs">
-			<TR>
-				<TD nowrap valign="top">Periods Preferences:</TD>
+			<logic:equal name="<%=frmName%>" property="examEnabled" value="true">
+				<TR id='finPref' style='display:null;'>
+			</logic:equal>
+			<logic:notEqual name="<%=frmName%>" property="examEnabled" value="true">
+				<TR id='finPref' style='display:none;'>
+			</logic:notEqual>
+				<TD nowrap valign="top">Final Examination<br>Periods Preferences:</TD>
 				<TD>
 					<bean:write scope="request" name="PeriodPrefs" filter="false"/>
+				</TD>
+			</TR>
+		</logic:notEmpty>
+
+		<logic:notEmpty scope="request" name="PeriodEPrefs">
+			<logic:equal name="<%=frmName%>" property="examEEnabled" value="true">
+				<TR id='evenPref' style='display:null;'>
+			</logic:equal>
+			<logic:notEqual name="<%=frmName%>" property="examEEnabled" value="true">
+				<TR id='evenPref' style='display:none;'>
+			</logic:notEqual>
+				<TD nowrap valign="top">Evening Examination<br>Periods Preferences:</TD>
+				<TD>
+					<bean:write scope="request" name="PeriodEPrefs" filter="false"/>
 				</TD>
 			</TR>
 		</logic:notEmpty>

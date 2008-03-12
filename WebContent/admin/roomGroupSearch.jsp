@@ -46,7 +46,12 @@
 					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
 					<html:option value="<%=Constants.ALL_OPTION_LABEL%>">All Managed</html:option>
 					<tt:canSeeExams>
-						<html:option value="Exam">All Examination Rooms</html:option>
+						<tt:hasFinalExams>
+							<html:option value="Exam">All Final Examination Rooms</html:option>
+						</tt:hasFinalExams>
+						<tt:hasEveningExams>
+							<html:option value="EExam">All Evening Examination Rooms</html:option>
+						</tt:hasEveningExams>
 					</tt:canSeeExams>
 					<html:options collection="<%=Department.DEPT_ATTR_NAME%>" 
 						property="value" labelProperty="label"/>

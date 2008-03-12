@@ -49,6 +49,7 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.RoomFeatureListForm;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
+import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Roles;
@@ -174,6 +175,7 @@ public class RoomFeatureListAction extends Action {
 						departmentRoomFeatures.add(rf);
 					}
 				} else if (roomFeatureListForm.getDeptCodeX().equalsIgnoreCase("Exam")) {
+                } else if (roomFeatureListForm.getDeptCodeX().equalsIgnoreCase("EExam")) {
 				} else if (rf.getDeptCode().equalsIgnoreCase(roomFeatureListForm.getDeptCodeX())) {
 					departmentRoomFeatures.add(rf);
 				}
@@ -253,7 +255,9 @@ public class RoomFeatureListAction extends Action {
 		boolean isAdmin = user.getRole().equals(Roles.ADMIN_ROLE);
 		boolean showAll = false;
 		Set depts = null;
-		boolean exam = roomFeatureListForm.getDeptCodeX().equalsIgnoreCase("Exam");
+        int examType = -1;
+        if (roomFeatureListForm.getDeptCodeX().equalsIgnoreCase("exam")) examType = Exam.sExamTypeFinal;
+        if (roomFeatureListForm.getDeptCodeX().equalsIgnoreCase("eexam")) examType = Exam.sExamTypeEvening;
 		if (roomFeatureListForm.getDeptCodeX().equalsIgnoreCase("All")) {
 			if (isAdmin) {
 				showAll = true;
@@ -263,6 +267,8 @@ public class RoomFeatureListAction extends Action {
 			}
 		} else if (roomFeatureListForm.getDeptCodeX().equalsIgnoreCase("Exam")) {
 		    depts = new HashSet(0);
+        } else if (roomFeatureListForm.getDeptCodeX().equalsIgnoreCase("EExam")) {
+            depts = new HashSet(0);
 		} else {
 			depts = new HashSet(1);
 			depts.add(Department.findByDeptCode(roomFeatureListForm.getDeptCodeX(),sessionId));
@@ -284,8 +290,8 @@ public class RoomFeatureListAction extends Action {
 			for (Iterator iter = rs.iterator();iter.hasNext();) {
 				Location r = (Location) iter.next();
 				if (!sessionId.equals(r.getSession().getUniqueId())) continue;
-				if (exam) {
-				    if (!r.isExamEnabled()) continue;
+				if (examType>=0) {
+				    if (!r.isExamEnabled(examType)) continue;
 				} else {
 	                if (!showAll) {
 	                    boolean skip = true;
@@ -344,8 +350,8 @@ public class RoomFeatureListAction extends Action {
 			
 			for (Iterator iter = rs.iterator();iter.hasNext();) {
 				Location r = (Location) iter.next();
-                if (exam) {
-                    if (!r.isExamEnabled()) continue;
+                if (examType>=0) {
+                    if (!r.isExamEnabled(examType)) continue;
                 } else {
                     boolean skip = true;
                     for (Iterator j=r.getRoomDepts().iterator();j.hasNext();) {
@@ -448,12 +454,15 @@ public class RoomFeatureListAction extends Action {
     				depts = Department.findAllOwned(sessionId, owner, false);
     			}
     		} else if (roomFeatureListForm.getDeptCodeX().equalsIgnoreCase("Exam")) {
+            } else if (roomFeatureListForm.getDeptCodeX().equalsIgnoreCase("EExam")) {
     		} else {
     			depts = new HashSet(1);
     			depts.add(Department.findByDeptCode(roomFeatureListForm.getDeptCodeX(),sessionId));
     		}
     		
-    		boolean exam = roomFeatureListForm.getDeptCodeX().equalsIgnoreCase("Exam");
+            int examType = -1;
+            if (roomFeatureListForm.getDeptCodeX().equalsIgnoreCase("exam")) examType = Exam.sExamTypeFinal;
+            if (roomFeatureListForm.getDeptCodeX().equalsIgnoreCase("eexam")) examType = Exam.sExamTypeEvening;
     		
     		boolean splitRows = false;
     		
@@ -472,8 +481,8 @@ public class RoomFeatureListAction extends Action {
     			for (Iterator iter = rs.iterator();iter.hasNext();) {
     				Location r = (Location) iter.next();
     				if (!sessionId.equals(r.getSession().getUniqueId())) continue;
-                    if (exam) {
-                        if (!r.isExamEnabled()) continue;
+                    if (examType>=0) {
+                        if (!r.isExamEnabled(examType)) continue;
                     } else {
                         if (!showAll) {
                             boolean skip = true;
@@ -535,8 +544,8 @@ public class RoomFeatureListAction extends Action {
     			
     			for (Iterator iter = rs.iterator();iter.hasNext();) {
     				Location r = (Location) iter.next();
-                    if (exam) {
-                        if (!r.isExamEnabled()) continue;
+                    if (examType>=0) {
+                        if (!r.isExamEnabled(examType)) continue;
                     } else {
                         boolean skip = true;
                         for (Iterator j=r.getRoomDepts().iterator();j.hasNext();) {

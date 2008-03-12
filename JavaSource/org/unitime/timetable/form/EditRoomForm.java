@@ -59,6 +59,7 @@ public class EditRoomForm extends ActionForm {
 	private boolean owner;
 	private boolean room;
     private Boolean examEnabled;
+    private Boolean examEEnabled;
     private String examCapacity;
 	
 	// --------------------------------------------------------- Methods
@@ -254,7 +255,7 @@ public class EditRoomForm extends ActionForm {
         bldgName=null; capacity=null; coordX=null; coordY=null; doit=null;
         externalId=null; id=null; name=null; owner=false; room=true; type=null; bldgId = null;
 		ignoreTooFar=Boolean.FALSE; ignoreRoomCheck=Boolean.FALSE;
-		examEnabled=Boolean.FALSE; examCapacity=null;
+		examEnabled=Boolean.FALSE; examEEnabled=Boolean.FALSE;  examCapacity=null;
 	}
 	
 	public Boolean getExamEnabled() {
@@ -265,7 +266,15 @@ public class EditRoomForm extends ActionForm {
 	    this.examEnabled = examEnabled;
 	}
 	
-	public String getExamCapacity() {
+    public Boolean getExamEEnabled() {
+        return examEEnabled;
+    }
+    
+    public void setExamEEnabled(Boolean examEEnabled) {
+        this.examEEnabled = examEEnabled;
+    }
+
+    public String getExamCapacity() {
 	    return examCapacity;
 	}
 	

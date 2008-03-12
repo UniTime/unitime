@@ -47,6 +47,7 @@ import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.RoomGroupListForm;
 import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.RoomDept;
@@ -199,6 +200,8 @@ public class RoomGroupListAction extends Action {
 			}
 		} else if (roomGroupListForm.getDeptCodeX().equalsIgnoreCase("Exam")) {
 		    depts = new HashSet(0);
+        } else if (roomGroupListForm.getDeptCodeX().equalsIgnoreCase("EExam")) {
+            depts = new HashSet(0);
 		} else {
 			depts = new HashSet(1);
 			depts.add(Department.findByDeptCode(roomGroupListForm.getDeptCodeX(),sessionId));
@@ -225,6 +228,7 @@ public class RoomGroupListAction extends Action {
 						if (depts.contains(rg.getDepartment()) || isAdmin) {
 							departmentRoomGroups.add(rg);
 						}
+                    } else if (roomGroupListForm.getDeptCodeX().equalsIgnoreCase("EExam")) {
 					} else if (roomGroupListForm.getDeptCodeX().equalsIgnoreCase("Exam")) {
 					} else if (rg.getDepartment().getDeptCode().equalsIgnoreCase(roomGroupListForm.getDeptCodeX())) {
 						departmentRoomGroups.add(rg);
@@ -249,7 +253,9 @@ public class RoomGroupListAction extends Action {
 				new String[] { "left", "left", "left", "left", "left" }, 
 				new boolean[] { true, true, true, true, true} );
 
-        boolean exam = roomGroupListForm.getDeptCodeX().equalsIgnoreCase("exam");
+        int examType = -1;
+        if (roomGroupListForm.getDeptCodeX().equalsIgnoreCase("exam")) examType = Exam.sExamTypeFinal;
+        if (roomGroupListForm.getDeptCodeX().equalsIgnoreCase("eexam")) examType = Exam.sExamTypeEvening;
 
         boolean haveGlobalRoomGroup = false;
 		for (Iterator it = globalRoomGroups.iterator(); it.hasNext();) {
@@ -262,8 +268,8 @@ public class RoomGroupListAction extends Action {
 			for (Iterator iter = rs.iterator();iter.hasNext();) {
 				Location r = (Location) iter.next();
 				if (!sessionId.equals(r.getSession().getUniqueId())) continue;
-				if (exam) {
-				    if (!r.isExamEnabled()) continue;
+				if (examType>=0) {
+				    if (!r.isExamEnabled(examType)) continue;
 				} else {
 	                if (!showAll) {
 	                    boolean skip = true;
@@ -325,8 +331,8 @@ public class RoomGroupListAction extends Action {
 			for (Iterator iter = rs.iterator();iter.hasNext();) {
 				Location r = (Location) iter.next();
                 boolean skip = true;
-                if (exam) {
-                    if (!r.isExamEnabled()) continue;
+                if (examType>=0) {
+                    if (!r.isExamEnabled(examType)) continue;
                 } else {
                     for (Iterator j=r.getRoomDepts().iterator();j.hasNext();) {
                         RoomDept rd = (RoomDept)j.next();
@@ -395,6 +401,8 @@ public class RoomGroupListAction extends Action {
     			} else {
     				depts = Department.findAllOwned(sessionId, manager, false);
     			}
+            } else if (roomGroupListForm.getDeptCodeX().equalsIgnoreCase("eexam")) {
+                depts = new HashSet(0);
     		} else if (roomGroupListForm.getDeptCodeX().equalsIgnoreCase("exam")) {
     		    depts = new HashSet(0);
     		} else {
@@ -424,6 +432,7 @@ public class RoomGroupListAction extends Action {
     						if (depts.contains(rg.getDepartment()) || isAdmin) {
     							departmentRoomGroups.add(rg);
     						}
+                        } else if (roomGroupListForm.getDeptCodeX().equalsIgnoreCase("EExam")) {
     					} else if (roomGroupListForm.getDeptCodeX().equalsIgnoreCase("Exam")) {
     					} else if (rg.getDepartment().getDeptCode().equalsIgnoreCase(roomGroupListForm.getDeptCodeX())) {
     						departmentRoomGroups.add(rg);
@@ -445,7 +454,9 @@ public class RoomGroupListAction extends Action {
     				new String[] { "left", "left", "left", "left", "left" }, 
     				new boolean[] { true, true, true, true, true} );
     		
-    		boolean exam = roomGroupListForm.getDeptCodeX().equalsIgnoreCase("exam");
+    		int examType = -1;
+    		if (roomGroupListForm.getDeptCodeX().equalsIgnoreCase("exam")) examType = Exam.sExamTypeFinal;
+    		if (roomGroupListForm.getDeptCodeX().equalsIgnoreCase("eexam")) examType = Exam.sExamTypeEvening;
 
     		boolean haveGlobalRoomGroup = false;
     		for (Iterator it = globalRoomGroups.iterator(); it.hasNext();) {
@@ -459,8 +470,8 @@ public class RoomGroupListAction extends Action {
     			for (Iterator iter = rs.iterator();iter.hasNext();) {
     				Location r = (Location) iter.next();
     				if (!sessionId.equals(r.getSession().getUniqueId())) continue;
-    				if (exam) {
-    				    if (!r.isExamEnabled()) continue;
+    				if (examType>=0) {
+    				    if (!r.isExamEnabled(examType)) continue;
     				} else {
                         if (!showAll) {
                             boolean skip = true;
@@ -525,8 +536,8 @@ public class RoomGroupListAction extends Action {
     			for (Iterator iter = rs.iterator();iter.hasNext();) {
     				Location r = (Location) iter.next();
                     boolean skip = true;
-                    if (exam) {
-                        if (!r.isExamEnabled()) continue;
+                    if (examType>=0) {
+                        if (!r.isExamEnabled(examType)) continue;
                     } else {
                         for (Iterator j=r.getRoomDepts().iterator();j.hasNext();) {
                             RoomDept rd = (RoomDept)j.next();

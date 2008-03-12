@@ -45,6 +45,7 @@ import org.unitime.timetable.form.SpecialUseRoomForm;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExternalBuilding;
 import org.unitime.timetable.model.ExternalRoom;
 import org.unitime.timetable.model.ExternalRoomDepartment;
@@ -299,7 +300,8 @@ public class AddSpecialUseRoomAction extends Action {
 			room.setCoordinateY(extRoom.getCoordinateY());
 			room.setCapacity(extRoom.getCapacity());
 			room.setExamCapacity(0);
-			room.setExamEnabled(Boolean.FALSE);
+            room.setExamEnabled(Exam.sExamTypeFinal,Boolean.FALSE);
+            room.setExamEnabled(Exam.sExamTypeEvening,Boolean.FALSE);
 			room.setRoomNumber(roomNum);
 			room.setScheduledRoomType("specialUse");
 			room.setExternalUniqueId(extRoom.getExternalUniqueId());

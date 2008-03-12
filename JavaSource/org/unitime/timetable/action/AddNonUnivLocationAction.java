@@ -42,6 +42,7 @@ import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.NonUnivLocationForm;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.NonUniversityLocation;
 import org.unitime.timetable.model.Roles;
@@ -176,7 +177,8 @@ public class AddNonUnivLocationAction extends Action {
 			nonUniv.setAssignments(new HashSet());
 			nonUniv.setRoomGroups(new HashSet());
 			nonUniv.setRoomDepts(new HashSet());
-			nonUniv.setExamEnabled(Boolean.FALSE);
+			nonUniv.setExamEnabled(Exam.sExamTypeFinal,Boolean.FALSE);
+			nonUniv.setExamEnabled(Exam.sExamTypeEvening,Boolean.FALSE);
 			nonUniv.setExamCapacity(0);
 			
 			LocationPermIdGenerator.setPermanentId(nonUniv);
