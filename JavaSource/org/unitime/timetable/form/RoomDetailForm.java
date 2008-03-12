@@ -62,8 +62,10 @@ public class RoomDetailForm extends ActionForm {
 	private boolean nonUniv;
 	private boolean editable = false;
 	private boolean examEnabled = false;
+	private boolean examEEnabled = false;
 	private Integer examCapacity;
 	private String examPref;
+	private String examEPref;
 
 	// --------------------------------------------------------- Methods
 
@@ -95,8 +97,8 @@ public class RoomDetailForm extends ActionForm {
 		ignoreRoomCheck = false;
 		editable = false;
 		control = null;
-		examEnabled = false;
-		examPref = null;
+		examEnabled = false; examEEnabled = false;
+		examPref = null; examEPref = null;
 	}
 
 	public Integer getCapacity() {
@@ -292,12 +294,28 @@ public class RoomDetailForm extends ActionForm {
 	    this.examEnabled = examEnabled;
 	}
 	
-	public void setExamPref(String examPref) {
+    public boolean isExamEEnabled() {
+        return examEEnabled;
+    }
+    
+    public void setExamEEnabled(boolean examEEnabled) {
+        this.examEEnabled = examEEnabled;
+    }
+
+    public void setExamPref(String examPref) {
 	    this.examPref = examPref;
 	}
 	
 	public String getExamPref() {
 	    return examPref;
 	}
+
+    public void setExamEPref(String examEPref) {
+        this.examEPref = examEPref;
+    }
+    
+    public String getExamEPref() {
+        return examEPref;
+    }
 }
 

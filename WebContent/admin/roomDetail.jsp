@@ -147,13 +147,28 @@
 		<TR>
 			<TD>Capacity:</TD><TD width='100%'><%=frm.getCapacity()%></TD>
 		</TR>
-		
+
 		<logic:equal name="<%=frmName%>" property="examEnabled" value="true">
 			<TR>
 				<TD nowrap>Exam Seating Capacity:</TD><TD width='100%'>
 					<bean:write name="<%=frmName%>" property="examCapacity"/>
+					<logic:equal name="<%=frmName%>" property="examEEnabled" value="true">
+						(Final &amp; Evening Examinations)
+					</logic:equal>
+					<logic:notEqual name="<%=frmName%>" property="examEEnabled" value="true">
+						(Final Examinations)
+					</logic:notEqual>
 				</TD>
 			</TR>
+		</logic:equal>
+		<logic:equal name="<%=frmName%>" property="examEEnabled" value="true">
+			<logic:notEqual name="<%=frmName%>" property="examEnabled" value="true">
+				<TR>
+					<TD nowrap>Exam Seating Capacity:</TD><TD width='100%'>
+						<bean:write name="<%=frmName%>" property="examCapacity"/> (Evening Examinations)
+					</TD>
+				</TR>
+			</logic:notEqual>
 		</logic:equal>
 		
 		<logic:notEmpty name="<%=frmName%>" property="control"> 
@@ -250,17 +265,6 @@
 			</TR>
 		</logic:notEmpty>
 		
-		<logic:equal name="<%=frmName%>" property="examEnabled" value="true">
-			<logic:notEmpty name="<%=frmName%>" property="examPref">
-				<TR>
-					<TD nowrap valign="top">Period Preferences:</TD>
-					<TD>
-						<bean:write name="<%=frmName%>" property="examPref" filter="false"/>
-					</TD>
-				</TR>
-			</logic:notEmpty>
-		</logic:equal>
-
 		<TR>
 			<TD colspan='2'>&nbsp;</TD>
 		</TR>
@@ -276,7 +280,7 @@
 				<%=frm.getSharingTable()%>
 			</TD>
 		</TR>
-
+		
 		<logic:equal name="<%=frmName%>" property="editable" value="true">
 			<TR>
 				<TD colspan="2" align='middle' style='border-top:black 1px dashed'>
@@ -286,6 +290,51 @@
 				</TD>
 			</TR>
 		</logic:equal>
+		
+		<logic:equal name="<%=frmName%>" property="examEnabled" value="true">
+			<logic:notEmpty name="<%=frmName%>" property="examPref">
+				<TR>
+					<TD colspan='2'><tt:section-title><br>Final Examination Period Preferences</tt:section-title></TD>
+				</TR>
+				<TR>
+					<TD colspan='2'>
+						<bean:write name="<%=frmName%>" property="examPref" filter="false"/>
+					</TD>
+				</TR>
+				<logic:equal name="<%=frmName%>" property="editable" value="true">
+					<TR>
+						<TD colspan="2" align='middle' style='border-top:black 1px dashed'>
+							<font size='-1'><i>
+								Final Examination Period Preferences table is read-only. To edit this table, please click Edit Room button.
+							</i></font>
+						</TD>
+					</TR>
+				</logic:equal>
+			</logic:notEmpty>
+		</logic:equal>
+		
+		<logic:equal name="<%=frmName%>" property="examEEnabled" value="true">
+			<logic:notEmpty name="<%=frmName%>" property="examEPref">
+				<TR>
+					<TD colspan='2'><tt:section-title><br>Evening Examination Period Preferences</tt:section-title></TD>
+				</TR>
+				<TR>
+					<TD colspan='2'>
+						<bean:write name="<%=frmName%>" property="examEPref" filter="false"/>
+					</TD>
+				</TR>
+				<logic:equal name="<%=frmName%>" property="editable" value="true">
+					<TR>
+						<TD colspan="2" align='middle' style='border-top:black 1px dashed'>
+							<font size='-1'><i>
+								Evening Examination Period Preferences table is read-only. To edit this table, please click Edit Room button.
+							</i></font>
+						</TD>
+					</TR>
+				</logic:equal>
+			</logic:notEmpty>
+		</logic:equal>
+
 
 		<tt:last-change type='Location'>
 			<bean:write name="<%=frmName%>" property="id"/>

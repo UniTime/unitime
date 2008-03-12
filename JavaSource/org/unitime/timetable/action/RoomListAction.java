@@ -54,6 +54,7 @@ import org.unitime.timetable.form.RoomListForm;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
+import org.unitime.timetable.model.EveningPeriodPreferenceModel;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExternalRoom;
 import org.unitime.timetable.model.GlobalRoomFeature;
@@ -193,17 +194,23 @@ public class RoomListAction extends Action {
 		if (roomListForm.getDeptCodeX().equalsIgnoreCase("All")) {
             roomListForm.setRooms(Session.getCurrentAcadSession(user).getRoomsFast(Department.getDeptCodesForUser(user, false)));
 		} else if (roomListForm.getDeptCodeX().equalsIgnoreCase("Exam")) {
-		    roomListForm.setRooms(Location.findAllExamLocations(sessionId));
+		    roomListForm.setRooms(Location.findAllExamLocations(sessionId, Exam.sExamTypeFinal));
+        } else if (roomListForm.getDeptCodeX().equalsIgnoreCase("EExam")) {
+            roomListForm.setRooms(Location.findAllExamLocations(sessionId, Exam.sExamTypeEvening));
 		} else {
 		    roomListForm.setRooms(Session.getCurrentAcadSession(user).getRoomsFast(new String[] {roomListForm.getDeptCodeX()}));
 		}
 		
+		int examType = -1;
+		if ("Exam".equals(roomListForm.getDeptCodeX())) examType = Exam.sExamTypeFinal;
+		if ("EExam".equals(roomListForm.getDeptCodeX())) examType = Exam.sExamTypeEvening;
+		
 		if ("Export PDF".equals(request.getParameter("op"))) {
-			buildPdfWebTable(request, roomListForm, "yes".equals(Settings.getSettingValue(user, Constants.SETTINGS_ROOMS_FEATURES_ONE_COLUMN)), "Exam".equals(roomListForm.getDeptCodeX()));
+			buildPdfWebTable(request, roomListForm, "yes".equals(Settings.getSettingValue(user, Constants.SETTINGS_ROOMS_FEATURES_ONE_COLUMN)), examType);
 		}
 		
 		// build web table for university locations
-		buildWebTable(request, roomListForm, "yes".equals(Settings.getSettingValue(user, Constants.SETTINGS_ROOMS_FEATURES_ONE_COLUMN)), "Exam".equals(roomListForm.getDeptCodeX()));
+		buildWebTable(request, roomListForm, "yes".equals(Settings.getSettingValue(user, Constants.SETTINGS_ROOMS_FEATURES_ONE_COLUMN)), examType);
 		
 		//set request attribute for department
 		LookupTables.setupDeptsForUser(request, user, sessionId, true);
@@ -218,7 +225,7 @@ public class RoomListAction extends Action {
 	 * @param roomListForm
 	 * @throws Exception 
 	 */
-	private void buildWebTable(HttpServletRequest request, RoomListForm roomListForm, boolean featuresOneColumn, boolean periodPrefs ) throws Exception {
+	private void buildWebTable(HttpServletRequest request, RoomListForm roomListForm, boolean featuresOneColumn, int examType) throws Exception {
 		
 		MessageResources rsc = getResources(request);
 		ActionMessages errors = new ActionMessages();
@@ -254,6 +261,8 @@ public class RoomListAction extends Action {
 				}
 			} else if (roomListForm.getDeptCodeX().equalsIgnoreCase("Exam")) {
 			    depts = new HashSet(0);
+            } else if (roomListForm.getDeptCodeX().equalsIgnoreCase("EExam")) {
+                depts = new HashSet(0);
 			} else {
 				depts = new HashSet(1);
 				depts.add(Department.findByDeptCode(roomListForm.getDeptCodeX(),sessionId));
@@ -291,8 +300,8 @@ public class RoomListAction extends Action {
 								"d.session.uniqueId=:sessionId order by f.label").
 								setLong("sessionId",sessionId.longValue()).
 								list());						
+	            } else if (roomListForm.getDeptCodeX().equalsIgnoreCase("EExam")) {
 				} else if (roomListForm.getDeptCodeX().equalsIgnoreCase("Exam")) {
-				    
 				} else {
 					deptRoomFeatures.addAll(hibSession.
 						createQuery(
@@ -310,13 +319,13 @@ public class RoomListAction extends Action {
 	
 			//build headings for university rooms
 			String fixedHeading1[][] =
-			    (periodPrefs?
+			    (examType>=0?
 		                (featuresOneColumn? new String[][]
 		                                                 { { "Bldg", "left", "true" },
 		                                                 { "Room", "left", "true" },
 		                                                 { "Capacity", "right", "false" },
 		                                                 { "Exam Capacity", "right", "false" },
-		                                                 { "Period Preferences", "center", "false" },
+		                                                 { (examType==Exam.sExamTypeEvening?"Not Available":"Period Preferences"), "center", "false" },
 		                                                 { "Groups", "left", "true" },
 		                                                 { "Features", "left", "true" } } 
 		                                             : new String[][]
@@ -384,12 +393,12 @@ public class RoomListAction extends Action {
 			
 			//build headings for non-univ locations
 			String fixedHeading2[][] =
-			    ( periodPrefs ?
+			    ( examType>=0 ?
 		                ( featuresOneColumn ? new String[][]
 		                                                   {{ "Location", "left", "true" },
 		                                                   { "Capacity", "right", "false" },
 		                                                   { "Exam Capacity", "right", "false" },
-		                                                   { "Period Preferences", "center", "false" },
+		                                                   { (examType==Exam.sExamTypeEvening?"Not Available":"Period Preferences"), "center", "false" },
 		                                                   { "Groups", "left", "true" },
 		                                                   { "Features", "left", "true" }}
 		                                           : new String[][]
@@ -538,8 +547,8 @@ public class RoomListAction extends Action {
 				comp[idx] = new Long(location.getCapacity().intValue());
 				idx++;
 				
-				if (periodPrefs) {
-	                if (location.isExamEnabled()) {
+				if (examType>=0) {
+	                if (location.isExamEnabled(examType)) {
 	                    text[idx] = (editable?"":"<font color='gray'>")+df5.format(location.getExamCapacity())+(editable?"":"</font>");
 	                    comp[idx] = location.getExamCapacity();
 	                } else {
@@ -548,24 +557,37 @@ public class RoomListAction extends Action {
 	                }
 	                idx++;
 
-	                if (location.isExamEnabled()) {
+	                if (location.isExamEnabled(examType)) {
 	                    if (gridAsText)
-	                        text[idx] = location.getExamPreferencesAbbreviationHtml();
+	                        text[idx] = location.getExamPreferencesAbbreviationHtml(examType);
 	                    else {
-	                        PeriodPreferenceModel px = new PeriodPreferenceModel(location.getSession(), Exam.sExamTypeFinal);
-	                        px.load(location);
-	                        RequiredTimeTable rtt = new RequiredTimeTable(px);
-	                        File imageFileName = null;
-	                        try {
-	                            imageFileName = rtt.createImage(timeVertical);
-	                        } catch (IOException ex) {
-	                            ex.printStackTrace();
+	                        PeriodPreferenceModel px = null;
+	                        if (examType==Exam.sExamTypeEvening) {
+	                            EveningPeriodPreferenceModel epx = new EveningPeriodPreferenceModel(location.getSession());
+	                            if (epx.canDo()) {
+	                                epx.load(location);
+	                                text[idx]=epx.toString();
+	                            } else {
+	                                px = new PeriodPreferenceModel(location.getSession(), examType);
+	                            }
+	                        } else {
+	                            px = new PeriodPreferenceModel(location.getSession(), examType);
 	                        }
-	                        String title = rtt.getModel().toString();
-	                        if (imageFileName!=null)
-	                            text[idx] = "<img border='0' src='temp/"+(imageFileName.getName())+"' title='"+title+"'>";
-	                        else
-	                            text[idx] = location.getExamPreferencesAbbreviationHtml();
+	                        if (px!=null) {
+	                            px.load(location);
+	                            RequiredTimeTable rtt = new RequiredTimeTable(px);
+	                            File imageFileName = null;
+	                            try {
+	                                imageFileName = rtt.createImage(timeVertical);
+	                            } catch (IOException ex) {
+	                                ex.printStackTrace();
+	                            }
+	                            String title = rtt.getModel().toString();
+	                            if (imageFileName!=null)
+	                                text[idx] = "<img border='0' src='temp/"+(imageFileName.getName())+"' title='"+title+"'>";
+	                            else
+	                                text[idx] = location.getExamPreferencesAbbreviationHtml(examType);
+	                        }
 	                    }
 	                    comp[idx] = null;
 	                } else {
@@ -650,7 +672,7 @@ public class RoomListAction extends Action {
 	                idx++;
 	                
 	                //control column
-	                if (!roomListForm.getDeptCodeX().equalsIgnoreCase("All") && !roomListForm.getDeptCodeX().equalsIgnoreCase("Exam")) {
+	                if (!roomListForm.getDeptCodeX().equalsIgnoreCase("All") && !roomListForm.getDeptCodeX().equalsIgnoreCase("Exam") && !roomListForm.getDeptCodeX().equalsIgnoreCase("EExam")) {
 	                    if (controlDept!=null && controlDept.getDeptCode().equals(roomListForm.getDeptCodeX())) {
 	                        text[idx] = "<IMG border='0' title='Selected department is controlling this room.' alt='true' align='absmiddle' src='images/tick.gif'>";
 	                        comp[idx] = new Integer(1);
@@ -800,7 +822,7 @@ public class RoomListAction extends Action {
 		}
 	}
 	
-	public static void buildPdfWebTable(HttpServletRequest request, RoomListForm roomListForm, boolean featuresOneColumn, boolean periodPrefs) throws Exception {
+	public static void buildPdfWebTable(HttpServletRequest request, RoomListForm roomListForm, boolean featuresOneColumn, int examType) throws Exception {
     	FileOutputStream out = null;
     	try {
     		File file = ApplicationProperties.getTempFile("rooms", "pdf");
@@ -830,6 +852,8 @@ public class RoomListAction extends Action {
 				}
 			} else if (roomListForm.getDeptCodeX().equalsIgnoreCase("Exam")) {
 			    depts = new HashSet();
+            } else if (roomListForm.getDeptCodeX().equalsIgnoreCase("EExam")) {
+                depts = new HashSet();
 			} else {
 				depts = new HashSet(1);
 				depts.add(Department.findByDeptCode(roomListForm.getDeptCodeX(),sessionId));
@@ -867,6 +891,7 @@ public class RoomListAction extends Action {
 								setLong("sessionId",sessionId.longValue()).
 								list());
 				} else if (roomListForm.getDeptCodeX().equalsIgnoreCase("Exam")) {
+                } else if (roomListForm.getDeptCodeX().equalsIgnoreCase("EExam")) {
 				} else {
 					deptRoomFeatures.addAll(hibSession.
 						createQuery(
@@ -882,7 +907,7 @@ public class RoomListAction extends Action {
 	
 			//build headings for university rooms
 			String fixedHeading1[][] =
-			    (periodPrefs?
+			    (examType>=0?
 			            (featuresOneColumn? new String[][]
 			                                             { { "Bldg", "left", "true" },
 			                                             { "Room", "left", "true" },
@@ -955,7 +980,7 @@ public class RoomListAction extends Action {
 			
 			//build headings for non-univ locations
 			String fixedHeading2[][] = 
-			    (periodPrefs ?
+			    (examType>=0 ?
 		                ( featuresOneColumn ? new String[][]
 		                                                   {{ "Location", "left", "true" },
 		                                                   { "Capacity", "right", "false" },
@@ -1103,8 +1128,8 @@ public class RoomListAction extends Action {
 				comp[idx] = new Long(location.getCapacity().intValue());
 				idx++;
 				
-				if (periodPrefs) {
-	                if (location.isExamEnabled()) {
+				if (examType>=0) {
+	                if (location.isExamEnabled(examType)) {
 	                    text[idx] = df5.format(location.getExamCapacity());
 	                    comp[idx] = location.getExamCapacity();
 	                } else {
@@ -1113,8 +1138,8 @@ public class RoomListAction extends Action {
 	                }
 	                idx++;
 
-	                if (location.isExamEnabled()) {
-	                    text[idx] = location.getExamPreferencesAbbreviation();
+	                if (location.isExamEnabled(examType)) {
+	                    text[idx] = location.getExamPreferencesAbbreviation(examType);
 	                    comp[idx] = null;
 	                } else {
 	                    text[idx] = "";
@@ -1194,7 +1219,7 @@ public class RoomListAction extends Action {
 	                idx++;
 	                
 	                //control column
-	                if (!roomListForm.getDeptCodeX().equalsIgnoreCase("All") && !roomListForm.getDeptCodeX().equalsIgnoreCase("Exam")) {
+	                if (!roomListForm.getDeptCodeX().equalsIgnoreCase("All") && !roomListForm.getDeptCodeX().equalsIgnoreCase("Exam") && !roomListForm.getDeptCodeX().equalsIgnoreCase("EExam")) {
 	                    if (controlDept!=null && controlDept.getDeptCode().equals(roomListForm.getDeptCodeX())) {
 	                        text[idx] = "Yes";
 	                        comp[idx] = new Integer(1);

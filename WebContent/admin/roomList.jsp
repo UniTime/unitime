@@ -98,15 +98,13 @@
 					</logic:equal>
 					<logic:equal name="<%=frmName%>" property="editRoomSharing" value="true">
 						<logic:notEqual name="<%=frmName%>" property="deptCodeX" value="All">
-							<logic:notEqual name="<%=frmName%>" property="deptCodeX" value="Exam">
-								<TD nowrap>
-									<html:form action="roomDeptEdit" styleClass="FormWithNoPadding">
-										<html:submit property="doit" onclick="displayLoading();" styleClass="btn" accesskey="E" titleKey="title.editRoomSharing">
-											<bean:message key="button.editRoomSharing" />
-										</html:submit>
-									</html:form>
-								</TD>
-							</logic:notEqual>
+							<TD nowrap>
+								<html:form action="roomDeptEdit" styleClass="FormWithNoPadding">
+									<html:submit property="doit" onclick="displayLoading();" styleClass="btn" accesskey="E" titleKey="title.editRoomSharing">
+										<bean:message key="button.editRoomSharing" />
+									</html:submit>
+								</html:form>
+							</TD>
 						</logic:notEqual>
 					</logic:equal>
 
@@ -307,7 +305,6 @@
 					--%>
 					<logic:equal name="<%=frmName%>" property="editRoomSharing" value="true">
 						<logic:notEqual name="<%=frmName%>" property="deptCodeX" value="All">
-						<logic:notEqual name="<%=frmName%>" property="deptCodeX" value="Exam">
 							<TD nowrap>
 								<html:form action="roomDeptEdit" styleClass="FormWithNoPadding">
 									<html:submit property="doit" onclick="displayLoading();" styleClass="btn" accesskey="E" titleKey="title.editRoomSharing">
@@ -315,7 +312,6 @@
 									</html:submit>
 								</html:form>
 							</TD>
-						</logic:notEqual>
 						</logic:notEqual>
 					</logic:equal>
 				</TR>
