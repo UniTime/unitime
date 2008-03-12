@@ -44,6 +44,7 @@
 	<html:hidden property="nextId"/>
 	<html:hidden property="previousId"/>
 	<html:hidden property="op2" value=""/>
+	<bean:define name='<%=frmName%>' property="examId" id="examId"/>
 	
 	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
@@ -60,6 +61,9 @@
 					<html:submit property="op" styleClass="btn" accesskey="A" titleKey="title.addDistPref" >
 						<bean:message key="button.addDistPref" />
 					</html:submit>
+					<input type="button" value="Info" title="Open Examination Info Window" class="btn"
+							onClick="javascript:window.open('examInfo.do?examId=<%=String.valueOf(examId)%>','exams','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no');"
+					/>
 					<html:submit property="op" styleClass="btn" accesskey="D" titleKey="title.deleteExam" onclick="return confirmDelete();">
 						<bean:message key="button.deleteExam" />
 					</html:submit>
@@ -240,6 +244,9 @@
 				<html:submit property="op" styleClass="btn" accesskey="A" titleKey="title.addDistPref" >
 					<bean:message key="button.addDistPref" />
 				</html:submit>
+				<input type="button" value="Info" title="Open Examination Info Window" class="btn"
+						onClick="javascript:window.open('examInfo.do?examId=<%=String.valueOf(examId)%>','exams','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no');"
+				/>
 				<html:submit property="op" styleClass="btn" accesskey="D" titleKey="title.deleteExam" onclick="return confirmDelete();">
 					<bean:message key="button.deleteExam" />
 				</html:submit>
