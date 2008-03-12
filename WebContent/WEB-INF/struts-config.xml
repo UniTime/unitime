@@ -1213,9 +1213,8 @@
       scope="request"
       validate="false"
       type="org.unitime.timetable.action.RoomDeptEditAction">
-      <forward name="showEdit" path="roomDeptEditTile" />
-      <forward name="showRoomDeptList" path="/roomDeptList.do" />
-      <forward name="showRoomList" path="/roomList.do" />
+      <forward name="show" path="roomDeptEditTile" />
+      <forward name="back" path="/roomList.do" />
     </action>
 
     <action
