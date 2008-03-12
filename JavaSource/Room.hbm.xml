@@ -112,9 +112,10 @@
 		/>
 			 
 		<property
-			name="examEnabled"
-			column="EXAM_ENABLE"
-			type="java.lang.Boolean"
+			name="examType"
+			column="EXAM_TYPE"
+			type="java.lang.Integer"
+			length="10"
 			not-null="false"
 		/>
 
@@ -126,13 +127,17 @@
 			length="10"
 		/>
 
-		<property
-			name="examPref"
-			column="EXAM_Pref"
-			type="java.lang.String"
-			not-null="false"
-			length="1000"
-		/>
+		<set
+			name="examPreferences"
+			inverse="true"
+			lazy="true"
+			cascade="all"
+			table="EXAM_LOCATION_PREF"
+			>
+	 		<cache include="non-lazy" usage="nonstrict-read-write"/>
+			<key column="LOCATION_ID"/>
+			<one-to-many class="org.unitime.timetable.model.ExamLocationPref" />
+		</set>	
 
 		<property
 			name="displayName"
@@ -251,4 +256,40 @@
 		</union-subclass>	
 	
 	</class>	
+	
+	<class
+		name="ExamLocationPref"
+		table="EXAM_LOCATION_PREF"
+		>
+
+ 		<cache include="non-lazy" usage="read-write"/>
+
+		<id 
+            name="uniqueId"
+            column="UNIQUEID" 
+            type="java.lang.Long">            
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+				<param name="sequence">PREF_SEQ</param>
+			</generator>
+            
+        </id>
+        
+		<many-to-one name="location"
+			class="Location"
+			column="LOCATION_ID"
+			not-null="true" />
+
+		<many-to-one name="prefLevel"
+			class="PreferenceLevel"
+			column="PREF_LEVEL_ID"
+			not-null="true"
+			foreign-key="FK_EXAM_LOCATION_PREF_PREF" />
+			
+		<many-to-one name="examPeriod"
+			class="ExamPeriod"
+			column="PERIOD_ID"
+		 	not-null="true"
+		 	foreign-key="FK_EXAM_LOCATION_PREF_PERIOD" />
+
+	</class>		
 </hibernate-mapping>
