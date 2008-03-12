@@ -70,14 +70,15 @@ public class PeriodPreferenceModel implements RequiredTimeTableModel {
     }
     
     public void load(Location location) {
-        for (Iterator i=iPeriods.iterator();i.hasNext();) {
-            ExamPeriod period = (ExamPeriod)i.next();
-            iPreferences.put(period, location.getExamPreference(period).getPrefProlog());
+        for (Iterator i=location.getExamPreferences().iterator();i.hasNext();) {
+            ExamLocationPref pref = (ExamLocationPref)i.next();
+            if (!iExamType.equals(pref.getExamPeriod().getExamType())) continue;
+            iPreferences.put(pref.getExamPeriod(), pref.getPrefLevel().getPrefProlog());
         }
     }
 
     public void save(Location location) {
-        location.clearExamPreferences();
+        location.clearExamPreferences(iExamType);
         for (Iterator i=iPreferences.entrySet().iterator();i.hasNext();) {
             Map.Entry entry = (Map.Entry)i.next();
             ExamPeriod period = (ExamPeriod)entry.getKey();
