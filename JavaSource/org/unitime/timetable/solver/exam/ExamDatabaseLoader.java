@@ -153,7 +153,7 @@ public class ExamDatabaseLoader extends ExamLoader {
     }
     
     protected void loadRooms() {
-        iAllRooms = Location.findAllExamLocations(iSessionId,org.unitime.timetable.model.Exam.sExamTypeFinal);
+        iAllRooms = Location.findAllExamLocations(iSessionId,iExamType);
         iProgress.setPhase("Loading rooms...", iAllRooms.size());
         for (Iterator i=iAllRooms.iterator();i.hasNext();) {
             iProgress.incProgress();
@@ -508,10 +508,12 @@ public class ExamDatabaseLoader extends ExamLoader {
     
     protected void loadDistributions() {
         List distPrefs = new DistributionPrefDAO().getSession().createQuery(
-                "select d from DistributionPref d where "+
+                "select distinct d from DistributionPref d inner join d.distributionObjects o, Exam x where "+
                 "d.distributionType.examPref=true and "+
+                "o.prefGroup=x and x.session.uniqueId=:sessionId and x.examType=:examType and "+
                 "d.owner.uniqueId=:sessionId").
-                setLong("sessionId", iSessionId).list();
+                setLong("sessionId", iSessionId).
+                setInteger("examType", iExamType).list();
         iProgress.setPhase("Loading distributions...", distPrefs.size());
         for (Iterator i=distPrefs.iterator();i.hasNext();) {
             iProgress.incProgress();
