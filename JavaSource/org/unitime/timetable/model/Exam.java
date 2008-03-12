@@ -305,7 +305,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
     }
     
     public Set getAvailableRooms() {
-        return Location.findAllExamLocations(getSession().getUniqueId());
+        return Location.findAllExamLocations(getSession().getUniqueId(), getExamType());
     }
     
     public SubjectArea firstSubjectArea() {
@@ -525,6 +525,14 @@ public class Exam extends BaseExam implements Comparable<Exam> {
     			setLong("sessionId", sessionId).uniqueResult()).longValue()>0;
     }
     
+    public static boolean hasFinalExams(Long sessionId) {
+        return ((Number)new ExamDAO().getSession().
+                createQuery("select count(p) from ExamPeriod p " +
+                        "where p.session.uniqueId=:sessionId and "+
+                        "p.examType = "+sExamTypeFinal).
+                setLong("sessionId", sessionId).uniqueResult()).longValue()>0;
+    }
+
     public static Collection<ExamAssignmentInfo> findAssignedExams(Long sessionId, Integer examType) {
         Vector<ExamAssignmentInfo> ret = new Vector<ExamAssignmentInfo>();
         List exams = new ExamDAO().getSession().createQuery(

@@ -106,9 +106,9 @@ public class ExamInfoModel implements Serializable {
             if (iExam==null) iExam = getSolver().getInfo(exam.getUniqueId());
             if (iExam==null) iExam = new ExamInfo(exam);
         } else {
-            if (exam.getAssignedPeriod()!=null) 
+            if (exam.getAssignedPeriod()!=null) {
                 iExam = new ExamAssignmentInfo(exam);
-            else  
+            } else  
                 iExam = new ExamInfo(exam);
         }
     }
@@ -165,7 +165,6 @@ public class ExamInfoModel implements Serializable {
             }
             iExamAssignment = new ExamAssignmentInfo(getExam().getExam(), iExamAssignment.getPeriod(), assignedRooms);
         }
-        System.out.println("rooms:"+iExamAssignment.getRoomsName(","));
     }
     
     public void apply(HttpServletRequest request) {
@@ -271,7 +270,6 @@ public class ExamInfoModel implements Serializable {
                     try {
                         iPeriods.add(new ExamAssignmentInfo(getExam().getExam(), period, null));
                     } catch (Exception e) {
-                        e.printStackTrace();
                     }
                 }
             }
@@ -280,7 +278,7 @@ public class ExamInfoModel implements Serializable {
     }
     
     protected Collection<ExamRoomInfo> findRooms(ExamPeriod period) {
-        Collection<ExamRoomInfo> rooms = new Vector<ExamRoomInfo>();
+        Collection<ExamRoomInfo> rooms = new TreeSet<ExamRoomInfo>();
         boolean reqRoom = false;
         boolean reqBldg = false;
         boolean reqGroup = false;
@@ -289,8 +287,14 @@ public class ExamInfoModel implements Serializable {
         Set roomPrefs = getExam().getExam().getPreferences(RoomPref.class);
         Set bldgPrefs = getExam().getExam().getPreferences(BuildingPref.class);
         Set featurePrefs = getExam().getExam().getPreferences(RoomFeaturePref.class);
+        
+        TreeSet locations = Location.findAllAvailableExamLocations(period);
+        if (isExamAssigned() && period.getUniqueId().equals(getExamAssignment().getPeriodId()) && getExamAssignment().getRooms()!=null) {
+            for (ExamRoomInfo room : getExamAssignment().getRooms())
+                locations.add(room.getLocation());
+        }
             
-        for (Iterator i1=Location.findAllAvailableExamLocations(period).iterator();i1.hasNext();) {
+        for (Iterator i1=locations.iterator();i1.hasNext();) {
             Location room = (Location)i1.next();
             
             int cap = (getExam().getSeatingType()==Exam.sSeatingTypeExam?room.getExamCapacity():room.getCapacity());
@@ -299,11 +303,11 @@ public class ExamInfoModel implements Serializable {
             
             if (PreferenceLevel.sProhibited.equals(room.getExamPreference(period).getPrefProlog())) continue;
             
+            boolean shouldNotBeUsed = PreferenceLevel.sStronglyDiscouraged.equals(room.getExamPreference(period).getPrefProlog());
+            
             boolean add = true;
             
             PreferenceCombination pref = new SumPreferenceCombination();
-            
-            pref.addPreferenceProlog(room.getExamPreference(period).getPrefProlog());
             
             // --- group preference ----------
             PreferenceCombination groupPref = PreferenceCombination.getDefault();
@@ -328,12 +332,13 @@ public class ExamInfoModel implements Serializable {
             
             
             // --- room preference ------------
-            String roomPref = null;
-
+            String roomPref = room.getExamPreference(period).getPrefProlog();
+            
             for (Iterator i2=roomPrefs.iterator();i2.hasNext();) {
                 RoomPref p = (RoomPref)i2.next();
                 if (room.equals(p.getRoom())) {
                     roomPref = p.getPrefLevel().getPrefProlog();
+                    shouldNotBeUsed = false;
                     break;
                 }
             }
@@ -395,13 +400,10 @@ public class ExamInfoModel implements Serializable {
             
             if (!acceptableFeatures) add=false;
             
-            if (!add) continue;
+            if (!add || shouldNotBeUsed) continue;
             
             rooms.add(new ExamRoomInfo(room, pref.getPreferenceInt()));
         }
-        
-        if (isExamAssigned() && period.getUniqueId().equals(getExamAssignment().getPeriodId()) && getExamAssignment().getRooms()!=null)
-            rooms.addAll(getExamAssignment().getRooms());
         
         return rooms;
     }
@@ -498,15 +500,21 @@ public class ExamInfoModel implements Serializable {
     }
     
     public Collection<ExamRoomInfo> getRooms() {
-        if (getSelectedAssignment()==null && !isExamAssigned()) return null;
-        if (iRooms==null) {
-            if (getSolver()!=null && getSolver().getExamType()==getExam().getExamType()) {
-                iRooms = getSolver().getRooms(getExam().getExamId(), getSelectedAssignment()!=null?getSelectedAssignment().getPeriodId():getExamAssignment().getPeriodId());
-            } else {
-                iRooms = findRooms(getSelectedAssignment()!=null?getSelectedAssignment().getPeriod():getExamAssignment().getPeriod());
+        if (getExam().getMaxRooms()==0) return null;
+        try {
+            if (getSelectedAssignment()==null && !isExamAssigned()) return null;
+            if (iRooms==null) {
+                if (getSolver()!=null && getSolver().getExamType()==getExam().getExamType()) {
+                    iRooms = getSolver().getRooms(getExam().getExamId(), getSelectedAssignment()!=null?getSelectedAssignment().getPeriodId():getExamAssignment().getPeriodId());
+                } else {
+                    iRooms = findRooms(getSelectedAssignment()!=null?getSelectedAssignment().getPeriod():getExamAssignment().getPeriod());
+                }
             }
+            return iRooms;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
-        return iRooms;
     }
     
     public int getRoomSize() {

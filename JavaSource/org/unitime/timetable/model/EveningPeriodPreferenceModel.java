@@ -105,6 +105,7 @@ public class EveningPeriodPreferenceModel {
     }
 
     public void save(Location location) {
+        location.clearExamPreferences(Exam.sExamTypeEvening);
     	for (Iterator i=iPeriods.iterator();i.hasNext();) {
             ExamPeriod period = (ExamPeriod)i.next();
             Integer pref = iPreferences.get(period.getDateOffset());
@@ -271,16 +272,36 @@ public class EveningPeriodPreferenceModel {
     public String toString() {
     	SimpleDateFormat df = new SimpleDateFormat("MM/dd");
         StringBuffer sb = new StringBuffer();
+        int fPref = -1, fDate = -1, lDate = -1;
         for (Integer date: iDates) {
         	Integer pref = iPreferences.get(date);
-        	if (pref==null || pref.intValue()==0) continue;
-        	if (sb.length()>0) sb.append(", ");
-        	if (pref.intValue()==3)
-        		sb.append(df.format(getDate(date)));
-        	if (pref.intValue()==1)
-        		sb.append("Early "+df.format(getDate(date)));
-        	if (pref.intValue()==2)
-        		sb.append("Late "+df.format(getDate(date)));
+        	if (fPref<0) {
+        	    fPref = pref; fDate = date;
+        	} else if (fPref!=pref) {
+        	    if (fPref!=0) {
+                    if (sb.length()>0) sb.append(", ");
+                    if (fPref==1) sb.append("Early ");
+                    if (fPref==2) sb.append("Late ");
+                    sb.append(df.format(getDate(fDate)));
+                    if (fDate!=lDate) 
+                        sb.append(" - "+df.format(getDate(lDate)));
+        	    }
+        	    fPref = pref; fDate = date;
+        	}
+        	lDate = date;
+        }
+        if (fPref>0) {
+            if (sb.length()>0) sb.append(", ");
+            if (fPref==1) sb.append("Early ");
+            if (fPref==2) sb.append("Late ");
+            sb.append(df.format(getDate(fDate)));
+            if (fDate!=lDate) 
+                sb.append(" - "+df.format(getDate(lDate)));
+        }
+        if (iLocation && fPref>0 && fDate==iDates.first() && lDate==iDates.last()) {
+            if (fPref==1) return "Available Late";
+            if (fPref==2) return "Available Early";
+            if (fPref==3) return "Not Available";
         }
         return sb.toString();
     }
