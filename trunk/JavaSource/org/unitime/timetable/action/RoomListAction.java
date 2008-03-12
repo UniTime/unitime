@@ -325,7 +325,7 @@ public class RoomListAction extends Action {
 		                                                 { "Room", "left", "true" },
 		                                                 { "Capacity", "right", "false" },
 		                                                 { "Exam Capacity", "right", "false" },
-		                                                 { (examType==Exam.sExamTypeEvening?"Not Available":"Period Preferences"), "center", "false" },
+		                                                 { (examType==Exam.sExamTypeEvening?"Not Available":"Period Preferences"), (examType==Exam.sExamTypeEvening?"left":"center"), "false" },
 		                                                 { "Groups", "left", "true" },
 		                                                 { "Features", "left", "true" } } 
 		                                             : new String[][]
@@ -398,7 +398,7 @@ public class RoomListAction extends Action {
 		                                                   {{ "Location", "left", "true" },
 		                                                   { "Capacity", "right", "false" },
 		                                                   { "Exam Capacity", "right", "false" },
-		                                                   { (examType==Exam.sExamTypeEvening?"Not Available":"Period Preferences"), "center", "false" },
+		                                                   { (examType==Exam.sExamTypeEvening?"Not Available":"Period Preferences"), (examType==Exam.sExamTypeEvening?"left":"center"), "false" },
 		                                                   { "Groups", "left", "true" },
 		                                                   { "Features", "left", "true" }}
 		                                           : new String[][]
@@ -566,7 +566,7 @@ public class RoomListAction extends Action {
 	                            EveningPeriodPreferenceModel epx = new EveningPeriodPreferenceModel(location.getSession());
 	                            if (epx.canDo()) {
 	                                epx.load(location);
-	                                text[idx]=epx.toString();
+	                                text[idx]=epx.toString().replaceAll(", ", "<br>");
 	                            } else {
 	                                px = new PeriodPreferenceModel(location.getSession(), examType);
 	                            }
@@ -699,7 +699,7 @@ public class RoomListAction extends Action {
                 comp[idx] = "";
 				for (Iterator it = new TreeSet(location.getRoomGroups()).iterator(); it.hasNext();) {
 					RoomGroup rg = (RoomGroup) it.next();
-					if (!rg.isGlobal().booleanValue() && !depts.contains(rg.getDepartment())) continue;
+					if (!rg.isGlobal().booleanValue() && (examType<0 || !depts.contains(rg.getDepartment()))) continue;
 					if (!rg.isGlobal().booleanValue()) {
                         boolean skip = true;
                         for (Iterator j=location.getRoomDepts().iterator();j.hasNext();) {
@@ -724,18 +724,19 @@ public class RoomListAction extends Action {
                         comp[idx] = comp[idx] + rf.getLabel().trim();
 						text[idx] += rf.htmlLabel();
 					}
-					for (Iterator it = new TreeSet(location.getDepartmentRoomFeatures()).iterator(); it.hasNext();) {
-						DepartmentRoomFeature drf = (DepartmentRoomFeature) it.next();
-	                    boolean skip = true;
-	                    for (Iterator j=location.getRoomDepts().iterator();j.hasNext();) {
-	                        RoomDept rd = (RoomDept)j.next();
-	                        if (drf.getDepartment().equals(rd.getDepartment())) { skip=false; break; }
-	                    }
-	                    if (skip) continue;
-                        if (text[idx].length()>0) text[idx] += "<br>";
-                        comp[idx] = comp[idx] + drf.getLabel().trim();
-						text[idx] += drf.htmlLabel();
-					}
+					if (examType<0)
+					    for (Iterator it = new TreeSet(location.getDepartmentRoomFeatures()).iterator(); it.hasNext();) {
+					        DepartmentRoomFeature drf = (DepartmentRoomFeature) it.next();
+					        boolean skip = true;
+					        for (Iterator j=location.getRoomDepts().iterator();j.hasNext();) {
+					            RoomDept rd = (RoomDept)j.next();
+					            if (drf.getDepartment().equals(rd.getDepartment())) { skip=false; break; }
+					        }
+					        if (skip) continue;
+					        if (text[idx].length()>0) text[idx] += "<br>";
+					        comp[idx] = comp[idx] + drf.getLabel().trim();
+					        text[idx] += drf.htmlLabel();
+					    }
 					idx++;
 				} else {
 					// get features columns
@@ -1243,7 +1244,7 @@ public class RoomListAction extends Action {
 				text[idx] = "";
 				for (Iterator it = new TreeSet(location.getRoomGroups()).iterator(); it.hasNext();) {
 					RoomGroup rg = (RoomGroup) it.next();
-					if (!rg.isGlobal().booleanValue() && !depts.contains(rg.getDepartment())) continue;
+					if (!rg.isGlobal().booleanValue() && (examType<0 || !depts.contains(rg.getDepartment()))) continue;
                     if (!rg.isGlobal().booleanValue()) {
                         boolean skip = true;
                         for (Iterator j=location.getRoomDepts().iterator();j.hasNext();) {
@@ -1267,18 +1268,19 @@ public class RoomListAction extends Action {
                         comp[idx] = comp[idx] + rf.getLabel().trim();
 						text[idx] += rf.getLabel();
 					}
-					for (Iterator it = new TreeSet(location.getDepartmentRoomFeatures()).iterator(); it.hasNext();) {
-						DepartmentRoomFeature drf = (DepartmentRoomFeature) it.next();
-                        boolean skip = true;
-                        for (Iterator j=location.getRoomDepts().iterator();j.hasNext();) {
-                            RoomDept rd = (RoomDept)j.next();
-                            if (drf.getDepartment().equals(rd.getDepartment())) { skip=false; break; }
-                        }
-                        if (skip) continue;
-                        if (text[idx].length()>0) text[idx] += "\n";
-                        comp[idx] = comp[idx] + drf.getLabel().trim();
-						text[idx] +="@@COLOR "+drf.getDepartment().getRoomSharingColor(null)+" "+drf.getLabel();
-					}
+					if (examType<0)
+	                    for (Iterator it = new TreeSet(location.getDepartmentRoomFeatures()).iterator(); it.hasNext();) {
+	                        DepartmentRoomFeature drf = (DepartmentRoomFeature) it.next();
+	                        boolean skip = true;
+	                        for (Iterator j=location.getRoomDepts().iterator();j.hasNext();) {
+	                            RoomDept rd = (RoomDept)j.next();
+	                            if (drf.getDepartment().equals(rd.getDepartment())) { skip=false; break; }
+	                        }
+	                        if (skip) continue;
+	                        if (text[idx].length()>0) text[idx] += "\n";
+	                        comp[idx] = comp[idx] + drf.getLabel().trim();
+	                        text[idx] +="@@COLOR "+drf.getDepartment().getRoomSharingColor(null)+" "+drf.getLabel();
+	                    }
 					idx++;
 				} else {
 					// get features columns
