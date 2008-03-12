@@ -567,6 +567,13 @@ public abstract class Location extends BaseLocation implements Comparable {
     }
 
     public String getExamPreferencesHtml(int examType) {
+        if (examType==Exam.sExamTypeEvening) {
+            EveningPeriodPreferenceModel epx = new EveningPeriodPreferenceModel(getSession());
+            if (epx.canDo()) {
+                epx.load(this);
+                return epx.toString().replaceAll(", ", "<br>");
+            }
+        }
         StringBuffer ret = new StringBuffer();
         for (Iterator i=getExamPreferences().iterator();i.hasNext();) {
             ExamLocationPref pref = (ExamLocationPref)i.next();
@@ -580,6 +587,13 @@ public abstract class Location extends BaseLocation implements Comparable {
     }
     
     public String getExamPreferencesAbbreviationHtml(int examType) {
+        if (examType==Exam.sExamTypeEvening) {
+            EveningPeriodPreferenceModel epx = new EveningPeriodPreferenceModel(getSession());
+            if (epx.canDo()) {
+                epx.load(this);
+                return epx.toString().replaceAll(", ", "<br>");
+            }
+        }
         StringBuffer ret = new StringBuffer();
         for (Iterator i=getExamPreferences().iterator();i.hasNext();) {
             ExamLocationPref pref = (ExamLocationPref)i.next();
@@ -593,6 +607,13 @@ public abstract class Location extends BaseLocation implements Comparable {
     }
     
     public String getExamPreferencesAbbreviation(int examType) {
+        if (examType==Exam.sExamTypeEvening) {
+            EveningPeriodPreferenceModel epx = new EveningPeriodPreferenceModel(getSession());
+            if (epx.canDo()) {
+                epx.load(this);
+                return epx.toString().replaceAll(", ", "\n");
+            }
+        }
         StringBuffer ret = new StringBuffer();
         for (Iterator i=getExamPreferences().iterator();i.hasNext();) {
             ExamLocationPref pref = (ExamLocationPref)i.next();
