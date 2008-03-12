@@ -691,6 +691,7 @@ public abstract class Location extends BaseLocation implements Comparable {
     }
     
     public boolean isExamEnabled(int examType) {
+        if (getExamType()==null) return false;
         switch (examType) {
         case Exam.sExamTypeFinal :
                 return sExamLocationTypeFinal==getExamType() || sExamLocationTypeBoth==getExamType();
