@@ -1434,4 +1434,51 @@
   			references %SCHEMA%.standard_event_note (UNIQUEID) on delete set null
 		</sql>
 	</update>
+	<update version="20" date="12-Mar-2008" comment="Exam room changes">
+		<plsql>alter table %SCHEMA%.room add exam_type number(10,0) default 0</plsql>
+		<plsql>alter table %SCHEMA%.non_university_location add exam_type number(10,0) default 0</plsql>
+		<mysql>alter table %SCHEMA%.room add exam_type bigint(10) default 0</mysql>
+		<mysql>alter table %SCHEMA%.non_university_location add exam_type bigint(10) default 0</mysql>
+		<sql>update %SCHEMA%.room set exam_type = 1 where exam_enable = 1</sql>
+		<sql>update %SCHEMA%.non_university_location set exam_type = 1 where exam_enable = 1</sql>
+		<sql>alter table %SCHEMA%.room drop column exam_enable</sql>
+		<sql>alter table %SCHEMA%.non_university_location drop column exam_enable</sql>
+		<sql>alter table %SCHEMA%.room drop column exam_pref</sql>
+		<sql>alter table %SCHEMA%.non_university_location drop column exam_pref</sql>
+		<plsql>
+			create table %SCHEMA%.exam_location_pref (
+				uniqueid number(20,0) constraint nn_exam_location_pref_uniqueid not null,
+				location_id number(20,0) constraint nn_exam_location_pref_owner not null,
+				pref_level_id number(20,0) constraint nn_exam_location_pref_pref not null,
+				period_id number(20,0) constraint nn_exam_location_pref_period not null
+			)
+		</plsql>
+		<plsql>
+			alter table %SCHEMA%.exam_location_pref add constraint pk_exam_location_pref primary key (uniqueid)
+		</plsql>
+		<mysql>
+			create table %SCHEMA%.exam_location_pref (
+				uniqueid decimal(20,0) primary key not null,
+				location_id decimal(20,0) not null,
+				pref_level_id decimal(20,0) not null,
+				period_id decimal(20,0) not null
+			)
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.exam_location_pref 
+			add constraint fk_exam_location_pref_pref foreign key (pref_level_id)
+			references %SCHEMA%.preference_level (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.exam_location_pref
+			add constraint fk_exam_location_pref_period foreign key (period_id)
+			references %SCHEMA%.exam_period (uniqueid) on delete cascade
+		</sql>
+		<plsql>
+			create index %SCHEMA%.idx_exam_location_pref on %SCHEMA%.exam_location_pref(location_id)
+		</plsql>
+		<mysql>
+			create index idx_exam_location_pref on %SCHEMA%.exam_location_pref(location_id)
+		</mysql>
+	</update>
 </dbupdate>

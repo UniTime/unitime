@@ -42,9 +42,8 @@ public abstract class BaseLocation  implements Serializable {
 	public static String PROP_IGNORE_ROOM_CHECK = "ignoreRoomCheck";
 	public static String PROP_MANAGER_IDS = "managerIds";
 	public static String PROP_PATTERN = "pattern";
-	public static String PROP_EXAM_ENABLED = "examEnabled";
+	public static String PROP_EXAM_TYPE = "examType";
 	public static String PROP_EXAM_CAPACITY = "examCapacity";
-	public static String PROP_EXAM_PREF = "examPref";
 	public static String PROP_DISPLAY_NAME = "displayName";
 
 
@@ -101,9 +100,8 @@ public abstract class BaseLocation  implements Serializable {
 	private java.lang.Boolean ignoreRoomCheck;
 	private java.lang.String managerIds;
 	private java.lang.String pattern;
-	private java.lang.Boolean examEnabled;
+	private java.lang.Integer examType;
 	private java.lang.Integer examCapacity;
-	private java.lang.String examPref;
 	private java.lang.String displayName;
 
 	// many to one
@@ -114,6 +112,7 @@ public abstract class BaseLocation  implements Serializable {
 	private java.util.Set assignments;
 	private java.util.Set roomGroups;
 	private java.util.Set roomDepts;
+	private java.util.Set examPreferences;
 
 
 
@@ -278,16 +277,16 @@ public abstract class BaseLocation  implements Serializable {
 	/**
 	 * Return the value associated with the column: EXAM_ENABLE
 	 */
-	public java.lang.Boolean isExamEnabled () {
-		return examEnabled;
+	public java.lang.Integer getExamType () {
+		return examType;
 	}
 
 	/**
 	 * Set the value related to the column: EXAM_ENABLE
 	 * @param examEnabled the EXAM_ENABLE value
 	 */
-	public void setExamEnabled (java.lang.Boolean examEnabled) {
-		this.examEnabled = examEnabled;
+	public void setExamType (java.lang.Integer examType) {
+		this.examType = examType;
 	}
 
 
@@ -306,25 +305,6 @@ public abstract class BaseLocation  implements Serializable {
 	public void setExamCapacity (java.lang.Integer examCapacity) {
 		this.examCapacity = examCapacity;
 	}
-
-
-
-	/**
-	 * Return the value associated with the column: EXAM_Pref
-	 */
-	public java.lang.String getExamPref () {
-		return examPref;
-	}
-
-	/**
-	 * Set the value related to the column: EXAM_Pref
-	 * @param examPref the EXAM_Pref value
-	 */
-	public void setExamPref (java.lang.String examPref) {
-		this.examPref = examPref;
-	}
-
-
 
 	/**
 	 * Return the value associated with the column: DISPLAY_NAME
@@ -432,7 +412,8 @@ public abstract class BaseLocation  implements Serializable {
 	}
 
 
-
+	public java.util.Set getExamPreferences() { return examPreferences; }
+	public void setExamPreferences(java.util.Set examPreferences) { this.examPreferences = examPreferences; }
 
 
 	public boolean equals (Object obj) {
