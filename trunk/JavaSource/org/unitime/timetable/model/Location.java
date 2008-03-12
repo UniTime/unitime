@@ -24,14 +24,13 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.TreeSet;
 
 import org.hibernate.HibernateException;
 import org.unitime.commons.User;
 import org.unitime.timetable.model.base.BaseLocation;
+import org.unitime.timetable.model.dao.ExamLocationPrefDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.solver.exam.ui.ExamRoomInfo;
 import org.unitime.timetable.webutil.RequiredTimeTable;
@@ -76,6 +75,11 @@ public abstract class Location extends BaseLocation implements Comparable {
 	}
 
 /*[CONSTRUCTOR MARKER END]*/
+	
+	private static final int sExamLocationTypeNone = 0;
+	private static final int sExamLocationTypeFinal = 1;
+	private static final int sExamLocationTypeEvening = 2;
+	private static final int sExamLocationTypeBoth = 3;
 
 	public int compareTo(Object o) {
 		if (o==null || !(o instanceof Location)) return -1;
@@ -501,141 +505,122 @@ public abstract class Location extends BaseLocation implements Comparable {
         }
     }
     
-    public Hashtable getExamPreferences() {
-        Hashtable ret = new Hashtable();
-        if (getExamPref()==null) return ret;
-        try {
-            for (StringTokenizer s = new StringTokenizer(getExamPref(),":");s.hasMoreTokens();) {
-                String token = s.nextToken();
-                StringTokenizer z = new StringTokenizer(token,",");
-                int dateOffset = Integer.parseInt(z.nextToken());
-                int startSlot = Integer.parseInt(z.nextToken());
-                char pref = z.nextToken().charAt(0);
-                ExamPeriod period = ExamPeriod.findByDateStart(getSession().getUniqueId(), dateOffset, startSlot);
-                if (period==null) continue;
-                PreferenceLevel preference = PreferenceLevel.getPreferenceLevel(PreferenceLevel.char2prolog(pref));
-                if (preference==null) continue;
-                ret.put(period, preference);
-            }
-        } catch (Exception e) {}
+    public Hashtable<ExamPeriod,PreferenceLevel> getExamPreferences(int examType) {
+        Hashtable<ExamPeriod,PreferenceLevel> ret = new Hashtable();
+        for (Iterator i=getExamPreferences().iterator();i.hasNext();) {
+            ExamLocationPref pref = (ExamLocationPref)i.next();
+            if (examType==pref.getExamPeriod().getExamType())
+                ret.put(pref.getExamPeriod(),pref.getPrefLevel());
+        }
         return ret;
     }
     
     public PreferenceLevel getExamPreference(ExamPeriod period) {
-        if (getExamPref()==null) 
-            return PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral);
-        try {
-            for (StringTokenizer s = new StringTokenizer(getExamPref(),":");s.hasMoreTokens();) {
-                String token = s.nextToken();
-                StringTokenizer z = new StringTokenizer(token,",");
-                int dateOffset = Integer.parseInt(z.nextToken());
-                int startSlot = Integer.parseInt(z.nextToken());
-                char pref = z.nextToken().charAt(0);
-                if (period.getDateOffset()==dateOffset && period.getStartSlot()==startSlot)
-                    return PreferenceLevel.getPreferenceLevel(PreferenceLevel.char2prolog(pref));
-            }
-        } catch (Exception e) {}
+        for (Iterator i=getExamPreferences().iterator();i.hasNext();) {
+            ExamLocationPref pref = (ExamLocationPref)i.next();
+            if (pref.getExamPeriod().equals(period)) return pref.getPrefLevel();
+        }
         return PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral);
     }
     
-    public void setExamPreferences(Hashtable preferences) {
-        String prefStr = null;
-        for (Iterator i=preferences.entrySet().iterator();i.hasNext();) {
-            Map.Entry entry = (Map.Entry)i.next();
-            ExamPeriod period = (ExamPeriod)entry.getKey();
-            PreferenceLevel pref = (PreferenceLevel)entry.getValue();
-            if (!PreferenceLevel.sNeutral.equals(pref.getPrefProlog())) {
-                prefStr = (prefStr==null?"":prefStr+":")+
-                    period.getDateOffset()+","+period.getStartSlot()+","+PreferenceLevel.prolog2char(pref.getPrefProlog());
+    public void clearExamPreferences(int examType) {
+        for (Iterator i=getExamPreferences().iterator();i.hasNext();) {
+            ExamLocationPref pref = (ExamLocationPref)i.next();
+            if (examType==pref.getExamPeriod().getExamType()) {
+                new ExamLocationPrefDAO().getSession().delete(pref);
+                i.remove();
             }
         }
-        setExamPref(prefStr);
     }
-
-
-    public void clearExamPreferences() {
-        setExamPref(null);
+    
+    public void setExamPreference(ExamPeriod period, PreferenceLevel preference) {
+        for (Iterator i=getExamPreferences().iterator();i.hasNext();) {
+            ExamLocationPref pref = (ExamLocationPref)i.next();
+            if (pref.getExamPeriod().equals(period)) {
+                if (PreferenceLevel.sNeutral.equals(preference.getPrefProlog())) {
+                    new ExamLocationPrefDAO().getSession().delete(pref);
+                    i.remove();
+                } else {
+                    pref.setPrefLevel(preference);
+                    new ExamLocationPrefDAO().getSession().update(pref);
+                }
+                return; 
+            }
+        }
+        if (PreferenceLevel.sNeutral.equals(preference.getPrefProlog())) return;
+        ExamLocationPref pref = new ExamLocationPref();
+        pref.setExamPeriod(period);
+        pref.setPrefLevel(preference);
+        pref.setLocation(this);
+        getExamPreferences().add(pref);
+        new ExamLocationPrefDAO().getSession().save(pref);
     }
     
     public void addExamPreference(ExamPeriod period, PreferenceLevel preference) {
-        if (!PreferenceLevel.sNeutral.equals(preference.getPrefProlog()))
-            setExamPref((getExamPref()==null?"":getExamPref()+":")+period.getDateOffset()+","+period.getStartSlot()+","+PreferenceLevel.prolog2char(preference.getPrefProlog()));
+        if (PreferenceLevel.sNeutral.equals(preference.getPrefProlog())) return;
+        ExamLocationPref pref = new ExamLocationPref();
+        pref.setExamPeriod(period);
+        pref.setPrefLevel(preference);
+        pref.setLocation(this);
+        getExamPreferences().add(pref);
+        new ExamLocationPrefDAO().getSession().save(pref);
     }
-    
-    public String getExamPreferencesHtml() {
-        if (getExamPref()==null) return null;
+
+    public String getExamPreferencesHtml(int examType) {
         StringBuffer ret = new StringBuffer();
-        try {
-            for (StringTokenizer s = new StringTokenizer(getExamPref(),":");s.hasMoreTokens();) {
-                String token = s.nextToken();
-                StringTokenizer z = new StringTokenizer(token,",");
-                int dateOffset = Integer.parseInt(z.nextToken());
-                int startSlot = Integer.parseInt(z.nextToken());
-                char pref = z.nextToken().charAt(0);
-                ExamPeriod period = ExamPeriod.findByDateStart(getSession().getUniqueId(), dateOffset, startSlot);
-                if (period==null) continue;
-                PreferenceLevel preference = PreferenceLevel.getPreferenceLevel(PreferenceLevel.char2prolog(pref));
-                if (preference==null || PreferenceLevel.sNeutral.equals(preference.getPrefProlog())) continue;
-                if (ret.length()>0) ret.append("<br>");
-                ret.append(
-                        "<span style='color:"+PreferenceLevel.prolog2color(preference.getPrefProlog())+";'>"+
-                        preference.getPrefName()+" "+period.getName()+
-                        "</span>");
-            }
-        } catch (Exception e) {}
+        for (Iterator i=getExamPreferences().iterator();i.hasNext();) {
+            ExamLocationPref pref = (ExamLocationPref)i.next();
+            if (examType!=pref.getExamPeriod().getExamType()) continue;
+            ret.append(
+                    "<span style='color:"+PreferenceLevel.prolog2color(pref.getPrefLevel().getPrefProlog())+";'>"+
+                    pref.getPrefLevel().getPrefName()+" "+pref.getExamPeriod().getName()+
+                    "</span>");
+        }
         return ret.toString();
     }
     
-    public String getExamPreferencesAbbreviationHtml() {
-        if (getExamPref()==null) return null;
+    public String getExamPreferencesAbbreviationHtml(int examType) {
         StringBuffer ret = new StringBuffer();
-        try {
-            for (StringTokenizer s = new StringTokenizer(getExamPref(),":");s.hasMoreTokens();) {
-                String token = s.nextToken();
-                StringTokenizer z = new StringTokenizer(token,",");
-                int dateOffset = Integer.parseInt(z.nextToken());
-                int startSlot = Integer.parseInt(z.nextToken());
-                char pref = z.nextToken().charAt(0);
-                ExamPeriod period = ExamPeriod.findByDateStart(getSession().getUniqueId(), dateOffset, startSlot);
-                if (period==null) continue;
-                PreferenceLevel preference = PreferenceLevel.getPreferenceLevel(PreferenceLevel.char2prolog(pref));
-                if (preference==null || PreferenceLevel.sNeutral.equals(preference.getPrefProlog())) continue;
-                if (ret.length()>0) ret.append("<br>");
-                ret.append(
-                        "<span title='"+preference.getPrefName()+" "+period.getName()+"' style='color:"+PreferenceLevel.prolog2color(preference.getPrefProlog())+";'>"+
-                        period.getAbbreviation()+
-                        "</span>");
-            }
-        } catch (Exception e) {}
+        for (Iterator i=getExamPreferences().iterator();i.hasNext();) {
+            ExamLocationPref pref = (ExamLocationPref)i.next();
+            if (examType!=pref.getExamPeriod().getExamType()) continue;
+            ret.append(
+                    "<span title='"+pref.getPrefLevel().getPrefName()+" "+pref.getExamPeriod().getName()+"' style='color:"+PreferenceLevel.prolog2color(pref.getPrefLevel().getPrefProlog())+";'>"+
+                    pref.getExamPeriod().getAbbreviation()+
+                    "</span>");
+        }
         return ret.toString();
     }
     
-    public String getExamPreferencesAbbreviation() {
-        if (getExamPref()==null) return null;
+    public String getExamPreferencesAbbreviation(int examType) {
         StringBuffer ret = new StringBuffer();
-        try {
-            for (StringTokenizer s = new StringTokenizer(getExamPref(),":");s.hasMoreTokens();) {
-                String token = s.nextToken();
-                StringTokenizer z = new StringTokenizer(token,",");
-                int dateOffset = Integer.parseInt(z.nextToken());
-                int startSlot = Integer.parseInt(z.nextToken());
-                char pref = z.nextToken().charAt(0);
-                ExamPeriod period = ExamPeriod.findByDateStart(getSession().getUniqueId(), dateOffset, startSlot);
-                if (period==null) continue;
-                PreferenceLevel preference = PreferenceLevel.getPreferenceLevel(PreferenceLevel.char2prolog(pref));
-                if (preference==null || PreferenceLevel.sNeutral.equals(preference.getPrefProlog())) continue;
-                if (ret.length()>0) ret.append("\n");
-                ret.append(PreferenceLevel.prolog2abbv(preference.getPrefProlog())+" "+period.getAbbreviation());
-            }
-        } catch (Exception e) {}
+        for (Iterator i=getExamPreferences().iterator();i.hasNext();) {
+            ExamLocationPref pref = (ExamLocationPref)i.next();
+            if (examType!=pref.getExamPeriod().getExamType()) continue;
+            if (ret.length()>0) ret.append("\n");
+            ret.append(PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.getExamPeriod().getAbbreviation());
+        }
         return ret.toString();
     }
 
-    public static TreeSet findAllExamLocations(Long sessionId) {
-        return new TreeSet(
-                (new LocationDAO()).getSession()
-                .createQuery("select room from Location as room where room.session.uniqueId = :sessionId and room.examEnabled = true")
-                .setLong("sessionId", sessionId).setCacheable(true).list());
+    public static TreeSet findAllExamLocations(Long sessionId, int examType) {
+        switch (examType) {
+        case Exam.sExamTypeFinal :
+            return new TreeSet(
+                    (new LocationDAO()).getSession()
+                    .createQuery("select room from Location as room where room.session.uniqueId = :sessionId and room.examType in ("+sExamLocationTypeFinal+","+sExamLocationTypeBoth+")")
+                    .setLong("sessionId", sessionId).setCacheable(true).list());
+        case Exam.sExamTypeEvening :
+            return new TreeSet(
+                    (new LocationDAO()).getSession()
+                    .createQuery("select room from Location as room where room.session.uniqueId = :sessionId and room.examType in ("+sExamLocationTypeEvening+","+sExamLocationTypeBoth+")")
+                    .setLong("sessionId", sessionId).setCacheable(true).list());
+        default :
+            return new TreeSet(
+                    (new LocationDAO()).getSession()
+                    .createQuery("select room from Location as room where room.session.uniqueId = :sessionId and room.examType != "+sExamLocationTypeNone)
+                    .setLong("sessionId", sessionId).setCacheable(true).list());
+        }
     }
     
     public static TreeSet findNotAvailableExamLocations(Long periodId) {
@@ -647,7 +632,7 @@ public abstract class Location extends BaseLocation implements Comparable {
     }
     
     public static TreeSet findAllAvailableExamLocations(ExamPeriod period) {
-        TreeSet locations = findAllExamLocations(period.getSession().getUniqueId());
+        TreeSet locations = findAllExamLocations(period.getSession().getUniqueId(),period.getExamType());
         locations.removeAll(findNotAvailableExamLocations(period.getUniqueId()));
         return locations;
     }
@@ -682,5 +667,27 @@ public abstract class Location extends BaseLocation implements Comparable {
                 .setLong("periodId",periodId)
                 .setLong("locationId",getUniqueId())
                 .setCacheable(true).list();
+    }
+    
+    public boolean isExamEnabled(int examType) {
+        switch (examType) {
+        case Exam.sExamTypeFinal :
+                return sExamLocationTypeFinal==getExamType() || sExamLocationTypeBoth==getExamType();
+        case Exam.sExamTypeEvening :
+                return sExamLocationTypeEvening==getExamType() || sExamLocationTypeBoth==getExamType();
+        }
+        return false;
+    }
+    public void setExamEnabled(int examType, boolean enabled) {
+        switch (examType) {
+        case Exam.sExamTypeFinal :
+                setExamType(
+                        (isExamEnabled(Exam.sExamTypeEvening)?sExamLocationTypeEvening:0)+
+                        (enabled?sExamLocationTypeFinal:0));
+        case Exam.sExamTypeEvening :
+            setExamType(
+                    (isExamEnabled(Exam.sExamTypeFinal)?sExamLocationTypeFinal:0)+
+                    (enabled?sExamLocationTypeEvening:0));
+        }
     }
 }
