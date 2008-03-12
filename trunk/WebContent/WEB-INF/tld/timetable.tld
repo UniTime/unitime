@@ -348,4 +348,29 @@
 		<tag-class>org.unitime.timetable.tags.CanSeeExams</tag-class>
 		<body-content>JSP</body-content>
 	</tag>
+
+	<tag>
+		<name>hasFinalExams</name>
+		<tag-class>org.unitime.timetable.tags.HasFinalExams</tag-class>
+		<body-content>JSP</body-content>
+	</tag>
+
+	<tag>
+		<name>notHasFinalExams</name>
+		<tag-class>org.unitime.timetable.tags.NotHasFinalExams</tag-class>
+		<body-content>JSP</body-content>
+	</tag>
+
+
+	<tag>
+		<name>hasEveningExams</name>
+		<tag-class>org.unitime.timetable.tags.HasEveningExams</tag-class>
+		<body-content>JSP</body-content>
+	</tag>
+
+	<tag>
+		<name>notHasEveningExams</name>
+		<tag-class>org.unitime.timetable.tags.NotHasEveningExams</tag-class>
+		<body-content>JSP</body-content>
+	</tag>
 </taglib>
