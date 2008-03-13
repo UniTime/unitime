@@ -37,12 +37,14 @@ import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.RoleListForm;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.ManagerRole;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.model.UserData;
 import org.unitime.timetable.model.dao.ManagerRoleDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.util.Constants;
@@ -252,8 +254,19 @@ public class RoleListAction extends Action {
     private boolean setPrimaryRole(HttpSession webSession, User user, ManagerRole role, Session session) throws Exception {
         
         if (role==null) return false;
-        if (session==null)
-            session = Session.defaultSession(role);
+        if (session==null) {
+            try {
+                if ("true".equals(ApplicationProperties.getProperty("tmtbl.keeplastused.session"))) {
+                    String sessionId = UserData.getProperty(webSession, "LastUsed.acadSessionId");
+                    if (sessionId!=null) {
+                        session = new SessionDAO().get(Long.valueOf(sessionId));
+                        if (session!=null && !Session.availableSessions(role).contains(session)) session = null;
+                    }
+                }
+            } catch (Exception e) {}
+            if (session==null)
+                session = Session.defaultSession(role);
+        }
         
         if (session==null) return false;
         
@@ -268,6 +281,8 @@ public class RoleListAction extends Action {
             throw new Exception("Timetable manager "+tm.getName()+" cannot manage requested academic session "+session.getAcademicYear()+" "+session.getAcademicTerm()+" "+session.getAcademicInitiative()+".");
         
         Constants.resetSessionAttributes(webSession);
+        
+        UserData.setProperty(webSession, "LastUsed.acadSessionId", session.getUniqueId().toString());
 
         user.setAdmin(Roles.ADMIN_ROLE.equals(role.getRole().getReference()));
         user.setRole(role.getRole().getReference());
