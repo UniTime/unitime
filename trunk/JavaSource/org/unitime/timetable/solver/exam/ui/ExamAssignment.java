@@ -32,6 +32,7 @@ import org.unitime.timetable.model.ExamPeriodPref;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.dao.ExamPeriodDAO;
+import org.unitime.timetable.util.Constants;
 
 import net.sf.cpsolver.coursett.preference.MinMaxPreferenceCombination;
 import net.sf.cpsolver.exam.model.ExamDistributionConstraint;
@@ -103,13 +104,14 @@ public class ExamAssignment extends ExamInfo implements Serializable, Comparable
     public ExamAssignment(Exam exam, ExamPeriod period, Collection<ExamRoomInfo> rooms) throws Exception {
         super(exam);
         if (period==null) return;
+        if (Constants.SLOT_LENGTH_MIN*period.getLength()<exam.getLength()) throw new Exception("Given period is two short.");
         String iPeriodPref = period.getPrefLevel().getPrefProlog();
         boolean reqPeriod = false;
         for (Iterator i=exam.getPreferences(ExamPeriodPref.class).iterator();i.hasNext();) {
             ExamPeriodPref periodPref = (ExamPeriodPref)i.next();
             if (PreferenceLevel.sRequired.equals(periodPref.getPrefLevel().getPrefProlog())) reqPeriod = true;
             if (periodPref.getExamPeriod().equals(period))
-                iPeriodPref = period.getPrefLevel().getPrefProlog();
+                iPeriodPref = periodPref.getPrefLevel().getPrefProlog();
         }
         if (PreferenceLevel.sProhibited.equals(iPeriodPref)) throw new Exception("Given period is prohibited.");
         if (reqPeriod && !PreferenceLevel.sRequired.equals(iPeriodPref)) throw new Exception("Given period is not required.");
