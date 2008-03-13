@@ -40,7 +40,6 @@ import org.hibernate.mapping.Selectable;
 import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.util.ConfigHelper;
 import org.unitime.commons.hibernate.id.UniqueIdGenerator;
-import org.unitime.commons.hibernate.interceptors.LobCleanUpInterceptor;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.base._BaseRootDAO;
 import org.unitime.timetable.model.dao._RootDAO;
@@ -213,8 +212,6 @@ public class HibernateUtil {
         sLog.debug("  -- configuration object created");
         cfg.configure(document);
         sLog.debug("  -- hibernate configured");
-        cfg.setInterceptor(new LobCleanUpInterceptor(cfg));
-        sLog.debug("  -- LOB clanup interceptor registered");
 
         fixSchemaInFormulas(cfg);
         
@@ -275,9 +272,6 @@ public class HibernateUtil {
 
             cfg.configure(document);
             sLog.debug("  -- hibernate configured");
-            
-            cfg.setInterceptor(new org.unitime.commons.hibernate.interceptors.LobCleanUpInterceptor(cfg));
-            sLog.debug("  -- interceptor set");
             
             HibernateUtil.fixSchemaInFormulas(cfg);
             sLog.debug("  -- %SCHEMA% in formulas changed to "+cfg.getProperty("default_schema"));
