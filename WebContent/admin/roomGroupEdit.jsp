@@ -23,6 +23,7 @@
 <%@ page import="org.unitime.timetable.model.RoomFeature" %>
 <%@ page import="org.unitime.timetable.form.RoomGroupEditForm" %>
 <%@ page import="org.unitime.timetable.model.Location" %>
+<%@page import="org.unitime.timetable.model.Exam"%>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
@@ -181,8 +182,8 @@
 								<%=r1.getCapacity()%>
 							</TD>
 							
-							<% if (r1.isExamEnabled()) { %>
-								<TD align="center"><%=r1.getExamCapacity()%>
+							<% if (r1.isExamEnabled(Exam.sExamTypeEvening) || r1.isExamEnabled(Exam.sExamTypeFinal)) { %>
+								<TD align="center"><%=r1.getExamCapacity()%></TD>
 							<% } else { %>
 								<TD></TD>
 							<% } %>
@@ -257,8 +258,8 @@
 								<%=r2.getCapacity()%>
 							</TD>
 							
-							<% if (r2.isExamEnabled()) { %>
-								<TD align="center"><%=r2.getExamCapacity()%>
+							<% if (r2.isExamEnabled(Exam.sExamTypeEvening) || r2.isExamEnabled(Exam.sExamTypeFinal)) { %>
+								<TD align="center"><%=r2.getExamCapacity()%></TD>
 							<% } else { %>
 								<TD></TD>
 							<% } %>
