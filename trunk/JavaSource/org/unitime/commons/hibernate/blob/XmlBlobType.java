@@ -22,14 +22,9 @@ package org.unitime.commons.hibernate.blob;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.sql.Blob;
-import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -50,16 +45,14 @@ import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 import org.hibernate.HibernateException;
 import org.hibernate.usertype.UserType;
-import org.unitime.commons.hibernate.interceptors.LobCleanUpInterceptor;
 
 /**
  * @author Tomas Muller
  */
 public class XmlBlobType implements UserType {
 	protected static Log sLog = LogFactory.getLog(XmlBlobType.class);
-
+	
     public Object nullSafeGet(ResultSet rs, String[] names, Object owner) throws SQLException {
-        //Get the blob field we are interested in from the result set 
         Blob blob = rs.getBlob(names[0]);
         if (blob==null) return null;
 		try {
@@ -77,104 +70,18 @@ public class XmlBlobType implements UserType {
 
     public void nullSafeSet(PreparedStatement ps, Object value, int index) throws SQLException, HibernateException {
         DatabaseMetaData dbMetaData = ps.getConnection().getMetaData();
-
         if (value == null) {
             ps.setNull(index, sqlTypes()[0]);
         } else {
-        	try {
-        		Class oracleBlobClass = Class.forName("oracle.sql.BLOB");
-        		Class oracleConnectionClass = Class.forName("oracle.jdbc.OracleConnection");
-
-        		// now get the static factory method
-        		Class[] partypes = new Class[3];
-        		partypes[0] = Connection.class;
-        		partypes[1] = Boolean.TYPE;
-        		partypes[2] = Integer.TYPE;
-
-        		Method createTemporaryMethod = oracleBlobClass.getDeclaredMethod("createTemporary", partypes);
-        		
-        		Field durationSessionField = oracleBlobClass.getField("DURATION_SESSION");
-        		Object[] arglist = new Object[3];
-
-        		Connection conn = dbMetaData.getConnection();
-                try {
-                    conn = (Connection)conn.getClass().getMethod("getConnection", new Class[]{}).invoke(conn, new Object[]{});
-                } catch (NoSuchMethodException ex) {}
-        		
-        		// Make sure connection object is right type
-        		if (!oracleConnectionClass.isAssignableFrom(conn.getClass())) {
-                    //My SQL Case
-                    ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-                    // write the document to the blob 
-                    XMLWriter writer = new XMLWriter(new GZIPOutputStream(bytes),OutputFormat.createCompactFormat());
-                    writer.write((Document)value);
-                    writer.flush(); writer.close();
-
-                    ps.setBinaryStream(index, new ByteArrayInputStream(bytes.toByteArray(),0,bytes.size()), bytes.size());
-                    
-                    return;
-                    /*
-        			throw new HibernateException("JDBC connection object must be a oracle.jdbc.OracleConnection. " +
-        					"Connection class is " + conn.getClass().getName());
-                            */
-        		}
-        		
-        		arglist[0] = conn;
-        		arglist[1] = Boolean.TRUE;
-        		arglist[2] = durationSessionField.get(null); //null is valid because of static field
-        		
-        		// Create our BLOB
-        		Object tempBlob = createTemporaryMethod.invoke(null, arglist); //null is valid because of static method
-        		
-        		// get the open method
-        		partypes = new Class[1];
-        		partypes[0] = Integer.TYPE;
-        		
-        		Method openMethod = oracleBlobClass.getDeclaredMethod("open", partypes);
-        		
-        		// prepare to call the method
-        		Field modeReadWriteField = oracleBlobClass.getField("MODE_READWRITE");
-        		arglist = new Object[1];
-        		arglist[0] = modeReadWriteField.get(null); //null is valid because of static field
-        		
-        		// call open(BLOB.MODE_READWRITE);
-        		openMethod.invoke(tempBlob, arglist);
-        		
-        		// get the getCharacterOutputStream method
-        		Method getBinaryOutputStreamMethod = oracleBlobClass.getDeclaredMethod("getBinaryOutputStream", new Class[]{});
-        		
-        		OutputStream out = (OutputStream)getBinaryOutputStreamMethod.invoke(tempBlob, new Object[]{});
-        		
-        		// write the document to the blob 
-        		XMLWriter writer = new XMLWriter(new GZIPOutputStream(out),OutputFormat.createCompactFormat());
-        		writer.write((Document)value);
-        		writer.flush(); writer.close();
-        		
-        		Method closeMethod = oracleBlobClass.getDeclaredMethod("close", new Class[]{});
-        		
-        		// call the close method 
-                closeMethod.invoke(tempBlob, new Object[]{});
-                
-                // add the blob to the statement
-                ps.setBlob(index, (Blob) tempBlob);
-                
-                LobCleanUpInterceptor.registerTempLobs(tempBlob);
-        	} catch (ClassNotFoundException e) {
-        		// could not find the class with reflection
-        		throw new HibernateException("Unable to find a required class, reason: " + e.getMessage(),e);
-        	} catch (NoSuchMethodException e) {
-        		// could not find the metho with reflection
-        		throw new HibernateException("Unable to find a required method, reason: " + e.getMessage(),e);
-        	} catch (NoSuchFieldException e) {
-        		// could not find the field with reflection
-        		throw new HibernateException("Unable to find a required field, reason: " + e.getMessage(),e);
-        	} catch (IllegalAccessException e) {
-        		throw new HibernateException("Unable to access a required method or field, reason: " + e.getMessage(),e);
-        	} catch (InvocationTargetException e) {
-        		throw new HibernateException(e.getMessage(),e);
-        	} catch (IOException e) {
-        		throw new HibernateException(e.getMessage(),e);
-        	}
+            try {
+                ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+                XMLWriter writer = new XMLWriter(new GZIPOutputStream(bytes),OutputFormat.createCompactFormat());
+                writer.write((Document)value);
+                writer.flush(); writer.close();
+                ps.setBinaryStream(index, new ByteArrayInputStream(bytes.toByteArray(),0,bytes.size()), bytes.size());
+            } catch (IOException e) {
+                throw new HibernateException(e.getMessage(),e);
+            }
         }
     }
 
@@ -216,7 +123,6 @@ public class XmlBlobType implements UserType {
     			if (!equals(a.get(i),b.get(i))) return false;
     		return true;
     	} else return (x.equals(y));
-    	//return ((Document)x).equals((Document)y);
     }
     
     public Serializable disassemble(Object value) throws HibernateException {
