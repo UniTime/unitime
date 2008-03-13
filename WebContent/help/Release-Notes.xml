@@ -34,6 +34,15 @@
 				<line>First release of examination timetabling.</line>
 			</description>
 		</item>
+		<item>
+			<name>Database</name>
+			<description>
+				<line>Oracle JDBC driver updated to version 10.2.0.4
+					<line>Special care about Oracle BLOBs is no longer needed, so it was removed.</line>
+					<line>This also fixes the issue: Unable to save timetable, reason: Unable to find a required class oracle.sql.BLOB</line>
+				</line> 
+			</description>
+		</item>
 	</category>
 </release>
 
