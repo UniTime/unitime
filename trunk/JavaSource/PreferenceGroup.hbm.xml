@@ -483,6 +483,14 @@
 				not-null="false"
 				length="20"
 			/>
+		
+			<property
+				name="externalUniqueId"
+				column="EXTERNAL_UID"
+				type="java.lang.String"
+				not-null="false"
+				length="40"
+			/>
 			
 		</union-subclass>
 		

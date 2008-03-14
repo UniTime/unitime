@@ -42,6 +42,7 @@ public abstract class BaseInstructionalOffering  implements Serializable {
 	public static String PROP_LIMIT = "limit";
 	public static String PROP_DESIGNATOR_REQUIRED = "designatorRequired";
 	public static String PROP_UNIQUE_ID_ROLLED_FORWARD_FROM = "uniqueIdRolledForwardFrom";
+	public static String PROP_EXTERNAL_UNIQUE_ID = "externalUniqueId";
 
 
 	// constructors
@@ -93,6 +94,7 @@ public abstract class BaseInstructionalOffering  implements Serializable {
 	private java.lang.Integer limit;
 	private java.lang.Boolean designatorRequired;
 	private java.lang.Long uniqueIdRolledForwardFrom;
+	private java.lang.String externalUniqueId;
 
 	// many to one
 	private org.unitime.timetable.model.Session session;
@@ -264,6 +266,23 @@ public abstract class BaseInstructionalOffering  implements Serializable {
 	 */
 	public void setUniqueIdRolledForwardFrom (java.lang.Long uniqueIdRolledForwardFrom) {
 		this.uniqueIdRolledForwardFrom = uniqueIdRolledForwardFrom;
+	}
+
+
+
+	/**
+	 * Return the value associated with the column: EXTERNAL_UID
+	 */
+	public java.lang.String getExternalUniqueId () {
+		return externalUniqueId;
+	}
+
+	/**
+	 * Set the value related to the column: EXTERNAL_UID
+	 * @param externalUniqueId the EXTERNAL_UID value
+	 */
+	public void setExternalUniqueId (java.lang.String externalUniqueId) {
+		this.externalUniqueId = externalUniqueId;
 	}
 
 

@@ -1,7 +1,6 @@
-/*
- * UniTime 3.0 (University Course Timetabling & Student Sectioning Application)
- * Copyright (C) 2007, UniTime.org, and individual contributors
- * as indicated by the @authors tag.
+/* 
+ * UniTime 3.1 (University Course Timetabling & Student Sectioning Application)
+ * Copyright (C) 2008, UniTime.org
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,34 +15,35 @@
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-*/
+ */ 
+ 
 package org.unitime.timetable.model.base;
 
 import org.hibernate.Hibernate;
 import org.hibernate.Session;
-import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
+import org.unitime.timetable.model.dao.StandardEventNoteDAO;
 import org.hibernate.criterion.Order;
 
 /**
  * This is an automatically generated DAO class which should not be edited.
  */
-public abstract class BaseInstructionalOfferingDAO extends org.unitime.timetable.model.dao._RootDAO {
+public abstract class BaseStandardEventNoteDAO extends org.unitime.timetable.model.dao._RootDAO {
 
 	// query name references
 
 
-	public static InstructionalOfferingDAO instance;
+	public static StandardEventNoteDAO instance;
 
 	/**
 	 * Return a singleton of the DAO
 	 */
-	public static InstructionalOfferingDAO getInstance () {
-		if (null == instance) instance = new InstructionalOfferingDAO();
+	public static StandardEventNoteDAO getInstance () {
+		if (null == instance) instance = new StandardEventNoteDAO();
 		return instance;
 	}
 
 	public Class getReferenceClass () {
-		return org.unitime.timetable.model.InstructionalOffering.class;
+		return org.unitime.timetable.model.StandardEventNote.class;
 	}
 
     public Order getDefaultOrder () {
@@ -51,35 +51,35 @@ public abstract class BaseInstructionalOfferingDAO extends org.unitime.timetable
     }
 
 	/**
-	 * Cast the object as a org.unitime.timetable.model.InstructionalOffering
+	 * Cast the object as a org.unitime.timetable.model.StandardEventNote
 	 */
-	public org.unitime.timetable.model.InstructionalOffering cast (Object object) {
-		return (org.unitime.timetable.model.InstructionalOffering) object;
+	public org.unitime.timetable.model.StandardEventNote cast (Object object) {
+		return (org.unitime.timetable.model.StandardEventNote) object;
 	}
 
-	public org.unitime.timetable.model.InstructionalOffering get(java.lang.Long key)
+	public org.unitime.timetable.model.StandardEventNote get(java.lang.Long key)
 	{
-		return (org.unitime.timetable.model.InstructionalOffering) get(getReferenceClass(), key);
+		return (org.unitime.timetable.model.StandardEventNote) get(getReferenceClass(), key);
 	}
 
-	public org.unitime.timetable.model.InstructionalOffering get(java.lang.Long key, Session s)
+	public org.unitime.timetable.model.StandardEventNote get(java.lang.Long key, Session s)
 	{
-		return (org.unitime.timetable.model.InstructionalOffering) get(getReferenceClass(), key, s);
+		return (org.unitime.timetable.model.StandardEventNote) get(getReferenceClass(), key, s);
 	}
 
-	public org.unitime.timetable.model.InstructionalOffering load(java.lang.Long key)
+	public org.unitime.timetable.model.StandardEventNote load(java.lang.Long key)
 	{
-		return (org.unitime.timetable.model.InstructionalOffering) load(getReferenceClass(), key);
+		return (org.unitime.timetable.model.StandardEventNote) load(getReferenceClass(), key);
 	}
 
-	public org.unitime.timetable.model.InstructionalOffering load(java.lang.Long key, Session s)
+	public org.unitime.timetable.model.StandardEventNote load(java.lang.Long key, Session s)
 	{
-		return (org.unitime.timetable.model.InstructionalOffering) load(getReferenceClass(), key, s);
+		return (org.unitime.timetable.model.StandardEventNote) load(getReferenceClass(), key, s);
 	}
 
-	public org.unitime.timetable.model.InstructionalOffering loadInitialize(java.lang.Long key, Session s) 
+	public org.unitime.timetable.model.StandardEventNote loadInitialize(java.lang.Long key, Session s) 
 	{ 
-		org.unitime.timetable.model.InstructionalOffering obj = load(key, s); 
+		org.unitime.timetable.model.StandardEventNote obj = load(key, s); 
 		if (!Hibernate.isInitialized(obj)) {
 			Hibernate.initialize(obj);
 		} 
@@ -90,36 +90,36 @@ public abstract class BaseInstructionalOfferingDAO extends org.unitime.timetable
 	/**
 	 * Persist the given transient instance, first assigning a generated identifier. (Or using the current value
 	 * of the identifier property if the assigned generator is used.) 
-	 * @param instructionalOffering a transient instance of a persistent class 
+	 * @param standardEventNote a transient instance of a persistent class 
 	 * @return the class identifier
 	 */
-	public java.lang.Long save(org.unitime.timetable.model.InstructionalOffering instructionalOffering)
+	public java.lang.Long save(org.unitime.timetable.model.StandardEventNote standardEventNote)
 	{
-		return (java.lang.Long) super.save(instructionalOffering);
+		return (java.lang.Long) super.save(standardEventNote);
 	}
 
 	/**
 	 * Persist the given transient instance, first assigning a generated identifier. (Or using the current value
 	 * of the identifier property if the assigned generator is used.) 
 	 * Use the Session given.
-	 * @param instructionalOffering a transient instance of a persistent class
+	 * @param standardEventNote a transient instance of a persistent class
 	 * @param s the Session
 	 * @return the class identifier
 	 */
-	public java.lang.Long save(org.unitime.timetable.model.InstructionalOffering instructionalOffering, Session s)
+	public java.lang.Long save(org.unitime.timetable.model.StandardEventNote standardEventNote, Session s)
 	{
-		return (java.lang.Long) save((Object) instructionalOffering, s);
+		return (java.lang.Long) save((Object) standardEventNote, s);
 	}
 
 	/**
 	 * Either save() or update() the given instance, depending upon the value of its identifier property. By default
 	 * the instance is always saved. This behaviour may be adjusted by specifying an unsaved-value attribute of the
 	 * identifier property mapping. 
-	 * @param instructionalOffering a transient instance containing new or updated state 
+	 * @param standardEventNote a transient instance containing new or updated state 
 	 */
-	public void saveOrUpdate(org.unitime.timetable.model.InstructionalOffering instructionalOffering)
+	public void saveOrUpdate(org.unitime.timetable.model.StandardEventNote standardEventNote)
 	{
-		saveOrUpdate((Object) instructionalOffering);
+		saveOrUpdate((Object) standardEventNote);
 	}
 
 	/**
@@ -127,34 +127,34 @@ public abstract class BaseInstructionalOfferingDAO extends org.unitime.timetable
 	 * instance is always saved. This behaviour may be adjusted by specifying an unsaved-value attribute of the identifier
 	 * property mapping. 
 	 * Use the Session given.
-	 * @param instructionalOffering a transient instance containing new or updated state.
+	 * @param standardEventNote a transient instance containing new or updated state.
 	 * @param s the Session.
 	 */
-	public void saveOrUpdate(org.unitime.timetable.model.InstructionalOffering instructionalOffering, Session s)
+	public void saveOrUpdate(org.unitime.timetable.model.StandardEventNote standardEventNote, Session s)
 	{
-		saveOrUpdate((Object) instructionalOffering, s);
+		saveOrUpdate((Object) standardEventNote, s);
 	}
 
 	/**
 	 * Update the persistent state associated with the given identifier. An exception is thrown if there is a persistent
 	 * instance with the same identifier in the current session.
-	 * @param instructionalOffering a transient instance containing updated state
+	 * @param standardEventNote a transient instance containing updated state
 	 */
-	public void update(org.unitime.timetable.model.InstructionalOffering instructionalOffering) 
+	public void update(org.unitime.timetable.model.StandardEventNote standardEventNote) 
 	{
-		update((Object) instructionalOffering);
+		update((Object) standardEventNote);
 	}
 
 	/**
 	 * Update the persistent state associated with the given identifier. An exception is thrown if there is a persistent
 	 * instance with the same identifier in the current session.
 	 * Use the Session given.
-	 * @param instructionalOffering a transient instance containing updated state
+	 * @param standardEventNote a transient instance containing updated state
 	 * @param the Session
 	 */
-	public void update(org.unitime.timetable.model.InstructionalOffering instructionalOffering, Session s)
+	public void update(org.unitime.timetable.model.StandardEventNote standardEventNote, Session s)
 	{
-		update((Object) instructionalOffering, s);
+		update((Object) standardEventNote, s);
 	}
 
 	/**
@@ -182,23 +182,23 @@ public abstract class BaseInstructionalOfferingDAO extends org.unitime.timetable
 	/**
 	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
 	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * @param instructionalOffering the instance to be removed
+	 * @param standardEventNote the instance to be removed
 	 */
-	public void delete(org.unitime.timetable.model.InstructionalOffering instructionalOffering)
+	public void delete(org.unitime.timetable.model.StandardEventNote standardEventNote)
 	{
-		delete((Object) instructionalOffering);
+		delete((Object) standardEventNote);
 	}
 
 	/**
 	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
 	 * Session or a transient instance with an identifier associated with existing persistent state. 
 	 * Use the Session given.
-	 * @param instructionalOffering the instance to be removed
+	 * @param standardEventNote the instance to be removed
 	 * @param s the Session
 	 */
-	public void delete(org.unitime.timetable.model.InstructionalOffering instructionalOffering, Session s)
+	public void delete(org.unitime.timetable.model.StandardEventNote standardEventNote, Session s)
 	{
-		delete((Object) instructionalOffering, s);
+		delete((Object) standardEventNote, s);
 	}
 	
 	/**
@@ -211,9 +211,9 @@ public abstract class BaseInstructionalOfferingDAO extends org.unitime.timetable
 	 * <li>after inserting a Blob or Clob</li>
 	 * </ul>
 	 */
-	public void refresh (org.unitime.timetable.model.InstructionalOffering instructionalOffering, Session s)
+	public void refresh (org.unitime.timetable.model.StandardEventNote standardEventNote, Session s)
 	{
-		refresh((Object) instructionalOffering, s);
+		refresh((Object) standardEventNote, s);
 	}
 
 
