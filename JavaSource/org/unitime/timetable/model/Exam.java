@@ -662,6 +662,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
 
             for (Iterator i=assignment.getDirectConflicts().iterator();i.hasNext();) {
                 ExamAssignmentInfo.DirectConflict dc = (ExamAssignmentInfo.DirectConflict)i.next();
+                if (dc.getOtherExam()==null) continue;
                 ExamConflict conf = new ExamConflict();
                 conf.setConflictType(ExamConflict.sConflictTypeDirect);
                 conf.setStudents(getStudents(hibSession, dc.getStudents()));
@@ -701,6 +702,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
             }
             for (Iterator i=assignment.getInstructorDirectConflicts().iterator();i.hasNext();) {
                 ExamAssignmentInfo.DirectConflict dc = (ExamAssignmentInfo.DirectConflict)i.next();
+                if (dc.getOtherExam()==null) continue;
                 ExamConflict conf = new ExamConflict();
                 conf.setConflictType(ExamConflict.sConflictTypeDirect);
                 conf.setStudents(getInstructors(hibSession, dc.getStudents()));
