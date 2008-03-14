@@ -1483,11 +1483,10 @@
 	</update>
 		<update version="21" date="06-Mar-2008" comment="Add External Uids to Class and Instr Offr">
 		<plsql>
-			alter table %SCHEMA%.INSTRUCTIONAL_OFFERING add external_uid varchar2(40);
+			alter table %SCHEMA%.INSTRUCTIONAL_OFFERING add external_uid varchar2(40)
 		</plsql>
 		<plsql>
-			alter table %SCHEMA%.CLASS_ add external_uid varchar2(40);
-
+			alter table %SCHEMA%.CLASS_ add external_uid varchar2(40)
 		</plsql>
 		<mysql>
 			alter table %SCHEMA%.INSTRUCTIONAL_OFFERING add external_uid varchar(40)
