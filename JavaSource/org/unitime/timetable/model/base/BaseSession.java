@@ -187,13 +187,24 @@ public abstract class BaseSession extends org.unitime.timetable.model.Preference
 		this.sessionEndDateTime = sessionEndDateTime;
 	}
 
-    public java.util.Date getExamBeginDate() {
-        return examBeginDate;
-    }
 
-    public void setExamBeginDate (java.util.Date examBeginDate) {
-        this.examBeginDate = examBeginDate;
-    }
+
+	/**
+	 * Return the value associated with the column: EXAM_BEGIN_DATE
+	 */
+	public java.util.Date getExamBeginDate () {
+		return examBeginDate;
+	}
+
+	/**
+	 * Set the value related to the column: EXAM_BEGIN_DATE
+	 * @param examBeginDate the EXAM_BEGIN_DATE value
+	 */
+	public void setExamBeginDate (java.util.Date examBeginDate) {
+		this.examBeginDate = examBeginDate;
+	}
+
+
 
 	/**
 	 * Return the value associated with the column: HOLIDAYS

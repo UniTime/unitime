@@ -45,6 +45,7 @@ public abstract class BaseClass_ extends org.unitime.timetable.model.PreferenceG
 	public static String PROP_MAX_EXPECTED_CAPACITY = "maxExpectedCapacity";
 	public static String PROP_ROOM_RATIO = "roomRatio";
 	public static String PROP_UNIQUE_ID_ROLLED_FORWARD_FROM = "uniqueIdRolledForwardFrom";
+	public static String PROP_EXTERNAL_UNIQUE_ID = "externalUniqueId";
 
 
 	// constructors
@@ -76,6 +77,7 @@ public abstract class BaseClass_ extends org.unitime.timetable.model.PreferenceG
 	private java.lang.Integer maxExpectedCapacity;
 	private java.lang.Float roomRatio;
 	private java.lang.Long uniqueIdRolledForwardFrom;
+	private java.lang.String externalUniqueId;
 
 	// one to one
 	private org.unitime.timetable.model.SectioningInfo sectioningInfo;
@@ -287,6 +289,23 @@ public abstract class BaseClass_ extends org.unitime.timetable.model.PreferenceG
 	 */
 	public void setUniqueIdRolledForwardFrom (java.lang.Long uniqueIdRolledForwardFrom) {
 		this.uniqueIdRolledForwardFrom = uniqueIdRolledForwardFrom;
+	}
+
+
+
+	/**
+	 * Return the value associated with the column: EXTERNAL_UID
+	 */
+	public java.lang.String getExternalUniqueId () {
+		return externalUniqueId;
+	}
+
+	/**
+	 * Set the value related to the column: EXTERNAL_UID
+	 * @param externalUniqueId the EXTERNAL_UID value
+	 */
+	public void setExternalUniqueId (java.lang.String externalUniqueId) {
+		this.externalUniqueId = externalUniqueId;
 	}
 
 
