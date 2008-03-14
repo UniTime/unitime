@@ -206,7 +206,7 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
             for (Enumeration e=exam.getPeriods().elements();e.hasMoreElements();) {
                 ExamPeriod period = (ExamPeriod)e.nextElement();
                 Set rooms = exam.findBestAvailableRooms(period);
-                if (rooms==null) continue;
+                if (rooms==null) rooms = new HashSet();
                 if (!exam.checkDistributionConstraints(period)) continue;
                 periods.add(new ExamAssignmentInfo(new ExamPlacement(exam, period, rooms)));
             }

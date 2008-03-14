@@ -191,6 +191,10 @@ public class ListSolutionsForm extends ActionForm {
             sInfoKeys.add("More Than 2 A Day Conflicts");
             sInfoKeys.add("Back-To-Back Conflicts");
             sInfoKeys.add("Distance Back-To-Back Conflicts");
+            sInfoKeys.add("Instructor Direct Conflicts");
+            sInfoKeys.add("Instructor More Than 2 A Day Conflicts");
+            sInfoKeys.add("Instructor Back-To-Back Conflicts");
+            sInfoKeys.add("Instructor Distance Back-To-Back Conflicts");
             sInfoKeys.add("Period Penalty");
             sInfoKeys.add("Exam Rotation Penalty");
             sInfoKeys.add("Room Penalty");
