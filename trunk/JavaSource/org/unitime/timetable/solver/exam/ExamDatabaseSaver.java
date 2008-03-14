@@ -146,6 +146,7 @@ public class ExamDatabaseSaver extends ExamSaver {
             ExamAssignmentInfo info = new ExamAssignmentInfo(placement);
             for (Iterator i=info.getDirectConflicts().iterator();i.hasNext();) {
                 ExamAssignmentInfo.DirectConflict dc = (ExamAssignmentInfo.DirectConflict)i.next();
+                if (dc.getOtherExam()==null) continue;
                 if (examVar.getId()<dc.getOtherExam().getExamId().longValue()) {
                     org.unitime.timetable.model.Exam otherExam = (org.unitime.timetable.model.Exam)examTable.get(dc.getOtherExam().getExamId());
                     if (otherExam==null) {
@@ -209,6 +210,7 @@ public class ExamDatabaseSaver extends ExamSaver {
 
             for (Iterator i=info.getInstructorDirectConflicts().iterator();i.hasNext();) {
                 ExamAssignmentInfo.DirectConflict dc = (ExamAssignmentInfo.DirectConflict)i.next();
+                if (dc.getOtherExam()==null) continue;
                 if (examVar.getId()<dc.getOtherExam().getExamId().longValue()) {
                     org.unitime.timetable.model.Exam otherExam = (org.unitime.timetable.model.Exam)examTable.get(dc.getOtherExam().getExamId());
                     if (otherExam==null) {

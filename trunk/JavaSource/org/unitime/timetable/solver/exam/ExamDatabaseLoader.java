@@ -34,8 +34,10 @@ import java.util.Vector;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Transaction;
+import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.BuildingPref;
+import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DepartmentalInstructor;
@@ -114,6 +116,7 @@ public class ExamDatabaseLoader extends ExamLoader {
             loadExams();
             loadStudents();
             loadDistributions();
+            loadAvailabilities();
             getModel().init();
             assignInitial();
             tx.commit();
@@ -194,8 +197,8 @@ public class ExamDatabaseLoader extends ExamLoader {
                     false,
                     (exam.getSeatingType()==org.unitime.timetable.model.Exam.sSeatingTypeExam?true:false),
                     exam.getMaxNbrRooms());
-            iExams.put(exam.getUniqueId(), x);
-            getModel().addVariable(x);
+            x.setModel(getModel());
+            
             for (Iterator j=new TreeSet(exam.getOwners()).iterator();j.hasNext();) {
                 ExamOwner owner = (ExamOwner)j.next();
                 Object ownerObject = owner.getOwnerObject();
@@ -245,7 +248,32 @@ public class ExamDatabaseLoader extends ExamLoader {
                     }
                 }
             }
+            if (x.getPeriods().isEmpty()) {
+                iProgress.warn("Exam "+getExamLabel(exam)+" has no period available, it is not loaded.");
+                continue;
+            }
+
             x.setRoomWeights(findRooms(exam));
+            
+            if (x.getMaxRooms()>0) {
+                if (x.getRooms().isEmpty()) {
+                    iProgress.warn("Exam "+getExamLabel(exam)+" has no room available, it is not loaded.");
+                    continue;
+                }
+                boolean hasAssignment = false;
+                for (Enumeration ep=x.getPeriods().elements();!hasAssignment && ep.hasMoreElements();) {
+                    ExamPeriod period = (ExamPeriod)ep.nextElement();
+                    if (x.findRoomsRandom(period)!=null) hasAssignment = true;
+                }
+                if (!hasAssignment) {
+                    iProgress.warn("Exam "+getExamLabel(exam)+" has no available assignment, it is not loaded.");
+                    continue;
+                }
+            }
+            
+            iExams.put(exam.getUniqueId(), x);
+            getModel().addVariable(x);
+
             
             for (Iterator j=exam.getInstructors().iterator();j.hasNext();)
                 loadInstructor((DepartmentalInstructor)j.next()).addVariable(x);
@@ -317,6 +345,14 @@ public class ExamDatabaseLoader extends ExamLoader {
         }
     }
     
+    protected ExamInstructor getInstructor(DepartmentalInstructor instructor) {
+        if (instructor.getExternalUniqueId()!=null && instructor.getExternalUniqueId().trim().length()>0) {
+            ExamInstructor i = (ExamInstructor)iInstructors.get(instructor.getExternalUniqueId());
+            if (i!=null) return i;
+        }
+        return (ExamInstructor)iInstructors.get(instructor.getUniqueId());
+    }
+
     protected Hashtable findRooms(org.unitime.timetable.model.Exam exam) {
         Hashtable rooms = new Hashtable();
         boolean reqRoom = false;
@@ -483,6 +519,7 @@ public class ExamDatabaseLoader extends ExamLoader {
     }
     
     protected void loadStudents(Collection enrl, String phase) {
+        HashSet notLoaded = new HashSet();
         iProgress.setPhase("Loading students ("+phase+")...", enrl.size());
         for (Iterator i=enrl.iterator();i.hasNext();) {
             iProgress.incProgress();
@@ -498,11 +535,51 @@ public class ExamDatabaseLoader extends ExamLoader {
             }
             Exam exam = (Exam)iExams.get(examId);
             if (exam==null) {
-                iProgress.warn("Exam "+getExamLabel(new ExamDAO().get(examId))+" not loaded.");
+                if (notLoaded.add(examId))
+                    iProgress.info("Exam "+getExamLabel(new ExamDAO().get(examId))+" not loaded.");
                 continue;
             }
             if (!student.variables().contains(exam))
                 student.addVariable(exam);
+        }
+    }
+    
+    protected void loadAvailabilities() {
+        if (org.unitime.timetable.model.Exam.sExamTypeFinal==iExamType) return;
+        List committedAssignments = new ExamDAO().getSession().createQuery(
+                "select a from Assignment a where a.solution.commited=true and " +
+                "a.solution.owner.session.uniqueId=:sessionId").
+                setLong("sessionId",iSessionId).list();
+        Set periods = org.unitime.timetable.model.ExamPeriod.findAll(iSessionId, iExamType);
+        iProgress.setPhase("Loading availabilities...", committedAssignments.size());
+        for (Iterator i=committedAssignments.iterator();i.hasNext();) {
+            iProgress.incProgress();
+            Assignment a = (Assignment)i.next();
+            List studentIds = null;
+            for (Iterator j=periods.iterator();j.hasNext();) {
+                org.unitime.timetable.model.ExamPeriod period = (org.unitime.timetable.model.ExamPeriod)j.next();
+                if (period.overlap(a)) {
+                    iProgress.debug("Class "+a.getClassName()+" "+a.getPlacement().getLongName()+" overlaps with period "+period.getName());
+                    ExamPeriod exPeriod = (ExamPeriod)iPeriods.get(period.getUniqueId());
+                    if (studentIds==null)
+                        studentIds = new ExamDAO().getSession().createQuery(
+                                "select e.student.uniqueId from "+
+                                "StudentClassEnrollment e where e.clazz.uniqueId=:classId").
+                                setLong("classId", a.getClassId()).list(); 
+                    for (Iterator k=studentIds.iterator();k.hasNext();) {
+                        Long studentId = (Long)k.next();
+                        ExamStudent student = (ExamStudent)iStudents.get(studentId);
+                        if (student!=null) 
+                            student.setAvailable(exPeriod.getIndex(), false);
+                    }
+                    for (Iterator k=a.getClazz().getClassInstructors().iterator();k.hasNext();) {
+                        ClassInstructor ci = (ClassInstructor)k.next();
+                        ExamInstructor instructor = getInstructor(ci.getInstructor());
+                        if (instructor!=null) 
+                            instructor.setAvailable(exPeriod.getIndex(), false);
+                    }
+                }
+            }
         }
     }
     
@@ -523,7 +600,7 @@ public class ExamDatabaseLoader extends ExamLoader {
                 DistributionObject distObj = (DistributionObject)j.next();
                 Exam exam = (Exam)iExams.get(distObj.getPrefGroup().getUniqueId());
                 if (exam==null) {
-                    iProgress.warn("Exam "+getExamLabel(new ExamDAO().get(distObj.getPrefGroup().getUniqueId()))+" not loaded.");
+                    iProgress.info("Exam "+getExamLabel(new ExamDAO().get(distObj.getPrefGroup().getUniqueId()))+" not loaded.");
                     continue;
                 }
                 constraint.addVariable(exam);
@@ -537,7 +614,9 @@ public class ExamDatabaseLoader extends ExamLoader {
     
     protected void assignInitial() {
         if (iLoadSolution) {
+            iProgress.setPhase("Assigning loaded solution...", getModel().variables().size());
             for (Enumeration e=getModel().variables().elements();e.hasMoreElements();) {
+                iProgress.incProgress();
                 Exam exam = (Exam)e.nextElement();
                 ExamPlacement placement = (ExamPlacement)exam.getInitialAssignment();
                 if (placement==null) continue;
@@ -564,7 +643,9 @@ public class ExamDatabaseLoader extends ExamLoader {
                 }
             }
         }
+        iProgress.setPhase("Assigning pre-assigned exams...", getModel().variables().size());
         for (Enumeration e=new Vector(getModel().unassignedVariables()).elements();e.hasMoreElements();) {
+            iProgress.incProgress();
             Exam exam = (Exam)e.nextElement();
             if (!exam.hasPreAssignedPeriod()) continue;
             ExamPlacement placement = null;

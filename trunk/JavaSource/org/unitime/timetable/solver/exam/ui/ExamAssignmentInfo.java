@@ -30,6 +30,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import org.unitime.timetable.model.Assignment;
+import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionObject;
 import org.unitime.timetable.model.DistributionPref;
@@ -39,6 +41,10 @@ import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.SolverParameterDef;
 import org.unitime.timetable.model.Student;
+import org.unitime.timetable.model.StudentClassEnrollment;
+import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
+import org.unitime.timetable.model.dao.ExamPeriodDAO;
+import org.unitime.timetable.model.dao.StudentDAO;
 
 import net.sf.cpsolver.exam.model.Exam;
 import net.sf.cpsolver.exam.model.ExamDistributionConstraint;
@@ -80,6 +86,8 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                     } else dc.incNrStudents();
                     dc.getStudents().add(student.getId());
                 }
+                if (!student.isAvailable(placement.getPeriod()))
+                    computeUnavailablility(new StudentDAO().get(student.getId()), new ExamPeriodDAO().get(placement.getPeriod().getId()));
             }
             iDirects.addAll(directs.values());
             int btbDist = model.getBackToBackDistance();
@@ -156,8 +164,11 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                     } else dc.incNrStudents();
                     dc.getStudents().add(instructor.getId());
                 }
+                if (!instructor.isAvailable(placement.getPeriod()))
+                    computeUnavailablility(new DepartmentalInstructorDAO().get(instructor.getId()), new ExamPeriodDAO().get(placement.getPeriod().getId()));
             }
             iInstructorDirects.addAll(idirects.values());
+
             Hashtable ibackToBacks = new Hashtable();
             for (Enumeration e=exam.getInstructors().elements();e.hasMoreElements();) {
                 ExamInstructor instructor = (ExamInstructor)e.nextElement();
@@ -242,7 +253,6 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                         if (x.equals(exam)) continue;
                         if (x.getAssignedPeriod()!=null) other = new ExamAssignment(x);
                     }
-                    if (other==null) continue;
                     if (conf.getNrStudents()>0)
                         iDirects.add(new DirectConflict(other, conf.getNrStudents()));
                     if (conf.getNrInstructors()>0)
@@ -280,8 +290,55 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             if (!check(pref, exam, getPeriod(), getRooms()))
                 iDistributions.add(new DistributionConflict(pref, exam));
         }
+        if (org.unitime.timetable.model.Exam.sExamTypeEvening==exam.getExamType()) {
+            for (Iterator i=exam.getStudents().iterator();i.hasNext();)
+                computeUnavailablility((Student)i.next(), exam.getAssignedPeriod());
+            for (Iterator i=exam.getInstructors().iterator();i.hasNext();)
+                computeUnavailablility((DepartmentalInstructor)i.next(), exam.getAssignedPeriod());
+        }
     }
     
+    private void computeUnavailablility(Student student, ExamPeriod period) {
+        Assignment blockingAssignment = null;
+        for (Iterator j=student.getClassEnrollments().iterator();blockingAssignment==null && j.hasNext();) {
+            StudentClassEnrollment sce = (StudentClassEnrollment)j.next();
+            if (sce.getClazz().getCommittedAssignment()!=null && period.overlap(sce.getClazz().getCommittedAssignment())) blockingAssignment = sce.getClazz().getCommittedAssignment();
+        }
+        if (blockingAssignment==null) return;
+        for (Iterator i=iDirects.iterator();i.hasNext();) {
+            DirectConflict dc = (DirectConflict)i.next();
+            if (blockingAssignment.getUniqueId().equals(dc.getOtherAssignmentId())) {
+                dc.incNrStudents();
+                dc.getStudents().add(student.getUniqueId());
+                return;
+            }
+        }
+        DirectConflict dc = new DirectConflict(blockingAssignment);
+        dc.getStudents().add(student.getUniqueId());
+        iDirects.add(dc);
+    }
+    
+    private void computeUnavailablility(DepartmentalInstructor instructor, ExamPeriod period) {
+        Assignment blockingAssignment = null;
+        for (Iterator j=instructor.getClasses().iterator();blockingAssignment==null && j.hasNext();) {
+            ClassInstructor ci = (ClassInstructor)j.next();
+            if (ci.isLead() && ci.getClassInstructing().getCommittedAssignment()!=null && period.overlap(ci.getClassInstructing().getCommittedAssignment())) 
+                blockingAssignment = ci.getClassInstructing().getCommittedAssignment();
+        }
+        if (blockingAssignment==null) return;
+        for (Iterator i=iInstructorDirects.iterator();i.hasNext();) {
+            DirectConflict dc = (DirectConflict)i.next();
+            if (blockingAssignment.getUniqueId().equals(dc.getOtherAssignmentId())) {
+                dc.incNrStudents();
+                dc.getStudents().add(instructor.getUniqueId());
+                return;
+            }
+        }
+        DirectConflict dc = new DirectConflict(blockingAssignment);
+        dc.getStudents().add(instructor.getUniqueId());
+        iInstructorDirects.add(dc);
+    }
+
     public boolean check(DistributionPref pref, org.unitime.timetable.model.Exam exam, ExamPeriod assignedPeriod, Collection<ExamRoomInfo> assignedRooms) {
         if (PreferenceLevel.sNeutral.equals(pref.getPrefLevel().getPrefProlog())) return true;
         boolean positive = 
@@ -414,6 +471,8 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                 if (period.getDateOffset().equals(other.getAssignedPeriod().getDateOffset()))
                     sameDateExams.add(other);
             }
+            if (org.unitime.timetable.model.Exam.sExamTypeEvening==exam.getExamType())
+                computeUnavailablility(student, period);
             if (sameDateExams.size()>=2) {
                 TreeSet examIds = new TreeSet();
                 TreeSet otherExams = new TreeSet();
@@ -462,6 +521,8 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                 if (period.getDateOffset().equals(other.getAssignedPeriod().getDateOffset()))
                     sameDateExams.add(other);
             }
+            if (org.unitime.timetable.model.Exam.sExamTypeEvening==exam.getExamType())
+                computeUnavailablility(instructor, period);
             if (sameDateExams.size()>=2) {
                 TreeSet examIds = new TreeSet();
                 TreeSet otherExams = new TreeSet();
@@ -697,9 +758,13 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
     
     
     public static class DirectConflict implements Serializable, Comparable {
-        protected ExamAssignment iOtherExam;
+        protected ExamAssignment iOtherExam = null;
         protected int iNrStudents = 1;
         protected transient Vector iStudents = new Vector();
+        protected String iOtherAssignmentName = null;
+        protected String iOtherAssignmentTime = null;
+        protected String iOtherAssignmentRoom = null;
+        protected Long iOtherAssignmentId;
         
         protected DirectConflict(ExamAssignment otherExam) {
             iOtherExam = otherExam;
@@ -707,6 +772,12 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         protected DirectConflict(ExamAssignment otherExam, int nrStudents) {
             iOtherExam = otherExam;
             iNrStudents = nrStudents;
+        }
+        protected DirectConflict(Assignment  otherAssignment) {
+            iOtherAssignmentId = otherAssignment.getUniqueId();
+            iOtherAssignmentName = otherAssignment.getClassName();
+            iOtherAssignmentTime = otherAssignment.getPlacement().getTimeLocation().getLongName();
+            iOtherAssignmentRoom = otherAssignment.getPlacement().getRoomName(", ");
         }
         protected void incNrStudents() {
             iNrStudents++;
@@ -720,10 +791,15 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         public ExamAssignment getOtherExam() {
             return iOtherExam;
         }
+        public Long getOtherAssignmentId() {
+            return iOtherAssignmentId;
+        }
         public int compareTo(Object o) {
             DirectConflict c = (DirectConflict)o;
             int cmp = -Double.compare(getNrStudents(), c.getNrStudents());
             if (cmp!=0) return cmp;
+            if (getOtherExam()==null) return (c.getOtherExam()==null?0:-1);
+            if (c.getOtherExam()==null) return 1;
             return getOtherExam().compareTo(c.getOtherExam());
         }
         public String toString() {
@@ -735,9 +811,19 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             ret += "<td style='font-weight:bold;color:"+PreferenceLevel.prolog2color("P")+";'>";
             ret += "Direct";
             ret += "</td>";
-            ret += "<td>"+getOtherExam().getExamNameHtml()+"</td>";
-            ret += "<td>"+getOtherExam().getPeriodAbbreviationWithPref()+"</td>";
-            ret += "<td>"+getOtherExam().getRoomsNameWithPref(", ")+"</td>";
+            if (getOtherExam()==null) {
+                if (iOtherAssignmentName!=null) {
+                    ret += "<td>"+iOtherAssignmentName+"</td>";
+                    ret += "<td>"+iOtherAssignmentTime+"</td>";
+                    ret += "<td>"+iOtherAssignmentRoom+"</td>";
+                } else {
+                    ret += "<td colspan='3'>Student/instructor not available for unknown reason.</td>";
+                }
+            } else {
+                ret += "<td>"+getOtherExam().getExamNameHtml()+"</td>";
+                ret += "<td>"+getOtherExam().getPeriodAbbreviationWithPref()+"</td>";
+                ret += "<td>"+getOtherExam().getRoomsNameWithPref(", ")+"</td>";
+            }
             ret += "</tr>";
             return ret;
         }

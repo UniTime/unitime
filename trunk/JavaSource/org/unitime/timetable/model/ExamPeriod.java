@@ -189,4 +189,32 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
         }
         return true;
     }
+    
+    public boolean overlap(Assignment assignment) {
+        return overlap(assignment, 6);
+    }
+    
+    public boolean overlap(Assignment assignment, int nrTravelSlots) {
+        //check date pattern
+        DatePattern dp = assignment.getDatePattern();
+        int dpIndex = getDateOffset()-getSession().getExamBeginOffset()-(dp.getOffset()==null?0:dp.getOffset());
+        if (dp.getPattern()==null || dpIndex<0 || dpIndex>=dp.getPattern().length() || dp.getPattern().charAt(dpIndex)!='1') return false;
+        
+        //check day of week
+        Calendar cal = Calendar.getInstance(Locale.US);
+        cal.setTime(getSession().getExamBeginDate());
+        cal.add(Calendar.DAY_OF_YEAR, getDateOffset());
+        switch (cal.get(Calendar.DAY_OF_WEEK)) {
+            case Calendar.MONDAY    : if ((assignment.getDays() & Constants.DAY_CODES[Constants.DAY_MON])==0) return false; break;
+            case Calendar.TUESDAY   : if ((assignment.getDays() & Constants.DAY_CODES[Constants.DAY_TUE])==0) return false; break;
+            case Calendar.WEDNESDAY : if ((assignment.getDays() & Constants.DAY_CODES[Constants.DAY_WED])==0) return false; break;
+            case Calendar.THURSDAY  : if ((assignment.getDays() & Constants.DAY_CODES[Constants.DAY_THU])==0) return false; break;
+            case Calendar.FRIDAY    : if ((assignment.getDays() & Constants.DAY_CODES[Constants.DAY_FRI])==0) return false; break;
+            case Calendar.SATURDAY  : if ((assignment.getDays() & Constants.DAY_CODES[Constants.DAY_SAT])==0) return false; break;
+            case Calendar.SUNDAY    : if ((assignment.getDays() & Constants.DAY_CODES[Constants.DAY_SUN])==0) return false; break;
+        }
+        
+        //check time
+        return getStartSlot() - nrTravelSlots < assignment.getStartSlot() + assignment.getSlotPerMtg() && assignment.getStartSlot() < getStartSlot() + getLength() + nrTravelSlots;
+    }
 }

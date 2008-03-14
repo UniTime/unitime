@@ -858,5 +858,9 @@ public class Session extends BaseSession implements Comparable {
 
 		return (6 + nrDays) / 7;
 	}
+	
+	public int getExamBeginOffset() {
+	    return (int)Math.round((getSessionBeginDateTime().getTime() - getExamBeginDate().getTime()) / 86.4e6); 
+	}
 
 }
