@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC 
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<!-- 
+ * UniTime 3.1 (University Course Timetabling & Student Sectioning Application)
+ * Copyright (C) 2008, UniTime.org
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ -->
+
+<hibernate-mapping package="org.unitime.timetable.model">
+	<class
+		name="EventNote"
+		table="EVENT_NOTE"
+		>
+
+ 		<cache include="non-lazy" usage="read-write"/>
+
+		<id 
+            name="uniqueId"
+            column="UNIQUEID" 
+            type="java.lang.Long">            
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+				<param name="sequence">PREF_GROUP_SEQ</param>
+			</generator>
+            
+        </id>
+        
+		<many-to-one 
+			name="event" 
+			class="Event" 
+			column="EVENT_ID" 
+			foreign-key="fk_event_note_event"
+			not-null="true"
+		/>
+        
+		<many-to-one 
+			name="standardNote" 
+			class="StandardEventNote" 
+			column="NOTE_ID" 
+			foreign-key="fk_event_note_std_note"
+			not-null="false"
+		/>
+
+		<property
+			name="textNote"
+			column="TEXT_NOTE"
+			type="java.lang.String"
+			length="1000"
+			not-null="false"
+		/>
+
+	</class>	
+</hibernate-mapping>

@@ -1481,4 +1481,20 @@
 			create index idx_exam_location_pref on %SCHEMA%.exam_location_pref(location_id)
 		</mysql>
 	</update>
+		<update version="21" date="06-Mar-2008" comment="Add External Uids to Class and Instr Offr">
+		<plsql>
+			alter table %SCHEMA%.INSTRUCTIONAL_OFFERING add external_uid varchar2(40);
+		</plsql>
+		<plsql>
+			alter table %SCHEMA%.CLASS_ add external_uid varchar2(40);
+
+		</plsql>
+		<mysql>
+			alter table %SCHEMA%.INSTRUCTIONAL_OFFERING add external_uid varchar(40)
+		</mysql>
+		<mysql>
+			alter table %SCHEMA%.CLASS_ add external_uid varchar(40)
+		</mysql>
+	</update>
+	
 </dbupdate>

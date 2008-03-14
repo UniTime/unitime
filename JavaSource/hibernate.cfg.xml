@@ -182,5 +182,11 @@
 	<mapping resource="ExamPeriod.hbm.xml" />
 	<mapping resource="ExamOwner.hbm.xml" />
 	<mapping resource="ExamConflict.hbm.xml" />
+	<mapping resource="StandardEventNote.hbm.xml" />
+	<mapping resource="EventNote.hbm.xml" />
+	<mapping resource="EventContact.hbm.xml" />
+	<mapping resource="Event.hbm.xml" />
+	<mapping resource="RelatedCourseInfo.hbm.xml" />
+	<mapping resource="Meeting.hbm.xml" />
 </session-factory>
 </hibernate-configuration>

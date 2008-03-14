@@ -21,8 +21,8 @@ package org.unitime.timetable.model.base;
 
 import org.hibernate.Hibernate;
 import org.hibernate.Session;
-import org.hibernate.criterion.Order;
 import org.unitime.timetable.model.dao.Class_DAO;
+import org.hibernate.criterion.Order;
 
 /**
  * This is an automatically generated DAO class which should not be edited.
