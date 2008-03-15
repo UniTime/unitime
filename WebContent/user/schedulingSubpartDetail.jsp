@@ -246,6 +246,7 @@
 		subpartClsTableBuilder.htmlTableForSubpartClasses(
 									session,
 				    		        WebSolver.getClassAssignmentProxy(session),
+				    		        WebSolver.getExamSolver(session),
 				    		        new Long(frm.getSchedulingSubpartId()), 
 				    		        Web.getUser(session), out,
 				    		        request.getParameter("backType"),
