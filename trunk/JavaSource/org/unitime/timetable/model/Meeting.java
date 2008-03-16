@@ -23,7 +23,7 @@ import org.unitime.timetable.model.base.BaseMeeting;
 
 
 
-public class Meeting extends BaseMeeting {
+public class Meeting extends BaseMeeting implements Comparable<Meeting> {
 	private static final long serialVersionUID = 1L;
 
 /*[CONSTRUCTOR MARKER BEGIN]*/
@@ -62,5 +62,12 @@ public class Meeting extends BaseMeeting {
 
 /*[CONSTRUCTOR MARKER END]*/
 
+	public int compareTo(Meeting other) {
+		int cmp = getMeetingDate().compareTo(other.getMeetingDate());
+		if (cmp!=0) return cmp;
+		cmp = getStartPeriod().compareTo(other.getStartPeriod());
+		if (cmp!=0) return cmp;
+		return getUniqueId().compareTo(other.getUniqueId());
+	}
 
 }
