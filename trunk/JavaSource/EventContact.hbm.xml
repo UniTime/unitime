@@ -42,7 +42,7 @@
         
 		<property
 			name="externalUniqueId"
-			column="EXTERNAL_UID"
+			column="EXTERNAL_ID"
 			type="string"
 			not-null="false"
 			length="40"
@@ -50,7 +50,7 @@
 		
 		<property
 			name="emailAddress"
-			column="EMAIL_ADDRESS"
+			column="EMAIL"
 			type="string"
 			not-null="false"
 			length="135"
@@ -66,7 +66,7 @@
 				
 		<property
 			name="firstName"
-			column="FIRST_NAME"
+			column="FIRSTNAME"
 			type="string"
 			not-null="true"
 			length="20"
@@ -74,7 +74,7 @@
 		
 		<property
 			name="middleName"
-			column="MIDDLE_NAME"
+			column="MIDDLENAME"
 			type="string"
 			not-null="false"
 			length="20"
@@ -82,7 +82,7 @@
 		
 		<property
 			name="lastName"
-			column="LAST_NAME"
+			column="LASTNAME"
 			type="string"
 			not-null="true"
 			length="30"
