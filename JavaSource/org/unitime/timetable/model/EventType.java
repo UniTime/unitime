@@ -20,6 +20,7 @@
  package org.unitime.timetable.model;
 
 import org.unitime.timetable.model.base.BaseEventType;
+import org.unitime.timetable.model.dao.EventTypeDAO;
 
 
 
@@ -51,6 +52,18 @@ public class EventType extends BaseEventType {
 	}
 
 /*[CONSTRUCTOR MARKER END]*/
-
+	public static final String sEventTypeClass = "class";
+	public static final String sEventTypeFinalExam = "final";
+	public static final String sEventTypeEveningExam = "evening";
+	public static final String sEventTypeOtherWithConflicts = "otherWithConflict";
+	public static final String sEventTypeOtherNoConflicts = "otherNoConflict";
+	public static final String sEventTypeSpecial = "special";
+	
+	public static EventType findByReference(String reference) {
+		return (EventType)new EventTypeDAO().getSession().createQuery(
+				"select t from EventType t where t.reference=:reference").
+				setString("reference", reference).
+				setCacheable(true).uniqueResult();
+	}
 
 }
