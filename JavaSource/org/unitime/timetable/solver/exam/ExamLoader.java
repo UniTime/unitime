@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.solver.exam;
 
-import net.sf.cpsolver.exam.model.ExamModel;
 import net.sf.cpsolver.ifs.util.Callback;
 
 import org.apache.log4j.Logger;

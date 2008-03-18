@@ -21,6 +21,7 @@ package org.unitime.timetable.solver.exam.ui;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -34,6 +35,7 @@ import net.sf.cpsolver.coursett.preference.PreferenceCombination;
 import net.sf.cpsolver.coursett.preference.SumPreferenceCombination;
 
 import org.unitime.commons.web.WebTable;
+import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.Exam;
@@ -264,13 +266,19 @@ public class ExamInfoModel implements Serializable {
             if (getSolver()!=null && getSolver().getExamType()==getExam().getExamType()) {
                 iPeriods = getSolver().getPeriods(getExam().getExamId());
             } else {
-                iPeriods = new Vector<ExamAssignmentInfo>();
-                for (Iterator i=ExamPeriod.findAll(getExam().getExam().getSession().getUniqueId(), getExam().getExamType()).iterator();i.hasNext();) {
-                    ExamPeriod period = (ExamPeriod)i.next();
-                    try {
-                        iPeriods.add(new ExamAssignmentInfo(getExam().getExam(), period, null));
-                    } catch (Exception e) {
+                try {
+                    Hashtable<Long, Set<Exam>> studentExams = getExam().getExam().getStudentExams();
+                    Hashtable<Assignment, Set<Long>> studentAssignments = getExam().getExam().getStudentAssignments();
+                    iPeriods = new Vector<ExamAssignmentInfo>();
+                    for (Iterator i=ExamPeriod.findAll(getExam().getExam().getSession().getUniqueId(), getExam().getExamType()).iterator();i.hasNext();) {
+                        ExamPeriod period = (ExamPeriod)i.next();
+                        try {
+                            iPeriods.add(new ExamAssignmentInfo(getExam().getExam(), period, null, studentExams, studentAssignments));
+                        } catch (Exception e) {
+                        }
                     }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         }
@@ -283,10 +291,11 @@ public class ExamInfoModel implements Serializable {
         boolean reqBldg = false;
         boolean reqGroup = false;
 
-        Set groupPrefs = getExam().getExam().getPreferences(RoomGroupPref.class);
-        Set roomPrefs = getExam().getExam().getPreferences(RoomPref.class);
-        Set bldgPrefs = getExam().getExam().getPreferences(BuildingPref.class);
-        Set featurePrefs = getExam().getExam().getPreferences(RoomFeaturePref.class);
+        Exam exam = getExam().getExam(new ExamDAO().getSession());
+        Set groupPrefs = exam.getPreferences(RoomGroupPref.class);
+        Set roomPrefs = exam.getPreferences(RoomPref.class);
+        Set bldgPrefs = exam.getPreferences(BuildingPref.class);
+        Set featurePrefs = exam.getPreferences(RoomFeaturePref.class);
         
         TreeSet locations = Location.findAllAvailableExamLocations(period);
         if (isExamAssigned() && period.getUniqueId().equals(getExamAssignment().getPeriodId()) && getExamAssignment().getRooms()!=null) {
