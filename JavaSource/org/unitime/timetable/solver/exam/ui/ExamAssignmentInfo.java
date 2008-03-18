@@ -26,9 +26,11 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
+import java.util.Map.Entry;
 
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
@@ -40,16 +42,12 @@ import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.SolverParameterDef;
-import org.unitime.timetable.model.Student;
-import org.unitime.timetable.model.StudentClassEnrollment;
-import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
-import org.unitime.timetable.model.dao.ExamPeriodDAO;
-import org.unitime.timetable.model.dao.StudentDAO;
+import org.unitime.timetable.solver.exam.ExamModel;
+import org.unitime.timetable.solver.exam.ExamResourceUnavailability;
 
 import net.sf.cpsolver.exam.model.Exam;
 import net.sf.cpsolver.exam.model.ExamDistributionConstraint;
 import net.sf.cpsolver.exam.model.ExamInstructor;
-import net.sf.cpsolver.exam.model.ExamModel;
 import net.sf.cpsolver.exam.model.ExamPlacement;
 import net.sf.cpsolver.exam.model.ExamStudent;
 
@@ -86,8 +84,6 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                     } else dc.incNrStudents();
                     dc.getStudents().add(student.getId());
                 }
-                if (!student.isAvailable(placement.getPeriod()))
-                    computeUnavailablility(new StudentDAO().get(student.getId()), new ExamPeriodDAO().get(placement.getPeriod().getId()));
             }
             iDirects.addAll(directs.values());
             int btbDist = model.getBackToBackDistance();
@@ -164,8 +160,6 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                     } else dc.incNrStudents();
                     dc.getStudents().add(instructor.getId());
                 }
-                if (!instructor.isAvailable(placement.getPeriod()))
-                    computeUnavailablility(new DepartmentalInstructorDAO().get(instructor.getId()), new ExamPeriodDAO().get(placement.getPeriod().getId()));
             }
             iInstructorDirects.addAll(idirects.values());
 
@@ -228,6 +222,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                 m2d.getStudents().add(instructor.getId());
             }
             iInstructorMoreThanTwoADays.addAll(im2ds.values());
+            computeUnavailablility(exam, model.getUnavailabilities(placement.getPeriod()));
         }
         for (Enumeration e=exam.getDistributionConstraints().elements();e.hasMoreElements();) {
             ExamDistributionConstraint dc = (ExamDistributionConstraint)e.nextElement();
@@ -291,31 +286,37 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                 iDistributions.add(new DistributionConflict(pref, exam));
         }
         if (org.unitime.timetable.model.Exam.sExamTypeEvening==exam.getExamType()) {
-            for (Iterator i=exam.getStudents().iterator();i.hasNext();)
-                computeUnavailablility((Student)i.next(), exam.getAssignedPeriod());
+            computeUnavailablility(exam.getStudentAssignments(), exam.getAssignedPeriod());
             for (Iterator i=exam.getInstructors().iterator();i.hasNext();)
                 computeUnavailablility((DepartmentalInstructor)i.next(), exam.getAssignedPeriod());
         }
     }
     
-    private void computeUnavailablility(Student student, ExamPeriod period) {
-        Assignment blockingAssignment = null;
-        for (Iterator j=student.getClassEnrollments().iterator();blockingAssignment==null && j.hasNext();) {
-            StudentClassEnrollment sce = (StudentClassEnrollment)j.next();
-            if (sce.getClazz().getCommittedAssignment()!=null && period.overlap(sce.getClazz().getCommittedAssignment())) blockingAssignment = sce.getClazz().getCommittedAssignment();
-        }
-        if (blockingAssignment==null) return;
-        for (Iterator i=iDirects.iterator();i.hasNext();) {
-            DirectConflict dc = (DirectConflict)i.next();
-            if (blockingAssignment.getUniqueId().equals(dc.getOtherAssignmentId())) {
-                dc.incNrStudents();
-                dc.getStudents().add(student.getUniqueId());
-                return;
+    private void computeUnavailablility(Exam exam, Vector<ExamResourceUnavailability> unavailabilities) {
+        if (unavailabilities==null || unavailabilities.isEmpty()) return;
+        for (ExamResourceUnavailability unavailability : unavailabilities) {
+            Vector<Long> commonStudents = new Vector();
+            for (Enumeration e=exam.getStudents().elements();e.hasMoreElements();) {
+                ExamStudent student = (ExamStudent)e.nextElement();
+                if (unavailability.getStudentIds().contains(student.getId())) commonStudents.add(student.getId());
             }
+            if (!commonStudents.isEmpty())
+                iDirects.add(new DirectConflict(unavailability, commonStudents));
+            Vector<Long> commonInstructors = new Vector();
+            for (Enumeration e=exam.getInstructors().elements();e.hasMoreElements();) {
+                ExamInstructor instructor = (ExamInstructor)e.nextElement();
+                if (unavailability.getInstructorIds().contains(instructor.getId())) commonInstructors.add(instructor.getId());
+            }
+            if (!commonInstructors.isEmpty())
+                iInstructorDirects.add(new DirectConflict(unavailability, commonInstructors));
         }
-        DirectConflict dc = new DirectConflict(blockingAssignment);
-        dc.getStudents().add(student.getUniqueId());
-        iDirects.add(dc);
+    }
+    
+    private void computeUnavailablility(Hashtable<Assignment, Set<Long>> studentAssignments, ExamPeriod period) {
+        for (Map.Entry<Assignment, Set<Long>> entry : studentAssignments.entrySet()) {
+            if (!period.overlap(entry.getKey())) continue;
+            iDirects.add(new DirectConflict(entry.getKey(), entry.getValue()));
+        }
     }
     
     private void computeUnavailablility(DepartmentalInstructor instructor, ExamPeriod period) {
@@ -430,6 +431,11 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
     }
     
     public ExamAssignmentInfo(org.unitime.timetable.model.Exam exam, ExamPeriod period, Collection<ExamRoomInfo> rooms) throws Exception {
+        this(exam, period, rooms, exam.getStudentExams(),
+                (org.unitime.timetable.model.Exam.sExamTypeEvening==exam.getExamType()?exam.getStudentAssignments():null));
+    }
+    
+    public ExamAssignmentInfo(org.unitime.timetable.model.Exam exam, ExamPeriod period, Collection<ExamRoomInfo> rooms, Hashtable<Long, Set<org.unitime.timetable.model.Exam>> examStudents, Hashtable<Assignment, Set<Long>> studentAssignments) throws Exception {
         super(exam, period, rooms);
         if (period==null) return;
         
@@ -446,11 +452,9 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         Hashtable directs = new Hashtable();
         Hashtable backToBacks = new Hashtable();
         Hashtable m2ds = new Hashtable();
-        for (Iterator i=exam.getStudents().iterator();i.hasNext();) {
-            Student student = (Student)i.next();
+        for (Entry<Long,Set<org.unitime.timetable.model.Exam>> studentExams : examStudents.entrySet()) {
             TreeSet sameDateExams = new TreeSet();
-            for (Iterator j=student.getExams(exam.getExamType()).iterator();j.hasNext();) {
-                org.unitime.timetable.model.Exam other = (org.unitime.timetable.model.Exam)j.next();
+            for (org.unitime.timetable.model.Exam other : studentExams.getValue()) {
                 if (other.equals(exam) || other.getAssignedPeriod()==null) continue;
                 if (period.equals(other.getAssignedPeriod())) { //direct conflict
                     DirectConflict dc = (DirectConflict)directs.get(other);
@@ -458,7 +462,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                         dc = new DirectConflict(new ExamAssignment(other));
                         directs.put(other, dc);
                     } else dc.incNrStudents();
-                    dc.getStudents().add(student.getUniqueId());
+                    dc.getStudents().add(studentExams.getKey());
                 } else if (period.isBackToBack(other.getAssignedPeriod(),btbDayBreak)) {
                     BackToBackConflict btb = (BackToBackConflict)backToBacks.get(other);
                     double distance = Location.getDistance(rooms, other.getAssignedRooms());
@@ -466,13 +470,11 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                         btb = new BackToBackConflict(new ExamAssignment(other), (btbDist<0?false:distance>btbDist), distance);
                         backToBacks.put(other, btb);
                     } else btb.incNrStudents();
-                    btb.getStudents().add(student.getUniqueId());
+                    btb.getStudents().add(studentExams.getKey());
                 }
                 if (period.getDateOffset().equals(other.getAssignedPeriod().getDateOffset()))
                     sameDateExams.add(other);
             }
-            if (org.unitime.timetable.model.Exam.sExamTypeEvening==exam.getExamType())
-                computeUnavailablility(student, period);
             if (sameDateExams.size()>=2) {
                 TreeSet examIds = new TreeSet();
                 TreeSet otherExams = new TreeSet();
@@ -486,12 +488,14 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                     m2d = new MoreThanTwoADayConflict(otherExams);
                     m2ds.put(examIds.toString(), m2d);
                 } else m2d.incNrStudents();
-                m2d.getStudents().add(student.getUniqueId());
+                m2d.getStudents().add(studentExams.getKey());
             }
         }
         iDirects.addAll(directs.values());
         iBackToBacks.addAll(backToBacks.values());
         iMoreThanTwoADays.addAll(m2ds.values());
+        if (studentAssignments!=null)
+            computeUnavailablility(studentAssignments, period);
         
         Hashtable idirects = new Hashtable();
         Hashtable ibackToBacks = new Hashtable();
@@ -778,6 +782,19 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             iOtherAssignmentName = otherAssignment.getClassName();
             iOtherAssignmentTime = otherAssignment.getPlacement().getTimeLocation().getLongName();
             iOtherAssignmentRoom = otherAssignment.getPlacement().getRoomName(", ");
+        }
+        protected DirectConflict(Assignment  otherAssignment, Collection<Long> studentIds) {
+            this(otherAssignment);
+            iNrStudents = studentIds.size();
+            iStudents.addAll(studentIds);
+        }
+        protected DirectConflict(ExamResourceUnavailability unavailability, Vector<Long> studentIds) {
+            iOtherAssignmentId = unavailability.getId();
+            iOtherAssignmentName = unavailability.getName();
+            iOtherAssignmentTime = unavailability.getTime();
+            iOtherAssignmentRoom = unavailability.getRoom();
+            iNrStudents = studentIds.size();
+            iStudents = studentIds;
         }
         protected void incNrStudents() {
             iNrStudents++;

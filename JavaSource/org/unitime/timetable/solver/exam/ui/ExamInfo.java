@@ -84,7 +84,7 @@ public class ExamInfo implements Serializable, Comparable {
         iMaxRooms = exam.getMaxNbrRooms();
         iExam = exam;
         iLength = exam.getLength();
-        iNrStudents = exam.countStudents();
+        iNrStudents = -1;
         iSeatingType = exam.getSeatingType().intValue();
     }
     
@@ -123,6 +123,7 @@ public class ExamInfo implements Serializable, Comparable {
     }
 
     public int getNrStudents() {
+        if (iNrStudents<0) iNrStudents = getExam().countStudents();
         return iNrStudents;
     }
     
