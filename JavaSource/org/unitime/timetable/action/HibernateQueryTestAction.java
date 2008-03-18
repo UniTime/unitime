@@ -19,13 +19,20 @@
 */
 package org.unitime.timetable.action;
 
+import java.io.ByteArrayOutputStream;
 import java.util.Iterator;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.apache.log4j.Appender;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
+import org.apache.log4j.WriterAppender;
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
@@ -41,6 +48,7 @@ import org.hibernate.Transaction;
 import org.hibernate.engine.SessionFactoryImplementor;
 import org.hibernate.hql.QueryExecutionRequestException;
 import org.hibernate.metadata.ClassMetadata;
+import org.hibernate.pretty.Formatter;
 import org.hibernate.type.CollectionType;
 import org.hibernate.type.Type;
 import org.unitime.commons.Debug;
@@ -83,11 +91,21 @@ public class HibernateQueryTestAction extends Action {
         }
 
 		String op = request.getParameter("op");
-		if(op==null || !op.equals("Submit")) 
+		if(op==null || !op.equals("Submit")) {
+		    if ("Clear Cache".equals(op)) 
+		        HibernateUtil.clearCache();
 		    return mapping.findForward("displayQueryForm");
+		}
 		
         HibernateQueryTestForm frm = (HibernateQueryTestForm) form;
         ActionMessages errors =  frm.validate(mapping, request);
+        
+        Logger sqlLog = Logger.getLogger("org.hibernate.SQL");
+        Level origLevel = sqlLog.getLevel();
+        sqlLog.setLevel(Level.DEBUG);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        Appender myAppender = new WriterAppender(new PatternLayout("%m%n"), out);
+        sqlLog.addAppender(myAppender);
         
         if(errors.size()==0) {
             try {
@@ -134,6 +152,25 @@ public class HibernateQueryTestAction extends Action {
                 Debug.error(e);
             }
         }
+        
+        sqlLog.removeAppender(myAppender);
+        sqlLog.setLevel(origLevel);
+        out.flush(); out.close();
+        String sql = "";
+        for (StringTokenizer stk = new StringTokenizer(new String(out.toByteArray()),"\n");stk.hasMoreTokens();) {
+            String line = (String)stk.nextToken();
+            String comment = null; 
+            if (line.indexOf("/*")>=0 && line.indexOf("/*")<line.indexOf("*/")) {
+                comment = line.substring(line.indexOf("/*")+2, line.indexOf("*/"));
+                line = line.substring(0, line.indexOf("/*")) + line.substring(line.indexOf("*/")+2);
+            }
+            if (sql.length()>0) sql+="<br><br>";
+            if (comment!=null)
+                sql += "<font color='gray'>-- "+comment+"</font>";
+            sql += new Formatter(line).format().replaceAll("\n", "<br>").replaceAll(" ", "&nbsp;");
+        }
+        if (sql.length()>0)
+            request.setAttribute("sql",sql);
 
         saveErrors(request, errors);        
         return mapping.findForward("displayQueryForm");

@@ -34,6 +34,7 @@
 					<html:submit property="op" accesskey="S" titleKey="button.submit">
 						<bean:message key="button.submit"/>
 					</html:submit>
+					<html:submit property="op" accesskey="C" value="Clear Cache" title="Clear Hibernate Cache (Alt+C)"/>
 				</tt:section-header>
 			</TD>
 		</TR>
@@ -82,6 +83,19 @@
 			</logic:notEmpty>
 		</logic:notEmpty>
 		
+		<logic:notEmpty scope="request" name="sql">
+			<TR>
+				<TD colspan='2'>
+					<br><tt:section-title>Generated SQL</tt:section-title>
+				</TD>
+			</TR>
+			<TR>
+				<TD colspan='2'>
+					<bean:write scope="request" name="sql" filter="false"/>
+				</TD>
+			</TR>
+		</logic:notEmpty>	
+		
 		<TR>
 			<TD colspan='2'>
 				<tt:section-title/>
@@ -93,6 +107,7 @@
 				<html:submit property="op" accesskey="S" titleKey="button.submit">
 					<bean:message key="button.submit"/>
 				</html:submit>
+				<html:submit property="op" accesskey="C" value="Clear Cache" title="Clear Hibernate Cache (Alt+C)"/>
 			</TD>
 		</TR>
 
