@@ -22,6 +22,7 @@
 <%@ page import="java.util.Collections"%>
 <%@ page import="java.util.regex.Pattern"%>
 <%@page import="org.unitime.commons.web.WebTable"%>
+<%@page import="org.unitime.commons.Debug"%>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
@@ -147,7 +148,13 @@
 		WebTable.setOrder(request.getSession(),"applicationConfig.ord2",request.getParameter("ord2"),1);
 		Vector props = new Vector (ApplicationProperties.getProperties().keySet()); 
 		Collections.sort(props);
-		Pattern pattern = Pattern.compile(ApplicationProperties.getProperty("tmtbl.appConfig.pattern","^tmtbl\\..*$"));
+		Pattern pattern = null;
+		try {
+			pattern = Pattern.compile(ApplicationProperties.getProperty("tmtbl.appConfig.pattern","^tmtbl\\..*$"));
+		} catch (Exception e) {
+			Debug.error(e);
+			pattern = Pattern.compile("^tmtbl\\..*$");
+		}
 		WebTable table = new WebTable(2, "Application Properties", "applicationConfig.do?ord2=%%", new String[] {"Name","Value"}, new String[] {"left","left"}, null);
 		table.enableHR("#EFEFEF");
 		for (Object prop: props) {
