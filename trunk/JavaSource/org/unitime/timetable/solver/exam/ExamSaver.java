@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.solver.exam;
 
-import net.sf.cpsolver.exam.model.ExamModel;
 import net.sf.cpsolver.ifs.solution.Solution;
 import net.sf.cpsolver.ifs.solver.Solver;
 import net.sf.cpsolver.ifs.util.Callback;

@@ -21,6 +21,7 @@ package org.unitime.timetable.model;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -257,6 +258,28 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 .setCacheable(true)
                 .list();
                 */
+    }
+    
+    public Hashtable<Long, Set<Exam>> getStudentExams() {
+        Hashtable<Long, Set<Exam>> studentExams = new Hashtable<Long, Set<Exam>>();
+        for (Iterator i=getOwners().iterator();i.hasNext();) {
+            ExamOwner owner = (ExamOwner)i.next();
+            owner.computeStudentExams(studentExams);
+        }
+        return studentExams;
+    }
+    
+    public Hashtable<Assignment, Set<Long>> getStudentAssignments() {
+        Hashtable<Assignment, Set<Long>> studentAssignments = new Hashtable<Assignment, Set<Long>>();
+        for (Iterator i=getOwners().iterator();i.hasNext();) {
+            ExamOwner owner = (ExamOwner)i.next();
+            owner.computeStudentAssignments(studentAssignments);
+        }
+        return studentAssignments;
+    }
+    
+    public void examChanged() {
+        setName(generateName());
     }
     
     public int countStudents() {

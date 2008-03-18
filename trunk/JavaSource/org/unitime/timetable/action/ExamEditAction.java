@@ -233,7 +233,9 @@ public class ExamEditAction extends PreferencesAction {
                 LookupTables.setupRoomFeatures(request, exam); // Preference Levels
                 LookupTables.setupRoomGroups(request, exam);   // Room Groups
             } else {
-                Exam dummy = new Exam(); dummy.setSession(Session.getCurrentAcadSession(user));
+                Exam dummy = new Exam(); 
+                dummy.setSession(Session.getCurrentAcadSession(user));
+                dummy.setExamType(frm.getExamType());
                 LookupTables.setupRooms(request, dummy);      // Room Prefs
                 LookupTables.setupBldgs(request, dummy);      // Building Prefs
                 LookupTables.setupRoomFeatures(request, dummy); // Preference Levels
@@ -406,7 +408,6 @@ public class ExamEditAction extends PreferencesAction {
 
         super.doUpdate(request, frm, exam, s, false);
         
-        exam.setName(frm.getName()==null || frm.getName().trim().length()==0?null:frm.getName().trim());
         exam.setNote(frm.getNote());
         exam.setSeatingType(frm.getSeatingTypeIdx());
         exam.setLength(Integer.valueOf(frm.getLength()));
@@ -424,9 +425,11 @@ public class ExamEditAction extends PreferencesAction {
         
         frm.setExamOwners(exam);
         
+        exam.examChanged();
+        
         new ExamDAO().saveOrUpdate(exam);
-
-        ChangeLog.addChange(
+        
+                ChangeLog.addChange(
                 null, 
                 request,
                 exam, 

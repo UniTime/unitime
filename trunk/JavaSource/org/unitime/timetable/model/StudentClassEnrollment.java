@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.model;
 
+import java.util.Iterator;
 import java.util.List;
 
 import org.unitime.timetable.model.base.BaseStudentClassEnrollment;
@@ -66,4 +67,10 @@ public class StudentClassEnrollment extends BaseStudentClassEnrollment {
 	            setLong("sessionId", sessionId).list();
 	}
 
+    public static Iterator findAllForStudent(Long studentId) {
+        return new StudentClassEnrollmentDAO().getSession().createQuery(
+                "select e from StudentClassEnrollment e where "+
+                "e.student.uniqueId=:studentId").
+                setLong("studentId", studentId).setCacheable(true).iterate();
+    }
 }

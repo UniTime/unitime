@@ -19,7 +19,11 @@
 */
 package org.unitime.timetable.model;
 
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.unitime.timetable.model.base.BaseExamOwner;
 import org.unitime.timetable.model.comparators.ClassComparator;
@@ -200,6 +204,325 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
         default : throw new RuntimeException("Unknown owner type "+getOwnerType());
         }
     }
+    
+    protected void computeStudentExams(Hashtable<Long, Set<Exam>> studentExams) {
+        switch (getOwnerType()) {
+        case sOwnerTypeClass :
+            for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
+                "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.clazz c " +
+                "where c.uniqueId = :examOwnerId and e.student=f.student and " +
+                "o.ownerType=:ownerType and o.ownerId=f.clazz.uniqueId and o.exam.examType=:examType")
+                .setInteger("ownerType", ExamOwner.sOwnerTypeClass)
+                .setInteger("examType", getExam().getExamType())
+                .setLong("examOwnerId", getOwnerId())
+                .setCacheable(true).iterate(); i.hasNext();) {
+                Object[] o = (Object[])i.next();
+                Long studentId = (Long)o[0];
+                Exam exam = (Exam)o[1];
+                Set<Exam> exams  = studentExams.get(studentId);
+                if (exams==null) { exams = new HashSet(); studentExams.put(studentId, exams); }
+                exams.add(exam);
+            }
+            for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
+                    "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.clazz c " +
+                    "where c.uniqueId = :examOwnerId and e.student=f.student and " +
+                    "o.ownerType=:ownerType and o.ownerId=f.clazz.schedulingSubpart.instrOfferingConfig.uniqueId and o.exam.examType=:examType")
+                    .setInteger("ownerType", ExamOwner.sOwnerTypeConfig)
+                    .setInteger("examType", getExam().getExamType())
+                    .setLong("examOwnerId", getOwnerId())
+                    .setCacheable(true).iterate(); i.hasNext();) {
+                Object[] o = (Object[])i.next();
+                Long studentId = (Long)o[0];
+                Exam exam = (Exam)o[1];
+                Set<Exam> exams  = studentExams.get(studentId);
+                if (exams==null) { exams = new HashSet(); studentExams.put(studentId, exams); }
+                exams.add(exam);
+            }
+            for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
+                    "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.clazz c " +
+                    "where c.uniqueId = :examOwnerId and e.student=f.student and " +
+                    "o.ownerType=:ownerType and o.ownerId=f.courseOffering.uniqueId and o.exam.examType=:examType")
+                    .setInteger("ownerType", ExamOwner.sOwnerTypeCourse)
+                    .setInteger("examType", getExam().getExamType())
+                    .setLong("examOwnerId", getOwnerId())
+                    .setCacheable(true).iterate(); i.hasNext();) {
+                Object[] o = (Object[])i.next();
+                Long studentId = (Long)o[0];
+                Exam exam = (Exam)o[1];
+                Set<Exam> exams  = studentExams.get(studentId);
+                if (exams==null) { exams = new HashSet(); studentExams.put(studentId, exams); }
+                exams.add(exam);
+            }
+            for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
+                    "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.clazz c " +
+                    "where c.uniqueId = :examOwnerId and e.student=f.student and " +
+                    "o.ownerType=:ownerType and o.ownerId=f.courseOffering.instructionalOffering.uniqueId and o.exam.examType=:examType")
+                    .setInteger("ownerType", ExamOwner.sOwnerTypeOffering)
+                    .setInteger("examType", getExam().getExamType())
+                    .setLong("examOwnerId", getOwnerId())
+                    .setCacheable(true).iterate(); i.hasNext();) {
+                Object[] o = (Object[])i.next();
+                Long studentId = (Long)o[0];
+                Exam exam = (Exam)o[1];
+                Set<Exam> exams  = studentExams.get(studentId);
+                if (exams==null) { exams = new HashSet(); studentExams.put(studentId, exams); }
+                exams.add(exam);
+            }
+            break;
+        case sOwnerTypeConfig :
+            for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
+                    "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.clazz c " +
+                    "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :examOwnerId and e.student=f.student and " +
+                    "o.ownerType=:ownerType and o.ownerId=f.clazz.uniqueId and o.exam.examType=:examType")
+                    .setInteger("ownerType", ExamOwner.sOwnerTypeClass)
+                    .setInteger("examType", getExam().getExamType())
+                    .setLong("examOwnerId", getOwnerId())
+                    .setCacheable(true).iterate(); i.hasNext();) {
+                Object[] o = (Object[])i.next();
+                Long studentId = (Long)o[0];
+                Exam exam = (Exam)o[1];
+                Set<Exam> exams  = studentExams.get(studentId);
+                if (exams==null) { exams = new HashSet(); studentExams.put(studentId, exams); }
+                exams.add(exam);
+            }
+            for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
+                    "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.clazz c " +
+                    "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :examOwnerId and e.student=f.student and " +
+                    "o.ownerType=:ownerType and o.ownerId=f.clazz.schedulingSubpart.instrOfferingConfig.uniqueId and o.exam.examType=:examType")
+                    .setInteger("ownerType", ExamOwner.sOwnerTypeConfig)
+                    .setInteger("examType", getExam().getExamType())
+                    .setLong("examOwnerId", getOwnerId())
+                    .setCacheable(true).iterate(); i.hasNext();) {
+                Object[] o = (Object[])i.next();
+                Long studentId = (Long)o[0];
+                Exam exam = (Exam)o[1];
+                Set<Exam> exams  = studentExams.get(studentId);
+                if (exams==null) { exams = new HashSet(); studentExams.put(studentId, exams); }
+                exams.add(exam);
+            }
+            for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
+                    "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.clazz c " +
+                    "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :examOwnerId and e.student=f.student and " +
+                    "o.ownerType=:ownerType and o.ownerId=f.courseOffering.uniqueId and o.exam.examType=:examType")
+                    .setInteger("ownerType", ExamOwner.sOwnerTypeCourse)
+                    .setInteger("examType", getExam().getExamType())
+                    .setLong("examOwnerId", getOwnerId())
+                    .setCacheable(true).iterate(); i.hasNext();) {
+                Object[] o = (Object[])i.next();
+                Long studentId = (Long)o[0];
+                Exam exam = (Exam)o[1];
+                Set<Exam> exams  = studentExams.get(studentId);
+                if (exams==null) { exams = new HashSet(); studentExams.put(studentId, exams); }
+                exams.add(exam);
+            }
+            for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
+                    "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.clazz c " +
+                    "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :examOwnerId and e.student=f.student and " +
+                    "o.ownerType=:ownerType and o.ownerId=f.courseOffering.instructionalOffering.uniqueId and o.exam.examType=:examType")
+                    .setInteger("ownerType", ExamOwner.sOwnerTypeOffering)
+                    .setInteger("examType", getExam().getExamType())
+                    .setLong("examOwnerId", getOwnerId())
+                    .setCacheable(true).iterate(); i.hasNext();) {
+                Object[] o = (Object[])i.next();
+                Long studentId = (Long)o[0];
+                Exam exam = (Exam)o[1];
+                Set<Exam> exams  = studentExams.get(studentId);
+                if (exams==null) { exams = new HashSet(); studentExams.put(studentId, exams); }
+                exams.add(exam);
+            }
+            break;
+        case sOwnerTypeCourse :
+            for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
+                    "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.courseOffering co " +
+                    "where co.uniqueId = :examOwnerId and e.student=f.student and " +
+                    "o.ownerType=:ownerType and o.ownerId=f.clazz.uniqueId and o.exam.examType=:examType")
+                    .setInteger("ownerType", ExamOwner.sOwnerTypeClass)
+                    .setInteger("examType", getExam().getExamType())
+                    .setLong("examOwnerId", getOwnerId())
+                    .setCacheable(true).iterate(); i.hasNext();) {
+                Object[] o = (Object[])i.next();
+                Long studentId = (Long)o[0];
+                Exam exam = (Exam)o[1];
+                Set<Exam> exams  = studentExams.get(studentId);
+                if (exams==null) { exams = new HashSet(); studentExams.put(studentId, exams); }
+                exams.add(exam);
+            }
+            for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
+                    "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.courseOffering co " +
+                    "where co.uniqueId = :examOwnerId and e.student=f.student and " +
+                    "o.ownerType=:ownerType and o.ownerId=f.clazz.schedulingSubpart.instrOfferingConfig.uniqueId and o.exam.examType=:examType")
+                    .setInteger("ownerType", ExamOwner.sOwnerTypeConfig)
+                    .setInteger("examType", getExam().getExamType())
+                    .setLong("examOwnerId", getOwnerId())
+                    .setCacheable(true).iterate(); i.hasNext();) {
+                Object[] o = (Object[])i.next();
+                Long studentId = (Long)o[0];
+                Exam exam = (Exam)o[1];
+                Set<Exam> exams  = studentExams.get(studentId);
+                if (exams==null) { exams = new HashSet(); studentExams.put(studentId, exams); }
+                exams.add(exam);
+            }
+            for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
+                    "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.courseOffering co " +
+                    "where co.uniqueId = :examOwnerId and e.student=f.student and  " +
+                    "o.ownerType=:ownerType and o.ownerId=f.courseOffering.uniqueId and o.exam.examType=:examType")
+                    .setInteger("ownerType", ExamOwner.sOwnerTypeCourse)
+                    .setInteger("examType", getExam().getExamType())
+                    .setLong("examOwnerId", getOwnerId())
+                    .setCacheable(true).iterate(); i.hasNext();) {
+                Object[] o = (Object[])i.next();
+                Long studentId = (Long)o[0];
+                Exam exam = (Exam)o[1];
+                Set<Exam> exams  = studentExams.get(studentId);
+                if (exams==null) { exams = new HashSet(); studentExams.put(studentId, exams); }
+                exams.add(exam);
+            }
+            for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
+                    "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.courseOffering co " +
+                    "where co.uniqueId = :examOwnerId and e.student=f.student and " +
+                    "o.ownerType=:ownerType and o.ownerId=f.courseOffering.instructionalOffering.uniqueId and o.exam.examType=:examType")
+                    .setInteger("ownerType", ExamOwner.sOwnerTypeOffering)
+                    .setInteger("examType", getExam().getExamType())
+                    .setLong("examOwnerId", getOwnerId())
+                    .setCacheable(true).iterate(); i.hasNext();) {
+                Object[] o = (Object[])i.next();
+                Long studentId = (Long)o[0];
+                Exam exam = (Exam)o[1];
+                Set<Exam> exams  = studentExams.get(studentId);
+                if (exams==null) { exams = new HashSet(); studentExams.put(studentId, exams); }
+                exams.add(exam);
+            }
+            break;
+        case sOwnerTypeOffering :
+            for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
+                    "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.courseOffering co " +
+                    "where co.instructionalOffering.uniqueId = :examOwnerId and e.student=f.student and " +
+                    "o.ownerType=:ownerType and o.ownerId=f.clazz.uniqueId and o.exam.examType=:examType")
+                    .setInteger("ownerType", ExamOwner.sOwnerTypeClass)
+                    .setInteger("examType", getExam().getExamType())
+                    .setLong("examOwnerId", getOwnerId())
+                    .setCacheable(true).iterate(); i.hasNext();) {
+                Object[] o = (Object[])i.next();
+                Long studentId = (Long)o[0];
+                Exam exam = (Exam)o[1];
+                Set<Exam> exams  = studentExams.get(studentId);
+                if (exams==null) { exams = new HashSet(); studentExams.put(studentId, exams); }
+                exams.add(exam);
+            }
+            for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
+                    "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.courseOffering co " +
+                    "where co.instructionalOffering.uniqueId = :examOwnerId and e.student=f.student and " +
+                    "o.ownerType=:ownerType and o.ownerId=f.clazz.schedulingSubpart.instrOfferingConfig.uniqueId and o.exam.examType=:examType")
+                    .setInteger("ownerType", ExamOwner.sOwnerTypeConfig)
+                    .setInteger("examType", getExam().getExamType())
+                    .setLong("examOwnerId", getOwnerId())
+                    .setCacheable(true).iterate(); i.hasNext();) {
+                Object[] o = (Object[])i.next();
+                Long studentId = (Long)o[0];
+                Exam exam = (Exam)o[1];
+                Set<Exam> exams  = studentExams.get(studentId);
+                if (exams==null) { exams = new HashSet(); studentExams.put(studentId, exams); }
+                exams.add(exam);
+            }
+            for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
+                    "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.courseOffering co " +
+                    "where co.instructionalOffering.uniqueId = :examOwnerId and e.student=f.student and " +
+                    "o.ownerType=:ownerType and o.ownerId=f.courseOffering.uniqueId and o.exam.examType=:examType")
+                    .setInteger("ownerType", ExamOwner.sOwnerTypeCourse)
+                    .setInteger("examType", getExam().getExamType())
+                    .setLong("examOwnerId", getOwnerId())
+                    .setCacheable(true).iterate(); i.hasNext();) {
+                Object[] o = (Object[])i.next();
+                Long studentId = (Long)o[0];
+                Exam exam = (Exam)o[1];
+                Set<Exam> exams  = studentExams.get(studentId);
+                if (exams==null) { exams = new HashSet(); studentExams.put(studentId, exams); }
+                exams.add(exam);
+            }
+            for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
+                    "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.courseOffering co " +
+                    "where co.instructionalOffering.uniqueId = :examOwnerId and e.student=f.student and " +
+                    "o.ownerType=:ownerType and o.ownerId=f.courseOffering.instructionalOffering.uniqueId and o.exam.examType=:examType")
+                    .setInteger("ownerType", ExamOwner.sOwnerTypeOffering)
+                    .setInteger("examType", getExam().getExamType())
+                    .setLong("examOwnerId", getOwnerId())
+                    .setCacheable(true).iterate(); i.hasNext();) {
+                Object[] o = (Object[])i.next();
+                Long studentId = (Long)o[0];
+                Exam exam = (Exam)o[1];
+                Set<Exam> exams  = studentExams.get(studentId);
+                if (exams==null) { exams = new HashSet(); studentExams.put(studentId, exams); }
+                exams.add(exam);
+            }
+            break;
+        }
+    }
+    
+    protected void computeStudentAssignments(Hashtable<Assignment, Set<Long>> studentAssignments) {
+        switch (getOwnerType()) {
+        case sOwnerTypeClass :
+            for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
+                "select e.student.uniqueId, a from Assignment a, StudentClassEnrollment f, StudentClassEnrollment e inner join e.clazz c " +
+                "where c.uniqueId = :examOwnerId and " +
+                "e.student=f.student and f.clazz = a.clazz and a.solution.commited = true")
+                .setLong("examOwnerId", getOwnerId())
+                .setCacheable(true).iterate(); i.hasNext();) {
+                Object[] o = (Object[])i.next();
+                Long studentId = (Long)o[0];
+                Assignment assignment = (Assignment)o[1];
+                Set<Long> students  = studentAssignments.get(assignment);
+                if (students==null) { students = new HashSet(); studentAssignments.put(assignment, students); }
+                students.add(studentId);
+            }
+            break;
+        case sOwnerTypeConfig :
+            for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
+                    "select e.student.uniqueId, a from Assignment a, StudentClassEnrollment f, StudentClassEnrollment e inner join e.clazz c " +
+                    "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :examOwnerId and " +
+                    "e.student=f.student and f.clazz = a.clazz and a.solution.commited = true")
+                    .setLong("examOwnerId", getOwnerId())
+                    .setCacheable(true).iterate(); i.hasNext();) {
+                Object[] o = (Object[])i.next();
+                Long studentId = (Long)o[0];
+                Assignment assignment = (Assignment)o[1];
+                Set<Long> students  = studentAssignments.get(assignment);
+                if (students==null) { students = new HashSet(); studentAssignments.put(assignment, students); }
+                students.add(studentId);
+            }
+            break;
+        case sOwnerTypeCourse :
+            for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
+                    "select e.student.uniqueId, a from Assignment a, StudentClassEnrollment f, StudentClassEnrollment e inner join e.courseOffering co " +
+                    "where co.uniqueId = :examOwnerId and " +
+                    "e.student=f.student and f.clazz = a.clazz and a.solution.commited = true")
+                    .setLong("examOwnerId", getOwnerId())
+                    .setCacheable(true).iterate(); i.hasNext();) {
+                Object[] o = (Object[])i.next();
+                Long studentId = (Long)o[0];
+                Assignment assignment = (Assignment)o[1];
+                Set<Long> students  = studentAssignments.get(assignment);
+                if (students==null) { students = new HashSet(); studentAssignments.put(assignment, students); }
+                students.add(studentId);
+            }
+            break;
+        case sOwnerTypeOffering :
+            for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
+                    "select e.student.uniqueId, a from Assignment a, StudentClassEnrollment f, StudentClassEnrollment e inner join e.courseOffering co " +
+                    "where co.instructionalOffering.uniqueId = :examOwnerId and " +
+                    "e.student=f.student and f.clazz = a.clazz and a.solution.commited = true")
+                    .setLong("examOwnerId", getOwnerId())
+                    .setCacheable(true).iterate(); i.hasNext();) {
+                Object[] o = (Object[])i.next();
+                Long studentId = (Long)o[0];
+                Assignment assignment = (Assignment)o[1];
+                Set<Long> students  = studentAssignments.get(assignment);
+                if (students==null) { students = new HashSet(); studentAssignments.put(assignment, students); }
+                students.add(studentId);
+            }
+            break;
+        }
+    }
+    
     
     public int countStudents() {
         switch (getOwnerType()) {

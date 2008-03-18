@@ -65,7 +65,6 @@ import net.sf.cpsolver.exam.model.Exam;
 import net.sf.cpsolver.exam.model.ExamCourseSection;
 import net.sf.cpsolver.exam.model.ExamDistributionConstraint;
 import net.sf.cpsolver.exam.model.ExamInstructor;
-import net.sf.cpsolver.exam.model.ExamModel;
 import net.sf.cpsolver.exam.model.ExamPeriod;
 import net.sf.cpsolver.exam.model.ExamPlacement;
 import net.sf.cpsolver.exam.model.ExamRoom;
@@ -561,6 +560,8 @@ public class ExamDatabaseLoader extends ExamLoader {
                 if (period.overlap(a)) {
                     iProgress.debug("Class "+a.getClassName()+" "+a.getPlacement().getLongName()+" overlaps with period "+period.getName());
                     ExamPeriod exPeriod = (ExamPeriod)iPeriods.get(period.getUniqueId());
+                    ExamResourceUnavailability unavailability = new ExamResourceUnavailability(exPeriod, a.getUniqueId(), "class", 
+                            a.getClassName(), a.getPlacement().getTimeLocation().getLongName(), a.getPlacement().getRoomName(", "));
                     if (studentIds==null)
                         studentIds = new ExamDAO().getSession().createQuery(
                                 "select e.student.uniqueId from "+
@@ -569,15 +570,20 @@ public class ExamDatabaseLoader extends ExamLoader {
                     for (Iterator k=studentIds.iterator();k.hasNext();) {
                         Long studentId = (Long)k.next();
                         ExamStudent student = (ExamStudent)iStudents.get(studentId);
-                        if (student!=null) 
+                        if (student!=null) { 
                             student.setAvailable(exPeriod.getIndex(), false);
+                            unavailability.getStudentIds().add(student.getId());
+                        }
                     }
                     for (Iterator k=a.getClazz().getClassInstructors().iterator();k.hasNext();) {
                         ClassInstructor ci = (ClassInstructor)k.next();
                         ExamInstructor instructor = getInstructor(ci.getInstructor());
-                        if (instructor!=null) 
+                        if (instructor!=null) {
                             instructor.setAvailable(exPeriod.getIndex(), false);
+                            unavailability.getInstructorIds().add(instructor.getId());
+                        }
                     }
+                    getModel().addUnavailability(unavailability);
                 }
             }
         }

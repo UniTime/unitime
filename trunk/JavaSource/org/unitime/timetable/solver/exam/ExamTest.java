@@ -25,7 +25,6 @@ import java.io.FileOutputStream;
 import java.text.DecimalFormat;
 
 import net.sf.cpsolver.exam.Test;
-import net.sf.cpsolver.exam.model.ExamModel;
 import net.sf.cpsolver.ifs.solution.Solution;
 import net.sf.cpsolver.ifs.solution.SolutionListener;
 import net.sf.cpsolver.ifs.solver.Solver;

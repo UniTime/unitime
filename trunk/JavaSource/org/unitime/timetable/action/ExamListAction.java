@@ -139,9 +139,9 @@ public class ExamListAction extends Action {
     }
     
     public PdfWebTable getExamTable(ExamAssignmentProxy examAssignment, User user, TimetableManager manager, Session session, ExamListForm form, boolean html) {
-        Collection exams = (Constants.ALL_OPTION_VALUE.equals(form.getSubjectAreaId())?Exam.findAll(session.getUniqueId(),form.getExamType()):Exam.findExamsOfCourse(Long.valueOf(form.getSubjectAreaId()), form.getCourseNbr(),form.getExamType()));
+        Collection exams = (form.getSubjectAreaId()==null || form.getSubjectAreaId().trim().length()==0 || "null".equals(form.getSubjectAreaId())?null:Constants.ALL_OPTION_VALUE.equals(form.getSubjectAreaId())?Exam.findAll(session.getUniqueId(),form.getExamType()):Exam.findExamsOfCourse(Long.valueOf(form.getSubjectAreaId()), form.getCourseNbr(),form.getExamType()));
         
-        if (exams.isEmpty()) return null;
+        if (exams==null || exams.isEmpty()) return null;
         
         String nl = (html?"<br>":"\n");
         
