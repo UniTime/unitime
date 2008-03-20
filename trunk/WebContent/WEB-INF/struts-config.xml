@@ -122,6 +122,7 @@
 	  <form-bean name="examGridForm" type="org.unitime.timetable.form.ExamGridForm" />
 	  <form-bean name="examChangesForm" type="org.unitime.timetable.form.ExamChangesForm" />
 	  <form-bean name="examInfoForm" type="org.unitime.timetable.form.ExamInfoForm" />
+	  <form-bean name="eventDetailForm" type="org.unitime.timetable.form.EventDetailForm" />
    </form-beans>
 
    <global-exceptions>
@@ -2097,6 +2098,23 @@
     		path="examInfoTile"
     		redirect="true" />
     </action>
+    
+    <action
+    	path="/eventDetail"
+    	type="org.unitime.timetable.action.EventDetailAction"
+    	attribute="eventDetailForm"
+    	input="eventDetailTile"
+    	name="eventDetailForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+    		name="show"
+    		path="eventDetailTile"
+    		redirect="true" />
+    </action>
+    
+    
+    
    </action-mappings>
 
 	<!-- Struts Layout Controller -->

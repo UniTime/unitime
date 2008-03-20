@@ -849,4 +849,9 @@
 		<put name="title" type="string" value="Examination Info"/>
 		<put name="body" value="/exam/info.jsp" />
   	</definition>
+  	
+ 	<definition	name="eventDetailTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Event Detail"/>
+		<put name="body" value="/user/eventDetail.jsp" />
+  	</definition> 	
 </tiles-definitions>
