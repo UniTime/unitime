@@ -40,10 +40,10 @@ public class WikiGet extends Task {
     private HashSet iDonePages = new HashSet();
     
     private static String sFirstPage = "Main_Page";
-    private static String sWikiPrefix = "/wiki/";
-    private static String sWikiIndex = "/wiki/index.php";
-    private static String sWikiImagesPrefix = "/wiki/images/";
-    private static String sWikiSkinsPrefix = "/wiki/skins/";
+    private static String sWikiPrefix = "/";
+    private static String sWikiIndex = "/index.php";
+    private static String sWikiImagesPrefix = "/images/";
+    private static String sWikiSkinsPrefix = "/skins/";
     
     public void setOutput(String outDir) {
         iOutDir = new File(outDir);
@@ -108,7 +108,7 @@ public class WikiGet extends Task {
     public void execute() throws BuildException {
         try {
             if (iWikiUrl==null)
-                setUrl("http://www.unitime.org/wiki");
+                setUrl("http://wiki.unitime.org");
             if (iOutDir==null)
                 setOutput("."+File.separator+"wiki");
             iRemainingPages.add(sFirstPage);
@@ -203,7 +203,7 @@ public class WikiGet extends Task {
                 } catch (Exception e) {
                     e.printStackTrace();
                 };
-                if (imageUrl.getPath().startsWith(sWikiPrefix) && !imageUrl.getPath().startsWith(sWikiImagesPrefix) && !imageUrl.getPath().startsWith(sWikiSkinsPrefix)) {
+                if (imageUrl.getHost().equals(iWikiUrl.getHost()) && imageUrl.getPath().startsWith(sWikiPrefix) && !imageUrl.getPath().startsWith(sWikiImagesPrefix) && !imageUrl.getPath().startsWith(sWikiSkinsPrefix)) {
                     if (imageUrl.getPath().startsWith(sWikiIndex)) {
                         if (imageUrl.getFile().indexOf("gen=js")>0 && imageUrl.getFile().indexOf("title=")>0) {
                             int titleIdx = imageUrl.getFile().indexOf("title=")+"title=".length();
