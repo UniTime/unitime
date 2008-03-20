@@ -250,7 +250,7 @@
 			<classpath path="${build.dir}"/>
 		</taskdef>
     	<delete dir="${dist.dir}/wiki" failonerror="false"/>
-		<wikiget url="http://www.unitime.org/wiki" output="${dist.dir}/wiki"/>
+		<wikiget url="http://wiki.unitime.org" output="${dist.dir}/wiki"/>
 	</target>
 
 	<target name="build-dist" depends="compile-war,wiki">
