@@ -30,7 +30,6 @@ import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.ExamInfoForm;
 import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.solver.WebSolver;
-import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.exam.ui.ExamInfoModel;
 import org.unitime.timetable.webutil.BackTracker;
 
@@ -69,8 +68,7 @@ public class ExamInfoAction extends Action {
             model.clear();
         }
         
-        ExamSolverProxy solver = WebSolver.getExamSolver(request.getSession());
-        if (solver!=null) model.setSolver(solver);
+        model.setSolver(WebSolver.getExamSolver(request.getSession()));
         
         if (request.getParameter("examId")!=null) {
             model.setExam(new ExamDAO().get(Long.valueOf(request.getParameter("examId"))));
