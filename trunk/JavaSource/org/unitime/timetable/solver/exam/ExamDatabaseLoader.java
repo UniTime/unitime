@@ -281,11 +281,11 @@ public class ExamDatabaseLoader extends ExamLoader {
                 boolean fail = false;
                 ExamPeriod period = (ExamPeriod)iPeriods.get(exam.getAssignedPeriod().getUniqueId());
                 if (period==null) {
-                    iProgress.warn("Unable to load assignment of "+getExamLabel(exam)+": "+exam.getAssignedPeriod().getName()+" is not allowed.");
+                    iProgress.warn("Unable assign exam "+getExamLabel(exam)+" to period "+exam.getAssignedPeriod().getName()+": period not allowed.");
                     fail = true;
                 }
                 if (!fail && !x.isAvailable(period)) {
-                    iProgress.warn("Unable to load assignment of "+getExamLabel(exam)+": "+exam.getAssignedPeriod().getName()+" is prohibited.");
+                    iProgress.warn("Unable to assign exam "+getExamLabel(exam)+" to period "+exam.getAssignedPeriod().getName()+": period prohibited.");
                     fail = true;
                 }
                 HashSet rooms = new HashSet();
@@ -294,25 +294,25 @@ public class ExamDatabaseLoader extends ExamLoader {
                         Location location = (Location)j.next();
                         ExamRoom room = (ExamRoom)iRooms.get(location.getUniqueId());
                         if (room==null) {
-                            iProgress.warn("Unable to load assignment of "+getExamLabel(exam)+": "+location.getLabel()+" is no longer an examination room.");
+                            iProgress.warn("Unable to assign exam "+getExamLabel(exam)+" to room "+location.getLabel()+": not an examination room.");
                             fail = true; break;
                         }
                         if (!x.getRooms().contains(room)) {
-                            iProgress.warn("Unable to load assignment of "+getExamLabel(exam)+": location "+location.getLabel()+" is no longer valid for this exam.");
+                            iProgress.warn("Unable to assign exam "+getExamLabel(exam)+" to room "+location.getLabel()+": room not valid for this exam.");
                             fail = true; break;
                         }
                         rooms.add(room);
                     }
                 }
                 if (!fail && rooms.size()>x.getMaxRooms()) {
-                    iProgress.warn("Unable to load assignment of "+getExamLabel(exam)+": number of assigned rooms exceeds the current limit ("+rooms.size()+">"+x.getMaxRooms()+").");
+                    iProgress.warn("Unable to assign exam "+getExamLabel(exam)+" to room"+(rooms.size()>1?"s":"")+" "+rooms+": number of assigned rooms exceeds the current limit ("+rooms.size()+">"+x.getMaxRooms()+").");
                     fail = true; 
                 }
                 if (!fail && !x.isAvailable(period, rooms)) {
                     if (rooms.size()==1)
-                        iProgress.warn("Unable to load assignment of "+getExamLabel(exam)+": location "+rooms.iterator().next()+" cannot be used at "+exam.getAssignedPeriod().getName()+".");
+                        iProgress.warn("Unable to assign exam "+getExamLabel(exam)+" to period "+exam.getAssignedPeriod().getName()+" and room "+rooms.iterator().next()+": room cannot be used at given period.");
                     else
-                        iProgress.warn("Unable to load assignment of "+getExamLabel(exam)+": one or more locations "+rooms+" cannot be used at "+exam.getAssignedPeriod().getName()+".");
+                        iProgress.warn("Unable to assign exam "+getExamLabel(exam)+" to period "+exam.getAssignedPeriod().getName()+" and one or more rooms "+rooms+": room cannot be used at given period.");
                     fail = true;
                 }
                 if (!fail)
