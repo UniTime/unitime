@@ -45,14 +45,6 @@
 	<script language="JavaScript">blEndCollapsed('dispFilter');</script>
 	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
 	<TR>
-  		<TD width="10%" nowrap>Examination Problem:</TD>
-		<TD>
-			<html:select property="examType">
-				<html:optionsCollection property="examTypes" label="label" value="value"/>
-			</html:select>
-		</TD>
-	</TR>
-	<TR>
 		<TD width="10%" nowrap>Subject Areas:</TD>
 		<TD>
 			<html:select name="examChangesForm" property="subjectArea"

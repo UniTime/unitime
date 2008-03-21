@@ -21,6 +21,9 @@ package org.unitime.timetable.action;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -37,9 +40,11 @@ import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ExamChangesForm;
 import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
+import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.PdfWebTable;
@@ -71,11 +76,47 @@ public class ExamChangesAction extends Action {
         myForm.setNoSolver(solver==null);
         Collection<ExamAssignmentInfo[]> changes = null;
         if (myForm.getSubjectArea()!=null && myForm.getSubjectArea()!=0) {
-            if (solver!=null && solver.getExamType()==myForm.getExamType()) {
+            if (solver!=null) {
                 if (ExamChangesForm.sChangeInitial.equals(myForm.getChangeType()))
                     changes = solver.getChangesToInitial(myForm.getSubjectArea());
-                else
+                else if (ExamChangesForm.sChangeBest.equals(myForm.getChangeType()))
                     changes = solver.getChangesToBest(myForm.getSubjectArea());
+                else { //sChangeSaved
+                    changes = new Vector<ExamAssignmentInfo[]>();
+                    List exams = null;
+                    if (myForm.getSubjectArea()<0)
+                        exams = Exam.findAll(solver.getSessionId(), solver.getExamType());
+                    else
+                        exams = Exam.findExamsOfSubjectArea(myForm.getSubjectArea(), solver.getExamType());
+                    exams: for (Iterator i=exams.iterator();i.hasNext();) {
+                        Exam exam = (Exam)i.next();
+                        ExamAssignment assignment = solver.getAssignment(exam.getUniqueId());
+                        if (assignment==null && exam.getAssignedPeriod()==null) continue;
+                        if (assignment==null || exam.getAssignedPeriod()==null) {
+                            changes.add(new ExamAssignmentInfo[] {
+                                    new ExamAssignmentInfo(exam),
+                                    solver.getAssignmentInfo(exam.getUniqueId())});
+                        } else if (!exam.getAssignedPeriod().getUniqueId().equals(assignment.getPeriodId())) {
+                            changes.add(new ExamAssignmentInfo[] {
+                                    new ExamAssignmentInfo(exam),
+                                    solver.getAssignmentInfo(exam.getUniqueId())});
+                        } else if (exam.getAssignedRooms().size()!=(assignment.getRooms()==null?0:assignment.getRooms().size())) {
+                            changes.add(new ExamAssignmentInfo[] {
+                                    new ExamAssignmentInfo(exam),
+                                    solver.getAssignmentInfo(exam.getUniqueId())});
+                        } else {
+                            for (Iterator j=exam.getAssignedRooms().iterator();j.hasNext();) {
+                                Location location = (Location)j.next();
+                                if (!assignment.hasRoom(location.getUniqueId())) {
+                                    changes.add(new ExamAssignmentInfo[] {
+                                            new ExamAssignmentInfo(exam),
+                                            solver.getAssignmentInfo(exam.getUniqueId())});
+                                    continue exams;
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
         
