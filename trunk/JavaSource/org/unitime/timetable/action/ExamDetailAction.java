@@ -164,7 +164,7 @@ public class ExamDetailAction extends PreferencesAction {
                 request.setAttribute(DistributionPref.DIST_PREF_REQUEST_ATTR, html);
             
             if (!exam.getOwners().isEmpty()) {
-                WebTable table = new WebTable(4, null, new String[] {"Object", "Type", "Manager", "Students", "Assignment"}, new String[] {"left", "center", "left", "center", "left"}, new boolean[] {true, true, true, true, true});
+                WebTable table = new WebTable(5, null, new String[] {"Object", "Type", "Manager", "Students", "Assignment"}, new String[] {"left", "center", "left", "center", "left"}, new boolean[] {true, true, true, true, true});
                 for (Iterator i=new TreeSet(exam.getOwners()).iterator();i.hasNext();) {
                     ExamOwner owner = (ExamOwner)i.next();
                     String onclick = null, name = null, type = null, students = String.valueOf(owner.countStudents()), manager = null, assignment = null;
