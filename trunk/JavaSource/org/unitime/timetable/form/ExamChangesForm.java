@@ -10,7 +10,8 @@ public class ExamChangesForm extends ExamReportForm {
     private String iChage = sChangeInitial;
     public static final String sChangeInitial = "Initial";
     public static final String sChangeBest = "Best";
-    public static final String[] sChanges = new String[] { sChangeInitial, sChangeBest }; 
+    public static final String sChangeSaved = "Saved";
+    public static final String[] sChanges = new String[] { sChangeInitial, sChangeBest, sChangeSaved }; 
     private boolean iReverse = false;
     private boolean iNoSolver = false;
     
