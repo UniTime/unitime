@@ -850,6 +850,11 @@
 		<put name="body" value="/exam/info.jsp" />
   	</definition>
   	
+ 	<definition	name="examAssignmentReportTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Examination Reports"/>
+		<put name="body" value="/exam/assignmentReport.jsp" />
+  	</definition> 	
+
  	<definition	name="eventDetailTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Event Detail"/>
 		<put name="body" value="/user/eventDetail.jsp" />
