@@ -192,7 +192,7 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
     public ExamAssignmentInfo getAssignmentInfo(long examId) {
         synchronized (super.currentSolution()) {
             Exam exam = getExam(examId);
-            return (exam==null || exam.getAssignment()==null?null:new ExamAssignmentInfo((ExamPlacement)exam.getAssignment()));
+            return (exam==null?null:new ExamAssignmentInfo(exam,(ExamPlacement)exam.getAssignment()));
         }
     }
     
@@ -812,5 +812,9 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
             }
         }
         return changes;
+    }
+    
+    public Long getSessionId() {
+        return getProperties().getPropertyLong("General.SessionId",null);
     }
 }
