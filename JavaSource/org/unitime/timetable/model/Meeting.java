@@ -19,13 +19,20 @@
  
 package org.unitime.timetable.model;
 
+import java.util.Calendar;
+import java.util.Iterator;
+import java.util.List;
+
 import org.unitime.timetable.model.base.BaseMeeting;
+import org.unitime.timetable.model.dao.MeetingDAO;
+import org.unitime.timetable.model.dao.RoomDAO;
 
 
 
 public class Meeting extends BaseMeeting implements Comparable<Meeting> {
 	private static final long serialVersionUID = 1L;
-
+	private Location location = null;
+	
 /*[CONSTRUCTOR MARKER BEGIN]*/
 	public Meeting () {
 		super();
@@ -62,12 +69,111 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
 
 /*[CONSTRUCTOR MARKER END]*/
 
+	@Override
+	public Object clone()  {
+		Meeting newMeeting = new Meeting();
+		newMeeting.setClassCanOverride(isClassCanOverride());
+		newMeeting.setEventType(getEventType());
+		newMeeting.setLocationPermanentId(getLocationPermanentId());
+		newMeeting.setMeetingDate(getMeetingDate());
+		newMeeting.setStartOffset(getStartOffset());
+		newMeeting.setStartPeriod(getStartPeriod());
+		newMeeting.setStopOffset(getStopOffset());
+		newMeeting.setStopPeriod(getStopPeriod());
+		
+		return(newMeeting);
+	}
+
 	public int compareTo(Meeting other) {
 		int cmp = getMeetingDate().compareTo(other.getMeetingDate());
 		if (cmp!=0) return cmp;
 		cmp = getStartPeriod().compareTo(other.getStartPeriod());
 		if (cmp!=0) return cmp;
 		return getUniqueId().compareTo(other.getUniqueId());
+	}
+
+	public Location getLocation(){
+		if (location != null){
+			return(location);
+		}
+		if(getLocationPermanentId() == null){
+			return(null);
+		}
+		if (getMeetingDate() == null){
+			return(null);
+		}
+		Calendar mtgDt = Calendar.getInstance();
+		mtgDt.setTime(getMeetingDate());
+		List<?> locations = (RoomDAO.getInstance()).getSession().createQuery("from Room as r where r.permanentId = :permId").setLong("permId", getLocationPermanentId().longValue()).list();
+		if (locations != null && !locations.isEmpty()){
+			for(Iterator<?> locIt = locations.iterator(); locIt.hasNext(); ){
+				Room r = (Room) locIt.next();
+				Calendar sessStart = Calendar.getInstance();
+				sessStart.setTime(r.getSession().getSessionBeginDateTime());
+				Calendar sessStop = Calendar.getInstance();
+				sessStop.setTime(r.getSession().getSessionEndDateTime());
+				if (mtgDt.compareTo(sessStart) >= 0 && mtgDt.compareTo(sessStop) <= 0){
+					location = r;
+				}
+			}
+			for(Iterator<?> locIt = locations.iterator(); locIt.hasNext(); ){
+				Room r = (Room) locIt.next();
+				Calendar sessStart = Calendar.getInstance();
+				sessStart.setTime(r.getSession().getSessionBeginDateTime());
+				sessStart.add(Calendar.DAY_OF_MONTH, -30);
+				Calendar sessStop = Calendar.getInstance();
+				sessStop.setTime(r.getSession().getSessionEndDateTime());
+				if (mtgDt.compareTo(sessStart) >= 0 && mtgDt.compareTo(sessStop) <= 0){
+					location = r;
+				}
+			}
+			
+		} else {
+			locations = (RoomDAO.getInstance()).getSession().createQuery("from NonUniversityLocation as nul where nul.permanentId = :permId").setLong("permId", getLocationPermanentId().longValue()).list();
+			for(Iterator<?> locIt = locations.iterator(); locIt.hasNext(); ){
+				NonUniversityLocation nul = (NonUniversityLocation) locIt.next();
+				Calendar sessStart = Calendar.getInstance();
+				sessStart.setTime(nul.getSession().getSessionBeginDateTime());
+				Calendar sessStop = Calendar.getInstance();
+				sessStop.setTime(nul.getSession().getSessionEndDateTime());
+				if (mtgDt.compareTo(sessStart) >= 0 && mtgDt.compareTo(sessStop) <= 0){
+					location = nul;
+				}
+			}
+			for(Iterator<?> locIt = locations.iterator(); locIt.hasNext(); ){
+				NonUniversityLocation nul = (NonUniversityLocation) locIt.next();
+				Calendar sessStart = Calendar.getInstance();
+				sessStart.setTime(nul.getSession().getSessionBeginDateTime());
+				sessStart.add(Calendar.DAY_OF_MONTH, -30);
+				Calendar sessStop = Calendar.getInstance();
+				sessStop.setTime(nul.getSession().getSessionEndDateTime());
+				if (mtgDt.compareTo(sessStart) >= 0 && mtgDt.compareTo(sessStop) <= 0){
+					location = nul;
+				}
+			}
+		}
+		return(location);
+	}
+	
+	public List<?> getTimeRoomOverlaps(){
+		return (MeetingDAO.getInstance()).getSession().createQuery("from Meeting m where m.meetingDate=:meetingDate and m.startPeriod <= :stopPeriod and m.stopPeriod >= :startPeriod and m.locationPermanentId = :locPermId and m.uniqueId != :uniqueId")
+		.setDate("meetingDate", getMeetingDate())
+		.setInteger("stopPeriod", getStopPeriod())
+		.setInteger("startPeriod", getStartPeriod())
+		.setLong("locPermId", getLocationPermanentId())
+		.setLong("uniqueId", this.getUniqueId())
+		.list();
+	}
+
+	public boolean hasTimeRoomOverlaps(){
+		Long count = (Long)MeetingDAO.getInstance().getSession().createQuery("select count(m) from Meeting m where m.meetingDate=:meetingDate and m.startPeriod <= :stopPeriod and m.stopPeriod >= :startPeriod and m.locationPermanentId = :locPermId and m.uniqueId != :uniqueId")
+		.setDate("meetingDate", getMeetingDate())
+		.setInteger("stopPeriod", getStopPeriod())
+		.setInteger("startPeriod", getStartPeriod())
+		.setLong("locPermId", getLocationPermanentId())
+		.setLong("uniqueId", this.getUniqueId())
+		.uniqueResult();
+		return(count > 0);
 	}
 
 }
