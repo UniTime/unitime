@@ -21,13 +21,16 @@ package org.unitime.timetable.solver.exam.ui;
 
 import java.io.Serializable;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
 import net.sf.cpsolver.exam.model.ExamCourseSection;
 import net.sf.cpsolver.exam.model.ExamInstructor;
 import net.sf.cpsolver.exam.model.ExamModel;
+import net.sf.cpsolver.exam.model.ExamStudent;
 import net.sf.cpsolver.ifs.model.Constraint;
 
 import org.unitime.timetable.model.DepartmentalInstructor;
@@ -49,8 +52,8 @@ public class ExamInfo implements Serializable, Comparable {
     protected int iLength;
     protected int iMaxRooms;
     protected int iSeatingType;
-    protected Vector iSections = null;
-    protected Vector iInstructors = null;
+    protected Vector<ExamSectionInfo> iSections = null;
+    protected Vector<ExamInstructorInfo> iInstructors = null;
     
     public ExamInfo(net.sf.cpsolver.exam.model.Exam exam) {
     	iExamType = ((ExamModel)exam.getModel()).getProperties().getPropertyInt("Exam.Type", Exam.sExamTypeFinal);
@@ -64,7 +67,10 @@ public class ExamInfo implements Serializable, Comparable {
             iSections = new Vector();
             for (Enumeration e=exam.getCourseSections().elements();e.hasMoreElements();) {
                 ExamCourseSection ecs = (ExamCourseSection)e.nextElement();
-                iSections.add(new ExamSectionInfo(ecs.getId(), ecs.getName(), ecs.getStudents().size()));
+                HashSet<Long> studentIds = new HashSet<Long>();
+                for (Iterator i=ecs.getStudents().iterator();i.hasNext();) 
+                    studentIds.add(((ExamStudent)i.next()).getId());
+                iSections.add(new ExamSectionInfo(ecs.getId(), ecs.getName(), studentIds));
             }
         }
         iInstructors = new Vector();
@@ -143,7 +149,7 @@ public class ExamInfo implements Serializable, Comparable {
         return iMaxRooms;
     }
 
-    public Vector getSections() {
+    public Vector<ExamSectionInfo> getSections() {
         if (iSections==null) {
             iSections = new Vector();
             for (Iterator i=new TreeSet(getExam().getOwners()).iterator();i.hasNext();)
@@ -162,7 +168,7 @@ public class ExamInfo implements Serializable, Comparable {
         return name;
     }
 
-    public Vector getInstructors() {
+    public Vector<ExamInstructorInfo> getInstructors() {
         if (iInstructors==null) {
             iInstructors = new Vector();
             for (Iterator i=new TreeSet(getExam().getInstructors()).iterator();i.hasNext();)
@@ -207,15 +213,22 @@ public class ExamInfo implements Serializable, Comparable {
         protected String iName;
         protected int iNrStudents = -1;
         protected transient ExamOwner iOwner = null;
-        public ExamSectionInfo(Long id, String name, int nrStudents) {
+        protected Set<Long> iStudentIds = null;
+        public ExamSectionInfo(Long id, String name, Set<Long> studentIds) {
             iId = id;
             iName = name;
-            iNrStudents = nrStudents;
+            iNrStudents = studentIds.size();
+            iStudentIds = studentIds;
         }
         public ExamSectionInfo(ExamOwner owner) {
             iOwner = owner;
             iId = owner.getUniqueId();
             iName = owner.getLabel();
+            iStudentIds = null;
+        }
+        public Set<Long> getStudentIds() {
+            if (iStudentIds==null) iStudentIds = new HashSet<Long>(getOwner().getStudentIds());
+            return iStudentIds;
         }
         public Long getId() { return iId; }
         public Long getOwnerId() { return getOwner().getOwnerId(); }
