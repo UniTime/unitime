@@ -223,15 +223,15 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             }
             iInstructorMoreThanTwoADays.addAll(im2ds.values());
             computeUnavailablility(exam, model.getUnavailabilities(placement.getPeriod()));
-        }
-        for (Enumeration e=exam.getDistributionConstraints().elements();e.hasMoreElements();) {
-            ExamDistributionConstraint dc = (ExamDistributionConstraint)e.nextElement();
-            if (dc.isHard()) {
-                if (dc.inConflict(placement))
-                    iDistributions.add(new DistributionConflict(dc,exam));
-            } else {
-                if (!dc.isSatisfied(placement))
-                    iDistributions.add(new DistributionConflict(dc,exam));
+            for (Enumeration e=exam.getDistributionConstraints().elements();e.hasMoreElements();) {
+                ExamDistributionConstraint dc = (ExamDistributionConstraint)e.nextElement();
+                if (dc.isHard()) {
+                    if (dc.inConflict(placement))
+                        iDistributions.add(new DistributionConflict(dc,exam));
+                } else {
+                    if (!dc.isSatisfied(placement))
+                        iDistributions.add(new DistributionConflict(dc,exam));
+                }
             }
         }
     }
@@ -604,6 +604,47 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         return ret;
     }
     
+    public int getNrDirectConflicts(ExamSectionInfo section) {
+        int ret = 0;
+        for (Iterator i=iDirects.iterator();i.hasNext();) {
+            DirectConflict dc = (DirectConflict)i.next();
+            for (Enumeration f=dc.getStudents().elements();f.hasMoreElements();)
+                if (section.getStudentIds().contains(f.nextElement())) ret++;
+        }
+        return ret;
+    }
+
+    public int getNrBackToBackConflicts(ExamSectionInfo section) {
+        int ret = 0;
+        for (Iterator i=iBackToBacks.iterator();i.hasNext();) {
+            BackToBackConflict btb = (BackToBackConflict)i.next();
+            for (Enumeration f=btb.getStudents().elements();f.hasMoreElements();)
+                if (section.getStudentIds().contains(f.nextElement())) ret++;
+        }
+        return ret;
+    }
+    
+    public int getNrDistanceBackToBackConflicts(ExamSectionInfo section) {
+        int ret = 0;
+        for (Iterator i=iBackToBacks.iterator();i.hasNext();) {
+            BackToBackConflict btb = (BackToBackConflict)i.next();
+            if (btb.isDistance())
+                for (Enumeration f=btb.getStudents().elements();f.hasMoreElements();)
+                    if (section.getStudentIds().contains(f.nextElement())) ret++;
+        }
+        return ret;
+    }
+
+    public int getNrMoreThanTwoConflicts(ExamSectionInfo section) {
+        int ret = 0;
+        for (Iterator i=iMoreThanTwoADays.iterator();i.hasNext();) {
+            MoreThanTwoADayConflict m2d = (MoreThanTwoADayConflict)i.next();
+            for (Enumeration f=m2d.getStudents().elements();f.hasMoreElements();)
+                if (section.getStudentIds().contains(f.nextElement())) ret++;
+        }
+        return ret;
+    }
+    
     public TreeSet getDistributionConflicts() {
         return iDistributions;
     }
@@ -731,6 +772,47 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         return ret;
     }
     
+    public int getNrInstructorDirectConflicts(ExamSectionInfo section) {
+        int ret = 0;
+        for (Iterator i=iInstructorDirects.iterator();i.hasNext();) {
+            DirectConflict dc = (DirectConflict)i.next();
+            for (Enumeration f=dc.getStudents().elements();f.hasMoreElements();)
+                if (section.getStudentIds().contains(f.nextElement())) ret++;
+        }
+        return ret;
+    }
+
+    public int getNrInstructorBackToBackConflicts(ExamSectionInfo section) {
+        int ret = 0;
+        for (Iterator i=iInstructorBackToBacks.iterator();i.hasNext();) {
+            BackToBackConflict btb = (BackToBackConflict)i.next();
+            for (Enumeration f=btb.getStudents().elements();f.hasMoreElements();)
+                if (section.getStudentIds().contains(f.nextElement())) ret++;
+        }
+        return ret;
+    }
+    
+    public int getNrInstructorDistanceBackToBackConflicts(ExamSectionInfo section) {
+        int ret = 0;
+        for (Iterator i=iInstructorBackToBacks.iterator();i.hasNext();) {
+            BackToBackConflict btb = (BackToBackConflict)i.next();
+            if (btb.isDistance())
+                for (Enumeration f=btb.getStudents().elements();f.hasMoreElements();)
+                    if (section.getStudentIds().contains(f.nextElement())) ret++;
+        }
+        return ret;
+    }
+
+    public int getNrInstructorMoreThanTwoConflicts(ExamSectionInfo section) {
+        int ret = 0;
+        for (Iterator i=iInstructorMoreThanTwoADays.iterator();i.hasNext();) {
+            MoreThanTwoADayConflict m2d = (MoreThanTwoADayConflict)i.next();
+            for (Enumeration f=m2d.getStudents().elements();f.hasMoreElements();)
+                if (section.getStudentIds().contains(f.nextElement())) ret++;
+        }
+        return ret;
+    }
+
     public boolean getHasInstructorConflicts() {
         return !getInstructorDirectConflicts().isEmpty() || !getInstructorBackToBackConflicts().isEmpty() || !getInstructorMoreThanTwoADaysConflicts().isEmpty();
     }
