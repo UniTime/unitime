@@ -101,7 +101,7 @@
 	leaf_item('Student Sectioning','Student Sectioning','sectioningDemo.do');
 <% } %>
 	<%  if (manager.canSeeExams(acadSession, user)) { %>
-	menu_item('2','Examintation Timetabling','Examination Timetabling','','expand');
+	menu_item('2','Examination Timetabling','Examination Timetabling','','expand');
 		menu_item('20','Input Data','Course Timetabling Input Data','','collapse');
 			menu_item('200','Rooms','Rooms','roomSearch.do?default=Exam','collapse');
 				leaf_item('Features','Room Features','roomFeatureSearch.do?default=Exam');
@@ -119,10 +119,11 @@
 			leaf_item('Log','Examination Solver Log','examSolverLog.do');
 		enditem(); //21
 	<% } %>
+		leaf_item('Reports','Examination Reports','examAssignmentReport.do');
 	<% if (user!=null && user.getRole().equals(Roles.ADMIN_ROLE)) { %>
 		menu_item('22','Administration','Administration','','expand');
 			leaf_item('Examination Periods','Examination Periods','examPeriodEdit.do');
-		enditem(); //22
+		enditem(); //2
 	<% } %>
 	enditem(); //2
 	<% } %>
