@@ -123,6 +123,7 @@
 	  <form-bean name="examChangesForm" type="org.unitime.timetable.form.ExamChangesForm" />
 	  <form-bean name="examInfoForm" type="org.unitime.timetable.form.ExamInfoForm" />
 	  <form-bean name="eventDetailForm" type="org.unitime.timetable.form.EventDetailForm" />
+	  <form-bean name="examAssignmentReportForm" type="org.unitime.timetable.form.ExamAssignmentReportForm" />
    </form-beans>
 
    <global-exceptions>
@@ -2100,6 +2101,20 @@
     </action>
     
     <action
+    	path="/examAssignmentReport"
+    	type="org.unitime.timetable.action.ExamAssignmentReportAction"
+    	attribute="examAssignmentReportForm"
+    	input="examAssignmentReportTile"
+    	name="examAssignmentReportForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+    		name="show"
+    		path="examAssignmentReportTile"
+    		redirect="true" />
+    </action>
+    
+    <action
     	path="/eventDetail"
     	type="org.unitime.timetable.action.EventDetailAction"
     	attribute="eventDetailForm"
@@ -2112,8 +2127,6 @@
     		path="eventDetailTile"
     		redirect="true" />
     </action>
-    
-    
     
    </action-mappings>
 
