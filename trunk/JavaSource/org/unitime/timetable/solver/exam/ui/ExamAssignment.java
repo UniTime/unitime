@@ -20,6 +20,7 @@
 package org.unitime.timetable.solver.exam.ui;
 
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -43,6 +44,8 @@ import net.sf.cpsolver.exam.model.ExamRoom;
  * @author Tomas Muller
  */
 public class ExamAssignment extends ExamInfo implements Serializable, Comparable {
+    private static SimpleDateFormat sDateFormat = new SimpleDateFormat("EEE MM/dd");
+    private static SimpleDateFormat sTimeFormat = new SimpleDateFormat("hh:mmaa");
     protected Long iPeriodId = null;
     protected TreeSet<ExamRoomInfo> iRooms = null;
     protected String iPeriodPref = null;
@@ -175,29 +178,63 @@ public class ExamAssignment extends ExamInfo implements Serializable, Comparable
             getPeriodAbbreviation()+
             "</span>";
     }
+    
+    public String getDate(boolean pref) {
+        if (!pref || iPeriodPref==null || PreferenceLevel.sNeutral.equals(iPeriodPref)) return sDateFormat.format(getPeriod().getStartDate());
+        return
+        "<span title='"+PreferenceLevel.prolog2string(iPeriodPref)+" "+getPeriodName()+"' style='color:"+PreferenceLevel.prolog2color(iPeriodPref)+";'>"+
+        sDateFormat.format(getPeriod().getStartDate())+
+        "</span>";
+    }
+
+    public String getTime(boolean pref) {
+        if (!pref || iPeriodPref==null || PreferenceLevel.sNeutral.equals(iPeriodPref)) return sTimeFormat.format(getPeriod().getStartTime());
+        return
+        "<span title='"+PreferenceLevel.prolog2string(iPeriodPref)+" "+getPeriodName()+"' style='color:"+PreferenceLevel.prolog2color(iPeriodPref)+";'>"+
+        sTimeFormat.format(getPeriod().getStartTime())+
+        "</span>";
+    }
 
     public TreeSet<ExamRoomInfo> getRooms() {
         return iRooms;
     }
     
+    public boolean hasRoom(Long locationId) {
+        if (iRooms==null) return false;
+        for (ExamRoomInfo room : getRooms()) 
+            if (room.getLocationId().equals(locationId)) return true;
+        return false;
+    }
+    
     public String getRoomsName(String delim) {
-        String rooms = "";
-        for (ExamRoomInfo room : getRooms()) {
-            if (rooms.length()>0) rooms+=delim;
-            rooms += room.getName();
-        }
-        return rooms;
+        return getRoomsName(false, delim);
     }
 
     public String getRoomsNameWithPref(String delim) {
+        return getRoomsName(true, delim);
+    }
+    
+    public String getRoomsName(boolean pref, String delim) {
         String rooms = "";
         for (ExamRoomInfo room : getRooms()) {
             if (rooms.length()>0) rooms+=delim;
-            rooms += room.toString();
+            rooms += (pref?room.toString():room.getName());
         }
         return rooms;
     }
     
+    public String getRoomsCapacity(boolean pref, String delim) {
+        String rooms = "";
+        for (ExamRoomInfo room : getRooms()) {
+            if (rooms.length()>0) rooms+=delim;
+            if (!pref)
+                rooms += room.getCapacity();
+            else
+                rooms += "<span style='color:"+PreferenceLevel.prolog2color(PreferenceLevel.int2prolog(room.getPreference()))+";' >"+room.getCapacity()+"</span>";
+        }
+        return rooms;
+    }
+
     public String toString() {
         return getExamName()+" "+getPeriodAbbreviation()+" "+getRoomsName(",");
     }
