@@ -23,6 +23,9 @@ package org.unitime.commons.web;
 
 import java.util.*;
 
+import net.sf.cpsolver.ifs.util.CSVFile;
+import net.sf.cpsolver.ifs.util.CSVFile.CSVField;
+
 import org.unitime.commons.NaturalOrderComparator;
 import org.unitime.commons.ToolBox;
 
@@ -71,6 +74,8 @@ public class WebTable {
 
     /** column filter -- column keys */
     private String[]  iColumnFilterKeys = null;
+    
+    protected boolean iBlankWhenSame = false;
     
     /** creates a WebTable instance */
     public WebTable(int columns, String name, String[] headers, String[] align, boolean[] asc) {
@@ -222,8 +227,18 @@ public class WebTable {
                 : false);
     }
     
+    public int getNrFilteredColumns() {
+        if (iColumnFilter==null) return 0;
+        int ret = 0;
+        for (Enumeration e=iColumnFilter.keys();e.hasMoreElements();) {
+            if (Boolean.TRUE.equals(e.nextElement())) ret++;
+        }
+        return ret;
+    }
+    
     /** returns table's HTML code, table is ordered by ordCol-th column */
     public String printTable(int ordCol) {
+        String lastLine[] = new String[Math.max(iColumns,(iHeaders==null?0:iHeaders.length))];
         StringBuffer sb = new StringBuffer();
 
         if (iName != null && iName.trim().length()>0) {
@@ -308,9 +323,12 @@ public class WebTable {
 			if (wtline.getUniqueId()!=null) {
 				sb.append("<A name=\""+wtline.iUniqueId+"\" />");
 			}
+            boolean blank = iBlankWhenSame;
             for (int i = 0; i < line.length; i++) {
                 if (!isFiltered(i)) {
-                    if (line[i] != null) {
+                    if (blank && line[i]!=null && !line[i].equals(lastLine[i]))
+                        blank=false;
+                    if (!blank && line[i] != null) {
                         sb.append("<td "
                                 + (iRowStyle == null
                                         ? ""
@@ -335,11 +353,58 @@ public class WebTable {
                                         : "")
                                 + ">&nbsp;</td>");
                     }
+                    lastLine[i] = line[i]; 
                 }
             }
             sb.append("</tr>" + (anchor ? "</a>" : ""));
         }
         return sb.toString();
+    }
+    
+    public CSVFile toCSVFile(int ordCol) {
+        CSVFile file = new CSVFile();
+        if (iHeaders != null) {
+            Vector header = new Vector();
+            for (int i=0;i<iHeaders.length;i++)
+                if (!isFiltered(i))
+                    header.add(new CSVField(iHeaders[i]==null?"":iHeaders[i]));
+            file.setHeader(header);
+        }
+        boolean asc = (ordCol == 0 || iAsc == null || iAsc.length <= Math.abs(ordCol) - 1 ? true : iAsc[Math.abs(ordCol) - 1]);
+        if (ordCol < 0) asc = !asc;
+        if (ordCol != 0) Collections.sort(iLines, new WebTableComparator(Math.abs(ordCol) - 1, asc));
+        String lastLine[] = new String[Math.max(iColumns,(iHeaders==null?0:iHeaders.length))];
+        for (Enumeration el = iLines.elements(); el.hasMoreElements();) {
+            WebTableLine wtline = (WebTableLine) el.nextElement();
+            String[] line = wtline.getLine();
+            Vector cline = new Vector();
+            boolean blank = iBlankWhenSame;
+            for (int i=0; i<line.length; i++) {
+                if (isFiltered(i)) continue;
+                if (blank && line[i]!=null && !line[i].equals(lastLine[i])) blank=false;
+
+                cline.add(new CSVField(blank || line[i]==null?"":line[i]));
+                lastLine[i] = line[i];
+            }
+            file.addLine(cline);
+        }
+        return file;
+    }
+    
+    public int getNrColumns() {
+        return iColumns - getNrFilteredColumns();
+    }
+    
+    public String[] getHeader() {
+        return iHeaders;
+    }
+    
+    public boolean isBlankWhenSame() {
+        return iBlankWhenSame;
+    }
+    
+    public void setBlankWhenSame(boolean blankWhenSame) {
+        iBlankWhenSame = blankWhenSame;
     }
 
     /** This class represents a single line in the WebTable */
@@ -379,7 +444,7 @@ public class WebTable {
         public String[] getLine() {
             return iLine;
         }
-
+        
         public Comparable[] getOrderBy() {
             return iOrderBy;
         }

@@ -317,7 +317,7 @@ public class PdfWebTable extends WebTable {
 	 * @return
 	 */
 	public PdfPTable printPdfTable(int ordCol, boolean keepTogether) {
-    	PdfPTable table = new PdfPTable(iColumns);
+    	PdfPTable table = new PdfPTable(getNrColumns());
 		table.setWidthPercentage(100);
 		table.getDefaultCell().setPadding(3);
 		table.getDefaultCell().setBorderWidth(0);
@@ -331,8 +331,11 @@ public class PdfWebTable extends WebTable {
         for (int i=0;i<iColumns;i++)
         	widths[i] = 0f;
 
+        String lastLine[] = new String[Math.max(iColumns,(iHeaders==null?0:iHeaders.length))];
+        
         if (iHeaders != null) {
             for (int i = 0; i < iColumns; i++) {
+                if (isFiltered(i)) continue;
             	PdfPCell c = createCell();
             	c.setBorderWidthBottom(1);
             	float width = addText(c,iHeaders[i]==null?"":iHeaders[i],true);
@@ -354,9 +357,12 @@ public class PdfWebTable extends WebTable {
         for (Enumeration el = iLines.elements(); el.hasMoreElements();) {
             WebTableLine wtline = (WebTableLine) el.nextElement();
             String[] line = wtline.getLine();
+            boolean blank = iBlankWhenSame;
             for (int i = 0; i < iColumns; i++) {
+                if (isFiltered(i)) continue;
+                if (blank && line[i]!=null && !line[i].equals(lastLine[i])) blank=false;
             	PdfPCell c = createCell();
-            	float width = addText(c,line[i]==null?"":line[i],false);
+            	float width = addText(c,blank || line[i]==null?"":line[i],false);
             	widths[i] = Math.max(widths[i],width);
             	String align = (iAlign != null ? iAlign[i] : "left");
             	if ("left".equals(align))
@@ -366,11 +372,22 @@ public class PdfWebTable extends WebTable {
             	if ("center".equals(align))
             		c.setHorizontalAlignment(Element.ALIGN_CENTER);
             	table.addCell(c);
+            	lastLine[i] = line[i];
             }
         }
         
         try {
-        	table.setWidths(widths);
+            if (getNrFilteredColumns()<0) {
+                table.setWidths(widths);
+            } else {
+                float[] x = new float[getNrColumns()];
+                int idx = 0;
+                for (int i=0;i<iColumns;i++) {
+                    if (isFiltered(i)) continue;
+                    x[idx++] = widths[i];
+                }
+                table.setWidths(x);
+            }
         } catch (Exception e) {
         	e.printStackTrace();
         }
