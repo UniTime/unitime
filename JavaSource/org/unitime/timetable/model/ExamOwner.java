@@ -205,6 +205,44 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
         }
     }
     
+    public List getStudentIds() {
+        switch (getOwnerType()) {
+        case sOwnerTypeClass : 
+            return new ExamOwnerDAO().getSession().createQuery(
+                    "select distinct e.student.uniqueId from " +
+                    "StudentClassEnrollment e inner join e.clazz c  " +
+                    "where c.uniqueId = :examOwnerId")
+                    .setLong("examOwnerId", getOwnerId())
+                    .setCacheable(true)
+                    .list();
+        case sOwnerTypeConfig : 
+            return new ExamOwnerDAO().getSession().createQuery(
+                    "select distinct e.student.uniqueId from " +
+                    "StudentClassEnrollment e inner join e.clazz c  " +
+                    "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :examOwnerId")
+                    .setLong("examOwnerId", getOwnerId())
+                    .setCacheable(true)
+                    .list();
+        case sOwnerTypeCourse : 
+            return new ExamOwnerDAO().getSession().createQuery(
+                    "select distinct e.student.uniqueId from " +
+                    "StudentClassEnrollment e inner join e.courseOffering co  " +
+                    "where co.uniqueId = :examOwnerId")
+                    .setLong("examOwnerId", getOwnerId())
+                    .setCacheable(true)
+                    .list();
+        case sOwnerTypeOffering : 
+            return new ExamOwnerDAO().getSession().createQuery(
+                    "select distinct e.student.uniqueId from " +
+                    "StudentClassEnrollment e inner join e.courseOffering co  " +
+                    "where co.instructionalOffering.uniqueId = :examOwnerId")
+                    .setLong("examOwnerId", getOwnerId())
+                    .setCacheable(true)
+                    .list();
+        default : throw new RuntimeException("Unknown owner type "+getOwnerType());
+        }
+    }
+    
     protected void computeStudentExams(Hashtable<Long, Set<Exam>> studentExams) {
         switch (getOwnerType()) {
         case sOwnerTypeClass :
