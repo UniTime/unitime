@@ -56,9 +56,9 @@ public class ExamRoomInfo implements Serializable, Comparable<ExamRoomInfo>{
     }
     
     public int compareTo(ExamRoomInfo room) {
-        int cmp = -Double.compare(getCapacity(), room.getCapacity());
-        if (cmp!=0) return cmp;
-        cmp = getName().compareTo(room.getName());
+        /*int cmp = -Double.compare(getCapacity(), room.getCapacity());
+        if (cmp!=0) return cmp;*/
+        int cmp = getName().compareTo(room.getName());
         if (cmp!=0) return cmp;
         return getLocationId().compareTo(room.getLocationId());
     }
