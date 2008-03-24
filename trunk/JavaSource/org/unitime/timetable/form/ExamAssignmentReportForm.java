@@ -40,17 +40,25 @@ public class ExamAssignmentReportForm extends ExamReportForm {
     public static final String sDirectStudentConflicts = "Direct Student Conflicts";
     public static final String sMore2ADayStudentConflicts = "More Than 2 Exams A Day Student Conflicts";
     public static final String sBackToBackStudentConflicts = "Back-To-Back Student Conflicts";
-    public static final String sStudentConflicts = "Student Conflicts";
+    public static final String sIndividualStudentConflicts = "Individual Student Conflicts";
+    public static final String sIndividualDirectStudentConflicts = "Individual Direct Student Conflicts";
+    public static final String sIndividualBackToBackStudentConflicts = "Individual Back-To-Back Student Conflicts";
+    public static final String sIndividualMore2ADayStudentConflicts = "Individual More Than 2 Exams A Day Student Conflicts";
     public static final String sDirectInstructorConflicts = "Direct Instructor Conflicts";
     public static final String sMore2ADayInstructorConflicts = "More Than 2 Exams A Day Instructor Conflicts";
     public static final String sBackToBackInstructorConflicts = "Back-To-Back Instructor Conflicts";
-    public static final String sInstructorConflicts = "Instructor Conflicts";
+    public static final String sIndividualInstructorConflicts = "Individual Instructor Conflicts";
+    public static final String sIndividualDirectInstructorConflicts = "Individual Direct Instructor Conflicts";
+    public static final String sIndividualBackToBackInstructorConflicts = "Individual Back-To-Back Instructor Conflicts";
+    public static final String sIndividualMore2ADayInstructorConflicts = "Individual More Than 2 Exams A Day Instructor Conflicts";
     private static final String[] sReports = { 
             sExamAssignmentReport, sRoomAssignmentReport, 
             sPeriodUsage, sNrExamsADay, sRoomSplits, 
-            // sViolatedDistributions,
-            // sDirectStudentConflicts, sMore2ADayStudentConflicts, sBackToBackStudentConflicts, sStudentConflicts,
-            // sDirectInstructorConflicts, sMore2ADayInstructorConflicts, sBackToBackInstructorConflicts, sInstructorConflicts
+            sViolatedDistributions,
+            sDirectStudentConflicts, sMore2ADayStudentConflicts, sBackToBackStudentConflicts, 
+            sIndividualStudentConflicts, sIndividualDirectStudentConflicts, sIndividualMore2ADayStudentConflicts, sIndividualBackToBackStudentConflicts,
+            sDirectInstructorConflicts, sMore2ADayInstructorConflicts, sBackToBackInstructorConflicts, 
+            sIndividualInstructorConflicts, sIndividualDirectInstructorConflicts, sIndividualBackToBackInstructorConflicts, sIndividualMore2ADayInstructorConflicts
             };
     private String iFilter = null;
     
