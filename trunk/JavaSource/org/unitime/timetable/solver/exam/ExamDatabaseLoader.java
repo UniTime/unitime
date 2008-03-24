@@ -480,7 +480,7 @@ public class ExamDatabaseLoader extends ExamLoader {
     protected void loadStudents() {
         loadStudents(
                 new ExamDAO().getSession().createQuery(
-                "select x.uniqueId, e.student.uniqueId from "+
+                "select x.uniqueId, o.uniqueId, e.student.uniqueId from "+
                 "Exam x inner join x.owners o, "+
                 "StudentClassEnrollment e inner join e.clazz c "+
                 "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
@@ -489,7 +489,7 @@ public class ExamDatabaseLoader extends ExamLoader {
                 "class");
         loadStudents(
                 new ExamDAO().getSession().createQuery(
-                "select x.uniqueId, e.student.uniqueId from "+
+                "select x.uniqueId, o.uniqueId, e.student.uniqueId from "+
                 "Exam x inner join x.owners o, "+
                 "StudentClassEnrollment e inner join e.clazz c " +
                 "inner join c.schedulingSubpart.instrOfferingConfig ioc " +
@@ -499,7 +499,7 @@ public class ExamDatabaseLoader extends ExamLoader {
                 "config");
         loadStudents(
                 new ExamDAO().getSession().createQuery(
-                "select x.uniqueId, e.student.uniqueId from "+
+                "select x.uniqueId, o.uniqueId, e.student.uniqueId from "+
                 "Exam x inner join x.owners o, "+
                 "StudentClassEnrollment e inner join e.courseOffering co " +
                 "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
@@ -508,7 +508,7 @@ public class ExamDatabaseLoader extends ExamLoader {
                 "course");
         loadStudents(
                 new ExamDAO().getSession().createQuery(
-                "select x.uniqueId, e.student.uniqueId from "+
+                "select x.uniqueId, o.uniqueId, e.student.uniqueId from "+
                 "Exam x inner join x.owners o, "+
                 "StudentClassEnrollment e inner join e.courseOffering.instructionalOffering io " +
                 "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
@@ -524,7 +524,8 @@ public class ExamDatabaseLoader extends ExamLoader {
             iProgress.incProgress();
             Object[] o = (Object[])i.next();
             Long examId = (Long)o[0];
-            Long studentId = (Long)o[1];
+            Long ownerId = (Long)o[1];
+            Long studentId = (Long)o[2];
             ExamStudent student = (ExamStudent)iStudents.get(studentId);
             if (student==null) {
                 student = new ExamStudent(getModel(), studentId);
@@ -540,6 +541,10 @@ public class ExamDatabaseLoader extends ExamLoader {
             }
             if (!student.variables().contains(exam))
                 student.addVariable(exam);
+            for (Enumeration e=exam.getCourseSections().elements();e.hasMoreElements();) {
+                ExamCourseSection ecs = (ExamCourseSection)e.nextElement();
+                if (ownerId.equals(ecs.getId())) ecs.getStudents().add(student);
+            }
         }
     }
     
