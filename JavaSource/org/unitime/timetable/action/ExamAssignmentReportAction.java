@@ -50,6 +50,7 @@ import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ExamAssignmentReportForm;
+import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriod;
@@ -157,6 +158,7 @@ public class ExamAssignmentReportAction extends Action {
 	}
 	
 	public boolean match(ExamAssignmentReportForm form, ExamAssignment exam) {
+	    if (exam==null) return false;
 	    if (form.getShowSections()) {
 	        for (ExamSectionInfo section : exam.getSections())
 	            if (match(form, section.getName())) return true;
@@ -910,7 +912,7 @@ public class ExamAssignmentReportAction extends Action {
         for (ExamAssignmentInfo exam : exams) {
             if (direct)
                 for (DirectConflict conflict : (studentConf?exam.getDirectConflicts():exam.getInstructorDirectConflicts())) {
-                    if (exam.compareTo(conflict.getOtherExam())>=0 && exams.contains(conflict.getOtherExam())) continue;
+                    if (conflict.getOtherExam()!=null && exam.compareTo(conflict.getOtherExam())>=0 && exams.contains(conflict.getOtherExam())) continue;
                     for (Long studentId : conflict.getStudents()) {
                         String id = "", name = "";
                         if (studentConf) {
@@ -942,18 +944,29 @@ public class ExamAssignmentReportAction extends Action {
                                 firstSection = false;
                             }
                             firstSection = true;
-                            for (ExamSectionInfo section : conflict.getOtherExam().getSections()) {
-                                if (!section.getStudentIds().contains(studentId)) continue;
-                                if (classes.length()>0) {
-                                    blank+=nl; classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl; distance += nl;
+                            if (conflict.getOtherExam()!=null) {
+                                for (ExamSectionInfo section : conflict.getOtherExam().getSections()) {
+                                    if (!section.getStudentIds().contains(studentId)) continue;
+                                    if (classes.length()>0) {
+                                        blank+=nl; classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl; distance += nl;
+                                    }
+                                    classes += section.getName();
+                                    enrollment += String.valueOf(section.getNrStudents());
+                                    if (firstSection) {
+                                        seating += Exam.sExamTypes[conflict.getOtherExam().getExamType()];
+                                        room += conflict.getOtherExam().getRoomsName(html, ", ");
+                                    }
+                                    firstSection = false;
                                 }
-                                classes += section.getName();
-                                enrollment += String.valueOf(section.getNrStudents());
-                                if (firstSection) {
-                                    seating += Exam.sExamTypes[conflict.getOtherExam().getExamType()];
-                                    room += conflict.getOtherExam().getRoomsName(html, ", ");
-                                }
-                                firstSection = false;
+                            } else if (conflict.getOtherAssignment()!=null) {
+                                blank+=nl; classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl; distance += nl;
+                                Assignment assignment = conflict.getOtherAssignment();
+                                classes += assignment.getClassName();
+                                enrollment += assignment.getClazz().getClassLimit();
+                                seating += "Class";
+                                room += assignment.getPlacement().getRoomName(", ");
+                                date += assignment.getDatePattern().getName();
+                                time += assignment.getPlacement().getTimeLocation().getName()+" - "+assignment.getPlacement().getTimeLocation().getEndTimeHeader();
                             }
                             table.addLine(
                                     "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"",
@@ -973,7 +986,7 @@ public class ExamAssignmentReportAction extends Action {
                                         new MultiComparable(name,id, exam, 0),
                                         new MultiComparable(0, exam, 0),
                                         new MultiComparable(exam, exam, 0),
-                                        new MultiComparable(-exam.getNrStudents()-conflict.getOtherExam().getNrStudents(), exam, 0),
+                                        new MultiComparable(-exam.getNrStudents()-(conflict.getOtherExam()==null?0:conflict.getOtherExam().getNrStudents()), exam, 0),
                                         new MultiComparable(exam.getExamType(), exam, 0),
                                         new MultiComparable(exam.getPeriodOrd(), exam, 0),
                                         new MultiComparable(exam.getPeriod().getStartSlot(), exam, 0),
@@ -982,32 +995,63 @@ public class ExamAssignmentReportAction extends Action {
                                     },
                                     exam.getExamId().toString());
                         } else {
-                            table.addLine(
-                                    "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"",
-                                    new String[] {
-                                        id,
-                                        name,
-                                        (html?"<font color='"+PreferenceLevel.prolog2color("P")+"'>":"")+"Direct"+(html?"</font>":""),
-                                        exam.getExamName()+nl+conflict.getOtherExam().getExamName(),
-                                        exam.getNrStudents()+nl+conflict.getOtherExam().getNrStudents(),
-                                        Exam.sExamTypes[exam.getExamType()]+nl+Exam.sExamTypes[conflict.getOtherExam().getExamType()],
-                                        exam.getDate(html)+nl,
-                                        exam.getTime(html)+nl,
-                                        exam.getRoomsName(html, ", ")+nl+conflict.getOtherExam().getRoomsName(html, ", "),
-                                        ""
-                                    }, new Comparable[] {
-                                        new MultiComparable(id, exam, 0),
-                                        new MultiComparable(name, id, exam, 0),
-                                        new MultiComparable(0, exam, 0),
-                                        new MultiComparable(exam, exam, 0),
-                                        new MultiComparable(-exam.getNrStudents()-conflict.getOtherExam().getNrStudents(), exam, 0),
-                                        new MultiComparable(exam.getExamType(), exam, 0),
-                                        new MultiComparable(exam.getPeriodOrd(), exam, 0),
-                                        new MultiComparable(exam.getPeriod().getStartSlot(), exam, 0),
-                                        new MultiComparable(exam.getRoomsName(":"), exam, 0),
-                                        new MultiComparable(-1.0, exam, 0)
-                                    },
-                                    exam.getExamId().toString());
+                            if (conflict.getOtherExam()!=null) {
+                                table.addLine(
+                                        "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"",
+                                        new String[] {
+                                            id,
+                                            name,
+                                            (html?"<font color='"+PreferenceLevel.prolog2color("P")+"'>":"")+"Direct"+(html?"</font>":""),
+                                            exam.getExamName()+nl+conflict.getOtherExam().getExamName(),
+                                            exam.getNrStudents()+nl+conflict.getOtherExam().getNrStudents(),
+                                            Exam.sExamTypes[exam.getExamType()]+nl+Exam.sExamTypes[conflict.getOtherExam().getExamType()],
+                                            exam.getDate(html)+nl,
+                                            exam.getTime(html)+nl,
+                                            exam.getRoomsName(html, ", ")+nl+conflict.getOtherExam().getRoomsName(html, ", "),
+                                            ""
+                                        }, new Comparable[] {
+                                            new MultiComparable(id, exam, 0),
+                                            new MultiComparable(name, id, exam, 0),
+                                            new MultiComparable(0, exam, 0),
+                                            new MultiComparable(exam, exam, 0),
+                                            new MultiComparable(-exam.getNrStudents()-conflict.getOtherExam().getNrStudents(), exam, 0),
+                                            new MultiComparable(exam.getExamType(), exam, 0),
+                                            new MultiComparable(exam.getPeriodOrd(), exam, 0),
+                                            new MultiComparable(exam.getPeriod().getStartSlot(), exam, 0),
+                                            new MultiComparable(exam.getRoomsName(":"), exam, 0),
+                                            new MultiComparable(-1.0, exam, 0)
+                                        },
+                                        exam.getExamId().toString());                                
+                            } else if (conflict.getOtherAssignment()!=null) {
+                                Assignment assignment = conflict.getOtherAssignment();
+                                table.addLine(
+                                        "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"",
+                                        new String[] {
+                                            id,
+                                            name,
+                                            (html?"<font color='"+PreferenceLevel.prolog2color("P")+"'>":"")+"Direct"+(html?"</font>":""),
+                                            exam.getExamName()+nl+assignment.getClassName(),
+                                            String.valueOf(exam.getNrStudents())+nl+assignment.getClazz().getClassLimit(),
+                                            Exam.sExamTypes[exam.getExamType()]+nl+"Class",
+                                            exam.getDate(html)+nl+assignment.getDatePattern().getName(),
+                                            exam.getTime(html)+nl+assignment.getPlacement().getTimeLocation().getName()+" - "+assignment.getPlacement().getTimeLocation().getEndTimeHeader(),
+                                            exam.getRoomsName(html, ", ")+nl+assignment.getPlacement().getRoomName(", "),
+                                            ""
+                                        }, new Comparable[] {
+                                            new MultiComparable(id, exam, 0),
+                                            new MultiComparable(name, id, exam, 0),
+                                            new MultiComparable(0, exam, 0),
+                                            new MultiComparable(exam, exam, 0),
+                                            new MultiComparable(-exam.getNrStudents()-assignment.getClazz().getClassLimit(), exam, 0),
+                                            new MultiComparable(exam.getExamType(), exam, 0),
+                                            new MultiComparable(exam.getPeriodOrd(), exam, 0),
+                                            new MultiComparable(exam.getPeriod().getStartSlot(), exam, 0),
+                                            new MultiComparable(exam.getRoomsName(":"), exam, 0),
+                                            new MultiComparable(-1.0, exam, 0)
+                                        },
+                                        exam.getExamId().toString());                                
+                            }
+
                         }
                     }
                 }
@@ -1267,67 +1311,133 @@ public class ExamAssignmentReportAction extends Action {
                 ExamAssignment other = conflict.getOtherExam();
                 if (form.getShowSections()) {
                     for (ExamSectionInfo section1 : exam.getSections()) {
-                        for (ExamSectionInfo section2 : conflict.getOtherExam().getSections()) {
-                            if (!match(form, section1.getName()) && !match(form, section2.getName())) continue;
+                        if (other!=null) {
+                            for (ExamSectionInfo section2 : conflict.getOtherExam().getSections()) {
+                                if (!match(form, section1.getName()) && !match(form, section2.getName())) continue;
+                                int nrStudents = 0;
+                                for (Long studentId : section1.getStudentIds())
+                                    if (section2.getStudentIds().contains(studentId)) nrStudents++;
+                                if (nrStudents==0) continue;
+                                table.addLine(
+                                        "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"",
+                                        new String[] {
+                                            section1.getName(),
+                                            String.valueOf(section1.getNrStudents()),
+                                            Exam.sExamTypes[exam.getExamType()],
+                                            section2.getName(),
+                                            String.valueOf(section2.getNrStudents()),
+                                            Exam.sExamTypes[conflict.getOtherExam().getExamType()],
+                                            exam.getDate(html),
+                                            exam.getTime(html),
+                                            String.valueOf(nrStudents),
+                                            df.format(100.0*nrStudents/Math.min(section1.getNrStudents(), section2.getNrStudents()))
+                                        }, new Comparable[] {
+                                            new MultiComparable(section1.getName(), section2.getName(), exam, other),
+                                            new MultiComparable(-section1.getNrStudents(), -section2.getNrStudents(), section1.getName(), section2.getName(), exam, other),
+                                            new MultiComparable(exam.getSeatingType(), other.getSeatingType(), section1.getName(), section2.getName(), exam, other),
+                                            new MultiComparable(section2.getName(), section1.getName(), other, exam),
+                                            new MultiComparable(-section2.getNrStudents(), -section1.getNrStudents(), section2.getName(), section1.getName(), other, exam),
+                                            new MultiComparable(other.getSeatingType(), exam.getSeatingType(), section2.getName(), section1.getName(), other, exam),
+                                            new MultiComparable(exam.getPeriodOrd(), exam, other),
+                                            new MultiComparable(exam.getPeriod().getStartSlot(), exam, other),
+                                            new MultiComparable(-nrStudents, exam, other),
+                                            new MultiComparable(-100.0*nrStudents/Math.min(section1.getNrStudents(), section2.getNrStudents()), exam, other)
+                                        },
+                                        exam.getExamId().toString());
+                            }                        
+                        } else if (conflict.getOtherAssignmentId()!=null) {
+                            if (!match(form, section1.getName())) continue;
                             int nrStudents = 0;
                             for (Long studentId : section1.getStudentIds())
-                                if (section2.getStudentIds().contains(studentId)) nrStudents++;
+                                if (conflict.getStudents().contains(studentId)) nrStudents++;
                             if (nrStudents==0) continue;
+                            Assignment assignment = conflict.getOtherAssignment();
+                            if (assignment==null) continue;
                             table.addLine(
                                     "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"",
                                     new String[] {
                                         section1.getName(),
                                         String.valueOf(section1.getNrStudents()),
                                         Exam.sExamTypes[exam.getExamType()],
-                                        section2.getName(),
-                                        String.valueOf(section2.getNrStudents()),
-                                        Exam.sExamTypes[conflict.getOtherExam().getExamType()],
+                                        assignment.getClassName(),
+                                        String.valueOf(assignment.getClazz().getClassLimit()),
+                                        "Class",
                                         exam.getDate(html),
                                         exam.getTime(html),
                                         String.valueOf(nrStudents),
-                                        df.format(100.0*nrStudents/Math.min(section1.getNrStudents(), section2.getNrStudents()))
+                                        df.format(100.0*nrStudents/Math.min(section1.getNrStudents(), assignment.getClazz().getClassLimit()))
                                     }, new Comparable[] {
-                                        new MultiComparable(section1.getName(), section2.getName(), exam, other),
-                                        new MultiComparable(-section1.getNrStudents(), -section2.getNrStudents(), section1.getName(), section2.getName(), exam, other),
-                                        new MultiComparable(exam.getSeatingType(), other.getSeatingType(), section1.getName(), section2.getName(), exam, other),
-                                        new MultiComparable(section2.getName(), section1.getName(), other, exam),
-                                        new MultiComparable(-section2.getNrStudents(), -section1.getNrStudents(), section2.getName(), section1.getName(), other, exam),
-                                        new MultiComparable(other.getSeatingType(), exam.getSeatingType(), section2.getName(), section1.getName(), other, exam),
+                                        new MultiComparable(section1.getName(), assignment.getClassName(), exam, other),
+                                        new MultiComparable(-section1.getNrStudents(), -assignment.getClazz().getClassLimit(), section1.getName(), assignment.getClassName(), exam, other),
+                                        new MultiComparable(exam.getSeatingType(), -1, section1.getName(), assignment.getClassName(), exam, other),
+                                        new MultiComparable(assignment.getClassName(), section1.getName(), other, exam),
+                                        new MultiComparable(-assignment.getClazz().getClassLimit(), -section1.getNrStudents(), assignment.getClassName(), section1.getName(), other, exam),
+                                        new MultiComparable(-1, exam.getSeatingType(), assignment.getClassName(), section1.getName(), other, exam),
                                         new MultiComparable(exam.getPeriodOrd(), exam, other),
                                         new MultiComparable(exam.getPeriod().getStartSlot(), exam, other),
                                         new MultiComparable(-nrStudents, exam, other),
-                                        new MultiComparable(-100.0*nrStudents/Math.min(section1.getNrStudents(), section2.getNrStudents()), exam, other)
+                                        new MultiComparable(-100.0*nrStudents/Math.min(section1.getNrStudents(), assignment.getClazz().getClassLimit()), exam, other)
                                     },
-                                    exam.getExamId().toString());
+                                    exam.getExamId().toString());                            
                         }
                     }
                 } else {
-                    table.addLine(
-                            "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"",
-                            new String[] {
-                                exam.getExamName(),
-                                String.valueOf(exam.getNrStudents()),
-                                Exam.sExamTypes[exam.getExamType()],
-                                other.getExamName(),
-                                String.valueOf(other.getNrStudents()),
-                                Exam.sExamTypes[conflict.getOtherExam().getExamType()],
-                                exam.getDate(html),
-                                exam.getTime(html),
-                                String.valueOf(conflict.getNrStudents()),
-                                df.format(100.0*conflict.getNrStudents()/Math.min(exam.getNrStudents(), other.getNrStudents()))
-                            }, new Comparable[] {
-                                new MultiComparable(exam, other),
-                                new MultiComparable(-exam.getNrStudents(), -other.getNrStudents(), exam, other),
-                                new MultiComparable(exam.getSeatingType(), other.getSeatingType(), exam, other),
-                                new MultiComparable(other, exam),
-                                new MultiComparable(-other.getNrStudents(), -exam.getNrStudents(), other, exam),
-                                new MultiComparable(other.getSeatingType(), exam.getSeatingType(), other, exam),
-                                new MultiComparable(exam.getPeriodOrd(), exam, other),
-                                new MultiComparable(exam.getPeriod().getStartSlot(), exam, other),
-                                new MultiComparable(-conflict.getNrStudents(), exam, other),
-                                new MultiComparable(-100.0*conflict.getNrStudents()/Math.min(exam.getNrStudents(), other.getNrStudents()), exam, other)
-                            },
-                            exam.getExamId().toString());
+                    if (other!=null) {
+                        table.addLine(
+                                "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"",
+                                new String[] {
+                                    exam.getExamName(),
+                                    String.valueOf(exam.getNrStudents()),
+                                    Exam.sExamTypes[exam.getExamType()],
+                                    other.getExamName(),
+                                    String.valueOf(other.getNrStudents()),
+                                    Exam.sExamTypes[conflict.getOtherExam().getExamType()],
+                                    exam.getDate(html),
+                                    exam.getTime(html),
+                                    String.valueOf(conflict.getNrStudents()),
+                                    df.format(100.0*conflict.getNrStudents()/Math.min(exam.getNrStudents(), other.getNrStudents()))
+                                }, new Comparable[] {
+                                    new MultiComparable(exam, other),
+                                    new MultiComparable(-exam.getNrStudents(), -other.getNrStudents(), exam, other),
+                                    new MultiComparable(exam.getSeatingType(), other.getSeatingType(), exam, other),
+                                    new MultiComparable(other, exam),
+                                    new MultiComparable(-other.getNrStudents(), -exam.getNrStudents(), other, exam),
+                                    new MultiComparable(other.getSeatingType(), exam.getSeatingType(), other, exam),
+                                    new MultiComparable(exam.getPeriodOrd(), exam, other),
+                                    new MultiComparable(exam.getPeriod().getStartSlot(), exam, other),
+                                    new MultiComparable(-conflict.getNrStudents(), exam, other),
+                                    new MultiComparable(-100.0*conflict.getNrStudents()/Math.min(exam.getNrStudents(), other.getNrStudents()), exam, other)
+                                },
+                                exam.getExamId().toString());
+                    } else if (conflict.getOtherAssignment()!=null) {
+                        Assignment assignment = conflict.getOtherAssignment();
+                        table.addLine(
+                                "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"",
+                                new String[] {
+                                    exam.getExamName(),
+                                    String.valueOf(exam.getNrStudents()),
+                                    Exam.sExamTypes[exam.getExamType()],
+                                    assignment.getClassName(),
+                                    String.valueOf(assignment.getClazz().getClassLimit()),
+                                    "Class",
+                                    exam.getDate(html),
+                                    exam.getTime(html),
+                                    String.valueOf(conflict.getNrStudents()),
+                                    df.format(100.0*conflict.getNrStudents()/Math.min(exam.getNrStudents(), assignment.getClazz().getClassLimit()))
+                                }, new Comparable[] {
+                                    new MultiComparable(exam, other),
+                                    new MultiComparable(-exam.getNrStudents(), -assignment.getClazz().getClassLimit(), exam, other),
+                                    new MultiComparable(exam.getSeatingType(), -1, exam, other),
+                                    new MultiComparable(other, exam),
+                                    new MultiComparable(-assignment.getClazz().getClassLimit(), -exam.getNrStudents(), other, exam),
+                                    new MultiComparable(-1, exam.getSeatingType(), other, exam),
+                                    new MultiComparable(exam.getPeriodOrd(), exam, other),
+                                    new MultiComparable(exam.getPeriod().getStartSlot(), exam, other),
+                                    new MultiComparable(-conflict.getNrStudents(), exam, other),
+                                    new MultiComparable(-100.0*conflict.getNrStudents()/Math.min(exam.getNrStudents(), assignment.getClazz().getClassLimit()), exam, other)
+                                },
+                                exam.getExamId().toString());
+                    }
                 }
             }
         }
