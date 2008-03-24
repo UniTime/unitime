@@ -21,9 +21,12 @@ package org.unitime.timetable.solver.exam.ui;
 
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
@@ -53,7 +56,7 @@ public class ExamAssignment extends ExamInfo implements Serializable, Comparable
     protected transient ExamPeriod iPeriod = null;
     protected ExamInfo iExam = null;
     protected String iDistPref = null;
-
+    
     public ExamAssignment(ExamPlacement placement) {
         this((net.sf.cpsolver.exam.model.Exam)placement.variable(), placement);
     }
@@ -154,8 +157,12 @@ public class ExamAssignment extends ExamInfo implements Serializable, Comparable
     }
 
     public String getPeriodName() {
-        ExamPeriod period = getPeriod();
-        return period==null?"":period.getName();
+        Date startTime = getPeriod().getStartTime();
+        Calendar cal = Calendar.getInstance(Locale.US);
+        cal.setTime(startTime);
+        cal.add(Calendar.MINUTE, getLength());
+        Date endTime = cal.getTime();
+        return sDateFormat.format(startTime)+" "+sTimeFormat.format(startTime)+" - "+sTimeFormat.format(endTime);
     }
     
     public String getPeriodAbbreviation() {
@@ -188,10 +195,16 @@ public class ExamAssignment extends ExamInfo implements Serializable, Comparable
     }
 
     public String getTime(boolean pref) {
-        if (!pref || iPeriodPref==null || PreferenceLevel.sNeutral.equals(iPeriodPref)) return sTimeFormat.format(getPeriod().getStartTime());
+        Date startTime = getPeriod().getStartTime();
+        Calendar cal = Calendar.getInstance(Locale.US);
+        cal.setTime(startTime);
+        cal.add(Calendar.MINUTE, getLength());
+        Date endTime = cal.getTime();
+        if (!pref || iPeriodPref==null || PreferenceLevel.sNeutral.equals(iPeriodPref)) 
+            return sTimeFormat.format(startTime) + " - "+ sTimeFormat.format(endTime);
         return
         "<span title='"+PreferenceLevel.prolog2string(iPeriodPref)+" "+getPeriodName()+"' style='color:"+PreferenceLevel.prolog2color(iPeriodPref)+";'>"+
-        sTimeFormat.format(getPeriod().getStartTime())+
+        sTimeFormat.format(startTime)+" - "+sTimeFormat.format(endTime)+
         "</span>";
     }
 
