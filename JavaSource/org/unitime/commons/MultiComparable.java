@@ -19,11 +19,20 @@
 */
 package org.unitime.commons;
 
+import java.util.Collection;
+
 public class MultiComparable implements Comparable<MultiComparable>{
     private Comparable[] iCmp;
     
     public MultiComparable(Comparable[] cmp) {
         iCmp = cmp;
+    }
+    
+    public MultiComparable(Collection cmp) {
+        iCmp = new Comparable[cmp.size()];
+        int idx = 0;
+        for (Object c : cmp)
+            iCmp[idx++] = (Comparable)c;
     }
     
     public MultiComparable(Comparable a) {
@@ -55,10 +64,17 @@ public class MultiComparable implements Comparable<MultiComparable>{
     }
 
     public int compareTo(MultiComparable mc) {
-        for (int i=0;i<iCmp.length;i++) {
+        for (int i=0;i<Math.min(iCmp.length,mc.iCmp.length);i++) {
+            if (iCmp[i]==null) {
+                if (mc.iCmp[i]==null) continue;
+                return -1;
+            }
+            if (mc.iCmp[i]==null) return 1;
             int cmp = iCmp[i].compareTo(mc.iCmp[i]);
             if (cmp!=0) return cmp;
         }
+        if (iCmp.length>mc.iCmp.length) return 1;
+        if (iCmp.length<mc.iCmp.length) return -1;
         return 0;
     }
 }
