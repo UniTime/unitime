@@ -42,6 +42,7 @@ import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.SolverParameterDef;
+import org.unitime.timetable.model.dao.AssignmentDAO;
 import org.unitime.timetable.solver.exam.ExamModel;
 import org.unitime.timetable.solver.exam.ExamResourceUnavailability;
 
@@ -851,6 +852,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         protected String iOtherAssignmentTime = null;
         protected String iOtherAssignmentRoom = null;
         protected Long iOtherAssignmentId;
+        protected transient Assignment iOtherAssignment = null;
         
         protected DirectConflict(ExamAssignment otherExam) {
             iOtherExam = otherExam;
@@ -864,6 +866,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             iOtherAssignmentName = otherAssignment.getClassName();
             iOtherAssignmentTime = otherAssignment.getPlacement().getTimeLocation().getLongName();
             iOtherAssignmentRoom = otherAssignment.getPlacement().getRoomName(", ");
+            iOtherAssignment = otherAssignment;
         }
         protected DirectConflict(Assignment  otherAssignment, Collection<Long> studentIds) {
             this(otherAssignment);
@@ -892,6 +895,12 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         }
         public Long getOtherAssignmentId() {
             return iOtherAssignmentId;
+        }
+        public Assignment getOtherAssignment() {
+            if (iOtherAssignment!=null) return iOtherAssignment;
+            if (iOtherAssignmentId==null) return null;
+            iOtherAssignment = new AssignmentDAO().get(iOtherAssignmentId);
+            return iOtherAssignment;
         }
         public int compareTo(DirectConflict c) {
             int cmp = -Double.compare(getNrStudents(), c.getNrStudents());
