@@ -25,6 +25,7 @@ import java.util.Set;
 
 import org.unitime.timetable.model.base.BaseStudent;
 import org.unitime.timetable.model.dao.StudentDAO;
+import org.unitime.timetable.util.Constants;
 
 
 
@@ -131,5 +132,35 @@ public class Student extends BaseStudent {
                 .setCacheable(true)
                 .list());
         return exams;
+    }
+    
+    public String getName(String instructorNameFormat) {
+        if (DepartmentalInstructor.sNameFormatLastFist.equals(instructorNameFormat))
+            return Constants.toInitialCase((getLastName()==null?"":getLastName().trim())+", "+(getFirstName()==null?"":getFirstName().trim()));
+        else if (DepartmentalInstructor.sNameFormatFirstLast.equals(instructorNameFormat))
+            return Constants.toInitialCase((getFirstName()==null?"":getFirstName().trim())+" "+(getLastName()==null?"":getLastName().trim()));
+        else if (DepartmentalInstructor.sNameFormatInitialLast.equals(instructorNameFormat))
+            return (getFirstName()==null?"":getFirstName().trim().substring(0, 1).toUpperCase())+
+                (getMiddleName()==null?"":" "+getMiddleName().trim().substring(0, 1).toUpperCase())+" "+
+                (Constants.toInitialCase(getLastName()==null?"":getLastName().trim()));
+        else if (DepartmentalInstructor.sNameFormatLastInitial.equals(instructorNameFormat))
+            return Constants.toInitialCase(getLastName()==null?"":getLastName().trim())+", "+
+                (getFirstName()==null?"":getFirstName().trim().substring(0, 1).toUpperCase())+
+                (getMiddleName()==null?"":" "+getMiddleName().trim().substring(0, 1).toUpperCase());
+        else if (DepartmentalInstructor.sNameFormatShort.equals(instructorNameFormat)) {
+            StringBuffer sb = new StringBuffer();
+            if (getFirstName()!=null && getFirstName().length()>0) {
+                sb.append(getFirstName().substring(0,1).toUpperCase());
+                sb.append(". ");
+            }
+            if (getLastName()!=null && getLastName().length()>0) {
+                sb.append(getLastName().substring(0,1).toUpperCase());
+                sb.append(getLastName().substring(1,Math.min(10,getLastName().length())).toLowerCase().trim());
+            }
+            return sb.toString();
+        } else 
+            return Constants.toInitialCase((getFirstName()==null?"":getFirstName().trim())+" "+
+                (getMiddleName()==null?"":getMiddleName().trim())+" "+
+                (getLastName()==null?"":getLastName().trim()));
     }
 }
