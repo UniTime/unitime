@@ -235,6 +235,12 @@ public class ExamAssignment extends ExamInfo implements Serializable, Comparable
         return rooms;
     }
 
+    public int getRoomsCapacity() {
+        int cap = 0;
+        for (ExamRoomInfo room : getRooms()) cap += room.getCapacity();
+        return cap;
+    }
+
     public String toString() {
         return getExamName()+" "+getPeriodAbbreviation()+" "+getRoomsName(",");
     }
