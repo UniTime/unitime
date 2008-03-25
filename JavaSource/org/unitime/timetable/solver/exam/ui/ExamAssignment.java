@@ -142,8 +142,10 @@ public class ExamAssignment extends ExamInfo implements Serializable, Comparable
     }
     
     public ExamPeriod getPeriod() {
-        if (iPeriod==null)
+        if (iPeriod==null) {
+            if (getPeriodId()==null) return null;
             iPeriod = new ExamPeriodDAO().get(getPeriodId());
+        }
         return iPeriod;
     }
     
@@ -157,6 +159,7 @@ public class ExamAssignment extends ExamInfo implements Serializable, Comparable
     }
 
     public String getPeriodName() {
+        if (getPeriod()==null) return "";
         Date startTime = getPeriod().getStartTime();
         Calendar cal = Calendar.getInstance(Locale.US);
         cal.setTime(startTime);
@@ -195,6 +198,7 @@ public class ExamAssignment extends ExamInfo implements Serializable, Comparable
     }
 
     public String getTime(boolean pref) {
+        if (getPeriod()==null) return "";
         Date startTime = getPeriod().getStartTime();
         Calendar cal = Calendar.getInstance(Locale.US);
         cal.setTime(startTime);
@@ -228,6 +232,7 @@ public class ExamAssignment extends ExamInfo implements Serializable, Comparable
     }
     
     public String getRoomsName(boolean pref, String delim) {
+        if (getPeriod()==null) return "";
         String rooms = "";
         for (ExamRoomInfo room : getRooms()) {
             if (rooms.length()>0) rooms+=delim;
