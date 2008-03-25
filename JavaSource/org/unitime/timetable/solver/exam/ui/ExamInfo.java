@@ -247,6 +247,28 @@ public class ExamInfo implements Serializable, Comparable {
         public ExamInfo getExam() {
             return ExamInfo.this;
         }
+        public ExamAssignment getExamAssignment() {
+            if (ExamInfo.this instanceof ExamAssignment)
+                return (ExamAssignment)ExamInfo.this;
+            return null;
+        }
+        public ExamAssignmentInfo getExamAssignmentInfo() {
+            if (ExamInfo.this instanceof ExamAssignmentInfo)
+                return (ExamAssignmentInfo)ExamInfo.this;
+            return null;
+        }
+        public String getSubject() {
+            return getOwner().getSubject();
+        }
+        public String getCourseNbr() {
+            return getOwner().getCourseNbr();
+        }
+        public String getItype() {
+            return getOwner().getItype();
+        }
+        public String getSection() {
+            return getOwner().getSection();
+        }
     }
     
     public class ExamInstructorInfo implements Serializable {
