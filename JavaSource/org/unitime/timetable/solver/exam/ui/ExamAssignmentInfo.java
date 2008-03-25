@@ -42,6 +42,7 @@ import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.SolverParameterDef;
+import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.dao.AssignmentDAO;
 import org.unitime.timetable.solver.exam.ExamModel;
 import org.unitime.timetable.solver.exam.ExamResourceUnavailability;
@@ -250,9 +251,9 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                         if (x.getAssignedPeriod()!=null) other = new ExamAssignment(x);
                     }
                     if (conf.getNrStudents()>0)
-                        iDirects.add(new DirectConflict(other, conf.getNrStudents()));
+                        iDirects.add(new DirectConflict(other, conf, true));
                     if (conf.getNrInstructors()>0)
-                        iInstructorDirects.add(new DirectConflict(other, conf.getNrInstructors()));
+                        iInstructorDirects.add(new DirectConflict(other, conf, false));
                 } else if (conf.isBackToBackConflict()) {
                     ExamAssignment other = null;
                     for (Iterator j=conf.getExams().iterator();j.hasNext();) {
@@ -262,9 +263,9 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                     }
                     if (other==null) continue;
                     if (conf.getNrStudents()>0)
-                        iBackToBacks.add(new BackToBackConflict(other, conf.getNrStudents(), conf.isDistanceBackToBackConflict(), conf.getDistance()));
+                        iBackToBacks.add(new BackToBackConflict(other, conf, true));
                     if (conf.getNrInstructors()>0)
-                        iInstructorBackToBacks.add(new BackToBackConflict(other, conf.getNrInstructors(), conf.isDistanceBackToBackConflict(), conf.getDistance()));
+                        iInstructorBackToBacks.add(new BackToBackConflict(other, conf, false));
                 } else if (conf.isMoreThanTwoADayConflict()) {
                     TreeSet other = new TreeSet();
                     for (Iterator j=conf.getExams().iterator();j.hasNext();) {
@@ -274,9 +275,9 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                     }
                     if (other.size()<2) continue;
                     if (conf.getNrStudents()>0)
-                        iMoreThanTwoADays.add(new MoreThanTwoADayConflict(other, conf.getNrStudents()));
+                        iMoreThanTwoADays.add(new MoreThanTwoADayConflict(other, conf, true));
                     if (conf.getNrInstructors()>0)
-                        iInstructorMoreThanTwoADays.add(new MoreThanTwoADayConflict(other, conf.getNrInstructors()));
+                        iInstructorMoreThanTwoADays.add(new MoreThanTwoADayConflict(other, conf, false));
                 }
             }
         }
@@ -857,9 +858,21 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         protected DirectConflict(ExamAssignment otherExam) {
             iOtherExam = otherExam;
         }
-        protected DirectConflict(ExamAssignment otherExam, int nrStudents) {
+        protected DirectConflict(ExamAssignment otherExam, ExamConflict conflict, boolean students) {
             iOtherExam = otherExam;
-            iNrStudents = nrStudents;
+            if (students) {
+                iNrStudents = conflict.getStudents().size();
+                for (Iterator i=conflict.getStudents().iterator();i.hasNext();) {
+                    Student student = (Student)i.next();
+                    iStudents.add(student.getUniqueId());
+                }
+            } else {
+                iNrStudents = conflict.getInstructors().size();
+                for (Iterator i=conflict.getInstructors().iterator();i.hasNext();) {
+                    DepartmentalInstructor instructor = (DepartmentalInstructor)i.next();
+                    iStudents.add(instructor.getUniqueId());
+                }
+            }
         }
         protected DirectConflict(Assignment  otherAssignment) {
             iOtherAssignmentId = otherAssignment.getUniqueId();
@@ -948,11 +961,23 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             iIsDistance = isDistance;
             iDistance = distance;
         }
-        protected BackToBackConflict(ExamAssignment otherExam, int nrStudents, boolean isDistance, double distance) {
+        protected BackToBackConflict(ExamAssignment otherExam, ExamConflict conflict, boolean students) {
             iOtherExam = otherExam;
-            iNrStudents = nrStudents;
-            iIsDistance = isDistance;
-            iDistance = distance;
+            if (students) {
+                iNrStudents = conflict.getStudents().size();
+                for (Iterator i=conflict.getStudents().iterator();i.hasNext();) {
+                    Student student = (Student)i.next();
+                    iStudents.add(student.getUniqueId());
+                }
+            } else {
+                iNrStudents = conflict.getInstructors().size();
+                for (Iterator i=conflict.getInstructors().iterator();i.hasNext();) {
+                    DepartmentalInstructor instructor = (DepartmentalInstructor)i.next();
+                    iStudents.add(instructor.getUniqueId());
+                }
+            }
+            iIsDistance = conflict.isDistanceBackToBackConflict();
+            iDistance = conflict.getDistance();
         }
         protected void incNrStudents() {
             iNrStudents++;
@@ -1004,9 +1029,21 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         protected MoreThanTwoADayConflict(TreeSet<ExamAssignment> otherExams) {
             iOtherExams = otherExams;
         }
-        protected MoreThanTwoADayConflict(TreeSet<ExamAssignment> otherExams, int nrStudents) {
+        protected MoreThanTwoADayConflict(TreeSet<ExamAssignment> otherExams, ExamConflict conflict, boolean students) {
             iOtherExams = otherExams;
-            iNrStudents = nrStudents;
+            if (students) {
+                iNrStudents = conflict.getStudents().size();
+                for (Iterator i=conflict.getStudents().iterator();i.hasNext();) {
+                    Student student = (Student)i.next();
+                    iStudents.add(student.getUniqueId());
+                }
+            } else {
+                iNrStudents = conflict.getInstructors().size();
+                for (Iterator i=conflict.getInstructors().iterator();i.hasNext();) {
+                    DepartmentalInstructor instructor = (DepartmentalInstructor)i.next();
+                    iStudents.add(instructor.getUniqueId());
+                }
+            }
         }
         protected void incNrStudents() {
             iNrStudents++;
