@@ -615,5 +615,58 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
         }
     }
 
+    public String getSubject() {
+        Object owner = getOwnerObject();
+        switch (getOwnerType()) {
+            case sOwnerTypeClass : 
+                return ((Class_)owner).getSchedulingSubpart().getControllingCourseOffering().getSubjectAreaAbbv();
+            case sOwnerTypeConfig : 
+                return ((InstrOfferingConfig)owner).getControllingCourseOffering().getSubjectAreaAbbv();
+            case sOwnerTypeCourse : 
+                return ((CourseOffering)owner).getSubjectAreaAbbv();
+            case sOwnerTypeOffering : 
+                return ((InstructionalOffering)owner).getControllingCourseOffering().getSubjectAreaAbbv();
+            default : throw new RuntimeException("Unknown owner type "+getOwnerType());
+        }
+    }
     
+    public String getCourseNbr() {
+        Object owner = getOwnerObject();
+        switch (getOwnerType()) {
+            case sOwnerTypeClass : 
+                return ((Class_)owner).getSchedulingSubpart().getControllingCourseOffering().getCourseNbr();
+            case sOwnerTypeConfig : 
+                return ((InstrOfferingConfig)owner).getControllingCourseOffering().getCourseNbr();
+            case sOwnerTypeCourse : 
+                return ((CourseOffering)owner).getCourseNbr();
+            case sOwnerTypeOffering : 
+                return ((InstructionalOffering)owner).getControllingCourseOffering().getCourseNbr();
+            default : throw new RuntimeException("Unknown owner type "+getOwnerType());
+        }
+    }
+    
+    public String getItype() {
+        switch (getOwnerType()) {
+            case sOwnerTypeClass : 
+                return ((Class_)getOwnerObject()).getSchedulingSubpart().getItypeDesc();
+            case sOwnerTypeConfig : 
+                return "["+((InstrOfferingConfig)getOwnerObject()).getName()+"]";
+            case sOwnerTypeCourse : 
+            case sOwnerTypeOffering : 
+                return "";
+            default : throw new RuntimeException("Unknown owner type "+getOwnerType());
+        }
+    }
+    
+    public String getSection() {
+        switch (getOwnerType()) {
+            case sOwnerTypeClass : 
+                return ((Class_)getOwnerObject()).getSectionNumberString();
+            case sOwnerTypeConfig : 
+            case sOwnerTypeCourse : 
+            case sOwnerTypeOffering : 
+                return "";
+            default : throw new RuntimeException("Unknown owner type "+getOwnerType());
+        }
+    }
 }
