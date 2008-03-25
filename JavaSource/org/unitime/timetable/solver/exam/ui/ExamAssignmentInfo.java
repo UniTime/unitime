@@ -847,7 +847,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
     public static class DirectConflict implements Serializable, Comparable<DirectConflict> {
         protected ExamAssignment iOtherExam = null;
         protected int iNrStudents = 1;
-        protected transient Vector<Long> iStudents = new Vector();
+        protected Vector<Long> iStudents = new Vector();
         protected String iOtherAssignmentName = null;
         protected String iOtherAssignmentTime = null;
         protected String iOtherAssignmentRoom = null;
@@ -940,7 +940,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         protected ExamAssignment iOtherExam;
         protected int iNrStudents = 1;
         protected boolean iIsDistance = false; 
-        protected transient Vector<Long> iStudents = new Vector();
+        protected Vector<Long> iStudents = new Vector();
         protected double iDistance = 0;
         
         protected BackToBackConflict(ExamAssignment otherExam, boolean isDistance, double distance) {
@@ -999,7 +999,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
     public static class MoreThanTwoADayConflict implements Serializable, Comparable<MoreThanTwoADayConflict> {
         protected TreeSet<ExamAssignment> iOtherExams;
         protected int iNrStudents = 1;
-        protected transient Vector<Long> iStudents = new Vector();
+        protected Vector<Long> iStudents = new Vector();
         
         protected MoreThanTwoADayConflict(TreeSet<ExamAssignment> otherExams) {
             iOtherExams = otherExams;
