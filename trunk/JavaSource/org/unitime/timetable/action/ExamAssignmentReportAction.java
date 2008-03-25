@@ -147,8 +147,8 @@ public class ExamAssignmentReportAction extends Action {
                 if (token.length()==0) continue;
                 if (token.indexOf('*')>=0 || token.indexOf('?')>=0) {
                     try {
-                        String tokenRegExp = "\\s+"+token.replaceAll("\\.", "\\.").replaceAll("\\?", ".+").replaceAll("\\*", ".*");
-                        if (!Pattern.compile(tokenRegExp).matcher(n).find()) match = false;
+                        String tokenRegExp = "\\s+"+token.replaceAll("\\.", "\\.").replaceAll("\\?", ".+").replaceAll("\\*", ".*")+"\\s";
+                        if (!Pattern.compile(tokenRegExp).matcher(" "+n+" ").find()) match = false;
                     } catch (PatternSyntaxException e) { match = false; }
                 } else if (n.indexOf(token)<0) match = false;
             }
