@@ -19,6 +19,7 @@
  
 package org.unitime.timetable.model;
 
+import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
@@ -26,6 +27,8 @@ import java.util.List;
 import org.unitime.timetable.model.base.BaseMeeting;
 import org.unitime.timetable.model.dao.MeetingDAO;
 import org.unitime.timetable.model.dao.RoomDAO;
+import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.DateUtils;
 
 
 
@@ -174,6 +177,36 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
 		.setLong("uniqueId", this.getUniqueId())
 		.uniqueResult();
 		return(count > 0);
+	}
+	
+	public String toString() {
+		return (DateFormat.getDateInstance(DateFormat.SHORT).format(getMeetingDate()) + " " + startTime() + " - " + stopTime() +  (getLocation() == null?"":", " + getLocation().getLabel()));
+	}
+	
+	private String periodToTime(Integer slot){
+		if (slot == null){
+			return("");
+		}
+		int min = slot.intValue()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
+		int hours = (min/60);
+		int minutes = min%60;
+		String amPm = "am";
+		if (hours >= 12){
+			amPm = "pm";
+			hours -= 12;
+		}
+		if (hours == 0) {
+			hours = 12;
+		}
+		return(hours + ":" + minutes + " " + amPm);
+	}
+	
+	public String startTime(){
+		return(periodToTime(getStartPeriod()));
+	}
+
+	public String stopTime(){
+		return(periodToTime(getStopPeriod()));
 	}
 
 }

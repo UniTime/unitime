@@ -82,4 +82,7 @@ public class ClassInstructor extends BaseClassInstructor implements Comparable {
         return getUniqueId().compareTo(i.getUniqueId());
     }
     
+    public String toString(){
+    	return(nameLastNameFirst());
+    }
 }

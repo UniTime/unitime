@@ -124,7 +124,8 @@ public class ChangeLog extends BaseChangeLog implements Comparable {
         BUILDING_EDIT,
         EXAM_PERIOD_EDIT,
         ROOM_EXAM_PERIOD_REF_EDIT,
-        EXAM_EDIT
+        EXAM_EDIT,
+        DATA_IMPORT
     }
     
     public static SimpleDateFormat sDF = new SimpleDateFormat("MM/dd/yy hh:mmaa");
@@ -200,6 +201,43 @@ public class ChangeLog extends BaseChangeLog implements Comparable {
                 Debug.warning("Unable to add change log -- no timetabling manager.");
                 return;
             }
+            addChange(hibSession, manager, session, object, objectTitle, source, operation, subjArea, dept);
+        } catch (Exception e) {
+            Debug.error(e);
+        }
+    }
+        
+    public static void addChange(
+            org.hibernate.Session hibSession,
+            TimetableManager manager,
+            Session session,
+            Object object,
+            Source source,
+            Operation operation,
+            SubjectArea subjArea,
+            Department dept) {
+    	addChange(hibSession, manager, session, object, null, source, operation, subjArea, dept);
+    }
+    
+    public static void addChange(
+            org.hibernate.Session hibSession,
+            TimetableManager manager,
+            Session session,
+            Object object,
+            String objectTitle,
+            Source source,
+            Operation operation,
+            SubjectArea subjArea,
+            Department dept) {
+        try {
+            if (session==null) {
+                Debug.warning("Unable to add change log -- no academic session.");
+                return;
+            }
+            if (manager==null) {
+                Debug.warning("Unable to add change log -- no timetabling manager.");
+                return;
+            }
             Number objectUniqueId = (Number)object.getClass().getMethod("getUniqueId", new Class[]{}).invoke(object, new Object[]{});
             String objectType = object.getClass().getName();
             if (objectType.indexOf("$$")>=0)
@@ -235,7 +273,7 @@ public class ChangeLog extends BaseChangeLog implements Comparable {
             Debug.error(e);
         }
     }
-    
+
     public static String getMessage(ServletRequest request, String message) {
         MessageResources rsc = (MessageResources)request.getAttribute(Globals.MESSAGES_KEY);
         if (rsc==null) return message;

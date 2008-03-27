@@ -146,4 +146,8 @@ public abstract class CourseCreditUnitConfig extends BaseCourseCreditUnitConfig 
 	}
 	
 	public abstract Object clone();
+	
+	public String toString(){
+		return(creditText());
+	}
 }

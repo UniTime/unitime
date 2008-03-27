@@ -66,7 +66,7 @@ public class DataImportAction extends Action {
                 saveErrors(request, errors);
             } else {
             	try {
-					myForm.doImport();
+					myForm.doImport(request);
 				} catch (Exception e) {
 					Debug.error(e);
 					errors.add("document", new ActionMessage("errors.generic", e.getMessage()));
