@@ -158,7 +158,9 @@ public class EditRoomAction extends Action {
                 editRoomForm.setExternalId(null);
             }
             editRoomForm.setCapacity(location.getCapacity().toString());
-            editRoomForm.setExamCapacity(location.getExamCapacity().toString());
+            if (location.getExamCapacity() != null){
+            	editRoomForm.setExamCapacity(location.getExamCapacity().toString());           
+            }
             editRoomForm.setExamEnabled(location.isExamEnabled(Exam.sExamTypeFinal));
             editRoomForm.setExamEEnabled(location.isExamEnabled(Exam.sExamTypeEvening));
             editRoomForm.setIgnoreTooFar(location.isIgnoreTooFar());
