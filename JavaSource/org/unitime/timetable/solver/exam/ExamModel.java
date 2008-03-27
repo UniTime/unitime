@@ -68,7 +68,7 @@ public class ExamModel extends net.sf.cpsolver.exam.model.ExamModel {
             for (Vector<ExamResourceUnavailability> unavailabilties : iUnavailabilitites.values()) {
                 for (ExamResourceUnavailability unavailability : unavailabilties) {
                     Element element = elements
-                        .addElement(unavailability.getName())
+                        .addElement(unavailability.getType())
                         .addAttribute("period", unavailability.getPeriod().getId().toString())
                         .addAttribute("id", unavailability.getId().toString())
                         .addAttribute("name", unavailability.getName())

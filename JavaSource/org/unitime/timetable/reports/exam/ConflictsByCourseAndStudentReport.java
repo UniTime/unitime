@@ -15,6 +15,7 @@ import net.sf.cpsolver.coursett.model.TimeLocation;
 
 import org.apache.log4j.Logger;
 import org.unitime.timetable.model.DatePattern;
+import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.StudentDAO;
@@ -45,7 +46,7 @@ public class ConflictsByCourseAndStudentReport extends PdfLegacyExamReport {
     }
     
     public void printReport() throws DocumentException {
-        printReport(true, true, false);
+        printReport(true, (getExamType()==Exam.sExamTypeFinal), (getExamType()==Exam.sExamTypeEvening));
     }
 
     public void printReport(boolean direct, boolean m2d, boolean btb) throws DocumentException {
@@ -55,11 +56,7 @@ public class ConflictsByCourseAndStudentReport extends PdfLegacyExamReport {
             for (ExamSectionInfo section : exam.getSections()) {
                 TreeSet<ExamSectionInfo> sections = subject2courseSections.get(section.getSubject());
                 if (sections==null) {
-                    sections = new TreeSet(new Comparator<ExamSectionInfo>() {
-                        public int compare(ExamSectionInfo s1, ExamSectionInfo s2) {
-                            return s1.getOwner().compareTo(s2.getOwner());
-                        }
-                    });
+                    sections = new TreeSet();
                     subject2courseSections.put(section.getSubject(), sections);
                 }
                 sections.add(section);
@@ -111,7 +108,7 @@ public class ConflictsByCourseAndStudentReport extends PdfLegacyExamReport {
                                         lpad(other.getSection(),4)+" "+
                                         other.getExamAssignment().getTime(false)
                                         );
-                                iSubjectPrinted = iCoursePrinted = iStudentPrinted = iPeriodPrinted = true;
+                                iSubjectPrinted = iCoursePrinted = iStudentPrinted = iPeriodPrinted = !iNewPage;
                             }
                         } else if (conflict.getOtherAssignment()!=null) {
                             String dpat = "";
@@ -140,6 +137,7 @@ public class ConflictsByCourseAndStudentReport extends PdfLegacyExamReport {
                                     lpad(conflict.getOtherAssignment().getClazz().getSectionNumberString(),4)+" "+
                                     rpad(meetingTime,38)
                                     );
+                            iSubjectPrinted = iCoursePrinted = iStudentPrinted = iPeriodPrinted = !iNewPage;
                         }
                     }
                     if (m2d) for (MoreThanTwoADayConflict conflict : exam.getMoreThanTwoADaysConflicts()) {
@@ -162,7 +160,7 @@ public class ConflictsByCourseAndStudentReport extends PdfLegacyExamReport {
                                         lpad(other.getSection(),4)+" "+
                                         other.getExamAssignment().getTime(false)
                                         );
-                                iSubjectPrinted = iCoursePrinted = iStudentPrinted = iPeriodPrinted = true;
+                                iSubjectPrinted = iCoursePrinted = iStudentPrinted = iPeriodPrinted = !iNewPage;
                             }
                         }
                     }
@@ -185,7 +183,7 @@ public class ConflictsByCourseAndStudentReport extends PdfLegacyExamReport {
                                     lpad(other.getSection(),4)+" "+
                                     other.getExamAssignment().getTime(false)
                                     );
-                            iSubjectPrinted = iCoursePrinted = iStudentPrinted = iPeriodPrinted = true;
+                            iSubjectPrinted = iCoursePrinted = iStudentPrinted = iPeriodPrinted = !iNewPage;
                         }
                     }                    
                 }

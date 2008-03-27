@@ -929,7 +929,7 @@ public class ExamAssignmentReportAction extends Action {
                             String classes = "", enrollment = "", seating = "", date = "", time = "", room = "", distance = "", blank="";
                             boolean firstSection = true;
                             for (ExamSectionInfo section : exam.getSections()) {
-                                if (!section.getStudentIds().contains(studentId)) continue;
+                                if (studentConf && !section.getStudentIds().contains(studentId)) continue;
                                 if (classes.length()>0) {
                                     blank+=nl; classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl; distance += nl;
                                 }
@@ -946,7 +946,7 @@ public class ExamAssignmentReportAction extends Action {
                             firstSection = true;
                             if (conflict.getOtherExam()!=null) {
                                 for (ExamSectionInfo section : conflict.getOtherExam().getSections()) {
-                                    if (!section.getStudentIds().contains(studentId)) continue;
+                                    if (studentConf && !section.getStudentIds().contains(studentId)) continue;
                                     if (classes.length()>0) {
                                         blank+=nl; classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl; distance += nl;
                                     }
@@ -1074,7 +1074,7 @@ public class ExamAssignmentReportAction extends Action {
                             String classes = "", enrollment = "", seating = "", date = "", time = "", room = "", distance = "", blank="";
                             boolean firstSection = true;
                             for (ExamSectionInfo section : exam.getSections()) {
-                                if (!section.getStudentIds().contains(studentId)) continue;
+                                if (studentConf && !section.getStudentIds().contains(studentId)) continue;
                                 if (classes.length()>0) {
                                     blank+=nl; classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl; distance += nl;
                                 }
@@ -1090,7 +1090,7 @@ public class ExamAssignmentReportAction extends Action {
                             }
                             firstSection = true;
                             for (ExamSectionInfo section : conflict.getOtherExam().getSections()) {
-                                if (!section.getStudentIds().contains(studentId)) continue;
+                                if (studentConf && !section.getStudentIds().contains(studentId)) continue;
                                 if (classes.length()>0) {
                                     blank+=nl; classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl; distance += nl;
                                 }
@@ -1180,7 +1180,7 @@ public class ExamAssignmentReportAction extends Action {
                             int nrStudents = exam.getNrStudents();
                             boolean firstSection = true;
                             for (ExamSectionInfo section : exam.getSections()) {
-                                if (!section.getStudentIds().contains(studentId)) continue;
+                                if (studentConf && !section.getStudentIds().contains(studentId)) continue;
                                 if (classes.length()>0) {
                                     blank+=nl; classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl; distance += nl;
                                 }
@@ -1198,7 +1198,7 @@ public class ExamAssignmentReportAction extends Action {
                                 firstSection = true;
                                 nrStudents += other.getNrStudents();
                                 for (ExamSectionInfo section : other.getSections()) {
-                                    if (!section.getStudentIds().contains(studentId)) continue;
+                                    if (studentConf && !section.getStudentIds().contains(studentId)) continue;
                                     if (classes.length()>0) {
                                         blank+=nl; classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl; distance += nl;
                                     }
@@ -1315,8 +1315,9 @@ public class ExamAssignmentReportAction extends Action {
                             for (ExamSectionInfo section2 : conflict.getOtherExam().getSections()) {
                                 if (!match(form, section1.getName()) && !match(form, section2.getName())) continue;
                                 int nrStudents = 0;
-                                for (Long studentId : section1.getStudentIds())
+                                if (studentConf) for (Long studentId : section1.getStudentIds()) {
                                     if (section2.getStudentIds().contains(studentId)) nrStudents++;
+                                } else nrStudents = conflict.getNrStudents();
                                 if (nrStudents==0) continue;
                                 table.addLine(
                                         "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"",
@@ -1475,8 +1476,10 @@ public class ExamAssignmentReportAction extends Action {
                          for (ExamSectionInfo section2 : conflict.getOtherExam().getSections()) {
                              int nrStudents = 0;
                              if (!match(form, section1.getName()) && !match(form, section2.getName())) continue;
-                             for (Long studentId : section1.getStudentIds())
+                             if (studentConf) for (Long studentId : section1.getStudentIds()) {
                                  if (section2.getStudentIds().contains(studentId)) nrStudents++;
+                             } else
+                                 nrStudents = conflict.getNrStudents();
                              if (nrStudents==0) continue;
                              table.addLine(
                                      "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"",
@@ -1592,7 +1595,7 @@ public class ExamAssignmentReportAction extends Action {
                     String[] line = new String[3+3*max];
                     Comparable[] cmp = new Comparable[3+3*max];
                     line[idx] = exam.getDate(false); cmp[idx] = new MultiComparable(exam.getPeriodOrd(), new MultiComparable(examsThisConf));
-                    m2dReportAddLines(form, html, table, max, examsThisConf, 0, line, cmp, 1, exam.getNrStudents(), null, false);  
+                    m2dReportAddLines(form, html, studentConf, table, max, examsThisConf, 0, line, cmp, 1, exam.getNrStudents(), null, false);  
                 } else {
                     idx = 0;
                     String[] line = new String[3+3*max];
@@ -1629,7 +1632,7 @@ public class ExamAssignmentReportAction extends Action {
         return table;
     }
     
-    private void m2dReportAddLines(ExamAssignmentReportForm form, boolean html, PdfWebTable table, int max, Vector<ExamAssignment> exams, int pos, String[] line, Comparable[] cmp, int idx, int minStudents, Set<Long> students, boolean match) {
+    private void m2dReportAddLines(ExamAssignmentReportForm form, boolean html, boolean studentConf, PdfWebTable table, int max, Vector<ExamAssignment> exams, int pos, String[] line, Comparable[] cmp, int idx, int minStudents, Set<Long> students, boolean match) {
         if (students!=null && students.isEmpty()) return;
         if (pos==max) {
             if (!match) return;
@@ -1649,8 +1652,10 @@ public class ExamAssignmentReportAction extends Action {
                     newStudents = new HashSet(section.getStudentIds());
                 } else {
                     newStudents = new HashSet<Long>();
-                    for (Long studentId : students)
-                        if (section.getStudentIds().contains(studentId)) newStudents.add(studentId);
+                    for (Long studentId : students) {
+                        if (studentConf && section.getStudentIds().contains(studentId)) newStudents.add(studentId);
+                        if (!studentConf && section.getExam().hasInstructor(studentId)) newStudents.add(studentId);
+                    }
                 }
                 if (newStudents.isEmpty()) continue;
                 line[idx] = section.getName();
@@ -1659,7 +1664,7 @@ public class ExamAssignmentReportAction extends Action {
                 cmp[idx+1] = new MultiComparable(-section.getNrStudents(), section.getName(), new MultiComparable(exams));
                 line[idx+2] = exam.getTime(html);
                 cmp[idx+2] = new MultiComparable(exam.getPeriod().getStartSlot(), section.getName(), new MultiComparable(exams));
-                m2dReportAddLines(form, html, table, max, exams, pos+1, line, cmp, idx+3, Math.min(section.getNrStudents(),minStudents), newStudents, match || match(form,section.getName()));
+                m2dReportAddLines(form, html, studentConf, table, max, exams, pos+1, line, cmp, idx+3, Math.min(section.getNrStudents(),minStudents), newStudents, match || match(form,section.getName()));
             }
         } else {
             line[idx] = "";
@@ -1668,7 +1673,7 @@ public class ExamAssignmentReportAction extends Action {
             cmp[idx++] = new MultiComparable(1, null, new MultiComparable(exams));
             line[idx] = "";
             cmp[idx++] = new MultiComparable(-1, null, new MultiComparable(exams));
-            m2dReportAddLines(form, html, table, max, exams, pos+1, line, cmp, idx, minStudents, students, match);
+            m2dReportAddLines(form, html, studentConf, table, max, exams, pos+1, line, cmp, idx, minStudents, students, match);
         }
     }
  
