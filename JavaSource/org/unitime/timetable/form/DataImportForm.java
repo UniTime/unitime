@@ -34,6 +34,7 @@ import org.unitime.timetable.dataexchange.AcademicAreaImportDAO;
 import org.unitime.timetable.dataexchange.AcademicClassificationImportDAO;
 import org.unitime.timetable.dataexchange.BuildingRoomImport;
 import org.unitime.timetable.dataexchange.CourseCatalogImportDAO;
+import org.unitime.timetable.dataexchange.CourseOfferingImport;
 import org.unitime.timetable.dataexchange.DepartmentImportDAO;
 import org.unitime.timetable.dataexchange.LastLikeCourseDemandImport;
 import org.unitime.timetable.dataexchange.PosMajorImportDAO;
@@ -118,7 +119,7 @@ public class DataImportForm extends ActionForm {
 		this.op = op;
 	}
 
-	public void doImport() throws Exception {
+	public void doImport(HttpServletRequest request) throws Exception {
         
 		Document document = (new SAXReader()).read(file.getInputStream());
         Element root = document.getRootElement();
@@ -161,6 +162,9 @@ public class DataImportForm extends ActionForm {
         }
         else if(root.getName().equalsIgnoreCase("buildingsRooms")) {
         	new BuildingRoomImport().loadXml(root);
+        }
+        else if(root.getName().equalsIgnoreCase("offerings")) {
+        	new CourseOfferingImport().loadXml(root, request);
         }
         else {
         	throw new Exception(root.getName() + " is an unknown data type.");
