@@ -74,7 +74,7 @@ public class ScheduleByRoomReport extends PdfLegacyExamReport {
                                     lpad(String.valueOf(section.getNrStudents()),5)
                                     
                                     );
-                            iPeriodPrinted = iStudentPrinted = iSubjectPrinted = iCoursePrinted = iITypePrinted = true;
+                            iPeriodPrinted = iStudentPrinted = iSubjectPrinted = iCoursePrinted = iITypePrinted = !iNewPage;
                             lastSection = section;
                         }
                         //println("");
@@ -93,7 +93,7 @@ public class ScheduleByRoomReport extends PdfLegacyExamReport {
                             lpad(String.valueOf(periods.indexOf(period)+1),6)+" "+
                             rpad(period.getName(),38)
                             );
-                    iPeriodPrinted = true;
+                    iPeriodPrinted = !iNewPage;
                     //println("");
                 }
             }

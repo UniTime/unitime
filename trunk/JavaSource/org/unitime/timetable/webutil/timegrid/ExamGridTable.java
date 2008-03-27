@@ -288,7 +288,7 @@ public class ExamGridTable {
         Calendar c = Calendar.getInstance(Locale.US);
         c.setTime(iForm.getSessionBeginDate());
         c.setLenient(true);
-        c.add(Calendar.WEEK_OF_YEAR, week);
+        c.add(Calendar.WEEK_OF_YEAR, week-1);
         SimpleDateFormat df = new SimpleDateFormat("MM/dd");
         while (c.get(Calendar.DAY_OF_WEEK)!=Calendar.MONDAY) c.add(Calendar.DAY_OF_YEAR, -1);
         String first = df.format(c.getTime());
@@ -1010,8 +1010,8 @@ public class ExamGridTable {
                 int btb = getInfo().getNrBackToBackConflicts();
                 return
                     "<font color='"+(dc>0?PreferenceLevel.prolog2color("P"):"gray")+"'>"+dc+"</font>, "+
-                    "<font color='"+(m2d>0?PreferenceLevel.prolog2color("1"):"gray")+"'>"+m2d+"</font>, "+
-                    "<font color='"+(btb>0?PreferenceLevel.prolog2color("2"):"gray")+"'>"+btb+"</font>";
+                    "<font color='"+(m2d>0?PreferenceLevel.prolog2color("2"):"gray")+"'>"+m2d+"</font>, "+
+                    "<font color='"+(btb>0?PreferenceLevel.prolog2color("1"):"gray")+"'>"+btb+"</font>";
             }
             
             public String getShortCommentNoColors() {

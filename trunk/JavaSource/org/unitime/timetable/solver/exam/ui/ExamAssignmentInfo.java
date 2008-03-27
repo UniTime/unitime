@@ -287,7 +287,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             if (!check(pref, exam, getPeriod(), getRooms()))
                 iDistributions.add(new DistributionConflict(pref, exam));
         }
-        if (org.unitime.timetable.model.Exam.sExamTypeEvening==exam.getExamType()) {
+        if (org.unitime.timetable.model.Exam.sExamTypeEvening==exam.getExamType() && exam.getAssignedPeriod()!=null) {
             computeUnavailablility(exam.getStudentAssignments(), exam.getAssignedPeriod());
             for (Iterator i=exam.getInstructors().iterator();i.hasNext();)
                 computeUnavailablility((DepartmentalInstructor)i.next(), exam.getAssignedPeriod());

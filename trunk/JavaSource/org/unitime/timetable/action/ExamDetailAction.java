@@ -218,7 +218,7 @@ public class ExamDetailAction extends PreferencesAction {
             } else if (exam.getAssignedPeriod()!=null)
                 ea = new ExamAssignmentInfo(exam);
             
-            if (ea!=null) {
+            if (ea!=null && ea.getPeriod()!=null) {
                 String assignment = "<tr><td>Examination Period:</td><td>"+ea.getPeriodNameWithPref()+"</td></tr>";
                 if (!ea.getRooms().isEmpty()) {
                     assignment += "<tr><td>Room"+(ea.getRooms().size()>1?"s":"")+":</td><td>";

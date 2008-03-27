@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.TreeSet;
@@ -37,11 +36,7 @@ public class ScheduleByPeriodReport extends PdfLegacyExamReport {
             for (ExamSectionInfo section : exam.getSections()) {
                 TreeSet<ExamSectionInfo> sections = subject2courseSections.get(section.getSubject());
                 if (sections==null) {
-                    sections = new TreeSet(new Comparator<ExamSectionInfo>() {
-                        public int compare(ExamSectionInfo s1, ExamSectionInfo s2) {
-                            return s1.getOwner().compareTo(s2.getOwner());
-                        }
-                    });
+                    sections = new TreeSet();
                     subject2courseSections.put(section.getSubject(), sections);
                 }
                 sections.add(section);
@@ -90,8 +85,7 @@ public class ScheduleByPeriodReport extends PdfLegacyExamReport {
                             rpad(meetingTime,38)+" "+
                             lpad(String.valueOf(section.getNrStudents()),5)
                             );
-                    iPeriodPrinted = iSubjectPrinted = true;
-                    iSubjectPrinted = iCoursePrinted = iStudentPrinted = true;
+                    iPeriodPrinted = iSubjectPrinted = !iNewPage;
                 }
             }
             setCont(null);
