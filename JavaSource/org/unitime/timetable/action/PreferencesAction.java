@@ -623,7 +623,7 @@ public class PreferencesAction extends Action {
             Exam exam = (Exam)pg;
             ExamSolverProxy solver = WebSolver.getExamSolver(request.getSession());
             ExamAssignment assignment = null;
-            if (solver!=null)
+            if (solver!=null && exam!=null && exam.getUniqueId()!=null)
                 assignment = solver.getAssignment(exam.getUniqueId());
             else if (exam.getAssignedPeriod()!=null)
                 assignment = new ExamAssignment(exam);
@@ -804,7 +804,7 @@ public class PreferencesAction extends Action {
         
         ExamSolverProxy solver = WebSolver.getExamSolver(request.getSession());
         ExamAssignment assignment = null;
-        if (solver!=null)
+        if (solver!=null && exam!=null)
             assignment = solver.getAssignment(exam.getUniqueId());
         else if (exam!=null && exam.getAssignedPeriod()!=null)
             assignment = new ExamAssignment(exam);
