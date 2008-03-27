@@ -221,7 +221,7 @@
 			<TD valign="top" height="15"><FONT color="#000000">&nbsp;Version</FONT></TD>
 			<TD valign="top" height="15"><FONT color="#000040">
 				<A href="../help/Release-Notes.xml" target="__new" title="View release notes"><FONT color="#000040"><I>
-				<%=Constants.VERSION%>.<%=Constants.BLD_NUMBER%></I></FONT></A>
+				<%=Constants.VERSION%>.<%=Constants.BLD_NUMBER.replaceAll("@build.number@","?")%></I></FONT></A>
 			</TD>
 		</TR>
 		
@@ -240,6 +240,8 @@
    long progressMax = ((Long)progress.get("MAX_PROGRESS")).longValue();
    String version = (String)progress.get("VERSION");
    if (version==null || "-1".equals(version)) version = "N/A";
+   if (version.indexOf("@build.number@")>=0)
+   		version = version.replaceAll("@build.number@","?");
    double progressPercent = 100.0*((double)(progressCur<progressMax?progressCur:progressMax))/((double)progressMax);
    String runnerName = getName(properties.getProperty("General.OwnerPuid","N/A"));
    Long[] solverGroupId = properties.getPropertyLongArry("General.SolverGroupId",null);
