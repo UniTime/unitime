@@ -67,6 +67,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
     protected boolean iCoursePrinted = false;
     protected boolean iStudentPrinted = false;
     protected boolean iPeriodPrinted = false;
+    protected boolean iNewPage = false;
     
     protected void headerPrinted() {
         iSubjectPrinted = false;
@@ -74,6 +75,12 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
         iStudentPrinted = false;
         iPeriodPrinted = false;
         iITypePrinted = false;
+        iNewPage = true;
+    }
+    
+    protected void println(String text) throws DocumentException {
+        iNewPage = false;
+        super.println(text);
     }
     
     public static void main(String[] args) {

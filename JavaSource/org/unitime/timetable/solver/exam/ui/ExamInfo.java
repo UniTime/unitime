@@ -43,7 +43,7 @@ import org.unitime.timetable.model.dao.ExamOwnerDAO;
 /**
  * @author Tomas Muller
  */
-public class ExamInfo implements Serializable, Comparable {
+public class ExamInfo implements Serializable, Comparable<ExamInfo> {
     protected String iExamLabel = null;
     protected Long iExamId = null;
     protected transient Exam iExam = null;
@@ -177,6 +177,17 @@ public class ExamInfo implements Serializable, Comparable {
         return iInstructors;
     }
     
+    public boolean hasInstructor(Long instructorId) {
+        if (iInstructors!=null) {
+            for (ExamInstructorInfo instructor : iInstructors)
+                if (instructor.getId().equals(instructorId)) return true;
+        } else {
+            for (Iterator i=getExam().getInstructors().iterator();i.hasNext();)
+                if (((DepartmentalInstructor)i.next()).getUniqueId().equals(instructorId)) return true;
+        }
+        return false;
+    }
+    
     public String getInstructorName(String delim) {
         String name = "";
         for (Enumeration e=getInstructors().elements();e.hasMoreElements();) {
@@ -196,19 +207,17 @@ public class ExamInfo implements Serializable, Comparable {
         return ((ExamInfo)o).getExamId().equals(getExamId());
     }
     
-    public int compareTo(Object o) {
-        if (o==null || !(o instanceof ExamInfo)) return -1;
-        ExamInfo a = (ExamInfo)o;
-        int cmp = getExamName().compareTo(a.getExamName());
+    public int compareTo(ExamInfo info) {
+        int cmp = getExamName().compareTo(info.getExamName());
         if (cmp!=0) return cmp;
-        return getExamId().compareTo(a.getExamId());
+        return getExamId().compareTo(info.getExamId());
     }
     
     public String toString() {
         return getExamName();
     }
     
-    public class ExamSectionInfo implements Serializable {
+    public class ExamSectionInfo implements Serializable, Comparable<ExamSectionInfo> {
         protected Long iId;
         protected String iName;
         protected int iNrStudents = -1;
@@ -269,6 +278,18 @@ public class ExamInfo implements Serializable, Comparable {
         public String getSection() {
             return getOwner().getSection();
         }
+        public int compareTo(ExamSectionInfo info) {
+            int cmp = getOwner().compareTo(getOwner());
+            if (cmp!=0) return cmp;
+            return getExam().compareTo(info.getExam());
+        }
+        public int hasCode() {
+            return getId().hashCode();
+        }
+        public boolean equals(Object o) {
+            if (o==null || !(o instanceof ExamSectionInfo)) return false;
+            return getId().equals(((ExamSectionInfo)o).getId());
+        }
     }
     
     public class ExamInstructorInfo implements Serializable {
@@ -293,6 +314,13 @@ public class ExamInfo implements Serializable, Comparable {
         }
         public ExamInfo getExam() {
             return ExamInfo.this;
+        }
+        public int hasCode() {
+            return getId().hashCode();
+        }
+        public boolean equals(Object o) {
+            if (o==null || !(o instanceof ExamInstructorInfo)) return false;
+            return getId().equals(((ExamInstructorInfo)o).getId());
         }
     }
 }

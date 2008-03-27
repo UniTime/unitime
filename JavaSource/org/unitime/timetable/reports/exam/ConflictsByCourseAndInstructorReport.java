@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.TreeSet;
@@ -13,6 +12,7 @@ import net.sf.cpsolver.coursett.model.TimeLocation;
 
 import org.apache.log4j.Logger;
 import org.unitime.timetable.model.DatePattern;
+import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
@@ -35,7 +35,7 @@ public class ConflictsByCourseAndInstructorReport extends PdfLegacyExamReport {
     }
     
     public void printReport() throws DocumentException {
-        printReport(true, true, false);
+        printReport(true, (getExamType()==Exam.sExamTypeFinal), (getExamType()==Exam.sExamTypeEvening));
     }
 
     public void printReport(boolean direct, boolean m2d, boolean btb) throws DocumentException {
@@ -45,11 +45,7 @@ public class ConflictsByCourseAndInstructorReport extends PdfLegacyExamReport {
             for (ExamSectionInfo section : exam.getSections()) {
                 TreeSet<ExamSectionInfo> sections = subject2courseSections.get(section.getSubject());
                 if (sections==null) {
-                    sections = new TreeSet(new Comparator<ExamSectionInfo>() {
-                        public int compare(ExamSectionInfo s1, ExamSectionInfo s2) {
-                            return s1.getOwner().compareTo(s2.getOwner());
-                        }
-                    });
+                    sections = new TreeSet();
                     subject2courseSections.put(section.getSubject(), sections);
                 }
                 sections.add(section);
@@ -93,7 +89,7 @@ public class ConflictsByCourseAndInstructorReport extends PdfLegacyExamReport {
                                         lpad(other.getSection(),4)+" "+
                                         other.getExamAssignment().getTime(false)
                                         );
-                                iSubjectPrinted = iCoursePrinted = iStudentPrinted = iPeriodPrinted = true;
+                                iSubjectPrinted = iCoursePrinted = iStudentPrinted = iPeriodPrinted = !iNewPage;
                             }
                         } else if (conflict.getOtherAssignment()!=null) {
                             String dpat = "";
@@ -122,6 +118,7 @@ public class ConflictsByCourseAndInstructorReport extends PdfLegacyExamReport {
                                     lpad(conflict.getOtherAssignment().getClazz().getSectionNumberString(),4)+" "+
                                     meetingTime
                                     );
+                            iSubjectPrinted = iCoursePrinted = iStudentPrinted = iPeriodPrinted = !iNewPage;
                         }
                     }
                     if (m2d) for (MoreThanTwoADayConflict conflict : exam.getInstructorMoreThanTwoADaysConflicts()) {
@@ -144,7 +141,7 @@ public class ConflictsByCourseAndInstructorReport extends PdfLegacyExamReport {
                                         lpad(other.getSection(),4)+" "+
                                         other.getExamAssignment().getTime(false)
                                         );
-                                iSubjectPrinted = iCoursePrinted = iStudentPrinted = iPeriodPrinted = true;
+                                iSubjectPrinted = iCoursePrinted = iStudentPrinted = iPeriodPrinted = !iNewPage;
                             }
                         }
                     }
@@ -167,7 +164,7 @@ public class ConflictsByCourseAndInstructorReport extends PdfLegacyExamReport {
                                     lpad(other.getSection(),4)+" "+
                                     other.getExamAssignment().getTime(false)
                                     );
-                            iSubjectPrinted = iCoursePrinted = iStudentPrinted = iPeriodPrinted = true;
+                            iSubjectPrinted = iCoursePrinted = iStudentPrinted = iPeriodPrinted = !iNewPage;
                         }
                     }                    
                 }

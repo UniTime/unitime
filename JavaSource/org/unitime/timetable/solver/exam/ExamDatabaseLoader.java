@@ -104,6 +104,10 @@ public class ExamDatabaseLoader extends ExamLoader {
         return "<A href='examDetail.do?examId="+exam.getUniqueId()+"'>"+exam.getLabel()+"</A>";
     }
 
+    private String getExamLabel(Exam exam) {
+        return "<A href='examDetail.do?examId="+exam.getId()+"'>"+exam.getName()+"</A>";
+    }
+
     public void load() throws Exception {
         iProgress.setStatus("Loading input data ...");
         org.hibernate.Session hibSession = new ExamDAO().getSession();
@@ -117,6 +121,7 @@ public class ExamDatabaseLoader extends ExamLoader {
             loadDistributions();
             loadAvailabilities();
             getModel().init();
+            checkConsistency();
             assignInitial();
             tx.commit();
         } catch (Exception e) {
@@ -690,6 +695,38 @@ public class ExamDatabaseLoader extends ExamLoader {
             } else {
                 iProgress.warn("Unable to assign "+placement.getName()+" to exam "+exam.getName());
                 iProgress.info("Conflicts:"+ToolBox.dict2string(getModel().conflictConstraints(exam.getInitialAssignment()), 2));
+            }
+        }
+    }
+    
+    protected void checkConsistency() {
+        iProgress.setPhase("Checking consistency...", getModel().variables().size());
+        for (Enumeration e=getModel().variables().elements();e.hasMoreElements();) {
+            iProgress.incProgress();
+            Exam exam = (Exam)e.nextElement();
+            if (exam.getPeriods().isEmpty()) {
+                iProgress.error("Exam "+getExamLabel(exam)+" has not period available.");
+                continue;
+            }
+            if (exam.getMaxRooms()>0) {
+                int capacity = 0;
+                for (int i = 0; i < Math.min(exam.getMaxRooms(), exam.getRooms().size()); i++) {
+                    ExamRoom r = (ExamRoom)exam.getRooms().elementAt(i);
+                    capacity += (exam.hasAltSeating()?r.getAltSize():r.getSize());
+                }
+                if (capacity<exam.getStudents().size()) {
+                    iProgress.error("Exam "+getExamLabel(exam)+" has not room placement available.");
+                    continue;
+                }
+                boolean hasValue = false;
+                for (Enumeration f=exam.getPeriods().elements();!hasValue && f.hasMoreElements();) {
+                    ExamPeriod period = (ExamPeriod)f.nextElement();
+                    if (exam.findBestAvailableRooms(period)!=null) hasValue = true;
+                }
+                if (!hasValue) {
+                    iProgress.error("Exam "+getExamLabel(exam)+" has not assignment available.");
+                    continue;
+                }
             }
         }
     }

@@ -46,7 +46,7 @@ import net.sf.cpsolver.exam.model.ExamRoom;
 /**
  * @author Tomas Muller
  */
-public class ExamAssignment extends ExamInfo implements Serializable, Comparable {
+public class ExamAssignment extends ExamInfo implements Serializable {
     private static SimpleDateFormat sDateFormat = new SimpleDateFormat("EEE MM/dd");
     private static SimpleDateFormat sTimeFormat = new SimpleDateFormat("hh:mmaa");
     protected Long iPeriodId = null;
@@ -298,5 +298,19 @@ public class ExamAssignment extends ExamInfo implements Serializable, Comparable
         for (ExamRoomInfo room : getRooms())
             roomSize += room.getCapacity(this);
         return roomSize;
+    }
+    
+    public int compareTo(ExamInfo info) {
+        int cmp = getExamName().compareTo(info.getExamName());
+        if (cmp!=0) return cmp;
+        ExamPeriod otherPeriod = (info instanceof ExamAssignment?((ExamAssignment)info).getPeriod():null);
+        if (getPeriod()==null) {
+            if (otherPeriod!=null) return -1;
+        } else {
+            if (otherPeriod==null) return 1;
+            cmp = getPeriod().compareTo(otherPeriod);
+            if (cmp!=0) return cmp;
+        }
+        return getExamId().compareTo(info.getExamId());
     }
 }

@@ -121,9 +121,9 @@
 	<% } %>
 		leaf_item('Reports','Examination Reports','examAssignmentReport.do');
 	<% if (user!=null && user.getRole().equals(Roles.ADMIN_ROLE)) { %>
-		menu_item('22','Administration','Administration','','expand');
+		//menu_item('22','Administration','Administration','','expand');
 			leaf_item('Examination Periods','Examination Periods','examPeriodEdit.do');
-		enditem(); //2
+		//enditem(); //2
 	<% } %>
 	enditem(); //2
 	<% } %>
