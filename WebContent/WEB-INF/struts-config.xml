@@ -124,6 +124,7 @@
 	  <form-bean name="examInfoForm" type="org.unitime.timetable.form.ExamInfoForm" />
 	  <form-bean name="eventDetailForm" type="org.unitime.timetable.form.EventDetailForm" />
 	  <form-bean name="examAssignmentReportForm" type="org.unitime.timetable.form.ExamAssignmentReportForm" />
+	  <form-bean name="ecbsForm" type="org.unitime.timetable.form.ExamCbsForm" />
    </form-beans>
 
    <global-exceptions>
@@ -2114,6 +2115,20 @@
     		redirect="true" />
     </action>
     
+    <action
+    	path="/ecbs"
+    	type="org.unitime.timetable.action.ExamCbsAction"
+    	attribute="ecbsForm"
+    	input="ecbsTile"
+    	name="ecbsForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+	    	name="show"
+	    	path="ecbsTile"
+	    	redirect="true" />
+    </action>
+
     <action
     	path="/eventDetail"
     	type="org.unitime.timetable.action.EventDetailAction"

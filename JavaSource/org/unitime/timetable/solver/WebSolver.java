@@ -257,6 +257,7 @@ public class WebSolver extends TimetableSolver implements ProgressListener {
         } else if (properties.getPropertyBoolean("ExamGeneral.CBS",type==SolverParameterGroup.sTypeExam)) {
             if (ext.length()>0) ext.append(";");
             ext.append("net.sf.cpsolver.ifs.extension.ConflictStatistics");
+            properties.setProperty("ConflictStatistics.Print","true");
         }
         if (type==SolverParameterGroup.sTypeCourse) {
             String mode = properties.getProperty("Basic.Mode","Initial");
