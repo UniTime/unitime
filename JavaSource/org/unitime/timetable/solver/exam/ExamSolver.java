@@ -41,6 +41,7 @@ import org.dom4j.io.XMLWriter;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
+import org.unitime.timetable.solver.exam.ui.ExamConflictStatisticsInfo;
 import org.unitime.timetable.solver.exam.ui.ExamInfo;
 import org.unitime.timetable.solver.exam.ui.ExamRoomInfo;
 import org.unitime.timetable.solver.remote.BackupFileFilter;
@@ -52,6 +53,8 @@ import net.sf.cpsolver.exam.model.ExamInstructor;
 import net.sf.cpsolver.exam.model.ExamPeriod;
 import net.sf.cpsolver.exam.model.ExamPlacement;
 import net.sf.cpsolver.exam.model.ExamRoom;
+import net.sf.cpsolver.ifs.extension.ConflictStatistics;
+import net.sf.cpsolver.ifs.extension.Extension;
 import net.sf.cpsolver.ifs.model.Constraint;
 import net.sf.cpsolver.ifs.model.Value;
 import net.sf.cpsolver.ifs.solver.Solver;
@@ -717,7 +720,7 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
         }
     }
     
-    public Collection<ExamAssignmentInfo> getAssignedExamsOfRoom(Long roomId) throws Exception {
+    public Collection<ExamAssignmentInfo> getAssignedExamsOfRoom(Long roomId) {
         synchronized (currentSolution()) {
             ExamRoom room = null;
             for (Enumeration e=((ExamModel)currentSolution().getModel()).getRooms().elements();e.hasMoreElements();) {
@@ -738,7 +741,7 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
         }
     }
 
-    public Collection<ExamAssignmentInfo> getAssignedExamsOfInstructor(Long instructorId) throws Exception {
+    public Collection<ExamAssignmentInfo> getAssignedExamsOfInstructor(Long instructorId) {
         synchronized (currentSolution()) {
             ExamInstructor instructor = null;
             for (Enumeration e=((ExamModel)currentSolution().getModel()).getRooms().elements();e.hasMoreElements();) {
@@ -817,4 +820,38 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
     public Long getSessionId() {
         return getProperties().getPropertyLong("General.SessionId",null);
     }
+    
+    public ExamConflictStatisticsInfo getCbsInfo() {
+        ConflictStatistics cbs = null;
+        for (Enumeration e=getExtensions().elements();e.hasMoreElements();) {
+            Extension ext = (Extension)e.nextElement();
+            if (ext instanceof ConflictStatistics) {
+                cbs = (ConflictStatistics)ext;
+                break;
+            }
+        }
+        if (cbs==null || cbs.getNoGoods().isEmpty()) return null;
+        ExamConflictStatisticsInfo info = new ExamConflictStatisticsInfo();
+        synchronized (currentSolution()) {
+            info.load(cbs);
+        }
+        return info; 
+    }
+    
+    public ExamConflictStatisticsInfo getCbsInfo(Long examId) {
+        ConflictStatistics cbs = null;
+        for (Enumeration e=getExtensions().elements();e.hasMoreElements();) {
+            Extension ext = (Extension)e.nextElement();
+            if (ext instanceof ConflictStatistics) {
+                cbs = (ConflictStatistics)ext;
+                break;
+            }
+        }
+        if (cbs==null || cbs.getNoGoods().isEmpty()) return null;
+        ExamConflictStatisticsInfo info = new ExamConflictStatisticsInfo();
+        synchronized (currentSolution()) {
+            info.load(cbs, examId);
+        }
+        return info; 
+    }    
 }

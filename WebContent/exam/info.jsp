@@ -49,7 +49,7 @@
 				<tt:section-title>Examination <bean:write name="exam" property="examName"/></tt:section-title>
 			</tt:section-header>
 		</td></tr>
-		<tr><td>Courses / Classes:</td><td><bean:write name="exam" property="sectionName(<br>)"/></td></tr>
+		<tr><td>Courses / Classes:</td><td><bean:write name="exam" property="sectionName(<br>)" filter="false"/></td></tr>
 		<tr><td>Type:</td><td><bean:write name="exam" property="examTypeLabel"/></td></tr>
 		<tr><td>Length:</td><td><bean:write name="exam" property="length"/> minutes</td></tr>
 		<tr><td>Students:</td><td><bean:write name="exam" property="nrStudents"/></td></tr>

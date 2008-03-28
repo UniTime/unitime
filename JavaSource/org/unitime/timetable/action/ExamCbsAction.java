@@ -19,8 +19,6 @@
 */
 package org.unitime.timetable.action;
 
-import java.io.File;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -29,53 +27,36 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.unitime.commons.web.Web;
-import org.unitime.timetable.ApplicationProperties;
-import org.unitime.timetable.form.ExamGridForm;
-import org.unitime.timetable.util.Constants;
-import org.unitime.timetable.webutil.timegrid.PdfExamGridTable;
+import org.unitime.timetable.form.ExamCbsForm;
+import org.unitime.timetable.model.UserData;
 
 
 /** 
  * @author Tomas Muller
  */
-public class ExamGridAction extends Action {
+public class ExamCbsAction extends Action {
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
-		ExamGridForm myForm = (ExamGridForm) form;
+		ExamCbsForm myForm = (ExamCbsForm) form;
         // Check Access
         if (!Web.isLoggedIn( request.getSession() )) {
             throw new Exception ("Access Denied.");
         }
-        
+		
         // Read operation to be performed
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
-        if (op==null && request.getParameter("resource")!=null) op="Change";
+        if (op==null) op="Change";
         
-        if ("Change".equals(op) || "Export PDF".equals(op)) {
-        	myForm.save(request.getSession());
+        if ("Change".equals(op)) {
+        	UserData.setPropertyDouble(request.getSession(), "Ecbs.limit", myForm.getLimit());
+        	UserData.setPropertyInt(request.getSession(), "Ecbs.type" ,myForm.getTypeInt());
         }
         
-        myForm.load(request.getSession());
-        
-        if ("Cbs".equals(op)) {
-            if (request.getParameter("resource")!=null)
-                myForm.setResource(Integer.parseInt(request.getParameter("resource")));
-            if (request.getParameter("filter")!=null)
-                myForm.setFilter(request.getParameter("filter"));
-        }
-        
-        PdfExamGridTable table = new PdfExamGridTable(myForm, request.getSession());
-        
-        request.setAttribute("table", table);
-
-        if ("Export PDF".equals(op)) {
-        	File file = ApplicationProperties.getTempFile("timetable", "pdf");
-        	table.export(file);
-        	request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
+        if ("Refresh".equals(op)) {
+        	myForm.reset(mapping,request);
         }
 
-        myForm.setOp("Change");
-        return mapping.findForward("showGrid");
+        return mapping.findForward("show");
 	}
 
 }
