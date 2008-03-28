@@ -50,7 +50,14 @@ TO DO:
 		<TR>
 			<TD nowrap>Event Capacity:&nbsp;</TD>
 			<TD width='100%'>
-				<bean:write name="eventDetailForm" property="minCapacity"/> - <bean:write name="eventDetailForm" property="maxCapacity"/>
+				<bean:define name="eventDetailForm" property="minCapacity" id="min"/>
+				<logic:equal name="eventDetailForm" property="maxCapacity" value="<%=min.toString()%>">
+					<bean:write name="eventDetailForm" property="minCapacity"/>
+				</logic:equal>
+				<logic:notEqual name="eventDetailForm" property="maxCapacity" value="<%=min.toString()%>">
+					<bean:write name="eventDetailForm" property="minCapacity"/> - <bean:write name="eventDetailForm" property="maxCapacity"/>
+				</logic:notEqual>
+
  			</TD>
 		</TR>
 		<TR>
@@ -67,6 +74,9 @@ TO DO:
 			<table>
 				<logic:iterate name="eventDetailForm" property="notes" id="note">
 				<tr><td><bean:write name="note" property="textNote"/></td></tr>
+				</logic:iterate>
+				<logic:iterate name="eventDetailForm" property="notes" id="note">
+				<tr><td><bean:write name="note" property="standardNote"/></td></tr>
 				</logic:iterate>
 			</table>
 			</td>
