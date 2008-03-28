@@ -7,20 +7,14 @@
 
 package org.unitime.timetable.form;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Random;
 import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
-import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.EventContact;
-import org.unitime.timetable.solver.exam.ui.ExamInfoModel;
 
 public class EventDetailForm extends ActionForm {
 
@@ -154,6 +148,12 @@ public class EventDetailForm extends ActionForm {
     	note.setTextNote(textNote);
     	iNotes.add(note);
     }
+
+    public void addStandardNote (String standardNote) {
+    	NoteBean note = new NoteBean();
+    	note.setStandardNote(standardNote);
+    	iNotes.add(note);
+    }
     
     public class MeetingBean {
     	private String iDate;
@@ -212,13 +212,16 @@ public class EventDetailForm extends ActionForm {
     public class NoteBean {
  
     	private String iTextNote;
+    	private String iStandardNote;
     	
     	public NoteBean () {
     	}
     	
     	public String getTextNote() {return iTextNote;	}
     	public void setTextNote(String textNote) {iTextNote = textNote;	}
-    	
+
+    	public String getStandardNote() {return iStandardNote;	}
+    	public void setStandardNote(String standardNote) {iStandardNote = standardNote;	}
     }
     
 }
