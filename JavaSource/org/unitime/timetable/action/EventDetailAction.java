@@ -20,40 +20,24 @@
 package org.unitime.timetable.action;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
+import java.util.Locale;
 import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessages;
-import org.apache.struts.util.LabelValueBean;
-import org.apache.struts.util.MessageResources;
-import org.hibernate.Transaction;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.EventDetailForm;
-import org.unitime.timetable.form.EventDetailForm.MeetingBean;
-import org.unitime.timetable.model.ChangeLog;
-import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.EventContact;
 import org.unitime.timetable.model.EventNote;
 import org.unitime.timetable.model.Meeting;
-import org.unitime.timetable.model.Roles;
-import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.model.StandardEventNote;
 import org.unitime.timetable.model.dao.EventDAO;
-import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.util.Constants;
 
 
@@ -86,12 +70,17 @@ public class EventDetailAction extends Action {
 				EventNote en = (EventNote) i.next();
 				myForm.addNote(en.getTextNote());
 			}
+			for (Iterator i = event.getNotes().iterator(); i.hasNext();) {
+				EventNote en2 = (EventNote) i.next();
+				StandardEventNote sen = en2.getStandardNote();
+				if (sen!=null) {myForm.addNote(sen.getNote());}
+			}			
 			myForm.setMainContact(event.getMainContact());
 			for (Iterator i = event.getAdditionalContacts().iterator(); i.hasNext();) {
 				EventContact ec = (EventContact) i.next();
 				myForm.addAdditionalContact(ec.getFirstName(), ec.getMiddleName(), ec.getLastName(), ec.getEmailAddress(), ec.getPhone());
 			}
-			SimpleDateFormat df = new SimpleDateFormat("MM/dd/yy (EEE)");			
+			SimpleDateFormat df = new SimpleDateFormat("MM/dd/yy (EEE)", Locale.US);			
 			for (Iterator i=new TreeSet(event.getMeetings()).iterator();i.hasNext();) {
 				Meeting meeting = (Meeting)i.next();
 				int start = Constants.SLOT_LENGTH_MIN*meeting.getStartPeriod()+
@@ -104,29 +93,16 @@ public class EventDetailAction extends Action {
 				(meeting.getStopOffset()==null?0:meeting.getStopOffset());
 				int endHour = end/60;
 				int endMin = end%60;
+				String location = (meeting.getLocation()==null?"":meeting.getLocation().getLabel());
 				myForm.addMeeting(df.format(meeting.getMeetingDate()),
 						(startHour>12?startHour-12:startHour)+":"+(startMin<10?"0":"")+startMin+(startHour>=12?"p":"a"),
 						(endHour>12?endHour-12:endHour)+":"+(endMin<10?"0":"")+endMin+(endHour>=12?"p":"a"), 
-						"guess where");
+						location);
 			}
 		} else {
 			myForm.setEventName("WON'T TELL A THING ABOUT SUCH EVENT");
 		}			
-/**			myForm.setEventName("an Event Name");
-			myForm.setMinCapacity(20);
-			myForm.setMaxCapacity(30);
-			myForm.setSponsoringOrg("Spejbl and Hurvinek, LLC");
-			myForm.setAdditionalInfo("some additional info");
 
-			EventContact ec = new EventContact (10101010101l, "Hurvinek", "Obecny");
-			myForm.setMainContact(ec);
-			myForm.addMeeting("08/01/01", "8:30", "10:30", "UNIV 103");
-			myForm.addMeeting("08/01/02", "9:00", "10:00", "REC 313");
-
-			SimpleDateFormat df = new SimpleDateFormat("EEE, dd-MMM-yyyy hh:mmaa");
-			myForm.addMeeting(df.format(new Date()), "6:00", "4:00", "LILY 3114");
-		}	
-*/
 		return mapping.findForward("show");
 	}
 	
