@@ -67,12 +67,14 @@ public class ExamAssignment extends ExamInfo implements Serializable {
             iPeriodId = placement.getPeriod().getId();
             iPeriodIdx = placement.getPeriod().getIndex();
             iRooms = new TreeSet<ExamRoomInfo>();
-            iPeriodPref = PreferenceLevel.int2prolog(placement.getPeriodPenalty());
-            if (placement.getRooms()!=null)
+            iPeriodPref = (exam.getPeriods().size()==1?PreferenceLevel.sRequired:PreferenceLevel.int2prolog(placement.getPeriodPenalty()));
+            if (placement.getRooms()!=null) {
+                boolean reqRoom = placement.getRooms().size()==exam.getRooms().size();
                 for (Iterator i=placement.getRooms().iterator();i.hasNext();) {
                     ExamRoom room = (ExamRoom)i.next();
-                    iRooms.add(new ExamRoomInfo(room, ((net.sf.cpsolver.exam.model.Exam)placement.variable()).getWeight(room)));
+                    iRooms.add(new ExamRoomInfo(room, (reqRoom?PreferenceLevel.sIntLevelRequired:((net.sf.cpsolver.exam.model.Exam)placement.variable()).getWeight(room))));
                 }
+            }
             MinMaxPreferenceCombination pc = new MinMaxPreferenceCombination();
             for (Enumeration e=((net.sf.cpsolver.exam.model.Exam)placement.variable()).getDistributionConstraints().elements();e.hasMoreElements();) {
                 ExamDistributionConstraint dc = (ExamDistributionConstraint)e.nextElement();
