@@ -439,7 +439,7 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
             ExamPeriodPlacement period = null;
             for (Enumeration f=exam.getPeriodPlacements().elements();f.hasMoreElements();) {
                 ExamPeriodPlacement p = (ExamPeriodPlacement)f.nextElement();
-                if (placement.getPeriod().equals(p)) {
+                if (placement.getPeriod().equals(p.getPeriod())) {
                     period = p; break;
                 }
             }
@@ -450,7 +450,7 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
             Set rooms = new HashSet();
             for (Iterator f=exam.getRoomPlacements().iterator();f.hasNext();) {
                 ExamRoomPlacement r = (ExamRoomPlacement)f.next();
-                if (r.isAvailable(period.getPeriod()) && placement.getRoomPlacements().contains(r)) {
+                if (r.isAvailable(period.getPeriod()) && placement.contains(r.getRoom())) {
                     rooms.add(r);
                 }
             }
