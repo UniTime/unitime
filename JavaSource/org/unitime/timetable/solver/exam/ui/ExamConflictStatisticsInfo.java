@@ -36,6 +36,7 @@ import net.sf.cpsolver.exam.model.ExamDistributionConstraint;
 import net.sf.cpsolver.exam.model.ExamInstructor;
 import net.sf.cpsolver.exam.model.ExamPlacement;
 import net.sf.cpsolver.exam.model.ExamRoom;
+import net.sf.cpsolver.exam.model.ExamRoomPlacement;
 import net.sf.cpsolver.exam.model.ExamStudent;
 import net.sf.cpsolver.ifs.extension.Assignment;
 import net.sf.cpsolver.ifs.extension.ConflictStatistics;
@@ -96,16 +97,16 @@ public class ExamConflictStatisticsInfo implements TimetableInfo, Serializable {
 			Vector roomIds = new Vector();
 			Vector roomNames = new Vector();
 			Vector roomPrefs = new Vector();
-			for (Iterator i=new TreeSet(placement.getRooms()).iterator();i.hasNext();) {
-			    ExamRoom room = (ExamRoom)i.next();
+			for (Iterator i=new TreeSet(placement.getRoomPlacements()).iterator();i.hasNext();) {
+			    ExamRoomPlacement room = (ExamRoomPlacement)i.next();
 			    roomIds.add(room.getId());
 			    roomNames.add(room.getName());
-			    roomPrefs.add(exam.getRooms().size()==placement.getRooms().size()?PreferenceLevel.sIntLevelRequired:exam.getWeight(room));
+			    roomPrefs.add(exam.getRoomPlacements().size()==placement.getRoomPlacements().size()?PreferenceLevel.sIntLevelRequired:room.getPenalty(placement.getPeriod()));
 			}
 			CBSValue val = new CBSValue(var,
 			        placement.getPeriod().getId(),
 			        placement.getPeriod().getDayStr()+" "+placement.getPeriod().getTimeStr(),
-			        (exam.getPeriods().size()==1?PreferenceLevel.sIntLevelRequired:placement.getPeriodPenalty()),
+			        (exam.getPeriodPlacements().size()==1?PreferenceLevel.sIntLevelRequired:placement.getPeriodPenalty()),
 			        roomIds, roomNames, roomPrefs);
 			var.values().add(val);
 			
@@ -150,11 +151,11 @@ public class ExamConflictStatisticsInfo implements TimetableInfo, Serializable {
 		            Vector aroomIds = new Vector();
 		            Vector aroomNames = new Vector();
 		            Vector aroomPrefs = new Vector();
-		            for (Iterator i=new TreeSet(p.getRooms()).iterator();i.hasNext();) {
-		                ExamRoom room = (ExamRoom)i.next();
+		            for (Iterator i=new TreeSet(p.getRoomPlacements()).iterator();i.hasNext();) {
+		                ExamRoomPlacement room = (ExamRoomPlacement)i.next();
 		                aroomIds.add(room.getId());
 		                aroomNames.add(room.getName());
-		                aroomPrefs.add(x.getRooms().size()==p.getRooms().size()?PreferenceLevel.sIntLevelRequired:x.getWeight(room));
+		                aroomPrefs.add(x.getRoomPlacements().size()==p.getRoomPlacements().size()?PreferenceLevel.sIntLevelRequired:room.getPenalty(p.getPeriod()));
 		            }
 					CBSAssignment a = new CBSAssignment(con,
 							x.getId(),
@@ -162,7 +163,7 @@ public class ExamConflictStatisticsInfo implements TimetableInfo, Serializable {
 							pr,
 							p.getPeriod().getId(),
 							p.getPeriod().getDayStr()+" "+p.getPeriod().getTimeStr(),
-							(x.getPeriods().size()==1?PreferenceLevel.sIntLevelRequired:p.getPeriodPenalty()),
+							(x.getPeriodPlacements().size()==1?PreferenceLevel.sIntLevelRequired:p.getPeriodPenalty()),
 							aroomIds,
 							aroomNames,
 							aroomPrefs);

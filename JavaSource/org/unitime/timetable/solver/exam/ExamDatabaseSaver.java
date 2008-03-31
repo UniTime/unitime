@@ -43,7 +43,7 @@ import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
 
 import net.sf.cpsolver.exam.model.Exam;
 import net.sf.cpsolver.exam.model.ExamPlacement;
-import net.sf.cpsolver.exam.model.ExamRoom;
+import net.sf.cpsolver.exam.model.ExamRoomPlacement;
 import net.sf.cpsolver.ifs.solver.Solver;
 import net.sf.cpsolver.ifs.util.Progress;
 
@@ -124,8 +124,8 @@ public class ExamDatabaseSaver extends ExamSaver {
                 continue;
             }
             exam.setAssignedPeriod(period);
-            for (Iterator j=placement.getRooms().iterator();j.hasNext();) {
-                ExamRoom room = (ExamRoom)j.next();
+            for (Iterator j=placement.getRoomPlacements().iterator();j.hasNext();) {
+                ExamRoomPlacement room = (ExamRoomPlacement)j.next();
                 Location location = new LocationDAO().get(room.getId());
                 if (location==null) {
                     iProgress.warn("Location "+room.getName()+" (id:"+room.getId()+") not found.");

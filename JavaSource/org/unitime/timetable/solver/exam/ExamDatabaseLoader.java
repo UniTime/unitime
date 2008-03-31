@@ -40,10 +40,10 @@ import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.CourseOfferingReservation;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionObject;
 import org.unitime.timetable.model.DistributionPref;
-import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.ExamPeriodPref;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
@@ -62,12 +62,14 @@ import net.sf.cpsolver.coursett.preference.MinMaxPreferenceCombination;
 import net.sf.cpsolver.coursett.preference.PreferenceCombination;
 import net.sf.cpsolver.coursett.preference.SumPreferenceCombination;
 import net.sf.cpsolver.exam.model.Exam;
-import net.sf.cpsolver.exam.model.ExamCourseSection;
 import net.sf.cpsolver.exam.model.ExamDistributionConstraint;
 import net.sf.cpsolver.exam.model.ExamInstructor;
+import net.sf.cpsolver.exam.model.ExamOwner;
 import net.sf.cpsolver.exam.model.ExamPeriod;
+import net.sf.cpsolver.exam.model.ExamPeriodPlacement;
 import net.sf.cpsolver.exam.model.ExamPlacement;
 import net.sf.cpsolver.exam.model.ExamRoom;
+import net.sf.cpsolver.exam.model.ExamRoomPlacement;
 import net.sf.cpsolver.exam.model.ExamStudent;
 import net.sf.cpsolver.ifs.model.Constraint;
 import net.sf.cpsolver.ifs.util.Progress;
@@ -89,7 +91,7 @@ public class ExamDatabaseLoader extends ExamLoader {
     private Hashtable iInstructors = new Hashtable();
     private Hashtable iStudents = new Hashtable();
     private Set iAllRooms = null;
-    private Set iProhibitedPeriods = new HashSet(); 
+    private Set<ExamPeriod> iProhibitedPeriods = new HashSet(); 
 
     public ExamDatabaseLoader(ExamModel model) {
         super(model);
@@ -183,7 +185,7 @@ public class ExamDatabaseLoader extends ExamLoader {
                 if (PreferenceLevel.sProhibited.equals(pref))
                     room.setAvailable(period.getIndex(), false);
                 else
-                    room.setWeight(period.getIndex(), pref2weight(pref));
+                    room.setPenalty(period.getIndex(), pref2weight(pref));
             }
         }
     }
@@ -194,79 +196,101 @@ public class ExamDatabaseLoader extends ExamLoader {
         for (Iterator i=exams.iterator();i.hasNext();) {
             iProgress.incProgress();
             org.unitime.timetable.model.Exam exam = (org.unitime.timetable.model.Exam)i.next();
-            Exam x = new Exam(
-                    exam.getUniqueId(),
-                    exam.getLabel(),
-                    exam.getLength(),
-                    false,
-                    (exam.getSeatingType()==org.unitime.timetable.model.Exam.sSeatingTypeExam?true:false),
-                    exam.getMaxNbrRooms());
-            x.setModel(getModel());
             
-            for (Iterator j=new TreeSet(exam.getOwners()).iterator();j.hasNext();) {
-                ExamOwner owner = (ExamOwner)j.next();
-                Object ownerObject = owner.getOwnerObject();
-                if (ownerObject instanceof Class_) {
-                    Class_ clazz = (Class_)ownerObject;
-                    ExamCourseSection cs = new ExamCourseSection(x, owner.getUniqueId(), clazz.getClassLabel(), true);
-                    x.getCourseSections().add(cs);
-                } else if (ownerObject instanceof InstrOfferingConfig) {
-                    InstrOfferingConfig config = (InstrOfferingConfig)ownerObject;
-                    ExamCourseSection cs = new ExamCourseSection(x, owner.getUniqueId(), config.toString(), false);
-                    x.getCourseSections().add(cs);
-                } else if (ownerObject instanceof CourseOffering) {
-                    CourseOffering course = (CourseOffering)ownerObject;
-                    ExamCourseSection cs = new ExamCourseSection(x, owner.getUniqueId(), course.getCourseName(), false);
-                    x.getCourseSections().add(cs);
-                } else if (ownerObject instanceof InstructionalOffering) {
-                    InstructionalOffering offering = (InstructionalOffering)ownerObject;
-                    ExamCourseSection cs = new ExamCourseSection(x, owner.getUniqueId(), offering.getCourseName(), false);
-                    x.getCourseSections().add(cs);
-                }
-            }
+            Vector periodPlacements = new Vector();
             boolean hasReqPeriod = false;
-            for (Iterator j=iProhibitedPeriods.iterator();j.hasNext();) {
-                ExamPeriod period = (ExamPeriod)j.next();
-                x.setAvailable(period.getIndex(), false);
+            Set periodPrefs = exam.getPreferences(ExamPeriodPref.class);
+            for (Enumeration e=getModel().getPeriods().elements();e.hasMoreElements(); ) {
+                ExamPeriod period = (ExamPeriod)e.nextElement();
+                if (iProhibitedPeriods.contains(period) ||  period.getLength()<exam.getLength()) continue;
+                String pref = PreferenceLevel.sNeutral;
+                for (Iterator j=periodPrefs.iterator();j.hasNext();) {
+                    ExamPeriodPref periodPref = (ExamPeriodPref)j.next();
+                    if (period.getId().equals(periodPref.getExamPeriod().getUniqueId())) { pref = periodPref.getPrefLevel().getPrefProlog(); break; }
+                }
+                if (PreferenceLevel.sProhibited.equals(pref)) continue;
+                if (PreferenceLevel.sRequired.equals(pref)) {
+                    if (!hasReqPeriod) periodPlacements.clear(); 
+                    hasReqPeriod = true;
+                    periodPlacements.add(new ExamPeriodPlacement(period, 0));
+                } else {
+                    periodPlacements.add(new ExamPeriodPlacement(period, pref2weight(pref)));
+                }
             }
             for (Iterator j=exam.getPreferences(ExamPeriodPref.class).iterator();j.hasNext();) {
                 ExamPeriodPref periodPref = (ExamPeriodPref)j.next();
                 ExamPeriod period = (ExamPeriod)iPeriods.get(periodPref.getExamPeriod().getUniqueId());
-                if (period==null) continue;
+                if (period==null || iProhibitedPeriods.contains(period)) continue;
+                if (period.getLength()<exam.getLength()) continue;
                 String pref = periodPref.getPrefLevel().getPrefProlog();
+                if (PreferenceLevel.sProhibited.equals(pref)) continue;
                 if (PreferenceLevel.sRequired.equals(pref)) {
-                    if (!hasReqPeriod) 
-                        for (Enumeration e=getModel().getPeriods().elements();e.hasMoreElements();) {
-                            ExamPeriod p = (ExamPeriod)e.nextElement();
-                            x.setAvailable(p.getIndex(), false);
-                        }
-                    x.setAvailable(period.getIndex(), true);
+                    if (!hasReqPeriod) periodPlacements.clear(); 
                     hasReqPeriod = true;
-                }
-                if (!hasReqPeriod) {
-                    if (PreferenceLevel.sProhibited.equals(pref)) {
-                        x.setAvailable(period.getIndex(), false);
-                    } else {
-                        x.setAvailable(period.getIndex(), true);
-                        x.setWeight(period.getIndex(), pref2weight(pref));
-                    }
+                    periodPlacements.add(new ExamPeriodPlacement(period, 0));
+                } else {
+                    periodPlacements.add(new ExamPeriodPlacement(period, pref2weight(pref)));
                 }
             }
-            if (x.getPeriods().isEmpty()) {
+            if (periodPlacements.isEmpty()) {
                 iProgress.warn("Exam "+getExamLabel(exam)+" has no period available, it is not loaded.");
                 continue;
             }
-
-            x.setRoomWeights(findRooms(exam));
+            
+            Exam x = new Exam(
+                    exam.getUniqueId(),
+                    exam.getLabel(),
+                    exam.getLength(),
+                    (exam.getSeatingType()==org.unitime.timetable.model.Exam.sSeatingTypeExam),
+                    exam.getMaxNbrRooms(),
+                    0,
+                    periodPlacements,
+                    findRooms(exam));
+            x.setModel(getModel());
+            
+            int minSize = 0;
+            Vector<ExamOwner> owners = new Vector();
+            for (Iterator j=new TreeSet(exam.getOwners()).iterator();j.hasNext();) {
+                org.unitime.timetable.model.ExamOwner owner = (org.unitime.timetable.model.ExamOwner)j.next();
+                Object ownerObject = owner.getOwnerObject();
+                if (ownerObject instanceof Class_) {
+                    Class_ clazz = (Class_)ownerObject;
+                    ExamOwner cs = new ExamOwner(x, owner.getUniqueId(), clazz.getClassLabel());
+                    minSize += clazz.getClassLimit();
+                    x.getOwners().add(cs);
+                } else if (ownerObject instanceof InstrOfferingConfig) {
+                    InstrOfferingConfig config = (InstrOfferingConfig)ownerObject;
+                    ExamOwner cs = new ExamOwner(x, owner.getUniqueId(), config.toString());
+                    minSize += config.getLimit();
+                    x.getOwners().add(cs);
+                } else if (ownerObject instanceof CourseOffering) {
+                    CourseOffering course = (CourseOffering)ownerObject;
+                    ExamOwner cs = new ExamOwner(x, owner.getUniqueId(), course.getCourseName());
+                    for (Iterator k=course.getInstructionalOffering().getCourseReservations().iterator();k.hasNext();) {
+                        CourseOfferingReservation reservation = (CourseOfferingReservation)k.next();
+                        if (reservation.getCourseOffering().equals(course))
+                            minSize += reservation.getReserved();
+                    }
+                    x.getOwners().add(cs);
+                } else if (ownerObject instanceof InstructionalOffering) {
+                    InstructionalOffering offering = (InstructionalOffering)ownerObject;
+                    ExamOwner cs = new ExamOwner(x, owner.getUniqueId(), offering.getCourseName());
+                    minSize += offering.getLimit();
+                    x.getOwners().add(cs);
+                }
+            }
+            
+            if (iExamType==org.unitime.timetable.model.Exam.sExamTypeEvening && minSize>0)
+                x.setMinSize(minSize);
             
             if (x.getMaxRooms()>0) {
-                if (x.getRooms().isEmpty()) {
+                if (x.getRoomPlacements().isEmpty()) {
                     iProgress.warn("Exam "+getExamLabel(exam)+" has no room available, it is not loaded.");
                     continue;
                 }
                 boolean hasAssignment = false;
-                for (Enumeration ep=x.getPeriods().elements();!hasAssignment && ep.hasMoreElements();) {
-                    ExamPeriod period = (ExamPeriod)ep.nextElement();
+                for (Enumeration ep=x.getPeriodPlacements().elements();!hasAssignment && ep.hasMoreElements();) {
+                    ExamPeriodPlacement period = (ExamPeriodPlacement)ep.nextElement();
                     if (x.findRoomsRandom(period)!=null) hasAssignment = true;
                 }
                 if (!hasAssignment) {
@@ -289,11 +313,12 @@ public class ExamDatabaseLoader extends ExamLoader {
                     iProgress.warn("Unable assign exam "+getExamLabel(exam)+" to period "+exam.getAssignedPeriod().getName()+": period not allowed.");
                     fail = true;
                 }
-                if (!fail && !x.isAvailable(period)) {
+                ExamPeriodPlacement periodPlacement = (period==null?null:x.getPeriodPlacement(period)); 
+                if (!fail && periodPlacement==null) {
                     iProgress.warn("Unable to assign exam "+getExamLabel(exam)+" to period "+exam.getAssignedPeriod().getName()+": period prohibited.");
                     fail = true;
                 }
-                HashSet rooms = new HashSet();
+                HashSet roomPlacements = new HashSet();
                 if (!fail && x.getMaxRooms()>0) {
                     for (Iterator j=exam.getAssignedRooms().iterator();j.hasNext();) {
                         Location location = (Location)j.next();
@@ -301,27 +326,25 @@ public class ExamDatabaseLoader extends ExamLoader {
                         if (room==null) {
                             iProgress.warn("Unable to assign exam "+getExamLabel(exam)+" to room "+location.getLabel()+": not an examination room.");
                             fail = true; break;
+                        } else {
+                            ExamRoomPlacement roomPlacement = x.getRoomPlacement(room);
+                            if (roomPlacement==null) {
+                                iProgress.warn("Unable to assign exam "+getExamLabel(exam)+" to room "+location.getLabel()+": room not valid for this exam.");
+                                fail = true; break;
+                            } else if (!roomPlacement.isAvailable(period)) {
+                                iProgress.warn("Unable to assign exam "+getExamLabel(exam)+" to room "+location.getLabel()+": room not available at "+period+".");
+                                fail = true; break;
+                            }
+                            roomPlacements.add(roomPlacement);
                         }
-                        if (!x.getRooms().contains(room)) {
-                            iProgress.warn("Unable to assign exam "+getExamLabel(exam)+" to room "+location.getLabel()+": room not valid for this exam.");
-                            fail = true; break;
-                        }
-                        rooms.add(room);
                     }
                 }
-                if (!fail && rooms.size()>x.getMaxRooms()) {
-                    iProgress.warn("Unable to assign exam "+getExamLabel(exam)+" to room"+(rooms.size()>1?"s":"")+" "+rooms+": number of assigned rooms exceeds the current limit ("+rooms.size()+">"+x.getMaxRooms()+").");
+                if (!fail && roomPlacements.size()>x.getMaxRooms()) {
+                    iProgress.warn("Unable to assign exam "+getExamLabel(exam)+" to room"+(roomPlacements.size()>1?"s":"")+" "+roomPlacements+": number of assigned rooms exceeds the current limit ("+roomPlacements.size()+">"+x.getMaxRooms()+").");
                     fail = true; 
                 }
-                if (!fail && !x.isAvailable(period, rooms)) {
-                    if (rooms.size()==1)
-                        iProgress.warn("Unable to assign exam "+getExamLabel(exam)+" to period "+exam.getAssignedPeriod().getName()+" and room "+rooms.iterator().next()+": room cannot be used at given period.");
-                    else
-                        iProgress.warn("Unable to assign exam "+getExamLabel(exam)+" to period "+exam.getAssignedPeriod().getName()+" and one or more rooms "+rooms+": room cannot be used at given period.");
-                    fail = true;
-                }
                 if (!fail)
-                    x.setInitialAssignment(new ExamPlacement(x, period, rooms));
+                    x.setInitialAssignment(new ExamPlacement(x, periodPlacement, roomPlacements));
             }
         }
     }
@@ -357,8 +380,8 @@ public class ExamDatabaseLoader extends ExamLoader {
         return (ExamInstructor)iInstructors.get(instructor.getUniqueId());
     }
 
-    protected Hashtable findRooms(org.unitime.timetable.model.Exam exam) {
-        Hashtable rooms = new Hashtable();
+    protected Vector<ExamRoomPlacement> findRooms(org.unitime.timetable.model.Exam exam) {
+        Vector<ExamRoomPlacement> rooms = new Vector();
         boolean reqRoom = false;
         boolean reqBldg = false;
         boolean reqGroup = false;
@@ -471,13 +494,18 @@ public class ExamDatabaseLoader extends ExamLoader {
             if (!add) continue;
             
             boolean canBeUsed = false;
-            for (Enumeration e=getModel().getPeriods().elements();!canBeUsed && e.hasMoreElements();) {
+            boolean hasStrongDisc = false, allStrongDisc = true;
+            for (Enumeration e=getModel().getPeriods().elements();e.hasMoreElements();) {
                 ExamPeriod period = (ExamPeriod)e.nextElement();
-                if (roomEx.isAvailable(period) && (roomPref!=null || roomEx.getWeight(period)!=4)) canBeUsed=true;
+                if (roomEx.isAvailable(period))
+                    if (roomEx.getPenalty(period)==4) hasStrongDisc = true;
+                    else allStrongDisc = false;
             }
-            if (!canBeUsed) continue;
+            //all strongly discouraged and not overridden by room preference -> do not use this room
+            if (allStrongDisc && roomPref==null) continue;
             
-            rooms.put(roomEx, prefInt);
+            //has strongly discouraged and not overridden by room preference -> strongly discouraged periods are not available
+            rooms.add(new ExamRoomPlacement(roomEx, prefInt, (hasStrongDisc && roomPref==null?3:100)));
         }
         return rooms;
     }
@@ -489,7 +517,7 @@ public class ExamDatabaseLoader extends ExamLoader {
                 "Exam x inner join x.owners o, "+
                 "StudentClassEnrollment e inner join e.clazz c "+
                 "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
-                "o.ownerType="+ExamOwner.sOwnerTypeClass+" and "+
+                "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeClass+" and "+
                 "o.ownerId=c.uniqueId").setLong("sessionId", iSessionId).setInteger("examType", iExamType).list(),
                 "class");
         loadStudents(
@@ -499,7 +527,7 @@ public class ExamDatabaseLoader extends ExamLoader {
                 "StudentClassEnrollment e inner join e.clazz c " +
                 "inner join c.schedulingSubpart.instrOfferingConfig ioc " +
                 "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
-                "o.ownerType="+ExamOwner.sOwnerTypeConfig+" and "+
+                "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeConfig+" and "+
                 "o.ownerId=ioc.uniqueId").setLong("sessionId", iSessionId).setInteger("examType", iExamType).list(),
                 "config");
         loadStudents(
@@ -508,7 +536,7 @@ public class ExamDatabaseLoader extends ExamLoader {
                 "Exam x inner join x.owners o, "+
                 "StudentClassEnrollment e inner join e.courseOffering co " +
                 "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
-                "o.ownerType="+ExamOwner.sOwnerTypeCourse+" and "+
+                "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeCourse+" and "+
                 "o.ownerId=co.uniqueId").setLong("sessionId", iSessionId).setInteger("examType", iExamType).list(),
                 "course");
         loadStudents(
@@ -517,7 +545,7 @@ public class ExamDatabaseLoader extends ExamLoader {
                 "Exam x inner join x.owners o, "+
                 "StudentClassEnrollment e inner join e.courseOffering.instructionalOffering io " +
                 "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
-                "o.ownerType="+ExamOwner.sOwnerTypeOffering+" and "+
+                "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeOffering+" and "+
                 "o.ownerId=io.uniqueId").setLong("sessionId", iSessionId).setInteger("examType", iExamType).list(),
                 "offering");
     }
@@ -546,9 +574,9 @@ public class ExamDatabaseLoader extends ExamLoader {
             }
             if (!student.variables().contains(exam))
                 student.addVariable(exam);
-            for (Enumeration e=exam.getCourseSections().elements();e.hasMoreElements();) {
-                ExamCourseSection ecs = (ExamCourseSection)e.nextElement();
-                if (ownerId.equals(ecs.getId())) ecs.getStudents().add(student);
+            for (Enumeration e=exam.getOwners().elements();e.hasMoreElements();) {
+                ExamOwner owner = (ExamOwner)e.nextElement();
+                if (owner.getId()==ownerId) owner.getStudents().add(student);
             }
         }
     }
@@ -659,44 +687,6 @@ public class ExamDatabaseLoader extends ExamLoader {
                 }
             }
         }
-        iProgress.setPhase("Assigning pre-assigned exams...", getModel().variables().size());
-        for (Enumeration e=new Vector(getModel().unassignedVariables()).elements();e.hasMoreElements();) {
-            iProgress.incProgress();
-            Exam exam = (Exam)e.nextElement();
-            if (!exam.hasPreAssignedPeriod()) continue;
-            ExamPlacement placement = null;
-            if (exam.hasPreAssignedRooms()) {
-                placement = new ExamPlacement(exam, exam.getPreAssignedPeriod(), new HashSet(exam.getPreassignedRooms()));
-            } else {
-                Set bestRooms = exam.findBestAvailableRooms(exam.getPreAssignedPeriod());
-                if (bestRooms==null) {
-                    iProgress.warn("Unable to assign "+exam.getPreAssignedPeriod()+" to exam "+exam.getName()+" -- no suitable room found.");
-                    continue;
-                }
-                placement = new ExamPlacement(exam, exam.getPreAssignedPeriod(), bestRooms);
-            }
-            Set conflicts = getModel().conflictValues(placement);
-            if (!conflicts.isEmpty()) {
-                for (Iterator i=getModel().conflictConstraints(placement).entrySet().iterator();i.hasNext();) {
-                    Map.Entry entry = (Map.Entry)i.next();
-                    Constraint constraint = (Constraint)entry.getKey();
-                    Set values = (Set)entry.getValue();
-                    if (constraint instanceof ExamStudent) {
-                        ((ExamStudent)constraint).setAllowDirectConflicts(true);
-                        exam.setAllowDirectConflicts(true);
-                        for (Iterator j=values.iterator();j.hasNext();)
-                            ((Exam)((ExamPlacement)j.next()).variable()).setAllowDirectConflicts(true);
-                    }
-                }
-                conflicts = getModel().conflictValues(placement);
-            }
-            if (conflicts.isEmpty()) {
-                exam.assign(0, placement);
-            } else {
-                iProgress.warn("Unable to assign "+placement.getName()+" to exam "+exam.getName());
-                iProgress.info("Conflicts:"+ToolBox.dict2string(getModel().conflictConstraints(exam.getInitialAssignment()), 2));
-            }
-        }
     }
     
     protected void checkConsistency() {
@@ -704,23 +694,23 @@ public class ExamDatabaseLoader extends ExamLoader {
         for (Enumeration e=getModel().variables().elements();e.hasMoreElements();) {
             iProgress.incProgress();
             Exam exam = (Exam)e.nextElement();
-            if (exam.getPeriods().isEmpty()) {
+            if (exam.getPeriodPlacements().isEmpty()) {
                 iProgress.error("Exam "+getExamLabel(exam)+" has not period available.");
                 continue;
             }
             if (exam.getMaxRooms()>0) {
                 int capacity = 0;
-                for (int i = 0; i < Math.min(exam.getMaxRooms(), exam.getRooms().size()); i++) {
-                    ExamRoom r = (ExamRoom)exam.getRooms().elementAt(i);
-                    capacity += (exam.hasAltSeating()?r.getAltSize():r.getSize());
+                for (int i = 0; i < Math.min(exam.getMaxRooms(), exam.getRoomPlacements().size()); i++) {
+                    ExamRoomPlacement r = (ExamRoomPlacement)exam.getRoomPlacements().elementAt(i);
+                    capacity += r.getSize(exam.hasAltSeating());
                 }
                 if (capacity<exam.getStudents().size()) {
                     iProgress.error("Exam "+getExamLabel(exam)+" has not room placement available.");
                     continue;
                 }
                 boolean hasValue = false;
-                for (Enumeration f=exam.getPeriods().elements();!hasValue && f.hasMoreElements();) {
-                    ExamPeriod period = (ExamPeriod)f.nextElement();
+                for (Enumeration f=exam.getPeriodPlacements().elements();!hasValue && f.hasMoreElements();) {
+                    ExamPeriodPlacement period = (ExamPeriodPlacement)f.nextElement();
                     if (exam.findBestAvailableRooms(period)!=null) hasValue = true;
                 }
                 if (!hasValue) {
