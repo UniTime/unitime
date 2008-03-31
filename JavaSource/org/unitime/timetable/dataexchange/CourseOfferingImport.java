@@ -20,8 +20,11 @@
 package org.unitime.timetable.dataexchange;
 
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -66,6 +69,7 @@ import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.VariableFixedCreditUnitConfig;
 import org.unitime.timetable.model.VariableRangeCreditUnitConfig;
+import org.unitime.timetable.util.CalendarUtils;
 import org.unitime.timetable.util.Constants;
 
 
@@ -81,6 +85,8 @@ public class CourseOfferingImport extends BaseImport {
 	Vector<String> changeList = new Vector<String>();
 	TimetableManager manager = null;
 	Session session = null;
+	String dateFormat = null;
+	String timeFormat = null;
 	
 	public void loadXml(Element rootElement, HttpServletRequest request) throws Exception {
 		HttpSession httpSession = request.getSession();
@@ -107,6 +113,11 @@ public class CourseOfferingImport extends BaseImport {
 	        String campus = getRequiredStringAttribute(rootElement, "campus", rootElementName);
 	        String year   = getRequiredStringAttribute(rootElement, "year", rootElementName);
 	        String term   = getRequiredStringAttribute(rootElement, "term", rootElementName);
+	        dateFormat = getOptionalStringAttribute(rootElement, "dateFormat");
+	        timeFormat = getOptionalStringAttribute(rootElement, "timeFormat");
+	        if(timeFormat == null){
+	        	timeFormat = "HHmm";
+	        }
 
 	        beginTransaction();
 	
@@ -377,8 +388,9 @@ public class CourseOfferingImport extends BaseImport {
 
 	private boolean isSameMeeting(Meeting originalMeeting, Meeting newMeeting){
 		boolean isSame = false;
-		if(originalMeeting.getMeetingDate().getTime() == newMeeting.getMeetingDate().getTime()
-				&& ((originalMeeting.getLocationPermanentId() != null && originalMeeting.getLocationPermanentId().longValue() == newMeeting.getLocationPermanentId().longValue())
+		if(getDateString(originalMeeting.getMeetingDate()).equals(getDateString(newMeeting.getMeetingDate()))
+				&& ((originalMeeting.getLocationPermanentId() != null && newMeeting.getLocationPermanentId() != null
+				        && originalMeeting.getLocationPermanentId().longValue() == newMeeting.getLocationPermanentId().longValue())
 						|| (originalMeeting.getLocationPermanentId() == null && newMeeting.getLocationPermanentId() == null))
 				&& originalMeeting.getStartOffset().intValue() == newMeeting.getStartOffset().intValue()
 				&& originalMeeting.getStartPeriod().intValue() == newMeeting.getStartPeriod().intValue()
@@ -452,48 +464,61 @@ public class CourseOfferingImport extends BaseImport {
 		uniqueResult();
 	}
 	
-	private DatePattern findDatePattern(Vector<Calendar> startDates, Vector<Calendar> endDates, Class_ c){
+	private String createPatternString(Vector<Calendar> startDates, Vector<Calendar> endDates){
 		Iterator<Calendar> startDateIt = startDates.iterator();
 		Iterator<Calendar> endDateIt = endDates.iterator();
-		
-		//Calculate offset from start of session
-		Calendar firstDate = (Calendar)startDates.firstElement();
-		Calendar sessionStartDate = Calendar.getInstance();
-		sessionStartDate.setTime(session.getSessionBeginDateTime());
-		int offset = 0;
-		if (firstDate.before(sessionStartDate) ){
-			while (firstDate.before(sessionStartDate)){
-				offset++;
-				firstDate.add(Calendar.DAY_OF_MONTH, 1);
-			}
-		} else if (firstDate.after(sessionStartDate)){
-			while (firstDate.after(sessionStartDate)){
-				offset--;
-				firstDate.add(Calendar.DAY_OF_MONTH, -1);
-			}			
-		}
-		
+				
 		StringBuffer patternString = new StringBuffer();
 		Calendar lastDate = null;
 		while(startDateIt.hasNext() && endDateIt.hasNext()){
-			Calendar startDate = (Calendar) startDateIt.next();
-			Calendar endDate = (Calendar) endDateIt.next();
+			Calendar startDate = Calendar.getInstance();
+			startDate.setTime(((Calendar) startDateIt.next()).getTime());
+			
+			Calendar endDate = Calendar.getInstance();
+			endDate.setTime(((Calendar) endDateIt.next()).getTime());
+			
+
 			if (lastDate != null){
-				while(lastDate.before(startDate)){
+				lastDate.add(Calendar.DAY_OF_MONTH, 1);
+				while(getCalendarDateString(lastDate).compareTo(getCalendarDateString(startDate)) < 0){
 					patternString.append("0");
 					lastDate.add(Calendar.DAY_OF_MONTH, 1);
 				}
-			}
-			while(!startDate.after(endDate)){
+			} 
+			lastDate = endDate;
+			
+			while(getCalendarDateString(startDate).compareTo(getCalendarDateString(endDate)) <= 0) {
 				patternString.append("1");
 				startDate.add(Calendar.DAY_OF_MONTH, 1);				
 			}
 		}
+		return(patternString.toString());
+	}
+	
+	private DatePattern findDatePattern(Vector<Calendar> startDates, Vector<Calendar> endDates, Class_ c){
+		//Calculate offset from start of session
+		Calendar firstDate = Calendar.getInstance();
+		firstDate.setTime(((Calendar)startDates.firstElement()).getTime());
+		Calendar sessionStartDate = Calendar.getInstance();
+		sessionStartDate.setTime(session.getSessionBeginDateTime());
+		int offset = 0;
+		if (getCalendarDateString(firstDate).compareTo(getCalendarDateString(sessionStartDate)) < 0){
+			while (getCalendarDateString(firstDate).compareTo(getCalendarDateString(sessionStartDate)) < 0){
+				offset++;
+				firstDate.add(Calendar.DAY_OF_MONTH, 1);
+			}
+		} else if (getCalendarDateString(firstDate).compareTo(getCalendarDateString(sessionStartDate)) > 0){
+			while (getCalendarDateString(firstDate).compareTo(getCalendarDateString(sessionStartDate)) > 0){
+				offset--;
+				firstDate.add(Calendar.DAY_OF_MONTH, -1);
+			}			
+		}
+		String pattern = createPatternString(startDates, endDates);
 		DatePattern dp = (DatePattern) this.
 		getHibSession().
 		createQuery("from DatePattern as d where d.session.uniqueId = :sessionId and d.pattern = :pattern and d.offset = :offset").
 		setLong("sessionId", session.getUniqueId().longValue()).
-		setString("pattern", patternString.toString()).
+		setString("pattern", pattern).
 		setInteger("offset", offset).
 		setCacheable(true).
 		uniqueResult();
@@ -501,7 +526,7 @@ public class CourseOfferingImport extends BaseImport {
 		if (dp == null){
 			dp = new DatePattern();
 			dp.setName("import - " + c.getClassLabel());
-			dp.setPattern(patternString.toString());
+			dp.setPattern(pattern);
 			dp.setOffset(new Integer(offset));			
 			dp.setSession(session);
 			dp.setType(new Integer(3));
@@ -572,6 +597,14 @@ public class CourseOfferingImport extends BaseImport {
 
 		return(courses);
 	}
+	
+	private String getDateString(Date date){
+		SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+		return(df.format(date));	
+	}
+	private String getCalendarDateString(Calendar calendar){
+		return(getDateString(calendar.getTime()));
+	}
 
 	private Calendar getCalendarForDate(String date){
 		if(date.length() < 3 || date.indexOf("/") < 0){
@@ -593,24 +626,32 @@ public class CourseOfferingImport extends BaseImport {
 			year = Integer.parseInt(date.substring(index2+1, date.length()));
 		}
 		
-		cal.set(year, month, day);
-		
+		cal.set(year, (month - 1), day, 0, 0, 0);
+
 		return(cal);
 	}
 	
-	private HashMap<String, Vector<Calendar>> getDates(Element element) throws Exception {
+	private HashMap<String, Vector<Calendar>> elementDates(Element element) throws Exception {
 		Vector<Calendar> startDates = new Vector<Calendar>();
 		Vector<Calendar> endDates = new Vector<Calendar>();
 		String elementName = "date";
         if(element.element(elementName) != null){
         	for (Iterator<?> it = element.elementIterator(elementName); it.hasNext();){
 				Element dateElement = (Element) it.next();
-				
-				Calendar startDate = getCalendarForDate(getRequiredStringAttribute(dateElement, "startDate", elementName));
+				Calendar startDate = null;
+				Calendar endDate = null;
+				if(dateFormat == null) {								
+					startDate = getCalendarForDate(getRequiredStringAttribute(dateElement, "startDate", elementName));
+					endDate = getCalendarForDate(getRequiredStringAttribute(dateElement, "endDate", elementName));;
+				} else {
+					startDate = Calendar.getInstance();
+					startDate.setTime(CalendarUtils.getDate(getRequiredStringAttribute(dateElement, "startDate", elementName), dateFormat));
+					endDate = Calendar.getInstance();
+					endDate.setTime(CalendarUtils.getDate(getRequiredStringAttribute(dateElement, "endDate", elementName), dateFormat));
+				}
 				if (startDate == null){
 					throw new Exception("For element 'date' a 'startDate' is required, unable to parse given date");
 				}
-				Calendar endDate = getCalendarForDate(getRequiredStringAttribute(dateElement, "endDate", elementName));;
 				if (endDate == null){
 					throw new Exception("For element 'date' a 'endDate' is required, unable to parse given date");
 				}				
@@ -640,18 +681,33 @@ public class CourseOfferingImport extends BaseImport {
 		
 			startPeriod = str2Slot(startTime);
 			endPeriod = str2Slot(endTime);
+			if (startPeriod >= endPeriod){
+				throw new Exception("Invalid time '"+startTime+"' must be before ("+endTime+").");
+			}
 			if (daysOfWeek == null || daysOfWeek.length() == 0){
 				return;
 			}
+			setDaysOfWeek(daysOfWeek);	
+		}
+		
+		private void setDaysOfWeek(String daysOfWeek){
 			days = new TreeSet<Integer>();
 			String tmpDays = daysOfWeek;
 			if(tmpDays.contains("Th")){
 				days.add(Calendar.THURSDAY);
 				tmpDays = tmpDays.replace("Th", "..");
 			}
+			if(tmpDays.contains("R")){
+				days.add(Calendar.THURSDAY);
+				tmpDays = tmpDays.replace("R", "..");
+			}
 			if (tmpDays.contains("Su")){
 				days.add(Calendar.SUNDAY);
 				tmpDays = tmpDays.replace("Su", "..");
+			}
+			if (tmpDays.contains("U")){
+				days.add(Calendar.SUNDAY);
+				tmpDays = tmpDays.replace("U", "..");
 			}
 			if (tmpDays.contains("M")){
 				days.add(Calendar.MONDAY);
@@ -672,8 +728,9 @@ public class CourseOfferingImport extends BaseImport {
 			if (tmpDays.contains("S")){
 				days.add(Calendar.SATURDAY);
 				tmpDays = tmpDays.replace("S", ".");
-			}			
+			}						
 		}
+		
 		public Integer getStartPeriod() {
 			return startPeriod;
 		}
@@ -706,10 +763,12 @@ public class CourseOfferingImport extends BaseImport {
 			return(meeting);
 		}
 		public Integer str2Slot(String timeString) throws Exception {
-
+			
 			int slot = -1;
 			try {
-				int time = Integer.parseInt(timeString.trim());
+				Date date = CalendarUtils.getDate(timeString, timeFormat);
+				SimpleDateFormat df = new SimpleDateFormat("HHmm");
+				int time = Integer.parseInt(df.format(date));
 				int hour = time/100;
 				int min = time%100;
 				if (hour>=24)
@@ -723,12 +782,12 @@ public class CourseOfferingImport extends BaseImport {
 				throw new Exception("Invalid time '"+timeString+"' -- not a number.");
 			}
 			if (slot<0)
-				throw new Exception("Invalid time '"+timeString+"'.");
+				throw new Exception("Invalid time '"+timeString+"', did not meet format: " + timeFormat);
 			return(slot);
 		}
 	}
 
-	private TimeObject getTimes(Element element) throws Exception {
+	private TimeObject elementTime(Element element) throws Exception {
 		TimeObject meetingTime = null;
 		String elementName = "time";
         if(element.element(elementName) != null){       
@@ -745,7 +804,7 @@ public class CourseOfferingImport extends BaseImport {
         return(meetingTime);
 	}
 	
-	private Vector<Room> getRooms(Element element, Class_ c) throws Exception {
+	private Vector<Room> elementRoom(Element element, Class_ c) throws Exception {
 		Vector<Room> rooms = new Vector<Room>();
 		String elementName = "room";
         if(element.element(elementName) != null){
@@ -755,29 +814,7 @@ public class CourseOfferingImport extends BaseImport {
 				String building = getRequiredStringAttribute(roomElement, "building", elementName);
 				String roomNbr = getRequiredStringAttribute(roomElement, "roomNbr", elementName);
 				String id = getOptionalStringAttribute(roomElement, "id");
-				Room room = null;
-				if (id != null) {
-					room = (Room) this.
-					getHibSession().
-					createQuery("select distinct r from Room as r where r.externalUniqueId=:externalId and r.building.session.uniqueId=:sessionId").
-					setLong("sessionId", session.getUniqueId().longValue()).
-					setString("externalId", id).
-					setCacheable(true).
-					uniqueResult();
-				} 
-				if (room == null) {
-					room = (Room) this.
-					getHibSession().
-					createQuery("select distinct r from Room as r where r.roomNumber=:roomNbr and r.building.abbreviation = :building and r.session.uniqueId=:sessionId").
-					setLong("sessionId", session.getUniqueId().longValue()).
-					setString("building", building).
-					setString("roomNbr", roomNbr).
-					setCacheable(true).
-					uniqueResult();
-					if (id != null && room != null && room.getExternalUniqueId() != null && !room.getExternalUniqueId().equals(id)){
-						room = null;
-					}
-				}
+				Room room = findRoom(id, building, roomNbr);
 				
 				if (room != null){
 					rooms.add(room);
@@ -794,7 +831,7 @@ public class CourseOfferingImport extends BaseImport {
         }
 	}	
 
-	private Vector<NonUniversityLocation> getLocations(Element element, Class_ c) throws Exception {
+	private Vector<NonUniversityLocation> elementLocation(Element element, Class_ c) throws Exception {
 		Vector<NonUniversityLocation> locations = new Vector<NonUniversityLocation>();
 		String elementName = "location";
         if(element.element(elementName) != null){
@@ -803,33 +840,7 @@ public class CourseOfferingImport extends BaseImport {
 				
 				String name = getRequiredStringAttribute(roomElement, "name", elementName);
 				
-				NonUniversityLocation location = null;
-				if (name != null) {
-					List<?> possibleLocations = this.
-					getHibSession().
-					createQuery("select distinct l from NonUniversityLocation as l where l.name=:name and l.session.uniqueId=:sessionId").
-					setLong("sessionId", session.getUniqueId().longValue()).
-					setString("name", name).
-					setCacheable(true).
-					list();
-					if (possibleLocations != null){
-						for(Iterator<?> lIt = possibleLocations.iterator(); lIt.hasNext(); ){
-							NonUniversityLocation l = (NonUniversityLocation) lIt.next();
-							if (l.getRoomDepts() != null) {
-								for(Iterator<?> rdIt = l.getRoomDepts().iterator(); rdIt.hasNext(); ){
-									RoomDept rd = (RoomDept) rdIt.next();
-									if (rd.getDepartment().getUniqueId().equals(c.getSchedulingSubpart().getControllingDept().getUniqueId())){
-										location = l;
-										break;
-									}
-								}
-							}
-							if(location != null){
-								break;
-							}
-						}
-					}
-				}
+				NonUniversityLocation location = findNonUniversityLocation(name, c);
 				if (location != null){
 					locations.add(location);
 				} else {
@@ -844,6 +855,91 @@ public class CourseOfferingImport extends BaseImport {
         }
 	}	
 	
+	private boolean elementMeetings(Element element, Class_ c) throws Exception {
+		String elementName = "meeting";
+		boolean changed = false;
+		Vector<Meeting> meetings = new Vector<Meeting>();
+        if(element.element(elementName) != null){
+			Calendar sessionStartDate = Calendar.getInstance();
+			sessionStartDate.setTime(session.getSessionBeginDateTime());
+			
+			Calendar sessionClassesEndDate = Calendar.getInstance();
+			sessionClassesEndDate.setTime(session.getExamBeginDate());				
+			sessionClassesEndDate.add(Calendar.DAY_OF_MONTH, -1);
+			
+			Calendar sessionEndDate = Calendar.getInstance();
+			sessionEndDate.setTime(session.getSessionEndDateTime());
+			
+			for (Iterator<?> it = element.elementIterator(elementName); it.hasNext();){
+				Element meetingElement = (Element) it.next();
+				String startDateStr = getOptionalStringAttribute(meetingElement, "startDate");
+				String endDateStr = getOptionalStringAttribute(meetingElement, "endDate");
+				String startTime = getRequiredStringAttribute(meetingElement, "startTime", elementName);
+				String endTime = getRequiredStringAttribute(meetingElement, "endTime", elementName);
+				String days = getRequiredStringAttribute(meetingElement, "days", elementName);
+				String building = getOptionalStringAttribute(meetingElement, "building");
+				String roomNbr = getOptionalStringAttribute(meetingElement, "room");
+				String location = getOptionalStringAttribute(meetingElement, "location");
+				Calendar startDate = null;
+				Calendar endDate = null;
+				if (startDateStr == null && endDateStr == null){
+					startDate = sessionStartDate;
+					endDate = sessionClassesEndDate;			
+				} else if (dateFormat != null) {
+					startDate = Calendar.getInstance();
+					startDate.setTime(CalendarUtils.getDate(startDateStr, dateFormat));
+					endDate = Calendar.getInstance();
+					endDate.setTime(CalendarUtils.getDate(endDateStr, dateFormat));
+				} else {
+					startDate = getCalendarForDate(startDateStr);
+					endDate = getCalendarForDate(endDateStr);
+				}
+				if(endDate.before(startDate)){
+					endDate.add(Calendar.YEAR, 1);
+				}
+				
+				TimeObject timeObject = new TimeObject(startTime, endTime, days);
+
+				Vector<Room> rooms = new Vector<Room>();
+				Vector<NonUniversityLocation> nonUniversityLocations = new Vector <NonUniversityLocation>();
+
+				if (building != null && roomNbr != null){
+					Room r = findRoom(null, building, roomNbr);
+					if (r != null) {
+						rooms.add(r);
+					}
+				} else if (location != null){
+					NonUniversityLocation nul = findNonUniversityLocation(location, c);
+					if (nul != null) {
+						nonUniversityLocations.add(nul);
+					}
+				}
+				
+				Vector<Calendar> startDates = new Vector<Calendar>();
+				startDates.add(startDate);
+				
+				Vector<Calendar> endDates = new Vector<Calendar>();
+				endDates.add(endDate);
+								
+				Vector<Meeting> m = null;
+				if (startDate.equals(sessionStartDate) && (endDate.equals(sessionClassesEndDate) || endDate.equals(sessionEndDate))){
+					m = getMeetings(session.getDefaultDatePattern(), timeObject, rooms, nonUniversityLocations);	
+				} else {
+					m = getMeetings(
+							startDate.getTime(), 
+							endDate.getTime(), 
+							createPatternString(startDates, endDates), 
+							timeObject, rooms, nonUniversityLocations);
+				}
+				if(m != null && !m.isEmpty()){
+					meetings.addAll(m);
+				}
+        	}
+        	changed = addUpdateClassEvent(c, meetings);
+        }
+        
+        return(changed);
+	}
 
 	private boolean elementInstructor(Element element, Class_ c) throws Exception {
 		boolean changed = false;
@@ -855,8 +951,8 @@ public class CourseOfferingImport extends BaseImport {
 				existingInstructors.put(ci.getInstructor().getExternalUniqueId(), ci);
 			}
 		}
-        if(element.element("instructor") != null){
-        	for (Iterator<?> it = element.elementIterator("instructor"); it.hasNext();){
+        if(element.element(elementName) != null){
+        	for (Iterator<?> it = element.elementIterator(elementName); it.hasNext();){
 				Element instructorElement = (Element) it.next();
 				String id = getRequiredStringAttribute(instructorElement, "id", elementName);
 				boolean addNew = false;
@@ -1363,7 +1459,7 @@ public class CourseOfferingImport extends BaseImport {
 					changed = true;
 				}
 				
-				HashMap<String, Vector<Calendar>> dates = getDates(classElement);
+				HashMap<String, Vector<Calendar>> dates = elementDates(classElement);
 				DatePattern dp = null;
 				if (dates != null){
 					dp = findDatePattern(dates.get("startDates"), dates.get("endDates"), clazz);					
@@ -1391,28 +1487,39 @@ public class CourseOfferingImport extends BaseImport {
 				if (changed){
 					this.getHibSession().saveOrUpdate(clazz);
 				}
-				
-				TimeObject meetingTime = getTimes(classElement);
-				Vector<Room> rooms = getRooms(classElement, clazz);
-				Vector<NonUniversityLocation> locations = getLocations(classElement, clazz);
-				
-				int numRooms = 0;
-				if (rooms != null && !rooms.isEmpty()){
-					numRooms += rooms.size();
-				} 
-				if (locations != null && !locations.isEmpty()){
-					numRooms += locations.size();
+				if (classElement.element("meeting") != null){
+					if(elementMeetings(classElement, clazz)){
+						changed = true;
+					}
+					int numRooms = 1;
+					if (clazz.getNbrRooms() != null && !clazz.getNbrRooms().equals(new Integer(numRooms))){
+						clazz.setNbrRooms(new Integer(numRooms));
+						addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " number of rooms changed");
+						changed = true;
+					}
+
+				} else if (classElement.element("time") != null){
+					TimeObject meetingTime = elementTime(classElement);
+					Vector<Room> rooms = elementRoom(classElement, clazz);
+					Vector<NonUniversityLocation> locations = elementLocation(classElement, clazz);
+					
+					int numRooms = 0;
+					if (rooms != null && !rooms.isEmpty()){
+						numRooms += rooms.size();
+					} 
+					if (locations != null && !locations.isEmpty()){
+						numRooms += locations.size();
+					}
+					if (clazz.getNbrRooms() != null && !clazz.getNbrRooms().equals(new Integer(numRooms))){
+						clazz.setNbrRooms(new Integer(numRooms));
+						addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " number of rooms changed");
+						changed = true;
+					}
+					if (addUpdateClassEvent(clazz, meetingTime, rooms, locations)){
+						addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " 'class' events for class changed");
+						changed = true;
+					}					
 				}
-				if (clazz.getNbrRooms() != null && !clazz.getNbrRooms().equals(new Integer(numRooms))){
-					clazz.setNbrRooms(new Integer(numRooms));
-					addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " number of rooms changed");
-					changed = true;
-				}
-				if (addUpdateClassEvent(clazz, clazz.effectiveDatePattern(), meetingTime, rooms, locations)){
-					addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " 'class' events for class changed");
-					changed = true;
-				}
-				
 				if (elementClass(classElement, ioc, clazz, allExistingClasses)){
 					addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " 'class' child classes changed");
 					changed = true;
@@ -1444,31 +1551,28 @@ public class CourseOfferingImport extends BaseImport {
 		}
 		return changed;
 	}
-	
-	private Vector<Meeting> getMeetings(DatePattern dp, TimeObject meetingTime, Vector<Room> rooms, Vector<NonUniversityLocation> locations){
+	private Vector<Meeting> getMeetings(Date startDate, Date stopDate, String pattern, TimeObject meetingTime, Vector<Room> rooms, Vector<NonUniversityLocation> locations){
 		if (meetingTime != null){
 			Meeting meeting = meetingTime.asMeeting();
 			meeting.setApprovedDate(Calendar.getInstance().getTime());
 			
-			
-			Calendar startDate = Calendar.getInstance();
-			startDate.setTime(dp.getStartDate());
-			Calendar stopDate = Calendar.getInstance();
-			stopDate.setTime(dp.getEndDate());
-			String pattern = dp.getPattern();
+			Calendar startDateCal = Calendar.getInstance();
+			startDateCal.setTime(startDate);
+			Calendar stopDateCal = Calendar.getInstance();
+			stopDateCal.setTime(stopDate);
 			int index = 0;
 			Vector<Meeting> meetingsForDates = new Vector<Meeting>();
-			while (!startDate.after(stopDate)){
-				if (meetingTime.getDays().contains(startDate.get(Calendar.DAY_OF_WEEK)) && pattern.charAt(index) == '1'){
+			while (!startDateCal.after(stopDateCal)){
+				if (meetingTime.getDays().contains(startDateCal.get(Calendar.DAY_OF_WEEK)) && pattern.charAt(index) == '1'){
 					Meeting dateMeeting = (Meeting)meeting.clone();
-					dateMeeting.setMeetingDate(startDate.getTime());
+					dateMeeting.setMeetingDate(startDateCal.getTime());
 					meetingsForDates.add(dateMeeting);
 				}
 				index++;
-				startDate.add(Calendar.DAY_OF_MONTH, 1);
+				startDateCal.add(Calendar.DAY_OF_MONTH, 1);
 			}
 			
-			if (rooms == null && locations == null){
+			if ((rooms == null || rooms.isEmpty()) && (locations == null || locations.isEmpty())){
 				return(meetingsForDates);
 			}
 			
@@ -1501,17 +1605,24 @@ public class CourseOfferingImport extends BaseImport {
 			} 
 		}
 		return(null);
+
+	}
+	private Vector<Meeting> getMeetings(DatePattern dp, TimeObject meetingTime, Vector<Room> rooms, Vector<NonUniversityLocation> locations){
+		return(getMeetings(dp.getStartDate(), dp.getEndDate(), dp.getPattern(), meetingTime, rooms, locations));
 	}
 	
-	private boolean addUpdateClassEvent(Class_ c, DatePattern dp, TimeObject meetingTime, Vector<Room> rooms, Vector<NonUniversityLocation> locations) {
+	private boolean addUpdateClassEvent(Class_ c, TimeObject meetingTime, Vector<Room> rooms, Vector<NonUniversityLocation> locations) {
+		return(addUpdateClassEvent(c, getMeetings(c.effectiveDatePattern(), meetingTime, rooms, locations)));
+	}
+	
+	private boolean addUpdateClassEvent(Class_ c, Vector<Meeting> meetings) {
 		boolean changed = false;
 		
-		Vector<Meeting> meetings = getMeetings(dp, meetingTime, rooms, locations);
 		List<?> originalClassEvents = null;
 		if (c.getUniqueId() != null){
 			originalClassEvents = Event.findCourseRelatedEventsOfTypeOwnedBy(this.getHibSession(), classType.getUniqueId(), c);
 		} else {
-			originalClassEvents = new ArrayList();
+			originalClassEvents = new ArrayList<Object>();
 		}
 		
 		if(meetings != null && !meetings.isEmpty() && (originalClassEvents == null || originalClassEvents.isEmpty() || originalClassEvents.size() > 1)){
@@ -1971,6 +2082,64 @@ public class CourseOfferingImport extends BaseImport {
 		uniqueResult();
 	}
 	
+	private Room findRoom(String id, String building, String roomNbr){
+		Room room = null;
+		if (id != null) {
+			room = (Room) this.
+			getHibSession().
+			createQuery("select distinct r from Room as r where r.externalUniqueId=:externalId and r.building.session.uniqueId=:sessionId").
+			setLong("sessionId", session.getUniqueId().longValue()).
+			setString("externalId", id).
+			setCacheable(true).
+			uniqueResult();
+		} 
+		if (room == null) {
+			room = (Room) this.
+			getHibSession().
+			createQuery("select distinct r from Room as r where r.roomNumber=:roomNbr and r.building.abbreviation = :building and r.session.uniqueId=:sessionId").
+			setLong("sessionId", session.getUniqueId().longValue()).
+			setString("building", building).
+			setString("roomNbr", roomNbr).
+			setCacheable(true).
+			uniqueResult();
+			if (id != null && room != null && room.getExternalUniqueId() != null && !room.getExternalUniqueId().equals(id)){
+				room = null;
+			}
+		}
+		return(room);
+	}
+	
+	private NonUniversityLocation findNonUniversityLocation(String name, Class_ c){
+		NonUniversityLocation location = null;
+		if (name != null) {
+			List<?> possibleLocations = this.
+			getHibSession().
+			createQuery("select distinct l from NonUniversityLocation as l where l.name=:name and l.session.uniqueId=:sessionId").
+			setLong("sessionId", session.getUniqueId().longValue()).
+			setString("name", name).
+			setCacheable(true).
+			list();
+			if (possibleLocations != null){
+				for(Iterator<?> lIt = possibleLocations.iterator(); lIt.hasNext(); ){
+					NonUniversityLocation l = (NonUniversityLocation) lIt.next();
+					if (l.getRoomDepts() != null) {
+						for(Iterator<?> rdIt = l.getRoomDepts().iterator(); rdIt.hasNext(); ){
+							RoomDept rd = (RoomDept) rdIt.next();
+							if (rd.getDepartment().getUniqueId().equals(c.getSchedulingSubpart().getControllingDept().getUniqueId())){
+								location = l;
+								break;
+							}
+						}
+					}
+					if(location != null){
+						break;
+					}
+				}
+			}
+		}
+		return(location);
+	}
+	
 	private void loadSubjectAreas(Long sessionId) {
 		List<?> subjects = new ArrayList<Object>();
 		subjects = this.
@@ -2098,11 +2267,11 @@ public class CourseOfferingImport extends BaseImport {
 					(String)ApplicationProperties.getProperty("tmtbl.smtp.host", "smtp.purdue.edu"), 
 					(String)ApplicationProperties.getProperty("tmtbl.smtp.domain", "smtp.purdue.edu"), 
 					(String)ApplicationProperties.getProperty("tmtbl.inquiry.sender", "smasops@purdue.edu"), 
-					(String)ApplicationProperties.getProperty("tmtbl.inquiry.sender", "smasops@purdue.edu"), 
+					(manager != null?manager.getEmailAddress():(String)ApplicationProperties.getProperty("tmtbl.inquiry.sender", "smasops@purdue.edu")), 
 					(String)ApplicationProperties.getProperty("tmtbl.inquiry.email","smasops@purdue.edu"), 
 					"Timetabling (Data Import): "+subject, 
 					mail, 
-					new Vector());
+					new Vector<Object>());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
