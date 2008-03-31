@@ -94,7 +94,7 @@
 				<bean:define id="assignment" name="model" property="examAssignment"/>
 				<tr><td>Period:</td><td><bean:write name="assignment" property="periodNameWithPref" filter="false"/></td></tr>
 				<logic:notEmpty name="assignment" property="rooms">
-					<tr><td>Room:</td><td><bean:write name="assignment" property="roomsNameWithPref(', ')" filter="false"/></td></tr>
+					<tr><td>Room:</td><td><bean:write name="assignment" property="roomsNameWithPref(, )" filter="false"/></td></tr>
 				</logic:notEmpty>
 				<logic:greaterThan name="assignment" property="nrDistributionConflicts" value="0">
 					<tr><td colspan='2'><tt:section-title><br>Violated Distribution Preferences</tt:section-title></td></tr>
