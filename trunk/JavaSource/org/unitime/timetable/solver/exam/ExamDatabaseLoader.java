@@ -213,22 +213,7 @@ public class ExamDatabaseLoader extends ExamLoader {
                     if (!hasReqPeriod) periodPlacements.clear(); 
                     hasReqPeriod = true;
                     periodPlacements.add(new ExamPeriodPlacement(period, 0));
-                } else {
-                    periodPlacements.add(new ExamPeriodPlacement(period, pref2weight(pref)));
-                }
-            }
-            for (Iterator j=exam.getPreferences(ExamPeriodPref.class).iterator();j.hasNext();) {
-                ExamPeriodPref periodPref = (ExamPeriodPref)j.next();
-                ExamPeriod period = (ExamPeriod)iPeriods.get(periodPref.getExamPeriod().getUniqueId());
-                if (period==null || iProhibitedPeriods.contains(period)) continue;
-                if (period.getLength()<exam.getLength()) continue;
-                String pref = periodPref.getPrefLevel().getPrefProlog();
-                if (PreferenceLevel.sProhibited.equals(pref)) continue;
-                if (PreferenceLevel.sRequired.equals(pref)) {
-                    if (!hasReqPeriod) periodPlacements.clear(); 
-                    hasReqPeriod = true;
-                    periodPlacements.add(new ExamPeriodPlacement(period, 0));
-                } else {
+                } else if (!hasReqPeriod) {
                     periodPlacements.add(new ExamPeriodPlacement(period, pref2weight(pref)));
                 }
             }
