@@ -41,7 +41,7 @@ import org.unitime.timetable.util.Constants;
 import net.sf.cpsolver.coursett.preference.MinMaxPreferenceCombination;
 import net.sf.cpsolver.exam.model.ExamDistributionConstraint;
 import net.sf.cpsolver.exam.model.ExamPlacement;
-import net.sf.cpsolver.exam.model.ExamRoom;
+import net.sf.cpsolver.exam.model.ExamRoomPlacement;
 
 /**
  * @author Tomas Muller
@@ -67,12 +67,12 @@ public class ExamAssignment extends ExamInfo implements Serializable {
             iPeriodId = placement.getPeriod().getId();
             iPeriodIdx = placement.getPeriod().getIndex();
             iRooms = new TreeSet<ExamRoomInfo>();
-            iPeriodPref = (exam.getPeriods().size()==1?PreferenceLevel.sRequired:PreferenceLevel.int2prolog(placement.getPeriodPenalty()));
-            if (placement.getRooms()!=null) {
-                boolean reqRoom = placement.getRooms().size()==exam.getRooms().size();
-                for (Iterator i=placement.getRooms().iterator();i.hasNext();) {
-                    ExamRoom room = (ExamRoom)i.next();
-                    iRooms.add(new ExamRoomInfo(room, (reqRoom?PreferenceLevel.sIntLevelRequired:((net.sf.cpsolver.exam.model.Exam)placement.variable()).getWeight(room))));
+            iPeriodPref = (exam.getPeriodPlacements().size()==1?PreferenceLevel.sRequired:PreferenceLevel.int2prolog(placement.getPeriodPenalty()));
+            if (placement.getRoomPlacements()!=null) {
+                boolean reqRoom = placement.getRoomPlacements().size()==exam.getRoomPlacements().size();
+                for (Iterator i=placement.getRoomPlacements().iterator();i.hasNext();) {
+                    ExamRoomPlacement room = (ExamRoomPlacement)i.next();
+                    iRooms.add(new ExamRoomInfo(room.getRoom(), (reqRoom?PreferenceLevel.sIntLevelRequired:room.getPenalty(placement.getPeriod()))));
                 }
             }
             MinMaxPreferenceCombination pc = new MinMaxPreferenceCombination();

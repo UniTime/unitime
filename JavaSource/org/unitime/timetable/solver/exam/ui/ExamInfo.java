@@ -27,7 +27,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
-import net.sf.cpsolver.exam.model.ExamCourseSection;
 import net.sf.cpsolver.exam.model.ExamInstructor;
 import net.sf.cpsolver.exam.model.ExamModel;
 import net.sf.cpsolver.exam.model.ExamStudent;
@@ -63,10 +62,10 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
         iMaxRooms = exam.getMaxRooms();
         iNrStudents = exam.getStudents().size();
         iSeatingType = (exam.hasAltSeating()?Exam.sSeatingTypeExam:Exam.sSeatingTypeNormal);
-        if (!exam.getCourseSections().isEmpty()) {
+        if (!exam.getOwners().isEmpty()) {
             iSections = new Vector();
-            for (Enumeration e=exam.getCourseSections().elements();e.hasMoreElements();) {
-                ExamCourseSection ecs = (ExamCourseSection)e.nextElement();
+            for (Enumeration e=exam.getOwners().elements();e.hasMoreElements();) {
+                net.sf.cpsolver.exam.model.ExamOwner ecs = (net.sf.cpsolver.exam.model.ExamOwner)e.nextElement();
                 HashSet<Long> studentIds = new HashSet<Long>();
                 for (Iterator i=ecs.getStudents().iterator();i.hasNext();) 
                     studentIds.add(((ExamStudent)i.next()).getId());
