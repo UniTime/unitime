@@ -20,6 +20,7 @@
 package org.unitime.timetable.model;
 
 import org.unitime.timetable.model.base.BaseEventContact;
+import org.unitime.timetable.model.dao.EventContactDAO;
 
 
 
@@ -51,8 +52,15 @@ public class EventContact extends BaseEventContact {
 			firstName,
 			lastName);
 	}
+	
 
 /*[CONSTRUCTOR MARKER END]*/
+
+	public static EventContact findByExternalUniqueId(String externalUniqueId) {
+	    return (EventContact)new EventContactDAO().getSession().
+	        createQuery("select c from EventContact c where c.externalUniqueId=:externalUniqueId").
+	        setString("externalUniqueId", externalUniqueId).uniqueResult();
+	}
 
 
 }
