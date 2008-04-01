@@ -88,7 +88,6 @@ public class ExamSolverForm extends ActionForm {
         	Map.Entry entry = (Map.Entry)i.next();
          	Long parm = (Long)entry.getKey();
         	String val = (String)entry.getValue();
-        	System.out.println("Parameter "+parm+" is "+val);
         	if (val==null || val.trim().length()==0)
         		errors.add("parameterValue["+parm+"]", new ActionMessage("errors.required", ""));
         }
