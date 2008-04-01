@@ -19,8 +19,11 @@
 */
 package org.unitime.timetable.model;
 
+import java.util.Calendar;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.Set;
 import java.util.Vector;
 
@@ -333,5 +336,76 @@ public class Assignment extends BaseAssignment {
 	           return false;
 	       return true;
    }
+	
+    public Event generateCommittedEvent(boolean createNoRoomMeetings) {
+        Class_ clazz = getClazz();
+        Event event = new Event();
+        event.setEventName(clazz.getClassLabel());
+        event.setEventType(EventType.findByReference(EventType.sEventTypeClass));
+        event.setRelatedCourses(new HashSet());
+        event.setMinCapacity(clazz.getClassLimit());
+        event.setMaxCapacity(clazz.getClassLimit());
+        RelatedCourseInfo courseInfo = new RelatedCourseInfo();
+        courseInfo.setOwner(clazz);
+        courseInfo.setEvent(event);
+        event.getRelatedCourses().add(courseInfo);
+        event.setMeetings(new HashSet());
+        DatePattern dp = getDatePattern();
+        Calendar cal = Calendar.getInstance(Locale.US);
+        cal.setTime(dp.getStartDate()); cal.setLenient(true);
+        TimeLocation time = getTimeLocation(); 
+        for (int idx=0;idx<dp.getPattern().length();idx++) {
+            if (dp.getPattern().charAt(idx)=='1') {
+                boolean offered = false;
+                switch (cal.get(Calendar.DAY_OF_WEEK)) {
+                    case Calendar.MONDAY : offered = ((time.getDayCode() & Constants.DAY_CODES[Constants.DAY_MON]) != 0); break;
+                    case Calendar.TUESDAY : offered = ((time.getDayCode() & Constants.DAY_CODES[Constants.DAY_TUE]) != 0); break;
+                    case Calendar.WEDNESDAY : offered = ((time.getDayCode() & Constants.DAY_CODES[Constants.DAY_WED]) != 0); break;
+                    case Calendar.THURSDAY : offered = ((time.getDayCode() & Constants.DAY_CODES[Constants.DAY_THU]) != 0); break;
+                    case Calendar.FRIDAY : offered = ((time.getDayCode() & Constants.DAY_CODES[Constants.DAY_FRI]) != 0); break;
+                    case Calendar.SATURDAY : offered = ((time.getDayCode() & Constants.DAY_CODES[Constants.DAY_SAT]) != 0); break;
+                    case Calendar.SUNDAY : offered = ((time.getDayCode() & Constants.DAY_CODES[Constants.DAY_SUN]) != 0); break;
+                }
+                if (offered) {
+                    boolean created = false;
+                    for (Iterator i=getRooms().iterator();i.hasNext();) {
+                        Location location = (Location)i.next();
+                        if (location.getPermanentId()!=null) {
+                            Meeting m = new Meeting();
+                            m.setEventType(event.getEventType());
+                            m.setMeetingDate(cal.getTime());
+                            m.setStartPeriod(time.getStartSlot());
+                            m.setStartOffset(0);
+                            m.setStopPeriod(time.getStartSlot()+time.getLength());
+                            m.setStopOffset(-time.getBreakTime());
+                            m.setClassCanOverride(false);
+                            m.setLocationPermanentId(location.getPermanentId());
+                            m.setApprovedDate(getSolution().getCommitDate());
+                            m.setEvent(event);
+                            event.getMeetings().add(m);
+                            created = true;
+                        }
+                    }
+                    if (!created && createNoRoomMeetings) {
+                        Meeting m = new Meeting();
+                        m.setEventType(event.getEventType());
+                        m.setMeetingDate(cal.getTime());
+                        m.setStartPeriod(time.getStartSlot());
+                        m.setStartOffset(0);
+                        m.setStopPeriod(time.getStartSlot()+time.getLength());
+                        m.setStopOffset(-time.getBreakTime());
+                        m.setClassCanOverride(false);
+                        m.setLocationPermanentId(null);
+                        m.setApprovedDate(getSolution().getCommitDate());
+                        m.setEvent(event);
+                        event.getMeetings().add(m);
+                    }
+                }
+            }
+            cal.add(Calendar.DAY_OF_YEAR, 1);
+        }
+        if (event.getMeetings().isEmpty()) return null;
+        return event;
+    }
 	
 }
