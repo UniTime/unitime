@@ -476,7 +476,7 @@ public class ExamAssignmentReportAction extends Action {
                     "Date",
                     "Time",
                     (form.getShowSections()?"Classes / Courses":"Examinations"),
-                    "Students",
+                    "Size",
                     (form.getShowSections()?"Classes / Courses":"Examinations")+nl+"with 10+ students",
                     (form.getShowSections()?"Classes / Courses":"Examinations")+nl+"with 50+ students",
                     (form.getShowSections()?"Classes / Courses":"Examinations")+nl+"with 100+ students"},

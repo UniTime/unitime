@@ -47,6 +47,7 @@ import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.RoomFeaturePref;
 import org.unitime.timetable.model.RoomGroupPref;
 import org.unitime.timetable.model.RoomPref;
+import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 
@@ -60,12 +61,14 @@ public class ExamInfoModel implements Serializable {
     private Collection<ExamAssignmentInfo> iPeriods = null;
     private Collection<ExamRoomInfo> iRooms = null;
     private int iPeriodTableOrd = 0;
+    private String iManagerExternalId = null;
     
     public void setSolver(ExamSolverProxy solver) { iSolver = solver; }
     public ExamSolverProxy getSolver() { return iSolver; }
 
-    public void clear() {
-        iExam = null; iExamAssignment = null; iRooms = null; iPeriods = null; 
+    public void clear(TimetableManager manager) {
+        iExam = null; iExamAssignment = null; iRooms = null; iPeriods = null;
+        iManagerExternalId = manager.getExternalUniqueId();
     }
     
     public ExamInfo getExam() {
@@ -85,7 +88,7 @@ public class ExamInfoModel implements Serializable {
             return getSolver().assign(iExamAssignment);
         } else {
             org.hibernate.Session hibSession = new ExamDAO().getSession();
-            return getExam().getExam(hibSession).assign(iExamAssignment, hibSession);
+            return getExam().getExam(hibSession).assign(iExamAssignment, iManagerExternalId, hibSession);
         }
     }
     
