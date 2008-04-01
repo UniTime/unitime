@@ -253,7 +253,7 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
             ExamPeriodPlacement period = null;
             for (Enumeration e=exam.getPeriodPlacements().elements();e.hasMoreElements();) {
                 ExamPeriodPlacement p = (ExamPeriodPlacement)e.nextElement();
-                if (p.getId()==periodId) { period = p; break; }
+                if (p.getId().equals(periodId)) { period = p; break; }
             }
             if (period==null) return null;
             HashSet rooms = new HashSet();
@@ -277,7 +277,7 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
             ExamPeriodPlacement period = null;
             for (Enumeration e=exam.getPeriodPlacements().elements();e.hasMoreElements();) {
                 ExamPeriodPlacement p = (ExamPeriodPlacement)e.nextElement();
-                if (p.getId()==assignment.getPeriodId()) { period = p; break; }
+                if (p.getId().equals(assignment.getPeriodId())) { period = p; break; }
             }
             if (period==null) return "Examination period "+assignment.getPeriodName()+" is not available for examination "+assignment.getExamName()+".";
             HashSet rooms = new HashSet();
