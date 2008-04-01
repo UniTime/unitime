@@ -337,11 +337,11 @@ public class Assignment extends BaseAssignment {
 	       return true;
    }
 	
-    public Event generateCommittedEvent(boolean createNoRoomMeetings) {
+    public Event generateCommittedEvent(EventType eventType, boolean createNoRoomMeetings) {
         Class_ clazz = getClazz();
         Event event = new Event();
-        event.setEventName(clazz.getClassLabel());
-        event.setEventType(EventType.findByReference(EventType.sEventTypeClass));
+        event.setEventName(getClassName());
+        event.setEventType(eventType);
         event.setRelatedCourses(new HashSet());
         event.setMinCapacity(clazz.getClassLimit());
         event.setMaxCapacity(clazz.getClassLimit());
@@ -372,7 +372,7 @@ public class Assignment extends BaseAssignment {
                         Location location = (Location)i.next();
                         if (location.getPermanentId()!=null) {
                             Meeting m = new Meeting();
-                            m.setEventType(event.getEventType());
+                            m.setEventType(eventType);
                             m.setMeetingDate(cal.getTime());
                             m.setStartPeriod(time.getStartSlot());
                             m.setStartOffset(0);
@@ -388,7 +388,7 @@ public class Assignment extends BaseAssignment {
                     }
                     if (!created && createNoRoomMeetings) {
                         Meeting m = new Meeting();
-                        m.setEventType(event.getEventType());
+                        m.setEventType(eventType);
                         m.setMeetingDate(cal.getTime());
                         m.setStartPeriod(time.getStartSlot());
                         m.setStartOffset(0);
