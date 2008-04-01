@@ -282,14 +282,14 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		*/
 
 		hibSession.update(this);
-
-        deleteObjects(
-                  hibSession,
-                  "Event",
-                  "select e.uniqueId from Event e inner join e.relatedCourses r, Assignment a where " +
-                  "r.ownerId=a.clazz.uniqueId and r.ownerType="+ExamOwner.sOwnerTypeClass+" and e.eventType.reference='"+EventType.sEventTypeClass+"' and "+
-                  "a.solution.uniqueId=:solutionId"
-                  );
+		
+		for (Iterator i=getAssignments().iterator();i.hasNext();) {
+		    Assignment a = (Assignment)i.next();
+		    if (a.getEvent()!=null) {
+		        hibSession.delete(a.getEvent());
+		        a.setEvent(null);
+		    }
+		}
 
         removeDivSecNumbers(hibSession);
 		
@@ -490,12 +490,15 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		        hibSession.save(contact);
 		    }
 		}
+		EventType eventType = EventType.findByReference(EventType.sEventTypeClass);
 		for (Iterator i=getAssignments().iterator();i.hasNext();) {
 		    Assignment a = (Assignment)i.next();
-		    Event event = a.generateCommittedEvent(true);
+		    Event event = a.generateCommittedEvent(eventType, true);
 		    if (event!=null) {
 		        event.setMainContact(contact);
+		        a.setEvent(event);
 		        hibSession.save(event);
+		        hibSession.update(a);
 		    }
 		}
 		
@@ -796,12 +799,10 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 				.setLong("solutionId", getUniqueId().longValue())
 				.executeUpdate();
 
-		deleteObjects(
+        deleteObjects(
                 hibSession,
                 "Event",
-                "select e.uniqueId from Event e inner join e.relatedCourses r, Assignment a where " +
-                "r.ownerId=a.clazz.uniqueId and r.ownerType="+ExamOwner.sOwnerTypeClass+" and e.eventType.reference='"+EventType.sEventTypeClass+"' and "+
-                "a.solution.uniqueId=:solutionId"
+                "select a.event.uniqueId from Assignment a where a.solution.uniqueId=:solutionId"
                 );
 		
 		deleteObjects(
@@ -878,11 +879,9 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
         deleteObjects(
                 hibSession,
                 "Event",
-                "select e.uniqueId from Event e inner join e.relatedCourses r, Assignment a where " +
-                "r.ownerId=a.clazz.uniqueId and r.ownerType="+ExamOwner.sOwnerTypeClass+" and e.eventType.reference='"+EventType.sEventTypeClass+"' and "+
-                "a.solution.uniqueId=:solutionId"
+                "select a.event.uniqueId from Assignment a where a.solution.uniqueId=:solutionId"
                 );
-		
+	
 		deleteObjects(
 				hibSession,
 				"SolverInfo",
