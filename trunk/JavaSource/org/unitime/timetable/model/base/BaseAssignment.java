@@ -88,6 +88,7 @@ public abstract class BaseAssignment  implements Serializable {
 	private org.unitime.timetable.model.TimePattern timePattern;
 	private org.unitime.timetable.model.Solution solution;
 	private org.unitime.timetable.model.Class_ clazz;
+	private org.unitime.timetable.model.Event event;
 
 	// collections
 	private java.util.Set instructors;
@@ -308,9 +309,9 @@ public abstract class BaseAssignment  implements Serializable {
 	public void setConstraintInfo (java.util.Set constraintInfo) {
 		this.constraintInfo = constraintInfo;
 	}
-
-
-
+	
+	public org.unitime.timetable.model.Event getEvent() { return event; }
+	public void setEvent(org.unitime.timetable.model.Event event) { this.event = event; }
 
 
 	public boolean equals (Object obj) {
