@@ -250,6 +250,11 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
 		}
 	}
 
+    //needs to be implemented
+    public boolean canSeeEvents (Session session, User user) {
+    	return true;
+    }
+
 	public Collection getClasses(Session session) {
     	Vector classes = new Vector(); 
     	for (Iterator i=departmentsForSession(session.getUniqueId()).iterator();i.hasNext();) {
