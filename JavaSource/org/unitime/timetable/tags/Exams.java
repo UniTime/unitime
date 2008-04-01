@@ -124,7 +124,7 @@ public class Exams extends BodyTagSupport {
                     "</td></tr></table>";
             
             WebTable table = new WebTable(10, title,
-                    new String[] { "Classes / Courses", "Type", "Length", "Seating<br>Type", "Students", "Max<br>Rooms", 
+                    new String[] { "Classes / Courses", "Type", "Length", "Seating<br>Type", "Size", "Max<br>Rooms", 
                         "Instructor", "Period<br>Preferences", "Room<br>Preferences", "Distribution<br>Preferences"},
                     new String[] {"left", "left", "right", "center", "right", "right", "left", 
                         "left", "left", "left"},
@@ -213,7 +213,7 @@ public class Exams extends BodyTagSupport {
                         instructors += instructor.getName(instructorNameFormat);
                     }
                     
-                    int nrStudents = exam.countStudents();
+                    int nrStudents = exam.getSize();
                     
                     if (exam.getUniqueId().toString().equals(backId)) {
                         objects = "<A name='examHash'>"+objects+"</A>";

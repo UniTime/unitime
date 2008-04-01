@@ -116,7 +116,7 @@ public class UnassignedExamsAction extends Action {
 		PdfWebTable table =
             new PdfWebTable( 9,
                     "Not-assigned Examinations", "unassignedExams.do?ord=%%",
-                    new String[] {(form.getShowSections()?"Classes / Courses":"Examination"), "Length", "Seating"+nl+"Type", "Students", "Max"+nl+"Rooms",
+                    new String[] {(form.getShowSections()?"Classes / Courses":"Examination"), "Length", "Seating"+nl+"Type", "Size", "Max"+nl+"Rooms",
                                  "Instructor", "Period"+nl+"Preferences", "Room"+nl+"Preferences", "Distribution"+nl+"Preferences"},
        				new String[] {"left", "right", "center", "right", "right", "left", "left", "left", "left"},
        				new boolean[] {true, true, true, false, false, true, true, true, true} );

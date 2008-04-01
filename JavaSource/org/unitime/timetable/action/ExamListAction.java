@@ -151,7 +151,7 @@ public class ExamListAction extends Action {
         PdfWebTable table = new PdfWebTable(
                 11,
                 Exam.sExamTypes[form.getExamType()]+" Examinations", "examList.do?ord=%%",
-                new String[] {"Classes / Courses", "Length", "Seating"+nl+"Type", "Students", "Max"+nl+"Rooms", 
+                new String[] {"Classes / Courses", "Length", "Seating"+nl+"Type", "Size", "Max"+nl+"Rooms", 
                         "Instructor", "Period"+nl+"Preferences", "Room"+nl+"Preferences", "Distribution"+nl+"Preferences",
                         "Assigned"+nl+"Period", "Assigned"+nl+"Room"},
                 new String[] {"left", "right", "center", "right", "right", "left", 
