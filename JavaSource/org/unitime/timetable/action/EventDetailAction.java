@@ -62,13 +62,13 @@ public class EventDetailAction extends Action {
 		if (request.getParameter("id")!=null) {
 			String id = request.getParameter("id");
 			Event event = new EventDAO().get(Long.valueOf(id));
-			myForm.setEventName(event.getEventName());
-			myForm.setMinCapacity(event.getMinCapacity());
-			myForm.setMaxCapacity(event.getMaxCapacity());
+			myForm.setEventName(event.getEventName()==null?"":event.getEventName());
+			myForm.setMinCapacity(event.getMinCapacity()==null?"":event.getMinCapacity().toString());
+			myForm.setMaxCapacity(event.getMaxCapacity()==null?"":event.getMaxCapacity().toString());
 			myForm.setSponsoringOrg("N/A yet");
 			for (Iterator i = event.getNotes().iterator(); i.hasNext();) {
 				EventNote en = (EventNote) i.next();
-				myForm.addNote(en.getTextNote());
+				if (en.getTextNote()!= null) {myForm.addNote(en.getTextNote());}
 			}
 			for (Iterator i = event.getNotes().iterator(); i.hasNext();) {
 				EventNote en2 = (EventNote) i.next();
@@ -78,9 +78,15 @@ public class EventDetailAction extends Action {
 			myForm.setMainContact(event.getMainContact());
 			for (Iterator i = event.getAdditionalContacts().iterator(); i.hasNext();) {
 				EventContact ec = (EventContact) i.next();
-				myForm.addAdditionalContact(ec.getFirstName(), ec.getMiddleName(), ec.getLastName(), ec.getEmailAddress(), ec.getPhone());
+				myForm.addAdditionalContact(
+						(ec.getFirstName()==null?"":ec.getFirstName()),
+						(ec.getMiddleName()==null?"":ec.getMiddleName()),
+						(ec.getLastName()==null?"":ec.getLastName()),
+						(ec.getEmailAddress()==null?"":ec.getEmailAddress()),
+						(ec.getPhone()==null?"":ec.getPhone()));
 			}
-			SimpleDateFormat df = new SimpleDateFormat("MM/dd/yy (EEE)", Locale.US);			
+			SimpleDateFormat df = new SimpleDateFormat("MM/dd/yy (EEE)", Locale.US);
+			SimpleDateFormat df2 = new SimpleDateFormat("MM/dd/yy", Locale.US);
 			for (Iterator i=new TreeSet(event.getMeetings()).iterator();i.hasNext();) {
 				Meeting meeting = (Meeting)i.next();
 				int start = Constants.SLOT_LENGTH_MIN*meeting.getStartPeriod()+
@@ -94,13 +100,14 @@ public class EventDetailAction extends Action {
 				int endHour = end/60;
 				int endMin = end%60;
 				String location = (meeting.getLocation()==null?"":meeting.getLocation().getLabel());
+				String approvedDate = (meeting.getApprovedDate()==null?"":df2.format(meeting.getApprovedDate()));
 				myForm.addMeeting(df.format(meeting.getMeetingDate()),
 						(startHour>12?startHour-12:startHour)+":"+(startMin<10?"0":"")+startMin+(startHour>=12?"p":"a"),
 						(endHour>12?endHour-12:endHour)+":"+(endMin<10?"0":"")+endMin+(endHour>=12?"p":"a"), 
-						location);
+						location,approvedDate);
 			}
 		} else {
-			myForm.setEventName("WON'T TELL A THING ABOUT SUCH EVENT");
+			myForm.setEventName("There is no event with this ID");
 		}			
 
 		return mapping.findForward("show");
