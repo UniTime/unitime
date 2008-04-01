@@ -55,6 +55,7 @@ public abstract class BaseExam extends org.unitime.timetable.model.PreferenceGro
 	// many to one
 	private org.unitime.timetable.model.Session session;
 	private org.unitime.timetable.model.ExamPeriod assignedPeriod;
+	private org.unitime.timetable.model.Event event;
 
     // collections
     private java.util.Set owners;
@@ -100,6 +101,10 @@ public abstract class BaseExam extends org.unitime.timetable.model.PreferenceGro
 	
 	public java.util.Set getConflicts() { return conflicts; }
 	public void setConflicts(java.util.Set conflicts) { this.conflicts = conflicts; }
+	
+	public org.unitime.timetable.model.Event getEvent() { return event; }
+	public void setEvent(org.unitime.timetable.model.Event event) { this.event = event; }
+
 
 	public boolean equals (Object obj) {
 		if (null == obj) return false;

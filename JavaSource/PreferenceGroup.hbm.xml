@@ -1085,8 +1085,16 @@
 					column="CONFLICT_ID"
 					foreign-key="FK_XCONFLICT_EX_CONF"
 				/>
-			</set>			
+			</set>
+						
+			<many-to-one 
+				name="event" 
+				class="Event"
+				column="EVENT_ID" 
+				lazy="proxy"
+				not-null="false"
+				foreign-key="FK_EXAM_EVENT"
+			/>
 	 	</union-subclass>
-	 					
 	</class>	
 </hibernate-mapping>
