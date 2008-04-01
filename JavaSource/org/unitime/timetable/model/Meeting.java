@@ -28,9 +28,6 @@ import org.unitime.timetable.model.base.BaseMeeting;
 import org.unitime.timetable.model.dao.MeetingDAO;
 import org.unitime.timetable.model.dao.RoomDAO;
 import org.unitime.timetable.util.Constants;
-import org.unitime.timetable.util.DateUtils;
-
-
 
 public class Meeting extends BaseMeeting implements Comparable<Meeting> {
 	private static final long serialVersionUID = 1L;
