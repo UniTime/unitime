@@ -20,9 +20,9 @@
 
 <%-- 
 TO DO: 
-* Font of table headers for meetings
+* Font of table headers for meetings (should be <font size = -1 ></font>)
+*    - how to make a style for the header???
 * Trash cans instead of Delete
-
 --%>
 
 <%@ page language="java" autoFlush="true" errorPage="../error.jsp" %>
@@ -55,7 +55,12 @@ TO DO:
 					<bean:write name="eventDetailForm" property="minCapacity"/>
 				</logic:equal>
 				<logic:notEqual name="eventDetailForm" property="maxCapacity" value="<%=min.toString()%>">
-					<bean:write name="eventDetailForm" property="minCapacity"/> - <bean:write name="eventDetailForm" property="maxCapacity"/>
+					<logic:equal name="eventDetailForm" property="maxCapacity" value="">
+						<bean:write name="eventDetailForm" property="minCapacity"/>
+					</logic:equal>
+					<logic:notEqual name="eventDetailForm" property="maxCapacity" value="">
+						<bean:write name="eventDetailForm" property="minCapacity"/> - <bean:write name="eventDetailForm" property="maxCapacity"/>
+					</logic:notEqual>
 				</logic:notEqual>
 
  			</TD>
@@ -113,7 +118,9 @@ TO DO:
 				<td>
 					<bean:write name="meeting" property="location"/>
 				</td>	
-				<td>&nbsp;</td>			
+				<td>
+					<bean:write name="meeting" property="approvedDate"/>
+				</td>			
 				<td>
 					<html:submit property="op" styleClass="btn" onclick="<%="selected.value='"+meetingId+"';"%>">Delete</html:submit>
 				</td>

@@ -19,10 +19,9 @@ import org.unitime.timetable.model.EventContact;
 public class EventDetailForm extends ActionForm {
 
 	private String iEventName;
-	private int iMinCapacity;
-	private int iMaxCapacity;
+	private String iMinCapacity;
+	private String iMaxCapacity;
 	private String iSponsoringOrg;
-//	private String iAdditionalInfo;
 	private Vector<MeetingBean> iMeetings = new Vector<MeetingBean>();
 	private Vector<NoteBean> iNotes = new Vector<NoteBean>();
 	private ContactBean iMainContact;
@@ -44,10 +43,9 @@ public class EventDetailForm extends ActionForm {
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
 
 		iEventName = null;
-		iMinCapacity = 0;
-		iMaxCapacity = 0;
+		iMinCapacity = null;
+		iMaxCapacity = null;
 		iSponsoringOrg = null;
-//		iAdditionalInfo = null;
 		iMainContact = null;
 		iAdditionalContacts.clear();
 		iMeetings.clear();
@@ -63,19 +61,19 @@ public class EventDetailForm extends ActionForm {
     	iEventName = eventName; 
     }
     
-    public int getMinCapacity() { 
+    public String getMinCapacity() { 
     	return iMinCapacity; 
     }
 
-    public void setMinCapacity(int minCapacity) { 
+    public void setMinCapacity(String minCapacity) { 
     	iMinCapacity = minCapacity; 
     }
     
-    public int getMaxCapacity() { 
+    public String getMaxCapacity() { 
     	return iMaxCapacity; 
     }
     
-    public void setMaxCapacity(int maxCapacity) { 
+    public void setMaxCapacity(String maxCapacity) { 
     	iMaxCapacity = maxCapacity; 
     }
     
@@ -103,12 +101,13 @@ public class EventDetailForm extends ActionForm {
     	return iMeetings;
     }
     
-    public void addMeeting(String date, String startTime, String endTime, String location) {
+    public void addMeeting(String date, String startTime, String endTime, String location, String approvedDate) {
     	MeetingBean meeting = new MeetingBean();
     	meeting.setDate(date);
     	meeting.setStartTime(startTime);
     	meeting.setEndTime(endTime);
     	meeting.setLocation(location);
+    	meeting.setApprovedDate(approvedDate);
     	iMeetings.add(meeting);
     }
     
@@ -160,6 +159,7 @@ public class EventDetailForm extends ActionForm {
     	private String iStartTime;
     	private String iEndTime;
     	private String iLocation;
+    	private String iApprovedDate;
    	
     	public MeetingBean() {
     	}
@@ -178,6 +178,9 @@ public class EventDetailForm extends ActionForm {
     	public String getLocation() { return iLocation;}
     	public void setLocation(String location) {iLocation = location;}
 
+    	public String getApprovedDate() { return iApprovedDate;}
+    	public void setApprovedDate(String approvedDate) {iApprovedDate = approvedDate;}
+    	
     	
     }
 
