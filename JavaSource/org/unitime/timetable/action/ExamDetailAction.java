@@ -164,10 +164,10 @@ public class ExamDetailAction extends PreferencesAction {
                 request.setAttribute(DistributionPref.DIST_PREF_REQUEST_ATTR, html);
             
             if (!exam.getOwners().isEmpty()) {
-                WebTable table = new WebTable(5, null, new String[] {"Object", "Type", "Manager", "Students", "Assignment"}, new String[] {"left", "center", "left", "center", "left"}, new boolean[] {true, true, true, true, true});
+                WebTable table = new WebTable(6, null, new String[] {"Object", "Type", "Manager", "Students", "Limit", "Assignment"}, new String[] {"left", "center", "left", "right", "right", "left"}, new boolean[] {true, true, true, true, true, true});
                 for (Iterator i=new TreeSet(exam.getOwners()).iterator();i.hasNext();) {
                     ExamOwner owner = (ExamOwner)i.next();
-                    String onclick = null, name = null, type = null, students = String.valueOf(owner.countStudents()), manager = null, assignment = null;
+                    String onclick = null, name = null, type = null, students = String.valueOf(owner.countStudents()), limit = String.valueOf(owner.getLimit()), manager = null, assignment = null;
                     switch (owner.getOwnerType()) {
                         case ExamOwner.sOwnerTypeClass :
                             Class_ clazz = (Class_)owner.getOwnerObject();
@@ -205,7 +205,7 @@ public class ExamDetailAction extends PreferencesAction {
                             break;
                                 
                     }
-                    table.addLine(onclick, new String[] { name, type, manager, students, assignment}, null);
+                    table.addLine(onclick, new String[] { name, type, manager, students, limit, assignment}, null);
                 }
                 request.setAttribute("ExamDetail.table",table.printTable());
             }
