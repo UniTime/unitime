@@ -180,8 +180,6 @@ try {
 <TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
 <%
 	if (solver==null) {
-		String id = (String)request.getSession().getAttribute("Solver.selectedSolutionId");
-		if (id==null || id.length()==0) {
 %>
 			<TR>
 				<TD colspan="2">
@@ -196,54 +194,6 @@ try {
 				</TD>
 			</TR>
 <%
- 		} else { 
- 			int idx=0;
- 			for (StringTokenizer s = new StringTokenizer(id,",");s.hasMoreTokens();idx++) {
- 				Solution solution = (new SolutionDAO()).get(Long.valueOf(s.nextToken()));
- 				if (idx>0) {
-%>
-					<TR><TD colspan="2">&nbsp;</TD></TR>
-<%
- 				}
-%>
-				<TR>
-					<TD colspan="2">
-						<DIV class="WelcomeRowHead">
-						Current Timetable - <%=solution.getOwner().getName()%> <tt:wiki>Solution Properties</tt:wiki>
-						</DIV>
-					</TD>
-				</TR>
-<%
- 				if (solution==null) continue;
-	 			PropertiesInfo info = (PropertiesInfo)solution.getInfo("GlobalInfo");
-				Vector keys = new Vector(info.keySet());
-				Collections.sort(keys,new ListSolutionsForm.InfoComparator());
-				for (Enumeration e=keys.elements();e.hasMoreElements();) {
-					String key = (String)e.nextElement();
-					String val = info.get(key).toString();
-%>
-					<TR><TD><%=key%>:</TD><TD><%=val%></TD></TR>
-<%
-				}
-			
-				LogInfo logInfo = (LogInfo)solution.getInfo("LogInfo");
-				String log = (logInfo==null?null:logInfo.getHtmlLog(Progress.MSGLEVEL_WARN, false, "Loading input data ..."));
-				if (log!=null && log.length()>0) {
-%>
-					<TR><TD colspan=2>&nbsp;</TD></TR>
-					<TR>
-						<TD colspan="2">
-							<DIV class="WelcomeRowHead">
-							Problems <tt:wiki>Solver Warnings</tt:wiki>
-							</DIV>
-						</TD>
-					</TR>
-					<TR><TD colspan='2'><%=log%></TD></TR>
-<%
-				}
-			}
-		}
-		
 	} else {
 		SolutionDAO dao = new SolutionDAO();
 		org.hibernate.Session hibSession = dao.getSession();
