@@ -20,6 +20,7 @@
 package org.unitime.timetable.model;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -40,6 +41,7 @@ import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
 import org.unitime.timetable.solver.exam.ui.ExamInfo;
 import org.unitime.timetable.solver.exam.ui.ExamRoomInfo;
+import org.unitime.timetable.util.Constants;
 
 public class Exam extends BaseExam implements Comparable<Exam> {
 	private static final long serialVersionUID = 1L;
@@ -287,26 +289,22 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         for (Iterator i=getOwners().iterator();i.hasNext();)
             nrStudents += ((ExamOwner)i.next()).countStudents();
         return nrStudents;
-        /*
-        return ((Number)new ExamDAO().getSession().createQuery(
-                "select count(distinct e.student) from " +
-                "StudentClassEnrollment e inner join e.clazz c " +
-                "inner join c.schedulingSubpart.instrOfferingConfig ioc " +
-                "inner join e.courseOffering co "+
-                "inner join co.instructionalOffering io, " +
-                "Exam x inner join x.owners o "+
-                "where x.uniqueId=:examId and ("+
-                "(o.ownerType="+ExamOwner.sOwnerTypeCourse+" and o.ownerId=co.uniqueId) or "+
-                "(o.ownerType="+ExamOwner.sOwnerTypeOffering+" and o.ownerId=io.uniqueId) or "+
-                "(o.ownerType="+ExamOwner.sOwnerTypeConfig+" and o.ownerId=ioc.uniqueId) or "+
-                "(o.ownerType="+ExamOwner.sOwnerTypeClass+" and o.ownerId=c.uniqueId) "+
-                ")")
-                .setLong("examId", getUniqueId())
-                .setCacheable(true)
-                .uniqueResult()).intValue();
-                */
     }
     
+    public int getLimit() {
+        int limit = 0;
+        for (Iterator i=getOwners().iterator();i.hasNext();)
+            limit += ((ExamOwner)i.next()).getLimit();
+        return limit;
+    }
+
+    public int getSize() {
+        int size = 0;
+        for (Iterator i=getOwners().iterator();i.hasNext();)
+            size += ((ExamOwner)i.next()).getSize();
+        return size;
+    }
+
     public Set effectivePreferences(Class type) {
         if (DistributionPref.class.equals(type)) {
             TreeSet prefs = new TreeSet();
@@ -402,6 +400,12 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                     hibSession.saveOrUpdate(distributionPref);
             }
             i.remove();
+        }
+        
+        if (getEvent()!=null) {
+            hibSession.delete(getEvent());
+            deleted = true;
+            setEvent(null);
         }
 
         if (deleted && updateExam)
@@ -656,7 +660,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         return ret;
     }
     
-    public String assign(ExamAssignmentInfo assignment, Session hibSession) {
+    public String assign(ExamAssignmentInfo assignment, String managerExternalId, Session hibSession) {
         Transaction tx = null;
         try {
             tx = hibSession.beginTransaction();
@@ -764,6 +768,29 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 }
             }
             
+            if (getEvent()!=null) hibSession.delete(getEvent());
+            Event event = generateEvent(EventType.findByReference(getExamType()==Exam.sExamTypeFinal?EventType.sEventTypeFinalExam:EventType.sEventTypeEveningExam),true);
+            if (event!=null) {
+                event.setEventName(assignment.getExamName());
+                event.setMinCapacity(assignment.getNrStudents());
+                event.setMaxCapacity(assignment.getNrStudents());
+                EventContact contact = EventContact.findByExternalUniqueId(managerExternalId);
+                if (contact==null) {
+                    TimetableManager manager = TimetableManager.findByExternalId(managerExternalId);
+                    contact = new EventContact();
+                    contact.setFirstName(manager.getFirstName());
+                    contact.setMiddleName(manager.getMiddleName());
+                    contact.setLastName(manager.getLastName());
+                    contact.setExternalUniqueId(manager.getExternalUniqueId());
+                    contact.setEmailAddress(manager.getEmailAddress());
+                    contact.setPhone("unknown");
+                    hibSession.save(contact);
+                }
+                event.setMainContact(contact);
+                setEvent(event);
+                hibSession.save(event);
+            }
+            
             hibSession.update(this);
             for (Iterator i=otherExams.iterator();i.hasNext();)
                 hibSession.update((Exam)i.next());
@@ -797,5 +824,58 @@ public class Exam extends BaseExam implements Comparable<Exam> {
             if (instructor!=null) instructors.add(instructor);
         }
         return instructors;
-    }    
+    }
+    
+    public Event generateEvent(EventType eventType, boolean createNoRoomMeetings) {
+        ExamPeriod period = getAssignedPeriod();
+        if (period==null) return null;
+        Event event = new Event();
+        event.setEventType(eventType);
+        event.setRelatedCourses(new HashSet());
+        for (Iterator i=getOwners().iterator();i.hasNext();) {
+            ExamOwner owner = (ExamOwner)i.next();
+            RelatedCourseInfo courseInfo = new RelatedCourseInfo();
+            courseInfo.setOwnerId(owner.getOwnerId());
+            courseInfo.setOwnerType(owner.getOwnerType());
+            courseInfo.setCourse(owner.getCourse());
+            courseInfo.setEvent(event);
+            event.getRelatedCourses().add(courseInfo);
+        }
+        event.setMeetings(new HashSet());
+        boolean created = false;
+        for (Iterator i=getAssignedRooms().iterator();i.hasNext();) {
+            Location location = (Location)i.next();
+            if (location.getPermanentId()!=null) {
+                Meeting m = new Meeting();
+                m.setEventType(eventType);
+                m.setMeetingDate(period.getStartDate());
+                m.setStartPeriod(period.getStartSlot());
+                m.setStartOffset(0);
+                m.setStopPeriod(period.getStartSlot()+period.getLength());
+                m.setStopOffset(getLength()-Constants.SLOT_LENGTH_MIN*period.getLength());
+                m.setClassCanOverride(false);
+                m.setLocationPermanentId(location.getPermanentId());
+                m.setApprovedDate(new Date());
+                m.setEvent(event);
+                event.getMeetings().add(m);
+                created = true;
+            }
+        }
+        if (!created && createNoRoomMeetings) {
+            Meeting m = new Meeting();
+            m.setEventType(eventType);
+            m.setMeetingDate(period.getStartDate());
+            m.setStartPeriod(period.getStartSlot());
+            m.setStartOffset(0);
+            m.setStopPeriod(period.getStartSlot()+period.getLength());
+            m.setStopOffset(getLength()-Constants.SLOT_LENGTH_MIN*period.getLength());
+            m.setClassCanOverride(false);
+            m.setLocationPermanentId(null);
+            m.setApprovedDate(new Date());
+            m.setEvent(event);
+            event.getMeetings().add(m);
+        }
+        if (event.getMeetings().isEmpty()) return null;
+        return event;
+    }
 }
