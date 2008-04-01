@@ -101,7 +101,7 @@ public class AssignedExamsAction extends Action {
 		PdfWebTable table =
             new PdfWebTable( 10,
                     "Assigned Examinations", "assignedExams.do?ord=%%",
-                    new String[] {(form.getShowSections()?"Classes / Courses":"Examination"), "Period", "Room", "Seating"+nl+"Type", "Students", "Instructor", "Violated"+nl+"Distributions", "Direct", ">2 A Day", "Back-To-Back"},
+                    new String[] {(form.getShowSections()?"Classes / Courses":"Examination"), "Period", "Room", "Seating"+nl+"Type", "Size", "Instructor", "Violated"+nl+"Distributions", "Direct", ">2 A Day", "Back-To-Back"},
        				new String[] {"left", "left", "left", "center", "right", "left", "left", "right", "right", "right"},
        				new boolean[] {true, true, true, true, false, true, true, false, false, false} );
 		table.setRowStyle("white-space:nowrap");

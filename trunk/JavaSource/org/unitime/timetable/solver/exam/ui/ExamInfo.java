@@ -128,7 +128,7 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
     }
 
     public int getNrStudents() {
-        if (iNrStudents<0) iNrStudents = getExam().countStudents();
+        if (iNrStudents<0) iNrStudents = getExam().getSize();
         return iNrStudents;
     }
     
@@ -249,7 +249,7 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
         public String getName() { return iName; }
         public int getNrStudents() {
             if (iNrStudents<0)
-                iNrStudents = getOwner().countStudents();
+                iNrStudents = getOwner().getSize();
             return iNrStudents;
         }
         public ExamInfo getExam() {

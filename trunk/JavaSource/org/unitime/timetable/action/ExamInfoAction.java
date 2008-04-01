@@ -28,6 +28,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.ExamInfoForm;
+import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ui.ExamInfoModel;
@@ -65,7 +66,7 @@ public class ExamInfoAction extends Action {
         model.apply(request);
         
         if (op==null) {
-            model.clear();
+            model.clear(TimetableManager.getManager(Web.getUser(request.getSession())));
         }
         
         model.setSolver(WebSolver.getExamSolver(request.getSession()));
