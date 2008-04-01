@@ -251,10 +251,14 @@ public class ExamDatabaseLoader extends ExamLoader {
                 } else if (ownerObject instanceof CourseOffering) {
                     CourseOffering course = (CourseOffering)ownerObject;
                     ExamOwner cs = new ExamOwner(x, owner.getUniqueId(), course.getCourseName());
-                    for (Iterator k=course.getInstructionalOffering().getCourseReservations().iterator();k.hasNext();) {
-                        CourseOfferingReservation reservation = (CourseOfferingReservation)k.next();
-                        if (reservation.getCourseOffering().equals(course))
-                            minSize += reservation.getReserved();
+                    if (course.getInstructionalOffering().getCourseOfferings().size()>1) {
+                        for (Iterator k=course.getInstructionalOffering().getCourseReservations().iterator();k.hasNext();) {
+                            CourseOfferingReservation reservation = (CourseOfferingReservation)k.next();
+                            if (reservation.getCourseOffering().equals(course))
+                                minSize += reservation.getReserved();
+                        }
+                    } else {
+                        minSize += course.getInstructionalOffering().getLimit();
                     }
                     x.getOwners().add(cs);
                 } else if (ownerObject instanceof InstructionalOffering) {
