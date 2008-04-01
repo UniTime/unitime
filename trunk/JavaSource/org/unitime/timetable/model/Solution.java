@@ -282,7 +282,16 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		*/
 
 		hibSession.update(this);
-		removeDivSecNumbers(hibSession);
+
+        deleteObjects(
+                  hibSession,
+                  "Event",
+                  "select e.uniqueId from Event e inner join e.relatedCourses r, Assignment a where " +
+                  "r.ownerId=a.clazz.uniqueId and r.ownerType="+ExamOwner.sOwnerTypeClass+" and e.eventType.reference='"+EventType.sEventTypeClass+"' and "+
+                  "a.solution.uniqueId=:solutionId"
+                  );
+
+        removeDivSecNumbers(hibSession);
 		
 		if (sendNotificationPuid!=null) sendNotification(this, null, sendNotificationPuid, true, null);
 	}
@@ -465,6 +474,30 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		setCommited(Boolean.TRUE);
 		
 		createDivSecNumbers(hibSession, messages);
+		
+		EventContact contact = null;
+		if (sendNotificationPuid!=null) {
+		    contact = EventContact.findByExternalUniqueId(sendNotificationPuid);
+		    if (contact==null) {
+		        TimetableManager manager = TimetableManager.findByExternalId(sendNotificationPuid);
+		        contact = new EventContact();
+		        contact.setFirstName(manager.getFirstName());
+                contact.setMiddleName(manager.getMiddleName());
+		        contact.setLastName(manager.getLastName());
+		        contact.setExternalUniqueId(manager.getExternalUniqueId());
+		        contact.setEmailAddress(manager.getEmailAddress());
+		        contact.setPhone("unknown");
+		        hibSession.save(contact);
+		    }
+		}
+		for (Iterator i=getAssignments().iterator();i.hasNext();) {
+		    Assignment a = (Assignment)i.next();
+		    Event event = a.generateCommittedEvent(true);
+		    if (event!=null) {
+		        event.setMainContact(contact);
+		        hibSession.save(event);
+		    }
+		}
 		
 		if (sendNotificationPuid!=null) sendNotification(uncommittedSolution, this, sendNotificationPuid, true, messages);
 		
@@ -753,7 +786,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 			Debug.error(e);
 		}
 		
-		hibSession.createQuery(
+        hibSession.createQuery(
 				"delete StudentEnrollment x where x.solution.uniqueId=:solutionId ")
 				.setLong("solutionId", getUniqueId().longValue())
 				.executeUpdate();
@@ -763,6 +796,14 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 				.setLong("solutionId", getUniqueId().longValue())
 				.executeUpdate();
 
+		deleteObjects(
+                hibSession,
+                "Event",
+                "select e.uniqueId from Event e inner join e.relatedCourses r, Assignment a where " +
+                "r.ownerId=a.clazz.uniqueId and r.ownerType="+ExamOwner.sOwnerTypeClass+" and e.eventType.reference='"+EventType.sEventTypeClass+"' and "+
+                "a.solution.uniqueId=:solutionId"
+                );
+		
 		deleteObjects(
 				hibSession,
 				"SolverInfo",
@@ -834,6 +875,14 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 				.setInteger("solutionId", getUniqueId().intValue())
 				.executeUpdate();
 
+        deleteObjects(
+                hibSession,
+                "Event",
+                "select e.uniqueId from Event e inner join e.relatedCourses r, Assignment a where " +
+                "r.ownerId=a.clazz.uniqueId and r.ownerType="+ExamOwner.sOwnerTypeClass+" and e.eventType.reference='"+EventType.sEventTypeClass+"' and "+
+                "a.solution.uniqueId=:solutionId"
+                );
+		
 		deleteObjects(
 				hibSession,
 				"SolverInfo",
