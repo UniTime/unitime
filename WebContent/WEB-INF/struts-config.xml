@@ -125,6 +125,7 @@
 	  <form-bean name="eventDetailForm" type="org.unitime.timetable.form.EventDetailForm" />
 	  <form-bean name="examAssignmentReportForm" type="org.unitime.timetable.form.ExamAssignmentReportForm" />
 	  <form-bean name="ecbsForm" type="org.unitime.timetable.form.ExamCbsForm" />
+	  <form-bean name="eventListForm" type="org.unitime.timetable.form.EventListForm" />
    </form-beans>
 
    <global-exceptions>
@@ -2142,6 +2143,20 @@
     		path="eventDetailTile"
     		redirect="true" />
     </action>
+
+    <action
+    	path="/eventList"
+    	type="org.unitime.timetable.action.EventListAction"
+    	attribute="eventListForm"
+    	input="eventListTile"
+    	name="eventListForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+    		name="show"
+    		path="eventListTile"
+    		redirect="true" />
+    </action>    
     
    </action-mappings>
 

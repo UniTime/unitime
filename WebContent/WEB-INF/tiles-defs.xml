@@ -864,4 +864,8 @@
 		<put name="title" type="string" value="Event Detail"/>
 		<put name="body" value="/user/eventDetail.jsp" />
   	</definition> 	
+ 	<definition	name="eventListTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Events"/>
+		<put name="body" value="/user/eventList.jsp" />
+  	</definition> 	
 </tiles-definitions>
