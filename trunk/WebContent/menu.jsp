@@ -129,20 +129,26 @@
 	enditem(); //2
 	<% } %>
 
-	menu_item('3','User Preferences','User Preferences','','expand');
+<%  if (manager.canSeeEvents(acadSession, user)) { %>
+	menu_item('3','Event Management','Events','','expand');
+		leaf_item('Events','Events','eventList.do');
+		enditem(); //3
+<% } %>
+		
+	menu_item('4','User Preferences','User Preferences','','expand');
 		leaf_item('Change Role','Change Role','selectPrimaryRole.do?list=Y');
 <% if ( ( user!=null && user.getRole().equals(Roles.ADMIN_ROLE) )
 			|| ( session.getAttribute("hdnAdminAlias")!=null && session.getAttribute("hdnAdminAlias").toString().equals("1") ) ) { %>
 		leaf_item('Switch User','Switch to a different user','chameleon.do');
 <% } %>
 		leaf_item('Settings','Default Application Settings','managerSettings.do');
-	enditem(); //3
+	enditem(); //4
 
 <% if (user!=null
 		&& user.getRole().equals(Roles.ADMIN_ROLE)) { %>
 
-		menu_item('4','Administration','Administration','','expand');
-			menu_item('41','Academic Sessions','Academic Session Management','sessionList.do','expand');
+		menu_item('5','Administration','Administration','','expand');
+			menu_item('51','Academic Sessions','Academic Session Management','sessionList.do','expand');
 				leaf_item('Managers','Timetable Managers','timetableManagerList.do');
 				leaf_item('Departments','Manage Departments','departmentList.do');
 				leaf_item('Subject Areas','Manage Subject Areas','subjectList.do');
@@ -158,40 +164,40 @@
 				leaf_item('Import Data','Import Data','dataImport.do');
 				leaf_item('Roll Forward Session','Roll Forward Session','rollForwardSession.do');
 				leaf_item('Change Log','View Change Log','lastChanges.do');
-			enditem(); //41
+			enditem(); //51
 	
-			menu_item('42','Solver','Solver Management','manageSolvers.do','expand');
+			menu_item('52','Solver','Solver Management','manageSolvers.do','expand');
 				leaf_item('Parameter Groups', 'Manage Solver Parameter Groups','solverParamGroups.do');
 				leaf_item('Parameters', 'Manage Solver Parameters','solverParamDef.do');
 				leaf_item('Configurations', 'Manage Solver Configurations','solverSettings.do');
 				leaf_item('Distribution Types','Manage Distribution Types','distributionTypeList.do');
 				// leaf_item('Definitions', 'Manage Solution Info Definitions','solverInfoDef.do');
-			enditem(); //42
+			enditem(); //52
 
 			<tt:hasProperty name="tmtbl.menu.admin.extra">
-				menu_item('43','Custom','Custom Menus','','expand');
+				menu_item('53','Custom','Custom Menus','','expand');
 					<tt:property name="tmtbl.menu.admin.extra"/>
-				enditem(); //43
+				enditem(); //53
 			</tt:hasProperty>
 			
-			menu_item('44','Defaults','Defaults','','expand');
+			menu_item('54','Defaults','Defaults','','expand');
 				leaf_item('Configuration','Application Configuration','applicationConfig.do');
 				leaf_item('Settings','Set Default Settings for Users','settings.do');
-			enditem(); //44
+			enditem(); //54
 
-			menu_item('45','Utilities','Miscellaneous Application Utilities','','expand');
+			menu_item('55','Utilities','Miscellaneous Application Utilities','','expand');
 				leaf_item('Hibernate Statistics','Display Hibernate Session Statistics','hibernateStats.do');
 				leaf_item('Test HQL','Test HQL Queries','hibernateQueryTest.do');
-			enditem(); //45
+			enditem(); //55
 			
-		enditem(); //4
+		enditem(); //5
 
 <% } %>
 	<tt:hasProperty name="tmtbl.help.root">
-	menu_item('5','Help','Help Manual','%tmtbl.help.root%','expand','_help');
+	menu_item('6','Help','Help Manual','%tmtbl.help.root%','expand','_help');
 	</tt:hasProperty>
 	<tt:notHasProperty name="tmtbl.help.root">
-	menu_item('5','Help','Help Manual','','expand');
+	menu_item('6','Help','Help Manual','','expand');
 	</tt:notHasProperty>
 		<tt:hasProperty name="tmtbl.help.manual.input_data">
 			leaf_item('Data Entry Manual','Manual for Data Entry','%tmtbl.help.manual.input_data%', '_help');
@@ -211,7 +217,7 @@
 		<tt:hasProperty name="tmtbl.inquiry.email">
 			leaf_item('Contact Us','Contact Us','inquiry.do');
 		</tt:hasProperty>
-	enditem(); //5
+	enditem(); //6
 	<%--
 	leaf_item('System Messages','View System Messages','blank.jsp');
 	--%>
