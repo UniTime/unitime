@@ -1481,7 +1481,7 @@
 			create index idx_exam_location_pref on %SCHEMA%.exam_location_pref(location_id)
 		</mysql>
 	</update>
-		<update version="21" date="06-Mar-2008" comment="Add External Uids to Class and Instr Offr">
+	<update version="21" date="06-Mar-2008" comment="Add External Uids to Class and Instr Offr">
 		<plsql>
 			alter table %SCHEMA%.INSTRUCTIONAL_OFFERING add external_uid varchar2(40)
 		</plsql>
@@ -1495,5 +1495,18 @@
 			alter table %SCHEMA%.CLASS_ add external_uid varchar(40)
 		</mysql>
 	</update>
-	
+	<update version="22" date="01-Apr-2008" comment="Class exam event relation">
+		<plsql>alter table %SCHEMA%.assignment add event_id number(20,0)</plsql>
+		<mysql>alter table %SCHEMA%.assignment add event_id decimal(20,0)</mysql>
+		<sql>
+			alter table %SCHEMA%.assignment add constraint fk_assignment_event foreign key (event_id)
+			references %SCHEMA%.event (uniqueid) on delete set null
+		</sql>
+		<plsql>alter table %SCHEMA%.exam add event_id number(20,0)</plsql>
+		<mysql>alter table %SCHEMA%.exam add event_id decimal(20,0)</mysql>
+		<sql>
+			alter table %SCHEMA%.exam add constraint fk_exam_event foreign key (event_id)
+			references %SCHEMA%.event (uniqueid) on delete set null
+		</sql>
+	</update>
 </dbupdate>
