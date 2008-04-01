@@ -26,8 +26,6 @@ import java.util.Set;
 
 import org.unitime.timetable.model.base.BaseEvent;
 import org.unitime.timetable.model.dao.EventDAO;
-import org.unitime.timetable.util.Constants;
-
 
 
 public class Event extends BaseEvent {
@@ -212,5 +210,19 @@ public class Event extends BaseEvent {
 	public String toString() {
 		return (this.getEventName());
 	}
+	
+// methods for eventDetail and eventList pages
+	public int compareTo (Event e) {
+		return getUniqueId().compareTo(e.getUniqueId());
+	}
+
+	public static List findAll() {
+	    return new EventDAO().getSession().createQuery(
+	            "select e from Event e"
+	            )
+	            .setCacheable(true)
+	            .list();
+	}	
+	
 	
 }
