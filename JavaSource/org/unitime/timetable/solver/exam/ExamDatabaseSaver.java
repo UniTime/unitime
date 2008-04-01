@@ -29,10 +29,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Transaction;
 import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.Event;
+import org.unitime.timetable.model.EventContact;
+import org.unitime.timetable.model.EventType;
 import org.unitime.timetable.model.ExamConflict;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Student;
+import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.model.dao.ExamPeriodDAO;
@@ -98,6 +102,10 @@ public class ExamDatabaseSaver extends ExamSaver {
             exam.setAssignedPeriod(null);
             exam.setAssignedPreference(null);
             exam.getAssignedRooms().clear();
+            if (exam.getEvent()!=null) {
+                hibSession.delete(exam.getEvent());
+                exam.setEvent(null);
+            }
             for (Iterator j=exam.getConflicts().iterator();j.hasNext();) {
                 ExamConflict conf = (ExamConflict)j.next();
                 hibSession.delete(conf);
@@ -134,6 +142,7 @@ public class ExamDatabaseSaver extends ExamSaver {
                 exam.getAssignedRooms().add(location);
             }
             exam.setAssignedPreference(new ExamAssignment(placement).getAssignedPreferenceString());
+            
             hibSession.saveOrUpdate(exam);
         }
         iProgress.setPhase("Saving conflicts...", getModel().assignedVariables().size());
@@ -272,9 +281,36 @@ public class ExamDatabaseSaver extends ExamSaver {
                 }
             }
         }
-        for (Iterator i=exams.iterator();i.hasNext();) {
-            org.unitime.timetable.model.Exam exam = (org.unitime.timetable.model.Exam)i.next();
-            if (!exam.getConflicts().isEmpty()) hibSession.saveOrUpdate(exam);
+        iProgress.setPhase("Saving events...", getModel().assignedVariables().size());
+        String ownerPuid = getModel().getProperties().getProperty("General.OwnerPuid");
+        EventContact contact = EventContact.findByExternalUniqueId(ownerPuid);
+        if (contact==null) {
+            TimetableManager manager = TimetableManager.findByExternalId(ownerPuid);
+            contact = new EventContact();
+            contact.setFirstName(manager.getFirstName());
+            contact.setMiddleName(manager.getMiddleName());
+            contact.setLastName(manager.getLastName());
+            contact.setExternalUniqueId(manager.getExternalUniqueId());
+            contact.setEmailAddress(manager.getEmailAddress());
+            contact.setPhone("unknown");
+            hibSession.save(contact);
+        }
+        EventType eventType = EventType.findByReference(iExamType==org.unitime.timetable.model.Exam.sExamTypeFinal?EventType.sEventTypeFinalExam:EventType.sEventTypeEveningExam);
+        for (Enumeration e=getModel().assignedVariables().elements();e.hasMoreElements();) {
+            Exam examVar = (Exam)e.nextElement();
+            iProgress.incProgress();
+            org.unitime.timetable.model.Exam exam = (org.unitime.timetable.model.Exam)examTable.get(examVar.getId());
+            if (exam==null) continue;
+            Event event = exam.generateEvent(eventType, true);
+            if (event!=null) {
+                event.setEventName(exam.getName());
+                event.setMinCapacity(examVar.getSize());
+                event.setMaxCapacity(examVar.getSize());
+                event.setMainContact(contact);
+                exam.setEvent(event);
+                hibSession.save(event);
+            }
+            if (exam.getEvent()!=null || !exam.getConflicts().isEmpty()) hibSession.saveOrUpdate(exam);
         }
     }
     
