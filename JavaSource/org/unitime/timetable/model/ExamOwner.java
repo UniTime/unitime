@@ -617,7 +617,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     return 0;
                 } else return (course.getInstructionalOffering().getLimit()==null?0:course.getInstructionalOffering().getLimit());
             case sOwnerTypeOffering : 
-                return ((InstructionalOffering)owner).getLimit();
+                return (((InstructionalOffering)owner).getLimit()==null?0:((InstructionalOffering)owner).getLimit());
             default : throw new RuntimeException("Unknown owner type "+getOwnerType());
         }
     }
