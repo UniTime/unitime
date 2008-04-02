@@ -847,7 +847,7 @@ public class WebInstructionalOfferingTableBuilder {
         StringBuffer sb = new StringBuffer();
         for (Iterator i=exams.iterator();i.hasNext();) {
             Exam exam = (Exam)i.next();
-            if (examAssignment!=null) {
+            if (examAssignment!=null && examAssignment.getExamType()==exam.getExamType()) {
                 ExamAssignment ea = examAssignment.getAssignment(exam.getUniqueId());
                 sb.append(ea==null?"":ea.getPeriodAbbreviationWithPref());
             } else 
@@ -863,7 +863,7 @@ public class WebInstructionalOfferingTableBuilder {
         StringBuffer sb = new StringBuffer();
         for (Iterator i=exams.iterator();i.hasNext();) {
             Exam exam = (Exam)i.next();
-            if (examAssignment!=null) {
+            if (examAssignment!=null && examAssignment.getExamType()==exam.getExamType()) {
                 ExamAssignment ea = examAssignment.getAssignment(exam.getUniqueId());
                 sb.append(ea==null?"":ea.getRoomsNameWithPref(", "));
             } else { 
