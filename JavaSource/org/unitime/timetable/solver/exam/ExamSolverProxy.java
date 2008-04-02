@@ -85,9 +85,6 @@ public interface ExamSolverProxy extends ExamAssignmentProxy {
     public ExamAssignmentInfo getAssignment(Long examId, Long periodId, Collection<Long> roomIds);
     public String assign(ExamAssignmentInfo assignment);
     
-    public int getExamType();
-    public Long getSessionId();
-    
     public Collection<ExamAssignmentInfo[]> getChangesToInitial(Long subjectAreaId);
     public Collection<ExamAssignmentInfo[]> getChangesToBest(Long subjectAreaId);
     
