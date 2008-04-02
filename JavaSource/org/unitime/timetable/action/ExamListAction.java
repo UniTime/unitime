@@ -143,6 +143,8 @@ public class ExamListAction extends Action {
         
         if (exams==null || exams.isEmpty()) return null;
         
+        if (examAssignment!=null && examAssignment.getExamType()!=form.getExamType()) examAssignment = null;
+        
         String nl = (html?"<br>":"\n");
         
         boolean timeVertical = RequiredTimeTable.getTimeGridVertical(user);

@@ -213,7 +213,7 @@ public class ExamDetailAction extends PreferencesAction {
             ExamAssignmentInfo ea = null;
             
             ExamAssignmentProxy examAssignment = WebSolver.getExamSolver(request.getSession());
-            if (examAssignment!=null) {
+            if (examAssignment!=null && examAssignment.getExamType()==exam.getExamType()) {
                 ea = examAssignment.getAssignmentInfo(exam.getUniqueId());
             } else if (exam.getAssignedPeriod()!=null)
                 ea = new ExamAssignmentInfo(exam);

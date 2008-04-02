@@ -940,7 +940,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         StringBuffer sb = new StringBuffer();
         for (Iterator i=exams.iterator();i.hasNext();) {
             Exam exam = (Exam)i.next();
-            if (examAssignment!=null) {
+            if (examAssignment!=null && examAssignment.getExamType()==exam.getExamType()) {
                 ExamAssignment ea = examAssignment.getAssignment(exam.getUniqueId());
                 sb.append(ea==null?"":ea.getPeriodAbbreviation());
             } else 
@@ -957,7 +957,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         StringBuffer sb = new StringBuffer();
         for (Iterator i=exams.iterator();i.hasNext();) {
             Exam exam = (Exam)i.next();
-            if (examAssignment!=null) {
+            if (examAssignment!=null && examAssignment.getExamType()==exam.getExamType()) {
                 ExamAssignment ea = examAssignment.getAssignment(exam.getUniqueId());
                 sb.append(ea==null?"":ea.getRoomsName(", "));
             } else {
