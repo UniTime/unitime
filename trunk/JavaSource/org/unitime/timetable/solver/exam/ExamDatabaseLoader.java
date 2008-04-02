@@ -258,13 +258,13 @@ public class ExamDatabaseLoader extends ExamLoader {
                                 minSize += reservation.getReserved();
                         }
                     } else {
-                        minSize += course.getInstructionalOffering().getLimit();
+                        minSize += (course.getInstructionalOffering().getLimit()==null?0:course.getInstructionalOffering().getLimit());
                     }
                     x.getOwners().add(cs);
                 } else if (ownerObject instanceof InstructionalOffering) {
                     InstructionalOffering offering = (InstructionalOffering)ownerObject;
                     ExamOwner cs = new ExamOwner(x, owner.getUniqueId(), offering.getCourseName());
-                    minSize += offering.getLimit();
+                    minSize += (offering.getLimit()==null?0:offering.getLimit());
                     x.getOwners().add(cs);
                 }
             }
