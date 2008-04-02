@@ -60,12 +60,12 @@ public abstract class BaseEventContact  implements Serializable {
 	 */
 	public BaseEventContact (
 		java.lang.Long uniqueId,
-		java.lang.String firstName,
-		java.lang.String lastName) {
+		java.lang.String emailAddress,
+		java.lang.String phone) {
 
 		this.setUniqueId(uniqueId);
-		this.setFirstName(firstName);
-		this.setLastName(lastName);
+		this.setEmailAddress(emailAddress);
+		this.setPhone(phone);
 		initialize();
 	}
 
@@ -111,15 +111,15 @@ public abstract class BaseEventContact  implements Serializable {
 
 
 	/**
-	 * Return the value associated with the column: EXTERNAL_UID
+	 * Return the value associated with the column: EXTERNAL_ID
 	 */
 	public java.lang.String getExternalUniqueId () {
 		return externalUniqueId;
 	}
 
 	/**
-	 * Set the value related to the column: EXTERNAL_UID
-	 * @param externalUniqueId the EXTERNAL_UID value
+	 * Set the value related to the column: EXTERNAL_ID
+	 * @param externalUniqueId the EXTERNAL_ID value
 	 */
 	public void setExternalUniqueId (java.lang.String externalUniqueId) {
 		this.externalUniqueId = externalUniqueId;
@@ -128,15 +128,15 @@ public abstract class BaseEventContact  implements Serializable {
 
 
 	/**
-	 * Return the value associated with the column: EMAIL_ADDRESS
+	 * Return the value associated with the column: EMAIL
 	 */
 	public java.lang.String getEmailAddress () {
 		return emailAddress;
 	}
 
 	/**
-	 * Set the value related to the column: EMAIL_ADDRESS
-	 * @param emailAddress the EMAIL_ADDRESS value
+	 * Set the value related to the column: EMAIL
+	 * @param emailAddress the EMAIL value
 	 */
 	public void setEmailAddress (java.lang.String emailAddress) {
 		this.emailAddress = emailAddress;
@@ -162,15 +162,15 @@ public abstract class BaseEventContact  implements Serializable {
 
 
 	/**
-	 * Return the value associated with the column: FIRST_NAME
+	 * Return the value associated with the column: FIRSTNAME
 	 */
 	public java.lang.String getFirstName () {
 		return firstName;
 	}
 
 	/**
-	 * Set the value related to the column: FIRST_NAME
-	 * @param firstName the FIRST_NAME value
+	 * Set the value related to the column: FIRSTNAME
+	 * @param firstName the FIRSTNAME value
 	 */
 	public void setFirstName (java.lang.String firstName) {
 		this.firstName = firstName;
@@ -179,15 +179,15 @@ public abstract class BaseEventContact  implements Serializable {
 
 
 	/**
-	 * Return the value associated with the column: MIDDLE_NAME
+	 * Return the value associated with the column: MIDDLENAME
 	 */
 	public java.lang.String getMiddleName () {
 		return middleName;
 	}
 
 	/**
-	 * Set the value related to the column: MIDDLE_NAME
-	 * @param middleName the MIDDLE_NAME value
+	 * Set the value related to the column: MIDDLENAME
+	 * @param middleName the MIDDLENAME value
 	 */
 	public void setMiddleName (java.lang.String middleName) {
 		this.middleName = middleName;
@@ -196,15 +196,15 @@ public abstract class BaseEventContact  implements Serializable {
 
 
 	/**
-	 * Return the value associated with the column: LAST_NAME
+	 * Return the value associated with the column: LASTNAME
 	 */
 	public java.lang.String getLastName () {
 		return lastName;
 	}
 
 	/**
-	 * Set the value related to the column: LAST_NAME
-	 * @param lastName the LAST_NAME value
+	 * Set the value related to the column: LASTNAME
+	 * @param lastName the LASTNAME value
 	 */
 	public void setLastName (java.lang.String lastName) {
 		this.lastName = lastName;

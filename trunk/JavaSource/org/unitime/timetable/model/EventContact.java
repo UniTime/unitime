@@ -44,15 +44,14 @@ public class EventContact extends BaseEventContact {
 	 */
 	public EventContact (
 		java.lang.Long uniqueId,
-		java.lang.String firstName,
-		java.lang.String lastName) {
+		java.lang.String emailAddress,
+		java.lang.String phone) {
 
 		super (
 			uniqueId,
-			firstName,
-			lastName);
+			emailAddress,
+			phone);
 	}
-	
 
 /*[CONSTRUCTOR MARKER END]*/
 
