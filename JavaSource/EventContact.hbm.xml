@@ -52,7 +52,7 @@
 			name="emailAddress"
 			column="EMAIL"
 			type="string"
-			not-null="false"
+			not-null="true"
 			length="135"
 		/>
 		
@@ -60,7 +60,7 @@
 			name="phone"
 			column="PHONE"
 			type="string"
-			not-null="false"
+			not-null="true"
 			length="10"
 		/>
 				
@@ -68,7 +68,7 @@
 			name="firstName"
 			column="FIRSTNAME"
 			type="string"
-			not-null="true"
+			not-null="false"
 			length="20"
 		/>
 		
@@ -84,7 +84,7 @@
 			name="lastName"
 			column="LASTNAME"
 			type="string"
-			not-null="true"
+			not-null="false"
 			length="30"
 		/>
 		
