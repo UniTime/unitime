@@ -186,8 +186,10 @@ public class WebEventTableBuilder {
     		cell.addContent("");
     	} else {
     		if (maxCap!=-1) {
-    			cell.addContent(minCap+"-"+maxCap);
-    		} else cell.addContent(minCap);
+    			if (maxCap!=minCap) {
+        			cell.addContent(minCap+"-"+maxCap);    				
+    			} else {cell.addContent(minCap);}
+    		}
     	}
     	this.endCell(cell, true);
     	return (cell);
