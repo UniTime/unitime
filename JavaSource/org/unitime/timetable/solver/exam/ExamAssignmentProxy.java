@@ -30,4 +30,7 @@ public interface ExamAssignmentProxy {
     public ExamInfo getInfo(long examId);
     public ExamAssignment getAssignment(long examId);
     public ExamAssignmentInfo getAssignmentInfo(long examId);
+
+    public int getExamType();
+    public Long getSessionId();
 }
