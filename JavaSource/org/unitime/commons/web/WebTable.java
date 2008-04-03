@@ -353,7 +353,7 @@ public class WebTable {
                                         : "")
                                 + ">&nbsp;</td>");
                     }
-                    lastLine[i] = line[i]; 
+                    if (i<lastLine.length) lastLine[i] = line[i]; 
                 }
             }
             sb.append("</tr>" + (anchor ? "</a>" : ""));
