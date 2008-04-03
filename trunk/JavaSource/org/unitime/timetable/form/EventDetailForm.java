@@ -18,10 +18,13 @@ import org.unitime.timetable.model.EventContact;
 
 public class EventDetailForm extends ActionForm {
 
+	private String iId;
+	private String iOp;
 	private String iEventName;
 	private String iMinCapacity;
 	private String iMaxCapacity;
 	private String iSponsoringOrg;
+	private Long iSelected;
 	private Vector<MeetingBean> iMeetings = new Vector<MeetingBean>();
 	private Vector<NoteBean> iNotes = new Vector<NoteBean>();
 	private ContactBean iMainContact;
@@ -85,17 +88,30 @@ public class EventDetailForm extends ActionForm {
     	iSponsoringOrg = sponsoringOrg; 
     }
     
- /*   public String getAdditionalInfo() { 
-    	return iAdditionalInfo; 
+	public String getId() {
+		return iId;
+	}
+
+	public void setId(String id) {
+		this.iId = id;
+	}
+
+	public String getDoit() {
+		return iOp;
+	}
+
+	public void setDoit(String doit) {
+		this.iOp = doit;
+	}
+	
+	
+    public Long getSelected() {
+    	return iSelected; 
     }
     
-    public void setAdditionalInfo(String additionalInfo) { 
-    	iAdditionalInfo = additionalInfo; 	
+    public void setSelected(Long selectedId) { 
+    	iSelected = selectedId;
     }
- */
-    
-    public Long getSelected() { return null; }
-    public void setSelected(Long selectedId) { }
     
     public Vector<MeetingBean> getMeetings() {
     	return iMeetings;
