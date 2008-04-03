@@ -31,6 +31,7 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.apache.struts.util.MessageResources;
 import org.unitime.timetable.form.EventDetailForm;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.EventContact;
@@ -58,6 +59,25 @@ public class EventDetailAction extends Action {
 			HttpServletResponse response) throws Exception {
 
 		EventDetailForm myForm = (EventDetailForm) form;
+
+		MessageResources rsc = getResources(request);
+		String doit = myForm.getDoit();
+				
+		if (doit != null) {
+		
+			//return to event list
+			if(doit.equals("Back")) {
+				//if (myForm.getId()!=null)
+					//request.setAttribute("hash", "A"+myForm.getId());
+				return mapping.findForward("showEventList");
+			}
+
+		}
+
+		
+		if (request.getParameter("id")==null && myForm.getId()==null)
+		    return mapping.findForward("showEventList");		
+		
 		
 		if (request.getParameter("id")!=null) {
 			String id = request.getParameter("id");
