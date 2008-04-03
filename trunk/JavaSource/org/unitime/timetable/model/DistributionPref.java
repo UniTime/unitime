@@ -520,4 +520,8 @@ public class DistributionPref extends BaseDistributionPref {
             setCacheable(true).
             uniqueResult(); 
     }
+    
+    public String toString(){
+    	return(preferenceText(true, false, " ", ", ", ""));
+    }
 }
