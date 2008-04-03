@@ -50,6 +50,9 @@ import org.unitime.timetable.model.CourseOfferingReservation;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.DistributionObject;
+import org.unitime.timetable.model.DistributionPref;
+import org.unitime.timetable.model.DistributionType;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.EventType;
 import org.unitime.timetable.model.FixedCreditUnitConfig;
@@ -59,6 +62,8 @@ import org.unitime.timetable.model.ItypeDesc;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.NonUniversityLocation;
 import org.unitime.timetable.model.OfferingConsentType;
+import org.unitime.timetable.model.PreferenceGroup;
+import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.RelatedCourseInfo;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomDept;
@@ -80,12 +85,16 @@ public class CourseOfferingImport extends BaseImport {
 	HashMap<String, SubjectArea> subjectAreas = new HashMap<String, SubjectArea>();
 	HashMap<String, ItypeDesc> itypes = new HashMap<String, ItypeDesc>();
 	private EventType classType = null;
+	private DistributionType meetsWithType = null;
 	Vector<String> offeringNotes = new Vector<String>();
 	Vector<String> changeList = new Vector<String>();
 	TimetableManager manager = null;
 	Session session = null;
 	String dateFormat = null;
 	String timeFormat = null;
+	boolean useMeetsWithElement = false;
+	PreferenceLevel requiredPrefLevel = null;
+	
 	
 	public void loadXml(Element rootElement, HttpServletRequest request) throws Exception {
 		HttpSession httpSession = request.getSession();
@@ -118,6 +127,10 @@ public class CourseOfferingImport extends BaseImport {
 	        	timeFormat = "HHmm";
 	        }
 
+	        Boolean useMeetsWith = getOptionalBooleanAttribute(rootElement, "useMeetsWith");
+	        if (useMeetsWith != null && useMeetsWith.booleanValue()){
+	        	useMeetsWithElement = true;
+	        }
 	        beginTransaction();
 	
 	        if (manager == null){
@@ -134,6 +147,8 @@ public class CourseOfferingImport extends BaseImport {
 	        loadExistingCourseOfferings(session.getUniqueId());
 	        loadExistingClasses(session.getUniqueId());
 	        loadClassEventType();
+	        loadRequiredPrefLevel();
+	        loadMeetsWithDistributionType();
 		                
 			String offeringElementName = "offering";
 	        for ( Iterator<?> it = rootElement.elementIterator(); it.hasNext(); ) {
@@ -1096,6 +1111,94 @@ public class CourseOfferingImport extends BaseImport {
 		return(changed);
 	}
 	
+	private boolean elementMeetsWith(Element element, Class_ c) throws Exception{
+		if (!useMeetsWithElement){
+			return(false);
+		}
+		boolean changed = false;
+		String elementName = "meetsWith";
+    	Vector<DistributionPref> existingMeetsWith = new Vector<DistributionPref>();
+		if(c.getDistributionPreferences() != null){
+			for(Iterator<?> dpIt = c.getDistributionPreferences().iterator(); dpIt.hasNext(); ){
+				DistributionPref dp = (DistributionPref) dpIt.next();
+				if (dp.getDistributionType().getUniqueId().equals(meetsWithType.getUniqueId())){
+					existingMeetsWith.add(dp);						
+				}
+			}
+		}
+		Vector<String> classIds = new Vector<String>();
+		if(element.element(elementName) != null){
+        	classIds.add(c.getExternalUniqueId());
+        	for (Iterator<?> it = element.elementIterator(elementName); it.hasNext();){
+        		Element meetsWithElement = (Element) it.next();
+        		classIds.add(getRequiredStringAttribute(meetsWithElement, "id", elementName));
+        	}
+       	
+        }
+      	if(existingMeetsWith.size() != 1){
+      		if (existingMeetsWith.size() > 1) {
+	      		addNote("\tMultiple meets with preferences exist -- deleted them");
+				for (Iterator<?> dpIt = existingMeetsWith.iterator(); dpIt.hasNext();){
+					DistributionPref dp = (DistributionPref) dpIt.next();				
+					addNote("\t\tdeleted '" + dp.preferenceText() + "'");
+					deleteDistributionPref(dp);									
+				}
+	      		changed = true;
+      		}
+      		if (classIds.size() > 1){
+      			addDistributionPref(classIds, c);
+      			changed = true;
+      		}
+		} else {
+			DistributionPref dp = (DistributionPref)existingMeetsWith.firstElement();
+			if (classIds.size() > 1){
+				if (!isMatchingMeetsWith(dp, classIds)){
+					changed = true;
+					deleteDistributionPref(dp);
+					addDistributionPref(classIds, c);
+				}
+				
+			} else {
+				addNote("Class  " + c.getClassLabel() +" is no longer a meets with, removed" + dp.toString());
+				deleteDistributionPref(dp);
+				changed = true;
+			}
+		}
+		return(changed);
+	}
+	
+	private boolean isMatchingMeetsWith(DistributionPref dp, Vector<String> classExternalIds){
+		boolean isSame = false;
+		DistributionObject distObj = null;
+		String cei = null;
+		boolean allFound = true;
+		HashSet<?> existingDistObjs = new HashSet<Object>();
+		existingDistObjs.addAll(dp.getDistributionObjects());
+		for (Iterator<?> ceiIt = classExternalIds.iterator(); ceiIt.hasNext();){
+			cei = (String) ceiIt.next();
+			boolean found = false;
+			for(Iterator<?> doIt = dp.getDistributionObjects().iterator(); doIt.hasNext();){
+				distObj = (DistributionObject) doIt.next();
+				if (distObj.getPrefGroup() instanceof Class_) {
+					Class_ c = (Class_) distObj.getPrefGroup();
+					if (cei.equals(c.getExternalUniqueId())){
+						found = true;
+						existingDistObjs.remove(distObj);
+						break;
+					}
+				}
+			}
+			if (!found){
+				allFound = false;
+				break;
+			}
+		}
+		if(allFound && existingDistObjs.isEmpty()){
+			isSame = true;
+		}
+		return(isSame);
+	}
+	
 	private boolean elementCourse(Element element, InstructionalOffering io, String action) throws Exception{
 		boolean changed = false;
 		ArrayList<CourseOffering> courses = getCourses(element);
@@ -1452,7 +1555,6 @@ public class CourseOfferingImport extends BaseImport {
 					throw new Exception(ioc.getCourseName() + " " + type + " " + suffix + " 'class' does not have matching 'subpart'");
 				}
 				
-				
 				if (elementInstructor(classElement, clazz)){
 					addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " 'class' instructor data changed");
 					changed = true;
@@ -1486,6 +1588,12 @@ public class CourseOfferingImport extends BaseImport {
 				if (changed){
 					this.getHibSession().saveOrUpdate(clazz);
 				}
+
+				if (elementMeetsWith(classElement, clazz)){
+					addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " 'class' meets with preferences changed");
+					changed = true;
+				}
+				
 				if (classElement.element("meeting") != null){
 					if(elementMeetings(classElement, clazz)){
 						changed = true;
@@ -1608,6 +1716,53 @@ public class CourseOfferingImport extends BaseImport {
 	}
 	private Vector<Meeting> getMeetings(DatePattern dp, TimeObject meetingTime, Vector<Room> rooms, Vector<NonUniversityLocation> locations){
 		return(getMeetings(dp.getStartDate(), dp.getEndDate(), dp.getPattern(), meetingTime, rooms, locations));
+	}
+	
+	private void addDistributionPref(Vector<String> classIds, Class_ clazz) throws Exception{
+		if (classIds.size() <= 1){
+			throw (new Exception("There must be at least two classes to have a meets with distribution preference: " + clazz.getClassLabel()));
+		}
+		Class_ c = null;
+		Vector<String> tmpClassIds = new Vector<String>();
+		tmpClassIds.addAll(classIds);
+		Vector<Class_> classes = new Vector<Class_>();
+		String externalId = null;
+		for (Iterator<?> eIt = classIds.iterator(); eIt.hasNext();){
+			externalId = (String) eIt.next();
+			if (externalId.equals(clazz.getExternalUniqueId())){
+				classes.add(clazz);
+				tmpClassIds.remove(externalId);
+			} else {
+				 c = findClassForExternalUniqueId(externalId);
+				 if (c == null){
+					 break;
+				 } else {
+					 classes.add(c);
+					 tmpClassIds.remove(externalId);
+				 }
+			}
+		}
+		if (!tmpClassIds.isEmpty()){
+			addNote("\t not all classes for this meets with pref exist yet, will add it later:" + clazz.getClassLabel());
+		} else {
+			DistributionPref dp = new DistributionPref();
+			dp.setDistributionType(meetsWithType);
+			dp.setGrouping(DistributionPref.sGroupingNone);
+			dp.setPrefLevel(requiredPrefLevel);
+			dp.setOwner(clazz.getSchedulingSubpart().getControllingDept());
+			for (Iterator<Class_> cIt = classes.iterator(); cIt.hasNext();){
+				c = (Class_) cIt.next();
+				DistributionObject distObj = new DistributionObject();
+				distObj.setDistributionPref(dp);
+				distObj.setPrefGroup(c);
+				dp.addTodistributionObjects(distObj);
+			}
+			getHibSession().save(dp);
+			getHibSession().flush();
+			getHibSession().refresh(dp);
+	        ChangeLog.addChange(getHibSession(), manager, session, dp, ChangeLog.Source.DATA_IMPORT, ChangeLog.Operation.CREATE, null, clazz.getSchedulingSubpart().getControllingDept());       
+		}	
+		
 	}
 	
 	private boolean addUpdateClassEvent(Class_ c, TimeObject meetingTime, Vector<Room> rooms, Vector<NonUniversityLocation> locations) {
@@ -1850,6 +2005,28 @@ public class CourseOfferingImport extends BaseImport {
 		}
 		return(changed);
 	}
+	
+	private void deleteDistributionPref(DistributionPref dp){
+		addNote("\tdeleting meets with distribution preference:  " + dp.preferenceText(true, false, "", ", ", ""));
+        HashSet relatedInstructionalOfferings = new HashSet();
+        Department dept = (Department) dp.getOwner();
+        dept.getPreferences().remove(dp);
+		for (Iterator i=dp.getDistributionObjects().iterator();i.hasNext();) {
+			DistributionObject dObj = (DistributionObject)i.next();
+			PreferenceGroup pg = dObj.getPrefGroup();
+            relatedInstructionalOfferings.add((pg instanceof Class_ ?((Class_)pg).getSchedulingSubpart():(SchedulingSubpart)pg).getInstrOfferingConfig().getInstructionalOffering());
+			pg.getDistributionObjects().remove(dObj);
+			getHibSession().saveOrUpdate(pg);
+		}
+        ChangeLog.addChange(getHibSession(), manager, session, dp, ChangeLog.Source.DATA_IMPORT, ChangeLog.Operation.DELETE, null, dept);       
+        getHibSession().delete(dp);
+        getHibSession().saveOrUpdate(dept);
+        
+//        for (Iterator i=relatedInstructionalOfferings.iterator();i.hasNext();) {
+//            InstructionalOffering io = (InstructionalOffering)i.next();
+//            ChangeLog.addChange(getHibSession(), manager, session, io, ChangeLog.Source.DATA_IMPORT, ChangeLog.Operation.DELETE, io.getControllingCourseOffering().getSubjectArea(), null);
+//        }
+	}
 
 	private void deleteCourseOffering(CourseOffering co){
 		InstructionalOffering io = co.getInstructionalOffering();
@@ -2081,6 +2258,16 @@ public class CourseOfferingImport extends BaseImport {
 		uniqueResult();
 	}
 	
+	private Class_ findClassForExternalUniqueId(String externalUniqueId){
+		return (Class_) this.
+		getHibSession().
+		createQuery("select distinct c from Class_ as c where c.externalUniqueId=:externalUniqueId and c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId=:sessionId" ).
+		setString("externalUniqueId", externalUniqueId).
+		setLong("sessionId", session.getUniqueId().longValue()).
+		setCacheable(true).
+		uniqueResult();
+	}
+	
 	private Room findRoom(String id, String building, String roomNbr){
 		Room room = null;
 		if (id != null) {
@@ -2179,6 +2366,12 @@ public class CourseOfferingImport extends BaseImport {
 	
 	private void loadClassEventType() {
 		classType = (EventType) this.getHibSession().createQuery("from EventType et where et.reference = 'class'").uniqueResult();
+	}
+	private void loadMeetsWithDistributionType() {
+		meetsWithType = (DistributionType) this.getHibSession().createQuery("from DistributionType dt where dt.reference = 'MEET_WITH'").uniqueResult();
+	}
+	private void loadRequiredPrefLevel() {
+		requiredPrefLevel = (PreferenceLevel) this.getHibSession().createQuery("from PreferenceLevel pl where pl.prefName = 'Required'").uniqueResult();
 	}
 	
 	private void loadExistingClasses(Long sessionId) throws Exception {
