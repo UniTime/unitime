@@ -40,10 +40,9 @@ TO DO:
 			<TD valign="middle" colspan='2'>
 				<tt:section-header>
 					<tt:section-title><bean:write name="eventDetailForm" property="eventName"/></tt:section-title>
-					<html:submit property="op" styleClass="btn">Edit Event</html:submit>
 					<html:submit property="op" styleClass="btn">Previous</html:submit>
 					<html:submit property="op" styleClass="btn">Next</html:submit>
-					<html:submit property="op" styleClass="btn">Back</html:submit>
+					<html:submit property="op"  styleClass="btn" accesskey="B" title="Return To Event List (Alt+B)" value="Back"/>
 				</tt:section-header>
 			</TD>
 		</TR>
@@ -51,9 +50,9 @@ TO DO:
 			<TD nowrap>Event Capacity:&nbsp;</TD>
 			<TD width='100%'>
 				<bean:define name="eventDetailForm" property="minCapacity" id="min"/>
-				<logic:equal name="eventDetailForm" property="maxCapacity" value="<%=min.toString()%>">
+ 				<logic:equal name="eventDetailForm" property="maxCapacity" value="<%=min.toString()%>">
 					<bean:write name="eventDetailForm" property="minCapacity"/>
-				</logic:equal>
+				</logic:equal> 
 				<logic:notEqual name="eventDetailForm" property="maxCapacity" value="<%=min.toString()%>">
 					<logic:equal name="eventDetailForm" property="maxCapacity" value="">
 						<bean:write name="eventDetailForm" property="minCapacity"/>
