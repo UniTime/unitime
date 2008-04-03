@@ -2,6 +2,8 @@ package org.unitime.timetable.webutil;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -9,6 +11,7 @@ import java.util.TreeSet;
 
 import javax.servlet.jsp.JspWriter;
 
+import org.hibernate.mapping.Collection;
 import org.unitime.commons.web.htmlgen.TableCell;
 import org.unitime.commons.web.htmlgen.TableHeaderCell;
 import org.unitime.commons.web.htmlgen.TableRow;
@@ -21,7 +24,8 @@ import org.unitime.timetable.util.Constants;
 
 public class WebEventTableBuilder {
 
-	public static SimpleDateFormat sDateFormat = new SimpleDateFormat("MM/dd/yy (EEE)", Locale.US);
+	public static SimpleDateFormat sDateFormat = new SimpleDateFormat("MMM dd, yyyy", Locale.US);
+	public static SimpleDateFormat sDateFormatDay = new SimpleDateFormat("EEE", Locale.US);	
 	
 	//Colors
     protected static String indent = "&nbsp;&nbsp;&nbsp;&nbsp;";
@@ -29,19 +33,23 @@ public class WebEventTableBuilder {
     protected static String oddRowBGColorChild = "#EFEFEF";
     protected static String oddRowMouseOverBGColor = "#8EACD0";
     protected static String evenRowMouseOverBGColor = "#8EACD0";
+    protected static String headerBGColor1 = "#E0E0E0";
+    protected static String headerBGColor2 = "#F4F4F4";
     protected String disabledColor = "gray";
 
     protected static String formName = "eventListForm";
     
-    protected static String LABEL = "&nbsp;";
+    protected static String LABEL = "Name";
+    protected static String EMPTY = "&nbsp;";
     public static final String EVENT_CAPACITY = "Capacity";
     public static final String EVENT_TYPE = "Type";
+    public static final String MAIN_CONTACT = "Main Contact";
     public static final String SPONSORING_ORG = "Sponsoring Org";
     public static final String MEETING_DATE = "Date";
     public static final String MEETING_TIME = "Time";
     public static final String MEETING_LOCATION = "Location";
     public static final String APPROVED_DATE = "Approved";
-
+    
     public WebEventTableBuilder() {
     	super();
     }
@@ -126,42 +134,43 @@ public class WebEventTableBuilder {
     
     protected void buildTableHeader(TableStream table){  
     	TableRow row = new TableRow();
+    	row.setBgColor(headerBGColor1);
     	TableRow row2 = new TableRow();
+    	row2.setBgColor(headerBGColor2);
      	TableHeaderCell cell = null;
 //    	if (isShowLabel()){
-    		cell = this.headerCell(LABEL, 2, 1);
-    		cell.addContent("<hr>");
+    		cell = this.headerCell(LABEL, 1, 1);
     		row.addContent(cell);
+    		cell = this.headerCell(EMPTY, 1, 1);    		
+        	cell.setStyle("border-bottom: gray 1px solid");
+    		row2.addContent(cell);
 //    	}
 //    	if (isShowDivSec()){
-    		cell = this.headerCell(EVENT_CAPACITY, 2, 1);
-    		cell.addContent("<hr>");
+    		cell = this.headerCell(EVENT_CAPACITY, 1, 1);
     		row.addContent(cell);
+    		cell = this.headerCell(MEETING_DATE, 1, 1);
+        	cell.setStyle("border-bottom: gray 1px solid");
+    		row2.addContent(cell);
 //    	}   	
 //    	if (isShowDemand()){
-    		cell = this.headerCell(SPONSORING_ORG, 2, 1);
-    		cell.addContent("<hr>");
+    		cell = this.headerCell(SPONSORING_ORG, 1, 1);
     		row.addContent(cell);
+    		cell = this.headerCell(MEETING_TIME, 1, 1);
+        	cell.setStyle("border-bottom: gray 1px solid");
+    		row2.addContent(cell);
 //    	}
 //    	if (isShowProjectedDemand()){
-    		cell = this.headerCell(MEETING_DATE, 2, 1);
-    		cell.addContent("<hr>");
+    		cell = this.headerCell(EVENT_TYPE, 1, 1);
     		row.addContent(cell);
-//    	}
-//    	if (isShowLimit()){
-    		cell = this.headerCell(MEETING_TIME, 2, 1);
-    		cell.addContent("<hr>");
-    		row.addContent(cell);
-//    	}
-//    	if (isShowRoomRatio()){
-    		cell = this.headerCell(MEETING_LOCATION, 2, 1);
-    		cell.addContent("<hr>");
-    		row.addContent(cell);
-//    	}
+    		cell = this.headerCell(MEETING_LOCATION, 1, 1);
+        	cell.setStyle("border-bottom: gray 1px solid");
+    		row2.addContent(cell);
 //    	if (isShowManager()){
-    		cell = this.headerCell(APPROVED_DATE, 2, 1);
-    		cell.addContent("<hr>");
+    		cell = this.headerCell(MAIN_CONTACT, 1, 1);
     		row.addContent(cell);
+    		cell = this.headerCell(APPROVED_DATE, 1, 1);
+        	cell.setStyle("border-bottom: gray 1px solid");
+    		row2.addContent(cell);
 //    	}
     	table.addContent(row);
     	table.addContent(row2);
@@ -200,6 +209,18 @@ public class WebEventTableBuilder {
     	cell.addContent("");
     	return(cell);
     }
+
+    private TableCell buildEventType(Event e) {
+    	TableCell cell = this.initCell(true, null, 1, true);
+    	cell.addContent(e.getEventType().getLabel());
+    	return(cell);
+    }
+    
+    private TableCell buildMainContactName(Event e) {
+    	TableCell cell = this.initCell(true, null, 1, true);
+    	cell.addContent(e.getMainContact().getLastName()+", "+e.getMainContact().getFirstName());
+    	return(cell);
+    }
     
     private TableCell buildEmptyEventInfo() {
     	TableCell cell = this.initCell(true, null, 1, true);
@@ -215,8 +236,10 @@ public class WebEventTableBuilder {
  
     private TableCell buildDate (Meeting m) {
     	TableCell cell = this.initCell(true, null, 1, true);
-    	SimpleDateFormat df = new SimpleDateFormat("MM/dd/yy (EEE)", Locale.US);
-    	cell.addContent(df.format(m.getMeetingDate())); //date cannot be null
+    	cell.addContent(sDateFormat.format(m.getMeetingDate())
+    			+" &nbsp;&nbsp;<font color='gray'><i>("
+    			+sDateFormatDay.format(m.getMeetingDate())
+    			+")</i></font>"); //date cannot be null
     	return(cell);
     }
     
@@ -260,11 +283,8 @@ public class WebEventTableBuilder {
         row.addContent(buildEventName(e));
         row.addContent(buildEventCapacity(e));
         row.addContent(buildSponsoringOrg(e));
-        row.addContent(buildEmptyEventInfo());
-        row.addContent(buildEmptyEventInfo());
-        row.addContent(buildEmptyEventInfo());
-        row.addContent(buildEmptyEventInfo());
-
+        row.addContent(buildEventType(e));
+        row.addContent(buildMainContactName(e));
         table.addContent(row);
     }
     
@@ -275,8 +295,6 @@ public class WebEventTableBuilder {
         row.setOnClick(subjectOnClickAction(m.getEvent().getUniqueId()));
         
         TableCell cell = null;
-        row.addContent(buildEmptyMeetingInfo());
-        row.addContent(buildEmptyMeetingInfo());
         row.addContent(buildEmptyMeetingInfo());
         row.addContent(buildDate(m));
         row.addContent(buildTime(m));
@@ -291,7 +309,24 @@ public class WebEventTableBuilder {
         ArrayList eventIds = new ArrayList();
         Event event = new Event();
         
+        /*
+        TreeSet events = new TreeSet(new Comparator<Event>(){
+        	public int compare(Event e1, Event e2) {
+        		int cmp = e1.getEventName().compareTo(e2.getEventName());
+        		if (cmp!=0) return cmp;
+        		return e1.getUniqueId().compareTo(e2.getUniqueId());
+        	}
+        });
+        events.addAll(Event.findAll());*/
+
         List events = Event.findAll();
+        Collections.sort(events, new Comparator<Event>(){
+        	public int compare(Event e1, Event e2) {
+        		int cmp = e1.getEventName().compareTo(e2.getEventName());
+        		if (cmp!=0) return cmp;
+        		return e1.getUniqueId().compareTo(e2.getUniqueId());
+        	}
+        });
         
         TableStream eventsTable = this.initTable(outputStream);
 

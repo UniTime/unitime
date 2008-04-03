@@ -28,7 +28,7 @@ import org.unitime.timetable.model.base.BaseEvent;
 import org.unitime.timetable.model.dao.EventDAO;
 
 
-public class Event extends BaseEvent {
+public class Event extends BaseEvent implements Comparable<Event> {
 	private static final long serialVersionUID = 1L;
 
 /*[CONSTRUCTOR MARKER BEGIN]*/
@@ -211,9 +211,10 @@ public class Event extends BaseEvent {
 		return (this.getEventName());
 	}
 	
-// methods for eventDetail and eventList pages
 	public int compareTo (Event e) {
-		return getUniqueId().compareTo(e.getUniqueId());
+		if (getEventName()!=e.getEventName()) {
+			return getEventName().compareTo(e.getEventName());
+		} else return getUniqueId().compareTo(e.getUniqueId());
 	}
 
 	public static List findAll() {
