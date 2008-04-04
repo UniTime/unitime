@@ -38,6 +38,7 @@ import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.model.dao._RootDAO;
+import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
 import org.unitime.timetable.solver.exam.ui.ExamInfo;
 import org.unitime.timetable.solver.exam.ui.ExamRoomInfo;
@@ -665,6 +666,8 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         try {
             tx = hibSession.beginTransaction();
             
+            ExamAssignment oldAssignment = new ExamAssignment(this); 
+            
             setAssignedPeriod(assignment.getPeriod(hibSession));
             if (getAssignedRooms()==null) setAssignedRooms(new HashSet());
             getAssignedRooms().clear();
@@ -768,7 +771,10 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 }
             }
             
-            if (getEvent()!=null) hibSession.delete(getEvent());
+            if (getEvent()!=null) {
+                hibSession.delete(getEvent());
+                setEvent(null);
+            }
             Event event = generateEvent(EventType.findByReference(getExamType()==Exam.sExamTypeFinal?EventType.sEventTypeFinalExam:EventType.sEventTypeEveningExam),true);
             if (event!=null) {
                 event.setEventName(assignment.getExamName());
@@ -794,13 +800,100 @@ public class Exam extends BaseExam implements Comparable<Exam> {
             hibSession.update(this);
             for (Iterator i=otherExams.iterator();i.hasNext();)
                 hibSession.update((Exam)i.next());
+            
+            SubjectArea subject = null;
+            Department dept = null;
+            for (Iterator i=new TreeSet(getOwners()).iterator();i.hasNext();) {
+                ExamOwner owner = (ExamOwner)i.next();
+                subject = owner.getCourse().getSubjectArea();
+                dept = subject.getDepartment();
+                break;
+            }
+
+            ChangeLog.addChange(hibSession,
+                    TimetableManager.findByExternalId(managerExternalId),
+                    getSession(),
+                    this,
+                    assignment.getExamName()+" ("+
+                        (oldAssignment.getPeriod()==null?"N/A":oldAssignment.getPeriodAbbreviation()+" "+oldAssignment.getRoomsName(", "))+
+                        " &rarr; "+assignment.getPeriodAbbreviation()+" "+assignment.getRoomsName(", ")+")",
+                    ChangeLog.Source.EXAM_INFO,
+                    ChangeLog.Operation.ASSIGN,
+                    subject,
+                    dept);
 
             tx.commit();
             return null;
         } catch (Exception e) {
             if (tx!=null) tx.rollback();
             e.printStackTrace();
-            return "Assignment failed, reason: "+e.getMessage();
+            return "Assignment of "+assignment.getExamName()+" to "+assignment.getPeriodAbbreviation()+" "+assignment.getRoomsName(", ")+" failed, reason: "+e.getMessage();
+        }
+    }
+    
+    public String unassign(String managerExternalId, Session hibSession) {
+        Transaction tx = null;
+        try {
+            tx = hibSession.beginTransaction();
+            
+            ExamAssignment oldAssignment = new ExamAssignment(this);
+            
+            setAssignedPeriod(null);
+            if (getAssignedRooms()==null) setAssignedRooms(new HashSet());
+            getAssignedRooms().clear();
+            setAssignedPreference(null);
+            
+            HashSet otherExams = new HashSet();
+            
+            for (Iterator j=getConflicts().iterator();j.hasNext();) {
+                ExamConflict conf = (ExamConflict)j.next();
+                for (Iterator i=conf.getExams().iterator();i.hasNext();) {
+                    Exam x = (Exam)i.next();
+                    if (!x.equals(this)) {
+                        x.getConflicts().remove(conf);
+                        otherExams.add(x);
+                    }
+                }
+                hibSession.delete(conf);
+                j.remove();
+            }
+
+            if (getEvent()!=null) {
+                hibSession.delete(getEvent());
+                setEvent(null);
+            }
+            
+            hibSession.update(this);
+            for (Iterator i=otherExams.iterator();i.hasNext();)
+                hibSession.update((Exam)i.next());
+            
+            SubjectArea subject = null;
+            Department dept = null;
+            for (Iterator i=new TreeSet(getOwners()).iterator();i.hasNext();) {
+                ExamOwner owner = (ExamOwner)i.next();
+                subject = owner.getCourse().getSubjectArea();
+                dept = subject.getDepartment();
+                break;
+            }
+            
+            ChangeLog.addChange(hibSession,
+                    TimetableManager.findByExternalId(managerExternalId),
+                    getSession(),
+                    this,
+                    getName()+" ("+
+                    (oldAssignment.getPeriod()==null?"N/A":oldAssignment.getPeriodAbbreviation()+" "+oldAssignment.getRoomsName(", "))+
+                    " &rarr; N/A)",
+                    ChangeLog.Source.EXAM_INFO,
+                    ChangeLog.Operation.UNASSIGN,
+                    subject,
+                    dept);
+
+            tx.commit();
+            return null;
+        } catch (Exception e) {
+            if (tx!=null) tx.rollback();
+            e.printStackTrace();
+            return "Unassignment of "+getName()+" failed, reason: "+e.getMessage();
         }
     }
     
