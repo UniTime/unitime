@@ -89,7 +89,9 @@ public class ChangeLog extends BaseChangeLog implements Comparable {
         UPDATE,
         DELETE,
         CLEAR_PREF,
-        CLEAR_ALL_PREF
+        CLEAR_ALL_PREF,
+        ASSIGN,
+        UNASSIGN
     }
     
     public static enum Source {
@@ -125,7 +127,8 @@ public class ChangeLog extends BaseChangeLog implements Comparable {
         EXAM_PERIOD_EDIT,
         ROOM_EXAM_PERIOD_REF_EDIT,
         EXAM_EDIT,
-        DATA_IMPORT
+        DATA_IMPORT,
+        EXAM_INFO
     }
     
     public static SimpleDateFormat sDF = new SimpleDateFormat("MM/dd/yy hh:mmaa");
