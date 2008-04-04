@@ -31,6 +31,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.Vector;
 
 import org.apache.commons.logging.Log;
@@ -43,7 +44,10 @@ import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
 import org.unitime.timetable.solver.exam.ui.ExamConflictStatisticsInfo;
 import org.unitime.timetable.solver.exam.ui.ExamInfo;
+import org.unitime.timetable.solver.exam.ui.ExamInfoModel;
+import org.unitime.timetable.solver.exam.ui.ExamProposedChange;
 import org.unitime.timetable.solver.exam.ui.ExamRoomInfo;
+import org.unitime.timetable.solver.exam.ui.ExamSuggestionsInfo;
 import org.unitime.timetable.solver.remote.BackupFileFilter;
 import org.unitime.timetable.util.Constants;
 
@@ -202,48 +206,28 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
     }
     
     
-    public Collection<ExamAssignmentInfo> getPeriods(long examId) {
+    public ExamPlacement getPlacement(ExamAssignment assignment) {
         synchronized (super.currentSolution()) {
-            Exam exam = getExam(examId);
-            if (exam==null) return null;
-            Vector<ExamAssignmentInfo> periods = new Vector<ExamAssignmentInfo>();
-            for (Enumeration e=exam.getPeriodPlacements().elements();e.hasMoreElements();) {
-                ExamPeriodPlacement period = (ExamPeriodPlacement)e.nextElement();
-                Set rooms = exam.findBestAvailableRooms(period);
-                if (rooms==null) rooms = new HashSet();
-                if (!exam.checkDistributionConstraints(period)) continue;
-                periods.add(new ExamAssignmentInfo(new ExamPlacement(exam, period, rooms)));
-            }
-            return periods;
-        }
-    }
-    
-    public Collection<ExamRoomInfo> getRooms(long examId, long periodId) {
-        synchronized (super.currentSolution()) {
-            Exam exam = getExam(examId);
+            Exam exam = getExam(assignment.getExamId());
             if (exam==null) return null;
             ExamPeriodPlacement period = null;
             for (Enumeration e=exam.getPeriodPlacements().elements();e.hasMoreElements();) {
                 ExamPeriodPlacement p = (ExamPeriodPlacement)e.nextElement();
-                if (periodId==p.getId()) { period = p; break; }
+                if (p.getId().equals(assignment.getPeriodId())) { period = p; break; }
             }
             if (period==null) return null;
-            Vector<ExamRoomInfo> rooms = new Vector<ExamRoomInfo>();
-            if (exam.getMaxRooms()==0) return rooms;
-            for (Enumeration e=exam.getRoomPlacements().elements();e.hasMoreElements();) {
-                ExamRoomPlacement room = (ExamRoomPlacement)e.nextElement();
-                
-                int cap = room.getSize(exam.hasAltSeating());
-                if (cap<exam.getStudents().size()/(exam.getMaxRooms()==1?1:2*exam.getMaxRooms())) continue;
-                if (cap>Math.max(20,3*exam.getStudents().size())) continue;
-
-                if (!room.isAvailable(period.getPeriod())) continue;
-                if (!exam.checkDistributionConstraints(room)) continue;
-                if (room.getRoom().getPlacement(period.getPeriod())!=null && !room.getRoom().getPlacement(period.getPeriod()).variable().equals(exam)) continue;
-                rooms.add(new ExamRoomInfo(room.getRoom(), room.getPenalty(period.getPeriod())));
+            HashSet rooms = new HashSet();
+            for (ExamRoomInfo roomInfo : assignment.getRooms()) {
+                Long roomId = roomInfo.getLocationId();
+                ExamRoomPlacement room = null;
+                for (Enumeration e=exam.getRoomPlacements().elements();e.hasMoreElements();) {
+                    ExamRoomPlacement r = (ExamRoomPlacement)e.nextElement();
+                    if (r.getId()==roomId) { room = r; break; }
+                }
+                if (room!=null) rooms.add(room);
             }
-            return rooms;
-        }        
+            return new ExamPlacement(exam, period, rooms);
+        }
     }
     
     public ExamAssignmentInfo getAssignment(Long examId, Long periodId, Collection<Long> roomIds) {
@@ -270,7 +254,7 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
         }
     }
     
-    public String assign(ExamAssignmentInfo assignment) {
+    public String assign(ExamAssignment assignment) {
         synchronized (super.currentSolution()) {
             Exam exam = getExam(assignment.getExamId());
             if (exam==null) return "Examination "+assignment.getExamName()+" not found.";
@@ -301,6 +285,16 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
                 ExamPlacement other = (ExamPlacement)conflicts.iterator().next();
                 return "Selected placement "+p.getName()+" is in conflict with exam "+other.variable().getName()+" that is assigned to "+other.getName()+"."; 
             }
+        }
+    }
+    
+    public String unassign(ExamInfo examInfo) {
+        synchronized (super.currentSolution()) {
+            Exam exam = getExam(examInfo.getExamId());
+            if (exam==null) return "Examination "+examInfo.getExamName()+" not found.";
+            if (exam.getAssignment()==null) return "Examination "+examInfo.getExamName()+" is not assigned.";
+            exam.unassign(0);
+            return null;
         }
     }
 
@@ -854,5 +848,190 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
             info.load(cbs, examId);
         }
         return info; 
-    }    
+    }
+    
+    public ExamProposedChange update(ExamProposedChange change) {
+        synchronized (currentSolution()) {
+            Hashtable<Exam, ExamPlacement> undo = new Hashtable();
+            Vector<Exam> unassign = new Vector();
+            Vector<ExamPlacement> assign = new Vector();
+            HashSet<ExamPlacement> conflicts = new HashSet();
+            for (ExamAssignment assignment: change.getConflicts()) {
+                ExamPlacement placement = getPlacement(assignment);
+                if (placement==null || !placement.equals(placement.variable().getAssignment())) return null;
+                undo.put((Exam)placement.variable(),placement);
+                unassign.add((Exam)placement.variable());
+            }
+            for (ExamAssignment assignment: change.getAssignments()) {
+                ExamPlacement placement = getPlacement(assignment);
+                if (placement==null) return null;
+                undo.put((Exam)placement.variable(),(ExamPlacement)placement.variable().getAssignment());
+                assign.add(placement);
+            }
+            for (Exam exam : unassign) exam.unassign(0);
+            for (ExamPlacement placement : assign) {
+                for (Iterator i=placement.variable().getModel().conflictValues(placement).iterator();i.hasNext();) {
+                    ExamPlacement conflict = (ExamPlacement)i.next();
+                    conflicts.add(conflict);
+                    undo.put((Exam)conflict.variable(),conflict);
+                    conflict.variable().unassign(0);
+                }
+                placement.variable().assign(0, placement);
+            }
+            Vector<ExamAssignmentInfo> newAssignments = new Vector<ExamAssignmentInfo>();
+            change.getAssignments().clear();
+            for (ExamPlacement assignment : assign)
+                change.getAssignments().add(new ExamAssignmentInfo(assignment));
+            for (Map.Entry<Exam, ExamPlacement> entry : undo.entrySet())
+                if (entry.getKey().getAssignment()!=null) entry.getKey().unassign(0);
+            for (Map.Entry<Exam, ExamPlacement> entry : undo.entrySet())
+                if (entry.getValue()!=null) entry.getKey().assign(0, entry.getValue());
+            for (ExamPlacement conflict : conflicts)
+                change.getConflicts().add(new ExamAssignment(conflict));
+            return change;            
+        }
+    }
+    
+    public Vector<ExamRoomInfo> getRooms(long examId, long periodId, ExamProposedChange change, int minRoomSize, int maxRoomSize, String filter, boolean allowConflicts) {
+        synchronized (super.currentSolution()) {
+            //lookup exam, period etc.
+            Exam exam = getExam(examId);
+            if (exam==null) return null;
+            ExamPeriodPlacement period = null;
+            for (Enumeration e=exam.getPeriodPlacements().elements();e.hasMoreElements();) {
+                ExamPeriodPlacement p = (ExamPeriodPlacement)e.nextElement();
+                if (periodId==p.getId()) { period = p; break; }
+            }
+            if (period==null) return null;
+            Vector<ExamRoomInfo> rooms = new Vector<ExamRoomInfo>();
+            if (exam.getMaxRooms()==0) return rooms;
+            
+            //assign change
+            Hashtable<Exam, ExamPlacement> undo = new Hashtable();
+            if (change!=null) {
+                for (ExamAssignment assignment: change.getConflicts()) {
+                    ExamPlacement placement = getPlacement(assignment);
+                    if (placement==null) continue;
+                    undo.put((Exam)placement.variable(),placement);
+                    placement.variable().unassign(0);
+                }
+                for (ExamAssignment assignment: change.getAssignments()) {
+                    ExamPlacement placement = getPlacement(assignment);
+                    if (placement==null) continue;
+                    for (Iterator i=placement.variable().getModel().conflictValues(placement).iterator();i.hasNext();) {
+                        ExamPlacement conflict = (ExamPlacement)i.next();
+                        if (conflict.variable().equals(placement.variable())) continue;
+                        undo.put((Exam)conflict.variable(),conflict);
+                        conflict.variable().unassign(0);
+                    }
+                    undo.put((Exam)placement.variable(),(ExamPlacement)placement.variable().getAssignment());
+                    placement.variable().assign(0, placement);
+                }
+            }
+            
+            //compute rooms
+            for (Enumeration e=exam.getRoomPlacements().elements();e.hasMoreElements();) {
+                ExamRoomPlacement room = (ExamRoomPlacement)e.nextElement();
+                
+                int cap = room.getSize(exam.hasAltSeating());
+                if (minRoomSize>=0 && cap<minRoomSize) continue;
+                if (maxRoomSize>=0 && cap>maxRoomSize) continue;
+                if (!ExamInfoModel.match(room.getName(), filter)) continue;
+                if (!room.isAvailable(period.getPeriod())) continue;
+                
+                boolean conf = !exam.checkDistributionConstraints(room) ||
+                               (room.getRoom().getPlacement(period.getPeriod())!=null && !room.getRoom().getPlacement(period.getPeriod()).variable().equals(exam)); 
+
+                if (!allowConflicts && conf) continue;
+                
+                rooms.add(new ExamRoomInfo(room.getRoom(), (conf?100:0) + room.getPenalty(period.getPeriod())));
+            }
+            
+            //undo change
+            for (Map.Entry<Exam, ExamPlacement> entry : undo.entrySet())
+                if (entry.getKey().getAssignment()!=null) entry.getKey().unassign(0);
+            for (Map.Entry<Exam, ExamPlacement> entry : undo.entrySet())
+                if (entry.getValue()!=null) entry.getKey().assign(0, entry.getValue());
+
+            return rooms;
+        }        
+    }
+    
+    public Collection<ExamAssignmentInfo> getPeriods(long examId, ExamProposedChange change) {
+        synchronized (super.currentSolution()) {
+            //lookup exam
+            Exam exam = getExam(examId);
+            if (exam==null) return null;
+            
+            //assign change
+            Hashtable<Exam, ExamPlacement> undo = new Hashtable();
+            if (change!=null) {
+                for (ExamAssignment assignment: change.getConflicts()) {
+                    ExamPlacement placement = getPlacement(assignment);
+                    if (placement==null) continue;
+                    undo.put((Exam)placement.variable(),placement);
+                    placement.variable().unassign(0);
+                }
+                for (ExamAssignment assignment: change.getAssignments()) {
+                    ExamPlacement placement = getPlacement(assignment);
+                    if (placement==null) continue;
+                    for (Iterator i=placement.variable().getModel().conflictValues(placement).iterator();i.hasNext();) {
+                        ExamPlacement conflict = (ExamPlacement)i.next();
+                        if (conflict.variable().equals(placement.variable())) continue;
+                        undo.put((Exam)conflict.variable(),conflict);
+                        conflict.variable().unassign(0);
+                    }
+                    undo.put((Exam)placement.variable(),(ExamPlacement)placement.variable().getAssignment());
+                    placement.variable().assign(0, placement);
+                }
+            }
+
+            Vector<ExamAssignmentInfo> periods = new Vector<ExamAssignmentInfo>();
+            for (Enumeration e=exam.getPeriodPlacements().elements();e.hasMoreElements();) {
+                ExamPeriodPlacement period = (ExamPeriodPlacement)e.nextElement();
+                Set rooms = exam.findBestAvailableRooms(period);
+                if (rooms==null) rooms = new HashSet();
+                boolean conf = !exam.checkDistributionConstraints(period);
+                ExamAssignmentInfo assignment = new ExamAssignmentInfo(new ExamPlacement(exam, period, rooms));
+                if (conf) assignment.setPeriodPref("P");
+                periods.add(assignment);
+            }
+            
+            //undo change
+            for (Map.Entry<Exam, ExamPlacement> entry : undo.entrySet())
+                if (entry.getKey().getAssignment()!=null) entry.getKey().unassign(0);
+            for (Map.Entry<Exam, ExamPlacement> entry : undo.entrySet())
+                if (entry.getValue()!=null) entry.getKey().assign(0, entry.getValue());
+            
+            return periods;
+        }
+    }
+    
+    public ExamSuggestionsInfo getSuggestions(long examId, ExamProposedChange change, String filter, int depth, int limit, long timeOut) {
+        synchronized (super.currentSolution()) {
+            Exam exam = getExam(examId);
+            if (exam==null) return null;
+            ExamSuggestions s = new ExamSuggestions(this);
+            s.setDepth(depth);
+            s.setFilter(filter);
+            s.setLimit(limit);
+            s.setTimeOut(timeOut);
+            TreeSet<ExamProposedChange> suggestions = s.computeSuggestions(exam, (change==null?null:change.getAssignments()));
+            String message = null;
+            if (s.wasTimeoutReached()) {
+                message = "("+(timeOut/1000l)+"s timeout reached, "+s.getNrCombinationsConsidered()+" possibilities up to "+depth+" changes were considered, ";
+            } else {
+                message = "(all "+s.getNrCombinationsConsidered()+" possibilities up to "+depth+" changes were considered, ";
+            }
+            if (suggestions.isEmpty()) {
+                message += "no suggestion found)";
+            } else if (s.getNrSolutions()>suggestions.size()) {
+                message += "top "+suggestions.size()+" of "+s.getNrSolutions()+" suggestions displayed)";
+            } else {
+                message += suggestions.size()+" suggestions displayed)";
+            }
+            return new ExamSuggestionsInfo(suggestions, message, s.wasTimeoutReached());
+        }
+    }
+
 }

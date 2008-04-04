@@ -29,6 +29,7 @@ import java.util.Iterator;
 import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
+import java.util.Vector;
 
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriod;
@@ -42,6 +43,7 @@ import net.sf.cpsolver.coursett.preference.MinMaxPreferenceCombination;
 import net.sf.cpsolver.exam.model.ExamDistributionConstraint;
 import net.sf.cpsolver.exam.model.ExamPlacement;
 import net.sf.cpsolver.exam.model.ExamRoomPlacement;
+import net.sf.cpsolver.ifs.util.ToolBox;
 
 /**
  * @author Tomas Muller
@@ -57,6 +59,21 @@ public class ExamAssignment extends ExamInfo implements Serializable {
     protected ExamInfo iExam = null;
     protected String iDistPref = null;
     
+    protected int iNrDirectConflicts = 0;
+    protected int iNrMoreThanTwoADayConflicts = 0;
+    protected int iNrBackToBackConflicts = 0;
+    protected int iNrDistanceBackToBackConflicts = 0;
+    protected int iPeriodPenalty = 0;
+    protected int iRoomSizePenalty = 0;
+    protected int iRoomSplitPenalty = 0;
+    protected int iRotationPenalty = 0;
+    protected int iRoomPenalty = 0;
+    protected int iNrInstructorDirectConflicts = 0;
+    protected int iNrInstructorMoreThanTwoADayConflicts = 0;
+    protected int iNrInstructorBackToBackConflicts = 0;
+    protected int iNrInstructorDistanceBackToBackConflicts = 0;
+    protected double iValue = 0;
+    
     public ExamAssignment(ExamPlacement placement) {
         this((net.sf.cpsolver.exam.model.Exam)placement.variable(), placement);
     }
@@ -64,6 +81,20 @@ public class ExamAssignment extends ExamInfo implements Serializable {
     public ExamAssignment(net.sf.cpsolver.exam.model.Exam exam, ExamPlacement placement) {
         super(exam);
         if (placement!=null) {
+            iNrDirectConflicts = placement.getNrDirectConflicts();
+            iNrMoreThanTwoADayConflicts = placement.getNrMoreThanTwoADayConflicts();
+            iNrBackToBackConflicts = placement.getNrBackToBackConflicts();
+            iNrDistanceBackToBackConflicts = placement.getNrDistanceBackToBackConflicts();
+            iPeriodPenalty = placement.getPeriodPenalty(); 
+            iRoomSizePenalty = placement.getRoomSizePenalty();
+            iRoomSplitPenalty = placement.getRoomSplitPenalty();
+            iRotationPenalty = placement.getRotationPenalty();
+            iRoomPenalty = placement.getRoomPenalty();
+            iNrInstructorDirectConflicts = placement.getNrInstructorDirectConflicts();
+            iNrInstructorMoreThanTwoADayConflicts = placement.getNrInstructorMoreThanTwoADayConflicts();
+            iNrInstructorBackToBackConflicts = placement.getNrInstructorBackToBackConflicts();
+            iNrInstructorDistanceBackToBackConflicts = placement.getNrInstructorDistanceBackToBackConflicts();
+            iValue = placement.toDouble();
             iPeriodId = placement.getPeriod().getId();
             iPeriodIdx = placement.getPeriod().getIndex();
             iRooms = new TreeSet<ExamRoomInfo>();
@@ -218,6 +249,13 @@ public class ExamAssignment extends ExamInfo implements Serializable {
         return iRooms;
     }
     
+    public Vector<Long> getRoomIds() {
+        Vector<Long> roomIds = new Vector(iRooms==null?0:iRooms.size());
+        if (iRooms!=null) for (ExamRoomInfo room : iRooms) roomIds.add(room.getLocationId());
+        return roomIds;
+    }
+
+    
     public boolean hasRoom(Long locationId) {
         if (iRooms==null) return false;
         for (ExamRoomInfo room : getRooms()) 
@@ -269,6 +307,10 @@ public class ExamAssignment extends ExamInfo implements Serializable {
         return (iPeriodPref==null?PreferenceLevel.sNeutral:iPeriodPref);
     }
     
+    public void setPeriodPref(String periodPref) {
+        iPeriodPref = periodPref;
+    }
+    
     public String getDistributionPref() {
         return (iDistPref==null?PreferenceLevel.sNeutral:iDistPref);
     }
@@ -314,5 +356,29 @@ public class ExamAssignment extends ExamInfo implements Serializable {
             if (cmp!=0) return cmp;
         }
         return getExamId().compareTo(info.getExamId());
+    }
+    
+    public int getPlacementNrDirectConflicts() { return iNrDirectConflicts; }
+    public int getPlacementNrMoreThanTwoADayConflicts() { return iNrMoreThanTwoADayConflicts; }
+    public int getPlacementNrBackToBackConflicts() { return iNrBackToBackConflicts; }
+    public int getPlacementNrDistanceBackToBackConflicts() { return iNrDistanceBackToBackConflicts; }
+    public int getPlacementPeriodPenalty() { return iPeriodPenalty; }
+    public int getPlacementRoomSizePenalty() { return iRoomSizePenalty; }
+    public int getPlacementRoomSplitPenalty() { return iRoomSplitPenalty; }
+    public int getPlacementRotationPenalty() { return iRotationPenalty; }
+    public int getPlacementRoomPenalty() { return iRoomPenalty; }
+    public int getPlacementNrInstructorDirectConflicts() { return iNrInstructorDirectConflicts; }
+    public int getPlacementNrInstructorMoreThanTwoADayConflicts() { return iNrInstructorMoreThanTwoADayConflicts; }
+    public int getPlacementNrInstructorBackToBackConflicts() { return iNrInstructorBackToBackConflicts; }
+    public int getPlacementNrInstructorDistanceBackToBackConflicts() { return iNrInstructorDistanceBackToBackConflicts; }
+    public double getPlacementValue() { return iValue; }
+    
+    public int getNrRooms() {
+        return (iRooms==null?0:iRooms.size());
+    }
+    
+    public boolean assignmentEquals(ExamAssignment other) {
+        if (!getExamId().equals(other.getExamId())) return false;
+        return ToolBox.equals(getPeriodId(),other.getPeriodId()) && ToolBox.equals(getRooms(), other.getRooms());
     }
 }
