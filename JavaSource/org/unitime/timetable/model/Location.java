@@ -652,6 +652,26 @@ public abstract class Location extends BaseLocation implements Comparable {
                 .setCacheable(true).list());
     }
     
+    public static Hashtable<Long,Long> findExamLocationTable(Long periodId) {
+        Hashtable<Long,Long> table = new Hashtable();
+        for (Iterator i = (new LocationDAO()).getSession()
+                    .createQuery("select distinct r.uniqueId, x.uniqueId from Exam x inner join x.assignedRooms r where x.assignedPeriod.uniqueId=:periodId")
+                    .setLong("periodId",periodId)
+                    .setCacheable(true).iterate();i.hasNext();) {
+            Object[] o = (Object[])i.next();
+            table.put((Long)o[0],(Long)o[1]);
+        }
+        return table;
+    }
+
+    public Exam getExam(Long periodId) {
+        return (Exam)new LocationDAO().getSession().createQuery(
+                "select x from Exam x inner join x.assignedRooms r where " +
+                "x.assignedPeriod.uniqueId=:periodId and r.uniqueId=:locationId")
+                .setLong("locationId", getUniqueId())
+                .setLong("periodId", periodId).setCacheable(true).uniqueResult();
+    }
+    
     public static TreeSet findAllAvailableExamLocations(ExamPeriod period) {
         TreeSet locations = findAllExamLocations(period.getSession().getUniqueId(),period.getExamType());
         locations.removeAll(findNotAvailableExamLocations(period.getUniqueId()));
