@@ -17,6 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 --%>
 <%@ page language="java" autoFlush="true"%>
+<%@page import="org.unitime.timetable.solver.exam.ui.ExamConflictStatisticsInfo"%>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
@@ -25,6 +26,9 @@
 <script language="JavaScript" type="text/javascript" src="scripts/block.js"></script>
 <tiles:importAttribute />
 <html:form action="/examInfo">
+	<html:submit property="op" value="Apply" style="display:none;"/>
+	<html:hidden property="depth"/>
+	<html:hidden property="timeout"/>
 	<bean:define id="model" name="examInfoForm" property="model"/>
 	<bean:define id="exam" name="model" property="exam"/>
 	<bean:define id="examId" name="exam" property="examId"/>
@@ -52,44 +56,51 @@
 		<tr><td>Courses / Classes:</td><td><bean:write name="exam" property="sectionName(<br>)" filter="false"/></td></tr>
 		<tr><td>Type:</td><td><bean:write name="exam" property="examTypeLabel"/></td></tr>
 		<tr><td>Length:</td><td><bean:write name="exam" property="length"/> minutes</td></tr>
-		<tr><td>Students:</td><td><bean:write name="exam" property="nrStudents"/></td></tr>
+		<tr><td>Size:</td><td><bean:write name="exam" property="nrStudents"/></td></tr>
 		<tr><td>Seating Type:</td><td><bean:write name="exam" property="seatingTypeLabel"/></td></tr>
 		<tr><td>Maximum Number of Rooms:</td><td><bean:write name="exam" property="maxRooms"/></td></tr>
 		<logic:notEmpty name="exam" property="instructors">
 			<tr><td>Instructor(s):</td><td><bean:write name="exam" property="instructorName(<br>)"/></td></tr>
 		</logic:notEmpty>
-		<logic:notEmpty name="model" property="selectedAssignment">
-			<logic:notEmpty name="model" property="examAssignment">
-				<bean:define id="assignment" name="model" property="examAssignment"/>
+		<logic:notEmpty name="model" property="change">
+			<logic:notEmpty name="model" property="examOldAssignment">
+				<bean:define id="assignment" name="model" property="examOldAssignment"/>
 				<tr><td>Assigned Period:</td><td><bean:write name="assignment" property="periodNameWithPref" filter="false"/></td></tr>
 				<logic:notEmpty name="assignment" property="rooms">
 					<tr><td>Assigned Room:</td><td><bean:write name="assignment" property="roomsNameWithPref(, )" filter="false"/></td></tr>
 				</logic:notEmpty>
 			</logic:notEmpty>
-			<bean:define id="assignment" name="model" property="selectedAssignment"/>
-			<tr><td>Selected Period:</td><td><bean:write name="assignment" property="periodNameWithPref" filter="false"/></td></tr>
-			<logic:notEmpty name="assignment" property="rooms">
-				<tr><td>Selected Room:</td><td><bean:write name="assignment" property="roomsNameWithPref(, )" filter="false"/></td></tr>
+			<logic:notEmpty name="model" property="selectedAssignment">
+				<bean:define id="assignment" name="model" property="selectedAssignment"/>
+				<tr><td>Selected Period:</td><td><bean:write name="assignment" property="periodNameWithPref" filter="false"/></td></tr>
+				<logic:notEmpty name="assignment" property="rooms">
+					<tr><td>Selected Room:</td><td><bean:write name="assignment" property="roomsNameWithPref(, )" filter="false"/></td></tr>
+				</logic:notEmpty>
 			</logic:notEmpty>
-			<logic:equal name="assignment" property="valid" value="true">
+			<bean:define name="model" property="change" id="change"/>
+			<tr><td colspan='2'><tt:section-title><br>New Assignment(s)</tt:section-title></td></tr>
+			<tr><td colspan='2'><bean:write name="change" property="htmlTable" filter="false"/></td></tr>
+			<logic:equal name="model" property="canAssign" value="true">
 				<tr><td colspan='2' align="right">
-					<html:submit property="op" value="Assign" onclick="return confirmAssign();"/>
+					<html:submit property="op" value="Assign" onclick="return confirmAssign();" />
 				</td></tr>
 			</logic:equal>
-			<logic:greaterThan name="assignment" property="nrDistributionConflicts" value="0">
-				<tr><td colspan='2'><tt:section-title><br>Violated Distribution Preferences (<bean:write name="assignment" property="periodAbbreviation" filter="false"/>)</tt:section-title></td></tr>
-				<tr><td colspan='2'><bean:write name="assignment" property="distributionConflictTable" filter="false"/></td></tr>
-			</logic:greaterThan>
-			<logic:equal name="assignment" property="hasConflicts" value="true">
-				<tr><td colspan='2'><tt:section-title><br>Student Conflicts (<bean:write name="assignment" property="periodAbbreviation" filter="false"/>)</tt:section-title></td></tr>
-				<tr><td colspan='2'><bean:write name="assignment" property="conflictTable" filter="false"/></td></tr>
-			</logic:equal>
-			<logic:equal name="assignment" property="hasInstructorConflicts" value="true">
-				<tr><td colspan='2'><tt:section-title><br>Instructor Conflicts (<bean:write name="assignment" property="periodAbbreviation" filter="false"/>)</tt:section-title></td></tr>
-				<tr><td colspan='2'><bean:write name="assignment" property="instructorConflictTable" filter="false"/></td></tr>
-			</logic:equal>
+			<logic:notEmpty name="model" property="selectedAssignment">
+				<logic:greaterThan name="assignment" property="nrDistributionConflicts" value="0">
+					<tr><td colspan='2'><tt:section-title><br>Violated Distribution Preferences for <bean:write name="exam" property="examName"/> (<bean:write name="assignment" property="periodAbbreviation" filter="false"/>)</tt:section-title></td></tr>
+					<tr><td colspan='2'><bean:write name="assignment" property="distributionInfoConflictTable" filter="false"/></td></tr>
+				</logic:greaterThan>
+				<logic:equal name="assignment" property="hasConflicts" value="true">
+					<tr><td colspan='2'><tt:section-title><br>Student Conflicts for <bean:write name="exam" property="examName"/> (<bean:write name="assignment" property="periodAbbreviation" filter="false"/>)</tt:section-title></td></tr>
+					<tr><td colspan='2'><bean:write name="assignment" property="conflictInfoTable" filter="false"/></td></tr>
+				</logic:equal>
+				<logic:equal name="assignment" property="hasInstructorConflicts" value="true">
+					<tr><td colspan='2'><tt:section-title><br>Instructor Conflicts for <bean:write name="exam" property="examName"/> (<bean:write name="assignment" property="periodAbbreviation" filter="false"/>)</tt:section-title></td></tr>
+					<tr><td colspan='2'><bean:write name="assignment" property="instructorConflictInfoTable" filter="false"/></td></tr>
+				</logic:equal>
+			</logic:notEmpty>
 		</logic:notEmpty>
-		<logic:empty name="model" property="selectedAssignment">
+		<logic:empty name="model" property="change">
 			<logic:notEmpty name="model" property="examAssignment">
 				<bean:define id="assignment" name="model" property="examAssignment"/>
 				<tr><td>Period:</td><td><bean:write name="assignment" property="periodNameWithPref" filter="false"/></td></tr>
@@ -115,10 +126,11 @@
 				<bean:write name="model" property="periodsTable" filter="false"/>
 			</table></td></tr>
 		</logic:notEmpty>
-		<logic:notEmpty name="model" property="rooms">
+		<logic:notEmpty name="model" property="selectedAssignment">
+		<logic:greaterThan name="exam" property="maxRooms" value="0">
 			<tr><td colspan='2'><tt:section-title>
-				<bean:define id="nrStudents" name="assignment" property="nrStudents"/>
-				<br>Available Rooms &nbsp;&nbsp;
+				<bean:define id="nrStudents" name="exam" property="nrStudents"/>
+				<br>Available Rooms for <bean:write name="exam" property="examName"/> &nbsp;&nbsp;
 				( selected size: <span id='roomCapacityCounter'>
 					<logic:lessThan name="model" property="roomSize" value="<%=String.valueOf(nrStudents)%>">
 						<font color='red'><bean:write name="model" property="roomSize"/></font>
@@ -126,10 +138,75 @@
 					<logic:greaterEqual name="model" property="roomSize" value="<%=String.valueOf(nrStudents)%>">
 						<bean:write name="model" property="roomSize"/>
 					</logic:greaterEqual>
-					</span> ) 
+					</span> of <bean:write name="exam" property="nrStudents"/> ) 
 			</tt:section-title></td></tr>
 			<tr><td colspan='2'>
-				<bean:write name="model" property="roomTable" filter="false"/>
+				<table border='0' width='100%'>
+					<tr><td>
+						Room size:
+							<html:text property="minRoomSize" size="5" maxlength="5"/> - <html:text property="maxRoomSize" size="5" maxlength="5"/>
+					</td><td>
+						Filter:
+							<html:text property="roomFilter" size="25" maxlength="100"/>
+					</td><td>
+						Allow conflicts:
+							<html:checkbox property="allowRoomConflict"/>
+					</td><td>
+						Order:
+							<html:select property="roomOrder">
+								<html:options property="roomOrders"/>
+							</html:select>
+					</td><td align="right">
+						<html:submit property="op" value="Apply"/>
+					</td></tr>
+				</table>
+			</td></tr>
+			<logic:empty name="model" property="roomTable">
+				<tr><td colspan='2'><i>No room matching the above criteria was found.</td></tr>
+			</logic:empty>
+			<logic:notEmpty name="model" property="roomTable">
+				<tr><td colspan='2'>
+					<bean:write name="model" property="roomTable" filter="false"/>
+				</td></tr>
+			</logic:notEmpty>
+		</logic:greaterThan>
+		</logic:notEmpty>
+		<logic:equal name="model" property="canComputeSuggestions" value="true">
+			<tr><td colspan='2'><tt:section-title><br><html:checkbox property="computeSuggestions" onclick="submit();"/> Suggestions</tt:section-title></td></tr>
+			<logic:equal name="examInfoForm" property="computeSuggestions" value="true">
+				<tr><td colspan='2'>
+					<table border='0' width='100%'>
+						<tr><td>
+							Filter:
+								<html:text property="filter" size="50" maxlength="100"/>
+						</td><td>
+							Maximal Number of Suggestions:
+								<html:text property="limit" size="5" maxlength="5"/>
+						</td><td align="right">
+						</td><td align="right">
+							<html:submit property="op" value="Apply"/>
+							<html:submit property="op" value="Search Deeper"/>
+							<logic:equal name="model" property="suggestionsTimeoutReached" value="true">
+								<html:submit property="op" value="Search Longer"/>
+							</logic:equal>
+						</td></tr>
+					</table>
+				</td></tr>
+				<logic:notEmpty name="model" property="suggestions">
+					<tr><td colspan='2'>
+						<bean:write name="model" property="suggestionTable" filter="false"/>
+					</td></tr>
+				</logic:notEmpty>
+			</logic:equal>
+		</logic:equal>
+		<logic:notEmpty name="model" property="cbs">
+			<% ExamConflictStatisticsInfo.printHtmlHeader(out); %>
+			<tr><td colspan='2'><tt:section-title><br>Conflict-based Statistics</tt:section-title></td></tr>
+			<tr><td colspan='2'>
+				<bean:define name="model" property="cbs" id="cbs"/>
+				<font size='2'>
+				<% ((ExamConflictStatisticsInfo)cbs).printHtml(out, (Long)examId, 1.0, ExamConflictStatisticsInfo.TYPE_CONSTRAINT_BASED, true); %>
+				</font>
 			</td></tr>
 		</logic:notEmpty>
 		<tr><td colspan='2'><tt:section-title><br></tt:section-title></td></tr>
