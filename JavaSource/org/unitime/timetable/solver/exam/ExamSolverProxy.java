@@ -24,11 +24,15 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.Vector;
 
+import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
 import org.unitime.timetable.solver.exam.ui.ExamConflictStatisticsInfo;
 import org.unitime.timetable.solver.exam.ui.ExamInfo;
+import org.unitime.timetable.solver.exam.ui.ExamProposedChange;
 import org.unitime.timetable.solver.exam.ui.ExamRoomInfo;
+import org.unitime.timetable.solver.exam.ui.ExamSuggestionsInfo;
 
 import net.sf.cpsolver.ifs.util.DataProperties;
 
@@ -80,10 +84,13 @@ public interface ExamSolverProxy extends ExamAssignmentProxy {
     public Collection<ExamAssignmentInfo> getAssignedExamsOfRoom(Long roomId);
     public Collection<ExamAssignmentInfo> getAssignedExamsOfInstructor(Long instructorId);
     
-    public Collection<ExamAssignmentInfo> getPeriods(long examId);
-    public Collection<ExamRoomInfo> getRooms(long examId, long periodId);
     public ExamAssignmentInfo getAssignment(Long examId, Long periodId, Collection<Long> roomIds);
-    public String assign(ExamAssignmentInfo assignment);
+    public String assign(ExamAssignment assignment);
+    public String unassign(ExamInfo exam);
+    public ExamProposedChange update(ExamProposedChange change);
+    public Vector<ExamRoomInfo> getRooms(long examId, long periodId, ExamProposedChange change, int minRoomSize, int maxRoomSize, String filter, boolean allowConflicts);
+    public Collection<ExamAssignmentInfo> getPeriods(long examId, ExamProposedChange change);
+    public ExamSuggestionsInfo getSuggestions(long examId, ExamProposedChange change, String filter, int depth, int limit, long timeOut);
     
     public Collection<ExamAssignmentInfo[]> getChangesToInitial(Long subjectAreaId);
     public Collection<ExamAssignmentInfo[]> getChangesToBest(Long subjectAreaId);

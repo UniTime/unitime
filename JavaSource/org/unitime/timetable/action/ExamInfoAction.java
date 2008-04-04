@@ -49,6 +49,16 @@ public class ExamInfoAction extends Action {
         
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
 
+        ExamInfoModel model = (ExamInfoModel)request.getSession().getAttribute("ExamInfo.model");
+        if (model==null) {
+            model = new ExamInfoModel();
+            request.getSession().setAttribute("ExamInfo.model", model);
+        }
+
+        if (op==null && model.getExam()!=null && request.getParameter("examId")==null) {
+            op="Apply";
+        }
+
         if ("Apply".equals(op)) {
             myForm.save(request.getSession());
         } else if ("Refresh".equals(op)) {
@@ -56,23 +66,29 @@ public class ExamInfoAction extends Action {
         }
         
         myForm.load(request.getSession());
-        
-        ExamInfoModel model = (ExamInfoModel)request.getSession().getAttribute("ExamInfo.model");
-        if (model==null) {
-            model = new ExamInfoModel();
-            request.getSession().setAttribute("ExamInfo.model", model);
-        }
         myForm.setModel(model);
-        model.apply(request);
+        model.apply(request, myForm);
         
         if (op==null) {
             model.clear(TimetableManager.getManager(Web.getUser(request.getSession())));
+        } else if ("Apply".equals(op)) {
+            model.refreshRooms();
+            model.refreshSuggestions();
+        } if ("Search Deeper".equals(op)) {
+            myForm.setDepth(myForm.getDepth()+1);
+            myForm.save(request.getSession());
+            model.refreshSuggestions();
+        } else if ("Search Longer".equals(op)) {
+            myForm.setTimeout(2*myForm.getTimeout());
+            myForm.save(request.getSession());
+            model.refreshSuggestions();
         }
         
         model.setSolver(WebSolver.getExamSolver(request.getSession()));
         
         if (request.getParameter("examId")!=null) {
             model.setExam(new ExamDAO().get(Long.valueOf(request.getParameter("examId"))));
+            myForm.save(request.getSession());
         }
         
         if (model.getExam()==null) throw new Exception("No exam given.");
@@ -82,11 +98,15 @@ public class ExamInfoAction extends Action {
                 model.setPeriod(Long.valueOf(request.getParameter("period")));
             if (request.getParameter("room")!=null)
                 model.setRooms(request.getParameter("room"));
+            if (request.getParameter("suggestion")!=null)
+                model.setSuggestion(Integer.parseInt(request.getParameter("suggestion")));
+            if (request.getParameter("delete")!=null)
+                model.delete(Long.valueOf(request.getParameter("delete")));
         }
         
         if ("Assign".equals(op)) {
             String message = model.assign();
-            if (message==null) {
+            if (message==null || message.trim().length()==0) {
                 myForm.setOp("Close");
             } else {
                 myForm.setMessage(message);
@@ -94,6 +114,7 @@ public class ExamInfoAction extends Action {
         }
 
         if ("Close".equals(op)) {
+            myForm.setOp("Close");
         }
         
         BackTracker.markForBack(
