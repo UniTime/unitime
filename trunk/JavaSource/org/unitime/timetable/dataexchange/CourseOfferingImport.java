@@ -1497,6 +1497,18 @@ public class CourseOfferingImport extends BaseImport {
 					origClass = (Class_) possibleClassesAtThisLevel.get(id);
 					if (origClass != null){
 						possibleClassesAtThisLevel.remove(id);
+						if (!origClass.getClassSuffix().equals(suffix)){
+							changed = true;
+							origClass.setClassSuffix(suffix);
+							Integer origSectionNbr = origClass.getSectionNumberCache();
+							try {
+								origClass.setSectionNumberCache(new Integer(suffix));
+							} catch (Exception e) {
+								origClass.setSectionNumberCache(origSectionNbr);			
+							}
+							addNote("\t suffix for class changed: " + origClass.getClassLabel());
+
+						}
 					}
 				} 
 				if (origClass == null){
@@ -1529,6 +1541,12 @@ public class CourseOfferingImport extends BaseImport {
 					clazz = new Class_();
 					clazz.setExternalUniqueId(id);
 					clazz.setClassSuffix(suffix);
+					try {
+						clazz.setSectionNumberCache(new Integer(suffix));
+					} catch (Exception e) {
+						// Ignore Exception						
+					}
+					
 					clazz.setExpectedCapacity(limit);
 					clazz.setMaxExpectedCapacity(limit);
 					clazz.setRoomRatio(new Float(1.0));
