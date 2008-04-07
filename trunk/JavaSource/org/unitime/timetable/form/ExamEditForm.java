@@ -382,5 +382,4 @@ public class ExamEditForm extends PreferencesForm {
     		ret.add(new ComboBoxLookup(Exam.sExamTypes[i], String.valueOf(i)));
     	return ret;
     }
-
 }

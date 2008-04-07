@@ -267,7 +267,7 @@ public class ExamEditAction extends PreferencesAction {
             frm.setExamId(exam.getUniqueId().toString());
             frm.setExamType(exam.getExamType());
             
-            frm.setName(exam.getName());
+            frm.setName(exam.generateName().equals(exam.getName())?null:exam.getName());
             frm.setNote(exam.getNote());
             frm.setLength(exam.getLength());
             frm.setSeatingType(Exam.sSeatingTypes[exam.getSeatingType()]);
@@ -424,8 +424,12 @@ public class ExamEditAction extends PreferencesAction {
         }
         
         frm.setExamOwners(exam);
-        
-        exam.examChanged();
+
+        if (frm.getName()==null || frm.getName().trim().length()==0) {
+            exam.setName(exam.generateName());            
+        } else {
+            exam.setName(frm.getName());
+        }
         
         new ExamDAO().saveOrUpdate(exam);
         

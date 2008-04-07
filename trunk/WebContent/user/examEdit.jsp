@@ -103,11 +103,9 @@
 		</TR>
 		</logic:messagesPresent>
 		
-		<!-- 
 		<TR>
-			<TD>Name:</TD><TD><html:text property="name" size="50" maxlength="100"/></TD>
+			<TD>Name:</TD><TD><html:text property="name" size="50" maxlength="100"/> <i>(A default name is generated when blank)</i></TD>
 		</TR>
-		-->
 		<TR>
 			<TD>Type:</TD><TD>
 				<html:select property="examType" onchange="javascript: doDel('examType', this.value); submit();">
