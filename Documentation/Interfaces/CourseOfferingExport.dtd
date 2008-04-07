@@ -71,6 +71,7 @@
 <!ATTLIST offerings dateFormat CDATA #IMPLIED >
 <!ATTLIST offerings timeFormat CDATA #IMPLIED >
 <!ATTLIST offerings useMeetsWith ( false | true ) #IMPLIED >
+<!ATTLIST offerings created CDATA #IMPLIED >
 
 <!ELEMENT room EMPTY >
 <!ATTLIST room building CDATA #REQUIRED >
