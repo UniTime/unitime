@@ -281,10 +281,6 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         return studentAssignments;
     }
     
-    public void examChanged() {
-        setName(generateName());
-    }
-    
     public int countStudents() {
         int nrStudents = 0;
         for (Iterator i=getOwners().iterator();i.hasNext();)
