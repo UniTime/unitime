@@ -202,6 +202,7 @@ public class ListSolutionsForm extends ActionForm {
             sInfoKeys.add("Room Size Penalty");
             sInfoKeys.add("Not-Original Room Penalty");
             sInfoKeys.add("Distribution Penalty");
+            sInfoKeys.add("Perturbation Penalty");
 			sInfoKeys.add("Perturbation penalty");
 			sInfoKeys.add("Perturbation variables");
 			sInfoKeys.add("Perturbations: Total penalty");

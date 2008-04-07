@@ -1033,5 +1033,9 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
             return new ExamSuggestionsInfo(suggestions, message, s.wasTimeoutReached());
         }
     }
-
+    
+    protected void autoConfigure() {
+        super.autoConfigure();
+        setPerturbationsCounter(null);
+    }
 }
