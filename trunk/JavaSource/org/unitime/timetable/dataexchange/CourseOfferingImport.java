@@ -123,6 +123,7 @@ public class CourseOfferingImport extends BaseImport {
 	        String term   = getRequiredStringAttribute(rootElement, "term", rootElementName);
 	        dateFormat = getOptionalStringAttribute(rootElement, "dateFormat");
 	        timeFormat = getOptionalStringAttribute(rootElement, "timeFormat");
+	        String created = getOptionalStringAttribute(rootElement, "created");
 	        if(timeFormat == null){
 	        	timeFormat = "HHmm";
 	        }
@@ -149,7 +150,12 @@ public class CourseOfferingImport extends BaseImport {
 	        loadClassEventType();
 	        loadRequiredPrefLevel();
 	        loadMeetsWithDistributionType();
-		                
+		    
+	        if (created != null) {
+		        addNote("Loading offerings XML file created on: " + created);
+				ChangeLog.addChange(getHibSession(), manager, session, session, created, ChangeLog.Source.DATA_IMPORT, ChangeLog.Operation.UPDATE, null, null);
+				updateChangeList(true);
+	        }
 			String offeringElementName = "offering";
 	        for ( Iterator<?> it = rootElement.elementIterator(); it.hasNext(); ) {
 	            Element element = (Element) it.next();
@@ -969,19 +975,33 @@ public class CourseOfferingImport extends BaseImport {
         	for (Iterator<?> it = element.elementIterator(elementName); it.hasNext();){
 				Element instructorElement = (Element) it.next();
 				String id = getRequiredStringAttribute(instructorElement, "id", elementName);
+				String firstName = getOptionalStringAttribute(instructorElement, "fname");
+				String middleName = getOptionalStringAttribute(instructorElement, "mname");
+				String lastName = getOptionalStringAttribute(instructorElement, "lname");
 				boolean addNew = false;
 				ClassInstructor ci = existingInstructors.get(id);
 				if (ci == null){
-					DepartmentalInstructor origDi = findDepartmentalInstructorWithExternalUniqueId(id, c.getControllingDept());
-					if (origDi != null){
-						ci = new ClassInstructor();
-						ci.setClassInstructing(c);
-						c.addToclassInstructors(ci);
-						ci.setInstructor(origDi);
-						origDi.addToclasses(ci);
-						changed = true;
-						addNew = true;
-					}				
+					DepartmentalInstructor di = findDepartmentalInstructorWithExternalUniqueId(id, c.getSchedulingSubpart().getControllingDept());
+					if (di == null) {
+						di = new DepartmentalInstructor();
+						di.setDepartment(c.getSchedulingSubpart().getControllingDept());
+						di.setExternalUniqueId(id);
+						di.setFirstName(firstName);
+						di.setMiddleName(middleName);
+						di.setLastName((lastName != null?lastName:"Unknown Name"));
+						di.setIgnoreToFar(new Boolean(false));
+						getHibSession().save(di);
+						getHibSession().flush();
+						getHibSession().refresh(di);
+			        	ChangeLog.addChange(getHibSession(), manager, session, di, ChangeLog.Source.DATA_IMPORT, ChangeLog.Operation.CREATE, c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea(), c.getSchedulingSubpart().getControllingCourseOffering().getDepartment());
+					}
+					ci = new ClassInstructor();
+					ci.setClassInstructing(c);
+					c.addToclassInstructors(ci);
+					ci.setInstructor(di);
+					di.addToclasses(ci);
+					changed = true;
+					addNew = true;
 					
 				} else {
 					existingInstructors.remove(id);
