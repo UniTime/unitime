@@ -277,7 +277,7 @@ public class ExamDetailAction extends PreferencesAction {
         frm.setExamId(exam.getUniqueId().toString());
         
         frm.setLabel(exam.getLabel());
-        frm.setName(exam.getName());
+        frm.setName(exam.generateName().equals(exam.getName())?null:exam.getName());
         frm.setNote(exam.getNote()==null?null:exam.getNote().replaceAll("\n", "<br>"));
         frm.setLength(exam.getLength());
         frm.setSeatingType(Exam.sSeatingTypes[exam.getSeatingType()]);
