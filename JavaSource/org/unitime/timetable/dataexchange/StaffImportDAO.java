@@ -88,7 +88,10 @@ public class StaffImportDAO extends StaffDAO {
             staff.setMiddleName(element.attributeValue("middleName"));
             staff.setLastName(element.attributeValue("lastName"));
             PositionCodeType posCodeType = null;
-            posCodeType = new PositionCodeTypeDAO().get(element.attributeValue("positionCode"));
+            String positionCode = element.attributeValue("positionCode");
+            if (positionCode != null && positionCode.trim().length() > 0){
+            	posCodeType = new PositionCodeTypeDAO().get(positionCode);
+            }
             staff.setPositionCode(posCodeType);
             staff.setExternalUniqueId(externalId);
             staff.setDept(element.attributeValue("department"));
