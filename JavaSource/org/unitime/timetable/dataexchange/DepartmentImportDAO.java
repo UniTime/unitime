@@ -88,7 +88,11 @@ public class DepartmentImportDAO extends DepartmentDAO {
             if(department == null) {
             	department = new Department();
                 department.setSession(session);
-            }
+                department.setAllowReqTime(new Boolean(false));
+                department.setAllowReqRoom(new Boolean(false));
+                department.setExternalManager(new Boolean(false));
+                department.setDistributionPrefPriority(new Integer(0));
+           }
             else {
             	if("T".equalsIgnoreCase(element.attributeValue("delete"))) {
             		this.delete(department);
