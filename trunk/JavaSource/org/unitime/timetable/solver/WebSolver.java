@@ -270,8 +270,10 @@ public class WebSolver extends TimetableSolver implements ProgressListener {
             String mode = properties.getProperty("ExamBasic.Mode","Initial");
             if ("MPP".equals(mode)) {
                 properties.setProperty("General.MPP","true");
+                /*
                 if (ext.length()>0) ext.append(";");
                 ext.append("net.sf.cpsolver.ifs.extension.ViolatedInitials");
+                */
             }
         }
         properties.setProperty("Extensions.Classes",ext.toString());
