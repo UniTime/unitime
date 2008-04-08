@@ -78,6 +78,14 @@
 			not-null="true"
 			length="6"
 		/>
+
+		<property
+			name="examCapacity"
+			column="EXAM_CAPACITY"
+			type="java.lang.Integer"
+			not-null="false"
+			length="6"
+		/>
 		
 		<property
 			name="classification"

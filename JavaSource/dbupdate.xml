@@ -1509,4 +1509,9 @@
 			references %SCHEMA%.event (uniqueid) on delete set null
 		</sql>
 	</update>
+		<update version="23" date="09-Apr-2008" comment="External Room add exam capacity">
+		<plsql>alter table %SCHEMA%.external_room add exam_capacity number(10)</plsql>
+		<mysql>alter table %SCHEMA%.external_room add exam_capacity bigint(10)</mysql>
+	</update>
+	
 </dbupdate>
