@@ -264,6 +264,7 @@ public class SessionRollForward {
 				if (toExternalRoom != null) {
 					toRoom = new Room();
 					toRoom.setCapacity(toExternalRoom.getCapacity());
+					toRoom.setExamCapacity(toExternalRoom.getExamCapacity());
 					toRoom.setClassification(toExternalRoom.getClassification());
 					toRoom.setCoordinateX(toExternalRoom.getCoordinateX());
 					toRoom.setCoordinateY(toExternalRoom.getCoordinateY());
@@ -584,6 +585,7 @@ public class SessionRollForward {
 					r = new Room();
 					r.setBuilding(b);
 					r.setCapacity(er.getCapacity());
+					r.setExamCapacity(er.getExamCapacity());
 					r.setClassification(er.getClassification());
 					r.setCoordinateX(er.getCoordinateX());
 					r.setCoordinateY(er.getCoordinateY());
@@ -1310,16 +1312,16 @@ public class SessionRollForward {
 //		Session fromSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollCourseOfferingsForwardFrom());
 //		if (toSession.getSubjectAreas() != null) {
 //			SubjectArea subjectArea = null;
-//			edu.purdue.smas.custom.util.PopulateSessionFromMsf pop = new edu.purdue.smas.custom.util.PopulateSessionFromMsf();
-////			InstructionalOfferingRollForward instrOffrRollFwd = new InstructionalOfferingRollForward();
+////			edu.purdue.smas.custom.util.PopulateSessionFromMsf pop = new edu.purdue.smas.custom.util.PopulateSessionFromMsf();
+//			InstructionalOfferingRollForward instrOffrRollFwd = new InstructionalOfferingRollForward();
 //			SubjectArea.loadSubjectAreas(toSession.getUniqueId());
 //			for (Iterator saIt = toSession.getSubjectAreas().iterator(); saIt.hasNext();){
 //				subjectArea = (SubjectArea) saIt.next();
-////				if (subjectArea.getSubjectAreaAbbreviation().compareTo("MGMT") == 0){
-//				SubjectArea.loadSubjectAreas(toSession.getUniqueId());
-//				pop.populateSubjectArea(subjectArea, toSession, fromSession);
+////				if (subjectArea.getSubjectAreaAbbreviation().compareTo("CHM") >= 0){
+////				SubjectArea.loadSubjectAreas(toSession.getUniqueId());
+////				pop.populateSubjectArea(subjectArea, toSession, fromSession);
 ////				}
-////				instrOffrRollFwd.rollForwardInstructionalOfferingsForASubjectArea(subjectArea.getSubjectAreaAbbreviation(), fromSession, toSession);
+//				instrOffrRollFwd.rollForwardInstructionalOfferingsForASubjectArea(subjectArea.getSubjectAreaAbbreviation(), fromSession, toSession);
 //
 //			}
 //		}
@@ -1363,6 +1365,25 @@ public class SessionRollForward {
 		}
 	}
 
+//	public void loadCoursesNoLongerInCourseCatalogForTerm(ActionMessages errors,
+//			RollForwardSessionForm rollForwardSessionForm){
+//		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
+//		Session fromSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollCourseOfferingsForwardFrom());
+//		ArrayList subjects = new ArrayList();
+//		SubjectAreaDAO saDao = new SubjectAreaDAO();
+//		for (int i = 0; i <	rollForwardSessionForm.getRollForwardSubjectAreaIds().length; i++){
+//			subjects.add(saDao.get(Long.parseLong(rollForwardSessionForm.getRollForwardSubjectAreaIds()[i])));
+//		}
+//		if (toSession.getSubjectAreas() != null) {
+//			SubjectArea subjectArea = null;
+//			InstructionalOfferingRollForward instrOffrRollFwd = new InstructionalOfferingRollForward();
+//			for (Iterator saIt = subjects.iterator(); saIt.hasNext();){
+//				subjectArea = (SubjectArea) saIt.next();
+//				SubjectArea.loadSubjectAreas(toSession.getUniqueId());
+//				instrOffrRollFwd.rollForwardExpiredInstructionalOfferingsForASubjectArea(subjectArea.getSubjectAreaAbbreviation(), fromSession, toSession);
+//			}
+//		}
+//	}
 	private static String buildRoomQueryForDepartment(Department dept, Session sess, String locType){
 		StringBuffer sb = new StringBuffer();
 		sb.append("select l from " + locType + " as l inner join l.roomDepts as rd where l.session.uniqueId = ");
@@ -1859,34 +1880,18 @@ public class SessionRollForward {
 //				"NUPH595E"
 //		};
 //		cloneCourses(courses, "CLPH585A", rollForwardSessionForm);
-		// PPE Courses
+//		// PPE Courses
 //		String[] courses = {
-//				"PPE 151 ",
-//				"PPE 303 ",
-//				"PPE 312 ",
-//				"PPE 313 ",
-//				"PPE 322 ",
-//				"PPE 323 ",
-//				"PPE 331 ",
-//				"PPE 332 ",
-//				"PPE 333 ",
-//				"PPE 442 "
+//				"PPE 305 ",
+//				"PPE 353 "
 //		};
-//		cloneCourses(courses, "PPE 441 ", rollForwardSessionForm);
+//		cloneCourses(courses, "PPE 151 ", rollForwardSessionForm);
 //		// PPT Courses
 //		String[] courses2 = {
-//				"PPT 151 ",
-//				"PPT 303 ",
-//				"PPT 312 ",
-//				"PPT 313 ",
-//				"PPT 322 ",
-//				"PPT 323 ",
-//				"PPT 331 ",
-//				"PPT 332 ",
-//				"PPT 333 ",
-//				"PPT 442 "
+//				"PPT 305 ",
+//				"PPT 353 "
 //		};
-//		cloneCourses(courses2, "PPT 441 ", rollForwardSessionForm);
+//		cloneCourses(courses2, "PPT 151 ", rollForwardSessionForm);
 
 	}
 
