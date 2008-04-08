@@ -70,4 +70,44 @@ public abstract class BaseImport extends DataExchangeHelper {
     
     public abstract void loadXml(Element rootElement) throws Exception;
     
+    protected String getRequiredStringAttribute(Element element, String attributeName, String elementName) throws Exception{		
+		String attributeValue = element.attributeValue(attributeName);
+		if (attributeValue == null || attributeValue.trim().length() == 0){
+			throw new Exception("For element '" + elementName + "' a '" + attributeName + "' is required");
+		} else {
+			attributeValue = attributeValue.trim().replace('\u0096', ' ').replace('\u0097', ' ');
+		}						
+		return(attributeValue);
+	}
+	
+	protected String getOptionalStringAttribute(Element element, String attributeName) {		
+		String attributeValue = element.attributeValue(attributeName);
+		if (attributeValue == null || attributeValue.trim().length() == 0){
+			attributeValue = null;
+		} else {
+			attributeValue = attributeValue.trim().replace('\u0096', ' ').replace('\u0097', ' ');
+		}						
+		return(attributeValue);		
+	}
+	
+	protected Integer getRequiredIntegerAttribute(Element element, String attributeName, String elementName) throws Exception {
+		String attributeStr = getRequiredStringAttribute(element, attributeName, elementName);
+		return(new Integer(attributeStr));
+	}
+	
+	protected Integer getOptionalIntegerAttribute(Element element, String attributeName) {
+		String attributeStr = getOptionalStringAttribute(element, attributeName);
+		return(new Integer(attributeStr));
+	}
+	
+	protected Boolean getRequiredBooleanAttribute(Element element, String attributeName, String elementName) throws Exception {
+		String attributeStr = getRequiredStringAttribute(element, attributeName, elementName);
+		return(new Boolean(attributeStr));
+	}
+	
+	protected Boolean getOptionalBooleanAttribute(Element element, String attributeName) {
+		String attributeStr = getOptionalStringAttribute(element, attributeName);
+		return(new Boolean(attributeStr));
+	}
+
 }
