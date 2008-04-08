@@ -153,7 +153,7 @@ public class CourseOfferingImport extends BaseImport {
 		    
 	        if (created != null) {
 		        addNote("Loading offerings XML file created on: " + created);
-				ChangeLog.addChange(getHibSession(), manager, session, session, created, ChangeLog.Source.DATA_IMPORT, ChangeLog.Operation.UPDATE, null, null);
+				ChangeLog.addChange(getHibSession(), manager, session, session, created, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.UPDATE, null, null);
 				updateChangeList(true);
 	        }
 			String offeringElementName = "offering";
@@ -467,7 +467,7 @@ public class CourseOfferingImport extends BaseImport {
 		
 		if (changed){
 			this.getHibSession().saveOrUpdate(io);
-			ChangeLog.addChange(getHibSession(), manager, session, io, ChangeLog.Source.DATA_IMPORT, (action.equalsIgnoreCase("insert")?ChangeLog.Operation.CREATE:ChangeLog.Operation.UPDATE), io.getControllingCourseOffering().getSubjectArea(), io.getDepartment());
+			ChangeLog.addChange(getHibSession(), manager, session, io, ChangeLog.Source.DATA_IMPORT_OFFERINGS, (action.equalsIgnoreCase("insert")?ChangeLog.Operation.CREATE:ChangeLog.Operation.UPDATE), io.getControllingCourseOffering().getSubjectArea(), io.getDepartment());
 		}
 		
 		return(changed);
@@ -554,7 +554,7 @@ public class CourseOfferingImport extends BaseImport {
 			this.getHibSession().save(dp);
 			this.getHibSession().flush();
 			this.getHibSession().refresh(dp);
-			ChangeLog.addChange(getHibSession(), manager, session, dp, ChangeLog.Source.DATA_IMPORT, ChangeLog.Operation.CREATE, c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea(), c.getSchedulingSubpart().getControllingCourseOffering().getDepartment());
+			ChangeLog.addChange(getHibSession(), manager, session, dp, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.CREATE, c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea(), c.getSchedulingSubpart().getControllingCourseOffering().getDepartment());
 		}
 		if (dp.isDefault()){
 			return(null);
@@ -993,7 +993,7 @@ public class CourseOfferingImport extends BaseImport {
 						getHibSession().save(di);
 						getHibSession().flush();
 						getHibSession().refresh(di);
-			        	ChangeLog.addChange(getHibSession(), manager, session, di, ChangeLog.Source.DATA_IMPORT, ChangeLog.Operation.CREATE, c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea(), c.getSchedulingSubpart().getControllingCourseOffering().getDepartment());
+			        	ChangeLog.addChange(getHibSession(), manager, session, di, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.CREATE, c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea(), c.getSchedulingSubpart().getControllingCourseOffering().getDepartment());
 					}
 					ci = new ClassInstructor();
 					ci.setClassInstructing(c);
@@ -1030,7 +1030,7 @@ public class CourseOfferingImport extends BaseImport {
 					getHibSession().saveOrUpdate(c);
 					getHibSession().flush();
 					getHibSession().refresh(c);
-		        	ChangeLog.addChange(getHibSession(), manager, session, ci, ChangeLog.Source.DATA_IMPORT, (addNew?ChangeLog.Operation.CREATE:ChangeLog.Operation.UPDATE), c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea(), c.getSchedulingSubpart().getControllingCourseOffering().getDepartment());
+		        	ChangeLog.addChange(getHibSession(), manager, session, ci, ChangeLog.Source.DATA_IMPORT_OFFERINGS, (addNew?ChangeLog.Operation.CREATE:ChangeLog.Operation.UPDATE), c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea(), c.getSchedulingSubpart().getControllingCourseOffering().getDepartment());
 				}
 			}
         }
@@ -1081,7 +1081,7 @@ public class CourseOfferingImport extends BaseImport {
 	        	getHibSession().saveOrUpdate(io);
 	        	getHibSession().flush();
 	        	getHibSession().refresh(io);
-	        	ChangeLog.addChange(getHibSession(), manager, session, io.getCredit(), ChangeLog.Source.DATA_IMPORT, ChangeLog.Operation.UPDATE, io.getControllingCourseOffering().getSubjectArea(), io.getControllingCourseOffering().getDepartment());
+	        	ChangeLog.addChange(getHibSession(), manager, session, io.getCredit(), ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.UPDATE, io.getControllingCourseOffering().getSubjectArea(), io.getControllingCourseOffering().getDepartment());
 	        }
         }
 		return(changed);
@@ -1125,7 +1125,7 @@ public class CourseOfferingImport extends BaseImport {
 	        	getHibSession().saveOrUpdate(ss);
 	        	getHibSession().flush();
 	        	getHibSession().refresh(ss);
-	        	ChangeLog.addChange(getHibSession(), manager, session, ss.getCredit(), ChangeLog.Source.DATA_IMPORT, ChangeLog.Operation.UPDATE, ss.getControllingCourseOffering().getSubjectArea(), ss.getControllingCourseOffering().getDepartment());
+	        	ChangeLog.addChange(getHibSession(), manager, session, ss.getCredit(), ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.UPDATE, ss.getControllingCourseOffering().getSubjectArea(), ss.getControllingCourseOffering().getDepartment());
 	        }
         }
 		return(changed);
@@ -1239,7 +1239,7 @@ public class CourseOfferingImport extends BaseImport {
 				getHibSession().saveOrUpdate(io);
 				getHibSession().flush();
 				getHibSession().refresh(io);
-				ChangeLog.addChange(getHibSession(), manager, session, co, ChangeLog.Source.DATA_IMPORT, ChangeLog.Operation.CREATE, co.getSubjectArea(), co.getDepartment());
+				ChangeLog.addChange(getHibSession(), manager, session, co, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.CREATE, co.getSubjectArea(), co.getDepartment());
 			}
 			changed = true;
 		} else {
@@ -1295,7 +1295,7 @@ public class CourseOfferingImport extends BaseImport {
 							changed = true;
 						}	
 						if(changed){
-				        	ChangeLog.addChange(getHibSession(), manager, session, oco, ChangeLog.Source.DATA_IMPORT, ChangeLog.Operation.UPDATE, oco.getSubjectArea(), oco.getDepartment());
+				        	ChangeLog.addChange(getHibSession(), manager, session, oco, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.UPDATE, oco.getSubjectArea(), oco.getDepartment());
 						}
 					}					
 				}
@@ -1314,7 +1314,7 @@ public class CourseOfferingImport extends BaseImport {
 					getHibSession().saveOrUpdate(io);
 					getHibSession().flush();
 					getHibSession().refresh(io);
-		        	ChangeLog.addChange(getHibSession(), manager, session, nco, ChangeLog.Source.DATA_IMPORT, ChangeLog.Operation.CREATE, nco.getSubjectArea(), nco.getDepartment());
+		        	ChangeLog.addChange(getHibSession(), manager, session, nco, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.CREATE, nco.getSubjectArea(), nco.getDepartment());
 				}
 			}
 			List<?> removeCourses = new ArrayList<Object>();
@@ -1428,7 +1428,7 @@ public class CourseOfferingImport extends BaseImport {
 
 				if (changed){
 					addNote("\tconfig element changed: " + name);
-		        	ChangeLog.addChange(getHibSession(), manager, session, ioc, ChangeLog.Source.DATA_IMPORT, (addNew?ChangeLog.Operation.CREATE:ChangeLog.Operation.UPDATE), ioc.getControllingCourseOffering().getSubjectArea(), ioc.getControllingCourseOffering().getDepartment());
+		        	ChangeLog.addChange(getHibSession(), manager, session, ioc, ChangeLog.Source.DATA_IMPORT_OFFERINGS, (addNew?ChangeLog.Operation.CREATE:ChangeLog.Operation.UPDATE), ioc.getControllingCourseOffering().getSubjectArea(), ioc.getControllingCourseOffering().getDepartment());
 					this.getHibSession().saveOrUpdate(ioc);
 				}
 			}
@@ -1670,7 +1670,7 @@ public class CourseOfferingImport extends BaseImport {
 					changed = true;
 				}				
 				if (changed){
-					ChangeLog.addChange(getHibSession(), manager, session, clazz, ChangeLog.Source.DATA_IMPORT, (isAdd?ChangeLog.Operation.CREATE:ChangeLog.Operation.UPDATE), ioc.getControllingCourseOffering().getSubjectArea(), ioc.getDepartment());
+					ChangeLog.addChange(getHibSession(), manager, session, clazz, ChangeLog.Source.DATA_IMPORT_OFFERINGS, (isAdd?ChangeLog.Operation.CREATE:ChangeLog.Operation.UPDATE), ioc.getControllingCourseOffering().getSubjectArea(), ioc.getDepartment());
 				}
 			}
 		} 
@@ -1798,7 +1798,7 @@ public class CourseOfferingImport extends BaseImport {
 			getHibSession().save(dp);
 			getHibSession().flush();
 			getHibSession().refresh(dp);
-	        ChangeLog.addChange(getHibSession(), manager, session, dp, ChangeLog.Source.DATA_IMPORT, ChangeLog.Operation.CREATE, null, clazz.getSchedulingSubpart().getControllingDept());       
+	        ChangeLog.addChange(getHibSession(), manager, session, dp, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.CREATE, null, clazz.getSchedulingSubpart().getControllingDept());       
 		}	
 		
 	}
@@ -1842,7 +1842,7 @@ public class CourseOfferingImport extends BaseImport {
 			getHibSession().save(newEvent);
 			changed = true; 
 			addNote("\tdid not find matching event, added new event: " + c.getSchedulingSubpart().getInstrOfferingConfig().getCourseName() + " " + c.getSchedulingSubpart().getItype().getAbbv().trim() + " " + c.getClassSuffix());
-			ChangeLog.addChange(getHibSession(), manager, session, newEvent, ChangeLog.Source.DATA_IMPORT, ChangeLog.Operation.CREATE, c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea(), c.getSchedulingSubpart().getControllingCourseOffering().getDepartment());
+			ChangeLog.addChange(getHibSession(), manager, session, newEvent, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.CREATE, c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea(), c.getSchedulingSubpart().getControllingCourseOffering().getDepartment());
 		} else {
 			if (!originalClassEvents.isEmpty()){
 				Event origEvent = (Event) originalClassEvents.get(0);
@@ -1874,13 +1874,13 @@ public class CourseOfferingImport extends BaseImport {
 						Meeting m = (Meeting) mIt.next();
 						origEvent.getMeetings().remove(m);
 						m.setEvent(null);
-						ChangeLog.addChange(getHibSession(), manager, session, m, ChangeLog.Source.DATA_IMPORT, ChangeLog.Operation.DELETE, c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea(), c.getSchedulingSubpart().getControllingCourseOffering().getDepartment());
+						ChangeLog.addChange(getHibSession(), manager, session, m, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.DELETE, c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea(), c.getSchedulingSubpart().getControllingCourseOffering().getDepartment());
 						getHibSession().delete(m);
 						changed = true;
 					}
 				}
 				if (changed){
-					ChangeLog.addChange(getHibSession(), manager, session, origEvent, ChangeLog.Source.DATA_IMPORT, ChangeLog.Operation.UPDATE, c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea(), c.getSchedulingSubpart().getControllingCourseOffering().getDepartment());	
+					ChangeLog.addChange(getHibSession(), manager, session, origEvent, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.UPDATE, c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea(), c.getSchedulingSubpart().getControllingCourseOffering().getDepartment());	
 					getHibSession().update(origEvent);
 				}
 			}
@@ -1999,7 +1999,7 @@ public class CourseOfferingImport extends BaseImport {
 					changed = true;
 				}	
 				if (changed){
-					ChangeLog.addChange(getHibSession(), manager, session, ss, ChangeLog.Source.DATA_IMPORT, (isAdd?ChangeLog.Operation.CREATE:ChangeLog.Operation.UPDATE), ioc.getControllingCourseOffering().getSubjectArea(), ioc.getDepartment());
+					ChangeLog.addChange(getHibSession(), manager, session, ss, ChangeLog.Source.DATA_IMPORT_OFFERINGS, (isAdd?ChangeLog.Operation.CREATE:ChangeLog.Operation.UPDATE), ioc.getControllingCourseOffering().getSubjectArea(), ioc.getDepartment());
 				}
 			}
 		} 
@@ -2012,7 +2012,7 @@ public class CourseOfferingImport extends BaseImport {
 			}
 			if(parentSubpart != null) {
 				this.getHibSession().saveOrUpdate(parentSubpart);
-				ChangeLog.addChange(getHibSession(), manager, session, parentSubpart, ChangeLog.Source.DATA_IMPORT, ChangeLog.Operation.UPDATE, ioc.getControllingCourseOffering().getSubjectArea(), ioc.getDepartment());
+				ChangeLog.addChange(getHibSession(), manager, session, parentSubpart, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.UPDATE, ioc.getControllingCourseOffering().getSubjectArea(), ioc.getDepartment());
 			}
 			changed = true;
 		}
@@ -2056,13 +2056,13 @@ public class CourseOfferingImport extends BaseImport {
 			pg.getDistributionObjects().remove(dObj);
 			getHibSession().saveOrUpdate(pg);
 		}
-        ChangeLog.addChange(getHibSession(), manager, session, dp, ChangeLog.Source.DATA_IMPORT, ChangeLog.Operation.DELETE, null, dept);       
+        ChangeLog.addChange(getHibSession(), manager, session, dp, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.DELETE, null, dept);       
         getHibSession().delete(dp);
         getHibSession().saveOrUpdate(dept);
         
 //        for (Iterator i=relatedInstructionalOfferings.iterator();i.hasNext();) {
 //            InstructionalOffering io = (InstructionalOffering)i.next();
-//            ChangeLog.addChange(getHibSession(), manager, session, io, ChangeLog.Source.DATA_IMPORT, ChangeLog.Operation.DELETE, io.getControllingCourseOffering().getSubjectArea(), null);
+//            ChangeLog.addChange(getHibSession(), manager, session, io, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.DELETE, io.getControllingCourseOffering().getSubjectArea(), null);
 //        }
 	}
 
@@ -2138,7 +2138,7 @@ public class CourseOfferingImport extends BaseImport {
 			}
 		}
 
-		ChangeLog.addChange(getHibSession(), manager, session, io, ChangeLog.Source.DATA_IMPORT, ChangeLog.Operation.DELETE, io.getControllingCourseOffering().getSubjectArea(), io.getControllingCourseOffering().getDepartment());
+		ChangeLog.addChange(getHibSession(), manager, session, io, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.DELETE, io.getControllingCourseOffering().getSubjectArea(), io.getControllingCourseOffering().getDepartment());
 		this.getHibSession().delete(io);
 	}
 	
@@ -2159,7 +2159,7 @@ public class CourseOfferingImport extends BaseImport {
 			}					
 		}
 		ioc.getInstructionalOffering().getInstrOfferingConfigs().remove(ioc);
-		ChangeLog.addChange(getHibSession(), manager, session, ioc, ChangeLog.Source.DATA_IMPORT, ChangeLog.Operation.DELETE, ioc.getControllingCourseOffering().getSubjectArea(), ioc.getControllingCourseOffering().getDepartment());
+		ChangeLog.addChange(getHibSession(), manager, session, ioc, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.DELETE, ioc.getControllingCourseOffering().getSubjectArea(), ioc.getControllingCourseOffering().getDepartment());
 		this.getHibSession().delete(ioc);
 	}
 	
@@ -2190,7 +2190,7 @@ public class CourseOfferingImport extends BaseImport {
 		}
 		ioc.getSchedulingSubparts().remove(ss);	
 		this.getHibSession().update(ioc);
-		ChangeLog.addChange(getHibSession(), manager, session, ss, ChangeLog.Source.DATA_IMPORT, ChangeLog.Operation.DELETE, ioc.getControllingCourseOffering().getSubjectArea(), ioc.getControllingCourseOffering().getDepartment());
+		ChangeLog.addChange(getHibSession(), manager, session, ss, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.DELETE, ioc.getControllingCourseOffering().getSubjectArea(), ioc.getControllingCourseOffering().getDepartment());
 		this.getHibSession().delete(ss);
 	}
 
@@ -2200,7 +2200,7 @@ public class CourseOfferingImport extends BaseImport {
 		Class_ clazz = ci.getClassInstructing();
 		ci.setClassInstructing(null);
 		ci.setInstructor(null);
-		ChangeLog.addChange(getHibSession(), manager, session, ci, ChangeLog.Source.DATA_IMPORT, ChangeLog.Operation.DELETE, clazz.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea(), clazz.getSchedulingSubpart().getControllingCourseOffering().getDepartment());
+		ChangeLog.addChange(getHibSession(), manager, session, ci, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.DELETE, clazz.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea(), clazz.getSchedulingSubpart().getControllingCourseOffering().getDepartment());
 		this.getHibSession().delete(ci);
 	}
 
@@ -2208,7 +2208,7 @@ public class CourseOfferingImport extends BaseImport {
 		c.deleteAllDependentObjects(this.getHibSession(), false);
 		c.getSchedulingSubpart().getClasses().remove(c);
 		SchedulingSubpart ss = c.getSchedulingSubpart();
-		ChangeLog.addChange(getHibSession(), manager, session, c, ChangeLog.Source.DATA_IMPORT, ChangeLog.Operation.DELETE, ss.getControllingCourseOffering().getSubjectArea(), ss.getControllingCourseOffering().getDepartment());
+		ChangeLog.addChange(getHibSession(), manager, session, c, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.DELETE, ss.getControllingCourseOffering().getSubjectArea(), ss.getControllingCourseOffering().getDepartment());
 		c.setSchedulingSubpart(null);
 		existingClasses.remove(c.getUniqueId());
 		this.getHibSession().delete(c);
@@ -2423,45 +2423,6 @@ public class CourseOfferingImport extends BaseImport {
 		}
 	}
 
-	private String getRequiredStringAttribute(Element element, String attributeName, String elementName) throws Exception{		
-		String attributeValue = element.attributeValue(attributeName);
-		if (attributeValue == null || attributeValue.trim().length() == 0){
-			throw new Exception("For element '" + elementName + "' a '" + attributeName + "' is required");
-		} else {
-			attributeValue = attributeValue.trim().replace('\u0096', ' ').replace('\u0097', ' ');
-		}						
-		return(attributeValue);
-	}
-	
-	private String getOptionalStringAttribute(Element element, String attributeName) {		
-		String attributeValue = element.attributeValue(attributeName);
-		if (attributeValue == null || attributeValue.trim().length() == 0){
-			attributeValue = null;
-		} else {
-			attributeValue = attributeValue.trim().replace('\u0096', ' ').replace('\u0097', ' ');
-		}						
-		return(attributeValue);		
-	}
-	
-	private Integer getRequiredIntegerAttribute(Element element, String attributeName, String elementName) throws Exception {
-		String attributeStr = getRequiredStringAttribute(element, attributeName, elementName);
-		return(new Integer(attributeStr));
-	}
-	
-	private Integer getOptionalIntegerAttribute(Element element, String attributeName) {
-		String attributeStr = getOptionalStringAttribute(element, attributeName);
-		return(new Integer(attributeStr));
-	}
-	
-	private Boolean getRequiredBooleanAttribute(Element element, String attributeName, String elementName) throws Exception {
-		String attributeStr = getRequiredStringAttribute(element, attributeName, elementName);
-		return(new Boolean(attributeStr));
-	}
-	
-	private Boolean getOptionalBooleanAttribute(Element element, String attributeName) {
-		String attributeStr = getOptionalStringAttribute(element, attributeName);
-		return(new Boolean(attributeStr));
-	}
 	
 	private void addNote(String note){
 		offeringNotes.add(note);
