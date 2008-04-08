@@ -89,6 +89,12 @@ public class BuildingRoomImport extends BaseImport {
 		room.setRoomNumber(element.attributeValue("roomNumber"));
 		room.setClassification(element.attributeValue("roomClassification"));
 		room.setCapacity(Integer.decode(element.attributeValue("capacity")));
+		String examCapacityStr = element.attributeValue("examCapacity");
+		if (examCapacityStr != null && examCapacityStr.trim().length() > 0){
+			room.setExamCapacity(Integer.decode(examCapacityStr));
+		} else {
+			room.setExamCapacity(new Integer(0));
+		}
 		room.setIsInstructional(Boolean.valueOf(element.attributeValue("instructional")));
 		room.setScheduledRoomType(element.attributeValue("scheduledRoomType"));
 		room.setBuilding(building);
