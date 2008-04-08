@@ -35,6 +35,7 @@
 
 <!ELEMENT room ( roomDepartments+, roomFeatures* ) >
 <!ATTLIST room capacity CDATA #REQUIRED >
+<!ATTLIST room examCapacity CDATA #REQUIRED >
 <!ATTLIST room displayName CDATA #IMPLIED >
 <!ATTLIST room externalId CDATA #IMPLIED >
 <!ATTLIST room instructional ( false | False | true | True ) #REQUIRED >

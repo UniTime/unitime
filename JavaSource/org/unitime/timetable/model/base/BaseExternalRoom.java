@@ -1,25 +1,6 @@
 /*
- * UniTime 3.0 (University Course Timetabling & Student Sectioning Application)
- * Copyright (C) 2007, UniTime.org, and individual contributors
- * as indicated by the @authors tag.
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-*/
-/*
- * UniTime 3.0 (University Course Timetabling & Student Sectioning Application)
- * Copyright (C) 2007, UniTime.org, and individual contributors
+ * UniTime 3.1 (University Course Timetabling & Student Sectioning Application)
+ * Copyright (C) 2008, UniTime.org, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -58,6 +39,7 @@ public abstract class BaseExternalRoom  implements Serializable {
 	public static String PROP_COORDINATE_X = "coordinateX";
 	public static String PROP_COORDINATE_Y = "coordinateY";
 	public static String PROP_CAPACITY = "capacity";
+	public static String PROP_EXAM_CAPACITY = "examCapacity";
 	public static String PROP_CLASSIFICATION = "classification";
 	public static String PROP_SCHEDULED_ROOM_TYPE = "scheduledRoomType";
 	public static String PROP_IS_INSTRUCTIONAL = "isInstructional";
@@ -114,6 +96,7 @@ public abstract class BaseExternalRoom  implements Serializable {
 	private java.lang.Integer coordinateX;
 	private java.lang.Integer coordinateY;
 	private java.lang.Integer capacity;
+	private java.lang.Integer examCapacity;
 	private java.lang.String classification;
 	private java.lang.String scheduledRoomType;
 	private java.lang.Boolean isInstructional;
@@ -231,6 +214,23 @@ public abstract class BaseExternalRoom  implements Serializable {
 	 */
 	public void setCapacity (java.lang.Integer capacity) {
 		this.capacity = capacity;
+	}
+
+
+
+	/**
+	 * Return the value associated with the column: EXAM_CAPACITY
+	 */
+	public java.lang.Integer getExamCapacity () {
+		return examCapacity;
+	}
+
+	/**
+	 * Set the value related to the column: EXAM_CAPACITY
+	 * @param examCapacity the EXAM_CAPACITY value
+	 */
+	public void setExamCapacity (java.lang.Integer examCapacity) {
+		this.examCapacity = examCapacity;
 	}
 
 
