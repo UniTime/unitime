@@ -41,6 +41,7 @@ import org.unitime.timetable.dataexchange.PosMajorImportDAO;
 import org.unitime.timetable.dataexchange.PosMinorImportDAO;
 import org.unitime.timetable.dataexchange.SessionImportDAO;
 import org.unitime.timetable.dataexchange.StaffImportDAO;
+import org.unitime.timetable.dataexchange.StudentEnrollmentImport;
 import org.unitime.timetable.dataexchange.StudentImport;
 import org.unitime.timetable.dataexchange.SubjectAreaImportDAO;
 
@@ -166,7 +167,10 @@ public class DataImportForm extends ActionForm {
         else if(root.getName().equalsIgnoreCase("offerings")) {
         	new CourseOfferingImport().loadXml(root, request);
         }
-        else {
+        else if(root.getName().equalsIgnoreCase("studentEnrollments")) {
+        	new StudentEnrollmentImport().loadXml(root, request);
+        }
+       else {
         	throw new Exception(root.getName() + " is an unknown data type.");
         }
 	}
