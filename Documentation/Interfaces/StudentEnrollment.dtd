@@ -21,9 +21,14 @@
 <!ATTLIST studentEnrollments campus CDATA #REQUIRED >
 <!ATTLIST studentEnrollments term CDATA #REQUIRED >
 <!ATTLIST studentEnrollments year CDATA #REQUIRED >
+<!ATTLIST studentEnrollments created CDATA #IMPLIED >
 
 <!ELEMENT student ( class+ ) >
 <!ATTLIST student externalId CDATA #REQUIRED >
+<!ATTLIST student firstName CDATA #IMPLIED >
+<!ATTLIST student middleName CDATA #IMPLIED >
+<!ATTLIST student lastName CDATA #IMPLIED >
+<!ATTLIST student email CDATA #IMPLIED >
 
 <!ELEMENT class EMPTY >
 <!ATTLIST class externalId CDATA #REQUIRED >
