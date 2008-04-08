@@ -48,8 +48,9 @@ public class PeriodChartReport extends PdfLegacyExamReport {
             days.put(new Integer(period.getDateOffset()), ds.format(period.getStartDate()));
         }
         boolean headerPrinted = false;
+        int nrCols = 6;
         Hashtable totalADay = new Hashtable();
-        for (int dIdx = 0; dIdx < days.size(); dIdx += 7) {
+        for (int dIdx = 0; dIdx < days.size(); dIdx += nrCols) {
             for (Enumeration e=ToolBox.sortEnumeration(times.keys());e.hasMoreElements();) {
                 int time = ((Integer)e.nextElement()).intValue();
                 String timeStr = (String)times.get(new Integer(time));
@@ -60,7 +61,7 @@ public class PeriodChartReport extends PdfLegacyExamReport {
                 int idx = 0;
                 for (Enumeration f=ToolBox.sortEnumeration(days.keys());f.hasMoreElements();idx++) {
                     int day = ((Integer)f.nextElement()).intValue();
-                    if (idx<dIdx || idx>=dIdx+7) continue;
+                    if (idx<dIdx || idx>=dIdx+nrCols) continue;
                     String dayStr = (String)days.get(new Integer(day));
                     header1 += mpad(dayStr,17)+"   "; 
                     header2 += "Exam         Enrl   ";
@@ -132,7 +133,7 @@ public class PeriodChartReport extends PdfLegacyExamReport {
             int idx = 0;
             for (Enumeration f=ToolBox.sortEnumeration(days.keys());f.hasMoreElements();idx++) {
                 Integer day = (Integer)f.nextElement();
-                if (idx<dIdx || idx>=dIdx+7) continue;
+                if (idx<dIdx || idx>=dIdx+nrCols) continue;
                 line1 += mpad((String)days.get(day),17)+"   ";
                 line2 += "============ ====   ";
                 line3 += lpad(totalADay.get(day)==null?"":totalADay.get(day).toString(),17)+"   ";
