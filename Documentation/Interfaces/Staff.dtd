@@ -21,6 +21,7 @@
 <!ATTLIST staff campus CDATA #REQUIRED >
 <!ATTLIST staff term CDATA #REQUIRED >
 <!ATTLIST staff year CDATA #REQUIRED >
+<!ATTLIST staff created CDATA #IMPLIED >
 
 <!ELEMENT staffMember EMPTY >
 <!ATTLIST staffMember department CDATA #REQUIRED >

@@ -27,3 +27,4 @@
 <!ATTLIST departments campus CDATA #REQUIRED >
 <!ATTLIST departments term CDATA #REQUIRED >
 <!ATTLIST departments year CDATA #REQUIRED >
+<!ATTLIST departments created CDATA #IMPLIED >
