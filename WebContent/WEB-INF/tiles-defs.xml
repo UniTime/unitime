@@ -846,7 +846,7 @@
   	</definition>
 
 	<definition	name="examInfoTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Examination Info"/>
+		<put name="title" type="string" value="Examination Assignment"/>
 		<put name="body" value="/exam/info.jsp" />
   	</definition>
   	
