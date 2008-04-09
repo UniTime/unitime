@@ -373,7 +373,7 @@ public class SessionRollForward {
 		}
 	}
 
-	private static void rollForwardRoomDept(RoomDept fromRoomDept, Room toRoom, Session toSession){
+	private void rollForwardRoomDept(RoomDept fromRoomDept, Room toRoom, Session toSession){
 		Department toDept = fromRoomDept.getDepartment().findSameDepartmentInSession(toSession);
 		RoomDept toRoomDept = null;
 		RoomDeptDAO rdDao = new RoomDeptDAO();
