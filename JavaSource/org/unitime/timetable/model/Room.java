@@ -19,11 +19,17 @@
 */
 package org.unitime.timetable.model;
 
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.hibernate.criterion.Restrictions;
 import org.unitime.timetable.model.base.BaseRoom;
+import org.unitime.timetable.model.dao.BuildingDAO;
+import org.unitime.timetable.model.dao.ExternalRoomDAO;
 import org.unitime.timetable.model.dao.RoomDAO;
+import org.unitime.timetable.model.dao.RoomDeptDAO;
+import org.unitime.timetable.util.LocationPermIdGenerator;
 
 
 public class Room extends BaseRoom {
@@ -147,4 +153,84 @@ public class Room extends BaseRoom {
                 setLong("sessionId", sessionId).
                 uniqueResult();
     }
+    
+	public void addExternalRoomDept(ExternalRoomDepartment externalRoomDept, Set externalRoomDepts){
+		Department dept = Department.findByDeptCode(externalRoomDept.getDepartmentCode(), this.getSession().getUniqueId());
+		RoomDept roomDept = null;
+		RoomDeptDAO rdDao = new RoomDeptDAO();
+		if (dept != null){
+			roomDept = new RoomDept();
+			roomDept.setRoom(this);
+			roomDept.setControl(new Boolean(ExternalRoomDepartment.isControllingExternalDept(externalRoomDept, externalRoomDepts)));
+			roomDept.setDepartment(dept);
+			this.addToroomDepts(roomDept);
+			dept.addToroomDepts(roomDept);
+			rdDao.saveOrUpdate(roomDept);
+		}
+	}
+    
+	public static void addNewExternalRoomsToSession(Session session){
+		ExternalRoomDAO erDao = new ExternalRoomDAO();
+		BuildingDAO bDao = new BuildingDAO();
+		RoomDAO rDao = new RoomDAO();
+		String query = "from ExternalRoom er where er.building.session.uniqueId=:sessionId ";
+		query += " and er.externalUniqueId not in (select r.externalUniqueId from Room r where r.session.uniqueId =:sessionId)";
+		query += " and er.classification in ('classroom', 'classLab')";
+		List l = erDao.getQuery(query).setLong("sessionId", session.getUniqueId()).list();
+		if (l != null){
+			ExternalRoom er = null;
+			Room r = null;
+			Building b = null;
+			for (Iterator erIt = l.iterator(); erIt.hasNext();){
+				er = (ExternalRoom) erIt.next();
+				b = Building.findByExternalIdAndSession(er.getBuilding().getExternalUniqueId(), session);
+				
+				if (b == null){
+					b = new Building();
+					b.setAbbreviation(er.getBuilding().getAbbreviation());
+					b.setCoordinateX(er.getBuilding().getCoordinateX());
+					b.setCoordinateY(er.getBuilding().getCoordinateY());
+					b.setExternalUniqueId(er.getBuilding().getExternalUniqueId());
+					b.setName(er.getBuilding().getDisplayName());
+					b.setSession(session);
+					bDao.saveOrUpdate(b);
+				}
+				r = new Room();
+				r.setBuilding(b);
+				r.setCapacity(er.getCapacity());
+				r.setExamCapacity(er.getExamCapacity());
+				r.setClassification(er.getClassification());
+				r.setCoordinateX(er.getCoordinateX());
+				r.setCoordinateY(er.getCoordinateY());
+				r.setDisplayName(er.getDisplayName());
+				r.setExternalUniqueId(er.getExternalUniqueId());
+				r.setIgnoreRoomCheck(new Boolean(false));
+				r.setIgnoreTooFar(new Boolean(false));
+				r.setRoomNumber(er.getRoomNumber());
+				r.setScheduledRoomType(er.getScheduledRoomType());
+				r.setSession(session);
+				LocationPermIdGenerator.setPermanentId(r);
+				if (er.getRoomFeatures() != null){
+					ExternalRoomFeature erf = null;
+					GlobalRoomFeature grf = null;
+					for (Iterator erfIt = er.getRoomFeatures().iterator(); erfIt.hasNext();){
+						erf = (ExternalRoomFeature) erfIt.next();
+						grf = GlobalRoomFeature.findGlobalRoomFeatureForLabel(erf.getValue());
+						if (grf != null){
+							r.addTofeatures(grf);
+						}
+					}
+				}
+				rDao.saveOrUpdate(r);
+				ExternalRoomDepartment toExternalRoomDept = null;
+				for(Iterator erdIt = er.getRoomDepartments().iterator(); erdIt.hasNext();){
+					toExternalRoomDept = (ExternalRoomDepartment) erdIt.next();
+					r.addExternalRoomDept(toExternalRoomDept, er.getRoomDepartments());
+					
+				}
+			}
+		}
+	
+	}
+
 }
