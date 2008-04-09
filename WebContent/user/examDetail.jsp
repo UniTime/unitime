@@ -61,7 +61,7 @@
 					<html:submit property="op" styleClass="btn" accesskey="A" titleKey="title.addDistPref" >
 						<bean:message key="button.addDistPref" />
 					</html:submit>
-					<input type="button" value="Info" title="Open Examination Info Window" class="btn"
+					<input type="button" value="Assign" title="Open Examination Assignment Window (Alt+X)" class="btn" accesskey="X"
 							onClick="javascript:window.open('examInfo.do?examId=<%=String.valueOf(examId)%>','exams','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no');"
 					/>
 					<html:submit property="op" styleClass="btn" accesskey="D" titleKey="title.deleteExam" onclick="return confirmDelete();">
@@ -244,7 +244,7 @@
 				<html:submit property="op" styleClass="btn" accesskey="A" titleKey="title.addDistPref" >
 					<bean:message key="button.addDistPref" />
 				</html:submit>
-				<input type="button" value="Info" title="Open Examination Info Window" class="btn"
+				<input type="button" value="Assign" title="Open Examination Assignment Window (Alt+X)" class="btn" accesskey="X"
 						onClick="javascript:window.open('examInfo.do?examId=<%=String.valueOf(examId)%>','exams','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no');"
 				/>
 				<html:submit property="op" styleClass="btn" accesskey="D" titleKey="title.deleteExam" onclick="return confirmDelete();">
