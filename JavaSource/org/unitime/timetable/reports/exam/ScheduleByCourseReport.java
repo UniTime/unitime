@@ -112,9 +112,7 @@ public class ScheduleByCourseReport extends PdfLegacyExamReport {
                     lastCourse = section.getCourseNbr();
                 }
                 if (j.hasNext()) { 
-                    if (getLineNumber()<sNrLines) {
-                        println(""); 
-                    }
+                    if (!iNewPage) println(""); 
                 }
             }
             setCont(null);

@@ -50,6 +50,7 @@ public class PeriodChartReport extends PdfLegacyExamReport {
         boolean headerPrinted = false;
         int nrCols = 6;
         Hashtable totalADay = new Hashtable();
+        String timesThisPage = null;
         for (int dIdx = 0; dIdx < days.size(); dIdx += nrCols) {
             for (Enumeration e=ToolBox.sortEnumeration(times.keys());e.hasMoreElements();) {
                 int time = ((Integer)e.nextElement()).intValue();
@@ -59,10 +60,14 @@ public class PeriodChartReport extends PdfLegacyExamReport {
                 String header3 = "";
                 Vector periods = new Vector();
                 int idx = 0;
+                String firstDay = null;
+                String lastDay = null;
                 for (Enumeration f=ToolBox.sortEnumeration(days.keys());f.hasMoreElements();idx++) {
                     int day = ((Integer)f.nextElement()).intValue();
                     if (idx<dIdx || idx>=dIdx+nrCols) continue;
                     String dayStr = (String)days.get(new Integer(day));
+                    if (firstDay==null) firstDay = dayStr; 
+                    lastDay = dayStr;
                     header1 += mpad(dayStr,17)+"   "; 
                     header2 += "Exam         Enrl   ";
                     header3 += "============ ====   ";
@@ -75,12 +80,34 @@ public class PeriodChartReport extends PdfLegacyExamReport {
                     periods.add(period);
                 }
                 setHeader(new String[] {timeStr,header1,header2,header3});
-                if (!headerPrinted)
+                int nextLines = 0;
+                for (Enumeration f=periods.elements();f.hasMoreElements();) {
+                    ExamPeriod period = (ExamPeriod)f.nextElement();
+                    if (period==null) continue;
+                    TreeSet<ExamSectionInfo> sections = period2courseSections.get(period);
+                    if (sections==null) continue;
+                    nextLines = Math.max(nextLines,6+sections.size());
+                }
+                if (!headerPrinted) {
                     printHeader();
-                else
+                    setPageName(timeStr+(days.size()>nrCols?" ("+firstDay+" - "+lastDay+")":""));
+                    setCont(timeStr+(days.size()>nrCols?" ("+firstDay+" - "+lastDay+")":""));
+                    timesThisPage = timeStr;
+                } else if (timesThisPage!=null && getLineNumber()+nextLines<=sNrLines) {
+                    println("");
+                    println(timeStr);
+                    println(header1);
+                    println(header2);
+                    println(header3);
+                    timesThisPage += ", "+timeStr;
+                    setPageName(timesThisPage+(days.size()>nrCols?" ("+firstDay+" - "+lastDay+")":""));
+                    setCont(timesThisPage+(days.size()>nrCols?" ("+firstDay+" - "+lastDay+")":""));
+                } else {
                     newPage();
-                setPageName(timeStr);
-                setCont(timeStr); 
+                    timesThisPage = timeStr;
+                    setPageName(timeStr+(days.size()>nrCols?" ("+firstDay+" - "+lastDay+")":""));
+                    setCont(timeStr+(days.size()>nrCols?" ("+firstDay+" - "+lastDay+")":""));
+                }
                 headerPrinted = true;
                 int max = 0;
                 Vector lines = new Vector();
@@ -141,6 +168,7 @@ public class PeriodChartReport extends PdfLegacyExamReport {
             println(line1);
             println(line2);
             println(line3);
+            timesThisPage = null;
         }
         lastPage();
     }
