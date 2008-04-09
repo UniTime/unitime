@@ -30,3 +30,4 @@
 <!ATTLIST subjectAreas campus CDATA #REQUIRED >
 <!ATTLIST subjectAreas term CDATA #REQUIRED >
 <!ATTLIST subjectAreas year CDATA #REQUIRED >
+<!ATTLIST subjectAreas created CDATA #IMPLIED >

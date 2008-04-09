@@ -32,6 +32,7 @@
 <!ATTLIST buildingsRooms campus CDATA #REQUIRED >
 <!ATTLIST buildingsRooms term CDATA #REQUIRED >
 <!ATTLIST buildingsRooms year CDATA #REQUIRED >
+<!ATTLIST buildingsRooms created CDATA #IMPLIED >
 
 <!ELEMENT room ( roomDepartments+, roomFeatures* ) >
 <!ATTLIST room capacity CDATA #REQUIRED >
