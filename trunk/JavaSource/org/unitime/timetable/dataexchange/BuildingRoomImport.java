@@ -52,6 +52,14 @@ public class BuildingRoomImport extends BaseImport {
 	        if(session == null) {
 	           	throw new Exception("No session found for the given campus, year, and term.");
 	        }
+            /* 
+             * Remove all buildings and rooms for the given session and reload them using the xml 
+             */
+            
+            getHibSession().createQuery("delete ExternalBuilding eb where eb.session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).executeUpdate();
+            
+            flush(true);
+            
 			for (Iterator i = root.elementIterator(); i.hasNext();) {
 				importBuildings((Element) i.next(), session);
 			}
