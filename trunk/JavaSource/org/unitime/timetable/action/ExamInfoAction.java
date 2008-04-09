@@ -32,7 +32,6 @@ import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ui.ExamInfoModel;
-import org.unitime.timetable.webutil.BackTracker;
 
 /**
  * @author Tomas Muller
@@ -117,12 +116,14 @@ public class ExamInfoAction extends Action {
             myForm.setOp("Close");
         }
         
+        /*
         BackTracker.markForBack(
                 request,
                 "examInfo.do?examId=" + model.getExam().getExamId(),
                 "Exam Info ("+ model.getExam().getExamName() +")",
                 true, false);
-
+        */
+        
         return mapping.findForward("show");        
     }
 
