@@ -42,9 +42,7 @@ public class ExamScheduleByPeriodReport extends PdfLegacyExamReport {
                 ExamAssignmentInfo exam = i.next();
                 if (!period.equals(exam.getPeriod())) continue;
                 if (iPeriodPrinted) {
-                    if (getLineNumber()<sNrLines) {
-                        println(""); 
-                    }
+                    if (!iNewPage) println("");
                 }
                 ExamSectionInfo lastSection = null;
                 for (Iterator<ExamSectionInfo> j = exam.getSections().iterator(); j.hasNext();) {
