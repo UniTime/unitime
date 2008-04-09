@@ -22,7 +22,6 @@ package org.unitime.timetable.action;
 import java.io.File;
 import java.text.DecimalFormat;
 import java.util.Iterator;
-import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -41,21 +40,11 @@ import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.BuildingEditForm;
 import org.unitime.timetable.model.Building;
-import org.unitime.timetable.model.Department;
-import org.unitime.timetable.model.ExternalRoom;
-import org.unitime.timetable.model.ExternalRoomDepartment;
-import org.unitime.timetable.model.ExternalRoomFeature;
-import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Room;
-import org.unitime.timetable.model.RoomDept;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.BuildingDAO;
-import org.unitime.timetable.model.dao.ExternalRoomDAO;
-import org.unitime.timetable.model.dao.RoomDAO;
-import org.unitime.timetable.model.dao.RoomDeptDAO;
 import org.unitime.timetable.util.Constants;
-import org.unitime.timetable.util.LocationPermIdGenerator;
 import org.unitime.timetable.webutil.PdfWebTable;
 
 
