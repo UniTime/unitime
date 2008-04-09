@@ -76,6 +76,9 @@
 <% 			if (manager.canDoTimetable(acadSession, user)) { %>		
 				leaf_item('Reports','Display Solution Reports','solutionReport.do');
 <% 			} %>
+<%          if (user!=null && user.getRole().equals(Roles.ADMIN_ROLE)) { %>
+				leaf_item('Manage Solvers','Manage Running Solvers','manageSolvers.do');
+<%          } %>
 		enditem(); //11
 <% } else if (manager.canAudit(acadSession, user)) { %>
 		menu_item('12','Audit','Audit Input Data','','collapse');
@@ -85,16 +88,6 @@
 			leaf_item('Reports','Display Solution Reports','solutionReport.do');
 		enditem(); //12
 <% }} %>
-	<% if (user!=null && user.getRole().equals(Roles.ADMIN_ROLE)) { %>
-		menu_item('13','Administration','Administration','','expand');
-				leaf_item('Date Patterns','Manage Date Patterns','datePatternEdit.do');
-				menu_item('130','Time Patterns','Manage Time Patterns','timePatternEdit.do','expand');
-					leaf_item('Exact Time','Exact Time Pattern','exactTimeEdit.do');
-				enditem(); //130
-				leaf_item('Solver Groups', 'Manage Solver Groups','solverGroupEdit.do');
-				leaf_item('Manage Solvers','Manage Running Solvers','manageSolvers.do');
-		enditem(); //13
-	<% } %>
 	enditem(); //1
 <% if (user!=null
 		&& user.getRole().equals(Roles.ADMIN_ROLE)) { %>
@@ -121,11 +114,6 @@
 		enditem(); //21
 	<% } %>
 		leaf_item('Reports','Examination Reports','examAssignmentReport.do');
-	<% if (user!=null && user.getRole().equals(Roles.ADMIN_ROLE)) { %>
-		//menu_item('22','Administration','Administration','','expand');
-			leaf_item('Examination Periods','Examination Periods','examPeriodEdit.do');
-		//enditem(); //2
-	<% } %>
 	enditem(); //2
 	<% } %>
 
@@ -156,11 +144,16 @@
 				<%--
 				leaf_item('Rooms','Manage Rooms','roomList.do');
 				--%>
+				leaf_item('Date Patterns','Manage Date Patterns','datePatternEdit.do');
+				menu_item('511','Time Patterns','Manage Time Patterns','timePatternEdit.do','expand');
+					leaf_item('Exact Time','Exact Time Pattern','exactTimeEdit.do');
+				enditem(); //511
 				leaf_item('Instructional Types','Manage Instructional Types','itypeDescList.do');
 				<%--
 				leaf_item('Preference Levels','Preference Levels','preferenceLevelList.do');
 				--%>
 				leaf_item('Status Types','Manage Status Types','deptStatusTypeEdit.do');
+				leaf_item('Examination Periods','Examination Periods','examPeriodEdit.do');
 				leaf_item('Import Data','Import Data','dataImport.do');
 				leaf_item('Roll Forward Session','Roll Forward Session','rollForwardSession.do');
 				leaf_item('Change Log','View Change Log','lastChanges.do');
@@ -170,6 +163,7 @@
 				leaf_item('Parameter Groups', 'Manage Solver Parameter Groups','solverParamGroups.do');
 				leaf_item('Parameters', 'Manage Solver Parameters','solverParamDef.do');
 				leaf_item('Configurations', 'Manage Solver Configurations','solverSettings.do');
+				leaf_item('Solver Groups', 'Manage Solver Groups','solverGroupEdit.do');
 				leaf_item('Distribution Types','Manage Distribution Types','distributionTypeList.do');
 				// leaf_item('Definitions', 'Manage Solution Info Definitions','solverInfoDef.do');
 			enditem(); //52
