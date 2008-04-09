@@ -21,12 +21,20 @@ package org.unitime.timetable.dataexchange;
 
 import java.util.Iterator;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
 import org.dom4j.Element;
+import org.unitime.commons.Debug;
+import org.unitime.commons.User;
+import org.unitime.commons.web.Web;
+import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.ExternalBuilding;
 import org.unitime.timetable.model.ExternalRoom;
 import org.unitime.timetable.model.ExternalRoomDepartment;
 import org.unitime.timetable.model.ExternalRoomFeature;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.TimetableManager;
 
 
 /**
@@ -36,10 +44,27 @@ import org.unitime.timetable.model.Session;
  */
 public class BuildingRoomImport extends BaseImport {
 
-    private static int BATCH_SIZE = 100;
+    TimetableManager manager = null;
+   private static int BATCH_SIZE = 100;
 
 	public BuildingRoomImport() {
 	}
+	
+	public void loadXml(Element rootElement, HttpServletRequest request) throws Exception {
+		HttpSession httpSession = request.getSession();
+        String userId = (String)httpSession.getAttribute("authUserExtId");
+        User user = Web.getUser(httpSession);
+        if (userId!=null) {
+        	manager = TimetableManager.findByExternalId(userId);
+        }
+        if (manager==null && user!=null) {
+            Debug.warning("No authenticated user defined, using "+user.getName());
+        	manager = TimetableManager.getManager(user);
+        }
+        
+		loadXml(rootElement);
+	}
+	
 
 	public void loadXml(Element root) throws Exception{
 		try {
@@ -47,12 +72,19 @@ public class BuildingRoomImport extends BaseImport {
 	        String campus = root.attributeValue("campus");
 	        String year   = root.attributeValue("year");
 	        String term   = root.attributeValue("term");
+	        String created = root.attributeValue("created");
 
 	        Session session = Session.getSessionUsingInitiativeYearTerm(campus, year, term);
 	        if(session == null) {
 	           	throw new Exception("No session found for the given campus, year, and term.");
 	        }
-            /* 
+	        if (manager == null){
+	        	manager = findDefaultManager();
+	        }
+	        if (created != null) {
+				ChangeLog.addChange(getHibSession(), manager, session, session, created, ChangeLog.Source.DATA_IMPORT_EXT_BUILDING_ROOM, ChangeLog.Operation.UPDATE, null, null);
+	        }
+           /* 
              * Remove all buildings and rooms for the given session and reload them using the xml 
              */
             
@@ -148,4 +180,9 @@ public class BuildingRoomImport extends BaseImport {
 		room.addToroomFeatures(feature);
 		getHibSession().save(feature);
 	}
+	
+	private TimetableManager findDefaultManager(){
+		return((TimetableManager)getHibSession().createQuery("from TimetableManager as m where m.uniqueId = (select min(tm.uniqueId) from TimetableManager as tm inner join tm.managerRoles as mr inner join mr.role as r where r.reference = 'Administrator')").uniqueResult());
+	}
+
 }

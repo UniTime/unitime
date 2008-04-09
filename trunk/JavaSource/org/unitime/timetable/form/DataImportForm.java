@@ -129,13 +129,13 @@ public class DataImportForm extends ActionForm {
         	new AcademicAreaImportDAO().loadFromXML(root);
         }
         else if(root.getName().equalsIgnoreCase("subjectAreas")) {
-        	new SubjectAreaImportDAO().loadFromXML(root);
+        	new SubjectAreaImportDAO().loadFromXML(root, request);
         }
         else if(root.getName().equalsIgnoreCase("academicClassifications")) {
         	new AcademicClassificationImportDAO().loadFromXML(root);
         }
         else if(root.getName().equalsIgnoreCase("departments")) {
-        	new DepartmentImportDAO().loadFromXML(root);
+        	new DepartmentImportDAO().loadFromXML(root, request);
         }
         else if(root.getName().equalsIgnoreCase("posMajors")) {
         	new PosMajorImportDAO().loadFromXML(root);
@@ -162,7 +162,7 @@ public class DataImportForm extends ActionForm {
         	new CourseCatalogImportDAO().loadFromXML(root);
         }
         else if(root.getName().equalsIgnoreCase("buildingsRooms")) {
-        	new BuildingRoomImport().loadXml(root);
+        	new BuildingRoomImport().loadXml(root, request);
         }
         else if(root.getName().equalsIgnoreCase("offerings")) {
         	new CourseOfferingImport().loadXml(root, request);

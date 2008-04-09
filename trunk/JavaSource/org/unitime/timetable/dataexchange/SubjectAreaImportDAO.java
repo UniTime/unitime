@@ -22,12 +22,20 @@ package org.unitime.timetable.dataexchange;
 import java.io.FileInputStream;
 import java.util.Iterator;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
+import org.unitime.commons.Debug;
+import org.unitime.commons.User;
+import org.unitime.commons.web.Web;
+import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
+import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 
 
@@ -37,7 +45,8 @@ import org.unitime.timetable.model.dao.SubjectAreaDAO;
  *
  */
 public class SubjectAreaImportDAO extends SubjectAreaDAO {
-
+	TimetableManager manager = null;
+	
 	public SubjectAreaImportDAO() {
 		super();
 	}
@@ -62,6 +71,21 @@ public class SubjectAreaImportDAO extends SubjectAreaDAO {
         
     }
     
+	public void loadFromXML(Element rootElement, HttpServletRequest request) throws Exception {
+		HttpSession httpSession = request.getSession();
+        String userId = (String)httpSession.getAttribute("authUserExtId");
+        User user = Web.getUser(httpSession);
+        if (userId!=null) {
+        	manager = TimetableManager.findByExternalId(userId);
+        }
+        if (manager==null && user!=null) {
+            Debug.warning("No authenticated user defined, using "+user.getName());
+        	manager = TimetableManager.getManager(user);
+        }
+        
+		loadFromXML(rootElement);
+	}
+
     public void loadFromXML(Element root) throws Exception {
 
         if (!root.getName().equalsIgnoreCase("subjectAreas")) {
@@ -71,10 +95,17 @@ public class SubjectAreaImportDAO extends SubjectAreaDAO {
         String campus = root.attributeValue("campus");
         String year   = root.attributeValue("year");
         String term   = root.attributeValue("term");
+        String created = root.attributeValue("created");
 
         Session session = Session.getSessionUsingInitiativeYearTerm(campus, year, term);
         if(session == null) {
            	throw new Exception("No session found for the given campus, year, and term.");
+        }
+        if (manager == null){
+        	manager = findDefaultManager();
+        }
+        if (created != null) {
+			ChangeLog.addChange(getSession(), manager, session, session, created, ChangeLog.Source.DATA_IMPORT_SUBJECT_AREAS, ChangeLog.Operation.UPDATE, null, null);
         }
         
         for ( Iterator it = root.elementIterator(); it.hasNext(); ) {
@@ -131,4 +162,9 @@ public class SubjectAreaImportDAO extends SubjectAreaDAO {
 			setCacheable(true).
 			uniqueResult();
 	}
+	
+	private TimetableManager findDefaultManager(){
+		return((TimetableManager)getSession().createQuery("from TimetableManager as m where m.uniqueId = (select min(tm.uniqueId) from TimetableManager as tm inner join tm.managerRoles as mr inner join mr.role as r where r.reference = 'Administrator')").uniqueResult());
+	}
+
 }
