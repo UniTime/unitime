@@ -19,6 +19,9 @@
 */
 package org.unitime.timetable.model;
 
+import java.util.Iterator;
+import java.util.Set;
+
 import org.unitime.timetable.model.base.BaseExternalRoomDepartment;
 
 
@@ -92,5 +95,42 @@ public class ExternalRoomDepartment extends BaseExternalRoomDepartment {
 		}
 		
 		return result;
+	}
+	
+	public static boolean isControllingExternalDept(ExternalRoomDepartment externalRoomDept, Set deptList){
+		String asgn = "assigned";
+		String sched = "scheduling";
+		if (externalRoomDept == null || deptList == null || deptList.isEmpty()){
+			return(false);
+		}
+		if (deptList.size() == 1) {
+			if (deptList.contains(externalRoomDept)){
+				return(true);
+			} else {
+				return(false);
+			}
+		} else {
+			boolean isControl = true;
+			ExternalRoomDepartment erd = null;
+			for (Iterator erdIt = deptList.iterator(); (erdIt.hasNext() && isControl);){
+				erd = (ExternalRoomDepartment) erdIt.next();
+				if (erd != null && !erd.equals(externalRoomDept)){
+					if (!erd.getDepartmentCode().equals(externalRoomDept.getDepartmentCode())){
+						if (externalRoomDept.getAssignmentType().equals(asgn)){
+							if (erd.getAssignmentType().equals(asgn) && erd.getPercent().compareTo(externalRoomDept.getPercent()) >= 0){
+								isControl = false;
+							} else if (erd.getAssignmentType().equals(sched)){
+								isControl = false;
+							}
+						} else if (externalRoomDept.getAssignmentType().equals(sched)){
+							if (erd.getAssignmentType().equals(sched) && erd.getPercent().compareTo(externalRoomDept.getPercent()) >= 0){
+								isControl = false;
+							}
+						}
+					}
+				}
+			}
+			return(isControl);
+		}
 	}
 }

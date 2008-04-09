@@ -357,7 +357,7 @@ public class SessionRollForward {
 						if (foundDept){
 							rollForwardRoomDept(fromRoomDept, toRoom, toSession);
 						} else {
-							rollForwardRoomDept(toExternalRoomDept, toRoom, toSession, toExternalRoom.getRoomDepartments());
+							toRoom.addExternalRoomDept(toExternalRoomDept, toExternalRoom.getRoomDepartments());
 						}
 					}
 				}
@@ -373,7 +373,7 @@ public class SessionRollForward {
 		}
 	}
 
-	private RoomDept rollForwardRoomDept(RoomDept fromRoomDept, Room toRoom, Session toSession){
+	private static void rollForwardRoomDept(RoomDept fromRoomDept, Room toRoom, Session toSession){
 		Department toDept = fromRoomDept.getDepartment().findSameDepartmentInSession(toSession);
 		RoomDept toRoomDept = null;
 		RoomDeptDAO rdDao = new RoomDeptDAO();
@@ -386,61 +386,9 @@ public class SessionRollForward {
 			toDept.addToroomDepts(toRoomDept);
 			rdDao.saveOrUpdate(toRoomDept);
 		}
-		return(toRoomDept);
-	}
-	
-	private boolean isControllingExternalDept(ExternalRoomDepartment externalRoomDept, Set deptList){
-		String asgn = "assigned";
-		String sched = "scheduling";
-		if (externalRoomDept == null || deptList == null || deptList.isEmpty()){
-			return(false);
-		}
-		if (deptList.size() == 1) {
-			if (deptList.contains(externalRoomDept)){
-				return(true);
-			} else {
-				return(false);
-			}
-		} else {
-			boolean isControl = true;
-			ExternalRoomDepartment erd = null;
-			for (Iterator erdIt = deptList.iterator(); (erdIt.hasNext() && isControl);){
-				erd = (ExternalRoomDepartment) erdIt.next();
-				if (erd != null && !erd.equals(externalRoomDept)){
-					if (!erd.getDepartmentCode().equals(externalRoomDept.getDepartmentCode())){
-						if (externalRoomDept.getAssignmentType().equals(asgn)){
-							if (erd.getAssignmentType().equals(asgn) && erd.getPercent().compareTo(externalRoomDept.getPercent()) >= 0){
-								isControl = false;
-							} else if (erd.getAssignmentType().equals(sched)){
-								isControl = false;
-							}
-						} else if (externalRoomDept.getAssignmentType().equals(sched)){
-							if (erd.getAssignmentType().equals(sched) && erd.getPercent().compareTo(externalRoomDept.getPercent()) >= 0){
-								isControl = false;
-							}
-						}
-					}
-				}
-			}
-			return(isControl);
-		}
-	}
-	private RoomDept rollForwardRoomDept(ExternalRoomDepartment toExternalRoomDept, Room toRoom, Session toSession, Set externalRoomDepts){
-		Department toDept = Department.findByDeptCode(toExternalRoomDept.getDepartmentCode(), toSession.getUniqueId());
-		RoomDept toRoomDept = null;
-		RoomDeptDAO rdDao = new RoomDeptDAO();
-		if (toDept != null){
-			toRoomDept = new RoomDept();
-			toRoomDept.setRoom(toRoom);
-			toRoomDept.setControl(new Boolean(isControllingExternalDept(toExternalRoomDept, externalRoomDepts)));
-			toRoomDept.setDepartment(toDept);
-			toRoom.addToroomDepts(toRoomDept);
-			toDept.addToroomDepts(toRoomDept);
-			rdDao.saveOrUpdate(toRoomDept);
-		}
-		return(toRoomDept);
 	}
 
+	
 	private void rollRoomGroupsForLocationForward(Location fromLocation, Location toLocation, Session toSession, HashMap roomGroupCache) {
 		if(fromLocation.getRoomGroups() != null && !fromLocation.getRoomGroups().isEmpty()){
 			RoomGroup fromRoomGroup = null;
@@ -543,6 +491,7 @@ public class SessionRollForward {
 			errors.add("rollForward", new ActionMessage("errors.rollForward", "Non University Locations", fromSession.getLabel(), toSession.getLabel(), "Failed to roll all non university locations forward."));
 		}		
 	}
+	
 
 	private void rollLocationsForward(ActionMessages errors, Session fromSession, Session toSession) {
 		if (fromSession.getRooms() != null && !fromSession.getRooms().isEmpty()){
@@ -557,67 +506,10 @@ public class SessionRollForward {
 			}
 		}
 		if (sessionHasExternalRoomList(toSession)){
-			ExternalRoomDAO erDao = new ExternalRoomDAO();
-			BuildingDAO bDao = new BuildingDAO();
-			RoomDAO rDao = new RoomDAO();
-			String query = "from ExternalRoom er where er.building.session.uniqueId=:sessionId ";
-			query += " and er.externalUniqueId not in (select r.externalUniqueId from Room r where r.session.uniqueId =:sessionId)";
-			query += " and er.classification in ('classroom', 'classLab')";
-			List l = erDao.getQuery(query).setLong("sessionId", toSession.getUniqueId()).list();
-			if (l != null){
-				ExternalRoom er = null;
-				Room r = null;
-				Building b = null;
-				for (Iterator erIt = l.iterator(); erIt.hasNext();){
-					er = (ExternalRoom) erIt.next();
-					b = Building.findByExternalIdAndSession(er.getBuilding().getExternalUniqueId(), toSession);
-					
-					if (b == null){
-						b = new Building();
-						b.setAbbreviation(er.getBuilding().getAbbreviation());
-						b.setCoordinateX(er.getBuilding().getCoordinateX());
-						b.setCoordinateY(er.getBuilding().getCoordinateY());
-						b.setExternalUniqueId(er.getBuilding().getExternalUniqueId());
-						b.setName(er.getBuilding().getDisplayName());
-						b.setSession(toSession);
-						bDao.saveOrUpdate(b);
-					}
-					r = new Room();
-					r.setBuilding(b);
-					r.setCapacity(er.getCapacity());
-					r.setExamCapacity(er.getExamCapacity());
-					r.setClassification(er.getClassification());
-					r.setCoordinateX(er.getCoordinateX());
-					r.setCoordinateY(er.getCoordinateY());
-					r.setDisplayName(er.getDisplayName());
-					r.setExternalUniqueId(er.getExternalUniqueId());
-					r.setIgnoreRoomCheck(new Boolean(false));
-					r.setIgnoreTooFar(new Boolean(false));
-					r.setRoomNumber(er.getRoomNumber());
-					r.setScheduledRoomType(er.getScheduledRoomType());
-					r.setSession(toSession);
-					LocationPermIdGenerator.setPermanentId(r);
-					if (er.getRoomFeatures() != null){
-						ExternalRoomFeature erf = null;
-						GlobalRoomFeature grf = null;
-						for (Iterator erfIt = er.getRoomFeatures().iterator(); erfIt.hasNext();){
-							erf = (ExternalRoomFeature) erfIt.next();
-							grf = GlobalRoomFeature.findGlobalRoomFeatureForLabel(erf.getValue());
-							if (grf != null){
-								r.addTofeatures(grf);
-							}
-						}
-					}
-					rDao.saveOrUpdate(r);
-					ExternalRoomDepartment toExternalRoomDept = null;
-					for(Iterator erdIt = er.getRoomDepartments().iterator(); erdIt.hasNext();){
-						toExternalRoomDept = (ExternalRoomDepartment) erdIt.next();
-						rollForwardRoomDept(toExternalRoomDept, r, toSession, er.getRoomDepartments());
-					}
-				}
-			}
+			Room.addNewExternalRoomsToSession(toSession);
 		}
 	}
+
 
 	private void rollBuildingsForward(ActionMessages errors, Session fromSession, Session toSession) {
 		if (fromSession.getBuildings() != null && !fromSession.getBuildings().isEmpty()){
