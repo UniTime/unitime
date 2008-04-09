@@ -129,6 +129,9 @@ public class ChangeLog extends BaseChangeLog implements Comparable {
         EXAM_EDIT,
         DATA_IMPORT_OFFERINGS,
         DATA_IMPORT_STUDENT_ENROLLMENTS,
+        DATA_IMPORT_SUBJECT_AREAS,
+        DATA_IMPORT_DEPARTMENTS,
+        DATA_IMPORT_EXT_BUILDING_ROOM,
         EXAM_INFO
     }
     
