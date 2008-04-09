@@ -35,6 +35,11 @@
 					<html:hidden property="op" value="Export PDF"/>
 					<html:submit onclick="displayLoading();" styleClass="btn" accesskey="P" title="Export PDF (Alt+P)" value="Export PDF"/>
 				</html:form>
+				</td><td nowrap>
+				<html:form action="buildingEdit" styleClass="FormWithNoPadding">
+					<html:hidden property="op" value="Update Data"/>
+					<html:submit onclick="displayLoading();" styleClass="btn" accesskey="U" title="Export PDF (Alt+U)" value="Update Data"/>
+				</html:form>
 		</tt:section-header>
 	</td></tr>
 <%
