@@ -66,7 +66,7 @@ public class StudentEnrollmentImport extends BaseImport {
             /* 
              * If some records of a table related to students need to be explicitly deleted, 
              * hibernate can also be used to delete them. For instance, the following query 
-             * deletes all last-like course demands for given academic session:
+             * deletes all student class enrollments for given academic session:
              *   
              * delete StudentClassEnrollment sce where sce.student.uniqueId in
              *      (select s.uniqueId from Student s where s.session.uniqueId=:sessionId)
