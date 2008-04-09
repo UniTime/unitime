@@ -227,7 +227,7 @@ public class ExamInfoModel implements Serializable {
         if (iChange==null) iChange = new ExamProposedChange();
         for (ExamAssignmentInfo period : getPeriods()) {
             if (periodId==period.getPeriodId()) {
-                iChange.addChange(period, getExamAssignment());
+                iChange.addChange(period, getExamOldAssignment());
             }
         }
         if (iChange.isEmpty()) iChange = null; 
@@ -248,7 +248,7 @@ public class ExamInfoModel implements Serializable {
         ExamAssignmentInfo assignment = iChange.getCurrent(iExam);
         if (assignment==null && isExamAssigned()) {
             for (ExamAssignmentInfo period : getPeriods()) {
-                if (getExamAssignment().getPeriodId().equals(period.getPeriodId())) {
+                if (getExamOldAssignment().getPeriodId().equals(period.getPeriodId())) {
                     assignment = period;
                     break;
                 }
@@ -277,7 +277,7 @@ public class ExamInfoModel implements Serializable {
             }
             assignment = new ExamAssignmentInfo(getExam().getExam(), assignment.getPeriod(), assignedRooms, iChange.getAssignmentTable());
         }
-        iChange.addChange(assignment, getExamAssignment());
+        iChange.addChange(assignment, getExamOldAssignment());
         if (iChange.isEmpty()) iChange = null; 
         update();
     }
