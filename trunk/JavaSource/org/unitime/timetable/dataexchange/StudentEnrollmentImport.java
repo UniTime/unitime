@@ -146,9 +146,5 @@ public class StudentEnrollmentImport extends BaseImport {
 		setCacheable(true).
 		uniqueResult();
 	}
-	
-	private TimetableManager findDefaultManager(){
-		return((TimetableManager)getHibSession().createQuery("from TimetableManager as m where m.uniqueId = (select min(tm.uniqueId) from TimetableManager as tm inner join tm.managerRoles as mr inner join mr.role as r where r.reference = 'Administrator')").uniqueResult());
-	}
 
 }
