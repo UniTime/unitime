@@ -40,7 +40,7 @@ import org.unitime.timetable.dataexchange.LastLikeCourseDemandImport;
 import org.unitime.timetable.dataexchange.PosMajorImportDAO;
 import org.unitime.timetable.dataexchange.PosMinorImportDAO;
 import org.unitime.timetable.dataexchange.SessionImportDAO;
-import org.unitime.timetable.dataexchange.StaffImportDAO;
+import org.unitime.timetable.dataexchange.StaffImport;
 import org.unitime.timetable.dataexchange.StudentEnrollmentImport;
 import org.unitime.timetable.dataexchange.StudentImport;
 import org.unitime.timetable.dataexchange.SubjectAreaImportDAO;
@@ -147,7 +147,7 @@ public class DataImportForm extends ActionForm {
         	new StudentImport().loadXml(root);
         }
         else if(root.getName().equalsIgnoreCase("staff")) {
-        	new StaffImportDAO().loadFromXML(root);
+        	new StaffImport().loadXml(root, request);
         }
         else if(root.getName().equalsIgnoreCase("lastLikeCourseDemand")) {
         	new LastLikeCourseDemandImport().loadXml(root);
