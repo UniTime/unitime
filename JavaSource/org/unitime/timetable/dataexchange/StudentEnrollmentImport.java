@@ -72,7 +72,7 @@ public class StudentEnrollmentImport extends BaseImport {
              *      (select s.uniqueId from Student s where s.session.uniqueId=:sessionId)
              */
             
-            getHibSession().createQuery("delete StudentClassEnrollment sce where sce.student.session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).executeUpdate();
+            getHibSession().createQuery("delete StudentClassEnrollment sce where sce.student.uniqueId in (select s.uniqueId from Student s where s.session.uniqueId=:sessionId)").setLong("sessionId", session.getUniqueId().longValue()).executeUpdate();
             
             flush(true);
             String elementName = "student";
@@ -83,6 +83,7 @@ public class StudentEnrollmentImport extends BaseImport {
 	            
             	Student student = fetchStudent(externalId, session.getUniqueId());
             	if (student == null){
+            		student = new Student();
 	                student.setSession(session);
 	                String firstName = getOptionalStringAttribute(studentElement, "firstName");
 		            student.setFirstName(firstName==null?"Name":firstName);
