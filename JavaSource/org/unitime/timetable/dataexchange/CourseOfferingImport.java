@@ -69,6 +69,7 @@ import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomDept;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.Staff;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.VariableFixedCreditUnitConfig;
@@ -972,13 +973,33 @@ public class CourseOfferingImport extends BaseImport {
 			}
 		}
         if(element.element(elementName) != null){
+        	HashSet<String> ids = new HashSet<String>();
+        	HashMap<String, String> firstNames = new HashMap<String, String>();
+        	HashMap<String, String> middleNames = new HashMap<String, String>();
+        	HashMap<String, String> lastNames = new HashMap<String, String>();
+        	HashMap<String, Integer> shares = new HashMap<String, Integer>();
+        	HashMap<String, Boolean> leads = new HashMap<String, Boolean>();
         	for (Iterator<?> it = element.elementIterator(elementName); it.hasNext();){
 				Element instructorElement = (Element) it.next();
 				String id = getRequiredStringAttribute(instructorElement, "id", elementName);
-				String firstName = getOptionalStringAttribute(instructorElement, "fname");
-				String middleName = getOptionalStringAttribute(instructorElement, "mname");
-				String lastName = getOptionalStringAttribute(instructorElement, "lname");
+				ids.add(id);
+				firstNames.put(id, getOptionalStringAttribute(instructorElement, "fname"));
+				middleNames.put(id, getOptionalStringAttribute(instructorElement, "mname"));
+				lastNames.put(id, getOptionalStringAttribute(instructorElement, "lname"));
+				Integer share = getOptionalIntegerAttribute(instructorElement, "share");;
+				if (share == null){
+					share = new Integer(100);
+				}
+				shares.put(id, share);
+				Boolean lead = getOptionalBooleanAttribute(instructorElement, "lead");
+				if (lead == null){
+					lead = new Boolean(true);
+				}
+				leads.put(id, lead);
+        	}
+        	for(Iterator<String> it = ids.iterator(); it.hasNext(); ){
 				boolean addNew = false;
+				String id = (String) it.next();
 				ClassInstructor ci = existingInstructors.get(id);
 				if (ci == null){
 					DepartmentalInstructor di = findDepartmentalInstructorWithExternalUniqueId(id, c.getSchedulingSubpart().getControllingDept());
@@ -986,8 +1007,17 @@ public class CourseOfferingImport extends BaseImport {
 						di = new DepartmentalInstructor();
 						di.setDepartment(c.getSchedulingSubpart().getControllingDept());
 						di.setExternalUniqueId(id);
-						di.setFirstName(firstName);
-						di.setMiddleName(middleName);
+						if (lastNames.get(id)  == null){
+							Staff staffData = findStaffMember(id);
+							if (staffData != null){
+								firstNames.put(id, staffData.getFirstName());
+								middleNames.put(id, staffData.getMiddleName());
+								lastNames.put(id, staffData.getLastName());
+							}
+						}
+						di.setFirstName(firstNames.get(id));
+						di.setMiddleName(middleNames.get(id));
+						String lastName = lastNames.get(id);
 						di.setLastName((lastName != null?lastName:"Unknown Name"));
 						di.setIgnoreToFar(new Boolean(false));
 						getHibSession().save(di);
@@ -1006,26 +1036,18 @@ public class CourseOfferingImport extends BaseImport {
 				} else {
 					existingInstructors.remove(id);
 				}
-				String shareStr = getOptionalStringAttribute(instructorElement, "share");
-				Integer share = null;
-				if (shareStr != null){
-					share = Integer.parseInt(shareStr);
-				} else {
-					share = new Integer(100);
-				}
+				Integer share = shares.get(id);
 				if (ci.getPercentShare() == null || !ci.getPercentShare().equals(share)){
 					ci.setPercentShare(share);
 					changed = true;
 				}
 				
-				Boolean lead = getOptionalBooleanAttribute(instructorElement, "lead");
-				if (lead == null){
-					lead = new Boolean(true);
-				}
+				Boolean lead = leads.get(id);
 				if (ci.isLead() == null || !ci.isLead().equals(lead)){
 					ci.setLead(lead);
 					changed = true;
 				}
+				
 				if (changed){
 					getHibSession().saveOrUpdate(c);
 					getHibSession().flush();
@@ -1042,6 +1064,15 @@ public class CourseOfferingImport extends BaseImport {
         	}
         }
         return(changed);
+	}
+
+	private Staff findStaffMember(String id) {
+		return(Staff) this.
+		getHibSession().
+		createQuery("select distinct s from Staff s where s.externalUniqueId=:externalId").
+		setString("externalId", id).
+		setCacheable(true).
+		uniqueResult();
 	}
 
 	private boolean elementCourseCredit(Element element, InstructionalOffering io) throws Exception {
@@ -1917,7 +1948,10 @@ public class CourseOfferingImport extends BaseImport {
 			for (Iterator<?> it = element.elementIterator(elementName); it.hasNext();){
 				Element subpart = (Element) it.next();
 				boolean isAdd = false;
-				Integer minPerWeek = getRequiredIntegerAttribute(subpart, "minPerWeek", elementName);
+				Integer minPerWeek = getOptionalIntegerAttribute(subpart, "minPerWeek");
+				if (minPerWeek == null){
+					minPerWeek = new Integer(0);
+				}
 				String type = getRequiredStringAttribute(subpart, "type", elementName);
 				String suffix = getOptionalStringAttribute(subpart, "suffix");
 				if(suffix != null){
