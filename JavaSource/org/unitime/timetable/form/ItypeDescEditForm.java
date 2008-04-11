@@ -45,6 +45,7 @@ public class ItypeDescEditForm extends ActionForm {
     private String iAbbreviation = null;
     private int iType = 1;
     private boolean iCanDelete = false;
+    private boolean iOrganized = false;
     private Integer iParent = null;
 
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
@@ -82,7 +83,7 @@ public class ItypeDescEditForm extends ActionForm {
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
         iId = null; iOp = null; iUniqueId = -1;
         iAbbreviation = null; iReference = null; iName = null;
-        iType = 1; iCanDelete = false;
+        iType = 1; iCanDelete = false; iOrganized = false;
 	}
 	
 	public String getOp() { return iOp; }
@@ -107,6 +108,8 @@ public class ItypeDescEditForm extends ActionForm {
     public String[] getTypes() { return ItypeDesc.sBasicTypes; }
     public boolean getCanDelete() { return iCanDelete; }
     public void setCanDelete(boolean canDelete) { iCanDelete = canDelete; }
+    public boolean getOrganized() { return iOrganized; }
+    public void setOrganized(boolean organized) { iOrganized = organized; }
     public Integer getParent() { return iParent; }
     public void setParent(Integer parent) { iParent = parent; }
     
@@ -125,6 +128,7 @@ public class ItypeDescEditForm extends ActionForm {
             uniqueResult()).intValue();
         setCanDelete(nrUsed<=0);
         setParent(itype.getParent()==null?null:itype.getParent().getItype());
+        setOrganized(itype.isOrganized());
     }
     
     public void saveOrUpdate(org.hibernate.Session hibSession, Session session) throws Exception {
@@ -137,6 +141,7 @@ public class ItypeDescEditForm extends ActionForm {
         itype.setSis_ref(getReference());
         itype.setBasic(getBasicType());
         itype.setParent(getParent()==null?null:new ItypeDescDAO().get(getParent()));
+        itype.setOrganized(getOrganized());
         hibSession.saveOrUpdate(itype);
     }
     
