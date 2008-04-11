@@ -117,7 +117,7 @@ public class StudentEnrollmentImport extends BaseImport {
         for ( Iterator it = studentElement.elementIterator(); it.hasNext(); ) {
             Element classElement = (Element) it.next();
             String externalId = getRequiredStringAttribute(classElement, "externalId", elementName);
-            Class_ clazz = fetchClassForExternalUniqueId(externalId, student.getSession().getUniqueId());
+            Class_ clazz = classes.get(externalId);
             if (clazz != null){
 				StudentClassEnrollment sce = new StudentClassEnrollment();
 		    	sce.setStudent(student);
@@ -139,21 +139,6 @@ public class StudentEnrollmentImport extends BaseImport {
 		uniqueResult();
 	}
 	
-	private Class_ fetchClassForExternalUniqueId(String externalUniqueId, Long sessionId){
-		if (classes.containsKey(externalUniqueId)){
-			return((Class_) classes.get(externalUniqueId));
-		} else {
-			Class_ c = (Class_) this.
-			getHibSession().
-			createQuery("select distinct c from Class_ as c where c.externalUniqueId=:externalUniqueId and c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId=:sessionId" ).
-			setString("externalUniqueId", externalUniqueId).
-			setLong("sessionId", sessionId.longValue()).
-			setCacheable(true).
-			uniqueResult();
-			classes.put(externalUniqueId, c);
-			return(c);
-		}
-	}
 	private void loadClasses(Long sessionId) throws Exception {
  		for (Iterator<?> it = Class_.findAll(sessionId).iterator(); it.hasNext();) {
 			Class_ c = (Class_) it.next();
