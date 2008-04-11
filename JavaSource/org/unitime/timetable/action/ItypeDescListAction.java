@@ -78,9 +78,9 @@ public class ItypeDescListAction extends Action {
 		    PdfWebTable webTable = new PdfWebTable( 6,
 		    	    null,
                     "itypeDescList.do?ord=%%",
-		    	    new String[] {"IType", "Abbreviation", "Name", "Reference", "Type", "Parent"},
-		    	    new String[] {"left", "left","left","left", "left", "left"},
-		    	    new boolean[] {true, true, true, true, false, true} );
+		    	    new String[] {"IType", "Abbreviation", "Name", "Reference", "Type", "Parent", "Organized"},
+		    	    new String[] {"left", "left","left","left", "left", "left", "center"},
+		    	    new boolean[] {true, true, true, true, false, true, true} );
 		    
 	        PdfWebTable.setOrder(request.getSession(),"itypeDescList.ord",request.getParameter("ord"),1);
 
@@ -95,13 +95,15 @@ public class ItypeDescListAction extends Action {
 			        					itypeDesc.getDesc(),
 			        					(itypeDesc.getSis_ref()==null?"":itypeDesc.getSis_ref()),
 			        					itypeDesc.getBasicType(),
-			        					(itypeDesc.getParent()==null?"":itypeDesc.getParent().getDesc())},
+			        					(itypeDesc.getParent()==null?"":itypeDesc.getParent().getDesc()),
+			        					(itypeDesc.isOrganized()?"yes":"no")},
 			        	new Comparable[] {itypeDesc.getItype(),
 				                        itypeDesc.getAbbv(),
 				                        itypeDesc.getDesc(),
 				                        (itypeDesc.getSis_ref()==null?"":itypeDesc.getSis_ref()),
 				                        itypeDesc.getBasic(),
-				                        (itypeDesc.getParent()==null?new Integer(-1):itypeDesc.getParent().getItype())});
+				                        (itypeDesc.getParent()==null?new Integer(-1):itypeDesc.getParent().getItype()),
+				                        (itypeDesc.isOrganized()?0:1)});
 	        }
 	        
 	        if ("Export PDF".equals(request.getParameter("op"))) {

@@ -116,6 +116,13 @@
 		</TR>
 
 		<TR>
+			<TD>Organized:</TD>
+			<TD>
+				<html:checkbox property="organized"/>
+			</TD>
+		</TR>
+
+		<TR>
 			<TD align="right" colspan="2">
 				<tt:section-title/>
 			</TD>
