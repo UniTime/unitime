@@ -69,6 +69,13 @@
 			length="1"
 		/>
 		
+		<property
+			name="organized"
+			column="ORGANIZED"
+			type="java.lang.Boolean"
+			not-null="true"
+		/>
+		
 		<many-to-one 
 			name="parent" 
 			class="ItypeDesc" 

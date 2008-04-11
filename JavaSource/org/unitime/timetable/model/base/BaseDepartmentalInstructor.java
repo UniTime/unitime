@@ -41,6 +41,7 @@ public abstract class BaseDepartmentalInstructor extends org.unitime.timetable.m
 	public static String PROP_LAST_NAME = "lastName";
 	public static String PROP_NOTE = "note";
 	public static String PROP_IGNORE_TO_FAR = "ignoreToFar";
+	public static String PROP_EMAIL = "email";
 
 
 	// constructors
@@ -67,6 +68,7 @@ public abstract class BaseDepartmentalInstructor extends org.unitime.timetable.m
 	private java.lang.String middleName;
 	private java.lang.String lastName;
 	private java.lang.String note;
+	private java.lang.String email;
 	private java.lang.Boolean ignoreToFar;
 
 	// many to one
@@ -296,6 +298,8 @@ public abstract class BaseDepartmentalInstructor extends org.unitime.timetable.m
 	}
 
 
+	public String getEmail() { return email; }
+	public void setEmail(String email) { this.email = email; }
 
 
 

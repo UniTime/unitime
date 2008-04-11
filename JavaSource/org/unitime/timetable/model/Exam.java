@@ -967,4 +967,8 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         if (event.getMeetings().isEmpty()) return null;
         return event;
     }
+    
+    public ExamPeriod getAveragePeriod() {
+        return ExamPeriod.findByIndex(getSession().getUniqueId(), getExamType(), getAvgPeriod());
+    }
 }
