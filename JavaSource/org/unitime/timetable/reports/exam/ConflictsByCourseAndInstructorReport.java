@@ -12,7 +12,6 @@ import net.sf.cpsolver.coursett.model.TimeLocation;
 
 import org.apache.log4j.Logger;
 import org.unitime.timetable.model.DatePattern;
-import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
@@ -35,10 +34,6 @@ public class ConflictsByCourseAndInstructorReport extends PdfLegacyExamReport {
     }
     
     public void printReport() throws DocumentException {
-        printReport(true, (getExamType()==Exam.sExamTypeFinal), (getExamType()==Exam.sExamTypeEvening));
-    }
-
-    public void printReport(boolean direct, boolean m2d, boolean btb) throws DocumentException {
         sLog.debug("  Sorting sections ...");
         Hashtable<String,TreeSet<ExamSectionInfo>> subject2courseSections = new Hashtable();
         for (ExamInfo exam : getExams()) {
@@ -69,7 +64,7 @@ public class ConflictsByCourseAndInstructorReport extends PdfLegacyExamReport {
                 iCoursePrinted = false;
                 for (ExamInstructorInfo instructor : exam.getInstructors()) {
                     iStudentPrinted = false;
-                    if (direct) for (DirectConflict conflict : exam.getInstructorDirectConflicts()) {
+                    if (iDirect) for (DirectConflict conflict : exam.getInstructorDirectConflicts()) {
                         if (!conflict.getStudents().contains(instructor.getId())) continue;
                         iPeriodPrinted = false;
                         if (conflict.getOtherExam()!=null) {
@@ -121,7 +116,7 @@ public class ConflictsByCourseAndInstructorReport extends PdfLegacyExamReport {
                             iSubjectPrinted = iCoursePrinted = iStudentPrinted = iPeriodPrinted = !iNewPage;
                         }
                     }
-                    if (m2d) for (MoreThanTwoADayConflict conflict : exam.getInstructorMoreThanTwoADaysConflicts()) {
+                    if (iM2d) for (MoreThanTwoADayConflict conflict : exam.getInstructorMoreThanTwoADaysConflicts()) {
                         if (!conflict.getStudents().contains(instructor.getId())) continue;
                         iPeriodPrinted = false;
                         for (ExamAssignment otherExam : conflict.getOtherExams()) {
@@ -145,7 +140,7 @@ public class ConflictsByCourseAndInstructorReport extends PdfLegacyExamReport {
                             }
                         }
                     }
-                    if (btb) for (BackToBackConflict conflict : exam.getInstructorBackToBackConflicts()) {
+                    if (iBtb) for (BackToBackConflict conflict : exam.getInstructorBackToBackConflicts()) {
                         if (!conflict.getStudents().contains(instructor.getId())) continue;
                         iPeriodPrinted = false;
                         for (ExamSectionInfo other : conflict.getOtherExam().getSections()) {

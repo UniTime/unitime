@@ -28,7 +28,7 @@ public class ScheduleByCourseReport extends PdfLegacyExamReport {
     public ScheduleByCourseReport(File file, Session session, int examType, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
         super(file, "SCHEDULE BY COURSE", session, examType, exams);
     }
-
+    
     public void printReport() throws DocumentException {
         sLog.debug("  Sorting sections ...");
         Hashtable<String,TreeSet<ExamSectionInfo>> subject2courseSections = new Hashtable();
@@ -43,8 +43,8 @@ public class ScheduleByCourseReport extends PdfLegacyExamReport {
             }
         }
         setHeader(new String[] {
-                "Subj Crsnbr InsTyp Sect   Meeting Times                         Enrl    Date And Time                   Room",
-                "---- ------ ------ ---- -------------------------------------- -----  -------------------------------- ------------------------------"});
+                "Subj Crsnbr InsTyp Sect   Meeting Times                         Enrl    Date And Time                   Room        Cap ExCap ",
+                "---- ------ ------ ---- -------------------------------------- -----  -------------------------------- ---------- ----- -----"});
         printHeader();
         for (Iterator<String> i = new TreeSet<String>(subject2courseSections.keySet()).iterator(); i.hasNext();) {
             String subject = i.next();
@@ -84,7 +84,7 @@ public class ScheduleByCourseReport extends PdfLegacyExamReport {
                             rpad(meetingTime,38)+" "+
                             lpad(String.valueOf(section.getNrStudents()),5)+"  "+
                             rpad((section.getExamAssignment()==null?"":section.getExamAssignment().getPeriodName()),32)+" "+
-                            (section.getExamAssignment()==null?"":section.getExamAssignment().getRoomsName(", "))
+                            (section.getExamAssignment()==null?"":iNoRoom)
                             );
                 } else {
                     if (getLineNumber()+section.getExamAssignment().getRooms().size()>sNrLines) newPage();
@@ -98,7 +98,9 @@ public class ScheduleByCourseReport extends PdfLegacyExamReport {
                                 rpad(!firstRoom?"":meetingTime,38)+" "+
                                 lpad(!firstRoom?"":String.valueOf(section.getNrStudents()),5)+"  "+
                                 rpad(!firstRoom?"":(section.getExamAssignment()==null?"":section.getExamAssignment().getPeriodName()),32)+" "+
-                                room.getName()
+                                rpad(room.getName(),10)+" "+
+                                lpad(""+room.getCapacity(),5)+" "+
+                                lpad(""+room.getExamCapacity(),5)
                                 );
                         firstRoom = false;
                     }
