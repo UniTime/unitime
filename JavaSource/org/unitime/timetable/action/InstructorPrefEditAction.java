@@ -311,6 +311,8 @@ public class InstructorPrefEditAction extends PreferencesAction {
 			frm.setCareerAcct(inst.getCareerAcct().trim());
 		}
 		
+		frm.setEmail(inst.getEmail());
+		
 		if (inst.getNote() != null) {
 			frm.setNote(inst.getNote().trim());
 		}

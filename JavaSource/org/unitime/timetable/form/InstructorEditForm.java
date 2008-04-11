@@ -72,6 +72,7 @@ public class InstructorEditForm extends PreferencesForm  {
 	private String mname;
 	private String fname;
 	private String deptName;
+	private String email;
 
 	private String searchSelect;
 	private User i2a2Match;
@@ -104,6 +105,9 @@ public class InstructorEditForm extends PreferencesForm  {
 	public void setDeptName(String deptName) {
 		this.deptName = deptName;
 	}
+	
+	public String getEmail() { return email; }
+	public void setEmail(String email) { this.email = email; }
 
 	public String getFname() {
 		return fname;
@@ -175,6 +179,7 @@ public class InstructorEditForm extends PreferencesForm  {
         prevId = nextId = null;
         ignoreDist = false;
         limitedEditable = false;
+        email = null;
 	}
 	
 	/**
