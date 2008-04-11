@@ -15,6 +15,7 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.InstrOfferingConfig;
@@ -26,6 +27,7 @@ import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
+import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 import org.unitime.timetable.util.ComboBoxLookup;
@@ -54,6 +56,8 @@ public class ExamEditForm extends PreferencesForm {
     private Collection subjectAreas;
     
     private Integer examType;
+    
+    private String avgPeriod;
     
     public String getExamId() { return examId; }
     public void setExamId(String examId) { this.examId = examId; }
@@ -95,6 +99,7 @@ public class ExamEditForm extends PreferencesForm {
         note = null;
         maxNbrRooms = 1;
         length = null;
+        avgPeriod = null;
         seatingType = Exam.sSeatingTypes[Exam.sSeatingTypeExam];
         instructors = DynamicList.getInstance(new ArrayList(), factory);
         subjectArea = DynamicList.getInstance(new ArrayList(), idfactory);
@@ -381,5 +386,13 @@ public class ExamEditForm extends PreferencesForm {
     	for (int i=0;i<Exam.sExamTypes.length;i++)
     		ret.add(new ComboBoxLookup(Exam.sExamTypes[i], String.valueOf(i)));
     	return ret;
+    }
+    
+    public String getAvgPeriod() { return avgPeriod; }
+    public void setAvgPeriod(String avgPeriod) { this.avgPeriod = avgPeriod; }
+    
+    public String getEmail(String instructorId) {
+        DepartmentalInstructor instructor = new DepartmentalInstructorDAO().get(Long.valueOf(instructorId));
+        return (instructor.getEmail()==null?"":instructor.getEmail());
     }
 }
