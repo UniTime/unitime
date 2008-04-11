@@ -1,5 +1,6 @@
 package org.unitime.timetable.dataexchange;
 
+import java.util.HashMap;
 import java.util.Iterator;
 
 import javax.servlet.http.HttpServletRequest;
@@ -18,7 +19,7 @@ import org.unitime.timetable.model.TimetableManager;
 
 public class StudentEnrollmentImport extends BaseImport {
 	TimetableManager manager = null;
-	
+	HashMap<String, Class_> classes = new HashMap<String, Class_>();
 	public void loadXml(Element rootElement, HttpServletRequest request) throws Exception {
 		HttpSession httpSession = request.getSession();
         String userId = (String)httpSession.getAttribute("authUserExtId");
@@ -54,7 +55,8 @@ public class StudentEnrollmentImport extends BaseImport {
 	        if(session == null) {
 	           	throw new Exception("No session found for the given campus, year, and term.");
 	        }
-
+	        loadClasses(session.getUniqueId());
+	        info("classes loaded");
 			beginTransaction();
 	        if (manager == null){
 	        	manager = findDefaultManager();
@@ -76,8 +78,7 @@ public class StudentEnrollmentImport extends BaseImport {
             
             flush(true);
             String elementName = "student";
-            
-	        for ( Iterator it = rootElement.elementIterator(); it.hasNext(); ) {
+ 	        for ( Iterator it = rootElement.elementIterator(); it.hasNext(); ) {
 	            Element studentElement = (Element) it.next();
 	            String externalId = getRequiredStringAttribute(studentElement, "externalId", elementName);
 	            
@@ -139,13 +140,27 @@ public class StudentEnrollmentImport extends BaseImport {
 	}
 	
 	private Class_ fetchClassForExternalUniqueId(String externalUniqueId, Long sessionId){
-		return (Class_) this.
-		getHibSession().
-		createQuery("select distinct c from Class_ as c where c.externalUniqueId=:externalUniqueId and c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId=:sessionId" ).
-		setString("externalUniqueId", externalUniqueId).
-		setLong("sessionId", sessionId.longValue()).
-		setCacheable(true).
-		uniqueResult();
+		if (classes.containsKey(externalUniqueId)){
+			return((Class_) classes.get(externalUniqueId));
+		} else {
+			Class_ c = (Class_) this.
+			getHibSession().
+			createQuery("select distinct c from Class_ as c where c.externalUniqueId=:externalUniqueId and c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId=:sessionId" ).
+			setString("externalUniqueId", externalUniqueId).
+			setLong("sessionId", sessionId.longValue()).
+			setCacheable(true).
+			uniqueResult();
+			classes.put(externalUniqueId, c);
+			return(c);
+		}
+	}
+	private void loadClasses(Long sessionId) throws Exception {
+ 		for (Iterator<?> it = Class_.findAll(sessionId).iterator(); it.hasNext();) {
+			Class_ c = (Class_) it.next();
+			if (c.getExternalUniqueId() != null){
+				classes.put(c.getExternalUniqueId(), c);
+			} 
+		}
 	}
 
 }
