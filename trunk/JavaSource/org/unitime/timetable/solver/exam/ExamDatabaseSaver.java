@@ -303,7 +303,7 @@ public class ExamDatabaseSaver extends ExamSaver {
             if (exam==null) continue;
             Event event = exam.generateEvent(eventType, true);
             if (event!=null) {
-                event.setEventName(exam.getName());
+                event.setEventName(examVar.getName());
                 event.setMinCapacity(examVar.getSize());
                 event.setMaxCapacity(examVar.getSize());
                 event.setMainContact(contact);
