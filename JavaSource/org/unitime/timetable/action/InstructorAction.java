@@ -97,6 +97,7 @@ public class InstructorAction extends Action {
         frm.setFname(staff.getFirstName()!=null ? staff.getFirstName().trim() : "");
         frm.setMname(staff.getMiddleName()!=null ? staff.getMiddleName().trim() : "");
         frm.setLname(staff.getLastName()!=null ? staff.getLastName().trim() : "");
+        frm.setEmail(staff.getEmail());
         if (staff.getPositionCode()!=null && staff.getPositionCode().getPositionType()!=null &&
         		(frm.getPosType()==null || frm.getPosType().trim().length()==0))
         	frm.setPosType(staff.getPositionCode().getPositionType().getUniqueId().toString());
@@ -120,7 +121,7 @@ public class InstructorAction extends Action {
 				frm.setFname((String)results.get(ExternalUidLookup.FIRST_NAME));
 				frm.setMname((String)results.get(ExternalUidLookup.MIDDLE_NAME));
 				frm.setLname((String)results.get(ExternalUidLookup.LAST_NAME));
-	    		
+	    		frm.setEmail((String)results.get(ExternalUidLookup.EMAIL));
 	    	}
 	    }	    
     }
@@ -243,6 +244,8 @@ public class InstructorAction extends Action {
 			if (frm.getCareerAcct() != null && frm.getCareerAcct().trim().length()>0) {
 				inst.setCareerAcct(frm.getCareerAcct().trim());
 			}
+			
+			inst.setEmail(frm.getEmail());
 						
 			if (frm.getPosType() != null && frm.getPosType().trim().length()>0) {
 				PositionType pt = PositionType.findById(new Long(frm.getPosType().trim()));

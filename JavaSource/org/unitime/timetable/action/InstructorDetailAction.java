@@ -423,6 +423,8 @@ public class InstructorDetailAction extends PreferencesAction {
         			+ ((inst.getMiddleName() == null) ?"": Constants.toInitialCase(inst.getMiddleName(), "-".toCharArray()) )+ " " 
         			+ Constants.toInitialCase(inst.getLastName(), "-".toCharArray()));
 		
+		frm.setEmail(inst.getEmail());
+		
 		String puid = inst.getExternalUniqueId();
 		if (puid != null) {
 			frm.setPuId(puid);

@@ -279,6 +279,8 @@ public class InstructorInfoEditAction extends InstructorAction {
 			frm.setPuId(puid);
 		}
 		
+		frm.setEmail(inst.getEmail());
+		
 		frm.setDeptName(inst.getDepartment().getName().trim());
 		
 		if (inst.getPositionType() != null) {
