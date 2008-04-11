@@ -1317,7 +1317,7 @@ public class CourseOfferingImport extends BaseImport {
 		        	ChangeLog.addChange(getHibSession(), manager, session, nco, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.CREATE, nco.getSubjectArea(), nco.getDepartment());
 				}
 			}
-			List<?> removeCourses = new ArrayList<Object>();
+			List removeCourses = new ArrayList<Object>();
 			removeCourses.addAll(io.getCourseOfferings());
 			for (Iterator<?> coIt = removeCourses.iterator(); coIt.hasNext(); ){
 				CourseOffering co = (CourseOffering) coIt.next();
@@ -1846,7 +1846,7 @@ public class CourseOfferingImport extends BaseImport {
 		} else {
 			if (!originalClassEvents.isEmpty()){
 				Event origEvent = (Event) originalClassEvents.get(0);
-				Set<?> origMeetings = new TreeSet<Object>();
+				Set origMeetings = new TreeSet<Object>();
 				origMeetings.addAll(origEvent.getMeetings());
 				if (meetings != null){
 					for(Iterator<Meeting> nmIt = meetings.iterator(); nmIt.hasNext(); ){
