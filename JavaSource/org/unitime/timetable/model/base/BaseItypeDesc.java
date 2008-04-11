@@ -58,6 +58,7 @@ public abstract class BaseItypeDesc  implements Serializable {
 	public static String PROP_SIS_REF = "sis_ref";
 	public static String PROP_BASIC = "basic";
 	public static String PROP_PARENT = "parent";
+	public static String PROP_ORGANIZED = "organized";
 
 
 	// constructors
@@ -68,8 +69,9 @@ public abstract class BaseItypeDesc  implements Serializable {
 	/**
 	 * Constructor for primary key
 	 */
-	public BaseItypeDesc (java.lang.Integer itype) {
+	public BaseItypeDesc (java.lang.Integer itype, java.lang.Boolean organized) {
 		this.setItype(itype);
+		this.setOrganized(organized);
 		initialize();
 	}
 
@@ -87,6 +89,7 @@ public abstract class BaseItypeDesc  implements Serializable {
 	private java.lang.String desc;
 	private java.lang.String sis_ref;
 	private java.lang.Integer basic;
+	private java.lang.Boolean organized;
 	private org.unitime.timetable.model.ItypeDesc parent;
 
 
@@ -187,6 +190,8 @@ public abstract class BaseItypeDesc  implements Serializable {
 	}
 
 
+	public java.lang.Boolean isOrganized() { return organized; }
+	public void setOrganized(java.lang.Boolean organized) { this.organized = organized; }
 
 
 	public boolean equals (Object obj) {

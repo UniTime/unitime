@@ -1509,9 +1509,25 @@
 			references %SCHEMA%.event (uniqueid) on delete set null
 		</sql>
 	</update>
-		<update version="23" date="09-Apr-2008" comment="External Room add exam capacity">
+	<update version="23" date="09-Apr-2008" comment="External Room add exam capacity">
 		<plsql>alter table %SCHEMA%.external_room add exam_capacity number(10)</plsql>
 		<mysql>alter table %SCHEMA%.external_room add exam_capacity bigint(10)</mysql>
 	</update>
-	
+	<update version="24" date="11-Apr-2008" comment="Exam avg period, instructor email, itype organized flag">
+		<plsql>alter table %SCHEMA%.exam add avg_period number(10)</plsql>
+		<mysql>alter table %SCHEMA%.exam add avg_period bigint(10)</mysql>
+		<plsql>alter table %SCHEMA%.itype_desc add organized number(1)</plsql>
+		<mysql>alter table %SCHEMA%.itype_desc add organized int(1)</mysql>
+		<sql>update %SCHEMA%.itype_desc set organized = 0</sql>
+		<sql>update %SCHEMA%.itype_desc set organized = 1 where abbv like 'Lec%'</sql>
+		<sql>update %SCHEMA%.itype_desc set organized = 1 where abbv like 'Rec%'</sql>
+		<sql>update %SCHEMA%.itype_desc set organized = 1 where abbv like 'Prsn%'</sql>
+		<sql>update %SCHEMA%.itype_desc set organized = 1 where abbv like 'Lab%'</sql>
+		<sql>update %SCHEMA%.itype_desc set organized = 1 where abbv like 'LabP%'</sql>
+		<sql>update %SCHEMA%.itype_desc set organized = 1 where abbv like 'Stdo%'</sql>
+		<mysql>alter table %SCHEMA%.itype_desc modify organized number(1) not null</mysql>
+		<plsql>alter table %SCHEMA%.itype_desc add constraint nn_itype_desc_organized check (organized is not null)</plsql>
+		<plsql>alter table %SCHEMA%.departmental_instructor add email varchar2(200)</plsql>
+		<mysql>alter table %SCHEMA%.departmental_instructor add email varchar(200)</mysql>
+	</update>
 </dbupdate>

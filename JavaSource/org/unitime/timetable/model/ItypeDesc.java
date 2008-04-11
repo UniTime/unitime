@@ -40,8 +40,8 @@ public class ItypeDesc extends BaseItypeDesc implements Comparable {
 	/**
 	 * Constructor for primary key
 	 */
-	public ItypeDesc (java.lang.Integer itype) {
-		super(itype);
+	public ItypeDesc (java.lang.Integer itype, java.lang.Boolean organized) {
+		super(itype, organized);
 	}
 
 /*[CONSTRUCTOR MARKER END]*/

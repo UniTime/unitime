@@ -176,6 +176,17 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
                 setInteger("startSlot", startSlot).setCacheable(true).uniqueResult();
     }
     
+    public static ExamPeriod findByIndex(Long sessionId, Integer type, Integer idx) {
+        if (idx==null || idx<0) return null;
+        int x = 0;
+        TreeSet periods = findAll(sessionId, type);
+        for (Iterator i=periods.iterator();i.hasNext();x++) {
+            ExamPeriod period = (ExamPeriod)i.next();
+            if (x==idx) return period;
+        }
+        return (periods.isEmpty()?null:(ExamPeriod)periods.last());
+    }
+    
     public String toString() {
         return getAbbreviation();
     }
