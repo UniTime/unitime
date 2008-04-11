@@ -96,6 +96,7 @@ public class StaffImport extends BaseImport {
         String year   = root.attributeValue("year");
         String term   = root.attributeValue("term");
         String created = root.attributeValue("created");
+        String elementName = "staffMember";
 		try {
 			beginTransaction();
 
@@ -110,7 +111,7 @@ public class StaffImport extends BaseImport {
 	       
 	        for ( Iterator it = root.elementIterator(); it.hasNext(); ) {
 				Element element = (Element) it.next();
-				String externalId = element.attributeValue("externalId");
+				String externalId = getRequiredStringAttribute(element, "externalId", elementName);
 				Staff staff = null;
 				if(externalId != null && externalId.length() > 0) {
 					staff = findByExternalId(externalId);
@@ -124,18 +125,18 @@ public class StaffImport extends BaseImport {
 						continue;
 					}
 				}
-				staff.setFirstName(element.attributeValue("firstName"));
-				staff.setMiddleName(element.attributeValue("middleName"));
-				staff.setLastName(element.attributeValue("lastName"));
+				staff.setFirstName(getOptionalStringAttribute(element, "firstName"));
+				staff.setMiddleName(getOptionalStringAttribute(element, "middleName"));
+				staff.setLastName(getRequiredStringAttribute(element, "lastName", elementName));
 				PositionCodeType posCodeType = null;
-				String positionCode = element.attributeValue("positionCode");
-				if (positionCode != null && positionCode.trim().length() > 0){
+				String positionCode = getOptionalStringAttribute(element, "positionCode");
+				if (positionCode != null){
 					posCodeType = new PositionCodeTypeDAO().get(positionCode);
 				}
 				staff.setPositionCode(posCodeType);
 				staff.setExternalUniqueId(externalId);
-				staff.setDept(element.attributeValue("department"));
-				staff.setEmail(element.attributeValue("email"));
+				staff.setDept(getRequiredStringAttribute(element, "department", elementName));
+				staff.setEmail(getOptionalStringAttribute(element, "email"));
 				getHibSession().saveOrUpdate(staff);
 				flushIfNeeded(true);
 	        }
