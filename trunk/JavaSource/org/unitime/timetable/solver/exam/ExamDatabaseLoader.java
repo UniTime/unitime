@@ -231,6 +231,7 @@ public class ExamDatabaseLoader extends ExamLoader {
                     0,
                     periodPlacements,
                     findRooms(exam));
+            if (exam.getAvgPeriod()!=null) x.setAveragePeriod(exam.getAvgPeriod());
             x.setModel(getModel());
             
             int minSize = 0;
