@@ -118,6 +118,13 @@
 		</TR>
 		
 		<TR>
+			<TD>Email:</TD>
+			<TD>
+				<html:text property="email" maxlength="200" size="50" /> 
+			<TD>
+		</TR>
+
+		<TR>
 			<TD>Department:</TD>
 			<TD>
 				<bean:write name="<%=frmName%>" property="deptName" />

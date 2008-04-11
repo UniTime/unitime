@@ -125,6 +125,11 @@
 		<TR>
 			<TD>Career Account:</TD><TD> <bean:write name="<%=frmName%>" property="careerAcct" /></TD>
 		</TR>
+		<logic:notEmpty name="<%=frmName%>" property="email">
+			<TR>
+				<TD>Email:</TD><TD> <bean:write name="<%=frmName%>" property="email" /></TD>
+			</TR>
+		</logic:notEmpty>
 		<TR>
 			<TD>Position:</TD><TD> <bean:write name="<%=frmName%>" property="posType" /></TD>
 		</TR>

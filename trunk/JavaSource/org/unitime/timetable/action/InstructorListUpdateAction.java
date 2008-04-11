@@ -267,6 +267,7 @@ public class InstructorListUpdateAction extends Action {
 					if (s2.indexOf(staff.getUniqueId().toString()) != -1) {
 						DepartmentalInstructor inst = new DepartmentalInstructor();
 						inst.setLastName(staff.getLastName());
+						inst.setEmail(staff.getEmail());
 						
 						HttpSession httpSession = request.getSession();
 						String deptId = (String) httpSession.getAttribute(Constants.DEPT_ID_ATTR_NAME);
