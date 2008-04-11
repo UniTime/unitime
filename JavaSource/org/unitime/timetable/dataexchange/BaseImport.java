@@ -98,7 +98,11 @@ public abstract class BaseImport extends DataExchangeHelper {
 	
 	protected Integer getOptionalIntegerAttribute(Element element, String attributeName) {
 		String attributeStr = getOptionalStringAttribute(element, attributeName);
-		return(new Integer(attributeStr));
+		if (attributeStr != null){
+			return(new Integer(attributeStr));
+		} else {
+			return(null);
+		}
 	}
 	
 	protected Boolean getRequiredBooleanAttribute(Element element, String attributeName, String elementName) throws Exception {
@@ -108,7 +112,11 @@ public abstract class BaseImport extends DataExchangeHelper {
 	
 	protected Boolean getOptionalBooleanAttribute(Element element, String attributeName) {
 		String attributeStr = getOptionalStringAttribute(element, attributeName);
-		return(new Boolean(attributeStr));
+		if (attributeStr != null) {
+			return(new Boolean(attributeStr));
+		} else {
+			return(null);
+		}
 	}
 	
 	protected TimetableManager findDefaultManager(){
