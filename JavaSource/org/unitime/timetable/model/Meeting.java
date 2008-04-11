@@ -156,7 +156,7 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
 	}
 	
 	public List<?> getTimeRoomOverlaps(){
-		return (MeetingDAO.getInstance()).getSession().createQuery("from Meeting m where m.meetingDate=:meetingDate and m.startPeriod <= :stopPeriod and m.stopPeriod >= :startPeriod and m.locationPermanentId = :locPermId and m.uniqueId != :uniqueId")
+		return (MeetingDAO.getInstance()).getSession().createQuery("from Meeting m where m.meetingDate=:meetingDate and m.startPeriod < :stopPeriod and m.stopPeriod > :startPeriod and m.locationPermanentId = :locPermId and m.uniqueId != :uniqueId")
 		.setDate("meetingDate", getMeetingDate())
 		.setInteger("stopPeriod", getStopPeriod())
 		.setInteger("startPeriod", getStartPeriod())
@@ -166,7 +166,7 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
 	}
 
 	public boolean hasTimeRoomOverlaps(){
-		Long count = (Long)MeetingDAO.getInstance().getSession().createQuery("select count(m) from Meeting m where m.meetingDate=:meetingDate and m.startPeriod <= :stopPeriod and m.stopPeriod >= :startPeriod and m.locationPermanentId = :locPermId and m.uniqueId != :uniqueId")
+		Long count = (Long)MeetingDAO.getInstance().getSession().createQuery("select count(m) from Meeting m where m.meetingDate=:meetingDate and m.startPeriod < :stopPeriod and m.stopPeriod > :startPeriod and m.locationPermanentId = :locPermId and m.uniqueId != :uniqueId")
 		.setDate("meetingDate", getMeetingDate())
 		.setInteger("stopPeriod", getStopPeriod())
 		.setInteger("startPeriod", getStartPeriod())
