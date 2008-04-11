@@ -83,8 +83,9 @@ public class RoomFeatureSearchAction extends Action {
 		Long sessionId = (Long) user
 				.getAttribute(Constants.SESSION_ID_ATTR_NAME);
 		
-		// Check if dept code saved to session
-		Object dc = httpSession.getAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME);
+        Object dc = roomFeatureListForm.getDeptCodeX();
+        if (dc==null)
+            dc = httpSession.getAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME);
         if (dc==null) {
             dc = request.getParameter("default");
             if (dc!=null)
@@ -93,7 +94,7 @@ public class RoomFeatureSearchAction extends Action {
 		String deptCode = "";
 		
 		// Dept code is saved to the session - go to room feature list
-		if (dc != null ) {
+		if (dc != null && !Constants.BLANK_OPTION_VALUE.equals(dc)) {
 			deptCode = dc.toString();
 			roomFeatureListForm.setDeptCodeX(deptCode);
 

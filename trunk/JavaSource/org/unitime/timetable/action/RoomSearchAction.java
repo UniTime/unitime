@@ -86,7 +86,9 @@ public class RoomSearchAction extends Action {
 		Long sessionId = (Long) user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
 		
 		// Check if dept code saved to session
-		Object dc = httpSession.getAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME);
+		Object dc = roomListForm.getDeptCodeX();
+		if (dc==null)
+		    dc = httpSession.getAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME);
 		if (dc==null) {
 		    dc = request.getParameter("default");
 		    if (dc!=null)
@@ -95,7 +97,7 @@ public class RoomSearchAction extends Action {
 		String deptCode = "";
 		
 		// Dept code is saved to the session - go to instructor list
-		if (dc != null ) {
+		if (dc != null && !Constants.BLANK_OPTION_VALUE.equals(dc)) {
 			deptCode = dc.toString();
 			roomListForm.setDeptCodeX(deptCode);
 			if (!roomListForm.getDeptCodeX().equalsIgnoreCase("All") && !roomListForm.getDeptCodeX().equalsIgnoreCase("Exam") && !roomListForm.getDeptCodeX().equalsIgnoreCase("EExam")) {
