@@ -28,6 +28,7 @@ import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamOwner;
+import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.dao.ExamDAO;
@@ -299,6 +300,9 @@ public class ExamDetailAction extends PreferencesAction {
         Long prevId = Navigation.getPrevious(request.getSession(), Navigation.sInstructionalOfferingLevel, exam.getUniqueId());
         frm.setPreviousId(prevId==null?null:prevId.toString());
         frm.setNextId(nextId==null?null:nextId.toString());
+        
+        ExamPeriod avgPeriod = exam.getAveragePeriod();
+        frm.setAvgPeriod(avgPeriod==null?null:avgPeriod.getName());
     }
 
     protected void setupInstructors(HttpServletRequest request, ExamEditForm frm, Exam exam) throws Exception {

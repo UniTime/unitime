@@ -137,19 +137,38 @@
 			<TR>
 				<TD valign="top">Instructors:</TD>
 				<TD>
-					<table border='0'>
+					<table border='0' cellspacing="0" cellpadding="3">
+					<!--  <tr><td><i>Name</i></td><td><i>Email</i></td></tr> -->
 					<logic:iterate name="<%=frmName%>" property="instructors" id="instructor" indexId="ctr">
 						<logic:iterate scope="request" name="<%=DepartmentalInstructor.INSTR_LIST_ATTR_NAME%>" id="instr">
 							<logic:equal name="instr" property="value" value="<%=(String)instructor%>">
-								<tr><td>
-									<bean:write name="instr" property="label"/>
-								</td></tr>
+								<tr onmouseover="this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='hand';this.style.cursor='pointer';" 
+									onmouseout="this.style.backgroundColor='transparent';"
+									onClick="document.location='instructorDetail.do?instructorId=<%=instructor%>';"
+								>
+									<td style="padding-right: 20px;">
+										<bean:write name="instr" property="label"/>
+									</td>
+									<td>
+										<bean:define name="<%=frmName%>" property="<%="email("+instructor+")"%>" id="email"/>
+										<logic:notEmpty name="email"><i>
+											<a href="mailto:<%=(String)email%>" onclick="event.cancelBubble=true;">
+											<bean:write name="email"/>
+											</a>
+										</i></logic:notEmpty>
+									</td>
+								</tr>
 							</logic:equal>
 						</logic:iterate>
 	   				</logic:iterate>
 	   				</table>
 			   	</TD>
 		   	</TR>
+		</logic:notEmpty>
+		<logic:notEmpty name="<%=frmName%>" property="avgPeriod">
+			<TR>
+				<TD>Average Period:</TD><TD> <bean:write name="<%=frmName%>" property="avgPeriod" /></TD>
+			</TR>
 		</logic:notEmpty>
 		<tt:last-change type='Exam'>
 			<bean:write name="<%=frmName%>" property="examId"/>
