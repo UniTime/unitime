@@ -51,6 +51,7 @@ public abstract class BaseExam extends org.unitime.timetable.model.PreferenceGro
 	private java.lang.Integer seatingType;
 	private java.lang.String assignedPreference;
 	private java.lang.Integer examType;
+	private java.lang.Integer avgPeriod;
 
 	// many to one
 	private org.unitime.timetable.model.Session session;
@@ -104,7 +105,9 @@ public abstract class BaseExam extends org.unitime.timetable.model.PreferenceGro
 	
 	public org.unitime.timetable.model.Event getEvent() { return event; }
 	public void setEvent(org.unitime.timetable.model.Event event) { this.event = event; }
-
+	
+	public java.lang.Integer getAvgPeriod() { return avgPeriod; }
+	public void setAvgPeriod(java.lang.Integer avgPeriod) { this.avgPeriod = avgPeriod; }
 
 	public boolean equals (Object obj) {
 		if (null == obj) return false;

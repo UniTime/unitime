@@ -892,6 +892,14 @@
 				length="20"
 			/>
 				
+			<property
+				name="email"
+				column="EMAIL"
+				type="java.lang.String"
+				not-null="false"
+				length="200"
+			/>
+
 			<set
 				name="classes"
 				cascade="all"
@@ -1032,6 +1040,14 @@
 				type="java.lang.Integer"
 				length="10"
 				not-null="true"
+			/>
+
+			<property
+				name="avgPeriod"
+				column="AVG_PERIOD"
+				type="java.lang.Integer"
+				length="10"
+				not-null="false"
 			/>
 
 			<set

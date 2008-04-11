@@ -477,6 +477,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 		newDepartmentalInstructor.setIgnoreToFar(isIgnoreToFar());
 		newDepartmentalInstructor.setNote(getNote());
 		newDepartmentalInstructor.setPositionType(getPositionType());
+		newDepartmentalInstructor.setEmail(getEmail());
 		return(newDepartmentalInstructor);
 	}
 	
