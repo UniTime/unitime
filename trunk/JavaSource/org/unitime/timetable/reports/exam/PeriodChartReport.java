@@ -26,7 +26,7 @@ public class PeriodChartReport extends PdfLegacyExamReport {
     public PeriodChartReport(File file, Session session, int examType, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
         super(file, "PERIOD ASSIGNMENT", session, examType, exams);
     }
-
+    
     public void printReport() throws DocumentException {
         Hashtable<ExamPeriod,TreeSet<ExamSectionInfo>> period2courseSections = new Hashtable();
         for (ExamAssignmentInfo exam : getExams()) {
@@ -68,9 +68,9 @@ public class PeriodChartReport extends PdfLegacyExamReport {
                     String dayStr = (String)days.get(new Integer(day));
                     if (firstDay==null) firstDay = dayStr; 
                     lastDay = dayStr;
-                    header1 += mpad(dayStr,17)+"   "; 
-                    header2 += "Exam         Enrl   ";
-                    header3 += "============ ====   ";
+                    header1 += mpad(dayStr,20)+"  "; 
+                    header2 += "Exam            Enrl  ";
+                    header3 += "=============== ====  ";
                     ExamPeriod period = null;
                     for (Iterator i=ExamPeriod.findAll(getSession().getUniqueId(), getExamType()).iterator();i.hasNext();) {
                         ExamPeriod p = (ExamPeriod)i.next();
@@ -86,7 +86,10 @@ public class PeriodChartReport extends PdfLegacyExamReport {
                     if (period==null) continue;
                     TreeSet<ExamSectionInfo> sections = period2courseSections.get(period);
                     if (sections==null) continue;
-                    nextLines = Math.max(nextLines,6+sections.size());
+                    int linesThisSections = 6;
+                    for (ExamSectionInfo section : sections)
+                        if (iLimit<0 || section.getNrStudents()>=iLimit) linesThisSections ++;
+                    nextLines = Math.max(nextLines,linesThisSections);
                 }
                 if (!headerPrinted) {
                     printHeader();
@@ -115,7 +118,7 @@ public class PeriodChartReport extends PdfLegacyExamReport {
                     ExamPeriod period = (ExamPeriod)f.nextElement();
                     if (period==null) {
                         Vector linesThisPeriod = new Vector();
-                        linesThisPeriod.add(lpad("0",17));
+                        linesThisPeriod.add(lpad("0",20));
                         lines.add(linesThisPeriod);
                         continue;
                     }
@@ -123,13 +126,19 @@ public class PeriodChartReport extends PdfLegacyExamReport {
                     if (sections==null) sections = new TreeSet();
                     Vector linesThisPeriod = new Vector();
                     int total = 0;
+                    int totalListed = 0;
                     for (ExamSectionInfo section : sections) {
                         total += section.getNrStudents();
+                        if (iLimit>=0 && section.getNrStudents()<iLimit) continue;
+                        totalListed += section.getNrStudents();
                         linesThisPeriod.add(
-                                rpad(section.getName(), 12)+" "+
+                                rpad(section.getName(), 15)+" "+
                                 lpad(String.valueOf(section.getNrStudents()),4));
                     }
-                    linesThisPeriod.insertElementAt(lpad(""+total,17), 0);
+                    if (totalListed!=total)
+                        linesThisPeriod.insertElementAt(mpad("("+totalListed+")",13)+" "+lpad(""+total,6), 0);
+                    else
+                        linesThisPeriod.insertElementAt(lpad(""+total,20), 0);
                     max = Math.max(max, linesThisPeriod.size());
                     Integer td = (Integer)totalADay.get(period.getDateOffset());
                     totalADay.put(period.getDateOffset(),new Integer(total+(td==null?0:td.intValue())));
@@ -142,8 +151,8 @@ public class PeriodChartReport extends PdfLegacyExamReport {
                         if (i<linesThisPeriod.size())
                             line += (String)linesThisPeriod.elementAt(i);
                         else
-                            line += rpad("",17);
-                        if (f.hasMoreElements()) line += "   ";
+                            line += rpad("",20);
+                        if (f.hasMoreElements()) line += "  ";
                     }
                     println(line);
                 }
@@ -161,9 +170,9 @@ public class PeriodChartReport extends PdfLegacyExamReport {
             for (Enumeration f=ToolBox.sortEnumeration(days.keys());f.hasMoreElements();idx++) {
                 Integer day = (Integer)f.nextElement();
                 if (idx<dIdx || idx>=dIdx+nrCols) continue;
-                line1 += mpad((String)days.get(day),17)+"   ";
-                line2 += "============ ====   ";
-                line3 += lpad(totalADay.get(day)==null?"":totalADay.get(day).toString(),17)+"   ";
+                line1 += mpad((String)days.get(day),20)+"  ";
+                line2 += "=============== ====  ";
+                line3 += lpad(totalADay.get(day)==null?"":totalADay.get(day).toString(),20)+"  ";
             }
             println(line1);
             println(line2);

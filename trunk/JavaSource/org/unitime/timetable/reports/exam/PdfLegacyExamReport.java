@@ -29,6 +29,13 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
     private Session iSession = null;
     private int iExamType = -1;
     
+    protected boolean iDispRooms = true;
+    protected String iNoRoom = "";
+    protected boolean iDirect = true;
+    protected boolean iM2d = true;
+    protected boolean iBtb = false;
+    protected int iLimit = -1;
+    
     static {
         sRegisteredReports.put("crsn", ScheduleByCourseReport.class);
         sRegisteredReports.put("conf", ConflictsByCourseAndStudentReport.class);
@@ -46,8 +53,21 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
         iExams = exams;
         iSession = session;
         iExamType = examType;
+        iDispRooms = "true".equals(System.getProperty("room","true"));
+        iNoRoom = System.getProperty("noroom","INSTR OFFC");
+        iDirect = "true".equals(System.getProperty("direct","true"));
+        iM2d = "true".equals(System.getProperty("m2d",(examType==Exam.sExamTypeFinal?"true":"false")));
+        iBtb = "true".equals(System.getProperty("btb","false"));
+        iLimit = Integer.parseInt(System.getProperty("limit", "-1"));
     }
     
+    public void setDispRooms(boolean dispRooms) { iDispRooms = dispRooms; }
+    public void setNoRoom(String noRoom) { iNoRoom = noRoom; }
+    public void setDirect(boolean direct) { iDirect = direct; }
+    public void setM2d(boolean m2d) { iM2d = m2d; }
+    public void setBtb(boolean btb) { iBtb = btb; }
+    public void setLimit(int limit) { iLimit = limit; }
+
     public Collection<ExamAssignmentInfo> getExams() {
         return iExams;
     }
