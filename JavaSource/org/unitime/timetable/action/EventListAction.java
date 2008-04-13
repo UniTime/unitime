@@ -27,6 +27,12 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.apache.struts.action.ActionMessages;
+import org.unitime.commons.User;
+import org.unitime.commons.web.Web;
+import org.unitime.timetable.form.EventListForm;
+import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.TimetableManager;
 
 public class EventListAction extends Action {
 
@@ -35,7 +41,22 @@ public class EventListAction extends Action {
 			ActionForm form,
 			HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
+		EventListForm myForm = (EventListForm)form;
+		
+        User user = Web.getUser(request.getSession()); 
+        TimetableManager manager = (user==null?null:TimetableManager.getManager(user)); 
+        Session session = (user==null?null:Session.getCurrentAcadSession(user));
+        if (user==null || session==null || !manager.canSeeEvents(session, user)) 
+        	throw new Exception ("Access Denied.");
 
+        String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
+
+        if ("Search".equals(op)) {
+        	ActionMessages errors = myForm.validate(mapping, request);
+        	if (!errors.isEmpty()) saveErrors(request, errors);
+        	else myForm.save(request.getSession());
+        } else myForm.load(request.getSession());
+		
 		return mapping.findForward("show");
 
 	}
