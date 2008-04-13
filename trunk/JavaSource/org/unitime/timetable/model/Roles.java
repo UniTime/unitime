@@ -69,7 +69,8 @@ public class Roles extends BaseRoles {
 	public static String DEPT_SCHED_MGR_ROLE = "Dept Sched Mgr";
 	public static String VIEW_ALL_ROLE = "View All";
 	public static String EXAM_MGR_ROLE = "Exam Mgr";
-
+	public static String EVENT_MGR_ROLE = "Event Mgr";
+	
     public static String USER_ROLES_ATTR_NAME = "userRoles";
     public static String ROLES_ATTR_NAME = "rolesList";
 
@@ -77,9 +78,14 @@ public class Roles extends BaseRoles {
 	 * Define Admin and non - admin roles
 	 */
 	
-    private static String[] adminRoles = new String[] { Roles.ADMIN_ROLE };
+    private static String[] adminRoles = new String[] { 
+    	Roles.ADMIN_ROLE };
     
-    private static String[] nonAdminRoles = new String[] { Roles.DEPT_SCHED_MGR_ROLE, Roles.VIEW_ALL_ROLE, Roles.EXAM_MGR_ROLE };
+    private static String[] nonAdminRoles = new String[] { 
+    	Roles.DEPT_SCHED_MGR_ROLE, 
+    	Roles.VIEW_ALL_ROLE, 
+    	Roles.EXAM_MGR_ROLE,
+    	Roles.EVENT_MGR_ROLE };
     
     /**
      * Retrieve admin roles
