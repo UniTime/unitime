@@ -1525,7 +1525,7 @@
 		<sql>update %SCHEMA%.itype_desc set organized = 1 where abbv like 'Lab%'</sql>
 		<sql>update %SCHEMA%.itype_desc set organized = 1 where abbv like 'LabP%'</sql>
 		<sql>update %SCHEMA%.itype_desc set organized = 1 where abbv like 'Stdo%'</sql>
-		<mysql>alter table %SCHEMA%.itype_desc modify organized number(1) not null</mysql>
+		<mysql>alter table %SCHEMA%.itype_desc modify organized int(1) not null</mysql>
 		<plsql>alter table %SCHEMA%.itype_desc add constraint nn_itype_desc_organized check (organized is not null)</plsql>
 		<plsql>alter table %SCHEMA%.departmental_instructor add email varchar2(200)</plsql>
 		<mysql>alter table %SCHEMA%.departmental_instructor add email varchar(200)</mysql>
