@@ -11,7 +11,6 @@ import java.util.TreeSet;
 
 import javax.servlet.jsp.JspWriter;
 
-import org.hibernate.mapping.Collection;
 import org.unitime.commons.web.htmlgen.TableCell;
 import org.unitime.commons.web.htmlgen.TableHeaderCell;
 import org.unitime.commons.web.htmlgen.TableRow;
@@ -182,7 +181,7 @@ public class WebEventTableBuilder {
     
     private TableCell buildEventName(Event e) {
         TableCell cell = this.initCell(true, null, 1, true);    	
-        cell.addContent(e.getEventName()==null?"":"<b>"+e.getEventName()+"</b>");
+        cell.addContent("<a name='A"+e.getUniqueId()+"'>"+(e.getEventName()==null?"":"<b>"+e.getEventName()+"</b>")+"</a>");
         this.endCell(cell, true);
         return (cell);
     }

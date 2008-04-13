@@ -29,6 +29,7 @@ public class EventDetailForm extends ActionForm {
 	private Vector<NoteBean> iNotes = new Vector<NoteBean>();
 	private ContactBean iMainContact;
 	private Vector<ContactBean> iAdditionalContacts = new Vector<ContactBean>();
+	private boolean iCanEdit;
 	
 	/** 
 	 * Method validate
@@ -53,6 +54,7 @@ public class EventDetailForm extends ActionForm {
 		iAdditionalContacts.clear();
 		iMeetings.clear();
 		iNotes.clear();
+		iCanEdit = false;
 	}
 	
 
@@ -96,12 +98,12 @@ public class EventDetailForm extends ActionForm {
 		this.iId = id;
 	}
 
-	public String getDoit() {
+	public String getOp() {
 		return iOp;
 	}
 
-	public void setDoit(String doit) {
-		this.iOp = doit;
+	public void setOp(String op) {
+		this.iOp = op;
 	}
 	
 	
@@ -168,6 +170,14 @@ public class EventDetailForm extends ActionForm {
     	NoteBean note = new NoteBean();
     	note.setStandardNote(standardNote);
     	iNotes.add(note);
+    }
+    
+    public boolean getCanEdit() {
+    	return iCanEdit;
+    }
+    
+    public void setCanEdit(boolean canEdit) {
+    	iCanEdit = canEdit;
     }
     
     public class MeetingBean {

@@ -35,6 +35,7 @@ TO DO:
 <tiles:importAttribute />
 
 <html:form action="/eventDetail">
+	<html:hidden property="id"/>
 	<TABLE width="93%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD valign="middle" colspan='2'>
@@ -42,7 +43,8 @@ TO DO:
 					<tt:section-title><bean:write name="eventDetailForm" property="eventName"/></tt:section-title>
 					<html:submit property="op" styleClass="btn">Previous</html:submit>
 					<html:submit property="op" styleClass="btn">Next</html:submit>
-					<html:submit property="op"  styleClass="btn" accesskey="B" title="Return To Event List (Alt+B)" value="Back"/>
+					<html:submit property="op"  styleClass="btn" accesskey="B" 
+					  	title="Return To Event List (Alt+B)" value="Back"/>
 				</tt:section-header>
 			</TD>
 		</TR>
@@ -85,6 +87,52 @@ TO DO:
 			</table>
 			</td>
 		</TR>
+		<logic:equal name="eventDetailForm" property="canEdit" value="true">
+			<TR>
+				<TD nowrap valign="top">Contact:&nbsp;</TD>
+				<td>
+				<Table width="100%" border="0" cellspacing="0" cellpadding="1">
+					<tr align="left">
+						<td><i>Name</i></td><td><i>E-mail</i></td><td><i>Phone</i></td>
+					</tr>
+					<logic:notEmpty name="eventDetailForm" property="mainContact">
+					<bean:define name="eventDetailForm" property="mainContact" id="mc"/>
+					<TR>
+						<TD>
+							<bean:write name="mc" property="firstName"/>
+							<bean:write name="mc" property="middleName"/> 
+							<bean:write name="mc" property="lastName"/> <i>(main contact)</i>
+						</TD>
+						<td>
+							<bean:write name="mc" property="email"/>						
+						</td>
+						<td>
+							<bean:write name="mc" property="phone"/>						
+						</td>
+					</TR>		
+					</logic:notEmpty>
+					<logic:iterate name="eventDetailForm" property="additionalContacts" id="additionalContact">
+						<tr>
+							<td>
+								<bean:write name="additionalContact" property="firstName"/> 
+								<bean:write name="additionalContact" property="middleName"/>
+								<bean:write name="additionalContact" property="lastName"/>							
+							</td>
+							<td>
+								<bean:write name="additionalContact" property="email"/>
+							</td>
+							<td>
+								<bean:write name="additionalContact" property="phone"/>
+							</td>						
+						</tr>
+					</logic:iterate>
+					
+				</table>
+				</td>
+			</TR>		
+		</logic:equal>
+
+
 
 		<TR>
 			<TD colspan='2'>&nbsp;</TD>
@@ -94,7 +142,9 @@ TO DO:
 			<TD colspan='2'>
 				<tt:section-header>
 				<tt:section-title>Meetings</tt:section-title>
-				<html:submit property="op" styleClass="btn">Add Meeting</html:submit>
+				<logic:equal name="eventDetailForm" property="canEdit" value="true">
+					<html:submit property="op" styleClass="btn">Add Meeting</html:submit>
+				</logic:equal>
 				</tt:section-header>
 			</TD>
 		</TR>
@@ -102,14 +152,14 @@ TO DO:
 	<tr><td colspan='2'>
 	<Table width="100%" border="0" cellspacing="0" cellpadding="1">
 		<tr align="left">
-			<th>Date</th><th>Time</th><th>Location</th><th>Approved</th>
+			<th><font size = -1 >Date</font></th><th><font size = -1 >Time</font></th><th><font size = -1 >Location</font></th><th><font size = -1 >Approved</font></th>
 		</tr>
 		<html:hidden property="selected"/>
 		<logic:iterate name="eventDetailForm" property="meetings" id="meeting">
 			<bean:define name="meeting" property="id" id="meetingId"/>
 			<tr>
 				<td>
-					<bean:write name="meeting" property="date"/>
+					<bean:write name="meeting" property="date" filter="false"/> 
 				</td>
 				<td>
 					<bean:write name="meeting" property="startTime"/> - <bean:write name="meeting" property="endTime"/>
@@ -121,64 +171,31 @@ TO DO:
 					<bean:write name="meeting" property="approvedDate"/>
 				</td>			
 				<td>
-					<html:submit property="op" styleClass="btn" onclick="<%="selected.value='"+meetingId+"';"%>">Delete</html:submit>
+					<logic:equal name="eventDetailForm" property="canEdit" value="true">
+						<html:submit property="op" styleClass="btn" onclick="<%="selected.value='"+meetingId+"';"%>">Delete</html:submit>
+					</logic:equal>
 				</td>
 			</tr>	
 		</logic:iterate>
 	</Table>
 	</td></tr>
 
-		<TR>
-			<TD colspan='2'>&nbsp;</TD>
-		</TR>
+<!-- Buttons -->
+	<TR>
+		<TD colspan="2" align="right">
+			<tt:section-title/>
+		</TD>
+	</TR>
+	<TR>
+		<TD colspan="2" align="right">
+				<html:submit property="op" styleClass="btn">Previous</html:submit>
+				<html:submit property="op" styleClass="btn">Next</html:submit>
+				<html:submit property="op"  styleClass="btn" accesskey="B" 
+				  	title="Return To Event List (Alt+B)" value="Back"/>
+		</TD>
+	</TR>
 
-		<TR>
-			<TD colspan='2'>
-				<tt:section-header>
-				<tt:section-title>Contacts</tt:section-title>
-				</tt:section-header>
-			</TD>
-		</TR>
-		<tr>
-			<td colspan='2'>
-				<Table width="100%" border="0" cellspacing="0" cellpadding="1">
-				<tr align="left">
-					<th>Name</th><th>E-mail</th><th>Phone</th>
-				</tr>
-				<logic:notEmpty name="eventDetailForm" property="mainContact">
-				<bean:define name="eventDetailForm" property="mainContact" id="mc"/>
-				<TR>
-					<TD>
-						<bean:write name="mc" property="firstName"/>
-						<bean:write name="mc" property="middleName"/> 
-						<bean:write name="mc" property="lastName"/> <i>(main contact)</i>
-					</TD>
-					<td>
-						<bean:write name="mc" property="email"/>						
-					</td>
-					<td>
-						<bean:write name="mc" property="phone"/>						
-					</td>
-				</TR>		
-				</logic:notEmpty>
-				<logic:iterate name="eventDetailForm" property="additionalContacts" id="additionalContact">
-					<tr>
-						<td>
-							<bean:write name="additionalContact" property="firstName"/> 
-							<bean:write name="additionalContact" property="middleName"/>
-							<bean:write name="additionalContact" property="lastName"/>							
-						</td>
-						<td>
-							<bean:write name="additionalContact" property="email"/>
-						</td>
-						<td>
-							<bean:write name="additionalContact" property="phone"/>
-						</td>						
-					</tr>
-				</logic:iterate>
-				</table>
-			</td>
-		</tr>
+
 	</TABLE>
 
 </html:form>
