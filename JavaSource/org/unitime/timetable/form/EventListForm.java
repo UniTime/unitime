@@ -90,7 +90,11 @@ public class EventListForm extends ActionForm {
 		int idx = 0;
 		while (stk.hasMoreTokens()) iEventTypes[idx++] = stk.nextToken();
 		
-		iEventMainContactSubstring = (String)session.getAttribute("EventList.EventMainContactSubstring");
+		iEventNameSubstring = (String)session.getAttribute("EventList.EventNameSubstring");
+ 		iEventMainContactSubstring = (String)session.getAttribute("EventList.EventMainContactSubstring");
+ 		if (session.getAttribute("EventList.EventDateFrom")!=null)
+ 			iEventDateFrom = (String)session.getAttribute("EventList.EventDateFrom");
+		iEventDateTo = (String)session.getAttribute("EventList.EventDateTo");		
 	}
 	
 	public void save(HttpSession session) {
@@ -100,10 +104,25 @@ public class EventListForm extends ActionForm {
 				eventTypes += (idx>0?",":"") + iEventTypes[idx];
 		UserData.setProperty(session, "EventList.EventTypes", eventTypes);
 		
+		if (iEventNameSubstring==null)
+			session.removeAttribute("EventList.EventNameSubstring");
+		else
+			session.setAttribute("EventList.EventNameSubstring", iEventNameSubstring);
+
 		if (iEventMainContactSubstring==null)
 			session.removeAttribute("EventList.EventMainContactSubstring");
 		else
 			session.setAttribute("EventList.EventMainContactSubstring", iEventMainContactSubstring);
+		
+		if (iEventDateFrom==null)
+			session.removeAttribute("EventList.EventDateFrom");
+		else
+			session.setAttribute("EventList.EventDateFrom", iEventDateFrom);		
+
+		if (iEventDateTo==null)
+			session.removeAttribute("EventList.EventDateTo");
+		else
+			session.setAttribute("EventList.EventDateTo", iEventDateTo);		
 	}
 
 	public String getEventNameSubstring () {

@@ -104,7 +104,7 @@
 		</TR>
 		<TR>
 			<TD colspan='2' align='right'>
-				<html:submit property="op" value="Search"/>
+				<html:submit property="op" value="Search" onclick="displayLoading();"/>
 			</TD>
 		</TR>
 </TABLE>
