@@ -1,16 +1,18 @@
 package org.unitime.timetable.webutil;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.StringTokenizer;
 import java.util.TreeSet;
 
 import javax.servlet.jsp.JspWriter;
 
+import org.hibernate.Query;
 import org.unitime.commons.web.htmlgen.TableCell;
 import org.unitime.commons.web.htmlgen.TableHeaderCell;
 import org.unitime.commons.web.htmlgen.TableRow;
@@ -18,6 +20,7 @@ import org.unitime.commons.web.htmlgen.TableStream;
 import org.unitime.timetable.form.EventListForm;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Meeting;
+import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.util.Constants;
 
 
@@ -306,7 +309,58 @@ public class WebEventTableBuilder {
     public void htmlTableForEvents (EventListForm form, JspWriter outputStream){
 
         ArrayList eventIds = new ArrayList();
-        Event event = new Event();
+        
+        String query = "select distinct e from Event e inner join e.meetings m where e.eventType.reference in (";
+        for (int i=0;i<form.getEventTypes().length;i++) {
+        	if (i>0) query+=",";
+        	query += "'"+form.getEventTypes()[i]+"'";
+        }
+        query += ")";
+        
+        if (form.getEventNameSubstring()!=null && form.getEventNameSubstring().trim().length()>0) {
+        	query += " and e.eventName like :eventNameSubstring";
+        }
+        
+        if (form.getEventDateFrom()!=null && form.getEventDateFrom().trim().length()>0) {
+        	query += " and m.meetingDate>=:eventDateFrom";
+        }
+        
+        if (form.getEventDateTo()!=null && form.getEventDateTo().trim().length()>0) {
+        	query += " and m.meetingDate<=:eventDateTo";
+        }
+                
+        if (form.getEventMainContactSubstring()!=null && form.getEventMainContactSubstring().trim().length()>0) {
+        	for (StringTokenizer s=new StringTokenizer(form.getEventMainContactSubstring().trim(),", ");s.hasMoreTokens();) {
+        		String token = s.nextToken();
+        		query += " and (e.mainContact.firstName like '%"+token+"%' or e.mainContact.middleName like '%"+token+"%' or e.mainContact.lastName like '%"+token+"%')";
+        	}
+        }
+
+        query += " order by e.eventName, e.uniqueId";
+        
+        Query hibQuery = new EventDAO().getSession().createQuery(query);
+        
+        if (form.getEventNameSubstring()!=null && form.getEventNameSubstring().trim().length()>0) {
+        	hibQuery.setString("eventNameSubstring", "%"+form.getEventNameSubstring().trim()+"%");
+        }
+        
+        if (form.getEventDateFrom()!=null && form.getEventDateFrom().trim().length()>0) {
+        	try {
+        		hibQuery.setDate("eventDateFrom", new SimpleDateFormat("MM/dd/yyyy").parse(form.getEventDateFrom()));
+        	} catch (ParseException ex) {
+        		hibQuery.setDate("eventDateFrom", new Date());
+        	}
+        }
+        
+        if (form.getEventDateTo()!=null && form.getEventDateTo().trim().length()>0) {
+        	try {
+        		hibQuery.setDate("eventDateTo", new SimpleDateFormat("MM/dd/yyyy").parse(form.getEventDateTo()));
+        	} catch (ParseException ex) {
+        		hibQuery.setDate("eventDateTo", new Date());
+        	}
+        }        
+        
+        List events = hibQuery.setCacheable(true).list();
         
         /*
         TreeSet events = new TreeSet(new Comparator<Event>(){
@@ -318,6 +372,7 @@ public class WebEventTableBuilder {
         });
         events.addAll(Event.findAll());*/
 
+        /*
         List events = Event.findAll();
         Collections.sort(events, new Comparator<Event>(){
         	public int compare(Event e1, Event e2) {
@@ -326,12 +381,13 @@ public class WebEventTableBuilder {
         		return e1.getUniqueId().compareTo(e2.getUniqueId());
         	}
         });
+        */
         
         TableStream eventsTable = this.initTable(outputStream);
 
         Iterator it = events.iterator();
         while (it.hasNext()){
-                    event = (Event) it.next();
+                    Event event = (Event) it.next();
                     eventIds.add(event.getUniqueId());
                     	this.addEventsRowsToTable(eventsTable, event);
             			for (Iterator i=new TreeSet(event.getMeetings()).iterator();i.hasNext();) {
