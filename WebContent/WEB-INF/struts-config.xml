@@ -2142,9 +2142,9 @@
     		name="show"
     		path="eventDetailTile"
     		redirect="true" />
-    	<forward
+    	<forward 
     		name="showEventList"
-    		path="eventListTile"
+    		path="/eventList.do"
     		redirect="true" />
     </action>
 
