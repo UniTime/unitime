@@ -438,4 +438,14 @@ public class CourseOffering extends BaseCourseOffering {
             setCacheable(true).
             uniqueResult(); 
     }
+    
+    public static CourseOffering findByExternalId(Long sessionId, String externalId) {
+        return (CourseOffering)new CourseOfferingDAO().
+            getSession().
+            createQuery("select c from CourseOffering c where c.subjectArea.session.uniqueId=:sessionId and c.externalUniqueId=:externalId").
+            setLong("sessionId", sessionId.longValue()).
+            setString("externalId", externalId).
+            setCacheable(true).
+            uniqueResult();
+    }
 }

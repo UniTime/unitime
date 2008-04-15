@@ -1314,4 +1314,14 @@ public class Class_ extends BaseClass_ {
                 .setCacheable(true)
                 .uniqueResult();
     }
+    
+    public static Class_ findByExternalId(Long sessionId, String externalId) {
+        return (Class_)new Class_DAO().
+            getSession().
+            createQuery("select c from Class_ c where c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId=:sessionId and c.externalUniqueId=:externalId").
+            setLong("sessionId", sessionId.longValue()).
+            setString("externalId", externalId).
+            setCacheable(true).
+            uniqueResult();
+    }
 }
