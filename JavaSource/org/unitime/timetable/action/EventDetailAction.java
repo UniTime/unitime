@@ -104,7 +104,8 @@ public class EventDetailAction extends Action {
 					StandardEventNote sen = en2.getStandardNote();
 					if (sen!=null) {myForm.addNote(sen.getNote());}
 				}			
-				myForm.setMainContact(event.getMainContact());
+				if (event.getMainContact()!=null)
+				    myForm.setMainContact(event.getMainContact());
 				for (Iterator i = event.getAdditionalContacts().iterator(); i.hasNext();) {
 					EventContact ec = (EventContact) i.next();
 					myForm.addAdditionalContact(
