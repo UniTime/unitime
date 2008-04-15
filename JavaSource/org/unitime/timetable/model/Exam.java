@@ -163,7 +163,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
             }
             prev = owner;
         }
-	    return sb.toString();
+        return (sb.toString().length()<=100?sb.toString():sb.toString().substring(0,97)+"...");
 	}
 	
 	public String getLabel() {
