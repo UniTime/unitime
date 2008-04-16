@@ -239,6 +239,23 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
         return getStartSlot() - nrTravelSlots < meeting.getStopPeriod() && meeting.getStartPeriod() < getStartSlot() + getLength() + nrTravelSlots;
     }
     
+    public List findOverlappingClassMeetings() {
+        return findOverlappingClassMeetings(Constants.EXAM_TRAVEL_TIME_SLOTS);
+    }
+
+    public List findOverlappingClassMeetings(int nrTravelSlots) {
+        return new ExamPeriodDAO().getSession().createQuery(
+                "select m from Meeting m where " +
+                "m.eventType.reference=:eventType and "+
+                "m.meetingDate=:startDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot")
+                .setDate("startDate", getStartDate())
+                .setInteger("startSlot", getStartSlot()-nrTravelSlots)
+                .setInteger("endSlot", getEndSlot()+nrTravelSlots)
+                .setString("eventType", EventType.sEventTypeClass)
+                .setCacheable(true)
+                .list();
+    } 
+    
     public List findOverlappingClassMeetings(Long classId) {
         return findOverlappingClassMeetings(classId, Constants.EXAM_TRAVEL_TIME_SLOTS);
     }
@@ -266,4 +283,17 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
         }
         return index;
     }
+    
+    public int getDayOfWeek() {
+        Calendar c = Calendar.getInstance(Locale.US);
+        c.setTime(getSession().getExamBeginDate());
+        c.add(Calendar.DAY_OF_YEAR, getDateOffset());
+        return c.get(Calendar.DAY_OF_WEEK);
+    }
+
+    
+    public boolean weakOverlap(Meeting meeting) {
+        return getDayOfWeek()==meeting.getDayOfWeek() && getStartSlot() < meeting.getStopPeriod() && meeting.getStartPeriod() < getStartSlot() + getLength();
+    }
+
 }
