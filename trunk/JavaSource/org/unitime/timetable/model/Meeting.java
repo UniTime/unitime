@@ -239,4 +239,10 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
         c.set(Calendar.MINUTE, min%60);
         return c.getTime();
     }
+    
+    public int getDayOfWeek() {
+        Calendar c = Calendar.getInstance(Locale.US);
+        c.setTime(getMeetingDate());
+        return c.get(Calendar.DAY_OF_WEEK);
+    }
 }
