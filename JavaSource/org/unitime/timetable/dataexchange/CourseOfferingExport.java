@@ -1,11 +1,34 @@
+/*
+ * UniTime 3.1 (University Timetabling Application)
+ * Copyright (C) 2007, UniTime.org, and individual contributors
+ * as indicated by the @authors tag.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
 package org.unitime.timetable.dataexchange;
 
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.TreeSet;
 
 import net.sf.cpsolver.coursett.model.TimeLocation;
 import net.sf.cpsolver.ifs.util.ToolBox;
@@ -21,10 +44,15 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseCreditUnitConfig;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DatePattern;
+import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.Event;
+import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.FixedCreditUnitConfig;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomPref;
@@ -32,36 +60,89 @@ import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.VariableFixedCreditUnitConfig;
 import org.unitime.timetable.model.VariableRangeCreditUnitConfig;
+import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.util.Constants;
 
 public class CourseOfferingExport extends BaseExport {
     protected static DecimalFormat sTwoNumbersDF = new DecimalFormat("00");
     protected static DecimalFormat sShareDF = new DecimalFormat("0.00");
+    protected static SimpleDateFormat sDateFormat = new SimpleDateFormat("yyyy/MM/dd");
+    protected static SimpleDateFormat sTimeFormat = new SimpleDateFormat("HHmm");
+    protected Hashtable<Long, TreeSet<Exam>> iExams = null;
     
     public void saveXml(Document document, Session session, Properties parameters) throws Exception {
         try {
             beginTransaction();
 
-            Element root = document.addElement("offerings");
+            boolean examsOnly = "true".equals(parameters.getProperty("tmtbl.export.exam"));
+            Element root = document.addElement(examsOnly?"exams":"offerings");
             root.addAttribute("campus", session.getAcademicInitiative());
             root.addAttribute("year", session.getAcademicYear());
             root.addAttribute("term", session.getAcademicTerm());
+            root.addAttribute("dateFormat", sDateFormat.toPattern());
+            root.addAttribute("timeFormat", sTimeFormat.toPattern());
+            root.addAttribute("created", new Date().toString());
+            if (examsOnly)
+                root.addAttribute("type", parameters.getProperty("tmtbl.export.exam.type", "all"));
             
-            document.addDocType("offerings", "-//UniTime//DTD University Course Timetabling/EN", "http://www.unitime.org/interface/CourseOfferingExport.dtd");
+            document.addDocType(examsOnly?"exams":"offerings", "-//UniTime//DTD University Course Timetabling/EN", "http://www.unitime.org/interface/CourseOfferingExport.dtd");
             
-            List offerings = getHibSession().createQuery(
+            if (examsOnly) {
+                if ("all".equals(parameters.getProperty("tmtbl.export.exam.type", "all")) || "final".equals(parameters.getProperty("tmtbl.export.exam.type", "all"))) {
+                    for (Iterator i=new TreeSet(Exam.findAll(session.getUniqueId(), Exam.sExamTypeFinal)).iterator();i.hasNext();) {
+                        Exam exam = (Exam)i.next();
+                        exportExam(root, null, exam, session);
+                    }
+                }
+                if ("all".equals(parameters.getProperty("tmtbl.export.exam.type", "all")) || "evening".equals(parameters.getProperty("tmtbl.export.exam.type", "all"))) {
+                    for (Iterator i=new TreeSet(Exam.findAll(session.getUniqueId(), Exam.sExamTypeEvening)).iterator();i.hasNext();) {
+                        Exam exam = (Exam)i.next();
+                        exportExam(root, null, exam, session);
+                    }
+                }
+            } else {
+                info("Loading offerings...");
+                List offerings = getHibSession().createQuery(
                     "select distinct io from InstructionalOffering io " +
-                    "left join fetch io.courseOfferings as co "+
+                    "inner join fetch io.courseOfferings as co inner join fetch co.subjectArea sa "+
                     "left join fetch io.instrOfferingConfigs as ioc "+
                     "left join fetch ioc.schedulingSubparts as ss "+
                     "left join fetch ss.classes as c "+
                     "where " +
-                    "io.session.uniqueId=:sessionId").
+                    "io.session.uniqueId=:sessionId "+
+                    "order by sa.subjectAreaAbbreviation, co.courseNbr").
                     setLong("sessionId",session.getUniqueId().longValue()).
                     setFetchSize(1000).list();
-            for (Iterator i=offerings.iterator();i.hasNext();) {
-                InstructionalOffering io = (InstructionalOffering)i.next(); 
-                exportInstructionalOffering(root, io, session);
+                
+                info("Loading exams...");
+                List allExams = getHibSession().createQuery(
+                    "select x from Exam x left join fetch x.owners o " +
+                    "where x.session.uniqueId=:sessionId").
+                    setLong("sessionId",session.getUniqueId().longValue()).
+                    setFetchSize(1000).list();
+                
+                iExams = new Hashtable();
+                info("Checking exams...");
+                for (Iterator i=allExams.iterator();i.hasNext();) {
+                    Exam exam = (Exam)i.next();
+                    for (Iterator j=exam.getOwners().iterator();j.hasNext();) {
+                        ExamOwner owner = (ExamOwner)j.next();
+                        Long offeringId = owner.getCourse().getInstructionalOffering().getUniqueId();
+                        TreeSet<Exam> exams = iExams.get(offeringId);
+                        if (exams==null) {
+                            exams = new TreeSet();
+                            iExams.put(offeringId,exams); 
+                        }
+                        exams.add(exam);
+                    }
+                }
+                
+                info("Exporting "+offerings.size()+" offerings ...");
+                for (Iterator i=offerings.iterator();i.hasNext();) {
+                    InstructionalOffering io = (InstructionalOffering)i.next();
+                    info("  -- "+io.getCourseName());
+                    exportInstructionalOffering(root, io, session);
+                }
             }
             
             commitTransaction();
@@ -73,7 +154,7 @@ public class CourseOfferingExport extends BaseExport {
     
     protected void exportInstructionalOffering(Element offeringsElement, InstructionalOffering offering, Session session) {
         Element offeringElement = offeringsElement.addElement("offering");
-        offeringElement.addAttribute("id", offering.getUniqueId().toString());
+        offeringElement.addAttribute("id", (offering.getExternalUniqueId()!=null?offering.getExternalUniqueId():offering.getUniqueId().toString()));
         offeringElement.addAttribute("offered", (offering.isNotOffered()?"false":"true"));
         offeringElement.addAttribute("action", "insert");
         if (offering.isDesignatorRequired()) offeringElement.addElement("designatorRequired");
@@ -92,6 +173,9 @@ public class CourseOfferingExport extends BaseExport {
                 InstrOfferingConfig config = (InstrOfferingConfig)i.next();
                 exportConfig(offeringElement.addElement("config"), config, session);
             }
+        TreeSet<Exam> exams = iExams.get(offering.getUniqueId());
+        if (exams!=null) for (Exam exam : exams)
+            exportExam(offeringElement, offering, exam, session);
     }
     
     protected void exportCredit(Element creditElement, CourseCreditUnitConfig credit, Session session) {
@@ -118,8 +202,7 @@ public class CourseOfferingExport extends BaseExport {
     }
     
     protected void exportCourse(Element courseElement, CourseOffering course, Session session) {
-        if (course.getExternalUniqueId()!=null)
-            courseElement.addAttribute("id", course.getExternalUniqueId());
+        courseElement.addAttribute("id", (course.getExternalUniqueId()!=null?course.getExternalUniqueId():course.getUniqueId().toString()));
         courseElement.addAttribute("subject", course.getSubjectArea().getSubjectAreaAbbreviation());
         courseElement.addAttribute("courseNbr", course.getCourseNbr());
         courseElement.addAttribute("controlling", course.isIsControl()?"true":"false");
@@ -162,7 +245,10 @@ public class CourseOfferingExport extends BaseExport {
     }
     
     protected void exportClass(Element classElement, Class_ clazz, Session session) {
-        classElement.addAttribute("id", clazz.getUniqueId().toString());
+        if (clazz.getExternalUniqueId()!=null)
+            classElement.addAttribute("id", clazz.getExternalUniqueId());
+        else
+            classElement.addAttribute("id", clazz.getUniqueId().toString());
         classElement.addAttribute("type", clazz.getItypeDesc().trim());
         classElement.addAttribute("suffix", clazz.getSectionNumberString());
         if (clazz.getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment())
@@ -183,21 +269,27 @@ public class CourseOfferingExport extends BaseExport {
         }
         if (clazz.isDisplayInstructor())
             for (Iterator i=clazz.getClassInstructors().iterator();i.hasNext();) {
-                ClassInstructor instructor = (ClassInstructor)i.next(); 
+                ClassInstructor instructor = (ClassInstructor)i.next();
+                if (instructor.getInstructor().getExternalUniqueId()!=null)
+                    exportInstructor(classElement.addElement("instructor"), instructor, session);
             }
     }
     
     protected void exportInstructor(Element instructorElement, ClassInstructor instructor, Session session) {
-        if (instructor.getInstructor().getExternalUniqueId()!=null)
-            instructorElement.addElement("id", instructor.getInstructor().getExternalUniqueId());
-        if (instructor.getInstructor().getFirstName()!=null)
-            instructorElement.addElement("fname", instructor.getInstructor().getFirstName());
-        if (instructor.getInstructor().getMiddleName()!=null)
-            instructorElement.addElement("mname", instructor.getInstructor().getMiddleName());
-        if (instructor.getInstructor().getLastName()!=null)
-            instructorElement.addElement("lname", instructor.getInstructor().getLastName());
-        instructorElement.addElement("share", sShareDF.format(((double)instructor.getPercentShare())/100.0));
-        instructorElement.addElement("lead", instructor.isLead()?"true":"false");
+        exportInstructor(instructorElement, instructor.getInstructor(), session);
+        instructorElement.addAttribute("share", sShareDF.format(((double)instructor.getPercentShare())/100.0));
+        instructorElement.addAttribute("lead", instructor.isLead()?"true":"false");
+    }
+    
+    protected void exportInstructor(Element instructorElement, DepartmentalInstructor instructor, Session session) {
+        if (instructor.getExternalUniqueId()!=null)
+            instructorElement.addAttribute("id", instructor.getExternalUniqueId());
+        if (instructor.getFirstName()!=null)
+            instructorElement.addAttribute("fname", instructor.getFirstName());
+        if (instructor.getMiddleName()!=null)
+            instructorElement.addAttribute("mname", instructor.getMiddleName());
+        if (instructor.getLastName()!=null)
+            instructorElement.addAttribute("lname", instructor.getLastName());
     }
     
     private static String dayCode2days(int dayCode) {
@@ -222,6 +314,7 @@ public class CourseOfferingExport extends BaseExport {
         exportDatePattern(classElement, assignment.getClazz(), session);
         exportTimeLocation(classElement, assignment, session);
         exportRooms(classElement, assignment, session);
+        //if (assignment.getEvent()!=null) exportEvent(classElement, assignment.getEvent(), session);
     }
     
     protected void exportTimeLocation(Element classElement, Assignment assignment, Session session) {
@@ -278,7 +371,7 @@ public class CourseOfferingExport extends BaseExport {
                 int d = (m==startMonth?startDate.get(Calendar.DAY_OF_MONTH):1);
                 for (;d<=daysOfMonth && charPosition<ptrn.length; d++) {
                     if (ptrn[charPosition]=='1' || (first!=null && dayOfWeek==Calendar.SUNDAY)) {
-                        if (first==null) first = ((m<0?12+m:m%12)+1)+"/"+d;
+                        if (first==null) first = (m<0?startYear-1:m>12?startYear+1:startYear)+"/"+((m<0?12+m:m%12)+1)+"/"+d;
                     } else {
                         if (first!=null) {
                             Element dateElement = classElement.addElement("date");
@@ -287,7 +380,7 @@ public class CourseOfferingExport extends BaseExport {
                             first=null;
                         }
                     }
-                    previous = ((m<0?12+m:m%12)+1)+"/"+d;
+                    previous = (m<0?startYear-1:m>12?startYear+1:startYear)+"/"+((m<0?12+m:m%12)+1)+"/"+d;
                     charPosition++;
                     dayOfWeek++;
                     if (dayOfWeek>Calendar.SATURDAY) dayOfWeek = Calendar.SUNDAY;
@@ -317,6 +410,144 @@ public class CourseOfferingExport extends BaseExport {
                     Element roomElement = classElement.addElement("location");
                     roomElement.addAttribute("name", rp.getRoom().getLabel());
                 }
+            }
+        }
+    }
+    
+    protected void exportExam(Element offeringElement, InstructionalOffering offering, Exam exam, Session session) {
+        Element examElement = offeringElement.addElement("exam");
+        examElement.addAttribute("id", exam.getUniqueId().toString());
+        examElement.addAttribute("name", (exam.getName()==null?exam.generateName():exam.getName()));
+        examElement.addAttribute("size", String.valueOf(exam.getSize())); 
+        if (exam.getNote()!=null)
+            examElement.addAttribute("note", exam.getNote());
+        examElement.addAttribute("seatingType", exam.getSeatingType()==Exam.sSeatingTypeExam?"exam":"normal");
+        examElement.addAttribute("type", exam.getExamType()==Exam.sExamTypeFinal?"final":"evening");
+        Element courseElement = null; CourseOffering lastCourse = null;
+        for (Iterator i=exam.getOwnerObjects().iterator();i.hasNext();) {
+            Object owner = (Object)i.next();
+            if (owner instanceof Class_) {
+                Class_ clazz = (Class_)owner;
+                if (offering==null) {
+                    if (lastCourse==null || !lastCourse.equals(clazz.getSchedulingSubpart().getControllingCourseOffering())) {
+                        lastCourse = clazz.getSchedulingSubpart().getControllingCourseOffering();
+                        courseElement = examElement.addElement("course");
+                        courseElement.addAttribute("id", (lastCourse.getExternalUniqueId()!=null?lastCourse.getExternalUniqueId():lastCourse.getUniqueId().toString()));
+                        courseElement.addAttribute("subject", lastCourse.getSubjectArea().getSubjectAreaAbbreviation());
+                        courseElement.addAttribute("courseNbr", lastCourse.getCourseNbr());
+                    }
+                    courseElement.addElement("class")
+                    .addAttribute("id", (clazz.getExternalUniqueId()!=null?clazz.getExternalUniqueId():clazz.getUniqueId().toString()))
+                    .addAttribute("type", clazz.getItypeDesc().trim())
+                    .addAttribute("suffix", clazz.getSectionNumberString());
+                } else {
+                    if (!clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().equals(offering)) continue;
+                    examElement.addElement("class")
+                    .addAttribute("id", (clazz.getExternalUniqueId()!=null?clazz.getExternalUniqueId():clazz.getUniqueId().toString()))
+                    .addAttribute("type", clazz.getItypeDesc().trim())
+                    .addAttribute("suffix", clazz.getSectionNumberString());
+                }
+            } else if (owner instanceof InstrOfferingConfig) {
+                InstrOfferingConfig config = (InstrOfferingConfig)owner;
+                if (offering==null) {
+                    if (lastCourse==null || !lastCourse.equals(config.getControllingCourseOffering())) {
+                        lastCourse = config.getControllingCourseOffering();
+                        courseElement = examElement.addElement("course");
+                        courseElement.addAttribute("id", (lastCourse.getExternalUniqueId()!=null?lastCourse.getExternalUniqueId():lastCourse.getUniqueId().toString()));
+                        courseElement.addAttribute("subject", lastCourse.getSubjectArea().getSubjectAreaAbbreviation());
+                        courseElement.addAttribute("courseNbr", lastCourse.getCourseNbr());
+                    }
+                    TreeSet subparts = new TreeSet(new SchedulingSubpartComparator()); subparts.addAll(config.getSchedulingSubparts());
+                    for (Iterator j=((SchedulingSubpart)subparts.first()).getClasses().iterator();j.hasNext();) {
+                        Class_ clazz = (Class_)j.next();
+                        courseElement.addElement("class")
+                            .addAttribute("id", (clazz.getExternalUniqueId()!=null?clazz.getExternalUniqueId():clazz.getUniqueId().toString()))
+                            .addAttribute("type", clazz.getItypeDesc().trim())
+                            .addAttribute("suffix", clazz.getSectionNumberString());
+                    }
+                } else {
+                    if (!config.getInstructionalOffering().equals(offering)) continue;
+                    if (config.getSchedulingSubparts().isEmpty()) continue;
+                    TreeSet subparts = new TreeSet(new SchedulingSubpartComparator()); subparts.addAll(config.getSchedulingSubparts());
+                    for (Iterator j=((SchedulingSubpart)subparts.first()).getClasses().iterator();j.hasNext();) {
+                        Class_ clazz = (Class_)j.next();
+                        examElement.addElement("class")
+                            .addAttribute("id", (clazz.getExternalUniqueId()!=null?clazz.getExternalUniqueId():clazz.getUniqueId().toString()))
+                            .addAttribute("type", clazz.getItypeDesc().trim())
+                            .addAttribute("suffix", clazz.getSectionNumberString());
+                    }
+                }
+            } else if (owner instanceof CourseOffering) {
+                CourseOffering course = (CourseOffering)owner;
+                if (offering!=null && !course.getInstructionalOffering().equals(offering)) continue;
+                if (offering!=null && offering.getCourseOfferings().size()==1) continue;
+                courseElement = examElement.addElement("course"); lastCourse = course;
+                courseElement.addAttribute("id", (course.getExternalUniqueId()!=null?course.getExternalUniqueId():course.getUniqueId().toString()));
+                courseElement.addAttribute("subject", course.getSubjectArea().getSubjectAreaAbbreviation());
+                courseElement.addAttribute("courseNbr", course.getCourseNbr());
+            } else if (owner instanceof CourseOffering) {
+                InstructionalOffering o = (InstructionalOffering)owner;
+                if (offering!=null) continue;
+                for (Iterator j=o.getCourseOfferings().iterator();j.hasNext();) {
+                    CourseOffering course = (CourseOffering)j.next();
+                    courseElement = examElement.addElement("course"); lastCourse = course;
+                    courseElement.addAttribute("id", (course.getExternalUniqueId()!=null?course.getExternalUniqueId():course.getUniqueId().toString()));
+                    courseElement.addAttribute("subject", course.getSubjectArea().getSubjectAreaAbbreviation());
+                    courseElement.addAttribute("courseNbr", course.getCourseNbr());
+                }
+            }
+        }
+        for (Iterator i=exam.getInstructors().iterator();i.hasNext();) {
+            DepartmentalInstructor instructor = (DepartmentalInstructor)i.next();
+            if (instructor.getExternalUniqueId()!=null)
+                exportInstructor(examElement.addElement("instructor"), instructor, session);
+        }
+        if (exam.getAssignedPeriod()!=null) {
+            Element periodElement = examElement.addElement("period");
+            periodElement.addAttribute("date", sDateFormat.format(exam.getAssignedPeriod().getStartDate()));
+            periodElement.addAttribute("startTime", sTimeFormat.format(exam.getAssignedPeriod().getStartTime()));
+            periodElement.addAttribute("endTime", sTimeFormat.format(exam.getAssignedPeriod().getEndTime()));
+            for (Iterator i=exam.getAssignedRooms().iterator();i.hasNext();) {
+                Location location = (Location)i.next();
+                if (location instanceof Room) {
+                    Room room = (Room)location;
+                    Element roomElement = examElement.addElement("room");
+                    if (room.getExternalUniqueId()!=null)
+                        roomElement.addAttribute("id", room.getExternalUniqueId());
+                    roomElement.addAttribute("building", room.getBuildingAbbv());
+                    roomElement.addAttribute("roomNbr", room.getRoomNumber());
+                } else {
+                    Element roomElement = examElement.addElement("location");
+                    roomElement.addAttribute("name", location.getLabel());
+                }
+            }
+        }
+    }
+    
+    protected void exportEvent(Element classElement, Event event, Session session) {
+        for (Iterator i=event.getMeetings().iterator();i.hasNext();) {
+            Meeting meeting = (Meeting)i.next();
+            Element meetingElement = classElement.addElement("meeting");
+            meetingElement.addAttribute("startDate", sDateFormat.format(meeting.getMeetingDate()));
+            meetingElement.addAttribute("endDate", sDateFormat.format(meeting.getMeetingDate()));
+            meetingElement.addAttribute("startTime", sDateFormat.format(meeting.getStartTime()));
+            meetingElement.addAttribute("endTime", sDateFormat.format(meeting.getStopTime()));
+            Calendar c = Calendar.getInstance(Locale.US); c.setTime(meeting.getMeetingDate());
+            switch (c.get(Calendar.DAY_OF_WEEK)) {
+                case Calendar.MONDAY : meetingElement.addAttribute("days","M"); break;
+                case Calendar.TUESDAY : meetingElement.addAttribute("days","T"); break;
+                case Calendar.WEDNESDAY : meetingElement.addAttribute("days","W"); break;
+                case Calendar.THURSDAY : meetingElement.addAttribute("days","R"); break;
+                case Calendar.FRIDAY : meetingElement.addAttribute("days","F"); break;
+                case Calendar.SATURDAY : meetingElement.addAttribute("days","S"); break;
+                case Calendar.SUNDAY : meetingElement.addAttribute("days","U"); break;
+            }
+            if (meeting.getLocation()==null) {
+            } else if (meeting.getLocation() instanceof Room) {
+                meetingElement.addAttribute("building", ((Room)meeting.getLocation()).getBuildingAbbv());
+                meetingElement.addAttribute("room", ((Room)meeting.getLocation()).getRoomNumber());
+            } else {
+                meetingElement.addAttribute("location", meeting.getLocation().getLabel());
             }
         }
     }
