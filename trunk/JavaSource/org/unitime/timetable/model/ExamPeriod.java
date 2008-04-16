@@ -23,6 +23,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.TreeSet;
 
@@ -202,7 +203,7 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
     }
     
     public boolean overlap(Assignment assignment) {
-        return overlap(assignment, 6);
+        return overlap(assignment, Constants.EXAM_TRAVEL_TIME_SLOTS);
     }
     
     public boolean overlap(Assignment assignment, int nrTravelSlots) {
@@ -227,5 +228,42 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
         
         //check time
         return getStartSlot() - nrTravelSlots < assignment.getStartSlot() + assignment.getSlotPerMtg() && assignment.getStartSlot() < getStartSlot() + getLength() + nrTravelSlots;
+    }
+    
+    public boolean overlap(Meeting meeting) {
+        return overlap(meeting, Constants.EXAM_TRAVEL_TIME_SLOTS);
+    }
+    
+    public boolean overlap(Meeting meeting, int nrTravelSlots) {
+        if (!meeting.getMeetingDate().equals(getStartDate())) return false;
+        return getStartSlot() - nrTravelSlots < meeting.getStopPeriod() && meeting.getStartPeriod() < getStartSlot() + getLength() + nrTravelSlots;
+    }
+    
+    public List findOverlappingClassMeetings(Long classId) {
+        return findOverlappingClassMeetings(classId, Constants.EXAM_TRAVEL_TIME_SLOTS);
+    }
+    
+    public List findOverlappingClassMeetings(Long classId, int nrTravelSlots) {
+        return new ExamPeriodDAO().getSession().createQuery(
+                "select m from Meeting m inner join m.event.relatedCourses r where " +
+                "m.eventType.reference=:eventType and "+
+                "m.meetingDate=:startDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and " +
+                "r.ownerType=:classType and r.ownerId=:classId")
+                .setDate("startDate", getStartDate())
+                .setInteger("startSlot", getStartSlot()-nrTravelSlots)
+                .setInteger("endSlot", getEndSlot()+nrTravelSlots)
+                .setString("eventType", EventType.sEventTypeClass)
+                .setInteger("classType", ExamOwner.sOwnerTypeClass)
+                .setLong("classId", classId)
+                .setCacheable(true)
+                .list();
+    } 
+    
+    public int getIndex() {
+        int index = 0;
+        for (Iterator i=findAll(getSession().getUniqueId(), getExamType()).iterator();i.hasNext();) {
+            if (compareTo((ExamPeriod)i.next())>0) index++;
+        }
+        return index;
     }
 }
