@@ -198,6 +198,82 @@ public class RelatedCourseInfo extends BaseRelatedCourseInfo {
         }
     }
     
+    public List getStudentIds() {
+        switch (getOwnerType()) {
+        case ExamOwner.sOwnerTypeClass : 
+            return new RelatedCourseInfoDAO().getSession().createQuery(
+                    "select distinct e.student.uniqueId from " +
+                    "StudentClassEnrollment e inner join e.clazz c  " +
+                    "where c.uniqueId = :eventOwnerId")
+                    .setLong("eventOwnerId", getOwnerId())
+                    .setCacheable(true)
+                    .list();
+        case ExamOwner.sOwnerTypeConfig : 
+            return new RelatedCourseInfoDAO().getSession().createQuery(
+                    "select distinct e.student.uniqueId from " +
+                    "StudentClassEnrollment e inner join e.clazz c  " +
+                    "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :eventOwnerId")
+                    .setLong("eventOwnerId", getOwnerId())
+                    .setCacheable(true)
+                    .list();
+        case ExamOwner.sOwnerTypeCourse : 
+            return new RelatedCourseInfoDAO().getSession().createQuery(
+                    "select distinct e.student.uniqueId from " +
+                    "StudentClassEnrollment e inner join e.courseOffering co  " +
+                    "where co.uniqueId = :eventOwnerId")
+                    .setLong("eventOwnerId", getOwnerId())
+                    .setCacheable(true)
+                    .list();
+        case ExamOwner.sOwnerTypeOffering : 
+            return new RelatedCourseInfoDAO().getSession().createQuery(
+                    "select distinct e.student.uniqueId from " +
+                    "StudentClassEnrollment e inner join e.courseOffering co  " +
+                    "where co.instructionalOffering.uniqueId = :eventOwnerId")
+                    .setLong("eventOwnerId", getOwnerId())
+                    .setCacheable(true)
+                    .list();
+        default : throw new RuntimeException("Unknown owner type "+getOwnerType());
+        }
+    }
+    
+    public List getInstructors() {
+        switch (getOwnerType()) {
+        case ExamOwner.sOwnerTypeClass : 
+            return new RelatedCourseInfoDAO().getSession().createQuery(
+                    "select i from " +
+                    "Class_ c inner join c.classInstructors ci inner join ci.instructor i " +
+                    "where c.uniqueId = :eventOwnerId and ci.lead=true")
+                    .setLong("eventOwnerId", getOwnerId())
+                    .setCacheable(true)
+                    .list();
+        case ExamOwner.sOwnerTypeConfig : 
+            return new RelatedCourseInfoDAO().getSession().createQuery(
+                    "select distinct i from " +
+                    "Class_ c inner join c.classInstructors ci inner join ci.instructor i " +
+                    "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :eventOwnerId")
+                    .setLong("eventOwnerId", getOwnerId())
+                    .setCacheable(true)
+                    .list();
+        case ExamOwner.sOwnerTypeCourse : 
+            return new RelatedCourseInfoDAO().getSession().createQuery(
+                    "select distinct i from " +
+                    "Class_ c inner join c.classInstructors ci inner join ci.instructor i inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co " +
+                    "where co.uniqueId = :eventOwnerId")
+                    .setLong("eventOwnerId", getOwnerId())
+                    .setCacheable(true)
+                    .list();
+        case ExamOwner.sOwnerTypeOffering : 
+            return new RelatedCourseInfoDAO().getSession().createQuery(
+                    "select distinct i from " +
+                    "Class_ c inner join c.classInstructors ci inner join ci.instructor i " +
+                    "where c.schedulingSubpart.instrOfferingConfig.instructionalOffering.uniqueId = :eventOwnerId")
+                    .setLong("eventOwnerId", getOwnerId())
+                    .setCacheable(true)
+                    .list();
+        default : throw new RuntimeException("Unknown owner type "+getOwnerType());
+        }
+    }
+
     public int countStudents() {
         switch (getOwnerType()) {
         case ExamOwner.sOwnerTypeClass : 
