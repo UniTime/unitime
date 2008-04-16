@@ -431,6 +431,8 @@ public class ExamEditAction extends PreferencesAction {
             exam.setName(frm.getName());
         }
         
+        exam.generateDefaultPreferences(false);
+        
         new ExamDAO().saveOrUpdate(exam);
         
                 ChangeLog.addChange(
