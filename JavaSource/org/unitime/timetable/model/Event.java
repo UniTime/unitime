@@ -159,14 +159,28 @@ public class Event extends BaseEvent implements Comparable<Event> {
         return (findEventsOfCourse((new EventDAO().getSession()), subjectAreaId, courseNbr, eventType));
     }
     
-    public Set<Object> getStudents() {
-        HashSet<Object> students = new HashSet<Object>();
-        for (Iterator<?> i=getRelatedCourses().iterator();i.hasNext();)
+    public Set<Student> getStudents() {
+        HashSet<Student> students = new HashSet();
+        for (Iterator i=getRelatedCourses().iterator();i.hasNext();)
             students.addAll(((RelatedCourseInfo)i.next()).getStudents());
         return students;
   
     }
     
+    public Set<Long> getStudentIds() {
+        HashSet<Long> students = new HashSet();
+        for (Iterator<?> i=getRelatedCourses().iterator();i.hasNext();)
+            students.addAll(((RelatedCourseInfo)i.next()).getStudentIds());
+        return students;
+    }
+    
+    public Set<DepartmentalInstructor> getInstructors() {
+        HashSet<DepartmentalInstructor> instructors = new HashSet();
+        for (Iterator i=getRelatedCourses().iterator();i.hasNext();)
+            instructors.addAll(((RelatedCourseInfo)i.next()).getInstructors());
+        return instructors;
+    }
+
     public int countStudents() {
         int nrStudents = 0;
         for (Iterator i=getRelatedCourses().iterator();i.hasNext();)
@@ -223,7 +237,6 @@ public class Event extends BaseEvent implements Comparable<Event> {
 	            )
 	            .setCacheable(true)
 	            .list();
-	}	
-	
+	}
 	
 }
