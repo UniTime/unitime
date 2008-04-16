@@ -20,9 +20,12 @@
 package org.unitime.timetable.model;
 
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 
 import org.unitime.timetable.model.base.BaseMeeting;
 import org.unitime.timetable.model.dao.MeetingDAO;
@@ -180,30 +183,60 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
 		return (DateFormat.getDateInstance(DateFormat.SHORT).format(getMeetingDate()) + " " + startTime() + " - " + stopTime() +  (getLocation() == null?"":", " + getLocation().getLabel()));
 	}
 	
-	private String periodToTime(Integer slot){
+	public String getTimeLabel() {
+        return dateStr() + " " + startTime() + " - " + stopTime();
+    }
+	
+	public String getRoomLabel() {
+        return getLocation() == null?"":getLocation().getLabel();
+    }
+	
+	private String periodToTime(Integer slot, Integer offset){
 		if (slot == null){
 			return("");
 		}
 		int min = slot.intValue()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
+		if (offset!=null) min += offset;
 		int hours = (min/60);
 		int minutes = min%60;
-		String amPm = "am";
+		String amPm = "a";
 		if (hours >= 12){
-			amPm = "pm";
+			amPm = "p";
 			hours -= 12;
 		}
 		if (hours == 0) {
 			hours = 12;
 		}
-		return(hours + ":" + minutes + " " + amPm);
+		return(hours + ":" + (minutes<10?"0":"") + minutes + amPm);
 	}
 	
 	public String startTime(){
-		return(periodToTime(getStartPeriod()));
+		return(periodToTime(getStartPeriod(), getStartOffset()));
 	}
 
 	public String stopTime(){
-		return(periodToTime(getStopPeriod()));
+		return(periodToTime(getStopPeriod(), getStopOffset()));
+	}
+	
+	public String dateStr() {
+	    return new SimpleDateFormat("EEE MM/dd").format(getMeetingDate());
+	}
+	
+	public Date getStartTime() {
+        Calendar c = Calendar.getInstance(Locale.US);
+        c.setTime(getMeetingDate());
+        int min = (getStartPeriod().intValue()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN)+getStartOffset();
+        c.set(Calendar.HOUR, min/60);
+        c.set(Calendar.MINUTE, min%60);
+        return c.getTime();
 	}
 
+    public Date getStopTime() {
+        Calendar c = Calendar.getInstance(Locale.US);
+        c.setTime(getMeetingDate());
+        int min = (getStopPeriod().intValue()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN)+getStopOffset();
+        c.set(Calendar.HOUR, min/60);
+        c.set(Calendar.MINUTE, min%60);
+        return c.getTime();
+    }
 }
