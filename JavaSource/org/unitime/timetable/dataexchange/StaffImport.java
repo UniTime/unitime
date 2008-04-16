@@ -37,7 +37,6 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Staff;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.PositionCodeTypeDAO;
-import org.unitime.timetable.model.dao.StaffDAO;
 
 
 /**
