@@ -40,7 +40,6 @@ import net.sf.cpsolver.coursett.preference.SumPreferenceCombination;
 
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.form.ExamInfoForm;
-import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.Exam;
@@ -396,12 +395,11 @@ public class ExamInfoModel implements Serializable {
             } else {
                 try {
                     Hashtable<Long, Set<Exam>> studentExams = getExam().getExam().getStudentExams();
-                    Hashtable<Assignment, Set<Long>> studentAssignments = getExam().getExam().getStudentAssignments();
                     iPeriods = new Vector<ExamAssignmentInfo>();
                     for (Iterator i=ExamPeriod.findAll(getExam().getExam().getSession().getUniqueId(), getExam().getExamType()).iterator();i.hasNext();) {
                         ExamPeriod period = (ExamPeriod)i.next();
                         try {
-                            iPeriods.add(new ExamAssignmentInfo(getExam().getExam(), period, null, studentExams, studentAssignments, (iChange==null?null:iChange.getAssignmentTable())));
+                            iPeriods.add(new ExamAssignmentInfo(getExam().getExam(), period, null, studentExams, (iChange==null?null:iChange.getAssignmentTable())));
                         } catch (Exception e) {}
                     }
                 } catch (Exception e) {

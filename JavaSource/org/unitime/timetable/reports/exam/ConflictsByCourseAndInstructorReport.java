@@ -2,16 +2,12 @@ package org.unitime.timetable.reports.exam;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.TreeSet;
 
-import net.sf.cpsolver.coursett.model.TimeLocation;
-
 import org.apache.log4j.Logger;
-import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
@@ -86,19 +82,7 @@ public class ConflictsByCourseAndInstructorReport extends PdfLegacyExamReport {
                                         );
                                 iSubjectPrinted = iCoursePrinted = iStudentPrinted = iPeriodPrinted = !iNewPage;
                             }
-                        } else if (conflict.getOtherAssignment()!=null) {
-                            String dpat = "";
-                            DatePattern dp = conflict.getOtherAssignment().getDatePattern();
-                            if (dp!=null && !dp.isDefault()) {
-                                if (dp.getType().intValue()==DatePattern.sTypeAlternate)
-                                    dpat = " "+dp.getName();
-                                else {
-                                    SimpleDateFormat dpf = new SimpleDateFormat("MM/dd");
-                                    dpat = ", "+dpf.format(dp.getStartDate())+" - "+dpf.format(dp.getEndDate());
-                                }
-                            }
-                            TimeLocation t = conflict.getOtherAssignment().getTimeLocation();
-                            String meetingTime = t.getDayHeader()+" "+t.getStartTimeHeader()+" - "+t.getEndTimeHeader()+dpat;
+                        } else if (conflict.getOtherEventId()!=null) {
                             println(
                                     rpad(iSubjectPrinted?"":subject,4)+" "+
                                     rpad(iCoursePrinted?"":section.getCourseNbr(), 6)+" "+
@@ -107,11 +91,11 @@ public class ConflictsByCourseAndInstructorReport extends PdfLegacyExamReport {
                                     rpad(iCoursePrinted?"":exam.getPeriodName(),28)+" "+
                                     rpad(iStudentPrinted?"":instructor.getName(),10)+" "+
                                     rpad(iPeriodPrinted?"":"DIRECT",6)+" "+
-                                    rpad(conflict.getOtherAssignment().getClazz().getSchedulingSubpart().getControllingCourseOffering().getSubjectAreaAbbv(),4)+" "+
-                                    rpad(conflict.getOtherAssignment().getClazz().getSchedulingSubpart().getControllingCourseOffering().getCourseNbr(),6)+" "+
-                                    rpad(conflict.getOtherAssignment().getClazz().getSchedulingSubpart().getItypeDesc(),6)+" "+
-                                    lpad(conflict.getOtherAssignment().getClazz().getSectionNumberString(),4)+" "+
-                                    meetingTime
+                                    rpad(conflict.getOtherClass().getSchedulingSubpart().getControllingCourseOffering().getSubjectAreaAbbv(),4)+" "+
+                                    rpad(conflict.getOtherClass().getSchedulingSubpart().getControllingCourseOffering().getCourseNbr(),6)+" "+
+                                    rpad(conflict.getOtherClass().getSchedulingSubpart().getItypeDesc(),6)+" "+
+                                    lpad(conflict.getOtherClass().getSectionNumberString(),4)+" "+
+                                    conflict.getOtherEventDate()+" "+conflict.getOtherEventTime()
                                     );
                             iSubjectPrinted = iCoursePrinted = iStudentPrinted = iPeriodPrinted = !iNewPage;
                         }
