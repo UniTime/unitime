@@ -65,13 +65,13 @@
 				<location name="PIZZA HUT"/> <!-- non-university location -->
 			</class>
 		</config>
-		<exam id="1223" seatingType="exam" length="120" type="final"> <!-- an exam for the whole course -->
+		<exam id="1223" name="A&amp;AE 101" size="30" seatingType="exam" length="120" type="final"> <!-- an exam for the whole offering -->
 			<instructor id="23344" lname="Doe" mname="" fname="Joe"/>
 			<period date="08/21" startTime="0800" endTime="1000"/>
 			<room id="" building="REC" roomNbr="101"/>
 			<room id="" building="REC" roomNbr="102"/>
 		</exam>
-		<exam id="1224" seatingType="exam" length="60" type="evening"> <!-- an evening exam for two sections -->
+		<exam id="1224" name="A&amp;AE 101 Lec 1,2" size="20" seatingType="exam" length="60" type="evening"> <!-- an evening exam for two sections -->
 			<class id="1001" type="Lec" suffix="1"/>
 			<class id="1008" type="Lec" suffix="2"/>
 			<period date="07/20" startTime="1830" endTime="1930"/>
