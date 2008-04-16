@@ -33,6 +33,7 @@ import org.hibernate.ObjectNotFoundException;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.unitime.commons.User;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.base.BaseExam;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.ExamDAO;
@@ -979,5 +980,94 @@ public class Exam extends BaseExam implements Comparable<Exam> {
     
     public ExamPeriod getAveragePeriod() {
         return ExamPeriod.findByIndex(getSession().getUniqueId(), getExamType(), getAvgPeriod());
+    }
+    
+    
+    public void generateDefaultPreferences(boolean override) {
+        Set allPeriods = ExamPeriod.findAll(getSession().getUniqueId(), getExamType());
+        
+        if (getPreferences()==null) setPreferences(new HashSet());
+        
+        //Prefer overlapping period for evening classes
+        PreferenceLevel eveningPref = PreferenceLevel.getPreferenceLevel(ApplicationProperties.getProperty(
+                "exam."+(getExamType()==Exam.sExamTypeEvening?"evening":"final")+".defaultPrefs.eveningClasses.pref",
+                (getExamType()==Exam.sExamTypeEvening?PreferenceLevel.sNeutral:PreferenceLevel.sRequired)));
+        if (!PreferenceLevel.sNeutral.equals(eveningPref.getPrefProlog()) && (override || getPreferences(ExamPeriodPref.class).isEmpty())) {
+            int firstEveningPeriod = Integer.parseInt(ApplicationProperties.getProperty(
+                    "exam."+(getExamType()==Exam.sExamTypeEvening?"evening":"final")+".defaultPrefs.eveningClasses.firstEveningPeriod","216")); //6pm
+            HashSet<ExamPeriod> periods = new HashSet();
+            for (Iterator i=getOwners().iterator();i.hasNext();) {
+                ExamOwner owner = (ExamOwner)i.next();
+                if (ExamOwner.sOwnerTypeClass!=owner.getOwnerType()) continue;
+                Event event = Event.findClassEvent(owner.getOwnerId());
+                if (event==null) continue;
+                for (Iterator j=event.getMeetings().iterator();j.hasNext();) {
+                    Meeting meeting = (Meeting)j.next();
+                    if (meeting.getStartPeriod()<firstEveningPeriod) continue;
+                    for (Iterator k=allPeriods.iterator();k.hasNext();) {
+                        ExamPeriod period = (ExamPeriod)k.next();
+                        if (period.weakOverlap(meeting)) periods.add(period);
+                    }
+                }
+            }
+            if (!periods.isEmpty()) {
+                for (Iterator i=getPreferences(ExamPeriodPref.class).iterator();i.hasNext();) {
+                    ExamPeriodPref pref = (ExamPeriodPref)i.next();
+                    if (periods.contains(pref.getExamPeriod())) {
+                        periods.remove(pref.getExamPeriod());
+                        if (!pref.getPrefLevel().equals(eveningPref)) {
+                            pref.setPrefLevel(eveningPref);
+                        }
+                    } else {
+                        getPreferences().remove(pref);
+                    }
+                }
+                for (ExamPeriod period : periods) {
+                    ExamPeriodPref pref = new ExamPeriodPref();
+                    pref.setPrefLevel(eveningPref);
+                    pref.setOwner(this);
+                    pref.setExamPeriod(period);
+                    getPreferences().add(pref);
+                }
+            }
+        }
+        
+        //Prefer original room
+        PreferenceLevel originalPref = PreferenceLevel.getPreferenceLevel(ApplicationProperties.getProperty(
+                "exam."+(getExamType()==Exam.sExamTypeEvening?"evening":"final")+".defaultPrefs.originalRoom.pref",
+                (getExamType()==Exam.sExamTypeEvening?PreferenceLevel.sNeutral:PreferenceLevel.sStronglyPreferred)));
+        if (!PreferenceLevel.sNeutral.equals(originalPref.getPrefProlog()) && (override || getPreferences(RoomPref.class).isEmpty())) {
+            HashSet<Location> locations = new HashSet();
+            for (Iterator i=getOwners().iterator();i.hasNext();) {
+                ExamOwner owner = (ExamOwner)i.next();
+                if (ExamOwner.sOwnerTypeClass!=owner.getOwnerType()) continue;
+                Event event = Event.findClassEvent(owner.getOwnerId());
+                if (event==null) continue;
+                for (Iterator j=event.getMeetings().iterator();j.hasNext();) {
+                    Meeting meeting = (Meeting)j.next();
+                    if (meeting.getLocation().isExamEnabled(getExamType())) locations.add(meeting.getLocation());
+                }
+            }
+            if (!locations.isEmpty()) {
+                for (Iterator i=getPreferences(RoomPref.class).iterator();i.hasNext();) {
+                    RoomPref pref = (RoomPref)i.next();
+                    if (locations.contains(pref.getRoom())) {
+                        locations.remove(pref.getRoom());
+                        if (!pref.getPrefLevel().equals(originalPref)) {
+                            pref.setPrefLevel(originalPref);
+                        }
+                    } else {
+                        getPreferences().remove(pref);
+                    }
+                }
+                for (Location location : locations) {
+                    RoomPref pref = new RoomPref();
+                    pref.setPrefLevel(originalPref);
+                    pref.setOwner(this);
+                    pref.setRoom(location);
+                    getPreferences().add(pref);
+                }
+            }
+        }
     }
 }
