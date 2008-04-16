@@ -129,7 +129,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                             //same subpart
                             sb.append(", "+clazz.getSectionNumberString());
                         } else
-                            sb.append(", "+clazz.getItypeDesc()+" "+clazz.getSectionNumberString());
+                            sb.append(", "+clazz.getItypeDesc().trim()+" "+clazz.getSectionNumberString());
                         break;
                     }
                 } else {
@@ -141,7 +141,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                         break;
                     case ExamOwner.sOwnerTypeClass :
                         Class_ clazz = (Class_)ownerObject;
-                        sb.append(" "+clazz.getItypeDesc()+" "+clazz.getSectionNumberString());
+                        sb.append(" "+clazz.getItypeDesc().trim()+" "+clazz.getSectionNumberString());
                         break;
                     }
                 }
@@ -281,6 +281,15 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         return studentAssignments;
     }
     
+    public Hashtable<Meeting, Set<Long>> getOverlappingStudentMeetings(Long periodId) {
+        Hashtable<Meeting, Set<Long>> studentMeetings = new Hashtable<Meeting, Set<Long>>();
+        for (Iterator i=getOwners().iterator();i.hasNext();) {
+            ExamOwner owner = (ExamOwner)i.next();
+            owner.computeOverlappingStudentMeetings(studentMeetings, periodId);
+        }
+        return studentMeetings;
+    }
+
     public int countStudents() {
         int nrStudents = 0;
         for (Iterator i=getOwners().iterator();i.hasNext();)

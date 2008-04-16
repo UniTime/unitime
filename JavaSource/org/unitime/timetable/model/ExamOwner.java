@@ -33,6 +33,7 @@ import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.ExamOwnerDAO;
 import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
+import org.unitime.timetable.util.Constants;
 
 public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
 	private static final long serialVersionUID = 1L;
@@ -561,6 +562,98 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
         }
     }
     
+    protected void computeOverlappingStudentMeetings(Hashtable<Meeting, Set<Long>> studentMeetings, Long periodId) {
+        switch (getOwnerType()) {
+        case sOwnerTypeClass :
+            for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
+                "select e.student.uniqueId, m from Meeting m inner join m.event.relatedCourses r, StudentClassEnrollment f, StudentClassEnrollment e inner join e.clazz c, ExamPeriod p " +
+                "where c.uniqueId = :examOwnerId and " +
+                "m.eventType.reference=:eventType and r.ownerType=:classType and "+
+                "e.student=f.student and f.clazz.uniqueId = r.ownerId and "+
+                "p.uniqueId=:periodId and p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
+                "p.session=co.subjectArea.session and p.session.examBeginDate+p.dateOffset = m.meetingDate")
+                .setLong("examOwnerId", getOwnerId())
+                .setString("eventType", EventType.sEventTypeClass)
+                .setInteger("classType", ExamOwner.sOwnerTypeClass)
+                .setInteger("travelTime", Constants.EXAM_TRAVEL_TIME_SLOTS)
+                .setLong("periodId", periodId)
+                .setCacheable(true).iterate(); i.hasNext();) {
+                Object[] o = (Object[])i.next();
+                Long studentId = (Long)o[0];
+                Meeting meeting = (Meeting)o[1];
+                Set<Long> students  = studentMeetings.get(meeting);
+                if (students==null) { students = new HashSet(); studentMeetings.put(meeting, students); }
+                students.add(studentId);
+            }
+            break;
+        case sOwnerTypeConfig :
+            for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
+                    "select e.student.uniqueId, m from Meeting m inner join m.event.relatedCourses r, StudentClassEnrollment f, StudentClassEnrollment e inner join e.clazz c, ExamPeriod p " +
+                    "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :examOwnerId and " +
+                    "m.eventType.reference=:eventType and r.ownerType=:classType and "+
+                    "e.student=f.student and f.clazz.uniqueId = r.ownerId and "+
+                    "p.uniqueId=:periodId and p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
+                    "p.session=co.subjectArea.session and p.session.examBeginDate+p.dateOffset = m.meetingDate")
+                    .setLong("examOwnerId", getOwnerId())
+                    .setString("eventType", EventType.sEventTypeClass)
+                    .setInteger("classType", ExamOwner.sOwnerTypeClass)
+                    .setInteger("travelTime", Constants.EXAM_TRAVEL_TIME_SLOTS)
+                    .setLong("periodId", periodId)
+                    .setCacheable(true).iterate(); i.hasNext();) {
+                Object[] o = (Object[])i.next();
+                Long studentId = (Long)o[0];
+                Meeting meeting = (Meeting)o[1];
+                Set<Long> students  = studentMeetings.get(meeting);
+                if (students==null) { students = new HashSet(); studentMeetings.put(meeting, students); }
+                students.add(studentId);
+            }
+            break;
+        case sOwnerTypeCourse :
+            for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
+                    "select e.student.uniqueId, m from Meeting m inner join m.event.relatedCourses r, StudentClassEnrollment f, StudentClassEnrollment e inner join e.courseOffering co, ExamPeriod p " +
+                    "where co.uniqueId = :examOwnerId and " +
+                    "m.eventType.reference=:eventType and r.ownerType=:classType and "+
+                    "e.student=f.student and f.clazz.uniqueId = r.ownerId and "+
+                    "p.uniqueId=:periodId and p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
+                    "p.session=co.subjectArea.session and p.session.examBeginDate+p.dateOffset = m.meetingDate")
+                    .setLong("examOwnerId", getOwnerId())
+                    .setString("eventType", EventType.sEventTypeClass)
+                    .setInteger("classType", ExamOwner.sOwnerTypeClass)
+                    .setInteger("travelTime", Constants.EXAM_TRAVEL_TIME_SLOTS)
+                    .setLong("periodId", periodId)
+                    .setCacheable(true).iterate(); i.hasNext();) {
+                Object[] o = (Object[])i.next();
+                Long studentId = (Long)o[0];
+                Meeting meeting = (Meeting)o[1];
+                Set<Long> students  = studentMeetings.get(meeting);
+                if (students==null) { students = new HashSet(); studentMeetings.put(meeting, students); }
+                students.add(studentId);
+            }
+            break;
+        case sOwnerTypeOffering :
+            for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
+                    "select e.student.uniqueId, m from Meeting m inner join m.event.relatedCourses r, StudentClassEnrollment f, StudentClassEnrollment e inner join e.courseOffering co, ExamPeriod p " +
+                    "where co.instructionalOffering.uniqueId = :examOwnerId and " +
+                    "m.eventType.reference=:eventType and r.ownerType=:classType and "+
+                    "e.student=f.student and f.clazz.uniqueId = r.ownerId and "+
+                    "p.uniqueId=:periodId and p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length :travelTime and "+
+                    "p.session=co.subjectArea.session and p.session.examBeginDate+p.dateOffset = m.meetingDate")
+                    .setLong("examOwnerId", getOwnerId())
+                    .setString("eventType", EventType.sEventTypeClass)
+                    .setInteger("classType", ExamOwner.sOwnerTypeClass)
+                    .setInteger("travelTime", Constants.EXAM_TRAVEL_TIME_SLOTS)
+                    .setLong("periodId", periodId)
+                    .setCacheable(true).iterate(); i.hasNext();) {
+                Object[] o = (Object[])i.next();
+                Long studentId = (Long)o[0];
+                Meeting meeting = (Meeting)o[1];
+                Set<Long> students  = studentMeetings.get(meeting);
+                if (students==null) { students = new HashSet(); studentMeetings.put(meeting, students); }
+                students.add(studentId);
+            }
+            break;
+        }
+    }
     
     public int countStudents() {
         switch (getOwnerType()) {
