@@ -100,6 +100,19 @@ public class DatePattern extends BaseDatePattern implements Comparable {
 	public void setOffset(Integer offset) {
 		super.setOffset(offset); iCachedPatternBitSet = null;
 	}
+	
+	public void setPatternOffset(Date firstDate) {
+	    Calendar cal = Calendar.getInstance(Locale.US);
+	    cal.setTime(getSession().getSessionBeginDateTime());
+	    int offset = 0;
+	    while (cal.getTime().compareTo(firstDate)<0) {
+	        offset--; cal.add(Calendar.DAY_OF_YEAR, 1);
+	    }
+	    while (cal.getTime().compareTo(firstDate)>0) {
+	        offset++; cal.add(Calendar.DAY_OF_YEAR, -1);
+	    }
+	    setOffset(offset);
+	}
 
 	public BitSet getPatternBitSet() {
 		if (iCachedPatternBitSet!=null) return iCachedPatternBitSet;
