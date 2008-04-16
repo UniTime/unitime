@@ -239,4 +239,15 @@ public class Event extends BaseEvent implements Comparable<Event> {
 	            .list();
 	}
 	
+	public static Event findClassEvent(Long classId) {
+	    return (Event)new EventDAO().getSession().createQuery(
+	            "select e from Event e inner join e.relatedCourses r where "+
+	            "e.eventType.reference=:eventType and "+
+	            "r.ownerType=:classType and r.ownerId=:classId")
+	            .setString("eventType", EventType.sEventTypeClass)
+	            .setInteger("classType", ExamOwner.sOwnerTypeClass)
+	            .setLong("classId", classId)
+	            .setCacheable(true).uniqueResult();
+	}
+	
 }
