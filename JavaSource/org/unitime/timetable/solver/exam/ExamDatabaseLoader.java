@@ -44,10 +44,13 @@ import org.unitime.timetable.model.CourseOfferingReservation;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionObject;
 import org.unitime.timetable.model.DistributionPref;
+import org.unitime.timetable.model.Event;
+import org.unitime.timetable.model.EventType;
 import org.unitime.timetable.model.ExamPeriodPref;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomFeature;
@@ -55,6 +58,7 @@ import org.unitime.timetable.model.RoomFeaturePref;
 import org.unitime.timetable.model.RoomGroupPref;
 import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.dao.DistributionPrefDAO;
+import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.util.Constants;
 
@@ -85,7 +89,7 @@ public class ExamDatabaseLoader extends ExamLoader {
     private boolean iLoadSolution;
     private String iInstructorFormat;
     private Progress iProgress = null;
-    private Hashtable iPeriods = new Hashtable();
+    private Hashtable<Long,ExamPeriod> iPeriods = new Hashtable();
     private Hashtable iRooms = new Hashtable();
     private Hashtable iExams = new Hashtable();
     private Hashtable iInstructors = new Hashtable();
@@ -121,7 +125,7 @@ public class ExamDatabaseLoader extends ExamLoader {
             loadExams();
             loadStudents();
             loadDistributions();
-            loadAvailabilities();
+            if (org.unitime.timetable.model.Exam.sExamTypeEvening==iExamType) loadAvailabilitiesFromEvents();//loadAvailabilities();
             getModel().init();
             checkConsistency();
             assignInitial();
@@ -179,7 +183,7 @@ public class ExamDatabaseLoader extends ExamLoader {
             iRooms.put(new Long(room.getId()),room);
             for (Iterator j=location.getExamPreferences(iExamType).entrySet().iterator();j.hasNext();) {
                 Map.Entry entry = (Map.Entry)j.next();
-                ExamPeriod period = (ExamPeriod)iPeriods.get(((org.unitime.timetable.model.ExamPeriod)entry.getKey()).getUniqueId());
+                ExamPeriod period = iPeriods.get(((org.unitime.timetable.model.ExamPeriod)entry.getKey()).getUniqueId());
                 String pref = ((PreferenceLevel)entry.getValue()).getPrefProlog();
                 if (period==null) continue;
                 if (PreferenceLevel.sProhibited.equals(pref))
@@ -298,7 +302,7 @@ public class ExamDatabaseLoader extends ExamLoader {
 
             if (exam.getAssignedPeriod()!=null) {
                 boolean fail = false;
-                ExamPeriod period = (ExamPeriod)iPeriods.get(exam.getAssignedPeriod().getUniqueId());
+                ExamPeriod period = iPeriods.get(exam.getAssignedPeriod().getUniqueId());
                 if (period==null) {
                     iProgress.warn("Unable assign exam "+getExamLabel(exam)+" to period "+exam.getAssignedPeriod().getName()+": period not allowed.");
                     fail = true;
@@ -572,7 +576,6 @@ public class ExamDatabaseLoader extends ExamLoader {
     }
     
     protected void loadAvailabilities() {
-        if (org.unitime.timetable.model.Exam.sExamTypeFinal==iExamType) return;
         List committedAssignments = new ExamDAO().getSession().createQuery(
                 "select a from Assignment a where a.solution.commited=true and " +
                 "a.solution.owner.session.uniqueId=:sessionId").
@@ -587,9 +590,11 @@ public class ExamDatabaseLoader extends ExamLoader {
                 org.unitime.timetable.model.ExamPeriod period = (org.unitime.timetable.model.ExamPeriod)j.next();
                 if (period.overlap(a)) {
                     iProgress.debug("Class "+a.getClassName()+" "+a.getPlacement().getLongName()+" overlaps with period "+period.getName());
-                    ExamPeriod exPeriod = (ExamPeriod)iPeriods.get(period.getUniqueId());
+                    ExamPeriod exPeriod = iPeriods.get(period.getUniqueId());
                     ExamResourceUnavailability unavailability = new ExamResourceUnavailability(exPeriod, a.getUniqueId(), "class", 
-                            a.getClassName(), a.getPlacement().getTimeLocation().getLongName(), a.getPlacement().getRoomName(", "));
+                            a.getClassName(), a.getPlacement().getTimeLocation().getDatePatternName(),
+                            a.getPlacement().getTimeLocation().getDayHeader()+" "+a.getPlacement().getTimeLocation().getStartTimeHeader()+" - "+a.getPlacement().getTimeLocation().getEndTimeHeader(), 
+                            a.getPlacement().getRoomName(", "), a.getClazz().getClassLimit());
                     if (studentIds==null)
                         studentIds = new ExamDAO().getSession().createQuery(
                                 "select e.student.uniqueId from "+
@@ -605,6 +610,7 @@ public class ExamDatabaseLoader extends ExamLoader {
                     }
                     for (Iterator k=a.getClazz().getClassInstructors().iterator();k.hasNext();) {
                         ClassInstructor ci = (ClassInstructor)k.next();
+                        if (!ci.isLead()) continue;
                         ExamInstructor instructor = getInstructor(ci.getInstructor());
                         if (instructor!=null) {
                             instructor.setAvailable(exPeriod.getIndex(), false);
@@ -614,6 +620,82 @@ public class ExamDatabaseLoader extends ExamLoader {
                     getModel().addUnavailability(unavailability);
                 }
             }
+        }
+    }
+    
+    protected void loadAvailabilitiesFromEvents() {
+        List overlappingEvents = new EventDAO().getSession().createQuery(
+                "select distinct e, p.uniqueId, m from Event e inner join e.meetings m, ExamPeriod p where " +
+                "m.eventType.reference=:eventType and p.session.uniqueId=:sessionId and p.examType=:examType and "+
+                "p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
+                "p.session.examBeginDate+p.dateOffset = m.meetingDate"
+                )
+                .setString("eventType", EventType.sEventTypeClass)
+                .setInteger("travelTime", Constants.EXAM_TRAVEL_TIME_SLOTS)
+                .setInteger("examType", iExamType)
+                .setLong("sessionId", iSessionId)
+                .setCacheable(true)
+                .list();
+        iProgress.setPhase("Loading availabilities...", overlappingEvents.size());
+        
+        Hashtable<Event, Set<Long>> students = new Hashtable();
+        Hashtable<Event, Set<DepartmentalInstructor>> instructors = new Hashtable();
+        Hashtable<Event, Hashtable<ExamPeriod,ExamResourceUnavailability>> unavailabilities = new Hashtable();
+        
+        for (Iterator i=overlappingEvents.iterator();i.hasNext();) {
+            iProgress.incProgress();
+            Object[] o = (Object[])i.next();
+            Event event = (Event)o[0];
+            ExamPeriod period = iPeriods.get((Long)o[1]);
+            Meeting meeting = (Meeting)o[2];
+            if (period==null) continue;
+            
+            Set<Long> studentsThisEvent = students.get(event);
+            if (studentsThisEvent==null) {
+                studentsThisEvent = event.getStudentIds();
+                students.put(event, studentsThisEvent);
+            }
+            
+            Set<DepartmentalInstructor> instructorsThisEvent = instructors.get(event);
+            if (instructorsThisEvent==null) {
+                instructorsThisEvent = event.getInstructors();
+                instructors.put(event, instructorsThisEvent);
+            }
+            
+            Hashtable<ExamPeriod,ExamResourceUnavailability> unavailabilitiesThisEvent = unavailabilities.get(event);
+            if (unavailabilitiesThisEvent==null) {
+                unavailabilitiesThisEvent = new Hashtable();
+                unavailabilities.put(event, unavailabilitiesThisEvent);
+            }
+            
+            ExamResourceUnavailability unavailability = unavailabilitiesThisEvent.get(period);
+            if (unavailability!=null) {
+                if (meeting.getLocation()!=null) unavailability.addRoom(meeting.getLocation().getLabel());
+                continue;
+            }
+            unavailability = new ExamResourceUnavailability(
+                    period, meeting.getEvent().getUniqueId(), "event", 
+                    meeting.getEvent().getEventName(), meeting.dateStr(), meeting.startTime()+" - "+meeting.stopTime(), 
+                    meeting.getRoomLabel(), meeting.getEvent().getMaxCapacity());
+            unavailabilitiesThisEvent.put(period, unavailability);
+            getModel().addUnavailability(unavailability);
+            
+            for (Long studentId : studentsThisEvent) {
+                ExamStudent student = (ExamStudent)iStudents.get(studentId);
+                if (student!=null) {
+                    student.setAvailable(period.getIndex(), false);
+                    unavailability.getStudentIds().add(student.getId());
+                }
+            }
+            
+            for (DepartmentalInstructor di : instructorsThisEvent) {
+                ExamInstructor instructor = getInstructor(di);
+                if (instructor!=null) {
+                    instructor.setAvailable(period.getIndex(), false);
+                    unavailability.getInstructorIds().add(instructor.getId());
+                }
+            }
+            
         }
     }
     

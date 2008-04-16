@@ -44,8 +44,10 @@ public class ExamModel extends net.sf.cpsolver.exam.model.ExamModel {
                         Long.valueOf(element.attributeValue("id")),
                         element.getName(),
                         element.attributeValue("name",""),
+                        element.attributeValue("date",""),
                         element.attributeValue("time",""),
-                        element.attributeValue("room",""));
+                        element.attributeValue("room",""),
+                        Integer.parseInt(element.attributeValue("size","0")));
                 for (Iterator j = element.elementIterator("student");j.hasNext();) {
                     Element e = (Element)j.next();
                     unavailability.getStudentIds().add(Long.valueOf(e.attributeValue("id")));
@@ -72,8 +74,10 @@ public class ExamModel extends net.sf.cpsolver.exam.model.ExamModel {
                         .addAttribute("period", unavailability.getPeriod().getId().toString())
                         .addAttribute("id", unavailability.getId().toString())
                         .addAttribute("name", unavailability.getName())
+                        .addAttribute("date", unavailability.getDate())
                         .addAttribute("time", unavailability.getTime())
-                        .addAttribute("room", unavailability.getRoom());
+                        .addAttribute("room", unavailability.getRoom())
+                        .addAttribute("size", String.valueOf(unavailability.getSize()));
                     for (Long studentId : unavailability.getStudentIds())
                         element.addElement("student").addAttribute("id", studentId.toString());
                     for (Long studentId : unavailability.getInstructorIds())
