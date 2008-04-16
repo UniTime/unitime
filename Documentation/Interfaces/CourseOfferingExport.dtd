@@ -17,24 +17,24 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  -->
 
-<!ELEMENT class ( class*, date*, time?, (room|location)*, meeting*, instructor*, meetsWith* ) >
+<!ELEMENT class ( class*, date*, time?, (room|location|instructor|meeting|meetsWith)* ) >
 <!ATTLIST class displayInScheduleBook ( false | true ) #IMPLIED >
 <!ATTLIST class id CDATA #IMPLIED >
 <!ATTLIST class limit NMTOKEN #IMPLIED >
 <!ATTLIST class scheduleNote CDATA #IMPLIED >
 <!ATTLIST class suffix NMTOKEN #REQUIRED >
-<!ATTLIST class type NMTOKEN #REQUIRED >
+<!ATTLIST class type CDATA #REQUIRED >
 
-<!ELEMENT config ( subpart*, class* ) >
+<!ELEMENT config ( (subpart|class)* ) >
 <!ATTLIST config limit NMTOKEN #REQUIRED >
 <!ATTLIST config name CDATA #REQUIRED >
 
 <!ELEMENT consent EMPTY >
 <!ATTLIST consent type CDATA #REQUIRED >
 
-<!ELEMENT course EMPTY >
+<!ELEMENT course ( class* ) >
 <!ATTLIST course id CDATA #IMPLIED >
-<!ATTLIST course controlling ( false | true ) #REQUIRED >
+<!ATTLIST course controlling ( false | true ) #IMPLIED >
 <!ATTLIST course courseNbr NMTOKEN #REQUIRED >
 <!ATTLIST course scheduleBookNote CDATA #IMPLIED >
 <!ATTLIST course subject CDATA #REQUIRED >
@@ -84,7 +84,7 @@
 <!ELEMENT subpart ( subpartCredit*, subpart* ) >
 <!ATTLIST subpart minPerWeek NMTOKEN #REQUIRED >
 <!ATTLIST subpart suffix CDATA #IMPLIED >
-<!ATTLIST subpart type NMTOKEN #REQUIRED >
+<!ATTLIST subpart type CDATA #REQUIRED >
 
 <!ELEMENT subpartCredit EMPTY >
 <!ATTLIST subpartCredit creditFormat ( arrangeHours | fixedUnit | variableMinMax | variableRange ) #REQUIRED >
@@ -104,8 +104,11 @@
 <!ATTLIST date endDate CDATA #REQUIRED >
 <!ATTLIST date startDate CDATA #REQUIRED >
 
-<!ELEMENT exam ( class*, instructor*, (period, room*)?) >
+<!ELEMENT exam ( (class|course)*, instructor*, (period, (room|location)*)?) >
 <!ATTLIST exam id CDATA #REQUIRED >
+<!ATTLIST exam name CDATA #REQUIRED >
+<!ATTLIST exam size NMTOKEN #REQUIRED >
+<!ATTLIST exam note CDATA #IMPLIED >
 <!ATTLIST exam length NMTOKEN #IMPLIED >
 <!ATTLIST exam seatingType ( normal | exam) #IMPLIED >
 <!ATTLIST exam type ( final | evening) #REQUIRED >
@@ -127,3 +130,12 @@
 
 <!ELEMENT meetsWith EMPTY >
 <!ATTLIST meetsWith id CDATA #REQUIRED >
+
+<!ELEMENT exams ( exam* ) >
+<!ATTLIST exams campus NMTOKEN #REQUIRED >
+<!ATTLIST exams term NMTOKEN #REQUIRED >
+<!ATTLIST exams year NMTOKEN #REQUIRED >
+<!ATTLIST exams dateFormat CDATA #IMPLIED >
+<!ATTLIST exams timeFormat CDATA #IMPLIED >
+<!ATTLIST exams created CDATA #IMPLIED >
+<!ATTLIST exams type ( all | final | evening) #REQUIRED >
