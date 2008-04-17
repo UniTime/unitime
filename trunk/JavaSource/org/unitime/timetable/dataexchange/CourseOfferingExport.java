@@ -250,7 +250,7 @@ public class CourseOfferingExport extends BaseExport {
         else
             classElement.addAttribute("id", clazz.getUniqueId().toString());
         classElement.addAttribute("type", clazz.getItypeDesc().trim());
-        classElement.addAttribute("suffix", clazz.getSectionNumberString());
+        classElement.addAttribute("suffix", (clazz.getClassSuffix()!=null?clazz.getClassSuffix():clazz.getSectionNumberString()));
         if (clazz.getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment())
             classElement.addAttribute("limit", "inf");
         else
@@ -439,13 +439,13 @@ public class CourseOfferingExport extends BaseExport {
                     courseElement.addElement("class")
                     .addAttribute("id", (clazz.getExternalUniqueId()!=null?clazz.getExternalUniqueId():clazz.getUniqueId().toString()))
                     .addAttribute("type", clazz.getItypeDesc().trim())
-                    .addAttribute("suffix", clazz.getSectionNumberString());
+                    .addAttribute("suffix", (clazz.getClassSuffix()!=null?clazz.getClassSuffix():clazz.getSectionNumberString()));
                 } else {
                     if (!clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().equals(offering)) continue;
                     examElement.addElement("class")
                     .addAttribute("id", (clazz.getExternalUniqueId()!=null?clazz.getExternalUniqueId():clazz.getUniqueId().toString()))
                     .addAttribute("type", clazz.getItypeDesc().trim())
-                    .addAttribute("suffix", clazz.getSectionNumberString());
+                    .addAttribute("suffix", (clazz.getClassSuffix()!=null?clazz.getClassSuffix():clazz.getSectionNumberString()));
                 }
             } else if (owner instanceof InstrOfferingConfig) {
                 InstrOfferingConfig config = (InstrOfferingConfig)owner;
@@ -463,7 +463,7 @@ public class CourseOfferingExport extends BaseExport {
                         courseElement.addElement("class")
                             .addAttribute("id", (clazz.getExternalUniqueId()!=null?clazz.getExternalUniqueId():clazz.getUniqueId().toString()))
                             .addAttribute("type", clazz.getItypeDesc().trim())
-                            .addAttribute("suffix", clazz.getSectionNumberString());
+                            .addAttribute("suffix", (clazz.getClassSuffix()!=null?clazz.getClassSuffix():clazz.getSectionNumberString()));
                     }
                 } else {
                     if (!config.getInstructionalOffering().equals(offering)) continue;
@@ -474,7 +474,7 @@ public class CourseOfferingExport extends BaseExport {
                         examElement.addElement("class")
                             .addAttribute("id", (clazz.getExternalUniqueId()!=null?clazz.getExternalUniqueId():clazz.getUniqueId().toString()))
                             .addAttribute("type", clazz.getItypeDesc().trim())
-                            .addAttribute("suffix", clazz.getSectionNumberString());
+                            .addAttribute("suffix", (clazz.getClassSuffix()!=null?clazz.getClassSuffix():clazz.getSectionNumberString()));
                     }
                 }
             } else if (owner instanceof CourseOffering) {
