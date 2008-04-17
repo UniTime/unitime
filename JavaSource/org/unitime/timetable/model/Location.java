@@ -732,4 +732,10 @@ public abstract class Location extends BaseLocation implements Comparable {
                     (enabled?sExamLocationTypeEvening:0));
         }
     }
+    
+    public static List findAll(Long sessionId) {
+        return new LocationDAO().getSession().createQuery(
+                "select l from Location l where l.session.uniqueId=:sessionId"
+                ).setLong("sessionId", sessionId).setCacheable(true).list();
+    }
 }
