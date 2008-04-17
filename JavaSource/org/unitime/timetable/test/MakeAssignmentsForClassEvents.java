@@ -60,6 +60,7 @@ public class MakeAssignmentsForClassEvents {
     private org.hibernate.Session iHibSession = null;
     private Hashtable<String,DatePattern> iDatePatterns = null;
     private TimePattern iExactTimePattern = null;
+    private Hashtable<Long,Location> iLocations = null;
     
     public MakeAssignmentsForClassEvents(Session session, org.hibernate.Session hibSession) {
         iHibSession = hibSession;
@@ -83,6 +84,12 @@ public class MakeAssignmentsForClassEvents {
             iDatePatterns.put(dp.getName(), dp);
         }
         iExactTimePattern = TimePattern.findExactTime(iSession.getUniqueId());
+        iLocations = new Hashtable();
+        for (Iterator i=Location.findAll(iSession.getUniqueId()).iterator();i.hasNext();) {
+            Location location = (Location)i.next();
+            if (location.getPermanentId()!=null)
+                iLocations.put(location.getPermanentId(), location);
+        }
     }
     
     protected int getWeek(Date date) {
@@ -208,7 +215,9 @@ public class MakeAssignmentsForClassEvents {
         Set<Location> rooms = new HashSet();
         for (Iterator i=event.getMeetings().iterator();i.hasNext();) {
             Meeting meeting = (Meeting)i.next();
-            if (meeting.getLocation()!=null) rooms.add(meeting.getLocation());
+            if (meeting.getLocationPermanentId()==null) continue;
+            Location location = iLocations.get(meeting.getLocationPermanentId());
+            if (location!=null) rooms.add(location);
         }
         return rooms;
     }
