@@ -22,7 +22,7 @@
 <!ATTLIST class id CDATA #IMPLIED >
 <!ATTLIST class limit NMTOKEN #IMPLIED >
 <!ATTLIST class scheduleNote CDATA #IMPLIED >
-<!ATTLIST class suffix NMTOKEN #REQUIRED >
+<!ATTLIST class suffix CDATA #REQUIRED >
 <!ATTLIST class type CDATA #REQUIRED >
 
 <!ELEMENT config ( (subpart|class)* ) >
