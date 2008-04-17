@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.base.BaseExamOwner;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
@@ -790,5 +791,109 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                 return "";
             default : throw new RuntimeException("Unknown owner type "+getOwnerType());
         }
+    }
+    
+    public String genName(String pattern) {
+        String name = pattern;
+        int idx = -1;
+        while (name.indexOf('%',idx+1)>=0) {
+            idx = name.indexOf('%',idx);
+            char code = name.charAt(idx+1);
+            String name4code = genName(code);
+            name = name.substring(0,idx)+(name4code==null?"":name4code)+name.substring(idx+2);
+        }
+        return name;
+    }
+    
+    /**
+     * Basic codes
+     * s ... subject area
+     * c ... course number
+     * i ... itype abbv
+     * n ... section number
+     * x ... configuration name
+     * Additional codes
+     * d ... department abbv
+     * a ... class suffix (div-sec number)
+     * y ... itype suffix (a, b etc.)
+     * e ... class external id
+     * f ... course external id
+     * o ... offering external id
+     * t ... exam type suffix (tmtbl.exam.name.type.final and tmtbl.exam.name.type.evening)
+     * I ... itype code
+     * p ... itype parent abbv
+     * P ... itype parent abbv
+     * _ ... space
+     */
+    protected String genName(char code) {
+        switch (code) {
+        case '_' : return " ";
+        case 's' : return getCourse().getSubjectArea().getSubjectAreaAbbreviation();
+        case 'c' : return getCourse().getCourseNbr();
+        case 'i' :
+            switch (getOwnerType()) {
+            case sOwnerTypeClass : return ((Class_)getOwnerObject()).getSchedulingSubpart().getItypeDesc().trim();
+            default : return "";
+            }
+        case 'n' :
+            switch (getOwnerType()) {
+            case sOwnerTypeClass : return ((Class_)getOwnerObject()).getSectionNumberString();
+            default : return "";
+            }
+        case 'x' :
+            switch (getOwnerType()) {
+            case sOwnerTypeClass : return ((Class_)getOwnerObject()).getSchedulingSubpart().getInstrOfferingConfig().getName();
+            case sOwnerTypeConfig : return ((InstrOfferingConfig)getOwnerObject()).getName();
+            default : return "";
+            }
+        case 'D' :
+            return getCourse().getDepartment().getDeptCode();
+        case 'd' :
+            Department d = getCourse().getDepartment();
+            return (d.getAbbreviation()==null || d.getAbbreviation().length()==0?d.getDeptCode():d.getAbbreviation());
+        case 'a' :
+            switch (getOwnerType()) {
+            case sOwnerTypeClass : return ((Class_)getOwnerObject()).getClassSuffix();
+            default : return "";
+            }
+        case 'y' :
+            switch (getOwnerType()) {
+            case sOwnerTypeClass : return ((Class_)getOwnerObject()).getSchedulingSubpart().getSchedulingSubpartSuffix();
+            default : return "";
+            }
+        case 'e' :
+            switch (getOwnerType()) {
+            case sOwnerTypeClass : return ((Class_)getOwnerObject()).getExternalUniqueId();
+            default : return "";
+            }
+        case 'f' :
+            return getCourse().getExternalUniqueId();
+        case 'o' :
+            return getCourse().getInstructionalOffering().getExternalUniqueId();
+        case 't' :
+            return ApplicationProperties.getProperty("tmtbl.exam.name.type."+Exam.sExamTypes[getExam().getExamType()]);
+        case 'I' :
+            switch (getOwnerType()) {
+            case sOwnerTypeClass : return ((Class_)getOwnerObject()).getSchedulingSubpart().getItype().getItype().toString();
+            default : return "";
+            }
+        case 'p' :
+            switch (getOwnerType()) {
+            case sOwnerTypeClass :
+                ItypeDesc itype = ((Class_)getOwnerObject()).getSchedulingSubpart().getItype();
+                while (itype.getParent()!=null) itype = itype.getParent();
+                return itype.getAbbv();
+            default : return "";
+            }
+        case 'P' :
+            switch (getOwnerType()) {
+            case sOwnerTypeClass : 
+                ItypeDesc itype = ((Class_)getOwnerObject()).getSchedulingSubpart().getItype();
+                while (itype.getParent()!=null) itype = itype.getParent();
+                return itype.getItype().toString();
+            default : return "";
+            }
+        }
+        return "";
     }
 }
