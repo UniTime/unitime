@@ -852,20 +852,24 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
     
     public ExamProposedChange update(ExamProposedChange change) {
         synchronized (currentSolution()) {
-            Hashtable<Exam, ExamPlacement> undo = new Hashtable();
+            Hashtable<Exam, ExamPlacement> undoAssign = new Hashtable();
+            HashSet<Exam> undoUnassing = new HashSet();
             Vector<Exam> unassign = new Vector();
             Vector<ExamPlacement> assign = new Vector();
             HashSet<ExamPlacement> conflicts = new HashSet();
             for (ExamAssignment assignment: change.getConflicts()) {
                 ExamPlacement placement = getPlacement(assignment);
                 if (placement==null || !placement.equals(placement.variable().getAssignment())) return null;
-                undo.put((Exam)placement.variable(),placement);
+                undoAssign.put((Exam)placement.variable(),placement);
                 unassign.add((Exam)placement.variable());
             }
             for (ExamAssignment assignment: change.getAssignments()) {
                 ExamPlacement placement = getPlacement(assignment);
                 if (placement==null) return null;
-                undo.put((Exam)placement.variable(),(ExamPlacement)placement.variable().getAssignment());
+                if (placement.variable().getAssignment()!=null)
+                    undoAssign.put((Exam)placement.variable(),(ExamPlacement)placement.variable().getAssignment());
+                else
+                    undoUnassing.add((Exam)placement.variable());
                 assign.add(placement);
             }
             for (Exam exam : unassign) exam.unassign(0);
@@ -873,7 +877,7 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
                 for (Iterator i=placement.variable().getModel().conflictValues(placement).iterator();i.hasNext();) {
                     ExamPlacement conflict = (ExamPlacement)i.next();
                     conflicts.add(conflict);
-                    undo.put((Exam)conflict.variable(),conflict);
+                    undoAssign.put((Exam)conflict.variable(),conflict);
                     conflict.variable().unassign(0);
                 }
                 placement.variable().assign(0, placement);
@@ -882,9 +886,11 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
             change.getAssignments().clear();
             for (ExamPlacement assignment : assign)
                 change.getAssignments().add(new ExamAssignmentInfo(assignment));
-            for (Map.Entry<Exam, ExamPlacement> entry : undo.entrySet())
+            for (Exam exam: undoUnassing)
+                if (exam.getAssignment()!=null) exam.unassign(0);
+            for (Map.Entry<Exam, ExamPlacement> entry : undoAssign.entrySet())
                 if (entry.getKey().getAssignment()!=null) entry.getKey().unassign(0);
-            for (Map.Entry<Exam, ExamPlacement> entry : undo.entrySet())
+            for (Map.Entry<Exam, ExamPlacement> entry : undoAssign.entrySet())
                 if (entry.getValue()!=null) entry.getKey().assign(0, entry.getValue());
             for (ExamPlacement conflict : conflicts)
                 change.getConflicts().add(new ExamAssignment(conflict));
@@ -907,12 +913,13 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
             if (exam.getMaxRooms()==0) return rooms;
             
             //assign change
-            Hashtable<Exam, ExamPlacement> undo = new Hashtable();
+            Hashtable<Exam, ExamPlacement> undoAssign = new Hashtable();
+            HashSet<Exam> undoUnassing = new HashSet();
             if (change!=null) {
                 for (ExamAssignment assignment: change.getConflicts()) {
                     ExamPlacement placement = getPlacement(assignment);
                     if (placement==null) continue;
-                    undo.put((Exam)placement.variable(),placement);
+                    undoAssign.put((Exam)placement.variable(),placement);
                     placement.variable().unassign(0);
                 }
                 for (ExamAssignment assignment: change.getAssignments()) {
@@ -921,10 +928,13 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
                     for (Iterator i=placement.variable().getModel().conflictValues(placement).iterator();i.hasNext();) {
                         ExamPlacement conflict = (ExamPlacement)i.next();
                         if (conflict.variable().equals(placement.variable())) continue;
-                        undo.put((Exam)conflict.variable(),conflict);
+                        undoAssign.put((Exam)conflict.variable(),conflict);
                         conflict.variable().unassign(0);
                     }
-                    undo.put((Exam)placement.variable(),(ExamPlacement)placement.variable().getAssignment());
+                    if (placement.variable().getAssignment()!=null)
+                        undoAssign.put((Exam)placement.variable(),(ExamPlacement)placement.variable().getAssignment());
+                    else
+                        undoUnassing.add((Exam)placement.variable());
                     placement.variable().assign(0, placement);
                 }
             }
@@ -948,9 +958,11 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
             }
             
             //undo change
-            for (Map.Entry<Exam, ExamPlacement> entry : undo.entrySet())
+            for (Exam undoExam: undoUnassing)
+                if (undoExam.getAssignment()!=null) undoExam.unassign(0);
+            for (Map.Entry<Exam, ExamPlacement> entry : undoAssign.entrySet())
                 if (entry.getKey().getAssignment()!=null) entry.getKey().unassign(0);
-            for (Map.Entry<Exam, ExamPlacement> entry : undo.entrySet())
+            for (Map.Entry<Exam, ExamPlacement> entry : undoAssign.entrySet())
                 if (entry.getValue()!=null) entry.getKey().assign(0, entry.getValue());
 
             return rooms;
@@ -964,12 +976,13 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
             if (exam==null) return null;
             
             //assign change
-            Hashtable<Exam, ExamPlacement> undo = new Hashtable();
+            Hashtable<Exam, ExamPlacement> undoAssign = new Hashtable();
+            HashSet<Exam> undoUnassing = new HashSet();
             if (change!=null) {
                 for (ExamAssignment assignment: change.getConflicts()) {
                     ExamPlacement placement = getPlacement(assignment);
                     if (placement==null) continue;
-                    undo.put((Exam)placement.variable(),placement);
+                    undoAssign.put((Exam)placement.variable(),placement);
                     placement.variable().unassign(0);
                 }
                 for (ExamAssignment assignment: change.getAssignments()) {
@@ -978,10 +991,13 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
                     for (Iterator i=placement.variable().getModel().conflictValues(placement).iterator();i.hasNext();) {
                         ExamPlacement conflict = (ExamPlacement)i.next();
                         if (conflict.variable().equals(placement.variable())) continue;
-                        undo.put((Exam)conflict.variable(),conflict);
+                        undoAssign.put((Exam)conflict.variable(),conflict);
                         conflict.variable().unassign(0);
                     }
-                    undo.put((Exam)placement.variable(),(ExamPlacement)placement.variable().getAssignment());
+                    if (placement.variable().getAssignment()!=null)
+                        undoAssign.put((Exam)placement.variable(),(ExamPlacement)placement.variable().getAssignment());
+                    else
+                        undoUnassing.add((Exam)placement.variable());
                     placement.variable().assign(0, placement);
                 }
             }
@@ -998,9 +1014,11 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
             }
             
             //undo change
-            for (Map.Entry<Exam, ExamPlacement> entry : undo.entrySet())
+            for (Exam undoExam: undoUnassing)
+                if (undoExam.getAssignment()!=null) undoExam.unassign(0);
+            for (Map.Entry<Exam, ExamPlacement> entry : undoAssign.entrySet())
                 if (entry.getKey().getAssignment()!=null) entry.getKey().unassign(0);
-            for (Map.Entry<Exam, ExamPlacement> entry : undo.entrySet())
+            for (Map.Entry<Exam, ExamPlacement> entry : undoAssign.entrySet())
                 if (entry.getValue()!=null) entry.getKey().assign(0, entry.getValue());
             
             return periods;
