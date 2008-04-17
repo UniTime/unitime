@@ -261,6 +261,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 		int sessionEndDay = DateUtils.getDayOfYear(solution.getSession().getSessionEndDateTime());
 		if (assignment!=null) {
 			iAssignmentInfo = (AssignmentPreferenceInfo)assignment.getAssignmentInfo("AssignmentInfo");
+			if (iAssignmentInfo==null) iAssignmentInfo = new AssignmentPreferenceInfo();
 			if (!assignment.getRooms().isEmpty()) {
 				iRoom = new RoomInfo[assignment.getRooms().size()];
 				int idx = 0;
