@@ -121,50 +121,31 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 if (prev.getCourse().equals(owner.getCourse()) && prev.getOwnerType().equals(owner.getOwnerType())) {
                     //same course number
                     switch (owner.getOwnerType()) {
-                    case ExamOwner.sOwnerTypeConfig :
-                        sb.append(", ["+((InstrOfferingConfig)ownerObject).getName()+"]");
-                        break;
                     case ExamOwner.sOwnerTypeClass :
                         Class_ clazz = (Class_)ownerObject;
-                        if (prev.getOwnerType()==ExamOwner.sOwnerTypeClass && ((Class_)prev.getOwnerObject()).getSchedulingSubpart().equals(clazz.getSchedulingSubpart())) {
-                            //same subpart
-                            sb.append(", "+clazz.getSectionNumberString());
-                        } else
-                            sb.append(", "+clazz.getItypeDesc().trim()+" "+clazz.getSectionNumberString());
+                        if (prev.getOwnerType()==ExamOwner.sOwnerTypeClass && ((Class_)prev.getOwnerObject()).getSchedulingSubpart().equals(clazz.getSchedulingSubpart()))
+                            sb.append(owner.genName(ApplicationProperties.getProperty("tmtbl.exam.name.sameSubpart."+ExamOwner.sOwnerTypes[owner.getOwnerType()])));
+                        else
+                            sb.append(owner.genName(ApplicationProperties.getProperty("tmtbl.exam.name.sameCourse."+ExamOwner.sOwnerTypes[owner.getOwnerType()])));
+                        break;
+                    case ExamOwner.sOwnerTypeConfig :
+                        sb.append(owner.genName(ApplicationProperties.getProperty("tmtbl.exam.name.sameCourse."+ExamOwner.sOwnerTypes[owner.getOwnerType()])));
                         break;
                     }
                 } else {
                     //different course number
-                    sb.append("; "+owner.getCourse().getCourseNbr());
-                    switch (owner.getOwnerType()) {
-                    case ExamOwner.sOwnerTypeConfig :
-                        sb.append(" ["+((InstrOfferingConfig)ownerObject).getName()+"]");
-                        break;
-                    case ExamOwner.sOwnerTypeClass :
-                        Class_ clazz = (Class_)ownerObject;
-                        sb.append(" "+clazz.getItypeDesc().trim()+" "+clazz.getSectionNumberString());
-                        break;
-                    }
+                    sb.append(owner.genName(ApplicationProperties.getProperty("tmtbl.exam.name.sameSubject."+ExamOwner.sOwnerTypes[owner.getOwnerType()])));
                 }
             } else {
                 //different subject area
-                if (prev!=null) sb.append("; ");
-                switch (owner.getOwnerType()) {
-                case ExamOwner.sOwnerTypeConfig :
-                    InstrOfferingConfig config = (InstrOfferingConfig)ownerObject;
-                    sb.append(config.getControllingCourseOffering().getCourseName()+" ["+config.getName()+"]");
-                    break;
-                case ExamOwner.sOwnerTypeClass :
-                    Class_ clazz = (Class_)ownerObject;
-                    sb.append(clazz.getClassLabel());
-                    break;
-                default :
-                    sb.append(owner.getCourse().getCourseName());
-                }
+                if (prev!=null) sb.append(prev.genName(ApplicationProperties.getProperty("tmtbl.exam.name.diffSubject.separator")));
+                sb.append(owner.genName(ApplicationProperties.getProperty("tmtbl.exam.name."+ExamOwner.sOwnerTypes[owner.getOwnerType()])));
             }
             prev = owner;
         }
-        return (sb.toString().length()<=100?sb.toString():sb.toString().substring(0,97)+"...");
+        String suffix = (prev==null?"":prev.genName(ApplicationProperties.getProperty("tmtbl.exam.name.suffix")));
+        int limit = Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.name.maxLength","100")) - suffix.length();
+        return (sb.toString().length()<=limit?sb.toString():sb.toString().substring(0,limit-3)+"...")+suffix;
 	}
 	
 	public String getLabel() {
