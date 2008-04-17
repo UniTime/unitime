@@ -362,11 +362,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 		DepartmentalInstructor i = (DepartmentalInstructor)o;
 		int cmp = nameLastNameFirst().compareToIgnoreCase(i.nameLastNameFirst());
 		if (cmp!=0) return cmp;
-		cmp = getUniqueId().compareTo(i.getUniqueId());
-		if (cmp!=0) return cmp;
-		Department deptO = getDepartment();
-		Department deptI = i.getDepartment();
-		return deptO.getAbbreviation().compareTo(deptI.getAbbreviation());
+		return getUniqueId().compareTo(i.getUniqueId());
 	}
 
 	/**
