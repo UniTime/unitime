@@ -178,11 +178,11 @@ public class ExamListAction extends Action {
             
             if (html) {
                 roomPref += exam.getEffectivePrefHtmlForPrefType(RoomPref.class);
-                if (roomPref.length()>0) roomPref+=nl;
+                if (roomPref.length()>0 && !roomPref.endsWith(nl)) roomPref+=nl;
                 roomPref += exam.getEffectivePrefHtmlForPrefType(BuildingPref.class);
-                if (roomPref.length()>0) roomPref+=nl;
+                if (roomPref.length()>0 && !roomPref.endsWith(nl)) roomPref+=nl;
                 roomPref += exam.getEffectivePrefHtmlForPrefType(RoomFeaturePref.class);
-                if (roomPref.length()>0) roomPref+=nl;
+                if (roomPref.length()>0 && !roomPref.endsWith(nl)) roomPref+=nl;
                 roomPref += exam.getEffectivePrefHtmlForPrefType(RoomGroupPref.class);
                 if (roomPref.endsWith(nl)) roomPref = roomPref.substring(0, roomPref.length()-nl.length());
                 if (timeText || Exam.sExamTypeEvening==exam.getExamType()) {
