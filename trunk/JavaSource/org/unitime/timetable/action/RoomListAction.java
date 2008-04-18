@@ -151,7 +151,8 @@ public class RoomListAction extends Action {
 			return mapping.findForward("showRoomSearch");
 		}
 
-		Long sessionId = Session.getCurrentAcadSession(user).getSessionId();
+		Session session = Session.getCurrentAcadSession(user);
+		Long sessionId = session.getUniqueId();
 		String mgrId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
         TimetableManager owner = (new TimetableManagerDAO()).get(new Long(mgrId));
 
@@ -177,7 +178,7 @@ public class RoomListAction extends Action {
             roomListForm.setCanAddNonUniv(true);
             roomListForm.setCanAddSpecial(hasExternalRooms);
         } else if ("Exam".equals(roomListForm.getDeptCodeX()) || "EExam".equals(roomListForm.getDeptCodeX())) {
-            if (user.getRole().equals(Roles.EXAM_MGR_ROLE)) {
+            if (user.getRole().equals(Roles.EXAM_MGR_ROLE) && session.getStatusType().canExamTimetable()) {
                 roomListForm.setEditRoomSharing(true);
                 if (!owner.departmentsForSession(sessionId).isEmpty()) {
                     roomListForm.setCanAddSpecial(hasExternalRooms);
