@@ -1111,6 +1111,16 @@
 				not-null="false"
 				foreign-key="FK_EXAM_EVENT"
 			/>
+			
+			<property
+				name="uniqueIdRolledForwardFrom"
+				column="UID_ROLLED_FWD_FROM"
+				type="java.lang.Long"
+				not-null="false"
+				length="20"
+			/>
+		
+			
 	 	</union-subclass>
 	</class>	
 </hibernate-mapping>

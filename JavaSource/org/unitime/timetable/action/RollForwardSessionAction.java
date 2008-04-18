@@ -116,6 +116,16 @@ public class RollForwardSessionAction extends Action {
         	if (errors.size() == 0 && rollForwardSessionForm.getAddNewCourseOfferings().booleanValue()){
         		sessionRollForward.addNewCourseOfferings(errors, rollForwardSessionForm);
         	}
+        	if (errors.size() == 0 && rollForwardSessionForm.getRollForwardExamConfiguration().booleanValue()){
+        		sessionRollForward.rollExamConfigurationDataForward(errors, rollForwardSessionForm);
+        	}
+        	if (errors.size() == 0 && rollForwardSessionForm.getRollForwardEveningExams().booleanValue()){
+        		sessionRollForward.rollEveningExamsForward(errors, rollForwardSessionForm);
+        	}
+        	if (errors.size() == 0 && rollForwardSessionForm.getRollForwardFinalExams().booleanValue()){
+        		sessionRollForward.rollFinalExamsForward(errors, rollForwardSessionForm);
+        	}
+
             if (errors.size() != 0) {
                 saveErrors(request, errors);
             }

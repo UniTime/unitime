@@ -29,10 +29,13 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.unitime.timetable.model.DatePattern;
+import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
+import org.unitime.timetable.model.dao.ExamDAO;
+import org.unitime.timetable.model.dao.ExamPeriodDAO;
 import org.unitime.timetable.model.dao.RoomFeatureDAO;
 import org.unitime.timetable.model.dao.RoomGroupDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
@@ -83,6 +86,10 @@ public class RollForwardSessionForm extends ActionForm {
 	private String[] rollForwardClassInstrSubjectIds;
 	private Boolean addNewCourseOfferings;
 	private String[] addNewCourseOfferingsSubjectIds;
+	private Boolean rollForwardExamConfiguration;
+	private Long sessionToRollExamConfigurationForwardFrom;
+	private Boolean rollForwardEveningExams;
+	private Boolean rollForwardFinalExams;
 
 	/** 
 	 * Method validate
@@ -169,6 +176,20 @@ public class RollForwardSessionForm extends ActionForm {
 				validateRollForwardSessionHasNoDataOfType(errors, s, ("Course Offerings - " + getRollForwardSubjectAreaIds()[i]), coDao.getQuery(queryStr).list());
 			}			
 		}
+		if (getRollForwardExamConfiguration().booleanValue()){
+			ExamPeriodDAO epDao = new ExamPeriodDAO();
+			validateRollForward(errors, s, getSessionToRollExamConfigurationForwardFrom(), "Exam Configuration", epDao.getQuery("from ExamPeriod ep where ep.session.uniqueId = " + s.getUniqueId().toString()).list());			
+		}
+
+		if (getRollForwardExamConfiguration().booleanValue()){
+			ExamDAO eDao = new ExamDAO();
+			validateRollForwardSessionHasNoDataOfType(errors, s, "Evening Exams", eDao.getQuery("from Exam e where e.session.uniqueId = " + s.getUniqueId().toString() +" and e.examType = " + Exam.sExamTypeEvening).list());			
+		}
+		if (getRollForwardExamConfiguration().booleanValue()){
+			ExamDAO epDao = new ExamDAO();
+			validateRollForwardSessionHasNoDataOfType(errors, s, "Final Exams", epDao.getQuery("from Exam e where e.session.uniqueId = " + s.getUniqueId().toString() +" and e.examType = " + Exam.sExamTypeFinal).list());			
+		}
+
 	}
 	
 	/** 
@@ -206,6 +227,10 @@ public class RollForwardSessionForm extends ActionForm {
 		rollForwardClassInstrSubjectIds = new String[0];
 		addNewCourseOfferings = new Boolean(false);
 		addNewCourseOfferingsSubjectIds = new String[0];
+		rollForwardExamConfiguration = new Boolean(false);
+		sessionToRollExamConfigurationForwardFrom = null;
+		rollForwardEveningExams = new Boolean(false);
+		rollForwardFinalExams = new Boolean(false);
 	}
 
 	/** 
@@ -497,4 +522,47 @@ public class RollForwardSessionForm extends ActionForm {
 			String[] addNewCourseOfferingsSubjectIds) {
 		this.addNewCourseOfferingsSubjectIds = addNewCourseOfferingsSubjectIds;
 	}
+
+
+	public Boolean getRollForwardExamConfiguration() {
+		return rollForwardExamConfiguration;
+	}
+
+
+	public void setRollForwardExamConfiguration(Boolean rollForwardExamConfiguration) {
+		this.rollForwardExamConfiguration = rollForwardExamConfiguration;
+	}
+
+
+	public Boolean getRollForwardEveningExams() {
+		return rollForwardEveningExams;
+	}
+
+
+	public void setRollForwardEveningExams(Boolean rollForwardEveningExams) {
+		this.rollForwardEveningExams = rollForwardEveningExams;
+	}
+
+
+	public Boolean getRollForwardFinalExams() {
+		return rollForwardFinalExams;
+	}
+
+
+	public void setRollForwardFinalExams(Boolean rollForwardFinalExams) {
+		this.rollForwardFinalExams = rollForwardFinalExams;
+	}
+
+
+	public Long getSessionToRollExamConfigurationForwardFrom() {
+		return sessionToRollExamConfigurationForwardFrom;
+	}
+
+
+	public void setSessionToRollExamConfigurationForwardFrom(
+			Long sessionToRollExamConfigurationForwardFrom) {
+		this.sessionToRollExamConfigurationForwardFrom = sessionToRollExamConfigurationForwardFrom;
+	}
+
+
 }

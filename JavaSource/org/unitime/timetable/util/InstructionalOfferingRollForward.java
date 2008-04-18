@@ -70,6 +70,45 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		}
 		coDao.getSession().clear();
 	}
+	public void rollForwardExpiredInstructionalOfferingsForASubjectArea(String subjectAreaAbbreviation, Session fromSession, Session toSession){
+		CourseOfferingDAO coDao = new CourseOfferingDAO();
+		String query = "select co from CourseOffering co"
+				+ " where co.subjectArea.subjectAreaAbbreviation = '" + subjectAreaAbbreviation + "'"
+				+ "  and co.subjectArea.session.uniqueId = " + fromSession.getUniqueId().longValue()
+				+ "  and co.isControl = 1"
+				+ "  and co.instructionalOffering.notOffered = false"
+				+ "  and 0 = (select count(cc) from CourseCatalog cc"
+				+ " where cc.session.uniqueId = " + toSession.getUniqueId().longValue()
+                + "  and cc.subject = co.subjectArea.subjectAreaAbbreviation"
+                + "  and (cc.courseNumber = co.courseNbr or cc.previousCourseNumber= co.courseNbr))"
+                + " and 0 = (select count(co2) from CourseOffering co2"
+                + "  where co2.subjectArea.session.uniqueId = " + toSession.getUniqueId().longValue()
+                + "   and co2.subjectArea.subjectAreaAbbreviation = co.subjectArea.subjectAreaAbbreviation"
+                + "   and co2.courseNbr = co.courseNbr)";
+		List l = coDao.getQuery(query).list();
+		if (l != null){
+			CourseOffering co = null;
+			for (Iterator it = l.iterator(); it.hasNext();){
+				co = (CourseOffering) it.next();
+				if ((co.getSubjectArea().getSubjectAreaAbbreviation().equals("ECE")&& co.getCourseNbr().equals("495E"))
+					|| (co.getSubjectArea().getSubjectAreaAbbreviation().equals("AMST")&& co.getCourseNbr().equals("650A"))
+					|| (co.getSubjectArea().getSubjectAreaAbbreviation().equals("FLL")&& co.getCourseNbr().equals("650T")))
+					continue;
+				rollForwardInstructionalOffering(co.getInstructionalOffering(), fromSession, toSession);
+			}
+		}
+		coDao.getSession().clear();
+	}
+	
+	public void rollForwardInstructionalOfferingForACourseOffering(CourseOffering co, Session fromSession, Session toSession){
+		CourseOfferingDAO coDao = new CourseOfferingDAO();
+		
+		if (co != null){
+				rollForwardInstructionalOffering(co.getInstructionalOffering(), fromSession, toSession);
+		}
+		coDao.getSession().clear();
+	}
+
 	
 	public void addNewInstructionalOfferingsForASubjectArea(
 			String subjectAreaAbbreviation, Session toSession) {
@@ -383,6 +422,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		toInstructionalOffering.setNotOffered(fromInstructionalOffering.isNotOffered());
 		toInstructionalOffering.setSession(toSession);
 		toInstructionalOffering.setUniqueIdRolledForwardFrom(fromInstructionalOffering.getUniqueId());
+		toInstructionalOffering.setInstrOfferingPermId(fromInstructionalOffering.getInstrOfferingPermId());
 		if(fromInstructionalOffering.getCreditConfigs() != null && !fromInstructionalOffering.getCreditConfigs().isEmpty()){
 			CourseCreditUnitConfig ccuc = null;
 			for(Iterator ccIt = fromInstructionalOffering.getCreditConfigs().iterator(); ccIt.hasNext();){
@@ -427,6 +467,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 			toCourseOffering.setDemand(fromCourseOffering.getDemand());
 			toCourseOffering.setPermId(fromCourseOffering.getPermId());
 			toCourseOffering.setScheduleBookNote(fromCourseOffering.getScheduleBookNote());
+//			toCourseOffering.setScheduleBookNote("***Course not in Registrar's Course Catalog*** " + (toCourseOffering.getScheduleBookNote()==null?"":toCourseOffering.getScheduleBookNote()));
 			toCourseOffering.setTitle(fromCourseOffering.getTitle());
 			toCourseOffering.setUniqueIdRolledForwardFrom(fromCourseOffering.getUniqueId());
 			toCourseOffering.setInstructionalOffering(toInstructionalOffering);
@@ -543,6 +584,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		}
 		InstructionalOffering toInstructionalOffering = createToInstructionalOfferingFromCourseCatalog(controllingCourseCatalogEntry, toSession);
 		toInstructionalOffering.setUniqueIdRolledForwardFrom(fromInstructionalOffering.getUniqueId());
+		toInstructionalOffering.setInstrOfferingPermId(fromInstructionalOffering.getInstrOfferingPermId());
 		CourseOffering fromCourseOffering = null;
 		CourseOffering toCourseOffering = null;
 		CourseCatalog courseCatalogEntry = null;
