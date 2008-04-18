@@ -39,6 +39,7 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Designator;
 import org.unitime.timetable.model.DistributionPref;
+import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.RoomFeaturePref;
 import org.unitime.timetable.model.RoomGroupPref;
@@ -57,7 +58,7 @@ public class InstructorListBuilder {
     
     public String htmlTableForInstructor(HttpServletRequest request, String deptId, int order, String backId) throws Exception {
         
-		int cols = 10;
+		int cols = 11;
 		User user = Web.getUser(request.getSession());
 		Long sessionId = (Long) user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
 		boolean timeVertical = RequiredTimeTable.getTimeGridVertical(user);
@@ -68,9 +69,9 @@ public class InstructorListBuilder {
 		WebTable webTable = new WebTable(cols, "",
 				"instructorList.do?order=%%&deptId=" + deptId,
 				new String[] { "ID", "Name", "Position", "Designator", "Note", "Preferences<BR>Time",
-						"<BR>Room", "<BR>Distribution", "Class<BR>Assignments", "Ignore Too Far"}, 
-				new String[] { "left", "left", "left", "right", "left", "left", "left", "left", "left", "left"},
-				new boolean[] { true, true, true, true, true, true, true, true, true, true});
+						"<BR>Room", "<BR>Distribution", "Class<BR>Assignments", "Exam<BR>Assignments", "Ignore Too Far"}, 
+				new String[] { "left", "left", "left", "right", "left", "left", "left", "left", "left", "left", "left"},
+				new boolean[] { true, true, true, true, true, true, true, true, true, true, true});
 		webTable.setRowStyle("white-space:nowrap;");
 		webTable.enableHR("#EFEFEF");
 
@@ -246,6 +247,20 @@ public class InstructorListBuilder {
 					if (i.hasNext()) classesStr += "<br>";
 				}
 				
+				TreeSet exams = new TreeSet(di.getExams());
+				String examsStr = "";
+				for (Iterator i=exams.iterator();i.hasNext();) {
+				    Exam exam = (Exam)i.next();
+                    String examName = exam.getName();
+                    String title = examName;
+                    if (exam.getExamType()==Exam.sExamTypeEvening) {
+                        examsStr += "<span title='"+examName+" Evening Exam'>"+examName+"</span>";
+                    } else {
+                        examsStr += "<span style='font-weight:bold;' title='"+examName+" Final Exam'>"+examName+"</span>";
+                    }
+                    if (i.hasNext()) examsStr += "<br>";
+				}
+				
 				boolean back = di.getUniqueId().toString().equals(backId);
                 boolean itf = (di.isIgnoreToFar()==null?false:di.isIgnoreToFar().booleanValue());
 
@@ -265,8 +280,9 @@ public class InstructorListBuilder {
 					        putSpace(rmPref),
 					        putSpace(distPref),
 					        putSpace(classesStr),
+					        putSpace(examsStr),
                             (itf?"<IMG border='0' title='Ignore too far distances' alt='true' align='absmiddle' src='images/tick.gif'>":"&nbsp;")}, 
-						new Comparable[] { puid, nameOrd, posType, designator.toString(), null, null, null, null, null, new Integer(itf?0:1) });
+						new Comparable[] { puid, nameOrd, posType, designator.toString(), null, null, null, null, null, null, new Integer(itf?0:1) });
 
 			}
 			
@@ -276,7 +292,7 @@ public class InstructorListBuilder {
     }
     
     public void pdfTableForInstructor(HttpServletRequest request, String deptId, int order ) throws Exception {
-		int cols = 9;
+		int cols = 10;
 		User user = Web.getUser(request.getSession());
 		Long sessionId = (Long) user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
 		boolean timeVertical = RequiredTimeTable.getTimeGridVertical(user);
@@ -287,9 +303,9 @@ public class InstructorListBuilder {
 		PdfWebTable webTable = new PdfWebTable(cols, "Instructor List",
 				null,
 				new String[] { "ID", "Name", "Position", "Designator", "Note", "Preferences\nTime",
-						"\nRoom", "\nDistribution", "Class\nAssignments" }, 
-				new String[] { "left", "left", "left", "left", "left", "left", "left", "left", "left" },
-				new boolean[] { true, true, true, true, true, true, true, true, true });
+						"\nRoom", "\nDistribution", "Class\nAssignments", "Exam\nAssignments" }, 
+				new String[] { "left", "left", "left", "left", "left", "left", "left", "left", "left", "left" },
+				new boolean[] { true, true, true, true, true, true, true, true, true, true });
 
 		// Loop through Instructor class
 		List list = null;
@@ -434,6 +450,21 @@ public class InstructorListBuilder {
 	    			classesStr +=  "@@END_BOLD ";
 				if (i.hasNext()) classesStr += "\n";
 			}
+			
+            TreeSet exams = new TreeSet(di.getExams());
+            String examsStr = "";
+            for (Iterator i=exams.iterator();i.hasNext();) {
+                Exam exam = (Exam)i.next();
+                String examName = exam.getName();
+                String title = examName;
+                if (exam.getExamType()==Exam.sExamTypeEvening) {
+                    examsStr += examName;
+                } else {
+                    examsStr += "@@BOLD "+examName+"@@END_BOLD ";
+                }
+                if (i.hasNext()) examsStr += "\n";
+            }
+
 
 			// Add to web table
 			webTable.addLine(
@@ -447,8 +478,9 @@ public class InstructorListBuilder {
 						timePref.toString(), 
 				        rmPref,
 				        distPref,
-				        classesStr }, 
-					new Comparable[] { puid, nameOrd, posType, designator.toString(), null, null, null, null, null });
+				        classesStr,
+				        examsStr}, 
+					new Comparable[] { puid, nameOrd, posType, designator.toString(), null, null, null, null, null, null });
 
 		}
 		
