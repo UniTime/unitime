@@ -296,7 +296,7 @@ public class LookupTables {
         
 		StringBuffer query = new StringBuffer("");
 
-		if (deptUids!=null) {
+		if (deptUids!=null && deptUids.length>0) {
 			query.append(" and i.department.uniqueId in ( " 
 			        + Constants.arrayToStr(deptUids, "", ", ") + " )");
 		}
