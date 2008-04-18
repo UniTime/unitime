@@ -1530,4 +1530,8 @@
 		<plsql>alter table %SCHEMA%.departmental_instructor add email varchar2(200)</plsql>
 		<mysql>alter table %SCHEMA%.departmental_instructor add email varchar(200)</mysql>
 	</update>
+	<update version="25" date="17-Apr-2008" comment="Exam added unique id rolled foward from">
+		<plsql>alter table %SCHEMA%.exam add uid_rolled_fwd_from number(20)</plsql>
+		<mysql>alter table %SCHEMA%.exam add uid_rolled_fwd_from decimal(20,0)</mysql>
+	</update>
 </dbupdate>

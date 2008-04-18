@@ -86,6 +86,8 @@ public class NonUniversityLocation extends BaseNonUniversityLocation {
 		l.setPattern(getPattern());
 		l.setSession(getSession());
 		l.setPermanentId(getPermanentId());
+		l.setExamCapacity(getExamCapacity());
+		l.setExamType(getExamType());
 		return l;
 	}
 	
@@ -96,14 +98,12 @@ public class NonUniversityLocation extends BaseNonUniversityLocation {
 		NonUniversityLocation newNonUniversityLocation = null;
 		NonUniversityLocationDAO nulDao = new NonUniversityLocationDAO();
 		
-		String query = "from NonUniversityLocation nul inner join RoomDept rd where nul.name = '" + getName() + "'";
+		String query = "from NonUniversityLocation nul inner join RoomDept rd where nul.permanentId = '" + getPermanentId() + "'";
 		query += " and nul.session.uniqueId = " + newSession.getUniqueId().toString();
 		query += " and rd.control = " + 1;
 		query += " and rd.department.uniqueId =" + getControllingDepartment().getUniqueId();
-		List l = nulDao.getQuery(query).list();
-		if (l != null && l.size() == 1) {
-			newNonUniversityLocation = (NonUniversityLocation) l.get(0);
-		} 
+		newNonUniversityLocation = (NonUniversityLocation)nulDao.getQuery(query).uniqueResult();
+		 
 		return(newNonUniversityLocation);
 	}
 

@@ -35,6 +35,7 @@ import org.hibernate.Transaction;
 import org.unitime.commons.User;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.base.BaseExam;
+import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
@@ -963,6 +964,16 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         return ExamPeriod.findByIndex(getSession().getUniqueId(), getExamType(), getAvgPeriod());
     }
     
+    public static Exam findByIdRolledForwardFrom(Long sessionId, Long uniqueIdRolledForwardFrom) {
+        return (Exam)new ExamDAO().
+            getSession().
+            createQuery("select e from Exam e where e.session.uniqueId=:sessionId and e.uniqueIdRolledForwardFrom=:uniqueIdRolledForwardFrom").
+            setLong("sessionId", sessionId.longValue()).
+            setLong("uniqueIdRolledForwardFrom", uniqueIdRolledForwardFrom.longValue()).
+            setCacheable(true).
+            uniqueResult();
+    }
+    
     
     public void generateDefaultPreferences(boolean override) {
         Set allPeriods = ExamPeriod.findAll(getSession().getUniqueId(), getExamType());
@@ -1051,4 +1062,5 @@ public class Exam extends BaseExam implements Comparable<Exam> {
             }
         }
     }
+
 }

@@ -1324,4 +1324,14 @@ public class Class_ extends BaseClass_ {
             setCacheable(true).
             uniqueResult();
     }
+    
+    public static Class_ findByIdRolledForwardFrom(Long sessionId, Long uniqueIdRolledForwardFrom) {
+        return (Class_)new Class_DAO().
+            getSession().
+            createQuery("select c from Class_ c where c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId=:sessionId and c.uniqueIdRolledForwardFrom=:uniqueIdRolledForwardFrom").
+            setLong("sessionId", sessionId.longValue()).
+            setLong("uniqueIdRolledForwardFrom", uniqueIdRolledForwardFrom.longValue()).
+            setCacheable(true).
+            uniqueResult();
+    }
 }

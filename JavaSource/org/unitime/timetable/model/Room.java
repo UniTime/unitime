@@ -112,6 +112,8 @@ public class Room extends BaseRoom {
 		r.setScheduledRoomType(getScheduledRoomType());
 		r.setSession(getSession());
 		r.setPermanentId(getPermanentId());
+		r.setExamCapacity(getExamCapacity());
+		r.setExamType(getExamType());
 		return r;
 	}
 	
@@ -121,26 +123,15 @@ public class Room extends BaseRoom {
 		}
 		Room newRoom = null;
 		RoomDAO rDao = new RoomDAO();
-		Building newBuilding = getBuilding().findSameBuildingInSession(newSession);
-//		String query = "from Room r where r.building.uniqueId = " + newBuilding.getUniqueId().toString();
-//		query += " and r.session.uniqueId = " + newSession.getUniqueId().toString();
-//		query += " and r.roomNumber = '" + getRoomNumber() + "'";
-		List rooms = rDao.getSession().createCriteria(Room.class)
-			.add(Restrictions.eq("building.uniqueId", newBuilding.getUniqueId()))
+		newRoom = (Room) rDao.getSession().createCriteria(Room.class)
+			.add(Restrictions.eq("permanentId", getPermanentId()))
 			.add(Restrictions.eq("session.uniqueId", newSession.getUniqueId()))
-			.add(Restrictions.eq("roomNumber", getRoomNumber()))
-			.setCacheable(true).list();
-		if (rooms != null && rooms.size() == 1) {
-			newRoom = (Room) rooms.get(0);
-		} else if (getExternalUniqueId() != null) {			
-			rooms = rDao.getSession().createCriteria(Room.class)
+			.setCacheable(true).uniqueResult();
+		if (newRoom == null && getExternalUniqueId() != null) {			
+			newRoom = (Room)rDao.getSession().createCriteria(Room.class)
 				.add(Restrictions.eq("externalUniqueId", getExternalUniqueId()))
 				.add(Restrictions.eq("session.uniqueId", newSession.getUniqueId()))
-				.setCacheable(true).list();
-			
-			if (rooms != null && rooms.size() == 1){
-				newRoom = (Room) rooms.get(0);
-			}
+				.setCacheable(true).uniqueResult();			
 		}
 		return(newRoom);
 	}

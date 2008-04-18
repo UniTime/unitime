@@ -21,8 +21,8 @@ package org.unitime.timetable.model.base;
 
 import org.hibernate.Hibernate;
 import org.hibernate.Session;
-import org.hibernate.criterion.Order;
 import org.unitime.timetable.model.dao.ExamDAO;
+import org.hibernate.criterion.Order;
 
 /**
  * This is an automatically generated DAO class which should not be edited.
@@ -90,36 +90,36 @@ public abstract class BaseExamDAO extends org.unitime.timetable.model.dao._RootD
 	/**
 	 * Persist the given transient instance, first assigning a generated identifier. (Or using the current value
 	 * of the identifier property if the assigned generator is used.) 
-	 * @param Exam a transient instance of a persistent class 
+	 * @param exam a transient instance of a persistent class 
 	 * @return the class identifier
 	 */
-	public java.lang.Long save(org.unitime.timetable.model.Exam Exam)
+	public java.lang.Long save(org.unitime.timetable.model.Exam exam)
 	{
-		return (java.lang.Long) super.save(Exam);
+		return (java.lang.Long) super.save(exam);
 	}
 
 	/**
 	 * Persist the given transient instance, first assigning a generated identifier. (Or using the current value
 	 * of the identifier property if the assigned generator is used.) 
 	 * Use the Session given.
-	 * @param Exam a transient instance of a persistent class
+	 * @param exam a transient instance of a persistent class
 	 * @param s the Session
 	 * @return the class identifier
 	 */
-	public java.lang.Long save(org.unitime.timetable.model.Exam Exam, Session s)
+	public java.lang.Long save(org.unitime.timetable.model.Exam exam, Session s)
 	{
-		return (java.lang.Long) save((Object) Exam, s);
+		return (java.lang.Long) save((Object) exam, s);
 	}
 
 	/**
 	 * Either save() or update() the given instance, depending upon the value of its identifier property. By default
 	 * the instance is always saved. This behaviour may be adjusted by specifying an unsaved-value attribute of the
 	 * identifier property mapping. 
-	 * @param Exam a transient instance containing new or updated state 
+	 * @param exam a transient instance containing new or updated state 
 	 */
-	public void saveOrUpdate(org.unitime.timetable.model.Exam Exam)
+	public void saveOrUpdate(org.unitime.timetable.model.Exam exam)
 	{
-		saveOrUpdate((Object) Exam);
+		saveOrUpdate((Object) exam);
 	}
 
 	/**
@@ -127,34 +127,34 @@ public abstract class BaseExamDAO extends org.unitime.timetable.model.dao._RootD
 	 * instance is always saved. This behaviour may be adjusted by specifying an unsaved-value attribute of the identifier
 	 * property mapping. 
 	 * Use the Session given.
-	 * @param Exam a transient instance containing new or updated state.
+	 * @param exam a transient instance containing new or updated state.
 	 * @param s the Session.
 	 */
-	public void saveOrUpdate(org.unitime.timetable.model.Exam Exam, Session s)
+	public void saveOrUpdate(org.unitime.timetable.model.Exam exam, Session s)
 	{
-		saveOrUpdate((Object) Exam, s);
+		saveOrUpdate((Object) exam, s);
 	}
 
 	/**
 	 * Update the persistent state associated with the given identifier. An exception is thrown if there is a persistent
 	 * instance with the same identifier in the current session.
-	 * @param Exam a transient instance containing updated state
+	 * @param exam a transient instance containing updated state
 	 */
-	public void update(org.unitime.timetable.model.Exam Exam) 
+	public void update(org.unitime.timetable.model.Exam exam) 
 	{
-		update((Object) Exam);
+		update((Object) exam);
 	}
 
 	/**
 	 * Update the persistent state associated with the given identifier. An exception is thrown if there is a persistent
 	 * instance with the same identifier in the current session.
 	 * Use the Session given.
-	 * @param Exam a transient instance containing updated state
+	 * @param exam a transient instance containing updated state
 	 * @param the Session
 	 */
-	public void update(org.unitime.timetable.model.Exam Exam, Session s)
+	public void update(org.unitime.timetable.model.Exam exam, Session s)
 	{
-		update((Object) Exam, s);
+		update((Object) exam, s);
 	}
 
 	/**
@@ -182,23 +182,23 @@ public abstract class BaseExamDAO extends org.unitime.timetable.model.dao._RootD
 	/**
 	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
 	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * @param Exam the instance to be removed
+	 * @param exam the instance to be removed
 	 */
-	public void delete(org.unitime.timetable.model.Exam Exam)
+	public void delete(org.unitime.timetable.model.Exam exam)
 	{
-		delete((Object) Exam);
+		delete((Object) exam);
 	}
 
 	/**
 	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
 	 * Session or a transient instance with an identifier associated with existing persistent state. 
 	 * Use the Session given.
-	 * @param Exam the instance to be removed
+	 * @param exam the instance to be removed
 	 * @param s the Session
 	 */
-	public void delete(org.unitime.timetable.model.Exam Exam, Session s)
+	public void delete(org.unitime.timetable.model.Exam exam, Session s)
 	{
-		delete((Object) Exam, s);
+		delete((Object) exam, s);
 	}
 	
 	/**
@@ -211,9 +211,9 @@ public abstract class BaseExamDAO extends org.unitime.timetable.model.dao._RootD
 	 * <li>after inserting a Blob or Clob</li>
 	 * </ul>
 	 */
-	public void refresh (org.unitime.timetable.model.Exam Exam, Session s)
+	public void refresh (org.unitime.timetable.model.Exam exam, Session s)
 	{
-		refresh((Object) Exam, s);
+		refresh((Object) exam, s);
 	}
 
 

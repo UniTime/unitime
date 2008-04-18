@@ -40,6 +40,8 @@ import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
 import org.unitime.timetable.model.comparators.NavigationComparator;
 import org.unitime.timetable.model.comparators.PosReservationComparator;
 import org.unitime.timetable.model.comparators.StudentGroupReservationComparator;
+import org.unitime.timetable.model.dao.Class_DAO;
+import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
 import org.unitime.timetable.util.Constants;
 
 
@@ -515,4 +517,15 @@ public class InstrOfferingConfig extends BaseInstrOfferingConfig {
     	}
     	return(newInstrOffrConfig);
     }
+    
+    public static InstrOfferingConfig findByIdRolledForwardFrom(Long sessionId, Long uniqueIdRolledForwardFrom) {
+        return (InstrOfferingConfig)new InstrOfferingConfigDAO().
+            getSession().
+            createQuery("select ioc from InstrOfferingConfig ioc where ioc.instructionalOffering.session.uniqueId=:sessionId and ioc.uniqueIdRolledForwardFrom=:uniqueIdRolledForwardFrom").
+            setLong("sessionId", sessionId.longValue()).
+            setLong("uniqueIdRolledForwardFrom", uniqueIdRolledForwardFrom.longValue()).
+            setCacheable(true).
+            uniqueResult();
+    }
+
 }

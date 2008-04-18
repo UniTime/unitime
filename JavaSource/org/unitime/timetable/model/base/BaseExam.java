@@ -21,9 +21,29 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
-public abstract class BaseExam extends org.unitime.timetable.model.PreferenceGroup implements Serializable {
+
+/**
+ * This is an object that contains data related to the EXAM table.
+ * Do not modify this class because it will be overwritten if the configuration file
+ * related to this class is modified.
+ *
+ * @hibernate.class
+ *  table="EXAM"
+ */
+
+public abstract class BaseExam extends org.unitime.timetable.model.PreferenceGroup  implements Serializable {
 
 	public static String REF = "Exam";
+	public static String PROP_NAME = "name";
+	public static String PROP_NOTE = "note";
+	public static String PROP_LENGTH = "length";
+	public static String PROP_MAX_NBR_ROOMS = "maxNbrRooms";
+	public static String PROP_SEATING_TYPE = "seatingType";
+	public static String PROP_ASSIGNED_PREFERENCE = "assignedPreference";
+	public static String PROP_EXAM_TYPE = "examType";
+	public static String PROP_AVG_PERIOD = "avgPeriod";
+	public static String PROP_UNIQUE_ID_ROLLED_FORWARD_FROM = "uniqueIdRolledForwardFrom";
+
 
 	// constructors
 	public BaseExam () {
@@ -40,8 +60,8 @@ public abstract class BaseExam extends org.unitime.timetable.model.PreferenceGro
 	protected void initialize () {}
 
 
-
 	private int hashCode = Integer.MIN_VALUE;
+
 
 	// fields
 	private java.lang.String name;
@@ -52,62 +72,302 @@ public abstract class BaseExam extends org.unitime.timetable.model.PreferenceGro
 	private java.lang.String assignedPreference;
 	private java.lang.Integer examType;
 	private java.lang.Integer avgPeriod;
+	private java.lang.Long uniqueIdRolledForwardFrom;
 
 	// many to one
 	private org.unitime.timetable.model.Session session;
 	private org.unitime.timetable.model.ExamPeriod assignedPeriod;
 	private org.unitime.timetable.model.Event event;
 
-    // collections
-    private java.util.Set owners;
-    private java.util.Set assignedRooms;
-    private java.util.Set instructors;
-    private java.util.Set conflicts;
+	// collections
+	private java.util.Set owners;
+	private java.util.Set assignedRooms;
+	private java.util.Set instructors;
+	private java.util.Set conflicts;
 
-	public java.lang.String getName() { return name; }
-	public void setName(java.lang.String name) { this.name = name; }
-	
-	public java.lang.String getNote() { return note; }
-	public void setNote(java.lang.String note) { this.note = note; }
-	
-	public java.lang.Integer getLength() { return length; }
-	public void setLength(java.lang.Integer length) { this.length = length; }
-	
-	public java.lang.Integer getMaxNbrRooms() { return maxNbrRooms; }
-	public void setMaxNbrRooms(java.lang.Integer maxNbrRooms) { this.maxNbrRooms = maxNbrRooms; }
-	
-	public java.lang.Integer getSeatingType() { return seatingType; }
-	public void setSeatingType(java.lang.Integer seatingType) { this.seatingType = seatingType; }
-	
-	public java.lang.String getAssignedPreference() { return assignedPreference; }
-	public void setAssignedPreference(java.lang.String assignedPreference) { this.assignedPreference = assignedPreference; }
-	
-	public java.lang.Integer getExamType() { return examType; }
-	public void setExamType(java.lang.Integer examType) { this.examType = examType; }
-	
-	public org.unitime.timetable.model.Session getSession() { return session; }
-	public void setSession(org.unitime.timetable.model.Session session) { this.session = session; }
-	
-	public org.unitime.timetable.model.ExamPeriod getAssignedPeriod() { return assignedPeriod; }
-	public void setAssignedPeriod(org.unitime.timetable.model.ExamPeriod assignedPeriod) { this.assignedPeriod = assignedPeriod; }
 
-	public java.util.Set getOwners() { return owners; }
-	public void setOwners(java.util.Set owners) { this.owners = owners; }
-	
-	public java.util.Set getAssignedRooms() { return assignedRooms; }
-	public void setAssignedRooms(java.util.Set assignedRooms) { this.assignedRooms = assignedRooms; }
-	
-	public java.util.Set getInstructors() { return instructors; }
-	public void setInstructors(java.util.Set instructors) { this.instructors = instructors; }
-	
-	public java.util.Set getConflicts() { return conflicts; }
-	public void setConflicts(java.util.Set conflicts) { this.conflicts = conflicts; }
-	
-	public org.unitime.timetable.model.Event getEvent() { return event; }
-	public void setEvent(org.unitime.timetable.model.Event event) { this.event = event; }
-	
-	public java.lang.Integer getAvgPeriod() { return avgPeriod; }
-	public void setAvgPeriod(java.lang.Integer avgPeriod) { this.avgPeriod = avgPeriod; }
+
+
+
+
+	/**
+	 * Return the value associated with the column: NAME
+	 */
+	public java.lang.String getName () {
+		return name;
+	}
+
+	/**
+	 * Set the value related to the column: NAME
+	 * @param name the NAME value
+	 */
+	public void setName (java.lang.String name) {
+		this.name = name;
+	}
+
+
+
+	/**
+	 * Return the value associated with the column: NOTE
+	 */
+	public java.lang.String getNote () {
+		return note;
+	}
+
+	/**
+	 * Set the value related to the column: NOTE
+	 * @param note the NOTE value
+	 */
+	public void setNote (java.lang.String note) {
+		this.note = note;
+	}
+
+
+
+	/**
+	 * Return the value associated with the column: LENGTH
+	 */
+	public java.lang.Integer getLength () {
+		return length;
+	}
+
+	/**
+	 * Set the value related to the column: LENGTH
+	 * @param length the LENGTH value
+	 */
+	public void setLength (java.lang.Integer length) {
+		this.length = length;
+	}
+
+
+
+	/**
+	 * Return the value associated with the column: MAX_NBR_ROOMS
+	 */
+	public java.lang.Integer getMaxNbrRooms () {
+		return maxNbrRooms;
+	}
+
+	/**
+	 * Set the value related to the column: MAX_NBR_ROOMS
+	 * @param maxNbrRooms the MAX_NBR_ROOMS value
+	 */
+	public void setMaxNbrRooms (java.lang.Integer maxNbrRooms) {
+		this.maxNbrRooms = maxNbrRooms;
+	}
+
+
+
+	/**
+	 * Return the value associated with the column: SEATING_TYPE
+	 */
+	public java.lang.Integer getSeatingType () {
+		return seatingType;
+	}
+
+	/**
+	 * Set the value related to the column: SEATING_TYPE
+	 * @param seatingType the SEATING_TYPE value
+	 */
+	public void setSeatingType (java.lang.Integer seatingType) {
+		this.seatingType = seatingType;
+	}
+
+
+
+	/**
+	 * Return the value associated with the column: ASSIGNED_PREF
+	 */
+	public java.lang.String getAssignedPreference () {
+		return assignedPreference;
+	}
+
+	/**
+	 * Set the value related to the column: ASSIGNED_PREF
+	 * @param assignedPreference the ASSIGNED_PREF value
+	 */
+	public void setAssignedPreference (java.lang.String assignedPreference) {
+		this.assignedPreference = assignedPreference;
+	}
+
+
+
+	/**
+	 * Return the value associated with the column: EXAM_TYPE
+	 */
+	public java.lang.Integer getExamType () {
+		return examType;
+	}
+
+	/**
+	 * Set the value related to the column: EXAM_TYPE
+	 * @param examType the EXAM_TYPE value
+	 */
+	public void setExamType (java.lang.Integer examType) {
+		this.examType = examType;
+	}
+
+
+
+	/**
+	 * Return the value associated with the column: AVG_PERIOD
+	 */
+	public java.lang.Integer getAvgPeriod () {
+		return avgPeriod;
+	}
+
+	/**
+	 * Set the value related to the column: AVG_PERIOD
+	 * @param avgPeriod the AVG_PERIOD value
+	 */
+	public void setAvgPeriod (java.lang.Integer avgPeriod) {
+		this.avgPeriod = avgPeriod;
+	}
+
+
+
+	/**
+	 * Return the value associated with the column: UID_ROLLED_FWD_FROM
+	 */
+	public java.lang.Long getUniqueIdRolledForwardFrom () {
+		return uniqueIdRolledForwardFrom;
+	}
+
+	/**
+	 * Set the value related to the column: UID_ROLLED_FWD_FROM
+	 * @param uniqueIdRolledForwardFrom the UID_ROLLED_FWD_FROM value
+	 */
+	public void setUniqueIdRolledForwardFrom (java.lang.Long uniqueIdRolledForwardFrom) {
+		this.uniqueIdRolledForwardFrom = uniqueIdRolledForwardFrom;
+	}
+
+
+
+	/**
+	 * Return the value associated with the column: SESSION_ID
+	 */
+	public org.unitime.timetable.model.Session getSession () {
+		return session;
+	}
+
+	/**
+	 * Set the value related to the column: SESSION_ID
+	 * @param session the SESSION_ID value
+	 */
+	public void setSession (org.unitime.timetable.model.Session session) {
+		this.session = session;
+	}
+
+
+
+	/**
+	 * Return the value associated with the column: ASSIGNED_PERIOD
+	 */
+	public org.unitime.timetable.model.ExamPeriod getAssignedPeriod () {
+		return assignedPeriod;
+	}
+
+	/**
+	 * Set the value related to the column: ASSIGNED_PERIOD
+	 * @param assignedPeriod the ASSIGNED_PERIOD value
+	 */
+	public void setAssignedPeriod (org.unitime.timetable.model.ExamPeriod assignedPeriod) {
+		this.assignedPeriod = assignedPeriod;
+	}
+
+
+
+	/**
+	 * Return the value associated with the column: EVENT_ID
+	 */
+	public org.unitime.timetable.model.Event getEvent () {
+		return event;
+	}
+
+	/**
+	 * Set the value related to the column: EVENT_ID
+	 * @param event the EVENT_ID value
+	 */
+	public void setEvent (org.unitime.timetable.model.Event event) {
+		this.event = event;
+	}
+
+
+
+	/**
+	 * Return the value associated with the column: owners
+	 */
+	public java.util.Set getOwners () {
+		return owners;
+	}
+
+	/**
+	 * Set the value related to the column: owners
+	 * @param owners the owners value
+	 */
+	public void setOwners (java.util.Set owners) {
+		this.owners = owners;
+	}
+
+	public void addToowners (org.unitime.timetable.model.ExamOwner examOwner) {
+		if (null == getOwners()) setOwners(new java.util.HashSet());
+		getOwners().add(examOwner);
+	}
+
+
+
+	/**
+	 * Return the value associated with the column: assignedRooms
+	 */
+	public java.util.Set getAssignedRooms () {
+		return assignedRooms;
+	}
+
+	/**
+	 * Set the value related to the column: assignedRooms
+	 * @param assignedRooms the assignedRooms value
+	 */
+	public void setAssignedRooms (java.util.Set assignedRooms) {
+		this.assignedRooms = assignedRooms;
+	}
+
+
+
+	/**
+	 * Return the value associated with the column: instructors
+	 */
+	public java.util.Set getInstructors () {
+		return instructors;
+	}
+
+	/**
+	 * Set the value related to the column: instructors
+	 * @param instructors the instructors value
+	 */
+	public void setInstructors (java.util.Set instructors) {
+		this.instructors = instructors;
+	}
+
+
+
+	/**
+	 * Return the value associated with the column: conflicts
+	 */
+	public java.util.Set getConflicts () {
+		return conflicts;
+	}
+
+	/**
+	 * Set the value related to the column: conflicts
+	 * @param conflicts the conflicts value
+	 */
+	public void setConflicts (java.util.Set conflicts) {
+		this.conflicts = conflicts;
+	}
+
+
+
+
 
 	public boolean equals (Object obj) {
 		if (null == obj) return false;

@@ -298,6 +298,38 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
         return index;
     }
     
+    public Object clone(){
+    	ExamPeriod newExamPeriod = new ExamPeriod();
+    	newExamPeriod.setExamType(getExamType());
+    	newExamPeriod.setDateOffset(getDateOffset());
+    	newExamPeriod.setLength(getLength());
+    	newExamPeriod.setPrefLevel(getPrefLevel());
+    	newExamPeriod.setStartSlot(getStartSlot());
+    	newExamPeriod.setSession(getSession());
+    	return(newExamPeriod);
+    }
+    
+    public ExamPeriod findSameExamPeriodInSession(Session session){
+		if (session == null) {
+			return(null);
+		}
+    	return((ExamPeriod)(new ExamPeriodDAO()).getQuery("select distinct ep from ExamPeriod ep where ep.session.uniqueId = :sessionId" +
+    			" and ep.examType = :examType" +
+    			" and ep.dateOffset = :dateOffset" +
+    			" and ep.length = :length" +
+    			" and ep.prefLevel.uniqueId = :prefLevelId" +
+    			" and ep.startSlot = :startSlot")
+    			.setLong("sessionId", session.getUniqueId().longValue())
+    			.setInteger("examType", getExamType().intValue())
+    			.setInteger("dateOffset", getDateOffset().intValue())
+    			.setInteger("length", getLength().intValue())
+    			.setLong("prefLevelId", getPrefLevel().getUniqueId().longValue())
+    			.setInteger("startSlot", getStartSlot().intValue())
+    			.setCacheable(true)
+    			.uniqueResult());
+    			
+    }
+    
     public int getDayOfWeek() {
         Calendar c = Calendar.getInstance(Locale.US);
         c.setTime(getSession().getExamBeginDate());
