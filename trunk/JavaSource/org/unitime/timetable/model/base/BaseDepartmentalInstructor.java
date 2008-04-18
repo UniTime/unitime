@@ -40,8 +40,8 @@ public abstract class BaseDepartmentalInstructor extends org.unitime.timetable.m
 	public static String PROP_MIDDLE_NAME = "middleName";
 	public static String PROP_LAST_NAME = "lastName";
 	public static String PROP_NOTE = "note";
-	public static String PROP_IGNORE_TO_FAR = "ignoreToFar";
 	public static String PROP_EMAIL = "email";
+	public static String PROP_IGNORE_TO_FAR = "ignoreToFar";
 
 
 	// constructors
@@ -188,6 +188,23 @@ public abstract class BaseDepartmentalInstructor extends org.unitime.timetable.m
 
 
 	/**
+	 * Return the value associated with the column: EMAIL
+	 */
+	public java.lang.String getEmail () {
+		return email;
+	}
+
+	/**
+	 * Set the value related to the column: EMAIL
+	 * @param email the EMAIL value
+	 */
+	public void setEmail (java.lang.String email) {
+		this.email = email;
+	}
+
+
+
+	/**
 	 * Return the value associated with the column: IGNORE_TOO_FAR
 	 */
 	public java.lang.Boolean isIgnoreToFar () {
@@ -298,8 +315,6 @@ public abstract class BaseDepartmentalInstructor extends org.unitime.timetable.m
 	}
 
 
-	public String getEmail() { return email; }
-	public void setEmail(String email) { this.email = email; }
 
 
 

@@ -153,7 +153,20 @@
 			</td></tr></table>
 			</td>
 		</tr>
-
+		<tr>
+			<td valign="top" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardExamConfiguration"/> Roll Exam Configuration Data Forward From Session: 
+			<html:select style="width:200;" property="sessionToRollExamConfigurationForwardFrom">
+			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
+			</td>			
+		</tr>
+		<tr>
+			<td valign="top" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardEveningExams"/> Roll Evening Exams Forward From Session
+			</td>	
+		</tr>
+		<tr>
+			<td valign="top" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardFinalExams"/> Roll Final Exams Forward From Session
+			</td>		
+		</tr>
 		<tr><td>&nbsp;<br>&nbsp;<br></td></tr>
 		<tr>
 			<td>

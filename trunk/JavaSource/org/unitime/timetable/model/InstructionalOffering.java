@@ -47,6 +47,7 @@ import org.unitime.timetable.model.comparators.InstructionalOfferingComparator;
 import org.unitime.timetable.model.comparators.NavigationComparator;
 import org.unitime.timetable.model.comparators.PosReservationComparator;
 import org.unitime.timetable.model.comparators.StudentGroupReservationComparator;
+import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.util.InstrOfferingPermIdGenerator;
@@ -789,5 +790,15 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 		if (null == getCourseReservations()) setCourseReservations(new java.util.HashSet());
 		getCourseReservations().add(courseOfferingReservation);
 	}
+
+    public static InstructionalOffering findByIdRolledForwardFrom(Long sessionId, Long uniqueIdRolledForwardFrom) {
+        return (InstructionalOffering)new InstructionalOfferingDAO().
+            getSession().
+            createQuery("select io from InstructionalOffering io where io.session.uniqueId=:sessionId and io.uniqueIdRolledForwardFrom=:uniqueIdRolledForwardFrom").
+            setLong("sessionId", sessionId.longValue()).
+            setLong("uniqueIdRolledForwardFrom", uniqueIdRolledForwardFrom.longValue()).
+            setCacheable(true).
+            uniqueResult();
+    }
 
 }

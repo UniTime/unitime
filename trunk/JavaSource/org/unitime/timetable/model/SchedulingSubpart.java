@@ -33,6 +33,7 @@ import org.unitime.commons.User;
 import org.unitime.timetable.model.base.BaseSchedulingSubpart;
 import org.unitime.timetable.model.comparators.NavigationComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
+import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 import org.unitime.timetable.webutil.Navigation;
 
@@ -723,4 +724,15 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     	}	
     	return(newSchedulingSubpart);
     }
+    
+    public static SchedulingSubpart findByIdRolledForwardFrom(Long sessionId, Long uniqueIdRolledForwardFrom) {
+        return (SchedulingSubpart)new SchedulingSubpartDAO().
+            getSession().
+            createQuery("select ss from SchedulingSubpart ss where ss.instrOfferingConfig.instructionalOffering.session.uniqueId=:sessionId and ss.uniqueIdRolledForwardFrom=:uniqueIdRolledForwardFrom").
+            setLong("sessionId", sessionId.longValue()).
+            setLong("uniqueIdRolledForwardFrom", uniqueIdRolledForwardFrom.longValue()).
+            setCacheable(true).
+            uniqueResult();
+    }
+
 }

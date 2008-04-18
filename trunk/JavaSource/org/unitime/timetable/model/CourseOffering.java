@@ -448,4 +448,15 @@ public class CourseOffering extends BaseCourseOffering {
             setCacheable(true).
             uniqueResult();
     }
+    
+    public static CourseOffering findByIdRolledForwardFrom(Long sessionId, Long uniqueIdRolledForwardFrom) {
+        return (CourseOffering)new CourseOfferingDAO().
+            getSession().
+            createQuery("select c from CourseOffering c where c.subjectArea.session.uniqueId=:sessionId and c.uniqueIdRolledForwardFrom=:uniqueIdRolledForwardFrom").
+            setLong("sessionId", sessionId.longValue()).
+            setLong("uniqueIdRolledForwardFrom", uniqueIdRolledForwardFrom.longValue()).
+            setCacheable(true).
+            uniqueResult();
+    }
+
 }
