@@ -31,6 +31,7 @@ public class PdfLegacyReport {
     private String iPageId = null;
     private String iCont = null;
     private String iHeader[] = null;
+    private String iFooter = null;
     
     private boolean iEmpty = true;
     
@@ -63,6 +64,10 @@ public class PdfLegacyReport {
     
     protected void setHeader(String[] header) {
         iHeader = header;
+    }
+    
+    protected void setFooter(String footer) {
+        iFooter = footer;
     }
     
     protected void out(String text) throws DocumentException {
@@ -156,7 +161,7 @@ public class PdfLegacyReport {
     protected void printFooter() throws DocumentException {
         iEmpty=false;
         out("");
-        out(renderEnd(renderMiddle("","Page "+(iPageNo+1)),(iPageId==null||iPageId.length()==0?"":iPageId)+"  "));
+        out(renderEnd(renderMiddle((iFooter==null?"":iFooter),"Page "+(iPageNo+1)),(iPageId==null||iPageId.length()==0?"":iPageId)+"  "));
         Paragraph p = new Paragraph(iBuffer.toString(), FontFactory.getFont(FontFactory.COURIER, 9));
         p.setLeading(9.5f); //was 13.5f
         iDoc.add(p);
