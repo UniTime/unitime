@@ -191,6 +191,14 @@
 			</TD>
 		</TR>
 		
+	<TR>
+		<TD colspan="2">
+			<tt:exams type='DepartmentalInstructor' add='false'>
+				<bean:write name="<%=frmName%>" property="instructorId"/>
+			</tt:exams>
+		</TD>
+	</TR>
+		
 <!-- Preferences -->		
 	<% if (frm.isDisplayPrefs()) { %>
 		<TR>
