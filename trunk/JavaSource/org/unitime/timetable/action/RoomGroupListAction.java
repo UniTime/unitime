@@ -140,7 +140,7 @@ public class RoomGroupListAction extends Action {
 		Long sessionId = Session.getCurrentAcadSession(user).getSessionId();
 		LookupTables.setupDeptsForUser(request, user, sessionId, true);
 		
-		if (user.getRole().equals(Roles.ADMIN_ROLE))
+		if (user.getRole().equals(Roles.ADMIN_ROLE) || user.getRole().equals(Roles.EXAM_MGR_ROLE))
 			roomGroupListForm.setCanAdd(true);
 		else if (Constants.ALL_OPTION_LABEL.equals(roomGroupListForm.getDeptCodeX())) {
 			roomGroupListForm.setCanAdd(false);
@@ -188,7 +188,7 @@ public class RoomGroupListAction extends Action {
 		String mgrId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
 		TimetableManagerDAO tdao = new TimetableManagerDAO();
         TimetableManager manager = tdao.get(new Long(mgrId));
-		boolean isAdmin = user.getRole().equals(Roles.ADMIN_ROLE);
+		boolean isAdmin = user.getRole().equals(Roles.ADMIN_ROLE) || user.getRole().equals(Roles.EXAM_MGR_ROLE);
 		boolean showAll = false;
 		Set depts = null;
 		if (roomGroupListForm.getDeptCodeX().equalsIgnoreCase("All")) {

@@ -35,6 +35,7 @@
 
 <%
 	boolean admin = Web.hasRole(request.getSession(), new String[] { Roles.ADMIN_ROLE});
+	boolean examMgr = Web.hasRole(request.getSession(), new String[] { Roles.EXAM_MGR_ROLE});
 
 	// Get Form 
 	String frmName = "roomDetailForm";	
@@ -67,7 +68,7 @@
 				<tt:section-header>
 					<tt:section-title><%=frm.getName()%></tt:section-title>
 					<logic:equal name="<%=frmName%>" property="editable" value="true">
-					<% if (admin || (frm.isNonUniv() && frm.isOwner())) { %>
+					<% if (admin || examMgr || (frm.isNonUniv() && frm.isOwner())) { %>
 						<html:submit property="doit" 
 								accesskey="R" styleClass="btn" titleKey="title.modifyRoom"
 								>
@@ -75,6 +76,7 @@
 						</html:submit>						
 						&nbsp;
 					<% } %>
+					<% if (!examMgr) { %>
 					<html:submit property="doit" 
 							accesskey="A" styleClass="btn" titleKey="title.modifyRoomDepts"
 							>
@@ -87,6 +89,7 @@
 							<bean:message key="button.modifyRoomPreference" />
 					</html:submit>
 					&nbsp;
+					<% } %>
 					<html:submit property="doit" 
 							accesskey="G" styleClass="btn" titleKey="title.modifyRoomGroups"
 							>
@@ -269,6 +272,8 @@
 			<TD colspan='2'>&nbsp;</TD>
 		</TR>
 		
+		<% if (!examMgr) { %>
+		
 		<TR>
 			<TD colspan='2'>
 				<tt:section-title>Room Availability</tt:section-title>
@@ -290,6 +295,8 @@
 				</TD>
 			</TR>
 		</logic:equal>
+
+		<% } %>
 		
 		<logic:equal name="<%=frmName%>" property="examEnabled" value="true">
 			<logic:notEmpty name="<%=frmName%>" property="examPref">
@@ -349,7 +356,7 @@
 		<TR>
 			<TD colspan='2' align='right'>
 				<logic:equal name="<%=frmName%>" property="editable" value="true">
-					<% if (admin || (frm.isNonUniv() && frm.isOwner())) { %>
+					<% if (admin || examMgr || (frm.isNonUniv() && frm.isOwner())) { %>
 						<html:submit property="doit" 
 								accesskey="P" styleClass="btn" titleKey="title.modifyRoom"
 								>
@@ -357,6 +364,7 @@
 						</html:submit>				
 						&nbsp;
 					<% } %>
+					<% if (!examMgr) { %>
 					<html:submit property="doit" 
 							accesskey="A" styleClass="btn" titleKey="title.modifyRoomDepts"
 							>
@@ -369,6 +377,7 @@
 							<bean:message key="button.modifyRoomPreference" />
 					</html:submit>
 					&nbsp;
+					<% } %>
 					<html:submit property="doit" 
 							accesskey="G" styleClass="btn" titleKey="title.modifyRoomGroups"
 							>

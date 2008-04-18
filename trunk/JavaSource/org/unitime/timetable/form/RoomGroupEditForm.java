@@ -357,8 +357,8 @@ public class RoomGroupEditForm extends ActionForm {
 		HttpSession webSession = request.getSession();
 		User user = Web.getUser(webSession);
 		Long sessionId = Session.getCurrentAcadSession(user).getUniqueId();
-		Department d = Department.findByDeptCode(deptCode, sessionId); 
-		return d.getDeptCode() + " - " + d.getName();		
+		Department d = Department.findByDeptCode(deptCode, sessionId);
+		return (d==null?"":d.getDeptCode() + " - " + d.getName());		
 	}
 }
 

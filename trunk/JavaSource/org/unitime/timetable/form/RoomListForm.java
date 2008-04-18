@@ -98,7 +98,7 @@ public class RoomListForm extends ActionForm {
     	deptSize = true;
     	User user = Web.getUser(request.getSession());
     	Long sessionId = (Long) user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
-    	if (!user.getRole().equals(Roles.ADMIN_ROLE)) {
+    	if (!user.getRole().equals(Roles.ADMIN_ROLE) && !user.getRole().equals(Roles.EXAM_MGR_ROLE)) {
 	    	TimetableManager mgr = TimetableManager.getManager(user);
 	    	Set mgrDepts = Department.findAllOwned(sessionId, mgr, true);
 	    	if (mgrDepts.size() == 1) {

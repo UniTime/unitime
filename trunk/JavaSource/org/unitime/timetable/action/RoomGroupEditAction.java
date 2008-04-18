@@ -513,7 +513,9 @@ public class RoomGroupEditAction extends LookupDispatchAction {
 		}
 
 		//get rooms owned by user
-		Collection rooms = Session.getCurrentAcadSession(user).getRoomsFast(depts);	
+		Collection rooms = Session.getCurrentAcadSession(user).getRoomsFast(depts);
+		if (rg.isGlobal().booleanValue() && user.getRole().equals(Roles.EXAM_MGR_ROLE))
+		    rooms = Location.findAllExamLocations(sessionId, -1);
 		Collection assigned = new HashSet();
 		
 		for (Iterator iter = rooms.iterator(); iter.hasNext();)  {
@@ -542,6 +544,8 @@ public class RoomGroupEditAction extends LookupDispatchAction {
 
 		//get rooms owned by user
 		Collection rooms = Session.getCurrentAcadSession(user).getRoomsFast(depts);	
+        if (rg.isGlobal().booleanValue() && user.getRole().equals(Roles.EXAM_MGR_ROLE))
+            rooms = Location.findAllExamLocations(sessionId, -1);
 		Collection available = new HashSet();
 		
 		for (Iterator iter = rooms.iterator(); iter.hasNext();)  {
