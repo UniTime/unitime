@@ -2243,7 +2243,6 @@ public class CourseOfferingImport extends BaseImport {
 		c.getSchedulingSubpart().getClasses().remove(c);
 		SchedulingSubpart ss = c.getSchedulingSubpart();
 		ChangeLog.addChange(getHibSession(), manager, session, c, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.DELETE, ss.getControllingCourseOffering().getSubjectArea(), ss.getControllingCourseOffering().getDepartment());
-		c.setSchedulingSubpart(null);
 		existingClasses.remove(c.getUniqueId());
 		this.getHibSession().delete(c);
 	}
