@@ -42,6 +42,7 @@ import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Designator;
+import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.util.Constants;
@@ -209,6 +210,12 @@ public class InstructorInfoEditAction extends InstructorAction {
 	        	hibSession.saveOrUpdate(ci);
 	        	hibSession.delete(ci);
 	        }
+            
+            for (Iterator i=inst.getExams().iterator();i.hasNext();) {
+                Exam exam = (Exam)i.next();
+                exam.getInstructors().remove(inst);
+                hibSession.saveOrUpdate(exam);
+            }
 	        
 	        for (Iterator i=inst.getAssignments().iterator();i.hasNext();) {
 	        	Assignment a = (Assignment)i.next();
