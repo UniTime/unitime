@@ -185,6 +185,18 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
         return meetingTime;
     }
     
+    protected String getMeetingTime(Meeting meeting) {
+        return lpad(meeting.startTime(),6)+" - "+lpad(meeting.stopTime(),6);
+    }
+    
+    protected String getMeetingTime(String time) {
+        int idx = time.indexOf('-');
+        if (idx<0) return lpad(time,15);
+        String start = time.substring(0,idx).trim();
+        String stop = time.substring(idx+1).trim();
+        return lpad(start,'0',6)+" - "+lpad(stop,'0',6);
+    }
+
     public String formatRoom(String room) {
         String r = room.trim();
         int idx = r.lastIndexOf(' '); 
