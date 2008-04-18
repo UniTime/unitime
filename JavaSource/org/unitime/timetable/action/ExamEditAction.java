@@ -414,12 +414,19 @@ public class ExamEditAction extends PreferencesAction {
         exam.setMaxNbrRooms(Integer.valueOf(frm.getMaxNbrRooms()));
         
         if (exam.getInstructors()==null) exam.setInstructors(new HashSet());
-        exam.getInstructors().clear();
+        for (Iterator i=exam.getInstructors().iterator();i.hasNext();) {
+            DepartmentalInstructor instructor = (DepartmentalInstructor)i.next();
+            instructor.getExams().remove(exam);
+            i.remove();
+        }
         for (Iterator i=frm.getInstructors().iterator();i.hasNext();) {
             String instructorId = (String)i.next();
             if (!Constants.BLANK_OPTION_VALUE.equals(instructorId) && !Preference.BLANK_PREF_VALUE.equals(instructorId)) {
                 DepartmentalInstructor instructor = new DepartmentalInstructorDAO().get(Long.valueOf(instructorId));
-                if (instructor!=null) exam.getInstructors().add(instructor);
+                if (instructor!=null) {
+                    exam.getInstructors().add(instructor);
+                    instructor.getExams().add(exam);
+                }
            }
         }
         

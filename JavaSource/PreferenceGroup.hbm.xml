@@ -913,6 +913,20 @@
 					class="ClassInstructor"/>
 			</set>
 						
+			<set
+				name="exams"
+				lazy="true" 
+				table="EXAM_INSTRUCTOR"
+				>
+				<cache include="non-lazy" usage="read-write"/>
+				<key column="INSTRUCTOR_ID" foreign-key="FK_EXAM_INSTRUCTOR_INSTRUCTOR"/>
+				<many-to-many 
+					class="Exam" 
+					column="EXAM_ID"
+					foreign-key="FK_EXAM_INSTRUCTOR_EXAM"
+				/>
+			</set>			
+
 			<many-to-one 
 				name="positionType" 
 				class="PositionType" 
@@ -1078,6 +1092,7 @@
 				name="instructors"
 				lazy="true" 
 				table="EXAM_INSTRUCTOR"
+				inverse="true"
 				>
 				<cache include="non-lazy" usage="read-write"/>
 				<key column="EXAM_ID" foreign-key="FK_EXAM_INSTRUCTOR_EXAM"/>

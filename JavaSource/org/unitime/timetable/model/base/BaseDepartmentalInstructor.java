@@ -79,10 +79,7 @@ public abstract class BaseDepartmentalInstructor extends org.unitime.timetable.m
 	private java.util.Set classes;
 	private java.util.Set designatorSubjectAreas;
 	private java.util.Set assignments;
-
-
-
-
+	private java.util.Set exams;
 
 
 	/**
@@ -315,6 +312,13 @@ public abstract class BaseDepartmentalInstructor extends org.unitime.timetable.m
 	}
 
 
+	public java.util.Set  getExams() {
+	    return exams;
+	}
+	
+	public void setExams(java.util.Set exams) {
+	    this.exams = exams;
+	}
 
 
 
