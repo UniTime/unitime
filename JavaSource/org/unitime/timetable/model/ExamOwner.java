@@ -724,9 +724,12 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
     }
     
     public String getLabel() {
+        return genName(ApplicationProperties.getProperty("tmtbl.exam.name."+ExamOwner.sOwnerTypes[getOwnerType()]));
+        /*
         Object owner = getOwnerObject();
         switch (getOwnerType()) {
             case sOwnerTypeClass : 
+                
                 return ((Class_)owner).getClassLabel();
             case sOwnerTypeConfig : 
                 return ((InstrOfferingConfig)owner).toString();
@@ -736,6 +739,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                 return ((InstructionalOffering)owner).getCourseName();
             default : throw new RuntimeException("Unknown owner type "+getOwnerType());
         }
+        */
     }
 
     public String getSubject() {
@@ -783,8 +787,9 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
     
     public String getSection() {
         switch (getOwnerType()) {
-            case sOwnerTypeClass : 
-                return ((Class_)getOwnerObject()).getSectionNumberString();
+            case sOwnerTypeClass :
+                Class_ clazz = (Class_)getOwnerObject();
+                return (clazz.getClassSuffix()!=null?clazz.getClassSuffix():clazz.getSectionNumberString());
             case sOwnerTypeConfig : 
             case sOwnerTypeCourse : 
             case sOwnerTypeOffering : 
@@ -822,7 +827,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
      * t ... exam type suffix (tmtbl.exam.name.type.final and tmtbl.exam.name.type.evening)
      * I ... itype code
      * p ... itype parent abbv
-     * P ... itype parent abbv
+     * P ... itype parent code
      * _ ... space
      */
     protected String genName(char code) {
