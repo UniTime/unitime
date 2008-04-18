@@ -181,7 +181,7 @@ public class RoomDetailAction extends Action {
 		
 		//get room preferences
 		Vector depts = new Vector();
-		roomDetailForm.setEditable(user.isAdmin() || Roles.EXAM_MGR_ROLE.equals(user.getRole()));
+		roomDetailForm.setEditable(user.isAdmin() || (Roles.EXAM_MGR_ROLE.equals(user.getRole()) && s.getStatusType().canExamTimetable()));
 		for (Iterator i=location.getRoomDepts().iterator();i.hasNext();) {
 			RoomDept rd = (RoomDept)i.next();
 			depts.add(rd.getDepartment());

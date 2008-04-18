@@ -108,7 +108,8 @@ public class RoomFeatureListAction extends Action {
 		}
 		
 		User user = Web.getUser(webSession);
-		Long sessionId = org.unitime.timetable.model.Session.getCurrentAcadSession(user).getSessionId();
+		Session session = org.unitime.timetable.model.Session.getCurrentAcadSession(user);
+		Long sessionId = session.getSessionId();
 		ActionMessages errors = new ActionMessages();
 		
 		//get deptCode from request - for user with only one department
@@ -193,7 +194,8 @@ public class RoomFeatureListAction extends Action {
 		//set request attribute for department
 		LookupTables.setupDeptsForUser(request, user, sessionId, true);
 		
-		if (user.getRole().equals(Roles.ADMIN_ROLE) || user.getRole().equals(Roles.EXAM_MGR_ROLE))
+		if (user.getRole().equals(Roles.ADMIN_ROLE) || (user.getRole().equals(Roles.EXAM_MGR_ROLE) 
+		        && session.getStatusType().canExamTimetable()))
 			roomFeatureListForm.setCanAdd(true);
 		else if (Constants.ALL_OPTION_LABEL.equals(roomFeatureListForm.getDeptCodeX())) {
 			roomFeatureListForm.setCanAdd(false);
@@ -234,7 +236,8 @@ public class RoomFeatureListAction extends Action {
 
 		HttpSession webSession = request.getSession();
 		User user = Web.getUser(webSession);
-		Long sessionId = Session.getCurrentAcadSession(user).getSessionId();
+		Session session = Session.getCurrentAcadSession(user);
+		Long sessionId = session.getSessionId();
 		
 		String mgrId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
 		TimetableManagerDAO tdao = new TimetableManagerDAO();
@@ -252,7 +255,8 @@ public class RoomFeatureListAction extends Action {
 				"Name", "Abbreviation", "Department", "Rooms" },
 				new String[] { "left", "left", "left", "left" }, new boolean[] { true, true, true, true});
 		
-		boolean isAdmin = user.getRole().equals(Roles.ADMIN_ROLE) || user.getRole().equals(Roles.EXAM_MGR_ROLE);
+		boolean isAdmin = user.getRole().equals(Roles.ADMIN_ROLE) || 
+		    (user.getRole().equals(Roles.EXAM_MGR_ROLE) && session.getStatusType().canExamTimetable());
 		boolean showAll = false;
 		Set depts = null;
         int examType = -1;
