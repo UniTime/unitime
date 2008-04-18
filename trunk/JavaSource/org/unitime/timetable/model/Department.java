@@ -436,6 +436,8 @@ public class Department extends BaseDepartment implements Comparable {
         if (user==null) return false;
         if (user.isAdmin()) return true;
         
+        if (user.getRole().equals(Roles.EXAM_MGR_ROLE) && effectiveStatusType().canExamTimetable()) return true;
+        
         TimetableManager tm = TimetableManager.getManager(user);
         if (tm==null) return false;
 
