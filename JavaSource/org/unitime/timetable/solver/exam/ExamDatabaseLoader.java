@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.solver.exam;
 
-import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -152,14 +151,17 @@ public class ExamDatabaseLoader extends ExamLoader {
     protected void loadPeriods() {
         Set periods = org.unitime.timetable.model.ExamPeriod.findAll(iSessionId, iExamType);
         iProgress.setPhase("Loading periods...", periods.size());
-        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE MM/dd");
-        SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mmaa");
         for (Iterator i=periods.iterator();i.hasNext();) {
             iProgress.incProgress();
             org.unitime.timetable.model.ExamPeriod period = (org.unitime.timetable.model.ExamPeriod)i.next();
             String pref = period.getPrefLevel().getPrefProlog();
             //if (PreferenceLevel.sProhibited.equals(pref)) continue;
-            ExamPeriod p = getModel().addPeriod(period.getUniqueId(),dateFormat.format(period.getStartDate()), timeFormat.format(period.getStartTime()), Constants.SLOT_LENGTH_MIN*period.getLength(), pref2weight(pref));
+            ExamPeriod p = getModel().addPeriod(
+                    period.getUniqueId(),
+                    period.getStartDateLabel(),
+                    period.getStartTimeLabel()+" - "+period.getEndTimeLabel(), 
+                    Constants.SLOT_LENGTH_MIN*period.getLength(), 
+                    pref2weight(pref));
             if (PreferenceLevel.sProhibited.equals(pref)) iProhibitedPeriods.add(p);
             iPeriods.put(period.getUniqueId(),p);
         }
@@ -678,7 +680,6 @@ public class ExamDatabaseLoader extends ExamLoader {
                     meeting.getEvent().getEventName(), meeting.dateStr(), meeting.startTime()+" - "+meeting.stopTime(), 
                     meeting.getRoomLabel(), meeting.getEvent().getMaxCapacity());
             unavailabilitiesThisEvent.put(period, unavailability);
-            getModel().addUnavailability(unavailability);
             
             for (Long studentId : studentsThisEvent) {
                 ExamStudent student = (ExamStudent)iStudents.get(studentId);
@@ -696,6 +697,7 @@ public class ExamDatabaseLoader extends ExamLoader {
                 }
             }
             
+            getModel().addUnavailability(unavailability);
         }
     }
     
