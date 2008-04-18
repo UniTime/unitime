@@ -2,21 +2,37 @@ package org.unitime.timetable.reports.exam;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.Properties;
+import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 import java.util.Vector;
+
+import net.sf.cpsolver.coursett.model.TimeLocation;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.model.Assignment;
+import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.DatePattern;
+import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.ExamPeriod;
+import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.reports.PdfLegacyReport;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
+import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamSectionInfo;
+import org.unitime.timetable.util.Constants;
 
 import com.lowagie.text.DocumentException;
 
@@ -35,6 +51,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
     protected boolean iM2d = true;
     protected boolean iBtb = false;
     protected int iLimit = -1;
+    protected boolean iItype = false;
     
     static {
         sRegisteredReports.put("crsn", ScheduleByCourseReport.class);
@@ -59,6 +76,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
         iM2d = "true".equals(System.getProperty("m2d",(examType==Exam.sExamTypeFinal?"true":"false")));
         iBtb = "true".equals(System.getProperty("btb","false"));
         iLimit = Integer.parseInt(System.getProperty("limit", "-1"));
+        iItype = "true".equals(System.getProperty("itype","false"));
     }
     
     public void setDispRooms(boolean dispRooms) { iDispRooms = dispRooms; }
@@ -67,6 +85,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
     public void setM2d(boolean m2d) { iM2d = m2d; }
     public void setBtb(boolean btb) { iBtb = btb; }
     public void setLimit(int limit) { iLimit = limit; }
+    public void setItype(boolean itype) { iItype = itype; }
 
     public Collection<ExamAssignmentInfo> getExams() {
         return iExams;
@@ -101,6 +120,81 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
     protected void println(String text) throws DocumentException {
         iNewPage = false;
         super.println(text);
+    }
+    
+    public int getDaysCode(Set meetings) {
+        int daysCode = 0;
+        for (Iterator i=meetings.iterator();i.hasNext();) {
+            Meeting meeting = (Meeting)i.next();
+            Calendar date = Calendar.getInstance(Locale.US);
+            date.setTime(meeting.getMeetingDate());
+            switch (date.get(Calendar.DAY_OF_WEEK)) {
+            case Calendar.MONDAY : daysCode |= Constants.DAY_CODES[Constants.DAY_MON]; break;
+            case Calendar.TUESDAY : daysCode |= Constants.DAY_CODES[Constants.DAY_TUE]; break;
+            case Calendar.WEDNESDAY : daysCode |= Constants.DAY_CODES[Constants.DAY_WED]; break;
+            case Calendar.THURSDAY : daysCode |= Constants.DAY_CODES[Constants.DAY_THU]; break;
+            case Calendar.FRIDAY : daysCode |= Constants.DAY_CODES[Constants.DAY_FRI]; break;
+            case Calendar.SATURDAY : daysCode |= Constants.DAY_CODES[Constants.DAY_SAT]; break;
+            case Calendar.SUNDAY : daysCode |= Constants.DAY_CODES[Constants.DAY_SUN]; break;
+            }
+        }
+        return daysCode;
+    }
+    
+    public static String DAY_NAMES_SHORT[] = new String[] {
+        "M", "T", "W", "R", "F", "S", "U"
+    }; 
+    
+    protected String getMeetingTime(ExamSectionInfo section) {
+        String meetingTime = "";
+        if (section.getOwner().getOwnerObject() instanceof Class_) {
+            SimpleDateFormat dpf = new SimpleDateFormat("MM/dd");
+            Class_ clazz = (Class_)section.getOwner().getOwnerObject();
+            Assignment assignment = clazz.getCommittedAssignment();
+            Event event = (assignment==null || assignment.getEvent()==null?Event.findClassEvent(clazz.getUniqueId()):assignment.getEvent());
+            TreeSet meetings = (event==null?null:new TreeSet(event.getMeetings()));
+            if (meetings!=null && !meetings.isEmpty()) {
+                Date first = ((Meeting)meetings.first()).getMeetingDate();
+                Date last = ((Meeting)meetings.last()).getMeetingDate();
+                meetingTime += dpf.format(first)+" - "+dpf.format(last);
+            } else if (assignment!=null && assignment.getDatePattern()!=null) {
+                DatePattern dp = assignment.getDatePattern();
+                if (dp!=null && !dp.isDefault()) {
+                    if (dp.getType().intValue()==DatePattern.sTypeAlternate)
+                        meetingTime += rpad(dp.getName(),13);
+                    else {
+                        meetingTime += dpf.format(dp.getStartDate())+" - "+dpf.format(dp.getEndDate());
+                    }
+                }
+            } else {
+                meetingTime = rpad("",13);
+            }
+            if (meetings!=null && !meetings.isEmpty()) {
+                int dayCode = getDaysCode(meetings);
+                String days = "";
+                for (int i=0;i<Constants.DAY_CODES.length;i++)
+                    if ((dayCode & Constants.DAY_CODES[i])!=0) days += DAY_NAMES_SHORT[i];
+                meetingTime += " "+rpad(days,5);
+                Meeting first = (Meeting)meetings.first();
+                meetingTime += " "+lpad(first.startTime(),6)+" - "+lpad(first.stopTime(),6);
+            } else if (assignment!=null) {
+                TimeLocation t = assignment.getTimeLocation();
+                meetingTime += " "+rpad(t.getDayHeader(),5)+" "+lpad(t.getStartTimeHeader(),6)+" - "+lpad(t.getEndTimeHeader(),6);
+            }
+        }
+        return meetingTime;
+    }
+    
+    public String formatRoom(String room) {
+        String r = room.trim();
+        int idx = r.lastIndexOf(' '); 
+        if (idx>=0 && idx<=5 && r.length()-idx-1<=5)
+            return rpad(r.substring(0, idx),5)+" "+rpad(room.substring(idx+1),5);
+        return rpad(room,11);
+    }
+    
+    public String formatPeriod(ExamPeriod period) {
+        return period.getStartDateLabel()+" "+lpad(period.getStartTimeLabel(),6)+" - "+lpad(period.getEndTimeLabel(),6);
     }
     
     public static void main(String[] args) {

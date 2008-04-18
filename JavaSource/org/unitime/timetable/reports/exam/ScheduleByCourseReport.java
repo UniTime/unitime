@@ -2,18 +2,12 @@ package org.unitime.timetable.reports.exam;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.TreeSet;
 
-import net.sf.cpsolver.coursett.model.TimeLocation;
-
 import org.apache.log4j.Logger;
-import org.unitime.timetable.model.Assignment;
-import org.unitime.timetable.model.Class_;
-import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
 import org.unitime.timetable.solver.exam.ui.ExamInfo;
@@ -43,8 +37,8 @@ public class ScheduleByCourseReport extends PdfLegacyExamReport {
             }
         }
         setHeader(new String[] {
-                "Subj Crsnbr InsTyp Sect   Meeting Times                         Enrl    Date And Time                   Room        Cap ExCap ",
-                "---- ------ ------ ---- -------------------------------------- -----  -------------------------------- ---------- ----- -----"});
+                "Subj Crsnbr "+(iItype?"InsTyp ":"")+"Sect   Meeting Times                         Enrl    Date And Time                   Room         Cap ExCap ",
+                "---- ------ "+(iItype?"------ ":"")+"---- -------------------------------------- -----  -------------------------------- ----------- ----- -----"});
         printHeader();
         for (Iterator<String> i = new TreeSet<String>(subject2courseSections.keySet()).iterator(); i.hasNext();) {
             String subject = i.next();
@@ -55,35 +49,17 @@ public class ScheduleByCourseReport extends PdfLegacyExamReport {
             iITypePrinted = false; String lastItype = null;
             for (Iterator<ExamSectionInfo> j = sections.iterator(); j.hasNext();) {
                 ExamSectionInfo  section = j.next();
-                String meetingTime = "";
-                if (section.getOwner().getOwnerObject() instanceof Class_) {
-                    Assignment assignment = ((Class_)section.getOwner().getOwnerObject()).getCommittedAssignment();
-                    if (assignment!=null) {
-                        String dpat = "";
-                        DatePattern dp = assignment.getDatePattern();
-                        if (dp!=null && !dp.isDefault()) {
-                            if (dp.getType().intValue()==DatePattern.sTypeAlternate)
-                                dpat = " "+dp.getName();
-                            else {
-                                SimpleDateFormat dpf = new SimpleDateFormat("MM/dd");
-                                dpat = ", "+dpf.format(dp.getStartDate())+" - "+dpf.format(dp.getEndDate());
-                            }
-                        }
-                        TimeLocation t = assignment.getTimeLocation();
-                        meetingTime = t.getDayHeader()+" "+t.getStartTimeHeader()+" - "+t.getEndTimeHeader()+dpat;
-                    }
-                }
                 if (iCoursePrinted && !section.getCourseNbr().equals(lastCourse)) { iCoursePrinted = false; iITypePrinted = false; }
                 if (iITypePrinted && !section.getItype().equals(lastItype)) iITypePrinted = false;
                 if (section.getExamAssignment().getRooms()==null || section.getExamAssignment().getRooms().isEmpty()) {
                     println(
                             rpad(iSubjectPrinted?"":subject, 4)+" "+
                             rpad(iCoursePrinted?"":section.getCourseNbr(), 6)+" "+
-                            rpad(iITypePrinted?"":section.getItype(), 6)+" "+
+                            (iItype?rpad(iITypePrinted?"":section.getItype(), 6)+" ":"")+
                             lpad(section.getSection(), 4)+" "+
-                            rpad(meetingTime,38)+" "+
+                            rpad(getMeetingTime(section),38)+" "+
                             lpad(String.valueOf(section.getNrStudents()),5)+"  "+
-                            rpad((section.getExamAssignment()==null?"":section.getExamAssignment().getPeriodName()),32)+" "+
+                            rpad((section.getExamAssignment()==null?"":section.getExamAssignment().getPeriodNameFixedLength()),32)+" "+
                             (section.getExamAssignment()==null?"":iNoRoom)
                             );
                 } else {
@@ -93,12 +69,12 @@ public class ScheduleByCourseReport extends PdfLegacyExamReport {
                         println(
                                 rpad(!firstRoom || iSubjectPrinted?"":subject, 4)+" "+
                                 rpad(!firstRoom || iCoursePrinted?"":section.getCourseNbr(), 6)+" "+
-                                rpad(!firstRoom || iITypePrinted?"":section.getItype(), 6)+" "+
+                                (iItype?rpad(!firstRoom || iITypePrinted?"":section.getItype(), 6)+" ":"")+
                                 lpad(!firstRoom?"":section.getSection(), 4)+" "+
-                                rpad(!firstRoom?"":meetingTime,38)+" "+
+                                rpad(!firstRoom?"":getMeetingTime(section),38)+" "+
                                 lpad(!firstRoom?"":String.valueOf(section.getNrStudents()),5)+"  "+
-                                rpad(!firstRoom?"":(section.getExamAssignment()==null?"":section.getExamAssignment().getPeriodName()),32)+" "+
-                                rpad(room.getName(),10)+" "+
+                                rpad(!firstRoom?"":(section.getExamAssignment()==null?"":section.getExamAssignment().getPeriodNameFixedLength()),32)+" "+
+                                formatRoom(room.getName())+" "+
                                 lpad(""+room.getCapacity(),5)+" "+
                                 lpad(""+room.getExamCapacity(),5)
                                 );
