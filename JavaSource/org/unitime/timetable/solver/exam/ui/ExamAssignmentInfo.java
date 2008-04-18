@@ -1021,6 +1021,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             iOtherEventSize = unavailability.getSize();
             iOtherEventName = unavailability.getName();
             iOtherEventTime = unavailability.getTime();
+            iOtherEventDate = unavailability.getDate();
             iOtherEventRoom = unavailability.getRoom();
             iNrStudents = studentIds.size();
             iStudents = studentIds;
