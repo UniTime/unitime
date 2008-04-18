@@ -134,8 +134,12 @@ public class StaffImport extends BaseImport {
 				}
 				staff.setPositionCode(posCodeType);
 				staff.setExternalUniqueId(externalId);
-				staff.setDept(getRequiredStringAttribute(element, "department", elementName));
-				staff.setEmail(getOptionalStringAttribute(element, "email"));
+				String dept = getOptionalStringAttribute(element, "department");
+				if (dept != null)
+					staff.setDept(dept);
+				String email = getOptionalStringAttribute(element, "email");
+				if (email != null)
+					staff.setEmail(email);
 				getHibSession().saveOrUpdate(staff);
 				flushIfNeeded(true);
 	        }
