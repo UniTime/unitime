@@ -48,6 +48,7 @@ import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
+import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimetableManager;
@@ -454,7 +455,10 @@ public class InstructorDetailAction extends PreferencesAction {
 
 		frm.setEditable(inst.isEditableBy(user));
 		frm.setLimitedEditable(frm.isEditable() || inst.getDepartment().isLimitedEditableBy(user));
-
+		if (frm.isEditable() && user.getRole().equals(Roles.EXAM_MGR_ROLE)) {
+		    frm.setLimitedEditable(true);
+		    frm.setEditable(false);
+		}
 
 		request.getSession().setAttribute(Constants.DEPT_ID_ATTR_NAME, inst.getDepartment().getUniqueId().toString());
 		
