@@ -96,6 +96,7 @@
 	<%  if (manager.canSeeExams(acadSession, user)) { %>
 	menu_item('2','Examination Timetabling','Examination Timetabling','','expand');
 		menu_item('20','Input Data','Course Timetabling Input Data','','collapse');
+			leaf_item('Instructors','Instructors','instructorSearch.do');
 			menu_item('200','Rooms','Rooms','roomSearch.do?default=Exam','collapse');
 				leaf_item('Features','Room Features','roomFeatureSearch.do?default=Exam');
 				leaf_item('Groups','Room Groups','roomGroupSearch.do?default=Exam');
