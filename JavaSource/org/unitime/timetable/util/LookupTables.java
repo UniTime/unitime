@@ -132,7 +132,7 @@ public class LookupTables {
 		TimetableManagerDAO tdao = new TimetableManagerDAO();
         TimetableManager owner = tdao.get(new Long(mgrId));
 
-		if (user.getRole().equals(Roles.ADMIN_ROLE) || user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE) || user.getCurrentRole().equals(Roles.EXAM_MGR_ROLE)) {
+        if (user.getRole().equals(Roles.ADMIN_ROLE) || user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE)) {
 			depts = Department.findAllBeingUsed(sessionId);
 		} else {
 			depts = Department.findAllOwned(sessionId, owner, includeExternal);

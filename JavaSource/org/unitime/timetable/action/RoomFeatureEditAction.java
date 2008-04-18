@@ -46,6 +46,7 @@ import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
 import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.RoomFeatureDAO;
@@ -386,7 +387,9 @@ public class RoomFeatureEditAction extends LookupDispatchAction {
 		}
 
 		//get rooms owned by user
-		Collection rooms = Session.getCurrentAcadSession(user).getRoomsFast(depts);	
+		Collection rooms = Session.getCurrentAcadSession(user).getRoomsFast(depts);
+        if (rf instanceof GlobalRoomFeature && user.getRole().equals(Roles.EXAM_MGR_ROLE))
+            rooms = Location.findAllExamLocations(sessionId, -1);
 		Collection available = new HashSet();
 		
         for (Iterator iter = rooms.iterator(); iter.hasNext();)  {
@@ -417,7 +420,9 @@ public class RoomFeatureEditAction extends LookupDispatchAction {
 
 		//get rooms owned by user
 		Collection rooms = Session.getCurrentAcadSession(user).getRoomsFast(depts);
-		
+        if (rf instanceof GlobalRoomFeature && user.getRole().equals(Roles.EXAM_MGR_ROLE))
+            rooms = Location.findAllExamLocations(sessionId, -1);
+
 		Collection assigned = new HashSet();
 		
 		for (Iterator iter = rooms.iterator(); iter.hasNext();)  {

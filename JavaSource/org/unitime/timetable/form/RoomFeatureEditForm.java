@@ -312,6 +312,6 @@ public class RoomFeatureEditForm extends ActionForm {
 		User user = Web.getUser(webSession);
 		Long sessionId = Session.getCurrentAcadSession(user).getUniqueId();
 		Department dept = Department.findByDeptCode(deptCode, sessionId);
-		return dept.getDeptCode()+" - "+dept.getName();		
+		return (dept==null?"":dept.getDeptCode() + " - " + dept.getName());	
 	}
 }

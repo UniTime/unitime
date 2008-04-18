@@ -52,6 +52,7 @@ import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.NonUniversityLocation;
 import org.unitime.timetable.model.PeriodPreferenceModel;
 import org.unitime.timetable.model.PreferenceLevel;
+import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomDept;
 import org.unitime.timetable.model.RoomGroup;
@@ -180,7 +181,7 @@ public class RoomDetailAction extends Action {
 		
 		//get room preferences
 		Vector depts = new Vector();
-		roomDetailForm.setEditable(user.isAdmin());
+		roomDetailForm.setEditable(user.isAdmin() || Roles.EXAM_MGR_ROLE.equals(user.getRole()));
 		for (Iterator i=location.getRoomDepts().iterator();i.hasNext();) {
 			RoomDept rd = (RoomDept)i.next();
 			depts.add(rd.getDepartment());

@@ -89,10 +89,15 @@ public class RoomDeptEditAction extends Action {
             }
 		}
 		
-		TreeSet rooms = new TreeSet(Session.getCurrentAcadSession(user).getRoomsFast(user));
-		for (Iterator i=rooms.iterator();i.hasNext();) {
-            Location location = (Location)i.next();
-            if (!(location instanceof Room)) i.remove();
+		TreeSet rooms = null;
+		if (myForm.getId()==null && myForm.getExamType()>=0) {
+		    rooms = new TreeSet(Room.findAll(Session.getCurrentAcadSession(user).getUniqueId()));
+		} else {
+		    rooms = new TreeSet(Session.getCurrentAcadSession(user).getRoomsFast(user));
+		    for (Iterator i=rooms.iterator();i.hasNext();) {
+		        Location location = (Location)i.next();
+		        if (!(location instanceof Room)) i.remove();
+		    }
 		}
 		
         int examType = myForm.getExamType();

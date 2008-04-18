@@ -35,6 +35,7 @@
 	String frmName = "editRoomForm";	
 	EditRoomForm frm = (EditRoomForm) request.getAttribute(frmName);
 	boolean admin = Web.hasRole(request.getSession(), new String[] { Roles.ADMIN_ROLE});
+	boolean examMgr = Web.hasRole(request.getSession(), new String[] { Roles.EXAM_MGR_ROLE});
 %>	
 
 <tiles:importAttribute />
@@ -112,10 +113,18 @@
 		<logic:notEmpty name="<%=frmName%>" property="id">
 			<TR>
 				<TD>Name:</TD>
+				<% if (examMgr) { %>
+					<TD width='100%'>
+						<bean:write name="<%=frmName%>" property="bldgName"/>
+						<bean:write name="<%=frmName%>" property="name"/>
+						<html:hidden property="name"/>
+					<TD>
+				<% } else {%>
 				<TD width='100%'>
 					<bean:write name="<%=frmName%>" property="bldgName"/>
 					<html:text property="name" maxlength="20" size="20" />
 				<TD>
+				<% } %>
 			</TR>
 		</logic:notEmpty>
 			
@@ -153,7 +162,12 @@
 		<TR>
 			<TD>Capacity:</TD>
 			<TD>
-				<html:text property="capacity" maxlength="15" size="10"/>
+				<% if (examMgr) { %>
+					<bean:write name="<%=frmName%>" property="capacity"/>
+					<html:hidden property="capacity"/>
+				<% } else { %>
+					<html:text property="capacity" maxlength="15" size="10"/>
+				<% } %>
 			</TD>
 		</TR>
 		
@@ -185,7 +199,13 @@
 			<TR>
 				<TD>Coordinates:</TD>
 				<TD>
+					<% if (examMgr) { %>
+						<bean:write name="<%=frmName%>" property="coordX"/>, <bean:write name="<%=frmName%>" property="coordY"/>
+						<html:hidden property="coordX" />
+						<html:hidden property="coordY" />
+					<% } else { %>
 					<html:text property="coordX" maxlength="5" size="5"/>, <html:text property="coordY" maxlength="5" size="5"/>
+					<% } %>
 				</TD>
 			</TR>
 		</logic:equal>
@@ -195,25 +215,33 @@
 		</logic:equal>
 
 		<logic:equal name="<%=frmName%>" property="room" value="false">
+			<% if (examMgr) { %>
+			<html:hidden property="ignoreTooFar" />
+			<% } else { %>
 			<TR>
 				<TD nowrap>Ignore Too Far Distances:</TD>
 				<TD>
 					<html:checkbox property="ignoreTooFar" />
 				</TD>
 			</TR>
+			<% } %>
 		</logic:equal>
 		<logic:equal name="<%=frmName%>" property="room" value="false">
 			<html:hidden property="ignoreTooFar" />
 		</logic:equal>
 			
+		<% if (examMgr) { %>
+			<html:hidden property="ignoreRoomCheck" />
+		<% } else { %>
 		<TR>
 			<TD nowrap>Ignore Room Checks:</TD>
 			<TD>
 				<html:checkbox property="ignoreRoomCheck" />
 			</TD>
 		</TR>
+		<% } %>
 		
-		<% if (admin) { %>
+		<% if (admin || examMgr) { %>
 		<TR>
 			<TD nowrap>Examination Room:</TD>
 			<TD>
@@ -232,6 +260,7 @@
 		</TR>
 		<% } else { %>
 			<html:hidden property="examEnabled"/>
+			<html:hidden property="examEEnabled"/>
 			<html:hidden property="examCapacity"/>
 		<% } %>
 		

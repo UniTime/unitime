@@ -113,8 +113,11 @@ public class RoomGroupAddAction extends Action {
 		setDeptList(request, roomGroupEditForm);
 		
 		User user = Web.getUser(webSession);
-		if (user.getRole().equals(Roles.ADMIN_ROLE)) {
-			roomGroupEditForm.setGlobal(roomGroupEditForm.getDeptCode()==null || roomGroupEditForm.getDeptCode().trim().length()==0);
+		if (user.getRole().equals(Roles.ADMIN_ROLE) || user.getRole().equals(Roles.EXAM_MGR_ROLE)) {
+			roomGroupEditForm.setGlobal(roomGroupEditForm.getDeptCode()==null 
+			        || roomGroupEditForm.getDeptCode().trim().length()==0
+			        || roomGroupEditForm.getDeptCode().equalsIgnoreCase("exam")
+                    || roomGroupEditForm.getDeptCode().equalsIgnoreCase("eexam"));
 		} else {
 			roomGroupEditForm.setGlobal(false);
 		}
@@ -194,7 +197,7 @@ public class RoomGroupAddAction extends Action {
 	private void setDeptList(HttpServletRequest request, RoomGroupEditForm roomGroupEditForm) throws Exception {
 		HttpSession webSession = request.getSession();
 		User user = Web.getUser(webSession);
-		boolean isAdmin = user.getRole().equals(Roles.ADMIN_ROLE);
+		boolean isAdmin = user.getRole().equals(Roles.ADMIN_ROLE) || user.getRole().equals(Roles.EXAM_MGR_ROLE);
 		Long sessionId = Session.getCurrentAcadSession(user).getUniqueId();		
 		String mgrId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
 		TimetableManagerDAO tdao = new TimetableManagerDAO();
