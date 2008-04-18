@@ -179,7 +179,7 @@ public class EditRoomFeatureAction extends Action {
 		for (Iterator iter = globalRoomFeatures.iterator(); iter.hasNext();) {
 			GlobalRoomFeature grf = (GlobalRoomFeature) iter.next();
 			if (!editRoomFeatureForm.getGlobalRoomFeatureIds().contains(grf.getUniqueId().toString())) {
-				if (user.getRole().equals(Roles.ADMIN_ROLE)) {
+				if (user.getRole().equals(Roles.ADMIN_ROLE) || user.getRole().equals(Roles.EXAM_MGR_ROLE)) {
 					editRoomFeatureForm.addToGlobalRoomFeatures(grf,Boolean.TRUE, Boolean.valueOf(location.hasFeature(grf)));
 				} else {
 					editRoomFeatureForm.addToGlobalRoomFeatures(grf,Boolean.FALSE,Boolean.valueOf(location.hasFeature(grf)));

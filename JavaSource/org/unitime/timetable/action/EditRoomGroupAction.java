@@ -173,7 +173,7 @@ public class EditRoomGroupAction extends Action {
 		for (Iterator iter = globalRoomGroups.iterator(); iter.hasNext();) {
 			RoomGroup grg = (RoomGroup) iter.next();
 			if (!editRoomGroupForm.getGlobalRoomGroupIds().contains(grg.getUniqueId().toString())) {
-				if (user.getRole().equals(Roles.ADMIN_ROLE)) {
+				if (user.getRole().equals(Roles.ADMIN_ROLE) || user.getRole().equals(Roles.EXAM_MGR_ROLE)) {
 					editRoomGroupForm.addToGlobalRoomGroups(grg,Boolean.TRUE, Boolean.valueOf(location.hasGroup(grg)));
 				} else {
 					editRoomGroupForm.addToGlobalRoomGroups(grg,Boolean.FALSE,Boolean.valueOf(location.hasGroup(grg)));

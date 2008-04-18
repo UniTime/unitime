@@ -170,25 +170,32 @@ public class RoomListAction extends Action {
 	        		break;
 	        	}
 	        }
+	        
+		} else if (user.getRole().equals(Roles.ADMIN_ROLE)) {
+            roomListForm.setEditRoomSharing(true);
+            roomListForm.setCanAdd(true); // !hasExternalRooms
+            roomListForm.setCanAddNonUniv(true);
+            roomListForm.setCanAddSpecial(hasExternalRooms);
+        } else if ("Exam".equals(roomListForm.getDeptCodeX()) || "EExam".equals(roomListForm.getDeptCodeX())) {
+            if (user.getRole().equals(Roles.EXAM_MGR_ROLE)) {
+                roomListForm.setEditRoomSharing(true);
+                if (!owner.departmentsForSession(sessionId).isEmpty()) {
+                    roomListForm.setCanAddSpecial(hasExternalRooms);
+                    roomListForm.setCanAddNonUniv(true);
+                }
+		    }
 		} else {
-			if (user.getRole().equals(Roles.ADMIN_ROLE)) {
-				roomListForm.setEditRoomSharing(true);
-				roomListForm.setCanAdd(true); // !hasExternalRooms
-                roomListForm.setCanAddNonUniv(true);
-                roomListForm.setCanAddSpecial(hasExternalRooms);
-			} else {
-		        for (Iterator i=owner.departmentsForSession(sessionId).iterator();i.hasNext();) {
-		        	Department d = (Department)i.next();
-		        	if (roomListForm.getDeptCodeX().equals(d.getDeptCode())) {
-		        		if (d.isEditableBy(user)) {
-		        			roomListForm.setEditRoomSharing(true);
-		        			roomListForm.setCanAddNonUniv(true);
-                            roomListForm.setCanAddSpecial(hasExternalRooms);
-		        			break;
-		        		}
-		        	}
-		        }
-			}
+            for (Iterator i=owner.departmentsForSession(sessionId).iterator();i.hasNext();) {
+                Department d = (Department)i.next();
+                if (roomListForm.getDeptCodeX().equals(d.getDeptCode())) {
+                    if (d.isEditableBy(user)) {
+                        roomListForm.setEditRoomSharing(true);
+                        roomListForm.setCanAddNonUniv(true);
+                        roomListForm.setCanAddSpecial(hasExternalRooms);
+                        break;
+                    }
+                }
+            }
 		}
 
 		if (roomListForm.getDeptCodeX().equalsIgnoreCase("All")) {
@@ -249,7 +256,7 @@ public class RoomListAction extends Action {
 			String mgrId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
 			TimetableManagerDAO tdao = new TimetableManagerDAO();
 	        TimetableManager owner = tdao.get(new Long(mgrId));
-	        boolean isAdmin = user.getRole().equals(Roles.ADMIN_ROLE);
+	        boolean isAdmin = user.getRole().equals(Roles.ADMIN_ROLE) || user.getRole().equals(Roles.EXAM_MGR_ROLE);
 			Set ownerDepts = owner.departmentsForSession(sessionId);
 			Set externalDepartments = Department.findAllExternal(sessionId);
 			Set depts = null;

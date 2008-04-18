@@ -193,7 +193,7 @@ public class RoomFeatureListAction extends Action {
 		//set request attribute for department
 		LookupTables.setupDeptsForUser(request, user, sessionId, true);
 		
-		if (user.getRole().equals(Roles.ADMIN_ROLE))
+		if (user.getRole().equals(Roles.ADMIN_ROLE) || user.getRole().equals(Roles.EXAM_MGR_ROLE))
 			roomFeatureListForm.setCanAdd(true);
 		else if (Constants.ALL_OPTION_LABEL.equals(roomFeatureListForm.getDeptCodeX())) {
 			roomFeatureListForm.setCanAdd(false);
@@ -252,7 +252,7 @@ public class RoomFeatureListAction extends Action {
 				"Name", "Abbreviation", "Department", "Rooms" },
 				new String[] { "left", "left", "left", "left" }, new boolean[] { true, true, true, true});
 		
-		boolean isAdmin = user.getRole().equals(Roles.ADMIN_ROLE);
+		boolean isAdmin = user.getRole().equals(Roles.ADMIN_ROLE) || user.getRole().equals(Roles.EXAM_MGR_ROLE);
 		boolean showAll = false;
 		Set depts = null;
         int examType = -1;
