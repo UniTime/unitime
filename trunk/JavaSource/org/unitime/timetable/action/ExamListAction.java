@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.TreeSet;
 import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
@@ -23,14 +24,11 @@ import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ExamListForm;
 import org.unitime.timetable.model.BuildingPref;
-import org.unitime.timetable.model.Class_;
-import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.EveningPeriodPreferenceModel;
 import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.ExamPeriodPref;
-import org.unitime.timetable.model.InstrOfferingConfig;
-import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.PeriodPreferenceModel;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceLevel;
@@ -166,19 +164,10 @@ public class ExamListAction extends Action {
             Exam exam = (Exam)i.next();
             String objects = "", perPref = "", roomPref = "", distPref = "", per = "", rooms = "";
             
-            for (Enumeration e=exam.getOwnerObjects().elements();e.hasMoreElements();) {
-                Object object = e.nextElement();
+            for (Iterator j=new TreeSet(exam.getOwners()).iterator();j.hasNext();) {
+                ExamOwner owner = (ExamOwner)j.next();
                 if (objects.length()>0) objects+=nl;
-                if (object instanceof Class_)
-                    objects += ((Class_)object).getClassLabel();
-                else if (object instanceof InstrOfferingConfig)
-                    objects += ((InstrOfferingConfig)object).toString();
-                else if (object instanceof InstructionalOffering)
-                    objects += ((InstructionalOffering)object).getCourseName();
-                else if (object instanceof CourseOffering)
-                    objects += ((CourseOffering)object).getCourseName();
-                else
-                    objects += object.toString();
+                objects += owner.getLabel();
             }
             
             ExamAssignment ea = (examAssignment!=null?examAssignment.getAssignment(exam.getUniqueId()):exam.getAssignedPeriod()!=null?new ExamAssignment(exam):null);

@@ -174,7 +174,7 @@ public class ExamDetailAction extends PreferencesAction {
                             Class_ clazz = (Class_)owner.getOwnerObject();
                             if (clazz.isViewableBy(user))
                                 onclick = "onClick=\"document.location='classDetail.do?cid="+clazz.getUniqueId()+"';\"";
-                            name = clazz.getClassLabel();
+                            name = owner.getLabel();//clazz.getClassLabel();
                             type = "Class";
                             manager = clazz.getManagingDept().getShortLabel();
                             if (clazz.getCommittedAssignment()!=null)
@@ -184,7 +184,7 @@ public class ExamDetailAction extends PreferencesAction {
                             InstrOfferingConfig config = (InstrOfferingConfig)owner.getOwnerObject();
                             if (config.isViewableBy(user))
                                 onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+config.getInstructionalOffering().getUniqueId()+"';\"";;
-                            name = config.getCourseName()+" ["+config.getName()+"]";
+                            name = owner.getLabel();//config.getCourseName()+" ["+config.getName()+"]";
                             type = "Configuration";
                             manager = config.getInstructionalOffering().getControllingCourseOffering().getDepartment().getShortLabel();
                             break;
@@ -192,7 +192,7 @@ public class ExamDetailAction extends PreferencesAction {
                             InstructionalOffering offering = (InstructionalOffering)owner.getOwnerObject();
                             if (offering.isViewableBy(user))
                                 onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+offering.getUniqueId()+"';\"";;
-                            name = offering.getCourseName();
+                            name = owner.getLabel();//offering.getCourseName();
                             type = "Offering";
                             manager = offering.getControllingCourseOffering().getDepartment().getShortLabel();
                             break;
@@ -200,7 +200,7 @@ public class ExamDetailAction extends PreferencesAction {
                             CourseOffering course = (CourseOffering)owner.getOwnerObject();
                             if (course.isViewableBy(user))
                                 onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+course.getInstructionalOffering().getUniqueId()+"';\"";;
-                            name = course.getCourseName();
+                            name = owner.getLabel();//course.getCourseName();
                             type = "Course";
                             manager = course.getDepartment().getShortLabel();
                             break;
