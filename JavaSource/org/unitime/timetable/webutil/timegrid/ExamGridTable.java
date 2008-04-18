@@ -58,7 +58,6 @@ import org.unitime.timetable.webutil.timegrid.ExamGridTable.ExamGridModel.ExamGr
  */
 public class ExamGridTable {
     public static SimpleDateFormat sDF = new SimpleDateFormat("EEE MM/dd");
-    public static SimpleDateFormat sTF = new SimpleDateFormat("hh:mmaa");
 
     public static final int sResourceRoom = 0;
     public static final int sResourceInstructor = 1;

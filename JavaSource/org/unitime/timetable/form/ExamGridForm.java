@@ -208,7 +208,7 @@ public class ExamGridForm extends ActionForm {
         for (Iterator i=iPeriods[examType].iterator();i.hasNext();) {
             ExamPeriod period = (ExamPeriod)i.next();
             if (added.add(period.getStartSlot())) {
-                ret.addElement(new ComboBoxLookup(ExamGridTable.sTF.format(period.getStartTime()), period.getStartSlot().toString()));
+                ret.addElement(new ComboBoxLookup(period.getStartTimeLabel(), period.getStartSlot().toString()));
             }
         }
         return ret;
@@ -220,7 +220,7 @@ public class ExamGridForm extends ActionForm {
         for (Iterator i=iPeriods[examType].iterator();i.hasNext();) {
             ExamPeriod period = (ExamPeriod)i.next();
             if (added.add(period.getEndSlot())) {
-                ret.addElement(new ComboBoxLookup(ExamGridTable.sTF.format(period.getEndTime()), String.valueOf(period.getEndSlot())));
+                ret.addElement(new ComboBoxLookup(period.getEndTimeLabel(), String.valueOf(period.getEndSlot())));
             }
         }
         return ret;
