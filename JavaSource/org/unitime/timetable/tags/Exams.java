@@ -44,6 +44,7 @@ import org.unitime.timetable.model.ExamPeriodPref;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.PeriodPreferenceModel;
+import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.RoomFeaturePref;
 import org.unitime.timetable.model.RoomGroupPref;
 import org.unitime.timetable.model.RoomPref;
@@ -53,6 +54,7 @@ import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
+import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.RequiredTimeTable;
 
@@ -142,11 +144,42 @@ public class Exams extends BodyTagSupport {
                 backId = pageContext.getRequest().getAttribute("examId").toString(); 
             boolean hasExamHash = false;
             
-            if (exams!=null) 
+            if (exams!=null)  {
+                ExamSolverProxy solver = WebSolver.getExamSolver(pageContext.getSession());
+                int solverType = (solver==null?-1:solver.getExamType());
+                
+                boolean hasSolution = false;
                 for (Iterator i=new TreeSet(exams).iterator();i.hasNext();) {
                     Exam exam = (Exam)i.next();
-                    
+                    ExamAssignment assignment = null;
+                    if (solver!=null && solverType==exam.getExamType())
+                        assignment = solver.getAssignment(exam.getUniqueId());
+                    else if (exam.getAssignedPeriod()!=null)
+                        assignment = new ExamAssignment(exam);
+                    if (assignment!=null && assignment.getPeriodId()!=null) {
+                        hasSolution = true; break;
+                    }
+                }
+                
+                if (hasSolution)
+                    table = new WebTable(10, title,
+                            new String[] { "Classes / Courses", "Type", "Length", "Seating<br>Type", "Size", "Max<br>Rooms", 
+                            "Instructor", "Assigned<br>Period", "Assigned<br>Room", "Student<br>Conflicts"},
+                        new String[] {"left", "left", "right", "center", "right", "right", "left", 
+                            "left", "left", "left"},
+                            new boolean[] {true, true, true, true, true, true, true, true, true}
+                        );
+            
+                for (Iterator i=new TreeSet(exams).iterator();i.hasNext();) {
+                    Exam exam = (Exam)i.next();
+                
                     String objects = "", instructors = "", perPref = "", roomPref = "", distPref = "";
+                    
+                    ExamAssignmentInfo assignment = null;
+                    if (solver!=null && solverType==exam.getExamType())
+                        assignment = solver.getAssignmentInfo(exam.getUniqueId());
+                    else if (exam.getAssignedPeriod()!=null)
+                        assignment = new ExamAssignmentInfo(exam);
                     
                     for (Enumeration e=exam.getOwnerObjects().elements();e.hasMoreElements();) {
                         Object object = e.nextElement();
@@ -163,49 +196,59 @@ public class Exams extends BodyTagSupport {
                             objects += object.toString();
                     }
                     
-                    roomPref += exam.getEffectivePrefHtmlForPrefType(RoomPref.class);
-                    if (roomPref.length()>0) roomPref+="<br>";
-                    roomPref += exam.getEffectivePrefHtmlForPrefType(BuildingPref.class);
-                    if (roomPref.length()>0) roomPref+="<br>";
-                    roomPref += exam.getEffectivePrefHtmlForPrefType(RoomFeaturePref.class);
-                    if (roomPref.length()>0) roomPref+="<br>";
-                    roomPref += exam.getEffectivePrefHtmlForPrefType(RoomGroupPref.class);
-                    if (roomPref.endsWith("<br>")) roomPref = roomPref.substring(0, roomPref.length()-"<br>".length());
-                    if (timeText || Exam.sExamTypeEvening==exam.getExamType()) {
-                    	if (Exam.sExamTypeEvening==exam.getExamType()) {
-                        	EveningPeriodPreferenceModel epx = new EveningPeriodPreferenceModel(exam.getSession(), null);
-                        	if (epx.canDo()) {
-                        		epx.load(exam);
-                        		perPref+=epx.toString();
-                        	} else {
-                        		perPref += exam.getEffectivePrefHtmlForPrefType(ExamPeriodPref.class);
-                        	}
-                    	} else {
-                    		perPref += exam.getEffectivePrefHtmlForPrefType(ExamPeriodPref.class);
-                    	}
-                    } else {
-                        ExamSolverProxy solver = WebSolver.getExamSolver(pageContext.getSession());
-                        ExamAssignment assignment = null;
-                        if (solver!=null)
-                            assignment = solver.getAssignment(exam.getUniqueId());
-                        else if (exam.getAssignedPeriod()!=null)
-                            assignment = new ExamAssignment(exam);
-                        PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession(), assignment, exam.getExamType());
-                        px.load(exam);
-                        RequiredTimeTable rtt = new RequiredTimeTable(px);
-                        File imageFileName = null;
-                        try {
-                            imageFileName = rtt.createImage(timeVertical);
-                        } catch (IOException ex) {
-                            ex.printStackTrace();
+                    if (!hasSolution || assignment==null || assignment.getPeriodId()==null) {
+                        roomPref += exam.getEffectivePrefHtmlForPrefType(RoomPref.class);
+                        if (roomPref.length()>0 && !roomPref.endsWith("<br>")) roomPref+="<br>";
+                        roomPref += exam.getEffectivePrefHtmlForPrefType(BuildingPref.class);
+                        if (roomPref.length()>0 && !roomPref.endsWith("<br>")) roomPref+="<br>";
+                        roomPref += exam.getEffectivePrefHtmlForPrefType(RoomFeaturePref.class);
+                        if (roomPref.length()>0 && !roomPref.endsWith("<br>")) roomPref+="<br>";
+                        roomPref += exam.getEffectivePrefHtmlForPrefType(RoomGroupPref.class);
+                        if (roomPref.endsWith("<br>")) roomPref = roomPref.substring(0, roomPref.length()-"<br>".length());
+                        if (timeText || Exam.sExamTypeEvening==exam.getExamType()) {
+                            if (Exam.sExamTypeEvening==exam.getExamType()) {
+                                EveningPeriodPreferenceModel epx = new EveningPeriodPreferenceModel(exam.getSession(), null);
+                                if (epx.canDo()) {
+                                    epx.load(exam);
+                                    perPref+=epx.toString();
+                                } else {
+                                    perPref += exam.getEffectivePrefHtmlForPrefType(ExamPeriodPref.class);
+                                }
+                            } else {
+                                perPref += exam.getEffectivePrefHtmlForPrefType(ExamPeriodPref.class);
+                            }
+                        } else {
+                            PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession(), null, exam.getExamType());
+                            px.load(exam);
+                            RequiredTimeTable rtt = new RequiredTimeTable(px);
+                            File imageFileName = null;
+                            try {
+                                imageFileName = rtt.createImage(timeVertical);
+                            } catch (IOException ex) {
+                                ex.printStackTrace();
+                            }
+                            String rttTitle = rtt.getModel().toString();
+                            if (imageFileName!=null)
+                                perPref = "<img border='0' src='temp/"+(imageFileName.getName())+"' title='"+rttTitle+"'>";
+                            else
+                                perPref += exam.getEffectivePrefHtmlForPrefType(ExamPeriodPref.class);
                         }
-                        String rttTitle = rtt.getModel().toString();
-                        if (imageFileName!=null)
-                            perPref = "<img border='0' src='temp/"+(imageFileName.getName())+"' title='"+rttTitle+"'>";
+                        if (!hasSolution)
+                            distPref += exam.getEffectivePrefHtmlForPrefType(DistributionPref.class);
                         else
-                            perPref += exam.getEffectivePrefHtmlForPrefType(ExamPeriodPref.class);
+                            distPref = "<i>Not Assigned</i>";
+                    } else {
+                        perPref = assignment.getPeriodAbbreviationWithPref();
+                        roomPref = assignment.getRoomsNameWithPref("<br>"); 
+                        int dc = assignment.getNrDirectConflicts();
+                        String dcStr = (dc<=0?"<font color='gray'>0</font>":"<font color='"+PreferenceLevel.prolog2color("P")+"'>"+dc+"</font>");
+                        int m2d = assignment.getNrMoreThanTwoConflicts();
+                        String m2dStr = (m2d<=0?"<font color='gray'>0</font>":"<font color='"+PreferenceLevel.prolog2color("2")+"'>"+m2d+"</font>");
+                        int btb = assignment.getNrBackToBackConflicts();
+                        int dbtb = assignment.getNrDistanceBackToBackConflicts();
+                        String btbStr = (btb<=0 && dbtb<=0?"<font color='gray'>0</font>":"<font color='"+PreferenceLevel.prolog2color("1")+"'>"+btb+(dbtb>0?" (d:"+dbtb+")":"")+"</font>");
+                        distPref = dcStr+", "+m2dStr+", "+btbStr; 
                     }
-                    distPref += exam.getEffectivePrefHtmlForPrefType(DistributionPref.class);
                     
                     for (Iterator j=new TreeSet(exam.getInstructors()).iterator();j.hasNext();) {
                         DepartmentalInstructor instructor = (DepartmentalInstructor)j.next();
@@ -237,6 +280,7 @@ public class Exams extends BodyTagSupport {
                             null,
                             exam.getUniqueId().toString());
                 }
+            }
             
             pageContext.getOut().println("<table width='99%' border='0' cellspacing='0' cellpadding='3'>");
             if ("Exam".equals(pageContext.getRequest().getParameter("backType"))) {
