@@ -125,17 +125,31 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
         c.set(Calendar.MINUTE, getEndMinute());
         return c.getTime();
     }
+    
+    public String getStartDateLabel() {
+        return new SimpleDateFormat("EEE MM/dd").format(getStartDate());
+    }
+    
+    public String getStartTimeLabel() {
+        int min = getStartSlot()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
+        int startHour = min/60;
+        int startMin = min%60;
+        return (startHour>12?startHour-12:startHour)+":"+(startMin<10?"0":"")+startMin+(startHour>=12?"p":"a");
+    }
 
+    public String getEndTimeLabel() {
+        int min = (getStartSlot()+getLength())*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
+        int endHour = min/60;
+        int endMin = min%60;
+        return (endHour>12?endHour-12:endHour)+":"+(endMin<10?"0":"")+endMin+(endHour>=12?"p":"a");
+    }
 
     public String getName() {
-        return
-            new SimpleDateFormat("EEE MM/dd hh:mmaa").format(getStartTime())+
-            " - "+
-            new SimpleDateFormat("hh:mmaa").format(getEndTime());
+        return getStartDateLabel()+" "+getStartTimeLabel()+" - "+getEndTimeLabel();
     }
 
     public String getAbbreviation() {
-        return new SimpleDateFormat("MM/dd hh:mmaa").format(getStartTime());
+        return getStartDateLabel()+" "+getStartTimeLabel();
     }
 
     public int compareTo(ExamPeriod period) {

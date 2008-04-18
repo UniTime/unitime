@@ -20,13 +20,11 @@
 package org.unitime.timetable.solver.exam.ui;
 
 import java.io.Serializable;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.Iterator;
-import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.Vector;
@@ -50,7 +48,7 @@ import net.sf.cpsolver.ifs.util.ToolBox;
  */
 public class ExamAssignment extends ExamInfo implements Serializable {
     private static SimpleDateFormat sDateFormat = new SimpleDateFormat("EEE MM/dd");
-    private static SimpleDateFormat sTimeFormat = new SimpleDateFormat("hh:mmaa");
+    private static DecimalFormat s2Z = new DecimalFormat("00");
     protected Long iPeriodId = null;
     protected TreeSet<ExamRoomInfo> iRooms = null;
     protected String iPeriodPref = null;
@@ -193,12 +191,28 @@ public class ExamAssignment extends ExamInfo implements Serializable {
 
     public String getPeriodName() {
         if (getPeriod()==null) return "";
-        Date startTime = getPeriod().getStartTime();
-        Calendar cal = Calendar.getInstance(Locale.US);
-        cal.setTime(startTime);
-        cal.add(Calendar.MINUTE, getLength());
-        Date endTime = cal.getTime();
-        return sDateFormat.format(startTime)+" "+sTimeFormat.format(startTime)+" - "+sTimeFormat.format(endTime);
+        int min = getPeriod().getStartSlot()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
+        int startHour = min / 60;
+        int startMin = min % 60;
+        min += getLength();
+        int endHour = min / 60;
+        int endMin = min % 60;
+        return sDateFormat.format(getPeriod().getStartDate())+" "+
+                (startHour>12?startHour-12:startHour)+":"+(startMin<10?"0":"")+startMin+(startHour>=12?"p":"a")+" - "+
+                (endHour>12?endHour-12:endHour)+":"+(endMin<10?"0":"")+endMin+(endHour>=12?"p":"a");
+    }
+    
+    public String getPeriodNameFixedLength() {
+        if (getPeriod()==null) return "";
+        int min = getPeriod().getStartSlot()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
+        int startHour = min / 60;
+        int startMin = min % 60;
+        min += getLength();
+        int endHour = min / 60;
+        int endMin = min % 60;
+        return sDateFormat.format(getPeriod().getStartDate())+" "+
+            s2Z.format(startHour>12?startHour-12:startHour)+":"+s2Z.format(startMin)+(startHour>=12?"p":"a")+" - "+
+            s2Z.format(endHour>12?endHour-12:endHour)+":"+s2Z.format(endMin)+(endHour>=12?"p":"a");
     }
     
     public String getPeriodAbbreviation() {
@@ -232,17 +246,34 @@ public class ExamAssignment extends ExamInfo implements Serializable {
 
     public String getTime(boolean pref) {
         if (getPeriod()==null) return "";
-        Date startTime = getPeriod().getStartTime();
-        Calendar cal = Calendar.getInstance(Locale.US);
-        cal.setTime(startTime);
-        cal.add(Calendar.MINUTE, getLength());
-        Date endTime = cal.getTime();
-        if (!pref || iPeriodPref==null || PreferenceLevel.sNeutral.equals(iPeriodPref)) 
-            return sTimeFormat.format(startTime) + " - "+ sTimeFormat.format(endTime);
+        int min = getPeriod().getStartSlot()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
+        int startHour = min / 60;
+        int startMin = min % 60;
+        min += getLength();
+        int endHour = min / 60;
+        int endMin = min % 60;
+        if (!pref || iPeriodPref==null || PreferenceLevel.sNeutral.equals(iPeriodPref))
+            return 
+            (startHour>12?startHour-12:startHour)+":"+(startMin<10?"0":"")+startMin+(startHour>=12?"p":"a")+" - "+
+            (endHour>12?endHour-12:endHour)+":"+(endMin<10?"0":"")+endMin+(endHour>=12?"p":"a");
         return
         "<span title='"+PreferenceLevel.prolog2string(iPeriodPref)+" "+getPeriodName()+"' style='color:"+PreferenceLevel.prolog2color(iPeriodPref)+";'>"+
-        sTimeFormat.format(startTime)+" - "+sTimeFormat.format(endTime)+
+        (startHour>12?startHour-12:startHour)+":"+(startMin<10?"0":"")+startMin+(startHour>=12?"p":"a")+" - "+
+        (endHour>12?endHour-12:endHour)+":"+(endMin<10?"0":"")+endMin+(endHour>=12?"p":"a")+
         "</span>";
+    }
+    
+    public String getTimeFixedLength() {
+        if (getPeriod()==null) return "";
+        int min = getPeriod().getStartSlot()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
+        int startHour = min / 60;
+        int startMin = min % 60;
+        min += getLength();
+        int endHour = min / 60;
+        int endMin = min % 60;
+        return 
+            s2Z.format(startHour>12?startHour-12:startHour)+":"+s2Z.format(startMin)+(startHour>=12?"p":"a")+" - "+
+            s2Z.format(endHour>12?endHour-12:endHour)+":"+s2Z.format(endMin)+(endHour>=12?"p":"a");
     }
 
     public TreeSet<ExamRoomInfo> getRooms() {

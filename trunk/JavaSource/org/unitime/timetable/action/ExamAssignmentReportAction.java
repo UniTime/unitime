@@ -466,8 +466,6 @@ public class ExamAssignmentReportAction extends Action {
 	}
 	
 	private PdfWebTable generatePeriodUsageReport(boolean html, ExamAssignmentReportForm form, Collection<ExamAssignmentInfo> exams, Long sessionId) {
-        SimpleDateFormat df = new SimpleDateFormat("EEE, MM/dd");
-        SimpleDateFormat tf = new SimpleDateFormat("hh:mmaa");
 	    String nl = (html?"<br>":"\n");
 	    PdfWebTable table = new PdfWebTable( 7,
                 form.getReport(), "examAssignmentReport.do?ord=%%",
@@ -485,8 +483,8 @@ public class ExamAssignmentReportAction extends Action {
         int tnrExams = 0, tnrStudents = 0, tnrExams10=0, tnrExams50=0, tnrExams100=0;
         for (Iterator i=ExamPeriod.findAll(sessionId, form.getExamType()).iterator();i.hasNext();) {
             ExamPeriod period = (ExamPeriod)i.next();
-            String periodDate = df.format(period.getStartDate());
-            String periodTime = tf.format(period.getStartTime())+" - "+tf.format(period.getEndTime());
+            String periodDate = period.getStartDateLabel();
+            String periodTime = period.getStartTimeLabel()+" - "+period.getEndTimeLabel();
             if (html && period.getPrefLevel()!=null && !PreferenceLevel.sNeutral.equals(period.getPrefLevel().getPrefProlog())) {
                 periodDate = "<font color='"+PreferenceLevel.prolog2color(period.getPrefLevel().getPrefProlog())+"'>"+periodDate+"</font>";
                 periodTime = "<font color='"+PreferenceLevel.prolog2color(period.getPrefLevel().getPrefProlog())+"'>"+periodTime+"</font>";
@@ -963,7 +961,7 @@ public class ExamAssignmentReportAction extends Action {
                                 enrollment += conflict.getOtherEventSize();
                                 seating += "Class";
                                 room += conflict.getOtherEventRoom();
-                                date += conflict.getOtherEventDate();
+                                //date += conflict.getOtherEventDate();
                                 time += conflict.getOtherEventTime(); 
                             }
                             table.addLine(
@@ -1030,7 +1028,7 @@ public class ExamAssignmentReportAction extends Action {
                                             exam.getExamName()+nl+conflict.getOtherEventName(),
                                             String.valueOf(exam.getNrStudents())+nl+conflict.getOtherEventSize(),
                                             Exam.sExamTypes[exam.getExamType()]+nl+"Class",
-                                            exam.getDate(html)+nl+conflict.getOtherEventDate(),
+                                            exam.getDate(html)+nl,//+conflict.getOtherEventDate(),
                                             exam.getTime(html)+nl+conflict.getOtherEventTime(),
                                             exam.getRoomsName(html, ", ")+nl+conflict.getOtherEventRoom(),
                                             ""
