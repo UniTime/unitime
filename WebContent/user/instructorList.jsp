@@ -32,7 +32,7 @@
 
 	<TABLE width="93%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
-			<TD valign="middle" colspan="10">
+			<TD valign="middle" colspan="11">
 					
 				<tt:section-header>
 					<tt:section-title>
@@ -95,7 +95,7 @@
 
 	<logic:equal name="instructorSearchForm" property="editable" value="true">
 		<TR>		
-			<TD colspan="10" align="right">
+			<TD colspan="11" align="right">
 				<TABLE border="0" cellspacing="1" cellpadding="0" align="right">
 				<TR>
 					<logic:equal name="instructorSearchForm" property="displayDeptList" value="false">
