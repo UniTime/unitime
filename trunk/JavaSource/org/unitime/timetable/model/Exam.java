@@ -35,7 +35,6 @@ import org.hibernate.Transaction;
 import org.unitime.commons.User;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.base.BaseExam;
-import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
@@ -513,6 +512,12 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                     "(o.ownerType="+ExamOwner.sOwnerTypeClass+" and o.ownerId=c.uniqueId) "+
                     ")").
                     setLong("instrOfferingConfigId", id).setCacheable(true).list();
+        } else if ("DepartmentalInstructor".equals(type)) {
+            return new ExamDAO().getSession().createQuery(
+                    "select distinct x from Exam x inner join x.instructors xi, DepartmentalInstructor i where "+
+                    "i.uniqueId=:instructorId and (xi.uniqueId=i.uniqueId or ("+
+                    "i.externalUniqueId is not null and i.externalUniqueId=xi.externalUniqueId))").
+                    setLong("instructorId", id).setCacheable(true).list();
         } else throw new RuntimeException("Unsupported type "+type);
     }
     
