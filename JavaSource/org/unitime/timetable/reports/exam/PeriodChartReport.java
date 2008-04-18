@@ -2,7 +2,6 @@ package org.unitime.timetable.reports.exam;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -38,14 +37,12 @@ public class PeriodChartReport extends PdfLegacyExamReport {
             }
             sections.addAll(exam.getSections());
         }
-        SimpleDateFormat ds = new SimpleDateFormat("MM/dd");
-        SimpleDateFormat ts = new SimpleDateFormat("hh:mmaa");
         Hashtable times = new Hashtable();
         Hashtable days = new Hashtable();
         for (Iterator i=ExamPeriod.findAll(getSession().getUniqueId(), getExamType()).iterator();i.hasNext();) {
             ExamPeriod period = (ExamPeriod)i.next();
-            times.put(new Integer(period.getStartSlot()), ts.format(period.getStartTime()));
-            days.put(new Integer(period.getDateOffset()), ds.format(period.getStartDate()));
+            times.put(new Integer(period.getStartSlot()), period.getStartTimeLabel());
+            days.put(new Integer(period.getDateOffset()), period.getStartDateLabel());
         }
         boolean headerPrinted = false;
         int nrCols = 6;
@@ -131,8 +128,15 @@ public class PeriodChartReport extends PdfLegacyExamReport {
                         total += section.getNrStudents();
                         if (iLimit>=0 && section.getNrStudents()<iLimit) continue;
                         totalListed += section.getNrStudents();
-                        linesThisPeriod.add(
-                                rpad(section.getName(), 15)+" "+
+                        if (iItype)
+                            linesThisPeriod.add(
+                                rpad(section.getName(),15)+" "+
+                                lpad(String.valueOf(section.getNrStudents()),4));
+                        else
+                            linesThisPeriod.add(
+                                rpad(section.getSubject(),4)+" "+
+                                rpad(section.getCourseNbr(),5)+" "+
+                                rpad(section.getSection(),3)+"  "+
                                 lpad(String.valueOf(section.getNrStudents()),4));
                     }
                     if (totalListed!=total)

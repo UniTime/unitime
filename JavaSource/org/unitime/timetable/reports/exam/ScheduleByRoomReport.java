@@ -26,8 +26,8 @@ public class ScheduleByRoomReport extends PdfLegacyExamReport {
 
     public void printReport() throws DocumentException {
         setHeader(new String[] {
-                "Bldg Room Capacity  ExCap Period Date And Time                          Subj Crsnbr InsTyp Sect  Enrl",
-                "---- ---- -------- ------ ------ -------------------------------------- ---- ------ ------ ---- -----"});
+                "Bldg  Room  Capacity  ExCap Period Date And Time                          Subj Crsnbr "+(iItype?"InsTyp ":"")+"Sect  Enrl",
+                "----- ----- -------- ------ ------ -------------------------------------- ---- ------ "+(iItype?"------ ":"")+"---- -----"});
         printHeader();
         Vector periods = new Vector(ExamPeriod.findAll(getSession().getUniqueId(), getExamType()));
         for (Iterator i = Location.findAllExamLocations(getSession().getUniqueId(), getExamType()).iterator(); i.hasNext();) {
@@ -58,18 +58,18 @@ public class ScheduleByRoomReport extends PdfLegacyExamReport {
                             }
                             println(
                                     (room!=null?
-                                            rpad(iPeriodPrinted?"":room.getBuildingAbbv(),4)+" "+
-                                            rpad(iPeriodPrinted?"":room.getRoomNumber(),4)+" "
+                                            rpad(iPeriodPrinted?"":room.getBuildingAbbv(),5)+" "+
+                                            rpad(iPeriodPrinted?"":room.getRoomNumber(),5)+" "
                                             :
                                             rpad(iPeriodPrinted?"":location.getLabel(),9)
                                     )+
                                     lpad(iPeriodPrinted?"":String.valueOf(location.getCapacity()),8)+" "+
                                     lpad(iPeriodPrinted?"":String.valueOf(location.getExamCapacity()),6)+" "+
                                     lpad(iStudentPrinted?"":String.valueOf(periods.indexOf(period)+1),6)+" "+
-                                    rpad(iStudentPrinted?"":period.getName(),38)+" "+
+                                    rpad(iStudentPrinted?"":formatPeriod(period),38)+" "+
                                     rpad(iSubjectPrinted?"":section.getSubject(),4)+" "+
                                     rpad(iCoursePrinted?"":section.getCourseNbr(), 6)+" "+
-                                    rpad(iITypePrinted?"":section.getItype(), 6)+" "+
+                                    (iItype?rpad(iITypePrinted?"":section.getItype(), 6)+" ":"")+
                                     lpad(section.getSection(),4)+" "+
                                     lpad(String.valueOf(section.getNrStudents()),5)
                                     
@@ -83,15 +83,15 @@ public class ScheduleByRoomReport extends PdfLegacyExamReport {
                 if (!iStudentPrinted) {
                     println(
                             (room!=null?
-                                    rpad(iPeriodPrinted?"":room.getBuildingAbbv(),4)+" "+
-                                    rpad(iPeriodPrinted?"":room.getRoomNumber(),4)+" "
+                                    rpad(iPeriodPrinted?"":room.getBuildingAbbv(),5)+" "+
+                                    rpad(iPeriodPrinted?"":room.getRoomNumber(),5)+" "
                                     :
-                                    rpad(iPeriodPrinted?"":location.getLabel(),9)
+                                    rpad(iPeriodPrinted?"":location.getLabel(),11)+" "
                             )+
                             lpad(iPeriodPrinted?"":String.valueOf(location.getCapacity()),8)+" "+
                             lpad(iPeriodPrinted?"":String.valueOf(location.getExamCapacity()),6)+" "+
                             lpad(String.valueOf(periods.indexOf(period)+1),6)+" "+
-                            rpad(period.getName(),38)
+                            rpad(formatPeriod(period),38)
                             );
                     iPeriodPrinted = !iNewPage;
                     //println("");
