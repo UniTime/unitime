@@ -23,12 +23,18 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
+import org.unitime.commons.Debug;
+import org.unitime.commons.User;
+import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.TimetableManager;
 
 /**
@@ -39,6 +45,7 @@ import org.unitime.timetable.model.TimetableManager;
 
 public abstract class BaseImport extends DataExchangeHelper {
     protected static Log sLog = LogFactory.getLog(BaseImport.class);
+	protected TimetableManager manager = null;
 
     public BaseImport() {
         super();
@@ -68,6 +75,23 @@ public abstract class BaseImport extends DataExchangeHelper {
             fatal("Unable to parse given XML, reason:"+e.getMessage(), e);
         }
     }    
+    
+	public void loadXml(Element rootElement, HttpServletRequest request) throws Exception {
+		if(request != null){
+			HttpSession httpSession = request.getSession();
+	        String userId = (String)httpSession.getAttribute("authUserExtId");
+	        User user = Web.getUser(httpSession);
+	        if (userId!=null) {
+	        	manager = TimetableManager.findByExternalId(userId);
+	        }
+	        if (manager==null && user!=null) {
+	            Debug.warning("No authenticated user defined, using "+user.getName());
+	        	manager = TimetableManager.getManager(user);
+	        }
+		}
+		loadXml(rootElement);
+	}
+
     
     public abstract void loadXml(Element rootElement) throws Exception;
     
