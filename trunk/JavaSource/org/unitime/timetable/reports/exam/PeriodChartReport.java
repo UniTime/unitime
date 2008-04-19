@@ -125,7 +125,6 @@ public class PeriodChartReport extends PdfLegacyExamReport {
                         if (iLimit<0 || section.getNrStudents()>=iLimit) linesThisSections ++;
                     nextLines = Math.max(nextLines,linesThisSections);
                 }
-                if (nextLines==0) continue;
                 if (iTotals) {
                     if (!headerPrinted) {
                         printHeader();
@@ -148,6 +147,7 @@ public class PeriodChartReport extends PdfLegacyExamReport {
                         setCont(timeStr+(days.size()>nrCols?" ("+firstDay+" - "+lastDay+")":""));
                     }
                 } else {
+                    if (nextLines==0) continue;
                     setCont(firstDay+" - "+lastDay+" "+fixedTimes.get(time));
                     setPageName(firstDay+" - "+lastDay+" "+fixedTimes.get(time));
                 }
