@@ -72,17 +72,18 @@ public class SubjectAreaImportDAO extends SubjectAreaDAO {
     }
     
 	public void loadFromXML(Element rootElement, HttpServletRequest request) throws Exception {
-		HttpSession httpSession = request.getSession();
-        String userId = (String)httpSession.getAttribute("authUserExtId");
-        User user = Web.getUser(httpSession);
-        if (userId!=null) {
-        	manager = TimetableManager.findByExternalId(userId);
-        }
-        if (manager==null && user!=null) {
-            Debug.warning("No authenticated user defined, using "+user.getName());
-        	manager = TimetableManager.getManager(user);
-        }
-        
+		if (request != null){
+			HttpSession httpSession = request.getSession();
+	        String userId = (String)httpSession.getAttribute("authUserExtId");
+	        User user = Web.getUser(httpSession);
+	        if (userId!=null) {
+	        	manager = TimetableManager.findByExternalId(userId);
+	        }
+	        if (manager==null && user!=null) {
+	            Debug.warning("No authenticated user defined, using "+user.getName());
+	        	manager = TimetableManager.getManager(user);
+	        }
+		}
 		loadFromXML(rootElement);
 	}
 
