@@ -22,20 +22,13 @@ package org.unitime.timetable.dataexchange;
 import java.io.FileInputStream;
 import java.util.Iterator;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
-import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.PositionCodeType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Staff;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.PositionCodeTypeDAO;
 
 
@@ -45,7 +38,6 @@ import org.unitime.timetable.model.dao.PositionCodeTypeDAO;
  *
  */
 public class StaffImport extends BaseImport {
-	TimetableManager manager = null;
 
 	public StaffImport() {
 		super();
@@ -71,20 +63,6 @@ public class StaffImport extends BaseImport {
         loadXml(root);
     }
     
-	public void loadXml(Element rootElement, HttpServletRequest request) throws Exception {
-		HttpSession httpSession = request.getSession();
-        String userId = (String)httpSession.getAttribute("authUserExtId");
-        User user = Web.getUser(httpSession);
-        if (userId!=null) {
-        	manager = TimetableManager.findByExternalId(userId);
-        }
-        if (manager==null && user!=null) {
-            Debug.warning("No authenticated user defined, using "+user.getName());
-        	manager = TimetableManager.getManager(user);
-        }
-        
-		loadXml(rootElement);
-	}
 	
     public void loadXml(Element root) throws Exception {
 
