@@ -3,13 +3,7 @@ package org.unitime.timetable.dataexchange;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-
 import org.dom4j.Element;
-import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Session;
@@ -20,21 +14,6 @@ import org.unitime.timetable.model.TimetableManager;
 public class StudentEnrollmentImport extends BaseImport {
 	TimetableManager manager = null;
 	HashMap<String, Class_> classes = new HashMap<String, Class_>();
-	public void loadXml(Element rootElement, HttpServletRequest request) throws Exception {
-		HttpSession httpSession = request.getSession();
-        String userId = (String)httpSession.getAttribute("authUserExtId");
-        User user = Web.getUser(httpSession);
-        if (userId!=null) {
-        	manager = TimetableManager.findByExternalId(userId);
-        }
-        if (manager==null && user!=null) {
-            Debug.warning("No authenticated user defined, using "+user.getName());
-        	manager = TimetableManager.getManager(user);
-        }
-        
-		loadXml(rootElement);
-	}
-	
 	
 	public StudentEnrollmentImport() {
 		super();
