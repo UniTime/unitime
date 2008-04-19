@@ -120,9 +120,7 @@ public class DataImportForm extends ActionForm {
 		this.op = op;
 	}
 
-	public void doImport(HttpServletRequest request) throws Exception {
-        
-		Document document = (new SAXReader()).read(file.getInputStream());
+	public static void importDocument(Document document, HttpServletRequest request) throws Exception {
         Element root = document.getRootElement();
 
         if (root.getName().equalsIgnoreCase("academicAreas")) {
@@ -173,6 +171,12 @@ public class DataImportForm extends ActionForm {
        else {
         	throw new Exception(root.getName() + " is an unknown data type.");
         }
+		
+	}
+	public void doImport(HttpServletRequest request) throws Exception {
+        
+		Document document = (new SAXReader()).read(file.getInputStream());
+		importDocument(document, request);
 	}
 }
 
