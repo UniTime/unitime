@@ -356,12 +356,12 @@ public class PdfWorksheet {
         String title = co.getTitle();
         if (title==null) title="*** Title not set";
         println("                                                                                              Proj  "+s2+"   Desig                   ");
-        println("Course    Title/Notes                           Credit Course Organization              Limit Enrl  Enrl  Reqd  Consent    Cross List");
-        println("--------- ------------------------------------- ------ -------------------------------- ----- ----- ----- ----- ---------- ----------");
-        println(rpad(co.getCourseName(),9)+" "+
+        println("Course     Title/Notes                           Credit Course Organization             Limit Enrl  Enrl  Reqd  Consent    Cross List");
+        println("---------- ------------------------------------- ------ ------------------------------- ----- ----- ----- ----- ---------- ----------");
+        println(rpad(co.getCourseName(),10)+" "+
                 rpad(title,37)+(title.length()>37?"-":" ")+" "+
                 rpad(offering.getCredit()==null?"":offering.getCredit().creditAbbv(),5)+" "+
-                rpad(courseOrg,32)+" "+
+                rpad(courseOrg,31)+" "+
                 lpad(courseLimit<=0?unlimited?"  inf":"":String.valueOf(courseLimit),5)+" "+
                 lpad(enrl<=0?"":String.valueOf(enrl),5)+" "+
                 lpad(lastLikeEnrl<=0?"":String.valueOf(lastLikeEnrl),5)+" "+
@@ -371,7 +371,7 @@ public class PdfWorksheet {
                 );
         while (title.length()>37) {
             title = title.substring(37);
-            println("          "+rpad(title,37)+(title.length()>37?"-":" "));
+            println("           "+rpad(title,37)+(title.length()>37?"-":" "));
         }
         if (co.getScheduleBookNote()!=null && co.getScheduleBookNote().trim().length()>0) {
             String note = co.getScheduleBookNote();
