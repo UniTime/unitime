@@ -6,9 +6,11 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -26,9 +28,12 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.SubjectArea;
+import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.reports.PdfLegacyReport;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamSectionInfo;
@@ -43,6 +48,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
     public static String sAllRegisteredReports = "";
     private Collection<ExamAssignmentInfo> iExams = null;
     private Session iSession = null;
+    private SubjectArea iSubjectArea = null;
     private int iExamType = -1;
     
     protected boolean iDispRooms = true;
@@ -61,15 +67,18 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
         sRegisteredReports.put("xpern", ExamScheduleByPeriodReport.class);
         sRegisteredReports.put("room", ScheduleByRoomReport.class);
         sRegisteredReports.put("chart", PeriodChartReport.class);
+        sRegisteredReports.put("ver", ExamVerificationReport.class);
         for (String report : sRegisteredReports.keySet())
             sAllRegisteredReports += (sAllRegisteredReports.length()>0?",":"") + report;
     }
     
-    public PdfLegacyExamReport(File file, String title, Session session, int examType, Collection<ExamAssignmentInfo> exams) throws DocumentException, IOException {
+    public PdfLegacyExamReport(File file, String title, Session session, int examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws DocumentException, IOException {
         super(file, title, (examType==Exam.sExamTypeFinal?"FINAL":"EVENING")+" EXAMINATIONS", title + " -- " + session.getLabel(), session.getLabel());
+        if (subjectArea!=null) setFooter(subjectArea.getSubjectAreaAbbreviation());
         iExams = exams;
         iSession = session;
         iExamType = examType;
+        iSubjectArea = subjectArea;
         iDispRooms = "true".equals(System.getProperty("room","true"));
         iNoRoom = System.getProperty("noroom","INSTR OFFC");
         iDirect = "true".equals(System.getProperty("direct","true"));
@@ -99,10 +108,15 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
         return iExamType;
     }
     
+    public SubjectArea getSubjectArea() {
+        return iSubjectArea;
+    }
+    
     public abstract void printReport() throws DocumentException; 
     
     protected boolean iSubjectPrinted = false;
     protected boolean iITypePrinted = false;
+    protected boolean iConfigPrinted = false;
     protected boolean iCoursePrinted = false;
     protected boolean iStudentPrinted = false;
     protected boolean iPeriodPrinted = false;
@@ -114,6 +128,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
         iStudentPrinted = false;
         iPeriodPrinted = false;
         iITypePrinted = false;
+        iConfigPrinted = false;
         iNewPage = true;
     }
     
@@ -237,22 +252,70 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                 sLog.info("Session: "+session);
             }
             int examType = (ApplicationProperties.getProperty("type","final").equalsIgnoreCase("final")?Exam.sExamTypeFinal:Exam.sExamTypeEvening);
+            boolean assgn = "true".equals(System.getProperty("assgn","true"));
             sLog.info("Exam type: "+Exam.sExamTypes[examType]);
             sLog.info("Loading exams...");
+            boolean perSubject = "true".equals(System.getProperty("persubject","false"));
+            HashSet<SubjectArea> subjects = null;
+            if (System.getProperty("subject")!=null) {
+                perSubject = true;
+                subjects = new HashSet();
+                String inSubjects = "";
+                for (StringTokenizer s=new StringTokenizer(System.getProperty("subject"),",");s.hasMoreTokens();)
+                    inSubjects += "'"+s.nextToken()+"'"+(s.hasMoreTokens()?",":"");
+                subjects.addAll(new _RootDAO().getSession().createQuery(
+                        "select sa from SubjectArea sa where sa.session.uniqueId=:sessionId and sa.subjectAreaAbbreviation in ("+inSubjects+")"
+                        ).setLong("sessionId", session.getUniqueId()).list());
+            }
             Vector<ExamAssignmentInfo> exams = new Vector<ExamAssignmentInfo>();
-            for (Iterator i=Exam.findAll(session.getUniqueId(),examType).iterator();i.hasNext();)
-                exams.add(new ExamAssignmentInfo((Exam)i.next()));
+            Hashtable<SubjectArea,Vector<ExamAssignmentInfo>> examsPerSubj = new Hashtable();
+            if (subjects==null) {
+                for (Iterator i=Exam.findAll(session.getUniqueId(),examType).iterator();i.hasNext();) {
+                    ExamAssignmentInfo exam = (assgn?new ExamAssignmentInfo((Exam)i.next()):new ExamAssignmentInfo((Exam)i.next(),null,null,null,null));
+                    exams.add(exam);
+                    if (perSubject) {
+                        HashSet<SubjectArea> sas = new HashSet<SubjectArea>();
+                        for (Iterator j=exam.getExam().getOwners().iterator();j.hasNext();) {
+                            ExamOwner owner = (ExamOwner)j.next();
+                            SubjectArea sa = owner.getCourse().getSubjectArea();
+                            if (!sas.add(sa)) continue;
+                            Vector<ExamAssignmentInfo> x = examsPerSubj.get(sa);
+                            if (x==null) { x = new Vector(); examsPerSubj.put(sa,x); }
+                            x.add(exam);
+                        }
+                    }
+                }
+            } else for (SubjectArea subject : subjects) {
+                Vector<ExamAssignmentInfo> examsOfThisSubject = new Vector();
+                for (Iterator i=Exam.findExamsOfSubjectArea(subject.getUniqueId(),examType).iterator();i.hasNext();) {
+                    ExamAssignmentInfo exam = (assgn?new ExamAssignmentInfo((Exam)i.next()):new ExamAssignmentInfo((Exam)i.next(),null,null,null,null)); 
+                    exams.add(exam);
+                    examsOfThisSubject.add(exam);
+                }
+                examsPerSubj.put(subject, examsOfThisSubject);
+            }
             for (StringTokenizer stk=new StringTokenizer(ApplicationProperties.getProperty("report",sAllRegisteredReports),",");stk.hasMoreTokens();) {
                 String reportName = stk.nextToken();
                 Class reportClass = sRegisteredReports.get(reportName);
                 if (reportClass==null) continue;
                 sLog.info("Report: "+reportClass.getName().substring(reportClass.getName().lastIndexOf('.')+1));
-                File file = new File(new File(ApplicationProperties.getProperty("output",".")),
-                        session.getAcademicTerm()+session.getYear()+(examType==Exam.sExamTypeEvening?"evn":"fin")+"_"+reportName+".pdf");
-                sLog.info("Generating report "+file+" ...");
-                PdfLegacyExamReport report = (PdfLegacyExamReport)reportClass.getConstructor(new Class[] {File.class, Session.class, int.class, Collection.class}).newInstance(file, session, examType, exams);
-                report.printReport();
-                report.close();
+                if (perSubject) {
+                    for (Map.Entry<SubjectArea,Vector<ExamAssignmentInfo>> entry : examsPerSubj.entrySet()) {
+                        File file = new File(new File(ApplicationProperties.getProperty("output",".")),
+                            session.getAcademicTerm()+session.getYear()+(examType==Exam.sExamTypeEvening?"evn":"fin")+"_"+reportName+"_"+entry.getKey().getSubjectAreaAbbreviation()+".pdf");
+                        sLog.info("Generating report "+file+" ("+entry.getKey().getSubjectAreaAbbreviation()+") ...");
+                        PdfLegacyExamReport report = (PdfLegacyExamReport)reportClass.getConstructor(File.class, Session.class, int.class, SubjectArea.class, Collection.class).newInstance(file, session, examType, entry.getKey(), entry.getValue());
+                        report.printReport();
+                        report.close();
+                    }
+                } else {
+                    File file = new File(new File(ApplicationProperties.getProperty("output",".")),
+                            session.getAcademicTerm()+session.getYear()+(examType==Exam.sExamTypeEvening?"evn":"fin")+"_"+reportName+".pdf");
+                        sLog.info("Generating report "+file+" ...");
+                        PdfLegacyExamReport report = (PdfLegacyExamReport)reportClass.getConstructor(File.class, Session.class, int.class, SubjectArea.class, Collection.class).newInstance(file, session, examType, null, exams);
+                        report.printReport();
+                        report.close();
+                }
             }
             sLog.info("Done.");
         } catch (Exception e) {

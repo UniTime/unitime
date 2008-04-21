@@ -9,6 +9,7 @@ import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
 import org.unitime.timetable.solver.exam.ui.ExamInfo;
 import org.unitime.timetable.solver.exam.ui.ExamRoomInfo;
@@ -19,8 +20,8 @@ import com.lowagie.text.DocumentException;
 public class ScheduleByCourseReport extends PdfLegacyExamReport {
     protected static Logger sLog = Logger.getLogger(ScheduleByCourseReport.class);
     
-    public ScheduleByCourseReport(File file, Session session, int examType, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
-        super(file, "SCHEDULE BY COURSE", session, examType, exams);
+    public ScheduleByCourseReport(File file, Session session, int examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
+        super(file, "SCHEDULE BY COURSE", session, examType, subjectArea, exams);
     }
     
     public void printReport() throws DocumentException {
@@ -28,6 +29,7 @@ public class ScheduleByCourseReport extends PdfLegacyExamReport {
         Hashtable<String,TreeSet<ExamSectionInfo>> subject2courseSections = new Hashtable();
         for (ExamInfo exam : getExams()) {
             for (ExamSectionInfo section : exam.getSections()) {
+                if (getSubjectArea()!=null && !getSubjectArea().getSubjectAreaAbbreviation().equals(section.getSubject())) continue;
                 TreeSet<ExamSectionInfo> sections = subject2courseSections.get(section.getSubject());
                 if (sections==null) {
                     sections = new TreeSet();
