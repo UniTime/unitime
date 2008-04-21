@@ -44,7 +44,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
     private CourseOffering iCourseOffering = null;
 
     public ExamVerificationReport(File file, Session session, int examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
-        super(file, "EXAMINATION REQUESTS", session, examType, subjectArea, exams);
+        super(file, "EXAMINATION VERIFICATION REPORT", session, examType, subjectArea, exams);
     }
     
     public TreeSet<ExamAssignmentInfo> getExams(CourseOffering course) {
@@ -188,7 +188,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
         if (exams.isEmpty()) {
             String message = "** NO SECTION EXAM **";
             if (!hasSectionExam && !same.firstElement().getSchedulingSubpart().getItype().isOrganized()) message = "Not organized instructional type";
-            if (hasCourseExam && !hasSectionExam) message = "Has course exam";
+            if (hasCourseExam && !hasSectionExam) message = "Has other exam";
             if (cmw.length()>0 && getLineNumber()+2>sNrLines) newPage();
             println(
                     lpad(iITypePrinted?"":same.firstElement().getSchedulingSubpart().getItypeDesc(),11)+" "+
@@ -302,7 +302,9 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
         System.out.println("Loading courses ...");
         TreeSet<CourseOffering> allCourses = new TreeSet(new Comparator<CourseOffering>() {
             public int compare(CourseOffering co1, CourseOffering co2) {
-                int cmp = co1.getCourseNbr().compareTo(co2.getCourseNbr());
+                int cmp = co1.getSubjectAreaAbbv().compareTo(co2.getSubjectAreaAbbv());
+                if (cmp!=0) return cmp;
+                cmp = co1.getCourseNbr().compareTo(co2.getCourseNbr());
                 if (cmp!=0) return cmp;
                 return co1.getUniqueId().compareTo(co2.getUniqueId());
             }
@@ -328,6 +330,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
             if (!co.isIsControl() && co.getInstructionalOffering().getControllingCourseOffering().getSubjectArea().equals(co.getSubjectArea())) continue;
             if (subject==null) {
                 subject = co.getSubjectArea();
+                setFooter(subject.getSubjectAreaAbbreviation());
             } else if (!subject.equals(co.getSubjectArea())) {
                 subject = co.getSubjectArea();
                 newPage(); setFooter(subject.getSubjectAreaAbbreviation());
@@ -505,6 +508,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                     }
                 }
                 if (allSectionsHaveExam && classes.size()>1) hasSubpartExam = true;
+                if (allSectionsHaveExam) hasCourseExam = true;
                 for (Class_ clazz : classes) {
                     int enrl = 
                         ((Number)new _RootDAO().getSession().createQuery(
@@ -519,7 +523,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                         continue;
                     }
                     if (!same.isEmpty()) {
-                        print(same, hasCourseExam || hasSubpartExam, hasSectionExam, minLimit, maxLimit, minEnrl, maxEnrl);
+                        print(same, hasCourseExam, hasSectionExam, minLimit, maxLimit, minEnrl, maxEnrl);
                         same.clear();
                     }
                     exams = getExams(clazz);
