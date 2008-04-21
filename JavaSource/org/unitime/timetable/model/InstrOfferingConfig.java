@@ -40,7 +40,6 @@ import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
 import org.unitime.timetable.model.comparators.NavigationComparator;
 import org.unitime.timetable.model.comparators.PosReservationComparator;
 import org.unitime.timetable.model.comparators.StudentGroupReservationComparator;
-import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
 import org.unitime.timetable.util.Constants;
 
