@@ -33,7 +33,6 @@ import org.unitime.commons.User;
 import org.unitime.timetable.model.base.BaseSchedulingSubpart;
 import org.unitime.timetable.model.comparators.NavigationComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
-import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 import org.unitime.timetable.webutil.Navigation;
 
