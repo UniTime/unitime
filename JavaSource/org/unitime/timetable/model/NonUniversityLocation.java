@@ -19,8 +19,6 @@
 */
 package org.unitime.timetable.model;
 
-import java.util.List;
-
 import org.unitime.timetable.model.base.BaseNonUniversityLocation;
 import org.unitime.timetable.model.dao.NonUniversityLocationDAO;
 

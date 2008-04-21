@@ -47,7 +47,6 @@ import org.unitime.timetable.model.comparators.InstructionalOfferingComparator;
 import org.unitime.timetable.model.comparators.NavigationComparator;
 import org.unitime.timetable.model.comparators.PosReservationComparator;
 import org.unitime.timetable.model.comparators.StudentGroupReservationComparator;
-import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.util.InstrOfferingPermIdGenerator;
