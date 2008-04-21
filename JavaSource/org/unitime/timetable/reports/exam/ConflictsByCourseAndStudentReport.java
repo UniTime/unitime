@@ -13,6 +13,7 @@ import java.util.Vector;
 import org.apache.log4j.Logger;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
@@ -28,8 +29,8 @@ public class ConflictsByCourseAndStudentReport extends PdfLegacyExamReport {
     protected static Logger sLog = Logger.getLogger(ConflictsByCourseAndStudentReport.class);
     Hashtable<Long,String> iStudentNames = new Hashtable();
     
-    public ConflictsByCourseAndStudentReport(File file, Session session, int examType, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
-        super(file, "CONFLICTS BY COURSE AND STUDENT", session, examType, exams);
+    public ConflictsByCourseAndStudentReport(File file, Session session, int examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
+        super(file, "CONFLICTS BY COURSE AND STUDENT", session, examType, subjectArea, exams);
         sLog.debug("  Loading students ...");
         for (Iterator i=new StudentDAO().getSession().createQuery("select s.uniqueId, s.externalUniqueId, s.lastName, s.firstName, s.middleName from Student s where s.session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).iterate();i.hasNext();) {
             Object[] o = (Object[])i.next();
@@ -45,6 +46,7 @@ public class ConflictsByCourseAndStudentReport extends PdfLegacyExamReport {
         Hashtable<String,TreeSet<ExamSectionInfo>> subject2courseSections = new Hashtable();
         for (ExamInfo exam : getExams()) {
             for (ExamSectionInfo section : exam.getSections()) {
+                if (getSubjectArea()!=null && !getSubjectArea().getSubjectAreaAbbreviation().equals(section.getSubject())) continue;
                 TreeSet<ExamSectionInfo> sections = subject2courseSections.get(section.getSubject());
                 if (sections==null) {
                     sections = new TreeSet();

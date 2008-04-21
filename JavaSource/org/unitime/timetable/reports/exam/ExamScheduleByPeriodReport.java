@@ -9,6 +9,7 @@ import java.util.TreeSet;
 import org.apache.log4j.Logger;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
 import org.unitime.timetable.solver.exam.ui.ExamRoomInfo;
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamSectionInfo;
@@ -18,8 +19,8 @@ import com.lowagie.text.DocumentException;
 public class ExamScheduleByPeriodReport extends PdfLegacyExamReport {
     protected static Logger sLog = Logger.getLogger(ScheduleByPeriodReport.class);
     
-    public ExamScheduleByPeriodReport(File file, Session session, int examType, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
-        super(file, "SCHEDULE BY PERIOD", session, examType, exams);
+    public ExamScheduleByPeriodReport(File file, Session session, int examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
+        super(file, "SCHEDULE BY PERIOD", session, examType, subjectArea, exams);
     }
 
     
@@ -43,6 +44,7 @@ public class ExamScheduleByPeriodReport extends PdfLegacyExamReport {
                 ExamSectionInfo lastSection = null;
                 for (Iterator<ExamSectionInfo> j = exam.getSections().iterator(); j.hasNext();) {
                     ExamSectionInfo  section = j.next();
+                    if (getSubjectArea()!=null && !getSubjectArea().getSubjectAreaAbbreviation().equals(section.getSubject())) continue;
                     iSubjectPrinted = iCoursePrinted = iStudentPrinted = false;
                     if (lastSection!=null) {
                         if (section.getSubject().equals(lastSection.getSubject())) {
