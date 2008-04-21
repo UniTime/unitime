@@ -12,6 +12,7 @@ import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamSectionInfo;
 
@@ -20,8 +21,8 @@ import com.lowagie.text.DocumentException;
 public class ScheduleByRoomReport extends PdfLegacyExamReport {
     protected static Logger sLog = Logger.getLogger(ScheduleByCourseReport.class);
     
-    public ScheduleByRoomReport(File file, Session session, int examType, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
-        super(file, "SCHEDULE BY ROOM", session, examType, exams);
+    public ScheduleByRoomReport(File file, Session session, int examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
+        super(file, "SCHEDULE BY ROOM", session, examType, subjectArea, exams);
     }
 
     public void printReport() throws DocumentException {
@@ -45,6 +46,7 @@ public class ScheduleByRoomReport extends PdfLegacyExamReport {
                         iSubjectPrinted = iCoursePrinted = iITypePrinted = false;
                         ExamSectionInfo lastSection = null;
                         for (ExamSectionInfo section : exam.getSections()) {
+                            if (getSubjectArea()!=null && !getSubjectArea().getSubjectAreaAbbreviation().equals(section.getSubject())) continue;
                             if (lastSection!=null && iSubjectPrinted) {
                                 if (section.getSubject().equals(lastSection.getSubject())) {
                                     iSubjectPrinted = true;

@@ -15,6 +15,7 @@ import net.sf.cpsolver.ifs.util.ToolBox;
 import org.apache.log4j.Logger;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
 import org.unitime.timetable.solver.exam.ui.ExamRoomInfo;
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamSectionInfo;
@@ -26,8 +27,8 @@ public class PeriodChartReport extends PdfLegacyExamReport {
     protected Hashtable<String,String> iRoomCodes = new Hashtable();
     protected boolean iTotals = true;
     
-    public PeriodChartReport(File file, Session session, int examType, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
-        super(file, "PERIOD ASSIGNMENT", session, examType, exams);
+    public PeriodChartReport(File file, Session session, int examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
+        super(file, "PERIOD ASSIGNMENT", session, examType, subjectArea, exams);
         if (iLimit>=0) setFooter("limit="+iLimit);
         setRoomCode(System.getProperty("roomcode"));
         iTotals = "true".equals(System.getProperty("totals","true"));
@@ -59,7 +60,10 @@ public class PeriodChartReport extends PdfLegacyExamReport {
                 sections = new TreeSet();
                 period2courseSections.put(exam.getPeriod(),sections);
             }
-            sections.addAll(exam.getSections());
+            for (ExamSectionInfo section : exam.getSections()) {
+                if (getSubjectArea()!=null && !getSubjectArea().getSubjectAreaAbbreviation().equals(section.getSubject())) continue;
+                sections.add(section);
+            }
         }
         Hashtable<Integer,String> times = new Hashtable();
         Hashtable<Integer,String> fixedTimes = new Hashtable();
