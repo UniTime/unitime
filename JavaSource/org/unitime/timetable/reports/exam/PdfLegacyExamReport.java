@@ -68,6 +68,8 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
         sRegisteredReports.put("room", ScheduleByRoomReport.class);
         sRegisteredReports.put("chart", PeriodChartReport.class);
         sRegisteredReports.put("ver", ExamVerificationReport.class);
+        sRegisteredReports.put("abbv", AbbvScheduleByCourseReport.class);
+        sRegisteredReports.put("xabbv", AbbvExamScheduleByCourseReport.class);
         for (String report : sRegisteredReports.keySet())
             sAllRegisteredReports += (sAllRegisteredReports.length()>0?",":"") + report;
     }
