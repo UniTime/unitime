@@ -3,6 +3,7 @@ package org.unitime.timetable.reports;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -24,6 +25,7 @@ public class PdfLegacyReport {
     private Document iDoc = null;
     private PdfWriter iWriter = null;
     private StringBuffer iBuffer = new StringBuffer();
+    private PrintWriter iPrint = null;
     private String iTitle, iTitle2;
     private String iSession;
     private int iPageNo = 0;
@@ -34,24 +36,35 @@ public class PdfLegacyReport {
     private String iFooter = null;
     
     private boolean iEmpty = true;
+    private int iMode = 0;
     
-    public PdfLegacyReport(File file, String title, String title2, String subject, String session) throws IOException, DocumentException{
+    public static final int sModeNormal = 0;
+    public static final int sModeLedger = 1;
+    public static final int sModeText   = 2;
+    
+    public PdfLegacyReport(int mode, File file, String title, String title2, String subject, String session) throws IOException, DocumentException{
         iFile = file;
         iTitle = title;
         iTitle2 = title2;
         iSession = session;
 
-        iDoc = new Document(PageSize.LETTER.rotate());
-
         iOut = new FileOutputStream(file);
-        iWriter = PdfWriter.getInstance(iDoc, iOut);
 
-        iDoc.addTitle(title);
-        iDoc.addAuthor(ApplicationProperties.getProperty("tmtbl.pdf.examreport.author","UniTime 3.0."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+", www.unitime.org"));
-        iDoc.addSubject(subject);
-        iDoc.addCreator("UniTime 3.0."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+", www.unitime.org");
+        if (mode==sModeText) {
+            iPrint = new PrintWriter(iOut);
+        } else {
+            if (mode==sModeLedger) sNrLines = 116;
+            iDoc = new Document(mode==sModeLedger?PageSize.LEDGER.rotate():PageSize.LETTER.rotate());
 
-        iDoc.open();
+            iWriter = PdfWriter.getInstance(iDoc, iOut);
+
+            iDoc.addTitle(title);
+            iDoc.addAuthor(ApplicationProperties.getProperty("tmtbl.pdf.examreport.author","UniTime 3.0."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+", www.unitime.org"));
+            iDoc.addSubject(subject);
+            iDoc.addCreator("UniTime 3.0."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+", www.unitime.org");
+
+            iDoc.open();
+        }
     }
     
     protected void setPageName(String pageName) {
@@ -162,9 +175,13 @@ public class PdfLegacyReport {
         iEmpty=false;
         out("");
         out(renderEnd(renderMiddle((iFooter==null?"":iFooter),"Page "+(iPageNo+1)),(iPageId==null||iPageId.length()==0?"":iPageId)+"  "));
-        Paragraph p = new Paragraph(iBuffer.toString(), FontFactory.getFont(FontFactory.COURIER, 9));
-        p.setLeading(9.5f); //was 13.5f
-        iDoc.add(p);
+        if (iPrint!=null) {
+            iPrint.print(iBuffer);
+        } else {
+            Paragraph p = new Paragraph(iBuffer.toString(), FontFactory.getFont(FontFactory.COURIER, 9));
+            p.setLeading(9.5f); //was 13.5f
+            iDoc.add(p);
+        }
         iBuffer = new StringBuffer();
         iPageNo++;
     }
@@ -180,7 +197,11 @@ public class PdfLegacyReport {
             out(""); iLineNo++;
         }
         printFooter();
-        iDoc.newPage();
+        if (iPrint!=null) {
+            iPrint.print("\f\n");
+        } else {
+            iDoc.newPage();
+        }
         printHeader();
     }
     
@@ -200,7 +221,11 @@ public class PdfLegacyReport {
     
     public void close() throws IOException, DocumentException {
         if (isEmpty()) { println("Nothing to report."); lastPage(); }
-        iDoc.close();
-        iOut.close();
+        if (iPrint!=null) {
+            iPrint.flush(); iPrint.close();
+        } else {
+            iDoc.close();
+            iOut.close();
+        }
     }
 }

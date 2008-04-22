@@ -72,8 +72,8 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
             sAllRegisteredReports += (sAllRegisteredReports.length()>0?",":"") + report;
     }
     
-    public PdfLegacyExamReport(File file, String title, Session session, int examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws DocumentException, IOException {
-        super(file, title, (examType==Exam.sExamTypeFinal?"FINAL":"EVENING")+" EXAMINATIONS", title + " -- " + session.getLabel(), session.getLabel());
+    public PdfLegacyExamReport(int mode, File file, String title, Session session, int examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws DocumentException, IOException {
+        super(mode, file, title, (examType==Exam.sExamTypeFinal?"FINAL":"EVENING")+" EXAMINATIONS", title + " -- " + session.getLabel(), session.getLabel());
         if (subjectArea!=null) setFooter(subjectArea.getSubjectAreaAbbreviation());
         iExams = exams;
         iSession = session;
@@ -253,6 +253,9 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
             }
             int examType = (ApplicationProperties.getProperty("type","final").equalsIgnoreCase("final")?Exam.sExamTypeFinal:Exam.sExamTypeEvening);
             boolean assgn = "true".equals(System.getProperty("assgn","true"));
+            int mode = sModeNormal;
+            if ("text".equals(System.getProperty("mode"))) mode = sModeText;
+            if ("ledger".equals(System.getProperty("mode"))) mode = sModeLedger;
             sLog.info("Exam type: "+Exam.sExamTypes[examType]);
             sLog.info("Loading exams...");
             boolean perSubject = "true".equals(System.getProperty("persubject","false"));
@@ -302,17 +305,17 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                 if (perSubject) {
                     for (Map.Entry<SubjectArea,Vector<ExamAssignmentInfo>> entry : examsPerSubj.entrySet()) {
                         File file = new File(new File(ApplicationProperties.getProperty("output",".")),
-                            session.getAcademicTerm()+session.getYear()+(examType==Exam.sExamTypeEvening?"evn":"fin")+"_"+reportName+"_"+entry.getKey().getSubjectAreaAbbreviation()+".pdf");
+                            session.getAcademicTerm()+session.getYear()+(examType==Exam.sExamTypeEvening?"evn":"fin")+"_"+reportName+"_"+entry.getKey().getSubjectAreaAbbreviation()+(mode==sModeText?".txt":".pdf"));
                         sLog.info("Generating report "+file+" ("+entry.getKey().getSubjectAreaAbbreviation()+") ...");
-                        PdfLegacyExamReport report = (PdfLegacyExamReport)reportClass.getConstructor(File.class, Session.class, int.class, SubjectArea.class, Collection.class).newInstance(file, session, examType, entry.getKey(), entry.getValue());
+                        PdfLegacyExamReport report = (PdfLegacyExamReport)reportClass.getConstructor(int.class, File.class, Session.class, int.class, SubjectArea.class, Collection.class).newInstance(mode, file, session, examType, entry.getKey(), entry.getValue());
                         report.printReport();
                         report.close();
                     }
                 } else {
                     File file = new File(new File(ApplicationProperties.getProperty("output",".")),
-                            session.getAcademicTerm()+session.getYear()+(examType==Exam.sExamTypeEvening?"evn":"fin")+"_"+reportName+".pdf");
+                            session.getAcademicTerm()+session.getYear()+(examType==Exam.sExamTypeEvening?"evn":"fin")+"_"+reportName+(mode==sModeText?".txt":".pdf"));
                         sLog.info("Generating report "+file+" ...");
-                        PdfLegacyExamReport report = (PdfLegacyExamReport)reportClass.getConstructor(File.class, Session.class, int.class, SubjectArea.class, Collection.class).newInstance(file, session, examType, null, exams);
+                        PdfLegacyExamReport report = (PdfLegacyExamReport)reportClass.getConstructor(int.class, File.class, Session.class, int.class, SubjectArea.class, Collection.class).newInstance(mode, file, session, examType, null, exams);
                         report.printReport();
                         report.close();
                 }

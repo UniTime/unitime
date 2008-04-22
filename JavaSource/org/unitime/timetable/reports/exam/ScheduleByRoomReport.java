@@ -21,8 +21,8 @@ import com.lowagie.text.DocumentException;
 public class ScheduleByRoomReport extends PdfLegacyExamReport {
     protected static Logger sLog = Logger.getLogger(ScheduleByCourseReport.class);
     
-    public ScheduleByRoomReport(File file, Session session, int examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
-        super(file, "SCHEDULE BY ROOM", session, examType, subjectArea, exams);
+    public ScheduleByRoomReport(int mode, File file, Session session, int examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
+        super(mode, file, "SCHEDULE BY ROOM", session, examType, subjectArea, exams);
     }
 
     public void printReport() throws DocumentException {
