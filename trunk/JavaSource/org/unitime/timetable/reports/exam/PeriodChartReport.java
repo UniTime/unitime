@@ -27,8 +27,8 @@ public class PeriodChartReport extends PdfLegacyExamReport {
     protected Hashtable<String,String> iRoomCodes = new Hashtable();
     protected boolean iTotals = true;
     
-    public PeriodChartReport(File file, Session session, int examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
-        super(file, "PERIOD ASSIGNMENT", session, examType, subjectArea, exams);
+    public PeriodChartReport(int mode, File file, Session session, int examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
+        super(mode, file, "PERIOD ASSIGNMENT", session, examType, subjectArea, exams);
         if (iLimit>=0) setFooter("limit="+iLimit);
         setRoomCode(System.getProperty("roomcode"));
         iTotals = "true".equals(System.getProperty("totals","true"));

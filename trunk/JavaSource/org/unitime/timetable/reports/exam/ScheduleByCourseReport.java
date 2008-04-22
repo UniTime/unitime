@@ -20,8 +20,8 @@ import com.lowagie.text.DocumentException;
 public class ScheduleByCourseReport extends PdfLegacyExamReport {
     protected static Logger sLog = Logger.getLogger(ScheduleByCourseReport.class);
     
-    public ScheduleByCourseReport(File file, Session session, int examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
-        super(file, "SCHEDULE BY COURSE", session, examType, subjectArea, exams);
+    public ScheduleByCourseReport(int mode, File file, Session session, int examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
+        super(mode, file, "SCHEDULE BY COURSE", session, examType, subjectArea, exams);
     }
     
     public void printReport() throws DocumentException {

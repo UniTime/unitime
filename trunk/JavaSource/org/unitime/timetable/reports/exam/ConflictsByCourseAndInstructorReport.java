@@ -26,8 +26,8 @@ public class ConflictsByCourseAndInstructorReport extends PdfLegacyExamReport {
     protected static Logger sLog = Logger.getLogger(ConflictsByCourseAndStudentReport.class);
     Hashtable<Long,String> iStudentNames = new Hashtable();
     
-    public ConflictsByCourseAndInstructorReport(File file, Session session, int examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
-        super(file, "CONFLICTS BY COURSE AND INSTRUCTOR", session, examType, subjectArea, exams);
+    public ConflictsByCourseAndInstructorReport(int mode, File file, Session session, int examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
+        super(mode, file, "CONFLICTS BY COURSE AND INSTRUCTOR", session, examType, subjectArea, exams);
     }
     
     public void printReport() throws DocumentException {
