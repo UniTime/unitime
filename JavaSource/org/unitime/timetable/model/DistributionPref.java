@@ -522,6 +522,6 @@ public class DistributionPref extends BaseDistributionPref {
     }
     
     public String toString(){
-    	return(preferenceText(true, false, " ", ", ", ""));
+    	return(preferenceText(false, false, " ", ", ", ""));
     }
 }
