@@ -68,6 +68,7 @@ import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.VariableFixedCreditUnitConfig;
 import org.unitime.timetable.model.VariableRangeCreditUnitConfig;
+import org.unitime.timetable.test.MakeAssignmentsForClassEvents;
 import org.unitime.timetable.util.CalendarUtils;
 import org.unitime.timetable.util.Constants;
 
@@ -89,6 +90,7 @@ public class CourseOfferingImport extends BaseImport {
 	String timeFormat = null;
 	boolean useMeetsWithElement = false;
 	PreferenceLevel requiredPrefLevel = null;
+	MakeAssignmentsForClassEvents assignmentHelper = null;
 	
 	public void loadXml(Element rootElement) throws Exception {
 		int changeCount = 0;
@@ -129,7 +131,7 @@ public class CourseOfferingImport extends BaseImport {
 	        loadClassEventType();
 	        loadRequiredPrefLevel();
 	        loadMeetsWithDistributionType();
-		    
+	        assignmentHelper = new MakeAssignmentsForClassEvents(session, getHibSession());
 	        if (created != null) {
 		        addNote("Loading offerings XML file created on: " + created);
 				ChangeLog.addChange(getHibSession(), manager, session, session, created, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.UPDATE, null, null);
@@ -1612,26 +1614,27 @@ public class CourseOfferingImport extends BaseImport {
 				if (dates != null){
 					dp = findDatePattern(dates.get("startDates"), dates.get("endDates"), clazz);					
 				}
-				if (dp == null && clazz.getDatePattern() != null){
-					if (!clazz.getDatePattern().isDefault() && clazz.getSchedulingSubpart().effectiveDatePattern().isDefault()){
+				if (classElement.element("meeting") == null){
+					if (dp == null && clazz.getDatePattern() != null){
+						if (!clazz.getDatePattern().isDefault() && clazz.getSchedulingSubpart().effectiveDatePattern().isDefault()){
+							clazz.setDatePattern(dp);
+							addNote("\t" + ioc.getCourseName() + " " + type + suffix + " 'class' date pattern changed back to default");
+							changed = true;
+						} else if (!clazz.getDatePattern().isDefault() && !clazz.getSchedulingSubpart().effectiveDatePattern().isDefault()){
+							clazz.setDatePattern(session.getDefaultDatePatternNotNull());
+							addNote("\t" + ioc.getCourseName() + " " + type + suffix + " 'class' date pattern changed to default");
+							changed = true;
+						}
+					} else if (dp != null && clazz.getDatePattern() == null){
 						clazz.setDatePattern(dp);
-						addNote("\t" + ioc.getCourseName() + " " + type + suffix + " 'class' date pattern changed back to default");
+						addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + "'class' date pattern changed from default");
 						changed = true;
-					} else if (!clazz.getDatePattern().isDefault() && !clazz.getSchedulingSubpart().effectiveDatePattern().isDefault()){
-						clazz.setDatePattern(session.getDefaultDatePatternNotNull());
-						addNote("\t" + ioc.getCourseName() + " " + type + suffix + " 'class' date pattern changed to default");
+					} else if (dp != null && clazz.getDatePattern() != null && !clazz.getDatePattern().getUniqueId().equals(dp.getUniqueId())){
+						clazz.setDatePattern(dp);
+						addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " 'class' date pattern changed");
 						changed = true;
 					}
-				} else if (dp != null && clazz.getDatePattern() == null){
-					clazz.setDatePattern(dp);
-					addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + "'class' date pattern changed from default");
-					changed = true;
-				} else if (dp != null && clazz.getDatePattern() != null && !clazz.getDatePattern().getUniqueId().equals(dp.getUniqueId())){
-					clazz.setDatePattern(dp);
-					addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " 'class' date pattern changed");
-					changed = true;
 				}
-				
 				if (changed){
 					this.getHibSession().saveOrUpdate(clazz);
 				}
@@ -1849,6 +1852,7 @@ public class CourseOfferingImport extends BaseImport {
 				newEvent.addTomeetings(meeting);
 			}
 			getHibSession().save(newEvent);
+			assignmentHelper.createAssignment(c, newEvent);
 			changed = true; 
 			addNote("\tdid not find matching event, added new event: " + c.getSchedulingSubpart().getInstrOfferingConfig().getCourseName() + " " + c.getSchedulingSubpart().getItype().getAbbv().trim() + " " + c.getClassSuffix());
 			ChangeLog.addChange(getHibSession(), manager, session, newEvent, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.CREATE, c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea(), c.getSchedulingSubpart().getControllingCourseOffering().getDepartment());
@@ -1889,6 +1893,7 @@ public class CourseOfferingImport extends BaseImport {
 					}
 				}
 				if (changed){
+					assignmentHelper.createAssignment(c, origEvent);
 					ChangeLog.addChange(getHibSession(), manager, session, origEvent, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.UPDATE, c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea(), c.getSchedulingSubpart().getControllingCourseOffering().getDepartment());	
 					getHibSession().update(origEvent);
 				}
