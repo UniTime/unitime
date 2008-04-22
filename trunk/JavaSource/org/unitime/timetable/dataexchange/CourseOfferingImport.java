@@ -1806,6 +1806,7 @@ public class CourseOfferingImport extends BaseImport {
 				distObj.setDistributionPref(dp);
 				distObj.setPrefGroup(c);
 				dp.addTodistributionObjects(distObj);
+				c.addTodistributionObjects(distObj);
 			}
 			getHibSession().save(dp);
 			getHibSession().flush();
