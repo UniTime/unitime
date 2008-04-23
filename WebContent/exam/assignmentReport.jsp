@@ -23,7 +23,7 @@
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <script language="JavaScript" type="text/javascript" src="scripts/block.js"></script>
-<tt:back-mark back="true" clear="true" title="Examination Assignments" uri="examAssignmentReport.do"/>
+<tt:back-mark back="true" clear="true" title="Examination Reports" uri="examAssignmentReport.do"/>
 <tiles:importAttribute />
 <html:form action="/examAssignmentReport">
 	<script language="JavaScript">blToggleHeader('Filter','dispFilter');blStart('dispFilter');</script>
