@@ -58,6 +58,8 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
     protected boolean iBtb = false;
     protected int iLimit = -1;
     protected boolean iItype = false;
+    protected Hashtable<String,String> iRoomCodes = new Hashtable();
+    protected boolean iTotals = true;
     
     static {
         sRegisteredReports.put("crsn", ScheduleByCourseReport.class);
@@ -88,6 +90,8 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
         iBtb = "true".equals(System.getProperty("btb","false"));
         iLimit = Integer.parseInt(System.getProperty("limit", "-1"));
         iItype = "true".equals(System.getProperty("itype","false"));
+        iTotals = "true".equals(System.getProperty("totals","true"));
+        setRoomCode(System.getProperty("roomcode"));
     }
     
     public void setDispRooms(boolean dispRooms) { iDispRooms = dispRooms; }
@@ -97,6 +101,23 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
     public void setBtb(boolean btb) { iBtb = btb; }
     public void setLimit(int limit) { iLimit = limit; }
     public void setItype(boolean itype) { iItype = itype; }
+    public void setTotals(boolean totals) { iTotals = totals; }
+    public String setRoomCode(String roomCode) {
+        if (roomCode==null || roomCode.length()==0) {
+            iRoomCodes = null;
+            return null;
+        }
+        iRoomCodes = new Hashtable<String, String>();
+        String codes = "";
+        for (StringTokenizer s = new StringTokenizer(roomCode,":;,=");s.hasMoreTokens();) {
+            String room = s.nextToken(), code = s.nextToken();
+            iRoomCodes.put(room, code);
+            if (codes.length()>0) codes += ", ";
+            codes += code+":"+room;
+        }
+        return codes;
+    }
+
 
     public Collection<ExamAssignmentInfo> getExams() {
         return iExams;
