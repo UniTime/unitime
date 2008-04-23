@@ -21,7 +21,7 @@
 <struts-config>
 
    <display-name>UniTime</display-name>
-   <description>University Course Timetabling Application</description>
+   <description>University Timetabling Application</description>
    
    <data-sources />
    
@@ -119,6 +119,7 @@
       <form-bean name="examSolverForm" type="org.unitime.timetable.form.ExamSolverForm" />
 	  <form-bean name="examSolverLogForm" type="org.unitime.timetable.form.ExamSolverLogForm" />
 	  <form-bean name="examReportForm" type="org.unitime.timetable.form.ExamReportForm" />
+	  <form-bean name="examPdfReportForm" type="org.unitime.timetable.form.ExamPdfReportForm" />
 	  <form-bean name="examGridForm" type="org.unitime.timetable.form.ExamGridForm" />
 	  <form-bean name="examChangesForm" type="org.unitime.timetable.form.ExamChangesForm" />
 	  <form-bean name="examInfoForm" type="org.unitime.timetable.form.ExamInfoForm" />
@@ -2113,6 +2114,20 @@
     	<forward
     		name="show"
     		path="examAssignmentReportTile"
+    		redirect="true" />
+    </action>
+    
+    <action
+    	path="/examPdfReport"
+    	type="org.unitime.timetable.action.ExamPdfReportAction"
+    	attribute="examPdfReportForm"
+    	input="examPdfReportTile"
+    	name="examPdfReportForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+    		name="show"
+    		path="examPdfReportTile"
     		redirect="true" />
     </action>
     

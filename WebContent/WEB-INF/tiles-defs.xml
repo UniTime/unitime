@@ -855,6 +855,11 @@
 		<put name="body" value="/exam/assignmentReport.jsp" />
   	</definition>
   	
+ 	<definition	name="examPdfReportTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Examination PDF Reports"/>
+		<put name="body" value="/exam/pdfReport.jsp" />
+  	</definition>
+
   	<definition	name="ecbsTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Examination Conflict-Based Statistics"/>
 		<put name="body" value="/exam/cbs.jsp" />
