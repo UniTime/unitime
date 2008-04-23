@@ -23,12 +23,15 @@ import java.util.Hashtable;
 import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
+import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
-import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.model.UserData;
 import org.unitime.timetable.reports.exam.AbbvExamScheduleByCourseReport;
 import org.unitime.timetable.reports.exam.AbbvScheduleByCourseReport;
 import org.unitime.timetable.reports.exam.ConflictsByCourseAndInstructorReport;
@@ -57,9 +60,17 @@ public class ExamPdfReportForm extends ExamReportForm {
     private String iLimit = null;
     private boolean iTotals = false;
     private String iRoomCodes = null;
+    private boolean iEmail = false;
+    private String iAddr, iCc, iBcc = null;
+    private boolean iEmailDeputies = false;
+    private String iReport = null;
+    private String iMessage = null;
+    private String iSubject = null;
     
     public static Hashtable<String,Class> sRegisteredReports = new Hashtable();
     public static String[] sModes = {"PDF (Letter)", "PDF (Ledger)", "Text"};
+    public static int sDeliveryDownload = 0;
+    public static int sDeliveryEmail = 1;
     
     static {
         sRegisteredReports.put("Schedule by Course", ScheduleByCourseReport.class);
@@ -100,16 +111,62 @@ public class ExamPdfReportForm extends ExamReportForm {
         iLimit = null;
         iTotals = false;
         iRoomCodes = null;
+        iEmail = false;
+        iAddr = null; iCc = null; iBcc = null; 
+        iEmailDeputies = false;
+        iSubject = "Examination Report";
+        iMessage = null;
+        iReport = null;
     }
     
-    public void setDefaults() {
-        iAll = true;
-        iDispRooms = true;
-        iNoRoom = ApplicationProperties.getProperty("tmtbl.exam.report.noroom");
-        iDirect = true;
-        iM2d = (getExamType()==Exam.sExamTypeFinal?true:false);
-        iTotals = (getExamType()==Exam.sExamTypeFinal?true:false);
-        iRoomCodes = ApplicationProperties.getProperty("tmtbl.exam.report.roomcode");
+    public void load(HttpSession session) {
+        super.load(session);
+        setAll(session.getAttribute("ExamPdfReport.all")==null?true:(Boolean)session.getAttribute("ExamPdfReport.all"));
+        setReports((String[])session.getAttribute("ExamPdfReport.reports"));
+        setMode(session.getAttribute("ExamPdfReport.mode")==null?sModes[0]:(String)session.getAttribute("ExamPdfReport.mode"));
+        setSubjects((String[])session.getAttribute("ExamPdfReport.subjects"));
+        setDispRooms(UserData.getPropertyBoolean(session,"ExamPdfReport.dispRooms", true));
+        setNoRoom(UserData.getProperty(session,"ExamPdfReport.noRoom", ApplicationProperties.getProperty("tmtbl.exam.report.noroom")));
+        setDirect(UserData.getPropertyBoolean(session,"ExamPdfReport.direct",true));
+        setM2d(UserData.getPropertyBoolean(session,"ExamPdfReport.m2d",true));
+        setBtb(UserData.getPropertyBoolean(session,"ExamPdfReport.btb",false));
+        setLimit(UserData.getProperty(session, "ExamPdfReport.limit"));
+        setTotals(UserData.getPropertyBoolean(session,"ExamPdfReport.totals",true));
+        setRoomCodes(UserData.getProperty(session,"ExamPdfReport.roomCodes", ApplicationProperties.getProperty("tmtbl.exam.report.roomcode")));
+        setEmail(UserData.getPropertyBoolean(session, "ExamPdfReport.email", false));
+        setAddress(UserData.getProperty(session,"ExamPdfReport.addr"));
+        setCc(UserData.getProperty(session,"ExamPdfReport.cc"));
+        setBcc(UserData.getProperty(session,"ExamPdfReport.bcc"));
+        if (getAddress()==null) {
+            TimetableManager manager = TimetableManager.getManager(Web.getUser(session));
+            if (manager!=null && manager.getEmailAddress()!=null) setAddress(manager.getEmailAddress());
+        }
+        setEmailDeputies(UserData.getPropertyBoolean(session,"ExamPdfReport.emailDeputies", false));
+        setMessage(UserData.getProperty(session,"ExamPdfReport.message"));
+        setSubject(UserData.getProperty(session,"ExamPdfReport.subject"));
+    }
+    
+    public void save(HttpSession session) {
+        super.save(session);
+        session.setAttribute("ExamPdfReport.reports", getReports());
+        session.setAttribute("ExamPdfReport.mode", getMode());
+        session.setAttribute("ExamPdfReport.all", getAll());
+        session.setAttribute("ExamPdfReport.subjects", getSubjects());
+        UserData.setPropertyBoolean(session,"ExamPdfReport.dispRooms", getDispRooms());
+        UserData.setProperty(session,"ExamPdfReport.noRoom", getNoRoom());
+        UserData.setPropertyBoolean(session,"ExamPdfReport.direct",getDirect());
+        UserData.setPropertyBoolean(session,"ExamPdfReport.m2d",getM2d());
+        UserData.setPropertyBoolean(session,"ExamPdfReport.btb",getBtb());
+        UserData.setProperty(session, "ExamPdfReport.limit", getLimit());
+        UserData.setPropertyBoolean(session,"ExamPdfReport.totals",getTotals());
+        UserData.setProperty(session,"ExamPdfReport.roomCodes", getRoomCodes());
+        UserData.setPropertyBoolean(session, "ExamPdfReport.email", getEmail());
+        UserData.setProperty(session,"ExamPdfReport.addr", getAddress());
+        UserData.setProperty(session,"ExamPdfReport.cc", getCc());
+        UserData.setProperty(session,"ExamPdfReport.bcc", getBcc());
+        UserData.setPropertyBoolean(session,"ExamPdfReport.emailDeputies", getEmailDeputies());
+        UserData.setProperty(session,"ExamPdfReport.message", getMessage());
+        UserData.setProperty(session,"ExamPdfReport.subject", getSubject());
     }
 
     public String[] getReports() { return iReports;}
@@ -141,6 +198,27 @@ public class ExamPdfReportForm extends ExamReportForm {
     public void setTotals(boolean totals) { iTotals = totals; }
     public String getRoomCodes() { return iRoomCodes; }
     public void setRoomCodes(String roomCodes) { iRoomCodes = roomCodes; }
+    public boolean getEmail() { return iEmail; }
+    public void setEmail(boolean email) { iEmail = email; }
+    public boolean getEmailDeputies() { return iEmailDeputies; }
+    public void setEmailDeputies(boolean emailDeputies) { iEmailDeputies = emailDeputies; }
+    public String getAddress() { return iAddr; }
+    public void setAddress(String addr) { iAddr = addr; }
+    public String getCc() { return iCc; }
+    public void setCc(String cc) { iCc = cc; }
+    public String getBcc() { return iBcc; }
+    public void setBcc(String bcc) { iBcc = bcc; }
+    public boolean getCanEmail() { 
+        return ApplicationProperties.getProperty("tmtbl.smtp.host")!=null &&
+            ApplicationProperties.getProperty("tmtbl.smtp.host").trim().length()>0;
+    }
+    public String getReport() { return iReport; }
+    public void setReport(String report) { iReport = report; }
+    public void log(String message) { iReport += message+"<br>"; }
+    public String getMessage() { return iMessage; }
+    public void setMessage(String message) { iMessage = message; }
+    public String getSubject() { return iSubject; }
+    public void setSubject(String subject) { iSubject = subject; }
     
     public TreeSet<String> getAllReports() {
         return new TreeSet<String>(sRegisteredReports.keySet());
