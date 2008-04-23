@@ -22,14 +22,29 @@ package org.unitime.timetable.action;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Collection;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.TreeSet;
+import java.util.Vector;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import javax.mail.Authenticator;
+import javax.mail.PasswordAuthentication;
+import javax.mail.Transport;
+import javax.mail.Message.RecipientType;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -38,6 +53,7 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
@@ -45,6 +61,8 @@ import org.unitime.timetable.form.ExamPdfReportForm;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
+import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.reports.exam.PdfLegacyExamReport;
 import org.unitime.timetable.solver.WebSolver;
@@ -70,8 +88,8 @@ public class ExamPdfReportAction extends Action {
 
         // Read operation to be performed
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
+        if ("Generate".equals(op)) myForm.save(request.getSession());
         myForm.load(request.getSession());
-        if (op==null) myForm.setDefaults();
         
         if ("Generate".equals(op)) {
             ActionMessages errors = myForm.validate(mapping, request);
@@ -80,56 +98,44 @@ public class ExamPdfReportAction extends Action {
                 return mapping.findForward("show");
             }
             Session session = Session.getCurrentAcadSession(Web.getUser(request.getSession()));
-            Hashtable<String,File> reports = new Hashtable();
-            TreeSet<ExamAssignmentInfo> exams = new TreeSet();
-            Hashtable<SubjectArea,TreeSet<ExamAssignmentInfo>> examsPerSubject = new Hashtable();
-            sLog.info("Loading exams...");
-            if (myForm.getAll()) {
-                for (Iterator i=Exam.findAll(session.getUniqueId(), myForm.getExamType()).iterator();i.hasNext();) {
-                    exams.add(new ExamAssignmentInfo((Exam)i.next()));
-                }
-            } else {
-                for (int i=0;i<myForm.getSubjects().length;i++) {
-                    SubjectArea subject = new SubjectAreaDAO().get(Long.valueOf(myForm.getSubjects()[i]));
-                    TreeSet<ExamAssignmentInfo> examsThisSubject = new TreeSet();
-                    for (Iterator j=Exam.findExamsOfSubjectArea(subject.getUniqueId(), myForm.getExamType()).iterator();j.hasNext();) {
-                        examsThisSubject.add(new ExamAssignmentInfo((Exam)j.next()));
-                    }
-                    examsPerSubject.put(subject, examsThisSubject);
-                }
-            }
-            for (int i=0;i<myForm.getReports().length;i++) {
-                sLog.info("Generating "+myForm.getReports()[i]+"...");
-                Class reportClass = ExamPdfReportForm.sRegisteredReports.get(myForm.getReports()[i]);
-                String reportName = null;
-                for (Map.Entry<String, Class> entry : PdfLegacyExamReport.sRegisteredReports.entrySet())
-                    if (entry.getValue().equals(reportClass)) reportName = entry.getKey();
-                if (reportName==null) reportName = "r"+(i+1);
-                String name = session.getAcademicTerm()+session.getYear()+(myForm.getExamType()==Exam.sExamTypeEvening?"evn":"fin")+"_"+reportName;
+            TimetableManager mgr = TimetableManager.getManager(Web.getUser(request.getSession()));
+            String from = (mgr.getEmailAddress()==null?ApplicationProperties.getProperty("tmtbl.contact.email"):mgr.getEmailAddress());
+            
+            try {
+                TreeSet<ExamAssignmentInfo> exams = new TreeSet();
+                Hashtable<SubjectArea,TreeSet<ExamAssignmentInfo>> examsPerSubject = new Hashtable();
+                myForm.setReport("");
+                myForm.log("Loading exams...");
                 if (myForm.getAll()) {
-                    File file = ApplicationProperties.getTempFile(name, (myForm.getModeIdx()==PdfLegacyExamReport.sModeText?"txt":"pdf"));
-                    sLog.info("Writing "+file.getName()+"... ("+exams.size()+" exams)");
-                    PdfLegacyExamReport report = (PdfLegacyExamReport)reportClass.
-                        getConstructor(int.class, File.class, Session.class, int.class, SubjectArea.class, Collection.class).
-                        newInstance(myForm.getModeIdx(), file, session, myForm.getExamType(), null, exams);
-                    report.setDirect(myForm.getDirect());
-                    report.setM2d(myForm.getM2d());
-                    report.setBtb(myForm.getBtb());
-                    report.setDispRooms(myForm.getDispRooms());
-                    report.setNoRoom(myForm.getNoRoom());
-                    report.setTotals(myForm.getTotals());
-                    report.setLimit(myForm.getLimit()==null || myForm.getLimit().length()==0?-1:Integer.parseInt(myForm.getLimit()));
-                    report.setRoomCode(myForm.getRoomCodes());
-                    report.printReport();
-                    report.close();
-                    reports.put(reportName+"."+(myForm.getModeIdx()==PdfLegacyExamReport.sModeText?"txt":"pdf"),file);
+                    for (Iterator i=Exam.findAll(session.getUniqueId(), myForm.getExamType()).iterator();i.hasNext();) {
+                        exams.add(new ExamAssignmentInfo((Exam)i.next()));
+                    }
                 } else {
-                    for (Map.Entry<SubjectArea, TreeSet<ExamAssignmentInfo>> entry : examsPerSubject.entrySet()) {
-                        File file = ApplicationProperties.getTempFile(name+"_"+entry.getKey().getSubjectAreaAbbreviation(), (myForm.getModeIdx()==PdfLegacyExamReport.sModeText?"txt":"pdf"));
-                        sLog.info("Writing "+file.getName()+"... ("+entry.getValue().size()+" exams)");
+                    for (int i=0;i<myForm.getSubjects().length;i++) {
+                        SubjectArea subject = new SubjectAreaDAO().get(Long.valueOf(myForm.getSubjects()[i]));
+                        TreeSet<ExamAssignmentInfo> examsThisSubject = new TreeSet();
+                        for (Iterator j=Exam.findExamsOfSubjectArea(subject.getUniqueId(), myForm.getExamType()).iterator();j.hasNext();) {
+                            examsThisSubject.add(new ExamAssignmentInfo((Exam)j.next()));
+                        }
+                        examsPerSubject.put(subject, examsThisSubject);
+                    }
+                }
+                Hashtable<String,File> output = new Hashtable();
+                Hashtable<SubjectArea,Vector<File>> outputPerSubject = new Hashtable();
+                for (int i=0;i<myForm.getReports().length;i++) {
+                    myForm.log("Generating "+myForm.getReports()[i]+"...");
+                    Class reportClass = ExamPdfReportForm.sRegisteredReports.get(myForm.getReports()[i]);
+                    String reportName = null;
+                    for (Map.Entry<String, Class> entry : PdfLegacyExamReport.sRegisteredReports.entrySet())
+                        if (entry.getValue().equals(reportClass)) reportName = entry.getKey();
+                    if (reportName==null) reportName = "r"+(i+1);
+                    String name = session.getAcademicTerm()+session.getYear()+(myForm.getExamType()==Exam.sExamTypeEvening?"evn":"fin")+"_"+reportName;
+                    if (myForm.getAll()) {
+                        File file = ApplicationProperties.getTempFile(name, (myForm.getModeIdx()==PdfLegacyExamReport.sModeText?"txt":"pdf"));
+                        myForm.log("&nbsp;&nbsp;Writing <a href='temp/"+file.getName()+"'>"+reportName+"."+(myForm.getModeIdx()==PdfLegacyExamReport.sModeText?"txt":"pdf")+"</a>... ("+exams.size()+" exams)");
                         PdfLegacyExamReport report = (PdfLegacyExamReport)reportClass.
                             getConstructor(int.class, File.class, Session.class, int.class, SubjectArea.class, Collection.class).
-                            newInstance(myForm.getModeIdx(), file, session, myForm.getExamType(), entry.getKey(), entry.getValue());
+                            newInstance(myForm.getModeIdx(), file, new SessionDAO().get(session.getUniqueId()), myForm.getExamType(), null, exams);
                         report.setDirect(myForm.getDirect());
                         report.setM2d(myForm.getM2d());
                         report.setBtb(myForm.getBtb());
@@ -140,44 +146,188 @@ public class ExamPdfReportAction extends Action {
                         report.setRoomCode(myForm.getRoomCodes());
                         report.printReport();
                         report.close();
-                        reports.put(entry.getKey().getSubjectAreaAbbreviation()+"_"+reportName+"."+(myForm.getModeIdx()==PdfLegacyExamReport.sModeText?"txt":"pdf"),file);
+                        output.put(reportName+"."+(myForm.getModeIdx()==PdfLegacyExamReport.sModeText?"txt":"pdf"),file);
+                    } else {
+                        for (Map.Entry<SubjectArea, TreeSet<ExamAssignmentInfo>> entry : examsPerSubject.entrySet()) {
+                            File file = ApplicationProperties.getTempFile(name+"_"+entry.getKey().getSubjectAreaAbbreviation(), (myForm.getModeIdx()==PdfLegacyExamReport.sModeText?"txt":"pdf"));
+                            myForm.log("&nbsp;&nbsp;Writing <a href='temp/"+file.getName()+"'>"+entry.getKey().getSubjectAreaAbbreviation()+"_"+reportName+"."+(myForm.getModeIdx()==PdfLegacyExamReport.sModeText?"txt":"pdf")+"</a>... ("+entry.getValue().size()+" exams)");
+                            PdfLegacyExamReport report = (PdfLegacyExamReport)reportClass.
+                                getConstructor(int.class, File.class, Session.class, int.class, SubjectArea.class, Collection.class).
+                                newInstance(myForm.getModeIdx(), file, new SessionDAO().get(session.getUniqueId()), myForm.getExamType(), entry.getKey(), entry.getValue());
+                            report.setDirect(myForm.getDirect());
+                            report.setM2d(myForm.getM2d());
+                            report.setBtb(myForm.getBtb());
+                            report.setDispRooms(myForm.getDispRooms());
+                            report.setNoRoom(myForm.getNoRoom());
+                            report.setTotals(myForm.getTotals());
+                            report.setLimit(myForm.getLimit()==null || myForm.getLimit().length()==0?-1:Integer.parseInt(myForm.getLimit()));
+                            report.setRoomCode(myForm.getRoomCodes());
+                            report.printReport();
+                            report.close();
+                            output.put(entry.getKey().getSubjectAreaAbbreviation()+"_"+reportName+"."+(myForm.getModeIdx()==PdfLegacyExamReport.sModeText?"txt":"pdf"),file);
+                            Vector<File> files = outputPerSubject.get(entry.getKey());
+                            if (files==null) {
+                                files = new Vector(); outputPerSubject.put(entry.getKey(),files);
+                            }
+                            files.add(file);
+                        }
                     }
                 }
-            }
-            
-            if (reports.isEmpty()) {
-                
-            } else if (reports.size()==1) {
-                request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+reports.elements().nextElement().getName());
-            } else {
-                FileInputStream fis = null;
-                ZipOutputStream zip = null;
-                byte[] buffer = new byte[32*1024];
-                int len = 0;
-                try {
-                    File zipFile = ApplicationProperties.getTempFile(session.getAcademicTerm()+session.getYear()+(myForm.getExamType()==Exam.sExamTypeEvening?"evn":"fin"), "zip");
-                    sLog.info("Writing "+zipFile+"...");
-                    zip = new ZipOutputStream(new FileOutputStream(zipFile));
-                    for (Map.Entry<String, File> entry : reports.entrySet()) {
-                        zip.putNextEntry(new ZipEntry(entry.getKey()));
-                        fis = new FileInputStream(entry.getValue());
-                        while ((len=fis.read(buffer))>0) zip.write(buffer, 0, len);
-                        fis.close(); fis = null;
-                        zip.closeEntry();
+                if (output.isEmpty())
+                    myForm.log("<font color='orange'>No report generated.</font>");
+                else if (myForm.getEmail()) {
+                    myForm.log("Sending email(s)...");
+                    Properties p = ApplicationProperties.getProperties();
+                    if (p.getProperty("mail.smtp.host")==null && p.getProperty("tmtbl.smtp.host")!=null)
+                        p.setProperty("mail.smtp.host", p.getProperty("tmtbl.smtp.host"));
+                    Authenticator a = null;
+                    if (ApplicationProperties.getProperty("tmtbl.mail.user")!=null && ApplicationProperties.getProperty("tmtbl.mail.pwd")!=null) {
+                        a = new Authenticator() {
+                            public PasswordAuthentication getPasswordAuthentication() {
+                                return new PasswordAuthentication(
+                                        ApplicationProperties.getProperty("tmtbl.mail.user"),
+                                        ApplicationProperties.getProperty("tmtbl.mail.pwd"));
+                            }
+                        };
                     }
-                    zip.flush(); zip.close();
-                    request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+zipFile.getName());
-                } catch (Exception e) {
-                    if (fis!=null) fis.close();
-                    if (zip!=null) zip.close();
-                    throw e;
+                    javax.mail.Session mailSession = javax.mail.Session.getDefaultInstance(p, a);
+                    if (myForm.getEmailDeputies()) {
+                        Hashtable<TimetableManager,Set<File>> files2send = new Hashtable();
+                        for (Map.Entry<SubjectArea, Vector<File>> entry : outputPerSubject.entrySet()) {
+                            if (entry.getKey().getDepartment().getTimetableManagers().isEmpty())
+                                myForm.log("<font color='orange'>&nbsp;&nbsp;No manager associated with subject area "+entry.getKey().getSubjectAreaAbbreviation()+
+                                    " (department "+entry.getKey().getDepartment().getLabel()+")</font>");
+                            for (Iterator i=entry.getKey().getDepartment().getTimetableManagers().iterator();i.hasNext();) {
+                                TimetableManager g = (TimetableManager)i.next();
+                                if (g.getEmailAddress()==null || g.getEmailAddress().length()==0) {
+                                    myForm.log("<font color='orange'>&nbsp;&nbsp;Manager "+g.getName()+" has no email address.</font>");
+                                    Set<File> files = files2send.get(g);
+                                    if (files==null) { files = new HashSet<File>(); files2send.put(g, files); }
+                                    files.addAll(entry.getValue());
+                                    continue;
+                                }
+                            }
+                        }
+                        if (files2send.isEmpty()) {
+                            myForm.log("<font color='red'>Nothing to send.</font>");
+                        } else {
+                            Set<TimetableManager> managers = files2send.keySet();
+                            while (!managers.isEmpty()) {
+                                TimetableManager manager = managers.iterator().next();
+                                Set<File> files = files2send.get(manager);
+                                managers.remove(manager);
+                                myForm.log("Sending email to "+manager.getName()+" ("+manager.getEmailAddress()+")...");
+                                MimeMessage mail = new MimeMessage(mailSession);
+                                mail.setSubject(myForm.getSubject());
+                                MimeMultipart body = new MimeMultipart();
+                                MimeBodyPart text = new MimeBodyPart();
+                                text.setText(myForm.getMessage()+
+                                        "\r\n\r\n"+
+                                        "This email was automatically generated by "+
+                                        "UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+".\r\n");
+                                mail.setContent(body);
+                                mail.addRecipient(RecipientType.TO, new InternetAddress(manager.getEmailAddress()));
+                                for (Iterator<TimetableManager> i=managers.iterator();i.hasNext();) {
+                                    TimetableManager m = (TimetableManager)i.next();
+                                    if (files.equals(files2send.get(m))) {
+                                        myForm.log("&nbsp;&nbsp;Including "+m.getName()+" ("+m.getEmailAddress()+")");
+                                        mail.addRecipient(RecipientType.TO, new InternetAddress(m.getEmailAddress()));
+                                        i.remove();
+                                    }
+                                }
+                                if (myForm.getAddress()!=null) for (StringTokenizer s=new StringTokenizer(myForm.getAddress(),";,\n\r ");s.hasMoreTokens();) 
+                                    mail.addRecipient(RecipientType.TO, new InternetAddress(s.nextToken()));
+                                if (myForm.getCc()!=null) for (StringTokenizer s=new StringTokenizer(myForm.getCc(),";,\n\r ");s.hasMoreTokens();) 
+                                    mail.addRecipient(RecipientType.CC, new InternetAddress(s.nextToken()));
+                                if (myForm.getBcc()!=null) for (StringTokenizer s=new StringTokenizer(myForm.getBcc(),";,\n\r ");s.hasMoreTokens();) 
+                                    mail.addRecipient(RecipientType.CC, new InternetAddress(s.nextToken()));
+                                if (from!=null)
+                                    mail.setFrom(new InternetAddress(from));
+                                mail.setSentDate(new Date());
+                                for (File file : files) {
+                                    FileInputStream fis = new FileInputStream(file);
+                                    body.addBodyPart(new MimeBodyPart(fis));
+                                    fis.close();
+                                    myForm.log("&nbsp;&nbsp;Attaching "+file.getName());
+                                }
+                                try {
+                                    Transport.send(mail);
+                                    myForm.log("Email sent.");
+                                } catch (Exception e) {
+                                    myForm.log("<font color='red'>Unable to send email: "+e.getMessage()+"</font>");
+                                }
+                            }
+                        }
+                    } else {
+                        MimeMessage mail = new MimeMessage(mailSession);
+                        mail.setSubject(myForm.getSubject());
+                        MimeMultipart body = new MimeMultipart();
+                        MimeBodyPart text = new MimeBodyPart();
+                        text.setText(myForm.getMessage()+
+                                "\r\n\r\n"+
+                                "This email was automatically generated by "+
+                                "UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+".\r\n");
+                        mail.setContent(body);
+                        if (myForm.getAddress()!=null) for (StringTokenizer s=new StringTokenizer(myForm.getAddress(),";,\n\r ");s.hasMoreTokens();) 
+                            mail.addRecipient(RecipientType.TO, new InternetAddress(s.nextToken()));
+                        if (myForm.getCc()!=null) for (StringTokenizer s=new StringTokenizer(myForm.getCc(),";,\n\r ");s.hasMoreTokens();) 
+                            mail.addRecipient(RecipientType.CC, new InternetAddress(s.nextToken()));
+                        if (myForm.getBcc()!=null) for (StringTokenizer s=new StringTokenizer(myForm.getBcc(),";,\n\r ");s.hasMoreTokens();) 
+                            mail.addRecipient(RecipientType.CC, new InternetAddress(s.nextToken()));
+                        if (from!=null)
+                            mail.setFrom(new InternetAddress(from));
+                        mail.setSentDate(new Date());
+                        for (File file : output.values()) {
+                            FileInputStream fis = new FileInputStream(file);
+                            body.addBodyPart(new MimeBodyPart(fis));
+                            fis.close();
+                        }
+                        try {
+                            Transport.send(mail);
+                            myForm.log("Email sent.");
+                        } catch (Exception e) {
+                            myForm.log("<font color='red'>Unable to send email: "+e.getMessage()+"</font>");
+                        }
+                    }
                 }
+                if (output.isEmpty()) {
+                    return null;
+                } else if (output.size()==1) {
+                    request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+output.elements().nextElement().getName());
+                } else {
+                    FileInputStream fis = null;
+                    ZipOutputStream zip = null;
+                    byte[] buffer = new byte[32*1024];
+                    int len = 0;
+                    try {
+                        File zipFile = ApplicationProperties.getTempFile(session.getAcademicTerm()+session.getYear()+(myForm.getExamType()==Exam.sExamTypeEvening?"evn":"fin"), "zip");
+                        myForm.log("Writing <a href='temp/"+zipFile.getName()+"'>"+session.getAcademicTerm()+session.getYear()+(myForm.getExamType()==Exam.sExamTypeEvening?"evn":"fin")+".zip</a>...");
+                        zip = new ZipOutputStream(new FileOutputStream(zipFile));
+                        for (Map.Entry<String, File> entry : output.entrySet()) {
+                            zip.putNextEntry(new ZipEntry(entry.getKey()));
+                            fis = new FileInputStream(entry.getValue());
+                            while ((len=fis.read(buffer))>0) zip.write(buffer, 0, len);
+                            fis.close(); fis = null;
+                            zip.closeEntry();
+                        }
+                        zip.flush(); zip.close();
+                        request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+zipFile.getName());
+                    } catch (IOException e) {
+                        if (fis!=null) fis.close();
+                        if (zip!=null) zip.close();
+                    }
+                }
+                myForm.log("All done.");
+            } catch (Exception e) {
+                myForm.log("<font color='red'>Process failed: "+e.getMessage()+" (exception "+e.getClass().getName()+")</font>");
+                sLog.error(e.getMessage(),e);
+                errors.add("report", new ActionMessage("errors.generic", "Unable to generate report, reason: "+e.getMessage()));
+                saveErrors(request, errors);
             }
-        	
         }
         
         return mapping.findForward("show");
 	}
-
+	
 }
 

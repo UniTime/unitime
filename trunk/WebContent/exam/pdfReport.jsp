@@ -30,7 +30,12 @@
 			<TD colspan='2'>
 				<tt:section-header>
 					<tt:section-title><font color='red'>Errors</font></tt:section-title>
-					<html:submit onclick="displayLoading();" accesskey="G" property="op" value="Generate" title="Generate Report (Alt+G)"/>
+					<logic:empty name="examPdfReportForm" property="report">
+						<html:submit onclick="displayLoading();" accesskey="G" property="op" value="Generate" title="Generate Report (Alt+G)"/>
+					</logic:empty>
+					<logic:notEmpty name="examPdfReportForm" property="report">
+						<html:submit onclick="displayLoading();" accesskey="B" property="op" value="Back" title="Back (Alt+B)"/>
+					</logic:notEmpty>
 				</tt:section-header>
 			</TD>
 		</TR>
@@ -49,6 +54,36 @@
 		</TR>
 		<TR><TD>&nbsp;</TD></TR>
 	</logic:messagesPresent>
+	<logic:notEmpty name="examPdfReportForm" property="report">
+		<TR>
+			<TD colspan='2'>
+				<tt:section-header>
+					<tt:section-title>Log</tt:section-title>
+					<logic:messagesNotPresent>
+						<html:submit onclick="displayLoading();" accesskey="B" property="op" value="Back" title="Back (Alt+B)"/>
+					</logic:messagesNotPresent>
+				</tt:section-header>
+			</TD>
+		</TR>
+		<TR>
+  			<TD colspan='2'>
+  				<blockquote>
+  					<bean:write name="examPdfReportForm" property="report" filter="false"/>
+  				</blockquote>
+  			</TD>
+		</TR>
+		<TR>
+			<TD colspan='2'>
+				<tt:section-title>&nbsp;</tt:section-title>
+			</TD>
+		</TR>
+		<TR>
+			<TD colspan='2' align='right'>
+				<html:submit onclick="displayLoading();" accesskey="B" property="op" value="Back" title="Back (Alt+B)"/>
+			</TD>
+		</TR>
+	</logic:notEmpty>
+	<logic:empty name="examPdfReportForm" property="report">
 	<TR>
 		<TD colspan='2'>
 			<tt:section-header>
@@ -71,7 +106,7 @@
   		<TD width="10%" nowrap valign='top'>Subject Areas:</TD>
 		<TD>
 			<bean:define name="examPdfReportForm" property="all" id="all"/>
-			<html:checkbox property="all" onclick="subjects.disabled=this.checked;"/>All Subject Areas (on one report)<br>
+			<html:checkbox property="all" onclick="subjects.disabled=this.checked;emailDeputies.disabled=this.checked; if (this.checked) emailDeputies.checked=false;"/>All Subject Areas (on one report)<br>
 			<html:select property="subjects" multiple="true" size="7" disabled="<%=(Boolean)all%>"
 				onfocus="setUp();" onkeypress="return selectSearch(event, this);" onkeydown="return checkKey(event, this);">
 				<html:optionsCollection property="subjectAreas"	label="subjectAreaAbbreviation" value="uniqueId" />
@@ -137,6 +172,39 @@
 			</html:select>
 		</TD>
 	</TR>
+	<logic:equal name="examPdfReportForm" property="canEmail" value="false">
+		<html:hidden property="delivery"/>
+	</logic:equal>
+	<logic:equal name="examPdfReportForm" property="canEmail" value="true">
+	<TR>
+		<TD rowspan='1' valign='top'>Delivery:</TD>
+		<TD>
+			<html:checkbox property="email" onclick="document.getElementById('eml').style.display=(this.checked?'block':'none');"/> Email
+			<bean:define name="examPdfReportForm" property="email" id="email"/>
+			<table border='0' id='eml' style='display:<%=(Boolean)email?"block":"none"%>;'>
+				<tr>
+					<td rowspan='2' valign='top'>Address:</td>
+					<td><html:textarea property="address" rows="3" cols="70"/></td>
+				</tr>
+				<tr><td>
+					<html:checkbox property="emailDeputies" styleId="ed" disabled="<%=(Boolean)all%>"/> All Involved Department Schedule Managers
+				</td></tr>
+				<tr><td valign='top'>CC:</td><td>
+					<html:textarea property="cc" rows="2" cols="70"/>
+				</td></tr>
+				<tr><td valign='top'>BCC:</td><td>
+					<html:textarea property="bcc" rows="2" cols="70"/>
+				</td></tr>
+				<tr><td valign='top' style='border-top: black 1px dashed;'>Subject:</td><td style='border-top: black 1px dashed;'>
+					<html:text property="subject" size="70" style="margin-top:2px;"/>
+				</td></tr>
+				<tr><td valign='top'>Message:</td><td>
+					<html:textarea property="message" rows="10" cols="70"/>
+				</td></tr>
+			</table>
+		</TD>
+	</TR>
+	</logic:equal>
 	<TR>
 		<TD colspan='2'>
 			<tt:section-title><br>&nbsp;</tt:section-title>
@@ -147,5 +215,6 @@
 			<html:submit onclick="displayLoading();" accesskey="G" property="op" value="Generate" title="Generate Report (Alt+G)"/>
 		</TD>
 	</TR>
+	</logic:empty>
 	</TABLE>
 </html:form>
