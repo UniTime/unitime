@@ -32,7 +32,6 @@ import org.apache.struts.action.ActionMapping;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.UserData;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.solver.WebSolver;
@@ -91,7 +90,12 @@ public class ExamReportForm extends ActionForm {
 	    setShowSections(UserData.getPropertyBoolean(session,"ExamReport.showSections", true));
 	    setSubjectArea(session.getAttribute("ExamReport.subjectArea")==null?null:(Long)session.getAttribute("ExamReport.subjectArea"));
 	    try {
-	        iSubjectAreas = new TreeSet(SubjectArea.getSubjectAreaList(Session.getCurrentAcadSession(Web.getUser(session)).getUniqueId()));
+	        iSubjectAreas = new TreeSet(
+	                new SubjectAreaDAO().getSession().createQuery(
+	                        "select distinct o.course.subjectArea from Exam x inner join x.owners o where "+
+	                        "x.session.uniqueId=:sessionId")
+	                        .setLong("sessionId", Session.getCurrentAcadSession(Web.getUser(session)).getUniqueId())
+	                        .setCacheable(true).list());
 	    } catch (Exception e) {}
 	    setExamType(session.getAttribute("Exam.Type")==null?iExamType:(Integer)session.getAttribute("Exam.Type"));
 	}
