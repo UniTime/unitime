@@ -115,6 +115,7 @@
 		enditem(); //21
 	<% } %>
 		leaf_item('Reports','Examination Reports','examAssignmentReport.do');
+		leaf_item('Pdf Reports','Examination Pdf Reports','examPdfReport.do');
 	enditem(); //2
 	<% } %>
 
