@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.Vector;
 
@@ -24,31 +23,17 @@ import com.lowagie.text.DocumentException;
 
 public class PeriodChartReport extends PdfLegacyExamReport {
     protected static Logger sLog = Logger.getLogger(ScheduleByCourseReport.class);
-    protected Hashtable<String,String> iRoomCodes = new Hashtable();
-    protected boolean iTotals = true;
     
     public PeriodChartReport(int mode, File file, Session session, int examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
         super(mode, file, "PERIOD ASSIGNMENT", session, examType, subjectArea, exams);
         if (iLimit>=0) setFooter("limit="+iLimit);
-        setRoomCode(System.getProperty("roomcode"));
-        iTotals = "true".equals(System.getProperty("totals","true"));
     }
     
-    public void setRoomCode(String roomCode) {
-        if (roomCode==null || roomCode.length()==0)
-            iRoomCodes = null;
-        else {
-            iRoomCodes = new Hashtable<String, String>();
-            String codes = "";
-            for (StringTokenizer s = new StringTokenizer(roomCode,":;,=");s.hasMoreTokens();) {
-                String room = s.nextToken(), code = s.nextToken();
-                iRoomCodes.put(room, code);
-                if (codes.length()>0) codes += ", ";
-                codes += code+":"+room;
-            }
-            if (codes.length()>0) setFooter(codes+(iLimit>=0?" (limit="+iLimit+")":""));
-            System.out.println("  Room codes:"+codes);
-        }
+    public String setRoomCode(String roomCode) {
+        String codes = super.setRoomCode(roomCode);
+        if (codes!=null && codes.length()>0)
+            setFooter(codes+(iLimit>=0?" (limit="+iLimit+")":""));
+        return codes;
     }
     
     public void printReport() throws DocumentException {
