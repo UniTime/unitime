@@ -26,7 +26,7 @@ public class PdfLegacyReport {
     private PdfWriter iWriter = null;
     private StringBuffer iBuffer = new StringBuffer();
     private PrintWriter iPrint = null;
-    private String iTitle, iTitle2;
+    private String iTitle, iTitle2, iSubject;
     private String iSession;
     private int iPageNo = 0;
     private int iLineNo = 0;
@@ -46,25 +46,32 @@ public class PdfLegacyReport {
         iFile = file;
         iTitle = title;
         iTitle2 = title2;
+        iSubject = subject;
         iSession = session;
-
+        
+        if (file!=null) open(file, mode);
+    }
+    
+    public void open(File file, int mode) throws DocumentException, IOException {
+        if (file==null) return;
         iOut = new FileOutputStream(file);
-
         if (mode==sModeText) {
             iPrint = new PrintWriter(iOut);
         } else {
-            if (mode==sModeLedger) iNrLines = 116;
+            iNrLines = (mode==sModeLedger?116:50);
             iDoc = new Document(mode==sModeLedger?PageSize.LEDGER.rotate():PageSize.LETTER.rotate());
 
             iWriter = PdfWriter.getInstance(iDoc, iOut);
 
-            iDoc.addTitle(title);
+            iDoc.addTitle(iTitle);
             iDoc.addAuthor(ApplicationProperties.getProperty("tmtbl.pdf.examreport.author","UniTime 3.0."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+", www.unitime.org"));
-            iDoc.addSubject(subject);
+            iDoc.addSubject(iSubject);
             iDoc.addCreator("UniTime 3.0."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+", www.unitime.org");
 
             iDoc.open();
         }
+        iEmpty = true;
+        iPageNo = 0; iLineNo = 0;
     }
     
     protected void setPageName(String pageName) {
@@ -77,6 +84,9 @@ public class PdfLegacyReport {
     
     protected void setHeader(String[] header) {
         iHeader = header;
+    }
+    protected String[] getHeader() {
+        return iHeader;
     }
     
     protected void setFooter(String footer) {
