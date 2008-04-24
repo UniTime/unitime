@@ -789,7 +789,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
         switch (getOwnerType()) {
             case sOwnerTypeClass :
                 Class_ clazz = (Class_)getOwnerObject();
-                return (clazz.getClassSuffix()!=null?clazz.getClassSuffix():clazz.getSectionNumberString());
+                return ("true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.suffix","false")) && clazz.getClassSuffix()!=null?clazz.getClassSuffix():clazz.getSectionNumberString());
             case sOwnerTypeConfig : 
             case sOwnerTypeCourse : 
             case sOwnerTypeOffering : 
