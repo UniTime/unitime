@@ -60,6 +60,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
     protected boolean iItype = false;
     protected Hashtable<String,String> iRoomCodes = new Hashtable();
     protected boolean iTotals = true;
+    protected boolean iUseClassSuffix = false;
     
     static {
         sRegisteredReports.put("crsn", ScheduleByCourseReport.class);
@@ -72,6 +73,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
         sRegisteredReports.put("ver", ExamVerificationReport.class);
         sRegisteredReports.put("abbv", AbbvScheduleByCourseReport.class);
         sRegisteredReports.put("xabbv", AbbvExamScheduleByCourseReport.class);
+        sRegisteredReports.put("instr", InstructorExamReport.class);
         for (String report : sRegisteredReports.keySet())
             sAllRegisteredReports += (sAllRegisteredReports.length()>0?",":"") + report;
     }
@@ -84,14 +86,15 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
         iExamType = examType;
         iSubjectArea = subjectArea;
         iDispRooms = "true".equals(System.getProperty("room","true"));
-        iNoRoom = System.getProperty("noroom","INSTR OFFC");
+        iNoRoom = System.getProperty("noroom",ApplicationProperties.getProperty("tmtbl.exam.report.noroom","INSTR OFFC"));
         iDirect = "true".equals(System.getProperty("direct","true"));
         iM2d = "true".equals(System.getProperty("m2d",(examType==Exam.sExamTypeFinal?"true":"false")));
         iBtb = "true".equals(System.getProperty("btb","false"));
         iLimit = Integer.parseInt(System.getProperty("limit", "-1"));
-        iItype = "true".equals(System.getProperty("itype","false"));
+        iItype = "true".equals(System.getProperty("itype",ApplicationProperties.getProperty("tmtbl.exam.report.itype","true")));
         iTotals = "true".equals(System.getProperty("totals","true"));
-        setRoomCode(System.getProperty("roomcode"));
+        iUseClassSuffix = "true".equals(System.getProperty("suffix",ApplicationProperties.getProperty("tmtbl.exam.report.suffix","false")));
+        setRoomCode(System.getProperty("roomcode",ApplicationProperties.getProperty("tmtbl.exam.report.roomcode")));
     }
     
     public void setDispRooms(boolean dispRooms) { iDispRooms = dispRooms; }
@@ -102,6 +105,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
     public void setLimit(int limit) { iLimit = limit; }
     public void setItype(boolean itype) { iItype = itype; }
     public void setTotals(boolean totals) { iTotals = totals; }
+    public void setUseClassSuffix(boolean useClassSuffix) { iUseClassSuffix = true; }
     public String setRoomCode(String roomCode) {
         if (roomCode==null || roomCode.length()==0) {
             iRoomCodes = null;

@@ -45,8 +45,8 @@ public class ConflictsByCourseAndInstructorReport extends PdfLegacyExamReport {
             }
         }
         setHeader(new String[] {
-                "Subj Crsnbr "+(iItype?"InsTyp ":"")+"Sect Date And Time                Name       Type   Subj Crsnbr "+(iItype?"InsTyp ":"")+"Sect Time",
-                "---- ------ "+(iItype?"------ ":"")+"---- ---------------------------- ---------- ------ ---- ------ "+(iItype?"------ ":"")+"---- ---------------------"});
+                "Subj Crsnbr "+(iItype?"InsTyp ":"")+"Sect Date And Time                Name                       Type   Subj Crsnbr "+(iItype?"InsTyp ":"")+"Sect Time",
+                "---- ------ "+(iItype?"------ ":"")+"---- ---------------------------- ------------------------- ------ ---- ------ "+(iItype?"------ ":"")+"---- ---------------------"});
         printHeader();
         for (Iterator<String> i = new TreeSet<String>(subject2courseSections.keySet()).iterator(); i.hasNext();) {
             String subject = i.next();
@@ -74,7 +74,7 @@ public class ConflictsByCourseAndInstructorReport extends PdfLegacyExamReport {
                                         (iItype?rpad(iCoursePrinted?"":section.getItype(), 6)+" ":"")+
                                         lpad(iCoursePrinted?"":section.getSection(),4)+" "+
                                         rpad(iCoursePrinted?"":exam.getPeriodNameFixedLength(),28)+" "+
-                                        rpad(iStudentPrinted?"":instructor.getName(),10)+" "+
+                                        rpad(iStudentPrinted?"":instructor.getName(),25)+" "+
                                         rpad(iPeriodPrinted?"":"DIRECT",6)+" "+
                                         rpad(other.getSubject(),4)+" "+
                                         rpad(other.getCourseNbr(),6)+" "+
@@ -91,12 +91,12 @@ public class ConflictsByCourseAndInstructorReport extends PdfLegacyExamReport {
                                     (iItype?rpad(iCoursePrinted?"":section.getItype(), 6)+" ":"")+
                                     lpad(iCoursePrinted?"":section.getSection(),4)+" "+
                                     rpad(iCoursePrinted?"":exam.getPeriodNameFixedLength(),28)+" "+
-                                    rpad(iStudentPrinted?"":instructor.getName(),10)+" "+
+                                    rpad(iStudentPrinted?"":instructor.getName(),25)+" "+
                                     rpad(iPeriodPrinted?"":"DIRECT",6)+" "+
                                     rpad(conflict.getOtherClass().getSchedulingSubpart().getControllingCourseOffering().getSubjectAreaAbbv(),4)+" "+
                                     rpad(conflict.getOtherClass().getSchedulingSubpart().getControllingCourseOffering().getCourseNbr(),6)+" "+
                                     (iItype?rpad(conflict.getOtherClass().getSchedulingSubpart().getItypeDesc(),6)+" ":"")+
-                                    lpad(conflict.getOtherClass().getSectionNumberString(),4)+" "+
+                                    lpad(iUseClassSuffix && conflict.getOtherClass().getClassSuffix()!=null?conflict.getOtherClass().getClassSuffix():conflict.getOtherClass().getSectionNumberString(),4)+" "+
                                     getMeetingTime(conflict.getOtherEventTime())
                                     );
                             iSubjectPrinted = iCoursePrinted = iStudentPrinted = iPeriodPrinted = !iNewPage;
@@ -114,7 +114,7 @@ public class ConflictsByCourseAndInstructorReport extends PdfLegacyExamReport {
                                         (iItype?rpad(iCoursePrinted?"":section.getItype(), 6)+" ":"")+
                                         lpad(iCoursePrinted?"":section.getSection(),4)+" "+
                                         rpad(iCoursePrinted?"":exam.getPeriodNameFixedLength(),28)+" "+
-                                        rpad(iStudentPrinted?"":instructor.getName(),10)+" "+
+                                        rpad(iStudentPrinted?"":instructor.getName(),25)+" "+
                                         rpad(iPeriodPrinted?"":">2-DAY",6)+" "+
                                         rpad(other.getSubject(),4)+" "+
                                         rpad(other.getCourseNbr(),6)+" "+
@@ -137,7 +137,7 @@ public class ConflictsByCourseAndInstructorReport extends PdfLegacyExamReport {
                                     (iItype?rpad(iCoursePrinted?"":section.getItype(), 6)+" ":"")+
                                     lpad(iCoursePrinted?"":section.getSection(),4)+" "+
                                     rpad(iCoursePrinted?"":exam.getPeriodNameFixedLength(),28)+" "+
-                                    rpad(iStudentPrinted?"":instructor.getName(),10)+" "+
+                                    rpad(iStudentPrinted?"":instructor.getName(),25)+" "+
                                     rpad(iPeriodPrinted?"":"BTB",6)+" "+
                                     rpad(other.getSubject(),4)+" "+
                                     rpad(other.getCourseNbr(),6)+" "+
