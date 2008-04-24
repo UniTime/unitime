@@ -257,7 +257,7 @@ public class ExamPdfReportAction extends Action {
                                 for (Map.Entry<String, File> entry : files.entrySet()) {
                                     BodyPart attachement = new MimeBodyPart();
                                     attachement.setDataHandler(new DataHandler(new FileDataSource(entry.getValue())));
-                                    attachement.setFileName((myForm.getExamType()==Exam.sExamTypeFinal?"Final":"Evening")+"Exams_"+entry.getKey());
+                                    attachement.setFileName(session.getAcademicTerm()+session.getYear()+(myForm.getExamType()==Exam.sExamTypeEvening?"evn":"fin")+"_"+entry.getKey());
                                     body.addBodyPart(attachement);
                                     myForm.log("&nbsp;&nbsp;Attaching <a href='temp/"+entry.getValue().getName()+"'>"+entry.getKey()+"</a>");
                                 }
@@ -295,7 +295,7 @@ public class ExamPdfReportAction extends Action {
                         for (Map.Entry<String, File> entry : output.entrySet()) {
                             BodyPart attachement = new MimeBodyPart();
                             attachement.setDataHandler(new DataHandler(new FileDataSource(entry.getValue())));
-                            attachement.setFileName(entry.getKey());
+                            attachement.setFileName(session.getAcademicTerm()+session.getYear()+(myForm.getExamType()==Exam.sExamTypeEvening?"evn":"fin")+"_"+entry.getKey());
                             body.addBodyPart(attachement);
                         }
                         mail.setSentDate(new Date());

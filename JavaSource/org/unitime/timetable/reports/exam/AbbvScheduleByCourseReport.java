@@ -95,15 +95,16 @@ public class AbbvScheduleByCourseReport extends PdfLegacyExamReport {
                         if (i==0) {
                             lines.add(
                                     (iItype?rpad(section.getName(),14):
-                                        rpad(section.getSubject(),4)+" "+
-                                        rpad(section.getCourseNbr(),5)+" "+
-                                        rpad(section.getSection().length()==0?"ALL":section.getSection(),3))+"  "+
+                                        rpad(sameSubj?"":section.getSubject(),4)+" "+
+                                        rpad(sameCrs?"":section.getCourseNbr(),5)+" "+
+                                        rpad(sameSct?"":section.getSection().length()==0?"ALL":section.getSection(),3))+"  "+
                                     formatPeriod(section.getExamAssignment().getPeriod())+" "+
                                     formatRoom(a.getName())+" "+formatRoom(b==null?"":b.getName()));
                         } else {
                             lines.add(
                                     rpad("",42)+
                                     formatRoom(a.getName())+" "+formatRoom(b==null?"":b.getName()));
+                            lx++;
                         }
                     }
                 }

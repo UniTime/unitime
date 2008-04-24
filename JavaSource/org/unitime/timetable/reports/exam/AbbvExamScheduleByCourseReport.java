@@ -26,7 +26,7 @@ public class AbbvExamScheduleByCourseReport extends PdfLegacyExamReport {
         int n = iNrLines - 2;
         if (!iDispRooms) {
             ExamSectionInfo last = null; int lx = 0;
-            for (ExamAssignment exam : getExams()) {
+            for (ExamAssignment exam : new TreeSet<ExamAssignment>(getExams())) {
                 boolean firstSection = true;
                 for (ExamSectionInfo section : exam.getSections()) {
                     boolean sameSubj = false, sameCrs = false, sameSct = false;
@@ -71,7 +71,7 @@ public class AbbvExamScheduleByCourseReport extends PdfLegacyExamReport {
             }
         } else {
             ExamSectionInfo last = null; int lx = 0;
-            for (ExamAssignment exam : getExams()) {
+            for (ExamAssignment exam : new TreeSet<ExamAssignment>(getExams())) {
                 Vector<String> rooms = new Vector();
                 if (exam.getRooms()==null || exam.getRooms().isEmpty()) {
                     rooms.add(rpad(iNoRoom,11));
