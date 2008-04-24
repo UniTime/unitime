@@ -84,6 +84,7 @@ public class CourseOfferingImport extends BaseImport {
 	private DistributionType meetsWithType = null;
 	Vector<String> offeringNotes = new Vector<String>();
 	Vector<String> changeList = new Vector<String>();
+	TreeSet<String> missingLocations = new TreeSet<String>();
 	TimetableManager manager = null;
 	Session session = null;
 	String dateFormat = null;
@@ -325,6 +326,7 @@ public class CourseOfferingImport extends BaseImport {
 		}	
 		addNote("Records Changed: " + changeCount);
 		updateChangeList(true);
+		reportMissingLocations();
 		mailLoadResults();
 	}
 	
@@ -820,8 +822,7 @@ public class CourseOfferingImport extends BaseImport {
 				if (room != null){
 					rooms.add(room);
 				} else {
-					addNote("\tCould not find room '" + building + " " + roomNbr + "' not adding it to class '" + c.getClassLabel() + "'");
-
+					addMissingLocation(building + " " + roomNbr + " - " + c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea().getSubjectAreaAbbreviation());
 				}
 			}
         }
@@ -845,7 +846,8 @@ public class CourseOfferingImport extends BaseImport {
 				if (location != null){
 					locations.add(location);
 				} else {
-					addNote("\tCould not find location '" + name + "' not adding it to class '" + c.getClassLabel() + "'");
+					addMissingLocation(name + " - " + c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea().getSubjectAreaAbbreviation());
+					addMissingLocation("\tCould not find location '" + name + "' not adding it to class '" + c.getClassLabel() + "'");
 				}
 			}
         }
@@ -908,11 +910,15 @@ public class CourseOfferingImport extends BaseImport {
 					Room r = findRoom(null, building, roomNbr);
 					if (r != null) {
 						rooms.add(r);
+					} else {
+						addMissingLocation(building + " " + roomNbr + " - " + c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea().getSubjectAreaAbbreviation());
 					}
 				} else if (location != null){
 					NonUniversityLocation nul = findNonUniversityLocation(location, c);
 					if (nul != null) {
 						nonUniversityLocations.add(nul);
+					} else {
+						addMissingLocation(location + " - " + c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea().getSubjectAreaAbbreviation());
 					}
 				}
 				
@@ -2459,6 +2465,22 @@ public class CourseOfferingImport extends BaseImport {
 			}
 		}
 		clearNotes();
+	}
+	
+	private void addMissingLocation(String location){
+		missingLocations.add(location);
+	}
+	
+	private void reportMissingLocations(){
+		if (!missingLocations.isEmpty()) {
+			changeList.add("\nMissing Locations\n");
+			info("\nMissing Locations\n");
+			for(Iterator<String> it = missingLocations.iterator(); it.hasNext();){
+				String location = (String) it.next();
+				changeList.add("\t" + location);
+				info("\t" + location);
+			}
+		}
 	}
 	
 	private void mailLoadResults(){
