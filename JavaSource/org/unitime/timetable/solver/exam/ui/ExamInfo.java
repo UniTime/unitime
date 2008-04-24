@@ -77,7 +77,7 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
             Constraint c = (Constraint)e.nextElement();
             if (c instanceof ExamInstructor) {
                 ExamInstructor instructor = (ExamInstructor)c;
-                iInstructors.add(new ExamInstructorInfo(instructor.getId(), instructor.getName()));
+                iInstructors.add(new ExamInstructorInfo(instructor.getId(), null, instructor.getName()));
             }
         }
     }
@@ -291,21 +291,29 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
         }
     }
     
-    public class ExamInstructorInfo implements Serializable {
+    public class ExamInstructorInfo implements Serializable, Comparable<ExamInstructorInfo> {
         protected Long iId;
+        protected String iExternalUniqueId = null;
         protected String iName = null;
         protected transient DepartmentalInstructor iInstructor;
-        public ExamInstructorInfo(Long id, String name) {
+        public ExamInstructorInfo(Long id, String externalUniqueId, String name) {
             iId = id;
+            iExternalUniqueId = externalUniqueId;
             iName = name;
         }
         public ExamInstructorInfo(DepartmentalInstructor instructor) {
             iId = instructor.getUniqueId();
             iName = instructor.getNameLastFirst();
+            iExternalUniqueId = instructor.getExternalUniqueId();
             iInstructor = instructor;
         }
         public Long getId() { return iId; }
         public String getName() { return iName; }
+        public String getExternalUniqueId() {
+            if (iExternalUniqueId==null && iInstructor==null)
+                iExternalUniqueId = getInstructor().getExternalUniqueId();
+            return iExternalUniqueId; 
+        }
         public DepartmentalInstructor getInstructor() {
             if (iInstructor==null)
                 iInstructor = new DepartmentalInstructorDAO().get(getId());
@@ -314,12 +322,20 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
         public ExamInfo getExam() {
             return ExamInfo.this;
         }
-        public int hasCode() {
+        public int compareTo(ExamInstructorInfo i) {
+            int cmp = getName().compareTo(i.getName());
+            if (cmp!=0) return cmp;
+            return getId().compareTo(i.getId());
+        }
+        public int hashCode() {
+            if (getExternalUniqueId()!=null) return getExternalUniqueId().hashCode();
             return getId().hashCode();
         }
         public boolean equals(Object o) {
             if (o==null || !(o instanceof ExamInstructorInfo)) return false;
-            return getId().equals(((ExamInstructorInfo)o).getId());
+            ExamInstructorInfo i = (ExamInstructorInfo)o;
+            if (getExternalUniqueId()!=null && getExternalUniqueId().equals(i.getExternalUniqueId())) return true;
+            return getId().equals(i.getId());
         }
     }
 }
