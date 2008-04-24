@@ -18,8 +18,8 @@ import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.PdfWriter;
 
 public class PdfLegacyReport {
-    protected static int sNrChars = 133;
-    protected static int sNrLines = 50;
+    protected int iNrChars = 133;
+    protected int iNrLines = 50;
     private File iFile = null;
     private FileOutputStream iOut = null;
     private Document iDoc = null;
@@ -53,7 +53,7 @@ public class PdfLegacyReport {
         if (mode==sModeText) {
             iPrint = new PrintWriter(iOut);
         } else {
-            if (mode==sModeLedger) sNrLines = 116;
+            if (mode==sModeLedger) iNrLines = 116;
             iDoc = new Document(mode==sModeLedger?PageSize.LEDGER.rotate():PageSize.LETTER.rotate());
 
             iWriter = PdfWriter.getInstance(iDoc, iOut);
@@ -95,7 +95,7 @@ public class PdfLegacyReport {
     }
     
     protected void outln(char ch) throws DocumentException {
-        out(rep(ch,sNrChars));
+        out(rep(ch,iNrChars));
     }
     
     protected String lpad(String s, char ch, int len) {
@@ -145,11 +145,11 @@ public class PdfLegacyReport {
     }
 
     protected String renderMiddle(String line, String s) {
-        return render(line, s, (sNrChars - s.length())/2);
+        return render(line, s, (iNrChars - s.length())/2);
     }
 
     protected String renderEnd(String line, String s) {
-        return render(line, s, sNrChars-s.length());
+        return render(line, s, iNrChars-s.length());
     }    
     
     protected void printHeader() throws DocumentException {
@@ -160,7 +160,7 @@ public class PdfLegacyReport {
                 iTitle2));
         out(mpad(
                 new SimpleDateFormat("EEE MMM dd, yyyy").format(new Date()),
-                iSession,' ',sNrChars));
+                iSession,' ',iNrChars));
         outln('=');
         iLineNo=0;
         if (iCont!=null && iCont.length()>0)
@@ -186,14 +186,14 @@ public class PdfLegacyReport {
         iPageNo++;
     }
     protected void lastPage() throws DocumentException {
-        while (iLineNo<sNrLines) {
+        while (iLineNo<iNrLines) {
             out(""); iLineNo++;
         }
         printFooter();
     }
     
     protected void newPage() throws DocumentException {
-        while (iLineNo<sNrLines) {
+        while (iLineNo<iNrLines) {
             out(""); iLineNo++;
         }
         printFooter();
@@ -212,7 +212,7 @@ public class PdfLegacyReport {
     protected void println(String text) throws DocumentException {
         out(text);
         iLineNo++;
-        if (iLineNo>=sNrLines) newPage();
+        if (iLineNo>=iNrLines) newPage();
     }
     
     public boolean isEmpty() {

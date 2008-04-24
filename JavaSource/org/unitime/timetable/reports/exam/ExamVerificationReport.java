@@ -226,7 +226,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                 }
             }
             boolean mwSameLine = (cmw.length()<=(28-formatSection(same).length()-(same.size()>1?" ("+same.size()+" classes)":"").length()-" m/w ".length()));
-            if (!mwSameLine && getLineNumber()+2>sNrLines) newPage();
+            if (!mwSameLine && getLineNumber()+2>iNrLines) newPage();
             println(
                     lpad(iITypePrinted?"":same.firstElement().getSchedulingSubpart().getItypeDesc(),11)+" "+
                     rpad(formatSection(same)+(same.size()>1?" ("+same.size()+" classes)":"")+(mwSameLine && cmw.length()>0?" m/w "+cmw:""),28)+" "+
@@ -319,7 +319,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
             int nrLines = Math.max(Math.max(rooms.size(), meetsWith.size()),times.size());
             boolean mwSameLine = (cmw.length()<=(28-formatSection(same).length()-(same.size()>1?" ("+same.size()+" classes)":"").length()-" m/w ".length()));
             boolean mwSeparateLine = (cmw.length()>(28-" Meets with ".length()) || (!mwSameLine && nrLines==1));
-            if (getLineNumber()+nrLines>sNrLines) newPage();
+            if (getLineNumber()+nrLines>iNrLines) newPage();
             for (int idx = 0; idx < nrLines; idx++) {
                 String room = (idx<rooms.size()?rooms.elementAt(idx):rpad("",23));
                 String mw = (idx<meetsWith.size()?meetsWith.elementAt(idx):"");
