@@ -120,7 +120,7 @@ public class PeriodChartReport extends PdfLegacyExamReport {
                         setPageName(timeStr+(days.size()>nrCols?" ("+firstDay+" - "+lastDay+")":""));
                         setCont(timeStr+(days.size()>nrCols?" ("+firstDay+" - "+lastDay+")":""));
                         timesThisPage = timeStr;
-                    } else if (timesThisPage!=null && getLineNumber()+nextLines<=sNrLines) {
+                    } else if (timesThisPage!=null && getLineNumber()+nextLines<=iNrLines) {
                         println("");
                         println(timeStr);
                         println(header1);
@@ -219,7 +219,7 @@ public class PeriodChartReport extends PdfLegacyExamReport {
                 setCont(null);
             }
             if (iTotals) {
-                if (getLineNumber()+5>sNrLines) {
+                if (getLineNumber()+5>iNrLines) {
                     newPage();
                     setPageName("Totals");
                 } else 

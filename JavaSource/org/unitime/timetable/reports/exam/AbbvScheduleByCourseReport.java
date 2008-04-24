@@ -29,7 +29,7 @@ public class AbbvScheduleByCourseReport extends PdfLegacyExamReport {
             }
         }
         Vector<String> lines = new Vector();
-        int n = sNrLines - 2;
+        int n = iNrLines - 2;
         if (!iDispRooms) {
             ExamSectionInfo last = null; int lx = 0;
             for (ExamSectionInfo section : sections) {

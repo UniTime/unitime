@@ -65,7 +65,7 @@ public class ScheduleByCourseReport extends PdfLegacyExamReport {
                             (section.getExamAssignment()==null?"":iNoRoom)
                             );
                 } else {
-                    if (getLineNumber()+section.getExamAssignment().getRooms().size()>sNrLines) newPage();
+                    if (getLineNumber()+section.getExamAssignment().getRooms().size()>iNrLines) newPage();
                     boolean firstRoom = true;
                     for (ExamRoomInfo room : section.getExamAssignment().getRooms()) {
                         println(
