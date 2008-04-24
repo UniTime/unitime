@@ -117,6 +117,10 @@ public class ExamPdfReportForm extends ExamReportForm {
         iSubject = "Examination Report";
         iMessage = null;
         iReport = null;
+        if (getAddress()==null) {
+            TimetableManager manager = TimetableManager.getManager(Web.getUser(request.getSession()));
+            if (manager!=null && manager.getEmailAddress()!=null) setAddress(manager.getEmailAddress());
+        }
     }
     
     public void load(HttpSession session) {
@@ -137,13 +141,9 @@ public class ExamPdfReportForm extends ExamReportForm {
         setAddress(UserData.getProperty(session,"ExamPdfReport.addr"));
         setCc(UserData.getProperty(session,"ExamPdfReport.cc"));
         setBcc(UserData.getProperty(session,"ExamPdfReport.bcc"));
-        if (getAddress()==null) {
-            TimetableManager manager = TimetableManager.getManager(Web.getUser(session));
-            if (manager!=null && manager.getEmailAddress()!=null) setAddress(manager.getEmailAddress());
-        }
         setEmailDeputies(UserData.getPropertyBoolean(session,"ExamPdfReport.emailDeputies", false));
         setMessage(UserData.getProperty(session,"ExamPdfReport.message"));
-        setSubject(UserData.getProperty(session,"ExamPdfReport.subject"));
+        setSubject(UserData.getProperty(session,"ExamPdfReport.subject","Examination Report"));
     }
     
     public void save(HttpSession session) {
