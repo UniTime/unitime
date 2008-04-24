@@ -23,7 +23,7 @@ public class AbbvExamScheduleByCourseReport extends PdfLegacyExamReport {
     public void printReport() throws DocumentException {
         TreeSet<ExamSectionInfo> sections = new TreeSet();
         Vector<String> lines = new Vector();
-        int n = sNrLines - 2;
+        int n = iNrLines - 2;
         if (!iDispRooms) {
             ExamSectionInfo last = null; int lx = 0;
             for (ExamAssignment exam : getExams()) {

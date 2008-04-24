@@ -83,7 +83,7 @@ public class ExamScheduleByPeriodReport extends PdfLegacyExamReport {
                                     );
                             iPeriodPrinted = !iNewPage;
                         } else {
-                            if (getLineNumber()+section.getExamAssignment().getRooms().size()>sNrLines) newPage();
+                            if (getLineNumber()+section.getExamAssignment().getRooms().size()>iNrLines) newPage();
                             boolean firstRoom = true;
                             for (ExamRoomInfo room : section.getExamAssignment().getRooms()) {
                                 println(
