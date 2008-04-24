@@ -111,7 +111,7 @@ public class ConflictsByCourseAndStudentReport extends PdfLegacyExamReport {
                                     lpad(iCoursePrinted?"":section.getSection(),4)+" "+
                                     rpad(iCoursePrinted?"":exam.getPeriodNameFixedLength(),28)+" "+
                                     rpad(iStudentPrinted?"":iStudentNames.get(studentId),10)+" "+
-                                    rpad(iPeriodPrinted?"":"DIRECT",6)+" "+
+                                    rpad(iPeriodPrinted?"":"CLASS",6)+" "+
                                     rpad(conflict.getOtherClass().getSchedulingSubpart().getControllingCourseOffering().getSubjectAreaAbbv(),4)+" "+
                                     rpad(conflict.getOtherClass().getSchedulingSubpart().getControllingCourseOffering().getCourseNbr(),6)+" "+
                                     (iItype?rpad(conflict.getOtherClass().getSchedulingSubpart().getItypeDesc(),6)+" ":"")+
