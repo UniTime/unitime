@@ -25,7 +25,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
@@ -33,11 +32,14 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
-import java.util.Vector;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import javax.activation.DataHandler;
+import javax.activation.FileDataSource;
 import javax.mail.Authenticator;
+import javax.mail.BodyPart;
+import javax.mail.Multipart;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Transport;
 import javax.mail.Message.RecipientType;
@@ -98,9 +100,6 @@ public class ExamPdfReportAction extends Action {
                 return mapping.findForward("show");
             }
             Session session = Session.getCurrentAcadSession(Web.getUser(request.getSession()));
-            TimetableManager mgr = TimetableManager.getManager(Web.getUser(request.getSession()));
-            String from = (mgr.getEmailAddress()==null?ApplicationProperties.getProperty("tmtbl.contact.email"):mgr.getEmailAddress());
-            
             try {
                 TreeSet<ExamAssignmentInfo> exams = new TreeSet();
                 Hashtable<SubjectArea,TreeSet<ExamAssignmentInfo>> examsPerSubject = new Hashtable();
@@ -121,7 +120,7 @@ public class ExamPdfReportAction extends Action {
                     }
                 }
                 Hashtable<String,File> output = new Hashtable();
-                Hashtable<SubjectArea,Vector<File>> outputPerSubject = new Hashtable();
+                Hashtable<SubjectArea,Hashtable<String,File>> outputPerSubject = new Hashtable();
                 for (int i=0;i<myForm.getReports().length;i++) {
                     myForm.log("Generating "+myForm.getReports()[i]+"...");
                     Class reportClass = ExamPdfReportForm.sRegisteredReports.get(myForm.getReports()[i]);
@@ -165,17 +164,26 @@ public class ExamPdfReportAction extends Action {
                             report.printReport();
                             report.close();
                             output.put(entry.getKey().getSubjectAreaAbbreviation()+"_"+reportName+"."+(myForm.getModeIdx()==PdfLegacyExamReport.sModeText?"txt":"pdf"),file);
-                            Vector<File> files = outputPerSubject.get(entry.getKey());
+                            Hashtable<String,File> files = outputPerSubject.get(entry.getKey());
                             if (files==null) {
-                                files = new Vector(); outputPerSubject.put(entry.getKey(),files);
+                                files = new Hashtable(); outputPerSubject.put(entry.getKey(),files);
                             }
-                            files.add(file);
+                            files.put(entry.getKey().getSubjectAreaAbbreviation()+"_"+reportName+"."+(myForm.getModeIdx()==PdfLegacyExamReport.sModeText?"txt":"pdf"),file);
                         }
                     }
                 }
+                byte[] buffer = new byte[32*1024];
+                int len = 0;
                 if (output.isEmpty())
                     myForm.log("<font color='orange'>No report generated.</font>");
                 else if (myForm.getEmail()) {
+                    TimetableManager mgr = TimetableManager.getManager(Web.getUser(request.getSession()));
+                    InternetAddress from = 
+                        (mgr.getEmailAddress()==null?
+                                new InternetAddress(
+                                        ApplicationProperties.getProperty("tmtbl.inquiry.sender",ApplicationProperties.getProperty("tmtbl.contact.email")),
+                                        ApplicationProperties.getProperty("tmtbl.inquiry.sender.name")):
+                                new InternetAddress(mgr.getEmailAddress(),mgr.getName()));
                     myForm.log("Sending email(s)...");
                     Properties p = ApplicationProperties.getProperties();
                     if (p.getProperty("mail.smtp.host")==null && p.getProperty("tmtbl.smtp.host")!=null)
@@ -192,19 +200,19 @@ public class ExamPdfReportAction extends Action {
                     }
                     javax.mail.Session mailSession = javax.mail.Session.getDefaultInstance(p, a);
                     if (myForm.getEmailDeputies()) {
-                        Hashtable<TimetableManager,Set<File>> files2send = new Hashtable();
-                        for (Map.Entry<SubjectArea, Vector<File>> entry : outputPerSubject.entrySet()) {
+                        Hashtable<TimetableManager,Hashtable<String,File>> files2send = new Hashtable();
+                        for (Map.Entry<SubjectArea, Hashtable<String,File>> entry : outputPerSubject.entrySet()) {
                             if (entry.getKey().getDepartment().getTimetableManagers().isEmpty())
                                 myForm.log("<font color='orange'>&nbsp;&nbsp;No manager associated with subject area "+entry.getKey().getSubjectAreaAbbreviation()+
-                                    " (department "+entry.getKey().getDepartment().getLabel()+")</font>");
+                                    " ("+entry.getKey().getDepartment().getLabel()+")</font>");
                             for (Iterator i=entry.getKey().getDepartment().getTimetableManagers().iterator();i.hasNext();) {
                                 TimetableManager g = (TimetableManager)i.next();
                                 if (g.getEmailAddress()==null || g.getEmailAddress().length()==0) {
                                     myForm.log("<font color='orange'>&nbsp;&nbsp;Manager "+g.getName()+" has no email address.</font>");
-                                    Set<File> files = files2send.get(g);
-                                    if (files==null) { files = new HashSet<File>(); files2send.put(g, files); }
-                                    files.addAll(entry.getValue());
-                                    continue;
+                                } else {
+                                    Hashtable<String,File> files = files2send.get(g);
+                                    if (files==null) { files = new Hashtable<String,File>(); files2send.put(g, files); }
+                                    files.putAll(entry.getValue());
                                 }
                             }
                         }
@@ -214,24 +222,27 @@ public class ExamPdfReportAction extends Action {
                             Set<TimetableManager> managers = files2send.keySet();
                             while (!managers.isEmpty()) {
                                 TimetableManager manager = managers.iterator().next();
-                                Set<File> files = files2send.get(manager);
+                                Hashtable<String,File> files = files2send.get(manager);
                                 managers.remove(manager);
                                 myForm.log("Sending email to "+manager.getName()+" ("+manager.getEmailAddress()+")...");
                                 MimeMessage mail = new MimeMessage(mailSession);
-                                mail.setSubject(myForm.getSubject());
-                                MimeMultipart body = new MimeMultipart();
-                                MimeBodyPart text = new MimeBodyPart();
+                                mail.setSubject(myForm.getSubject()==null?"Examination Report":myForm.getSubject());
+                                Multipart body = new MimeMultipart();
+                                BodyPart text = new MimeBodyPart();
                                 text.setText(myForm.getMessage()+
                                         "\r\n\r\n"+
+                                        "For an up-to-date report, please visit "+
+                                        request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+request.getContextPath()+"/\r\n\r\n"+
                                         "This email was automatically generated by "+
-                                        "UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+".\r\n");
-                                mail.setContent(body);
-                                mail.addRecipient(RecipientType.TO, new InternetAddress(manager.getEmailAddress()));
+                                        "UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+
+                                        " (Univesity Timetabling Application, http://www.unitime.org).");
+                                body.addBodyPart(text);
+                                mail.addRecipient(RecipientType.TO, new InternetAddress(manager.getEmailAddress(),manager.getName()));
                                 for (Iterator<TimetableManager> i=managers.iterator();i.hasNext();) {
                                     TimetableManager m = (TimetableManager)i.next();
                                     if (files.equals(files2send.get(m))) {
                                         myForm.log("&nbsp;&nbsp;Including "+m.getName()+" ("+m.getEmailAddress()+")");
-                                        mail.addRecipient(RecipientType.TO, new InternetAddress(m.getEmailAddress()));
+                                        mail.addRecipient(RecipientType.TO, new InternetAddress(m.getEmailAddress(),m.getName()));
                                         i.remove();
                                     }
                                 }
@@ -240,16 +251,18 @@ public class ExamPdfReportAction extends Action {
                                 if (myForm.getCc()!=null) for (StringTokenizer s=new StringTokenizer(myForm.getCc(),";,\n\r ");s.hasMoreTokens();) 
                                     mail.addRecipient(RecipientType.CC, new InternetAddress(s.nextToken()));
                                 if (myForm.getBcc()!=null) for (StringTokenizer s=new StringTokenizer(myForm.getBcc(),";,\n\r ");s.hasMoreTokens();) 
-                                    mail.addRecipient(RecipientType.CC, new InternetAddress(s.nextToken()));
+                                    mail.addRecipient(RecipientType.BCC, new InternetAddress(s.nextToken()));
                                 if (from!=null)
-                                    mail.setFrom(new InternetAddress(from));
-                                mail.setSentDate(new Date());
-                                for (File file : files) {
-                                    FileInputStream fis = new FileInputStream(file);
-                                    body.addBodyPart(new MimeBodyPart(fis));
-                                    fis.close();
-                                    myForm.log("&nbsp;&nbsp;Attaching "+file.getName());
+                                    mail.setFrom(from);
+                                for (Map.Entry<String, File> entry : files.entrySet()) {
+                                    BodyPart attachement = new MimeBodyPart();
+                                    attachement.setDataHandler(new DataHandler(new FileDataSource(entry.getValue())));
+                                    attachement.setFileName((myForm.getExamType()==Exam.sExamTypeFinal?"Final":"Evening")+"Exams_"+entry.getKey());
+                                    body.addBodyPart(attachement);
+                                    myForm.log("&nbsp;&nbsp;Attaching <a href='temp/"+entry.getValue().getName()+"'>"+entry.getKey()+"</a>");
                                 }
+                                mail.setSentDate(new Date());
+                                mail.setContent(body);
                                 try {
                                     Transport.send(mail);
                                     myForm.log("Email sent.");
@@ -260,28 +273,33 @@ public class ExamPdfReportAction extends Action {
                         }
                     } else {
                         MimeMessage mail = new MimeMessage(mailSession);
-                        mail.setSubject(myForm.getSubject());
-                        MimeMultipart body = new MimeMultipart();
+                        mail.setSubject(myForm.getSubject()==null?"Examination Report":myForm.getSubject());
+                        Multipart body = new MimeMultipart();
                         MimeBodyPart text = new MimeBodyPart();
                         text.setText(myForm.getMessage()+
                                 "\r\n\r\n"+
+                                "For an up-to-date report, please visit "+
+                                request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+request.getContextPath()+"/\r\n\r\n"+
                                 "This email was automatically generated by "+
-                                "UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+".\r\n");
-                        mail.setContent(body);
+                                "UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+
+                                " (Univesity Timetabling Application, http://www.unitime.org).");
+                        body.addBodyPart(text);
                         if (myForm.getAddress()!=null) for (StringTokenizer s=new StringTokenizer(myForm.getAddress(),";,\n\r ");s.hasMoreTokens();) 
                             mail.addRecipient(RecipientType.TO, new InternetAddress(s.nextToken()));
                         if (myForm.getCc()!=null) for (StringTokenizer s=new StringTokenizer(myForm.getCc(),";,\n\r ");s.hasMoreTokens();) 
                             mail.addRecipient(RecipientType.CC, new InternetAddress(s.nextToken()));
                         if (myForm.getBcc()!=null) for (StringTokenizer s=new StringTokenizer(myForm.getBcc(),";,\n\r ");s.hasMoreTokens();) 
-                            mail.addRecipient(RecipientType.CC, new InternetAddress(s.nextToken()));
+                            mail.addRecipient(RecipientType.BCC, new InternetAddress(s.nextToken()));
                         if (from!=null)
-                            mail.setFrom(new InternetAddress(from));
-                        mail.setSentDate(new Date());
-                        for (File file : output.values()) {
-                            FileInputStream fis = new FileInputStream(file);
-                            body.addBodyPart(new MimeBodyPart(fis));
-                            fis.close();
+                            mail.setFrom(from);
+                        for (Map.Entry<String, File> entry : output.entrySet()) {
+                            BodyPart attachement = new MimeBodyPart();
+                            attachement.setDataHandler(new DataHandler(new FileDataSource(entry.getValue())));
+                            attachement.setFileName(entry.getKey());
+                            body.addBodyPart(attachement);
                         }
+                        mail.setSentDate(new Date());
+                        mail.setContent(body);
                         try {
                             Transport.send(mail);
                             myForm.log("Email sent.");
@@ -297,8 +315,6 @@ public class ExamPdfReportAction extends Action {
                 } else {
                     FileInputStream fis = null;
                     ZipOutputStream zip = null;
-                    byte[] buffer = new byte[32*1024];
-                    int len = 0;
                     try {
                         File zipFile = ApplicationProperties.getTempFile(session.getAcademicTerm()+session.getYear()+(myForm.getExamType()==Exam.sExamTypeEvening?"evn":"fin"), "zip");
                         myForm.log("Writing <a href='temp/"+zipFile.getName()+"'>"+session.getAcademicTerm()+session.getYear()+(myForm.getExamType()==Exam.sExamTypeEvening?"evn":"fin")+".zip</a>...");
