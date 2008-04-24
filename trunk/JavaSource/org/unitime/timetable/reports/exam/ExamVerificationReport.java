@@ -47,6 +47,7 @@ import com.lowagie.text.DocumentException;
 
 public class ExamVerificationReport extends PdfLegacyExamReport {
     private CourseOffering iCourseOffering = null;
+    
 
     public ExamVerificationReport(int mode, File file, Session session, int examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
         super(mode, file, "EXAMINATION VERIFICATION REPORT", session, examType, subjectArea, exams);
@@ -142,8 +143,8 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
         TreeSet<Class_> classes = new TreeSet(new Comparator<Class_>() {
             public int compare(Class_ c1, Class_ c2) {
                 if (c1.getSchedulingSubpart().equals(c2.getSchedulingSubpart())) {
-                    String sx1 = c1.getClassSuffix();
-                    String sx2 = c2.getClassSuffix();
+                    String sx1 = (iUseClassSuffix?c1.getClassSuffix():c1.getSectionNumberString());
+                    String sx2 = (iUseClassSuffix?c2.getClassSuffix():c2.getSectionNumberString());
                     if (sx1!=null && sx2!=null) return sx1.compareTo(sx2);
                     return c1.getSectionNumber().compareTo(c2.getSectionNumber());
                 } 
@@ -191,7 +192,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
     }
     
     private String formatSection(Class_ clazz) { 
-        return (clazz.getClassSuffix()==null || clazz.getClassSuffix().length()==0?clazz.getSectionNumberString():clazz.getClassSuffix());
+        return (!iUseClassSuffix || clazz.getClassSuffix()==null || clazz.getClassSuffix().length()==0?clazz.getSectionNumberString():clazz.getClassSuffix());
     }
     
     private String formatSection(Vector<Class_>  classes) {
@@ -528,9 +529,11 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                 iITypePrinted = false;
                 TreeSet<Class_> classes = new TreeSet(new Comparator<Class_>() {
                    public int compare(Class_ c1, Class_ c2) {
-                       String sx1 = c1.getClassSuffix();
-                       String sx2 = c2.getClassSuffix();
-                       if (sx1!=null && sx2!=null) return sx1.compareTo(sx2);
+                       if (iUseClassSuffix) {
+                           String sx1 = c1.getClassSuffix();
+                           String sx2 = c2.getClassSuffix();
+                           if (sx1!=null && sx2!=null) return sx1.compareTo(sx2);
+                       }
                        return c1.getSectionNumber().compareTo(c2.getSectionNumber());
                    }
                 });
