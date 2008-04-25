@@ -27,6 +27,7 @@ import org.unitime.commons.Debug;
 import org.unitime.timetable.model.SolverInfo;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.solver.remote.SolverRegisterService;
+import org.unitime.timetable.util.RoomAvailability;
 
 
 /**
@@ -63,6 +64,11 @@ public class InitServlet extends HttpServlet implements Servlet {
 			SolverRegisterService.startService();
 			SolverRegisterService.addShutdownHook();
 			
+			if (RoomAvailability.getInstance()!=null) {
+			    logMessage(" - Initializing Room Availability Service ... ");
+			    RoomAvailability.getInstance().startService();
+			}
+			
 			logMessage("******* Timetabling Application : Initializing DONE *******");
 		} 
 		catch (Exception e) {
@@ -90,6 +96,11 @@ public class InitServlet extends HttpServlet implements Servlet {
 			SolverInfo.stopInfoCacheCleanup();
 		
 			ApplicationProperties.stopListener();
+			
+	         if (RoomAvailability.getInstance()!=null) {
+	             logMessage(" - Stopping Room Availability Service ... ");
+	             RoomAvailability.getInstance().stopService();
+	         }
 			
 			logMessage("******* Timetabling Application : Shut down DONE *******");
 		} catch (Exception e) {

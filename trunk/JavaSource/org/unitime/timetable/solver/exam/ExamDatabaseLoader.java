@@ -20,6 +20,7 @@
 package org.unitime.timetable.solver.exam;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -33,6 +34,8 @@ import java.util.Vector;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Transaction;
+import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
+import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.BuildingPref;
@@ -60,6 +63,7 @@ import org.unitime.timetable.model.dao.DistributionPrefDAO;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.RoomAvailability;
 
 import net.sf.cpsolver.coursett.preference.MinMaxPreferenceCombination;
 import net.sf.cpsolver.coursett.preference.PreferenceCombination;
@@ -89,7 +93,7 @@ public class ExamDatabaseLoader extends ExamLoader {
     private String iInstructorFormat;
     private Progress iProgress = null;
     private Hashtable<Long,ExamPeriod> iPeriods = new Hashtable();
-    private Hashtable iRooms = new Hashtable();
+    private Hashtable<Long,ExamRoom> iRooms = new Hashtable();
     private Hashtable iExams = new Hashtable();
     private Hashtable iInstructors = new Hashtable();
     private Hashtable iStudents = new Hashtable();
@@ -121,6 +125,7 @@ public class ExamDatabaseLoader extends ExamLoader {
             tx = hibSession.beginTransaction();
             loadPeriods();
             loadRooms();
+            if (RoomAvailability.getInstance()!=null) loadRoomAvailability(RoomAvailability.getInstance());
             loadExams();
             loadStudents();
             loadDistributions();
@@ -182,7 +187,7 @@ public class ExamDatabaseLoader extends ExamLoader {
                     (location.getCoordinateY()==null?-1:location.getCoordinateY()));
             getModel().addConstraint(room);
             getModel().getRooms().add(room);
-            iRooms.put(new Long(room.getId()),room);
+            iRooms.put(room.getId(),room);
             for (Iterator j=location.getExamPreferences(iExamType).entrySet().iterator();j.hasNext();) {
                 Map.Entry entry = (Map.Entry)j.next();
                 ExamPeriod period = iPeriods.get(((org.unitime.timetable.model.ExamPeriod)entry.getKey()).getUniqueId());
@@ -318,7 +323,7 @@ public class ExamDatabaseLoader extends ExamLoader {
                 if (!fail && x.getMaxRooms()>0) {
                     for (Iterator j=exam.getAssignedRooms().iterator();j.hasNext();) {
                         Location location = (Location)j.next();
-                        ExamRoom room = (ExamRoom)iRooms.get(location.getUniqueId());
+                        ExamRoom room = iRooms.get(location.getUniqueId());
                         if (room==null) {
                             iProgress.warn("Unable to assign exam "+getExamLabel(exam)+" to room "+location.getLabel()+": not an examination room.");
                             fail = true; break;
@@ -389,7 +394,7 @@ public class ExamDatabaseLoader extends ExamLoader {
             
         for (Iterator i1=iAllRooms.iterator();i1.hasNext();) {
             Location room = (Location)i1.next();
-            ExamRoom roomEx = (ExamRoom)iRooms.get(room.getUniqueId());
+            ExamRoom roomEx = iRooms.get(room.getUniqueId());
             if (roomEx==null) continue;
             boolean add = true;
             
@@ -790,6 +795,33 @@ public class ExamDatabaseLoader extends ExamLoader {
                 if (!hasValue) {
                     iProgress.error("Exam "+getExamLabel(exam)+" has not assignment available.");
                     continue;
+                }
+            }
+        }
+    }
+    
+    public void loadRoomAvailability(RoomAvailabilityInterface ra) {
+        TreeSet periods = org.unitime.timetable.model.ExamPeriod.findAll(iSessionId, iExamType);
+        Date start = ((org.unitime.timetable.model.ExamPeriod)periods.first()).getStartTime();
+        Date stop = ((org.unitime.timetable.model.ExamPeriod)periods.last()).getEndTime();
+        ra.activate(start,stop);
+        iProgress.setPhase("Loading room availability...", iAllRooms.size());
+        for (Iterator i=iAllRooms.iterator();i.hasNext();) {
+            iProgress.incProgress();
+            Location location = (Location)i.next();
+            if (!(location instanceof Room)) continue;
+            Room room = (Room)location;
+            ExamRoom roomEx = iRooms.get(room.getUniqueId());
+            if (roomEx==null) continue;
+            Collection<TimeBlock> times = ra.getRoomAvailability(room.getExternalUniqueId(), room.getBuildingAbbv(), room.getRoomNumber(), 
+                    start, stop,
+                    new String[] {RoomAvailabilityInterface.sExamType});
+            if (times==null) continue;
+            for (TimeBlock time : times) {
+                for (Iterator j=periods.iterator();j.hasNext();) {
+                    org.unitime.timetable.model.ExamPeriod period = (org.unitime.timetable.model.ExamPeriod)j.next();
+                    ExamPeriod periodEx = iPeriods.get(period.getUniqueId());
+                    if (periodEx!=null && period.overlap(time)) roomEx.setAvailable(periodEx, false);
                 }
             }
         }
