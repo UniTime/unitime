@@ -19,6 +19,9 @@
 */
 package org.unitime.timetable.action;
 
+import java.util.Date;
+import java.util.TreeSet;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -28,10 +31,12 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.ExamInfoForm;
+import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ui.ExamInfoModel;
+import org.unitime.timetable.util.RoomAvailability;
 
 /**
  * @author Tomas Muller
@@ -91,6 +96,13 @@ public class ExamInfoAction extends Action {
         }
         
         if (model.getExam()==null) throw new Exception("No exam given.");
+        
+        if (RoomAvailability.getInstance()!=null) {
+            TreeSet periods = org.unitime.timetable.model.ExamPeriod.findAll(Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId(), model.getExam().getExamType());
+            Date start = ((org.unitime.timetable.model.ExamPeriod)periods.first()).getStartTime();
+            Date stop = ((org.unitime.timetable.model.ExamPeriod)periods.last()).getEndTime();
+            RoomAvailability.getInstance().activate(start,stop);
+        }
         
         if ("Select".equals(op)) {
             if (request.getParameter("period")!=null)

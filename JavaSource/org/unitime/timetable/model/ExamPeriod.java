@@ -30,6 +30,7 @@ import java.util.TreeSet;
 import javax.servlet.http.HttpServletRequest;
 
 import org.unitime.commons.web.Web;
+import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
 import org.unitime.timetable.model.base.BaseExamPeriod;
 import org.unitime.timetable.model.dao.ExamPeriodDAO;
 import org.unitime.timetable.util.Constants;
@@ -340,6 +341,10 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
     
     public boolean weakOverlap(Meeting meeting) {
         return getDayOfWeek()==meeting.getDayOfWeek() && getStartSlot() < meeting.getStopPeriod() && meeting.getStartPeriod() < getStartSlot() + getLength();
+    }
+    
+    public boolean overlap(TimeBlock time) {
+        return getStartTime().compareTo(time.getEndTime())<0 && time.getStartTime().compareTo(getEndTime()) < 0;
     }
 
 }
