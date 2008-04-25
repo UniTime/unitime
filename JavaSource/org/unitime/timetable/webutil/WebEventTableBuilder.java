@@ -10,6 +10,7 @@ import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
+import javax.servlet.http.HttpSession;
 import javax.servlet.jsp.JspWriter;
 
 import org.hibernate.Query;
@@ -307,7 +308,7 @@ public class WebEventTableBuilder {
     }
     
     
-    public void htmlTableForEvents (EventListForm form, JspWriter outputStream){
+    public void htmlTableForEvents (HttpSession httpSession, EventListForm form, JspWriter outputStream){
 
         ArrayList eventIds = new ArrayList();
         
@@ -398,6 +399,7 @@ public class WebEventTableBuilder {
                 }
 
         eventsTable.tableComplete();
+        Navigation.set(httpSession, Navigation.sInstructionalOfferingLevel, eventIds);
     }
 
         

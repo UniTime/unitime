@@ -33,6 +33,7 @@ import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.EventListForm;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.webutil.BackTracker;
 
 public class EventListAction extends Action {
 
@@ -57,7 +58,16 @@ public class EventListAction extends Action {
         	else myForm.save(request.getSession());
         } else myForm.load(request.getSession());
 		
-		return mapping.findForward("show");
+        if (request.getParameter("backId")!=null)
+            request.setAttribute("hash", request.getParameter("backId"));
+
+        BackTracker.markForBack(
+                request, 
+                "eventList.do",
+                "Events", 
+                true, true);
+
+        return mapping.findForward("show");
 
 	}
 }

@@ -868,9 +868,11 @@
  	<definition	name="eventDetailTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Event Detail"/>
 		<put name="body" value="/user/eventDetail.jsp" />
+		<put name="showNavigation" value="true" />
   	</definition> 	
  	<definition	name="eventListTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Events"/>
 		<put name="body" value="/user/eventList.jsp" />
+		<put name="showNavigation" value="true" />
   	</definition> 	
 </tiles-definitions>

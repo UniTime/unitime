@@ -30,6 +30,8 @@ public class EventDetailForm extends ActionForm {
 	private ContactBean iMainContact;
 	private Vector<ContactBean> iAdditionalContacts = new Vector<ContactBean>();
 	private boolean iCanEdit;
+	private String iPreviousId;
+	private String iNextId;
 	
 	/** 
 	 * Method validate
@@ -55,70 +57,33 @@ public class EventDetailForm extends ActionForm {
 		iMeetings.clear();
 		iNotes.clear();
 		iCanEdit = false;
+		iPreviousId = null;
+		iNextId = null;
 	}
 	
 
-    public String getEventName() { 
-    	return iEventName; 
-    }
+    public String getEventName() {return iEventName;}
+    public void setEventName(String eventName) {iEventName = eventName;}
     
-    public void setEventName(String eventName) { 
-    	iEventName = eventName; 
-    }
+    public String getMinCapacity() {return iMinCapacity;}
+    public void setMinCapacity(String minCapacity) {iMinCapacity = minCapacity;}
     
-    public String getMinCapacity() { 
-    	return iMinCapacity; 
-    }
+    public String getMaxCapacity() {return iMaxCapacity;}
+    public void setMaxCapacity(String maxCapacity) {iMaxCapacity = maxCapacity;}
+    
+    public String getSponsoringOrg() {return iSponsoringOrg;}
+    public void setSponsoringOrg(String sponsoringOrg) {iSponsoringOrg = sponsoringOrg;}
+    
+	public String getId() {return iId;}
+	public void setId(String id) {this.iId = id;}
 
-    public void setMinCapacity(String minCapacity) { 
-    	iMinCapacity = minCapacity; 
-    }
-    
-    public String getMaxCapacity() { 
-    	return iMaxCapacity; 
-    }
-    
-    public void setMaxCapacity(String maxCapacity) { 
-    	iMaxCapacity = maxCapacity; 
-    }
-    
-    public String getSponsoringOrg() { 
-    	return iSponsoringOrg; 
-    }
-    
-    public void setSponsoringOrg(String sponsoringOrg) { 
-    	iSponsoringOrg = sponsoringOrg; 
-    }
-    
-	public String getId() {
-		return iId;
-	}
-
-	public void setId(String id) {
-		this.iId = id;
-	}
-
-	public String getOp() {
-		return iOp;
-	}
-
-	public void setOp(String op) {
-		this.iOp = op;
-	}
+	public String getOp() {return iOp;}
+	public void setOp(String op) {this.iOp = op;}
 	
-	
-    public Long getSelected() {
-    	return iSelected; 
-    }
+    public Long getSelected() {return iSelected;}
+    public void setSelected(Long selectedId) {iSelected = selectedId;}
     
-    public void setSelected(Long selectedId) { 
-    	iSelected = selectedId;
-    }
-    
-    public Vector<MeetingBean> getMeetings() {
-    	return iMeetings;
-    }
-    
+    public Vector<MeetingBean> getMeetings() {return iMeetings;}
     public void addMeeting(String date, String startTime, String endTime, String location, String approvedDate) {
     	MeetingBean meeting = new MeetingBean();
     	meeting.setDate(date);
@@ -129,10 +94,7 @@ public class EventDetailForm extends ActionForm {
     	iMeetings.add(meeting);
     }
     
-    public ContactBean getMainContact() { 
-    	return iMainContact; 
-    }
-    
+    public ContactBean getMainContact() {return iMainContact;}
     public void setMainContact(EventContact contact) { 
     	iMainContact = new ContactBean(); 
     	iMainContact.setFirstName(contact.getFirstName());
@@ -142,10 +104,7 @@ public class EventDetailForm extends ActionForm {
     	iMainContact.setPhone(contact.getPhone());
     }
     
-    public Vector<ContactBean> getAdditionalContacts() {
-    	return iAdditionalContacts;
-    }
-    
+    public Vector<ContactBean> getAdditionalContacts() {return iAdditionalContacts;}
     public void addAdditionalContact(String firstName, String middleName, String lastName, String email, String phone) {
     	ContactBean contact = new ContactBean();
     	contact.setFirstName(firstName);
@@ -156,10 +115,7 @@ public class EventDetailForm extends ActionForm {
     	iAdditionalContacts.add(contact);
     }
     
-    public Vector<NoteBean> getNotes() {
-    	return iNotes;
-    }
-    
+    public Vector<NoteBean> getNotes() {return iNotes;}
     public void addNote (String textNote) {
     	NoteBean note = new NoteBean();
     	note.setTextNote(textNote);
@@ -172,13 +128,15 @@ public class EventDetailForm extends ActionForm {
     	iNotes.add(note);
     }
     
-    public boolean getCanEdit() {
-    	return iCanEdit;
-    }
+    public boolean getCanEdit() {return iCanEdit;}
+    public void setCanEdit(boolean canEdit) {iCanEdit = canEdit;}
     
-    public void setCanEdit(boolean canEdit) {
-    	iCanEdit = canEdit;
-    }
+    public String getPreviousId () {return iPreviousId;}
+    public void setPreviousId(String prevId) {iPreviousId = prevId;}
+
+    public String getNextId () {return iNextId; }
+    public void setNextId(String nextId) {iNextId = nextId;}
+ 
     
     public class MeetingBean {
     	private String iDate;

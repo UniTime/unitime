@@ -26,11 +26,11 @@
 <%@ taglib uri="http://struts.apache.org/tags-html" prefix="html" %>
 <%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic" %>
 <%@ taglib uri="http://struts.apache.org/tags-tiles" prefix="tiles" %>
+<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 
 <script language="JavaScript" type="text/javascript" src="scripts/block.js"></script>
 
 <tiles:importAttribute />
-
 <html:form action="/eventList">
 <script language="JavaScript">blToggleHeader('Filter','dispFilter');blStart('dispFilter');</script>
 <TABLE border="0" cellspacing="0" cellpadding="3" width='90%'>
@@ -115,7 +115,7 @@
 
 	<% 
 		EventListForm form = (EventListForm)request.getAttribute("eventListForm");
-		new WebEventTableBuilder().htmlTableForEvents(form,out);
+		new WebEventTableBuilder().htmlTableForEvents(session,form,out);
 	%>
 
 	<logic:notEmpty scope="request" name="hash">
