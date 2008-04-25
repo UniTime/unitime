@@ -43,6 +43,8 @@ import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.StandardEventNote;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.webutil.BackTracker;
+import org.unitime.timetable.webutil.Navigation;
 
 
 public class EventDetailAction extends Action {
@@ -80,6 +82,18 @@ public class EventDetailAction extends Action {
 				return mapping.findForward("showEventList");
 			}
 
+			if(iOp.equals("Previous")) {
+				if (myForm.getPreviousId() != null)
+					response.sendRedirect(response.encodeURL("eventDetail.do?id="+myForm.getPreviousId()));
+				return null;
+			}
+
+			if(iOp.equals("Next")) {
+				if (myForm.getPreviousId() != null)
+					response.sendRedirect(response.encodeURL("eventDetail.do?id="+myForm.getNextId()));
+				return null;
+			}
+			
 		}
 
 		
@@ -139,10 +153,21 @@ public class EventDetailAction extends Action {
 							location,approvedDate);
 				}
 				myForm.setCanEdit(user.isAdmin()||user.hasRole(Roles.EVENT_MGR_ROLE)||user.getId().equals(event.getMainContact().getExternalUniqueId()));
+				
+		        Long nextId = Navigation.getNext(request.getSession(), Navigation.sInstructionalOfferingLevel, event.getUniqueId());
+		        Long prevId = Navigation.getPrevious(request.getSession(), Navigation.sInstructionalOfferingLevel, event.getUniqueId());
+		        myForm.setPreviousId(prevId==null?null:prevId.toString());
+		        myForm.setNextId(nextId==null?null:nextId.toString());
 			} else {
 				myForm.setEventName("There is no event with this ID");
 			}	
 		}
+		
+        BackTracker.markForBack(
+                request,
+                "eventDetail.do?id=" + myForm.getId(),
+                myForm.getEventName(),
+                true, false);
 
 		return mapping.findForward("show");
 	}
