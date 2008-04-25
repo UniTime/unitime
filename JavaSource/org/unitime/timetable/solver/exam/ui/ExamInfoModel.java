@@ -40,6 +40,8 @@ import net.sf.cpsolver.coursett.preference.SumPreferenceCombination;
 
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.form.ExamInfoForm;
+import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
+import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.Exam;
@@ -54,6 +56,7 @@ import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
+import org.unitime.timetable.util.RoomAvailability;
 
 /**
  * @author Tomas Muller
@@ -449,20 +452,8 @@ public class ExamInfoModel implements Serializable {
             }
         }
         
-        for (Iterator i1=locations.iterator();i1.hasNext();) {
+        rooms: for (Iterator i1=locations.iterator();i1.hasNext();) {
             Location room = (Location)i1.next();
-            
-            Long examId = locationTable.get(room.getUniqueId());
-            if (!allowConflicts && examId!=null) continue;
-            if (examId!=null && iChange!=null && iChange.getCurrent(examId)!=null) continue;
-            
-            int cap = (getExam().getSeatingType()==Exam.sSeatingTypeExam?room.getExamCapacity():room.getCapacity());
-            if (minRoomSize>=0 && cap<minRoomSize) continue;
-            if (maxRoomSize>=0 && cap>maxRoomSize) continue;
-            
-            if (PreferenceLevel.sProhibited.equals(room.getExamPreference(period).getPrefProlog())) continue;
-            
-            if (!match(room.getLabel(),filter)) continue;
             
             boolean shouldNotBeUsed = PreferenceLevel.sStronglyDiscouraged.equals(room.getExamPreference(period).getPrefProlog());
             
@@ -563,7 +554,31 @@ public class ExamInfoModel implements Serializable {
             
             if (!add || shouldNotBeUsed) continue;
             
-            boolean conflict = false;
+            Long examId = locationTable.get(room.getUniqueId());
+            if (!allowConflicts && examId!=null) continue;
+            if (examId!=null && iChange!=null && iChange.getCurrent(examId)!=null) continue;
+            
+            int cap = (getExam().getSeatingType()==Exam.sSeatingTypeExam?room.getExamCapacity():room.getCapacity());
+            if (minRoomSize>=0 && cap<minRoomSize) continue;
+            if (maxRoomSize>=0 && cap>maxRoomSize) continue;
+            
+            if (PreferenceLevel.sProhibited.equals(room.getExamPreference(period).getPrefProlog())) continue;
+            
+            if (!match(room.getLabel(),filter)) continue;
+            
+            if (RoomAvailability.getInstance()!=null && room instanceof Room) {
+                Room r = (Room)room;
+                Collection<TimeBlock> times = RoomAvailability.getInstance().getRoomAvailability(
+                        r.getExternalUniqueId(),r.getBuildingAbbv(),r.getRoomNumber(), 
+                        period.getStartTime(), period.getEndTime(), 
+                        new String[] {RoomAvailabilityInterface.sExamType});
+                if (times!=null) for (TimeBlock time : times) {
+                    if (period.overlap(time)) {
+                        System.out.println("Room "+room.getLabel()+" is not avaiable due to "+time);
+                        continue rooms;
+                    }
+                }
+            }
             
             rooms.add(new ExamRoomInfo(room, (examId==null?0:100)+pref.getPreferenceInt()));
         }
