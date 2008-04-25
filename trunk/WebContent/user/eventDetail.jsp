@@ -36,15 +36,26 @@ TO DO:
 
 <html:form action="/eventDetail">
 	<html:hidden property="id"/>
+	<html:hidden property="nextId"/>
+	<html:hidden property="previousId"/>	
 	<TABLE width="93%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD valign="middle" colspan='2'>
 				<tt:section-header>
 					<tt:section-title><bean:write name="eventDetailForm" property="eventName"/></tt:section-title>
-					<html:submit property="op" styleClass="btn">Previous</html:submit>
-					<html:submit property="op" styleClass="btn">Next</html:submit>
-					<html:submit property="op"  styleClass="btn" accesskey="B" 
-					  	title="Return To Event List (Alt+B)" value="Back"/>
+					<logic:notEmpty name="eventDetailForm" property="previousId">
+						<html:submit property="op" styleClass="btn" accesskey="P" 
+							title="Previous Event (Alt+P)" value="Previous"/>
+					</logic:notEmpty>
+					&nbsp;
+					<logic:notEmpty name="eventDetailForm" property="nextId">
+						<html:submit property="op" styleClass="btn" accesskey="N"
+							title="Next Event (Alt+N)" value="Next"/>
+					</logic:notEmpty>
+					&nbsp;
+					<tt:back styleClass="btn" name="Back" title="Return to %% (Alt+B)" accesskey="B" type="PreferenceGroup">
+						A<bean:write name="eventDetailForm" property="id"/>
+					</tt:back>
 				</tt:section-header>
 			</TD>
 		</TR>
@@ -188,10 +199,19 @@ TO DO:
 	</TR>
 	<TR>
 		<TD colspan="2" align="right">
-				<html:submit property="op" styleClass="btn">Previous</html:submit>
-				<html:submit property="op" styleClass="btn">Next</html:submit>
-				<html:submit property="op"  styleClass="btn" accesskey="B" 
-				  	title="Return To Event List (Alt+B)" value="Back"/>
+				<logic:notEmpty name="eventDetailForm" property="previousId">
+					<html:submit property="op" styleClass="btn" accesskey="P" 
+						title="Go To Previous Event (Alt+P)" value="Previous"/>
+				</logic:notEmpty>
+				&nbsp;
+				<logic:notEmpty name="eventDetailForm" property="nextId">
+					<html:submit property="op" styleClass="btn" accesskey="N"
+						title="Next Event (Alt+N)" value="Next"/>
+				</logic:notEmpty>
+				&nbsp;
+				<tt:back styleClass="btn" name="Back" title="Return to %% (Alt+B)" accesskey="B" type="PreferenceGroup">
+					A<bean:write name="eventDetailForm" property="id"/>
+				</tt:back>
 		</TD>
 	</TR>
 
