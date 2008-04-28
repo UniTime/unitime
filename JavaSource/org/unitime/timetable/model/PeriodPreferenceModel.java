@@ -28,7 +28,7 @@ public class PeriodPreferenceModel implements RequiredTimeTableModel {
     private ExamPeriod iPeriod = null;
     private Integer iExamType = null;
     
-    public static SimpleDateFormat sDF = new SimpleDateFormat("EEE MM/dd");
+    public static SimpleDateFormat[] sDF = new SimpleDateFormat[]{new SimpleDateFormat("EEE"),new SimpleDateFormat("MM/dd")};
     
     public PeriodPreferenceModel(Session session, Integer examType) {
         this(session, null, examType);
@@ -127,7 +127,7 @@ public class PeriodPreferenceModel implements RequiredTimeTableModel {
     public String getDayHeader(int day) {
         Integer dateOffset = (Integer)iDates.toArray()[day];
         Date date = new Date(iFirstDate.getTime() + dateOffset * 24 * 3600 * 1000);
-        return sDF.format(date);
+        return sDF[0].format(date)+"<br>"+sDF[1].format(date);
     }
     
     public String getFileName() {
