@@ -141,7 +141,7 @@ public class UnassignedExamsAction extends Action {
                             EveningPeriodPreferenceModel epx = new EveningPeriodPreferenceModel(exam.getExam().getSession());
                             if (epx.canDo()) {
                                 epx.load(exam.getExam());
-                                perPref += epx.toString();
+                                perPref += epx.toString(true);
                             } else {
                                 PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getExam().getSession(), exam.getExamType());
                                 px.load(exam.getExam());

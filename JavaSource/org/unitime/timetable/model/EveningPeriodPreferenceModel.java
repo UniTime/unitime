@@ -348,7 +348,11 @@ public class EveningPeriodPreferenceModel {
 		}
 	}
 	
-    public String toString() {
+	public String toString() {
+	    return toString(false);
+	}
+	
+    public String toString(boolean html) {
     	SimpleDateFormat df = new SimpleDateFormat("MM/dd");
         StringBuffer sb = new StringBuffer();
         String[] fPref = null; 
@@ -365,10 +369,20 @@ public class EveningPeriodPreferenceModel {
         	            //
         	        } else {
         	            if (sb.length()>0) sb.append(", ");
-                        sb.append(PreferenceLevel.prolog2abbv(fPref[0])+" ");
-                        sb.append(df.format(getDate(fDate)));
-                        if (fDate!=lDate) 
-                            sb.append(" - "+df.format(getDate(lDate)));
+        	            if (html) {
+        	                sb.append("<span style='color:"+PreferenceLevel.prolog2color(fPref[0])+";' title='");
+                            sb.append(PreferenceLevel.prolog2string(fPref[0])+" ");
+                            sb.append(df.format(getDate(fDate)));
+                            if (fDate!=lDate) sb.append(" - "+df.format(getDate(lDate)));
+        	                sb.append("'>");
+        	                sb.append(df.format(getDate(fDate)));
+                            if (fDate!=lDate) sb.append(" - "+df.format(getDate(lDate)));
+                            sb.append("</span>");
+        	            } else {
+        	                sb.append(PreferenceLevel.prolog2abbv(fPref[0])+" ");
+        	                sb.append(df.format(getDate(fDate)));
+        	                if (fDate!=lDate) sb.append(" - "+df.format(getDate(lDate)));
+        	            }
         	        }
         	    } else {
                     if ("@".equals(fPref[0])) {
@@ -379,10 +393,21 @@ public class EveningPeriodPreferenceModel {
                         //
                     } else {
                         if (sb.length()>0) sb.append(", ");
-                        sb.append(PreferenceLevel.prolog2abbv(fPref[0])+" Early ");
-                        sb.append(df.format(getDate(fDate)));
-                        if (fDate!=lDate) 
-                            sb.append(" - "+df.format(getDate(lDate)));
+                        if (html) {
+                            sb.append("<span style='color:"+PreferenceLevel.prolog2color(fPref[0])+";' title='");
+                            sb.append(PreferenceLevel.prolog2string(fPref[0])+" Early ");
+                            sb.append(df.format(getDate(fDate)));
+                            if (fDate!=lDate) sb.append(" - "+df.format(getDate(lDate)));
+                            sb.append("'>");
+                            sb.append("Early ");
+                            sb.append(df.format(getDate(fDate)));
+                            if (fDate!=lDate) sb.append(" - "+df.format(getDate(lDate)));
+                            sb.append("</span>");
+                        } else {
+                            sb.append(PreferenceLevel.prolog2abbv(fPref[0])+" Early ");
+                            sb.append(df.format(getDate(fDate)));
+                            if (fDate!=lDate) sb.append(" - "+df.format(getDate(lDate)));
+                        }
                     }
                     if ("@".equals(fPref[1])) {
                         //
@@ -392,10 +417,22 @@ public class EveningPeriodPreferenceModel {
                         //
                     } else {
                         if (sb.length()>0) sb.append(", ");
-                        sb.append(PreferenceLevel.prolog2abbv(fPref[1])+" Late ");
-                        sb.append(df.format(getDate(fDate)));
-                        if (fDate!=lDate) 
-                            sb.append(" - "+df.format(getDate(lDate)));
+                        if (html) {
+                            sb.append("<span style='color:"+PreferenceLevel.prolog2color(fPref[1])+";' title='");
+                            sb.append(PreferenceLevel.prolog2string(fPref[1])+" Late ");
+                            sb.append(df.format(getDate(fDate)));
+                            if (fDate!=lDate) sb.append(" - "+df.format(getDate(lDate)));
+                            sb.append("'>");
+                            sb.append("Late ");
+                            sb.append(df.format(getDate(fDate)));
+                            if (fDate!=lDate) sb.append(" - "+df.format(getDate(lDate)));
+                            sb.append("</span>");
+                        } else {
+                            sb.append(PreferenceLevel.prolog2abbv(fPref[1])+" Late ");
+                            sb.append(df.format(getDate(fDate)));
+                            if (fDate!=lDate) 
+                                sb.append(" - "+df.format(getDate(lDate)));
+                        }
                     }
         	    }
         	    fPref = pref; fDate = date;
@@ -410,10 +447,20 @@ public class EveningPeriodPreferenceModel {
                     //
                 } else {
                     if (sb.length()>0) sb.append(", ");
-                    sb.append(PreferenceLevel.prolog2abbv(fPref[0])+" ");
-                    sb.append(df.format(getDate(fDate)));
-                    if (fDate!=lDate) 
-                        sb.append(" - "+df.format(getDate(lDate)));
+                    if (html) {
+                        sb.append("<span style='color:"+PreferenceLevel.prolog2color(fPref[0])+";' title='");
+                        sb.append(PreferenceLevel.prolog2string(fPref[0])+" ");
+                        sb.append(df.format(getDate(fDate)));
+                        if (fDate!=lDate) sb.append(" - "+df.format(getDate(lDate)));
+                        sb.append("'>");
+                        sb.append(df.format(getDate(fDate)));
+                        if (fDate!=lDate) sb.append(" - "+df.format(getDate(lDate)));
+                        sb.append("</span>");
+                    } else {
+                        sb.append(PreferenceLevel.prolog2abbv(fPref[0])+" ");
+                        sb.append(df.format(getDate(fDate)));
+                        if (fDate!=lDate) sb.append(" - "+df.format(getDate(lDate)));
+                    }
                 }
             } else {
                 if ("@".equals(fPref[0])) {
@@ -424,10 +471,21 @@ public class EveningPeriodPreferenceModel {
                     //
                 } else {
                     if (sb.length()>0) sb.append(", ");
-                    sb.append(PreferenceLevel.prolog2abbv(fPref[0])+" Early ");
-                    sb.append(df.format(getDate(fDate)));
-                    if (fDate!=lDate) 
-                        sb.append(" - "+df.format(getDate(lDate)));
+                    if (html) {
+                        sb.append("<span style='color:"+PreferenceLevel.prolog2color(fPref[0])+";' title='");
+                        sb.append(PreferenceLevel.prolog2string(fPref[0])+" Early ");
+                        sb.append(df.format(getDate(fDate)));
+                        if (fDate!=lDate) sb.append(" - "+df.format(getDate(lDate)));
+                        sb.append("'>");
+                        sb.append("Early ");
+                        sb.append(df.format(getDate(fDate)));
+                        if (fDate!=lDate) sb.append(" - "+df.format(getDate(lDate)));
+                        sb.append("</span>");
+                    } else {
+                        sb.append(PreferenceLevel.prolog2abbv(fPref[0])+" Early ");
+                        sb.append(df.format(getDate(fDate)));
+                        if (fDate!=lDate) sb.append(" - "+df.format(getDate(lDate)));
+                    }
                 }
                 if ("@".equals(fPref[1])) {
                     //
@@ -437,13 +495,26 @@ public class EveningPeriodPreferenceModel {
                     //
                 } else {
                     if (sb.length()>0) sb.append(", ");
-                    sb.append(PreferenceLevel.prolog2abbv(fPref[1])+" Late ");
-                    sb.append(df.format(getDate(fDate)));
-                    if (fDate!=lDate) 
-                        sb.append(" - "+df.format(getDate(lDate)));
+                    if (html) {
+                        sb.append("<span style='color:"+PreferenceLevel.prolog2color(fPref[1])+";' title='");
+                        sb.append(PreferenceLevel.prolog2string(fPref[1])+" Late ");
+                        sb.append(df.format(getDate(fDate)));
+                        if (fDate!=lDate) sb.append(" - "+df.format(getDate(lDate)));
+                        sb.append("'>");
+                        sb.append("Late ");
+                        sb.append(df.format(getDate(fDate)));
+                        if (fDate!=lDate) sb.append(" - "+df.format(getDate(lDate)));
+                        sb.append("</span>");
+                    } else {
+                        sb.append(PreferenceLevel.prolog2abbv(fPref[1])+" Late ");
+                        sb.append(df.format(getDate(fDate)));
+                        if (fDate!=lDate) 
+                            sb.append(" - "+df.format(getDate(lDate)));
+                    }
                 }
             }
         }
+        /*
         if (iLocation && fPref!=null && fDate==iDates.first() && lDate==iDates.last()) {
             if (fPref[0].equals(fPref[1])) {
                 if (PreferenceLevel.sNeutral.equals(fPref[0])) {
@@ -472,6 +543,7 @@ public class EveningPeriodPreferenceModel {
                 }
             }
         }
-        return (iLocation?sb.toString().replaceAll(PreferenceLevel.prolog2abbv(PreferenceLevel.sProhibited),"N/A"):sb.toString());
+        */
+        return sb.toString();//(iLocation?sb.toString().replaceAll(PreferenceLevel.prolog2abbv(PreferenceLevel.sProhibited),"N/A"):sb.toString());
     }
 }

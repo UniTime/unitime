@@ -190,7 +190,7 @@ public class ExamListAction extends Action {
                     	EveningPeriodPreferenceModel epx = new EveningPeriodPreferenceModel(exam.getSession(), null);
                     	if (epx.canDo()) {
                     		epx.load(exam);
-                    		perPref+=epx.toString();
+                    		perPref+=epx.toString(true);
                     	} else {
                     		perPref += exam.getEffectivePrefHtmlForPrefType(ExamPeriodPref.class);
                     	}
@@ -235,7 +235,16 @@ public class ExamListAction extends Action {
                     if (roomPref.length()>0) roomPref+=nl;
                     roomPref += PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText();
                 }
-                for (Iterator j=exam.effectivePreferences(ExamPeriodPref.class).iterator();j.hasNext();) {
+                boolean prefPrinted = false;
+                if (Exam.sExamTypeEvening==exam.getExamType()) {
+                    EveningPeriodPreferenceModel epx = new EveningPeriodPreferenceModel(exam.getSession(), null);
+                    if (epx.canDo()) {
+                        epx.load(exam);
+                        perPref+=epx.toString(false);
+                        prefPrinted = true;
+                    } 
+                }
+                if (!prefPrinted) for (Iterator j=exam.effectivePreferences(ExamPeriodPref.class).iterator();j.hasNext();) {
                     Preference pref = (Preference)j.next();
                     if (perPref.length()>0) perPref+=nl;
                     perPref += PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText();
