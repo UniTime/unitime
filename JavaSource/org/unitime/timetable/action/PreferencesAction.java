@@ -811,10 +811,10 @@ public class PreferencesAction extends Action {
         if (Exam.sExamTypeEvening==((ExamEditForm)frm).getExamType()) {
         	EveningPeriodPreferenceModel epx = new EveningPeriodPreferenceModel(exam==null?Session.getCurrentAcadSession(Web.getUser(request.getSession())):exam.getSession(), assignment);
         	if (epx.canDo()) {
-        		if (exam!=null) epx.load(exam);
+        		if (exam!=null) epx.load(exam); else epx.invertRequired();
         		frm.setHasNotAvailable(true);
         		if (!op.equals("init")) epx.load(request);
-        		request.setAttribute("ExamPeriodGrid", epx.print(editable));
+        		request.setAttribute("ExamPeriodGrid", epx.print(editable, (editable?0:exam.getLength())));
         		return;
         	}
         }

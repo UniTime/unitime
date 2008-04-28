@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Locale;
@@ -20,7 +21,7 @@ import org.unitime.timetable.util.DateUtils;
 public class EveningPeriodPreferenceModel {
     private TreeSet<Integer> iDates = new TreeSet<Integer>();
     private Vector<Integer> iStarts = new Vector<Integer>();
-    private Hashtable<Integer,Integer> iPreferences = new Hashtable<Integer,Integer>();
+    private Hashtable<Integer,String[]> iPreferences = new Hashtable<Integer,String[]>();
     private Hashtable<Integer,Integer> iLength = new Hashtable<Integer,Integer>();
     private TreeSet iPeriods = null;
     private Date iFirstDate = null, iLastDate = null;
@@ -48,7 +49,6 @@ public class EveningPeriodPreferenceModel {
             	iLength.put(period.getStartSlot(), period.getLength());
             }
             iDates.add(period.getDateOffset());
-            iPreferences.put(period.getDateOffset(),0);
             if (iFirstDate==null) {
             	iFirstDate = period.getStartDate(); iLastDate = period.getStartDate();
             } else {
@@ -59,10 +59,17 @@ public class EveningPeriodPreferenceModel {
             }
         }
         Collections.sort(iStarts);
+        for (Iterator i=iPeriods.iterator();i.hasNext();) {
+            ExamPeriod period = (ExamPeriod)i.next();
+            String[] pref = iPreferences.get(period.getDateOffset());
+            if (pref==null) { pref = new String[] {"@","@"}; iPreferences.put(period.getDateOffset(),pref); }
+            boolean early = (iStarts.indexOf(period.getStartSlot())==0);
+            pref[early?0:1] = PreferenceLevel.sNeutral;
+        }
     }
     
     public boolean canDo() {
-        if (iStarts.size()>2) return false;
+        if (iStarts.size()!=2) return false;
         if (iStarts.size()*iDates.size()!=iPeriods.size()) return false;
         return true;
     }
@@ -70,23 +77,44 @@ public class EveningPeriodPreferenceModel {
     public void load(PreferenceGroup pg) {
         for (Iterator i=pg.getPreferences(ExamPeriodPref.class).iterator();i.hasNext();) {
         	ExamPeriodPref pref = (ExamPeriodPref)i.next();
-        	Integer currentPref = iPreferences.get(pref.getExamPeriod().getDateOffset());
-        	int bit = 1<<iStarts.indexOf(pref.getExamPeriod().getStartSlot());
-        	iPreferences.put(pref.getExamPeriod().getDateOffset(), (currentPref==null?0:currentPref.intValue()) | bit);
+        	String[] currentPref = iPreferences.get(pref.getExamPeriod().getDateOffset());
+        	boolean early = (iStarts.indexOf(pref.getExamPeriod().getStartSlot())==0);
+        	currentPref[early?0:1] = pref.getPrefLevel().getPrefProlog();
+        }
+        boolean hasReq = false, noPref = true;
+        for (Integer date: iDates) {
+            String[] prefs = iPreferences.get(date);
+            if (PreferenceLevel.sRequired.equals(prefs[0]) || PreferenceLevel.sRequired.equals(prefs[1])) {
+                hasReq = true; break;
+            } 
+        }
+        if (hasReq) {
+            for (Integer date: iDates) {
+                String[] prefs = iPreferences.get(date);
+                prefs[0] = (PreferenceLevel.sRequired.equals(prefs[0])?PreferenceLevel.sNeutral:PreferenceLevel.sProhibited);
+                prefs[1] = (PreferenceLevel.sRequired.equals(prefs[1])?PreferenceLevel.sNeutral:PreferenceLevel.sProhibited);
+            }
+        }
+    }
+    
+    public void invertRequired() {
+        for (Integer date: iDates) {
+            String[] prefs = iPreferences.get(date);
+            prefs[0] = (PreferenceLevel.sRequired.equals(prefs[0])?PreferenceLevel.sNeutral:PreferenceLevel.sProhibited);
+            prefs[1] = (PreferenceLevel.sRequired.equals(prefs[1])?PreferenceLevel.sNeutral:PreferenceLevel.sProhibited);
         }
     }
     
     public void save(Set preferences, PreferenceGroup pg) {
     	for (Iterator i=iPeriods.iterator();i.hasNext();) {
             ExamPeriod period = (ExamPeriod)i.next();
-            Integer pref = iPreferences.get(period.getDateOffset());
-            if (pref==null) continue;
-            int bit = 1<<iStarts.indexOf(period.getStartSlot());
-            if ((pref.intValue() & bit)!=0) {
+            boolean early = (iStarts.indexOf(period.getStartSlot())==0);
+            String[] pref = iPreferences.get(period.getDateOffset());
+            if (!PreferenceLevel.sNeutral.equals(pref[early?0:1])) {
             	ExamPeriodPref p = new ExamPeriodPref();
                 p.setOwner(pg);
                 p.setExamPeriod(period);
-                p.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sRequired));
+                p.setPrefLevel(PreferenceLevel.getPreferenceLevel(pref[early?0:1]));
                 preferences.add(p);
             }
         }
@@ -96,10 +124,22 @@ public class EveningPeriodPreferenceModel {
     	iLocation = true;
         for (Iterator i=iPeriods.iterator();i.hasNext();) {
             ExamPeriod period = (ExamPeriod)i.next();
-            if (PreferenceLevel.sProhibited.equals(location.getExamPreference(period).getPrefProlog())) {
-            	Integer currentPref = iPreferences.get(period.getDateOffset());
-            	int bit = 1<<iStarts.indexOf(period.getStartSlot());
-            	iPreferences.put(period.getDateOffset(), (currentPref==null?0:currentPref.intValue()) | bit);
+            String[] currentPref = iPreferences.get(period.getDateOffset());
+            boolean early = (iStarts.indexOf(period.getStartSlot())==0);
+            currentPref[early?0:1] = location.getExamPreference(period).getPrefProlog();
+        }
+        boolean hasReq = false;
+        for (Integer date: iDates) {
+            String[] prefs = iPreferences.get(date);
+            if (PreferenceLevel.sRequired.equals(prefs[0]) || PreferenceLevel.sRequired.equals(prefs[1])) {
+                hasReq = true; break;
+            }
+        }
+        if (hasReq) {
+            for (Integer date: iDates) {
+                String[] prefs = iPreferences.get(date);
+                prefs[0] = (PreferenceLevel.sRequired.equals(prefs[0])?PreferenceLevel.sNeutral:PreferenceLevel.sProhibited);
+                prefs[1] = (PreferenceLevel.sRequired.equals(prefs[1])?PreferenceLevel.sNeutral:PreferenceLevel.sProhibited);
             }
         }
     }
@@ -108,11 +148,10 @@ public class EveningPeriodPreferenceModel {
         location.clearExamPreferences(Exam.sExamTypeEvening);
     	for (Iterator i=iPeriods.iterator();i.hasNext();) {
             ExamPeriod period = (ExamPeriod)i.next();
-            Integer pref = iPreferences.get(period.getDateOffset());
-            if (pref==null) continue;
-            int bit = 1<<iStarts.indexOf(period.getStartSlot());
-            if ((pref.intValue() & bit)!=0) {
-                location.addExamPreference(period, PreferenceLevel.getPreferenceLevel(PreferenceLevel.sProhibited));
+            boolean early = (iStarts.indexOf(period.getStartSlot())==0);
+            String[] pref = iPreferences.get(period.getDateOffset());
+            if (!PreferenceLevel.sNeutral.equals(pref[early?0:1])) {
+                location.addExamPreference(period, PreferenceLevel.getPreferenceLevel(pref[early?0:1]));
             }
         }
     }
@@ -197,63 +236,102 @@ public class EveningPeriodPreferenceModel {
 		default : return PreferenceLevel.prolog2bgColor(PreferenceLevel.sNeutral); 
 		}
 	}
-
-    public String print(boolean editable) throws Exception {
+	
+	public String print(boolean editable) throws Exception {
+	    return print(editable, 0);
+	}
+	
+    public String print(boolean editable, int length) throws Exception {
 		StringBuffer border = new StringBuffer("[");
-		StringBuffer pattern = new StringBuffer("[");
+		StringBuffer patternEarly = new StringBuffer("[");
+		StringBuffer patternLate = new StringBuffer("[");
+		boolean earlyProh = true, lateProh = true;
 		for (int m=getStartMonth();m<=getEndMonth();m++) {
-			if (m!=getStartMonth()) { border.append(","); pattern.append(","); }
-			border.append("["); pattern.append("[");
+			if (m!=getStartMonth()) { border.append(","); patternEarly.append(","); patternLate.append(","); }
+			border.append("["); patternEarly.append("["); patternLate.append("[");
 			int daysOfMonth = DateUtils.getNrDaysOfMonth(m, getYear());;
 			for (int d=1;d<=daysOfMonth;d++) {
-				if (d>1) { border.append(","); pattern.append(","); }
+				if (d>1) { border.append(","); patternEarly.append(","); patternLate.append(","); }
 				Integer date = getDateOffset(d, m);
-				Integer pref = iPreferences.get(date);
+				String[] pref = iPreferences.get(date);
 				boolean hasPeriod = iDates.contains(date);
+				if (hasPeriod && !"@".equals(pref[0]) && !PreferenceLevel.sProhibited.equals(pref[0])) earlyProh = false;
+				if (hasPeriod && !"@".equals(pref[1]) && !PreferenceLevel.sProhibited.equals(pref[1])) lateProh = false;
 				border.append(getBorder(d,m));
-				pattern.append(hasPeriod?"'"+(pref==null?0:pref.intValue())+"'":"'@'");
+				patternEarly.append(hasPeriod?"'"+pref[0]+"'":"'@'");
+				patternLate.append(hasPeriod?"'"+pref[1]+"'":"'@'");
 			}
 			border.append("]");
-			pattern.append("]");
+			patternEarly.append("]");
+			patternLate.append("]");
 		}
 		border.append("]");
-		pattern.append("]");
-        Calendar firstStart = Calendar.getInstance(Locale.US);
-        firstStart.set(Calendar.HOUR, (Constants.SLOT_LENGTH_MIN*iStarts.firstElement()+Constants.FIRST_SLOT_TIME_MIN) / 60);
-        firstStart.set(Calendar.MINUTE, (Constants.SLOT_LENGTH_MIN*iStarts.firstElement()+Constants.FIRST_SLOT_TIME_MIN) % 60);
-        Calendar firstEnd = Calendar.getInstance(Locale.US);
-        firstEnd.set(Calendar.HOUR, (Constants.SLOT_LENGTH_MIN*(iStarts.firstElement()+iLength.get(iStarts.firstElement()))+Constants.FIRST_SLOT_TIME_MIN) / 60);
-        firstEnd.set(Calendar.MINUTE, (Constants.SLOT_LENGTH_MIN*(iStarts.firstElement()+iLength.get(iStarts.firstElement()))+Constants.FIRST_SLOT_TIME_MIN) % 60);
-        Calendar lastStart = Calendar.getInstance(Locale.US);
-        lastStart.set(Calendar.HOUR, (Constants.SLOT_LENGTH_MIN*iStarts.lastElement()+Constants.FIRST_SLOT_TIME_MIN) / 60);
-        lastStart.set(Calendar.MINUTE, (Constants.SLOT_LENGTH_MIN*iStarts.lastElement()+Constants.FIRST_SLOT_TIME_MIN) % 60);
-        Calendar lastEnd = Calendar.getInstance(Locale.US);
-        lastEnd.set(Calendar.HOUR, (Constants.SLOT_LENGTH_MIN*(iStarts.lastElement()+iLength.get(iStarts.lastElement()))+Constants.FIRST_SLOT_TIME_MIN) / 60);
-        lastEnd.set(Calendar.MINUTE, (Constants.SLOT_LENGTH_MIN*(iStarts.lastElement()+iLength.get(iStarts.lastElement()))+Constants.FIRST_SLOT_TIME_MIN) % 60);
-        SimpleDateFormat df = new SimpleDateFormat("h:mmaa");
-		StringBuffer sb = new StringBuffer(); 
+		patternEarly.append("]");
+		patternLate.append("]");
+		int firstStartHour = (Constants.SLOT_LENGTH_MIN*iStarts.firstElement()+Constants.FIRST_SLOT_TIME_MIN) / 60;
+		int firstStartMin = (Constants.SLOT_LENGTH_MIN*iStarts.firstElement()+Constants.FIRST_SLOT_TIME_MIN) % 60;
+		String firstStart = (firstStartHour>12?firstStartHour-12:firstStartHour)+":"+(firstStartMin<10?"0":"")+firstStartMin+(firstStartHour>=12?"p":"a");
+		int firstEndHour = (Constants.SLOT_LENGTH_MIN*(iStarts.firstElement()+iLength.get(iStarts.firstElement()))+Constants.FIRST_SLOT_TIME_MIN) / 60;
+		int firstEndMin = (Constants.SLOT_LENGTH_MIN*(iStarts.firstElement()+iLength.get(iStarts.firstElement()))+Constants.FIRST_SLOT_TIME_MIN) % 60;
+		String firstEnd = (firstEndHour>12?firstEndHour-12:firstEndHour)+":"+(firstEndMin<10?"0":"")+firstEndMin+(firstEndHour>=12?"p":"a");
+        int lastStartHour = (Constants.SLOT_LENGTH_MIN*iStarts.lastElement()+Constants.FIRST_SLOT_TIME_MIN) / 60;
+        int lastStartMin = (Constants.SLOT_LENGTH_MIN*iStarts.lastElement()+Constants.FIRST_SLOT_TIME_MIN) % 60;
+        String lastStart = (lastStartHour>12?lastStartHour-12:lastStartHour)+":"+(lastStartMin<10?"0":"")+lastStartMin+(lastStartHour>=12?"p":"a");
+        int lastEndHour = (Constants.SLOT_LENGTH_MIN*(iStarts.lastElement()+iLength.get(iStarts.lastElement()))+Constants.FIRST_SLOT_TIME_MIN) / 60;
+        int lastEndMin = (Constants.SLOT_LENGTH_MIN*(iStarts.lastElement()+iLength.get(iStarts.lastElement()))+Constants.FIRST_SLOT_TIME_MIN) % 60;
+        String lastEnd = (lastEndHour>12?lastEndHour-12:lastEndHour)+":"+(lastEndMin<10?"0":"")+lastEndMin+(lastEndHour>=12?"p":"a");
+        StringBuffer legendCode = new StringBuffer("[");
+        StringBuffer legendText = new StringBuffer("[");
+        StringBuffer legendColor = new StringBuffer("[");
+        Vector prefs = new Vector(PreferenceLevel.getPreferenceLevelList(false));
+        prefs.remove(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sRequired));
+        for (Enumeration e=prefs.elements();e.hasMoreElements();) {
+            PreferenceLevel p = (PreferenceLevel)e.nextElement();
+            legendCode.append("'"+p.getPrefProlog()+"',");
+            legendText.append("'"+p.getPrefName()+"',");
+            /*
+            if (!iLocation && PreferenceLevel.sNeutral.equals(p.getPrefProlog())) {
+                legendColor.append("'"+PreferenceLevel.prolog2bgColor(PreferenceLevel.sDiscouraged)+"',");
+            } else if (!iLocation && PreferenceLevel.sDiscouraged.equals(p.getPrefProlog())) {
+                legendColor.append("'"+PreferenceLevel.prolog2bgColor(PreferenceLevel.sStronglyDiscouraged)+"',");
+            } else if (!iLocation && PreferenceLevel.sStronglyDiscouraged.equals(p.getPrefProlog())) {
+                legendColor.append("'"+PreferenceLevel.prolog2bgColor(PreferenceLevel.sProhibited)+"',");
+            } else if (!iLocation && PreferenceLevel.sProhibited.equals(p.getPrefProlog())) {
+                legendColor.append("'"+PreferenceLevel.prolog2bgColor(PreferenceLevel.sNeutral)+"',");
+            } else */ 
+            legendColor.append("'"+PreferenceLevel.prolog2bgColor(p.getPrefProlog())+"',");
+        }
+        legendCode.append("'@']");
+        legendText.append("'No Period']");
+        legendColor.append("'rgb(150,150,150)']");
+        boolean early = (length <= Constants.SLOT_LENGTH_MIN * iLength.get(iStarts.firstElement())) && (editable || iLocation || !earlyProh);
+        boolean late = (length <= Constants.SLOT_LENGTH_MIN * iLength.get(iStarts.lastElement())) && (editable || iLocation || !lateProh);
+        StringBuffer sb = new StringBuffer(); 
         sb.append("<script language='JavaScript' type='text/javascript' src='scripts/datepatt.js'></script>");
 		sb.append("<script language='JavaScript'>");
-		sb.append(
+		if (early) sb.append(
 			"calGenerate("+getYear()+","+
 				getStartMonth()+","+
 				getEndMonth()+","+
-				pattern+","+
-				"['3','2','1','0','@'],"+
-				(iLocation?"[" +
-						"'Not Available'," +
-						"'Available Erly Period Only ("+df.format(firstStart.getTime())+" - "+df.format(firstEnd.getTime())+")'," +
-						"'Available Late Priod Only ("+df.format(lastStart.getTime())+" - "+df.format(lastEnd.getTime())+")'," +
-						"'Available','No Period'],":
-						"[" +
-						"'Both Periods'," +
-						"'Late Period ("+df.format(lastStart.getTime())+" - "+df.format(lastEnd.getTime())+")'," +
-						"'Early Period  ("+df.format(firstStart.getTime())+" - "+df.format(firstEnd.getTime())+")'," +
-				        "'Not Available','No Period'],")+
-				"['"+getColor(3)+"','"+getColor(2)+"','"+getColor(1)+"','"+getColor(0)+"','rgb(150,150,150)'],"+
-				"'3',"+
-				border+","+editable+","+true+");");
-		sb.append("</script>");
+				patternEarly+","+
+                legendCode+","+legendText+","+legendColor+",'0',"+
+				border+","+editable+","+editable+","+
+				"'early','("+firstStart+" - "+firstEnd+")',5,true,"+!late+");");
+		if (late) sb.append(
+            "calGenerate("+getYear()+","+
+                getStartMonth()+","+
+                getEndMonth()+","+
+                patternLate+","+
+                legendCode+","+legendText+","+legendColor+",'0',"+
+                border+","+editable+","+!early+","+
+                "'late','("+lastStart+" - "+lastEnd+")',5,"+!early+",true);");
+        sb.append("</script>");
+        if (!early && !late) {
+            if (length > Constants.SLOT_LENGTH_MIN * iLength.get(iStarts.firstElement()) && length > Constants.SLOT_LENGTH_MIN * iLength.get(iStarts.lastElement())) 
+                sb.append("<font color='red'>Examination is too long, no period is availabile.</font>");
+            else
+                sb.append("<font color='red'>No period is availabile.</font>");
+        }
 		return sb.toString();
 	}
     
@@ -262,47 +340,138 @@ public class EveningPeriodPreferenceModel {
 		for (int m=getStartMonth();m<=getEndMonth();m++) {
 			int daysOfMonth = DateUtils.getNrDaysOfMonth(m, getYear());;
 			for (int d=1;d<=daysOfMonth;d++) {
-				String pref = request.getParameter("cal_val_"+((12+m)%12)+"_"+d);
-				if (pref==null || "0".equals(pref) || "@".equals(pref)) continue;
-				iPreferences.put(getDateOffset(d, m), Integer.valueOf(pref));
+			    if (!iDates.contains(getDateOffset(d,m))) continue; 
+			    iPreferences.put(getDateOffset(d,m), new String[] {
+                    request.getParameter("early_val_"+((12+m)%12)+"_"+d),
+                    request.getParameter("late_val_"+((12+m)%12)+"_"+d)});
 			}
 		}
 	}
-    
+	
     public String toString() {
     	SimpleDateFormat df = new SimpleDateFormat("MM/dd");
         StringBuffer sb = new StringBuffer();
-        int fPref = -1, fDate = -1, lDate = -1;
+        String[] fPref = null; 
+        int fDate = -1, lDate = -1;
         for (Integer date: iDates) {
-        	Integer pref = iPreferences.get(date);
-        	if (fPref<0) {
+        	String[] pref = iPreferences.get(date);
+        	if (fPref==null) {
         	    fPref = pref; fDate = date;
-        	} else if (fPref!=pref) {
-        	    if (fPref!=0) {
-                    if (sb.length()>0) sb.append(", ");
-                    if (fPref==1) sb.append("Early ");
-                    if (fPref==2) sb.append("Late ");
-                    sb.append(df.format(getDate(fDate)));
-                    if (fDate!=lDate) 
-                        sb.append(" - "+df.format(getDate(lDate)));
+        	} else if (!fPref[0].equals(pref[0]) || !fPref[1].equals(pref[1])) {
+        	    if (fPref[0].equals(fPref[1])) {
+        	        if (iLocation && PreferenceLevel.sNeutral.equals(fPref[0])) {
+        	            //
+        	        } else if (!iLocation && PreferenceLevel.sProhibited.equals(fPref[0])) {
+        	            //
+        	        } else {
+        	            if (sb.length()>0) sb.append(", ");
+                        sb.append(PreferenceLevel.prolog2abbv(fPref[0])+" ");
+                        sb.append(df.format(getDate(fDate)));
+                        if (fDate!=lDate) 
+                            sb.append(" - "+df.format(getDate(lDate)));
+        	        }
+        	    } else {
+                    if ("@".equals(fPref[0])) {
+                        //
+                    } else if (iLocation && PreferenceLevel.sNeutral.equals(fPref[0])) {
+                        //
+                    } else if (!iLocation && PreferenceLevel.sProhibited.equals(fPref[0])) {
+                        //
+                    } else {
+                        if (sb.length()>0) sb.append(", ");
+                        sb.append(PreferenceLevel.prolog2abbv(fPref[0])+" Early ");
+                        sb.append(df.format(getDate(fDate)));
+                        if (fDate!=lDate) 
+                            sb.append(" - "+df.format(getDate(lDate)));
+                    }
+                    if ("@".equals(fPref[1])) {
+                        //
+                    } else if (iLocation && PreferenceLevel.sNeutral.equals(fPref[1])) {
+                        //
+                    } else if (!iLocation && PreferenceLevel.sProhibited.equals(fPref[1])) {
+                        //
+                    } else {
+                        if (sb.length()>0) sb.append(", ");
+                        sb.append(PreferenceLevel.prolog2abbv(fPref[1])+" Late ");
+                        sb.append(df.format(getDate(fDate)));
+                        if (fDate!=lDate) 
+                            sb.append(" - "+df.format(getDate(lDate)));
+                    }
         	    }
         	    fPref = pref; fDate = date;
         	}
         	lDate = date;
         }
-        if (fPref>0) {
-            if (sb.length()>0) sb.append(", ");
-            if (fPref==1) sb.append("Early ");
-            if (fPref==2) sb.append("Late ");
-            sb.append(df.format(getDate(fDate)));
-            if (fDate!=lDate) 
-                sb.append(" - "+df.format(getDate(lDate)));
+        if (fPref!=null) {
+            if (fPref[0].equals(fPref[1])) {
+                if (iLocation && PreferenceLevel.sNeutral.equals(fPref[0])) {
+                    //
+                } else if (!iLocation && PreferenceLevel.sProhibited.equals(fPref[0])) {
+                    //
+                } else {
+                    if (sb.length()>0) sb.append(", ");
+                    sb.append(PreferenceLevel.prolog2abbv(fPref[0])+" ");
+                    sb.append(df.format(getDate(fDate)));
+                    if (fDate!=lDate) 
+                        sb.append(" - "+df.format(getDate(lDate)));
+                }
+            } else {
+                if ("@".equals(fPref[0])) {
+                    //
+                } else if (iLocation && PreferenceLevel.sNeutral.equals(fPref[0])) {
+                    //
+                } else if (!iLocation && PreferenceLevel.sProhibited.equals(fPref[0])) {
+                    //
+                } else {
+                    if (sb.length()>0) sb.append(", ");
+                    sb.append(PreferenceLevel.prolog2abbv(fPref[0])+" Early ");
+                    sb.append(df.format(getDate(fDate)));
+                    if (fDate!=lDate) 
+                        sb.append(" - "+df.format(getDate(lDate)));
+                }
+                if ("@".equals(fPref[1])) {
+                    //
+                } else if (iLocation && PreferenceLevel.sNeutral.equals(fPref[1])) {
+                    //
+                } else if (!iLocation && PreferenceLevel.sProhibited.equals(fPref[1])) {
+                    //
+                } else {
+                    if (sb.length()>0) sb.append(", ");
+                    sb.append(PreferenceLevel.prolog2abbv(fPref[1])+" Late ");
+                    sb.append(df.format(getDate(fDate)));
+                    if (fDate!=lDate) 
+                        sb.append(" - "+df.format(getDate(lDate)));
+                }
+            }
         }
-        if (iLocation && fPref>0 && fDate==iDates.first() && lDate==iDates.last()) {
-            if (fPref==1) return "Available Late";
-            if (fPref==2) return "Available Early";
-            if (fPref==3) return "Not Available";
+        if (iLocation && fPref!=null && fDate==iDates.first() && lDate==iDates.last()) {
+            if (fPref[0].equals(fPref[1])) {
+                if (PreferenceLevel.sNeutral.equals(fPref[0])) {
+                    return "";
+                } else if (PreferenceLevel.sProhibited.equals(fPref[0])) {
+                    return "Not Available";
+                } else {
+                    return PreferenceLevel.getPreferenceLevel(fPref[0]).getPrefName();
+                }
+            } else {
+                String ret = "";
+                if ("@".equals(fPref[0])) {
+                } else if (PreferenceLevel.sNeutral.equals(fPref[0])) {
+                } else if (PreferenceLevel.sProhibited.equals(fPref[0])) {
+                    ret += "Not Available Early";
+                } else {
+                    ret += PreferenceLevel.getPreferenceLevel(fPref[0]).getPrefName()+" Early";
+                }
+                if ("@".equals(fPref[1])) {
+                } else if (PreferenceLevel.sNeutral.equals(fPref[1])) {
+                } else if (PreferenceLevel.sProhibited.equals(fPref[1])) {
+                    if (ret.length()>0) ret+=", ";
+                    ret += "Not Available Late";
+                } else {
+                    ret += PreferenceLevel.getPreferenceLevel(fPref[0]).getPrefName()+" Late";
+                }
+            }
         }
-        return sb.toString();
+        return (iLocation?sb.toString().replaceAll(PreferenceLevel.prolog2abbv(PreferenceLevel.sProhibited),"N/A"):sb.toString());
     }
 }
