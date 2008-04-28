@@ -333,7 +333,7 @@ public class RoomListAction extends Action {
 		                                                 { "Room", "left", "true" },
 		                                                 { "Capacity", "right", "false" },
 		                                                 { "Exam Capacity", "right", "false" },
-		                                                 { (examType==Exam.sExamTypeEvening?"Not Available":"Period Preferences"), (examType==Exam.sExamTypeEvening?"left":"center"), "false" },
+		                                                 { "Period Preferences", "center", "false" },
 		                                                 { "Groups", "left", "true" },
 		                                                 { "Features", "left", "true" } } 
 		                                             : new String[][]
@@ -406,7 +406,7 @@ public class RoomListAction extends Action {
 		                                                   {{ "Location", "left", "true" },
 		                                                   { "Capacity", "right", "false" },
 		                                                   { "Exam Capacity", "right", "false" },
-		                                                   { (examType==Exam.sExamTypeEvening?"Not Available":"Period Preferences"), (examType==Exam.sExamTypeEvening?"left":"center"), "false" },
+		                                                   { "Period Preferences", "center", "false" },
 		                                                   { "Groups", "left", "true" },
 		                                                   { "Features", "left", "true" }}
 		                                           : new String[][]
@@ -574,7 +574,7 @@ public class RoomListAction extends Action {
 	                            EveningPeriodPreferenceModel epx = new EveningPeriodPreferenceModel(location.getSession());
 	                            if (epx.canDo()) {
 	                                epx.load(location);
-	                                text[idx]=epx.toString().replaceAll(", ", "<br>");
+	                                text[idx]=epx.toString(true).replaceAll(", ", "<br>");
 	                            } else {
 	                                px = new PeriodPreferenceModel(location.getSession(), examType);
 	                            }
