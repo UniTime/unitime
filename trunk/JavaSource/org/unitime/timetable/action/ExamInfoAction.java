@@ -98,10 +98,11 @@ public class ExamInfoAction extends Action {
         if (model.getExam()==null) throw new Exception("No exam given.");
         
         if (RoomAvailability.getInstance()!=null) {
-            TreeSet periods = org.unitime.timetable.model.ExamPeriod.findAll(Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId(), model.getExam().getExamType());
+            Session session = Session.getCurrentAcadSession(Web.getUser(request.getSession()));
+            TreeSet periods = org.unitime.timetable.model.ExamPeriod.findAll(session.getUniqueId(), model.getExam().getExamType());
             Date start = ((org.unitime.timetable.model.ExamPeriod)periods.first()).getStartTime();
             Date stop = ((org.unitime.timetable.model.ExamPeriod)periods.last()).getEndTime();
-            RoomAvailability.getInstance().activate(start,stop);
+            RoomAvailability.getInstance().activate(session,start,stop);
         }
         
         if ("Select".equals(op)) {
