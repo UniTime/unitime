@@ -62,6 +62,7 @@ import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.dao.DistributionPrefDAO;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.ExamDAO;
+import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.RoomAvailability;
 
@@ -804,7 +805,7 @@ public class ExamDatabaseLoader extends ExamLoader {
         TreeSet periods = org.unitime.timetable.model.ExamPeriod.findAll(iSessionId, iExamType);
         Date start = ((org.unitime.timetable.model.ExamPeriod)periods.first()).getStartTime();
         Date stop = ((org.unitime.timetable.model.ExamPeriod)periods.last()).getEndTime();
-        ra.activate(start,stop);
+        ra.activate(new SessionDAO().get(iSessionId),start,stop);
         iProgress.setPhase("Loading room availability...", iAllRooms.size());
         for (Iterator i=iAllRooms.iterator();i.hasNext();) {
             iProgress.incProgress();
@@ -815,7 +816,7 @@ public class ExamDatabaseLoader extends ExamLoader {
             if (roomEx==null) continue;
             Collection<TimeBlock> times = ra.getRoomAvailability(room.getExternalUniqueId(), room.getBuildingAbbv(), room.getRoomNumber(), 
                     start, stop,
-                    new String[] {RoomAvailabilityInterface.sExamType});
+                    new String[] {(iExamType==org.unitime.timetable.model.Exam.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sEveningExamType)});
             if (times==null) continue;
             for (TimeBlock time : times) {
                 for (Iterator j=periods.iterator();j.hasNext();) {

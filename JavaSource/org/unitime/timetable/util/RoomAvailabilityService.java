@@ -23,6 +23,7 @@ import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
+import org.unitime.timetable.model.Session;
 
 public class RoomAvailabilityService implements RoomAvailabilityInterface {
     private static Log sLog = LogFactory.getLog(RoomAvailabilityInterface.class);
@@ -84,12 +85,12 @@ public class RoomAvailabilityService implements RoomAvailabilityInterface {
         return null;
     }
     
-    public void activate(Date startTime, Date endTime) {
+    public void activate(Session session, Date startTime, Date endTime) {
         TimeFrame time = new TimeFrame(startTime, endTime);
         sLog.debug("Activate: "+time);
         CacheElement cache = get(time);
         if (cache==null) {
-            iCache.add(new CacheElement(time));
+            iCache.add(new CacheElement(session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative(), time));
         } else {
             synchronized (cache) {
                 cache.markDirty();
@@ -109,13 +110,16 @@ public class RoomAvailabilityService implements RoomAvailabilityInterface {
         iRefreshThread.interrupt();
     }
     
-    protected Document createRequest(TimeFrame time) {
+    protected Document createRequest(CacheElement cache) {
         Document request = DocumentHelper.createDocument();
         Element params = request.addElement("parameters");
-        params.addElement("beginDate").addAttribute("value", new SimpleDateFormat("MM/dd/yyyy").format(time.getStartTime()));
-        params.addElement("endDate").addAttribute("value", new SimpleDateFormat("MM/dd/yyyy").format(time.getEndTime()));
-        params.addElement("startTime").addAttribute("value", new SimpleDateFormat("HH:mm").format(time.getStartTime()));
-        params.addElement("endTime").addAttribute("value", new SimpleDateFormat("HH:mm").format(time.getEndTime()));
+        params.addElement("year").addAttribute("value", cache.getYear());
+        params.addElement("term").addAttribute("value", cache.getTerm());
+        params.addElement("campus").addAttribute("value", cache.getCampus());
+        params.addElement("beginDate").addAttribute("value", new SimpleDateFormat("MM/dd/yyyy").format(cache.getTimeFrame().getStartTime()));
+        params.addElement("endDate").addAttribute("value", new SimpleDateFormat("MM/dd/yyyy").format(cache.getTimeFrame().getEndTime()));
+        params.addElement("startTime").addAttribute("value", new SimpleDateFormat("HH:mm").format(cache.getTimeFrame().getStartTime()));
+        params.addElement("endTime").addAttribute("value", new SimpleDateFormat("HH:mm").format(cache.getTimeFrame().getEndTime()));
         return request;
     }
     
@@ -174,7 +178,7 @@ public class RoomAvailabilityService implements RoomAvailabilityInterface {
         public synchronized void update(CacheElement cache) throws InterruptedException {
             try {
                 sLog.debug("Updating "+cache);
-                sendRequest(createRequest(cache.getTimeFrame()));
+                sendRequest(createRequest(cache));
                 sLog.debug("Request "+iRequestFile+" created.");
                 Document response = null;
                 long waited = 0;
@@ -255,7 +259,9 @@ public class RoomAvailabilityService implements RoomAvailabilityInterface {
         private TimeFrame iTime;
         private Hashtable<Room, Vector<TimeBlock>> iAvailability = new Hashtable();
         private long iLastAccess, iLastUpdate;
-        public CacheElement(TimeFrame time) {
+        private String iTerm, iYear, iCampus;
+        public CacheElement(String year, String term, String campus, TimeFrame time) {
+            iYear = year; iTerm = term; iCampus = campus;
             iTime = time; iLastAccess = System.currentTimeMillis();
         };
         public void update(Hashtable<Room, Vector<TimeBlock>> availability) {
@@ -296,6 +302,9 @@ public class RoomAvailabilityService implements RoomAvailabilityInterface {
             long givenEndTime = iTime.getEndTime().getTime() % 86400000;
             return (startDay<=givenStartDay && givenEndDay<=endDay && startTime<=givenStartTime && givenEndTime<=endTime);
         }
+        public String getYear() { return iYear; }
+        public String getTerm() { return iTerm; }
+        public String getCampus() { return iCampus; }
         public String toString() {
             return iTime+" (updated "+(getAge()/1000)+"s ago, used "+(getUse()/1000)+"s ago"+(iActive?", active":"")+(iDirty?", dirty":"")+")";
         }
