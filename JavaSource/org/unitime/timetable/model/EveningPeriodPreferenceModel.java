@@ -316,7 +316,7 @@ public class EveningPeriodPreferenceModel {
 				patternEarly+","+
                 legendCode+","+legendText+","+legendColor+",'0',"+
 				border+","+editable+","+editable+","+
-				"'early','("+firstStart+" - "+firstEnd+")',5,true,"+!late+");");
+				"'early','("+firstStart+" - "+firstEnd+")',6,true,"+!late+");");
 		if (late) sb.append(
             "calGenerate("+getYear()+","+
                 getStartMonth()+","+
@@ -324,7 +324,7 @@ public class EveningPeriodPreferenceModel {
                 patternLate+","+
                 legendCode+","+legendText+","+legendColor+",'0',"+
                 border+","+editable+","+!early+","+
-                "'late','("+lastStart+" - "+lastEnd+")',5,"+!early+",true);");
+                "'late','("+lastStart+" - "+lastEnd+")',6,"+!early+",true);");
         sb.append("</script>");
         if (!early && !late) {
             if (length > Constants.SLOT_LENGTH_MIN * iLength.get(iStarts.firstElement()) && length > Constants.SLOT_LENGTH_MIN * iLength.get(iStarts.lastElement())) 
