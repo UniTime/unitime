@@ -22,6 +22,7 @@
 <%@ page errorPage="error.jsp" %>
 <%@ page import="org.unitime.timetable.model.Session" %>
 <%@ page import="org.unitime.timetable.model.TimetableManager" %>
+<%@page import="org.unitime.timetable.util.RoomAvailability"%>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <%@ include file="/checkLogin.jspf" %>
 <html>
@@ -100,6 +101,9 @@
 			menu_item('200','Rooms','Rooms','roomSearch.do?default=Exam','collapse');
 				leaf_item('Features','Room Features','roomFeatureSearch.do?default=Exam');
 				leaf_item('Groups','Room Groups','roomGroupSearch.do?default=Exam');
+<%				if (RoomAvailability.getInstance()!=null) { %>
+				leaf_item('Availability','Room A','roomAvailability.do');
+<%				} %>
 			enditem(); //200
 			leaf_item('Examinations','View/Edit Examinations','examList.do');
 			leaf_item('Distribution Prefs','Examination Distribution Preferences','examDistributionPrefs.do');
@@ -220,6 +224,6 @@
 	leaf_item('Log Out','Exit Timetabling Appplication','logOut.do');
 <% } %>
 </script>
-</body>
+<br></body>
 </html>
 </script><br>

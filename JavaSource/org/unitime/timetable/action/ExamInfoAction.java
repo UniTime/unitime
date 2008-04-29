@@ -102,7 +102,7 @@ public class ExamInfoAction extends Action {
             TreeSet periods = org.unitime.timetable.model.ExamPeriod.findAll(session.getUniqueId(), model.getExam().getExamType());
             Date start = ((org.unitime.timetable.model.ExamPeriod)periods.first()).getStartTime();
             Date stop = ((org.unitime.timetable.model.ExamPeriod)periods.last()).getEndTime();
-            RoomAvailability.getInstance().activate(session,start,stop);
+            RoomAvailability.getInstance().activate(session,start,stop,false);
         }
         
         if ("Select".equals(op)) {

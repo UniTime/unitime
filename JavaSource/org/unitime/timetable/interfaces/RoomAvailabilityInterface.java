@@ -12,8 +12,9 @@ public interface RoomAvailabilityInterface {
     public static final String sFinalExamType = ApplicationProperties.getProperty("tmtbl.room.availability.eventType.finalExam","Final Exam");
     public static final String sClassType = ApplicationProperties.getProperty("tmtbl.room.availability.eventType.class","Course Activity");
 
+    public String getTimeStamp(Date startTime, Date endTime);
     public Collection<TimeBlock> getRoomAvailability(String roomExternalId, String buildingAbbv, String roomNbr, Date startTime, Date endTime, String[] excludeTypes);
-    public void activate(Session session, Date startTime, Date endTime);
+    public void activate(Session session, Date startTime, Date endTime, boolean waitForSync);
     
     public void startService();
     public void stopService();

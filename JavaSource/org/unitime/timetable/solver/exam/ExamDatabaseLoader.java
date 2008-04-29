@@ -805,7 +805,7 @@ public class ExamDatabaseLoader extends ExamLoader {
         TreeSet periods = org.unitime.timetable.model.ExamPeriod.findAll(iSessionId, iExamType);
         Date start = ((org.unitime.timetable.model.ExamPeriod)periods.first()).getStartTime();
         Date stop = ((org.unitime.timetable.model.ExamPeriod)periods.last()).getEndTime();
-        ra.activate(new SessionDAO().get(iSessionId),start,stop);
+        ra.activate(new SessionDAO().get(iSessionId),start,stop,true);
         iProgress.setPhase("Loading room availability...", iAllRooms.size());
         for (Iterator i=iAllRooms.iterator();i.hasNext();) {
             iProgress.incProgress();
