@@ -244,7 +244,9 @@ public class MakeAssignmentsForClassEvents {
         if (assignment==null) {
             assignment = new Assignment();
             assignment.setClazz(clazz);
-            assignment.setSolution(getSolution(clazz.getManagingDept()));
+            Department dept = clazz.getManagingDept();
+            if (dept==null) dept = clazz.getSchedulingSubpart().getControllingDept();
+            assignment.setSolution(getSolution(dept));
             assignment.setClassName(clazz.getClassLabel());
             assignment.setClassId(clazz.getUniqueId());
             clazz.setCommittedAssignment(assignment);
