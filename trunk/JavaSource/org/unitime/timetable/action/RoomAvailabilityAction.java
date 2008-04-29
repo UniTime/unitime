@@ -137,9 +137,6 @@ public class RoomAvailabilityAction extends Action {
                         if (period.overlap(event)) { overlaps = true; break; }
                     }
                     if (!overlaps) continue;
-                    if (event.getStartTime().getTime()>event.getEndTime().getTime()) {
-                        System.out.println("THIS IS ODD.");
-                    }
                     table.addLine(
                             null,
                             new String[] {
