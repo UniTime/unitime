@@ -864,6 +864,11 @@
 		<put name="title" type="string" value="Examination Conflict-Based Statistics"/>
 		<put name="body" value="/exam/cbs.jsp" />
   	</definition>
+
+  	<definition	name="roomAvailabilityTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Room Availability"/>
+		<put name="body" value="/exam/roomAvailability.jsp" />
+  	</definition>
   	
  	<definition	name="eventDetailTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Event Detail"/>
