@@ -363,6 +363,7 @@ public class WebEventTableBuilder {
         }        
         
         List events = hibQuery.setCacheable(true).list();
+        int numberOfEvents = events.size();
         
         /*
         TreeSet events = new TreeSet(new Comparator<Event>(){
@@ -386,17 +387,27 @@ public class WebEventTableBuilder {
         */
         
         TableStream eventsTable = this.initTable(outputStream);
+        if (numberOfEvents>100) {
+        	TableRow row = new TableRow();
+        	TableCell cell = initCell(true, null, 5, false);
+        	cell.addContent("Warning: There are more than 100 events matching your search criteria. Only the first 100 events are displayed. Please, redefine the search criteria in your filter.");
+        	cell.setStyle("padding-bottom:10px;color:red;font-weight:bold;");
+        	row.addContent(cell);
+        	eventsTable.addContent(row);
+        }
+        buildTableHeader(eventsTable);
 
-        Iterator it = events.iterator();
-        while (it.hasNext()){
-                    Event event = (Event) it.next();
-                    eventIds.add(event.getUniqueId());
-                    	this.addEventsRowsToTable(eventsTable, event);
-            			for (Iterator i=new TreeSet(event.getMeetings()).iterator();i.hasNext();) {
-            				Meeting meeting = (Meeting)i.next();
-            				this.addMeetingRowsToTable(eventsTable, meeting);
-            			}
-                }
+        int idx = 0;
+        for (Iterator it = events.iterator();it.hasNext();idx++){
+        	if (idx==100) break;
+            Event event = (Event) it.next();
+            eventIds.add(event.getUniqueId());
+            addEventsRowsToTable(eventsTable, event);
+			for (Iterator i=new TreeSet(event.getMeetings()).iterator();i.hasNext();) {
+				Meeting meeting = (Meeting)i.next();
+				addMeetingRowsToTable(eventsTable, meeting);
+			}
+        }
 
         eventsTable.tableComplete();
         Navigation.set(httpSession, Navigation.sInstructionalOfferingLevel, eventIds);
@@ -410,7 +421,6 @@ public class WebEventTableBuilder {
         table.setCellSpacing(0);
         table.setCellPadding(3);
         table.tableDefComplete();
-        this.buildTableHeader(table);
         return(table);
     }            
    
