@@ -2144,6 +2144,20 @@
 	    	path="ecbsTile"
 	    	redirect="true" />
     </action>
+    
+    <action
+    	path="/roomAvailability"
+    	type="org.unitime.timetable.action.RoomAvailabilityAction"
+    	attribute="examReportForm"
+    	input="roomAvailabilityTile"
+    	name="examReportForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+	    	name="showReport"
+	    	path="roomAvailabilityTile"
+	    	redirect="true" />
+    </action>
 
     <action
     	path="/eventDetail"

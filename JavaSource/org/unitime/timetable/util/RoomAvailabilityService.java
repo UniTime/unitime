@@ -6,10 +6,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.Vector;
 
 import org.apache.commons.logging.Log;
@@ -60,6 +63,9 @@ public class RoomAvailabilityService implements RoomAvailabilityInterface {
                 sLog.info("Cache "+cache+" too old, waiting for an update...");
                 cache.markDirty();
                 try {
+                    iRefreshThread.notify();
+                } catch (IllegalMonitorStateException e) {}
+                try {
                     cache.wait(iTimeout);
                 } catch (InterruptedException e) {
                     sLog.warn("Wait for an update of "+cache+" got timed out.");
@@ -78,6 +84,12 @@ public class RoomAvailabilityService implements RoomAvailabilityInterface {
         }
     }
     
+    public String getTimeStamp(Date startTime, Date endTime) {
+        TimeFrame time = new TimeFrame(startTime, endTime);
+        CacheElement cache = get(time);
+        return (cache==null?null:cache.getTimestamp());
+    }
+    
     public CacheElement get(TimeFrame time) {
         synchronized (iCache) {
             for (CacheElement cache : iCache) if (cache.cover(time)) return cache;
@@ -85,15 +97,32 @@ public class RoomAvailabilityService implements RoomAvailabilityInterface {
         return null;
     }
     
-    public void activate(Session session, Date startTime, Date endTime) {
+    public void activate(Session session, Date startTime, Date endTime, boolean waitForSync) {
         TimeFrame time = new TimeFrame(startTime, endTime);
         sLog.debug("Activate: "+time);
         CacheElement cache = get(time);
         if (cache==null) {
-            iCache.add(new CacheElement(session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative(), time));
+            cache = new CacheElement(session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative(), time);
+            iCache.add(cache);
         } else {
             synchronized (cache) {
                 cache.markDirty();
+            }
+        }
+        synchronized (iRefreshThread) {
+            iRefreshThread.notify();
+        }
+        if (waitForSync) {
+            synchronized (cache) {
+                try {
+                    cache.wait(iTimeout);
+                } catch (InterruptedException e) {
+                    sLog.warn("Wait for an update of "+cache+" got timed out.");
+                    cache.deactivate();
+                }
+                if (!cache.isActive()) {
+                    sLog.warn("Cache "+cache+" is not active.");
+                }
             }
         }
     }
@@ -135,16 +164,16 @@ public class RoomAvailabilityService implements RoomAvailabilityInterface {
         }
     }
     
-    protected Hashtable<Room, Vector<TimeBlock>> readResponse(Document response) throws ParseException {
-        SimpleDateFormat dateFormat = new SimpleDateFormat(response.getRootElement().attributeValue("dateFormat","MM/dd/yyyy"));
-        SimpleDateFormat timeFormat = new SimpleDateFormat(response.getRootElement().attributeValue("timeFormat","h:mm a"));
-        Hashtable<Room, Vector<TimeBlock>> availability = new Hashtable<Room, Vector<TimeBlock>>();
+    protected Hashtable<Room, HashSet<TimeBlock>> readResponse(Document response) throws ParseException {
+        SimpleDateFormat dateFormat = new SimpleDateFormat(response.getRootElement().attributeValue("dateFormat","MM/dd/yyyy"), Locale.US);
+        SimpleDateFormat timeFormat = new SimpleDateFormat(response.getRootElement().attributeValue("timeFormat","h:mm a"), Locale.US);
+        Hashtable<Room, HashSet<TimeBlock>> availability = new Hashtable<Room, HashSet<TimeBlock>>();
         for (Iterator i=response.getRootElement().elementIterator("room");i.hasNext();) {
             Element roomElement = (Element)i.next();
             Room room = new Room(roomElement);
-            Vector<TimeBlock> roomAvailability = availability.get(room);
+            HashSet<TimeBlock> roomAvailability = availability.get(room);
             if (roomAvailability==null) {
-                roomAvailability = new Vector<TimeBlock>();
+                roomAvailability = new HashSet<TimeBlock>();
                 availability.put(room, roomAvailability);
             }
             for (Iterator j=roomElement.elementIterator("event");j.hasNext();) {
@@ -193,7 +222,7 @@ public class RoomAvailabilityService implements RoomAvailabilityInterface {
                 }
                 sLog.debug("Reading response "+iResponseFile+"...");
                 synchronized (cache) {
-                    cache.update(readResponse(response));
+                    cache.update(readResponse(response), response.getRootElement().attributeValue("created"));
                 }
             } catch (InterruptedException e) {
                 throw e;
@@ -211,7 +240,9 @@ public class RoomAvailabilityService implements RoomAvailabilityInterface {
                 try {
                     if (iStop) break;
                     try {
-                        sleep(iRefreshRate);
+                        synchronized (this) {
+                            this.wait(iRefreshRate);
+                        }
                         Vector<CacheElement> dirty = new Vector();
                         for (CacheElement cache : iCache) {
                             if (cache.isDirty()) { dirty.add(cache); continue; }
@@ -257,21 +288,22 @@ public class RoomAvailabilityService implements RoomAvailabilityInterface {
     public static class CacheElement{
         private boolean iDirty = true, iActive = false;
         private TimeFrame iTime;
-        private Hashtable<Room, Vector<TimeBlock>> iAvailability = new Hashtable();
+        private Hashtable<Room, HashSet<TimeBlock>> iAvailability = new Hashtable();
         private long iLastAccess, iLastUpdate;
         private String iTerm, iYear, iCampus;
+        private String iTimestamp = null;
         public CacheElement(String year, String term, String campus, TimeFrame time) {
             iYear = year; iTerm = term; iCampus = campus;
             iTime = time; iLastAccess = System.currentTimeMillis();
         };
-        public void update(Hashtable<Room, Vector<TimeBlock>> availability) {
-            iAvailability = availability; iLastUpdate = System.currentTimeMillis(); iDirty = false; iActive = true;
+        public void update(Hashtable<Room, HashSet<TimeBlock>> availability, String timestamp) {
+            iAvailability = availability; iLastUpdate = System.currentTimeMillis(); iDirty = false; iActive = true; iTimestamp = timestamp;
         }
-        public Vector<TimeBlock> get(Room room, String[] excludeTypes) {
+        public HashSet<TimeBlock> get(Room room, String[] excludeTypes) {
             iLastAccess = System.currentTimeMillis();
-            Vector<TimeBlock> roomAvailability = iAvailability.get(room);
+            HashSet<TimeBlock> roomAvailability = iAvailability.get(room);
             if (roomAvailability==null || excludeTypes==null || excludeTypes.length==0) return roomAvailability;
-            Vector<TimeBlock> ret = new Vector(roomAvailability.size());
+            HashSet<TimeBlock> ret = new HashSet(roomAvailability.size());
             blocks: for (TimeBlock block : roomAvailability) {
                 for (int i=0;i<excludeTypes.length;i++)
                     if (excludeTypes[i].equals(block.getEventType())) continue blocks;
@@ -305,6 +337,7 @@ public class RoomAvailabilityService implements RoomAvailabilityInterface {
         public String getYear() { return iYear; }
         public String getTerm() { return iTerm; }
         public String getCampus() { return iCampus; }
+        public String getTimestamp() { return iTimestamp; }
         public String toString() {
             return iTime+" (updated "+(getAge()/1000)+"s ago, used "+(getUse()/1000)+"s ago"+(iActive?", active":"")+(iDirty?", dirty":"")+")";
         }
@@ -347,11 +380,22 @@ public class RoomAvailabilityService implements RoomAvailabilityInterface {
         public EventTimeBlock(Element eventElement, SimpleDateFormat dateFormat, SimpleDateFormat timeFormat) throws ParseException {
             iEventName = eventElement.attributeValue("name");
             iEventType = eventElement.attributeValue("type");
-            Date date = dateFormat.parse(eventElement.attributeValue("date"));
-            Date start = timeFormat.parse(eventElement.attributeValue("startTime"));
-            Date end = timeFormat.parse(eventElement.attributeValue("endTime"));
-            iStartTime = new Date(date.getTime() + start.getTime());
-            iEndTime = new Date(date.getTime() + end.getTime());
+            Calendar c = Calendar.getInstance(Locale.US);
+            c.setTime(dateFormat.parse(eventElement.attributeValue("date")));
+            int start = Integer.parseInt(new SimpleDateFormat("HHmm").format(timeFormat.parse(eventElement.attributeValue("startTime"))));
+            int end = Integer.parseInt(new SimpleDateFormat("HHmm").format(timeFormat.parse(eventElement.attributeValue("endTime"))));
+            c.set(Calendar.HOUR, start/100);
+            c.set(Calendar.MINUTE, start%100);
+            iStartTime = c.getTime();
+            c.setTime(dateFormat.parse(eventElement.attributeValue("date")));
+            c.set(Calendar.HOUR, end/100);
+            c.set(Calendar.MINUTE, end%100);
+            iEndTime = c.getTime();
+            if (iEndTime.compareTo(iStartTime)<0) {
+                sLog.info("Event "+iEventName+" ("+iEventType+") goes over midnight ("+eventElement.attributeValue("date")+" "+eventElement.attributeValue("startTime")+" - "+eventElement.attributeValue("endTime")+").");
+                c.add(Calendar.DAY_OF_YEAR, 1);
+                iEndTime = c.getTime();
+            }
         }
         
         public String getEventName() { return iEventName; }
@@ -362,6 +406,17 @@ public class RoomAvailabilityService implements RoomAvailabilityInterface {
             SimpleDateFormat df = new SimpleDateFormat("MM/dd/yy HH:mm");
             SimpleDateFormat df2 = new SimpleDateFormat("HH:mm");
             return getEventName()+" ("+getEventType()+") "+df.format(getStartTime())+" - "+df2.format(getEndTime());
+        }
+        public boolean equals(Object o) {
+            if (o==null || !(o instanceof TimeBlock)) return false;
+            TimeBlock t = (TimeBlock)o;
+            return getEventName().equals(t.getEventName()) &&
+                   getEventType().equals(t.getEventType()) &&
+                   getStartTime().equals(t.getStartTime()) &&
+                   getEndTime().equals(t.getEndTime());
+        }
+        public int hashCode() {
+            return getEventName().hashCode() ^ getEventType().hashCode() ^ getStartTime().hashCode();
         }
     }
 }
