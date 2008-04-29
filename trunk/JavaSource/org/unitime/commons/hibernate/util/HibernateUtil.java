@@ -175,9 +175,6 @@ public class HibernateUtil {
             String dialect = getProperty(properties, "dialect");
             if (dialect!=null)
                 setProperty(document, "dialect", dialect);
-            String default_schema = getProperty(properties, "default_schema");
-            if (default_schema!=null)
-                setProperty(document, "default_schema", default_schema);
             String idgen = getProperty(properties, "tmtbl.uniqueid.generator");
             if (idgen!=null)
                 setProperty(document, "tmtbl.uniqueid.generator", idgen);
@@ -205,6 +202,10 @@ public class HibernateUtil {
             setProperty(document, "hibernate.dbcp.testOnReturn", "false");
             setProperty(document, "hibernate.dbcp.validationQuery", "select 1 from dual");
         }
+        
+        String default_schema = getProperty(properties, "default_schema");
+        if (default_schema!=null)
+            setProperty(document, "default_schema", default_schema);
 
         sLog.debug("  -- hibernate.cfg.xml altered");
         
