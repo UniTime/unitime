@@ -28,6 +28,7 @@ import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URL;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -41,13 +42,17 @@ import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
+import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.base._BaseRootDAO;
+import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.remote.core.ConnectionFactory;
 import org.unitime.timetable.solver.remote.core.RemoteIo;
 import org.unitime.timetable.solver.ui.TimetableInfo;
 import org.unitime.timetable.solver.ui.TimetableInfoUtil;
+import org.unitime.timetable.util.RoomAvailability;
 
 import net.sf.cpsolver.ifs.util.Callback;
 
@@ -364,6 +369,31 @@ public class SolverRegisterService extends Thread {
                         Solution.refreshSolution((Long)cmd[1]);
                     } finally {
                         _BaseRootDAO.closeCurrentThreadSessions();
+                    }
+                    return null;
+                }
+                if ("hasRoomAvailability".equals(cmd[0])) {
+                    return new Boolean(RoomAvailability.getInstance()!=null);
+                }
+                if ("activateRoomAvailability".equals(cmd[0])) {
+                    if (RoomAvailability.getInstance()!=null) {
+                        RoomAvailability.getInstance().activate(
+                                new SessionDAO().get((Long)cmd[1]),
+                                (Date)cmd[2],
+                                (Date)cmd[3], 
+                                true);
+                    }
+                    return "ack";
+                }
+                if ("getExamRoomAvailability".equals(cmd[0])) {
+                    if (RoomAvailability.getInstance()!=null) {
+                        return RoomAvailability.getInstance().getRoomAvailability(
+                                (String)cmd[1],
+                                (String)cmd[2],
+                                (String)cmd[3],
+                                (Date)cmd[4],
+                                (Date)cmd[5],
+                                new String[]{((Integer)cmd[6]==Exam.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sEveningExamType)});
                     }
                     return null;
                 }

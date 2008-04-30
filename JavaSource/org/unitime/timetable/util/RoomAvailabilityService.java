@@ -373,7 +373,7 @@ public class RoomAvailabilityService implements RoomAvailabilityInterface {
         }
     }
     
-    public class EventTimeBlock implements TimeBlock{
+    public static class EventTimeBlock implements TimeBlock{
         private String iEventName, iEventType;
         private Date iStartTime, iEndTime;
         
