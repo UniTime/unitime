@@ -267,10 +267,10 @@ public class ExamAssignmentReportAction extends Action {
                             },
                             new Comparable[] {
                                 new MultiComparable(section.getName(), exam),
-                                new MultiComparable(-exam.getNrStudents(), section.getName(), exam),
+                                new MultiComparable(-section.getNrStudents(), section.getName(), exam),
                                 new MultiComparable(exam.getSeatingType(), section.getName(), exam),
                                 new MultiComparable(exam.getPeriodOrd(), section.getName(), exam),
-                                new MultiComparable(exam.getPeriod().getStartSlot(), section.getName(), exam),
+                                new MultiComparable(exam.getPeriod()==null?-1:exam.getPeriod().getStartSlot(), section.getName(), exam),
                                 new MultiComparable(exam.getRoomsName(":"), section.getName(), exam),
                                 new MultiComparable(-exam.getRoomsCapacity(), section.getName(), exam),
                                 new MultiComparable(exam.getInstructorName(":"), section.getName(), exam),

@@ -79,7 +79,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
     }
     
     public PdfLegacyExamReport(int mode, File file, String title, Session session, int examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws DocumentException, IOException {
-        super(mode, file, title, (examType==Exam.sExamTypeFinal?"FINAL":"EVENING")+" EXAMINATIONS", title + " -- " + session.getLabel(), session.getLabel());
+        super(mode, file, title, (examType<0?"":examType==Exam.sExamTypeFinal?"FINAL":"EVENING")+" EXAMINATIONS", title + " -- " + session.getLabel(), session.getLabel());
         if (subjectArea!=null) setFooter(subjectArea.getSubjectAreaAbbreviation());
         iExams = exams;
         iSession = session;

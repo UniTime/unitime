@@ -72,7 +72,8 @@ public class LoginAction extends Action {
 
 		// Check form is submitted
 		if (cs == null || !cs.equals("login")) {
-			response.sendRedirect(ApplicationProperties.getProperty("tmtbl.login_url"));
+		    String m = (String)request.getAttribute("message");
+			response.sendRedirect(ApplicationProperties.getProperty("tmtbl.login_url")+(m==null?"":"?m="+m));
 			return null;
 		}
 		

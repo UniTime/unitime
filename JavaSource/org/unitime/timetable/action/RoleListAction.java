@@ -85,8 +85,11 @@ public class RoleListAction extends Action {
 
         // Get manager object
         TimetableManager tm = TimetableManager.getManager(user);        
-        if(tm==null)
+        if(tm==null) {
+            if ("true".equals(ApplicationProperties.getProperty("tmtbl.authentication.norole","false")))
+                return mapping.findForward("norole");
             return(mapping.findForward("loginRequired"));
+        }
  
         // Check App Access Level
     	String appAccessLevel = (String) webSession.getAttribute(Constants.CFG_APP_ACCESS_LEVEL);
