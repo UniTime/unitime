@@ -30,7 +30,7 @@ import org.unitime.timetable.util.Constants;
 
 
 
-public class Student extends BaseStudent {
+public class Student extends BaseStudent implements Comparable<Student> {
 	private static final long serialVersionUID = 1L;
 
 /*[CONSTRUCTOR MARKER BEGIN]*/
@@ -162,5 +162,11 @@ public class Student extends BaseStudent {
             return Constants.toInitialCase((getFirstName()==null?"":getFirstName().trim())+" "+
                 (getMiddleName()==null?"":getMiddleName().trim())+" "+
                 (getLastName()==null?"":getLastName().trim()));
+    }
+    
+    public int compareTo(Student student) {
+        int cmp = getName(DepartmentalInstructor.sNameFormatLastFist).compareTo(student.getName(DepartmentalInstructor.sNameFormatLastFist));
+        if (cmp!=0) return cmp;
+        return getUniqueId().compareTo(student.getUniqueId());
     }
 }

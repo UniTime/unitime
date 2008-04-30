@@ -127,6 +127,7 @@
 	  <form-bean name="examAssignmentReportForm" type="org.unitime.timetable.form.ExamAssignmentReportForm" />
 	  <form-bean name="ecbsForm" type="org.unitime.timetable.form.ExamCbsForm" />
 	  <form-bean name="eventListForm" type="org.unitime.timetable.form.EventListForm" />
+	  <form-bean name="personalizedExamReportForm" type="org.unitime.timetable.form.PersonalizedExamReportForm" />
    </form-beans>
 
    <global-exceptions>
@@ -288,6 +289,10 @@
          <forward
             name="loginRequired"
             path="loginRequiredTile" />
+         <forward
+         	name="norole"
+            path="/exams.do"
+            redirect="true" />
       </action>
 
       <action
@@ -1779,7 +1784,7 @@
     <action
       path="/login"
       type="org.unitime.timetable.action.LoginAction"
-      validate="false" />
+      validate="false"/> 
 
     <action
       attribute="dataImportForm"
@@ -2191,6 +2196,25 @@
     		redirect="true" />
     </action>    
     
+    <action
+    	path="/exams"
+    	type="org.unitime.timetable.action.PersonalizedExamReportAction"
+    	attribute="personalizedExamReportForm"
+    	input="personalizedExamReportTile"
+    	name="personalizedExamReportForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+    		name="show"
+    		path="personalizedExamReportTile" />
+    	<forward
+    		name="main"
+    		path="/main.jsp" />
+    	<forward
+    		name="back"
+    		path="/login.do"/>
+    </action>    
+
    </action-mappings>
 
 	<!-- Struts Layout Controller -->

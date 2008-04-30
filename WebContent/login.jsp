@@ -42,6 +42,8 @@
 			errorMsg = "Authentication failed";
 		if (eNum.equals("3"))
 			errorMsg = "Authentication failed";
+	} else if (request.getParameter("m")!=null) {
+		errorMsg = (String)request.getParameter("m");
 	}
  %>		
 		<BR>

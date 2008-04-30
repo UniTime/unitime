@@ -23,8 +23,6 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.Vector;
 
 import javax.naming.Context;
@@ -41,7 +39,6 @@ import javax.security.auth.login.LoginException;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.ManagerRole;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.TimetableManager;
 
 /**
@@ -64,103 +61,59 @@ public class LdapAuthenticateModule extends AuthenticateModule {
 	 * Commit phase of login
 	 */
 	public boolean commit() throws LoginException {
-		
-		// Check if authentication succeeded
-		if (isAuthSucceeded()) {		
-			
-			// External UID must exist in order to get manager info
-			if (iExternalUid==null || iExternalUid.trim().length()==0)
-				throw new LoginException ("External Uid not found");
-			
-			// Get manager info			
-			String name = "";
-			String role = "";
-			String dept = "";
-			
-			try {
-				TimetableManager tm = TimetableManager.findByExternalId(iExternalUid);
-				
-				name = tm.getName();
-				
-				// Get roles
-				if (tm.getManagerRoles() != null){					
-					if (isDebug()) System.out.println("User roles found ");					
-					ManagerRole mr = null;
-					
-					Iterator it2 = tm.getManagerRoles().iterator();
-					while (it2.hasNext()){
-						mr = (ManagerRole) it2.next();
-					    Roles roles = mr.getRole();
-					    role = role + roles.getReference() + "-";
-					}
-				}
-				
-				// Get departments
-				if (tm.getDepartments()!=null) {
-					if (isDebug()) System.out.println("User departments found ");					
-					Set ds = tm.getDepartments();
-					for (Iterator it3=ds.iterator(); it3.hasNext(); ) {
-						Department d = (Department) it3.next();
-						String deptCode = d.getDeptCode();
-						if (deptCode!=null && dept.indexOf(deptCode)<0) dept += d.getDeptCode() + " ";
-					}
-				}
-			} catch(Exception e) {
-				throw new LoginException(e.getMessage());
-			}
-			
-			// Check at least one role is found
-			if ( role==null || role.trim().length()==0 ) {
-				if (isDebug()) System.out.println("Role not found. Access Denied to User: " + getUser());
-				throw new LoginException ("Role not found. Access Denied to User: " + getUser());
-			}
+        if (isAuthSucceeded()) {      // Check if authentication succeeded      
+            
+            // External UID must exist in order to get manager info
+            if (iExternalUid==null || iExternalUid.trim().length()==0)
+                throw new LoginException ("External UID not found");
 
-			if(role.endsWith("-"))
-			    role = role.substring(0, role.length()-1);
+            org.unitime.commons.User p = new org.unitime.commons.User();
+            
+            p.setLogin(getUser());
+            p.setId(iExternalUid);
+            p.setName(getUser());
+            p.setAdmin(false);
+            p.setRoles(new Vector());
+            p.setDepartments(new Vector());
+            
+            TimetableManager manager = TimetableManager.findByExternalId(iExternalUid);
+            
+            if (manager!=null) {
+                p.setName(manager.getName());
+                
+                // Get roles
+                for (Iterator i=manager.getManagerRoles().iterator();i.hasNext();) {
+                    ManagerRole role = (ManagerRole)i.next();
+                    p.getRoles().add(role.getRole().getReference());
+                }
+                
+                // Get departments
+                for (Iterator i=manager.getDepartments().iterator();i.hasNext();) {
+                    Department dept = (Department)i.next();
+                    p.getDepartments().add(dept.getDeptCode());
+                }
+            }
 
-			// Create user principal
-			if (isDebug()) System.out.println("User Roles: " + role);
-			if (isDebug()) System.out.println("User Depts: " + dept);
+            // Check at least one role is found
+            if (p.getRoles().isEmpty() && !"true".equals(ApplicationProperties.getProperty("tmtbl.authentication.norole","false"))) {
+                if (isDebug()) System.out.println("Role not found. Access Denied to User: " + getUser());
+                throw new LoginException ("Role not found. Access Denied to User: " + getUser());
+            }
+        
+            // Create user principal
+            if (isDebug()) System.out.println("User Roles: " + p.getRoles());
+            if (isDebug()) System.out.println("User Depts: " + p.getDepartments());
 
-			Vector roles = new Vector();
-			Vector depts = new Vector();
 
-			org.unitime.commons.User p = new org.unitime.commons.User();
-			
-		    p.setLogin(getUser());
-		    p.setId(iExternalUid);
-		    p.setName(name);
-		    p.setAdmin(false);
-		    
-			StringTokenizer strTok = new StringTokenizer(dept, " ");
-			while(strTok.hasMoreElements())
-			    depts.addElement(strTok.nextElement().toString());
-
-			strTok = new StringTokenizer(role, "-");
-			while(strTok.hasMoreElements()) {
-				String role1 = strTok.nextElement().toString();
-				roles.addElement(role1);
-			    if(role1.equals(Roles.ADMIN_ROLE)) {
-					if (isDebug()) System.out.println("User is admin ");
-			        p.setAdmin(true);
-			    }
-			}
-
-			p.setDepartments(depts);
-			p.setRoles(roles);
-
-			// Add user object to subjects public credentials
-			getSubject().getPublicCredentials().add(p);
-			
-		    setCommitSucceeded(true);
-			return true;
-		}
-		
-		// Authentication failed - do not commit 
-		else {
-			reset();
-			return false;
-		}
+            // Add user object to subjects public credentials
+            getSubject().getPublicCredentials().add(p);
+            
+            setCommitSucceeded(true);
+            return true;
+        } else { // Authentication failed - do not commit 
+            reset();
+            return false;
+        }
 	}
 
 	/**

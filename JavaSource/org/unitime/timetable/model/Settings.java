@@ -81,7 +81,7 @@ public class Settings extends BaseSettings {
     public static Set getSettings(User user) {
         TimetableManager tm = TimetableManager.getManager(user);
         
-	    return (tm.getSettings());
+	    return (tm==null?null:tm.getSettings());
     }
     
 	
@@ -97,6 +97,7 @@ public class Settings extends BaseSettings {
         String[] data = new String[2];
         data[0] = "-1";
         data[1] = defaultValue;
+        if (uSettings==null) return data;
 
         org.hibernate.Session hibSession = null;
         

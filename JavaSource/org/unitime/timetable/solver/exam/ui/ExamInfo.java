@@ -54,6 +54,9 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
     protected Vector<ExamSectionInfo> iSections = null;
     protected Vector<ExamInstructorInfo> iInstructors = null;
     
+    private ExamInfo() {
+    }
+    
     public ExamInfo(net.sf.cpsolver.exam.model.Exam exam) {
     	iExamType = ((ExamModel)exam.getModel()).getProperties().getPropertyInt("Exam.Type", Exam.sExamTypeFinal);
         iExamId = exam.getId();
@@ -337,5 +340,13 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
             if (getExternalUniqueId()!=null && getExternalUniqueId().equals(i.getExternalUniqueId())) return true;
             return getId().equals(i.getId());
         }
+    }
+    
+    private ExamInstructorInfo instructorInfo(DepartmentalInstructor i) {
+        return new ExamInstructorInfo(i);
+    }
+    
+    public static ExamInstructorInfo createInstructorInfo(DepartmentalInstructor i) {
+        return new ExamInfo().instructorInfo(i);
     }
 }
