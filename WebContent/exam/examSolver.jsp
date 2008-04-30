@@ -55,6 +55,7 @@ try {
 	ExamSolverProxy solver = WebSolver.getExamSolver(session);
 	String status = null;
 	String progress = null;
+	boolean hasSolution = Exam.hasTimetable(Session.getCurrentAcadSession(user).getUniqueId());
 	if (solver!=null) {
 		Map p = solver.getProgress();
 		status = (String)p.get("STATUS");
@@ -91,7 +92,7 @@ try {
 <%  
 	boolean disabled = (solver!=null && solver.isWorking());
 %>
-   	<TR><TD>Examination Problem:</TD>
+   	<TR><TD>Examination problem:</TD>
 		<TD>
 			<html:select property="examType" disabled="<%=solver!=null%>">
 				<html:optionsCollection name="examSolverForm" property="examTypes" label="label" value="value"/>
@@ -169,8 +170,21 @@ try {
 <% }
    if (solver!=null && !solver.isWorking()) { %>
 			<html:submit onclick="displayLoading();" property="op" value="Reload Input Data"/>
-			<html:submit onclick="if (!confirmUnload()) return false; displayLoading();" property="op" value="Unload"/>
+				<logic:equal name="examSolverForm" property="canDo" value="true">
+<%
+				if (hasSolution) {
+%>
+						<html:submit onclick="if (!confirmSave()) return false; displayLoading();" property="op" value="Save"/>
+<%
+				} else {
+%>
+						<html:submit onclick="if (!confirmSaveAsNew()) return false; displayLoading();" property="op" value="Save As New"/>
+<%
+				}
+%>
+				</logic:equal>
 			<html:submit onclick="if (!confirmClear()) return false; displayLoading();" property="op" value="Clear"/>
+			<html:submit onclick="if (!confirmUnload()) return false; displayLoading();" property="op" value="Unload"/>
 <% } %>
 			<html:submit onclick="displayLoading();" property="op" accesskey="R" value="Refresh"/>
 		</TD>
@@ -200,14 +214,13 @@ try {
 		Transaction tx = null;
 		if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
 			tx = hibSession.beginTransaction();
-		boolean hasSolution = Exam.hasTimetable(Session.getCurrentAcadSession(user).getUniqueId());
 		Hashtable info = solver.bestSolutionInfo();
 		if (info!=null) {
 %>
 			<TR>
 				<TD colspan="2">
 					<DIV class="WelcomeRowHead">
-					Best Timetable Found So Far <tt:wiki>Solution Properties</tt:wiki>
+					Best Timetable Found So Far <tt:wiki>Examination Solution Properties</tt:wiki>
 					</DIV>
 				</TD>
 			</TR>
@@ -221,27 +234,6 @@ try {
 				<TR><TD><%=key%>:</TD><TD><%=val%></TD></TR>
 <%
 			}
-			if (!solver.isWorking())  {
-%>
-			<logic:equal name="examSolverForm" property="canDo" value="true">
-				<TR>
-					<TD align="right" colspan="2">
-<%
-				if (hasSolution) {
-%>
-						<html:submit onclick="if (!confirmSave()) return false; displayLoading();" property="op" value="Save"/>
-<%
-				} else {
-%>
-						<html:submit onclick="if (!confirmSaveAsNew()) return false; displayLoading();" property="op" value="Save As New"/>
-<%
-				}
-%>
-					</TD>
-				</TR>
-			</logic:equal>
-<%
-			}
 %>
 		<TR><TD colspan=2>&nbsp;</TD></TR>
 <%
@@ -250,7 +242,7 @@ try {
 		<TR>
 			<TD colspan="2">
 				<DIV class="WelcomeRowHead">
-				Current Timetable <tt:wiki>Solution Properties</tt:wiki>
+				Current Timetable <tt:wiki>Examination Solution Properties</tt:wiki>
 				</DIV>
 			</TD>
 		</TR>
@@ -277,7 +269,7 @@ try {
 <%
 			}
 %>
-					<html:submit onclick="displayLoading();" property="op" value="Save To Best"/>
+					<html:submit onclick="displayLoading();" property="op" value="Store To Best"/>
 				</TD>
 			</TR>
 <%
