@@ -3,12 +3,12 @@ package org.unitime.timetable.webutil;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.StringTokenizer;
-import java.util.TreeSet;
 
 import javax.servlet.http.HttpSession;
 import javax.servlet.jsp.JspWriter;
@@ -21,14 +21,17 @@ import org.unitime.commons.web.htmlgen.TableStream;
 import org.unitime.timetable.form.EventListForm;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Meeting;
+import org.unitime.timetable.model.Event.MultiMeeting;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.util.Constants;
 
 
 public class WebEventTableBuilder {
 
-	public static SimpleDateFormat sDateFormat = new SimpleDateFormat("MMM dd, yyyy", Locale.US);
-	public static SimpleDateFormat sDateFormatDay = new SimpleDateFormat("EEE", Locale.US);	
+	public static SimpleDateFormat sDateFormat = new SimpleDateFormat("EEE MM/dd, yyyy", Locale.US);
+	//public static SimpleDateFormat sDateFormatDay = new SimpleDateFormat("EEE", Locale.US);	
+	public static SimpleDateFormat sDateFormatM1 = new SimpleDateFormat("MM/dd", Locale.US);
+	public static SimpleDateFormat sDateFormatM2 = new SimpleDateFormat("MM/dd, yyyy", Locale.US);
 	
 	//Colors
     protected static String indent = "&nbsp;&nbsp;&nbsp;&nbsp;";
@@ -240,13 +243,30 @@ public class WebEventTableBuilder {
  
     private TableCell buildDate (Meeting m) {
     	TableCell cell = this.initCell(true, null, 1, true);
-    	cell.addContent(sDateFormat.format(m.getMeetingDate())
+    	cell.addContent(sDateFormat.format(m.getMeetingDate()));
+    	/*
     			+" &nbsp;&nbsp;<font color='gray'><i>("
     			+sDateFormatDay.format(m.getMeetingDate())
-    			+")</i></font>"); //date cannot be null
+    			+")</i></font>"); //date cannot be null*/
     	return(cell);
     }
     
+    private TableCell buildDate (MultiMeeting m) {
+        TableCell cell = this.initCell(true, null, 1, true);
+        Calendar c = Calendar.getInstance();
+        c.setTime(m.getMeetings().first().getMeetingDate());
+        int y1 = c.get(Calendar.YEAR);
+        c.setTime(m.getMeetings().last().getMeetingDate());
+        int y2 = c.get(Calendar.YEAR);
+        cell.addContent(
+                m.getDays()+" "+
+                (y1==y2?sDateFormatM1:sDateFormatM2).format(m.getMeetings().first().getMeetingDate())
+                +" - "+
+                sDateFormatM2.format(m.getMeetings().last().getMeetingDate())
+                );
+        return(cell);
+    }
+
     private TableCell buildTime (Meeting m) {
     	TableCell cell = this.initCell(true, null, 1, true);
 		int start = Constants.SLOT_LENGTH_MIN*m.getStartPeriod()+
@@ -277,6 +297,16 @@ public class WebEventTableBuilder {
     	return(cell);
     }
     
+    private TableCell buildApproved (MultiMeeting mm) {
+        TableCell cell = this.initCell(true, null, 1, true);
+        SimpleDateFormat df = new SimpleDateFormat("MM/dd/yy", Locale.US);
+        Date approvalDate = null; //latest approval date
+        for (Meeting m : mm.getMeetings())
+            if (approvalDate==null || approvalDate.compareTo(m.getApprovedDate())<0) approvalDate = m.getApprovedDate();
+        cell.addContent(approvalDate==null?"":df.format(approvalDate));
+        return(cell);
+    }
+
     private void addEventsRowsToTable(TableStream table, Event e) {
         TableRow row = (this.initRow(true));
         row.setOnMouseOver(this.getRowMouseOver(true, true));
@@ -307,6 +337,21 @@ public class WebEventTableBuilder {
         table.addContent(row);
     }
     
+    private void addMeetingRowsToTable (TableStream table, MultiMeeting mm) {
+        Meeting m = mm.getMeetings().first();
+        TableRow row = (this.initRow(false));
+        row.setOnMouseOver(this.getRowMouseOver(false, true));
+        row.setOnMouseOut(this.getRowMouseOut(false));
+        row.setOnClick(subjectOnClickAction(m.getEvent().getUniqueId()));
+        
+        TableCell cell = null;
+        row.addContent(buildEmptyMeetingInfo());
+        row.addContent(mm.getMeetings().size()==1?buildDate(m):buildDate(mm));
+        row.addContent(buildTime(m));
+        row.addContent(buildLocation(m));
+        row.addContent(mm.getMeetings().size()==1?buildApproved(m):buildApproved(mm));
+        table.addContent(row);
+    }
     
     public void htmlTableForEvents (HttpSession httpSession, EventListForm form, JspWriter outputStream){
 
@@ -403,10 +448,14 @@ public class WebEventTableBuilder {
             Event event = (Event) it.next();
             eventIds.add(event.getUniqueId());
             addEventsRowsToTable(eventsTable, event);
+            for (MultiMeeting meeting : event.getMultiMeetings()) 
+                addMeetingRowsToTable(eventsTable, meeting);
+            /*
 			for (Iterator i=new TreeSet(event.getMeetings()).iterator();i.hasNext();) {
 				Meeting meeting = (Meeting)i.next();
 				addMeetingRowsToTable(eventsTable, meeting);
 			}
+			*/
         }
 
         eventsTable.tableComplete();
