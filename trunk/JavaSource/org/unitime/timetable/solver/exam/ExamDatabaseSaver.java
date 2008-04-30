@@ -24,18 +24,23 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.TreeSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Transaction;
+import org.unitime.timetable.model.ChangeLog;
+import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.EventContact;
 import org.unitime.timetable.model.EventType;
 import org.unitime.timetable.model.ExamConflict;
+import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Student;
+import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.ExamDAO;
@@ -50,6 +55,7 @@ import net.sf.cpsolver.exam.model.ExamPlacement;
 import net.sf.cpsolver.exam.model.ExamRoomPlacement;
 import net.sf.cpsolver.ifs.solver.Solver;
 import net.sf.cpsolver.ifs.util.Progress;
+import net.sf.cpsolver.ifs.util.ToolBox;
 
 /**
  * @author Tomas Muller
@@ -93,12 +99,14 @@ public class ExamDatabaseSaver extends ExamSaver {
             .setLong("sessionId", iSessionId)
             .executeUpdate();
             */
+        TimetableManager owner = TimetableManager.findByExternalId(getModel().getProperties().getProperty("General.OwnerPuid"));
         Collection exams = org.unitime.timetable.model.Exam.findAll(iSessionId, iExamType);
         iProgress.setPhase("Saving assignments...", exams.size());
         Hashtable examTable = new Hashtable();
         for (Iterator i=exams.iterator();i.hasNext();) {
             iProgress.incProgress();
             org.unitime.timetable.model.Exam exam = (org.unitime.timetable.model.Exam)i.next();
+            ExamAssignment oldAssignment = new ExamAssignment(exam);
             exam.setAssignedPeriod(null);
             exam.setAssignedPreference(null);
             exam.getAssignedRooms().clear();
@@ -118,17 +126,74 @@ public class ExamDatabaseSaver extends ExamSaver {
             }
             if (examVar==null) {
                 iProgress.warn("Exam "+getExamLabel(exam)+" was not loaded.");
+                if (oldAssignment.getPeriodId()!=null) {
+                    SubjectArea subject = null;
+                    Department dept = null;
+                    for (Iterator j=new TreeSet(exam.getOwners()).iterator();j.hasNext();) {
+                        ExamOwner xo = (ExamOwner)j.next();
+                        subject = xo.getCourse().getSubjectArea();
+                        dept = subject.getDepartment();
+                        break;
+                    }
+                    ChangeLog.addChange(hibSession,
+                            owner,
+                            exam.getSession(),
+                            exam,
+                            exam.getName()+" ("+oldAssignment.getPeriodAbbreviation()+" "+oldAssignment.getRoomsName(", ")+" &rarr; N/A)",
+                            ChangeLog.Source.EXAM_SOLVER,
+                            ChangeLog.Operation.UNASSIGN,
+                            subject,
+                            dept);
+                }
                 continue;
             }
             examTable.put(examVar.getId(), exam);
             ExamPlacement placement = (ExamPlacement)examVar.getAssignment();
             if (placement==null) {
                 iProgress.warn("Exam "+getExamLabel(exam)+" has no assignment.");
+                if (oldAssignment.getPeriodId()!=null) {
+                    SubjectArea subject = null;
+                    Department dept = null;
+                    for (Iterator j=new TreeSet(exam.getOwners()).iterator();j.hasNext();) {
+                        ExamOwner xo = (ExamOwner)j.next();
+                        subject = xo.getCourse().getSubjectArea();
+                        dept = subject.getDepartment();
+                        break;
+                    }
+                    ChangeLog.addChange(hibSession,
+                            owner,
+                            exam.getSession(),
+                            exam,
+                            exam.getName()+" ("+oldAssignment.getPeriodAbbreviation()+" "+oldAssignment.getRoomsName(", ")+" &rarr; N/A)",
+                            ChangeLog.Source.EXAM_SOLVER,
+                            ChangeLog.Operation.UNASSIGN,
+                            subject,
+                            dept);
+                }
                 continue;
             }
             ExamPeriod period = new ExamPeriodDAO().get(placement.getPeriod().getId());
             if (period==null) {
                 iProgress.warn("Examination period "+placement.getPeriod().getDayStr()+" "+placement.getPeriod().getTimeStr()+" not found.");
+                if (oldAssignment.getPeriodId()!=null) {
+                    SubjectArea subject = null;
+                    Department dept = null;
+                    for (Iterator j=new TreeSet(exam.getOwners()).iterator();j.hasNext();) {
+                        ExamOwner xo = (ExamOwner)j.next();
+                        subject = xo.getCourse().getSubjectArea();
+                        dept = subject.getDepartment();
+                        break;
+                    }
+                    ChangeLog.addChange(hibSession,
+                            owner,
+                            exam.getSession(),
+                            exam,
+                            exam.getName()+" ("+oldAssignment.getPeriodAbbreviation()+" "+oldAssignment.getRoomsName(", ")+" &rarr; N/A)",
+                            ChangeLog.Source.EXAM_SOLVER,
+                            ChangeLog.Operation.UNASSIGN,
+                            subject,
+                            dept);
+                }
                 continue;
             }
             exam.setAssignedPeriod(period);
@@ -144,6 +209,28 @@ public class ExamDatabaseSaver extends ExamSaver {
             exam.setAssignedPreference(new ExamAssignment(placement).getAssignedPreferenceString());
             
             hibSession.saveOrUpdate(exam);
+            ExamAssignment newAssignment = new ExamAssignment(exam);
+            if (!ToolBox.equals(newAssignment.getPeriodId(), oldAssignment.getPeriodId()) || !ToolBox.equals(newAssignment.getRooms(), oldAssignment.getRooms())) {
+                SubjectArea subject = null;
+                Department dept = null;
+                for (Iterator j=new TreeSet(exam.getOwners()).iterator();j.hasNext();) {
+                    ExamOwner xo = (ExamOwner)j.next();
+                    subject = xo.getCourse().getSubjectArea();
+                    dept = subject.getDepartment();
+                    break;
+                }
+                ChangeLog.addChange(hibSession,
+                        owner,
+                        exam.getSession(),
+                        exam,
+                        exam.getName()+" ("+
+                            (oldAssignment.getPeriod()==null?"N/A":oldAssignment.getPeriodAbbreviation()+" "+oldAssignment.getRoomsName(", "))+
+                            " &rarr; "+newAssignment.getPeriodAbbreviation()+" "+newAssignment.getRoomsName(", ")+")",
+                        ChangeLog.Source.EXAM_SOLVER,
+                        ChangeLog.Operation.ASSIGN,
+                        subject,
+                        dept);
+            }
         }
         iProgress.setPhase("Saving conflicts...", getModel().assignedVariables().size());
         for (Enumeration e=getModel().assignedVariables().elements();e.hasMoreElements();) {
