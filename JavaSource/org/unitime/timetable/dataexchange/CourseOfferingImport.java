@@ -778,8 +778,11 @@ public class CourseOfferingImport extends BaseImport {
 					throw new Exception("Invalid time '"+timeString+"' -- hour ("+hour+") must be between 0 and 23.");
 				if (min>=60)
 					throw new Exception("Invalid time '"+timeString+"' -- minute ("+min+") must be between 0 and 59.");
-				if ((min%Constants.SLOT_LENGTH_MIN)!=0)
-					throw new Exception("Invalid time '"+timeString+"' -- minute ("+min+") must be divisible by "+Constants.SLOT_LENGTH_MIN+".");
+				
+				if ((min%Constants.SLOT_LENGTH_MIN)!=0){
+					min = min - (min%Constants.SLOT_LENGTH_MIN);
+					//throw new Exception("Invalid time '"+timeString+"' -- minute ("+min+") must be divisible by "+Constants.SLOT_LENGTH_MIN+".");
+				}
 				slot = (hour*60+min - Constants.FIRST_SLOT_TIME_MIN)/Constants.SLOT_LENGTH_MIN;
 			} catch (NumberFormatException ex) {
 				throw new Exception("Invalid time '"+timeString+"' -- not a number.");
