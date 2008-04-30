@@ -92,6 +92,8 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
 		if (cmp!=0) return cmp;
 		cmp = getStartPeriod().compareTo(other.getStartPeriod());
 		if (cmp!=0) return cmp;
+		cmp = getRoomLabel().compareTo(other.getRoomLabel());
+		if (cmp!=0) return cmp;
 		return getUniqueId().compareTo(other.getUniqueId());
 	}
 
@@ -245,4 +247,6 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
         c.setTime(getMeetingDate());
         return c.get(Calendar.DAY_OF_WEEK);
     }
+    
+    public boolean isApproved() { return getApprovedDate()!=null; }
 }
