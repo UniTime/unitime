@@ -19,13 +19,21 @@
  
 package org.unitime.timetable.model;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
+import java.util.TreeSet;
+
+import net.sf.cpsolver.ifs.util.ToolBox;
 
 import org.unitime.timetable.model.base.BaseEvent;
 import org.unitime.timetable.model.dao.EventDAO;
+import org.unitime.timetable.util.Constants;
 
 
 public class Event extends BaseEvent implements Comparable<Event> {
@@ -248,6 +256,92 @@ public class Event extends BaseEvent implements Comparable<Event> {
 	            .setInteger("classType", ExamOwner.sOwnerTypeClass)
 	            .setLong("classId", classId)
 	            .setCacheable(true).uniqueResult();
+	}
+	
+	public TreeSet<MultiMeeting> getMultiMeetings() {
+	    TreeSet<MultiMeeting> ret = new TreeSet<MultiMeeting>();
+	    TreeSet<Meeting> meetings = new TreeSet<Meeting>();
+	    meetings.addAll(getMeetings());
+	    while (!meetings.isEmpty()) {
+	        Meeting meeting = meetings.first(); meetings.remove(meeting);
+	        Hashtable<Long,Meeting> similar = new Hashtable(); 
+	        TreeSet<Integer> dow = new TreeSet<Integer>(); dow.add(meeting.getDayOfWeek()); 
+	        for (Meeting m : meetings) {
+	            if (ToolBox.equals(m.getStartPeriod(),meeting.getStartPeriod()) &&
+	                ToolBox.equals(m.getStartOffset(),meeting.getStartOffset()) &&
+	                ToolBox.equals(m.getStopPeriod(),meeting.getStopPeriod()) &&
+	                ToolBox.equals(m.getStopOffset(),meeting.getStopOffset()) &&
+	                ToolBox.equals(m.getLocationPermanentId(),meeting.getLocationPermanentId()) &&
+	                m.isApproved()==meeting.isApproved()) {
+	                dow.add(m.getDayOfWeek());
+	                similar.put(m.getMeetingDate().getTime(),m);
+	            }
+	        }
+            TreeSet<Meeting> multi = new TreeSet<Meeting>(); multi.add(meeting);
+	        if (!similar.isEmpty()) {
+	            Calendar c = Calendar.getInstance(Locale.US);
+	            c.setTimeInMillis(meeting.getMeetingDate().getTime());
+	            while (true) {
+	                do {
+	                    c.add(Calendar.DAY_OF_YEAR, 1);
+	                } while (!dow.contains(c.get(Calendar.DAY_OF_WEEK)));
+	                Meeting m = similar.get(c.getTimeInMillis()); 
+	                if (m==null) break;
+	                multi.add(m);
+	                meetings.remove(m);
+	            }
+	        }
+	        ret.add(new MultiMeeting(multi));
+	    }
+	    return ret;
+	}
+	
+	public static class MultiMeeting implements Comparable<MultiMeeting> {
+	    private TreeSet<Meeting> iMeetings;
+	    
+	    public MultiMeeting(TreeSet<Meeting> meetings) {
+	        iMeetings = meetings;
+	    }
+	    
+	    public TreeSet<Meeting> getMeetings() { return iMeetings; }
+
+	    public int compareTo(MultiMeeting m) {
+	        return getMeetings().first().compareTo(m.getMeetings().first());
+	    }
+	    
+	    public String getDays() {
+	        int nrDays = 0;
+	        int dayCode = 0;
+	        for (Meeting meeting : getMeetings()) {
+	            int dc = 0;
+	            switch (meeting.getDayOfWeek()) {
+                case Calendar.MONDAY    : dc = Constants.DAY_CODES[Constants.DAY_MON]; break;
+                case Calendar.TUESDAY   : dc = Constants.DAY_CODES[Constants.DAY_TUE]; break;
+                case Calendar.WEDNESDAY : dc = Constants.DAY_CODES[Constants.DAY_WED]; break;
+                case Calendar.THURSDAY  : dc = Constants.DAY_CODES[Constants.DAY_THU]; break;
+                case Calendar.FRIDAY    : dc = Constants.DAY_CODES[Constants.DAY_FRI]; break;
+                case Calendar.SATURDAY  : dc = Constants.DAY_CODES[Constants.DAY_SAT]; break;
+                case Calendar.SUNDAY    : dc = Constants.DAY_CODES[Constants.DAY_SUN]; break;
+	            }
+	            if ((dayCode & dc)==0) nrDays++;
+	            dayCode |= dc;
+	        }
+            String ret = "";
+	        for (int i=0;i<Constants.DAY_CODES.length;i++) {
+	            if ((dayCode & Constants.DAY_CODES[i])!=0)
+	                ret += (nrDays==1?Constants.DAY_NAME:Constants.DAY_NAMES_SHORT)[i];
+	        }
+            return ret;
+	    }
+	    
+	    public String toString() {
+	        return getDays()+" "+
+	            new SimpleDateFormat("MM/dd").format(getMeetings().first().getMeetingDate())+
+	            (getMeetings().size()>1?" - "+new SimpleDateFormat("MM/dd").format(getMeetings().last().getMeetingDate()):"")+" "+
+	            getMeetings().first().startTime()+" - "+
+	            getMeetings().first().stopTime()+
+	            (getMeetings().first().getLocation()==null?"":" "+getMeetings().first().getLocation().getLabel());
+	    }
 	}
 	
 }
