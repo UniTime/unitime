@@ -63,6 +63,7 @@ import org.unitime.timetable.model.dao.DistributionPrefDAO;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.solver.remote.core.RemoteSolverServer;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.RoomAvailability;
 
@@ -126,7 +127,7 @@ public class ExamDatabaseLoader extends ExamLoader {
             tx = hibSession.beginTransaction();
             loadPeriods();
             loadRooms();
-            if (RoomAvailability.getInstance()!=null) loadRoomAvailability(RoomAvailability.getInstance());
+            if (hasRoomAvailability()) loadRoomAvailability(RoomAvailability.getInstance());
             loadExams();
             loadStudents();
             loadDistributions();
@@ -805,7 +806,7 @@ public class ExamDatabaseLoader extends ExamLoader {
         TreeSet periods = org.unitime.timetable.model.ExamPeriod.findAll(iSessionId, iExamType);
         Date start = ((org.unitime.timetable.model.ExamPeriod)periods.first()).getStartTime();
         Date stop = ((org.unitime.timetable.model.ExamPeriod)periods.last()).getEndTime();
-        ra.activate(new SessionDAO().get(iSessionId),start,stop,true);
+        roomAvailabilityActivate(start,stop);
         iProgress.setPhase("Loading room availability...", iAllRooms.size());
         for (Iterator i=iAllRooms.iterator();i.hasNext();) {
             iProgress.incProgress();
@@ -814,9 +815,7 @@ public class ExamDatabaseLoader extends ExamLoader {
             Room room = (Room)location;
             ExamRoom roomEx = iRooms.get(room.getUniqueId());
             if (roomEx==null) continue;
-            Collection<TimeBlock> times = ra.getRoomAvailability(room.getExternalUniqueId(), room.getBuildingAbbv(), room.getRoomNumber(), 
-                    start, stop,
-                    new String[] {(iExamType==org.unitime.timetable.model.Exam.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sEveningExamType)});
+            Collection<TimeBlock> times = getRoomAvailability(room.getExternalUniqueId(), room.getBuildingAbbv(), room.getRoomNumber(), start, stop);
             if (times==null) continue;
             for (TimeBlock time : times) {
                 for (Iterator j=periods.iterator();j.hasNext();) {
@@ -828,4 +827,45 @@ public class ExamDatabaseLoader extends ExamLoader {
         }
     }
     
+    public boolean hasRoomAvailability() {
+        try {
+            if (isRemote()) {
+                return (Boolean)RemoteSolverServer.query(new Object[]{"hasRoomAvailability"});
+            } else return RoomAvailability.getInstance()!=null;
+        } catch (Exception e) {
+            sLog.error(e.getMessage(),e);
+            iProgress.warn("Unable to access room availability service, reason:"+e.getMessage());
+            return false;
+        }
+    }
+    
+    public Collection<TimeBlock> getRoomAvailability(String roomExternalId, String buildingAbbv, String roomNbr, Date startTime, Date endTime) {
+        try {
+            if (isRemote()) {
+                return (Collection<TimeBlock>)RemoteSolverServer.query(new Object[]{"getExamRoomAvailability",roomExternalId,buildingAbbv,roomNbr,startTime,endTime,iExamType});
+            } else {
+                return RoomAvailability.getInstance().getRoomAvailability(
+                        roomExternalId, buildingAbbv, roomNbr, startTime, endTime,
+                        new String[] {(iExamType==org.unitime.timetable.model.Exam.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sEveningExamType)});
+            }
+        } catch (Exception e) {
+            sLog.error(e.getMessage(),e);
+            iProgress.warn("Unable to access room availability service, reason:"+e.getMessage());
+            return null;
+        } 
+    }
+    
+    public void roomAvailabilityActivate(Date startTime, Date endTime) {
+        try {
+            if (isRemote()) {
+                RemoteSolverServer.query(new Object[]{"activateRoomAvailability",iSessionId,startTime,endTime});
+            } else {
+                RoomAvailability.getInstance().activate(new SessionDAO().get(iSessionId), startTime, endTime, true);
+            }
+        } catch (Exception e) {
+            sLog.error(e.getMessage(),e);
+            iProgress.warn("Unable to access room availability service, reason:"+e.getMessage());
+        } 
+        
+    }
 }

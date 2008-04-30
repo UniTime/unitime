@@ -22,6 +22,7 @@ package org.unitime.timetable.solver.exam;
 import net.sf.cpsolver.ifs.util.Callback;
 
 import org.apache.log4j.Logger;
+import org.unitime.timetable.solver.remote.core.RemoteSolverServer;
 
 /**
  * @author Tomas Muller
@@ -61,5 +62,7 @@ public abstract class ExamLoader implements Runnable {
                 iCallback.execute();
         }
     }
+    
+    public boolean isRemote() { return RemoteSolverServer.getServerThread()!=null; }
 
 }
