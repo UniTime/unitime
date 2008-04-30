@@ -215,7 +215,6 @@ public class InstructorExamReport extends PdfLegacyExamReport {
         lastSubject = null;
         for (ExamSectionInfo section : sections) {
             iSubjectPrinted = (!iNewPage && lastSubject!=null && lastSubject.equals(section.getSubject()));
-            lastSubject = section.getSubject();
             ExamAssignmentInfo exam = section.getExamAssignmentInfo();
             if (exam==null || exam.getPeriod()==null) continue;
             ExamPeriod period = exam.getPeriod();
@@ -252,6 +251,7 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                                     other.getExamAssignment().getTimeFixedLength()
                                     );
                             iSubjectPrinted = iCoursePrinted = iStudentPrinted = iPeriodPrinted = !iNewPage;
+                            lastSubject = section.getSubject();
                         }
                     } else if (conflict.getOtherEventId()!=null) {
                         if (!headerPrinted) {
@@ -280,6 +280,7 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                                 getMeetingTime(conflict.getOtherEventTime())
                                 );
                         iSubjectPrinted = iCoursePrinted = iStudentPrinted = iPeriodPrinted = !iNewPage;
+                        lastSubject = section.getSubject();
                     }
                 }
                 if (iM2d) for (MoreThanTwoADayConflict conflict : exam.getInstructorMoreThanTwoADaysConflicts()) {
@@ -314,6 +315,7 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                                     other.getExamAssignment().getTimeFixedLength()
                                     );
                             iSubjectPrinted = iCoursePrinted = iStudentPrinted = iPeriodPrinted = !iNewPage;
+                            lastSubject = section.getSubject();
                         }
                     }
                 }
@@ -348,6 +350,7 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                                 other.getExamAssignment().getTimeFixedLength()
                                 );
                         iSubjectPrinted = iCoursePrinted = iStudentPrinted = iPeriodPrinted = !iNewPage;
+                        lastSubject = section.getSubject();
                     }
             }
         }
@@ -366,7 +369,6 @@ public class InstructorExamReport extends PdfLegacyExamReport {
         lastSubject = null;
         for (ExamSectionInfo section : sections) {
             iSubjectPrinted = (!iNewPage && lastSubject!=null && lastSubject.equals(section.getSubject()));
-            lastSubject = section.getSubject();
             ExamAssignmentInfo exam = section.getExamAssignmentInfo();
             if (exam==null || exam.getPeriod()==null) continue;
             ExamPeriod period = exam.getPeriod();
@@ -402,6 +404,7 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                                     other.getExamAssignment().getTimeFixedLength()
                                     );
                             iSubjectPrinted = iCoursePrinted = iStudentPrinted = iPeriodPrinted = !iNewPage;
+                            lastSubject = section.getSubject();
                         }
                     } else if (conflict.getOtherEventId()!=null) {
                         println(
@@ -419,6 +422,7 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                                 getMeetingTime(conflict.getOtherEventTime())
                                 );
                         iSubjectPrinted = iCoursePrinted = iStudentPrinted = iPeriodPrinted = !iNewPage;
+                        lastSubject = section.getSubject();
                     }
                 }
                 if (iM2d) for (MoreThanTwoADayConflict conflict : exam.getMoreThanTwoADaysConflicts()) {
@@ -442,6 +446,7 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                                     other.getExamAssignment().getTimeFixedLength()
                                     );
                             iSubjectPrinted = iCoursePrinted = iStudentPrinted = iPeriodPrinted = !iNewPage;
+                            lastSubject = section.getSubject();
                         }
                     }
                 }
@@ -465,6 +470,7 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                                 other.getExamAssignment().getTimeFixedLength()
                                 );
                         iSubjectPrinted = iCoursePrinted = iStudentPrinted = iPeriodPrinted = !iNewPage;
+                        lastSubject = section.getSubject();
                     }
                 }                    
             }

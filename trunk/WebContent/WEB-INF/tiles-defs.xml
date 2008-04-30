@@ -880,4 +880,8 @@
 		<put name="body" value="/user/eventList.jsp" />
 		<put name="showNavigation" value="true" />
   	</definition> 	
+ 	<definition	name="personalizedExamReportTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Examinations"/>
+		<put name="body" value="/exam/personalizedReport.jsp" />
+  	</definition> 	
 </tiles-definitions>

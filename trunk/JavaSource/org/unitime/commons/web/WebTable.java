@@ -598,4 +598,7 @@ public class WebTable {
     public Vector getLines() {
         return iLines;
     }
+    
+    public void setRef(String ref) { iRef = ref; }
+    public void setName(String name) { iName = name; }
 }

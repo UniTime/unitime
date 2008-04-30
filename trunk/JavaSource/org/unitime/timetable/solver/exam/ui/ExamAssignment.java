@@ -237,6 +237,7 @@ public class ExamAssignment extends ExamInfo implements Serializable {
     }
     
     public String getDate(boolean pref) {
+        if (getPeriod()==null) return "";
         if (!pref || iPeriodPref==null || PreferenceLevel.sNeutral.equals(iPeriodPref)) return sDateFormat.format(getPeriod().getStartDate());
         return
         "<span title='"+PreferenceLevel.prolog2string(iPeriodPref)+" "+getPeriodName()+"' style='color:"+PreferenceLevel.prolog2color(iPeriodPref)+";'>"+
@@ -313,6 +314,7 @@ public class ExamAssignment extends ExamInfo implements Serializable {
     }
     
     public String getRoomsCapacity(boolean pref, String delim) {
+        if (getPeriod()==null) return "";
         String rooms = "";
         for (ExamRoomInfo room : getRooms()) {
             if (rooms.length()>0) rooms+=delim;
@@ -325,6 +327,7 @@ public class ExamAssignment extends ExamInfo implements Serializable {
     }
 
     public int getRoomsCapacity() {
+        if (getPeriod()==null) return 0;
         int cap = 0;
         for (ExamRoomInfo room : getRooms()) cap += room.getCapacity();
         return cap;

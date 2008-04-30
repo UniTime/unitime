@@ -162,7 +162,7 @@ public class PdfLegacyReport {
         return render(line, s, iNrChars-s.length());
     }    
     
-    protected void printHeader() throws DocumentException {
+    public void printHeader() throws DocumentException {
         out(renderEnd(renderMiddle(
                 ApplicationProperties.getProperty("tmtbl.pdf.examreport.author","UniTime 3.0."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")),
                 ApplicationProperties.getProperty("tmtbl.pdf.examreport.title",iTitle)
@@ -195,7 +195,7 @@ public class PdfLegacyReport {
         iBuffer = new StringBuffer();
         iPageNo++;
     }
-    protected void lastPage() throws DocumentException {
+    public void lastPage() throws DocumentException {
         while (iLineNo<iNrLines) {
             out(""); iLineNo++;
         }
