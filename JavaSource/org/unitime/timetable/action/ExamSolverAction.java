@@ -75,16 +75,15 @@ public class ExamSolverAction extends Action {
         	solver.restoreBest();
         }
         
-        if ("Save To Best".equals(op)) {
+        if ("Store To Best".equals(op)) {
         	if (solver==null) throw new Exception("Solver is not started.");
         	if (solver.isWorking()) throw new Exception("Solver is working, stop it first.");
         	solver.saveBest();
         }
         
-        if (op.startsWith("Save") && !op.equals("Save To Best")) {
+        if (op.startsWith("Save")) {
         	if (solver==null) throw new Exception("Solver is not started.");
         	if (solver.isWorking()) throw new Exception("Solver is working, stop it first.");
-        	solver.restoreBest();
         	solver.save();
         	myForm.setChangeTab(true);
         }
