@@ -524,6 +524,7 @@ public abstract class Location extends BaseLocation implements Comparable {
     }
     
     public void clearExamPreferences(int examType) {
+        if (getExamPreferences()==null) setExamPreferences(new HashSet());
         for (Iterator i=getExamPreferences().iterator();i.hasNext();) {
             ExamLocationPref pref = (ExamLocationPref)i.next();
             if (examType==pref.getExamPeriod().getExamType()) {
@@ -534,6 +535,7 @@ public abstract class Location extends BaseLocation implements Comparable {
     }
     
     public void setExamPreference(ExamPeriod period, PreferenceLevel preference) {
+        if (getExamPreferences()==null) setExamPreferences(new HashSet());
         for (Iterator i=getExamPreferences().iterator();i.hasNext();) {
             ExamLocationPref pref = (ExamLocationPref)i.next();
             if (pref.getExamPeriod().equals(period)) {
