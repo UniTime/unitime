@@ -26,10 +26,24 @@
 <html:form action="/exams">
 	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
 		<TR><TD align='right'>
-			<html:submit accesskey="P" property="op" value="Export PDF" title="Export PDF (Alt+P)"/>
+			<logic:equal name="personalizedExamReportForm" property="canExport" value="true">
+				<html:submit accesskey="P" property="op" value="Export PDF" title="Export PDF (Alt+P)"/>
+			</logic:equal>
 			<html:submit accesskey="L" property="op" value="Log Out" title="Log out (Alt+L)"/>
 		</TD></TR>
 	</TABLE>
+	<logic:notEmpty scope="request" name="sessions">
+		<BR>
+		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+			<bean:write scope="request" name="sessions" filter="false"/>
+		</TABLE>
+	</logic:notEmpty>
+	<logic:notEmpty scope="request" name="iclsschd">
+		<BR>
+		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+			<bean:write scope="request" name="iclsschd" filter="false"/>
+		</TABLE>
+	</logic:notEmpty>
 	<logic:notEmpty scope="request" name="ischedule">
 		<BR>
 		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
@@ -48,6 +62,12 @@
 			<bean:write scope="request" name="sconf" filter="false"/>
 		</TABLE>
 	</logic:notEmpty>
+	<logic:notEmpty scope="request" name="clsschd">
+		<BR>
+		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+			<bean:write scope="request" name="clsschd" filter="false"/>
+		</TABLE>
+	</logic:notEmpty>
 	<logic:notEmpty scope="request" name="schedule">
 		<BR>
 		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
@@ -63,7 +83,9 @@
 	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
 		<TR><TD><tt:section-title/></TD></TR>
 		<TR><TD align='right'>
-			<html:submit accesskey="P" property="op" value="Export PDF" title="Export PDF (Alt+P)"/>
+			<logic:equal name="personalizedExamReportForm" property="canExport" value="true">
+				<html:submit accesskey="P" property="op" value="Export PDF" title="Export PDF (Alt+P)"/>
+			</logic:equal>
 			<html:submit accesskey="L" property="op" value="Log Out" title="Log out (Alt+L)"/>
 		</TD></TR>
 	</TABLE>

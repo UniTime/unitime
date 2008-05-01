@@ -47,13 +47,16 @@ import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.PersonalizedExamReportForm;
 import org.unitime.timetable.model.Assignment;
+import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.PreferenceLevel;
+import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
@@ -92,6 +95,13 @@ public class PersonalizedExamReportAction extends Action {
             return mapping.findForward("back");
         }
         
+        Long sessionId = (Long)request.getAttribute("PersonalizedExamReport.SessionId");
+        if (request.getParameter("session")!=null) {
+            sessionId = Long.valueOf(request.getParameter("session"));
+            request.setAttribute("PersonalizedExamReport.SessionId", sessionId);
+        }
+        
+        HashSet<Session> sessions = new HashSet();
         DepartmentalInstructor instructor = null;
         for (Iterator i=new DepartmentalInstructorDAO().
                 getSession().
@@ -100,7 +110,12 @@ public class PersonalizedExamReportAction extends Action {
                 setCacheable(true).list().iterator();i.hasNext();) {
             DepartmentalInstructor s = (DepartmentalInstructor)i.next();
             if (s.getDepartment().getSession().getStatusType()==null || !s.getDepartment().getSession().getStatusType().canExamView() || !Exam.hasTimetable(s.getDepartment().getSession().getUniqueId())) continue;
-            if (instructor==null || instructor.getDepartment().getSession().compareTo(s.getDepartment().getSession())>0) instructor = s;
+            sessions.add(s.getDepartment().getSession());
+            if (sessionId==null) {
+                if (instructor==null || instructor.getDepartment().getSession().compareTo(s.getDepartment().getSession())>0) instructor = s;
+            } else if (sessionId.equals(s.getDepartment().getSession().getUniqueId())) {
+                instructor = s;
+            }
         }
         
         Student student = null;
@@ -111,13 +126,19 @@ public class PersonalizedExamReportAction extends Action {
                 setCacheable(true).list().iterator();i.hasNext();) {
             Student s = (Student)i.next();
             if (s.getSession().getStatusType()==null || !s.getSession().getStatusType().canExamView() || !Exam.hasTimetable(s.getSession().getUniqueId())) continue;
-            if (student==null || student.getSession().compareTo(s.getSession())>0) student = s;
+            sessions.add(s.getSession());
+            if (sessionId==null) {
+                if (student==null || student.getSession().compareTo(s.getSession())>0) student = s;
+            } else if (sessionId.equals(s.getSession().getUniqueId()))
+                student = s;
         }
         
         if (instructor==null && student==null) {
             request.setAttribute("message", "No examinations found.");
             return mapping.findForward("back");
         }
+        
+        myForm.setCanExport(false);
         
         if (instructor!=null && student!=null && !instructor.getDepartment().getSession().equals(student.getSession())) {
             if (instructor.getDepartment().getSession().compareTo(student.getSession())<0)
@@ -143,11 +164,13 @@ public class PersonalizedExamReportAction extends Action {
             return mapping.findForward("back");
         }
         
+        WebTable.setOrder(request.getSession(),"exams.o0",request.getParameter("o0"),1);
         WebTable.setOrder(request.getSession(),"exams.o1",request.getParameter("o1"),1);
         WebTable.setOrder(request.getSession(),"exams.o2",request.getParameter("o2"),1);
         WebTable.setOrder(request.getSession(),"exams.o3",request.getParameter("o3"),1);
         WebTable.setOrder(request.getSession(),"exams.o4",request.getParameter("o4"),1);
         WebTable.setOrder(request.getSession(),"exams.o5",request.getParameter("o5"),1);
+        WebTable.setOrder(request.getSession(),"exams.o6",request.getParameter("o6"),1);
         
         if ("Export PDF".equals(myForm.getOp())) {
             FileOutputStream out = null;
@@ -195,7 +218,30 @@ public class PersonalizedExamReportAction extends Action {
             }
         }
         
+        if (instructor!=null && sessions.size()>1) {
+            PdfWebTable table = getSessions(true, sessions, instructor.getName(DepartmentalInstructor.sNameFormatLastFist), instructor.getDepartment().getSession().getUniqueId());
+            request.setAttribute("sessions", table.printTable(WebTable.getOrder(request.getSession(),"exams.o0")));
+        } else if (student!=null && sessions.size()>1) {
+            PdfWebTable table = getSessions(true, sessions, student.getName(DepartmentalInstructor.sNameFormatLastFist), student.getSession().getUniqueId());
+            request.setAttribute("sessions", table.printTable(WebTable.getOrder(request.getSession(),"exams.o0")));
+        }
+        
+        if (student!=null && !student.getClassEnrollments().isEmpty()) {
+            PdfWebTable table =  getStudentClassSchedule(true, student);
+            if (!table.getLines().isEmpty()) {
+                request.setAttribute("clsschd", table.printTable(WebTable.getOrder(request.getSession(),"exams.o6")));
+            }
+        }
+        
+        if (instructor!=null) {
+            PdfWebTable table = getInstructorClassSchedule(true, instructor);
+            if (!table.getLines().isEmpty()) {
+                request.setAttribute("iclsschd", table.printTable(WebTable.getOrder(request.getSession(),"exams.o7")));
+            }
+        }
+        
         if (!studentExams.isEmpty()) {
+            myForm.setCanExport(true);
             TreeSet<ExamAssignmentInfo> exams = new TreeSet<ExamAssignmentInfo>();
             for (Exam exam : studentExams) exams.add(new ExamAssignmentInfo(exam));
             
@@ -208,6 +254,7 @@ public class PersonalizedExamReportAction extends Action {
         }
         
         if (!instructorExams.isEmpty()) {
+            myForm.setCanExport(true);
             TreeSet<ExamAssignmentInfo> exams = new TreeSet<ExamAssignmentInfo>();
             for (Exam exam : instructorExams) exams.add(new ExamAssignmentInfo(exam));
             
@@ -301,6 +348,36 @@ public class PersonalizedExamReportAction extends Action {
             }
         }
         return meetingTime;
+    }
+    
+    public PdfWebTable getSessions(boolean html, HashSet<Session> sessions, String name, Long sessionId) {
+        String nl = (html?"<br>":"\n");
+        PdfWebTable table = new PdfWebTable( 5,
+                "Available Academic Sessions for "+name,
+                "exams.do?o0=%%",
+                new String[] {
+                    "Term",
+                    "Year",
+                    "Campus"},
+                new String[] {"left", "left", "left"},
+                new boolean[] {true, true, true} );
+        table.setRowStyle("white-space:nowrap");
+        for (Session session : sessions) {
+            String bgColor = null;
+            if (sessionId.equals(session.getUniqueId())) bgColor = "rgb(168,187,225)";
+            table.addLine(
+                    "onClick=\"document.location='exams.do?session="+session.getUniqueId()+"';\"",
+                    new String[] {
+                        session.getAcademicTerm(),
+                        session.getAcademicYear(),
+                        session.getAcademicInitiative()
+                    },
+                    new Comparable[] {
+                        new MultiComparable(session.getSessionBeginDateTime(),session.getAcademicInitiative()),
+                        new MultiComparable(session.getSessionBeginDateTime(),session.getAcademicInitiative()),
+                        new MultiComparable(session.getAcademicInitiative(),session.getSessionBeginDateTime())}).setBgColor(bgColor);
+        }
+        return table;
     }
     
     public PdfWebTable getStudentExamSchedule(boolean html, TreeSet<ExamAssignmentInfo> exams, Student student) {
@@ -976,5 +1053,188 @@ public class PersonalizedExamReportAction extends Action {
             }
         }
         return table;       
+    }
+    
+    protected String getMeetingTime(Class_ clazz) {
+        String meetingTime = "";
+        SimpleDateFormat dpf = new SimpleDateFormat("MM/dd");
+        Assignment assignment = clazz.getCommittedAssignment();
+        Event event = (assignment==null || assignment.getEvent()==null?Event.findClassEvent(clazz.getUniqueId()):assignment.getEvent());
+        TreeSet meetings = (event==null?null:new TreeSet(event.getMeetings()));
+        if (meetings!=null && !meetings.isEmpty()) {
+            Date first = ((Meeting)meetings.first()).getMeetingDate();
+            Date last = ((Meeting)meetings.last()).getMeetingDate();
+            meetingTime += dpf.format(first)+" - "+dpf.format(last);
+        } else if (assignment!=null && assignment.getDatePattern()!=null) {
+            DatePattern dp = assignment.getDatePattern();
+            if (dp!=null && !dp.isDefault()) {
+                if (dp.getType().intValue()==DatePattern.sTypeAlternate)
+                    meetingTime += dp.getName();
+                else {
+                    meetingTime += dpf.format(dp.getStartDate())+" - "+dpf.format(dp.getEndDate());
+                }
+            }
+        }
+        if (meetings!=null && !meetings.isEmpty()) {
+            int dayCode = getDaysCode(meetings);
+            String days = "";
+            for (int i=0;i<Constants.DAY_CODES.length;i++)
+                if ((dayCode & Constants.DAY_CODES[i])!=0) days += Constants.DAY_NAMES_SHORT[i];
+            meetingTime += " "+days;
+            Meeting first = (Meeting)meetings.first();
+            meetingTime += " "+first.startTime()+" - "+first.stopTime();
+        } else if (assignment!=null) {
+            TimeLocation t = assignment.getTimeLocation();
+            meetingTime += " "+t.getDayHeader()+" "+t.getStartTimeHeader()+" - "+t.getEndTimeHeader();
+        } else {
+            meetingTime += "Arr Hrs";
+        }
+        return meetingTime;
+    }
+    
+    protected String getMeetingRooms(Class_ clazz) {
+        String meetingRooms = "";
+        Assignment assignment = clazz.getCommittedAssignment();
+        Event event = (assignment==null || assignment.getEvent()==null?Event.findClassEvent(clazz.getUniqueId()):assignment.getEvent());
+        TreeSet<Meeting> meetings = (event==null?null:new TreeSet(event.getMeetings()));
+        TreeSet<Location> locations = new TreeSet<Location>();
+        if (meetings!=null && !meetings.isEmpty()) {
+            for (Meeting meeting : meetings)
+                if (meeting.getLocation()!=null) locations.add(meeting.getLocation());
+        } else if (assignment!=null && assignment.getDatePattern()!=null) {
+            for (Iterator i=assignment.getRooms().iterator();i.hasNext();) {
+                locations.add((Location)i.next());
+            }
+        }
+        for (Location location: locations) {
+            if (meetingRooms.length()>0) meetingRooms+=", ";
+            meetingRooms+=location.getLabel();
+        }
+        return meetingRooms;
+    }
+    
+    protected long getMeetingComparable(Class_ clazz) {
+        Assignment assignment = clazz.getCommittedAssignment();
+        Event event = (assignment==null || assignment.getEvent()==null?Event.findClassEvent(clazz.getUniqueId()):assignment.getEvent());
+        TreeSet meetings = (event==null?null:new TreeSet(event.getMeetings()));
+        if (meetings!=null && !meetings.isEmpty()) {
+            return ((Meeting)meetings.first()).getMeetingDate().getTime();
+        } else if (assignment!=null) {
+            return assignment.getTimeLocation().getStartSlot();
+        }
+        return -1;
+    }
+    
+    protected String getMeetingInstructor(Class_ clazz) {
+        String meetingInstructor = "";
+        if (!clazz.isDisplayInstructor()) return meetingInstructor;
+        for (Iterator i=new TreeSet(clazz.getClassInstructors()).iterator();i.hasNext();) {
+            ClassInstructor ci = (ClassInstructor)i.next();
+            if (meetingInstructor.length()>0) meetingInstructor+=", ";
+            meetingInstructor += ci.getInstructor().getName(DepartmentalInstructor.sNameFormatLastInitial);
+        }
+        return meetingInstructor;
+    }
+    
+    public PdfWebTable getStudentClassSchedule(boolean html, Student student) {
+        String nl = (html?"<br>":"\n");
+        PdfWebTable table = new PdfWebTable( 6,
+                student.getSession().getLabel()+" Class Schedule for "+student.getName(DepartmentalInstructor.sNameFormatLastFist),
+                "exams.do?o6=%%",
+                new String[] {
+                    "Course",
+                    "Instruction"+nl+"Type",
+                    "Section",
+                    "Time",
+                    "Room",
+                    "Instructor"
+                    },
+                new String[] {"left", "left", "left", "left", "left", "left"},
+                new boolean[] {true, true, true, true, true, true} );
+        table.setRowStyle("white-space:nowrap");
+        table.setBlankWhenSame(true);
+        for (Iterator i=student.getClassEnrollments().iterator();i.hasNext();) {
+            StudentClassEnrollment sce = (StudentClassEnrollment)i.next();
+            String course = sce.getCourseOffering().getCourseName();
+            String itype =  sce.getClazz().getSchedulingSubpart().getItypeDesc();
+            int itypeCmp = sce.getClazz().getSchedulingSubpart().getItype().getItype();
+            String section = (sce.getClazz().getClassSuffix()!=null?sce.getClazz().getClassSuffix():sce.getClazz().getSectionNumberString());
+            String time = getMeetingTime(sce.getClazz());
+            long timeCmp = getMeetingComparable(sce.getClazz());
+            String room = getMeetingRooms(sce.getClazz());
+            String instr = getMeetingInstructor(sce.getClazz());
+            table.addLine(
+                    new String[] {
+                            course,
+                            itype,
+                            section,
+                            time,
+                            room,
+                            instr
+                        },
+                        new Comparable[] {
+                            new MultiComparable(course, itypeCmp, section, timeCmp, room, instr),
+                            new MultiComparable(itypeCmp, course, section, timeCmp, room, instr),
+                            new MultiComparable(course, section, itypeCmp, timeCmp, room, instr),
+                            new MultiComparable(timeCmp, room, course, itypeCmp, section, instr),
+                            new MultiComparable(room, timeCmp, course, itypeCmp, section, instr),
+                            new MultiComparable(instr, course, itypeCmp, section, timeCmp, room)
+                        });
+        }
+        return table;        
+    }
+    
+    public PdfWebTable getInstructorClassSchedule(boolean html, DepartmentalInstructor instructor) {
+        String nl = (html?"<br>":"\n");
+        PdfWebTable table = new PdfWebTable( 6,
+                instructor.getDepartment().getSession().getLabel()+" Class Schedule for "+instructor.getName(DepartmentalInstructor.sNameFormatLastFist),
+                "exams.do?o7=%%",
+                new String[] {
+                    "Course",
+                    "Instruction"+nl+"Type",
+                    "Section",
+                    "Time",
+                    "Room",
+                    "Share"
+                    },
+                new String[] {"left", "left", "left", "left", "left", "left"},
+                new boolean[] {true, true, true, true, true, true} );
+        Set allClasses = new HashSet();
+        for (Iterator i=DepartmentalInstructor.getAllForInstructor(instructor, instructor.getDepartment().getSession().getUniqueId()).iterator();i.hasNext();) {
+            DepartmentalInstructor di = (DepartmentalInstructor)i.next();
+            allClasses.addAll(di.getClasses());
+        }
+        table.setRowStyle("white-space:nowrap");
+        table.setBlankWhenSame(true);
+        for (Iterator i=allClasses.iterator();i.hasNext();) {
+            ClassInstructor ci = (ClassInstructor)i.next();
+            String course = ci.getClassInstructing().getSchedulingSubpart().getControllingCourseOffering().getCourseName();
+            String itype =  ci.getClassInstructing().getSchedulingSubpart().getItypeDesc();
+            int itypeCmp = ci.getClassInstructing().getSchedulingSubpart().getItype().getItype();
+            String section = (ci.getClassInstructing().getClassSuffix()!=null?ci.getClassInstructing().getClassSuffix():ci.getClassInstructing().getSectionNumberString());
+            String time = getMeetingTime(ci.getClassInstructing());
+            long timeCmp = getMeetingComparable(ci.getClassInstructing());
+            String room = getMeetingRooms(ci.getClassInstructing());
+            String share = ci.getPercentShare()+"%";
+            if (html && ci.isLead()) share = "<b>"+share+"</b>";
+            table.addLine(
+                    new String[] {
+                            course,
+                            itype,
+                            section,
+                            time,
+                            room,
+                            share
+                        },
+                        new Comparable[] {
+                            new MultiComparable(course, itypeCmp, section, timeCmp, room),
+                            new MultiComparable(itypeCmp, course, section, timeCmp, room),
+                            new MultiComparable(course, section, itypeCmp, timeCmp, room),
+                            new MultiComparable(timeCmp, room, course, itypeCmp, section),
+                            new MultiComparable(room, timeCmp, course, itypeCmp, section),
+                            new MultiComparable(-ci.getPercentShare(), course, itypeCmp, section, timeCmp, room)
+                        });
+        }
+        return table;        
     }
 }
