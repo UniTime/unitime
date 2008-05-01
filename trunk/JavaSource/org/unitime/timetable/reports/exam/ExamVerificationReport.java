@@ -278,11 +278,11 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
             if (exam.getPeriod()==null) {
                 times.add(rpad(" Exam not assigned",26));
                 rooms.add(rpad("", 23));
-                if (exam.getMaxRooms()==0) rooms.add(" "+rpad(iNoRoom, 22));
+                //if (exam.getMaxRooms()==0) rooms.add(" "+rpad(iNoRoom, 22));
                 for (Iterator i=new TreeSet(exam.getExam().getPreferences()).iterator();i.hasNext();) {
                     Preference pref = (Preference)i.next();
                     if (PreferenceLevel.sRequired.equals(pref.getPrefLevel().getPrefProlog()) || PreferenceLevel.sProhibited.equals(pref.getPrefLevel().getPrefProlog())) {
-                        String pf = (PreferenceLevel.sRequired.equals(pref.getPrefLevel().getPrefProlog())?" ":"*");
+                        String pf = (PreferenceLevel.sRequired.equals(pref.getPrefLevel().getPrefProlog())?" ":"!");
                         if (pref instanceof ExamPeriodPref) {
                             ExamPeriodPref xp = (ExamPeriodPref)pref;
                             times.add(pf+rpad(formatPeriod(xp.getExamPeriod()), 25));
@@ -310,15 +310,15 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                     DistributionPref pref = dObj.getDistributionPref();
                     if (!PreferenceLevel.sRequired.equals(pref.getPrefLevel().getPrefProlog()) && !PreferenceLevel.sProhibited.equals(pref.getPrefLevel().getPrefProlog())) continue;
                     int line = 0;
+                    String name = (PreferenceLevel.sRequired.equals(pref.getPrefLevel().getPrefProlog())?" ":"!")+pref.getDistributionType().getAbbreviation();
+                    if (name.toUpperCase().startsWith("!SAME ")) name = " Diff"+name.substring(5);
                     for (Iterator j=new TreeSet(pref.getDistributionObjects()).iterator();j.hasNext();) {
                         DistributionObject xObj = (DistributionObject)j.next();
                         if (xObj.equals(dObj)) continue;
                         Exam x = (Exam)xObj.getPrefGroup();
                         for (Iterator k=new TreeSet(x.getOwners()).iterator();k.hasNext();) {
                             ExamOwner own = (ExamOwner)k.next();
-                            times.add(
-                                    (line>0 || PreferenceLevel.sRequired.equals(pref.getPrefLevel().getPrefProlog())?" ":"*")+
-                                    rpad((line==0?pref.getDistributionType().getAbbreviation():rpad("",pref.getDistributionType().getAbbreviation().length()))+" "+own.getLabel(),25));
+                            times.add(rpad(rpad(line>0?"":name,name.length())+" "+own.getLabel(),26));
                             line++;
                         }
                     }
@@ -478,11 +478,11 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                     if (exam.getPeriod()==null) {
                         times.add(rpad(" Exam not assigned",26));
                         rooms.add(rpad("", 23));
-                        if (exam.getMaxRooms()==0) rooms.add(" "+rpad(iNoRoom, 22));
+                        //if (exam.getMaxRooms()==0) rooms.add(" "+rpad(iNoRoom, 22));
                         for (Iterator i=new TreeSet(exam.getExam().getPreferences()).iterator();i.hasNext();) {
                             Preference pref = (Preference)i.next();
                             if (PreferenceLevel.sRequired.equals(pref.getPrefLevel().getPrefProlog()) || PreferenceLevel.sProhibited.equals(pref.getPrefLevel().getPrefProlog())) {
-                                String pf = (PreferenceLevel.sRequired.equals(pref.getPrefLevel().getPrefProlog())?" ":"*");
+                                String pf = (PreferenceLevel.sRequired.equals(pref.getPrefLevel().getPrefProlog())?" ":"!");
                                 if (pref instanceof ExamPeriodPref) {
                                     ExamPeriodPref xp = (ExamPeriodPref)pref;
                                     times.add(pf+rpad(formatPeriod(xp.getExamPeriod()), 25));
@@ -509,6 +509,8 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                             DistributionObject dObj = (DistributionObject)i.next();
                             DistributionPref pref = dObj.getDistributionPref();
                             if (!PreferenceLevel.sRequired.equals(pref.getPrefLevel().getPrefProlog()) && !PreferenceLevel.sProhibited.equals(pref.getPrefLevel().getPrefProlog())) continue;
+                            String name = (PreferenceLevel.sRequired.equals(pref.getPrefLevel().getPrefProlog())?" ":"!")+pref.getDistributionType().getAbbreviation();
+                            if (name.toUpperCase().startsWith("!SAME ")) name = " Diff"+name.substring(5);
                             int line = 0;
                             for (Iterator j=new TreeSet(pref.getDistributionObjects()).iterator();j.hasNext();) {
                                 DistributionObject xObj = (DistributionObject)j.next();
@@ -516,9 +518,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                                 Exam x = (Exam)xObj.getPrefGroup();
                                 for (Iterator k=new TreeSet(x.getOwners()).iterator();k.hasNext();) {
                                     ExamOwner own = (ExamOwner)k.next();
-                                    times.add(
-                                            (line>0 || PreferenceLevel.sRequired.equals(pref.getPrefLevel().getPrefProlog())?" ":"*")+
-                                            rpad((line==0?pref.getDistributionType().getAbbreviation():rpad("",pref.getDistributionType().getAbbreviation().length()))+" "+own.getLabel(),25));
+                                    times.add(rpad(rpad(line>0?"":name,name.length())+" "+own.getLabel(),26));
                                     line++;
                                 }
                             }
