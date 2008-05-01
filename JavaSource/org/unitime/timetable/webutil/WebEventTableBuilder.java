@@ -440,7 +440,14 @@ public class WebEventTableBuilder {
         	row.addContent(cell);
         	eventsTable.addContent(row);
         }
-        buildTableHeader(eventsTable);
+        if (numberOfEvents==0) {
+        	TableRow row = new TableRow();
+        	TableCell cell = initCell(true, null, 5, false);
+        	cell.addContent("No events matching the search criteria were found.");
+        	cell.setStyle("padding-bottom:10px;color:red;font-weight:bold;");
+        	row.addContent(cell);
+        	eventsTable.addContent(row);
+        } else buildTableHeader(eventsTable);
 
         int idx = 0;
         for (Iterator it = events.iterator();it.hasNext();idx++){
