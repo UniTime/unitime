@@ -637,7 +637,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "where co.instructionalOffering.uniqueId = :examOwnerId and " +
                     "m.eventType.reference=:eventType and r.ownerType=:classType and "+
                     "e.student=f.student and f.clazz.uniqueId = r.ownerId and "+
-                    "p.uniqueId=:periodId and p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length :travelTime and "+
+                    "p.uniqueId=:periodId and p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
                     "p.session=co.subjectArea.session and p.session.examBeginDate+p.dateOffset = m.meetingDate")
                     .setLong("examOwnerId", getOwnerId())
                     .setString("eventType", EventType.sEventTypeClass)
