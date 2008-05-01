@@ -129,9 +129,9 @@ public class EventDetailAction extends Action {
 							(ec.getEmailAddress()==null?"":ec.getEmailAddress()),
 							(ec.getPhone()==null?"":ec.getPhone()));
 				}
-				SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy", Locale.US);
-				SimpleDateFormat dateFormatDay = new SimpleDateFormat("EEE", Locale.US);	
-				SimpleDateFormat df2 = new SimpleDateFormat("MM/dd/yy", Locale.US);
+				SimpleDateFormat iDateFormat = new SimpleDateFormat("EEE MM/dd, yyyy", Locale.US);
+				//SimpleDateFormat dateFormatDay = new SimpleDateFormat("EEE", Locale.US);	
+				SimpleDateFormat iDateFormat2 = new SimpleDateFormat("MM/dd/yy", Locale.US);
 				for (Iterator i=new TreeSet(event.getMeetings()).iterator();i.hasNext();) {
 					Meeting meeting = (Meeting)i.next();
 					int start = Constants.SLOT_LENGTH_MIN*meeting.getStartPeriod()+
@@ -145,9 +145,9 @@ public class EventDetailAction extends Action {
 					int endHour = end/60;
 					int endMin = end%60;
 					String location = (meeting.getLocation()==null?"":meeting.getLocation().getLabel());
-					String approvedDate = (meeting.getApprovedDate()==null?"":df2.format(meeting.getApprovedDate()));
+					String approvedDate = (meeting.getApprovedDate()==null?"":iDateFormat2.format(meeting.getApprovedDate()));
 					myForm.addMeeting(
-							dateFormat.format(meeting.getMeetingDate())+"&nbsp;&nbsp;"+"<font color='gray'><i>("+dateFormatDay.format(meeting.getMeetingDate())+")</i></font>",
+							iDateFormat.format(meeting.getMeetingDate()),
 							(startHour>12?startHour-12:startHour)+":"+(startMin<10?"0":"")+startMin+(startHour>=12?"p":"a"),
 							(endHour>12?endHour-12:endHour)+":"+(endMin<10?"0":"")+endMin+(endHour>=12?"p":"a"), 
 							location,approvedDate);
