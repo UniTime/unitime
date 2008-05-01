@@ -142,7 +142,7 @@ public class ExamAssignment extends ExamInfo implements Serializable {
         super(exam);
         if (period==null) return;
         if (Constants.SLOT_LENGTH_MIN*period.getLength()<exam.getLength()) throw new Exception("Given period is two short.");
-        String iPeriodPref = period.getPrefLevel().getPrefProlog();
+        iPeriodPref = period.getPrefLevel().getPrefProlog();
         boolean reqPeriod = false;
         for (Iterator i=exam.getPreferences(ExamPeriodPref.class).iterator();i.hasNext();) {
             ExamPeriodPref periodPref = (ExamPeriodPref)i.next();
