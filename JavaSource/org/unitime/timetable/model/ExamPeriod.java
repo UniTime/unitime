@@ -346,5 +346,34 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
     public boolean overlap(TimeBlock time) {
         return getStartTime().compareTo(time.getEndTime())<0 && time.getStartTime().compareTo(getEndTime()) < 0;
     }
+    
+    public static Date[] getBounds(Session session, int examType) {
+        Object[] bounds = (Object[])new ExamPeriodDAO().getQuery("select min(ep.dateOffset), min(ep.startSlot), max(ep.dateOffset), max(ep.startSlot+ep.length) " +
+        		"from ExamPeriod ep where ep.session.uniqueId = :sessionId and ep.examType = :examType")
+        		.setLong("sessionId", session.getUniqueId())
+                .setInteger("examType", examType)
+                .setCacheable(true).uniqueResult();
+        if (bounds==null) return null;
+        int minDateOffset = ((Number)bounds[0]).intValue();
+        int minSlot = ((Number)bounds[1]).intValue();
+        int minHour = (Constants.SLOT_LENGTH_MIN*minSlot+Constants.FIRST_SLOT_TIME_MIN) / 60;
+        int minMin = (Constants.SLOT_LENGTH_MIN*minSlot+Constants.FIRST_SLOT_TIME_MIN) % 60;
+        int maxDateOffset = ((Number)bounds[2]).intValue();
+        int maxSlot = ((Number)bounds[3]).intValue();
+        int maxHour = (Constants.SLOT_LENGTH_MIN*maxSlot+Constants.FIRST_SLOT_TIME_MIN) / 60;
+        int maxMin = (Constants.SLOT_LENGTH_MIN*maxSlot+Constants.FIRST_SLOT_TIME_MIN) % 60;
+        Calendar c = Calendar.getInstance(Locale.US);
+        c.setTime(session.getExamBeginDate());
+        c.add(Calendar.DAY_OF_YEAR, minDateOffset);
+        c.set(Calendar.HOUR, minHour);
+        c.set(Calendar.MINUTE, minMin);
+        Date min = c.getTime();
+        c.setTime(session.getExamBeginDate());
+        c.add(Calendar.DAY_OF_YEAR, maxDateOffset);
+        c.set(Calendar.HOUR, maxHour);
+        c.set(Calendar.MINUTE, maxMin);
+        Date max = c.getTime();
+        return new Date[] {min, max};
+    }
 
 }
