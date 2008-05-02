@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Hashtable;
@@ -60,15 +61,21 @@ import org.apache.struts.action.ActionMessages;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ExamPdfReportForm;
+import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
+import org.unitime.timetable.reports.exam.InstructorExamReport;
 import org.unitime.timetable.reports.exam.PdfLegacyExamReport;
+import org.unitime.timetable.reports.exam.StudentExamReport;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
+import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamInstructorInfo;
+import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamSectionInfo;
 import org.unitime.timetable.util.Constants;
 
 
@@ -121,6 +128,8 @@ public class ExamPdfReportAction extends Action {
                 }
                 Hashtable<String,File> output = new Hashtable();
                 Hashtable<SubjectArea,Hashtable<String,File>> outputPerSubject = new Hashtable();
+                Hashtable<ExamInstructorInfo,File> ireports = null;
+                Hashtable<Student,File> sreports = null;
                 for (int i=0;i<myForm.getReports().length;i++) {
                     myForm.log("Generating "+myForm.getReports()[i]+"...");
                     Class reportClass = ExamPdfReportForm.sRegisteredReports.get(myForm.getReports()[i]);
@@ -143,9 +152,26 @@ public class ExamPdfReportAction extends Action {
                         report.setTotals(myForm.getTotals());
                         report.setLimit(myForm.getLimit()==null || myForm.getLimit().length()==0?-1:Integer.parseInt(myForm.getLimit()));
                         report.setRoomCode(myForm.getRoomCodes());
+                        report.setDispLimits(myForm.getDispLimit());
+                        report.setSince(myForm.getSince()==null || myForm.getSince().length()==0?null:new SimpleDateFormat("MM/dd/yyyy").parse(myForm.getSince()));
                         report.printReport();
                         report.close();
                         output.put(reportName+"."+(myForm.getModeIdx()==PdfLegacyExamReport.sModeText?"txt":"pdf"),file);
+                        if (report instanceof InstructorExamReport && myForm.getEmailInstructors()) {
+                            ireports = ((InstructorExamReport)report).printInstructorReports(
+                                    myForm.getModeIdx(), name, new FileGenerator(name), new InstructorExamReport.InstructorFilter() {
+                                public boolean generate(ExamInstructorInfo instructor, TreeSet<ExamAssignmentInfo> exams) {
+                                    return true;
+                                }
+                            });
+                        } else if (report instanceof StudentExamReport && myForm.getEmailStudents()) {
+                            sreports = ((StudentExamReport)report).printStudentReports(
+                                    myForm.getModeIdx(), name, new FileGenerator(name), new StudentExamReport.StudentFilter() {
+                                public boolean generate(Student student, TreeSet<ExamSectionInfo> sections) {
+                                    return true;
+                                }
+                            });
+                        }
                     } else {
                         for (Map.Entry<SubjectArea, TreeSet<ExamAssignmentInfo>> entry : examsPerSubject.entrySet()) {
                             File file = ApplicationProperties.getTempFile(name+"_"+entry.getKey().getSubjectAreaAbbreviation(), (myForm.getModeIdx()==PdfLegacyExamReport.sModeText?"txt":"pdf"));
@@ -161,6 +187,7 @@ public class ExamPdfReportAction extends Action {
                             report.setTotals(myForm.getTotals());
                             report.setLimit(myForm.getLimit()==null || myForm.getLimit().length()==0?-1:Integer.parseInt(myForm.getLimit()));
                             report.setRoomCode(myForm.getRoomCodes());
+                            report.setDispLimits(myForm.getDispLimit());
                             report.printReport();
                             report.close();
                             output.put(entry.getKey().getSubjectAreaAbbreviation()+"_"+reportName+"."+(myForm.getModeIdx()==PdfLegacyExamReport.sModeText?"txt":"pdf"),file);
@@ -305,6 +332,78 @@ public class ExamPdfReportAction extends Action {
                             myForm.log("<font color='red'>Unable to send email: "+e.getMessage()+"</font>");
                         }
                     }
+                    if (myForm.getEmailInstructors() && ireports!=null && !ireports.isEmpty()) {
+                        myForm.log("Emailing instructors...");
+                        for (ExamInstructorInfo instructor : new TreeSet<ExamInstructorInfo>(ireports.keySet())) {
+                            File report = ireports.get(instructor);
+                            String email = instructor.getInstructor().getEmail();
+                            if (email==null || email.isEmpty()) {
+                                myForm.log("&nbsp;&nbsp;<font color='orange'>Unable to email <a href='temp/"+report.getName()+"'>"+instructor.getName()+"</a> -- instructor has no email address.</font>");
+                                continue;
+                            }
+                            MimeMessage mail = new MimeMessage(mailSession);
+                            mail.setSubject(myForm.getSubject()==null?"Examination Report":myForm.getSubject());
+                            Multipart body = new MimeMultipart();
+                            MimeBodyPart text = new MimeBodyPart();
+                            text.setText((myForm.getMessage()==null?"":myForm.getMessage()+"\r\n\r\n")+
+                                    "For an up-to-date report, please visit "+
+                                    request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+request.getContextPath()+"/\r\n\r\n"+
+                                    "This email was automatically generated by "+
+                                    "UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+
+                                    " (Univesity Timetabling Application, http://www.unitime.org).");
+                            body.addBodyPart(text);
+                            mail.addRecipient(RecipientType.TO, new InternetAddress(email));
+                            if (from!=null) mail.setFrom(from);
+                            BodyPart attachement = new MimeBodyPart();
+                            attachement.setDataHandler(new DataHandler(new FileDataSource(report)));
+                            attachement.setFileName(session.getAcademicTerm()+session.getYear()+(myForm.getExamType()==Exam.sExamTypeEvening?"evn":"fin")+(myForm.getModeIdx()==PdfLegacyExamReport.sModeText?".txt":".pdf"));
+                            mail.setSentDate(new Date());
+                            mail.setContent(body);
+                            try {
+                                Transport.send(mail);
+                                myForm.log("&nbsp;&nbsp;An email was sent to <a href='temp/"+report.getName()+"'>"+instructor.getName()+"</a>.");
+                            } catch (Exception e) {
+                                myForm.log("&nbsp;&nbsp;<font color='orange'>Unable to email <a href='temp/"+report.getName()+"'>"+instructor.getName()+"</a> -- "+e.getMessage()+".</font>");
+                            }
+                        }
+                        myForm.log("Emails sent.");
+                    }
+                    if (myForm.getEmailStudents() && sreports!=null && !sreports.isEmpty()) {
+                        myForm.log("Emailing instructors...");
+                        for (Student student : new TreeSet<Student>(sreports.keySet())) {
+                            File report = sreports.get(student);
+                            String email = student.getEmail();
+                            if (email==null || email.isEmpty()) {
+                                myForm.log("&nbsp;&nbsp;<font color='orange'>Unable to email <a href='temp/"+report.getName()+"'>"+student.getName(DepartmentalInstructor.sNameFormatLastFist)+"</a> -- student has no email address.</font>");
+                                continue;
+                            }
+                            MimeMessage mail = new MimeMessage(mailSession);
+                            mail.setSubject(myForm.getSubject()==null?"Examination Report":myForm.getSubject());
+                            Multipart body = new MimeMultipart();
+                            MimeBodyPart text = new MimeBodyPart();
+                            text.setText((myForm.getMessage()==null?"":myForm.getMessage()+"\r\n\r\n")+
+                                    "For an up-to-date report, please visit "+
+                                    request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+request.getContextPath()+"/\r\n\r\n"+
+                                    "This email was automatically generated by "+
+                                    "UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+
+                                    " (Univesity Timetabling Application, http://www.unitime.org).");
+                            body.addBodyPart(text);
+                            mail.addRecipient(RecipientType.TO, new InternetAddress(email));
+                            if (from!=null) mail.setFrom(from);
+                            BodyPart attachement = new MimeBodyPart();
+                            attachement.setDataHandler(new DataHandler(new FileDataSource(report)));
+                            attachement.setFileName(session.getAcademicTerm()+session.getYear()+(myForm.getExamType()==Exam.sExamTypeEvening?"evn":"fin")+(myForm.getModeIdx()==PdfLegacyExamReport.sModeText?".txt":".pdf"));
+                            mail.setSentDate(new Date());
+                            mail.setContent(body);
+                            try {
+                                Transport.send(mail);
+                                myForm.log("&nbsp;&nbsp;An email was sent to <a href='temp/"+report.getName()+"'>"+student.getName(DepartmentalInstructor.sNameFormatLastFist)+"</a>.");
+                            } catch (Exception e) {
+                                myForm.log("&nbsp;&nbsp;<font color='orange'>Unable to email <a href='temp/"+report.getName()+"'>"+student.getName(DepartmentalInstructor.sNameFormatLastFist)+"</a> -- "+e.getMessage()+".</font>");
+                            }
+                        }
+                        myForm.log("Emails sent.");
+                    }
                 }
                 if (output.isEmpty()) {
                     return null;
@@ -343,5 +442,48 @@ public class ExamPdfReportAction extends Action {
         return mapping.findForward("show");
 	}
 	
+    
+    public static class InstructorFilter implements InstructorExamReport.InstructorFilter {
+        private ExamPdfReportForm iForm;
+        public InstructorFilter(ExamPdfReportForm form) {
+            iForm = form;
+        }
+        public boolean generate(ExamInstructorInfo instructor, TreeSet<ExamAssignmentInfo> exams) {
+            if (iForm.getAll()) return true;
+            for (int i=0;i<iForm.getSubjects().length;i++) {
+                SubjectArea subject = new SubjectAreaDAO().get(Long.valueOf(iForm.getSubjects()[i]));
+                for (ExamAssignmentInfo exam : exams)
+                    for (ExamSectionInfo section : exam.getSections())
+                        if (section.getSubject().equals(subject.getSubjectAreaAbbreviation())) return true;
+            }
+            return false;
+        }
+    }
+	
+    public static class StudentFilter implements StudentExamReport.StudentFilter {
+        private ExamPdfReportForm iForm;
+        public StudentFilter(ExamPdfReportForm form) {
+            iForm = form;
+        }
+        public boolean generate(Student student, TreeSet<ExamSectionInfo> sections) {
+            if (iForm.getAll()) return true;
+            for (int i=0;i<iForm.getSubjects().length;i++) {
+                SubjectArea subject = new SubjectAreaDAO().get(Long.valueOf(iForm.getSubjects()[i]));
+                for (ExamSectionInfo section : sections)
+                    if (section.getSubject().equals(subject.getSubjectAreaAbbreviation())) return true;
+            }
+            return false;
+        }
+    }
+    
+    public static class FileGenerator implements InstructorExamReport.FileGenerator {
+        String iName;
+        public FileGenerator(String name) {
+            iName = name;
+        }
+        public File generate(String prefix, String ext) {
+            return ApplicationProperties.getTempFile(iName+"_"+prefix, ext);
+        }
+    }
 }
 
