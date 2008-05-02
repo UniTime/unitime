@@ -105,9 +105,8 @@
 	<TR>
   		<TD width="10%" nowrap valign='top'>Subject Areas:</TD>
 		<TD>
-			<bean:define name="examPdfReportForm" property="all" id="all"/>
-			<html:checkbox property="all" onclick="subjects.disabled=this.checked;emailDeputies.disabled=this.checked; if (this.checked) emailDeputies.checked=false;"/>All Subject Areas (on one report)<br>
-			<html:select property="subjects" multiple="true" size="7" disabled="<%=(Boolean)all%>"
+			<html:checkbox property="all" onclick="selectionChanged();"/>All Subject Areas (on one report)<br>
+			<html:select property="subjects" multiple="true" size="7"
 				onfocus="setUp();" onkeypress="return selectSearch(event, this);" onkeydown="return checkKey(event, this);">
 				<html:optionsCollection property="subjectAreas"	label="subjectAreaAbbreviation" value="uniqueId" />
 			</html:select>
@@ -122,7 +121,7 @@
   		<TD width="10%" nowrap valign='top'>Report:</TD>
 		<TD>
 			<logic:iterate name="examPdfReportForm" property="allReports" id="report">
-				<html:multibox property="reports">
+				<html:multibox property="reports" onclick="selectionChanged();">
 					<bean:write name="report"/>
 				</html:multibox>
 				<bean:write name="report"/><br>
@@ -160,6 +159,19 @@
 		<TD>Room Codes: <html:text property="roomCodes" size="70" maxlength="200"/></TD>
 	</TR>
 	<TR>
+  		<TD width="10%" nowrap valign='top'>Verification Report:</TD>
+		<TD><html:checkbox property="dispLimit"/>Display Limits &amp; Enrollments</TD>
+	</TR>
+	<TR>
+  		<TD width="10%" nowrap valign='top'>Individual Reports:</TD>
+		<TD>
+			Date: <html:text property="since" maxlength="10" size="10" styleId="since_date"/> 
+				<img style="cursor: pointer;" src="scripts/jscalendar/calendar_1.gif" 
+				border="0" id="show_since_date">
+			<i>(Only email instructors/students that have a change in their schedule since this date, email all when empty)</i>
+		</TD>
+	</TR>
+	<TR>
 		<TD colspan='2' valign='top'>
 			<tt:section-title><br>Output</tt:section-title>
 		</TD>
@@ -183,11 +195,17 @@
 			<bean:define name="examPdfReportForm" property="email" id="email"/>
 			<table border='0' id='eml' style='display:<%=(Boolean)email?"block":"none"%>;'>
 				<tr>
-					<td rowspan='2' valign='top'>Address:</td>
+					<td rowspan='4' valign='top'>Address:</td>
 					<td><html:textarea property="address" rows="3" cols="70"/></td>
 				</tr>
 				<tr><td>
-					<html:checkbox property="emailDeputies" styleId="ed" disabled="<%=(Boolean)all%>"/> All Involved Department Schedule Managers
+					<html:checkbox property="emailDeputies" styleId="ed"/> All Involved Department Schedule Managers
+				</td></tr>
+				<tr><td>
+					<html:checkbox property="emailInstructors" styleId="ed"/> Send Individual Instructor Schedule Reports to All Involved Instructors
+				</td></tr>
+				<tr><td>
+					<html:checkbox property="emailStudents" styleId="ed"/> Send Individual Student Schedule Reports to All Involved Students
 				</td></tr>
 				<tr><td valign='top'>CC:</td><td>
 					<html:textarea property="cc" rows="2" cols="70"/>
@@ -217,4 +235,53 @@
 	</TR>
 	</logic:empty>
 	</TABLE>
+<script type="text/javascript" language="javascript">
+	function selectionChanged() {
+		var allSubjects = document.getElementsByName('all')[0].checked;
+		var objSubjects = document.getElementsByName('subjects')[0];
+		var objEmailDeputies = document.getElementsByName('emailDeputies')[0];
+		var objEmailInstructors = document.getElementsByName('emailInstructors')[0];
+		var objEmailStudents = document.getElementsByName('emailStudents')[0];
+		var objReports = document.getElementsByName('reports');
+		var objSince = document.getElementsByName('since')[0];
+		var studentSchedule = false;
+		var instructorSchedule = false;
+		for (var i=0;i<objReports.length;i++) {
+			if ('Individual Student Schedule'==objReports[i].value) studentSchedule = objReports[i].checked;
+			if ('Individual Instructor Schedule'==objReports[i].value) instructorSchedule = objReports[i].checked;
+		}
+		objSubjects.disabled=allSubjects;
+		objEmailDeputies.disabled=allSubjects; 
+		objEmailInstructors.disabled=!allSubjects || !instructorSchedule;
+		objEmailStudents.disabled=!allSubjects || !studentSchedule;
+		if (allSubjects) {
+			objEmailDeputies.checked=false;
+		} else {
+			objEmailInstructors.checked=false;
+			objEmailStudents.checked=false;
+		}
+		if (!studentSchedule) objEmailStudents.checked=false;
+		if (!instructorSchedule) objEmailInstructors.checked=false;
+		objSince.disabled=objEmailInstructors.disabled && objEmailStudents.disabled;
+	}
+</script>
+<script type="text/javascript" language="javascript">
+ 
+ var objSinceDate = document.getElementById('since_date');
+ if (objSinceDate!=null) {
+ Calendar.setup( {
+  cache      : true,      // Single object used for all calendars
+  electric   : false,     // Changes date only when calendar is closed
+  inputField : "since_date",  // ID of the input field
+     ifFormat   : "%m/%d/%Y",    // Format of the input field
+     showOthers : true,     // Show overlap of dates from other months     
+     <% if (request.getParameter("since")!=null && request.getParameter("since").length()>=10) { %>
+     date  : <%=request.getParameter("since")%>,
+     <% }%>
+  button     : "show_since_date" // ID of the button
+ } );
+ }
+ 
+ selectionChanged();
+</script>
 </html:form>
