@@ -20,7 +20,6 @@
 package org.unitime.timetable.action;
 
 import java.util.Date;
-import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -31,6 +30,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.ExamInfoForm;
+import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.ExamDAO;
@@ -99,10 +99,8 @@ public class ExamInfoAction extends Action {
         
         if (RoomAvailability.getInstance()!=null) {
             Session session = Session.getCurrentAcadSession(Web.getUser(request.getSession()));
-            TreeSet periods = org.unitime.timetable.model.ExamPeriod.findAll(session.getUniqueId(), model.getExam().getExamType());
-            Date start = ((org.unitime.timetable.model.ExamPeriod)periods.first()).getStartTime();
-            Date stop = ((org.unitime.timetable.model.ExamPeriod)periods.last()).getEndTime();
-            RoomAvailability.getInstance().activate(session,start,stop,false);
+            Date[] bounds = ExamPeriod.getBounds(session, model.getExam().getExamType());
+            RoomAvailability.getInstance().activate(session,bounds[0],bounds[1],false);
         }
         
         if ("Select".equals(op)) {

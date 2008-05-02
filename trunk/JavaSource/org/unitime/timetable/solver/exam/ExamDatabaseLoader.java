@@ -803,10 +803,9 @@ public class ExamDatabaseLoader extends ExamLoader {
     }
     
     public void loadRoomAvailability(RoomAvailabilityInterface ra) {
-        TreeSet periods = org.unitime.timetable.model.ExamPeriod.findAll(iSessionId, iExamType);
-        Date start = ((org.unitime.timetable.model.ExamPeriod)periods.first()).getStartTime();
-        Date stop = ((org.unitime.timetable.model.ExamPeriod)periods.last()).getEndTime();
-        roomAvailabilityActivate(start,stop);
+        Set periods = org.unitime.timetable.model.ExamPeriod.findAll(iSessionId, iExamType);
+        Date[] bounds = org.unitime.timetable.model.ExamPeriod.getBounds(new SessionDAO().get(iSessionId), iExamType);
+        roomAvailabilityActivate(bounds[0],bounds[1]);
         iProgress.setPhase("Loading room availability...", iAllRooms.size());
         for (Iterator i=iAllRooms.iterator();i.hasNext();) {
             iProgress.incProgress();
@@ -815,7 +814,7 @@ public class ExamDatabaseLoader extends ExamLoader {
             Room room = (Room)location;
             ExamRoom roomEx = iRooms.get(room.getUniqueId());
             if (roomEx==null) continue;
-            Collection<TimeBlock> times = getRoomAvailability(room.getExternalUniqueId(), room.getBuildingAbbv(), room.getRoomNumber(), start, stop);
+            Collection<TimeBlock> times = getRoomAvailability(room.getExternalUniqueId(), room.getBuildingAbbv(), room.getRoomNumber(), bounds[0], bounds[1]);
             if (times==null) continue;
             for (TimeBlock time : times) {
                 for (Iterator j=periods.iterator();j.hasNext();) {

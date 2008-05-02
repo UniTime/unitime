@@ -45,6 +45,7 @@ import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.RoomAvailability;
 import org.unitime.timetable.webutil.PdfWebTable;
@@ -72,12 +73,10 @@ public class RoomAvailabilityAction extends Action {
         myForm.load(request.getSession());
         
         Session session = Session.getCurrentAcadSession(Web.getUser(request.getSession()));
-        TreeSet periods = ExamPeriod.findAll(session.getUniqueId(), myForm.getExamType());
+        Date[] bounds = ExamPeriod.getBounds(session, myForm.getExamType());
         
-        if (!periods.isEmpty() && RoomAvailability.getInstance()!=null) {
-            Date startTime = ((ExamPeriod)periods.first()).getStartTime();
-            Date endTime = ((ExamPeriod)periods.last()).getEndTime();
-            RoomAvailability.getInstance().activate(session, startTime, endTime, "Refresh".equals(op));
+        if (bounds!=null && RoomAvailability.getInstance()!=null) {
+            RoomAvailability.getInstance().activate(session, bounds[0], bounds[1], "Refresh".equals(op));
         }
         
         WebTable.setOrder(request.getSession(),"roomAvailability.ord",request.getParameter("ord"),1);
@@ -117,8 +116,7 @@ public class RoomAvailabilityAction extends Action {
             table.addLine(new String[] {"<font color='orange'>WARN: No examination periods.</font>"},null);
             return table;
         }
-        Date startTime = ((ExamPeriod)periods.first()).getStartTime();
-        Date endTime = ((ExamPeriod)periods.last()).getEndTime();
+        Date[] bounds = ExamPeriod.getBounds(new SessionDAO().get(sessionId), form.getExamType());
         SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, MM/dd/yyyy");
         SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mmaa");
         String ts = null;
@@ -127,9 +125,9 @@ public class RoomAvailabilityAction extends Action {
                 Location location = (Location)i.next();
                 if (!(location instanceof Room)) continue;
                 Room room = (Room)location;
-                Collection<TimeBlock> events = ra.getRoomAvailability(room.getExternalUniqueId(),room.getBuildingAbbv(), room.getRoomNumber(), startTime, endTime, new String[]{});
+                Collection<TimeBlock> events = ra.getRoomAvailability(room.getExternalUniqueId(),room.getBuildingAbbv(), room.getRoomNumber(), bounds[0], bounds[1], new String[]{});
                 if (events==null) continue;
-                if (ts==null) ts = ra.getTimeStamp(startTime, endTime);
+                if (ts==null) ts = ra.getTimeStamp(bounds[0], bounds[1]);
                 for (TimeBlock event : events) {
                     boolean overlaps = false;
                     for (Iterator j=periods.iterator();j.hasNext();) {
