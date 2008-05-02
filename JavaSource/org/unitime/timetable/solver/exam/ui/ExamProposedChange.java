@@ -175,7 +175,7 @@ public class ExamProposedChange implements Serializable, Comparable<ExamProposed
             if (initial==null)
                 ret += "<font color='"+PreferenceLevel.prolog2color("P")+"'><i>not-assigned</i></font> &rarr; ";
             ret += current.getRoomsNameWithPref(", ");
-            if (current.getNrRooms()==0 && current.getMaxRooms()>0) ret += "<i>Select bellow ...</i>";
+            if (current.getNrRooms()==0 && current.getMaxRooms()>0) ret += "<i>Select below ...</i>";
             ret += "</td><td nowrap>";
             ret += ClassAssignmentDetails.dispNumberShort(false,(initial==null?0:initial.getPlacementNrDirectConflicts()), current.getPlacementNrDirectConflicts());
             ret += "</td><td nowrap>";
