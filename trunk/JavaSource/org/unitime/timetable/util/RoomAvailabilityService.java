@@ -324,14 +324,16 @@ public class RoomAvailabilityService implements RoomAvailabilityInterface {
         public long getUse() { return System.currentTimeMillis() - iLastAccess; }
         public TimeFrame getTimeFrame() { return iTime; }
         public boolean cover(TimeFrame time) {
-            long startDay = iTime.getStartTime().getTime() / 86400000;
-            long endDay = iTime.getEndTime().getTime() / 86400000;
-            long startTime = iTime.getStartTime().getTime() % 86400000;
-            long endTime = iTime.getEndTime().getTime() % 86400000;
-            long givenStartDay = iTime.getStartTime().getTime() / 86400000;
-            long givenEndDay = iTime.getEndTime().getTime() / 86400000;
-            long givenStartTime = iTime.getStartTime().getTime() % 86400000;
-            long givenEndTime = iTime.getEndTime().getTime() % 86400000;
+            Calendar c = Calendar.getInstance(Locale.US);
+            long offset = c.get(Calendar.DST_OFFSET)+c.get(Calendar.ZONE_OFFSET);
+            long startDay = (iTime.getStartTime().getTime()+offset) / 86400000;
+            long endDay = (iTime.getEndTime().getTime()+offset) / 86400000;
+            long startTime = (iTime.getStartTime().getTime()+offset) % 86400000;
+            long endTime = (iTime.getEndTime().getTime()+offset) % 86400000;
+            long givenStartDay = (time.getStartTime().getTime()+offset) / 86400000;
+            long givenEndDay = (time.getEndTime().getTime()+offset) / 86400000;
+            long givenStartTime = (time.getStartTime().getTime()+offset) % 86400000;
+            long givenEndTime = (time.getEndTime().getTime()+offset) % 86400000;
             return (startDay<=givenStartDay && givenEndDay<=endDay && startTime<=givenStartTime && givenEndTime<=endTime);
         }
         public String getYear() { return iYear; }
