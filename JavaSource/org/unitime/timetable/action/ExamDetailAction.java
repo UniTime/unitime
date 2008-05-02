@@ -75,7 +75,7 @@ public class ExamDetailAction extends PreferencesAction {
                 frm.setOp(op);
             }
             // Read exam id from form
-            if (op.equals(rsc.getMessage("button.editExam")) || op.equals(rsc.getMessage("button.addDistPref")) || op.equals(rsc.getMessage("button.nextExam")) || op.equals(rsc.getMessage("button.previousExam"))) {
+            if (op.equals(rsc.getMessage("button.editExam")) || op.equals(rsc.getMessage("button.cloneExam")) || op.equals(rsc.getMessage("button.addDistPref")) || op.equals(rsc.getMessage("button.nextExam")) || op.equals(rsc.getMessage("button.previousExam"))) {
                 examId = frm.getExamId();
             } else {
                 frm.reset(mapping, request);
@@ -105,6 +105,11 @@ public class ExamDetailAction extends PreferencesAction {
             //Edit Information - Redirect to info edit screen
             if (op.equals(rsc.getMessage("button.editExam")) && examId!=null && examId.trim()!="") {
                 response.sendRedirect( response.encodeURL("examEdit.do?examId="+examId) );
+                return null;
+            }
+
+            if (op.equals(rsc.getMessage("button.cloneExam")) && examId!=null && examId.trim()!="") {
+                response.sendRedirect( response.encodeURL("examEdit.do?examId="+examId+"&clone=true") );
                 return null;
             }
             

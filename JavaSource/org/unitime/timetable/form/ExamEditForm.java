@@ -59,6 +59,8 @@ public class ExamEditForm extends PreferencesForm {
     
     private String avgPeriod;
     
+    private boolean clone;
+    
     public String getExamId() { return examId; }
     public void setExamId(String examId) { this.examId = examId; }
     public String getLabel() { return label; }
@@ -109,6 +111,7 @@ public class ExamEditForm extends PreferencesForm {
         examType = Exam.sExamTypeFinal;
         if (request.getSession().getAttribute("Exam.Type")!=null)
         	examType = (Integer)request.getSession().getAttribute("Exam.Type");
+        clone = false;
         super.reset(mapping, request);
     }
 
@@ -395,4 +398,7 @@ public class ExamEditForm extends PreferencesForm {
         DepartmentalInstructor instructor = new DepartmentalInstructorDAO().get(Long.valueOf(instructorId));
         return (instructor.getEmail()==null?"":instructor.getEmail());
     }
+    
+    public boolean getClone() { return clone; }
+    public void setClone(boolean clone) { this.clone = clone; }
 }
