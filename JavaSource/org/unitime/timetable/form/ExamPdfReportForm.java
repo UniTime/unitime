@@ -43,6 +43,7 @@ import org.unitime.timetable.reports.exam.PeriodChartReport;
 import org.unitime.timetable.reports.exam.ScheduleByCourseReport;
 import org.unitime.timetable.reports.exam.ScheduleByPeriodReport;
 import org.unitime.timetable.reports.exam.ScheduleByRoomReport;
+import org.unitime.timetable.reports.exam.StudentExamReport;
 
 /*
  * @author Tomas Muller
@@ -60,6 +61,7 @@ public class ExamPdfReportForm extends ExamReportForm {
     private boolean iBtb = false;
     private String iLimit = null;
     private boolean iTotals = false;
+    private boolean iDispLimit = true;
     private String iRoomCodes = null;
     private boolean iEmail = false;
     private String iAddr, iCc, iBcc = null;
@@ -67,6 +69,8 @@ public class ExamPdfReportForm extends ExamReportForm {
     private String iReport = null;
     private String iMessage = null;
     private String iSubject = null;
+    private String iSince = null;
+    private boolean iEmailInstructors, iEmailStudents;
     
     public static Hashtable<String,Class> sRegisteredReports = new Hashtable();
     public static String[] sModes = {"PDF (Letter)", "PDF (Ledger)", "Text"};
@@ -84,7 +88,8 @@ public class ExamPdfReportForm extends ExamReportForm {
         sRegisteredReports.put("Verification", ExamVerificationReport.class);
         sRegisteredReports.put("Abbreviated Schedule", AbbvScheduleByCourseReport.class);
         sRegisteredReports.put("Abbreviated Schedule (Exams)", AbbvExamScheduleByCourseReport.class);
-        sRegisteredReports.put("Instructor Schedule", InstructorExamReport.class);
+        sRegisteredReports.put("Individual Instructor Schedule", InstructorExamReport.class);
+        sRegisteredReports.put("Individual Student Schedule", StudentExamReport.class);
     }
     
     public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
@@ -119,6 +124,10 @@ public class ExamPdfReportForm extends ExamReportForm {
         iSubject = "Examination Report";
         iMessage = null;
         iReport = null;
+        iDispLimit = false;
+        iSince = null;
+        iEmailInstructors = false; 
+        iEmailStudents = false;
         if (getAddress()==null) {
             TimetableManager manager = TimetableManager.getManager(Web.getUser(request.getSession()));
             if (manager!=null && manager.getEmailAddress()!=null) setAddress(manager.getEmailAddress());
@@ -146,6 +155,10 @@ public class ExamPdfReportForm extends ExamReportForm {
         setEmailDeputies(UserData.getPropertyBoolean(session,"ExamPdfReport.emailDeputies", false));
         setMessage(UserData.getProperty(session,"ExamPdfReport.message"));
         setSubject(UserData.getProperty(session,"ExamPdfReport.subject","Examination Report"));
+        setDispLimit(UserData.getPropertyBoolean(session,"ExamPdfReport.dispLimit", true));
+        setSince(UserData.getProperty(session,"ExamPdfReport.since"));
+        setEmailInstructors(UserData.getPropertyBoolean(session,"ExamPdfReport.emailInstructors", false));
+        setEmailStudents(UserData.getPropertyBoolean(session,"ExamPdfReport.emailStudents", false));
     }
     
     public void save(HttpSession session) {
@@ -169,6 +182,10 @@ public class ExamPdfReportForm extends ExamReportForm {
         UserData.setPropertyBoolean(session,"ExamPdfReport.emailDeputies", getEmailDeputies());
         UserData.setProperty(session,"ExamPdfReport.message", getMessage());
         UserData.setProperty(session,"ExamPdfReport.subject", getSubject());
+        UserData.setPropertyBoolean(session,"ExamPdfReport.dispLimit", getDispLimit());
+        UserData.setProperty(session,"ExamPdfReport.since", getSince());
+        UserData.setPropertyBoolean(session,"ExamPdfReport.emailInstructors", getEmailInstructors());
+        UserData.setPropertyBoolean(session,"ExamPdfReport.emailStudents", getEmailStudents());
     }
 
     public String[] getReports() { return iReports;}
@@ -227,5 +244,12 @@ public class ExamPdfReportForm extends ExamReportForm {
     }
     public String[] getModes() { return sModes; }
     
-    
+    public boolean getDispLimit() { return iDispLimit; }
+    public void setDispLimit(boolean dispLimit) { iDispLimit = dispLimit; }
+    public String getSince() { return iSince; }
+    public void setSince(String since) { iSince = since; }
+    public boolean getEmailInstructors() { return iEmailInstructors; }
+    public void setEmailInstructors(boolean emailInstructors) { iEmailInstructors = emailInstructors; }
+    public boolean getEmailStudents() { return iEmailStudents; }
+    public void setEmailStudents(boolean emailStudents) { iEmailStudents = emailStudents; }
 }
