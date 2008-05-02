@@ -62,6 +62,13 @@ public class InstructorExamReport extends PdfLegacyExamReport {
         boolean firstInstructor = true;
         printHeader();
         for (ExamInstructorInfo instructor : new TreeSet<ExamInstructorInfo>(exams.keySet())) {
+            if (iSince!=null) {
+                ChangeLog last = getLastChange(instructor, exams.get(instructor));
+                if (last==null || iSince.compareTo(last.getTimeStamp())>0) {
+                    sLog.debug("No change found for "+instructor.getName());
+                    continue;
+                }
+            }
             if (!firstInstructor) newPage();
             printReport(instructor, exams.get(instructor));
             firstInstructor = false;
@@ -69,7 +76,7 @@ public class InstructorExamReport extends PdfLegacyExamReport {
         lastPage();
     }
     
-    public Hashtable<ExamInstructorInfo,File> printInstructorReports(int mode, String filePrefix, Date since, FileGenerator gen) throws DocumentException, IOException {
+    public Hashtable<ExamInstructorInfo,File> printInstructorReports(int mode, String filePrefix, FileGenerator gen, InstructorFilter filter) throws DocumentException, IOException {
         Hashtable<ExamInstructorInfo,File> files = new Hashtable();
         Hashtable<ExamInstructorInfo,TreeSet<ExamAssignmentInfo>> exams = new Hashtable();
         for (ExamAssignmentInfo exam:getExams()) {
@@ -83,9 +90,10 @@ public class InstructorExamReport extends PdfLegacyExamReport {
             }
         }
         for (ExamInstructorInfo instructor : new TreeSet<ExamInstructorInfo>(exams.keySet())) {
-            if (since!=null) {
+            if (!filter.generate(instructor, exams.get(instructor))) continue;
+            if (iSince!=null) {
                 ChangeLog last = getLastChange(instructor, exams.get(instructor));
-                if (last==null || since.compareTo(last.getTimeStamp())>0) {
+                if (last==null || iSince.compareTo(last.getTimeStamp())>0) {
                     sLog.debug("No change found for "+instructor.getName());
                     continue;
                 }
@@ -518,13 +526,8 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                 ExamAssignmentInfo exam = new ExamAssignmentInfo((Exam)i.next());
                 exams.add(exam);
             }
-            Date since = null;
-            if (System.getProperty("since")!=null) {
-                since = new SimpleDateFormat(System.getProperty("sinceFormat","MM/dd/yy")).parse(System.getProperty("since"));
-                sLog.info("Since: "+since);
-            }
             InstructorExamReport report = new InstructorExamReport(mode, null, session, examType, null, exams);
-            report.printInstructorReports(mode, session.getAcademicTerm()+session.getYear()+(examType==Exam.sExamTypeEvening?"evn":"fin"), since, new FileGenerator() {
+            report.printInstructorReports(mode, session.getAcademicTerm()+session.getYear()+(examType==Exam.sExamTypeEvening?"evn":"fin"), new FileGenerator() {
                 public File generate(String prefix, String ext) {
                     int idx = 0;
                     File file = new File(prefix+"."+ext);
@@ -533,6 +536,10 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                         file = new File(prefix+"_"+idx+"."+ext);
                     }
                     return file;
+                }
+            }, new InstructorFilter() {
+                public boolean generate(ExamInstructorInfo instructor, TreeSet<ExamAssignmentInfo> exams) {
+                    return true;
                 }
             });
             sLog.info("Done.");
@@ -543,5 +550,9 @@ public class InstructorExamReport extends PdfLegacyExamReport {
     
     public static interface FileGenerator {
         public File generate(String prefix, String ext);
+    }
+
+    public static interface InstructorFilter {
+        public boolean generate(ExamInstructorInfo instructor, TreeSet<ExamAssignmentInfo> exams);
     }
 }

@@ -2,6 +2,7 @@ package org.unitime.timetable.reports.exam;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collection;
@@ -17,6 +18,20 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import javax.activation.DataHandler;
+import javax.activation.FileDataSource;
+import javax.mail.Authenticator;
+import javax.mail.BodyPart;
+import javax.mail.MessagingException;
+import javax.mail.Multipart;
+import javax.mail.PasswordAuthentication;
+import javax.mail.Transport;
+import javax.mail.Message.RecipientType;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+
 import net.sf.cpsolver.coursett.model.TimeLocation;
 
 import org.apache.log4j.Logger;
@@ -26,16 +41,20 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DatePattern;
+import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.SubjectArea;
+import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.reports.PdfLegacyReport;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
+import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamInstructorInfo;
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamSectionInfo;
 import org.unitime.timetable.util.Constants;
 
@@ -61,6 +80,8 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
     protected Hashtable<String,String> iRoomCodes = new Hashtable();
     protected boolean iTotals = true;
     protected boolean iUseClassSuffix = false;
+    protected boolean iDispLimits = true;
+    protected Date iSince = null;
     
     static {
         sRegisteredReports.put("crsn", ScheduleByCourseReport.class);
@@ -74,6 +95,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
         sRegisteredReports.put("abbv", AbbvScheduleByCourseReport.class);
         sRegisteredReports.put("xabbv", AbbvExamScheduleByCourseReport.class);
         sRegisteredReports.put("instr", InstructorExamReport.class);
+        sRegisteredReports.put("stud", StudentExamReport.class);
         for (String report : sRegisteredReports.keySet())
             sAllRegisteredReports += (sAllRegisteredReports.length()>0?",":"") + report;
     }
@@ -94,6 +116,14 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
         iItype = "true".equals(System.getProperty("itype",ApplicationProperties.getProperty("tmtbl.exam.report.itype","true")));
         iTotals = "true".equals(System.getProperty("totals","true"));
         iUseClassSuffix = "true".equals(System.getProperty("suffix",ApplicationProperties.getProperty("tmtbl.exam.report.suffix","false")));
+        iDispLimits = "true".equals(System.getProperty("verlimit","true"));
+        if (System.getProperty("since")!=null) {
+            try {
+                iSince = new SimpleDateFormat(System.getProperty("sinceFormat","MM/dd/yy")).parse(System.getProperty("since"));
+            } catch (Exception e) {
+                sLog.error("Unable to parse date "+System.getProperty("since")+", reason: "+e.getMessage());
+            }
+        }
         setRoomCode(System.getProperty("roomcode",ApplicationProperties.getProperty("tmtbl.exam.report.roomcode")));
     }
     
@@ -106,6 +136,8 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
     public void setItype(boolean itype) { iItype = itype; }
     public void setTotals(boolean totals) { iTotals = totals; }
     public void setUseClassSuffix(boolean useClassSuffix) { iUseClassSuffix = true; }
+    public void setDispLimits(boolean dispLimits) { iDispLimits = dispLimits; }
+    public void setSince(Date since) { iSince = since; }
     public String setRoomCode(String roomCode) {
         if (roomCode==null || roomCode.length()==0) {
             iRoomCodes = null;
@@ -251,6 +283,215 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
         return period.getStartDateLabel()+" "+lpad(period.getStartTimeLabel(),6)+" - "+lpad(period.getEndTimeLabel(),6);
     }
     
+    public static void sendEmails(String prefix, Hashtable<String,File> output, Hashtable<SubjectArea,Hashtable<String,File>> outputPerSubject, Hashtable<ExamInstructorInfo,File> ireports, Hashtable<Student,File> sreports) throws MessagingException, UnsupportedEncodingException {
+        String managerExternalId = System.getProperty("sender");
+        TimetableManager mgr = (managerExternalId==null?null:TimetableManager.findByExternalId(managerExternalId));
+        InternetAddress from = null;
+        if (System.getProperty("email.from")!=null)
+            from = new InternetAddress(System.getProperty("email.from"), System.getProperty("email.from.name"));
+        else
+            from = new InternetAddress(
+                            ApplicationProperties.getProperty("tmtbl.inquiry.sender",ApplicationProperties.getProperty("tmtbl.contact.email")),
+                            ApplicationProperties.getProperty("tmtbl.inquiry.sender.name"));
+        
+        sLog.info("Sending email(s)...");
+        Properties p = ApplicationProperties.getProperties();
+        if (p.getProperty("mail.smtp.host")==null && p.getProperty("tmtbl.smtp.host")!=null)
+            p.setProperty("mail.smtp.host", p.getProperty("tmtbl.smtp.host"));
+        Authenticator a = null;
+        if (ApplicationProperties.getProperty("tmtbl.mail.user")!=null && ApplicationProperties.getProperty("tmtbl.mail.pwd")!=null) {
+            a = new Authenticator() {
+                public PasswordAuthentication getPasswordAuthentication() {
+                    return new PasswordAuthentication(
+                            ApplicationProperties.getProperty("tmtbl.mail.user"),
+                            ApplicationProperties.getProperty("tmtbl.mail.pwd"));
+                }
+            };
+        }
+        javax.mail.Session mailSession = javax.mail.Session.getDefaultInstance(p, a);
+        if (!outputPerSubject.isEmpty() && "true".equals(System.getProperty("email.deputies","false"))) {
+                Hashtable<TimetableManager,Hashtable<String,File>> files2send = new Hashtable();
+                for (Map.Entry<SubjectArea, Hashtable<String,File>> entry : outputPerSubject.entrySet()) {
+                    if (entry.getKey().getDepartment().getTimetableManagers().isEmpty())
+                        sLog.warn("No manager associated with subject area "+entry.getKey().getSubjectAreaAbbreviation()+" ("+entry.getKey().getDepartment().getLabel()+")</font>");
+                    for (Iterator i=entry.getKey().getDepartment().getTimetableManagers().iterator();i.hasNext();) {
+                        TimetableManager g = (TimetableManager)i.next();
+                        if (g.getEmailAddress()==null || g.getEmailAddress().length()==0) {
+                            sLog.warn("Manager "+g.getName()+" has no email address.");
+                        } else {
+                            Hashtable<String,File> files = files2send.get(g);
+                            if (files==null) { files = new Hashtable<String,File>(); files2send.put(g, files); }
+                            files.putAll(entry.getValue());
+                        }
+                    }
+                }
+                if (files2send.isEmpty()) {
+                    sLog.error("Nothing to send.");
+                } else {
+                    Set<TimetableManager> managers = files2send.keySet();
+                    while (!managers.isEmpty()) {
+                        TimetableManager manager = managers.iterator().next();
+                        Hashtable<String,File> files = files2send.get(manager);
+                        managers.remove(manager);
+                        sLog.info("Sending email to "+manager.getName()+" ("+manager.getEmailAddress()+")...");
+                        MimeMessage mail = new MimeMessage(mailSession);
+                        mail.setSubject(System.getProperty("email.subject","Examination Report"));
+                        Multipart body = new MimeMultipart();
+                        BodyPart text = new MimeBodyPart();
+                        String message = System.getProperty("email.body");
+                        String url = System.getProperty("email.url");
+                        text.setText((message==null?"":message+"\r\n\r\n")+
+                                (url==null?"":"For an up-to-date report, please visit "+url+"/\r\n\r\n")+
+                                "This email was automatically generated by "+
+                                "UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+
+                                " (Univesity Timetabling Application, http://www.unitime.org).");
+                        body.addBodyPart(text);
+                        mail.addRecipient(RecipientType.TO, new InternetAddress(manager.getEmailAddress(),manager.getName()));
+                        for (Iterator<TimetableManager> i=managers.iterator();i.hasNext();) {
+                            TimetableManager m = (TimetableManager)i.next();
+                            if (files.equals(files2send.get(m))) {
+                                sLog.info("  Including "+m.getName()+" ("+m.getEmailAddress()+")");
+                                mail.addRecipient(RecipientType.TO, new InternetAddress(m.getEmailAddress(),m.getName()));
+                                i.remove();
+                            }
+                        }
+                        if (System.getProperty("email.to")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.to"),";,\n\r ");s.hasMoreTokens();) 
+                            mail.addRecipient(RecipientType.TO, new InternetAddress(s.nextToken()));
+                        if (System.getProperty("email.cc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.to"),";,\n\r ");s.hasMoreTokens();) 
+                            mail.addRecipient(RecipientType.CC, new InternetAddress(s.nextToken()));
+                        if (System.getProperty("email.bcc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.to"),";,\n\r ");s.hasMoreTokens();) 
+                            mail.addRecipient(RecipientType.BCC, new InternetAddress(s.nextToken()));
+                        if (from!=null)
+                            mail.setFrom(from);
+                        for (Map.Entry<String, File> entry : files.entrySet()) {
+                            BodyPart attachement = new MimeBodyPart();
+                            attachement.setDataHandler(new DataHandler(new FileDataSource(entry.getValue())));
+                            attachement.setFileName(prefix+"_"+entry.getKey());
+                            body.addBodyPart(attachement);
+                            sLog.info("  Attaching <a href='temp/"+entry.getValue().getName()+"'>"+entry.getKey()+"</a>");
+                        }
+                        mail.setSentDate(new Date());
+                        mail.setContent(body);
+                        try {
+                            Transport.send(mail);
+                            sLog.info("Email sent.");
+                        } catch (Exception e) {
+                            sLog.error("Unable to send email: "+e.getMessage());
+                        }
+                    }
+                }
+            } else {
+                MimeMessage mail = new MimeMessage(mailSession);
+                mail.setSubject(System.getProperty("email.subject","Examination Report"));
+                Multipart body = new MimeMultipart();
+                BodyPart text = new MimeBodyPart();
+                String message = System.getProperty("email.body");
+                String url = System.getProperty("email.url");
+                text.setText((message==null?"":message+"\r\n\r\n")+
+                        (url==null?"":"For an up-to-date report, please visit "+url+"/\r\n\r\n")+
+                        "This email was automatically generated by "+
+                        "UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+
+                        " (Univesity Timetabling Application, http://www.unitime.org).");
+                body.addBodyPart(text);
+                if (System.getProperty("email.to")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.to"),";,\n\r ");s.hasMoreTokens();) 
+                    mail.addRecipient(RecipientType.TO, new InternetAddress(s.nextToken()));
+                if (System.getProperty("email.cc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.to"),";,\n\r ");s.hasMoreTokens();) 
+                    mail.addRecipient(RecipientType.CC, new InternetAddress(s.nextToken()));
+                if (System.getProperty("email.bcc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.to"),";,\n\r ");s.hasMoreTokens();) 
+                    mail.addRecipient(RecipientType.BCC, new InternetAddress(s.nextToken()));
+                if (from!=null)
+                    mail.setFrom(from);
+                for (Map.Entry<String, File> entry : output.entrySet()) {
+                    BodyPart attachement = new MimeBodyPart();
+                    attachement.setDataHandler(new DataHandler(new FileDataSource(entry.getValue())));
+                    attachement.setFileName(prefix+"_"+entry.getKey());
+                    body.addBodyPart(attachement);
+                }
+                mail.setSentDate(new Date());
+                mail.setContent(body);
+                try {
+                    Transport.send(mail);
+                    sLog.info("Email sent.");
+                } catch (Exception e) {
+                    sLog.error("Unable to send email: "+e.getMessage());
+                }
+            }
+            if ("true".equals(System.getProperty("email.instructors","false")) && ireports!=null && !ireports.isEmpty()) {
+                sLog.info("Emailing instructors...");
+                for (ExamInstructorInfo instructor : new TreeSet<ExamInstructorInfo>(ireports.keySet())) {
+                    File report = ireports.get(instructor);
+                    String email = instructor.getInstructor().getEmail();
+                    if (email==null || email.isEmpty()) {
+                        sLog.warn("Unable to email <a href='temp/"+report.getName()+"'>"+instructor.getName()+"</a> -- instructor has no email address.");
+                        continue;
+                    }
+                    MimeMessage mail = new MimeMessage(mailSession);
+                    mail.setSubject(System.getProperty("email.subject","Examination Report"));
+                    Multipart body = new MimeMultipart();
+                    BodyPart text = new MimeBodyPart();
+                    String message = System.getProperty("email.body");
+                    String url = System.getProperty("email.url");
+                    text.setText((message==null?"":message+"\r\n\r\n")+
+                            (url==null?"":"For an up-to-date report, please visit "+url+"/\r\n\r\n")+
+                            "This email was automatically generated by "+
+                            "UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+
+                            " (Univesity Timetabling Application, http://www.unitime.org).");
+                    body.addBodyPart(text);
+                    mail.addRecipient(RecipientType.TO, new InternetAddress(email));
+                    if (from!=null) mail.setFrom(from);
+                    BodyPart attachement = new MimeBodyPart();
+                    attachement.setDataHandler(new DataHandler(new FileDataSource(report)));
+                    attachement.setFileName(prefix+(report.getName().endsWith(".txt")?".txt":".pdf"));
+                    mail.setSentDate(new Date());
+                    mail.setContent(body);
+                    try {
+                        Transport.send(mail);
+                        sLog.info("&nbsp;&nbsp;An email was sent to <a href='temp/"+report.getName()+"'>"+instructor.getName()+"</a>.");
+                    } catch (Exception e) {
+                        sLog.error("Unable to email <a href='temp/"+report.getName()+"'>"+instructor.getName()+"</a> -- "+e.getMessage());
+                    }
+                }
+                sLog.info("Emails sent.");
+            }
+            if ("true".equals(System.getProperty("email.students","false")) && sreports!=null && !sreports.isEmpty()) {
+                sLog.info("Emailing instructors...");
+                for (Student student : new TreeSet<Student>(sreports.keySet())) {
+                    File report = sreports.get(student);
+                    String email = student.getEmail();
+                    if (email==null || email.isEmpty()) {
+                        sLog.warn("  Unable to email <a href='temp/"+report.getName()+"'>"+student.getName(DepartmentalInstructor.sNameFormatLastFist)+"</a> -- student has no email address.");
+                        continue;
+                    }
+                    MimeMessage mail = new MimeMessage(mailSession);
+                    mail.setSubject(System.getProperty("email.subject","Examination Report"));
+                    Multipart body = new MimeMultipart();
+                    BodyPart text = new MimeBodyPart();
+                    String message = System.getProperty("email.body");
+                    String url = System.getProperty("email.url");
+                    text.setText((message==null?"":message+"\r\n\r\n")+
+                            (url==null?"":"For an up-to-date report, please visit "+url+"/\r\n\r\n")+
+                            "This email was automatically generated by "+
+                            "UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+
+                            " (Univesity Timetabling Application, http://www.unitime.org).");
+                    body.addBodyPart(text);
+                    mail.addRecipient(RecipientType.TO, new InternetAddress(email));
+                    if (from!=null) mail.setFrom(from);
+                    BodyPart attachement = new MimeBodyPart();
+                    attachement.setDataHandler(new DataHandler(new FileDataSource(report)));
+                    attachement.setFileName(prefix+(report.getName().endsWith(".txt")?".txt":".pdf"));
+                    mail.setSentDate(new Date());
+                    mail.setContent(body);
+                    try {
+                        Transport.send(mail);
+                        sLog.info(" An email was sent to <a href='temp/"+report.getName()+"'>"+student.getName(DepartmentalInstructor.sNameFormatLastFist)+"</a>.");
+                    } catch (Exception e) {
+                        sLog.error("Unable to email <a href='temp/"+report.getName()+"'>"+student.getName(DepartmentalInstructor.sNameFormatLastFist)+"</a> -- "+e.getMessage()+".");
+                    }
+                }
+                sLog.info("Emails sent.");
+            }
+    }
+    
     public static void main(String[] args) {
         try {
             Properties props = new Properties();
@@ -324,6 +565,10 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                 }
                 examsPerSubj.put(subject, examsOfThisSubject);
             }
+            Hashtable<String,File> output = new Hashtable();
+            Hashtable<SubjectArea,Hashtable<String,File>> outputPerSubject = new Hashtable();
+            Hashtable<ExamInstructorInfo,File> ireports = null;
+            Hashtable<Student,File> sreports = null;
             for (StringTokenizer stk=new StringTokenizer(ApplicationProperties.getProperty("report",sAllRegisteredReports),",");stk.hasMoreTokens();) {
                 String reportName = stk.nextToken();
                 Class reportClass = sRegisteredReports.get(reportName);
@@ -337,6 +582,12 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                         PdfLegacyExamReport report = (PdfLegacyExamReport)reportClass.getConstructor(int.class, File.class, Session.class, int.class, SubjectArea.class, Collection.class).newInstance(mode, file, session, examType, entry.getKey(), entry.getValue());
                         report.printReport();
                         report.close();
+                        output.put(entry.getKey().getSubjectAreaAbbreviation()+"_"+reportName+"."+(mode==sModeText?"txt":"pdf"),file);
+                        Hashtable<String,File> files = outputPerSubject.get(entry.getKey());
+                        if (files==null) {
+                            files = new Hashtable(); outputPerSubject.put(entry.getKey(),files);
+                        }
+                        files.put(entry.getKey().getSubjectAreaAbbreviation()+"_"+reportName+"."+(mode==sModeText?"txt":"pdf"),file);
                     }
                 } else {
                     File file = new File(new File(ApplicationProperties.getProperty("output",".")),
@@ -345,7 +596,46 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                         PdfLegacyExamReport report = (PdfLegacyExamReport)reportClass.getConstructor(int.class, File.class, Session.class, int.class, SubjectArea.class, Collection.class).newInstance(mode, file, session, examType, null, exams);
                         report.printReport();
                         report.close();
+                        output.put(reportName+"."+(mode==sModeText?"txt":"pdf"),file);
+                        if (report instanceof InstructorExamReport && "true".equals(System.getProperty("email.instructors","false"))) {
+                            ireports = ((InstructorExamReport)report).printInstructorReports(
+                                    mode, session.getAcademicTerm()+session.getYear()+(examType==Exam.sExamTypeEvening?"evn":"fin"), new InstructorExamReport.FileGenerator() {
+                                        public File generate(String prefix, String ext) {
+                                            int idx = 0;
+                                            File file = new File(prefix+"."+ext);
+                                            while (file.exists()) {
+                                                idx++;
+                                                file = new File(prefix+"_"+idx+"."+ext);
+                                            }
+                                            return file;
+                                        }
+                                    }, new InstructorExamReport.InstructorFilter() {
+                                public boolean generate(ExamInstructorInfo instructor, TreeSet<ExamAssignmentInfo> exams) {
+                                    return true;
+                                }
+                            });
+                        } else if (report instanceof StudentExamReport && "true".equals(System.getProperty("email.students","false"))) {
+                            sreports = ((StudentExamReport)report).printStudentReports(
+                                    mode, session.getAcademicTerm()+session.getYear()+(examType==Exam.sExamTypeEvening?"evn":"fin"), new InstructorExamReport.FileGenerator() {
+                                        public File generate(String prefix, String ext) {
+                                            int idx = 0;
+                                            File file = new File(prefix+"."+ext);
+                                            while (file.exists()) {
+                                                idx++;
+                                                file = new File(prefix+"_"+idx+"."+ext);
+                                            }
+                                            return file;
+                                        }
+                                    }, new StudentExamReport.StudentFilter() {
+                                public boolean generate(Student student, TreeSet<ExamSectionInfo> sections) {
+                                    return true;
+                                }
+                            });
+                        }
                 }
+            }
+            if ("true".equals(System.getProperty("email","false"))) {
+                sendEmails(session.getAcademicTerm()+session.getYear()+(examType==Exam.sExamTypeEvening?"evn":"fin"), output, outputPerSubject, ireports, sreports);
             }
             sLog.info("Done.");
         } catch (Exception e) {
