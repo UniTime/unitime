@@ -50,9 +50,13 @@ import com.lowagie.text.DocumentException;
 public class ExamVerificationReport extends PdfLegacyExamReport {
     private CourseOffering iCourseOffering = null;
     private boolean iSkipHoles = true;
+    private boolean iHasAssignment = false;
 
     public ExamVerificationReport(int mode, File file, Session session, int examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
         super(mode, file, "EXAMINATION VERIFICATION REPORT", session, examType, subjectArea, exams);
+        for (ExamAssignmentInfo exam : exams) {
+            if (exam.getPeriod()!=null) { iHasAssignment = true; break; }
+        }
     }
     
     public TreeSet<ExamAssignmentInfo> getExams(CourseOffering course) {
@@ -212,13 +216,13 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
     public String getMessage(Class_ clazz, boolean hasCourseExam, boolean hasSectionExam) {
         TreeSet<ExamAssignmentInfo> exams = getExams(clazz);
         if (!exams.isEmpty()) return "";
-        String message = "** NO SECTION EXAM **";
+        String message = "** NO EXAM **";
         if (hasCourseExam && !hasSectionExam) message = ""; // Has other exam
         else if (!hasSectionExam && !clazz.getSchedulingSubpart().getItype().isOrganized()) message = "Not organized instructional type";
         else {
             Event classEvent = Event.findClassEvent(clazz.getUniqueId());
             if (classEvent==null || classEvent.getMeetings().isEmpty()) {
-                message = "Class not meeting";
+                message = "Class not organized";
             } else if (!isFullTerm(classEvent)) {
                 TreeSet meetings = new TreeSet(classEvent.getMeetings());
                 Meeting first = (Meeting)meetings.first();
@@ -235,13 +239,13 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
         TreeSet<ExamAssignmentInfo> exams = getExams(same.firstElement());
         iPeriodPrinted = false;
         if (exams.isEmpty()) {
-            String message = "** NO SECTION EXAM **";
+            String message = "** NO EXAM **";
             if (hasCourseExam && !hasSectionExam) message = ""; // Has other exam
             else if (!hasSectionExam && !same.firstElement().getSchedulingSubpart().getItype().isOrganized()) message = "Not organized instructional type";
             else {
                 Event classEvent = Event.findClassEvent(same.firstElement().getUniqueId());
                 if (classEvent==null || classEvent.getMeetings().isEmpty()) {
-                    message = "Class not meeting";
+                    message = "Class not organized";
                 } else if (!isFullTerm(classEvent)) {
                     TreeSet meetings = new TreeSet(classEvent.getMeetings());
                     Meeting first = (Meeting)meetings.first();
@@ -251,21 +255,23 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                 }
             }
             String title = same.firstElement().getSchedulePrintNote();
+            /*
             if (title!=null && title.equals(same.firstElement().getSchedulingSubpart().getControllingCourseOffering().getTitle()))
                 title = null;
+                */
             boolean hasTitle = (title!=null && title.trim().length()>0);
-            boolean titleSameLine = hasTitle && (" "+title).length()<=(28-formatSection(same).length()-(same.size()>1?" ("+same.size()+" classes)":"").length());
+            boolean titleSameLine = hasTitle && (" "+title).length()<=((iDispLimits?28:48)-formatSection(same).length()-(same.size()>1?" ("+same.size()+" classes)":"").length());
             boolean titleSeparateLine = hasTitle && !titleSameLine;
             boolean hasMw = cmw.length()>0;
-            boolean mwSameLine = hasMw && !titleSameLine && (" m/w "+cmw).length()<=(28-formatSection(same).length()-(same.size()>1?" ("+same.size()+" classes)":"").length());
+            boolean mwSameLine = hasMw && !titleSameLine && (" m/w "+cmw).length()<=((iDispLimits?28:48)-formatSection(same).length()-(same.size()>1?" ("+same.size()+" classes)":"").length());
             boolean mwSeparateLine = hasMw && !mwSameLine;
             if ((titleSeparateLine || mwSeparateLine) && getLineNumber()+1+(titleSeparateLine?0:1)+(mwSeparateLine?1:0)>iNrLines) newPage();
             println(
                     lpad(iITypePrinted?"":same.firstElement().getSchedulingSubpart().getItypeDesc(),11)+" "+
                     rpad(formatSection(same)+(same.size()>1?" ("+same.size()+" classes)":"")+
-                            (titleSameLine?" "+title:"")+(mwSameLine?" m/w "+cmw:""),28)+" "+
-                    lpad(maxLimit<=0?"":minLimit!=maxLimit?minLimit+"-"+maxLimit:""+minLimit,9)+" "+
-                    lpad(maxEnrl<=0?"":minEnrl!=maxEnrl?minEnrl+"-"+maxEnrl:""+minEnrl,9)+" "+
+                            (titleSameLine?" "+title:"")+(mwSameLine?" m/w "+cmw:""),(iDispLimits?28:48))+" "+
+                    (iDispLimits?lpad(maxLimit<=0?"":minLimit!=maxLimit?minLimit+"-"+maxLimit:""+minLimit,9)+" "+
+                    lpad(maxEnrl<=0?"":minEnrl!=maxEnrl?minEnrl+"-"+maxEnrl:""+minEnrl,9)+" ":"")+
                     "         "+message);
             if (titleSeparateLine)
                 println(lpad("",11)+"  "+title);
@@ -276,7 +282,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
             Vector<String> rooms = new Vector();
             Vector<String> times = new Vector();
             if (exam.getPeriod()==null) {
-                times.add(rpad(" Exam not assigned",26));
+                times.add(rpad(iHasAssignment?" Exam not assigned":" Section exam",26));
                 rooms.add(rpad("", 23));
                 //if (exam.getMaxRooms()==0) rooms.add(" "+rpad(iNoRoom, 22));
                 for (Iterator i=new TreeSet(exam.getExam().getPreferences()).iterator();i.hasNext();) {
@@ -354,17 +360,19 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
 
             int nrLines = Math.max(Math.max(rooms.size(), meetsWith.size()),times.size());
             String title = same.firstElement().getSchedulePrintNote();
+            /*
             if (title!=null && title.equals(same.firstElement().getSchedulingSubpart().getControllingCourseOffering().getTitle()))
                 title = null;
+                */
             boolean hasTitle = !iPeriodPrinted && (title!=null && title.trim().length()>0);
-            boolean titleSameLine = hasTitle && (" "+title).length()<=(28-formatSection(same).length()-(same.size()>1?" ("+same.size()+" classes)":"").length());
-            boolean titleSecondLine = hasTitle && !titleSameLine && nrLines>1 && (" "+title).length()<=28;
+            boolean titleSameLine = hasTitle && (" "+title).length()<=((iDispLimits?28:48)-formatSection(same).length()-(same.size()>1?" ("+same.size()+" classes)":"").length());
+            boolean titleSecondLine = hasTitle && !titleSameLine && nrLines>1 && (" "+title).length()<=(iDispLimits?28:48);
             boolean titleSeparateLine = hasTitle && !titleSameLine && !titleSecondLine;
             
             boolean hasMw = !iPeriodPrinted && cmw.length()>0;
-            boolean mwSameLine = hasMw && !titleSameLine && (" m/w "+cmw).length()<=(28-formatSection(same).length()-(same.size()>1?" ("+same.size()+" classes)":"").length());
-            boolean mwSecondLine = hasMw && !mwSameLine && !titleSecondLine && nrLines>1 && (" Meets with "+cmw).length()<=28;
-            boolean mwThirdLine = hasMw && !mwSameLine && titleSecondLine && nrLines>2 && (" Meets with "+cmw).length()<=28;
+            boolean mwSameLine = hasMw && !titleSameLine && (" m/w "+cmw).length()<=((iDispLimits?28:48)-formatSection(same).length()-(same.size()>1?" ("+same.size()+" classes)":"").length());
+            boolean mwSecondLine = hasMw && !mwSameLine && !titleSecondLine && nrLines>1 && (" Meets with "+cmw).length()<=(iDispLimits?28:48);
+            boolean mwThirdLine = hasMw && !mwSameLine && titleSecondLine && nrLines>2 && (" Meets with "+cmw).length()<=(iDispLimits?28:48);
             boolean mwSeparateLine = hasMw && !mwSameLine && !mwSecondLine && !mwThirdLine;
             if (getLineNumber()+nrLines+(mwSeparateLine?1:0)+(titleSeparateLine?1:0)>iNrLines) newPage();
             
@@ -379,9 +387,9 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                                    : formatSection(same)+(same.size()>1?" ("+same.size()+" classes)":"")+
                                      (titleSameLine?" "+title:"")+
                                      (mwSameLine?" m/w "+cmw:"")
-                                   ,28)+" "+
-                        lpad(iPeriodPrinted || idx>0 || maxLimit<=0?"":minLimit!=maxLimit?minLimit+"-"+maxLimit:""+minLimit,9)+" "+
-                        lpad(iPeriodPrinted || idx>0 || maxEnrl<=0?"":minEnrl!=maxEnrl?minEnrl+"-"+maxEnrl:""+minEnrl,9)+" "+
+                                   ,(iDispLimits?28:48))+" "+
+                        (iDispLimits?lpad(iPeriodPrinted || idx>0 || maxLimit<=0?"":minLimit!=maxLimit?minLimit+"-"+maxLimit:""+minLimit,9)+" "+
+                        lpad(iPeriodPrinted || idx>0 || maxEnrl<=0?"":minEnrl!=maxEnrl?minEnrl+"-"+maxEnrl:""+minEnrl,9)+" ":"")+
                         lpad(idx>0?"":exam.getSeatingType()==Exam.sSeatingTypeExam?"yes":"no",4)+" "+
                         lpad(idx>0?"":String.valueOf(exam.getLength()),3)+time+room+mw
                         );
@@ -417,9 +425,9 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
         System.out.println("Printing report ...");
         SubjectArea subject = null;
         setHeader(new String[] {
-                "Course      Title                                            Alt  Len                                                  ",
-                "   InsType    Sections                   Limit     Enrollmnt Seat ght Date & Time               Room         Cap ExCap Exam with",
-                "----------- ---------------------------- --------- --------- ---- --- ------------------------- ----------- ---- ----- --------------"});
+                "Course      Title                       "+(iDispLimits?"                    ":"                    ")+" Alt  Len                                                  ",
+                "   InsType    Sections                  "+(iDispLimits?" Limit     Enrollmnt":"                    ")+" Seat ght Date & Time               Room         Cap ExCap Exam with",
+                "----------- ----------------------------"+(iDispLimits?" --------- ---------":"--------------------")+" ---- --- ------------------------- ----------- ---- ----- --------------"});
         printHeader();
         for (CourseOffering co : allCourses) {
             InstructionalOffering io = co.getInstructionalOffering();
@@ -468,15 +476,14 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                 if (exams.isEmpty()) {
                     println(
                         rpad(courseName,11)+" "+
-                        rpad(course.getTitle()==null?"":course.getTitle(),28)+" "+
-                        lpad(courseLimit<=0?unlimited?"  inf":"":String.valueOf(courseLimit),9)+" "+
-                        lpad(enrl<=0?"":String.valueOf(enrl),9)+" "+
-                        "         "+(hasCourseExam?"** NO COURSE EXAM**":""));
+                        rpad(course.getTitle()==null?"":course.getTitle(),(iDispLimits?28:48))+" "+
+                        (iDispLimits?lpad(courseLimit<=0?unlimited?"  inf":"":String.valueOf(courseLimit),9)+" "+lpad(enrl<=0?"":String.valueOf(enrl),9)+" ":"")+
+                        "         "+(hasCourseExam?"** NO EXAM**":""));
                 } else for (ExamAssignmentInfo exam : exams) {
                     Vector<String> rooms = new Vector();
                     Vector<String> times = new Vector();
                     if (exam.getPeriod()==null) {
-                        times.add(rpad(" Exam not assigned",26));
+                        times.add(rpad(iHasAssignment?" Exam not assigned":" Course Exam",26));
                         rooms.add(rpad("", 23));
                         //if (exam.getMaxRooms()==0) rooms.add(" "+rpad(iNoRoom, 22));
                         for (Iterator i=new TreeSet(exam.getExam().getPreferences()).iterator();i.hasNext();) {
@@ -558,9 +565,9 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                         String mw = (idx<meetsWith.size()?meetsWith.elementAt(idx):"");
                         String time = (idx<times.size()?times.elementAt(idx):rpad("",26));
                         println(rpad(idx>0 || iCoursePrinted?"":courseName,11)+" "+
-                                rpad(idx>0 || iCoursePrinted?"":course.getTitle()==null?"":course.getTitle(),28)+" "+
-                                lpad(idx>0 || iCoursePrinted?"":courseLimit<=0?unlimited?"  inf":"":String.valueOf(courseLimit),9)+" "+
-                                lpad(idx>0 || iCoursePrinted || enrl<=0?"":String.valueOf(enrl),9)+" "+
+                                rpad(idx>0 || iCoursePrinted?"":course.getTitle()==null?"":course.getTitle(),(iDispLimits?28:48))+" "+
+                                (iDispLimits?lpad(idx>0 || iCoursePrinted?"":courseLimit<=0?unlimited?"  inf":"":String.valueOf(courseLimit),9)+" "+
+                                        lpad(idx>0 || iCoursePrinted || enrl<=0?"":String.valueOf(enrl),9)+" ":"")+
                                 lpad(idx>0?"":exam.getSeatingType()==Exam.sSeatingTypeExam?"yes":"no",4)+" "+
                                 lpad(idx>0?"":String.valueOf(exam.getLength()),3)+
                                 time+room+mw
@@ -644,5 +651,4 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
             if (!iNewPage) println("");
         }
     }
-
 }
