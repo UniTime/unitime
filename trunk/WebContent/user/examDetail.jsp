@@ -58,6 +58,10 @@
 						styleClass="btn" accesskey="E" titleKey="title.editExam" >
 						<bean:message key="button.editExam" />
 					</html:submit> 
+					<html:submit property="op" 
+						styleClass="btn" accesskey="C" titleKey="title.cloneExam" >
+						<bean:message key="button.cloneExam" />
+					</html:submit> 
 					<html:submit property="op" styleClass="btn" accesskey="A" titleKey="title.addDistPref" >
 						<bean:message key="button.addDistPref" />
 					</html:submit>
@@ -260,6 +264,10 @@
 					styleClass="btn" accesskey="E" titleKey="title.editExam" >
 					<bean:message key="button.editExam" />
 				</html:submit>
+				<html:submit property="op" 
+					styleClass="btn" accesskey="C" titleKey="title.cloneExam" >
+					<bean:message key="button.cloneExam" />
+				</html:submit> 
 				<html:submit property="op" styleClass="btn" accesskey="A" titleKey="title.addDistPref" >
 					<bean:message key="button.addDistPref" />
 				</html:submit>

@@ -42,6 +42,7 @@
 	<html:hidden property="examId"/>
 	<html:hidden property="nextId"/>
 	<html:hidden property="previousId"/>
+	<html:hidden property="clone"/>
 	<html:hidden property="op2" value=""/>
 	
 	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">

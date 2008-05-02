@@ -149,9 +149,13 @@ public class ExamEditAction extends PreferencesAction {
                 frm.reset(mapping, request);
                 // Load form attributes that are constant
                 doLoad(request, frm, exam);
+                if ("true".equals(request.getParameter("clone"))) {
+                    frm.setExamId(null);
+                    frm.setClone(true);
+                }
             }
             
-            frm.setLabel(exam==null?"New Examination":exam.getLabel());
+            frm.setLabel(frm.getClone() || exam==null?"New Examination":exam.getLabel());
             
             if (op.equals(rsc.getMessage("button.addInstructor"))) {
                 List lst = frm.getInstructors();
@@ -200,7 +204,7 @@ public class ExamEditAction extends PreferencesAction {
                         response.sendRedirect(response.encodeURL("examEdit.do?examId="+frm.getPreviousId()));
                     
                     //response.sendRedirect(response.encodeURL("examDetail.do?examId="+examId));
-                    if (op.equals(rsc.getMessage("button.saveExam")) && BackTracker.hasBack(request, 2)) {
+                    if (op.equals(rsc.getMessage("button.saveExam")) && BackTracker.hasBack(request, 2) && !frm.getClone()) {
                         request.setAttribute("backType", "PreferenceGroup");
                         request.setAttribute("backId", frm.getExamId());
                         BackTracker.doBack(request, response);
@@ -220,7 +224,7 @@ public class ExamEditAction extends PreferencesAction {
                 initPrefs(user, frm, exam, null, true);
             }
             boolean timeVertical = RequiredTimeTable.getTimeGridVertical(Web.getUser(httpSession));
-            generateExamPeriodGrid(request, frm, exam, op, timeVertical, true);
+            generateExamPeriodGrid(request, frm, (frm.getClone()?null:exam), op, timeVertical, true);
             
             // Process Preferences Action
             processPrefAction(request, frm, errors);
@@ -246,7 +250,7 @@ public class ExamEditAction extends PreferencesAction {
             
             frm.setSubjectAreas(TimetableManager.getSubjectAreas(user));
         
-            if (exam!=null) {
+            if (!frm.getClone() && exam!=null) {
                 BackTracker.markForBack(
                     request,
                     "examDetail.do?examId="+frm.getExamId(),
@@ -254,7 +258,7 @@ public class ExamEditAction extends PreferencesAction {
                     true, false);
             }
 
-            return (exam==null?mapping.findForward("showAdd"):mapping.findForward("showEdit"));
+            return (frm.getClone() || exam==null?mapping.findForward("showAdd"):mapping.findForward("showEdit"));
             
         } catch (Exception e) {
             Debug.error(e);
