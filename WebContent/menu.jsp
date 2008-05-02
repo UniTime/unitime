@@ -119,7 +119,9 @@
 		enditem(); //21
 	<% } %>
 		leaf_item('Reports','Examination Reports','examAssignmentReport.do');
+	<%  if (user!=null && (user.getRole().equals(Roles.ADMIN_ROLE) || user.getRole().equals(Roles.EXAM_MGR_ROLE))) { %>
 		leaf_item('Pdf Reports','Examination Pdf Reports','examPdfReport.do');
+	<% } %>
 	enditem(); //2
 	<% } %>
 
