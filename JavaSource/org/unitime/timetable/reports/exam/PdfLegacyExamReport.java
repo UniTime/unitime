@@ -421,7 +421,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                 for (ExamInstructorInfo instructor : new TreeSet<ExamInstructorInfo>(ireports.keySet())) {
                     File report = ireports.get(instructor);
                     String email = instructor.getInstructor().getEmail();
-                    if (email==null || email.isEmpty()) {
+                    if (email==null || email.length()==0) {
                         sLog.warn("Unable to email <a href='temp/"+report.getName()+"'>"+instructor.getName()+"</a> -- instructor has no email address.");
                         continue;
                     }
@@ -458,7 +458,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                 for (Student student : new TreeSet<Student>(sreports.keySet())) {
                     File report = sreports.get(student);
                     String email = student.getEmail();
-                    if (email==null || email.isEmpty()) {
+                    if (email==null || email.length()==0) {
                         sLog.warn("  Unable to email <a href='temp/"+report.getName()+"'>"+student.getName(DepartmentalInstructor.sNameFormatLastFist)+"</a> -- student has no email address.");
                         continue;
                     }
