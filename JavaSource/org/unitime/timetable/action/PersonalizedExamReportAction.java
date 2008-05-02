@@ -203,7 +203,7 @@ public class PersonalizedExamReportAction extends Action {
                             -1, null, exams);
                     sr.setM2d(true); sr.setBtb(true); sr.setDirect(true);
                     sr.printHeader();
-                    sr.printReport(student.getUniqueId(), sections);
+                    sr.printReport(student, sections);
                     sr.lastPage();
                     sr.close();
                 }
