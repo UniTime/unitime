@@ -31,6 +31,7 @@ import java.util.Properties;
 
 import org.unitime.commons.Debug;
 import org.unitime.timetable.model.ApplicationConfig;
+import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.util.Constants;
 
 
@@ -45,6 +46,7 @@ public class ApplicationProperties {
 	private static Properties props = new Properties();
     private static long appPropertiesLastModified = -1, custPropertiesLastModified = -1;  
     private static PropertyFileChangeListener pfc=null;
+    private static Properties configProps = null;
 	
 	/**
 	 * Sets the properties 
@@ -151,19 +153,23 @@ public class ApplicationProperties {
         }
 	}
 	
+	public static Properties getConfigProperties() {
+	    if (configProps==null && _RootDAO.getConfiguration()!=null)
+	        configProps = ApplicationConfig.toProperties();
+	    return (configProps==null?new Properties():configProps);
+	}
+	
+	public static void clearConfigProperties() {
+	    configProps = null;
+	}
+	
 	/**
 	 * Retrieves value for the property key
 	 * @param key
 	 * @return null if invalid key / key does not exist
 	 */
 	public static String getProperty(String key) {
-	    if(key==null || key.trim().length()==0)
-	        return null;
-        
-        String value = ApplicationConfig.getConfigValue(key, null);
-        if (value!=null) return value;
-        
-        return props.getProperty(key);
+	    return getProperty(key, null);
 	}
 
 	/**
@@ -176,7 +182,7 @@ public class ApplicationProperties {
 	    if(key==null || key.trim().length()==0)
 	        return defaultValue;
         
-        String value = ApplicationConfig.getConfigValue(key, null);
+        String value = getConfigProperties().getProperty(key);
         if (value!=null) return value;
         
         return props.getProperty(key, defaultValue);
@@ -188,7 +194,7 @@ public class ApplicationProperties {
 	 */
 	public static Properties getProperties() {
         Properties ret = (Properties)props.clone();
-        ret.putAll(ApplicationConfig.toProperties());
+        ret.putAll(getConfigProperties());
 		return ret;
 	}
 

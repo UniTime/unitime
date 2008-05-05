@@ -35,6 +35,7 @@ import org.apache.struts.util.MessageResources;
 import org.hibernate.criterion.Order;
 import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ApplicationConfigForm;
 import org.unitime.timetable.model.ApplicationConfig;
 import org.unitime.timetable.model.Roles;
@@ -126,6 +127,7 @@ public class ApplicationConfigAction extends Action {
 	                s.setValue(frm.getValue());                
 	                s.setDescription(frm.getDescription());                
 	                sdao.saveOrUpdate(s);
+	                ApplicationProperties.getConfigProperties().put(frm.getKey(), frm.getValue());
 	                frm.reset(mapping, request);
                 }
                 catch (Exception e) {
@@ -147,6 +149,7 @@ public class ApplicationConfigAction extends Action {
                     ApplicationConfigDAO sdao = new ApplicationConfigDAO();
                     
                     sdao.delete(frm.getKey());
+                    ApplicationProperties.getConfigProperties().remove(frm.getKey());
                     
                     frm.reset(mapping, request);
                 }
@@ -177,6 +180,7 @@ public class ApplicationConfigAction extends Action {
                     s.setValue(frm.getValue());                
                     s.setDescription(frm.getDescription());                
                     sdao.saveOrUpdate(s);
+                    ApplicationProperties.getConfigProperties().put(frm.getKey(), frm.getValue());
                     frm.reset(mapping, request);
                 }
                 catch (Exception e) {
