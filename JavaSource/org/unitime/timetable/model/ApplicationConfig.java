@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.Properties;
 
 import org.hibernate.criterion.Restrictions;
@@ -56,30 +55,17 @@ public class ApplicationConfig extends BaseApplicationConfig {
 	 * @return Object if found, null otherwise
 	 */
 	public static ApplicationConfig getConfig(String key) {
-	    ApplicationConfig config = null;
-		org.hibernate.Session hibSession = null;
-	    
         try {
-            ApplicationConfigDAO sDao = new ApplicationConfigDAO();
-			hibSession = sDao.getSession();
-            
-			List configList = hibSession.createCriteria(ApplicationConfig.class)
-			.add(Restrictions.eq("key", key))
-			.setCacheable(true)
-			.list();
-			
-			if(configList.size()!=0) 
-			    config = (ApplicationConfig) configList.get(0);
-			    
-	    }
-	    catch (Exception e) {
+            return (ApplicationConfig)new ApplicationConfigDAO()
+                .getSession()
+                .createCriteria(ApplicationConfig.class)
+                .add(Restrictions.eq("key", key))
+                .setCacheable(true)
+                .uniqueResult();
+	    } catch (Exception e) {
 			Debug.error(e);
-			config = null;
+			return null;
 	    }
-	    finally {
-	    }
-	    
-	    return config;
 	}
 	
 	/**
@@ -91,11 +77,12 @@ public class ApplicationConfig extends BaseApplicationConfig {
 	    //return defaultValue if hibernate is not yet initialized
         if (_RootDAO.getConfiguration()==null) return defaultValue;
         
-	    ApplicationConfig config = getConfig(key);
-	    if (config==null || config.getValue()==null || config.getValue().trim().length()==0)
-	        return defaultValue;
-	    
-	    return config.getValue();
+        String value = (String)new ApplicationConfigDAO().
+            getSession().
+            createQuery("select c.value from ApplicationConfig c where c.key=:key").
+            setString("key", key).setCacheable(true).uniqueResult();
+        
+        return (value==null?defaultValue:value);
 	}
     
     public static Properties toProperties() {
