@@ -20,6 +20,7 @@
 package org.unitime.timetable.action;
 
 import java.io.File;
+import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -31,7 +32,10 @@ import org.apache.struts.action.ActionMapping;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ExamGridForm;
+import org.unitime.timetable.model.ExamPeriod;
+import org.unitime.timetable.model.Session;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.RoomAvailability;
 import org.unitime.timetable.webutil.timegrid.PdfExamGridTable;
 
 
@@ -62,6 +66,12 @@ public class ExamGridAction extends Action {
                 myForm.setResource(Integer.parseInt(request.getParameter("resource")));
             if (request.getParameter("filter")!=null)
                 myForm.setFilter(request.getParameter("filter"));
+        }
+        
+        if (RoomAvailability.getInstance()!=null) {
+            Session session = Session.getCurrentAcadSession(Web.getUser(request.getSession()));
+            Date[] bounds = ExamPeriod.getBounds(session, myForm.getExamType());
+            RoomAvailability.getInstance().activate(session,bounds[0],bounds[1],false);
         }
         
         PdfExamGridTable table = new PdfExamGridTable(myForm, request.getSession());
