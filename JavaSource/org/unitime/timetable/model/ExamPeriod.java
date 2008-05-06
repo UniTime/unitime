@@ -348,9 +348,13 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
     }
     
     public static Date[] getBounds(Session session, int examType) {
+        return getBounds(session.getUniqueId(), session.getExamBeginDate(), examType);
+    }
+    
+    public static Date[] getBounds(Long sessionId, Date examBeginDate, int examType) {
         Object[] bounds = (Object[])new ExamPeriodDAO().getQuery("select min(ep.dateOffset), min(ep.startSlot), max(ep.dateOffset), max(ep.startSlot+ep.length) " +
         		"from ExamPeriod ep where ep.session.uniqueId = :sessionId and ep.examType = :examType")
-        		.setLong("sessionId", session.getUniqueId())
+        		.setLong("sessionId", sessionId)
                 .setInteger("examType", examType)
                 .setCacheable(true).uniqueResult();
         if (bounds==null) return null;
@@ -363,12 +367,12 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
         int maxHour = (Constants.SLOT_LENGTH_MIN*maxSlot+Constants.FIRST_SLOT_TIME_MIN) / 60;
         int maxMin = (Constants.SLOT_LENGTH_MIN*maxSlot+Constants.FIRST_SLOT_TIME_MIN) % 60;
         Calendar c = Calendar.getInstance(Locale.US);
-        c.setTime(session.getExamBeginDate());
+        c.setTime(examBeginDate);
         c.add(Calendar.DAY_OF_YEAR, minDateOffset);
         c.set(Calendar.HOUR, minHour);
         c.set(Calendar.MINUTE, minMin);
         Date min = c.getTime();
-        c.setTime(session.getExamBeginDate());
+        c.setTime(examBeginDate);
         c.add(Calendar.DAY_OF_YEAR, maxDateOffset);
         c.set(Calendar.HOUR, maxHour);
         c.set(Calendar.MINUTE, maxMin);
