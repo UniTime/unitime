@@ -24,6 +24,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -37,20 +38,23 @@ import javax.servlet.jsp.JspWriter;
 
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.ExamGridForm;
+import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
+import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
+import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.SubjectArea;
-import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
 import org.unitime.timetable.solver.exam.ui.ExamRoomInfo;
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamInstructorInfo;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.RoomAvailability;
 import org.unitime.timetable.webutil.timegrid.ExamGridTable.ExamGridModel.ExamGridCell;
 
 /**
@@ -143,21 +147,16 @@ public class ExamGridTable {
 	    }
 	    ExamSolverProxy solver = WebSolver.getExamSolver(session);
 	    if (iForm.getResource()==sResourceRoom) {
+	        Date[] bounds = ExamPeriod.getBounds(form.getSessionId(),form.getExamBeginDate(), form.getExamType());
 	        for (Iterator i=Location.findAllExamLocations(iForm.getSessionId(), iForm.getExamType()).iterator();i.hasNext();) {
 	            Location location = (Location)i.next();
 	            if (match(location.getLabel())) {
 	                if (solver!=null && solver.getExamType()==iForm.getExamType())
-	                    iModels.add(new RoomExamGridModel(
-	                            location.getUniqueId(),
-	                            location.getLabel(),
-	                            location.getCapacity(),
-	                            solver.getAssignedExamsOfRoom(location.getUniqueId())));
+	                    iModels.add(new RoomExamGridModel(location,
+	                            solver.getAssignedExamsOfRoom(location.getUniqueId()),bounds));
 	                else
-                        iModels.add(new RoomExamGridModel(
-                                location.getUniqueId(),
-                                location.getLabel(),
-                                location.getCapacity(),
-                                Exam.findAssignedExamsOfLocation(location.getUniqueId(), iForm.getExamType())));
+                        iModels.add(new RoomExamGridModel(location,
+                                Exam.findAssignedExamsOfLocation(location.getUniqueId(), iForm.getExamType()),bounds));
 	            }
 	        }
 	    } else if (iForm.getResource()==sResourceInstructor) {
@@ -361,9 +360,10 @@ public class ExamGridTable {
 	
     private void getMouseOverAndMouseOut(StringBuffer onMouseOver, StringBuffer onMouseOut, ExamGridCell cell, String bgColor, boolean changeMouse) {
     	if (cell==null) return;
+        ExamAssignmentInfo info = cell.getInfo();
+        if (info==null) return;
     	onMouseOver.append(" onmouseover=\"");
         onMouseOut.append(" onmouseout=\"");
-        ExamAssignmentInfo info = cell.getInfo();
         if (iForm.getResource()==sResourceRoom) {
             for (ExamRoomInfo room : info.getRooms()) {
                 Long roomId = room.getLocationId();
@@ -931,10 +931,11 @@ public class ExamGridTable {
 
 	    public class ExamGridCell {
 	        private ExamAssignmentInfo iInfo = null;
+	        public ExamGridCell() {}
 	        public ExamGridCell(ExamAssignmentInfo info) {
 	            iInfo = info;
 	        }
-	        public ExamAssignmentInfo getInfo() {
+	        private ExamAssignmentInfo getInfo() {
 	            return iInfo;
 	        }
 	        public String getBackground() {
@@ -1019,15 +1020,70 @@ public class ExamGridTable {
                 int btb = getInfo().getNrBackToBackConflicts();
                 return dc+", "+m2d+", "+btb;
             }
+
 	    }
+        public class BlockGridCell extends ExamGridCell {
+            private TimeBlock iBlock = null;
+            public BlockGridCell(TimeBlock block) {
+                iBlock = block;
+            }
+            public String getBackground() {
+                return sBgColorNotAvailable;
+            }
+
+            public String getOnClick() {
+                return null;
+            }
+            
+            public String getId() {
+                return null;
+            }
+            
+            public String getTitle() {
+                return iBlock.getEventName()+" ("+iBlock.getEventType()+")";
+            }
+            
+            public String getName() {
+                return iBlock.getEventName();
+            }
+            
+            public String getRoomName() {
+                return iBlock.getEventType();
+            }
+            
+            public String getShortComment() {
+                return "";
+            }
+            
+            public String getShortCommentNoColors() {
+                return "";
+            }
+        }
 	}
 	
 	public class RoomExamGridModel extends ExamGridModel {
 	    private Hashtable iExamPrefs = new Hashtable();
+	    private Collection<TimeBlock> iUnavailabilities = null;
 	    
-	    RoomExamGridModel(Long id, String name, int size, Collection<ExamAssignmentInfo> assignments) {
-	        super(id, name, size, assignments);
-	        iExamPrefs = new LocationDAO().get(id).getExamPreferences(iForm.getExamType());
+	    RoomExamGridModel(Location location, Collection<ExamAssignmentInfo> assignments, Date[] bounds) {
+	        super(location.getUniqueId(), location.getLabel(), location.getCapacity(), assignments);
+	        iExamPrefs = location.getExamPreferences(iForm.getExamType());
+	        if (RoomAvailability.getInstance()!=null && location instanceof Room) {
+	            Room room = (Room)location;
+	            iUnavailabilities = RoomAvailability.getInstance().getRoomAvailability(
+	                    room.getExternalUniqueId(), 
+	                    room.getBuildingAbbv(), 
+	                    room.getRoomNumber(), 
+	                    bounds[0], bounds[1], 
+                        new String[] {(iForm.getExamType()==Exam.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sEveningExamType)});
+	        }
+	    }
+	    
+	    public TimeBlock getBlock(ExamPeriod period) {
+	        if (period==null || iUnavailabilities==null || iUnavailabilities.isEmpty()) return null;
+	        for (TimeBlock block : iUnavailabilities)
+	            if (period.overlap(block)) return block;
+	        return null;
 	    }
 	    
 	    public PreferenceLevel getPreference(ExamPeriod period) {
@@ -1036,6 +1092,7 @@ public class ExamGridTable {
 
         public boolean isAvailable(ExamPeriod period) {
             if (!super.isAvailable(period)) return false;
+            if (getBlock(period)!=null) return false;
             PreferenceLevel pref = getPreference(period);
             return (pref==null || !PreferenceLevel.sProhibited.equals(pref.getPrefProlog()));
         }
@@ -1048,6 +1105,16 @@ public class ExamGridTable {
                     return pref2color(pref.getPrefProlog());
                 if (period.getPrefLevel()!=null && !PreferenceLevel.sNeutral.equals(period.getPrefLevel().getPrefProlog()))
                     return pref2color(period.getPrefLevel().getPrefProlog());
+            }
+            return null;
+        }
+        
+        public ExamGridCell getAssignment(ExamPeriod period, int idx) {
+            ExamGridCell cell = super.getAssignment(period, idx);
+            if (cell!=null) return cell;
+            if (idx==getAssignments(period).size()) {
+                TimeBlock block = getBlock(period);
+                if (block!=null) return new BlockGridCell(block);
             }
             return null;
         }
