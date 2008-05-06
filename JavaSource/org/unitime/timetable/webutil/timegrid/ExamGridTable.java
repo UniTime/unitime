@@ -147,13 +147,13 @@ public class ExamGridTable {
 	            Location location = (Location)i.next();
 	            if (match(location.getLabel())) {
 	                if (solver!=null && solver.getExamType()==iForm.getExamType())
-	                    iModels.add(new ExamGridModel(
+	                    iModels.add(new RoomExamGridModel(
 	                            location.getUniqueId(),
 	                            location.getLabel(),
 	                            location.getCapacity(),
 	                            solver.getAssignedExamsOfRoom(location.getUniqueId())));
 	                else
-                        iModels.add(new ExamGridModel(
+                        iModels.add(new RoomExamGridModel(
                                 location.getUniqueId(),
                                 location.getLabel(),
                                 location.getCapacity(),
@@ -996,7 +996,7 @@ public class ExamGridTable {
 	        }
 	        
 	        public String getName() {
-	            return getInfo().getSectionName("<br>");
+	            return (iForm.getShowSections()?getInfo().getSectionName("<br>"):getInfo().getExamName());
 	        }
 	        
 	        public String getRoomName() {
@@ -1031,7 +1031,7 @@ public class ExamGridTable {
 	    }
 	    
 	    public PreferenceLevel getPreference(ExamPeriod period) {
-	        return (PreferenceLevel)iExamPrefs.get(period);
+	        return (iExamPrefs==null?null:(PreferenceLevel)iExamPrefs.get(period));
 	    }
 
         public boolean isAvailable(ExamPeriod period) {
@@ -1041,6 +1041,7 @@ public class ExamGridTable {
         }
         
         public String getBackground(ExamPeriod period) {
+            if (period==null) return null;
             if (iForm.getBgPreferences() && iForm.getBackground()==sBgPeriodPref) {
                 PreferenceLevel pref = getPreference(period);
                 if (pref!=null && !PreferenceLevel.sNeutral.equals(pref.getPrefProlog()))
