@@ -791,6 +791,8 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                 Class_ clazz = (Class_)getOwnerObject();
                 return ("true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.suffix","false")) && clazz.getClassSuffix()!=null?clazz.getClassSuffix():clazz.getSectionNumberString());
             case sOwnerTypeConfig : 
+                if ("false".equals(ApplicationProperties.getProperty("tmtbl.exam.report.itype","true")))
+                    return "["+((InstrOfferingConfig)getOwnerObject()).getName()+"]";
             case sOwnerTypeCourse : 
             case sOwnerTypeOffering : 
                 return "";
