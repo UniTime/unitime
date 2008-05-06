@@ -1575,7 +1575,26 @@ public class CourseOfferingImport extends BaseImport {
 						}
 						addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " 'class' itype changed");
 						changed = true;
-					} 
+					}
+					if ((clazz.getSchedulePrintNote() != null && !clazz.getSchedulePrintNote().equals(scheduleNote))
+							 || (clazz.getSchedulePrintNote() == null && scheduleNote != null)){
+						clazz.setSchedulePrintNote(scheduleNote);
+						addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " 'class' schedule note changed");
+						changed = true;
+					}
+					if ((clazz.getExpectedCapacity() != null && !clazz.getExpectedCapacity().equals(limit))
+							 || (clazz.getExpectedCapacity() == null && limit != null)){
+						clazz.setExpectedCapacity(limit);
+						clazz.setMaxExpectedCapacity(limit);
+						addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " 'class' limit changed");
+						changed = true;						
+					}
+					if ((clazz.isDisplayInScheduleBook() != null && !clazz.isDisplayInScheduleBook().equals(displayInScheduleBook))
+							 || (clazz.isDisplayInScheduleBook() == null && displayInScheduleBook != null)){
+						clazz.setDisplayInScheduleBook(displayInScheduleBook);
+						addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " 'class' display in schedule book changed");
+						changed = true;						
+					}
 				} else {
 					isAdd = true;
 					clazz = new Class_();
