@@ -109,8 +109,8 @@ public class PreferenceLevel extends BasePreferenceLevel {
         sBgPref2color.put(sProhibited,"rgb(220,50,40)");
         sHexPref2color = new Hashtable();
         sHexPref2color.put(sRequired,"#3c3cb4");
-        sHexPref2color.put(sStronglyPreferred,"#14a028");
-        sHexPref2color.put(sPreferred,"#0f821e"); //6ec814, 96f028
+        sHexPref2color.put(sStronglyPreferred,"#0f821e"); //14a028
+        sHexPref2color.put(sPreferred,"#32c814"); //6ec814, 96f028
         sHexPref2color.put(sNeutral,"#0a0a0a");
         sHexPref2color.put(sDiscouraged,"#dcb414"); //f0c828
         sHexPref2color.put(sStronglyDiscouraged,"#f06428");
