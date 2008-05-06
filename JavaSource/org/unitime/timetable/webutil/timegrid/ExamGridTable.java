@@ -45,7 +45,6 @@ import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
-import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.solver.WebSolver;
@@ -1068,12 +1067,9 @@ public class ExamGridTable {
 	    RoomExamGridModel(Location location, Collection<ExamAssignmentInfo> assignments, Date[] bounds) {
 	        super(location.getUniqueId(), location.getLabel(), location.getCapacity(), assignments);
 	        iExamPrefs = location.getExamPreferences(iForm.getExamType());
-	        if (RoomAvailability.getInstance()!=null && location instanceof Room) {
-	            Room room = (Room)location;
+	        if (RoomAvailability.getInstance()!=null) {
 	            iUnavailabilities = RoomAvailability.getInstance().getRoomAvailability(
-	                    room.getExternalUniqueId(), 
-	                    room.getBuildingAbbv(), 
-	                    room.getRoomNumber(), 
+	                    location, 
 	                    bounds[0], bounds[1], 
                         new String[] {(iForm.getExamType()==Exam.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sEveningExamType)});
 	        }

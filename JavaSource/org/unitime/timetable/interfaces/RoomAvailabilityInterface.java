@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Date;
 
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Session;
 
 public interface RoomAvailabilityInterface {
@@ -13,7 +14,7 @@ public interface RoomAvailabilityInterface {
     public static final String sClassType = ApplicationProperties.getProperty("tmtbl.room.availability.eventType.class","Course Activity");
 
     public String getTimeStamp(Date startTime, Date endTime);
-    public Collection<TimeBlock> getRoomAvailability(String roomExternalId, String buildingAbbv, String roomNbr, Date startTime, Date endTime, String[] excludeTypes);
+    public Collection<TimeBlock> getRoomAvailability(Location location, Date startTime, Date endTime, String[] excludeTypes);
     public void activate(Session session, Date startTime, Date endTime, boolean waitForSync);
     
     public void startService();
