@@ -779,11 +779,9 @@ public class ExamDatabaseLoader extends ExamLoader {
         for (Iterator i=iAllRooms.iterator();i.hasNext();) {
             iProgress.incProgress();
             Location location = (Location)i.next();
-            if (!(location instanceof Room)) continue;
-            Room room = (Room)location;
-            ExamRoom roomEx = iRooms.get(room.getUniqueId());
+            ExamRoom roomEx = iRooms.get(location.getUniqueId());
             if (roomEx==null) continue;
-            Collection<TimeBlock> times = getRoomAvailability(room.getExternalUniqueId(), room.getBuildingAbbv(), room.getRoomNumber(), bounds[0], bounds[1]);
+            Collection<TimeBlock> times = getRoomAvailability(location, bounds[0], bounds[1]);
             if (times==null) continue;
             for (TimeBlock time : times) {
                 for (Iterator j=periods.iterator();j.hasNext();) {
@@ -807,13 +805,13 @@ public class ExamDatabaseLoader extends ExamLoader {
         }
     }
     
-    public Collection<TimeBlock> getRoomAvailability(String roomExternalId, String buildingAbbv, String roomNbr, Date startTime, Date endTime) {
+    public Collection<TimeBlock> getRoomAvailability(Location location, Date startTime, Date endTime) {
         try {
             if (isRemote()) {
-                return (Collection<TimeBlock>)RemoteSolverServer.query(new Object[]{"getExamRoomAvailability",roomExternalId,buildingAbbv,roomNbr,startTime,endTime,iExamType});
+                return (Collection<TimeBlock>)RemoteSolverServer.query(new Object[]{"getExamRoomAvailability",location.getUniqueId(),startTime,endTime,iExamType});
             } else {
                 return RoomAvailability.getInstance().getRoomAvailability(
-                        roomExternalId, buildingAbbv, roomNbr, startTime, endTime,
+                        location, startTime, endTime,
                         new String[] {(iExamType==org.unitime.timetable.model.Exam.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sEveningExamType)});
             }
         } catch (Exception e) {

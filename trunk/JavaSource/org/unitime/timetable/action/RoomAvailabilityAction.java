@@ -41,9 +41,9 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ExamReportForm;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
+import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Location;
-import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.util.Constants;
@@ -123,9 +123,8 @@ public class RoomAvailabilityAction extends Action {
         try {
             for (Iterator i=Location.findAllExamLocations(sessionId, form.getExamType()).iterator();i.hasNext();) {
                 Location location = (Location)i.next();
-                if (!(location instanceof Room)) continue;
-                Room room = (Room)location;
-                Collection<TimeBlock> events = ra.getRoomAvailability(room.getExternalUniqueId(),room.getBuildingAbbv(), room.getRoomNumber(), bounds[0], bounds[1], new String[]{});
+                Collection<TimeBlock> events = ra.getRoomAvailability(location, bounds[0], bounds[1], 
+                        new String[]{(form.getExamType()==Exam.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sEveningExamType)});
                 if (events==null) continue;
                 if (ts==null) ts = ra.getTimeStamp(bounds[0], bounds[1]);
                 for (TimeBlock event : events) {
@@ -138,9 +137,9 @@ public class RoomAvailabilityAction extends Action {
                     table.addLine(
                             null,
                             new String[] {
-                                room.getLabel(),
-                                room.getCapacity().toString(),
-                                room.getExamCapacity().toString(),
+                                location.getLabel(),
+                                location.getCapacity().toString(),
+                                location.getExamCapacity().toString(),
                                 event.getEventName(),
                                 event.getEventType(),
                                 dateFormat.format(event.getStartTime()),
@@ -148,16 +147,16 @@ public class RoomAvailabilityAction extends Action {
                                 timeFormat.format(event.getEndTime()),
                             },
                             new Comparable[] {
-                                new MultiComparable(room.getLabel(),event.getStartTime()),
-                                new MultiComparable(-room.getCapacity(),room.getLabel(),event.getStartTime()),
-                                new MultiComparable(-room.getExamCapacity(),room.getLabel(),event.getStartTime()),
-                                new MultiComparable(event.getEventName(),room.getLabel(),event.getStartTime()),
-                                new MultiComparable(event.getEventType(),event.getEventName(),room.getLabel(),event.getStartTime()),
-                                new MultiComparable(event.getStartTime(),room.getLabel()),
-                                new MultiComparable(event.getStartTime().getTime() % 86400000,room.getLabel()),
-                                new MultiComparable(event.getEndTime().getTime() % 86400000,room.getLabel())
+                                new MultiComparable(location.getLabel(),event.getStartTime()),
+                                new MultiComparable(-location.getCapacity(),location.getLabel(),event.getStartTime()),
+                                new MultiComparable(-location.getExamCapacity(),location.getLabel(),event.getStartTime()),
+                                new MultiComparable(event.getEventName(),location.getLabel(),event.getStartTime()),
+                                new MultiComparable(event.getEventType(),event.getEventName(),location.getLabel(),event.getStartTime()),
+                                new MultiComparable(event.getStartTime(),location.getLabel()),
+                                new MultiComparable(event.getStartTime().getTime() % 86400000,location.getLabel()),
+                                new MultiComparable(event.getEndTime().getTime() % 86400000,location.getLabel())
                             },
-                            room.getUniqueId().toString());
+                            location.getUniqueId().toString());
                 }
             }
             if (ts!=null) request.setAttribute("timestamp", ts);
