@@ -566,10 +566,9 @@ public class ExamInfoModel implements Serializable {
             
             if (!match(room.getLabel(),filter)) continue;
             
-            if (RoomAvailability.getInstance()!=null && room instanceof Room) {
-                Room r = (Room)room;
+            if (RoomAvailability.getInstance()!=null) {
                 Collection<TimeBlock> times = RoomAvailability.getInstance().getRoomAvailability(
-                        r.getExternalUniqueId(),r.getBuildingAbbv(),r.getRoomNumber(), 
+                        room,
                         period.getStartTime(), period.getEndTime(), 
                         new String[] {(getExam().getExamType()==Exam.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sEveningExamType)});
                 if (times!=null) for (TimeBlock time : times) {
