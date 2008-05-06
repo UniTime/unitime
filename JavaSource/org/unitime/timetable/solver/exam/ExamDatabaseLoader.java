@@ -40,17 +40,12 @@ import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.ClassInstructor;
-import org.unitime.timetable.model.Class_;
-import org.unitime.timetable.model.CourseOffering;
-import org.unitime.timetable.model.CourseOfferingReservation;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionObject;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.EventType;
 import org.unitime.timetable.model.ExamPeriodPref;
-import org.unitime.timetable.model.InstrOfferingConfig;
-import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.PreferenceLevel;
@@ -252,35 +247,9 @@ public class ExamDatabaseLoader extends ExamLoader {
             for (Iterator j=new TreeSet(exam.getOwners()).iterator();j.hasNext();) {
                 org.unitime.timetable.model.ExamOwner owner = (org.unitime.timetable.model.ExamOwner)j.next();
                 Object ownerObject = owner.getOwnerObject();
-                if (ownerObject instanceof Class_) {
-                    Class_ clazz = (Class_)ownerObject;
-                    ExamOwner cs = new ExamOwner(x, owner.getUniqueId(), clazz.getClassLabel());
-                    minSize += clazz.getClassLimit();
-                    x.getOwners().add(cs);
-                } else if (ownerObject instanceof InstrOfferingConfig) {
-                    InstrOfferingConfig config = (InstrOfferingConfig)ownerObject;
-                    ExamOwner cs = new ExamOwner(x, owner.getUniqueId(), config.toString());
-                    minSize += config.getLimit();
-                    x.getOwners().add(cs);
-                } else if (ownerObject instanceof CourseOffering) {
-                    CourseOffering course = (CourseOffering)ownerObject;
-                    ExamOwner cs = new ExamOwner(x, owner.getUniqueId(), course.getCourseName());
-                    if (course.getInstructionalOffering().getCourseOfferings().size()>1) {
-                        for (Iterator k=course.getInstructionalOffering().getCourseReservations().iterator();k.hasNext();) {
-                            CourseOfferingReservation reservation = (CourseOfferingReservation)k.next();
-                            if (reservation.getCourseOffering().equals(course))
-                                minSize += reservation.getReserved();
-                        }
-                    } else {
-                        minSize += (course.getInstructionalOffering().getLimit()==null?0:course.getInstructionalOffering().getLimit());
-                    }
-                    x.getOwners().add(cs);
-                } else if (ownerObject instanceof InstructionalOffering) {
-                    InstructionalOffering offering = (InstructionalOffering)ownerObject;
-                    ExamOwner cs = new ExamOwner(x, owner.getUniqueId(), offering.getCourseName());
-                    minSize += (offering.getLimit()==null?0:offering.getLimit());
-                    x.getOwners().add(cs);
-                }
+                ExamOwner cs = new ExamOwner(x, owner.getUniqueId(), owner.getLabel());
+                minSize += owner.getLimit();
+                x.getOwners().add(cs);
             }
             
             if (iExamType==org.unitime.timetable.model.Exam.sExamTypeEvening && minSize>0)
