@@ -33,6 +33,12 @@ try {
 	<script language="JavaScript">blToggleHeader('Filter','dispFilter');blStart('dispFilter');</script>
 	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
+			<TD width="10%" nowrap>Show classes/courses:</TD>
+			<TD>
+				<html:checkbox property="showSections"/>
+			</TD>
+		</TR>
+		<TR>
   			<TD nowrap>Examination Problem:</TD>
 			<TD>
 				<html:select property="examType" onchange="javascript: showDates(this.value);">
