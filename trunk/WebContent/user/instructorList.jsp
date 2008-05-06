@@ -88,7 +88,7 @@
 	<%}%>
 	
 	<TR>		
-		<TD colspan="9" align="right" class="WelcomeRowHead">
+		<TD colspan="11" align="right" class="WelcomeRowHead">
 		&nbsp;
 		</TD>
 	</TR>
