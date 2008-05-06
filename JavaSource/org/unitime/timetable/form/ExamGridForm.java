@@ -31,6 +31,7 @@ public class ExamGridForm extends ActionForm {
     private int iSessionBeginWeek;
     private Date iSessionBeginDate;
     private Date iExamBeginDate;
+    private boolean iShowSections = false;
     
     private String iOp = null;
     private int iExamType = Exam.sExamTypeFinal;
@@ -80,6 +81,7 @@ public class ExamGridForm extends ActionForm {
         iOrder = ExamGridTable.sOrderByNameAsc;
         iBgPreferences = false;
         iOp = null;
+        iShowSections = false;
 		iExamType = Exam.sExamTypeFinal;
 		try {
 			ExamSolverProxy solver = WebSolver.getExamSolver(request.getSession());
@@ -117,6 +119,7 @@ public class ExamGridForm extends ActionForm {
         setOrder(UserData.getPropertyInt(httpSession,"ExamGrid.order",ExamGridTable.sOrderByNameAsc));
         setBgPreferences(UserData.getPropertyBoolean(httpSession,"ExamGrid.bgPref",false));
         setExamType(httpSession.getAttribute("Exam.Type")==null?iExamType:(Integer)httpSession.getAttribute("Exam.Type"));
+        setShowSections(UserData.getPropertyBoolean(httpSession,"ExamReport.showSections", true));
     }
     
     public void save(HttpSession httpSession) throws Exception {
@@ -132,6 +135,7 @@ public class ExamGridForm extends ActionForm {
         UserData.setPropertyInt(httpSession, "ExamGrid.order", getOrder());
         UserData.setPropertyBoolean(httpSession, "ExamGrid.bgPref", getBgPreferences());
         httpSession.setAttribute("Exam.Type", getExamType());
+        UserData.setPropertyBoolean(httpSession,"ExamReport.showSections", getShowSections());
     }
 
     public Vector<ComboBoxLookup> getDates(int examType) {
@@ -267,4 +271,6 @@ public class ExamGridForm extends ActionForm {
     
     public int getSessionBeginWeek() { return iSessionBeginWeek; }
     public Date getSessionBeginDate() { return iSessionBeginDate; }
+    public boolean getShowSections() { return iShowSections; }
+    public void setShowSections(boolean showSections) { iShowSections = showSections; }
 }
