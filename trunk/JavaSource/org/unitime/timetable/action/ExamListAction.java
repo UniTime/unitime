@@ -24,6 +24,7 @@ import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ExamListForm;
 import org.unitime.timetable.model.BuildingPref;
+import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.EveningPeriodPreferenceModel;
 import org.unitime.timetable.model.Exam;
@@ -36,6 +37,7 @@ import org.unitime.timetable.model.RoomFeaturePref;
 import org.unitime.timetable.model.RoomGroupPref;
 import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
@@ -147,6 +149,7 @@ public class ExamListAction extends Action {
         
         boolean timeVertical = RequiredTimeTable.getTimeGridVertical(user);
         boolean timeText = RequiredTimeTable.getTimeGridAsText(user);
+        String instructorNameFormat = Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT);
         
         PdfWebTable table = new PdfWebTable(
                 11,
@@ -258,7 +261,13 @@ public class ExamListAction extends Action {
             
             ExamInfo ei = (ea==null?new ExamInfo(exam):ea);
             int nrStudents = ei.getNrStudents();
-            String instructors = ei.getInstructorName(nl);
+            //String instructors = ei.getInstructorName(nl);
+            String instructors = "";
+            for (Iterator j=new TreeSet(exam.getInstructors()).iterator();j.hasNext();) {
+                DepartmentalInstructor instructor = (DepartmentalInstructor)j.next();
+                if (instructors.length()>0) instructors+=nl;
+                instructors+=instructor.getName(instructorNameFormat);
+            }
             
             table.addLine(
                     "onClick=\"document.location='examDetail.do?examId="+exam.getUniqueId()+"';\"",
