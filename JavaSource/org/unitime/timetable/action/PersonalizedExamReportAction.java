@@ -171,6 +171,7 @@ public class PersonalizedExamReportAction extends Action {
         WebTable.setOrder(request.getSession(),"exams.o4",request.getParameter("o4"),1);
         WebTable.setOrder(request.getSession(),"exams.o5",request.getParameter("o5"),1);
         WebTable.setOrder(request.getSession(),"exams.o6",request.getParameter("o6"),1);
+        WebTable.setOrder(request.getSession(),"exams.o7",request.getParameter("o7"),1);
         
         if ("Export PDF".equals(myForm.getOp())) {
             FileOutputStream out = null;
@@ -1153,12 +1154,13 @@ public class PersonalizedExamReportAction extends Action {
                 new boolean[] {true, true, true, true, true, true} );
         table.setRowStyle("white-space:nowrap");
         table.setBlankWhenSame(true);
+        boolean suffix = "true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.suffix","false"));
         for (Iterator i=student.getClassEnrollments().iterator();i.hasNext();) {
             StudentClassEnrollment sce = (StudentClassEnrollment)i.next();
             String course = sce.getCourseOffering().getCourseName();
             String itype =  sce.getClazz().getSchedulingSubpart().getItypeDesc();
             int itypeCmp = sce.getClazz().getSchedulingSubpart().getItype().getItype();
-            String section = (sce.getClazz().getClassSuffix()!=null?sce.getClazz().getClassSuffix():sce.getClazz().getSectionNumberString());
+            String section = (suffix && sce.getClazz().getClassSuffix()!=null?sce.getClazz().getClassSuffix():sce.getClazz().getSectionNumberString());
             String time = getMeetingTime(sce.getClazz());
             long timeCmp = getMeetingComparable(sce.getClazz());
             String room = getMeetingRooms(sce.getClazz());
@@ -1206,12 +1208,13 @@ public class PersonalizedExamReportAction extends Action {
         }
         table.setRowStyle("white-space:nowrap");
         table.setBlankWhenSame(true);
+        boolean suffix = "true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.suffix","false"));
         for (Iterator i=allClasses.iterator();i.hasNext();) {
             ClassInstructor ci = (ClassInstructor)i.next();
             String course = ci.getClassInstructing().getSchedulingSubpart().getControllingCourseOffering().getCourseName();
             String itype =  ci.getClassInstructing().getSchedulingSubpart().getItypeDesc();
             int itypeCmp = ci.getClassInstructing().getSchedulingSubpart().getItype().getItype();
-            String section = (ci.getClassInstructing().getClassSuffix()!=null?ci.getClassInstructing().getClassSuffix():ci.getClassInstructing().getSectionNumberString());
+            String section = (suffix && ci.getClassInstructing().getClassSuffix()!=null?ci.getClassInstructing().getClassSuffix():ci.getClassInstructing().getSectionNumberString());
             String time = getMeetingTime(ci.getClassInstructing());
             long timeCmp = getMeetingComparable(ci.getClassInstructing());
             String room = getMeetingRooms(ci.getClassInstructing());
