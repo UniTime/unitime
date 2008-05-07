@@ -20,9 +20,11 @@
 package org.unitime.commons;
 
 import java.util.Collection;
+import java.util.Comparator;
 
 public class MultiComparable implements Comparable<MultiComparable>{
     private Comparable[] iCmp;
+    private Comparator iStringCmp = new NaturalOrderComparator();
     
     public MultiComparable(Comparable[] cmp) {
         iCmp = cmp;
@@ -70,7 +72,11 @@ public class MultiComparable implements Comparable<MultiComparable>{
                 return -1;
             }
             if (mc.iCmp[i]==null) return 1;
-            int cmp = iCmp[i].compareTo(mc.iCmp[i]);
+            int cmp = 0;
+            if (iCmp[i]!=null && iCmp[i] instanceof String && mc.iCmp[i]!=null && mc.iCmp[i] instanceof String)
+                cmp = iStringCmp.compare(iCmp[i], mc.iCmp[i]);
+            else
+                cmp = iCmp[i].compareTo(mc.iCmp[i]);
             if (cmp!=0) return cmp;
         }
         if (iCmp.length>mc.iCmp.length) return 1;
