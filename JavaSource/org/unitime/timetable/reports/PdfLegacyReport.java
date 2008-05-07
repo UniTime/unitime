@@ -64,9 +64,9 @@ public class PdfLegacyReport {
             iWriter = PdfWriter.getInstance(iDoc, iOut);
 
             iDoc.addTitle(iTitle);
-            iDoc.addAuthor(ApplicationProperties.getProperty("tmtbl.pdf.examreport.author","UniTime 3.0."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+", www.unitime.org"));
+            iDoc.addAuthor(ApplicationProperties.getProperty("tmtbl.pdf.examreport.author","UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+", www.unitime.org"));
             iDoc.addSubject(iSubject);
-            iDoc.addCreator("UniTime 3.0."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+", www.unitime.org");
+            iDoc.addCreator("UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+", www.unitime.org");
 
             iDoc.open();
         }
@@ -164,7 +164,7 @@ public class PdfLegacyReport {
     
     public void printHeader() throws DocumentException {
         out(renderEnd(renderMiddle(
-                ApplicationProperties.getProperty("tmtbl.pdf.examreport.author","UniTime 3.0."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")),
+                ApplicationProperties.getProperty("tmtbl.pdf.examreport.author","UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")),
                 ApplicationProperties.getProperty("tmtbl.pdf.examreport.title",iTitle)
                 ),
                 iTitle2));
