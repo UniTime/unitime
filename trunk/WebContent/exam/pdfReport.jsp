@@ -237,6 +237,7 @@
 	</TABLE>
 <script type="text/javascript" language="javascript">
 	function selectionChanged() {
+		if (document.getElementsByName('all')==null || document.getElementsByName('all').length==0) return;
 		var allSubjects = document.getElementsByName('all')[0].checked;
 		var objSubjects = document.getElementsByName('subjects')[0];
 		var objEmailDeputies = document.getElementsByName('emailDeputies')[0];
