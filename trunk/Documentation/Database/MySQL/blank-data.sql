@@ -1,6 +1,6 @@
 /*
- * UniTime 3.0 (University Course Timetabling & Student Sectioning Application)
- * Copyright (C) 2007, UniTime.org
+ * UniTime 3.1 (University Timetabling Application)
+ * Copyright (C) 2008, UniTime.org
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -64,7 +64,19 @@ DELETE FROM `timetable`.`dist_type_dept`;
 DELETE FROM `timetable`.`distribution_object`;
 DELETE FROM `timetable`.`distribution_pref`;
 DELETE FROM `timetable`.`distribution_type`;
+DELETE FROM `timetable`.`event`;
+DELETE FROM `timetable`.`event_contact`;
+DELETE FROM `timetable`.`event_join_event_contact`;
+DELETE FROM `timetable`.`event_note`;
+DELETE FROM `timetable`.`event_type`;
 DELETE FROM `timetable`.`exact_time_mins`;
+DELETE FROM `timetable`.`exam`;
+DELETE FROM `timetable`.`exam_instructor`;
+DELETE FROM `timetable`.`exam_location_pref`;
+DELETE FROM `timetable`.`exam_owner`;
+DELETE FROM `timetable`.`exam_period`;
+DELETE FROM `timetable`.`exam_period_pref`;
+DELETE FROM `timetable`.`exam_room_assignment`;
 DELETE FROM `timetable`.`external_building`;
 DELETE FROM `timetable`.`external_room`;
 DELETE FROM `timetable`.`external_room_department`;
@@ -78,6 +90,7 @@ DELETE FROM `timetable`.`itype_desc`;
 DELETE FROM `timetable`.`jenrl`;
 DELETE FROM `timetable`.`lastlike_course_demand`;
 DELETE FROM `timetable`.`manager_settings`;
+DELETE FROM `timetable`.`meeting`;
 DELETE FROM `timetable`.`non_university_location`;
 DELETE FROM `timetable`.`offr_consent_type`;
 DELETE FROM `timetable`.`offr_group`;
@@ -90,6 +103,7 @@ DELETE FROM `timetable`.`pos_reservation`;
 DELETE FROM `timetable`.`position_code_to_type`;
 DELETE FROM `timetable`.`position_type`;
 DELETE FROM `timetable`.`preference_level`;
+DELETE FROM `timetable`.`related_course_info`;
 DELETE FROM `timetable`.`reservation_type`;
 DELETE FROM `timetable`.`roles`;
 DELETE FROM `timetable`.`room`;
@@ -115,6 +129,7 @@ DELETE FROM `timetable`.`solver_parameter_def`;
 DELETE FROM `timetable`.`solver_parameter_group`;
 DELETE FROM `timetable`.`solver_predef_setting`;
 DELETE FROM `timetable`.`staff`;
+DELETE FROM `timetable`.`standard_event_note`;
 DELETE FROM `timetable`.`student`;
 DELETE FROM `timetable`.`student_acad_area`;
 DELETE FROM `timetable`.`student_accomodation`;
@@ -140,11 +155,15 @@ DELETE FROM `timetable`.`tmtbl_mgr_to_roles`;
 DELETE FROM `timetable`.`user_data`;
 DELETE FROM `timetable`.`users`;
 DELETE FROM `timetable`.`waitlist`;
+DELETE FROM `timetable`.`xconflict`;
+DELETE FROM `timetable`.`xconflict_exam`;
+DELETE FROM `timetable`.`xconflict_instructor`;
+DELETE FROM `timetable`.`xconflict_student`;
 
 INSERT INTO `timetable`.`application_config`(`name`, `value`, `description`)
 VALUES ('tmtbl.system_message', '', 'Message displayed to users when they first log in to Timetabling'),
   ('tmtbl.access_level', 'all', 'Access Levels: all | {dept code}(:{dept code})*'),
-  ('tmtbl.db.version','10','Timetabling database version (please do not change -- this key is used by automatic database update)');
+  ('tmtbl.db.version','25','Timetabling database version (please do not change -- this key is used by automatic database update)');
 
 
 INSERT INTO `timetable`.`course_credit_type`(`uniqueid`, `reference`, `label`, `abbreviation`, `legacy_crse_master_code`)
@@ -171,14 +190,15 @@ INSERT INTO `timetable`.`dept_status_type`(`uniqueid`, `reference`, `label`, `st
 VALUES (13, 'initial', 'Initial Data Load', 0, 1, 0),
   (14, 'input', 'Input Data Entry', 185, 1, 1),
   (15, 'timetabling', 'Timetabling', 441, 1, 2),
-  (16, 'publish', 'Timetable Published', 9, 1, 3),
-  (17, 'finished', 'Session Finished', 9, 1, 4),
+  (16, 'publish', 'Timetable Published', 521, 1, 4),
+  (17, 'finished', 'Session Finished', 521, 1, 5),
   (18, 'dept_input', 'External Mgr. Input Data Entry', 135, 2, 5),
   (19, 'dept_timetabling', 'External Mgr. Timetabling', 423, 2, 6),
   (20, 'dept_publish', 'External Mgr. Timetable Published', 1, 2, 8),
   (21, 'dept_readonly_ni', 'External Mgr. Timetabling (No Instructor Assignments)', 391, 2, 7),
   (22, 'dept_readonly', 'Department Read Only', 9, 2, 9),
-  (23, 'dept_edit', 'Department Allow Edit', 441, 2, 10);
+  (23, 'dept_edit', 'Department Allow Edit', 441, 2, 10),
+  (107, 'exams', 'Examination Timetabling', 3593, 1, 3);
   
 INSERT INTO `timetable`.`settings`(`uniqueid`, `name`, `default_value`, `allowed_values`, `description`)
 VALUES (24, 'jsConfirm', 'yes', 'yes,no', 'Display confirmation dialogs'),
@@ -191,56 +211,57 @@ VALUES (24, 'jsConfirm', 'yes', 'yes,no', 'Display confirmation dialogs'),
   (31, 'keepSort', 'no', 'yes,no', 'Sort classes on detail pages'),
   (32, 'roomFeaturesInOneColumn', 'yes', 'yes,no', 'Display Room Features In One Column');
 
-INSERT INTO `timetable`.`distribution_type`(`uniqueid`, `reference`, `label`, `sequencing_required`, `req_id`, `allowed_pref`, `description`, `abbreviation`, `instructor_pref`)
-VALUES (33, 'BTB_DAY', 'Back-To-Back Day', '0', 26, 'P43210R', 'Classes must be offered on adjacent days and may be placed in different rooms.<BR>When prohibited or (strongly) discouraged: classes can not be taught on adjacent days. They also can not be taught on the same days. This means that there must be at least one day between these classes.', 'BTB Day', 0),
-  (34, 'MIN_GRUSE(10x1h)', 'Minimize Use Of 1h Groups', '0', 27, 'P43210R', 'Minimize number of groups of time that are used by the given classes. The time is spread into the following 10 groups of one hour: 7:30a-8:30a, 8:30a-9:30a, 9:30a-10:30a, ... 4:30p-5:30p.', 'Min 1h Groups', 0),
-  (35, 'MIN_GRUSE(5x2h)', 'Minimize Use Of 2h Groups', '0', 28, 'P43210R', 'Minimize number of groups of time that are used by the given classes. The time is spread into the following 5 groups of two hours: 7:30a-9:30a, 9:30a-11:30a, 11:30a-1:30p, 1:30p-3:30p, 3:30p-5:30p.', 'Min 2h Groups', 0),
-  (36, 'MIN_GRUSE(3x3h)', 'Minimize Use Of 3h Groups', '0', 29, 'P43210R', 'Minimize number of groups of time that are used by the given classes. The time is spread into the following 3 groups: 7:30a-10:30a, 10:30a-2:30p, 2:30p-5:30p.', 'Min 3h Groups', 0),
-  (37, 'MIN_GRUSE(2x5h)', 'Minimize Use Of 5h Groups', '0', 30, 'P43210R', 'Minimize number of groups of time that are used by the given classes. The time is spread into the following 2 groups: 7:30a-12:30a, 12:30a-5:30p.', 'Min 5h Groups', 0),
-  (38, 'SAME_STUDENTS', 'Same Students', '0', 20, '210R', 'Given classes are treated as they are attended by the same students, i.e., they cannot overlap in time and if they are back-to-back the assigned rooms cannot be too far (student limit is used).', 'Same Students', 0),
-  (39, 'SAME_INSTR', 'Same Instructor', '0', 21, '210R', 'Given classes are treated as they are taught by the same instructor, i.e., they cannot overlap in time and if they are back-to-back the assigned rooms cannot be too far (instructor limit is used).<BR>If the constraint is required and the classes are back-to-back, discouraged and strongly discouraged distances between assigned rooms are also considered.', 'Same Instr', 0),
-  (40, 'CAN_SHARE_ROOM', 'Can Share Room', '0', 22, '2R', 'Given classes can share the room (use the room in the same time) if the room is big enough.', 'Share Room', 0),
-  (41, 'SPREAD', 'Spread In Time', '0', 23, '2R', 'Given classes have to be spread in time (overlapping of the classes in time needs to be minimized).', 'Time Spread', 0),
-  (42, 'MIN_ROOM_USE', 'Minimize Number Of Rooms Used', '0', 25, 'P43210R', 'Minimize number of rooms used by the given set of classes.', 'Min Rooms', 1),
-  (43, 'PRECEDENCE', 'Precedence', '1', 24, 'P43210R', 'Given classes have to be taught in the given order (the first meeting of the first class has to end before the first meeting of the second class etc.)<BR>When prohibited or (strongly) discouraged: classes have to be taught in the order reverse to the given one', 'Precede', 0),
-  (44, 'BTB', 'Back-To-Back & Same Room', '0', 1, 'P43210R', 'Classes must be offered in adjacent time segments and must be placed in the same room. Given classes must also be taught on the same days.<BR>When prohibited or (strongly) discouraged: classes cannot be back-to-back. There must be at least half-hour between these classes, and they must be taught on the same days and in the same room.', 'BTB Same Room', 1),
-  (45, 'BTB_TIME', 'Back-To-Back', '0', 2, 'P43210R', 'Classes must be offered in adjacent time segments but may be placed in different rooms. Given classes must also be taught on the same days.<BR>When prohibited or (strongly) discouraged: no pair of classes can be taught back-to-back. They may not overlap in time, but must be taught on the same days. This means that there must be at least half-hour between these classes. ', 'BTB', 1),
-  (46, 'SAME_TIME', 'Same Time', '0', 3, 'P43210R', 'Given classes must be taught at the same time of day (independent of the actual day the classes meet). For the classes of the same length, this is the same constraint as <i>same start</i>. For classes of different length, the shorter one cannot start before, nor end after, the longer one.<BR>When prohibited or (strongly) discouraged: one class may not meet on any day at a time of day that overlaps with that of the other. For example, one class can not meet M 7:30 while the other meets F 7:30. Note the difference here from the <i>different time</i> constraint that only prohibits the actual class meetings from overlapping.', 'Same Time', 0),
-  (47, 'SAME_DAYS', 'Same Days', '0', 4, 'P43210R', 'Given classes must be taught on the same days. In case of classes of different time patterns, a class with fewer meetings must meet on a subset of the days used by the class with more meetings. For example, if one class pattern is 3x50, all others given in the constraint can only be taught on Monday, Wednesday, or Friday. For a 2x100 class MW, MF, WF is allowed but TTh is prohibited.<BR>When prohibited or (strongly) discouraged: any pair of classes classes cannot be taught on the same days (cannot overlap in days). For instance, if one class is MFW, the second has to be TTh.', 'Same Days', 1),
-  (48, 'NHB(1)', '1 Hour Between', '0', 5, 'P43210R', 'Given classes must have exactly 1 hour in between the end of one and the beginning of another. As with the <i>back-to-back time</i> constraint, given classes must be taught on the same days.<BR>When prohibited or (strongly) discouraged: classes can not have 1 hour in between. They may not overlap in time but must be taught on the same days.', '1h Btw', 0),
-  (49, 'NHB(2)', '2 Hours Between', '0', 6, 'P43210R', 'Given classes must have exactly 2 hours in between the end of one and the beginning of another. As with the <i>back-to-back time</i> constraint, given classes must be taught on the same days.<BR>When prohibited or (strongly) discouraged: classes can not have 2 hours in between. They may not overlap in time but must be taught on the same days.', '2h Btw', 0),
-  (50, 'NHB(3)', '3 Hours Between', '0', 7, 'P43210R', 'Given classes must have exactly 3 hours in between the end of one and the beginning of another. As with the <i>back-to-back time</i> constraint, given classes must be taught on the same days.<BR>When prohibited or (strongly) discouraged: classes can not have 3 hours in between. They may not overlap in time but must be taught on the same days.', '3h Btw', 0),
-  (51, 'NHB(4)', '4 Hours Between', '0', 8, 'P43210R', 'Given classes must have exactly 4 hours in between the end of one and the beginning of another. As with the <i>back-to-back time</i> constraint, given classes must be taught on the same days.<BR>When prohibited or (strongly) discouraged: classes can not have 4 hours in between. They may not overlap in time but must be taught on the same days.', '4h Btw', 0),
-  (52, 'NHB(5)', '5 Hours Between', '0', 9, 'P43210R', 'Given classes must have exactly 5 hours in between the end of one and the beginning of another. As with the <i>back-to-back time</i> constraint, given classes must be taught on the same days.<BR>When prohibited or (strongly) discouraged: classes can not have 5 hours in between. They may not overlap in time but must be taught on the same days.', '5h Btw', 0),
-  (53, 'NHB(6)', '6 Hours Between', '0', 10, 'P43210R', 'Given classes must have exactly 6 hours in between the end of one and the beginning of another. As with the <i>back-to-back time</i> constraint, given classes must be taught on the same days.<BR>When prohibited or (strongly) discouraged: classes can not have 6 hours in between. They may not overlap in time but must be taught on the same days.', '6h Btw', 0),
-  (54, 'NHB(7)', '7 Hours Between', '0', 11, 'P43210R', 'Given classes must have exactly 7 hours in between the end of one and the beginning of another. As with the <i>back-to-back time</i> constraint, given classes must be taught on the same days.<BR>When prohibited or (strongly) discouraged: classes can not have 7 hours in between. They may not overlap in time but must be taught on the same days.', '7h Btw', 0),
-  (55, 'NHB(8)', '8 Hours Between', '0', 12, 'P43210R', 'Given classes must have exactly 8 hours in between the end of one and the beginning of another. As with the <i>back-to-back time</i> constraint, given classes must be taught on the same days.<BR>When prohibited or (strongly) discouraged: classes can not have 8 hours in between. They may not overlap in time but must be taught on the same days.', '8h Btw', 0),
-  (56, 'DIFF_TIME', 'Different Time', '0', 13, 'P43210R', 'Given classes cannot overlap in time. They may be taught at the same time of day if they are on different days. For instance, MF 7:30 is compatible with TTh 7:30.<BR>When prohibited or (strongly) discouraged: every pair of classes in the constraint must overlap in time.', 'Diff Time', 0),
-  (57, 'NHB(1.5)', '90 Minutes Between', '0', 14, 'P43210R', 'Given classes must have exactly 90 minutes in between the end of one and the beginning of another. As with the <i>back-to-back time</i> constraint, given classes must be taught on the same days.<BR>When prohibited or (strongly) discouraged: classes can not have 90 minutes in between. They may not overlap in time but must be taught on the same days.', '90min Btw', 0),
-  (58, 'NHB(4.5)', '4.5 Hours Between', '0', 15, 'P43210R', 'Given classes must have exactly 4.5 hours in between the end of one and the beginning of another. As with the <i>back-to-back time</i> constraint, given classes must be taught on the same days.<BR>When prohibited or (strongly) discouraged: classes can not have 4.5 hours in between. They may not overlap in time but must be taught on the same days.', '4.5h Btw', 0),
-  (59, 'SAME_ROOM', 'Same Room', '0', 17, 'P43210R', 'Given classes must be taught in the same room.<BR>When prohibited or (strongly) discouraged: any pair of classes in the constraint cannot be taught in the same room.', 'Same Room', 1),
-  (60, 'NHB_GTE(1)', 'At Least 1 Hour Between', '0', 18, 'P43210R', 'Given classes have to have 1 hour or more in between.<BR>When prohibited or (strongly) discouraged: given classes have to have less than 1 hour in between.', '>=1h Btw', 1),
-  (61, 'SAME_START', 'Same Start Time', '0', 16, 'P43210R', 'Given classes must start during the same half-hour period of a day (independent of the actual day the classes meet). For instance, MW 7:30 is compatible with TTh 7:30 but not with MWF 8:00.<BR>When prohibited or (strongly) discouraged: any pair of classes in the given constraint cannot start during the same half-hour period of any day of the week.', 'Same Start', 0),
-  (62, 'NHB_LT(6)', 'Less Than 6 Hours Between', '0', 19, 'P43210R', 'Given classes must have less than 6 hours from end of first class to the beginning of the next.  Given classes must also be taught on the same days.<BR>When prohibited or (strongly) discouraged: given classes must have 6 or more hours between. This constraint does not carry over from classes taught at the end of one day to the beginning of the next.', '<6h Btw', 1),
-  (63, 'CH_NOTOVERLAP', 'Children Cannot Overlap', '0', 33, '210R', 'If parent classes do not overlap in time, children classes can not overlap in time as well.<br>Note: This constraint only needs to be put on the parent classes. Preferred configurations are Required All Classes or Pairwise (Strongly) Preferred.', 'Ch No Ovlap', 0),
-  (64, 'NDB_GT_1', 'More Than 1 Day Between', '0', 32, 'P43210R', 'Given classes must have two or more days in between.<br>When prohibited or (strongly) discouraged: given classes must be offered on adjacent days or with at most one day in between.', '>1d Btw', 0),
-  (65, 'FOLLOWING_DAY', 'Next Day', '1', 34, 'P43210R', 'The second class has to be placed on the following day of the first class (if the first class is on Friday, second class have to be on Monday).<br> When prohibited or (strongly) discouraged: The second class has to be placed on the previous day of the first class (if the first class is on Monday, second class have to be on Friday).<br> Note: This constraint works only between pairs of classes.', 'Next Day', 0),
-  (66, 'EVERY_OTHER_DAY', 'Two Days After', '1', 35, 'P43210R', 'The second class has to be placed two days after the first class (Monday &rarr; Wednesday, Tuesday &rarr; Thurday, Wednesday &rarr; Friday, Thursday &rarr; Monday, Friday &rarr; Tuesday).<br> When prohibited or (strongly) discouraged: The second class has to be placed two days before the first class (Monday &rarr; Thursday, Tuesday &rarr; Friday, Wednesday &rarr; Monday, Thursday &rarr; Tuesday, Friday &rarr; Wednesday).<br> Note: This constraint works only between pairs of classes.', '2d After', 0),
-  (67, 'MEET_WITH', 'Meet Together', '0', 31, '2R', 'Given classes are meeting together (same as if the given classes require constraints Can Share Room, Same Room, Same Time and Same Days all together).', 'Meet Together', 0);
+INSERT INTO `timetable`.`distribution_type`(`uniqueid`, `reference`, `label`, `sequencing_required`, `req_id`, `allowed_pref`, `description`, `abbreviation`, `instructor_pref`, `exam_pref`)
+VALUES (33, 'BTB_DAY', 'Back-To-Back Day', '0', 26, 'P43210R', 'Classes must be offered on adjacent days and may be placed in different rooms.<BR>When prohibited or (strongly) discouraged: classes can not be taught on adjacent days. They also can not be taught on the same days. This means that there must be at least one day between these classes.', 'BTB Day', 0, 0),
+  (34, 'MIN_GRUSE(10x1h)', 'Minimize Use Of 1h Groups', '0', 27, 'P43210R', 'Minimize number of groups of time that are used by the given classes. The time is spread into the following 10 groups of one hour: 7:30a-8:30a, 8:30a-9:30a, 9:30a-10:30a, ... 4:30p-5:30p.', 'Min 1h Groups', 0, 0),
+  (35, 'MIN_GRUSE(5x2h)', 'Minimize Use Of 2h Groups', '0', 28, 'P43210R', 'Minimize number of groups of time that are used by the given classes. The time is spread into the following 5 groups of two hours: 7:30a-9:30a, 9:30a-11:30a, 11:30a-1:30p, 1:30p-3:30p, 3:30p-5:30p.', 'Min 2h Groups', 0, 0),
+  (36, 'MIN_GRUSE(3x3h)', 'Minimize Use Of 3h Groups', '0', 29, 'P43210R', 'Minimize number of groups of time that are used by the given classes. The time is spread into the following 3 groups: 7:30a-10:30a, 10:30a-2:30p, 2:30p-5:30p.', 'Min 3h Groups', 0, 0),
+  (37, 'MIN_GRUSE(2x5h)', 'Minimize Use Of 5h Groups', '0', 30, 'P43210R', 'Minimize number of groups of time that are used by the given classes. The time is spread into the following 2 groups: 7:30a-12:30a, 12:30a-5:30p.', 'Min 5h Groups', 0, 0),
+  (38, 'SAME_STUDENTS', 'Same Students', '0', 20, '210R', 'Given classes are treated as they are attended by the same students, i.e., they cannot overlap in time and if they are back-to-back the assigned rooms cannot be too far (student limit is used).', 'Same Students', 0, 0),
+  (39, 'SAME_INSTR', 'Same Instructor', '0', 21, '210R', 'Given classes are treated as they are taught by the same instructor, i.e., they cannot overlap in time and if they are back-to-back the assigned rooms cannot be too far (instructor limit is used).<BR>If the constraint is required and the classes are back-to-back, discouraged and strongly discouraged distances between assigned rooms are also considered.', 'Same Instr', 0, 0),
+  (40, 'CAN_SHARE_ROOM', 'Can Share Room', '0', 22, '2R', 'Given classes can share the room (use the room in the same time) if the room is big enough.', 'Share Room', 0, 0),
+  (41, 'SPREAD', 'Spread In Time', '0', 23, '2R', 'Given classes have to be spread in time (overlapping of the classes in time needs to be minimized).', 'Time Spread', 0, 0),
+  (42, 'MIN_ROOM_USE', 'Minimize Number Of Rooms Used', '0', 25, 'P43210R', 'Minimize number of rooms used by the given set of classes.', 'Min Rooms', 1, 0),
+  (43, 'PRECEDENCE', 'Precedence', '1', 24, 'P43210R', 'Given classes have to be taught in the given order (the first meeting of the first class has to end before the first meeting of the second class etc.)<BR>When prohibited or (strongly) discouraged: classes have to be taught in the order reverse to the given one', 'Precede', 0, 0),
+  (44, 'BTB', 'Back-To-Back & Same Room', '0', 1, 'P43210R', 'Classes must be offered in adjacent time segments and must be placed in the same room. Given classes must also be taught on the same days.<BR>When prohibited or (strongly) discouraged: classes cannot be back-to-back. There must be at least half-hour between these classes, and they must be taught on the same days and in the same room.', 'BTB Same Room', 1, 0),
+  (45, 'BTB_TIME', 'Back-To-Back', '0', 2, 'P43210R', 'Classes must be offered in adjacent time segments but may be placed in different rooms. Given classes must also be taught on the same days.<BR>When prohibited or (strongly) discouraged: no pair of classes can be taught back-to-back. They may not overlap in time, but must be taught on the same days. This means that there must be at least half-hour between these classes. ', 'BTB', 1, 0),
+  (46, 'SAME_TIME', 'Same Time', '0', 3, 'P43210R', 'Given classes must be taught at the same time of day (independent of the actual day the classes meet). For the classes of the same length, this is the same constraint as <i>same start</i>. For classes of different length, the shorter one cannot start before, nor end after, the longer one.<BR>When prohibited or (strongly) discouraged: one class may not meet on any day at a time of day that overlaps with that of the other. For example, one class can not meet M 7:30 while the other meets F 7:30. Note the difference here from the <i>different time</i> constraint that only prohibits the actual class meetings from overlapping.', 'Same Time', 0, 0),
+  (47, 'SAME_DAYS', 'Same Days', '0', 4, 'P43210R', 'Given classes must be taught on the same days. In case of classes of different time patterns, a class with fewer meetings must meet on a subset of the days used by the class with more meetings. For example, if one class pattern is 3x50, all others given in the constraint can only be taught on Monday, Wednesday, or Friday. For a 2x100 class MW, MF, WF is allowed but TTh is prohibited.<BR>When prohibited or (strongly) discouraged: any pair of classes classes cannot be taught on the same days (cannot overlap in days). For instance, if one class is MFW, the second has to be TTh.', 'Same Days', 1, 0),
+  (48, 'NHB(1)', '1 Hour Between', '0', 5, 'P43210R', 'Given classes must have exactly 1 hour in between the end of one and the beginning of another. As with the <i>back-to-back time</i> constraint, given classes must be taught on the same days.<BR>When prohibited or (strongly) discouraged: classes can not have 1 hour in between. They may not overlap in time but must be taught on the same days.', '1h Btw', 0, 0),
+  (49, 'NHB(2)', '2 Hours Between', '0', 6, 'P43210R', 'Given classes must have exactly 2 hours in between the end of one and the beginning of another. As with the <i>back-to-back time</i> constraint, given classes must be taught on the same days.<BR>When prohibited or (strongly) discouraged: classes can not have 2 hours in between. They may not overlap in time but must be taught on the same days.', '2h Btw', 0, 0),
+  (50, 'NHB(3)', '3 Hours Between', '0', 7, 'P43210R', 'Given classes must have exactly 3 hours in between the end of one and the beginning of another. As with the <i>back-to-back time</i> constraint, given classes must be taught on the same days.<BR>When prohibited or (strongly) discouraged: classes can not have 3 hours in between. They may not overlap in time but must be taught on the same days.', '3h Btw', 0, 0),
+  (51, 'NHB(4)', '4 Hours Between', '0', 8, 'P43210R', 'Given classes must have exactly 4 hours in between the end of one and the beginning of another. As with the <i>back-to-back time</i> constraint, given classes must be taught on the same days.<BR>When prohibited or (strongly) discouraged: classes can not have 4 hours in between. They may not overlap in time but must be taught on the same days.', '4h Btw', 0, 0),
+  (52, 'NHB(5)', '5 Hours Between', '0', 9, 'P43210R', 'Given classes must have exactly 5 hours in between the end of one and the beginning of another. As with the <i>back-to-back time</i> constraint, given classes must be taught on the same days.<BR>When prohibited or (strongly) discouraged: classes can not have 5 hours in between. They may not overlap in time but must be taught on the same days.', '5h Btw', 0, 0),
+  (53, 'NHB(6)', '6 Hours Between', '0', 10, 'P43210R', 'Given classes must have exactly 6 hours in between the end of one and the beginning of another. As with the <i>back-to-back time</i> constraint, given classes must be taught on the same days.<BR>When prohibited or (strongly) discouraged: classes can not have 6 hours in between. They may not overlap in time but must be taught on the same days.', '6h Btw', 0, 0),
+  (54, 'NHB(7)', '7 Hours Between', '0', 11, 'P43210R', 'Given classes must have exactly 7 hours in between the end of one and the beginning of another. As with the <i>back-to-back time</i> constraint, given classes must be taught on the same days.<BR>When prohibited or (strongly) discouraged: classes can not have 7 hours in between. They may not overlap in time but must be taught on the same days.', '7h Btw', 0, 0),
+  (55, 'NHB(8)', '8 Hours Between', '0', 12, 'P43210R', 'Given classes must have exactly 8 hours in between the end of one and the beginning of another. As with the <i>back-to-back time</i> constraint, given classes must be taught on the same days.<BR>When prohibited or (strongly) discouraged: classes can not have 8 hours in between. They may not overlap in time but must be taught on the same days.', '8h Btw', 0, 0),
+  (56, 'DIFF_TIME', 'Different Time', '0', 13, 'P43210R', 'Given classes cannot overlap in time. They may be taught at the same time of day if they are on different days. For instance, MF 7:30 is compatible with TTh 7:30.<BR>When prohibited or (strongly) discouraged: every pair of classes in the constraint must overlap in time.', 'Diff Time', 0, 0),
+  (57, 'NHB(1.5)', '90 Minutes Between', '0', 14, 'P43210R', 'Given classes must have exactly 90 minutes in between the end of one and the beginning of another. As with the <i>back-to-back time</i> constraint, given classes must be taught on the same days.<BR>When prohibited or (strongly) discouraged: classes can not have 90 minutes in between. They may not overlap in time but must be taught on the same days.', '90min Btw', 0, 0),
+  (58, 'NHB(4.5)', '4.5 Hours Between', '0', 15, 'P43210R', 'Given classes must have exactly 4.5 hours in between the end of one and the beginning of another. As with the <i>back-to-back time</i> constraint, given classes must be taught on the same days.<BR>When prohibited or (strongly) discouraged: classes can not have 4.5 hours in between. They may not overlap in time but must be taught on the same days.', '4.5h Btw', 0, 0),
+  (59, 'SAME_ROOM', 'Same Room', '0', 17, 'P43210R', 'Given classes must be taught in the same room.<BR>When prohibited or (strongly) discouraged: any pair of classes in the constraint cannot be taught in the same room.', 'Same Room', 1, 0),
+  (60, 'NHB_GTE(1)', 'At Least 1 Hour Between', '0', 18, 'P43210R', 'Given classes have to have 1 hour or more in between.<BR>When prohibited or (strongly) discouraged: given classes have to have less than 1 hour in between.', '>=1h Btw', 1, 0),
+  (61, 'SAME_START', 'Same Start Time', '0', 16, 'P43210R', 'Given classes must start during the same half-hour period of a day (independent of the actual day the classes meet). For instance, MW 7:30 is compatible with TTh 7:30 but not with MWF 8:00.<BR>When prohibited or (strongly) discouraged: any pair of classes in the given constraint cannot start during the same half-hour period of any day of the week.', 'Same Start', 0, 0),
+  (62, 'NHB_LT(6)', 'Less Than 6 Hours Between', '0', 19, 'P43210R', 'Given classes must have less than 6 hours from end of first class to the beginning of the next.  Given classes must also be taught on the same days.<BR>When prohibited or (strongly) discouraged: given classes must have 6 or more hours between. This constraint does not carry over from classes taught at the end of one day to the beginning of the next.', '<6h Btw', 1, 0),
+  (63, 'CH_NOTOVERLAP', 'Children Cannot Overlap', '0', 33, '210R', 'If parent classes do not overlap in time, children classes can not overlap in time as well.<br>Note: This constraint only needs to be put on the parent classes. Preferred configurations are Required All Classes or Pairwise (Strongly) Preferred.', 'Ch No Ovlap', 0, 0),
+  (64, 'NDB_GT_1', 'More Than 1 Day Between', '0', 32, 'P43210R', 'Given classes must have two or more days in between.<br>When prohibited or (strongly) discouraged: given classes must be offered on adjacent days or with at most one day in between.', '>1d Btw', 0, 0),
+  (65, 'FOLLOWING_DAY', 'Next Day', '1', 34, 'P43210R', 'The second class has to be placed on the following day of the first class (if the first class is on Friday, second class have to be on Monday).<br> When prohibited or (strongly) discouraged: The second class has to be placed on the previous day of the first class (if the first class is on Monday, second class have to be on Friday).<br> Note: This constraint works only between pairs of classes.', 'Next Day', 0, 0),
+  (66, 'EVERY_OTHER_DAY', 'Two Days After', '1', 35, 'P43210R', 'The second class has to be placed two days after the first class (Monday &rarr; Wednesday, Tuesday &rarr; Thurday, Wednesday &rarr; Friday, Thursday &rarr; Monday, Friday &rarr; Tuesday).<br> When prohibited or (strongly) discouraged: The second class has to be placed two days before the first class (Monday &rarr; Thursday, Tuesday &rarr; Friday, Wednesday &rarr; Monday, Thursday &rarr; Tuesday, Friday &rarr; Wednesday).<br> Note: This constraint works only between pairs of classes.', '2d After', 0, 0),
+  (67, 'MEET_WITH', 'Meet Together', '0', 31, '2R', 'Given classes are meeting together (same as if the given classes require constraints Can Share Room, Same Room, Same Time and Same Days all together).', 'Meet Together', 0, 0);
+
   
-INSERT INTO `timetable`.`itype_desc`(`itype`, `description`, `sis_ref`, `abbv`, `basic`)
-VALUES (10, 'Lecture', 'lec', 'Lec  ', 1),
-  (20, 'Recitation', 'rec', 'Rec  ', 1),
-  (25, 'Presentation', 'prsn', 'Prsn ', 1),
-  (30, 'Laboratory', 'lab', 'Lab  ', 1),
-  (35, 'Laboratory Preparation', 'labP', 'LabP ', 1),
-  (40, 'Studio', 'stdo', 'Stdo ', 1),
-  (45, 'Distance Learning', 'dist', 'Dist ', 1),
-  (50, 'Clinic', 'clin', 'Clin ', 1),
-  (60, 'Experiential', 'expr', 'Expr ', 1),
-  (70, 'Research', 'res', 'Res  ', 1),
-  (80, 'Individual Study', 'ind', 'Ind  ', 1),
-  (90, 'Practice Study Observation', 'pso', 'Pso  ', 1);
+INSERT INTO `timetable`.`itype_desc`(`itype`, `description`, `sis_ref`, `abbv`, `basic`, `parent`, `organized`)
+VALUES (10, 'Lecture', 'lec', 'Lec  ', 1, NULL, 1),
+  (20, 'Recitation', 'rec', 'Rec  ', 1, NULL, 1),
+  (25, 'Presentation', 'prsn', 'Prsn ', 1, NULL, 1),
+  (30, 'Laboratory', 'lab', 'Lab  ', 1, NULL, 1),
+  (35, 'Laboratory Preparation', 'labP', 'LabP ', 1, NULL, 1),
+  (40, 'Studio', 'stdo', 'Stdo ', 1, NULL, 1),
+  (45, 'Distance Learning', 'dist', 'Dist ', 1, NULL, 0),
+  (50, 'Clinic', 'clin', 'Clin ', 1, NULL, 0),
+  (60, 'Experiential', 'expr', 'Expr ', 1, NULL, 0),
+  (70, 'Research', 'res', 'Res  ', 1, NULL, 0),
+  (80, 'Individual Study', 'ind', 'Ind  ', 1, NULL, 0),
+  (90, 'Practice Study Observation', 'pso', 'Pso  ', 1, NULL, 0);
 
 INSERT INTO `timetable`.`position_type`(`uniqueid`, `reference`, `label`, `sort_order`)
 VALUES (68, 'PROF', 'Professor', 100),
@@ -713,5 +734,69 @@ update `timetable`.`hibernate_unique_key` set `next_hi`=1000;
 
 -- Re-enable foreign key checks
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+
+select `next_hi` into @id from `timetable`.`hibernate_unique_key`;
+
+select max(`ord`)+1 into @ord from `timetable`.`solver_parameter_group`;
+
+insert into `timetable`.`solver_parameter_group` (`uniqueid`, `name`, `description`, `ord`, `param_type`) values
+			(@id, 'ExamBasic', 'Basic Parameters', @ord, 1),
+			(@id+1, 'ExamWeights', 'Examination Weights', @ord+1, 1),
+			(@id+2, 'Exam', 'General Parameters', @ord+2, 1),
+			(@id+3, 'ExamGD', 'Great Deluge Parameters', @ord+3, 1),
+			(@id+4, 'ExamSA', 'Simulated Annealing Parameters', @ord+4, 1);
+
+insert into `timetable`.`solver_parameter_def`
+			(`uniqueid`, `name`, `default_value`, `description`, `type`, `ord`, `visible`, `solver_param_group_id`) values
+			(@id+5, 'ExamBasic.Mode', 'Initial', 'Solver mode', 'enum(Initial,MPP)', 0, 1, @id),
+			(@id+6, 'ExamBasic.WhenFinished', 'No Action', 'When finished', 'enum(No Action,Save,Save and Unload)', 1, 1, @id),
+			(@id+7, 'Exams.MaxRooms', '4', 'Default number of room splits per exam', 'integer', 0, 1, @id+1),
+			(@id+8, 'Exams.IsDayBreakBackToBack', 'false', 'Consider back-to-back over day break', 'boolean', 1, 1, @id+1),
+			(@id+9, 'Exams.DirectConflictWeight', '1000.0', 'Direct conflict weight', 'double', 2, 1, @id+1),
+			(@id+10, 'Exams.MoreThanTwoADayWeight', '100.0', 'Three or more exams a day conflict weight', 'double', 3, 1, @id+1),
+			(@id+11, 'Exams.BackToBackConflictWeight', '10.0', 'Back-to-back conflict weight', 'double', 4, 1, @id+1),
+			(@id+12, 'Exams.DistanceBackToBackConflictWeight', '25.0', 'Distance back-to-back conflict weight', 'double', 5, 1, @id+1),
+			(@id+13, 'Exams.BackToBackDistance', '-1', 'Back-to-back distance (-1 means disabled)', 'double', 6, 1, @id+1),
+			(@id+14, 'Exams.PeriodWeight', '1.0', 'Period preference weight', 'double', 7, 1, @id+1),
+			(@id+15, 'Exams.RoomWeight', '1.0', 'Room preference weight', 'double', 8, 1, @id+1),
+			(@id+16, 'Exams.DistributionWeight', '1.0', 'Distribution preference weight', 'double', 9, 1, @id+1),
+			(@id+17, 'Exams.RoomSplitWeight', '10.0', 'Room split weight', 'double', 10, 1, @id+1),
+			(@id+18, 'Exams.RoomSizeWeight', '0.001', 'Excessive room size weight', 'double', 11, 1, @id+1),
+			(@id+19, 'Exams.NotOriginalRoomWeight', '1.0', 'Not original room weight', 'double', 12, 1, @id+1),
+			(@id+20, 'Exams.RotationWeight', '0.001', 'Exam rotation weight', 'double', 13, 1, @id+1),
+			(@id+21, 'Neighbour.Class', 'net.sf.cpsolver.exam.heuristics.ExamNeighbourSelection', 'Examination timetabling neighbour selection class', 'text', 0, 0, @id+2),
+			(@id+22, 'Termination.TimeOut', '1800', 'Maximal solver time (in sec)', 'integer', 1, 1, @id+2),
+			(@id+23, 'Exam.Algorithm', 'Great Deluge', 'Used heuristics', 'enum(Great Deluge,Simulated Annealing)', 2, 1, @id+2),
+			(@id+24, 'HillClimber.MaxIdle', '25000', 'Hill Climber: maximal idle iteration', 'integer', 3, 1, @id+2),
+			(@id+25, 'Termination.StopWhenComplete', 'false', 'Stop when a complete solution if found', 'boolean', 4, 0, @id+2),
+			(@id+26, 'General.SaveBestUnassigned', '-1', 'Save best when x unassigned', 'integer', 5, 0, @id+2),
+			(@id+27, 'GreatDeluge.CoolRate', '0.99999995', 'Cooling rate', 'double', 0, 1, @id+3),
+			(@id+28, 'GreatDeluge.UpperBoundRate', '1.05', 'Upper bound rate', 'double', 1, 1, @id+3),
+			(@id+29, 'GreatDeluge.LowerBoundRate', '0.95', 'Lower bound rate', 'double', 2, 1, @id+3),
+			(@id+30, 'SimulatedAnnealing.InitialTemperature', '1.5', 'Initial temperature', 'double', 0, 1, @id+4),
+			(@id+31, 'SimulatedAnnealing.CoolingRate', '0.95', 'Cooling rate', 'double', 1, 1, @id+4),
+			(@id+32, 'SimulatedAnnealing.TemperatureLength', '25000', 'Temperature length', 'integer', 2, 1, @id+4),
+			(@id+33, 'SimulatedAnnealing.ReheatLengthCoef', '5', 'Reheat length coefficient', 'double', 3, 1, @id+4);
+
+insert into `timetable`.`solver_predef_setting` (`uniqueid`, `name`, `description`, `appearance`) values 
+			(@id+34, 'Exam.Default', 'Default', 2);
+			
+insert into `timetable`.`event_type` (`uniqueid`,`reference`,`label`) values
+	(@id+35, 'class', 'Class'),
+	(@id+36, 'final', 'Final Exam'),
+	(@id+37, 'evening', 'Evening Exam'),
+	(@id+38, 'otherWithConflict', 'Other Course Event with Conflict Checking'),
+	(@id+39, 'otherNoConflict', 'Other Course Event with No Conflict Checking'),
+	(@id+40, 'special', 'Special Event');
+
+insert into `timetable`.`roles` (`role_id`, `reference`, `abbv`) values
+	(@id+41, 'Exam Mgr', 'Examination Timetabling Manager');
+
+insert into `timetable`.`distribution_type`(`uniqueid`, `reference`, `label`, `sequencing_required`, `req_id`, `allowed_pref`, `description`, `abbreviation`, `instructor_pref`, `exam_pref`) values 
+	(@id+42, 'EX_SAME_PER', 'Same Period', 0, 36, 'P43210R', 'Exams are to be placed at the same period. <BR>When prohibited or (strongly) discouraged: exams are to be placed at different periods.', 'Same Per', 0, 1), 
+	(@id+43, 'EX_SAME_ROOM', 'Same Room', 0, 37, 'P43210R', 'Exams are to be placed at the same room(s). <BR>When prohibited or (strongly) discouraged: exams are to be placed at different rooms.', 'Same Room', 0, 1), 
+	(@id+44, 'EX_PRECEDENCE', 'Precedence', 1, 38, 'P43210R', 'Exams are to be placed in the given order. <BR>When prohibited or (strongly) discouraged: exams are to be placed in the order reverse to the given one.', 'Precede', 0, 1); 
+
+update `timetable`.`hibernate_unique_key` set `next_hi`=`next_hi`+45
 
 -- End of script
