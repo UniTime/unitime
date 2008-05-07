@@ -31,7 +31,8 @@
 		<item>
 			<name>Examination Timetabling</name>
 			<description>
-				<line>First release of examination timetabling.</line>
+				<line>First alpha release of examination timetabling.</line>
+				<line>See http://wiki.unitime.org/Examination_Timetabling for the description of the examination problem.</line>
 			</description>
 		</item>
 		<item>
