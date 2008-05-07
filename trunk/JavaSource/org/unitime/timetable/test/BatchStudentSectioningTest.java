@@ -206,7 +206,7 @@ public class BatchStudentSectioningTest {
             cfg.setProperty("Neighbour.Class","net.sf.cpsolver.studentsct.heuristics.StudentSctNeighbourSelection");
             cfg.setProperty("General.SaveBestUnassigned", "-1");
             cfg.setProperty("Extensions.Classes","net.sf.cpsolver.ifs.extension.ConflictStatistics;net.sf.cpsolver.studentsct.extension.DistanceConflict");
-            cfg.setProperty("Data.Initiative","puWestLafayetteTrdtn");
+            cfg.setProperty("Data.Initiative","woebegon");
             cfg.setProperty("Data.Term","Fal");
             cfg.setProperty("Data.Year","2007");
             cfg.setProperty("Load.IncludeCourseDemands", (sIncludeCourseDemands?"true":"false"));
