@@ -34,6 +34,7 @@ import java.util.Vector;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Transaction;
+import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
 import org.unitime.timetable.model.Assignment;
@@ -199,6 +200,7 @@ public class ExamDatabaseLoader extends ExamLoader {
     }
     
     protected void loadExams() {
+        if (isRemote()) HibernateUtil.clearCache();
         Collection exams = org.unitime.timetable.model.Exam.findAll(iSessionId, iExamType);
         iProgress.setPhase("Loading exams...", exams.size());
         for (Iterator i=exams.iterator();i.hasNext();) {
