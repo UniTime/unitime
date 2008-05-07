@@ -728,6 +728,7 @@ public abstract class Location extends BaseLocation implements Comparable {
                 setExamType(
                         (isExamEnabled(Exam.sExamTypeEvening)?sExamLocationTypeEvening:0)+
                         (enabled?sExamLocationTypeFinal:0));
+                break;
         case Exam.sExamTypeEvening :
             setExamType(
                     (isExamEnabled(Exam.sExamTypeFinal)?sExamLocationTypeFinal:0)+
