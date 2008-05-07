@@ -1,6 +1,6 @@
 /*
- * UniTime 3.0 (University Course Timetabling & Student Sectioning Application)
- * Copyright (C) 2007, UniTime.org
+ * UniTime 3.1 (University Timetabling Application)
+ * Copyright (C) 2008, UniTime.org
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,7 +38,8 @@ create table TIMETABLE.DATE_PATTERN
   TYPE       NUMBER(10),
   VISIBLE    NUMBER(1),
   SESSION_ID NUMBER(20)
-);
+)
+;
 alter table TIMETABLE.DATE_PATTERN
   add constraint PK_DATE_PATTERN primary key (UNIQUEID);
 alter table TIMETABLE.DATE_PATTERN
@@ -67,7 +68,8 @@ create table TIMETABLE.DEPT_STATUS_TYPE
   STATUS    NUMBER(10),
   APPLY     NUMBER(10),
   ORD       NUMBER(10)
-);
+)
+;
 alter table TIMETABLE.DEPT_STATUS_TYPE
   add constraint PK_DEPT_STATUS primary key (UNIQUEID);
 alter table TIMETABLE.DEPT_STATUS_TYPE
@@ -105,8 +107,10 @@ create table TIMETABLE.SESSIONS
   STATUS_TYPE             NUMBER(20),
   LAST_MODIFIED_TIME      TIMESTAMP(6),
   ACADEMIC_YEAR           VARCHAR2(4),
-  ACADEMIC_TERM           VARCHAR2(20)
-);
+  ACADEMIC_TERM           VARCHAR2(20),
+  EXAM_BEGIN_DATE         DATE
+)
+;
 alter table TIMETABLE.SESSIONS
   add constraint PK_SESSIONS primary key (UNIQUEID);
 alter table TIMETABLE.SESSIONS
@@ -128,16 +132,19 @@ alter table TIMETABLE.SESSIONS
   add constraint NN_SESSIONS_CLASSESENDDATETIME
   check ("CLASSES_END_DATE_TIME" IS NOT NULL);
 alter table TIMETABLE.SESSIONS
+  add constraint NN_SESSIONS_EXAM_BEGIN_DATE
+  check (exam_begin_date is not null);
+alter table TIMETABLE.SESSIONS
   add constraint NN_SESSIONS_SESSIONENDDATETIME
   check ("SESSION_END_DATE_TIME" IS NOT NULL);
 alter table TIMETABLE.SESSIONS
   add constraint NN_SESSIONS_SESSION_BEGI_DT_TM
   check ("SESSION_BEGIN_DATE_TIME" IS NOT NULL);
-create index TIMETABLE.IDX_SESSIONS_DATE_PATTERN on TIMETABLE.SESSIONS (DEF_DATEPATT_ID);
-create index TIMETABLE.IDX_SESSIONS_STATUS_TYPE on TIMETABLE.SESSIONS (STATUS_TYPE);
 alter table TIMETABLE.DATE_PATTERN
   add constraint FK_DATE_PATTERN_SESSION foreign key (SESSION_ID)
   references TIMETABLE.SESSIONS (UNIQUEID) on delete cascade;
+create index TIMETABLE.IDX_SESSIONS_DATE_PATTERN on TIMETABLE.SESSIONS (DEF_DATEPATT_ID);
+create index TIMETABLE.IDX_SESSIONS_STATUS_TYPE on TIMETABLE.SESSIONS (STATUS_TYPE);
 
 prompt
 prompt Creating table ACADEMIC_AREA
@@ -151,7 +158,8 @@ create table TIMETABLE.ACADEMIC_AREA
   SHORT_TITLE                VARCHAR2(50),
   LONG_TITLE                 VARCHAR2(100),
   EXTERNAL_UID               VARCHAR2(40)
-);
+)
+;
 alter table TIMETABLE.ACADEMIC_AREA
   add constraint PK_ACADEMIC_AREA primary key (UNIQUEID);
 alter table TIMETABLE.ACADEMIC_AREA
@@ -186,7 +194,8 @@ create table TIMETABLE.ACADEMIC_CLASSIFICATION
   CODE         VARCHAR2(10),
   NAME         VARCHAR2(50),
   EXTERNAL_UID VARCHAR2(40)
-);
+)
+;
 alter table TIMETABLE.ACADEMIC_CLASSIFICATION
   add constraint PK_ACAD_CLASS primary key (UNIQUEID);
 alter table TIMETABLE.ACADEMIC_CLASSIFICATION
@@ -214,7 +223,8 @@ create table TIMETABLE.RESERVATION_TYPE
   UNIQUEID  NUMBER(20),
   REFERENCE VARCHAR2(20),
   LABEL     VARCHAR2(60)
-);
+)
+;
 alter table TIMETABLE.RESERVATION_TYPE
   add constraint PK_RESERVATION_TYPE primary key (UNIQUEID);
 alter table TIMETABLE.RESERVATION_TYPE
@@ -246,7 +256,8 @@ create table TIMETABLE.ACAD_AREA_RESERVATION
   OWNER_CLASS_ID       VARCHAR2(1),
   REQUESTED            NUMBER(10),
   LAST_MODIFIED_TIME   TIMESTAMP(6)
-);
+)
+;
 alter table TIMETABLE.ACAD_AREA_RESERVATION
   add constraint PK_ACAD_AREA_RESV primary key (UNIQUEID);
 alter table TIMETABLE.ACAD_AREA_RESERVATION
@@ -294,7 +305,8 @@ create table TIMETABLE.APPLICATION_CONFIG
   NAME        VARCHAR2(1000),
   VALUE       VARCHAR2(4000),
   DESCRIPTION VARCHAR2(100)
-);
+)
+;
 alter table TIMETABLE.APPLICATION_CONFIG
   add constraint PK_APPLICATION_CONFIG primary key (NAME);
 alter table TIMETABLE.APPLICATION_CONFIG
@@ -310,7 +322,8 @@ create table TIMETABLE.OFFR_CONSENT_TYPE
   UNIQUEID  NUMBER(20),
   REFERENCE VARCHAR2(20),
   LABEL     VARCHAR2(60)
-);
+)
+;
 alter table TIMETABLE.OFFR_CONSENT_TYPE
   add constraint PK_OFFR_CONSENT_TYPE primary key (UNIQUEID);
 alter table TIMETABLE.OFFR_CONSENT_TYPE
@@ -338,11 +351,12 @@ create table TIMETABLE.INSTRUCTIONAL_OFFERING
   CONSENT_TYPE           NUMBER(20),
   DESIGNATOR_REQUIRED    NUMBER(1),
   LAST_MODIFIED_TIME     TIMESTAMP(6),
-  UID_ROLLED_FWD_FROM    NUMBER(20)
-);
+  UID_ROLLED_FWD_FROM    NUMBER(20),
+  EXTERNAL_UID           VARCHAR2(40)
+)
+;
 alter table TIMETABLE.INSTRUCTIONAL_OFFERING
-  add constraint PK_INSTR_OFFR primary key (UNIQUEID)
-  using index ;
+  add constraint PK_INSTR_OFFR primary key (UNIQUEID);
 alter table TIMETABLE.INSTRUCTIONAL_OFFERING
   add constraint FK_INSTR_OFFR_CONSENT_TYPE foreign key (CONSENT_TYPE)
   references TIMETABLE.OFFR_CONSENT_TYPE (UNIQUEID) on delete cascade;
@@ -376,7 +390,8 @@ create table TIMETABLE.INSTR_OFFERING_CONFIG
   NAME                 VARCHAR2(10),
   LAST_MODIFIED_TIME   TIMESTAMP(6),
   UID_ROLLED_FWD_FROM  NUMBER(20)
-);
+)
+;
 alter table TIMETABLE.INSTR_OFFERING_CONFIG
   add constraint PK_INSTR_OFFR_CFG primary key (UNIQUEID);
 alter table TIMETABLE.INSTR_OFFERING_CONFIG
@@ -409,17 +424,18 @@ create table TIMETABLE.ITYPE_DESC
   DESCRIPTION VARCHAR2(50),
   SIS_REF     VARCHAR2(20),
   BASIC       NUMBER(1),
-  PARENT       NUMBER(2)
-);
+  PARENT      NUMBER(2),
+  ORGANIZED   NUMBER(1)
+)
+;
 alter table TIMETABLE.ITYPE_DESC
   add constraint PK_ITYPE_DESC primary key (ITYPE);
 alter table TIMETABLE.ITYPE_DESC
   add constraint NN_ITYPE_DESC_ITYPE
   check ("ITYPE" IS NOT NULL);
-alter table ITYPE_DESC 
-  add constraint FK_ITYPE_PARENT
-  foreign key (PARENT) 
-  references ITYPE_DESC(ITYPE);
+alter table TIMETABLE.ITYPE_DESC
+  add constraint NN_ITYPE_DESC_ORGANIZED
+  check (organized is not null);
 
 prompt
 prompt Creating table SCHEDULING_SUBPART
@@ -438,7 +454,8 @@ create table TIMETABLE.SCHEDULING_SUBPART
   STUDENT_ALLOW_OVERLAP NUMBER(1) default (0),
   LAST_MODIFIED_TIME    TIMESTAMP(6),
   UID_ROLLED_FWD_FROM   NUMBER(20)
-);
+)
+;
 alter table TIMETABLE.SCHEDULING_SUBPART
   add constraint PK_SCHED_SUBPART primary key (UNIQUEID);
 alter table TIMETABLE.SCHEDULING_SUBPART
@@ -500,8 +517,10 @@ create table TIMETABLE.CLASS_
   ROOM_RATIO            NUMBER default 1.0,
   SECTION_NUMBER        NUMBER(5),
   LAST_MODIFIED_TIME    TIMESTAMP(6),
-  UID_ROLLED_FWD_FROM   NUMBER(20)
-);
+  UID_ROLLED_FWD_FROM   NUMBER(20),
+  EXTERNAL_UID          VARCHAR2(40)
+)
+;
 alter table TIMETABLE.CLASS_
   add constraint PK_CLASS primary key (UNIQUEID);
 alter table TIMETABLE.CLASS_
@@ -540,6 +559,80 @@ create index TIMETABLE.IDX_CLASS_PARENT on TIMETABLE.CLASS_ (PARENT_CLASS_ID);
 create index TIMETABLE.IDX_CLASS_SUBPART_ID on TIMETABLE.CLASS_ (SUBPART_ID);
 
 prompt
+prompt Creating table EVENT_CONTACT
+prompt ============================
+prompt
+create table TIMETABLE.EVENT_CONTACT
+(
+  UNIQUEID    NUMBER(20),
+  EXTERNAL_ID VARCHAR2(40),
+  EMAIL       VARCHAR2(100),
+  PHONE       VARCHAR2(10),
+  FIRSTNAME   VARCHAR2(20),
+  MIDDLENAME  VARCHAR2(20),
+  LASTNAME    VARCHAR2(30)
+)
+;
+alter table TIMETABLE.EVENT_CONTACT
+  add constraint PK_EVENT_CONTACT_UNIQUEID primary key (UNIQUEID);
+alter table TIMETABLE.EVENT_CONTACT
+  add constraint NN_EVENT_CONTACT_EMAIL
+  check ("EMAIL" IS NOT NULL);
+alter table TIMETABLE.EVENT_CONTACT
+  add constraint NN_EVENT_CONTACT_PHONE
+  check ("PHONE" IS NOT NULL);
+alter table TIMETABLE.EVENT_CONTACT
+  add constraint NN_EVENT_CONTACT_UNIQUEID
+  check ("UNIQUEID" IS NOT NULL);
+
+prompt
+prompt Creating table EVENT_TYPE
+prompt =========================
+prompt
+create table TIMETABLE.EVENT_TYPE
+(
+  UNIQUEID  NUMBER(20),
+  REFERENCE VARCHAR2(20),
+  LABEL     VARCHAR2(60)
+)
+;
+alter table TIMETABLE.EVENT_TYPE
+  add constraint PK_EVENT_TYPE primary key (UNIQUEID);
+alter table TIMETABLE.EVENT_TYPE
+  add constraint NN_EVENT_TYPE_LABEL
+  check ("LABEL" IS NOT NULL);
+alter table TIMETABLE.EVENT_TYPE
+  add constraint NN_EVENT_TYPE_REFERENCE
+  check ("REFERENCE" IS NOT NULL);
+alter table TIMETABLE.EVENT_TYPE
+  add constraint NN_EVENT_TYPE_UNIQUEID
+  check ("UNIQUEID" IS NOT NULL);
+
+prompt
+prompt Creating table EVENT
+prompt ====================
+prompt
+create table TIMETABLE.EVENT
+(
+  UNIQUEID        NUMBER(20) not null,
+  EVENT_TYPE      NUMBER(20) not null,
+  EVENT_NAME      VARCHAR2(100),
+  MIN_CAPACITY    NUMBER(10),
+  MAX_CAPACITY    NUMBER(10),
+  SPONSORING_ORG  NUMBER(20),
+  MAIN_CONTACT_ID NUMBER(20)
+)
+;
+alter table TIMETABLE.EVENT
+  add constraint PK_EVENT_UNIQUEID primary key (UNIQUEID);
+alter table TIMETABLE.EVENT
+  add constraint FK_EVENT_EVENT_TYPE foreign key (EVENT_TYPE)
+  references TIMETABLE.EVENT_TYPE (UNIQUEID) on delete cascade;
+alter table TIMETABLE.EVENT
+  add constraint FK_EVENT_MAIN_CONTACT foreign key (MAIN_CONTACT_ID)
+  references TIMETABLE.EVENT_CONTACT (UNIQUEID) on delete set null;
+
+prompt
 prompt Creating table SOLVER_GROUP
 prompt ===========================
 prompt
@@ -549,7 +642,8 @@ create table TIMETABLE.SOLVER_GROUP
   NAME       VARCHAR2(50),
   ABBV       VARCHAR2(50),
   SESSION_ID NUMBER(20)
-);
+)
+;
 alter table TIMETABLE.SOLVER_GROUP
   add constraint PK_SOLVER_GROUP primary key (UNIQUEID);
 alter table TIMETABLE.SOLVER_GROUP
@@ -584,7 +678,8 @@ create table TIMETABLE.SOLUTION
   CREATOR            VARCHAR2(250),
   OWNER_ID           NUMBER(20),
   LAST_MODIFIED_TIME TIMESTAMP(6)
-);
+)
+;
 alter table TIMETABLE.SOLUTION
   add constraint PK_SOLUTION primary key (UNIQUEID);
 alter table TIMETABLE.SOLUTION
@@ -622,7 +717,8 @@ create table TIMETABLE.TIME_PATTERN
   TYPE       NUMBER(10),
   BREAK_TIME NUMBER(3),
   SESSION_ID NUMBER(20)
-);
+)
+;
 alter table TIMETABLE.TIME_PATTERN
   add constraint PK_TIME_PATTERN primary key (UNIQUEID);
 alter table TIMETABLE.TIME_PATTERN
@@ -649,13 +745,18 @@ create table TIMETABLE.ASSIGNMENT
   SOLUTION_ID        NUMBER(20),
   CLASS_ID           NUMBER(20),
   CLASS_NAME         VARCHAR2(100),
-  LAST_MODIFIED_TIME TIMESTAMP(6)
-);
+  LAST_MODIFIED_TIME TIMESTAMP(6),
+  EVENT_ID           NUMBER(20)
+)
+;
 alter table TIMETABLE.ASSIGNMENT
   add constraint PK_ASSIGNMENT primary key (UNIQUEID);
 alter table TIMETABLE.ASSIGNMENT
   add constraint FK_ASSIGNMENT_CLASS foreign key (CLASS_ID)
   references TIMETABLE.CLASS_ (UNIQUEID) on delete cascade;
+alter table TIMETABLE.ASSIGNMENT
+  add constraint FK_ASSIGNMENT_EVENT foreign key (EVENT_ID)
+  references TIMETABLE.EVENT (UNIQUEID) on delete set null;
 alter table TIMETABLE.ASSIGNMENT
   add constraint FK_ASSIGNMENT_SOLUTION foreign key (SOLUTION_ID)
   references TIMETABLE.SOLUTION (UNIQUEID) on delete cascade;
@@ -691,7 +792,8 @@ create table TIMETABLE.POSITION_TYPE
   REFERENCE  VARCHAR2(20),
   LABEL      VARCHAR2(60),
   SORT_ORDER NUMBER(4)
-);
+)
+;
 alter table TIMETABLE.POSITION_TYPE
   add constraint PK_POSITION_TYPE primary key (UNIQUEID);
 alter table TIMETABLE.POSITION_TYPE
@@ -733,12 +835,12 @@ create table TIMETABLE.DEPARTMENT
   ALLOW_REQ_TIME     NUMBER(1) default (0),
   ALLOW_REQ_ROOM     NUMBER(1) default (0),
   LAST_MODIFIED_TIME TIMESTAMP(6)
-);
+)
+;
 alter table TIMETABLE.DEPARTMENT
   add constraint PK_DEPARTMENT primary key (UNIQUEID);
 alter table TIMETABLE.DEPARTMENT
-  add constraint UK_DEPARTMENT_DEPT_CODE unique (SESSION_ID, DEPT_CODE)
-  using index ;
+  add constraint UK_DEPARTMENT_DEPT_CODE unique (SESSION_ID, DEPT_CODE);
 alter table TIMETABLE.DEPARTMENT
   add constraint FK_DEPARTMENT_SOLVER_GROUP foreign key (SOLVER_GROUP_ID)
   references TIMETABLE.SOLVER_GROUP (UNIQUEID) on delete cascade;
@@ -782,8 +884,10 @@ create table TIMETABLE.DEPARTMENTAL_INSTRUCTOR
   NOTE                VARCHAR2(20),
   DEPARTMENT_UNIQUEID NUMBER(20),
   IGNORE_TOO_FAR      NUMBER(1) default 0,
-  LAST_MODIFIED_TIME  TIMESTAMP(6)
-);
+  LAST_MODIFIED_TIME  TIMESTAMP(6),
+  EMAIL               VARCHAR2(200)
+)
+;
 alter table TIMETABLE.DEPARTMENTAL_INSTRUCTOR
   add constraint PK_DEPT_INSTR primary key (UNIQUEID);
 alter table TIMETABLE.DEPARTMENTAL_INSTRUCTOR
@@ -813,7 +917,8 @@ create table TIMETABLE.ASSIGNED_INSTRUCTORS
   ASSIGNMENT_ID      NUMBER(20),
   INSTRUCTOR_ID      NUMBER(20),
   LAST_MODIFIED_TIME TIMESTAMP(6)
-);
+)
+;
 alter table TIMETABLE.ASSIGNED_INSTRUCTORS
   add constraint PK_ASSIGNED_INSTRUCTORS primary key (ASSIGNMENT_ID, INSTRUCTOR_ID);
 alter table TIMETABLE.ASSIGNED_INSTRUCTORS
@@ -839,7 +944,8 @@ create table TIMETABLE.ASSIGNED_ROOMS
   ASSIGNMENT_ID      NUMBER(20),
   ROOM_ID            NUMBER(20),
   LAST_MODIFIED_TIME TIMESTAMP(6)
-);
+)
+;
 alter table TIMETABLE.ASSIGNED_ROOMS
   add constraint PK_ASSIGNED_ROOMS primary key (ASSIGNMENT_ID, ROOM_ID);
 alter table TIMETABLE.ASSIGNED_ROOMS
@@ -866,12 +972,12 @@ create table TIMETABLE.BUILDING
   COORDINATE_X NUMBER(10),
   COORDINATE_Y NUMBER(10),
   EXTERNAL_UID VARCHAR2(40)
-);
+)
+;
 alter table TIMETABLE.BUILDING
   add constraint PK_BUILDING primary key (UNIQUEID);
 alter table TIMETABLE.BUILDING
-  add constraint UK_BUILDING unique (SESSION_ID, ABBREVIATION)
-  using index ;
+  add constraint UK_BUILDING unique (SESSION_ID, ABBREVIATION);
 alter table TIMETABLE.BUILDING
   add constraint FK_BUILDING_SESSION foreign key (SESSION_ID)
   references TIMETABLE.SESSIONS (UNIQUEID) on delete cascade;
@@ -904,7 +1010,8 @@ create table TIMETABLE.PREFERENCE_LEVEL
   PREF_PROLOG VARCHAR2(2),
   PREF_NAME   VARCHAR2(20),
   UNIQUEID    NUMBER(20)
-);
+)
+;
 alter table TIMETABLE.PREFERENCE_LEVEL
   add constraint PK_PREFERENCE_LEVEL primary key (UNIQUEID);
 alter table TIMETABLE.PREFERENCE_LEVEL
@@ -928,7 +1035,8 @@ create table TIMETABLE.BUILDING_PREF
   BLDG_ID            NUMBER(20),
   DISTANCE_FROM      NUMBER(5),
   LAST_MODIFIED_TIME TIMESTAMP(6)
-);
+)
+;
 alter table TIMETABLE.BUILDING_PREF
   add constraint PK_BUILDING_PREF primary key (UNIQUEID);
 alter table TIMETABLE.BUILDING_PREF
@@ -966,7 +1074,8 @@ create table TIMETABLE.SUBJECT_AREA
   DEPARTMENT_UNIQUEID       NUMBER(20),
   EXTERNAL_UID              VARCHAR2(40),
   LAST_MODIFIED_TIME        TIMESTAMP(6)
-);
+)
+;
 alter table TIMETABLE.SUBJECT_AREA
   add constraint PK_SUBJECT_AREA primary key (UNIQUEID);
 alter table TIMETABLE.SUBJECT_AREA
@@ -1013,7 +1122,8 @@ create table TIMETABLE.TIMETABLE_MANAGER
   LAST_NAME          VARCHAR2(30),
   EMAIL_ADDRESS      VARCHAR2(135),
   LAST_MODIFIED_TIME TIMESTAMP(6)
-);
+)
+;
 alter table TIMETABLE.TIMETABLE_MANAGER
   add constraint PK_TIMETABLE_MANAGER primary key (UNIQUEID);
 alter table TIMETABLE.TIMETABLE_MANAGER
@@ -1049,7 +1159,8 @@ create table TIMETABLE.CHANGE_LOG
   SOURCE        VARCHAR2(50),
   OPERATION     VARCHAR2(50),
   DETAIL        BLOB
-);
+)
+;
 alter table TIMETABLE.CHANGE_LOG
   add constraint PK_CHANGE_LOG primary key (UNIQUEID);
 alter table TIMETABLE.CHANGE_LOG
@@ -1108,7 +1219,8 @@ create table TIMETABLE.CLASS_INSTRUCTOR
   PERCENT_SHARE      NUMBER(3),
   IS_LEAD            NUMBER(1),
   LAST_MODIFIED_TIME TIMESTAMP(6)
-);
+)
+;
 alter table TIMETABLE.CLASS_INSTRUCTOR
   add constraint PK_CLASS_INSTRUCTOR_UNIQUEID primary key (UNIQUEID);
 alter table TIMETABLE.CLASS_INSTRUCTOR
@@ -1144,7 +1256,8 @@ create table TIMETABLE.STUDENT_STATUS_TYPE
   UNIQUEID     NUMBER(20),
   ABBREVIATION VARCHAR2(20),
   NAME         VARCHAR2(50)
-);
+)
+;
 alter table TIMETABLE.STUDENT_STATUS_TYPE
   add constraint PK_STUDENT_STATUS_TYPE primary key (UNIQUEID);
 alter table TIMETABLE.STUDENT_STATUS_TYPE
@@ -1174,7 +1287,8 @@ create table TIMETABLE.STUDENT
   STATUS_TYPE_ID      NUMBER(20),
   STATUS_CHANGE_DATE  DATE,
   SESSION_ID          NUMBER(20)
-);
+)
+;
 alter table TIMETABLE.STUDENT
   add constraint PK_STUDENT primary key (UNIQUEID);
 alter table TIMETABLE.STUDENT
@@ -1216,7 +1330,8 @@ create table TIMETABLE.FREE_TIME
   LENGTH     NUMBER(10),
   CATEGORY   NUMBER(10),
   SESSION_ID NUMBER(20)
-);
+)
+;
 alter table TIMETABLE.FREE_TIME
   add constraint PK_FREE_TIME primary key (UNIQUEID);
 alter table TIMETABLE.FREE_TIME
@@ -1257,7 +1372,8 @@ create table TIMETABLE.COURSE_DEMAND
   IS_ALTERNATIVE NUMBER(1),
   TIMESTAMP      DATE,
   FREE_TIME_ID   NUMBER(20)
-);
+)
+;
 alter table TIMETABLE.COURSE_DEMAND
   add constraint PK_COURSE_DEMAND primary key (UNIQUEID);
 alter table TIMETABLE.COURSE_DEMAND
@@ -1308,14 +1424,13 @@ create table TIMETABLE.COURSE_OFFERING
   EXTERNAL_UID         VARCHAR2(40),
   LAST_MODIFIED_TIME   TIMESTAMP(6),
   UID_ROLLED_FWD_FROM  NUMBER(20),
-  LASTLIKE_DEMAND NUMBER(10) default 0
-);
+  LASTLIKE_DEMAND      NUMBER(10) default 0
+)
+;
 alter table TIMETABLE.COURSE_OFFERING
-  add constraint PK_COURSE_OFFERING primary key (UNIQUEID)
-  using index ;
+  add constraint PK_COURSE_OFFERING primary key (UNIQUEID);
 alter table TIMETABLE.COURSE_OFFERING
-  add constraint UK_COURSE_OFFERING_SUBJ_CRS unique (COURSE_NBR, SUBJECT_AREA_ID)
-  using index ;
+  add constraint UK_COURSE_OFFERING_SUBJ_CRS unique (COURSE_NBR, SUBJECT_AREA_ID);
 alter table TIMETABLE.COURSE_OFFERING
   add constraint FK_COURSE_OFFERING_DEMAND_OFFR foreign key (DEMAND_OFFERING_ID)
   references TIMETABLE.COURSE_OFFERING (UNIQUEID) on delete cascade;
@@ -1338,14 +1453,14 @@ alter table TIMETABLE.COURSE_OFFERING
   add constraint NN_COURSE_OFFERING_IS_CONTROL
   check ("IS_CONTROL" IS NOT NULL);
 alter table TIMETABLE.COURSE_OFFERING
+  add constraint NN_COURSE_OFFERING_LL_DEMAND
+  check ("LASTLIKE_DEMAND" IS NOT NULL);
+alter table TIMETABLE.COURSE_OFFERING
   add constraint NN_COURSE_OFFERING_SUBJAREA_ID
   check ("SUBJECT_AREA_ID" IS NOT NULL);
 alter table TIMETABLE.COURSE_OFFERING
   add constraint NN_COURSE_OFFERING_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
-alter table TIMETABLE.COURSE_OFFERING
-  add constraint NN_COURSE_OFFERING_LL_DEMAND
-  check ("LASTLIKE_DEMAND" IS NOT NULL);
 create index TIMETABLE.IDX_COURSE_OFFERING_CONTROL on TIMETABLE.COURSE_OFFERING (IS_CONTROL);
 create index TIMETABLE.IDX_COURSE_OFFERING_DEMD_OFFR on TIMETABLE.COURSE_OFFERING (DEMAND_OFFERING_ID);
 create index TIMETABLE.IDX_COURSE_OFFERING_INSTR_OFFR on TIMETABLE.COURSE_OFFERING (INSTR_OFFR_ID);
@@ -1362,7 +1477,8 @@ create table TIMETABLE.COURSE_REQUEST
   ORD                NUMBER(10),
   ALLOW_OVERLAP      NUMBER(1),
   CREDIT             NUMBER(10) default (0)
-);
+)
+;
 alter table TIMETABLE.COURSE_REQUEST
   add constraint PK_COURSE_REQUEST primary key (UNIQUEID);
 alter table TIMETABLE.COURSE_REQUEST
@@ -1404,7 +1520,8 @@ create table TIMETABLE.CLASS_WAITLIST
   CLASS_ID          NUMBER(20),
   TYPE              NUMBER(10) default (0),
   TIMESTAMP         DATE
-);
+)
+;
 alter table TIMETABLE.CLASS_WAITLIST
   add constraint PK_CLASS_WAITLIST primary key (UNIQUEID);
 alter table TIMETABLE.CLASS_WAITLIST
@@ -1448,7 +1565,8 @@ create table TIMETABLE.SOLVER_INFO_DEF
   NAME           VARCHAR2(100),
   DESCRIPTION    VARCHAR2(1000),
   IMPLEMENTATION VARCHAR2(250)
-);
+)
+;
 alter table TIMETABLE.SOLVER_INFO_DEF
   add constraint PK_SOLVER_INFO_DEF primary key (UNIQUEID);
 alter table TIMETABLE.SOLVER_INFO_DEF
@@ -1468,7 +1586,8 @@ create table TIMETABLE.SOLVER_INFO
   SOLVER_INFO_DEF_ID NUMBER(20),
   SOLUTION_ID        NUMBER(20),
   ASSIGNMENT_ID      NUMBER(20)
-);
+)
+;
 alter table TIMETABLE.SOLVER_INFO
   add constraint PK_SOLVER_INFO primary key (UNIQUEID);
 alter table TIMETABLE.SOLVER_INFO
@@ -1500,7 +1619,8 @@ create table TIMETABLE.CONSTRAINT_INFO
 (
   ASSIGNMENT_ID  NUMBER(20),
   SOLVER_INFO_ID NUMBER(20)
-);
+)
+;
 alter table TIMETABLE.CONSTRAINT_INFO
   add constraint UK_CONSTRAINT_INFO_SOLV_ASSGN primary key (SOLVER_INFO_ID, ASSIGNMENT_ID);
 alter table TIMETABLE.CONSTRAINT_INFO
@@ -1540,7 +1660,8 @@ create table TIMETABLE.COURSE_CATALOG
   FIXED_MIN_CREDIT    NUMBER(10),
   MAX_CREDIT          NUMBER(10),
   FRAC_CREDIT_ALLOWED NUMBER(1)
-);
+)
+;
 alter table TIMETABLE.COURSE_CATALOG
   add constraint PK_COURSE_CATALOG primary key (UNIQUEID);
 alter table TIMETABLE.COURSE_CATALOG
@@ -1583,7 +1704,8 @@ create table TIMETABLE.COURSE_CREDIT_TYPE
   LABEL                   VARCHAR2(60),
   ABBREVIATION            VARCHAR2(10),
   LEGACY_CRSE_MASTER_CODE VARCHAR2(10)
-);
+)
+;
 alter table TIMETABLE.COURSE_CREDIT_TYPE
   add constraint PK_COURSE_CREDIT_TYPE primary key (UNIQUEID);
 alter table TIMETABLE.COURSE_CREDIT_TYPE
@@ -1613,7 +1735,8 @@ create table TIMETABLE.COURSE_CREDIT_UNIT_CONFIG
   FRACTIONAL_INCR_ALLOWED        NUMBER(1),
   INSTR_OFFR_ID                  NUMBER(20),
   LAST_MODIFIED_TIME             TIMESTAMP(6)
-);
+)
+;
 alter table TIMETABLE.COURSE_CREDIT_UNIT_CONFIG
   add constraint PK_CRS_CRDT_UNIT_CFG primary key (UNIQUEID);
 alter table TIMETABLE.COURSE_CREDIT_UNIT_CONFIG
@@ -1654,7 +1777,8 @@ create table TIMETABLE.COURSE_CREDIT_UNIT_TYPE
   REFERENCE    VARCHAR2(20),
   LABEL        VARCHAR2(60),
   ABBREVIATION VARCHAR2(10)
-);
+)
+;
 alter table TIMETABLE.COURSE_CREDIT_UNIT_TYPE
   add constraint PK_CRS_CRDT_UNIT_TYPE primary key (UNIQUEID);
 alter table TIMETABLE.COURSE_CREDIT_UNIT_TYPE
@@ -1676,7 +1800,8 @@ create table TIMETABLE.COURSE_REQUEST_OPTION
   COURSE_REQUEST_ID NUMBER(20),
   OPTION_TYPE       NUMBER(10),
   VALUE             BLOB
-);
+)
+;
 alter table TIMETABLE.COURSE_REQUEST_OPTION
   add constraint PK_COURSE_REQUEST_OPTION primary key (UNIQUEID);
 alter table TIMETABLE.COURSE_REQUEST_OPTION
@@ -1713,7 +1838,8 @@ create table TIMETABLE.COURSE_RESERVATION
   OWNER_CLASS_ID       VARCHAR2(1),
   REQUESTED            NUMBER(10),
   LAST_MODIFIED_TIME   TIMESTAMP(6)
-);
+)
+;
 alter table TIMETABLE.COURSE_RESERVATION
   add constraint PK_COURSE_RESV primary key (UNIQUEID);
 alter table TIMETABLE.COURSE_RESERVATION
@@ -1763,7 +1889,8 @@ create table TIMETABLE.COURSE_SUBPART_CREDIT
   FIXED_MIN_CREDIT    NUMBER(10),
   MAX_CREDIT          NUMBER(10),
   FRAC_CREDIT_ALLOWED NUMBER(1)
-);
+)
+;
 alter table TIMETABLE.COURSE_SUBPART_CREDIT
   add constraint PK_COURSE_SUBPART_CREDIT primary key (UNIQUEID);
 alter table TIMETABLE.COURSE_SUBPART_CREDIT
@@ -1798,7 +1925,8 @@ create table TIMETABLE.CRSE_CREDIT_FORMAT
   REFERENCE    VARCHAR2(20),
   LABEL        VARCHAR2(60),
   ABBREVIATION VARCHAR2(10)
-);
+)
+;
 alter table TIMETABLE.CRSE_CREDIT_FORMAT
   add constraint PK_CRSE_CREDIT_FORMAT primary key (UNIQUEID);
 alter table TIMETABLE.CRSE_CREDIT_FORMAT
@@ -1818,7 +1946,8 @@ create table TIMETABLE.DATE_PATTERN_DEPT
 (
   DEPT_ID    NUMBER(20),
   PATTERN_ID NUMBER(20)
-);
+)
+;
 alter table TIMETABLE.DATE_PATTERN_DEPT
   add constraint PK_DATE_PATTERN_DEPT primary key (DEPT_ID, PATTERN_ID);
 alter table TIMETABLE.DATE_PATTERN_DEPT
@@ -1843,7 +1972,8 @@ create table TIMETABLE.DEMAND_OFFR_TYPE
   UNIQUEID  NUMBER(20),
   REFERENCE VARCHAR2(20),
   LABEL     VARCHAR2(60)
-);
+)
+;
 alter table TIMETABLE.DEMAND_OFFR_TYPE
   add constraint PK_DEMAND_OFFR_TYPE primary key (UNIQUEID);
 alter table TIMETABLE.DEMAND_OFFR_TYPE
@@ -1865,7 +1995,8 @@ create table TIMETABLE.DEPT_TO_TT_MGR
 (
   TIMETABLE_MGR_ID NUMBER(20),
   DEPARTMENT_ID    NUMBER(20)
-);
+)
+;
 alter table TIMETABLE.DEPT_TO_TT_MGR
   add constraint PK_DEPT_TO_TT_MGR_UID primary key (TIMETABLE_MGR_ID, DEPARTMENT_ID);
 alter table TIMETABLE.DEPT_TO_TT_MGR
@@ -1892,13 +2023,12 @@ create table TIMETABLE.DESIGNATOR
   INSTRUCTOR_ID      NUMBER(20),
   CODE               VARCHAR2(3),
   LAST_MODIFIED_TIME TIMESTAMP(6)
-);
+)
+;
 alter table TIMETABLE.DESIGNATOR
-  add constraint PK_DESIGNATOR primary key (UNIQUEID)
-  using index ;
+  add constraint PK_DESIGNATOR primary key (UNIQUEID);
 alter table TIMETABLE.DESIGNATOR
-  add constraint UK_DESIGNATOR_CODE unique (SUBJECT_AREA_ID, INSTRUCTOR_ID, CODE)
-  using index ;
+  add constraint UK_DESIGNATOR_CODE unique (SUBJECT_AREA_ID, INSTRUCTOR_ID, CODE);
 alter table TIMETABLE.DESIGNATOR
   add constraint FK_DESIGNATOR_INSTRUCTOR foreign key (INSTRUCTOR_ID)
   references TIMETABLE.DEPARTMENTAL_INSTRUCTOR (UNIQUEID) on delete cascade;
@@ -1932,8 +2062,10 @@ create table TIMETABLE.DISTRIBUTION_TYPE
   ALLOWED_PREF        VARCHAR2(10),
   DESCRIPTION         VARCHAR2(2048),
   ABBREVIATION        VARCHAR2(20),
-  INSTRUCTOR_PREF     NUMBER(1) default (0)
-);
+  INSTRUCTOR_PREF     NUMBER(1) default (0),
+  EXAM_PREF           NUMBER(1) default 0
+)
+;
 alter table TIMETABLE.DISTRIBUTION_TYPE
   add constraint PK_DISTRIBUTION_TYPE primary key (UNIQUEID);
 alter table TIMETABLE.DISTRIBUTION_TYPE
@@ -1957,14 +2089,15 @@ prompt ================================
 prompt
 create table TIMETABLE.DISTRIBUTION_PREF
 (
-  UNIQUEID           NUMBER(20),
-  OWNER_ID           NUMBER(20),
-  PREF_LEVEL_ID      NUMBER(20),
-  DIST_TYPE_ID       NUMBER(20),
-  GROUPING           NUMBER(10),
-  LAST_MODIFIED_TIME TIMESTAMP(6),
+  UNIQUEID            NUMBER(20),
+  OWNER_ID            NUMBER(20),
+  PREF_LEVEL_ID       NUMBER(20),
+  DIST_TYPE_ID        NUMBER(20),
+  GROUPING            NUMBER(10),
+  LAST_MODIFIED_TIME  TIMESTAMP(6),
   UID_ROLLED_FWD_FROM NUMBER(20)
-);
+)
+;
 alter table TIMETABLE.DISTRIBUTION_PREF
   add constraint PK_DISTRIBUTION_PREF primary key (UNIQUEID);
 alter table TIMETABLE.DISTRIBUTION_PREF
@@ -1997,10 +2130,10 @@ create table TIMETABLE.DISTRIBUTION_OBJECT
   SEQUENCE_NUMBER    NUMBER(3),
   PREF_GROUP_ID      NUMBER(20),
   LAST_MODIFIED_TIME TIMESTAMP(6)
-);
+)
+;
 alter table TIMETABLE.DISTRIBUTION_OBJECT
-  add constraint PK_DISTRIBUTION_OBJECT primary key (UNIQUEID)
-  using index ;
+  add constraint PK_DISTRIBUTION_OBJECT primary key (UNIQUEID);
 alter table TIMETABLE.DISTRIBUTION_OBJECT
   add constraint FK_DISTRIBUTION_OBJECT_PREF foreign key (DIST_PREF_ID)
   references TIMETABLE.DISTRIBUTION_PREF (UNIQUEID) on delete cascade;
@@ -2024,7 +2157,8 @@ create table TIMETABLE.DIST_TYPE_DEPT
 (
   DIST_TYPE_ID NUMBER(19),
   DEPT_ID      NUMBER(20)
-);
+)
+;
 alter table TIMETABLE.DIST_TYPE_DEPT
   add constraint PK_DIST_TYPE_DEPT primary key (DIST_TYPE_ID, DEPT_ID);
 alter table TIMETABLE.DIST_TYPE_DEPT
@@ -2041,6 +2175,79 @@ alter table TIMETABLE.DIST_TYPE_DEPT
   check ("DIST_TYPE_ID" IS NOT NULL);
 
 prompt
+prompt Creating table EVENT_JOIN_EVENT_CONTACT
+prompt =======================================
+prompt
+create table TIMETABLE.EVENT_JOIN_EVENT_CONTACT
+(
+  EVENT_ID         NUMBER(20),
+  EVENT_CONTACT_ID NUMBER(20)
+)
+;
+alter table TIMETABLE.EVENT_JOIN_EVENT_CONTACT
+  add constraint FK_EVENT_CONTACT_JOIN foreign key (EVENT_CONTACT_ID)
+  references TIMETABLE.EVENT_CONTACT (UNIQUEID) on delete cascade;
+alter table TIMETABLE.EVENT_JOIN_EVENT_CONTACT
+  add constraint FK_EVENT_ID_JOIN foreign key (EVENT_ID)
+  references TIMETABLE.EVENT (UNIQUEID) on delete cascade;
+alter table TIMETABLE.EVENT_JOIN_EVENT_CONTACT
+  add constraint NN_EVENT_JOIN_EVENT_CONTACT_ID
+  check ("EVENT_CONTACT_ID" IS NOT NULL);
+alter table TIMETABLE.EVENT_JOIN_EVENT_CONTACT
+  add constraint NN_EVENT_JOIN_EVENT_ID
+  check ("EVENT_ID" IS NOT NULL);
+
+prompt
+prompt Creating table STANDARD_EVENT_NOTE
+prompt ==================================
+prompt
+create table TIMETABLE.STANDARD_EVENT_NOTE
+(
+  UNIQUEID  NUMBER(20),
+  REFERENCE VARCHAR2(20),
+  NOTE      VARCHAR2(1000)
+)
+;
+alter table TIMETABLE.STANDARD_EVENT_NOTE
+  add constraint PK_STANDARD_EVENT_NOTE primary key (UNIQUEID);
+alter table TIMETABLE.STANDARD_EVENT_NOTE
+  add constraint NN_STD_EVENT_NOTE_NOTE
+  check ("NOTE" IS NOT NULL);
+alter table TIMETABLE.STANDARD_EVENT_NOTE
+  add constraint NN_STD_EVENT_NOTE_REFERENCE
+  check ("REFERENCE" IS NOT NULL);
+alter table TIMETABLE.STANDARD_EVENT_NOTE
+  add constraint NN_STD_EVENT_NOTE_UNIQUEID
+  check ("UNIQUEID" IS NOT NULL);
+
+prompt
+prompt Creating table EVENT_NOTE
+prompt =========================
+prompt
+create table TIMETABLE.EVENT_NOTE
+(
+  UNIQUEID  NUMBER(20),
+  EVENT_ID  NUMBER(20),
+  NOTE_ID   NUMBER(20),
+  TEXT_NOTE VARCHAR2(1000)
+)
+;
+alter table TIMETABLE.EVENT_NOTE
+  add constraint PK_EVENT_NOTE_UNIQUEID primary key (UNIQUEID);
+alter table TIMETABLE.EVENT_NOTE
+  add constraint FK_EVENT_NOTE_EVENT foreign key (EVENT_ID)
+  references TIMETABLE.EVENT (UNIQUEID) on delete cascade;
+alter table TIMETABLE.EVENT_NOTE
+  add constraint FK_EVENT_NOTE_STD_NOTE foreign key (NOTE_ID)
+  references TIMETABLE.STANDARD_EVENT_NOTE (UNIQUEID) on delete set null;
+alter table TIMETABLE.EVENT_NOTE
+  add constraint NN_EVENT_NOTE_EVENT_UNIQUEID
+  check ("EVENT_ID" IS NOT NULL);
+alter table TIMETABLE.EVENT_NOTE
+  add constraint NN_EVENT_NOTE_UNIQUEID
+  check ("UNIQUEID" IS NOT NULL);
+
+prompt
 prompt Creating table EXACT_TIME_MINS
 prompt ==============================
 prompt
@@ -2051,7 +2258,8 @@ create table TIMETABLE.EXACT_TIME_MINS
   MINS_MAX   NUMBER(4),
   NR_SLOTS   NUMBER(4),
   BREAK_TIME NUMBER(4)
-);
+)
+;
 alter table TIMETABLE.EXACT_TIME_MINS
   add constraint PK_EXACT_TIME_MINS primary key (UNIQUEID);
 alter table TIMETABLE.EXACT_TIME_MINS
@@ -2072,6 +2280,250 @@ alter table TIMETABLE.EXACT_TIME_MINS
 create index TIMETABLE.IDX_EXACT_TIME_MINS on TIMETABLE.EXACT_TIME_MINS (MINS_MIN, MINS_MAX);
 
 prompt
+prompt Creating table EXAM_PERIOD
+prompt ==========================
+prompt
+create table TIMETABLE.EXAM_PERIOD
+(
+  UNIQUEID      NUMBER(20),
+  SESSION_ID    NUMBER(20),
+  DATE_OFS      NUMBER(10),
+  START_SLOT    NUMBER(10),
+  LENGTH        NUMBER(10),
+  PREF_LEVEL_ID NUMBER(20),
+  EXAM_TYPE     NUMBER(10) default 0
+)
+;
+alter table TIMETABLE.EXAM_PERIOD
+  add constraint PK_EXAM_PERIOD primary key (UNIQUEID);
+alter table TIMETABLE.EXAM_PERIOD
+  add constraint FK_EXAM_PERIOD_PREF foreign key (PREF_LEVEL_ID)
+  references TIMETABLE.PREFERENCE_LEVEL (UNIQUEID) on delete cascade;
+alter table TIMETABLE.EXAM_PERIOD
+  add constraint FK_EXAM_PERIOD_SESSION foreign key (SESSION_ID)
+  references TIMETABLE.SESSIONS (UNIQUEID) on delete cascade;
+alter table TIMETABLE.EXAM_PERIOD
+  add constraint NN_EXAM_PERIOD_DATE_OFS
+  check ("DATE_OFS" IS NOT NULL);
+alter table TIMETABLE.EXAM_PERIOD
+  add constraint NN_EXAM_PERIOD_LENGTH
+  check ("LENGTH" IS NOT NULL);
+alter table TIMETABLE.EXAM_PERIOD
+  add constraint NN_EXAM_PERIOD_PREF
+  check ("PREF_LEVEL_ID" IS NOT NULL);
+alter table TIMETABLE.EXAM_PERIOD
+  add constraint NN_EXAM_PERIOD_SESSION
+  check ("SESSION_ID" IS NOT NULL);
+alter table TIMETABLE.EXAM_PERIOD
+  add constraint NN_EXAM_PERIOD_START_SLOT
+  check ("START_SLOT" IS NOT NULL);
+alter table TIMETABLE.EXAM_PERIOD
+  add constraint NN_EXAM_PERIOD_UNIQUEID
+  check ("UNIQUEID" IS NOT NULL);
+
+prompt
+prompt Creating table EXAM
+prompt ===================
+prompt
+create table TIMETABLE.EXAM
+(
+  UNIQUEID            NUMBER(20),
+  SESSION_ID          NUMBER(20),
+  NAME                VARCHAR2(100),
+  NOTE                VARCHAR2(1000),
+  LENGTH              NUMBER(10),
+  MAX_NBR_ROOMS       NUMBER(10) default 1,
+  SEATING_TYPE        NUMBER(10),
+  ASSIGNED_PERIOD     NUMBER(20),
+  ASSIGNED_PREF       VARCHAR2(100),
+  EXAM_TYPE           NUMBER(10) default 0,
+  EVENT_ID            NUMBER(20),
+  AVG_PERIOD          NUMBER(10),
+  UID_ROLLED_FWD_FROM NUMBER(20)
+)
+;
+alter table TIMETABLE.EXAM
+  add constraint PK_EXAM primary key (UNIQUEID);
+alter table TIMETABLE.EXAM
+  add constraint FK_EXAM_EVENT foreign key (EVENT_ID)
+  references TIMETABLE.EVENT (UNIQUEID) on delete set null;
+alter table TIMETABLE.EXAM
+  add constraint FK_EXAM_PERIOD foreign key (ASSIGNED_PERIOD)
+  references TIMETABLE.EXAM_PERIOD (UNIQUEID) on delete cascade;
+alter table TIMETABLE.EXAM
+  add constraint FK_EXAM_SESSION foreign key (SESSION_ID)
+  references TIMETABLE.SESSIONS (UNIQUEID) on delete cascade;
+alter table TIMETABLE.EXAM
+  add constraint NN_EXAM_LENGTH
+  check ("LENGTH" IS NOT NULL);
+alter table TIMETABLE.EXAM
+  add constraint NN_EXAM_NBR_ROOMS
+  check ("MAX_NBR_ROOMS" IS NOT NULL);
+alter table TIMETABLE.EXAM
+  add constraint NN_EXAM_SEATING
+  check ("SEATING_TYPE" IS NOT NULL);
+alter table TIMETABLE.EXAM
+  add constraint NN_EXAM_SESSION
+  check ("SESSION_ID" IS NOT NULL);
+alter table TIMETABLE.EXAM
+  add constraint NN_EXAM_UNIQUEID
+  check ("UNIQUEID" IS NOT NULL);
+
+prompt
+prompt Creating table EXAM_INSTRUCTOR
+prompt ==============================
+prompt
+create table TIMETABLE.EXAM_INSTRUCTOR
+(
+  EXAM_ID       NUMBER(20),
+  INSTRUCTOR_ID NUMBER(20)
+)
+;
+alter table TIMETABLE.EXAM_INSTRUCTOR
+  add constraint PK_EXAM_INSTRUCTOR primary key (EXAM_ID, INSTRUCTOR_ID);
+alter table TIMETABLE.EXAM_INSTRUCTOR
+  add constraint FK_EXAM_INSTRUCTOR_EXAM foreign key (EXAM_ID)
+  references TIMETABLE.EXAM (UNIQUEID) on delete cascade;
+alter table TIMETABLE.EXAM_INSTRUCTOR
+  add constraint FK_EXAM_INSTRUCTOR_INSTRUCTOR foreign key (INSTRUCTOR_ID)
+  references TIMETABLE.DEPARTMENTAL_INSTRUCTOR (UNIQUEID) on delete cascade;
+alter table TIMETABLE.EXAM_INSTRUCTOR
+  add constraint NN_EXAM_INSTRUCTOR_EXAM
+  check ("EXAM_ID" IS NOT NULL);
+alter table TIMETABLE.EXAM_INSTRUCTOR
+  add constraint NN_EXAM_INSTRUCTOR_INSTRUCTOR
+  check ("INSTRUCTOR_ID" IS NOT NULL);
+
+prompt
+prompt Creating table EXAM_LOCATION_PREF
+prompt =================================
+prompt
+create table TIMETABLE.EXAM_LOCATION_PREF
+(
+  UNIQUEID      NUMBER(20),
+  LOCATION_ID   NUMBER(20),
+  PREF_LEVEL_ID NUMBER(20),
+  PERIOD_ID     NUMBER(20)
+)
+;
+alter table TIMETABLE.EXAM_LOCATION_PREF
+  add constraint PK_EXAM_LOCATION_PREF primary key (UNIQUEID);
+alter table TIMETABLE.EXAM_LOCATION_PREF
+  add constraint FK_EXAM_LOCATION_PREF_PERIOD foreign key (PERIOD_ID)
+  references TIMETABLE.EXAM_PERIOD (UNIQUEID) on delete cascade;
+alter table TIMETABLE.EXAM_LOCATION_PREF
+  add constraint FK_EXAM_LOCATION_PREF_PREF foreign key (PREF_LEVEL_ID)
+  references TIMETABLE.PREFERENCE_LEVEL (UNIQUEID) on delete cascade;
+alter table TIMETABLE.EXAM_LOCATION_PREF
+  add constraint NN_EXAM_LOCATION_PREF_OWNER
+  check ("LOCATION_ID" IS NOT NULL);
+alter table TIMETABLE.EXAM_LOCATION_PREF
+  add constraint NN_EXAM_LOCATION_PREF_PERIOD
+  check ("PERIOD_ID" IS NOT NULL);
+alter table TIMETABLE.EXAM_LOCATION_PREF
+  add constraint NN_EXAM_LOCATION_PREF_PREF
+  check ("PREF_LEVEL_ID" IS NOT NULL);
+alter table TIMETABLE.EXAM_LOCATION_PREF
+  add constraint NN_EXAM_LOCATION_PREF_UNIQUEID
+  check ("UNIQUEID" IS NOT NULL);
+create index TIMETABLE.IDX_EXAM_LOCATION_PREF on TIMETABLE.EXAM_LOCATION_PREF (LOCATION_ID);
+
+prompt
+prompt Creating table EXAM_OWNER
+prompt =========================
+prompt
+create table TIMETABLE.EXAM_OWNER
+(
+  UNIQUEID   NUMBER(20),
+  EXAM_ID    NUMBER(20),
+  OWNER_ID   NUMBER(20),
+  OWNER_TYPE NUMBER(10),
+  COURSE_ID  NUMBER(20)
+)
+;
+alter table TIMETABLE.EXAM_OWNER
+  add constraint PK_EXAM_OWNER primary key (UNIQUEID);
+alter table TIMETABLE.EXAM_OWNER
+  add constraint FK_EXAM_OWNER_COURSE foreign key (COURSE_ID)
+  references TIMETABLE.COURSE_OFFERING (UNIQUEID) on delete cascade;
+alter table TIMETABLE.EXAM_OWNER
+  add constraint FK_EXAM_OWNER_EXAM foreign key (EXAM_ID)
+  references TIMETABLE.EXAM (UNIQUEID) on delete cascade;
+alter table TIMETABLE.EXAM_OWNER
+  add constraint NN_EXAM_OWNER_COURSE
+  check (course_id is not null);
+alter table TIMETABLE.EXAM_OWNER
+  add constraint NN_EXAM_OWNER_EXAM_ID
+  check ("EXAM_ID" IS NOT NULL);
+alter table TIMETABLE.EXAM_OWNER
+  add constraint NN_EXAM_OWNER_OWNER_ID
+  check ("OWNER_ID" IS NOT NULL);
+alter table TIMETABLE.EXAM_OWNER
+  add constraint NN_EXAM_OWNER_OWNER_TYPE
+  check ("OWNER_TYPE" IS NOT NULL);
+alter table TIMETABLE.EXAM_OWNER
+  add constraint NN_EXAM_OWNER_UNIQUE_ID
+  check ("UNIQUEID" IS NOT NULL);
+create index TIMETABLE.IDX_EXAM_OWNER_COURSE on TIMETABLE.EXAM_OWNER (COURSE_ID);
+create index TIMETABLE.IDX_EXAM_OWNER_EXAM on TIMETABLE.EXAM_OWNER (EXAM_ID);
+create index TIMETABLE.IDX_EXAM_OWNER_OWNER on TIMETABLE.EXAM_OWNER (OWNER_ID, OWNER_TYPE);
+
+prompt
+prompt Creating table EXAM_PERIOD_PREF
+prompt ===============================
+prompt
+create table TIMETABLE.EXAM_PERIOD_PREF
+(
+  UNIQUEID      NUMBER(20),
+  OWNER_ID      NUMBER(20),
+  PREF_LEVEL_ID NUMBER(20),
+  PERIOD_ID     NUMBER(20)
+)
+;
+alter table TIMETABLE.EXAM_PERIOD_PREF
+  add constraint PK_EXAM_PERIOD_PREF primary key (UNIQUEID);
+alter table TIMETABLE.EXAM_PERIOD_PREF
+  add constraint FK_EXAM_PERIOD_PREF_PERIOD foreign key (PERIOD_ID)
+  references TIMETABLE.EXAM_PERIOD (UNIQUEID) on delete cascade;
+alter table TIMETABLE.EXAM_PERIOD_PREF
+  add constraint FK_EXAM_PERIOD_PREF_PREF foreign key (PREF_LEVEL_ID)
+  references TIMETABLE.PREFERENCE_LEVEL (UNIQUEID) on delete cascade;
+alter table TIMETABLE.EXAM_PERIOD_PREF
+  add constraint NN_EXAM_PERIOD_PREF_OWNER
+  check ("OWNER_ID" IS NOT NULL);
+alter table TIMETABLE.EXAM_PERIOD_PREF
+  add constraint NN_EXAM_PERIOD_PREF_PERIOD
+  check ("PERIOD_ID" IS NOT NULL);
+alter table TIMETABLE.EXAM_PERIOD_PREF
+  add constraint NN_EXAM_PERIOD_PREF_PREF
+  check ("PREF_LEVEL_ID" IS NOT NULL);
+alter table TIMETABLE.EXAM_PERIOD_PREF
+  add constraint NN_EXAM_PERIOD_PREF_UNIQUEID
+  check ("UNIQUEID" IS NOT NULL);
+
+prompt
+prompt Creating table EXAM_ROOM_ASSIGNMENT
+prompt ===================================
+prompt
+create table TIMETABLE.EXAM_ROOM_ASSIGNMENT
+(
+  EXAM_ID     NUMBER(20),
+  LOCATION_ID NUMBER(20)
+)
+;
+alter table TIMETABLE.EXAM_ROOM_ASSIGNMENT
+  add constraint PK_EXAM_ROOM_ASSIGNMENT primary key (EXAM_ID, LOCATION_ID);
+alter table TIMETABLE.EXAM_ROOM_ASSIGNMENT
+  add constraint FK_EXAM_ROOM_EXAM foreign key (EXAM_ID)
+  references TIMETABLE.EXAM (UNIQUEID) on delete cascade;
+alter table TIMETABLE.EXAM_ROOM_ASSIGNMENT
+  add constraint NN_EXAM_ROOM_EXAM_ID
+  check ("EXAM_ID" IS NOT NULL);
+alter table TIMETABLE.EXAM_ROOM_ASSIGNMENT
+  add constraint NN_EXAM_ROOM_LOCATION_ID
+  check ("LOCATION_ID" IS NOT NULL);
+
+prompt
 prompt Creating table EXTERNAL_BUILDING
 prompt ================================
 prompt
@@ -2084,7 +2536,8 @@ create table TIMETABLE.EXTERNAL_BUILDING
   COORDINATE_X NUMBER(10),
   COORDINATE_Y NUMBER(10),
   DISPLAY_NAME VARCHAR2(100)
-);
+)
+;
 alter table TIMETABLE.EXTERNAL_BUILDING
   add constraint PK_EXTERNAL_BLDG primary key (UNIQUEID);
 alter table TIMETABLE.EXTERNAL_BUILDING
@@ -2111,8 +2564,10 @@ create table TIMETABLE.EXTERNAL_ROOM
   CLASSIFICATION      VARCHAR2(20),
   SCHEDULED_ROOM_TYPE VARCHAR2(20),
   INSTRUCTIONAL       NUMBER(1),
-  DISPLAY_NAME        VARCHAR2(100)
-);
+  DISPLAY_NAME        VARCHAR2(100),
+  EXAM_CAPACITY       NUMBER(10)
+)
+;
 alter table TIMETABLE.EXTERNAL_ROOM
   add constraint PK_EXTERNAL_ROOM primary key (UNIQUEID);
 alter table TIMETABLE.EXTERNAL_ROOM
@@ -2149,7 +2604,8 @@ create table TIMETABLE.EXTERNAL_ROOM_DEPARTMENT
   DEPARTMENT_CODE  VARCHAR2(50),
   PERCENT          NUMBER(10),
   ASSIGNMENT_TYPE  VARCHAR2(20)
-);
+)
+;
 alter table TIMETABLE.EXTERNAL_ROOM_DEPARTMENT
   add constraint PK_EXTERNAL_ROOM_DEPT primary key (UNIQUEID);
 alter table TIMETABLE.EXTERNAL_ROOM_DEPARTMENT
@@ -2178,7 +2634,8 @@ create table TIMETABLE.EXTERNAL_ROOM_FEATURE
   EXTERNAL_ROOM_ID NUMBER(20),
   NAME             VARCHAR2(20),
   VALUE            VARCHAR2(20)
-);
+)
+;
 alter table TIMETABLE.EXTERNAL_ROOM_FEATURE
   add constraint PK_EXTERNAL_ROOM_FEATURE primary key (UNIQUEID);
 alter table TIMETABLE.EXTERNAL_ROOM_FEATURE
@@ -2207,7 +2664,8 @@ create table TIMETABLE.HISTORY
   OLD_NUMBER VARCHAR2(20),
   NEW_NUMBER VARCHAR2(20),
   SESSION_ID NUMBER(20)
-);
+)
+;
 alter table TIMETABLE.HISTORY
   add constraint PK_HISTORY primary key (UNIQUEID);
 alter table TIMETABLE.HISTORY
@@ -2245,7 +2703,8 @@ create table TIMETABLE.INDIVIDUAL_RESERVATION
   EXPIRATION_DATE    DATE,
   OWNER_CLASS_ID     VARCHAR2(1),
   LAST_MODIFIED_TIME TIMESTAMP(6)
-);
+)
+;
 alter table TIMETABLE.INDIVIDUAL_RESERVATION
   add constraint PK_INDIVIDUAL_RESV primary key (UNIQUEID);
 alter table TIMETABLE.INDIVIDUAL_RESERVATION
@@ -2287,7 +2746,8 @@ create table TIMETABLE.JENRL
   SOLUTION_ID NUMBER(20),
   CLASS1_ID   NUMBER(20),
   CLASS2_ID   NUMBER(20)
-);
+)
+;
 alter table TIMETABLE.JENRL
   add constraint PK_JENRL primary key (UNIQUEID);
 alter table TIMETABLE.JENRL
@@ -2330,7 +2790,8 @@ create table TIMETABLE.LASTLIKE_COURSE_DEMAND
   COURSE_NBR      VARCHAR2(10),
   PRIORITY        NUMBER(10) default (0),
   COURSE_PERM_ID  VARCHAR2(20)
-);
+)
+;
 alter table TIMETABLE.LASTLIKE_COURSE_DEMAND
   add constraint PK_LASTLIKE_COURSE_DEMAND primary key (UNIQUEID);
 alter table TIMETABLE.LASTLIKE_COURSE_DEMAND
@@ -2355,8 +2816,8 @@ alter table TIMETABLE.LASTLIKE_COURSE_DEMAND
   add constraint NN_LL_COURSE_DEMAND_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
 create index TIMETABLE.IDX_LL_COURSE_DEMAND_COURSE on TIMETABLE.LASTLIKE_COURSE_DEMAND (SUBJECT_AREA_ID, COURSE_NBR);
-create index TIMETABLE.IDX_LL_COURSE_DEMAND_STUDENT on TIMETABLE.LASTLIKE_COURSE_DEMAND (STUDENT_ID);
 create index TIMETABLE.IDX_LL_COURSE_DEMAND_PERMID on TIMETABLE.LASTLIKE_COURSE_DEMAND (COURSE_PERM_ID);
+create index TIMETABLE.IDX_LL_COURSE_DEMAND_STUDENT on TIMETABLE.LASTLIKE_COURSE_DEMAND (STUDENT_ID);
 
 prompt
 prompt Creating table SETTINGS
@@ -2369,7 +2830,8 @@ create table TIMETABLE.SETTINGS
   DEFAULT_VALUE  VARCHAR2(100),
   ALLOWED_VALUES VARCHAR2(500),
   DESCRIPTION    VARCHAR2(100)
-);
+)
+;
 alter table TIMETABLE.SETTINGS
   add constraint PK_SETTINGS primary key (UNIQUEID);
 alter table TIMETABLE.SETTINGS
@@ -2398,7 +2860,8 @@ create table TIMETABLE.MANAGER_SETTINGS
   KEY_ID        NUMBER(20),
   VALUE         VARCHAR2(100),
   USER_UNIQUEID NUMBER(20)
-);
+)
+;
 alter table TIMETABLE.MANAGER_SETTINGS
   add constraint PK_MANAGER_SETTINGS primary key (UNIQUEID);
 alter table TIMETABLE.MANAGER_SETTINGS
@@ -2423,6 +2886,55 @@ create index TIMETABLE.IDX_MANAGER_SETTINGS_KEY on TIMETABLE.MANAGER_SETTINGS (K
 create index TIMETABLE.IDX_MANAGER_SETTINGS_MANAGER on TIMETABLE.MANAGER_SETTINGS (USER_UNIQUEID);
 
 prompt
+prompt Creating table MEETING
+prompt ======================
+prompt
+create table TIMETABLE.MEETING
+(
+  UNIQUEID           NUMBER(20),
+  EVENT_ID           NUMBER(20),
+  EVENT_TYPE         NUMBER(20),
+  MEETING_DATE       DATE,
+  START_PERIOD       NUMBER(10),
+  START_OFFSET       NUMBER(10),
+  STOP_PERIOD        NUMBER(10),
+  STOP_OFFSET        NUMBER(10),
+  LOCATION_PERM_ID   NUMBER(20),
+  CLASS_CAN_OVERRIDE NUMBER(1),
+  APPROVED_DATE      DATE
+)
+;
+alter table TIMETABLE.MEETING
+  add constraint PK_MEETING_UNIQUEID primary key (UNIQUEID);
+alter table TIMETABLE.MEETING
+  add constraint FK_MEETING_EVENT foreign key (EVENT_ID)
+  references TIMETABLE.EVENT (UNIQUEID) on delete cascade;
+alter table TIMETABLE.MEETING
+  add constraint FK_MEETING_EVENT_TYPE foreign key (EVENT_TYPE)
+  references TIMETABLE.EVENT_TYPE (UNIQUEID) on delete cascade;
+alter table TIMETABLE.MEETING
+  add constraint NN_MEETING_DATE
+  check ("MEETING_DATE" IS NOT NULL);
+alter table TIMETABLE.MEETING
+  add constraint NN_MEETING_EVENT_ID
+  check ("EVENT_ID" IS NOT NULL);
+alter table TIMETABLE.MEETING
+  add constraint NN_MEETING_EVENT_TYPE
+  check ("EVENT_TYPE" IS NOT NULL);
+alter table TIMETABLE.MEETING
+  add constraint NN_MEETING_OVERRIDE
+  check ("CLASS_CAN_OVERRIDE" IS NOT NULL);
+alter table TIMETABLE.MEETING
+  add constraint NN_MEETING_START_PERIOD
+  check ("START_PERIOD" IS NOT NULL);
+alter table TIMETABLE.MEETING
+  add constraint NN_MEETING_STOP_PERIOD
+  check ("STOP_PERIOD" IS NOT NULL);
+alter table TIMETABLE.MEETING
+  add constraint NN_MEETING_UNIQUEID
+  check ("UNIQUEID" IS NOT NULL);
+
+prompt
 prompt Creating table NON_UNIVERSITY_LOCATION
 prompt ======================================
 prompt
@@ -2438,8 +2950,12 @@ create table TIMETABLE.NON_UNIVERSITY_LOCATION
   MANAGER_IDS       VARCHAR2(200),
   PATTERN           VARCHAR2(350),
   IGNORE_ROOM_CHECK NUMBER(1) default (0),
-  DISPLAY_NAME      VARCHAR2(100)
-);
+  DISPLAY_NAME      VARCHAR2(100),
+  EXAM_CAPACITY     NUMBER(10) default 0,
+  PERMANENT_ID      NUMBER(20) not null,
+  EXAM_TYPE         NUMBER(10) default 0
+)
+;
 alter table TIMETABLE.NON_UNIVERSITY_LOCATION
   add constraint PK_NON_UNIV_LOC primary key (UNIQUEID);
 alter table TIMETABLE.NON_UNIVERSITY_LOCATION
@@ -2482,7 +2998,8 @@ create table TIMETABLE.OFFR_GROUP
   NAME          VARCHAR2(20),
   DESCRIPTION   VARCHAR2(200),
   DEPARTMENT_ID NUMBER(20)
-);
+)
+;
 alter table TIMETABLE.OFFR_GROUP
   add constraint PK_OFFR_GROUP_UID primary key (UNIQUEID);
 alter table TIMETABLE.OFFR_GROUP
@@ -2511,7 +3028,8 @@ create table TIMETABLE.OFFR_GROUP_OFFERING
 (
   OFFR_GROUP_ID     NUMBER(20),
   INSTR_OFFERING_ID NUMBER(20)
-);
+)
+;
 alter table TIMETABLE.OFFR_GROUP_OFFERING
   add constraint PK_OFFR_GROUP_OFFERING primary key (OFFR_GROUP_ID, INSTR_OFFERING_ID);
 alter table TIMETABLE.OFFR_GROUP_OFFERING
@@ -2528,46 +3046,6 @@ alter table TIMETABLE.OFFR_GROUP_OFFERING
   check ("INSTR_OFFERING_ID" IS NOT NULL);
 
 prompt
-prompt Creating table PLAN_TABLE
-prompt =========================
-prompt
-create table TIMETABLE.PLAN_TABLE
-(
-  STATEMENT_ID      VARCHAR2(30),
-  TIMESTAMP         DATE,
-  REMARKS           VARCHAR2(80),
-  OPERATION         VARCHAR2(30),
-  OPTIONS           VARCHAR2(30),
-  OBJECT_NODE       VARCHAR2(128),
-  OBJECT_OWNER      VARCHAR2(30),
-  OBJECT_NAME       VARCHAR2(30),
-  OBJECT_INSTANCE   INTEGER,
-  OBJECT_TYPE       VARCHAR2(30),
-  OPTIMIZER         VARCHAR2(255),
-  SEARCH_COLUMNS    NUMBER,
-  ID                INTEGER,
-  PARENT_ID         INTEGER,
-  POSITION          INTEGER,
-  COST              INTEGER,
-  CARDINALITY       INTEGER,
-  BYTES             INTEGER,
-  OTHER_TAG         VARCHAR2(255),
-  PARTITION_START   VARCHAR2(255),
-  PARTITION_STOP    VARCHAR2(255),
-  PARTITION_ID      INTEGER,
-  OTHER             LONG,
-  DISTRIBUTION      VARCHAR2(30),
-  CPU_COST          INTEGER,
-  IO_COST           INTEGER,
-  TEMP_SPACE        INTEGER,
-  ACCESS_PREDICATES VARCHAR2(4000),
-  FILTER_PREDICATES VARCHAR2(4000),
-  PROJECTION        VARCHAR2(4000),
-  TIME              INTEGER,
-  QBLOCK_NAME       VARCHAR2(30)
-);
-
-prompt
 prompt Creating table POSITION_CODE_TO_TYPE
 prompt ====================================
 prompt
@@ -2575,7 +3053,8 @@ create table TIMETABLE.POSITION_CODE_TO_TYPE
 (
   POSITION_CODE CHAR(5),
   POS_CODE_TYPE NUMBER(20)
-);
+)
+;
 alter table TIMETABLE.POSITION_CODE_TO_TYPE
   add constraint PK_POS_CODE_TO_TYPE primary key (POSITION_CODE);
 alter table TIMETABLE.POSITION_CODE_TO_TYPE
@@ -2600,7 +3079,8 @@ create table TIMETABLE.POS_MAJOR
   NAME         VARCHAR2(50),
   EXTERNAL_UID VARCHAR2(20),
   SESSION_ID   NUMBER(20)
-);
+)
+;
 alter table TIMETABLE.POS_MAJOR
   add constraint PK_POS_MAJOR primary key (UNIQUEID);
 alter table TIMETABLE.POS_MAJOR
@@ -2627,7 +3107,8 @@ create table TIMETABLE.POS_ACAD_AREA_MAJOR
 (
   ACADEMIC_AREA_ID NUMBER(20),
   MAJOR_ID         NUMBER(20)
-);
+)
+;
 alter table TIMETABLE.POS_ACAD_AREA_MAJOR
   add constraint PK_POS_ACAD_AREA_MAJOR primary key (ACADEMIC_AREA_ID, MAJOR_ID);
 alter table TIMETABLE.POS_ACAD_AREA_MAJOR
@@ -2654,10 +3135,10 @@ create table TIMETABLE.POS_MINOR
   NAME         VARCHAR2(50),
   EXTERNAL_UID VARCHAR2(40),
   SESSION_ID   NUMBER(20)
-);
+)
+;
 alter table TIMETABLE.POS_MINOR
-  add constraint PK_POS_MINOR primary key (UNIQUEID)
-  using index ;
+  add constraint PK_POS_MINOR primary key (UNIQUEID);
 alter table TIMETABLE.POS_MINOR
   add constraint FK_POS_MINOR_SESSION foreign key (SESSION_ID)
   references TIMETABLE.SESSIONS (UNIQUEID) on delete cascade;
@@ -2682,10 +3163,10 @@ create table TIMETABLE.POS_ACAD_AREA_MINOR
 (
   ACADEMIC_AREA_ID NUMBER(20),
   MINOR_ID         NUMBER(20)
-);
+)
+;
 alter table TIMETABLE.POS_ACAD_AREA_MINOR
-  add constraint PK_POS_ACAD_AREA_MINOR primary key (ACADEMIC_AREA_ID, MINOR_ID)
-  using index ;
+  add constraint PK_POS_ACAD_AREA_MINOR primary key (ACADEMIC_AREA_ID, MINOR_ID);
 alter table TIMETABLE.POS_ACAD_AREA_MINOR
   add constraint FK_POS_ACAD_AREA_MINOR_AREA foreign key (ACADEMIC_AREA_ID)
   references TIMETABLE.ACADEMIC_AREA (UNIQUEID) on delete cascade;
@@ -2717,7 +3198,8 @@ create table TIMETABLE.POS_RESERVATION
   OWNER_CLASS_ID       VARCHAR2(1),
   REQUESTED            NUMBER(10),
   LAST_MODIFIED_TIME   TIMESTAMP(6)
-);
+)
+;
 alter table TIMETABLE.POS_RESERVATION
   add constraint PK_POS_RESV primary key (UNIQUEID);
 alter table TIMETABLE.POS_RESERVATION
@@ -2757,26 +3239,43 @@ create index TIMETABLE.IDX_POS_RESV_OWNER_CLS on TIMETABLE.POS_RESERVATION (OWNE
 create index TIMETABLE.IDX_POS_RESV_TYPE on TIMETABLE.POS_RESERVATION (RESERVATION_TYPE);
 
 prompt
-prompt Creating table QX__$SCHEMA
-prompt ==========================
+prompt Creating table RELATED_COURSE_INFO
+prompt ==================================
 prompt
-create table TIMETABLE.QX__$SCHEMA
+create table TIMETABLE.RELATED_COURSE_INFO
 (
-  TABLE_NAME         VARCHAR2(30),
-  COLUMN_NAME        VARCHAR2(30),
-  INFORMIX_TYPE_CODE NUMBER(4),
-  INFORMIX_TYPE_DATA NUMBER(10)
-);
-alter table TIMETABLE.QX__$SCHEMA
-  add constraint NN_QX__$SCHEMA_COLUMN_NAME
-  check ("COLUMN_NAME" IS NOT NULL);
-alter table TIMETABLE.QX__$SCHEMA
-  add constraint NN_QX__$SCHEMA_INFX_TYPE_CODE
-  check ("INFORMIX_TYPE_CODE" IS NOT NULL);
-alter table TIMETABLE.QX__$SCHEMA
-  add constraint NN_QX__$SCHEMA_TABLE_NAME
-  check ("TABLE_NAME" IS NOT NULL);
-create unique index TIMETABLE.QX__$SCHEMAINDEX on TIMETABLE.QX__$SCHEMA (TABLE_NAME, COLUMN_NAME);
+  UNIQUEID   NUMBER(20),
+  EVENT_ID   NUMBER(20),
+  OWNER_ID   NUMBER(20),
+  OWNER_TYPE NUMBER(10),
+  COURSE_ID  NUMBER(20)
+)
+;
+alter table TIMETABLE.RELATED_COURSE_INFO
+  add constraint PK_RELATED_CRS_INFO primary key (UNIQUEID);
+alter table TIMETABLE.RELATED_COURSE_INFO
+  add constraint FK_EVENT_OWNER_COURSE foreign key (COURSE_ID)
+  references TIMETABLE.COURSE_OFFERING (UNIQUEID) on delete cascade;
+alter table TIMETABLE.RELATED_COURSE_INFO
+  add constraint FK_EVENT_OWNER_EVENT foreign key (EVENT_ID)
+  references TIMETABLE.EVENT (UNIQUEID) on delete cascade;
+alter table TIMETABLE.RELATED_COURSE_INFO
+  add constraint NN_REL_CRS_INFO_COURSE_ID
+  check ("COURSE_ID" IS NOT NULL);
+alter table TIMETABLE.RELATED_COURSE_INFO
+  add constraint NN_REL_CRS_INFO_EVENT_ID
+  check ("EVENT_ID" IS NOT NULL);
+alter table TIMETABLE.RELATED_COURSE_INFO
+  add constraint NN_REL_CRS_INFO_OWNER_ID
+  check ("OWNER_ID" IS NOT NULL);
+alter table TIMETABLE.RELATED_COURSE_INFO
+  add constraint NN_REL_CRS_INFO_OWNER_TYPE
+  check ("OWNER_TYPE" IS NOT NULL);
+alter table TIMETABLE.RELATED_COURSE_INFO
+  add constraint NN_REL_CRS_INFO_UNIQUE_ID
+  check ("UNIQUEID" IS NOT NULL);
+create index TIMETABLE.IDX_EVENT_OWNER_EVENT on TIMETABLE.RELATED_COURSE_INFO (EVENT_ID);
+create index TIMETABLE.IDX_EVENT_OWNER_OWNER on TIMETABLE.RELATED_COURSE_INFO (OWNER_ID, OWNER_TYPE);
 
 prompt
 prompt Creating table ROLES
@@ -2787,7 +3286,8 @@ create table TIMETABLE.ROLES
   ROLE_ID   NUMBER(20),
   REFERENCE VARCHAR2(20),
   ABBV      VARCHAR2(40)
-);
+)
+;
 alter table TIMETABLE.ROLES
   add constraint PK_ROLES primary key (ROLE_ID);
 alter table TIMETABLE.ROLES
@@ -2824,14 +3324,16 @@ create table TIMETABLE.ROOM
   PATTERN             VARCHAR2(350),
   IGNORE_ROOM_CHECK   NUMBER(1) default (0),
   CLASSIFICATION      VARCHAR2(20),
-  DISPLAY_NAME        VARCHAR2(100)
-);
+  DISPLAY_NAME        VARCHAR2(100),
+  EXAM_CAPACITY       NUMBER(10) default 0,
+  PERMANENT_ID        NUMBER(20) not null,
+  EXAM_TYPE           NUMBER(10) default 0
+)
+;
 alter table TIMETABLE.ROOM
-  add constraint PK_ROOM primary key (UNIQUEID)
-  using index ;
+  add constraint PK_ROOM primary key (UNIQUEID);
 alter table TIMETABLE.ROOM
-  add constraint UK_ROOM unique (SESSION_ID, BUILDING_ID, ROOM_NUMBER)
-  using index ;
+  add constraint UK_ROOM unique (SESSION_ID, BUILDING_ID, ROOM_NUMBER);
 alter table TIMETABLE.ROOM
   add constraint FK_ROOM_BUILDING foreign key (BUILDING_ID)
   references TIMETABLE.BUILDING (UNIQUEID) on delete cascade;
@@ -2880,10 +3382,10 @@ create table TIMETABLE.ROOM_DEPT
   ROOM_ID       NUMBER(20),
   DEPARTMENT_ID NUMBER(20),
   IS_CONTROL    NUMBER(1) default 0
-);
+)
+;
 alter table TIMETABLE.ROOM_DEPT
-  add constraint PK_ROOM_DEPT primary key (UNIQUEID)
-  using index ;
+  add constraint PK_ROOM_DEPT primary key (UNIQUEID);
 alter table TIMETABLE.ROOM_DEPT
   add constraint FK_ROOM_DEPT_DEPT foreign key (DEPARTMENT_ID)
   references TIMETABLE.DEPARTMENT (UNIQUEID) on delete cascade;
@@ -2915,7 +3417,8 @@ create table TIMETABLE.ROOM_FEATURE
   SIS_VALUE     VARCHAR2(20),
   DEPARTMENT_ID NUMBER(20),
   ABBV          VARCHAR2(20)
-);
+)
+;
 alter table TIMETABLE.ROOM_FEATURE
   add constraint PK_ROOM_FEATURE primary key (UNIQUEID);
 alter table TIMETABLE.ROOM_FEATURE
@@ -2943,7 +3446,8 @@ create table TIMETABLE.ROOM_FEATURE_PREF
   PREF_LEVEL_ID      NUMBER(20),
   ROOM_FEATURE_ID    NUMBER(20),
   LAST_MODIFIED_TIME TIMESTAMP(6)
-);
+)
+;
 alter table TIMETABLE.ROOM_FEATURE_PREF
   add constraint PK_ROOM_FEAT_PREF primary key (UNIQUEID);
 alter table TIMETABLE.ROOM_FEATURE_PREF
@@ -2979,7 +3483,8 @@ create table TIMETABLE.ROOM_GROUP
   DEFAULT_GROUP NUMBER(1),
   DEPARTMENT_ID NUMBER(20),
   ABBV          VARCHAR2(20)
-);
+)
+;
 alter table TIMETABLE.ROOM_GROUP
   add constraint PK_ROOM_GROUP_UID primary key (UNIQUEID);
 alter table TIMETABLE.ROOM_GROUP
@@ -3017,7 +3522,8 @@ create table TIMETABLE.ROOM_GROUP_PREF
   PREF_LEVEL_ID      NUMBER(20),
   ROOM_GROUP_ID      NUMBER(20),
   LAST_MODIFIED_TIME TIMESTAMP(6)
-);
+)
+;
 alter table TIMETABLE.ROOM_GROUP_PREF
   add constraint PK_ROOM_GROUP_PREF primary key (UNIQUEID);
 alter table TIMETABLE.ROOM_GROUP_PREF
@@ -3047,7 +3553,8 @@ create table TIMETABLE.ROOM_GROUP_ROOM
 (
   ROOM_GROUP_ID NUMBER(20),
   ROOM_ID       NUMBER(20)
-);
+)
+;
 alter table TIMETABLE.ROOM_GROUP_ROOM
   add constraint PK_ROOM_GROUP_ROOM primary key (ROOM_GROUP_ID, ROOM_ID);
 alter table TIMETABLE.ROOM_GROUP_ROOM
@@ -3068,10 +3575,10 @@ create table TIMETABLE.ROOM_JOIN_ROOM_FEATURE
 (
   ROOM_ID    NUMBER(20),
   FEATURE_ID NUMBER(20)
-);
+)
+;
 alter table TIMETABLE.ROOM_JOIN_ROOM_FEATURE
-  add constraint UK_ROOM_JOIN_ROOM_FEAT_RM_FEAT unique (ROOM_ID, FEATURE_ID)
-  using index ;
+  add constraint UK_ROOM_JOIN_ROOM_FEAT_RM_FEAT unique (ROOM_ID, FEATURE_ID);
 alter table TIMETABLE.ROOM_JOIN_ROOM_FEATURE
   add constraint FK_ROOM_JOIN_ROOM_FEAT_RM_FEAT foreign key (FEATURE_ID)
   references TIMETABLE.ROOM_FEATURE (UNIQUEID) on delete cascade;
@@ -3093,7 +3600,8 @@ create table TIMETABLE.ROOM_PREF
   PREF_LEVEL_ID      NUMBER(20),
   ROOM_ID            NUMBER(20),
   LAST_MODIFIED_TIME TIMESTAMP(6)
-);
+)
+;
 alter table TIMETABLE.ROOM_PREF
   add constraint PK_ROOM_PREF primary key (UNIQUEID);
 alter table TIMETABLE.ROOM_PREF
@@ -3121,7 +3629,8 @@ create table TIMETABLE.SECTIONING_INFO
   CLASS_ID          NUMBER(20),
   NBR_EXP_STUDENTS  FLOAT,
   NBR_HOLD_STUDENTS FLOAT
-);
+)
+;
 alter table TIMETABLE.SECTIONING_INFO
   add constraint PK_SECTIONING_INFO primary key (UNIQUEID);
 alter table TIMETABLE.SECTIONING_INFO
@@ -3148,7 +3657,8 @@ create table TIMETABLE.SOLVER_GR_TO_TT_MGR
 (
   SOLVER_GROUP_ID  NUMBER(20),
   TIMETABLE_MGR_ID NUMBER(20)
-);
+)
+;
 alter table TIMETABLE.SOLVER_GR_TO_TT_MGR
   add constraint PK_SOLVER_GR_TO_TT_MGR primary key (SOLVER_GROUP_ID, TIMETABLE_MGR_ID);
 alter table TIMETABLE.SOLVER_GR_TO_TT_MGR
@@ -3174,8 +3684,10 @@ create table TIMETABLE.SOLVER_PARAMETER_GROUP
   NAME        VARCHAR2(100),
   DESCRIPTION VARCHAR2(1000),
   CONDITION   VARCHAR2(250),
-  ORD         NUMBER(10)
-);
+  ORD         NUMBER(10),
+  PARAM_TYPE  NUMBER(10) default 0
+)
+;
 alter table TIMETABLE.SOLVER_PARAMETER_GROUP
   add constraint PK_SOLVER_PARAM_GROUP primary key (UNIQUEID);
 alter table TIMETABLE.SOLVER_PARAMETER_GROUP
@@ -3196,7 +3708,8 @@ create table TIMETABLE.SOLVER_PARAMETER_DEF
   ORD                   NUMBER(10),
   VISIBLE               NUMBER(1),
   SOLVER_PARAM_GROUP_ID NUMBER(20)
-);
+)
+;
 alter table TIMETABLE.SOLVER_PARAMETER_DEF
   add constraint PK_SOLV_PARAM_DEF primary key (UNIQUEID);
 alter table TIMETABLE.SOLVER_PARAMETER_DEF
@@ -3220,7 +3733,8 @@ create table TIMETABLE.SOLVER_PREDEF_SETTING
   NAME        VARCHAR2(100),
   DESCRIPTION VARCHAR2(1000),
   APPEARANCE  NUMBER(10)
-);
+)
+;
 alter table TIMETABLE.SOLVER_PREDEF_SETTING
   add constraint PK_SOLV_PREDEF_SETTG primary key (UNIQUEID);
 alter table TIMETABLE.SOLVER_PREDEF_SETTING
@@ -3238,7 +3752,8 @@ create table TIMETABLE.SOLVER_PARAMETER
   SOLVER_PARAM_DEF_ID      NUMBER(20),
   SOLUTION_ID              NUMBER(20),
   SOLVER_PREDEF_SETTING_ID NUMBER(20)
-);
+)
+;
 alter table TIMETABLE.SOLVER_PARAMETER
   add constraint FK_SOLVER_PARAM_DEF foreign key (SOLVER_PARAM_DEF_ID)
   references TIMETABLE.SOLVER_PARAMETER_DEF (UNIQUEID) on delete cascade;
@@ -3272,7 +3787,8 @@ create table TIMETABLE.STAFF
   POS_CODE     VARCHAR2(20),
   DEPT         VARCHAR2(50),
   EMAIL        VARCHAR2(200)
-);
+)
+;
 alter table TIMETABLE.STAFF
   add constraint PK_STAFF primary key (UNIQUEID);
 alter table TIMETABLE.STAFF
@@ -3292,7 +3808,8 @@ create table TIMETABLE.STUDENT_ACAD_AREA
   STUDENT_ID    NUMBER(20),
   ACAD_CLASF_ID NUMBER(20),
   ACAD_AREA_ID  NUMBER(20)
-);
+)
+;
 alter table TIMETABLE.STUDENT_ACAD_AREA
   add constraint PK_STUDENT_ACAD_AREA primary key (UNIQUEID);
 alter table TIMETABLE.STUDENT_ACAD_AREA
@@ -3331,7 +3848,8 @@ create table TIMETABLE.STUDENT_ACCOMODATION
   ABBREVIATION VARCHAR2(20),
   EXTERNAL_UID VARCHAR2(40),
   SESSION_ID   NUMBER(20)
-);
+)
+;
 alter table TIMETABLE.STUDENT_ACCOMODATION
   add constraint PK_STUDENT_ACCOMODATION primary key (UNIQUEID);
 alter table TIMETABLE.STUDENT_ACCOMODATION
@@ -3356,17 +3874,22 @@ prompt =================================
 prompt
 create table TIMETABLE.STUDENT_CLASS_ENRL
 (
-  UNIQUEID          NUMBER(20),
-  STUDENT_ID        NUMBER(20),
-  COURSE_REQUEST_ID NUMBER(20),
-  CLASS_ID          NUMBER(20),
-  TIMESTAMP         DATE
-);
+  UNIQUEID           NUMBER(20),
+  STUDENT_ID         NUMBER(20),
+  COURSE_REQUEST_ID  NUMBER(20),
+  CLASS_ID           NUMBER(20),
+  TIMESTAMP          DATE,
+  COURSE_OFFERING_ID NUMBER(20)
+)
+;
 alter table TIMETABLE.STUDENT_CLASS_ENRL
   add constraint PK_STUDENT_CLASS_ENRL primary key (UNIQUEID);
 alter table TIMETABLE.STUDENT_CLASS_ENRL
   add constraint FK_STUDENT_CLASS_ENRL_CLASS foreign key (CLASS_ID)
   references TIMETABLE.CLASS_ (UNIQUEID) on delete cascade;
+alter table TIMETABLE.STUDENT_CLASS_ENRL
+  add constraint FK_STUDENT_CLASS_ENRL_COURSE foreign key (COURSE_OFFERING_ID)
+  references TIMETABLE.COURSE_OFFERING (UNIQUEID) on delete cascade;
 alter table TIMETABLE.STUDENT_CLASS_ENRL
   add constraint FK_STUDENT_CLASS_ENRL_REQUEST foreign key (COURSE_REQUEST_ID)
   references TIMETABLE.COURSE_REQUEST (UNIQUEID) on delete cascade;
@@ -3400,10 +3923,10 @@ create table TIMETABLE.STUDENT_ENRL
   SOLUTION_ID        NUMBER(20),
   CLASS_ID           NUMBER(20),
   LAST_MODIFIED_TIME TIMESTAMP(6)
-);
+)
+;
 alter table TIMETABLE.STUDENT_ENRL
-  add constraint PK_STUDENT_ENRL primary key (UNIQUEID)
-  using index ;
+  add constraint PK_STUDENT_ENRL primary key (UNIQUEID);
 alter table TIMETABLE.STUDENT_ENRL
   add constraint FK_STUDENT_ENRL_CLASS foreign key (CLASS_ID)
   references TIMETABLE.CLASS_ (UNIQUEID) on delete cascade;
@@ -3438,7 +3961,8 @@ create table TIMETABLE.STUDENT_ENRL_MSG
   TIMESTAMP        DATE,
   COURSE_DEMAND_ID NUMBER(20),
   ORD              NUMBER(10)
-);
+)
+;
 alter table TIMETABLE.STUDENT_ENRL_MSG
   add constraint PK_STUDENT_ENRL_MSG primary key (UNIQUEID);
 alter table TIMETABLE.STUDENT_ENRL_MSG
@@ -3478,7 +4002,8 @@ create table TIMETABLE.STUDENT_GROUP
   GROUP_ABBREVIATION VARCHAR2(30),
   GROUP_NAME         VARCHAR2(90),
   EXTERNAL_UID       VARCHAR2(40)
-);
+)
+;
 alter table TIMETABLE.STUDENT_GROUP
   add constraint PK_STUDENT_GROUP primary key (UNIQUEID);
 alter table TIMETABLE.STUDENT_GROUP
@@ -3516,7 +4041,8 @@ create table TIMETABLE.STUDENT_GROUP_RESERVATION
   OWNER_CLASS_ID       VARCHAR2(1),
   REQUESTED            NUMBER(10),
   LAST_MODIFIED_TIME   TIMESTAMP(6)
-);
+)
+;
 alter table TIMETABLE.STUDENT_GROUP_RESERVATION
   add constraint PK_STU_GRP_RESV primary key (UNIQUEID);
 alter table TIMETABLE.STUDENT_GROUP_RESERVATION
@@ -3559,7 +4085,8 @@ create table TIMETABLE.STUDENT_MAJOR
 (
   STUDENT_ID NUMBER(20),
   MAJOR_ID   NUMBER(20)
-);
+)
+;
 alter table TIMETABLE.STUDENT_MAJOR
   add constraint PK_STUDENT_MAJOR primary key (STUDENT_ID, MAJOR_ID);
 alter table TIMETABLE.STUDENT_MAJOR
@@ -3583,7 +4110,8 @@ create table TIMETABLE.STUDENT_MINOR
 (
   STUDENT_ID NUMBER(20),
   MINOR_ID   NUMBER(20)
-);
+)
+;
 alter table TIMETABLE.STUDENT_MINOR
   add constraint PK_STUDENT_MINOR primary key (STUDENT_ID, MINOR_ID);
 alter table TIMETABLE.STUDENT_MINOR
@@ -3610,7 +4138,8 @@ create table TIMETABLE.STUDENT_SECT_HIST
   DATA       BLOB,
   TYPE       NUMBER(10),
   TIMESTAMP  DATE
-);
+)
+;
 alter table TIMETABLE.STUDENT_SECT_HIST
   add constraint PK_STUDENT_SECT_HIST primary key (UNIQUEID);
 alter table TIMETABLE.STUDENT_SECT_HIST
@@ -3641,7 +4170,8 @@ create table TIMETABLE.STUDENT_TO_ACOMODATION
 (
   STUDENT_ID      NUMBER(20),
   ACCOMODATION_ID NUMBER(20)
-);
+)
+;
 alter table TIMETABLE.STUDENT_TO_ACOMODATION
   add constraint PK_STUDENT_TO_ACOMODATION primary key (STUDENT_ID, ACCOMODATION_ID);
 alter table TIMETABLE.STUDENT_TO_ACOMODATION
@@ -3665,7 +4195,8 @@ create table TIMETABLE.STUDENT_TO_GROUP
 (
   STUDENT_ID NUMBER(20),
   GROUP_ID   NUMBER(20)
-);
+)
+;
 alter table TIMETABLE.STUDENT_TO_GROUP
   add constraint PK_STUDENT_TO_GROUP primary key (STUDENT_ID, GROUP_ID);
 alter table TIMETABLE.STUDENT_TO_GROUP
@@ -3690,7 +4221,8 @@ create table TIMETABLE.TIME_PATTERN_DAYS
   UNIQUEID        NUMBER(20),
   DAY_CODE        NUMBER(10),
   TIME_PATTERN_ID NUMBER(20)
-);
+)
+;
 alter table TIMETABLE.TIME_PATTERN_DAYS
   add constraint PK_TIME_PATTERN_DAYS primary key (UNIQUEID);
 alter table TIMETABLE.TIME_PATTERN_DAYS
@@ -3709,7 +4241,8 @@ create table TIMETABLE.TIME_PATTERN_DEPT
 (
   DEPT_ID    NUMBER(20),
   PATTERN_ID NUMBER(20)
-);
+)
+;
 alter table TIMETABLE.TIME_PATTERN_DEPT
   add constraint PK_TIME_PATTERN_DEPT primary key (DEPT_ID, PATTERN_ID);
 alter table TIMETABLE.TIME_PATTERN_DEPT
@@ -3734,7 +4267,8 @@ create table TIMETABLE.TIME_PATTERN_TIME
   UNIQUEID        NUMBER(20),
   START_SLOT      NUMBER(10),
   TIME_PATTERN_ID NUMBER(20)
-);
+)
+;
 alter table TIMETABLE.TIME_PATTERN_TIME
   add constraint PK_TIME_PATTERN_TIME primary key (UNIQUEID);
 alter table TIMETABLE.TIME_PATTERN_TIME
@@ -3757,7 +4291,8 @@ create table TIMETABLE.TIME_PREF
   PREFERENCE         VARCHAR2(2048),
   TIME_PATTERN_ID    NUMBER(20),
   LAST_MODIFIED_TIME TIMESTAMP(6)
-);
+)
+;
 alter table TIMETABLE.TIME_PREF
   add constraint PK_TIME_PREF primary key (UNIQUEID);
 alter table TIMETABLE.TIME_PREF
@@ -3789,7 +4324,8 @@ create table TIMETABLE.TMTBL_MGR_TO_ROLES
   ROLE_ID    NUMBER(20),
   UNIQUEID   NUMBER(20),
   IS_PRIMARY NUMBER(1)
-);
+)
+;
 alter table TIMETABLE.TMTBL_MGR_TO_ROLES
   add constraint PK_TMTBL_MGR_TO_ROLES primary key (UNIQUEID);
 alter table TIMETABLE.TMTBL_MGR_TO_ROLES
@@ -3822,7 +4358,8 @@ create table TIMETABLE.USERS
   USERNAME     VARCHAR2(15) not null,
   PASSWORD     VARCHAR2(25),
   EXTERNAL_UID VARCHAR2(40)
-);
+)
+;
 alter table TIMETABLE.USERS
   add constraint PK_USERS primary key (USERNAME);
 alter table TIMETABLE.USERS
@@ -3838,7 +4375,8 @@ create table TIMETABLE.USER_DATA
   EXTERNAL_UID VARCHAR2(12),
   NAME         VARCHAR2(100),
   VALUE        VARCHAR2(2048)
-);
+)
+;
 alter table TIMETABLE.USER_DATA
   add constraint PK_USER_DATA primary key (EXTERNAL_UID, NAME);
 alter table TIMETABLE.USER_DATA
@@ -3862,7 +4400,8 @@ create table TIMETABLE.WAITLIST
   COURSE_OFFERING_ID NUMBER(20),
   TYPE               NUMBER(10) default (0),
   TIMESTAMP          DATE
-);
+)
+;
 alter table TIMETABLE.WAITLIST
   add constraint PK_WAITLIST primary key (UNIQUEID);
 alter table TIMETABLE.WAITLIST
@@ -3888,6 +4427,102 @@ alter table TIMETABLE.WAITLIST
   check ("UNIQUEID" IS NOT NULL);
 create index TIMETABLE.IDX_WAITLIST_OFFERING on TIMETABLE.WAITLIST (COURSE_OFFERING_ID);
 create index TIMETABLE.IDX_WAITLIST_STUDENT on TIMETABLE.WAITLIST (STUDENT_ID);
+
+prompt
+prompt Creating table XCONFLICT
+prompt ========================
+prompt
+create table TIMETABLE.XCONFLICT
+(
+  UNIQUEID      NUMBER(20),
+  CONFLICT_TYPE NUMBER(10),
+  DISTANCE      FLOAT
+)
+;
+alter table TIMETABLE.XCONFLICT
+  add constraint PK_XCONFLICT primary key (UNIQUEID);
+alter table TIMETABLE.XCONFLICT
+  add constraint NN_XCONFLICT_TYPE
+  check ("CONFLICT_TYPE" IS NOT NULL);
+alter table TIMETABLE.XCONFLICT
+  add constraint NN_XCONFLICT_UNIQUEID
+  check ("UNIQUEID" IS NOT NULL);
+
+prompt
+prompt Creating table XCONFLICT_EXAM
+prompt =============================
+prompt
+create table TIMETABLE.XCONFLICT_EXAM
+(
+  CONFLICT_ID NUMBER(20),
+  EXAM_ID     NUMBER(20)
+)
+;
+alter table TIMETABLE.XCONFLICT_EXAM
+  add constraint PK_XCONFLICT_EXAM primary key (CONFLICT_ID, EXAM_ID);
+alter table TIMETABLE.XCONFLICT_EXAM
+  add constraint FK_XCONFLICT_EX_CONF foreign key (CONFLICT_ID)
+  references TIMETABLE.XCONFLICT (UNIQUEID) on delete cascade;
+alter table TIMETABLE.XCONFLICT_EXAM
+  add constraint FK_XCONFLICT_EX_EXAM foreign key (EXAM_ID)
+  references TIMETABLE.EXAM (UNIQUEID) on delete cascade;
+alter table TIMETABLE.XCONFLICT_EXAM
+  add constraint NN_XCONFLICT_EX_CONF
+  check ("CONFLICT_ID" IS NOT NULL);
+alter table TIMETABLE.XCONFLICT_EXAM
+  add constraint NN_XCONFLICT_EX_EXAM
+  check ("EXAM_ID" IS NOT NULL);
+create index TIMETABLE.IDX_XCONFLICT_EXAM on TIMETABLE.XCONFLICT_EXAM (EXAM_ID);
+
+prompt
+prompt Creating table XCONFLICT_INSTRUCTOR
+prompt ===================================
+prompt
+create table TIMETABLE.XCONFLICT_INSTRUCTOR
+(
+  CONFLICT_ID   NUMBER(20),
+  INSTRUCTOR_ID NUMBER(20)
+)
+;
+alter table TIMETABLE.XCONFLICT_INSTRUCTOR
+  add constraint PK_XCONFLICT_INSTRUCTOR primary key (CONFLICT_ID, INSTRUCTOR_ID);
+alter table TIMETABLE.XCONFLICT_INSTRUCTOR
+  add constraint FK_XCONFLICT_IN_CONF foreign key (CONFLICT_ID)
+  references TIMETABLE.XCONFLICT (UNIQUEID) on delete cascade;
+alter table TIMETABLE.XCONFLICT_INSTRUCTOR
+  add constraint FK_XCONFLICT_IN_INSTRUCTOR foreign key (INSTRUCTOR_ID)
+  references TIMETABLE.DEPARTMENTAL_INSTRUCTOR (UNIQUEID) on delete cascade;
+alter table TIMETABLE.XCONFLICT_INSTRUCTOR
+  add constraint NN_XCONFLICT_IN_CONF
+  check ("CONFLICT_ID" IS NOT NULL);
+alter table TIMETABLE.XCONFLICT_INSTRUCTOR
+  add constraint NN_XCONFLICT_IN_STUDENT
+  check ("INSTRUCTOR_ID" IS NOT NULL);
+
+prompt
+prompt Creating table XCONFLICT_STUDENT
+prompt ================================
+prompt
+create table TIMETABLE.XCONFLICT_STUDENT
+(
+  CONFLICT_ID NUMBER(20),
+  STUDENT_ID  NUMBER(20)
+)
+;
+alter table TIMETABLE.XCONFLICT_STUDENT
+  add constraint PK_XCONFLICT_STUDENT primary key (CONFLICT_ID, STUDENT_ID);
+alter table TIMETABLE.XCONFLICT_STUDENT
+  add constraint FK_XCONFLICT_ST_CONF foreign key (CONFLICT_ID)
+  references TIMETABLE.XCONFLICT (UNIQUEID) on delete cascade;
+alter table TIMETABLE.XCONFLICT_STUDENT
+  add constraint FK_XCONFLICT_ST_STUDENT foreign key (STUDENT_ID)
+  references TIMETABLE.STUDENT (UNIQUEID) on delete cascade;
+alter table TIMETABLE.XCONFLICT_STUDENT
+  add constraint NN_XCONFLICT_ST_CONF
+  check ("CONFLICT_ID" IS NOT NULL);
+alter table TIMETABLE.XCONFLICT_STUDENT
+  add constraint NN_XCONFLICT_ST_STUDENT
+  check ("STUDENT_ID" IS NOT NULL);
 
 prompt
 prompt Creating sequence ACADEMIC_AREA_SEQ
@@ -3918,7 +4553,7 @@ prompt
 create sequence TIMETABLE.ASSIGNMENT_SEQ
 minvalue 1
 maxvalue 999999999999999999999999999
-start with 142297
+start with 142457
 increment by 1
 cache 20;
 
@@ -4006,7 +4641,7 @@ prompt
 create sequence TIMETABLE.DIST_OBJ_SEQ
 minvalue 1
 maxvalue 9999999999
-start with 5732
+start with 5752
 increment by 1
 cache 20;
 
@@ -4077,6 +4712,17 @@ increment by 1
 cache 20;
 
 prompt
+prompt Creating sequence LOC_PERM_ID_SEQ
+prompt =================================
+prompt
+create sequence TIMETABLE.LOC_PERM_ID_SEQ
+minvalue 1
+maxvalue 99999999999999999999
+start with 21
+increment by 1
+cache 20;
+
+prompt
 prompt Creating sequence POS_MAJOR_SEQ
 prompt ===============================
 prompt
@@ -4094,7 +4740,7 @@ prompt
 create sequence TIMETABLE.PREF_GROUP_SEQ
 minvalue 1
 maxvalue 99999999999999999999
-start with 226559
+start with 231179
 increment by 1
 cache 20;
 
@@ -4116,7 +4762,7 @@ prompt
 create sequence TIMETABLE.PREF_SEQ
 minvalue 1
 maxvalue 99999999999999999999
-start with 121540
+start with 123160
 increment by 1
 cache 20;
 
@@ -4138,7 +4784,7 @@ prompt
 create sequence TIMETABLE.REF_TABLE_SEQ
 minvalue 1
 maxvalue 1000000
-start with 405
+start with 425
 increment by 1
 cache 20;
 
@@ -4160,7 +4806,7 @@ prompt
 create sequence TIMETABLE.ROLE_SEQ
 minvalue 1
 maxvalue 999999999999999999999999999
-start with 61
+start with 81
 increment by 1
 cache 20;
 
@@ -4226,7 +4872,7 @@ prompt
 create sequence TIMETABLE.SETTINGS_SEQ
 minvalue 1
 maxvalue 999999999999999999999999999
-start with 168
+start with 188
 increment by 1
 cache 20;
 
@@ -4270,7 +4916,7 @@ prompt
 create sequence TIMETABLE.SOLVER_INFO_SEQ
 minvalue 1
 maxvalue 999999999999999999999999999
-start with 274779
+start with 274999
 increment by 1
 cache 20;
 
@@ -4281,7 +4927,7 @@ prompt
 create sequence TIMETABLE.SOLVER_PARAMETER_DEF_SEQ
 minvalue 1
 maxvalue 999999999999999999999999999
-start with 261
+start with 301
 increment by 1
 cache 20;
 
@@ -4292,7 +4938,7 @@ prompt
 create sequence TIMETABLE.SOLVER_PARAMETER_GROUP_SEQ
 minvalue 1
 maxvalue 999999999999999999999999999
-start with 81
+start with 101
 increment by 1
 cache 20;
 
@@ -4303,7 +4949,7 @@ prompt
 create sequence TIMETABLE.SOLVER_PARAMETER_SEQ
 minvalue 1
 maxvalue 999999999999999999999999999
-start with 94676
+start with 95016
 increment by 1
 cache 20;
 
@@ -4314,7 +4960,7 @@ prompt
 create sequence TIMETABLE.SOLVER_PREDEF_SETTING_SEQ
 minvalue 1
 maxvalue 999999999999999999999999999
-start with 101
+start with 121
 increment by 1
 cache 20;
 
@@ -4325,7 +4971,7 @@ prompt
 create sequence TIMETABLE.STAFF_SEQ
 minvalue 1
 maxvalue 999999999999999999999999999
-start with 3463041
+start with 3463061
 increment by 1
 cache 20;
 
@@ -4347,7 +4993,7 @@ prompt
 create sequence TIMETABLE.STUDENT_ENRL_SEQ
 minvalue 1
 maxvalue 999999999999999999999999999
-start with 7618838
+start with 7619058
 increment by 1
 cache 20;
 
@@ -4413,7 +5059,7 @@ prompt
 create sequence TIMETABLE.TIMETABLE_MGR_SEQ
 minvalue 1
 maxvalue 99999999999999999999
-start with 490
+start with 510
 increment by 1
 cache 20;
 
@@ -4479,7 +5125,7 @@ prompt
 create sequence TIMETABLE.TMTBL_MGR_TO_ROLES_SEQ
 minvalue 1
 maxvalue 9999999999
-start with 530
+start with 550
 increment by 1
 cache 20;
 
