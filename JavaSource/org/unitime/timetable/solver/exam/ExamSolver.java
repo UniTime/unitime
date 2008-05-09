@@ -871,29 +871,36 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
                 else
                     undoUnassing.add((Exam)placement.variable());
                 assign.add(placement);
+                unassign.add((Exam)placement.variable());
             }
             for (Exam exam : unassign) exam.unassign(0);
             for (ExamPlacement placement : assign) {
                 for (Iterator i=placement.variable().getModel().conflictValues(placement).iterator();i.hasNext();) {
                     ExamPlacement conflict = (ExamPlacement)i.next();
+                    Exam conflictingExam = (Exam)conflict.variable();
+                    if (!undoAssign.containsKey(conflictingExam) && !undoUnassing.contains(conflictingExam)) 
+                        undoAssign.put(conflictingExam,conflict);
                     conflicts.add(conflict);
-                    undoAssign.put((Exam)conflict.variable(),conflict);
                     conflict.variable().unassign(0);
                 }
                 placement.variable().assign(0, placement);
             }
             Vector<ExamAssignmentInfo> newAssignments = new Vector<ExamAssignmentInfo>();
             change.getAssignments().clear();
+            change.getConflicts().clear();
             for (ExamPlacement assignment : assign)
-                change.getAssignments().add(new ExamAssignmentInfo(assignment));
+                if (!conflicts.contains(assignment)) 
+                    change.getAssignments().add(new ExamAssignmentInfo(assignment));
             for (Exam exam: undoUnassing)
                 if (exam.getAssignment()!=null) exam.unassign(0);
             for (Map.Entry<Exam, ExamPlacement> entry : undoAssign.entrySet())
-                if (entry.getKey().getAssignment()!=null) entry.getKey().unassign(0);
+                entry.getKey().unassign(0);
             for (Map.Entry<Exam, ExamPlacement> entry : undoAssign.entrySet())
-                if (entry.getValue()!=null) entry.getKey().assign(0, entry.getValue());
-            for (ExamPlacement conflict : conflicts)
-                change.getConflicts().add(new ExamAssignment(conflict));
+                entry.getKey().assign(0, entry.getValue());
+            for (ExamPlacement conflict : conflicts) {
+                ExamPlacement original = undoAssign.get((Exam)conflict.variable());
+                change.getConflicts().add(new ExamAssignment(original==null?conflict:original));
+            }
             return change;            
         }
     }
@@ -928,7 +935,9 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
                     for (Iterator i=placement.variable().getModel().conflictValues(placement).iterator();i.hasNext();) {
                         ExamPlacement conflict = (ExamPlacement)i.next();
                         if (conflict.variable().equals(placement.variable())) continue;
-                        undoAssign.put((Exam)conflict.variable(),conflict);
+                        Exam conflictingExam = (Exam)conflict.variable();
+                        if (!undoAssign.containsKey(conflictingExam) && !undoUnassing.contains(conflictingExam)) 
+                            undoAssign.put(conflictingExam,conflict);
                         conflict.variable().unassign(0);
                     }
                     if (placement.variable().getAssignment()!=null)
@@ -961,9 +970,9 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
             for (Exam undoExam: undoUnassing)
                 if (undoExam.getAssignment()!=null) undoExam.unassign(0);
             for (Map.Entry<Exam, ExamPlacement> entry : undoAssign.entrySet())
-                if (entry.getKey().getAssignment()!=null) entry.getKey().unassign(0);
+                entry.getKey().unassign(0);
             for (Map.Entry<Exam, ExamPlacement> entry : undoAssign.entrySet())
-                if (entry.getValue()!=null) entry.getKey().assign(0, entry.getValue());
+                entry.getKey().assign(0, entry.getValue());
 
             return rooms;
         }        
@@ -991,7 +1000,9 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
                     for (Iterator i=placement.variable().getModel().conflictValues(placement).iterator();i.hasNext();) {
                         ExamPlacement conflict = (ExamPlacement)i.next();
                         if (conflict.variable().equals(placement.variable())) continue;
-                        undoAssign.put((Exam)conflict.variable(),conflict);
+                        Exam conflictingExam = (Exam)conflict.variable();
+                        if (!undoAssign.containsKey(conflictingExam) && !undoUnassing.contains(conflictingExam)) 
+                            undoAssign.put(conflictingExam,conflict);
                         conflict.variable().unassign(0);
                     }
                     if (placement.variable().getAssignment()!=null)
@@ -1017,9 +1028,9 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
             for (Exam undoExam: undoUnassing)
                 if (undoExam.getAssignment()!=null) undoExam.unassign(0);
             for (Map.Entry<Exam, ExamPlacement> entry : undoAssign.entrySet())
-                if (entry.getKey().getAssignment()!=null) entry.getKey().unassign(0);
+                entry.getKey().unassign(0);
             for (Map.Entry<Exam, ExamPlacement> entry : undoAssign.entrySet())
-                if (entry.getValue()!=null) entry.getKey().assign(0, entry.getValue());
+                entry.getKey().assign(0, entry.getValue());
             
             return periods;
         }
