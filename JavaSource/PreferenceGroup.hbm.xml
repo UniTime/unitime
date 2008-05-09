@@ -491,7 +491,6 @@
 				not-null="false"
 				length="40"
 			/>
-			
 		</union-subclass>
 		
 	 	<union-subclass
@@ -1118,15 +1117,6 @@
 				/>
 			</set>
 						
-			<many-to-one 
-				name="event" 
-				class="Event"
-				column="EVENT_ID" 
-				lazy="proxy"
-				not-null="false"
-				foreign-key="FK_EXAM_EVENT"
-			/>
-			
 			<property
 				name="uniqueIdRolledForwardFrom"
 				column="UID_ROLLED_FWD_FROM"

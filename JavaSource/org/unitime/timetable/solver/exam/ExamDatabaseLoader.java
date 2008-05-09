@@ -40,12 +40,12 @@ import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.BuildingPref;
+import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionObject;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.Event;
-import org.unitime.timetable.model.EventType;
 import org.unitime.timetable.model.ExamPeriodPref;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
@@ -127,7 +127,8 @@ public class ExamDatabaseLoader extends ExamLoader {
             loadExams();
             loadStudents();
             loadDistributions();
-            if (org.unitime.timetable.model.Exam.sExamTypeEvening==iExamType) loadAvailabilitiesFromEvents();//loadAvailabilities();
+            if (org.unitime.timetable.model.Exam.sExamTypeMidterm==iExamType)
+                loadAvailabilitiesFromEvents();//loadAvailabilities();
             getModel().init();
             checkConsistency();
             assignInitial();
@@ -254,7 +255,7 @@ public class ExamDatabaseLoader extends ExamLoader {
                 x.getOwners().add(cs);
             }
             
-            if (iExamType==org.unitime.timetable.model.Exam.sExamTypeEvening && minSize>0)
+            if (iExamType==org.unitime.timetable.model.Exam.sExamTypeMidterm && minSize>0)
                 x.setMinSize(minSize);
             
             if (x.getMaxRooms()>0) {
@@ -605,12 +606,11 @@ public class ExamDatabaseLoader extends ExamLoader {
     
     protected void loadAvailabilitiesFromEvents() {
         List overlappingEvents = new EventDAO().getSession().createQuery(
-                "select distinct e, p.uniqueId, m from Event e inner join e.meetings m, ExamPeriod p where " +
-                "m.eventType.reference=:eventType and p.session.uniqueId=:sessionId and p.examType=:examType and "+
+                "select distinct e, p.uniqueId, m from ClassEvent e inner join e.meetings m, ExamPeriod p where " +
+                "p.session.uniqueId=:sessionId and p.examType=:examType and "+
                 "p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
                 "p.session.examBeginDate+p.dateOffset = m.meetingDate"
                 )
-                .setString("eventType", EventType.sEventTypeClass)
                 .setInteger("travelTime", Constants.EXAM_TRAVEL_TIME_SLOTS)
                 .setInteger("examType", iExamType)
                 .setLong("sessionId", iSessionId)
@@ -618,19 +618,19 @@ public class ExamDatabaseLoader extends ExamLoader {
                 .list();
         iProgress.setPhase("Loading availabilities...", overlappingEvents.size());
         
-        Hashtable<Event, Set<Long>> students = new Hashtable();
+        Hashtable<Event, List> students = new Hashtable();
         Hashtable<Event, Set<DepartmentalInstructor>> instructors = new Hashtable();
         Hashtable<Event, Hashtable<ExamPeriod,ExamResourceUnavailability>> unavailabilities = new Hashtable();
         
         for (Iterator i=overlappingEvents.iterator();i.hasNext();) {
             iProgress.incProgress();
             Object[] o = (Object[])i.next();
-            Event event = (Event)o[0];
+            ClassEvent event = (ClassEvent)o[0];
             ExamPeriod period = iPeriods.get((Long)o[1]);
             Meeting meeting = (Meeting)o[2];
             if (period==null) continue;
             
-            Set<Long> studentsThisEvent = students.get(event);
+            List studentsThisEvent = students.get(event);
             if (studentsThisEvent==null) {
                 studentsThisEvent = event.getStudentIds();
                 students.put(event, studentsThisEvent);
@@ -659,8 +659,8 @@ public class ExamDatabaseLoader extends ExamLoader {
                     meeting.getRoomLabel(), meeting.getEvent().getMaxCapacity());
             unavailabilitiesThisEvent.put(period, unavailability);
             
-            for (Long studentId : studentsThisEvent) {
-                ExamStudent student = (ExamStudent)iStudents.get(studentId);
+            for (Iterator j=studentsThisEvent.iterator();j.hasNext();) {
+                ExamStudent student = (ExamStudent)iStudents.get((Long)j.next());
                 if (student!=null) {
                     student.setAvailable(period.getIndex(), false);
                     unavailability.getStudentIds().add(student.getId());
@@ -814,7 +814,7 @@ public class ExamDatabaseLoader extends ExamLoader {
             } else {
                 return RoomAvailability.getInstance().getRoomAvailability(
                         location, startTime, endTime,
-                        new String[] {(iExamType==org.unitime.timetable.model.Exam.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sEveningExamType)});
+                        new String[] {(iExamType==org.unitime.timetable.model.Exam.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sMidtermExamType)});
             }
         } catch (Exception e) {
             sLog.error(e.getMessage(),e);

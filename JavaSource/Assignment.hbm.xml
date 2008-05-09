@@ -151,14 +151,5 @@
 				foreign-key="FK_CONSTRAINT_INFO_SOLVER"
 			/>
 		</set>
-		
-		<many-to-one 
-			name="event" 
-			class="Event"
-			column="EVENT_ID" 
-			lazy="proxy"
-			not-null="false"
-			foreign-key="FK_ASSIGNMENT_EVENT"
-		/>
 	</class>
 </hibernate-mapping>

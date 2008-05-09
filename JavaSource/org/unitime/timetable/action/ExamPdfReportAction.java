@@ -137,7 +137,7 @@ public class ExamPdfReportAction extends Action {
                     for (Map.Entry<String, Class> entry : PdfLegacyExamReport.sRegisteredReports.entrySet())
                         if (entry.getValue().equals(reportClass)) reportName = entry.getKey();
                     if (reportName==null) reportName = "r"+(i+1);
-                    String name = session.getAcademicTerm()+session.getYear()+(myForm.getExamType()==Exam.sExamTypeEvening?"evn":"fin")+"_"+reportName;
+                    String name = session.getAcademicTerm()+session.getYear()+(myForm.getExamType()==Exam.sExamTypeMidterm?"evn":"fin")+"_"+reportName;
                     if (myForm.getAll()) {
                         File file = ApplicationProperties.getTempFile(name, (myForm.getModeIdx()==PdfLegacyExamReport.sModeText?"txt":"pdf"));
                         myForm.log("&nbsp;&nbsp;Writing <a href='temp/"+file.getName()+"'>"+reportName+"."+(myForm.getModeIdx()==PdfLegacyExamReport.sModeText?"txt":"pdf")+"</a>... ("+exams.size()+" exams)");
@@ -283,7 +283,7 @@ public class ExamPdfReportAction extends Action {
                                 for (Map.Entry<String, File> entry : files.entrySet()) {
                                     BodyPart attachement = new MimeBodyPart();
                                     attachement.setDataHandler(new DataHandler(new FileDataSource(entry.getValue())));
-                                    attachement.setFileName(session.getAcademicTerm()+session.getYear()+(myForm.getExamType()==Exam.sExamTypeEvening?"evn":"fin")+"_"+entry.getKey());
+                                    attachement.setFileName(session.getAcademicTerm()+session.getYear()+(myForm.getExamType()==Exam.sExamTypeMidterm?"evn":"fin")+"_"+entry.getKey());
                                     body.addBodyPart(attachement);
                                     myForm.log("&nbsp;&nbsp;Attaching <a href='temp/"+entry.getValue().getName()+"'>"+entry.getKey()+"</a>");
                                 }
@@ -320,7 +320,7 @@ public class ExamPdfReportAction extends Action {
                         for (Map.Entry<String, File> entry : output.entrySet()) {
                             BodyPart attachement = new MimeBodyPart();
                             attachement.setDataHandler(new DataHandler(new FileDataSource(entry.getValue())));
-                            attachement.setFileName(session.getAcademicTerm()+session.getYear()+(myForm.getExamType()==Exam.sExamTypeEvening?"evn":"fin")+"_"+entry.getKey());
+                            attachement.setFileName(session.getAcademicTerm()+session.getYear()+(myForm.getExamType()==Exam.sExamTypeMidterm?"evn":"fin")+"_"+entry.getKey());
                             body.addBodyPart(attachement);
                         }
                         mail.setSentDate(new Date());
@@ -356,7 +356,7 @@ public class ExamPdfReportAction extends Action {
                             if (from!=null) mail.setFrom(from);
                             BodyPart attachement = new MimeBodyPart();
                             attachement.setDataHandler(new DataHandler(new FileDataSource(report)));
-                            attachement.setFileName(session.getAcademicTerm()+session.getYear()+(myForm.getExamType()==Exam.sExamTypeEvening?"evn":"fin")+(myForm.getModeIdx()==PdfLegacyExamReport.sModeText?".txt":".pdf"));
+                            attachement.setFileName(session.getAcademicTerm()+session.getYear()+(myForm.getExamType()==Exam.sExamTypeMidterm?"evn":"fin")+(myForm.getModeIdx()==PdfLegacyExamReport.sModeText?".txt":".pdf"));
                             mail.setSentDate(new Date());
                             mail.setContent(body);
                             try {
@@ -392,7 +392,7 @@ public class ExamPdfReportAction extends Action {
                             if (from!=null) mail.setFrom(from);
                             BodyPart attachement = new MimeBodyPart();
                             attachement.setDataHandler(new DataHandler(new FileDataSource(report)));
-                            attachement.setFileName(session.getAcademicTerm()+session.getYear()+(myForm.getExamType()==Exam.sExamTypeEvening?"evn":"fin")+(myForm.getModeIdx()==PdfLegacyExamReport.sModeText?".txt":".pdf"));
+                            attachement.setFileName(session.getAcademicTerm()+session.getYear()+(myForm.getExamType()==Exam.sExamTypeMidterm?"evn":"fin")+(myForm.getModeIdx()==PdfLegacyExamReport.sModeText?".txt":".pdf"));
                             mail.setSentDate(new Date());
                             mail.setContent(body);
                             try {
@@ -413,8 +413,8 @@ public class ExamPdfReportAction extends Action {
                     FileInputStream fis = null;
                     ZipOutputStream zip = null;
                     try {
-                        File zipFile = ApplicationProperties.getTempFile(session.getAcademicTerm()+session.getYear()+(myForm.getExamType()==Exam.sExamTypeEvening?"evn":"fin"), "zip");
-                        myForm.log("Writing <a href='temp/"+zipFile.getName()+"'>"+session.getAcademicTerm()+session.getYear()+(myForm.getExamType()==Exam.sExamTypeEvening?"evn":"fin")+".zip</a>...");
+                        File zipFile = ApplicationProperties.getTempFile(session.getAcademicTerm()+session.getYear()+(myForm.getExamType()==Exam.sExamTypeMidterm?"evn":"fin"), "zip");
+                        myForm.log("Writing <a href='temp/"+zipFile.getName()+"'>"+session.getAcademicTerm()+session.getYear()+(myForm.getExamType()==Exam.sExamTypeMidterm?"evn":"fin")+".zip</a>...");
                         zip = new ZipOutputStream(new FileOutputStream(zipFile));
                         for (Map.Entry<String, File> entry : output.entrySet()) {
                             zip.putNextEntry(new ZipEntry(entry.getKey()));

@@ -29,10 +29,10 @@ import org.unitime.timetable.model.Session;
 /**
  * @author Tomas Muller
  */
-public class HasEveningExams extends TagSupport {
+public class HasMidtermExams extends TagSupport {
     public boolean includeContent() {
         try {
-            return Exam.hasEveningExams(Session.getCurrentAcadSession(Web.getUser(pageContext.getSession())).getUniqueId());
+            return Exam.hasMidtermExams(Session.getCurrentAcadSession(Web.getUser(pageContext.getSession())).getUniqueId());
         } catch (Exception e) {}
         return false;
     }

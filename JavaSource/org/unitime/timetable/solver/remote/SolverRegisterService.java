@@ -392,7 +392,7 @@ public class SolverRegisterService extends Thread {
                                 new LocationDAO().get((Long)cmd[1]),
                                 (Date)cmd[2],
                                 (Date)cmd[3],
-                                new String[]{((Integer)cmd[4]==Exam.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sEveningExamType)});
+                                new String[]{((Integer)cmd[4]==Exam.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sMidtermExamType)});
                     }
                     return null;
                 }

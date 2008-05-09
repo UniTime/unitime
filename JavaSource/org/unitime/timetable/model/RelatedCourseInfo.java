@@ -52,7 +52,7 @@ public class RelatedCourseInfo extends BaseRelatedCourseInfo {
 	 */
 	public RelatedCourseInfo (
 		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Event event,
+		org.unitime.timetable.model.CourseEvent event,
 		org.unitime.timetable.model.CourseOffering course,
 		java.lang.Long ownerId,
 		java.lang.Integer ownerType) {

@@ -45,7 +45,7 @@ import org.unitime.timetable.form.EditRoomForm;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
-import org.unitime.timetable.model.EveningPeriodPreferenceModel;
+import org.unitime.timetable.model.MidtermPeriodPreferenceModel;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.NonUniversityLocation;
@@ -162,7 +162,7 @@ public class EditRoomAction extends Action {
             	editRoomForm.setExamCapacity(location.getExamCapacity().toString());           
             }
             editRoomForm.setExamEnabled(location.isExamEnabled(Exam.sExamTypeFinal));
-            editRoomForm.setExamEEnabled(location.isExamEnabled(Exam.sExamTypeEvening));
+            editRoomForm.setExamEEnabled(location.isExamEnabled(Exam.sExamTypeMidterm));
             editRoomForm.setIgnoreTooFar(location.isIgnoreTooFar());
             editRoomForm.setIgnoreRoomCheck(location.isIgnoreRoomCheck());
             editRoomForm.setCoordX(location.getCoordinateX()==null || location.getCoordinateX().intValue()<0?null:location.getCoordinateX().toString());
@@ -176,13 +176,13 @@ public class EditRoomAction extends Action {
             rttPx.setName("PeriodPrefs");
             request.setAttribute("PeriodPrefs", rttPx.print(true, RequiredTimeTable.getTimeGridVertical(user))); 
 
-            if (Exam.hasEveningExams(location.getSession().getUniqueId())) {
-                EveningPeriodPreferenceModel epx = new EveningPeriodPreferenceModel(location.getSession());
+            if (Exam.hasMidtermExams(location.getSession().getUniqueId())) {
+                MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(location.getSession());
                 if (epx.canDo()) {
                     epx.load(location);
                     request.setAttribute("PeriodEPrefs", epx.print(true));
                 } else {
-                    px = new PeriodPreferenceModel(location.getSession(), Exam.sExamTypeEvening);
+                    px = new PeriodPreferenceModel(location.getSession(), Exam.sExamTypeMidterm);
                     px.load(location);
                     px.setAllowRequired(false);
                     rttPx = new RequiredTimeTable(px);
@@ -312,7 +312,7 @@ public class EditRoomAction extends Action {
             }
 
             location.setExamEnabled(Exam.sExamTypeFinal,editRoomForm.getExamEnabled());
-            location.setExamEnabled(Exam.sExamTypeEvening,editRoomForm.getExamEEnabled());
+            location.setExamEnabled(Exam.sExamTypeMidterm,editRoomForm.getExamEEnabled());
 				
 			if (editRoomForm.isIgnoreTooFar() == null || !editRoomForm.isIgnoreTooFar().booleanValue()) {
 				location.setIgnoreTooFar(Boolean.FALSE);
@@ -344,21 +344,21 @@ public class EditRoomAction extends Action {
 			    location.clearExamPreferences(Exam.sExamTypeFinal);
 			}
             
-            if (Exam.hasEveningExams(location.getSession().getUniqueId()) && location.isExamEnabled(Exam.sExamTypeEvening)) {
-                EveningPeriodPreferenceModel epx = new EveningPeriodPreferenceModel(location.getSession());
+            if (Exam.hasMidtermExams(location.getSession().getUniqueId()) && location.isExamEnabled(Exam.sExamTypeMidterm)) {
+                MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(location.getSession());
                 if (epx.canDo()) {
                     epx.load(request);
                     request.setAttribute("PeriodEPrefs", epx.print(true));
                     epx.save(location);
                 } else {
-                    PeriodPreferenceModel px = new PeriodPreferenceModel(location.getSession(), Exam.sExamTypeEvening);
+                    PeriodPreferenceModel px = new PeriodPreferenceModel(location.getSession(), Exam.sExamTypeMidterm);
                     RequiredTimeTable rttPx = new RequiredTimeTable(px);
                     rttPx.setName("PeriodEPrefs");
                     rttPx.update(request);
                     px.save(location);
                 }
             } else {
-                location.clearExamPreferences(Exam.sExamTypeEvening);
+                location.clearExamPreferences(Exam.sExamTypeMidterm);
             }
 			
 			for (Iterator i=location.getRoomDepts().iterator();i.hasNext();) {
@@ -413,7 +413,7 @@ public class EditRoomAction extends Action {
             room.setCapacity(Integer.valueOf(editRoomForm.getCapacity().trim()));
             room.setExamCapacity(Integer.valueOf(editRoomForm.getExamCapacity().trim()));
             room.setExamEnabled(Exam.sExamTypeFinal,editRoomForm.getExamEnabled());
-            room.setExamEnabled(Exam.sExamTypeEvening,editRoomForm.getExamEEnabled());
+            room.setExamEnabled(Exam.sExamTypeMidterm,editRoomForm.getExamEEnabled());
             room.setIgnoreTooFar(Boolean.FALSE);
             room.setIgnoreRoomCheck(editRoomForm.isIgnoreRoomCheck()!=null && editRoomForm.isIgnoreRoomCheck().booleanValue());
             room.setExternalUniqueId(editRoomForm.getExternalId());

@@ -32,10 +32,9 @@ import org.hibernate.Transaction;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
-import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.EventContact;
-import org.unitime.timetable.model.EventType;
 import org.unitime.timetable.model.ExamConflict;
+import org.unitime.timetable.model.ExamEvent;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Location;
@@ -92,15 +91,17 @@ public class ExamDatabaseSaver extends ExamSaver {
     }
 
     protected void saveSolution(org.hibernate.Session hibSession) {
-        /*
-        hibSession.createQuery(
-                "delete ExamConflict c where c.uniqueId in "+
-                "(select c.uniqueId from Exam x inner join x.conflicts c where x.session.uniqueId=:sessionId)")
-            .setLong("sessionId", iSessionId)
-            .executeUpdate();
-            */
         TimetableManager owner = TimetableManager.findByExternalId(getModel().getProperties().getProperty("General.OwnerPuid"));
         Collection exams = org.unitime.timetable.model.Exam.findAll(iSessionId, iExamType);
+        Hashtable<Long,ExamEvent> examEvents = new Hashtable();
+        for (Iterator i=hibSession.createQuery(
+                "select e from ExamEvent e where e.exam.session.uniqueId=:sessionId and e.exam.examType=:examType")
+                .setLong("sessionId",iSessionId)
+                .setInteger("examType", iExamType)
+                .iterate(); i.hasNext();) {
+            ExamEvent e = (ExamEvent)i.next();
+            examEvents.put(e.getExam().getUniqueId(),e);
+        }
         iProgress.setPhase("Saving assignments...", exams.size());
         Hashtable examTable = new Hashtable();
         for (Iterator i=exams.iterator();i.hasNext();) {
@@ -110,10 +111,8 @@ public class ExamDatabaseSaver extends ExamSaver {
             exam.setAssignedPeriod(null);
             exam.setAssignedPreference(null);
             exam.getAssignedRooms().clear();
-            if (exam.getEvent()!=null) {
-                hibSession.delete(exam.getEvent());
-                exam.setEvent(null);
-            }
+            ExamEvent event = examEvents.get(exam.getUniqueId());
+            if (event!=null) hibSession.delete(event);
             for (Iterator j=exam.getConflicts().iterator();j.hasNext();) {
                 ExamConflict conf = (ExamConflict)j.next();
                 hibSession.delete(conf);
@@ -382,22 +381,20 @@ public class ExamDatabaseSaver extends ExamSaver {
             contact.setPhone("unknown");
             hibSession.save(contact);
         }
-        EventType eventType = EventType.findByReference(iExamType==org.unitime.timetable.model.Exam.sExamTypeFinal?EventType.sEventTypeFinalExam:EventType.sEventTypeEveningExam);
         for (Enumeration e=getModel().assignedVariables().elements();e.hasMoreElements();) {
             Exam examVar = (Exam)e.nextElement();
             iProgress.incProgress();
             org.unitime.timetable.model.Exam exam = (org.unitime.timetable.model.Exam)examTable.get(examVar.getId());
             if (exam==null) continue;
-            Event event = exam.generateEvent(eventType, true);
+            ExamEvent event = exam.generateEvent(null,true);
             if (event!=null) {
                 event.setEventName(examVar.getName());
                 event.setMinCapacity(examVar.getSize());
                 event.setMaxCapacity(examVar.getSize());
                 event.setMainContact(contact);
-                exam.setEvent(event);
-                hibSession.save(event);
+                hibSession.saveOrUpdate(event);
             }
-            if (exam.getEvent()!=null || !exam.getConflicts().isEmpty()) hibSession.saveOrUpdate(exam);
+            if (event!=null || !exam.getConflicts().isEmpty()) hibSession.saveOrUpdate(exam);
         }
     }
     

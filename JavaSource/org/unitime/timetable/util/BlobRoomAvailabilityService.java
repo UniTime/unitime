@@ -4,12 +4,14 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.sql.CallableStatement;
+import java.sql.Connection;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
+import org.hibernate.engine.SessionFactoryImplementor;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.dao._RootDAO;
 
@@ -24,10 +26,13 @@ public class BlobRoomAvailabilityService extends RoomAvailabilityService {
             StringWriter writer = new StringWriter();
             (new XMLWriter(writer,OutputFormat.createPrettyPrint())).write(request);
             writer.flush(); writer.close();
-            CallableStatement call = new _RootDAO().getSession().connection().prepareCall(iRequestSql);
+            SessionFactoryImplementor hibSessionFactory = (SessionFactoryImplementor)new _RootDAO().getSession().getSessionFactory();
+            Connection connection = hibSessionFactory.getConnectionProvider().getConnection();
+            CallableStatement call = connection.prepareCall(iRequestSql);
             call.setString(1, writer.getBuffer().toString());
             call.execute();
             call.close();
+            hibSessionFactory.getConnectionProvider().closeConnection(connection);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -35,11 +40,14 @@ public class BlobRoomAvailabilityService extends RoomAvailabilityService {
     
     protected Document recieveResponse() throws IOException, DocumentException {
         try {
-            CallableStatement call = new _RootDAO().getSession().connection().prepareCall(iResponseSql);
+            SessionFactoryImplementor hibSessionFactory = (SessionFactoryImplementor)new _RootDAO().getSession().getSessionFactory();
+            Connection connection = hibSessionFactory.getConnectionProvider().getConnection();
+            CallableStatement call = connection.prepareCall(iResponseSql);
             call.registerOutParameter(1, java.sql.Types.CLOB);
             call.execute();
             String response = call.getString(1);
             call.close();
+            hibSessionFactory.getConnectionProvider().closeConnection(connection);
             if (response==null || response.length()==0) return null;
             StringReader reader = new StringReader(response);
             Document document = (new SAXReader()).read(reader);

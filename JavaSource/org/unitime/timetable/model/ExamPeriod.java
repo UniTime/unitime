@@ -260,13 +260,11 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
 
     public List findOverlappingClassMeetings(int nrTravelSlots) {
         return new ExamPeriodDAO().getSession().createQuery(
-                "select m from Meeting m where " +
-                "m.eventType.reference=:eventType and "+
+                "select m from ClassEvent e inner join e.meetings m where " +
                 "m.meetingDate=:startDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot")
                 .setDate("startDate", getStartDate())
                 .setInteger("startSlot", getStartSlot()-nrTravelSlots)
                 .setInteger("endSlot", getEndSlot()+nrTravelSlots)
-                .setString("eventType", EventType.sEventTypeClass)
                 .setCacheable(true)
                 .list();
     } 
@@ -277,15 +275,12 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
     
     public List findOverlappingClassMeetings(Long classId, int nrTravelSlots) {
         return new ExamPeriodDAO().getSession().createQuery(
-                "select m from Meeting m inner join m.event.relatedCourses r where " +
-                "m.eventType.reference=:eventType and "+
+                "select m from ClassEvent e inner join e.meetings m where " +
                 "m.meetingDate=:startDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and " +
-                "r.ownerType=:classType and r.ownerId=:classId")
+                "e.clazz.uniqueId=:classId")
                 .setDate("startDate", getStartDate())
                 .setInteger("startSlot", getStartSlot()-nrTravelSlots)
                 .setInteger("endSlot", getEndSlot()+nrTravelSlots)
-                .setString("eventType", EventType.sEventTypeClass)
-                .setInteger("classType", ExamOwner.sOwnerTypeClass)
                 .setLong("classId", classId)
                 .setCacheable(true)
                 .list();

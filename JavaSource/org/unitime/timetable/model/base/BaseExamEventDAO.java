@@ -1,49 +1,30 @@
-/* 
- * UniTime 3.1 (University Course Timetabling & Student Sectioning Application)
- * Copyright (C) 2008, UniTime.org
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- */ 
- 
 package org.unitime.timetable.model.base;
 
 import org.hibernate.Hibernate;
 import org.hibernate.Session;
-import org.unitime.timetable.model.dao.EventTypeDAO;
+import org.unitime.timetable.model.dao.ExamEventDAO;
 import org.hibernate.criterion.Order;
 
 /**
  * This is an automatically generated DAO class which should not be edited.
  */
-public abstract class BaseEventTypeDAO extends org.unitime.timetable.model.dao._RootDAO {
+public abstract class BaseExamEventDAO extends org.unitime.timetable.model.dao._RootDAO {
 
 	// query name references
 
 
-	public static EventTypeDAO instance;
+	public static ExamEventDAO instance;
 
 	/**
 	 * Return a singleton of the DAO
 	 */
-	public static EventTypeDAO getInstance () {
-		if (null == instance) instance = new EventTypeDAO();
+	public static ExamEventDAO getInstance () {
+		if (null == instance) instance = new ExamEventDAO();
 		return instance;
 	}
 
 	public Class getReferenceClass () {
-		return org.unitime.timetable.model.EventType.class;
+		return org.unitime.timetable.model.ExamEvent.class;
 	}
 
     public Order getDefaultOrder () {
@@ -51,35 +32,35 @@ public abstract class BaseEventTypeDAO extends org.unitime.timetable.model.dao._
     }
 
 	/**
-	 * Cast the object as a org.unitime.timetable.model.EventType
+	 * Cast the object as a org.unitime.timetable.model.ExamEvent
 	 */
-	public org.unitime.timetable.model.EventType cast (Object object) {
-		return (org.unitime.timetable.model.EventType) object;
+	public org.unitime.timetable.model.ExamEvent cast (Object object) {
+		return (org.unitime.timetable.model.ExamEvent) object;
 	}
 
-	public org.unitime.timetable.model.EventType get(java.lang.Long key)
+	public org.unitime.timetable.model.ExamEvent get(java.lang.Long key)
 	{
-		return (org.unitime.timetable.model.EventType) get(getReferenceClass(), key);
+		return (org.unitime.timetable.model.ExamEvent) get(getReferenceClass(), key);
 	}
 
-	public org.unitime.timetable.model.EventType get(java.lang.Long key, Session s)
+	public org.unitime.timetable.model.ExamEvent get(java.lang.Long key, Session s)
 	{
-		return (org.unitime.timetable.model.EventType) get(getReferenceClass(), key, s);
+		return (org.unitime.timetable.model.ExamEvent) get(getReferenceClass(), key, s);
 	}
 
-	public org.unitime.timetable.model.EventType load(java.lang.Long key)
+	public org.unitime.timetable.model.ExamEvent load(java.lang.Long key)
 	{
-		return (org.unitime.timetable.model.EventType) load(getReferenceClass(), key);
+		return (org.unitime.timetable.model.ExamEvent) load(getReferenceClass(), key);
 	}
 
-	public org.unitime.timetable.model.EventType load(java.lang.Long key, Session s)
+	public org.unitime.timetable.model.ExamEvent load(java.lang.Long key, Session s)
 	{
-		return (org.unitime.timetable.model.EventType) load(getReferenceClass(), key, s);
+		return (org.unitime.timetable.model.ExamEvent) load(getReferenceClass(), key, s);
 	}
 
-	public org.unitime.timetable.model.EventType loadInitialize(java.lang.Long key, Session s) 
+	public org.unitime.timetable.model.ExamEvent loadInitialize(java.lang.Long key, Session s) 
 	{ 
-		org.unitime.timetable.model.EventType obj = load(key, s); 
+		org.unitime.timetable.model.ExamEvent obj = load(key, s); 
 		if (!Hibernate.isInitialized(obj)) {
 			Hibernate.initialize(obj);
 		} 
@@ -90,36 +71,36 @@ public abstract class BaseEventTypeDAO extends org.unitime.timetable.model.dao._
 	/**
 	 * Persist the given transient instance, first assigning a generated identifier. (Or using the current value
 	 * of the identifier property if the assigned generator is used.) 
-	 * @param eventType a transient instance of a persistent class 
+	 * @param examEvent a transient instance of a persistent class 
 	 * @return the class identifier
 	 */
-	public java.lang.Long save(org.unitime.timetable.model.EventType eventType)
+	public java.lang.Long save(org.unitime.timetable.model.ExamEvent examEvent)
 	{
-		return (java.lang.Long) super.save(eventType);
+		return (java.lang.Long) super.save(examEvent);
 	}
 
 	/**
 	 * Persist the given transient instance, first assigning a generated identifier. (Or using the current value
 	 * of the identifier property if the assigned generator is used.) 
 	 * Use the Session given.
-	 * @param eventType a transient instance of a persistent class
+	 * @param examEvent a transient instance of a persistent class
 	 * @param s the Session
 	 * @return the class identifier
 	 */
-	public java.lang.Long save(org.unitime.timetable.model.EventType eventType, Session s)
+	public java.lang.Long save(org.unitime.timetable.model.ExamEvent examEvent, Session s)
 	{
-		return (java.lang.Long) save((Object) eventType, s);
+		return (java.lang.Long) save((Object) examEvent, s);
 	}
 
 	/**
 	 * Either save() or update() the given instance, depending upon the value of its identifier property. By default
 	 * the instance is always saved. This behaviour may be adjusted by specifying an unsaved-value attribute of the
 	 * identifier property mapping. 
-	 * @param eventType a transient instance containing new or updated state 
+	 * @param examEvent a transient instance containing new or updated state 
 	 */
-	public void saveOrUpdate(org.unitime.timetable.model.EventType eventType)
+	public void saveOrUpdate(org.unitime.timetable.model.ExamEvent examEvent)
 	{
-		saveOrUpdate((Object) eventType);
+		saveOrUpdate((Object) examEvent);
 	}
 
 	/**
@@ -127,34 +108,34 @@ public abstract class BaseEventTypeDAO extends org.unitime.timetable.model.dao._
 	 * instance is always saved. This behaviour may be adjusted by specifying an unsaved-value attribute of the identifier
 	 * property mapping. 
 	 * Use the Session given.
-	 * @param eventType a transient instance containing new or updated state.
+	 * @param examEvent a transient instance containing new or updated state.
 	 * @param s the Session.
 	 */
-	public void saveOrUpdate(org.unitime.timetable.model.EventType eventType, Session s)
+	public void saveOrUpdate(org.unitime.timetable.model.ExamEvent examEvent, Session s)
 	{
-		saveOrUpdate((Object) eventType, s);
+		saveOrUpdate((Object) examEvent, s);
 	}
 
 	/**
 	 * Update the persistent state associated with the given identifier. An exception is thrown if there is a persistent
 	 * instance with the same identifier in the current session.
-	 * @param eventType a transient instance containing updated state
+	 * @param examEvent a transient instance containing updated state
 	 */
-	public void update(org.unitime.timetable.model.EventType eventType) 
+	public void update(org.unitime.timetable.model.ExamEvent examEvent) 
 	{
-		update((Object) eventType);
+		update((Object) examEvent);
 	}
 
 	/**
 	 * Update the persistent state associated with the given identifier. An exception is thrown if there is a persistent
 	 * instance with the same identifier in the current session.
 	 * Use the Session given.
-	 * @param eventType a transient instance containing updated state
+	 * @param examEvent a transient instance containing updated state
 	 * @param the Session
 	 */
-	public void update(org.unitime.timetable.model.EventType eventType, Session s)
+	public void update(org.unitime.timetable.model.ExamEvent examEvent, Session s)
 	{
-		update((Object) eventType, s);
+		update((Object) examEvent, s);
 	}
 
 	/**
@@ -182,23 +163,23 @@ public abstract class BaseEventTypeDAO extends org.unitime.timetable.model.dao._
 	/**
 	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
 	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * @param eventType the instance to be removed
+	 * @param examEvent the instance to be removed
 	 */
-	public void delete(org.unitime.timetable.model.EventType eventType)
+	public void delete(org.unitime.timetable.model.ExamEvent examEvent)
 	{
-		delete((Object) eventType);
+		delete((Object) examEvent);
 	}
 
 	/**
 	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
 	 * Session or a transient instance with an identifier associated with existing persistent state. 
 	 * Use the Session given.
-	 * @param eventType the instance to be removed
+	 * @param examEvent the instance to be removed
 	 * @param s the Session
 	 */
-	public void delete(org.unitime.timetable.model.EventType eventType, Session s)
+	public void delete(org.unitime.timetable.model.ExamEvent examEvent, Session s)
 	{
-		delete((Object) eventType, s);
+		delete((Object) examEvent, s);
 	}
 	
 	/**
@@ -211,9 +192,9 @@ public abstract class BaseEventTypeDAO extends org.unitime.timetable.model.dao._
 	 * <li>after inserting a Blob or Clob</li>
 	 * </ul>
 	 */
-	public void refresh (org.unitime.timetable.model.EventType eventType, Session s)
+	public void refresh (org.unitime.timetable.model.ExamEvent examEvent, Session s)
 	{
-		refresh((Object) eventType, s);
+		refresh((Object) examEvent, s);
 	}
 
 

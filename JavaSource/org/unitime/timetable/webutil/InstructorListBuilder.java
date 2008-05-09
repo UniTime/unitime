@@ -251,10 +251,10 @@ public class InstructorListBuilder {
 				String examsStr = "";
 				for (Iterator i=exams.iterator();i.hasNext();) {
 				    Exam exam = (Exam)i.next();
-                    String examName = exam.getName();
+                    String examName = exam.getLabel();
                     String title = examName;
-                    if (exam.getExamType()==Exam.sExamTypeEvening) {
-                        examsStr += "<span title='"+examName+" Evening Exam'>"+examName+"</span>";
+                    if (exam.getExamType()==Exam.sExamTypeMidterm) {
+                        examsStr += "<span title='"+examName+" Midterm Exam'>"+examName+"</span>";
                     } else {
                         examsStr += "<span style='font-weight:bold;' title='"+examName+" Final Exam'>"+examName+"</span>";
                     }
@@ -455,9 +455,9 @@ public class InstructorListBuilder {
             String examsStr = "";
             for (Iterator i=exams.iterator();i.hasNext();) {
                 Exam exam = (Exam)i.next();
-                String examName = exam.getName();
+                String examName = exam.getLabel();
                 String title = examName;
-                if (exam.getExamType()==Exam.sExamTypeEvening) {
+                if (exam.getExamType()==Exam.sExamTypeMidterm) {
                     examsStr += examName;
                 } else {
                     examsStr += "@@BOLD "+examName+"@@END_BOLD ";

@@ -337,18 +337,15 @@ public class Assignment extends BaseAssignment {
 	       return true;
    }
 	
-    public Event generateCommittedEvent(EventType eventType, boolean createNoRoomMeetings) {
+    public ClassEvent generateCommittedEvent(ClassEvent event, boolean createNoRoomMeetings) {
         Class_ clazz = getClazz();
-        Event event = new Event();
+        if (event==null) {
+            event = new ClassEvent();
+            event.setClazz(clazz);
+        }
         event.setEventName(getClassName());
-        event.setEventType(eventType);
-        event.setRelatedCourses(new HashSet());
         event.setMinCapacity(clazz.getClassLimit());
         event.setMaxCapacity(clazz.getClassLimit());
-        RelatedCourseInfo courseInfo = new RelatedCourseInfo();
-        courseInfo.setOwner(clazz);
-        courseInfo.setEvent(event);
-        event.getRelatedCourses().add(courseInfo);
         event.setMeetings(new HashSet());
         DatePattern dp = getDatePattern();
         Calendar cal = Calendar.getInstance(Locale.US);
@@ -372,7 +369,6 @@ public class Assignment extends BaseAssignment {
                         Location location = (Location)i.next();
                         if (location.getPermanentId()!=null) {
                             Meeting m = new Meeting();
-                            m.setEventType(eventType);
                             m.setMeetingDate(cal.getTime());
                             m.setStartPeriod(time.getStartSlot());
                             m.setStartOffset(0);
@@ -388,7 +384,6 @@ public class Assignment extends BaseAssignment {
                     }
                     if (!created && createNoRoomMeetings) {
                         Meeting m = new Meeting();
-                        m.setEventType(eventType);
                         m.setMeetingDate(cal.getTime());
                         m.setStartPeriod(time.getStartSlot());
                         m.setStartOffset(0);
@@ -404,8 +399,6 @@ public class Assignment extends BaseAssignment {
             }
             cal.add(Calendar.DAY_OF_YEAR, 1);
         }
-        if (event.getMeetings().isEmpty()) return null;
         return event;
     }
-	
 }

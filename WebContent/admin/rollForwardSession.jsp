@@ -160,7 +160,7 @@
 			</td>			
 		</tr>
 		<tr>
-			<td valign="top" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardEveningExams"/> Roll Evening Exams Forward From Session
+			<td valign="top" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardMidtermExams"/> Roll Midterm Exams Forward From Session
 			</td>	
 		</tr>
 		<tr>

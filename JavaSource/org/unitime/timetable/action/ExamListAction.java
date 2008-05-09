@@ -26,7 +26,7 @@ import org.unitime.timetable.form.ExamListForm;
 import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionPref;
-import org.unitime.timetable.model.EveningPeriodPreferenceModel;
+import org.unitime.timetable.model.MidtermPeriodPreferenceModel;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.ExamPeriodPref;
@@ -188,9 +188,9 @@ public class ExamListAction extends Action {
                 if (roomPref.length()>0 && !roomPref.endsWith(nl)) roomPref+=nl;
                 roomPref += exam.getEffectivePrefHtmlForPrefType(RoomGroupPref.class);
                 if (roomPref.endsWith(nl)) roomPref = roomPref.substring(0, roomPref.length()-nl.length());
-                if (timeText || Exam.sExamTypeEvening==exam.getExamType()) {
-                	if (Exam.sExamTypeEvening==exam.getExamType()) {
-                    	EveningPeriodPreferenceModel epx = new EveningPeriodPreferenceModel(exam.getSession(), null);
+                if (timeText || Exam.sExamTypeMidterm==exam.getExamType()) {
+                	if (Exam.sExamTypeMidterm==exam.getExamType()) {
+                    	MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(exam.getSession(), null);
                     	if (epx.canDo()) {
                     		epx.load(exam);
                     		perPref+=epx.toString(true);
@@ -239,8 +239,8 @@ public class ExamListAction extends Action {
                     roomPref += PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText();
                 }
                 boolean prefPrinted = false;
-                if (Exam.sExamTypeEvening==exam.getExamType()) {
-                    EveningPeriodPreferenceModel epx = new EveningPeriodPreferenceModel(exam.getSession(), null);
+                if (Exam.sExamTypeMidterm==exam.getExamType()) {
+                    MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(exam.getSession(), null);
                     if (epx.canDo()) {
                         epx.load(exam);
                         perPref+=epx.toString(false);

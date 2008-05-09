@@ -218,7 +218,7 @@ public class WebEventTableBuilder {
 
     private TableCell buildEventType(Event e) {
     	TableCell cell = this.initCell(true, null, 1, true);
-    	cell.addContent(e.getEventType().getLabel());
+    	cell.addContent(e.getEventTypeLabel());
     	return(cell);
     }
     
@@ -357,10 +357,17 @@ public class WebEventTableBuilder {
 
         ArrayList eventIds = new ArrayList();
         
-        String query = "select distinct e from Event e inner join e.meetings m where e.eventType.reference in (";
+        String query = "select distinct e from Event e inner join e.meetings m where e.class in (";
         for (int i=0;i<form.getEventTypes().length;i++) {
         	if (i>0) query+=",";
-        	query += "'"+form.getEventTypes()[i]+"'";
+        	switch (form.getEventTypes()[i].intValue()) {
+        	case Event.sEventTypeClass : query += "ClassEvent"; break;
+        	case Event.sEventTypeFinalExam : query += "FinalExamEvent"; break;
+        	case Event.sEventTypeMidtermExam : query += "MidtermExamEvent"; break;
+        	case Event.sEventTypeCourse : query += "CourseEvent"; break;
+        	case Event.sEventTypeSpecial : query += "SpecialEvent"; break;
+        	}
+        	//query += form.getEventTypes()[i];
         }
         query += ")";
         

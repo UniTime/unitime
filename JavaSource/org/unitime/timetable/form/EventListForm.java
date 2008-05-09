@@ -22,7 +22,6 @@ package org.unitime.timetable.form;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletRequest;
@@ -32,9 +31,8 @@ import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
-import org.unitime.timetable.model.EventType;
+import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.UserData;
-import org.unitime.timetable.model.dao.EventTypeDAO;
 import org.unitime.timetable.util.CalendarUtils;
 
 public class EventListForm extends ActionForm {
@@ -43,7 +41,7 @@ public class EventListForm extends ActionForm {
 	private String iEventMainContactSubstring;
 	private String iEventDateFrom;
 	private String iEventDateTo;
-	private String[] iEventTypes = null;
+	private Integer[] iEventTypes = null;
 	
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 		
@@ -76,19 +74,19 @@ public class EventListForm extends ActionForm {
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
 		iEventDateFrom = new SimpleDateFormat("MM/dd/yyyy").format(new Date());
 		iEventDateTo = null;
-		iEventTypes = new String[] {
-				EventType.sEventTypeEveningExam,
-				EventType.sEventTypeFinalExam
+		iEventTypes = new Integer[] {
+				Event.sEventTypeFinalExam,
+				Event.sEventTypeMidtermExam
 		};
 		iOp = null;
 	}
 	
 	public void load(HttpSession session) {
-		String eventTypes = UserData.getProperty(session, "EventList.EventTypes", EventType.sEventTypeEveningExam+","+EventType.sEventTypeFinalExam);
+		String eventTypes = UserData.getProperty(session, "EventList.EventTypesInt", Event.sEventTypeFinalExam+","+Event.sEventTypeMidtermExam);
 		StringTokenizer stk = new StringTokenizer(eventTypes,",");
-		iEventTypes = new String[stk.countTokens()];
+		iEventTypes = new Integer[stk.countTokens()];
 		int idx = 0;
-		while (stk.hasMoreTokens()) iEventTypes[idx++] = stk.nextToken();
+		while (stk.hasMoreTokens()) iEventTypes[idx++] = Integer.valueOf(stk.nextToken());
 		
 		iEventNameSubstring = (String)session.getAttribute("EventList.EventNameSubstring");
  		iEventMainContactSubstring = (String)session.getAttribute("EventList.EventMainContactSubstring");
@@ -102,7 +100,7 @@ public class EventListForm extends ActionForm {
 		if (iEventTypes!=null)
 			for (int idx=0; idx<iEventTypes.length; idx++)
 				eventTypes += (idx>0?",":"") + iEventTypes[idx];
-		UserData.setProperty(session, "EventList.EventTypes", eventTypes);
+		UserData.setProperty(session, "EventList.EventTypesInt", eventTypes);
 		
 		if (iEventNameSubstring==null)
 			session.removeAttribute("EventList.EventNameSubstring");
@@ -150,9 +148,9 @@ public class EventListForm extends ActionForm {
 	public String getOp() { return iOp; }
 	public void setOp(String op) { iOp = op; }
 
-	public String[] getEventTypes() { return iEventTypes; }
-	public void setEventTypes(String[] types) { iEventTypes = types; }
-	public List getAllEventTypes() {
-		return new EventTypeDAO().findAll();
+	public Integer[] getEventTypes() { return iEventTypes; }
+	public void setEventTypes(Integer[] types) { iEventTypes = types; }
+	public String[] getAllEventTypes() {
+	    return Event.sEventTypes;
 	}
 }

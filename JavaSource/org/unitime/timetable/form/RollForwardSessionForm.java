@@ -88,7 +88,7 @@ public class RollForwardSessionForm extends ActionForm {
 	private String[] addNewCourseOfferingsSubjectIds;
 	private Boolean rollForwardExamConfiguration;
 	private Long sessionToRollExamConfigurationForwardFrom;
-	private Boolean rollForwardEveningExams;
+	private Boolean rollForwardMidtermExams;
 	private Boolean rollForwardFinalExams;
 
 	/** 
@@ -183,7 +183,7 @@ public class RollForwardSessionForm extends ActionForm {
 
 		if (getRollForwardExamConfiguration().booleanValue()){
 			ExamDAO eDao = new ExamDAO();
-			validateRollForwardSessionHasNoDataOfType(errors, s, "Evening Exams", eDao.getQuery("from Exam e where e.session.uniqueId = " + s.getUniqueId().toString() +" and e.examType = " + Exam.sExamTypeEvening).list());			
+			validateRollForwardSessionHasNoDataOfType(errors, s, "Midterm Exams", eDao.getQuery("from Exam e where e.session.uniqueId = " + s.getUniqueId().toString() +" and e.examType = " + Exam.sExamTypeMidterm).list());			
 		}
 		if (getRollForwardExamConfiguration().booleanValue()){
 			ExamDAO epDao = new ExamDAO();
@@ -229,7 +229,7 @@ public class RollForwardSessionForm extends ActionForm {
 		addNewCourseOfferingsSubjectIds = new String[0];
 		rollForwardExamConfiguration = new Boolean(false);
 		sessionToRollExamConfigurationForwardFrom = null;
-		rollForwardEveningExams = new Boolean(false);
+		rollForwardMidtermExams = new Boolean(false);
 		rollForwardFinalExams = new Boolean(false);
 	}
 
@@ -534,13 +534,13 @@ public class RollForwardSessionForm extends ActionForm {
 	}
 
 
-	public Boolean getRollForwardEveningExams() {
-		return rollForwardEveningExams;
+	public Boolean getRollForwardMidtermExams() {
+		return rollForwardMidtermExams;
 	}
 
 
-	public void setRollForwardEveningExams(Boolean rollForwardEveningExams) {
-		this.rollForwardEveningExams = rollForwardEveningExams;
+	public void setRollForwardMidtermExams(Boolean rollForwardMidtermExams) {
+		this.rollForwardMidtermExams = rollForwardMidtermExams;
 	}
 
 

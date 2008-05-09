@@ -97,9 +97,9 @@ public class ExamPeriodEditAction extends Action {
                 myForm.setOp("Save");
             }
 
-            if ("Evening Periods".equals(op) && myForm.getCanAutoSetup()) {
+            if ("Midterm Periods".equals(op) && myForm.getCanAutoSetup()) {
             	myForm.setAutoSetup(true);
-            	myForm.setExamType(Exam.sExamTypes[Exam.sExamTypeEvening]);
+            	myForm.setExamType(Exam.sExamTypes[Exam.sExamTypeMidterm]);
                 myForm.setOp("Save");
             }
 
@@ -202,7 +202,7 @@ public class ExamPeriodEditAction extends Action {
 	            return mapping.findForward("list");
 	        } 
 	        
-	        return mapping.findForward(myForm.getAutoSetup()?"evening":myForm.getUniqueId().longValue()<0?"add":"edit");
+	        return mapping.findForward(myForm.getAutoSetup()?"midterm":myForm.getUniqueId().longValue()<0?"add":"edit");
 	        
 		} catch (Exception e) {
 			Debug.error(e);

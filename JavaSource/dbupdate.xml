@@ -1001,7 +1001,7 @@
   			alter table %SCHEMA%.exam add assigned_pref varchar(100)
   		</mysql>
 	</update>
-	<update version="17" date="3-Mar-2008" comment="Evening exams">
+	<update version="17" date="3-Mar-2008" comment="Midterm exams">
 		<plsql>
 			alter table %SCHEMA%.exam add exam_type number(10,0) default 0
 		</plsql>
@@ -1533,5 +1533,52 @@
 	<update version="25" date="17-Apr-2008" comment="Exam added unique id rolled foward from">
 		<plsql>alter table %SCHEMA%.exam add uid_rolled_fwd_from number(20)</plsql>
 		<mysql>alter table %SCHEMA%.exam add uid_rolled_fwd_from decimal(20,0)</mysql>
+	</update>
+	<update version="26" date="8-May-2008" comment="Event changes">
+		<mysql>alter table %SCHEMA%.event add class_id decimal(20,0)</mysql>
+		<mysql>alter table %SCHEMA%.event add exam_id decimal(20,0)</mysql>
+		<mysql>alter table %SCHEMA%.event add new_event_type bigint(10)</mysql>
+		<mysql>alter table %SCHEMA%.event add req_attd int(1)</mysql>
+		<plsql>alter table %SCHEMA%.event add class_id number(20,0)</plsql>
+		<plsql>alter table %SCHEMA%.event add exam_id number(20,0)</plsql>
+		<plsql>alter table %SCHEMA%.event add new_event_type number(10,0)</plsql>
+		<plsql>alter table %SCHEMA%.event add req_attd number(1,0)</plsql>
+		<sql>
+			alter table %SCHEMA%.event add constraint fk_event_class foreign key (class_id)
+			references %SCHEMA%.class_ (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.event add constraint fk_event_exam foreign key (exam_id)
+			references %SCHEMA%.exam (uniqueid) on delete cascade
+		</sql>
+		<sql>update %SCHEMA%.event e set e.new_event_type = 0 where e.event_type = (select t.uniqueid from %SCHEMA%.event_type t where t.reference = 'class')</sql>
+		<sql>update %SCHEMA%.event e set e.new_event_type = 1 where e.event_type = (select t.uniqueid from %SCHEMA%.event_type t where t.reference = 'final')</sql>
+		<sql>update %SCHEMA%.event e set e.new_event_type = 2 where e.event_type = (select t.uniqueid from %SCHEMA%.event_type t where t.reference = 'evening')</sql>
+		<sql>update %SCHEMA%.event e set e.new_event_type = 3, e.req_attd=1 where e.event_type = (select t.uniqueid from %SCHEMA%.event_type t where t.reference = 'otherWithConflict')</sql>
+		<sql>update %SCHEMA%.event e set e.new_event_type = 3, e.req_attd=0 where e.event_type = (select t.uniqueid from %SCHEMA%.event_type t where t.reference = 'otherNoConflict')</sql>
+		<sql>update %SCHEMA%.event e set e.new_event_type = 4 where e.event_type = (select t.uniqueid from %SCHEMA%.event_type t where t.reference = 'special')</sql>
+		<mysql>alter table %SCHEMA%.event drop foreign key fk_event_event_type</mysql>
+		<mysql>alter table %SCHEMA%.event drop column event_type</mysql>
+		<mysql>alter table %SCHEMA%.event change column new_event_type event_type bigint(10) not null</mysql>
+		<mysql>alter table %SCHEMA%.meeting drop foreign key fk_meeting_event_type</mysql>
+		<mysql>alter table %SCHEMA%.meeting drop column event_type</mysql>
+		<plsql>alter table %SCHEMA%.event drop constraint fk_event_event_type</plsql>
+		<plsql>alter table %SCHEMA%.event drop column event_type</plsql>
+		<plsql>alter table %SCHEMA%.event rename column new_event_type to event_type</plsql>
+		<plsql>alter table %SCHEMA%.event add constraint nn_event_type check (event_type is not null)</plsql>
+		<plsql>alter table %SCHEMA%.meeting drop constraint fk_meeting_event_type</plsql>
+		<plsql>alter table %SCHEMA%.meeting drop column event_type</plsql>
+		<sql>drop table %SCHEMA%.event_type</sql>
+		<sql>update %SCHEMA%.event e set e.exam_id = (select x.uniqueid from %SCHEMA%.exam x where x.event_id=e.uniqueid) where e.event_type in (1, 2)</sql>
+		<sql>update %SCHEMA%.event e set e.class_id = (select a.class_id from %SCHEMA%.assignment a where a.event_id=e.uniqueid) where e.event_type = 0</sql>
+		<sql>delete from %SCHEMA%.related_course_info where event_id in (select e.uniqueid from %SCHEMA%.event e where e.event_type != 3)</sql>
+		<mysql>alter table %SCHEMA%.assignment drop foreign key fk_assignment_event</mysql>
+		<mysql>alter table %SCHEMA%.assignment drop column event_id</mysql>
+		<mysql>alter table %SCHEMA%.exam drop foreign key fk_exam_event</mysql>
+		<mysql>alter table %SCHEMA%.exam drop column event_id</mysql>
+		<plsql>alter table %SCHEMA%.assignment drop constraint fk_assignment_event</plsql>
+		<plsql>alter table %SCHEMA%.assignment drop column event_id</plsql>
+		<plsql>alter table %SCHEMA%.exam drop constraint fk_exam_event</plsql>
+		<plsql>alter table %SCHEMA%.exam drop column event_id</plsql>
 	</update>
 </dbupdate>

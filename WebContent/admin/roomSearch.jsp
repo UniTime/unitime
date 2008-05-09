@@ -49,9 +49,9 @@
 						<tt:hasFinalExams>
 							<html:option value="Exam">All Final Examination Rooms</html:option>
 						</tt:hasFinalExams>
-						<tt:hasEveningExams>
-							<html:option value="EExam">All Evening Examination Rooms</html:option>
-						</tt:hasEveningExams>
+						<tt:hasMidtermExams>
+							<html:option value="EExam">All Midterm Examination Rooms</html:option>
+						</tt:hasMidtermExams>
 					</tt:canSeeExams>
 					<html:options collection="<%=Department.DEPT_ATTR_NAME%>" 
 						property="value" labelProperty="label"/>

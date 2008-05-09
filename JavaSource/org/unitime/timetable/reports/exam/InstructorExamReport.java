@@ -514,7 +514,7 @@ public class InstructorExamReport extends PdfLegacyExamReport {
             } else {
                 sLog.info("Session: "+session);
             }
-            int examType = (ApplicationProperties.getProperty("type","final").equalsIgnoreCase("final")?Exam.sExamTypeFinal:Exam.sExamTypeEvening);
+            int examType = (ApplicationProperties.getProperty("type","final").equalsIgnoreCase("final")?Exam.sExamTypeFinal:Exam.sExamTypeMidterm);
             int mode = sModeNormal;
             if ("text".equals(System.getProperty("mode"))) mode = sModeText;
             if ("ledger".equals(System.getProperty("mode"))) mode = sModeLedger;
@@ -527,7 +527,7 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                 exams.add(exam);
             }
             InstructorExamReport report = new InstructorExamReport(mode, null, session, examType, null, exams);
-            report.printInstructorReports(mode, session.getAcademicTerm()+session.getYear()+(examType==Exam.sExamTypeEvening?"evn":"fin"), new FileGenerator() {
+            report.printInstructorReports(mode, session.getAcademicTerm()+session.getYear()+(examType==Exam.sExamTypeMidterm?"evn":"fin"), new FileGenerator() {
                 public File generate(String prefix, String ext) {
                     int idx = 0;
                     File file = new File(prefix+"."+ext);

@@ -38,6 +38,7 @@ import net.sf.cpsolver.coursett.preference.MinMaxPreferenceCombination;
 import net.sf.cpsolver.coursett.preference.PreferenceCombination;
 import net.sf.cpsolver.coursett.preference.SumPreferenceCombination;
 
+import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.form.ExamInfoForm;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
@@ -354,41 +355,46 @@ public class ExamInfoModel implements Serializable {
     }
     
     public String getPeriodsTable() {
-        WebTable table = new WebTable(8, "Available Periods for "+getExam().getExamName(), "examInfo.do?op=Reorder&pord=%%", 
-                new String[] {"Available<br>Period","Violated<br>Distributions", "Student<br>Direct", "Student<br>&gt; 2 A Day","Student<br>Back-To-Back", "Instructor<br>Direct", "Instructor<br>&gt; 2 A Day", "Instructor<br>Back-To-Back"},
-                new String[] {"left", "left", "right", "right", "right", "right", "right", "right", "right"},
-                new boolean[] { true, true, true, true, true, true, true, true});
-        ExamAssignmentInfo current = getExamAssignment();
-        for (ExamAssignmentInfo period : getPeriods()) {
-            WebTable.WebTableLine line = table.addLine(
-               "onClick=\"document.location='examInfo.do?op=Select&period="+period.getPeriodId()+"';\"",
-               new String[] {
-                    period.getPeriodAbbreviationWithPref(),
-                    period.getDistributionConflictsHtml("<br>"),
-                    dc2html(true, period.getNrDirectConflicts(), (current==null?0:period.getNrDirectConflicts()-current.getNrDirectConflicts())),
-                    m2d2html(true, period.getNrMoreThanTwoConflicts(), (current==null?0:period.getNrMoreThanTwoConflicts()-current.getNrMoreThanTwoConflicts())),
-                    btb2html(true, period.getNrBackToBackConflicts(), (current==null?0:period.getNrBackToBackConflicts()-current.getNrBackToBackConflicts()), 
-                            period.getNrDistanceBackToBackConflicts(), (current==null?0:period.getNrDistanceBackToBackConflicts()-current.getNrDistanceBackToBackConflicts())),
-                    dc2html(true, period.getNrInstructorDirectConflicts(), (current==null?0:period.getNrInstructorDirectConflicts()-current.getNrInstructorDirectConflicts())),
-                    m2d2html(true, period.getNrInstructorMoreThanTwoConflicts(), (current==null?0:period.getNrInstructorMoreThanTwoConflicts()-current.getNrInstructorMoreThanTwoConflicts())),
-                    btb2html(true, period.getNrInstructorBackToBackConflicts(), (current==null?0:period.getNrInstructorBackToBackConflicts()-current.getNrInstructorBackToBackConflicts()),
-                            period.getNrInstructorDistanceBackToBackConflicts(), (current==null?0:period.getNrInstructorDistanceBackToBackConflicts()-current.getNrInstructorDistanceBackToBackConflicts()))
-                }, new Comparable[] {
-                    period.getPeriodOrd(),
-                    period.getDistributionConflictsList(":"),
-                    period.getNrDirectConflicts(),
-                    period.getNrMoreThanTwoConflicts(),
-                    period.getNrBackToBackConflicts(),
-                    period.getNrInstructorDirectConflicts(),
-                    period.getNrInstructorMoreThanTwoConflicts(),
-                    period.getNrInstructorBackToBackConflicts()
-                });
-            ExamAssignment examAssignment = (iChange==null?null:iChange.getCurrent(iExam));
-            if ((isExamAssigned() || examAssignment!=null) && period.getPeriodId().equals((examAssignment==null?getExamAssignment():examAssignment).getPeriodId())) {
-                line.setBgColor("rgb(168,187,225)");
+        try {
+            WebTable table = new WebTable(8, "Available Periods for "+getExam().getExamName(), "examInfo.do?op=Reorder&pord=%%", 
+                    new String[] {"Available<br>Period","Violated<br>Distributions", "Student<br>Direct", "Student<br>&gt; 2 A Day","Student<br>Back-To-Back", "Instructor<br>Direct", "Instructor<br>&gt; 2 A Day", "Instructor<br>Back-To-Back"},
+                    new String[] {"left", "left", "right", "right", "right", "right", "right", "right", "right"},
+                    new boolean[] { true, true, true, true, true, true, true, true});
+            ExamAssignmentInfo current = getExamAssignment();
+            for (ExamAssignmentInfo period : getPeriods()) {
+                WebTable.WebTableLine line = table.addLine(
+                   "onClick=\"document.location='examInfo.do?op=Select&period="+period.getPeriodId()+"';\"",
+                   new String[] {
+                        period.getPeriodAbbreviationWithPref(),
+                        period.getDistributionConflictsHtml("<br>"),
+                        dc2html(true, period.getNrDirectConflicts(), (current==null?0:period.getNrDirectConflicts()-current.getNrDirectConflicts())),
+                        m2d2html(true, period.getNrMoreThanTwoConflicts(), (current==null?0:period.getNrMoreThanTwoConflicts()-current.getNrMoreThanTwoConflicts())),
+                        btb2html(true, period.getNrBackToBackConflicts(), (current==null?0:period.getNrBackToBackConflicts()-current.getNrBackToBackConflicts()), 
+                                period.getNrDistanceBackToBackConflicts(), (current==null?0:period.getNrDistanceBackToBackConflicts()-current.getNrDistanceBackToBackConflicts())),
+                        dc2html(true, period.getNrInstructorDirectConflicts(), (current==null?0:period.getNrInstructorDirectConflicts()-current.getNrInstructorDirectConflicts())),
+                        m2d2html(true, period.getNrInstructorMoreThanTwoConflicts(), (current==null?0:period.getNrInstructorMoreThanTwoConflicts()-current.getNrInstructorMoreThanTwoConflicts())),
+                        btb2html(true, period.getNrInstructorBackToBackConflicts(), (current==null?0:period.getNrInstructorBackToBackConflicts()-current.getNrInstructorBackToBackConflicts()),
+                                period.getNrInstructorDistanceBackToBackConflicts(), (current==null?0:period.getNrInstructorDistanceBackToBackConflicts()-current.getNrInstructorDistanceBackToBackConflicts()))
+                    }, new Comparable[] {
+                        period.getPeriodOrd(),
+                        period.getDistributionConflictsList(":"),
+                        period.getNrDirectConflicts(),
+                        period.getNrMoreThanTwoConflicts(),
+                        period.getNrBackToBackConflicts(),
+                        period.getNrInstructorDirectConflicts(),
+                        period.getNrInstructorMoreThanTwoConflicts(),
+                        period.getNrInstructorBackToBackConflicts()
+                    });
+                ExamAssignment examAssignment = (iChange==null?null:iChange.getCurrent(iExam));
+                if ((isExamAssigned() || examAssignment!=null) && period.getPeriodId().equals((examAssignment==null?getExamAssignment():examAssignment).getPeriodId())) {
+                    line.setBgColor("rgb(168,187,225)");
+                }
             }
+            return table.printTable(iPeriodTableOrd);
+        } catch (Exception e) {
+            Debug.error(e);
+            return null;
         }
-        return table.printTable(iPeriodTableOrd);
     }
     
     public Collection<ExamAssignmentInfo> getPeriods() {
@@ -403,10 +409,13 @@ public class ExamInfoModel implements Serializable {
                         ExamPeriod period = (ExamPeriod)i.next();
                         try {
                             iPeriods.add(new ExamAssignmentInfo(getExam().getExam(), period, null, studentExams, (iChange==null?null:iChange.getAssignmentTable())));
-                        } catch (Exception e) {}
+                        } catch (Exception e) {
+                            if (!"Given period is prohibited.".equals(e.getMessage()) && !"Given period is two short.".equals(e.getMessage()))
+                                Debug.error(e);
+                        }
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    Debug.error(e);
                 }
             }
         }
@@ -570,7 +579,7 @@ public class ExamInfoModel implements Serializable {
                 Collection<TimeBlock> times = RoomAvailability.getInstance().getRoomAvailability(
                         room,
                         period.getStartTime(), period.getEndTime(), 
-                        new String[] {(getExam().getExamType()==Exam.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sEveningExamType)});
+                        new String[] {(getExam().getExamType()==Exam.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sMidtermExamType)});
                 if (times!=null) for (TimeBlock time : times) {
                     if (period.overlap(time)) {
                         System.out.println("Room "+room.getLabel()+" is not avaiable due to "+time);

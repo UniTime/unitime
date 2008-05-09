@@ -14,7 +14,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Query;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
-import org.unitime.timetable.model.EventType;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.Session;
@@ -55,16 +54,19 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
             if (excludeTypes!=null && excludeTypes.length>0) {
                 for (int i=0;i<excludeTypes.length;i++) {
                     if (exclude==null) exclude=""; else exclude+=",";
-                    if (sFinalExamType.equals(excludeTypes[i])) exclude+="'"+EventType.sEventTypeFinalExam+"'";
-                    else if (sEveningExamType.equals(excludeTypes[i])) exclude+="'"+EventType.sEventTypeEveningExam+"'";
-                    else if (sClassType.equals(excludeTypes[i])) exclude+="'"+EventType.sEventTypeClass+"'";
+                    if (sFinalExamType.equals(excludeTypes[i]))
+                        exclude += "FinalExamEvent";
+                    else if (sMidtermExamType.equals(excludeTypes[i]))
+                        exclude += "MidtermExamEvent";
+                    else if (sClassType.equals(excludeTypes[i]))
+                        exclude += "ClassEvent";
                 }
             }
             Query q = new _RootDAO().getSession().createQuery(
                     "select m from Meeting m where m.locationPermanentId=:locPermId and "+
                     "m.meetingDate>=:startDate and m.meetingDate<=:endDate and "+
                     "m.startPeriod<:endSlot and m.stopPeriod>:startSlot"+
-                    (exclude!=null?excludeTypes.length==1?" and m.eventType.reference!="+exclude:" and m.eventType.reference not in ("+exclude+")":""))
+                    (exclude!=null?excludeTypes.length==1?" and m.event.class!="+exclude:" and m.event.class not in ("+exclude+")":""))
                     .setLong("locPermId", location.getPermanentId())
                     .setDate("startDate", start.getTime())
                     .setDate("endDate", end.getTime())
@@ -168,15 +170,8 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
             if (roomAvailability==null || excludeTypes==null || excludeTypes.length==0) return roomAvailability;
             TreeSet<TimeBlock> ret = new TreeSet();
             blocks: for (TimeBlock block : roomAvailability) {
-                String ref = ((MeetingTimeBlock)block).getEventRef();
-                for (int i=0;i<excludeTypes.length;i++) {
-                    if (sFinalExamType.equals(excludeTypes[i]) && EventType.sEventTypeFinalExam.equals(ref))
-                        continue blocks;
-                    if (sEveningExamType.equals(excludeTypes[i]) && EventType.sEventTypeEveningExam.equals(ref))
-                        continue blocks;
-                    if (sClassType.equals(excludeTypes[i]) && EventType.sEventTypeClass.equals(ref))
-                        continue blocks;
-                }
+                for (int i=0;i<excludeTypes.length;i++)
+                    if (excludeTypes[i].equals(block.getEventType())) continue blocks;
                 ret.add(block);
             }
             return ret;
@@ -196,20 +191,18 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
     
     public static class MeetingTimeBlock implements TimeBlock, Comparable<TimeBlock> {
         Long iMeetingId;
-        String iEventName, iEventType, iEventRef;
+        String iEventName, iEventType;
         Date iStart, iEnd;
         public MeetingTimeBlock(Meeting m) {
             iMeetingId = m.getUniqueId();
             iEventName = m.getEvent().getEventName();
-            iEventType = m.getEventType().getLabel();
-            iEventRef = m.getEventType().getReference();
+            iEventType = m.getEvent().getEventTypeLabel();
             iStart = m.getStartTime();
             iEnd = m.getStopTime();
         }
         public Long getId() { return iMeetingId; }
         public String getEventName() { return iEventName; }
         public String getEventType() { return iEventType; }
-        public String getEventRef() { return iEventRef; }
         public Date getStartTime() { return iStart; }
         public Date getEndTime() { return iEnd; }
         public String toString() {

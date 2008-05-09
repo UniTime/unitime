@@ -110,7 +110,7 @@ public class RoomSearchAction extends Action {
 			
 			int examType = -1;
 			if ("Exam".equals(roomListForm.getDeptCodeX())) examType = Exam.sExamTypeFinal;
-			if ("EExam".equals(roomListForm.getDeptCodeX())) examType = Exam.sExamTypeEvening;
+			if ("EExam".equals(roomListForm.getDeptCodeX())) examType = Exam.sExamTypeMidterm;
 			
 			if ("Export PDF".equals(request.getParameter("op"))) {
 				RoomListAction.buildPdfWebTable(request, roomListForm, "yes".equals(Settings.getSettingValue(user, Constants.SETTINGS_ROOMS_FEATURES_ONE_COLUMN)),
