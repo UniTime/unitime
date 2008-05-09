@@ -194,10 +194,13 @@ public class ExamInfoModel implements Serializable {
                 iExam = new ExamInfo(exam);
         }
         if (iChange!=null) {
+            iChange.setSelected(exam.getUniqueId());
+            /*
             for (Iterator<ExamAssignmentInfo> i=iChange.getAssignments().iterator();i.hasNext();) {
                 ExamAssignmentInfo a = i.next();
                 if (!a.isValid()) i.remove();
             }
+            */
         }
         iForm.setMinRoomSize(String.valueOf(iExam.getNrStudents()));
         iForm.setMaxRoomSize(String.valueOf(Math.max(50,2*iExam.getNrStudents())));
@@ -362,10 +365,11 @@ public class ExamInfoModel implements Serializable {
                     new boolean[] { true, true, true, true, true, true, true, true});
             ExamAssignmentInfo current = getExamAssignment();
             for (ExamAssignmentInfo period : getPeriods()) {
+                boolean initial = (getExamOldAssignment()!=null && getExamOldAssignment().getPeriodId()!=null && getExamOldAssignment().getPeriodId().equals(period.getPeriodId()));
                 WebTable.WebTableLine line = table.addLine(
                    "onClick=\"document.location='examInfo.do?op=Select&period="+period.getPeriodId()+"';\"",
                    new String[] {
-                        period.getPeriodAbbreviationWithPref(),
+                        (initial?"<u>":"")+period.getPeriodAbbreviationWithPref()+(initial?"</u>":""),
                         period.getDistributionConflictsHtml("<br>"),
                         dc2html(true, period.getNrDirectConflicts(), (current==null?0:period.getNrDirectConflicts()-current.getNrDirectConflicts())),
                         m2d2html(true, period.getNrMoreThanTwoConflicts(), (current==null?0:period.getNrMoreThanTwoConflicts()-current.getNrMoreThanTwoConflicts())),
@@ -598,6 +602,7 @@ public class ExamInfoModel implements Serializable {
         Vector<ExamRoomInfo> rooms = getRooms();
         ExamAssignment examAssignment = (iChange==null?null:iChange.getCurrent(iExam));
         Collection<ExamRoomInfo> assigned = (examAssignment!=null?examAssignment.getRooms():isExamAssigned()?getExamAssignment().getRooms():null);
+        Collection<ExamRoomInfo> original = (getExamOldAssignment()!=null?getExamOldAssignment().getRooms():null);
         if (rooms==null || rooms.isEmpty()) return "";
         Collections.sort(rooms, new Comparator<ExamRoomInfo>() {
             public int compare(ExamRoomInfo r1, ExamRoomInfo r2) {
@@ -683,6 +688,8 @@ public class ExamInfoModel implements Serializable {
             String style = "";
             if (assigned!=null && assigned.contains(room))
                 style += "background-color:rgb(168,187,225);";
+            if (original!=null && original.contains(room))
+                style += "text-decoration:underline;";
             String mouse = 
                 "onMouseOver=\"roomOver(this,"+room.getLocationId()+");\" "+
                 "onMouseOut=\"roomOut("+room.getLocationId()+");\" "+

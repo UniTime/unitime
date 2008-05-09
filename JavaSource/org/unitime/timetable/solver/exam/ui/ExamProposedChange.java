@@ -17,6 +17,7 @@ public class ExamProposedChange implements Serializable, Comparable<ExamProposed
     private Vector<ExamAssignmentInfo> iAssignments = null;
     private Vector<ExamAssignment> iConflicts = null;
     private Hashtable<Long,ExamAssignment> iInitials = null;
+    private Long iSelectedExamId = null; 
     
     private double iValue = 0;
     private int iNrAssigned = 0;
@@ -68,7 +69,7 @@ public class ExamProposedChange implements Serializable, Comparable<ExamProposed
                 iConflicts.remove(conflict); break;
             }
         }
-        if (initial!=null && initial.assignmentEquals(change)) return;
+        //if (initial!=null && initial.assignmentEquals(change)) return;
         if (change.getPeriodId()!=null) {
             iAssignments.add(change); 
             if (initial!=null && initial.getPeriodId()!=null) 
@@ -147,6 +148,10 @@ public class ExamProposedChange implements Serializable, Comparable<ExamProposed
         return Double.compare(getValue(), change.getValue());
     }
     
+    public void setSelected(Long examId) {
+        iSelectedExamId = examId;
+    }
+    
     public String getHtmlTable() {
         String ret = "<table border='0' cellspacing='0' cellpadding='3' width='100%'>";
         ret += "<tr>";
@@ -159,7 +164,11 @@ public class ExamProposedChange implements Serializable, Comparable<ExamProposed
         ret += "</tr>";
         for (ExamAssignment current : iAssignments) {
             ExamAssignment initial = iInitials.get(current.getExamId());
-            ret += "<tr onmouseover=\"this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='hand';this.style.cursor='pointer';\" onmouseout=\"this.style.backgroundColor='transparent';\" onclick=\"document.location='examInfo.do?examId="+current.getExamId()+"&op=Select';\">";
+            String bgColor = (current.getExamId().equals(iSelectedExamId)?"rgb(168,187,225)":null);
+            ret += "<tr "+(bgColor==null?"":"style=\"background-color:"+bgColor+";\" ")+
+            		"onmouseover=\"this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='hand';this.style.cursor='pointer';\" "+
+            		"onmouseout=\"this.style.backgroundColor='"+(bgColor==null?"transparent":bgColor)+"';\" "+
+            		"onclick=\"document.location='examInfo.do?examId="+current.getExamId()+"&op=Select';\">";
             ret += "<td nowrap>";
             ret += "<img src='images/Delete16.gif' border='0' onclick=\"document.location='examInfo.do?delete="+current.getExamId()+"&op=Select';event.cancelBubble=true;\">&nbsp;";
             ret += current.getExamNameHtml();
@@ -175,7 +184,12 @@ public class ExamProposedChange implements Serializable, Comparable<ExamProposed
             if (initial==null)
                 ret += "<font color='"+PreferenceLevel.prolog2color("P")+"'><i>not-assigned</i></font> &rarr; ";
             ret += current.getRoomsNameWithPref(", ");
-            if (current.getNrRooms()==0 && current.getMaxRooms()>0) ret += "<i>Select below ...</i>";
+            if (current.getNrRooms()==0 && current.getMaxRooms()>0) {
+                if (current.getExamId().equals(iSelectedExamId))
+                    ret += "<i>Select below ...</i>";
+                else
+                    ret += "<i><font color='red'>Not selected ...</font></i>";
+            }
             ret += "</td><td nowrap>";
             ret += ClassAssignmentDetails.dispNumberShort(false,(initial==null?0:initial.getPlacementNrDirectConflicts()), current.getPlacementNrDirectConflicts());
             ret += "</td><td nowrap>";
@@ -187,7 +201,11 @@ public class ExamProposedChange implements Serializable, Comparable<ExamProposed
             ret += "</td></tr>";
         }
         for (ExamAssignment conflict : iConflicts) {
-            ret += "<tr onmouseover=\"this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='hand';this.style.cursor='pointer';\" onmouseout=\"this.style.backgroundColor='transparent';\" onclick=\"document.location='examInfo.do?examId="+conflict.getExamId()+"&op=Select';\">";
+            String bgColor = (conflict.getExamId().equals(iSelectedExamId)?"rgb(168,187,225)":null);
+            ret += "<tr "+(bgColor==null?"":"style=\"background-color:"+bgColor+";\" ")+
+                "onmouseover=\"this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='hand';this.style.cursor='pointer';\" "+
+                "onmouseout=\"this.style.backgroundColor='"+(bgColor==null?"transparent":bgColor)+"';\" "+
+                "onclick=\"document.location='examInfo.do?examId="+conflict.getExamId()+"&op=Select';\">";
             ret += "<td nowrap>";
             ret += conflict.getExamNameHtml();
             ret += "</td><td nowrap>";
