@@ -35,7 +35,7 @@ public class FinalExamEvent extends BaseFinalExamEvent {
 
 /*[CONSTRUCTOR MARKER END]*/
 	
-	public String getEventTypeLabel() { return sEventTypes[sEventTypeFinalExam]; }
+	public int getEventType() { return sEventTypeFinalExam; }
 
 
 }
