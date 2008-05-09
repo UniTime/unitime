@@ -6,7 +6,7 @@ import org.unitime.timetable.model.base.BaseExamEvent;
 
 
 
-public class ExamEvent extends BaseExamEvent {
+public abstract class ExamEvent extends BaseExamEvent {
 	private static final long serialVersionUID = 1L;
 
 /*[CONSTRUCTOR MARKER BEGIN]*/

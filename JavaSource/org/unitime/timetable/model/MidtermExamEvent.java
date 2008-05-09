@@ -34,7 +34,7 @@ public class MidtermExamEvent extends BaseMidtermExamEvent {
 	}
 
 /*[CONSTRUCTOR MARKER END]*/
-
-	public String getEventTypeLabel() { return sEventTypes[sEventTypeMidtermExam]; }
+	
+	public int getEventType() { return sEventTypeMidtermExam; }
 
 }
