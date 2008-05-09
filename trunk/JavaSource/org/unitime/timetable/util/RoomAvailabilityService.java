@@ -156,6 +156,7 @@ public class RoomAvailabilityService implements RoomAvailabilityInterface {
     protected Document createRequest(CacheElement cache) {
         Document request = DocumentHelper.createDocument();
         Element params = request.addElement("parameters");
+        params.addAttribute("created", new Date().toString());
         params.addElement("year").addAttribute("value", cache.getYear());
         params.addElement("term").addAttribute("value", cache.getTerm());
         params.addElement("campus").addAttribute("value", cache.getCampus());
