@@ -54,7 +54,6 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
 	public Meeting (
 		java.lang.Long uniqueId,
 		org.unitime.timetable.model.Event event,
-		org.unitime.timetable.model.EventType eventType,
 		java.util.Date meetingDate,
 		java.lang.Integer startPeriod,
 		java.lang.Integer stopPeriod,
@@ -63,7 +62,6 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
 		super (
 			uniqueId,
 			event,
-			eventType,
 			meetingDate,
 			startPeriod,
 			stopPeriod,
@@ -76,7 +74,6 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
 	public Object clone()  {
 		Meeting newMeeting = new Meeting();
 		newMeeting.setClassCanOverride(isClassCanOverride());
-		newMeeting.setEventType(getEventType());
 		newMeeting.setLocationPermanentId(getLocationPermanentId());
 		newMeeting.setMeetingDate(getMeetingDate());
 		newMeeting.setStartOffset(getStartOffset());

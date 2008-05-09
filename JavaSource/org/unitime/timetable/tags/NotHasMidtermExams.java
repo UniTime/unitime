@@ -22,7 +22,7 @@ package org.unitime.timetable.tags;
 /**
  * @author Tomas Muller
  */
-public class NotHasEveningExams extends HasEveningExams {
+public class NotHasMidtermExams extends HasMidtermExams {
     
     public boolean includeContent() {
         return !super.includeContent();

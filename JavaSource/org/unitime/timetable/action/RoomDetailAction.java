@@ -46,7 +46,7 @@ import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
-import org.unitime.timetable.model.EveningPeriodPreferenceModel;
+import org.unitime.timetable.model.MidtermPeriodPreferenceModel;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.NonUniversityLocation;
@@ -211,7 +211,7 @@ public class RoomDetailAction extends Action {
 		
 		//set location information in form
 		roomDetailForm.setExamEnabled(location.isExamEnabled(Exam.sExamTypeFinal));
-		roomDetailForm.setExamEEnabled(location.isExamEnabled(Exam.sExamTypeEvening));
+		roomDetailForm.setExamEEnabled(location.isExamEnabled(Exam.sExamTypeMidterm));
 		roomDetailForm.setExamCapacity(location.getExamCapacity());
 		
         if (location.isExamEnabled(Exam.sExamTypeFinal) && !location.getExamPreferences(Exam.sExamTypeFinal).isEmpty()) {
@@ -223,18 +223,18 @@ public class RoomDetailAction extends Action {
             roomDetailForm.setExamPref(rttPx.print(false, timeVertical, true, false));
         }
         
-        if (Exam.hasEveningExams(location.getSession().getUniqueId()) && location.isExamEnabled(Exam.sExamTypeEvening) && !location.getExamPreferences(Exam.sExamTypeEvening).isEmpty()) {
-            EveningPeriodPreferenceModel epx = new EveningPeriodPreferenceModel(location.getSession());
+        if (Exam.hasMidtermExams(location.getSession().getUniqueId()) && location.isExamEnabled(Exam.sExamTypeMidterm) && !location.getExamPreferences(Exam.sExamTypeMidterm).isEmpty()) {
+            MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(location.getSession());
             if (epx.canDo()) {
                 epx.load(location);
                 roomDetailForm.setExamEPref(epx.print(false));
             } else {
-                PeriodPreferenceModel px = new PeriodPreferenceModel(location.getSession(), Exam.sExamTypeEvening);
+                PeriodPreferenceModel px = new PeriodPreferenceModel(location.getSession(), Exam.sExamTypeMidterm);
                 px.setAllowRequired(false);
                 px.load(location);
                 RequiredTimeTable rttPx = new RequiredTimeTable(px);
                 rttPx.setName("PeriodEPrefs");
-                if (!location.getExamPreferences(Exam.sExamTypeEvening).isEmpty())
+                if (!location.getExamPreferences(Exam.sExamTypeMidterm).isEmpty())
                     roomDetailForm.setExamEPref(rttPx.print(false, timeVertical, true, false));
             }
         } 

@@ -19,6 +19,7 @@
 */
 package org.unitime.commons.hibernate.util;
 
+import java.sql.Connection;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Map;
@@ -30,9 +31,9 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.MappingException;
-import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
+import org.hibernate.engine.SessionFactoryImplementor;
 import org.hibernate.mapping.Formula;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Property;
@@ -289,11 +290,10 @@ public class HibernateUtil {
     public static String getConnectionUrl() {
         if (sConnectionUrl==null) {
             try {
-                Session session = (new _BaseRootDAO() {
-                    protected Class getReferenceClass() { return null; }
-                }).createNewSession();
-                sConnectionUrl = session.connection().getMetaData().getURL();
-                session.close();
+                SessionFactoryImplementor hibSessionFactory = (SessionFactoryImplementor)new _RootDAO().getSession().getSessionFactory();
+                Connection connection = hibSessionFactory.getConnectionProvider().getConnection();
+                sConnectionUrl = connection.getMetaData().getURL();
+                hibSessionFactory.getConnectionProvider().closeConnection(connection);
             } catch (Exception e) {
                 sLog.error("Unable to get connection string, reason: "+e.getMessage(),e);
             }

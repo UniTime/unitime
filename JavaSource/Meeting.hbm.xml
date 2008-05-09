@@ -48,14 +48,6 @@
 			not-null="true"
 		/>
 
-		<many-to-one 
-			name="eventType" 
-			class="EventType" 
-			column="EVENT_TYPE" 
-			foreign-key="fk_meeting_event_type"
-			not-null="true"
-		/>
-        
 		<property
 			name="meetingDate"
 			column="MEETING_DATE"

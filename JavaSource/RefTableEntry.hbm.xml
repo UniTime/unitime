@@ -222,13 +222,5 @@
 		 		not-null="true"		 		
 		 		/>
 		</union-subclass>
-		
-		<union-subclass
-			name="EventType"
-			table="EVENT_TYPE"
-			abstract ="false"
-			>
-		</union-subclass>
-
 	</class>	
 </hibernate-mapping>

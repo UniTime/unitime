@@ -19,14 +19,10 @@
 */
 package org.unitime.timetable.model;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TreeMap;
 
-import org.hibernate.HibernateException;
 import org.hibernate.criterion.Restrictions;
 import org.unitime.timetable.model.base.BaseGlobalRoomFeature;
 import org.unitime.timetable.model.dao.GlobalRoomFeatureDAO;
@@ -67,30 +63,6 @@ public class GlobalRoomFeature extends BaseGlobalRoomFeature {
 	
 	public static String featureTypeDisplayString() {
 		return "Global";		
-	}
-
-	public static TreeMap sisFeatures () throws HibernateException, SQLException {
-		if (sisFeatureMap == null) {
-			sisFeatureMap = new TreeMap();
-			GlobalRoomFeatureDAO d = new GlobalRoomFeatureDAO();
-			PreparedStatement stmt = d.getSession().connection().prepareStatement(
-				"SELECT AL1.REFERENCE reference, AL1.LABEL label " +
-				"FROM ADMIN.VENUE_FEATURE_TYPE@siq AL1 " + 
-				"WHERE (AL1.CATEGORY='room')" +
-				"AND (AL1.FIRST_EFFECTIVE_DATE<=SYSDATE AND (AL1.LAST_EFFECTIVE_DATE IS NULL OR AL1.LAST_EFFECTIVE_DATE >= SYSDATE)) " +
-				"ORDER BY label");
-			ResultSet r = stmt.executeQuery();
-			while (r.next()) {
-				sisFeatureMap.put (r.getString("reference"), r.getString("label"));
-			}
-			r.close();
-			stmt.close();
-		}
-	return sisFeatureMap;
-	}
-	
-	public String sisFeatureDisplayString() throws HibernateException, SQLException {
-		return (String) sisFeatures().get(this.getSisReference());
 	}
 
 	/**

@@ -66,7 +66,7 @@ public class RoomDeptEditAction extends Action {
 			    myForm.setExamType(Exam.sExamTypeFinal);
 			} else if ("EExam".equalsIgnoreCase(deptCode)) { 
                 myForm.setId(null);
-                myForm.setExamType(Exam.sExamTypeEvening);
+                myForm.setExamType(Exam.sExamTypeMidterm);
 			} else {
 			    d = Department.findByDeptCode(deptCode, sessionId);
 			    myForm.setId(d.getUniqueId());
@@ -81,7 +81,7 @@ public class RoomDeptEditAction extends Action {
                 myForm.setExamType(Exam.sExamTypeFinal);
             } else if ("EExam".equalsIgnoreCase(id)) { 
                 myForm.setId(null);
-                myForm.setExamType(Exam.sExamTypeEvening);
+                myForm.setExamType(Exam.sExamTypeMidterm);
             } else {
                 d = new DepartmentDAO().get(Long.valueOf(id));
                 myForm.setId(d.getUniqueId());
@@ -107,8 +107,8 @@ public class RoomDeptEditAction extends Action {
             myForm.setName(d.getDeptCode()+" "+d.getName());
         else if (examType==Exam.sExamTypeFinal)
             myForm.setName("Final Examination Rooms");
-        else if (examType==Exam.sExamTypeEvening)
-            myForm.setName("Evening Examination Rooms");
+        else if (examType==Exam.sExamTypeMidterm)
+            myForm.setName("Midterm Examination Rooms");
         else
             myForm.setName("Unknown");
 

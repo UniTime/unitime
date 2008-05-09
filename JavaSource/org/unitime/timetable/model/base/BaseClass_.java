@@ -601,9 +601,6 @@ public abstract class BaseClass_ extends org.unitime.timetable.model.PreferenceG
 	}
 
 
-
-
-
 	public boolean equals (Object obj) {
 		if (null == obj) return false;
 		if (!(obj instanceof org.unitime.timetable.model.Class_)) return false;

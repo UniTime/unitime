@@ -363,14 +363,14 @@
 
 
 	<tag>
-		<name>hasEveningExams</name>
-		<tag-class>org.unitime.timetable.tags.HasEveningExams</tag-class>
+		<name>hasMidtermExams</name>
+		<tag-class>org.unitime.timetable.tags.HasMidtermExams</tag-class>
 		<body-content>JSP</body-content>
 	</tag>
 
 	<tag>
-		<name>notHasEveningExams</name>
-		<tag-class>org.unitime.timetable.tags.NotHasEveningExams</tag-class>
+		<name>notHasMidtermExams</name>
+		<tag-class>org.unitime.timetable.tags.NotHasMidtermExams</tag-class>
 		<body-content>JSP</body-content>
 	</tag>
 </taglib>

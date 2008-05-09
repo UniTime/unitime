@@ -220,11 +220,10 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
         if (hasCourseExam && !hasSectionExam) message = ""; // Has other exam
         else if (!hasSectionExam && !clazz.getSchedulingSubpart().getItype().isOrganized()) message = "Not organized instructional type";
         else {
-            Event classEvent = Event.findClassEvent(clazz.getUniqueId());
-            if (classEvent==null || classEvent.getMeetings().isEmpty()) {
+            if (clazz.getEvent()==null || clazz.getEvent().getMeetings().isEmpty()) {
                 message = "Class not organized";
-            } else if (!isFullTerm(classEvent)) {
-                TreeSet meetings = new TreeSet(classEvent.getMeetings());
+            } else if (!isFullTerm(clazz.getEvent())) {
+                TreeSet meetings = new TreeSet(clazz.getEvent().getMeetings());
                 Meeting first = (Meeting)meetings.first();
                 Meeting last = (Meeting)meetings.last();
                 SimpleDateFormat df = new SimpleDateFormat("MM/dd");
@@ -243,7 +242,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
             if (hasCourseExam && !hasSectionExam) message = ""; // Has other exam
             else if (!hasSectionExam && !same.firstElement().getSchedulingSubpart().getItype().isOrganized()) message = "Not organized instructional type";
             else {
-                Event classEvent = Event.findClassEvent(same.firstElement().getUniqueId());
+                Event classEvent = same.firstElement().getEvent();
                 if (classEvent==null || classEvent.getMeetings().isEmpty()) {
                     message = "Class not organized";
                 } else if (!isFullTerm(classEvent)) {

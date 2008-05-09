@@ -42,7 +42,7 @@
         
 		<many-to-one 
 			name="event" 
-			class="Event" 
+			class="CourseEvent" 
 			column="EVENT_ID" 
 			foreign-key="fk_event_owner_event"
 			not-null="true"

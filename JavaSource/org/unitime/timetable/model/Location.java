@@ -78,7 +78,7 @@ public abstract class Location extends BaseLocation implements Comparable {
 	
 	private static final int sExamLocationTypeNone = 0;
 	private static final int sExamLocationTypeFinal = 1;
-	private static final int sExamLocationTypeEvening = 2;
+	private static final int sExamLocationTypeMidterm = 2;
 	private static final int sExamLocationTypeBoth = 3;
 
 	public int compareTo(Object o) {
@@ -569,8 +569,8 @@ public abstract class Location extends BaseLocation implements Comparable {
     }
 
     public String getExamPreferencesHtml(int examType) {
-        if (examType==Exam.sExamTypeEvening) {
-            EveningPeriodPreferenceModel epx = new EveningPeriodPreferenceModel(getSession());
+        if (examType==Exam.sExamTypeMidterm) {
+            MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(getSession());
             if (epx.canDo()) {
                 epx.load(this);
                 return epx.toString().replaceAll(", ", "<br>");
@@ -589,8 +589,8 @@ public abstract class Location extends BaseLocation implements Comparable {
     }
     
     public String getExamPreferencesAbbreviationHtml(int examType) {
-        if (examType==Exam.sExamTypeEvening) {
-            EveningPeriodPreferenceModel epx = new EveningPeriodPreferenceModel(getSession());
+        if (examType==Exam.sExamTypeMidterm) {
+            MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(getSession());
             if (epx.canDo()) {
                 epx.load(this);
                 return epx.toString().replaceAll(", ", "<br>");
@@ -609,8 +609,8 @@ public abstract class Location extends BaseLocation implements Comparable {
     }
     
     public String getExamPreferencesAbbreviation(int examType) {
-        if (examType==Exam.sExamTypeEvening) {
-            EveningPeriodPreferenceModel epx = new EveningPeriodPreferenceModel(getSession());
+        if (examType==Exam.sExamTypeMidterm) {
+            MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(getSession());
             if (epx.canDo()) {
                 epx.load(this);
                 return epx.toString().replaceAll(", ", "\n");
@@ -633,10 +633,10 @@ public abstract class Location extends BaseLocation implements Comparable {
                     (new LocationDAO()).getSession()
                     .createQuery("select room from Location as room where room.session.uniqueId = :sessionId and room.examType in ("+sExamLocationTypeFinal+","+sExamLocationTypeBoth+")")
                     .setLong("sessionId", sessionId).setCacheable(true).list());
-        case Exam.sExamTypeEvening :
+        case Exam.sExamTypeMidterm :
             return new TreeSet(
                     (new LocationDAO()).getSession()
-                    .createQuery("select room from Location as room where room.session.uniqueId = :sessionId and room.examType in ("+sExamLocationTypeEvening+","+sExamLocationTypeBoth+")")
+                    .createQuery("select room from Location as room where room.session.uniqueId = :sessionId and room.examType in ("+sExamLocationTypeMidterm+","+sExamLocationTypeBoth+")")
                     .setLong("sessionId", sessionId).setCacheable(true).list());
         default :
             return new TreeSet(
@@ -717,8 +717,8 @@ public abstract class Location extends BaseLocation implements Comparable {
         switch (examType) {
         case Exam.sExamTypeFinal :
                 return sExamLocationTypeFinal==getExamType() || sExamLocationTypeBoth==getExamType();
-        case Exam.sExamTypeEvening :
-                return sExamLocationTypeEvening==getExamType() || sExamLocationTypeBoth==getExamType();
+        case Exam.sExamTypeMidterm :
+                return sExamLocationTypeMidterm==getExamType() || sExamLocationTypeBoth==getExamType();
         }
         return false;
     }
@@ -726,13 +726,13 @@ public abstract class Location extends BaseLocation implements Comparable {
         switch (examType) {
         case Exam.sExamTypeFinal :
                 setExamType(
-                        (isExamEnabled(Exam.sExamTypeEvening)?sExamLocationTypeEvening:0)+
+                        (isExamEnabled(Exam.sExamTypeMidterm)?sExamLocationTypeMidterm:0)+
                         (enabled?sExamLocationTypeFinal:0));
                 break;
-        case Exam.sExamTypeEvening :
+        case Exam.sExamTypeMidterm :
             setExamType(
                     (isExamEnabled(Exam.sExamTypeFinal)?sExamLocationTypeFinal:0)+
-                    (enabled?sExamLocationTypeEvening:0));
+                    (enabled?sExamLocationTypeMidterm:0));
         }
     }
     

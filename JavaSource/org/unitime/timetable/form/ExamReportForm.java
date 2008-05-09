@@ -51,7 +51,7 @@ public class ExamReportForm extends ActionForm {
 	private int iNrColumns;
 	private int iNrRows;
 	private int iExamType;
-    private boolean iHasEveningExams = false;
+    private boolean iHasMidtermExams = false;
 
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
         ActionErrors errors = new ActionErrors();
@@ -71,7 +71,7 @@ public class ExamReportForm extends ActionForm {
 				iExamType = solver.getProperties().getPropertyInt("Exam.Type", iExamType);
 		} catch (Exception e) {}
         try {
-            iHasEveningExams = Exam.hasEveningExams(Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId());
+            iHasMidtermExams = Exam.hasMidtermExams(Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId());
         } catch (Exception e) {}
 	}
 	
@@ -121,7 +121,7 @@ public class ExamReportForm extends ActionForm {
     public Collection getExamTypes() {
     	Vector ret = new Vector(Exam.sExamTypes.length);
         for (int i=0;i<Exam.sExamTypes.length;i++) {
-            if (i==Exam.sExamTypeEvening && !iHasEveningExams) continue;
+            if (i==Exam.sExamTypeMidterm && !iHasMidtermExams) continue;
             ret.add(new ComboBoxLookup(Exam.sExamTypes[i], String.valueOf(i)));
         }
     	return ret;

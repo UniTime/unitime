@@ -38,7 +38,7 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionPref;
-import org.unitime.timetable.model.EveningPeriodPreferenceModel;
+import org.unitime.timetable.model.MidtermPeriodPreferenceModel;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriodPref;
 import org.unitime.timetable.model.InstrOfferingConfig;
@@ -205,9 +205,9 @@ public class Exams extends BodyTagSupport {
                         if (roomPref.length()>0 && !roomPref.endsWith("<br>")) roomPref+="<br>";
                         roomPref += exam.getEffectivePrefHtmlForPrefType(RoomGroupPref.class);
                         if (roomPref.endsWith("<br>")) roomPref = roomPref.substring(0, roomPref.length()-"<br>".length());
-                        if (timeText || Exam.sExamTypeEvening==exam.getExamType()) {
-                            if (Exam.sExamTypeEvening==exam.getExamType()) {
-                                EveningPeriodPreferenceModel epx = new EveningPeriodPreferenceModel(exam.getSession(), null);
+                        if (timeText || Exam.sExamTypeMidterm==exam.getExamType()) {
+                            if (Exam.sExamTypeMidterm==exam.getExamType()) {
+                                MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(exam.getSession(), null);
                                 if (epx.canDo()) {
                                     epx.load(exam);
                                     perPref+=epx.toString();

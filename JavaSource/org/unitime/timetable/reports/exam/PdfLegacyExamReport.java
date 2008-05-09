@@ -42,7 +42,6 @@ import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.DepartmentalInstructor;
-import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.ExamPeriod;
@@ -101,7 +100,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
     }
     
     public PdfLegacyExamReport(int mode, File file, String title, Session session, int examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws DocumentException, IOException {
-        super(mode, file, title, (examType<0?"":examType==Exam.sExamTypeFinal?"FINAL":"EVENING")+" EXAMINATIONS", title + " -- " + session.getLabel(), session.getLabel());
+        super(mode, file, title, (examType<0?"":examType==Exam.sExamTypeFinal?"FINAL":"MIDTERM")+" EXAMINATIONS", title + " -- " + session.getLabel(), session.getLabel());
         if (subjectArea!=null) setFooter(subjectArea.getSubjectAreaAbbreviation());
         iExams = exams;
         iSession = session;
@@ -225,8 +224,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
             SimpleDateFormat dpf = new SimpleDateFormat("MM/dd");
             Class_ clazz = (Class_)section.getOwner().getOwnerObject();
             Assignment assignment = clazz.getCommittedAssignment();
-            Event event = (assignment==null || assignment.getEvent()==null?Event.findClassEvent(clazz.getUniqueId()):assignment.getEvent());
-            TreeSet meetings = (event==null?null:new TreeSet(event.getMeetings()));
+            TreeSet meetings = (clazz.getEvent()==null?null:new TreeSet(clazz.getEvent().getMeetings()));
             if (meetings!=null && !meetings.isEmpty()) {
                 Date first = ((Meeting)meetings.first()).getMeetingDate();
                 Date last = ((Meeting)meetings.last()).getMeetingDate();
@@ -519,7 +517,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
             } else {
                 sLog.info("Session: "+session);
             }
-            int examType = (ApplicationProperties.getProperty("type","final").equalsIgnoreCase("final")?Exam.sExamTypeFinal:Exam.sExamTypeEvening);
+            int examType = (ApplicationProperties.getProperty("type","final").equalsIgnoreCase("final")?Exam.sExamTypeFinal:Exam.sExamTypeMidterm);
             boolean assgn = "true".equals(System.getProperty("assgn","true"));
             int mode = sModeNormal;
             if ("text".equals(System.getProperty("mode"))) mode = sModeText;
@@ -577,7 +575,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                 if (perSubject) {
                     for (Map.Entry<SubjectArea,Vector<ExamAssignmentInfo>> entry : examsPerSubj.entrySet()) {
                         File file = new File(new File(ApplicationProperties.getProperty("output",".")),
-                            session.getAcademicTerm()+session.getYear()+(examType==Exam.sExamTypeEvening?"evn":"fin")+"_"+reportName+"_"+entry.getKey().getSubjectAreaAbbreviation()+(mode==sModeText?".txt":".pdf"));
+                            session.getAcademicTerm()+session.getYear()+(examType==Exam.sExamTypeMidterm?"evn":"fin")+"_"+reportName+"_"+entry.getKey().getSubjectAreaAbbreviation()+(mode==sModeText?".txt":".pdf"));
                         sLog.info("Generating report "+file+" ("+entry.getKey().getSubjectAreaAbbreviation()+") ...");
                         PdfLegacyExamReport report = (PdfLegacyExamReport)reportClass.getConstructor(int.class, File.class, Session.class, int.class, SubjectArea.class, Collection.class).newInstance(mode, file, session, examType, entry.getKey(), entry.getValue());
                         report.printReport();
@@ -591,7 +589,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                     }
                 } else {
                     File file = new File(new File(ApplicationProperties.getProperty("output",".")),
-                            session.getAcademicTerm()+session.getYear()+(examType==Exam.sExamTypeEvening?"evn":"fin")+"_"+reportName+(mode==sModeText?".txt":".pdf"));
+                            session.getAcademicTerm()+session.getYear()+(examType==Exam.sExamTypeMidterm?"evn":"fin")+"_"+reportName+(mode==sModeText?".txt":".pdf"));
                         sLog.info("Generating report "+file+" ...");
                         PdfLegacyExamReport report = (PdfLegacyExamReport)reportClass.getConstructor(int.class, File.class, Session.class, int.class, SubjectArea.class, Collection.class).newInstance(mode, file, session, examType, null, exams);
                         report.printReport();
@@ -599,7 +597,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                         output.put(reportName+"."+(mode==sModeText?"txt":"pdf"),file);
                         if (report instanceof InstructorExamReport && "true".equals(System.getProperty("email.instructors","false"))) {
                             ireports = ((InstructorExamReport)report).printInstructorReports(
-                                    mode, session.getAcademicTerm()+session.getYear()+(examType==Exam.sExamTypeEvening?"evn":"fin"), new InstructorExamReport.FileGenerator() {
+                                    mode, session.getAcademicTerm()+session.getYear()+(examType==Exam.sExamTypeMidterm?"evn":"fin"), new InstructorExamReport.FileGenerator() {
                                         public File generate(String prefix, String ext) {
                                             int idx = 0;
                                             File file = new File(prefix+"."+ext);
@@ -616,7 +614,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                             });
                         } else if (report instanceof StudentExamReport && "true".equals(System.getProperty("email.students","false"))) {
                             sreports = ((StudentExamReport)report).printStudentReports(
-                                    mode, session.getAcademicTerm()+session.getYear()+(examType==Exam.sExamTypeEvening?"evn":"fin"), new InstructorExamReport.FileGenerator() {
+                                    mode, session.getAcademicTerm()+session.getYear()+(examType==Exam.sExamTypeMidterm?"evn":"fin"), new InstructorExamReport.FileGenerator() {
                                         public File generate(String prefix, String ext) {
                                             int idx = 0;
                                             File file = new File(prefix+"."+ext);
@@ -635,7 +633,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                 }
             }
             if ("true".equals(System.getProperty("email","false"))) {
-                sendEmails(session.getAcademicTerm()+session.getYear()+(examType==Exam.sExamTypeEvening?"evn":"fin"), output, outputPerSubject, ireports, sreports);
+                sendEmails(session.getAcademicTerm()+session.getYear()+(examType==Exam.sExamTypeMidterm?"evn":"fin"), output, outputPerSubject, ireports, sreports);
             }
             sLog.info("Done.");
         } catch (Exception e) {

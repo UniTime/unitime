@@ -5,13 +5,17 @@ import java.util.Collection;
 import java.util.Date;
 
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Session;
 
 public interface RoomAvailabilityInterface {
-    public static final String sEveningExamType = ApplicationProperties.getProperty("tmtbl.room.availability.eventType.eveningExam","Evening Exam");
-    public static final String sFinalExamType = ApplicationProperties.getProperty("tmtbl.room.availability.eventType.finalExam","Final Exam");
-    public static final String sClassType = ApplicationProperties.getProperty("tmtbl.room.availability.eventType.class","Course Activity");
+    public static final String sMidtermExamType = 
+        ApplicationProperties.getProperty("tmtbl.room.availability.eventType.midtermExam",Event.sEventTypes[Event.sEventTypeMidtermExam]);
+    public static final String sFinalExamType = 
+        ApplicationProperties.getProperty("tmtbl.room.availability.eventType.finalExam",Event.sEventTypes[Event.sEventTypeFinalExam]);
+    public static final String sClassType = 
+        ApplicationProperties.getProperty("tmtbl.room.availability.eventType.class",Event.sEventTypes[Event.sEventTypeClass]);
 
     public String getTimeStamp(Date startTime, Date endTime);
     public Collection<TimeBlock> getRoomAvailability(Location location, Date startTime, Date endTime, String[] excludeTypes);

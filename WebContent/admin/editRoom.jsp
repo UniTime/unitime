@@ -246,9 +246,9 @@
 			<TD nowrap>Examination Room:</TD>
 			<TD>
 				Final: <html:checkbox property="examEnabled" onchange="document.getElementById('finPref').style.display=(this.checked?null:'none');"/>
-				<tt:hasEveningExams>
-				, Evening: <html:checkbox property="examEEnabled" onchange="document.getElementById('evenPref').style.display=(this.checked?null:'none');"/>
-				</tt:hasEveningExams>
+				<tt:hasMidtermExams>
+				, Midterm: <html:checkbox property="examEEnabled" onchange="document.getElementById('evenPref').style.display=(this.checked?null:'none');"/>
+				</tt:hasMidtermExams>
 			</TD>
 		</TR>
 
@@ -285,7 +285,7 @@
 			<logic:notEqual name="<%=frmName%>" property="examEEnabled" value="true">
 				<TR id='evenPref' style='display:none;'>
 			</logic:notEqual>
-				<TD nowrap valign="top">Evening Examination<br>Periods Preferences:</TD>
+				<TD nowrap valign="top">Midterm Examination<br>Periods Preferences:</TD>
 				<TD>
 					<bean:write scope="request" name="PeriodEPrefs" filter="false"/>
 				</TD>

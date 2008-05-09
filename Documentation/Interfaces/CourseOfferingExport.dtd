@@ -111,7 +111,7 @@
 <!ATTLIST exam note CDATA #IMPLIED >
 <!ATTLIST exam length NMTOKEN #IMPLIED >
 <!ATTLIST exam seatingType ( normal | exam) #IMPLIED >
-<!ATTLIST exam type ( final | evening) #REQUIRED >
+<!ATTLIST exam type ( final | midterm) #REQUIRED >
 
 <!ELEMENT period EMPTY >
 <!ATTLIST period date CDATA #REQUIRED >
@@ -138,4 +138,4 @@
 <!ATTLIST exams dateFormat CDATA #IMPLIED >
 <!ATTLIST exams timeFormat CDATA #IMPLIED >
 <!ATTLIST exams created CDATA #IMPLIED >
-<!ATTLIST exams type ( all | final | evening) #REQUIRED >
+<!ATTLIST exams type ( all | final | midterm) #REQUIRED >

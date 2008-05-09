@@ -63,7 +63,6 @@ public abstract class BaseMeeting  implements Serializable {
 	public BaseMeeting (
 		java.lang.Long uniqueId,
 		org.unitime.timetable.model.Event event,
-		org.unitime.timetable.model.EventType eventType,
 		java.util.Date meetingDate,
 		java.lang.Integer startPeriod,
 		java.lang.Integer stopPeriod,
@@ -71,7 +70,6 @@ public abstract class BaseMeeting  implements Serializable {
 
 		this.setUniqueId(uniqueId);
 		this.setEvent(event);
-		this.setEventType(eventType);
 		this.setMeetingDate(meetingDate);
 		this.setStartPeriod(startPeriod);
 		this.setStopPeriod(stopPeriod);
@@ -100,7 +98,6 @@ public abstract class BaseMeeting  implements Serializable {
 
 	// many to one
 	private org.unitime.timetable.model.Event event;
-	private org.unitime.timetable.model.EventType eventType;
 
 
 
@@ -276,24 +273,6 @@ public abstract class BaseMeeting  implements Serializable {
 	public void setEvent (org.unitime.timetable.model.Event event) {
 		this.event = event;
 	}
-
-
-
-	/**
-	 * Return the value associated with the column: EVENT_TYPE
-	 */
-	public org.unitime.timetable.model.EventType getEventType () {
-		return eventType;
-	}
-
-	/**
-	 * Set the value related to the column: EVENT_TYPE
-	 * @param eventType the EVENT_TYPE value
-	 */
-	public void setEventType (org.unitime.timetable.model.EventType eventType) {
-		this.eventType = eventType;
-	}
-
 
 
 

@@ -27,7 +27,7 @@ import org.unitime.timetable.model.Session;
 /**
  * @author Tomas Muller
  */
-public class HasFinalExams extends HasEveningExams {
+public class HasFinalExams extends HasMidtermExams {
 
     public boolean includeContent() {
         try {

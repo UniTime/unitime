@@ -56,7 +56,7 @@ public abstract class BaseRelatedCourseInfo  implements Serializable {
 	 */
 	public BaseRelatedCourseInfo (
 		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Event event,
+		org.unitime.timetable.model.CourseEvent event,
 		org.unitime.timetable.model.CourseOffering course,
 		java.lang.Long ownerId,
 		java.lang.Integer ownerType) {
@@ -83,7 +83,7 @@ public abstract class BaseRelatedCourseInfo  implements Serializable {
 	private java.lang.Integer ownerType;
 
 	// many to one
-	private org.unitime.timetable.model.Event event;
+	private org.unitime.timetable.model.CourseEvent event;
 	private org.unitime.timetable.model.CourseOffering course;
 
 
@@ -147,7 +147,7 @@ public abstract class BaseRelatedCourseInfo  implements Serializable {
 	/**
 	 * Return the value associated with the column: EVENT_ID
 	 */
-	public org.unitime.timetable.model.Event getEvent () {
+	public org.unitime.timetable.model.CourseEvent getEvent () {
 		return event;
 	}
 
@@ -155,7 +155,7 @@ public abstract class BaseRelatedCourseInfo  implements Serializable {
 	 * Set the value related to the column: EVENT_ID
 	 * @param event the EVENT_ID value
 	 */
-	public void setEvent (org.unitime.timetable.model.Event event) {
+	public void setEvent (org.unitime.timetable.model.CourseEvent event) {
 		this.event = event;
 	}
 

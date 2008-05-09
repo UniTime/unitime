@@ -567,15 +567,11 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
         switch (getOwnerType()) {
         case sOwnerTypeClass :
             for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
-                "select e.student.uniqueId, m from Meeting m inner join m.event.relatedCourses r, StudentClassEnrollment f, StudentClassEnrollment e inner join e.clazz c, ExamPeriod p " +
-                "where c.uniqueId = :examOwnerId and " +
-                "m.eventType.reference=:eventType and r.ownerType=:classType and "+
-                "e.student=f.student and f.clazz.uniqueId = r.ownerId and "+
+                "select e.student.uniqueId, m from ClassEvent ce inner join ce.meetings m inner join ce.clazz.studentEnrollments f, StudentClassEnrollment e inner join e.clazz c, ExamPeriod p " +
+                "where c.uniqueId = :examOwnerId and e.student=f.student and "+
                 "p.uniqueId=:periodId and p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
                 "p.session=co.subjectArea.session and p.session.examBeginDate+p.dateOffset = m.meetingDate")
                 .setLong("examOwnerId", getOwnerId())
-                .setString("eventType", EventType.sEventTypeClass)
-                .setInteger("classType", ExamOwner.sOwnerTypeClass)
                 .setInteger("travelTime", Constants.EXAM_TRAVEL_TIME_SLOTS)
                 .setLong("periodId", periodId)
                 .setCacheable(true).iterate(); i.hasNext();) {
@@ -589,15 +585,11 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
             break;
         case sOwnerTypeConfig :
             for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
-                    "select e.student.uniqueId, m from Meeting m inner join m.event.relatedCourses r, StudentClassEnrollment f, StudentClassEnrollment e inner join e.clazz c, ExamPeriod p " +
-                    "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :examOwnerId and " +
-                    "m.eventType.reference=:eventType and r.ownerType=:classType and "+
-                    "e.student=f.student and f.clazz.uniqueId = r.ownerId and "+
+                    "select e.student.uniqueId, m from ClassEvent ce inner join ce.meetings m inner join ce.clazz.studentEnrollments f, StudentClassEnrollment e inner join e.clazz c, ExamPeriod p " +
+                    "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :examOwnerId and e.student=f.student and "+
                     "p.uniqueId=:periodId and p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
                     "p.session=co.subjectArea.session and p.session.examBeginDate+p.dateOffset = m.meetingDate")
                     .setLong("examOwnerId", getOwnerId())
-                    .setString("eventType", EventType.sEventTypeClass)
-                    .setInteger("classType", ExamOwner.sOwnerTypeClass)
                     .setInteger("travelTime", Constants.EXAM_TRAVEL_TIME_SLOTS)
                     .setLong("periodId", periodId)
                     .setCacheable(true).iterate(); i.hasNext();) {
@@ -611,15 +603,11 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
             break;
         case sOwnerTypeCourse :
             for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
-                    "select e.student.uniqueId, m from Meeting m inner join m.event.relatedCourses r, StudentClassEnrollment f, StudentClassEnrollment e inner join e.courseOffering co, ExamPeriod p " +
-                    "where co.uniqueId = :examOwnerId and " +
-                    "m.eventType.reference=:eventType and r.ownerType=:classType and "+
-                    "e.student=f.student and f.clazz.uniqueId = r.ownerId and "+
+                    "select e.student.uniqueId, m from ClassEvent ce inner join ce.meetings m inner join ce.clazz.studentEnrollments f, StudentClassEnrollment e inner join e.courseOffering co, ExamPeriod p " +
+                    "where co.uniqueId = :examOwnerId and e.student=f.student and "+
                     "p.uniqueId=:periodId and p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
                     "p.session=co.subjectArea.session and p.session.examBeginDate+p.dateOffset = m.meetingDate")
                     .setLong("examOwnerId", getOwnerId())
-                    .setString("eventType", EventType.sEventTypeClass)
-                    .setInteger("classType", ExamOwner.sOwnerTypeClass)
                     .setInteger("travelTime", Constants.EXAM_TRAVEL_TIME_SLOTS)
                     .setLong("periodId", periodId)
                     .setCacheable(true).iterate(); i.hasNext();) {
@@ -633,15 +621,11 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
             break;
         case sOwnerTypeOffering :
             for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
-                    "select e.student.uniqueId, m from Meeting m inner join m.event.relatedCourses r, StudentClassEnrollment f, StudentClassEnrollment e inner join e.courseOffering co, ExamPeriod p " +
-                    "where co.instructionalOffering.uniqueId = :examOwnerId and " +
-                    "m.eventType.reference=:eventType and r.ownerType=:classType and "+
-                    "e.student=f.student and f.clazz.uniqueId = r.ownerId and "+
+                    "select e.student.uniqueId, m from ClassEvent ce inner join ce.meetings m inner join ce.clazz.studentEnrollments f, StudentClassEnrollment e inner join e.courseOffering co, ExamPeriod p " +
+                    "where co.instructionalOffering.uniqueId = :examOwnerId and e.student=f.student and "+
                     "p.uniqueId=:periodId and p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
                     "p.session=co.subjectArea.session and p.session.examBeginDate+p.dateOffset = m.meetingDate")
                     .setLong("examOwnerId", getOwnerId())
-                    .setString("eventType", EventType.sEventTypeClass)
-                    .setInteger("classType", ExamOwner.sOwnerTypeClass)
                     .setInteger("travelTime", Constants.EXAM_TRAVEL_TIME_SLOTS)
                     .setLong("periodId", periodId)
                     .setCacheable(true).iterate(); i.hasNext();) {
@@ -826,7 +810,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
      * e ... class external id
      * f ... course external id
      * o ... offering external id
-     * t ... exam type suffix (tmtbl.exam.name.type.final and tmtbl.exam.name.type.evening)
+     * t ... exam type suffix (tmtbl.exam.name.type.Final and tmtbl.exam.name.type.Midterm)
      * I ... itype code
      * p ... itype parent abbv
      * P ... itype parent code

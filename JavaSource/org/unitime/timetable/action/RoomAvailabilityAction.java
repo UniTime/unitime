@@ -124,7 +124,7 @@ public class RoomAvailabilityAction extends Action {
             for (Iterator i=Location.findAllExamLocations(sessionId, form.getExamType()).iterator();i.hasNext();) {
                 Location location = (Location)i.next();
                 Collection<TimeBlock> events = ra.getRoomAvailability(location, bounds[0], bounds[1], 
-                        new String[]{(form.getExamType()==Exam.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sEveningExamType)});
+                        new String[]{(form.getExamType()==Exam.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sMidtermExamType)});
                 if (events==null) continue;
                 if (ts==null) ts = ra.getTimeStamp(bounds[0], bounds[1]);
                 for (TimeBlock event : events) {

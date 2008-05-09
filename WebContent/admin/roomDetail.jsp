@@ -156,7 +156,7 @@
 				<TD nowrap>Exam Seating Capacity:</TD><TD width='100%'>
 					<bean:write name="<%=frmName%>" property="examCapacity"/>
 					<logic:equal name="<%=frmName%>" property="examEEnabled" value="true">
-						(Final &amp; Evening Examinations)
+						(Final &amp; Midterm Examinations)
 					</logic:equal>
 					<logic:notEqual name="<%=frmName%>" property="examEEnabled" value="true">
 						(Final Examinations)
@@ -168,7 +168,7 @@
 			<logic:notEqual name="<%=frmName%>" property="examEnabled" value="true">
 				<TR>
 					<TD nowrap>Exam Seating Capacity:</TD><TD width='100%'>
-						<bean:write name="<%=frmName%>" property="examCapacity"/> (Evening Examinations)
+						<bean:write name="<%=frmName%>" property="examCapacity"/> (Midterm Examinations)
 					</TD>
 				</TR>
 			</logic:notEqual>
@@ -323,7 +323,7 @@
 		<logic:equal name="<%=frmName%>" property="examEEnabled" value="true">
 			<logic:notEmpty name="<%=frmName%>" property="examEPref">
 				<TR>
-					<TD colspan='2'><tt:section-title><br>Evening Examination Period Preferences</tt:section-title></TD>
+					<TD colspan='2'><tt:section-title><br>Midterm Examination Period Preferences</tt:section-title></TD>
 				</TR>
 				<TR>
 					<TD colspan='2'>
@@ -334,7 +334,7 @@
 					<TR>
 						<TD colspan="2" align='middle' style='border-top:black 1px dashed'>
 							<font size='-1'><i>
-								Evening Examination Period Preferences table is read-only. To edit this table, please click Edit Room button.
+								Midterm Examination Period Preferences table is read-only. To edit this table, please click Edit Room button.
 							</i></font>
 						</TD>
 					</TR>

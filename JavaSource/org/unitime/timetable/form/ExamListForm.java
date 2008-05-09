@@ -20,7 +20,7 @@ public class ExamListForm extends ActionForm {
     private String iOp = null;
     private Collection iSubjectAreas = null;
     private int iExamType = 0;
-    private boolean iHasEveningExams = false;
+    private boolean iHasMidtermExams = false;
     
     public String getSubjectAreaId() { return iSubjectAreaId; }
     public void setSubjectAreaId(String subjectAreaId) { iSubjectAreaId = subjectAreaId; }
@@ -38,7 +38,7 @@ public class ExamListForm extends ActionForm {
         iSubjectAreaId = null; iCourseNbr = null; iOp = null;
         iExamType = Exam.sExamTypeFinal;
         try {
-            iHasEveningExams = Exam.hasEveningExams(Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId());
+            iHasMidtermExams = Exam.hasMidtermExams(Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId());
         } catch (Exception e) {}
     }
     
@@ -52,7 +52,7 @@ public class ExamListForm extends ActionForm {
     public Collection getExamTypes() {
     	Vector ret = new Vector(Exam.sExamTypes.length);
     	for (int i=0;i<Exam.sExamTypes.length;i++) {
-    	    if (i==Exam.sExamTypeEvening && !iHasEveningExams) continue;
+    	    if (i==Exam.sExamTypeMidterm && !iHasMidtermExams) continue;
     		ret.add(new ComboBoxLookup(Exam.sExamTypes[i], String.valueOf(i)));
     	}
     	return ret;

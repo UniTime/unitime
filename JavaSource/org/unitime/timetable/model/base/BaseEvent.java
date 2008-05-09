@@ -1,22 +1,3 @@
-/* 
- * UniTime 3.1 (University Course Timetabling & Student Sectioning Application)
- * Copyright (C) 2008, UniTime.org
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- */ 
- 
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
@@ -57,12 +38,10 @@ public abstract class BaseEvent  implements Serializable {
 	 */
 	public BaseEvent (
 		java.lang.Long uniqueId,
-		org.unitime.timetable.model.EventType eventType,
 		java.lang.Integer minCapacity,
 		java.lang.Integer maxCapacity) {
 
 		this.setUniqueId(uniqueId);
-		this.setEventType(eventType);
 		this.setMinCapacity(minCapacity);
 		this.setMaxCapacity(maxCapacity);
 		initialize();
@@ -83,13 +62,11 @@ public abstract class BaseEvent  implements Serializable {
 	private java.lang.Integer maxCapacity;
 
 	// many to one
-	private org.unitime.timetable.model.EventType eventType;
 	private org.unitime.timetable.model.EventContact mainContact;
 
 	// collections
 	private java.util.Set additionalContacts;
 	private java.util.Set notes;
-	private java.util.Set relatedCourses;
 	private java.util.Set meetings;
 
 
@@ -168,23 +145,6 @@ public abstract class BaseEvent  implements Serializable {
 
 
 	/**
-	 * Return the value associated with the column: EVENT_TYPE
-	 */
-	public org.unitime.timetable.model.EventType getEventType () {
-		return eventType;
-	}
-
-	/**
-	 * Set the value related to the column: EVENT_TYPE
-	 * @param eventType the EVENT_TYPE value
-	 */
-	public void setEventType (org.unitime.timetable.model.EventType eventType) {
-		this.eventType = eventType;
-	}
-
-
-
-	/**
 	 * Return the value associated with the column: main_contact_id
 	 */
 	public org.unitime.timetable.model.EventContact getMainContact () {
@@ -236,28 +196,6 @@ public abstract class BaseEvent  implements Serializable {
 	public void addTonotes (org.unitime.timetable.model.EventNote eventNote) {
 		if (null == getNotes()) setNotes(new java.util.HashSet());
 		getNotes().add(eventNote);
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: relatedCourses
-	 */
-	public java.util.Set getRelatedCourses () {
-		return relatedCourses;
-	}
-
-	/**
-	 * Set the value related to the column: relatedCourses
-	 * @param relatedCourses the relatedCourses value
-	 */
-	public void setRelatedCourses (java.util.Set relatedCourses) {
-		this.relatedCourses = relatedCourses;
-	}
-
-	public void addTorelatedCourses (org.unitime.timetable.model.RelatedCourseInfo relatedCourseInfo) {
-		if (null == getRelatedCourses()) setRelatedCourses(new java.util.HashSet());
-		getRelatedCourses().add(relatedCourseInfo);
 	}
 
 

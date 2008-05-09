@@ -25,8 +25,9 @@
 <hibernate-mapping package="org.unitime.timetable.model">
 	<class
 		name="Event"
-		abstract="false"
-		table="EVENT">
+		abstract="true"
+		table="EVENT"
+		discriminator-value="-1">
 
 		<cache include="non-lazy" usage="read-write"/>
 
@@ -40,21 +41,19 @@
             
         </id>
         
-		<many-to-one 
-			name="eventType" 
-			class="EventType" 
-			column="EVENT_TYPE" 
-			foreign-key="fk_event_event_type"
-			not-null="true"
-		/>
+        <discriminator
+    		column="EVENT_TYPE"
+    		type="java.lang.Integer"
+    	/>
         
-		<property
+        <property
 			name="eventName"
 			column="EVENT_NAME"
 			type="java.lang.String"
 			length="100"
 			not-null="false"
 		/>
+		
  		<property
 			name="minCapacity"
 			column="MIN_CAPACITY"
@@ -101,18 +100,7 @@
 			<key column="EVENT_ID"/>
 			<one-to-many class="EventNote"/>
 		</set>
-
-		<set
-			name="relatedCourses"
-			lazy="true"
-			cascade="all-delete-orphan" 
-			inverse="true"
-			>
-			<cache include="non-lazy" usage="read-write"/>
-			<key column="EVENT_ID" foreign-key="fk_event_owner_event"/>
-			<one-to-many class="RelatedCourseInfo"/>
-		</set>			
-			
+		
 		<set
 			name="meetings"
 			lazy="true"
@@ -123,7 +111,77 @@
 			<key column="EVENT_ID" foreign-key="fk_meeting_event"/>
 			<one-to-many class="Meeting"/>
 		</set>			
+
+		<subclass 
+			name="ClassEvent" 
+			abstract="false"
+			discriminator-value="0" 
+			>
 			
+			<many-to-one 
+				name="clazz"
+				class="Class_"
+				column="CLASS_ID"
+				foreign-key="FK_EVENT_CLASS"
+				not-null="true"
+				unique="true"
+			/>
 		
+		</subclass>
+		
+		<subclass
+			name="ExamEvent"
+			abstract="true"
+			discriminator-value="-2"
+			>
+			
+			<many-to-one 
+				name="exam"
+				class="Exam"
+				column="EXAM_ID"
+				foreign-key="FK_EVENT_EXAM"
+				not-null="true"
+				unique="true"
+			/>
+			
+			<subclass
+				name="FinalExamEvent"
+				abstract="false"
+				discriminator-value="1"/>
+
+			<subclass
+				name="MidtermExamEvent"
+				abstract="false"
+				discriminator-value="2"/>
+		</subclass>
+		
+		<subclass
+			name="CourseEvent"
+			abstract="false"
+			discriminator-value="3">
+
+			<property 
+				name="reqAttendance" 
+				type="java.lang.Boolean" 
+				column="REQ_ATTD" 
+				not-null="true"
+			/>
+
+			<set
+				name="relatedCourses"
+				lazy="true"
+				cascade="all-delete-orphan" 
+				inverse="true"
+				>
+				<cache include="non-lazy" usage="read-write"/>
+				<key column="EVENT_ID" foreign-key="fk_event_owner_event"/>
+				<one-to-many class="RelatedCourseInfo"/>
+			</set>
+		</subclass>
+		
+		<subclass
+			name="SpecialEvent"
+			abstract="false"
+			discriminator-value="4"/>
 	</class>
 </hibernate-mapping>

@@ -21,7 +21,6 @@ package org.unitime.timetable.model;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -56,139 +55,50 @@ public class Event extends BaseEvent implements Comparable<Event> {
 	 */
 	public Event (
 		java.lang.Long uniqueId,
-		org.unitime.timetable.model.EventType eventType,
 		java.lang.Integer minCapacity,
 		java.lang.Integer maxCapacity) {
 
 		super (
 			uniqueId,
-			eventType,
 			minCapacity,
 			maxCapacity);
 	}
 
 /*[CONSTRUCTOR MARKER END]*/
-
 	
+	public static final int sEventTypeClass = 0;
+	public static final int sEventTypeFinalExam = 1;
+	public static final int sEventTypeMidtermExam = 2;
+	public static final int sEventTypeCourse = 3;
+	public static final int sEventTypeSpecial = 4;
+	public static final String[] sEventTypes = new String[] {
+	    "Class Event",
+	    "Final Examination Event",
+	    "Midterm Examination Event",
+	    "Course Event",
+	    "Special Event"
+	};
+
+	public String getEventTypeLabel() { throw new RuntimeException("Method not implemented."); }
 	
-    public static List findEventsOfSubjectArea(org.hibernate.Session hibSession, Long subjectAreaId, Integer eventType) {
-        return hibSession.createQuery(
-                "select distinct e from Event e inner join e.relatedCourses r where " +
-                "r.course.subjectArea.uniqueId=:subjectAreaId and e.eventType.uniqueId=:eventType")
-                .setLong("subjectAreaId", subjectAreaId)
-                .setInteger("examType", eventType)
-                .setCacheable(true)
-                .list();
-    }
-    
-    public static List findEventsOfSubjectArea(Long subjectAreaId, Integer eventType) {
-        return (findEventsOfSubjectArea((new EventDAO().getSession()), subjectAreaId, eventType));
-    }
-     
-    public static List findExamsOfCourseOffering(org.hibernate.Session hibSession, Long courseOfferingId, Integer eventType) {
-        return hibSession.createQuery(
-                "select distinct e from Event e inner join e.relatedCourses r where " +
-                "r.course.uniqueId=:courseOfferingId and e.eventType.uniqueId=:eventType")
-                .setLong("courseOfferingId", courseOfferingId)
-                .setInteger("eventType", eventType)
-                .setCacheable(true)
-                .list();
-    }
-    
-    public static List findExamsOfCourseOffering(Long courseOfferingId, Integer eventType) {
-        return (findExamsOfCourseOffering((new EventDAO().getSession()),courseOfferingId, eventType));
-    }
- 
-    public static List findEventsOfCourse(org.hibernate.Session hibSession, Long subjectAreaId, String courseNbr, Integer eventType) {
-        if (courseNbr==null || courseNbr.trim().length()==0) return findEventsOfSubjectArea(subjectAreaId, eventType);
-        return hibSession.createQuery(
-                "select distinct e from Event e inner join e.relatedCourses r where " +
-                "r.course.subjectArea.uniqueId=:subjectAreaId and e.eventType.uniqueId=:eventType and "+
-                (courseNbr.indexOf('*')>=0?"r.course.courseNbr like :courseNbr":"r.course.courseNbr=:courseNbr"))
-                .setLong("subjectAreaId", subjectAreaId)
-                .setString("courseNbr", courseNbr.trim().replaceAll("\\*", "%"))
-                .setInteger("eventType", eventType)
-                .setCacheable(true)
-                .list();
-    }
-
-    
-    public static List findCourseRelatedEventsOfTypeOwnedBy(org.hibernate.Session hibSession, Long eventType, Long ownerId, Integer ownerType) {
-        return hibSession.createQuery(
-                "select distinct e from Event e inner join e.relatedCourses r where " +
-                "r.ownerId=:ownerId and r.ownerType=:ownerType and e.eventType.uniqueId=:eventType")
-                .setLong("ownerId", ownerId)
-                .setInteger("ownerType", ownerType)
-                .setLong("eventType", eventType)
-                .setCacheable(true)
-                .list();
-    }
-    
-    public static List findCourseRelatedEventsOfTypeOwnedBy(Long eventType, Long ownerId, Integer ownerType) {
-    	return(findCourseRelatedEventsOfTypeOwnedBy((new EventDAO().getSession()), eventType, ownerId, ownerType));
-    }
-    
-    public static List findCourseRelatedEventsOfTypeOwnedBy(org.hibernate.Session hibSession, Long eventType, CourseOffering courseOffering){
-    	return(findCourseRelatedEventsOfTypeOwnedBy(hibSession, eventType, courseOffering.getUniqueId(), ExamOwner.sOwnerTypeCourse));
-    }
-
-    public static List findCourseRelatedEventsOfTypeOwnedBy(Long eventType, CourseOffering courseOffering){
-    	return(findCourseRelatedEventsOfTypeOwnedBy((new EventDAO().getSession()), eventType, courseOffering));
-    }
-    
-    public static List findCourseRelatedEventsOfTypeOwnedBy(org.hibernate.Session hibSession, Long eventType, InstructionalOffering instructionalOffering){
-    	return(findCourseRelatedEventsOfTypeOwnedBy(hibSession, eventType, instructionalOffering.getUniqueId(), ExamOwner.sOwnerTypeOffering));
-    }
-
-    public static List findCourseRelatedEventsOfTypeOwnedBy(Long eventType, InstructionalOffering instructionalOffering){
-    	return(findCourseRelatedEventsOfTypeOwnedBy((new EventDAO().getSession()), eventType, instructionalOffering));
-    }
-  
-    public static List findCourseRelatedEventsOfTypeOwnedBy(org.hibernate.Session hibSession, Long eventType, InstrOfferingConfig instrOffrConfig){
-    	return(findCourseRelatedEventsOfTypeOwnedBy(hibSession, eventType, instrOffrConfig.getUniqueId(), ExamOwner.sOwnerTypeConfig));
-    }
-
-    public static List findCourseRelatedEventsOfTypeOwnedBy(Long eventType, InstrOfferingConfig instrOffrConfig){
-    	return(findCourseRelatedEventsOfTypeOwnedBy((new EventDAO().getSession()), eventType, instrOffrConfig));
-    }
-  
-    public static List findCourseRelatedEventsOfTypeOwnedBy(org.hibernate.Session hibSession, Long eventType, Class_ clazz){
-    	return(findCourseRelatedEventsOfTypeOwnedBy(hibSession, eventType, clazz.getUniqueId(), ExamOwner.sOwnerTypeClass));
-    }
-
-    public static List findCourseRelatedEventsOfTypeOwnedBy(Long eventType, Class_ clazz){
-    	return(findCourseRelatedEventsOfTypeOwnedBy((new EventDAO().getSession()), eventType, clazz));
-    }
-  
-    
-    
-    public static List findEventsOfCourse(Long subjectAreaId, String courseNbr, Integer eventType) {
-        if (courseNbr==null || courseNbr.trim().length()==0) return findEventsOfSubjectArea(subjectAreaId, eventType);
-        return (findEventsOfCourse((new EventDAO().getSession()), subjectAreaId, courseNbr, eventType));
-    }
-    
     public Set<Student> getStudents() {
-        HashSet<Student> students = new HashSet();
-        for (Iterator i=getRelatedCourses().iterator();i.hasNext();)
-            students.addAll(((RelatedCourseInfo)i.next()).getStudents());
-        return students;
-  
+        throw new RuntimeException("Method not implemented.");
     }
     
+    /*
     public Set<Long> getStudentIds() {
         HashSet<Long> students = new HashSet();
         for (Iterator<?> i=getRelatedCourses().iterator();i.hasNext();)
             students.addAll(((RelatedCourseInfo)i.next()).getStudentIds());
         return students;
     }
+    */
     
     public Set<DepartmentalInstructor> getInstructors() {
-        HashSet<DepartmentalInstructor> instructors = new HashSet();
-        for (Iterator i=getRelatedCourses().iterator();i.hasNext();)
-            instructors.addAll(((RelatedCourseInfo)i.next()).getInstructors());
-        return instructors;
+        throw new RuntimeException("Method not implemented.");
     }
 
+    /*
     public int countStudents() {
         int nrStudents = 0;
         for (Iterator i=getRelatedCourses().iterator();i.hasNext();)
@@ -196,14 +106,15 @@ public class Event extends BaseEvent implements Comparable<Event> {
         return nrStudents;
        
     }
+    */
     
     public static void deleteFromEvents(org.hibernate.Session hibSession, Integer ownerType, Long ownerId) {
-        for (Iterator i=hibSession.createQuery("select r from Event e inner join e.relatedCourses r where "+
+        for (Iterator i=hibSession.createQuery("select r from CourseEvent e inner join e.relatedCourses r where "+
                 "r.ownerType=:ownerType and r.ownerId=:ownerId")
                 .setInteger("ownerType", ownerType)
                 .setLong("ownerId", ownerId).iterate();i.hasNext();) {
             RelatedCourseInfo relatedCourse = (RelatedCourseInfo)i.next();
-            Event event = relatedCourse.getEvent();
+            CourseEvent event = relatedCourse.getEvent();
             event.getRelatedCourses().remove(relatedCourse);
             relatedCourse.setOwnerId(null);
             relatedCourse.setCourse(null);
@@ -245,17 +156,6 @@ public class Event extends BaseEvent implements Comparable<Event> {
 	            )
 	            .setCacheable(true)
 	            .list();
-	}
-	
-	public static Event findClassEvent(Long classId) {
-	    return (Event)new EventDAO().getSession().createQuery(
-	            "select e from Event e inner join e.relatedCourses r where "+
-	            "e.eventType.reference=:eventType and "+
-	            "r.ownerType=:classType and r.ownerId=:classId")
-	            .setString("eventType", EventType.sEventTypeClass)
-	            .setInteger("classType", ExamOwner.sOwnerTypeClass)
-	            .setLong("classId", classId)
-	            .setCacheable(true).uniqueResult();
 	}
 	
 	public TreeSet<MultiMeeting> getMultiMeetings() {

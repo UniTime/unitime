@@ -44,7 +44,7 @@ public class ExamGridForm extends ActionForm {
     private int iDispMode = ExamGridTable.sDispModePerWeekVertical;
     private int iOrder = ExamGridTable.sOrderByNameAsc;
     private boolean iBgPreferences = false;
-    private boolean iHasEveningExams = false;
+    private boolean iHasMidtermExams = false;
     
     public int getDate(int examType) { return iDate[examType]; }
     public void setDate(int examType, int date) { iDate[examType] = date; }
@@ -89,7 +89,7 @@ public class ExamGridForm extends ActionForm {
 				iExamType = solver.getProperties().getPropertyInt("Exam.Type", iExamType);
 		} catch (Exception e) {}
         try {
-            iHasEveningExams = Exam.hasEveningExams(Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId());
+            iHasMidtermExams = Exam.hasMidtermExams(Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId());
         } catch (Exception e) {}
     }
     
@@ -263,7 +263,7 @@ public class ExamGridForm extends ActionForm {
     public Collection getExamTypes() {
     	Vector ret = new Vector(Exam.sExamTypes.length);
         for (int i=0;i<Exam.sExamTypes.length;i++) {
-            if (i==Exam.sExamTypeEvening && !iHasEveningExams) continue;
+            if (i==Exam.sExamTypeMidterm && !iHasMidtermExams) continue;
             ret.add(new ComboBoxLookup(Exam.sExamTypes[i], String.valueOf(i)));
         }
     	return ret;

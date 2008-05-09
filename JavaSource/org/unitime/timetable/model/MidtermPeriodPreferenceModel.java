@@ -18,7 +18,7 @@ import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
 
-public class EveningPeriodPreferenceModel {
+public class MidtermPeriodPreferenceModel {
     private TreeSet<Integer> iDates = new TreeSet<Integer>();
     private Vector<Integer> iStarts = new Vector<Integer>();
     private Hashtable<Integer,String[]> iPreferences = new Hashtable<Integer,String[]>();
@@ -33,15 +33,15 @@ public class EveningPeriodPreferenceModel {
     
     public static SimpleDateFormat sDF = new SimpleDateFormat("EEE MM/dd");
     
-    public EveningPeriodPreferenceModel(Session session) {
+    public MidtermPeriodPreferenceModel(Session session) {
         this(session, null);
     }
 
-    public EveningPeriodPreferenceModel(Session session, ExamAssignment assignment) {
+    public MidtermPeriodPreferenceModel(Session session, ExamAssignment assignment) {
         iPeriod = (assignment==null?null:assignment.getPeriod());
         iSession = session;
         iExamBeginDate = session.getExamBeginDate();
-        iPeriods = ExamPeriod.findAll(session.getUniqueId(), Exam.sExamTypeEvening);
+        iPeriods = ExamPeriod.findAll(session.getUniqueId(), Exam.sExamTypeMidterm);
         for (Iterator i=iPeriods.iterator();i.hasNext();) {
             ExamPeriod period = (ExamPeriod)i.next();
             if (!iStarts.contains(period.getStartSlot())) {
@@ -145,7 +145,7 @@ public class EveningPeriodPreferenceModel {
     }
 
     public void save(Location location) {
-        location.clearExamPreferences(Exam.sExamTypeEvening);
+        location.clearExamPreferences(Exam.sExamTypeMidterm);
     	for (Iterator i=iPeriods.iterator();i.hasNext();) {
             ExamPeriod period = (ExamPeriod)i.next();
             boolean early = (iStarts.indexOf(period.getStartSlot())==0);

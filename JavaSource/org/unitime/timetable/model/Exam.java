@@ -68,9 +68,9 @@ public class Exam extends BaseExam implements Comparable<Exam> {
 	public static final String sSeatingTypes[] = new String[] {"Normal","Exam"};
 	
 	public static final int sExamTypeFinal = 0;
-	public static final int sExamTypeEvening = 1;
+	public static final int sExamTypeMidterm = 1;
 	
-	public static final String sExamTypes[] = new String[] {"Final", "Evening"};
+	public static final String sExamTypes[] = new String[] {"Final", "Midterm"};
 	
 	protected boolean canUserEdit(User user) {
         //admin
@@ -390,10 +390,10 @@ public class Exam extends BaseExam implements Comparable<Exam> {
             i.remove();
         }
         
-        if (getEvent()!=null) {
-            hibSession.delete(getEvent());
+        ExamEvent event = getEvent();
+        if (event!=null) {
+            hibSession.delete(event);
             deleted = true;
-            setEvent(null);
         }
 
         if (deleted && updateExam)
@@ -538,11 +538,11 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 setLong("sessionId",sessionId).uniqueResult()).longValue()>0;
     }
 
-    public static boolean hasEveningExams(Long sessionId) {
+    public static boolean hasMidtermExams(Long sessionId) {
     	return ((Number)new ExamDAO().getSession().
     			createQuery("select count(p) from ExamPeriod p " +
     					"where p.session.uniqueId=:sessionId and "+
-    					"p.examType = "+sExamTypeEvening).
+    					"p.examType = "+sExamTypeMidterm).
     			setLong("sessionId", sessionId).uniqueResult()).longValue()>0;
     }
     
@@ -764,11 +764,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 }
             }
             
-            if (getEvent()!=null) {
-                hibSession.delete(getEvent());
-                setEvent(null);
-            }
-            Event event = generateEvent(EventType.findByReference(getExamType()==Exam.sExamTypeFinal?EventType.sEventTypeFinalExam:EventType.sEventTypeEveningExam),true);
+            ExamEvent event = generateEvent(getEvent(),true);
             if (event!=null) {
                 event.setEventName(assignment.getExamName());
                 event.setMinCapacity(assignment.getNrStudents());
@@ -786,8 +782,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                     hibSession.save(contact);
                 }
                 event.setMainContact(contact);
-                setEvent(event);
-                hibSession.save(event);
+                hibSession.saveOrUpdate(event);
             }
             
             hibSession.update(this);
@@ -851,10 +846,8 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 j.remove();
             }
 
-            if (getEvent()!=null) {
-                hibSession.delete(getEvent());
-                setEvent(null);
-            }
+            ExamEvent event = getEvent();
+            if (event!=null) hibSession.delete(event);
             
             hibSession.update(this);
             for (Iterator i=otherExams.iterator();i.hasNext();)
@@ -912,28 +905,22 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         return instructors;
     }
     
-    public Event generateEvent(EventType eventType, boolean createNoRoomMeetings) {
+    public ExamEvent generateEvent(ExamEvent event, boolean createNoRoomMeetings) {
         ExamPeriod period = getAssignedPeriod();
         if (period==null) return null;
-        Event event = new Event();
-        event.setEventType(eventType);
-        event.setRelatedCourses(new HashSet());
-        for (Iterator i=getOwners().iterator();i.hasNext();) {
-            ExamOwner owner = (ExamOwner)i.next();
-            RelatedCourseInfo courseInfo = new RelatedCourseInfo();
-            courseInfo.setOwnerId(owner.getOwnerId());
-            courseInfo.setOwnerType(owner.getOwnerType());
-            courseInfo.setCourse(owner.getCourse());
-            courseInfo.setEvent(event);
-            event.getRelatedCourses().add(courseInfo);
+        if (event==null) {
+            event = (getExamType()==sExamTypeFinal?new FinalExamEvent():new MidtermExamEvent());
+            event.setExam(this);
         }
-        event.setMeetings(new HashSet());
+        if (event.getMeetings()!=null) 
+            event.getMeetings().clear();
+        else 
+            event.setMeetings(new HashSet());
         boolean created = false;
         for (Iterator i=getAssignedRooms().iterator();i.hasNext();) {
             Location location = (Location)i.next();
             if (location.getPermanentId()!=null) {
                 Meeting m = new Meeting();
-                m.setEventType(eventType);
                 m.setMeetingDate(period.getStartDate());
                 m.setStartPeriod(period.getStartSlot());
                 m.setStartOffset(0);
@@ -949,7 +936,6 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         }
         if (!created && createNoRoomMeetings) {
             Meeting m = new Meeting();
-            m.setEventType(eventType);
             m.setMeetingDate(period.getStartDate());
             m.setStartPeriod(period.getStartSlot());
             m.setStartOffset(0);
@@ -961,7 +947,6 @@ public class Exam extends BaseExam implements Comparable<Exam> {
             m.setEvent(event);
             event.getMeetings().add(m);
         }
-        if (event.getMeetings().isEmpty()) return null;
         return event;
     }
     
@@ -985,22 +970,22 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         
         if (getPreferences()==null) setPreferences(new HashSet());
         
-        //Prefer overlapping period for evening classes
-        PreferenceLevel eveningPref = PreferenceLevel.getPreferenceLevel(ApplicationProperties.getProperty(
-                "exam."+(getExamType()==Exam.sExamTypeEvening?"evening":"final")+".defaultPrefs.eveningClasses.pref",
-                (getExamType()==Exam.sExamTypeEvening?PreferenceLevel.sNeutral:PreferenceLevel.sRequired)));
-        if (!PreferenceLevel.sNeutral.equals(eveningPref.getPrefProlog()) && (override || getPreferences(ExamPeriodPref.class).isEmpty())) {
-            int firstEveningPeriod = Integer.parseInt(ApplicationProperties.getProperty(
-                    "exam."+(getExamType()==Exam.sExamTypeEvening?"evening":"final")+".defaultPrefs.eveningClasses.firstEveningPeriod","216")); //6pm
+        //Prefer overlapping period for midterm classes
+        PreferenceLevel midtermPref = PreferenceLevel.getPreferenceLevel(ApplicationProperties.getProperty(
+                "exam."+(getExamType()==Exam.sExamTypeMidterm?"midterm":"final")+".defaultPrefs.midtermClasses.pref",
+                (getExamType()==Exam.sExamTypeMidterm?PreferenceLevel.sNeutral:PreferenceLevel.sRequired)));
+        if (!PreferenceLevel.sNeutral.equals(midtermPref.getPrefProlog()) && (override || getPreferences(ExamPeriodPref.class).isEmpty())) {
+            int firstMidtermPeriod = Integer.parseInt(ApplicationProperties.getProperty(
+                    "exam."+(getExamType()==Exam.sExamTypeMidterm?"midterm":"final")+".defaultPrefs.midtermClasses.firstMidtermPeriod","216")); //6pm
             HashSet<ExamPeriod> periods = new HashSet();
             for (Iterator i=getOwners().iterator();i.hasNext();) {
                 ExamOwner owner = (ExamOwner)i.next();
                 if (ExamOwner.sOwnerTypeClass!=owner.getOwnerType()) continue;
-                Event event = Event.findClassEvent(owner.getOwnerId());
+                Event event = ((Class_)owner.getOwnerObject()).getEvent();
                 if (event==null) continue;
                 for (Iterator j=event.getMeetings().iterator();j.hasNext();) {
                     Meeting meeting = (Meeting)j.next();
-                    if (meeting.getStartPeriod()<firstEveningPeriod) continue;
+                    if (meeting.getStartPeriod()<firstMidtermPeriod) continue;
                     for (Iterator k=allPeriods.iterator();k.hasNext();) {
                         ExamPeriod period = (ExamPeriod)k.next();
                         if (period.weakOverlap(meeting)) periods.add(period);
@@ -1012,8 +997,8 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                     ExamPeriodPref pref = (ExamPeriodPref)i.next();
                     if (periods.contains(pref.getExamPeriod())) {
                         periods.remove(pref.getExamPeriod());
-                        if (!pref.getPrefLevel().equals(eveningPref)) {
-                            pref.setPrefLevel(eveningPref);
+                        if (!pref.getPrefLevel().equals(midtermPref)) {
+                            pref.setPrefLevel(midtermPref);
                         }
                     } else {
                         getPreferences().remove(pref);
@@ -1021,7 +1006,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 }
                 for (ExamPeriod period : periods) {
                     ExamPeriodPref pref = new ExamPeriodPref();
-                    pref.setPrefLevel(eveningPref);
+                    pref.setPrefLevel(midtermPref);
                     pref.setOwner(this);
                     pref.setExamPeriod(period);
                     getPreferences().add(pref);
@@ -1031,14 +1016,14 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         
         //Prefer original room
         PreferenceLevel originalPref = PreferenceLevel.getPreferenceLevel(ApplicationProperties.getProperty(
-                "exam."+(getExamType()==Exam.sExamTypeEvening?"evening":"final")+".defaultPrefs.originalRoom.pref",
-                (getExamType()==Exam.sExamTypeEvening?PreferenceLevel.sNeutral:PreferenceLevel.sStronglyPreferred)));
+                "exam."+(getExamType()==Exam.sExamTypeMidterm?"midterm":"final")+".defaultPrefs.originalRoom.pref",
+                (getExamType()==Exam.sExamTypeMidterm?PreferenceLevel.sNeutral:PreferenceLevel.sStronglyPreferred)));
         if (!PreferenceLevel.sNeutral.equals(originalPref.getPrefProlog()) && (override || getPreferences(RoomPref.class).isEmpty())) {
             HashSet<Location> locations = new HashSet();
             for (Iterator i=getOwners().iterator();i.hasNext();) {
                 ExamOwner owner = (ExamOwner)i.next();
                 if (ExamOwner.sOwnerTypeClass!=owner.getOwnerType()) continue;
-                Event event = Event.findClassEvent(owner.getOwnerId());
+                Event event = ((Class_)owner.getOwnerObject()).getEvent();
                 if (event==null) continue;
                 for (Iterator j=event.getMeetings().iterator();j.hasNext();) {
                     Meeting meeting = (Meeting)j.next();
@@ -1066,6 +1051,13 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 }
             }
         }
+    }
+    
+    public ExamEvent getEvent() {
+        return (ExamEvent)new ExamDAO().getSession().createQuery(
+                "from ExamEvent where exam.uniqueId=:examId").
+                setLong("examId", getUniqueId()).
+                setCacheable(true).uniqueResult();
     }
 
 }

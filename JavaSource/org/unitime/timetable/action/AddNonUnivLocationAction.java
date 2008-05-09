@@ -178,7 +178,7 @@ public class AddNonUnivLocationAction extends Action {
 			nonUniv.setRoomGroups(new HashSet());
 			nonUniv.setRoomDepts(new HashSet());
 			nonUniv.setExamEnabled(Exam.sExamTypeFinal,Boolean.FALSE);
-			nonUniv.setExamEnabled(Exam.sExamTypeEvening,Boolean.FALSE);
+			nonUniv.setExamEnabled(Exam.sExamTypeMidterm,Boolean.FALSE);
 			nonUniv.setExamCapacity(0);
 			
 			LocationPermIdGenerator.setPermanentId(nonUniv);
