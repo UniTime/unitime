@@ -38,7 +38,7 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ExamReportForm;
 import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.DistributionPref;
-import org.unitime.timetable.model.EveningPeriodPreferenceModel;
+import org.unitime.timetable.model.MidtermPeriodPreferenceModel;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriodPref;
 import org.unitime.timetable.model.PeriodPreferenceModel;
@@ -137,8 +137,8 @@ public class UnassignedExamsAction extends Action {
                     if (timeText) {
                         perPref += exam.getExam().getEffectivePrefHtmlForPrefType(ExamPeriodPref.class);
                     } else {
-                        if (exam.getExamType()==Exam.sExamTypeEvening) {
-                            EveningPeriodPreferenceModel epx = new EveningPeriodPreferenceModel(exam.getExam().getSession());
+                        if (exam.getExamType()==Exam.sExamTypeMidterm) {
+                            MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(exam.getExam().getSession());
                             if (epx.canDo()) {
                                 epx.load(exam.getExam());
                                 perPref += epx.toString(true);
@@ -197,8 +197,8 @@ public class UnassignedExamsAction extends Action {
                         if (roomPref.length()>0) roomPref+=nl;
                         roomPref += PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText();
                     }
-                    if (exam.getExamType()==Exam.sExamTypeEvening) {
-                        EveningPeriodPreferenceModel epx = new EveningPeriodPreferenceModel(exam.getExam().getSession());
+                    if (exam.getExamType()==Exam.sExamTypeMidterm) {
+                        MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(exam.getExam().getSession());
                         if (epx.canDo()) {
                             epx.load(exam.getExam());
                             perPref += epx.toString();

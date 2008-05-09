@@ -94,11 +94,11 @@
 		<TR>
 			<TD valign="top">Event Type:</TD>
 			<TD>
-				<logic:iterate name="eventListForm" property="allEventTypes" id="type">
+				<logic:iterate name="eventListForm" property="allEventTypes" id="type" indexId="typeIdx">
 					<html:multibox property="eventTypes">
-						<bean:write name="type" property="reference"/>
+						<bean:write name="typeIdx"/>
 					</html:multibox>
-					<bean:write name="type" property="label" /><br>
+					<bean:write name="type"/><br>
 				</logic:iterate>
 			<TD>
 		</TR>

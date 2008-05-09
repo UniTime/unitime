@@ -1071,7 +1071,7 @@ public class ExamGridTable {
 	            iUnavailabilities = RoomAvailability.getInstance().getRoomAvailability(
 	                    location, 
 	                    bounds[0], bounds[1], 
-                        new String[] {(iForm.getExamType()==Exam.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sEveningExamType)});
+                        new String[] {(iForm.getExamType()==Exam.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sMidtermExamType)});
 	        }
 	    }
 	    

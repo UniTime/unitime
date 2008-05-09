@@ -54,7 +54,7 @@ import org.unitime.timetable.form.RoomListForm;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
-import org.unitime.timetable.model.EveningPeriodPreferenceModel;
+import org.unitime.timetable.model.MidtermPeriodPreferenceModel;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExternalRoom;
 import org.unitime.timetable.model.GlobalRoomFeature;
@@ -204,14 +204,14 @@ public class RoomListAction extends Action {
 		} else if (roomListForm.getDeptCodeX().equalsIgnoreCase("Exam")) {
 		    roomListForm.setRooms(Location.findAllExamLocations(sessionId, Exam.sExamTypeFinal));
         } else if (roomListForm.getDeptCodeX().equalsIgnoreCase("EExam")) {
-            roomListForm.setRooms(Location.findAllExamLocations(sessionId, Exam.sExamTypeEvening));
+            roomListForm.setRooms(Location.findAllExamLocations(sessionId, Exam.sExamTypeMidterm));
 		} else {
 		    roomListForm.setRooms(Session.getCurrentAcadSession(user).getRoomsFast(new String[] {roomListForm.getDeptCodeX()}));
 		}
 		
 		int examType = -1;
 		if ("Exam".equals(roomListForm.getDeptCodeX())) examType = Exam.sExamTypeFinal;
-		if ("EExam".equals(roomListForm.getDeptCodeX())) examType = Exam.sExamTypeEvening;
+		if ("EExam".equals(roomListForm.getDeptCodeX())) examType = Exam.sExamTypeMidterm;
 		
 		if ("Export PDF".equals(request.getParameter("op"))) {
 			buildPdfWebTable(request, roomListForm, "yes".equals(Settings.getSettingValue(user, Constants.SETTINGS_ROOMS_FEATURES_ONE_COLUMN)), examType);
@@ -570,8 +570,8 @@ public class RoomListAction extends Action {
 	                        text[idx] = location.getExamPreferencesAbbreviationHtml(examType);
 	                    else {
 	                        PeriodPreferenceModel px = null;
-	                        if (examType==Exam.sExamTypeEvening) {
-	                            EveningPeriodPreferenceModel epx = new EveningPeriodPreferenceModel(location.getSession());
+	                        if (examType==Exam.sExamTypeMidterm) {
+	                            MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(location.getSession());
 	                            if (epx.canDo()) {
 	                                epx.load(location);
 	                                text[idx]=epx.toString(true).replaceAll(", ", "<br>");

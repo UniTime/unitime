@@ -261,7 +261,7 @@ public class RoomFeatureListAction extends Action {
 		Set depts = null;
         int examType = -1;
         if (roomFeatureListForm.getDeptCodeX().equalsIgnoreCase("exam")) examType = Exam.sExamTypeFinal;
-        if (roomFeatureListForm.getDeptCodeX().equalsIgnoreCase("eexam")) examType = Exam.sExamTypeEvening;
+        if (roomFeatureListForm.getDeptCodeX().equalsIgnoreCase("eexam")) examType = Exam.sExamTypeMidterm;
 		if (roomFeatureListForm.getDeptCodeX().equalsIgnoreCase("All")) {
 			if (isAdmin) {
 				showAll = true;
@@ -466,7 +466,7 @@ public class RoomFeatureListAction extends Action {
     		
             int examType = -1;
             if (roomFeatureListForm.getDeptCodeX().equalsIgnoreCase("exam")) examType = Exam.sExamTypeFinal;
-            if (roomFeatureListForm.getDeptCodeX().equalsIgnoreCase("eexam")) examType = Exam.sExamTypeEvening;
+            if (roomFeatureListForm.getDeptCodeX().equalsIgnoreCase("eexam")) examType = Exam.sExamTypeMidterm;
     		
     		boolean splitRows = false;
     		

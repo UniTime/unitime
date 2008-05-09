@@ -301,7 +301,7 @@ public class AddSpecialUseRoomAction extends Action {
 			room.setCapacity(extRoom.getCapacity());
 			room.setExamCapacity(0);
             room.setExamEnabled(Exam.sExamTypeFinal,Boolean.FALSE);
-            room.setExamEnabled(Exam.sExamTypeEvening,Boolean.FALSE);
+            room.setExamEnabled(Exam.sExamTypeMidterm,Boolean.FALSE);
 			room.setRoomNumber(roomNum);
 			room.setScheduledRoomType("specialUse");
 			room.setExternalUniqueId(extRoom.getExternalUniqueId());

@@ -51,7 +51,6 @@ import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.DepartmentalInstructor;
-import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
@@ -155,7 +154,7 @@ public class PersonalizedExamReportAction extends Action {
         
         HashSet<Exam> instructorExams = new HashSet<Exam>();
         if (instructor!=null) {
-            instructorExams.addAll(instructor.getExams(Exam.sExamTypeEvening));
+            instructorExams.addAll(instructor.getExams(Exam.sExamTypeMidterm));
             instructorExams.addAll(instructor.getExams(Exam.sExamTypeFinal));
         }
         
@@ -302,8 +301,7 @@ public class PersonalizedExamReportAction extends Action {
             SimpleDateFormat dpf = new SimpleDateFormat("MM/dd");
             Class_ clazz = (Class_)section.getOwner().getOwnerObject();
             Assignment assignment = clazz.getCommittedAssignment();
-            Event event = (assignment==null || assignment.getEvent()==null?Event.findClassEvent(clazz.getUniqueId()):assignment.getEvent());
-            TreeSet meetings = (event==null?null:new TreeSet(event.getMeetings()));
+            TreeSet meetings = (clazz.getEvent()==null?null:new TreeSet(clazz.getEvent().getMeetings()));
             if (meetings!=null && !meetings.isEmpty()) {
                 return ((Meeting)meetings.first()).getMeetingDate().getTime();
             } else if (assignment!=null) {
@@ -319,8 +317,7 @@ public class PersonalizedExamReportAction extends Action {
             SimpleDateFormat dpf = new SimpleDateFormat("MM/dd");
             Class_ clazz = (Class_)section.getOwner().getOwnerObject();
             Assignment assignment = clazz.getCommittedAssignment();
-            Event event = (assignment==null || assignment.getEvent()==null?Event.findClassEvent(clazz.getUniqueId()):assignment.getEvent());
-            TreeSet meetings = (event==null?null:new TreeSet(event.getMeetings()));
+            TreeSet meetings = (clazz.getEvent()==null?null:new TreeSet(clazz.getEvent().getMeetings()));
             if (meetings!=null && !meetings.isEmpty()) {
                 Date first = ((Meeting)meetings.first()).getMeetingDate();
                 Date last = ((Meeting)meetings.last()).getMeetingDate();
@@ -1060,8 +1057,7 @@ public class PersonalizedExamReportAction extends Action {
         String meetingTime = "";
         SimpleDateFormat dpf = new SimpleDateFormat("MM/dd");
         Assignment assignment = clazz.getCommittedAssignment();
-        Event event = (assignment==null || assignment.getEvent()==null?Event.findClassEvent(clazz.getUniqueId()):assignment.getEvent());
-        TreeSet meetings = (event==null?null:new TreeSet(event.getMeetings()));
+        TreeSet meetings = (clazz.getEvent()==null?null:new TreeSet(clazz.getEvent().getMeetings()));
         if (meetings!=null && !meetings.isEmpty()) {
             Date first = ((Meeting)meetings.first()).getMeetingDate();
             Date last = ((Meeting)meetings.last()).getMeetingDate();
@@ -1096,8 +1092,7 @@ public class PersonalizedExamReportAction extends Action {
     protected String getMeetingRooms(Class_ clazz) {
         String meetingRooms = "";
         Assignment assignment = clazz.getCommittedAssignment();
-        Event event = (assignment==null || assignment.getEvent()==null?Event.findClassEvent(clazz.getUniqueId()):assignment.getEvent());
-        TreeSet<Meeting> meetings = (event==null?null:new TreeSet(event.getMeetings()));
+        TreeSet<Meeting> meetings = (clazz.getEvent()==null?null:new TreeSet(clazz.getEvent().getMeetings()));
         TreeSet<Location> locations = new TreeSet<Location>();
         if (meetings!=null && !meetings.isEmpty()) {
             for (Meeting meeting : meetings)
@@ -1116,8 +1111,7 @@ public class PersonalizedExamReportAction extends Action {
     
     protected long getMeetingComparable(Class_ clazz) {
         Assignment assignment = clazz.getCommittedAssignment();
-        Event event = (assignment==null || assignment.getEvent()==null?Event.findClassEvent(clazz.getUniqueId()):assignment.getEvent());
-        TreeSet meetings = (event==null?null:new TreeSet(event.getMeetings()));
+        TreeSet meetings = (clazz.getEvent()==null?null:new TreeSet(clazz.getEvent().getMeetings()));
         if (meetings!=null && !meetings.isEmpty()) {
             return ((Meeting)meetings.first()).getMeetingDate().getTime();
         } else if (assignment!=null) {

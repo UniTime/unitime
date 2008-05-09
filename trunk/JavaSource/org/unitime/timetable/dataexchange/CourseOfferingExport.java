@@ -94,8 +94,8 @@ public class CourseOfferingExport extends BaseExport {
                         exportExam(root, null, exam, session);
                     }
                 }
-                if ("all".equals(parameters.getProperty("tmtbl.export.exam.type", "all")) || "evening".equals(parameters.getProperty("tmtbl.export.exam.type", "all"))) {
-                    for (Iterator i=new TreeSet(Exam.findAll(session.getUniqueId(), Exam.sExamTypeEvening)).iterator();i.hasNext();) {
+                if ("all".equals(parameters.getProperty("tmtbl.export.exam.type", "all")) || "midterm".equals(parameters.getProperty("tmtbl.export.exam.type", "all"))) {
+                    for (Iterator i=new TreeSet(Exam.findAll(session.getUniqueId(), Exam.sExamTypeMidterm)).iterator();i.hasNext();) {
                         Exam exam = (Exam)i.next();
                         exportExam(root, null, exam, session);
                     }
@@ -422,7 +422,7 @@ public class CourseOfferingExport extends BaseExport {
         if (exam.getNote()!=null)
             examElement.addAttribute("note", exam.getNote());
         examElement.addAttribute("seatingType", exam.getSeatingType()==Exam.sSeatingTypeExam?"exam":"normal");
-        examElement.addAttribute("type", exam.getExamType()==Exam.sExamTypeFinal?"final":"evening");
+        examElement.addAttribute("type", exam.getExamType()==Exam.sExamTypeFinal?"final":"midterm");
         Element courseElement = null; CourseOffering lastCourse = null;
         for (Iterator i=exam.getOwnerObjects().iterator();i.hasNext();) {
             Object owner = (Object)i.next();

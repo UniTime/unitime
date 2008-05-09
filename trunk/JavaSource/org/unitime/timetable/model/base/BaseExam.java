@@ -77,7 +77,6 @@ public abstract class BaseExam extends org.unitime.timetable.model.PreferenceGro
 	// many to one
 	private org.unitime.timetable.model.Session session;
 	private org.unitime.timetable.model.ExamPeriod assignedPeriod;
-	private org.unitime.timetable.model.Event event;
 
 	// collections
 	private java.util.Set owners;
@@ -274,24 +273,6 @@ public abstract class BaseExam extends org.unitime.timetable.model.PreferenceGro
 	public void setAssignedPeriod (org.unitime.timetable.model.ExamPeriod assignedPeriod) {
 		this.assignedPeriod = assignedPeriod;
 	}
-
-
-
-	/**
-	 * Return the value associated with the column: EVENT_ID
-	 */
-	public org.unitime.timetable.model.Event getEvent () {
-		return event;
-	}
-
-	/**
-	 * Set the value related to the column: EVENT_ID
-	 * @param event the EVENT_ID value
-	 */
-	public void setEvent (org.unitime.timetable.model.Event event) {
-		this.event = event;
-	}
-
 
 
 	/**

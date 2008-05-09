@@ -212,7 +212,7 @@ public class ExamPeriodEditForm extends ActionForm {
 		if (iSession==null) iSession = Session.getCurrentAcadSession(Web.getUser(request.getSession()));
 		if (getAutoSetup()) {
 			setDays(request);
-			TreeSet periods = ExamPeriod.findAll(request, Exam.sExamTypeEvening);
+			TreeSet periods = ExamPeriod.findAll(request, Exam.sExamTypeMidterm);
 			Integer firstSlot = null, lastSlot = null;
 			TreeSet oldDays = new TreeSet();
 			for (Iterator i=periods.iterator();i.hasNext();) {
@@ -256,7 +256,7 @@ public class ExamPeriodEditForm extends ActionForm {
 		        ep.setStartSlot(slot1);
 		        ep.setLength(iLength / Constants.SLOT_LENGTH_MIN);
 		        ep.setPrefLevel(null);
-		        ep.setExamType(Exam.sExamTypeEvening);
+		        ep.setExamType(Exam.sExamTypeMidterm);
 		        ep.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral));
 		        hibSession.save(ep);
 			    ep = new ExamPeriod();
@@ -265,7 +265,7 @@ public class ExamPeriodEditForm extends ActionForm {
 		        ep.setStartSlot(slot2);
 		        ep.setLength(iLength2 / Constants.SLOT_LENGTH_MIN);
 		        ep.setPrefLevel(null);
-		        ep.setExamType(Exam.sExamTypeEvening);
+		        ep.setExamType(Exam.sExamTypeMidterm);
 		        ep.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral));
 		        hibSession.save(ep);
 			}
@@ -347,7 +347,7 @@ public class ExamPeriodEditForm extends ActionForm {
 		iDays = new TreeSet<Integer>(); 
 		TreeSet<Integer> times = new TreeSet<Integer>(); 
 		Hashtable<Integer, Integer> lengths = new Hashtable<Integer, Integer>(); 
-		TreeSet periods = ExamPeriod.findAll(iSession.getUniqueId(),Exam.sExamTypeEvening);
+		TreeSet periods = ExamPeriod.findAll(iSession.getUniqueId(),Exam.sExamTypeMidterm);
 		for (Iterator i=periods.iterator();i.hasNext();) {
 			ExamPeriod period = (ExamPeriod)i.next();
 			iDays.add(period.getDateOffset());
@@ -418,7 +418,7 @@ public class ExamPeriodEditForm extends ActionForm {
 				iSession.getEndMonth()+","+
 				pattern+","+
 				"['1','0'],"+
-				"['Evening exams offered','Evening exams not offered'],"+
+				"['Midterm exams offered','Midterm exams not offered'],"+
 				"['rgb(240,240,50)','rgb(240,240,240)'],"+
 				"'1',"+
 				border+","+true+","+true+");");

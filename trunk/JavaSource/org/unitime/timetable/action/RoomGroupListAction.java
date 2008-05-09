@@ -259,7 +259,7 @@ public class RoomGroupListAction extends Action {
 
         int examType = -1;
         if (roomGroupListForm.getDeptCodeX().equalsIgnoreCase("exam")) examType = Exam.sExamTypeFinal;
-        if (roomGroupListForm.getDeptCodeX().equalsIgnoreCase("eexam")) examType = Exam.sExamTypeEvening;
+        if (roomGroupListForm.getDeptCodeX().equalsIgnoreCase("eexam")) examType = Exam.sExamTypeMidterm;
 
         boolean haveGlobalRoomGroup = false;
 		for (Iterator it = globalRoomGroups.iterator(); it.hasNext();) {
@@ -460,7 +460,7 @@ public class RoomGroupListAction extends Action {
     		
     		int examType = -1;
     		if (roomGroupListForm.getDeptCodeX().equalsIgnoreCase("exam")) examType = Exam.sExamTypeFinal;
-    		if (roomGroupListForm.getDeptCodeX().equalsIgnoreCase("eexam")) examType = Exam.sExamTypeEvening;
+    		if (roomGroupListForm.getDeptCodeX().equalsIgnoreCase("eexam")) examType = Exam.sExamTypeMidterm;
 
     		boolean haveGlobalRoomGroup = false;
     		for (Iterator it = globalRoomGroups.iterator(); it.hasNext();) {

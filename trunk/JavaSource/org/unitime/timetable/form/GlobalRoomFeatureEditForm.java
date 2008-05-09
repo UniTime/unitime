@@ -19,12 +19,9 @@
 */
 package org.unitime.timetable.form;
 
-import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Set;
-import java.util.TreeMap;
 
-import org.hibernate.HibernateException;
 import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.RoomFeature;
 
@@ -41,7 +38,6 @@ public class GlobalRoomFeatureEditForm extends RoomFeatureEditForm {
 	private static final long serialVersionUID = 3258125843296629559L;
 	// --------------------------------------------------------- Instance Variables
 	GlobalRoomFeature roomFeature = new GlobalRoomFeature();
-	TreeMap sisReferenceOptions;
 	// --------------------------------------------------------- Methods
 
 	/**
@@ -115,16 +111,5 @@ public class GlobalRoomFeatureEditForm extends RoomFeatureEditForm {
 	 */
 	public void setRoomFeature(RoomFeature roomFeature) {
 		this.roomFeature = (GlobalRoomFeature) roomFeature;
-	}
-	public Object get(Object key) {
-		return sisReferenceOptions.get(key);
-	}
-	public TreeMap getSisReferenceOptions() throws HibernateException, SQLException {
-		if (sisReferenceOptions==null) 
-			sisReferenceOptions = GlobalRoomFeature.sisFeatures();
-		return sisReferenceOptions;
-	}
-	public void setSisReferenceOptions(TreeMap sisReferenceOptions) {
-		this.sisReferenceOptions = sisReferenceOptions;
 	}
 }

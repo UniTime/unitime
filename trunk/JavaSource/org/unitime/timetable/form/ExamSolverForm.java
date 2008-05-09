@@ -76,7 +76,7 @@ public class ExamSolverForm extends ActionForm {
 	private boolean iCanDo = true;
 	private boolean iChangeTab = false;
 	private int iExamType = 0;
-    private boolean iHasEveningExams = false;
+    private boolean iHasMidtermExams = false;
 
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
         ActionErrors errors = new ActionErrors();
@@ -221,7 +221,7 @@ public class ExamSolverForm extends ActionForm {
 			iHosts.insertElementAt("auto",0);
 		}	
         try {
-            iHasEveningExams = Exam.hasEveningExams(Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId());
+            iHasMidtermExams = Exam.hasMidtermExams(Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId());
         } catch (Exception e) {}
 	}
 	
@@ -330,7 +330,7 @@ public class ExamSolverForm extends ActionForm {
     public Collection getExamTypes() {
     	Vector ret = new Vector(Exam.sExamTypes.length);
         for (int i=0;i<Exam.sExamTypes.length;i++) {
-            if (i==Exam.sExamTypeEvening && !iHasEveningExams) continue;
+            if (i==Exam.sExamTypeMidterm && !iHasMidtermExams) continue;
             ret.add(new ComboBoxLookup(Exam.sExamTypes[i], String.valueOf(i)));
         }
     	return ret;

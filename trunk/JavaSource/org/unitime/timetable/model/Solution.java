@@ -283,15 +283,11 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 
 		hibSession.update(this);
 		
-		for (Iterator i=getAssignments().iterator();i.hasNext();) {
-		    Assignment a = (Assignment)i.next();
-		    if (a.getEvent()!=null) {
-		        hibSession.delete(a.getEvent());
-		        a.setEvent(null);
-		    }
-		}
+		deleteObjects(hibSession,
+	              "ClassEvent",
+	              "select e.uniqueId from Solution s inner join s.assignments a, ClassEvent e where e.clazz=a.clazz and s.uniqueId=:solutionId");
 
-        removeDivSecNumbers(hibSession);
+		removeDivSecNumbers(hibSession);
 		
 		if (sendNotificationPuid!=null) sendNotification(this, null, sendNotificationPuid, true, null);
 	}
@@ -490,16 +486,26 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		        hibSession.save(contact);
 		    }
 		}
-		EventType eventType = EventType.findByReference(EventType.sEventTypeClass);
+        Hashtable<Long,ClassEvent> classEvents = new Hashtable();
+        for (Iterator i=hibSession.createQuery(
+                "select e from Solution s inner join s.assignments a, ClassEvent e where e.clazz=a.clazz and s.uniqueId=:solutionId")
+                .setLong("solutionId",getUniqueId())
+                .iterate(); i.hasNext();) {
+            ClassEvent e = (ClassEvent)i.next();
+            classEvents.put(e.getClazz().getUniqueId(),e);
+        }
 		for (Iterator i=getAssignments().iterator();i.hasNext();) {
 		    Assignment a = (Assignment)i.next();
-		    Event event = a.generateCommittedEvent(eventType, true);
+		    ClassEvent event = a.generateCommittedEvent(classEvents.get(a.getClassId()),true);
+		    classEvents.remove(a.getClassId());
 		    if (event!=null) {
 		        event.setMainContact(contact);
-		        a.setEvent(event);
-		        hibSession.save(event);
-		        hibSession.update(a);
+		        hibSession.saveOrUpdate(event);
 		    }
+		}
+		for (Enumeration e=classEvents.elements();e.hasMoreElements();) {
+		    ClassEvent event = (ClassEvent)e.nextElement();
+		    hibSession.delete(event);
 		}
 		
 		if (sendNotificationPuid!=null) sendNotification(uncommittedSolution, this, sendNotificationPuid, true, messages);
@@ -799,12 +805,6 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 				.setLong("solutionId", getUniqueId().longValue())
 				.executeUpdate();
 
-        deleteObjects(
-                hibSession,
-                "Event",
-                "select a.event.uniqueId from Assignment a where a.solution.uniqueId=:solutionId"
-                );
-		
 		deleteObjects(
 				hibSession,
 				"SolverInfo",
@@ -876,12 +876,6 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 				.setInteger("solutionId", getUniqueId().intValue())
 				.executeUpdate();
 
-        deleteObjects(
-                hibSession,
-                "Event",
-                "select a.event.uniqueId from Assignment a where a.solution.uniqueId=:solutionId"
-                );
-	
 		deleteObjects(
 				hibSession,
 				"SolverInfo",

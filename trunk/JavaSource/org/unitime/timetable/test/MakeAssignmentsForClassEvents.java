@@ -36,12 +36,11 @@ import net.sf.cpsolver.ifs.util.ToolBox;
 import org.hibernate.Transaction;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.model.Assignment;
+import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Event;
-import org.unitime.timetable.model.EventType;
-import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.Session;
@@ -237,8 +236,9 @@ public class MakeAssignmentsForClassEvents {
         return iExactTimePattern;
     }
     
-    public Assignment createAssignment(Class_ clazz, Event event) {
-        if (clazz==null || event==null || event.getMeetings().isEmpty()) return null;
+    public Assignment createAssignment(ClassEvent event) {
+        if (event==null || event.getClazz()==null || event.getMeetings().isEmpty()) return null;
+        Class_ clazz = event.getClazz();
         clazz.setDatePattern(getDatePattern(event));
         Assignment assignment = clazz.getCommittedAssignment();
         if (assignment==null) {
@@ -253,7 +253,6 @@ public class MakeAssignmentsForClassEvents {
         }
         assignment.setDays(getDaysCode(event));
         assignment.setStartSlot(getStartSlot(event));
-        assignment.setEvent(event);
         assignment.setRooms(getRooms(event));
         assignment.setTimePattern(getTimePattern(event));
         iHibSession.saveOrUpdate(clazz);
@@ -287,19 +286,15 @@ public class MakeAssignmentsForClassEvents {
                     MakeAssignmentsForClassEvents m = new MakeAssignmentsForClassEvents(new SessionDAO().get(sa.getSession().getUniqueId()), hibSession);
                     
                     for (Iterator j=hibSession.createQuery(
-                            "select c, e from " +
-                            "Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co, " +
-                            "Event e inner join e.relatedCourses r "+
-                            "where co.isControl=true and co.subjectArea.uniqueId=:subjectId and e.eventType.reference=:classType and "+
-                            "r.ownerType=:classOwner and r.ownerId=c.uniqueId"+
+                            "select e from ClassEvent e inner join e.clazz c " +
+                            "inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co " +
+                            "where co.isControl=true and co.subjectArea.uniqueId=:subjectId "+
                             (excludeCommittedAssignments?" and c.committedAssignment is null":""))
                             .setLong("subjectId", sa.getUniqueId())
-                            .setString("classType", EventType.sEventTypeClass)
-                            .setInteger("classOwner", ExamOwner.sOwnerTypeClass)
                             .iterate();j.hasNext();) {
-                        Object[] o = (Object[])j.next();
-                        Assignment a = m.createAssignment((Class_)o[0], (Event)o[1]);
-                        System.out.println("  "+((Event)o[1]).getEventName()+" -- "+(a==null?"Not Assigned":a.getPlacement().getLongName()));
+                        ClassEvent e = (ClassEvent)j.next();
+                        Assignment a = m.createAssignment(e);
+                        System.out.println("  "+e.getEventName()+" -- "+(a==null?"Not Assigned":a.getPlacement().getLongName()));
                     }
 
                     tx.commit();

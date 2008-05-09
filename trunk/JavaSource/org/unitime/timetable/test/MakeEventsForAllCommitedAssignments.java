@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.test;
 
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -27,8 +28,7 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.model.Assignment;
-import org.unitime.timetable.model.Event;
-import org.unitime.timetable.model.EventType;
+import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.dao._RootDAO;
 
@@ -42,7 +42,7 @@ public class MakeEventsForAllCommitedAssignments {
             HibernateUtil.configureHibernate(new Properties());
             
             Session hibSession = new _RootDAO().getSession();
-            List commitedSolutions = hibSession.createQuery("select distinct s from Solution s inner join s.assignments a where s.commited = true and a.event is null").list();
+            List commitedSolutions = hibSession.createQuery("select s from Solution s where s.commited = true").list();
             
             for (Iterator i=commitedSolutions.iterator();i.hasNext();) {
                 Solution s = (Solution)i.next();
@@ -53,20 +53,25 @@ public class MakeEventsForAllCommitedAssignments {
                 try {
                     tx = hibSession.beginTransaction();
 
-                    EventType eventType = EventType.findByReference(EventType.sEventTypeClass);
+                    Hashtable<Long,ClassEvent> classEvents = new Hashtable();
+                    for (Iterator j=hibSession.createQuery(
+                            "select e from Solution s inner join s.assignments a, ClassEvent e where e.clazz=a.clazz and s.uniqueId=:solutionId")
+                            .setLong("solutionId",s.getUniqueId())
+                            .iterate(); j.hasNext();) {
+                        ClassEvent e = (ClassEvent)j.next();
+                        classEvents.put(e.getClazz().getUniqueId(),e);
+                    }
                     for (Iterator j=hibSession.createQuery(
                             "select a from Assignment a "+
-                            "where a.event is null and a.solution.uniqueId = :solutionId")
+                            "where a.solution.uniqueId = :solutionId")
                             .setLong("solutionId", s.getUniqueId())
                             .iterate();
                         j.hasNext();) {
                         Assignment a = (Assignment)j.next();
-                        Event event = a.generateCommittedEvent(eventType, true);
+                        ClassEvent event = a.generateCommittedEvent(classEvents.get(a.getUniqueId()),true);
                         if (event!=null) {
                             System.out.println("  "+a.getClassName()+" "+a.getPlacement().getLongName());
-                            a.setEvent(event);
-                            hibSession.save(event);
-                            hibSession.update(a);
+                            hibSession.saveOrUpdate(event);
                         }
                     }
                     

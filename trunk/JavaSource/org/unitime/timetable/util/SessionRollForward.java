@@ -1264,18 +1264,18 @@ public class SessionRollForward {
 				.list());
 	}
 	
-	public void rollEveningExamsForward(ActionMessages errors, RollForwardSessionForm rollForwardSessionForm){
+	public void rollMidtermExamsForward(ActionMessages errors, RollForwardSessionForm rollForwardSessionForm){
 		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
 		
 		try {
-			List exams = findExamToRollForward(toSession, Exam.sExamTypeEvening);
+			List exams = findExamToRollForward(toSession, Exam.sExamTypeMidterm);
 			for(Iterator examIt = exams.iterator(); examIt.hasNext();){
 				rollForwardExam((Exam) examIt.next(), toSession);
 			}
 		} catch (Exception e) {
 			Debug.error(e.getStackTrace().toString());
 			Debug.error(e.getMessage());
-			errors.add("rollForward", new ActionMessage("errors.rollForward", "Evening Exam", "previous session", toSession.getLabel(), "Failed to roll all evening exams forward."));
+			errors.add("rollForward", new ActionMessage("errors.rollForward", "Midterm Exam", "previous session", toSession.getLabel(), "Failed to roll all midterm exams forward."));
 		}		
 	}
 

@@ -51,7 +51,7 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.DistributionType;
-import org.unitime.timetable.model.EveningPeriodPreferenceModel;
+import org.unitime.timetable.model.MidtermPeriodPreferenceModel;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Location;
@@ -627,8 +627,8 @@ public class PreferencesAction extends Action {
                 assignment = solver.getAssignment(exam.getUniqueId());
             else if (exam.getAssignedPeriod()!=null)
                 assignment = new ExamAssignment(exam);
-            if (Exam.sExamTypeEvening==exam.getExamType()) {
-            	EveningPeriodPreferenceModel epx = new EveningPeriodPreferenceModel(exam.getSession(), assignment);
+            if (Exam.sExamTypeMidterm==exam.getExamType()) {
+            	MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(exam.getSession(), assignment);
             	if (epx.canDo()) {
             		epx.load(exam);
             		epx.load(request);
@@ -808,8 +808,8 @@ public class PreferencesAction extends Action {
             assignment = solver.getAssignment(exam.getUniqueId());
         else if (exam!=null && exam.getAssignedPeriod()!=null)
             assignment = new ExamAssignment(exam);
-        if (Exam.sExamTypeEvening==((ExamEditForm)frm).getExamType()) {
-        	EveningPeriodPreferenceModel epx = new EveningPeriodPreferenceModel(exam==null?Session.getCurrentAcadSession(Web.getUser(request.getSession())):exam.getSession(), assignment);
+        if (Exam.sExamTypeMidterm==((ExamEditForm)frm).getExamType()) {
+        	MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(exam==null?Session.getCurrentAcadSession(Web.getUser(request.getSession())):exam.getSession(), assignment);
         	if (epx.canDo()) {
         		if (exam!=null) epx.load(exam); else epx.invertRequired();
         		frm.setHasNotAvailable(true);

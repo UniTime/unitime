@@ -36,6 +36,7 @@ import org.dom4j.Element;
 import org.unitime.commons.Email;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.ChangeLog;
+import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseCreditUnitConfig;
@@ -47,8 +48,6 @@ import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionObject;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.DistributionType;
-import org.unitime.timetable.model.Event;
-import org.unitime.timetable.model.EventType;
 import org.unitime.timetable.model.FixedCreditUnitConfig;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
@@ -58,7 +57,6 @@ import org.unitime.timetable.model.NonUniversityLocation;
 import org.unitime.timetable.model.OfferingConsentType;
 import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.PreferenceLevel;
-import org.unitime.timetable.model.RelatedCourseInfo;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomDept;
 import org.unitime.timetable.model.SchedulingSubpart;
@@ -80,7 +78,6 @@ public class CourseOfferingImport extends BaseImport {
 	HashSet<Long> existingClasses = new HashSet<Long>();
 	HashMap<String, SubjectArea> subjectAreas = new HashMap<String, SubjectArea>();
 	HashMap<String, ItypeDesc> itypes = new HashMap<String, ItypeDesc>();
-	private EventType classType = null;
 	private DistributionType meetsWithType = null;
 	Vector<String> offeringNotes = new Vector<String>();
 	Vector<String> changeList = new Vector<String>();
@@ -129,7 +126,6 @@ public class CourseOfferingImport extends BaseImport {
 	        loadExistingInstructionalOfferings(session.getUniqueId());
 	        loadExistingCourseOfferings(session.getUniqueId());
 	        loadExistingClasses(session.getUniqueId());
-	        loadClassEventType();
 	        loadRequiredPrefLevel();
 	        loadMeetsWithDistributionType();
 	        assignmentHelper = new MakeAssignmentsForClassEvents(session, getHibSession());
@@ -398,8 +394,7 @@ public class CourseOfferingImport extends BaseImport {
 				&& originalMeeting.getStartOffset().intValue() == newMeeting.getStartOffset().intValue()
 				&& originalMeeting.getStartPeriod().intValue() == newMeeting.getStartPeriod().intValue()
 				&& originalMeeting.getStopOffset().intValue() == newMeeting.getStopOffset().intValue()
-				&& originalMeeting.getStopPeriod().intValue() == newMeeting.getStopPeriod().intValue()
-				&& originalMeeting.getEventType().equals(newMeeting.getEventType())){			
+				&& originalMeeting.getStopPeriod().intValue() == newMeeting.getStopPeriod().intValue()){			
 			isSame = true;
 		}
 		return (isSame);
@@ -761,7 +756,6 @@ public class CourseOfferingImport extends BaseImport {
 			meeting.setStartPeriod(this.getStartPeriod());
 			meeting.setStopOffset(new Integer(0));
 			meeting.setStopPeriod(this.getEndPeriod());
-			meeting.setEventType(classType);
 
 			return(meeting);
 		}
@@ -1851,82 +1845,61 @@ public class CourseOfferingImport extends BaseImport {
 	private boolean addUpdateClassEvent(Class_ c, Vector<Meeting> meetings) {
 		boolean changed = false;
 		
-		List<?> originalClassEvents = null;
-		if (c.getUniqueId() != null){
-			originalClassEvents = Event.findCourseRelatedEventsOfTypeOwnedBy(this.getHibSession(), classType.getUniqueId(), c);
-		} else {
-			originalClassEvents = new ArrayList<Object>();
-		}
-		
-		if(meetings != null && !meetings.isEmpty() && (originalClassEvents == null || originalClassEvents.isEmpty() || originalClassEvents.size() > 1)){
-			if (originalClassEvents.size() > 1){
-				addNote("\tfound multiple matching events, deleting them and adding new event: " + c.getSchedulingSubpart().getInstrOfferingConfig().getCourseName() + " " + c.getSchedulingSubpart().getItype().getAbbv().trim() + " " + c.getClassSuffix());
-				for(Iterator<?> eIt = originalClassEvents.iterator(); eIt.hasNext(); ){
-					Event event = (Event) eIt.next();
-					getHibSession().delete(event);
-				}
-			}
-			Event newEvent = new Event();
-			newEvent.setEventType(classType);
+		ClassEvent origEvent = c.getEvent();
+		if(meetings != null && !meetings.isEmpty() && origEvent==null){
+			ClassEvent newEvent = new ClassEvent();
 			newEvent.setMaxCapacity(c.getMaxExpectedCapacity());
 			newEvent.setMinCapacity(c.getExpectedCapacity());
 			newEvent.setEventName(c.getSchedulingSubpart().getInstrOfferingConfig().getCourseName() + " " + c.getSchedulingSubpart().getItype().getAbbv().trim() + " " + c.getClassSuffix());
-			RelatedCourseInfo rci = new RelatedCourseInfo();
-			rci.setOwner(c);
-			rci.setEvent(newEvent);
-			newEvent.addTorelatedCourses(rci);
 			for(Iterator<Meeting> mIt = meetings.iterator(); mIt.hasNext(); ){
 				Meeting meeting = (Meeting) mIt.next();
 				meeting.setEvent(newEvent);
 				newEvent.addTomeetings(meeting);
 			}
 			getHibSession().save(newEvent);
-			assignmentHelper.createAssignment(c, newEvent);
+			assignmentHelper.createAssignment(newEvent);
 			changed = true; 
 			addNote("\tdid not find matching event, added new event: " + c.getSchedulingSubpart().getInstrOfferingConfig().getCourseName() + " " + c.getSchedulingSubpart().getItype().getAbbv().trim() + " " + c.getClassSuffix());
 			ChangeLog.addChange(getHibSession(), manager, session, newEvent, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.CREATE, c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea(), c.getSchedulingSubpart().getControllingCourseOffering().getDepartment());
-		} else {
-			if (!originalClassEvents.isEmpty()){
-				Event origEvent = (Event) originalClassEvents.get(0);
-				Set origMeetings = new TreeSet<Object>();
-				origMeetings.addAll(origEvent.getMeetings());
-				if (meetings != null){
-					for(Iterator<Meeting> nmIt = meetings.iterator(); nmIt.hasNext(); ){
-						Meeting newMeeting = (Meeting) nmIt.next();
-						boolean found = false;
-						for(Iterator<?> omIt = origMeetings.iterator(); omIt.hasNext(); ){
-							Meeting origMeeting = (Meeting) omIt.next();
-							if(isSameMeeting(origMeeting, newMeeting)){
-								found = true;
-								origMeetings.remove(origMeeting);
-								break;
-							}
-						}
-						if (!found){
-							addNote("\tdid not find matching meeting, adding new meeting to event: " + c.getClassLabel());
-							newMeeting.setEvent(origEvent);
-							origEvent.addTomeetings(newMeeting);
-							changed = true;
-						}
-					}
-				}
-				if (!origMeetings.isEmpty()){
-					addNote("\tsome existing meetings did not have matches in input, deleted them: " + c.getClassLabel());
-					for(Iterator<?> mIt = origMeetings.iterator(); mIt.hasNext(); ){
-						Meeting m = (Meeting) mIt.next();
-						origEvent.getMeetings().remove(m);
-						m.setEvent(null);
-						ChangeLog.addChange(getHibSession(), manager, session, m, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.DELETE, c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea(), c.getSchedulingSubpart().getControllingCourseOffering().getDepartment());
-						getHibSession().delete(m);
-						changed = true;
-					}
-				}
-				if (changed){
-					assignmentHelper.createAssignment(c, origEvent);
-					ChangeLog.addChange(getHibSession(), manager, session, origEvent, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.UPDATE, c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea(), c.getSchedulingSubpart().getControllingCourseOffering().getDepartment());	
-					getHibSession().update(origEvent);
-				}
-			}
+		} else if (origEvent!=null) {
+            Set origMeetings = new TreeSet<Object>();
+            origMeetings.addAll(origEvent.getMeetings());
+            if (meetings != null){
+                for(Iterator<Meeting> nmIt = meetings.iterator(); nmIt.hasNext(); ){
+                    Meeting newMeeting = (Meeting) nmIt.next();
+                    boolean found = false;
+                    for(Iterator<?> omIt = origMeetings.iterator(); omIt.hasNext(); ){
+                        Meeting origMeeting = (Meeting) omIt.next();
+                        if(isSameMeeting(origMeeting, newMeeting)){
+                            found = true;
+                            origMeetings.remove(origMeeting);
+                            break;
+                        }
+                    }
+                    if (!found){
+                        addNote("\tdid not find matching meeting, adding new meeting to event: " + c.getClassLabel());
+                        newMeeting.setEvent(origEvent);
+                        origEvent.addTomeetings(newMeeting);
+                        changed = true;
+                    }
+                }
+            }
+            if (!origMeetings.isEmpty()){
+                addNote("\tsome existing meetings did not have matches in input, deleted them: " + c.getClassLabel());
+                for(Iterator<?> mIt = origMeetings.iterator(); mIt.hasNext(); ){
+                    Meeting m = (Meeting) mIt.next();
+                    origEvent.getMeetings().remove(m);
+                    m.setEvent(null);
+                    ChangeLog.addChange(getHibSession(), manager, session, m, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.DELETE, c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea(), c.getSchedulingSubpart().getControllingCourseOffering().getDepartment());
+                    getHibSession().delete(m);
+                    changed = true;
+                }
+            }
+            if (changed){
+                assignmentHelper.createAssignment(origEvent);
+                ChangeLog.addChange(getHibSession(), manager, session, origEvent, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.UPDATE, c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea(), c.getSchedulingSubpart().getControllingCourseOffering().getDepartment());   
+                getHibSession().update(origEvent);
+            }
 		}
 				
 		return(changed);
@@ -2447,9 +2420,6 @@ public class CourseOfferingImport extends BaseImport {
 		}
 	}
 	
-	private void loadClassEventType() {
-		classType = (EventType) this.getHibSession().createQuery("from EventType et where et.reference = 'class'").uniqueResult();
-	}
 	private void loadMeetsWithDistributionType() {
 		meetsWithType = (DistributionType) this.getHibSession().createQuery("from DistributionType dt where dt.reference = 'MEET_WITH'").uniqueResult();
 	}

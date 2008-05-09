@@ -35,7 +35,7 @@
 			<TD colspan="2">
 				<tt:section-header>
 					<tt:section-title>
-						Setup Evening Examination Periods
+						Setup Midterm Examination Periods
 					</tt:section-title>
 					<html:submit property="op">
 						<bean:write name="examPeriodEditForm" property="op" />
@@ -228,7 +228,7 @@
 				<tt:section-title>Examination Periods</tt:section-title>
 				<html:submit property="op" value="Add Period" title="Create a new examination period"/>
 				<logic:equal name="examPeriodEditForm" property="canAutoSetup" value="true">
-					<html:submit property="op" value="Evening Periods" title="Setup periods for evening exams"/>
+					<html:submit property="op" value="Midterm Periods" title="Setup periods for midterm exams"/>
 				</logic:equal>
 			</tt:section-header>
 		</TD>
@@ -243,7 +243,7 @@
 		<TD colspan='6' align="right">
 			<html:submit property="op" value="Add Period" title="Create a new examination period"/>
 			<logic:equal name="examPeriodEditForm" property="canAutoSetup" value="true">
-				<html:submit property="op" value="Evening Periods" title="Setup periods for evening exams"/>
+				<html:submit property="op" value="Midterm Periods" title="Setup periods for midterm exams"/>
 			</logic:equal>
 		</TD>
 	</TR>

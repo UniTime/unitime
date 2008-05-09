@@ -1304,17 +1304,6 @@ public class Class_ extends BaseClass_ {
 		return(newClass);
 	}
 	
-    public Event getCommittedEvent() {
-        return (Event)new Class_DAO().getSession().createQuery(
-                "select e from Event e inner join e.relatedCourses r where " +
-                "r.ownerId=:clazzId and r.ownerType=:ownerType and e.eventType.reference=:eventType")
-                .setLong("ownerId", getUniqueId())
-                .setInteger("ownerType", ExamOwner.sOwnerTypeClass)
-                .setString("eventType", EventType.sEventTypeClass)
-                .setCacheable(true)
-                .uniqueResult();
-    }
-    
     public static Class_ findByExternalId(Long sessionId, String externalId) {
         return (Class_)new Class_DAO().
             getSession().
@@ -1333,5 +1322,12 @@ public class Class_ extends BaseClass_ {
             setLong("uniqueIdRolledForwardFrom", uniqueIdRolledForwardFrom.longValue()).
             setCacheable(true).
             uniqueResult();
+    }
+    
+    public ClassEvent getEvent() {
+        return (ClassEvent)new Class_DAO().getSession().createQuery(
+                "from ClassEvent where clazz.uniqueId=:classId").
+                setLong("classId", getUniqueId()).
+                setCacheable(true).uniqueResult();
     }
 }
