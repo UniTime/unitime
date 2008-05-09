@@ -35,7 +35,7 @@ import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.util.Constants;
 
 
-public class Event extends BaseEvent implements Comparable<Event> {
+public abstract class Event extends BaseEvent implements Comparable<Event> {
 	private static final long serialVersionUID = 1L;
 
 /*[CONSTRUCTOR MARKER BEGIN]*/
@@ -79,35 +79,14 @@ public class Event extends BaseEvent implements Comparable<Event> {
 	    "Special Event"
 	};
 
-	public String getEventTypeLabel() { throw new RuntimeException("Method not implemented."); }
+	public abstract int getEventType();
 	
-    public Set<Student> getStudents() {
-        throw new RuntimeException("Method not implemented.");
-    }
+	public String getEventTypeLabel() { return sEventTypes[getEventType()]; }
+	
+    public abstract Set<Student> getStudents();
     
-    /*
-    public Set<Long> getStudentIds() {
-        HashSet<Long> students = new HashSet();
-        for (Iterator<?> i=getRelatedCourses().iterator();i.hasNext();)
-            students.addAll(((RelatedCourseInfo)i.next()).getStudentIds());
-        return students;
-    }
-    */
-    
-    public Set<DepartmentalInstructor> getInstructors() {
-        throw new RuntimeException("Method not implemented.");
-    }
+    public abstract Set<DepartmentalInstructor> getInstructors();
 
-    /*
-    public int countStudents() {
-        int nrStudents = 0;
-        for (Iterator i=getRelatedCourses().iterator();i.hasNext();)
-            nrStudents += ((RelatedCourseInfo)i.next()).countStudents();
-        return nrStudents;
-       
-    }
-    */
-    
     public static void deleteFromEvents(org.hibernate.Session hibSession, Integer ownerType, Long ownerId) {
         for (Iterator i=hibSession.createQuery("select r from CourseEvent e inner join e.relatedCourses r where "+
                 "r.ownerType=:ownerType and r.ownerId=:ownerId")

@@ -66,6 +66,6 @@ public class ClassEvent extends BaseClassEvent {
         return instructors;
     }
     
-    public String getEventTypeLabel() { return sEventTypes[sEventTypeClass]; }
+    public int getEventType() { return sEventTypeClass; }
 
 }

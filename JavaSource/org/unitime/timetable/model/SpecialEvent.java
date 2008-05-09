@@ -46,6 +46,6 @@ public class SpecialEvent extends BaseSpecialEvent {
         return new HashSet<DepartmentalInstructor>();
     }
     
-    public String getEventTypeLabel() { return sEventTypes[sEventTypeSpecial]; }
+    public int getEventType() { return sEventTypeSpecial; }
 
 }

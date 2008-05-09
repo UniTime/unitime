@@ -41,6 +41,7 @@ public class CourseEvent extends BaseCourseEvent {
 
     public Set<Student> getStudents() {
         HashSet<Student> students = new HashSet();
+        if (isReqAttendance()==null || !isReqAttendance().booleanValue()) return students;
         for (Iterator i=getRelatedCourses().iterator();i.hasNext();)
             students.addAll(((RelatedCourseInfo)i.next()).getStudents());
         return students;
@@ -49,11 +50,12 @@ public class CourseEvent extends BaseCourseEvent {
     
     public Set<DepartmentalInstructor> getInstructors() {
         HashSet<DepartmentalInstructor> instructors = new HashSet();
+        if (isReqAttendance()==null || !isReqAttendance().booleanValue()) return instructors;
         for (Iterator i=getRelatedCourses().iterator();i.hasNext();)
             instructors.addAll(((RelatedCourseInfo)i.next()).getInstructors());
         return instructors;
     }
 
-    public String getEventTypeLabel() { return sEventTypes[sEventTypeCourse]; }
+    public int getEventType() { return sEventTypeCourse; }
 
 }
