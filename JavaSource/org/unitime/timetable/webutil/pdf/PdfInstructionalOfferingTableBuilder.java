@@ -222,10 +222,10 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	if (isShowSchedulePrintNote()) width[idx++] = 150f;
     	if (isShowNote()) width[idx++] = 300f;
         if (isShowExam()) {
-            if (isShowExamName()) width[idx++] = 200f;
+            if (isShowExamName()) width[idx++] = 120f;
             if (isShowExamTimetable()) {
-                width[idx++] = 100f;
-                width[idx++] = 60f;
+                width[idx++] = 120f;
+                width[idx++] = 80f;
             }
         }
     	return width;
@@ -942,9 +942,12 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
             Exam exam = (Exam)i.next();
             if (examAssignment!=null && examAssignment.getExamType()==exam.getExamType()) {
                 ExamAssignment ea = examAssignment.getAssignment(exam.getUniqueId());
+                if (ea==null && !isShowExamName()) continue;
                 sb.append(ea==null?"":ea.getPeriodAbbreviation());
-            } else 
+            } else {
+                if (exam.getAssignedPeriod()==null && !isShowExamName()) continue;
                 sb.append(exam.getAssignedPeriod()==null?"":exam.getAssignedPeriod().getAbbreviation());
+            }
             if (i.hasNext()) sb.append("\n");
         }
         Color color = (isEditable?sEnableColor:sDisableColor);
@@ -959,8 +962,10 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
             Exam exam = (Exam)i.next();
             if (examAssignment!=null && examAssignment.getExamType()==exam.getExamType()) {
                 ExamAssignment ea = examAssignment.getAssignment(exam.getUniqueId());
+                if (ea==null && !isShowExamName()) continue;
                 sb.append(ea==null?"":ea.getRoomsName(", "));
             } else {
+                if (exam.getAssignedPeriod()==null && !isShowExamName()) continue;
                 for (Iterator j=new TreeSet(exam.getAssignedRooms()).iterator();j.hasNext();) {
                     Location location = (Location)j.next();
                     sb.append(location.getLabel());
