@@ -66,11 +66,13 @@ public class ExamPdfReportForm extends ExamReportForm {
     private boolean iEmail = false;
     private String iAddr, iCc, iBcc = null;
     private boolean iEmailDeputies = false;
+    private boolean iItype = false;
     private String iReport = null;
     private String iMessage = null;
     private String iSubject = null;
     private String iSince = null;
     private boolean iEmailInstructors, iEmailStudents;
+    private boolean iClassSchedule = false;
     
     public static Hashtable<String,Class> sRegisteredReports = new Hashtable();
     public static String[] sModes = {"PDF (Letter)", "PDF (Ledger)", "Text"};
@@ -128,6 +130,8 @@ public class ExamPdfReportForm extends ExamReportForm {
         iSince = null;
         iEmailInstructors = false; 
         iEmailStudents = false;
+        iClassSchedule = false;
+        iItype = false;
         if (getAddress()==null) {
             TimetableManager manager = TimetableManager.getManager(Web.getUser(request.getSession()));
             if (manager!=null && manager.getEmailAddress()!=null) setAddress(manager.getEmailAddress());
@@ -159,6 +163,8 @@ public class ExamPdfReportForm extends ExamReportForm {
         setSince(UserData.getProperty(session,"ExamPdfReport.since"));
         setEmailInstructors(UserData.getPropertyBoolean(session,"ExamPdfReport.emailInstructors", false));
         setEmailStudents(UserData.getPropertyBoolean(session,"ExamPdfReport.emailStudents", false));
+        setItype(UserData.getPropertyBoolean(session,"ExamPdfReport.itype", "true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.itype","true"))));
+        setClassSchedule(UserData.getPropertyBoolean(session,"ExamPdfReport.cschedule", true));
     }
     
     public void save(HttpSession session) {
@@ -186,6 +192,8 @@ public class ExamPdfReportForm extends ExamReportForm {
         UserData.setProperty(session,"ExamPdfReport.since", getSince());
         UserData.setPropertyBoolean(session,"ExamPdfReport.emailInstructors", getEmailInstructors());
         UserData.setPropertyBoolean(session,"ExamPdfReport.emailStudents", getEmailStudents());
+        UserData.setPropertyBoolean(session,"ExamPdfReport.itype", getItype());
+        UserData.setPropertyBoolean(session,"ExamPdfReport.cschedule", getClassSchedule());
     }
 
     public String[] getReports() { return iReports;}
@@ -252,4 +260,8 @@ public class ExamPdfReportForm extends ExamReportForm {
     public void setEmailInstructors(boolean emailInstructors) { iEmailInstructors = emailInstructors; }
     public boolean getEmailStudents() { return iEmailStudents; }
     public void setEmailStudents(boolean emailStudents) { iEmailStudents = emailStudents; }
+    public boolean getItype() { return iItype; }
+    public void setItype(boolean itype) { iItype = itype; }
+    public boolean getClassSchedule() { return iClassSchedule; }
+    public void setClassSchedule(boolean classSchedule) { iClassSchedule = classSchedule; }
 }
