@@ -189,6 +189,10 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
 	    }
 	    
 	    public String getDays() {
+	        return getDays(Constants.DAY_NAME, Constants.DAY_NAMES_SHORT);
+	    }
+	    
+	    public String getDays(String[] dayNames, String[] shortDyNames) {
 	        int nrDays = 0;
 	        int dayCode = 0;
 	        for (Meeting meeting : getMeetings()) {
@@ -208,7 +212,7 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
             String ret = "";
 	        for (int i=0;i<Constants.DAY_CODES.length;i++) {
 	            if ((dayCode & Constants.DAY_CODES[i])!=0)
-	                ret += (nrDays==1?Constants.DAY_NAME:Constants.DAY_NAMES_SHORT)[i];
+	                ret += (nrDays==1?dayNames:shortDyNames)[i];
 	        }
             return ret;
 	    }
