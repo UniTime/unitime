@@ -57,6 +57,7 @@ public class DeptStatusTypeEditForm extends ActionForm {
     private boolean iCanExamView            = false;
     private boolean iCanExamEdit            = false;
     private boolean iCanExamTimetable       = false;
+    private boolean iCanNoRoleReport  = false;
     
 
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
@@ -99,6 +100,7 @@ public class DeptStatusTypeEditForm extends ActionForm {
         iCanExamView            = false;
         iCanExamEdit            = false;
         iCanExamTimetable       = false;
+        iCanNoRoleReport  = false;
 	}
     
     public void setOp(String op) { iOp = op; }
@@ -145,6 +147,8 @@ public class DeptStatusTypeEditForm extends ActionForm {
     public void setCanExamEdit(boolean canExamEdit) { iCanExamEdit = canExamEdit; }
     public boolean getCanExamTimetable() { return iCanExamTimetable; }
     public void setCanExamTimetable(boolean canExamTimetable) { iCanExamTimetable = canExamTimetable; }
+    public void setCanNoRoleReport(boolean canNoRoleReport) { iCanNoRoleReport = canNoRoleReport; }
+    public boolean getCanNoRoleReport() { return iCanNoRoleReport; }
     public int getRights() {
         int rights = 0;
         if (getCanManagerView()) rights += DepartmentStatusType.sCanManagerView;
@@ -159,6 +163,7 @@ public class DeptStatusTypeEditForm extends ActionForm {
         if (getCanExamView()) rights += DepartmentStatusType.sCanExamView;
         if (getCanExamEdit()) rights += DepartmentStatusType.sCanExamEdit;
         if (getCanExamTimetable()) rights += DepartmentStatusType.sCanExamTimetable;
+        if (getCanNoRoleReport()) rights += DepartmentStatusType.sCanNoRoleReport;
         return rights;
     }
     public void setRights(int rights) {
@@ -174,6 +179,7 @@ public class DeptStatusTypeEditForm extends ActionForm {
         setCanExamView((rights&DepartmentStatusType.sCanExamView)==DepartmentStatusType.sCanExamView);
         setCanExamEdit((rights&DepartmentStatusType.sCanExamEdit)==DepartmentStatusType.sCanExamEdit);
         setCanExamTimetable((rights&DepartmentStatusType.sCanExamTimetable)==DepartmentStatusType.sCanExamTimetable);
+        setCanNoRoleReport((rights&DepartmentStatusType.sCanNoRoleReport)==DepartmentStatusType.sCanNoRoleReport);
     }
 	
 	public void load(DepartmentStatusType s) {
