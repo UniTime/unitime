@@ -835,11 +835,15 @@ public class WebInstructionalOfferingTableBuilder {
         StringBuffer sb = new StringBuffer();
         for (Iterator i=exams.iterator();i.hasNext();) {
             Exam exam = (Exam)i.next();
+            sb.append("<span "+(Exam.sExamTypeFinal==exam.getExamType()?"style='font-weight:bold;' ":"")+
+                    "title='"+exam.getLabel()+" "+Exam.sExamTypes[exam.getExamType()]+" Examination'>");
             sb.append(exam.getLabel());
+            if (Exam.sExamTypeFinal==exam.getExamType()) sb.append("</span>");
             if (i.hasNext()) sb.append("<br>");
         }
         TableCell cell = this.initNormalCell(sb.toString() ,isEditable);
         cell.setAlign("left");
+        cell.setNoWrap(true);
         return(cell);
     }
 
@@ -847,15 +851,22 @@ public class WebInstructionalOfferingTableBuilder {
         StringBuffer sb = new StringBuffer();
         for (Iterator i=exams.iterator();i.hasNext();) {
             Exam exam = (Exam)i.next();
+            sb.append("<span "+(Exam.sExamTypeFinal==exam.getExamType()?"style='font-weight:bold;' ":"")+
+                    "title='"+exam.getLabel()+" "+Exam.sExamTypes[exam.getExamType()]+" Examination'>");
             if (examAssignment!=null && examAssignment.getExamType()==exam.getExamType()) {
                 ExamAssignment ea = examAssignment.getAssignment(exam.getUniqueId());
+                if (ea==null && !isShowExamName()) continue;
                 sb.append(ea==null?"":ea.getPeriodAbbreviationWithPref());
-            } else 
+            } else {
+                if (exam.getAssignedPeriod()==null && !isShowExamName()) continue;
                 sb.append(exam.getAssignedPeriod()==null?"":exam.getAssignedPeriod().getAbbreviation());
+            }
+            if (Exam.sExamTypeFinal==exam.getExamType()) sb.append("</span>");
             if (i.hasNext()) sb.append("<br>");
         }
         TableCell cell = this.initNormalCell(sb.toString() ,isEditable);
         cell.setAlign("left");
+        cell.setNoWrap(true);
         return(cell);
     }
 
@@ -863,20 +874,26 @@ public class WebInstructionalOfferingTableBuilder {
         StringBuffer sb = new StringBuffer();
         for (Iterator i=exams.iterator();i.hasNext();) {
             Exam exam = (Exam)i.next();
+            sb.append("<span "+(Exam.sExamTypeFinal==exam.getExamType()?"style='font-weight:bold;' ":"")+
+                    "title='"+exam.getLabel()+" "+Exam.sExamTypes[exam.getExamType()]+" Examination'>");
             if (examAssignment!=null && examAssignment.getExamType()==exam.getExamType()) {
                 ExamAssignment ea = examAssignment.getAssignment(exam.getUniqueId());
+                if (ea==null && !isShowExamName()) continue;
                 sb.append(ea==null?"":ea.getRoomsNameWithPref(", "));
             } else { 
+                if (exam.getAssignedPeriod()==null && !isShowExamName()) continue;
                 for (Iterator j=new TreeSet(exam.getAssignedRooms()).iterator();j.hasNext();) {
                     Location location = (Location)j.next();
                     sb.append(location.getLabel());
                     if (j.hasNext()) sb.append(", ");
                 }
             }
+            if (Exam.sExamTypeFinal==exam.getExamType()) sb.append("</span>");
             if (i.hasNext()) sb.append("<br>");
         }
         TableCell cell = this.initNormalCell(sb.toString() ,isEditable);
         cell.setAlign("left");
+        cell.setNoWrap(true);
         return(cell);
     }
 
