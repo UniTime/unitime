@@ -68,7 +68,6 @@ DELETE FROM `timetable`.`event`;
 DELETE FROM `timetable`.`event_contact`;
 DELETE FROM `timetable`.`event_join_event_contact`;
 DELETE FROM `timetable`.`event_note`;
-DELETE FROM `timetable`.`event_type`;
 DELETE FROM `timetable`.`exact_time_mins`;
 DELETE FROM `timetable`.`exam`;
 DELETE FROM `timetable`.`exam_instructor`;
@@ -163,7 +162,7 @@ DELETE FROM `timetable`.`xconflict_student`;
 INSERT INTO `timetable`.`application_config`(`name`, `value`, `description`)
 VALUES ('tmtbl.system_message', '', 'Message displayed to users when they first log in to Timetabling'),
   ('tmtbl.access_level', 'all', 'Access Levels: all | {dept code}(:{dept code})*'),
-  ('tmtbl.db.version','25','Timetabling database version (please do not change -- this key is used by automatic database update)');
+  ('tmtbl.db.version','27','Timetabling database version (please do not change -- this key is used by automatic database update)');
 
 
 INSERT INTO `timetable`.`course_credit_type`(`uniqueid`, `reference`, `label`, `abbreviation`, `legacy_crse_master_code`)
@@ -762,41 +761,37 @@ insert into `timetable`.`solver_parameter_def`
 			(@id+16, 'Exams.DistributionWeight', '1.0', 'Distribution preference weight', 'double', 9, 1, @id+1),
 			(@id+17, 'Exams.RoomSplitWeight', '10.0', 'Room split weight', 'double', 10, 1, @id+1),
 			(@id+18, 'Exams.RoomSizeWeight', '0.001', 'Excessive room size weight', 'double', 11, 1, @id+1),
-			(@id+19, 'Exams.NotOriginalRoomWeight', '1.0', 'Not original room weight', 'double', 12, 1, @id+1),
-			(@id+20, 'Exams.RotationWeight', '0.001', 'Exam rotation weight', 'double', 13, 1, @id+1),
-			(@id+21, 'Neighbour.Class', 'net.sf.cpsolver.exam.heuristics.ExamNeighbourSelection', 'Examination timetabling neighbour selection class', 'text', 0, 0, @id+2),
-			(@id+22, 'Termination.TimeOut', '1800', 'Maximal solver time (in sec)', 'integer', 1, 1, @id+2),
-			(@id+23, 'Exam.Algorithm', 'Great Deluge', 'Used heuristics', 'enum(Great Deluge,Simulated Annealing)', 2, 1, @id+2),
-			(@id+24, 'HillClimber.MaxIdle', '25000', 'Hill Climber: maximal idle iteration', 'integer', 3, 1, @id+2),
-			(@id+25, 'Termination.StopWhenComplete', 'false', 'Stop when a complete solution if found', 'boolean', 4, 0, @id+2),
-			(@id+26, 'General.SaveBestUnassigned', '-1', 'Save best when x unassigned', 'integer', 5, 0, @id+2),
-			(@id+27, 'GreatDeluge.CoolRate', '0.99999995', 'Cooling rate', 'double', 0, 1, @id+3),
-			(@id+28, 'GreatDeluge.UpperBoundRate', '1.05', 'Upper bound rate', 'double', 1, 1, @id+3),
-			(@id+29, 'GreatDeluge.LowerBoundRate', '0.95', 'Lower bound rate', 'double', 2, 1, @id+3),
-			(@id+30, 'SimulatedAnnealing.InitialTemperature', '1.5', 'Initial temperature', 'double', 0, 1, @id+4),
-			(@id+31, 'SimulatedAnnealing.CoolingRate', '0.95', 'Cooling rate', 'double', 1, 1, @id+4),
-			(@id+32, 'SimulatedAnnealing.TemperatureLength', '25000', 'Temperature length', 'integer', 2, 1, @id+4),
-			(@id+33, 'SimulatedAnnealing.ReheatLengthCoef', '5', 'Reheat length coefficient', 'double', 3, 1, @id+4);
+			(@id+19, 'Exams.RotationWeight', '0.001', 'Exam rotation weight', 'double', 13, 1, @id+1),
+ 			(@id+20, 'Exams.InstructorDirectConflictWeight', '0.0', 'Direct instructor conflict weight', 'double', @ord+1, 1, @id+1),
+			(@id+21, 'Exams.InstructorMoreThanTwoADayWeight', '0.0', 'Three or more exams a day instructor conflict weight', 'double', @ord+2, 1, @id+1),
+			(@id+22, 'Exams.InstructorBackToBackConflictWeight', '0.0', 'Back-to-back instructor conflict weight', 'double', @ord+3, 1, @id+1),
+			(@id+23, 'Exams.InstructorDistanceBackToBackConflictWeight', '0.0', 'Distance back-to-back instructor conflict weight', 'double', @ord+4, 1, @id+1),
+			(@id+24, 'Exams.PerturbationWeight', '0.01', 'Perturbation penalty weight', 'double', @ord+5, 1, @id+1),
+			(@id+25, 'Neighbour.Class', 'net.sf.cpsolver.exam.heuristics.ExamNeighbourSelection', 'Examination timetabling neighbour selection class', 'text', 0, 0, @id+2),
+			(@id+26, 'Termination.TimeOut', '1800', 'Maximal solver time (in sec)', 'integer', 1, 1, @id+2),
+			(@id+27, 'Exam.Algorithm', 'Great Deluge', 'Used heuristics', 'enum(Great Deluge,Simulated Annealing)', 2, 1, @id+2),
+			(@id+28, 'HillClimber.MaxIdle', '25000', 'Hill Climber: maximal idle iteration', 'integer', 3, 1, @id+2),
+			(@id+29, 'Termination.StopWhenComplete', 'false', 'Stop when a complete solution if found', 'boolean', 4, 0, @id+2),
+			(@id+30, 'General.SaveBestUnassigned', '-1', 'Save best when x unassigned', 'integer', 5, 0, @id+2),
+			(@id+31, 'GreatDeluge.CoolRate', '0.99999995', 'Cooling rate', 'double', 0, 1, @id+3),
+			(@id+32, 'GreatDeluge.UpperBoundRate', '1.05', 'Upper bound rate', 'double', 1, 1, @id+3),
+			(@id+33, 'GreatDeluge.LowerBoundRate', '0.95', 'Lower bound rate', 'double', 2, 1, @id+3),
+			(@id+34, 'SimulatedAnnealing.InitialTemperature', '1.5', 'Initial temperature', 'double', 0, 1, @id+4),
+			(@id+35, 'SimulatedAnnealing.CoolingRate', '0.95', 'Cooling rate', 'double', 1, 1, @id+4),
+			(@id+36, 'SimulatedAnnealing.TemperatureLength', '25000', 'Temperature length', 'integer', 2, 1, @id+4),
+			(@id+37, 'SimulatedAnnealing.ReheatLengthCoef', '5', 'Reheat length coefficient', 'double', 3, 1, @id+4);
 
 insert into `timetable`.`solver_predef_setting` (`uniqueid`, `name`, `description`, `appearance`) values 
-			(@id+34, 'Exam.Default', 'Default', 2);
-			
-insert into `timetable`.`event_type` (`uniqueid`,`reference`,`label`) values
-	(@id+35, 'class', 'Class'),
-	(@id+36, 'final', 'Final Exam'),
-	(@id+37, 'evening', 'Evening Exam'),
-	(@id+38, 'otherWithConflict', 'Other Course Event with Conflict Checking'),
-	(@id+39, 'otherNoConflict', 'Other Course Event with No Conflict Checking'),
-	(@id+40, 'special', 'Special Event');
+			(@id+38, 'Exam.Default', 'Default', 2);
 
 insert into `timetable`.`roles` (`role_id`, `reference`, `abbv`) values
-	(@id+41, 'Exam Mgr', 'Examination Timetabling Manager');
+	(@id+39, 'Exam Mgr', 'Examination Timetabling Manager');
 
 insert into `timetable`.`distribution_type`(`uniqueid`, `reference`, `label`, `sequencing_required`, `req_id`, `allowed_pref`, `description`, `abbreviation`, `instructor_pref`, `exam_pref`) values 
-	(@id+42, 'EX_SAME_PER', 'Same Period', 0, 36, 'P43210R', 'Exams are to be placed at the same period. <BR>When prohibited or (strongly) discouraged: exams are to be placed at different periods.', 'Same Per', 0, 1), 
-	(@id+43, 'EX_SAME_ROOM', 'Same Room', 0, 37, 'P43210R', 'Exams are to be placed at the same room(s). <BR>When prohibited or (strongly) discouraged: exams are to be placed at different rooms.', 'Same Room', 0, 1), 
-	(@id+44, 'EX_PRECEDENCE', 'Precedence', 1, 38, 'P43210R', 'Exams are to be placed in the given order. <BR>When prohibited or (strongly) discouraged: exams are to be placed in the order reverse to the given one.', 'Precede', 0, 1); 
+	(@id+40, 'EX_SAME_PER', 'Same Period', 0, 36, 'P43210R', 'Exams are to be placed at the same period. <BR>When prohibited or (strongly) discouraged: exams are to be placed at different periods.', 'Same Per', 0, 1), 
+	(@id+41, 'EX_SAME_ROOM', 'Same Room', 0, 37, 'P43210R', 'Exams are to be placed at the same room(s). <BR>When prohibited or (strongly) discouraged: exams are to be placed at different rooms.', 'Same Room', 0, 1), 
+	(@id+42, 'EX_PRECEDENCE', 'Precedence', 1, 38, 'P43210R', 'Exams are to be placed in the given order. <BR>When prohibited or (strongly) discouraged: exams are to be placed in the order reverse to the given one.', 'Precede', 0, 1); 
 
-update `timetable`.`hibernate_unique_key` set `next_hi`=`next_hi`+45
+update `timetable`.`hibernate_unique_key` set `next_hi`=`next_hi`+43
 
 -- End of script
