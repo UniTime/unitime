@@ -154,6 +154,8 @@ public class ExamPdfReportAction extends Action {
                         report.setRoomCode(myForm.getRoomCodes());
                         report.setDispLimits(myForm.getDispLimit());
                         report.setSince(myForm.getSince()==null || myForm.getSince().length()==0?null:new SimpleDateFormat("MM/dd/yyyy").parse(myForm.getSince()));
+                        report.setItype(myForm.getItype());
+                        report.setClassSchedule(myForm.getClassSchedule());
                         report.printReport();
                         report.close();
                         output.put(reportName+"."+(myForm.getModeIdx()==PdfLegacyExamReport.sModeText?"txt":"pdf"),file);
@@ -188,6 +190,8 @@ public class ExamPdfReportAction extends Action {
                             report.setLimit(myForm.getLimit()==null || myForm.getLimit().length()==0?-1:Integer.parseInt(myForm.getLimit()));
                             report.setRoomCode(myForm.getRoomCodes());
                             report.setDispLimits(myForm.getDispLimit());
+                            report.setItype(myForm.getItype());
+                            report.setClassSchedule(myForm.getClassSchedule());
                             report.printReport();
                             report.close();
                             output.put(entry.getKey().getSubjectAreaAbbreviation()+"_"+reportName+"."+(myForm.getModeIdx()==PdfLegacyExamReport.sModeText?"txt":"pdf"),file);

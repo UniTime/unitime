@@ -134,6 +134,10 @@
 		</TD>
 	</TR>
 	<TR>
+  		<TD width="10%" nowrap valign='top'>All Reports:</TD>
+		<TD><html:checkbox property="itype"/>Display Instructional Type</TD>
+	</TR>
+	<TR>
   		<TD width="10%" nowrap valign='top'>Conflicts Reports:</TD>
 		<TD>
 			<html:checkbox property="direct"/>Display Direct Conflicts<br>
@@ -163,7 +167,10 @@
 		<TD><html:checkbox property="dispLimit"/>Display Limits &amp; Enrollments</TD>
 	</TR>
 	<TR>
-  		<TD width="10%" nowrap valign='top'>Individual Reports:</TD>
+  		<TD width="10%" nowrap valign='top' rowspan='2'>Individual Reports:</TD>
+  		<TD><html:checkbox property="classSchedule"/>Include Class Schedule</TD>
+  	</TR>
+  	<TR>
 		<TD>
 			Date: <html:text property="since" maxlength="10" size="10" styleId="since_date"/> 
 				<img style="cursor: pointer;" src="scripts/jscalendar/calendar_1.gif" 
