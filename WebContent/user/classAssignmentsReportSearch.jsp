@@ -25,6 +25,7 @@
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic"%>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles"%>
 <%@ taglib uri="/WEB-INF/tld/struts-layout.tld" prefix="layout"%>
+<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <script language="JavaScript" type="text/javascript" src="scripts/block.js"></script>
 <tiles:importAttribute />
 
@@ -177,12 +178,14 @@
 				<html:submit property="doit" accesskey="C" styleClass="btn" titleKey="title.exportCSV">
 					<bean:message key="button.exportCSV" />
 				</html:submit>
-				<logic:equal name="<%=frmName%>" property="isAdmin" value="true">
-					&nbsp;&nbsp;&nbsp;
-					<html:submit property="doit" accesskey="M" styleClass="btn">
-						<bean:message key="button.msfExport" />
-					</html:submit>
-				</logic:equal>
+				<tt:propertyEquals name="tmtbl.exportMSF" value="true">
+					<logic:equal name="<%=frmName%>" property="isAdmin" value="true">
+						&nbsp;&nbsp;&nbsp;
+						<html:submit property="doit" accesskey="M" styleClass="btn">
+							<bean:message key="button.msfExport" />
+						</html:submit>
+					</logic:equal>
+				</tt:propertyEquals>
 			</TD>
 		</TR>
 		</TABLE></TD></TR>
