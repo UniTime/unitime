@@ -12,6 +12,7 @@ import java.util.Vector;
 import net.sf.cpsolver.ifs.util.ToolBox;
 
 import org.apache.log4j.Logger;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
@@ -23,10 +24,12 @@ import com.lowagie.text.DocumentException;
 
 public class PeriodChartReport extends PdfLegacyExamReport {
     protected static Logger sLog = Logger.getLogger(ScheduleByCourseReport.class);
+    private boolean iExternal = false;
     
     public PeriodChartReport(int mode, File file, Session session, int examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
         super(mode, file, "PERIOD ASSIGNMENT", session, examType, subjectArea, exams);
         if (iLimit>=0) setFooter("limit="+iLimit);
+        iExternal = "true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.external","false"));
     }
     
     public String setRoomCode(String roomCode) {
@@ -167,17 +170,27 @@ public class PeriodChartReport extends PdfLegacyExamReport {
                                 if (c!=null) code = c; break;
                             }
                         }
-                        if (iItype)
-                            linesThisPeriod.add(
-                                    rpad(section.getName(),15)+(code==null||code.length()==0?' ':code.charAt(0))+
-                                    lpad(String.valueOf(section.getNrStudents()),4));
-                            else
+                        if (iItype) {
+                            if (iExternal) {
                                 linesThisPeriod.add(
+                                        rpad(section.getSubject(),4)+
+                                        rpad(section.getCourseNbr(),5)+" "+
+                                        rpad(section.getItype(),5)+
+                                        (code==null||code.length()==0?' ':code.charAt(0))+
+                                        lpad(String.valueOf(section.getNrStudents()),4));
+                            } else {
+                                linesThisPeriod.add(
+                                        rpad(section.getName(),15)+(code==null||code.length()==0?' ':code.charAt(0))+
+                                        lpad(String.valueOf(section.getNrStudents()),4));
+                            }
+                        } else {
+                            linesThisPeriod.add(
                                     rpad(section.getSubject(),4)+" "+
                                     rpad(section.getCourseNbr(),5)+" "+
                                     rpad(section.getSection(),3)+" "+
                                     (code==null||code.length()==0?' ':code.charAt(0))+
                                     lpad(String.valueOf(section.getNrStudents()),4));
+                        }
                     }
                     if (iTotals) {
                         if (totalListed!=total)
