@@ -29,7 +29,7 @@ public class AbbvExamScheduleByCourseReport extends PdfLegacyExamReport {
             for (ExamAssignment exam : new TreeSet<ExamAssignment>(getExams())) {
                 boolean firstSection = true;
                 for (ExamSectionInfo section : exam.getSections()) {
-                    boolean sameSubj = false, sameCrs = false, sameSct = false;
+                    boolean sameSubj = false, sameCrs = false, sameSct = false, sameItype = false;
                     if ((lx%n)!=0 && last!=null) {
                         if (last.getSubject().equals(section.getSubject())) { 
                             sameSubj = true;
@@ -37,36 +37,66 @@ public class AbbvExamScheduleByCourseReport extends PdfLegacyExamReport {
                                 sameCrs = true;
                                 if (last.getSection().equals(section.getSection()))
                                     sameSct = true;
+                                if (last.getItype().equals(section.getItype()))
+                                    sameItype = true;
                             }
                         } 
                     }
                     last = section; lx++;
-                    if (firstSection)
-                        lines.add(
-                                (iItype?rpad(section.getName(),14):
+                    if (firstSection) {
+                        if (iItype) {
+                            lines.add(
+                                 rpad(sameSubj?"":section.getSubject(),4)+" "+
+                                 rpad(sameCrs?"":section.getCourseNbr(),5)+" "+
+                                 rpad(sameItype?"":section.getItype().length()==0?"ALL":section.getItype(),5)+" "+
+                                 lpad(sameSct?"":section.getSection(),3)+" "+
+                                formatShortPeriod(section.getExamAssignment().getPeriod()));
+                        } else {
+                            lines.add(
                                     rpad(sameSubj?"":section.getSubject(),4)+" "+
                                     rpad(sameCrs?"":section.getCourseNbr(),5)+" "+
-                                    rpad(sameSct?"":section.getSection().length()==0?"ALL":section.getSection(),3))+"  "+
+                                    rpad(sameSct?"":section.getSection().length()==0?"ALL":section.getSection(),3)+"  "+
                                     formatPeriod(exam.getPeriod()));
-                    else
-                        lines.add(rpad(lpad("w/"+
-                                (iItype?rpad(section.getName(),14):
-                                    (sameCrs?"":section.getSubject()+" ")+
-                                    (sameCrs?"":section.getCourseNbr()+" ")+
-                                    (sameSct?"":section.getSection().length()==0?"ALL":section.getSection())),16),41));
+                        }
+                    } else {
+                        if (iItype) {
+                            String w = "w/"+(sameCrs?"":section.getSubject()+" ")+
+                                (sameCrs?"":section.getCourseNbr()+" ")+
+                                (sameItype?"":(section.getItype().length()==0?"ALL":section.getItype())+" ")+
+                                (sameSct?"":section.getSection()); 
+                            if (w.length()<20) w = lpad(w,20);
+                            lines.add(w);
+                        } else {
+                            String w = "w/"+
+                            (sameCrs?"":section.getSubject()+" ")+
+                            (sameCrs?"":section.getCourseNbr()+" ")+
+                            (sameSct?"":section.getSection().length()==0?"ALL":section.getSection());
+                            if (w.length()<14) w = lpad(w, 14);
+                            lines.add(w);
+                        }
+                    }
                     firstSection = false;
                 }
             }
-            setHeader(new String[] {
+            if (iItype) {
+                setHeader(new String[] {
+                        "Subj CrsNr InsTp Sct Date    Time          | Subj CrsNr InsTp Sct Date    Time          | Subj CrsNr InsTp Sct Date    Time         ",
+                        "---- ----- ----- --- ------- ------------- | ---- ----- ----- --- ------- ------------- | ---- ----- ----- --- ------- -------------"});
+            } else {
+                setHeader(new String[] {
                     "  Subj CrsNr Sct  Date      Time            | Subj CrsNr Sct  Date      Time            | Subj CrsNr Sct  Date      Time           ",
                     "  ---- ----- ---  --------- --------------- | ---- ----- ---  --------- --------------- | ---- ----- ---  --------- ---------------"});
+            }
             printHeader();
             for (int idx=0; idx<lines.size(); idx+=3*n) {
                 for (int i=0;i<n;i++) {
-                    String a = (i+idx+0*n<lines.size()?lines.elementAt(i+idx+0*n):rpad("",41));
-                    String b = (i+idx+1*n<lines.size()?lines.elementAt(i+idx+1*n):rpad("",41));
-                    String c = (i+idx+2*n<lines.size()?lines.elementAt(i+idx+2*n):rpad("",41));
-                    println("  "+a+" | "+b+" | "+c);
+                    String a = (i+idx+0*n<lines.size()?lines.elementAt(i+idx+0*n):"");
+                    String b = (i+idx+1*n<lines.size()?lines.elementAt(i+idx+1*n):"");
+                    String c = (i+idx+2*n<lines.size()?lines.elementAt(i+idx+2*n):"");
+                    if (iItype)
+                        println(rpad(a,42)+" | "+rpad(b,42)+" | "+c);
+                    else
+                        println("  "+rpad(a,41)+" | "+rpad(b,41)+" | "+c);
                 }
             }
         } else {
@@ -82,7 +112,7 @@ public class AbbvExamScheduleByCourseReport extends PdfLegacyExamReport {
                     String a = (2*i+0<rooms.size()?rooms.elementAt(2*i+0):rpad("",11));
                     String b = (2*i+1<rooms.size()?rooms.elementAt(2*i+1):rpad("",11));
                     ExamSectionInfo section = (i<exam.getSections().size()?exam.getSections().elementAt(i):null);
-                    boolean sameSubj = false, sameCrs = false, sameSct = false;
+                    boolean sameSubj = false, sameCrs = false, sameSct = false, sameItype = false;
                     if ((lx%n)!=0 && last!=null) {
                         if (section!=null && last.getSubject().equals(section.getSubject())) { 
                             sameSubj = true;
@@ -90,39 +120,64 @@ public class AbbvExamScheduleByCourseReport extends PdfLegacyExamReport {
                                 sameCrs = true;
                                 if (last.getSection().equals(section.getSection()))
                                     sameSct = true;
+                                if (last.getItype().equals(section.getItype()))
+                                    sameItype = true;
                             }
                         } 
                     }
                     if (i==0) {
-                        lines.add(
-                                (iItype?rpad(section.getName(),14):
-                                    rpad(sameSubj?"":section.getSubject(),4)+" "+
-                                    rpad(sameCrs?"":section.getCourseNbr(),5)+" "+
-                                    rpad(sameSct?"":section.getSection().length()==0?"ALL":section.getSection(),3))+"  "+
-                                formatPeriod(section.getExamAssignment().getPeriod())+" "+
-                                a+" "+b);
-                        last = section;
+                        if (iItype) {
+                            lines.add(
+                                     rpad(sameSubj?"":section.getSubject(),4)+" "+
+                                     rpad(sameCrs?"":section.getCourseNbr(),5)+" "+
+                                     rpad(sameItype?"":section.getItype().length()==0?"ALL":section.getItype(),5)+" "+
+                                     lpad(sameSct?"":section.getSection(),3)+" "+
+                                    formatShortPeriod(section.getExamAssignment().getPeriod())+" "+a+" "+b);
+                            } else {
+                                lines.add(
+                                        (iItype?rpad(section.getName(),14):
+                                            rpad(sameSubj?"":section.getSubject(),4)+" "+
+                                            rpad(sameCrs?"":section.getCourseNbr(),5)+" "+
+                                            rpad(sameSct?"":section.getSection().length()==0?"ALL":section.getSection(),3))+"  "+
+                                        formatPeriod(section.getExamAssignment().getPeriod())+" "+a+" "+b);
+                            }
                     } else if (section!=null) {
-                        lines.add(rpad(lpad("w/"+
-                                (iItype?rpad(section.getName(),14):
-                                    (sameCrs?"":section.getSubject()+" ")+
-                                    (sameCrs?"":section.getCourseNbr()+" ")+
-                                    (sameSct?"":section.getSection().length()==0?"ALL":section.getSection())),16),41)+" "+a+" "+b);
+                        if (iItype) {
+                            String w = "w/"+(sameCrs?"":section.getSubject()+" ")+
+                                (sameCrs?"":section.getCourseNbr()+" ")+
+                                (sameItype?"":(section.getItype().length()==0?"ALL":section.getItype())+" ")+
+                                (sameSct?"":section.getSection()); 
+                            if (w.length()<20) w = lpad(w,20);
+                            lines.add(rpad(w,43)+a+" "+b);
+                        } else {
+                            String w = "w/"+
+                            (sameCrs?"":section.getSubject()+" ")+
+                            (sameCrs?"":section.getCourseNbr()+" ")+
+                            (sameSct?"":section.getSection().length()==0?"ALL":section.getSection());
+                            if (w.length()<14) w = lpad(w, 14);
+                            lines.add(rpad(w,42)+a+" "+b);
+                        }
                     } else {
-                        lines.add(rpad("",41)+" "+a+" "+b);
+                        lines.add(rpad("",(iItype?43:42))+a+" "+b);
                     }
                     lx++;
                 }
             }
-            setHeader(new String[] {
+            if (iItype) {
+                setHeader(new String[] {
+                    "Subj CrsNr InsTp Sct Date    Time          Bldg  Room  Bldg  Room | Subj CrsNr InsTp Sct Date    Time          Bldg  Room  Bldg  Room",
+                    "---- ----- ----- --- ------- ------------- ----- ----- ----- ---- | ---- ----- ----- --- ------- ------------- ----- ----- ----- ----"});
+            } else {
+                setHeader(new String[] {
                     "Subj CrsNr Sct  Date      Time            Bldg  Room  Bldg  Room  | Subj CrsNr Sct  Date      Time            Bldg  Room  Bldg  Room ",
-                    "---- ----- ---  --------- --------------- ----- ----- ----- ----- | ---- ----- ---  --------- --------------- ----- ----- ----- ----- "});
+                    "---- ----- ---  --------- --------------- ----- ----- ----- ----- | ---- ----- ---  --------- --------------- ----- ----- ----- -----"});
+            }
             printHeader();
             for (int idx=0; idx<lines.size(); idx+=2*n) {
                 for (int i=0;i<n;i++) {
                     String a = (i+idx+0*n<lines.size()?lines.elementAt(i+idx+0*n):rpad("",65));
                     String b = (i+idx+1*n<lines.size()?lines.elementAt(i+idx+1*n):rpad("",65));
-                    println(a+" | "+b);
+                    println(rpad(a,66)+"|"+b);
                 }
             }
         }
