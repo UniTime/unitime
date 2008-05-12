@@ -18,10 +18,16 @@ import org.apache.log4j.PropertyConfigurator;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.ChangeLog;
+import org.unitime.timetable.model.ClassEvent;
+import org.unitime.timetable.model.ClassInstructor;
+import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriod;
+import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
+import org.unitime.timetable.model.Event.MultiMeeting;
+import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
@@ -158,6 +164,85 @@ public class InstructorExamReport extends PdfLegacyExamReport {
         }
         if (lastChange!=null)
             println("Last Change: "+new SimpleDateFormat("EEE, MM/dd/yyyy hh:mmaa").format(lastChange)+(changeObject==null?"":" "+changeObject));
+        if (iClassSchedule) {
+            TreeSet<ClassInstructor> allClasses = new TreeSet(new Comparator<ClassInstructor>() {
+                ClassComparator cc = new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY); 
+                public int compare(ClassInstructor c1, ClassInstructor c2) {
+                    return cc.compare(c1.getClassInstructing(), c2.getClassInstructing());
+                }
+            });
+            for (Iterator i=DepartmentalInstructor.getAllForInstructor(instructor.getInstructor(), getSession().getUniqueId()).iterator();i.hasNext();) {
+                DepartmentalInstructor di = (DepartmentalInstructor)i.next();
+                allClasses.addAll(di.getClasses());
+            }
+            if (!allClasses.isEmpty()) {
+                println("");
+                setHeader(new String[]{
+                        "Subj Crsnbr "+(iItype?"InsTyp ":"")+"Sect  Dates                     Time            Room       Lead Share",
+                        "---- ------ "+(iItype?"------ ":"")+"---- ------------------------- --------------- ----------- ---- -----"});
+                println(mpad("~ ~ ~ ~ ~ CLASS SECHEDULE ~ ~ ~ ~ ~",iNrChars));
+                for (int i=0;i<getHeader().length;i++) println(getHeader()[i]);
+                for (Iterator i=allClasses.iterator();i.hasNext();) {
+                    ClassInstructor ci = (ClassInstructor)i.next();
+                    String subject = ci.getClassInstructing().getSchedulingSubpart().getControllingCourseOffering().getSubjectAreaAbbv(); 
+                    String course = ci.getClassInstructing().getSchedulingSubpart().getControllingCourseOffering().getCourseNbr();
+                    String itype =  getItype(ci.getClassInstructing());
+                    String section = (iUseClassSuffix && ci.getClassInstructing().getClassSuffix()!=null?ci.getClassInstructing().getClassSuffix():ci.getClassInstructing().getSectionNumberString());
+                    ClassEvent event = ci.getClassInstructing().getEvent();
+                    if (event==null || event.getMeetings().isEmpty()) {
+                        println(
+                                rpad(subject,4)+" "+
+                                rpad(course,6)+" "+
+                                (iItype?rpad(itype,6)+" ":"")+
+                                lpad(section,4)+" "+
+                                rpad("ARRANGED HOURS", 54)+
+                                rpad(ci.isLead()?"yes":"no",4)+" "+
+                                lpad(ci.getPercentShare()+"%",5)
+                                );
+                    } else {
+                        MultiMeeting last = null;
+                        String lastTime = null, lastDate = null;
+                        String lastLoc = null;
+                        for (MultiMeeting meeting : event.getMultiMeetings()) {
+                            String line;
+                            if (last==null) {
+                                line = rpad(subject,4)+" "+
+                                rpad(course,6)+" "+
+                                (iItype?rpad(itype,6)+" ":"")+
+                                lpad(section,4)+" ";
+                            } else {
+                                line = rpad("",17+(iItype?7:0));
+                            }
+                            String date = getMeetingDate(meeting);
+                            String time = getMeetingTime(meeting.getMeetings().first());
+                            if (last==null || !time.equals(lastTime) || !date.equals(lastDate)) {
+                                line += rpad(date.equals(lastDate)?"":date,25)+" "+
+                                        rpad(time.equals(lastTime)?"":time,15)+" ";
+                            } else {
+                                line += rpad("",42);
+                            }
+                            Location location = meeting.getMeetings().first().getLocation();
+                            String loc = (location==null?"":formatRoom(location.getLabel()));
+                            if (last==null || !loc.equals(lastLoc)) {
+                                line += loc + " ";
+                            } else {
+                                line += rpad("",12);
+                            }
+                            if (last==null) {
+                                line +=
+                                     rpad(ci.isLead()?"yes":"no",4)+" "+
+                                     lpad(ci.getPercentShare()+"%",5);
+                            }
+                            lastLoc = loc;
+                            lastTime = time; lastDate = date;
+                            last = meeting;
+                            println(line);
+                            if (iNewPage) { last=null; lastTime = null; lastDate = null; lastLoc = null; }
+                        }
+                    }
+                }
+            }
+        }
         println("");
         setHeader(new String[]{
                 "Subj Crsnbr "+(iItype?"InsTyp ":"")+"Sect   Meeting Times                         Enrl    Date And Time                   Room         Cap ExCap",
@@ -364,9 +449,8 @@ public class InstructorExamReport extends PdfLegacyExamReport {
         }
         if (headerPrinted && !iNewPage) println("");
         
-        if (!iNewPage) println("");
         setHeader(null);
-        if (getLineNumber()+5>=iNrLines) newPage();
+        if (getLineNumber()+5>=iNrLines) newPage(); else println("");
         setHeader(new String[] {
                 "Subj Crsnbr "+(iItype?"InsTyp ":"")+"Sect Date And Time                Name                      Type   Subj Crsnbr "+(iItype?"InsTyp ":"")+"Sect Time                 ",
                 "---- ------ "+(iItype?"------ ":"")+"---- ---------------------------- ------------------------- ------ ---- ------ "+(iItype?"------ ":"")+"---- ---------------------"});

@@ -50,6 +50,7 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.model.Event.MultiMeeting;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.reports.PdfLegacyReport;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
@@ -76,6 +77,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
     protected boolean iBtb = false;
     protected int iLimit = -1;
     protected boolean iItype = false;
+    protected boolean iClassSchedule = false;
     protected Hashtable<String,String> iRoomCodes = new Hashtable();
     protected boolean iTotals = true;
     protected boolean iUseClassSuffix = false;
@@ -116,6 +118,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
         iTotals = "true".equals(System.getProperty("totals","true"));
         iUseClassSuffix = "true".equals(System.getProperty("suffix",ApplicationProperties.getProperty("tmtbl.exam.report.suffix","false")));
         iDispLimits = "true".equals(System.getProperty("verlimit","true"));
+        iClassSchedule = "true".equals(System.getProperty("cschedule","true"));
         if (System.getProperty("since")!=null) {
             try {
                 iSince = new SimpleDateFormat(System.getProperty("sinceFormat","MM/dd/yy")).parse(System.getProperty("since"));
@@ -136,6 +139,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
     public void setTotals(boolean totals) { iTotals = totals; }
     public void setUseClassSuffix(boolean useClassSuffix) { iUseClassSuffix = true; }
     public void setDispLimits(boolean dispLimits) { iDispLimits = dispLimits; }
+    public void setClassSchedule(boolean classSchedule) { iClassSchedule = classSchedule; }
     public void setSince(Date since) { iSince = since; }
     public String setRoomCode(String roomCode) {
         if (roomCode==null || roomCode.length()==0) {
@@ -218,6 +222,14 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
         "M", "T", "W", "R", "F", "S", "U"
     }; 
     
+    public String getMeetingDate(MultiMeeting m) {
+        if (m.getMeetings().isEmpty()) return "ARRANGED HOURS";
+        SimpleDateFormat df = new SimpleDateFormat("MM/dd");
+        return 
+            df.format(m.getMeetings().first().getMeetingDate())+" - "+
+            df.format(m.getMeetings().last().getMeetingDate())+" "+m.getDays(DAY_NAMES_SHORT,DAY_NAMES_SHORT);
+    }
+    
     protected String getMeetingTime(ExamSectionInfo section) {
         String meetingTime = "";
         if (section.getOwner().getOwnerObject() instanceof Class_) {
@@ -279,6 +291,34 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
     
     public String formatPeriod(ExamPeriod period) {
         return period.getStartDateLabel()+" "+lpad(period.getStartTimeLabel(),6)+" - "+lpad(period.getEndTimeLabel(),6);
+    }
+    
+    public String getShortDate(Date date) {
+        Calendar c = Calendar.getInstance(Locale.US);
+        c.setTime(date);
+        String day = "";
+        switch (c.get(Calendar.DAY_OF_WEEK)) {
+            case Calendar.MONDAY : day = DAY_NAMES_SHORT[Constants.DAY_MON]; break;
+            case Calendar.TUESDAY : day = DAY_NAMES_SHORT[Constants.DAY_TUE]; break;
+            case Calendar.WEDNESDAY : day = DAY_NAMES_SHORT[Constants.DAY_WED]; break;
+            case Calendar.THURSDAY : day = DAY_NAMES_SHORT[Constants.DAY_THU]; break;
+            case Calendar.FRIDAY : day = DAY_NAMES_SHORT[Constants.DAY_FRI]; break;
+            case Calendar.SATURDAY : day = DAY_NAMES_SHORT[Constants.DAY_SAT]; break;
+            case Calendar.SUNDAY : day = DAY_NAMES_SHORT[Constants.DAY_SUN]; break;
+        }
+        return day+" "+new SimpleDateFormat("MM/dd").format(date);
+    }
+    
+    public String formatShortPeriod(ExamPeriod period) {
+        return getShortDate(period.getStartDate())+" "+lpad(period.getStartTimeLabel(),6)+"-"+lpad(period.getEndTimeLabel(),6);
+    }
+    
+    public String getItype(Class_ clazz) {
+        if ("true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.external","false"))) {
+            String ext = clazz.getExternalUniqueId();
+            return (ext==null?"":ext);
+        } else
+            return clazz.getSchedulingSubpart().getItypeDesc();
     }
     
     public static void sendEmails(String prefix, Hashtable<String,File> output, Hashtable<SubjectArea,Hashtable<String,File>> outputPerSubject, Hashtable<ExamInstructorInfo,File> ireports, Hashtable<Student,File> sreports) throws MessagingException, UnsupportedEncodingException {
