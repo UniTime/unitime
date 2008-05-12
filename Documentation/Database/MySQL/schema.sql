@@ -50,6 +50,7 @@ DROP DATABASE IF EXISTS `timetable`;
 
 CREATE DATABASE `timetable`
   CHARACTER SET utf8;
+
 USE `timetable`;
 -- -------------------------------------
 -- Tables
@@ -172,7 +173,6 @@ CREATE TABLE `timetable`.`assignment` (
   `class_id` DECIMAL(20, 0) NULL,
   `class_name` VARCHAR(100) BINARY NULL,
   `last_modified_time` DATETIME NULL,
-  `event_id` DECIMAL(20, 0) NULL,
   PRIMARY KEY (`uniqueid`),
   INDEX `idx_assignment_class` (`class_id`),
   INDEX `idx_assignment_solution_index` (`solution_id`),
@@ -180,10 +180,6 @@ CREATE TABLE `timetable`.`assignment` (
   CONSTRAINT `fk_assignment_class` FOREIGN KEY `fk_assignment_class` (`class_id`)
     REFERENCES `timetable`.`class_` (`uniqueid`)
     ON DELETE CASCADE
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_assignment_event` FOREIGN KEY `fk_assignment_event` (`event_id`)
-    REFERENCES `timetable`.`event` (`uniqueid`)
-    ON DELETE SET NULL
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_assignment_solution` FOREIGN KEY `fk_assignment_solution` (`solution_id`)
     REFERENCES `timetable`.`solution` (`uniqueid`)
@@ -742,7 +738,7 @@ DROP TABLE IF EXISTS `timetable`.`dept_to_tt_mgr`;
 CREATE TABLE `timetable`.`dept_to_tt_mgr` (
   `timetable_mgr_id` DECIMAL(20, 0) NOT NULL,
   `department_id` DECIMAL(20, 0) NOT NULL,
-  PRIMARY KEY (`timetable_mgr_id`, `department_id`),
+  PRIMARY KEY (`department_id`, `timetable_mgr_id`),
   CONSTRAINT `fk_dept_to_tt_mgr_dept` FOREIGN KEY `fk_dept_to_tt_mgr_dept` (`department_id`)
     REFERENCES `timetable`.`department` (`uniqueid`)
     ON DELETE CASCADE
@@ -851,15 +847,22 @@ ENGINE = INNODB;
 DROP TABLE IF EXISTS `timetable`.`event`;
 CREATE TABLE `timetable`.`event` (
   `uniqueid` DECIMAL(20, 0) NOT NULL,
-  `event_type` DECIMAL(20, 0) NOT NULL,
   `event_name` VARCHAR(100) BINARY NULL,
   `min_capacity` BIGINT(10) NULL,
   `max_capacity` BIGINT(10) NULL,
   `sponsoring_org` DECIMAL(20, 0) NULL,
   `main_contact_id` DECIMAL(20, 0) NULL,
+  `class_id` DECIMAL(20, 0) NULL,
+  `exam_id` DECIMAL(20, 0) NULL,
+  `event_type` BIGINT(10) NULL,
+  `req_attd` INT(1) NULL,
   PRIMARY KEY (`uniqueid`),
-  CONSTRAINT `fk_event_event_type` FOREIGN KEY `fk_event_event_type` (`event_type`)
-    REFERENCES `timetable`.`event_type` (`uniqueid`)
+  CONSTRAINT `fk_event_class` FOREIGN KEY `fk_event_class` (`class_id`)
+    REFERENCES `timetable`.`class_` (`uniqueid`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_event_exam` FOREIGN KEY `fk_event_exam` (`exam_id`)
+    REFERENCES `timetable`.`exam` (`uniqueid`)
     ON DELETE CASCADE
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_event_main_contact` FOREIGN KEY `fk_event_main_contact` (`main_contact_id`)
@@ -915,15 +918,6 @@ CREATE TABLE `timetable`.`event_note` (
 )
 ENGINE = INNODB;
 
-DROP TABLE IF EXISTS `timetable`.`event_type`;
-CREATE TABLE `timetable`.`event_type` (
-  `uniqueid` DECIMAL(20, 0) NOT NULL,
-  `reference` VARCHAR(20) BINARY NULL,
-  `label` VARCHAR(60) BINARY NULL,
-  PRIMARY KEY (`uniqueid`)
-)
-ENGINE = INNODB;
-
 DROP TABLE IF EXISTS `timetable`.`exact_time_mins`;
 CREATE TABLE `timetable`.`exact_time_mins` (
   `uniqueid` DECIMAL(20, 0) NOT NULL,
@@ -948,14 +942,9 @@ CREATE TABLE `timetable`.`exam` (
   `assigned_period` DECIMAL(20, 0) NULL,
   `assigned_pref` VARCHAR(100) BINARY NULL,
   `exam_type` BIGINT(10) NULL DEFAULT 0,
-  `event_id` DECIMAL(20, 0) NULL,
   `avg_period` BIGINT(10) NULL,
   `uid_rolled_fwd_from` DECIMAL(20, 0) NULL,
   PRIMARY KEY (`uniqueid`),
-  CONSTRAINT `fk_exam_event` FOREIGN KEY `fk_exam_event` (`event_id`)
-    REFERENCES `timetable`.`event` (`uniqueid`)
-    ON DELETE SET NULL
-    ON UPDATE NO ACTION,
   CONSTRAINT `fk_exam_period` FOREIGN KEY `fk_exam_period` (`assigned_period`)
     REFERENCES `timetable`.`exam_period` (`uniqueid`)
     ON DELETE CASCADE
@@ -1067,7 +1056,7 @@ DROP TABLE IF EXISTS `timetable`.`exam_room_assignment`;
 CREATE TABLE `timetable`.`exam_room_assignment` (
   `exam_id` DECIMAL(20, 0) NOT NULL,
   `location_id` DECIMAL(20, 0) NOT NULL,
-  PRIMARY KEY (`location_id`, `exam_id`),
+  PRIMARY KEY (`exam_id`, `location_id`),
   CONSTRAINT `fk_exam_room_exam` FOREIGN KEY `fk_exam_room_exam` (`exam_id`)
     REFERENCES `timetable`.`exam` (`uniqueid`)
     ON DELETE CASCADE
@@ -1324,7 +1313,6 @@ DROP TABLE IF EXISTS `timetable`.`meeting`;
 CREATE TABLE `timetable`.`meeting` (
   `uniqueid` DECIMAL(20, 0) NOT NULL,
   `event_id` DECIMAL(20, 0) NOT NULL,
-  `event_type` DECIMAL(20, 0) NOT NULL,
   `meeting_date` DATETIME NOT NULL,
   `start_period` BIGINT(10) NOT NULL,
   `start_offset` BIGINT(10) NULL,
@@ -1336,10 +1324,6 @@ CREATE TABLE `timetable`.`meeting` (
   PRIMARY KEY (`uniqueid`),
   CONSTRAINT `fk_meeting_event` FOREIGN KEY `fk_meeting_event` (`event_id`)
     REFERENCES `timetable`.`event` (`uniqueid`)
-    ON DELETE CASCADE
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_meeting_event_type` FOREIGN KEY `fk_meeting_event_type` (`event_type`)
-    REFERENCES `timetable`.`event_type` (`uniqueid`)
     ON DELETE CASCADE
     ON UPDATE NO ACTION
 )
@@ -1406,7 +1390,7 @@ DROP TABLE IF EXISTS `timetable`.`offr_group_offering`;
 CREATE TABLE `timetable`.`offr_group_offering` (
   `offr_group_id` DECIMAL(20, 0) NOT NULL,
   `instr_offering_id` DECIMAL(20, 0) NOT NULL,
-  PRIMARY KEY (`offr_group_id`, `instr_offering_id`),
+  PRIMARY KEY (`instr_offering_id`, `offr_group_id`),
   CONSTRAINT `fk_offr_group_instr_offr` FOREIGN KEY `fk_offr_group_instr_offr` (`instr_offering_id`)
     REFERENCES `timetable`.`instructional_offering` (`uniqueid`)
     ON DELETE CASCADE
@@ -1447,7 +1431,7 @@ DROP TABLE IF EXISTS `timetable`.`pos_acad_area_major`;
 CREATE TABLE `timetable`.`pos_acad_area_major` (
   `academic_area_id` DECIMAL(20, 0) NOT NULL,
   `major_id` DECIMAL(20, 0) NOT NULL,
-  PRIMARY KEY (`academic_area_id`, `major_id`),
+  PRIMARY KEY (`major_id`, `academic_area_id`),
   CONSTRAINT `fk_pos_acad_area_major_area` FOREIGN KEY `fk_pos_acad_area_major_area` (`academic_area_id`)
     REFERENCES `timetable`.`academic_area` (`uniqueid`)
     ON DELETE CASCADE
@@ -1734,7 +1718,7 @@ DROP TABLE IF EXISTS `timetable`.`room_group_room`;
 CREATE TABLE `timetable`.`room_group_room` (
   `room_group_id` DECIMAL(20, 0) NOT NULL,
   `room_id` DECIMAL(20, 0) NOT NULL,
-  PRIMARY KEY (`room_id`, `room_group_id`),
+  PRIMARY KEY (`room_group_id`, `room_id`),
   CONSTRAINT `fk_room_group_room_room_grp` FOREIGN KEY `fk_room_group_room_room_grp` (`room_group_id`)
     REFERENCES `timetable`.`room_group` (`uniqueid`)
     ON DELETE CASCADE
@@ -1900,7 +1884,7 @@ DROP TABLE IF EXISTS `timetable`.`solver_gr_to_tt_mgr`;
 CREATE TABLE `timetable`.`solver_gr_to_tt_mgr` (
   `solver_group_id` DECIMAL(20, 0) NOT NULL,
   `timetable_mgr_id` DECIMAL(20, 0) NOT NULL,
-  PRIMARY KEY (`solver_group_id`, `timetable_mgr_id`),
+  PRIMARY KEY (`timetable_mgr_id`, `solver_group_id`),
   CONSTRAINT `fk_solver_gr_to_tt_mgr_solvgrp` FOREIGN KEY `fk_solver_gr_to_tt_mgr_solvgrp` (`solver_group_id`)
     REFERENCES `timetable`.`solver_group` (`uniqueid`)
     ON DELETE CASCADE
@@ -2222,7 +2206,7 @@ DROP TABLE IF EXISTS `timetable`.`student_major`;
 CREATE TABLE `timetable`.`student_major` (
   `student_id` DECIMAL(20, 0) NOT NULL,
   `major_id` DECIMAL(20, 0) NOT NULL,
-  PRIMARY KEY (`major_id`, `student_id`),
+  PRIMARY KEY (`student_id`, `major_id`),
   CONSTRAINT `fk_student_major_major` FOREIGN KEY `fk_student_major_major` (`major_id`)
     REFERENCES `timetable`.`pos_major` (`uniqueid`)
     ON DELETE CASCADE
@@ -2238,7 +2222,7 @@ DROP TABLE IF EXISTS `timetable`.`student_minor`;
 CREATE TABLE `timetable`.`student_minor` (
   `student_id` DECIMAL(20, 0) NOT NULL,
   `minor_id` DECIMAL(20, 0) NOT NULL,
-  PRIMARY KEY (`minor_id`, `student_id`),
+  PRIMARY KEY (`student_id`, `minor_id`),
   CONSTRAINT `fk_student_minor_minor` FOREIGN KEY `fk_student_minor_minor` (`minor_id`)
     REFERENCES `timetable`.`pos_minor` (`uniqueid`)
     ON DELETE CASCADE
@@ -2381,7 +2365,7 @@ DROP TABLE IF EXISTS `timetable`.`time_pattern_dept`;
 CREATE TABLE `timetable`.`time_pattern_dept` (
   `dept_id` DECIMAL(20, 0) NOT NULL,
   `pattern_id` DECIMAL(20, 0) NOT NULL,
-  PRIMARY KEY (`dept_id`, `pattern_id`),
+  PRIMARY KEY (`pattern_id`, `dept_id`),
   CONSTRAINT `fk_time_pattern_dept_dept` FOREIGN KEY `fk_time_pattern_dept_dept` (`dept_id`)
     REFERENCES `timetable`.`department` (`uniqueid`)
     ON DELETE CASCADE
@@ -2501,7 +2485,7 @@ DROP TABLE IF EXISTS `timetable`.`xconflict_exam`;
 CREATE TABLE `timetable`.`xconflict_exam` (
   `conflict_id` DECIMAL(20, 0) NOT NULL,
   `exam_id` DECIMAL(20, 0) NOT NULL,
-  PRIMARY KEY (`conflict_id`, `exam_id`),
+  PRIMARY KEY (`exam_id`, `conflict_id`),
   INDEX `idx_xconflict_exam` (`exam_id`),
   CONSTRAINT `fk_xconflict_ex_conf` FOREIGN KEY `fk_xconflict_ex_conf` (`conflict_id`)
     REFERENCES `timetable`.`xconflict` (`uniqueid`)
@@ -2518,7 +2502,7 @@ DROP TABLE IF EXISTS `timetable`.`xconflict_instructor`;
 CREATE TABLE `timetable`.`xconflict_instructor` (
   `conflict_id` DECIMAL(20, 0) NOT NULL,
   `instructor_id` DECIMAL(20, 0) NOT NULL,
-  PRIMARY KEY (`conflict_id`, `instructor_id`),
+  PRIMARY KEY (`instructor_id`, `conflict_id`),
   CONSTRAINT `fk_xconflict_in_conf` FOREIGN KEY `fk_xconflict_in_conf` (`conflict_id`)
     REFERENCES `timetable`.`xconflict` (`uniqueid`)
     ON DELETE CASCADE
@@ -2552,7 +2536,6 @@ SET FOREIGN_KEY_CHECKS = 1;
 
 -- ----------------------------------------------------------------------
 -- EOF
-
 
 DROP TABLE IF EXISTS `timetable`.`hibernate_unique_key`;
 CREATE TABLE  `timetable`.`hibernate_unique_key` (
