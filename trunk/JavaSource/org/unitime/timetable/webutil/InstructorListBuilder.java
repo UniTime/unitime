@@ -254,9 +254,9 @@ public class InstructorListBuilder {
                     String examName = exam.getLabel();
                     String title = examName;
                     if (exam.getExamType()==Exam.sExamTypeMidterm) {
-                        examsStr += "<span title='"+examName+" Midterm Exam'>"+examName+"</span>";
+                        examsStr += "<span title='"+examName+" Midterm Examination'>"+examName+"</span>";
                     } else {
-                        examsStr += "<span style='font-weight:bold;' title='"+examName+" Final Exam'>"+examName+"</span>";
+                        examsStr += "<span style='font-weight:bold;' title='"+examName+" Final Examination'>"+examName+"</span>";
                     }
                     if (i.hasNext()) examsStr += "<br>";
 				}
