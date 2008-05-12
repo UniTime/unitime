@@ -16,12 +16,19 @@ import org.apache.log4j.PropertyConfigurator;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.ChangeLog;
+import org.unitime.timetable.model.ClassEvent;
+import org.unitime.timetable.model.ClassInstructor;
+import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriod;
+import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
+import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.SubjectArea;
+import org.unitime.timetable.model.Event.MultiMeeting;
+import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.reports.exam.InstructorExamReport.FileGenerator;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
@@ -100,6 +107,83 @@ public class StudentExamReport extends PdfLegacyExamReport {
             println("Email:       "+student.getEmail());
         Date lastChange = null;
         String changeObject = null;
+        if (iClassSchedule) {
+            TreeSet<Class_> allClasses = new TreeSet(new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
+            for (Iterator i=student.getClassEnrollments().iterator();i.hasNext();) {
+                StudentClassEnrollment sce = (StudentClassEnrollment)i.next();
+                allClasses.add(sce.getClazz());
+            }
+            if (!allClasses.isEmpty()) {
+                println("");
+                setHeader(new String[]{
+                        "Subj Crsnbr "+(iItype?"InsTyp ":"")+"Sect  Dates                     Time            Room        Instructor",
+                        "---- ------ "+(iItype?"------ ":"")+"---- ------------------------- --------------- ----------- -------------------------"});
+                println(mpad("~ ~ ~ ~ ~ CLASS SECHEDULE ~ ~ ~ ~ ~",iNrChars));
+                for (int i=0;i<getHeader().length;i++) println(getHeader()[i]);
+                for (Class_ clazz : allClasses) {
+                    String instructor = "";
+                    if (clazz.isDisplayInstructor()) {
+                        for (Iterator i=new TreeSet(clazz.getClassInstructors()).iterator();i.hasNext();) {
+                            ClassInstructor ci = (ClassInstructor)i.next();
+                            if (instructor.length()>0) instructor+=", ";
+                            instructor += ci.getInstructor().getName(DepartmentalInstructor.sNameFormatLastInitial);
+                        }
+                    }
+                    String subject = clazz.getSchedulingSubpart().getControllingCourseOffering().getSubjectAreaAbbv(); 
+                    String course = clazz.getSchedulingSubpart().getControllingCourseOffering().getCourseNbr();
+                    String itype =  getItype(clazz);
+                    String section = (iUseClassSuffix && clazz.getClassSuffix()!=null?clazz.getClassSuffix():clazz.getSectionNumberString());
+                    ClassEvent event = clazz.getEvent();
+                    if (event==null || event.getMeetings().isEmpty()) {
+                        println(
+                                rpad(subject,4)+" "+
+                                rpad(course,6)+" "+
+                                (iItype?rpad(itype,6)+" ":"")+
+                                lpad(section,4)+" "+
+                                rpad("ARRANGED HOURS",54)+
+                                rpad(instructor,55)
+                                );
+                    } else {
+                        MultiMeeting last = null;
+                        String lastTime = null, lastDate = null;
+                        String lastLoc = null;
+                        for (MultiMeeting meeting : event.getMultiMeetings()) {
+                            String line;
+                            if (last==null) {
+                                line = rpad(subject,4)+" "+
+                                rpad(course,6)+" "+
+                                (iItype?rpad(itype,6)+" ":"")+
+                                lpad(section,4)+" ";
+                            } else {
+                                line = rpad("",17+(iItype?7:0));
+                            }
+                            String date = getMeetingDate(meeting);
+                            String time = getMeetingTime(meeting.getMeetings().first());
+                            if (last==null || !time.equals(lastTime) || !date.equals(lastDate)) {
+                                line += rpad(date.equals(lastDate)?"":date,25)+" "+
+                                        rpad(time.equals(lastTime)?"":time,15)+" ";
+                            } else {
+                                line += rpad("",39);
+                            }
+                            Location location = meeting.getMeetings().first().getLocation();
+                            String loc = (location==null?"":formatRoom(location.getLabel()));
+                            if (last==null || !loc.equals(lastLoc)) {
+                                line += loc + " ";
+                            } else {
+                                line += rpad("",12);
+                            }
+                            if (last==null)
+                                line += rpad(instructor,55);
+                            lastLoc = loc;
+                            lastTime = time; lastDate = date;
+                            last = meeting;
+                            println(line);
+                            if (iNewPage) { last=null; lastTime = null; lastDate = null; lastLoc = null; }
+                        }
+                    }
+                }
+            }
+        }
         println("");
         setHeader(new String[]{
                 "Subj Crsnbr "+(iItype?"InsTyp ":"")+"Sect   Meeting Times                          Date And Time                   Room      ",
@@ -151,7 +235,6 @@ public class StudentExamReport extends PdfLegacyExamReport {
                 lastSection = section.getSection();
             }
         }
-        println("");
         
         boolean headerPrinted = false;
         lastSubject = null;
