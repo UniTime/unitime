@@ -42,6 +42,7 @@ public class DepartmentStatusType extends BaseDepartmentStatusType implements Co
 	public static final int sCanExamView            = 512;
 	public static final int sCanExamEdit            = 1024;
 	public static final int sCanExamTimetable       = 2048;
+	public static final int sCanNoRoleReport        = 4096;
 	
 	public static final int sApplySession    = 1;
 	public static final int sApplyDepartment = 2;
@@ -172,6 +173,10 @@ public class DepartmentStatusType extends BaseDepartmentStatusType implements Co
 
     public boolean canExamTimetable() {
         return can(sCanExamTimetable);
+    }
+    
+    public boolean canNoRoleReport() {
+        return can(sCanNoRoleReport);
     }
 
     public boolean apply(int apply) {
