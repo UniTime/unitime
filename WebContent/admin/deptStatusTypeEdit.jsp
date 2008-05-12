@@ -93,6 +93,7 @@
 		<TR><TD>Exam View:</TD><TD><html:checkbox property="canExamView"/></TD></TR>
 		<TR><TD>Exam Edit:</TD><TD><html:checkbox property="canExamEdit"/></TD></TR>
 		<TR><TD>Exam Timetable:</TD><TD><html:checkbox property="canExamTimetable"/></TD></TR>
+		<TR><TD>No-Role Report:</TD><TD><html:checkbox property="canNoRoleReport"/></TD></TR>
 		
 		<TR>
 			<TD colspan='2'>

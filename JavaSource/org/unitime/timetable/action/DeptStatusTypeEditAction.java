@@ -299,6 +299,10 @@ public class DeptStatusTypeEditAction extends Action {
                     }
                 }
             }
+            if (s.canNoRoleReport()) {
+                if (rights.length()>0) rights+="; ";
+                rights += "no-role";
+            }
             String ops = "";
             if (s.getOrd().intValue()>0) {
                 ops += "<img src='images/arrow_u.gif' border='0' align='absmiddle' title='Move Up' " +
