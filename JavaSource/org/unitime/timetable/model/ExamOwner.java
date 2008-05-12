@@ -759,7 +759,11 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
     public String getItype() {
         switch (getOwnerType()) {
             case sOwnerTypeClass : 
-                return ((Class_)getOwnerObject()).getSchedulingSubpart().getItypeDesc();
+                if ("true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.external","false"))) {
+                    String ext = ((Class_)getOwnerObject()).getExternalUniqueId();
+                    return (ext==null?"":ext);
+                } else
+                    return ((Class_)getOwnerObject()).getSchedulingSubpart().getItypeDesc();
             case sOwnerTypeConfig : 
                 return "["+((InstrOfferingConfig)getOwnerObject()).getName()+"]";
             case sOwnerTypeCourse : 
