@@ -108,7 +108,7 @@ public class PersonalizedExamReportAction extends Action {
                 setString("externalId",externalId).
                 setCacheable(true).list().iterator();i.hasNext();) {
             DepartmentalInstructor s = (DepartmentalInstructor)i.next();
-            if (s.getDepartment().getSession().getStatusType()==null || !s.getDepartment().getSession().getStatusType().canExamView() || !Exam.hasTimetable(s.getDepartment().getSession().getUniqueId())) continue;
+            if (s.getDepartment().getSession().getStatusType()==null || !s.getDepartment().getSession().getStatusType().canNoRoleReport() || !Exam.hasTimetable(s.getDepartment().getSession().getUniqueId())) continue;
             sessions.add(s.getDepartment().getSession());
             if (sessionId==null) {
                 if (instructor==null || instructor.getDepartment().getSession().compareTo(s.getDepartment().getSession())>0) instructor = s;
@@ -124,7 +124,7 @@ public class PersonalizedExamReportAction extends Action {
                 setString("externalId",externalId).
                 setCacheable(true).list().iterator();i.hasNext();) {
             Student s = (Student)i.next();
-            if (s.getSession().getStatusType()==null || !s.getSession().getStatusType().canExamView() || !Exam.hasTimetable(s.getSession().getUniqueId())) continue;
+            if (s.getSession().getStatusType()==null || !s.getSession().getStatusType().canNoRoleReport() || !Exam.hasTimetable(s.getSession().getUniqueId())) continue;
             sessions.add(s.getSession());
             if (sessionId==null) {
                 if (student==null || student.getSession().compareTo(s.getSession())>0) student = s;
