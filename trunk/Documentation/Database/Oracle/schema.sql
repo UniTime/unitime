@@ -559,80 +559,6 @@ create index TIMETABLE.IDX_CLASS_PARENT on TIMETABLE.CLASS_ (PARENT_CLASS_ID);
 create index TIMETABLE.IDX_CLASS_SUBPART_ID on TIMETABLE.CLASS_ (SUBPART_ID);
 
 prompt
-prompt Creating table EVENT_CONTACT
-prompt ============================
-prompt
-create table TIMETABLE.EVENT_CONTACT
-(
-  UNIQUEID    NUMBER(20),
-  EXTERNAL_ID VARCHAR2(40),
-  EMAIL       VARCHAR2(100),
-  PHONE       VARCHAR2(10),
-  FIRSTNAME   VARCHAR2(20),
-  MIDDLENAME  VARCHAR2(20),
-  LASTNAME    VARCHAR2(30)
-)
-;
-alter table TIMETABLE.EVENT_CONTACT
-  add constraint PK_EVENT_CONTACT_UNIQUEID primary key (UNIQUEID);
-alter table TIMETABLE.EVENT_CONTACT
-  add constraint NN_EVENT_CONTACT_EMAIL
-  check ("EMAIL" IS NOT NULL);
-alter table TIMETABLE.EVENT_CONTACT
-  add constraint NN_EVENT_CONTACT_PHONE
-  check ("PHONE" IS NOT NULL);
-alter table TIMETABLE.EVENT_CONTACT
-  add constraint NN_EVENT_CONTACT_UNIQUEID
-  check ("UNIQUEID" IS NOT NULL);
-
-prompt
-prompt Creating table EVENT_TYPE
-prompt =========================
-prompt
-create table TIMETABLE.EVENT_TYPE
-(
-  UNIQUEID  NUMBER(20),
-  REFERENCE VARCHAR2(20),
-  LABEL     VARCHAR2(60)
-)
-;
-alter table TIMETABLE.EVENT_TYPE
-  add constraint PK_EVENT_TYPE primary key (UNIQUEID);
-alter table TIMETABLE.EVENT_TYPE
-  add constraint NN_EVENT_TYPE_LABEL
-  check ("LABEL" IS NOT NULL);
-alter table TIMETABLE.EVENT_TYPE
-  add constraint NN_EVENT_TYPE_REFERENCE
-  check ("REFERENCE" IS NOT NULL);
-alter table TIMETABLE.EVENT_TYPE
-  add constraint NN_EVENT_TYPE_UNIQUEID
-  check ("UNIQUEID" IS NOT NULL);
-
-prompt
-prompt Creating table EVENT
-prompt ====================
-prompt
-create table TIMETABLE.EVENT
-(
-  UNIQUEID        NUMBER(20) not null,
-  EVENT_TYPE      NUMBER(20) not null,
-  EVENT_NAME      VARCHAR2(100),
-  MIN_CAPACITY    NUMBER(10),
-  MAX_CAPACITY    NUMBER(10),
-  SPONSORING_ORG  NUMBER(20),
-  MAIN_CONTACT_ID NUMBER(20)
-)
-;
-alter table TIMETABLE.EVENT
-  add constraint PK_EVENT_UNIQUEID primary key (UNIQUEID);
-alter table TIMETABLE.EVENT
-  add constraint FK_EVENT_EVENT_TYPE foreign key (EVENT_TYPE)
-  references TIMETABLE.EVENT_TYPE (UNIQUEID) on delete cascade;
-alter table TIMETABLE.EVENT
-  add constraint FK_EVENT_MAIN_CONTACT foreign key (MAIN_CONTACT_ID)
-  references TIMETABLE.EVENT_CONTACT (UNIQUEID) on delete set null;
-
-prompt
 prompt Creating table SOLVER_GROUP
 prompt ===========================
 prompt
@@ -745,8 +671,7 @@ create table TIMETABLE.ASSIGNMENT
   SOLUTION_ID        NUMBER(20),
   CLASS_ID           NUMBER(20),
   CLASS_NAME         VARCHAR2(100),
-  LAST_MODIFIED_TIME TIMESTAMP(6),
-  EVENT_ID           NUMBER(20)
+  LAST_MODIFIED_TIME TIMESTAMP(6)
 )
 ;
 alter table TIMETABLE.ASSIGNMENT
@@ -754,9 +679,6 @@ alter table TIMETABLE.ASSIGNMENT
 alter table TIMETABLE.ASSIGNMENT
   add constraint FK_ASSIGNMENT_CLASS foreign key (CLASS_ID)
   references TIMETABLE.CLASS_ (UNIQUEID) on delete cascade;
-alter table TIMETABLE.ASSIGNMENT
-  add constraint FK_ASSIGNMENT_EVENT foreign key (EVENT_ID)
-  references TIMETABLE.EVENT (UNIQUEID) on delete set null;
 alter table TIMETABLE.ASSIGNMENT
   add constraint FK_ASSIGNMENT_SOLUTION foreign key (SOLUTION_ID)
   references TIMETABLE.SOLUTION (UNIQUEID) on delete cascade;
@@ -2175,6 +2097,152 @@ alter table TIMETABLE.DIST_TYPE_DEPT
   check ("DIST_TYPE_ID" IS NOT NULL);
 
 prompt
+prompt Creating table EVENT_CONTACT
+prompt ============================
+prompt
+create table TIMETABLE.EVENT_CONTACT
+(
+  UNIQUEID    NUMBER(20),
+  EXTERNAL_ID VARCHAR2(40),
+  EMAIL       VARCHAR2(100),
+  PHONE       VARCHAR2(10),
+  FIRSTNAME   VARCHAR2(20),
+  MIDDLENAME  VARCHAR2(20),
+  LASTNAME    VARCHAR2(30)
+)
+;
+alter table TIMETABLE.EVENT_CONTACT
+  add constraint PK_EVENT_CONTACT_UNIQUEID primary key (UNIQUEID);
+alter table TIMETABLE.EVENT_CONTACT
+  add constraint NN_EVENT_CONTACT_EMAIL
+  check ("EMAIL" IS NOT NULL);
+alter table TIMETABLE.EVENT_CONTACT
+  add constraint NN_EVENT_CONTACT_PHONE
+  check ("PHONE" IS NOT NULL);
+alter table TIMETABLE.EVENT_CONTACT
+  add constraint NN_EVENT_CONTACT_UNIQUEID
+  check ("UNIQUEID" IS NOT NULL);
+
+prompt
+prompt Creating table EXAM_PERIOD
+prompt ==========================
+prompt
+create table TIMETABLE.EXAM_PERIOD
+(
+  UNIQUEID      NUMBER(20),
+  SESSION_ID    NUMBER(20),
+  DATE_OFS      NUMBER(10),
+  START_SLOT    NUMBER(10),
+  LENGTH        NUMBER(10),
+  PREF_LEVEL_ID NUMBER(20),
+  EXAM_TYPE     NUMBER(10) default 0
+)
+;
+alter table TIMETABLE.EXAM_PERIOD
+  add constraint PK_EXAM_PERIOD primary key (UNIQUEID);
+alter table TIMETABLE.EXAM_PERIOD
+  add constraint FK_EXAM_PERIOD_PREF foreign key (PREF_LEVEL_ID)
+  references TIMETABLE.PREFERENCE_LEVEL (UNIQUEID) on delete cascade;
+alter table TIMETABLE.EXAM_PERIOD
+  add constraint FK_EXAM_PERIOD_SESSION foreign key (SESSION_ID)
+  references TIMETABLE.SESSIONS (UNIQUEID) on delete cascade;
+alter table TIMETABLE.EXAM_PERIOD
+  add constraint NN_EXAM_PERIOD_DATE_OFS
+  check ("DATE_OFS" IS NOT NULL);
+alter table TIMETABLE.EXAM_PERIOD
+  add constraint NN_EXAM_PERIOD_LENGTH
+  check ("LENGTH" IS NOT NULL);
+alter table TIMETABLE.EXAM_PERIOD
+  add constraint NN_EXAM_PERIOD_PREF
+  check ("PREF_LEVEL_ID" IS NOT NULL);
+alter table TIMETABLE.EXAM_PERIOD
+  add constraint NN_EXAM_PERIOD_SESSION
+  check ("SESSION_ID" IS NOT NULL);
+alter table TIMETABLE.EXAM_PERIOD
+  add constraint NN_EXAM_PERIOD_START_SLOT
+  check ("START_SLOT" IS NOT NULL);
+alter table TIMETABLE.EXAM_PERIOD
+  add constraint NN_EXAM_PERIOD_UNIQUEID
+  check ("UNIQUEID" IS NOT NULL);
+
+prompt
+prompt Creating table EXAM
+prompt ===================
+prompt
+create table TIMETABLE.EXAM
+(
+  UNIQUEID            NUMBER(20),
+  SESSION_ID          NUMBER(20),
+  NAME                VARCHAR2(100),
+  NOTE                VARCHAR2(1000),
+  LENGTH              NUMBER(10),
+  MAX_NBR_ROOMS       NUMBER(10) default 1,
+  SEATING_TYPE        NUMBER(10),
+  ASSIGNED_PERIOD     NUMBER(20),
+  ASSIGNED_PREF       VARCHAR2(100),
+  EXAM_TYPE           NUMBER(10) default 0,
+  AVG_PERIOD          NUMBER(10),
+  UID_ROLLED_FWD_FROM NUMBER(20)
+)
+;
+alter table TIMETABLE.EXAM
+  add constraint PK_EXAM primary key (UNIQUEID);
+alter table TIMETABLE.EXAM
+  add constraint FK_EXAM_PERIOD foreign key (ASSIGNED_PERIOD)
+  references TIMETABLE.EXAM_PERIOD (UNIQUEID) on delete cascade;
+alter table TIMETABLE.EXAM
+  add constraint FK_EXAM_SESSION foreign key (SESSION_ID)
+  references TIMETABLE.SESSIONS (UNIQUEID) on delete cascade;
+alter table TIMETABLE.EXAM
+  add constraint NN_EXAM_LENGTH
+  check ("LENGTH" IS NOT NULL);
+alter table TIMETABLE.EXAM
+  add constraint NN_EXAM_NBR_ROOMS
+  check ("MAX_NBR_ROOMS" IS NOT NULL);
+alter table TIMETABLE.EXAM
+  add constraint NN_EXAM_SEATING
+  check ("SEATING_TYPE" IS NOT NULL);
+alter table TIMETABLE.EXAM
+  add constraint NN_EXAM_SESSION
+  check ("SESSION_ID" IS NOT NULL);
+alter table TIMETABLE.EXAM
+  add constraint NN_EXAM_UNIQUEID
+  check ("UNIQUEID" IS NOT NULL);
+
+prompt
+prompt Creating table EVENT
+prompt ====================
+prompt
+create table TIMETABLE.EVENT
+(
+  UNIQUEID        NUMBER(20) not null,
+  EVENT_NAME      VARCHAR2(100),
+  MIN_CAPACITY    NUMBER(10),
+  MAX_CAPACITY    NUMBER(10),
+  SPONSORING_ORG  NUMBER(20),
+  MAIN_CONTACT_ID NUMBER(20),
+  CLASS_ID        NUMBER(20),
+  EXAM_ID         NUMBER(20),
+  EVENT_TYPE      NUMBER(10),
+  REQ_ATTD        NUMBER(1)
+)
+;
+alter table TIMETABLE.EVENT
+  add constraint PK_EVENT_UNIQUEID primary key (UNIQUEID);
+alter table TIMETABLE.EVENT
+  add constraint FK_EVENT_CLASS foreign key (CLASS_ID)
+  references TIMETABLE.CLASS_ (UNIQUEID) on delete cascade;
+alter table TIMETABLE.EVENT
+  add constraint FK_EVENT_EXAM foreign key (EXAM_ID)
+  references TIMETABLE.EXAM (UNIQUEID) on delete cascade;
+alter table TIMETABLE.EVENT
+  add constraint FK_EVENT_MAIN_CONTACT foreign key (MAIN_CONTACT_ID)
+  references TIMETABLE.EVENT_CONTACT (UNIQUEID) on delete set null;
+alter table TIMETABLE.EVENT
+  add constraint NN_EVENT_TYPE
+  check (event_type is not null);
+
+prompt
 prompt Creating table EVENT_JOIN_EVENT_CONTACT
 prompt =======================================
 prompt
@@ -2278,96 +2346,6 @@ alter table TIMETABLE.EXACT_TIME_MINS
   add constraint NN_EXACT_TIME_MINS_UID
   check ("UNIQUEID" IS NOT NULL);
 create index TIMETABLE.IDX_EXACT_TIME_MINS on TIMETABLE.EXACT_TIME_MINS (MINS_MIN, MINS_MAX);
-
-prompt
-prompt Creating table EXAM_PERIOD
-prompt ==========================
-prompt
-create table TIMETABLE.EXAM_PERIOD
-(
-  UNIQUEID      NUMBER(20),
-  SESSION_ID    NUMBER(20),
-  DATE_OFS      NUMBER(10),
-  START_SLOT    NUMBER(10),
-  LENGTH        NUMBER(10),
-  PREF_LEVEL_ID NUMBER(20),
-  EXAM_TYPE     NUMBER(10) default 0
-)
-;
-alter table TIMETABLE.EXAM_PERIOD
-  add constraint PK_EXAM_PERIOD primary key (UNIQUEID);
-alter table TIMETABLE.EXAM_PERIOD
-  add constraint FK_EXAM_PERIOD_PREF foreign key (PREF_LEVEL_ID)
-  references TIMETABLE.PREFERENCE_LEVEL (UNIQUEID) on delete cascade;
-alter table TIMETABLE.EXAM_PERIOD
-  add constraint FK_EXAM_PERIOD_SESSION foreign key (SESSION_ID)
-  references TIMETABLE.SESSIONS (UNIQUEID) on delete cascade;
-alter table TIMETABLE.EXAM_PERIOD
-  add constraint NN_EXAM_PERIOD_DATE_OFS
-  check ("DATE_OFS" IS NOT NULL);
-alter table TIMETABLE.EXAM_PERIOD
-  add constraint NN_EXAM_PERIOD_LENGTH
-  check ("LENGTH" IS NOT NULL);
-alter table TIMETABLE.EXAM_PERIOD
-  add constraint NN_EXAM_PERIOD_PREF
-  check ("PREF_LEVEL_ID" IS NOT NULL);
-alter table TIMETABLE.EXAM_PERIOD
-  add constraint NN_EXAM_PERIOD_SESSION
-  check ("SESSION_ID" IS NOT NULL);
-alter table TIMETABLE.EXAM_PERIOD
-  add constraint NN_EXAM_PERIOD_START_SLOT
-  check ("START_SLOT" IS NOT NULL);
-alter table TIMETABLE.EXAM_PERIOD
-  add constraint NN_EXAM_PERIOD_UNIQUEID
-  check ("UNIQUEID" IS NOT NULL);
-
-prompt
-prompt Creating table EXAM
-prompt ===================
-prompt
-create table TIMETABLE.EXAM
-(
-  UNIQUEID            NUMBER(20),
-  SESSION_ID          NUMBER(20),
-  NAME                VARCHAR2(100),
-  NOTE                VARCHAR2(1000),
-  LENGTH              NUMBER(10),
-  MAX_NBR_ROOMS       NUMBER(10) default 1,
-  SEATING_TYPE        NUMBER(10),
-  ASSIGNED_PERIOD     NUMBER(20),
-  ASSIGNED_PREF       VARCHAR2(100),
-  EXAM_TYPE           NUMBER(10) default 0,
-  EVENT_ID            NUMBER(20),
-  AVG_PERIOD          NUMBER(10),
-  UID_ROLLED_FWD_FROM NUMBER(20)
-)
-;
-alter table TIMETABLE.EXAM
-  add constraint PK_EXAM primary key (UNIQUEID);
-alter table TIMETABLE.EXAM
-  add constraint FK_EXAM_EVENT foreign key (EVENT_ID)
-  references TIMETABLE.EVENT (UNIQUEID) on delete set null;
-alter table TIMETABLE.EXAM
-  add constraint FK_EXAM_PERIOD foreign key (ASSIGNED_PERIOD)
-  references TIMETABLE.EXAM_PERIOD (UNIQUEID) on delete cascade;
-alter table TIMETABLE.EXAM
-  add constraint FK_EXAM_SESSION foreign key (SESSION_ID)
-  references TIMETABLE.SESSIONS (UNIQUEID) on delete cascade;
-alter table TIMETABLE.EXAM
-  add constraint NN_EXAM_LENGTH
-  check ("LENGTH" IS NOT NULL);
-alter table TIMETABLE.EXAM
-  add constraint NN_EXAM_NBR_ROOMS
-  check ("MAX_NBR_ROOMS" IS NOT NULL);
-alter table TIMETABLE.EXAM
-  add constraint NN_EXAM_SEATING
-  check ("SEATING_TYPE" IS NOT NULL);
-alter table TIMETABLE.EXAM
-  add constraint NN_EXAM_SESSION
-  check ("SESSION_ID" IS NOT NULL);
-alter table TIMETABLE.EXAM
-  add constraint NN_EXAM_UNIQUEID
-  check ("UNIQUEID" IS NOT NULL);
 
 prompt
 prompt Creating table EXAM_INSTRUCTOR
@@ -2893,7 +2871,6 @@ create table TIMETABLE.MEETING
 (
   UNIQUEID           NUMBER(20),
   EVENT_ID           NUMBER(20),
-  EVENT_TYPE         NUMBER(20),
   MEETING_DATE       DATE,
   START_PERIOD       NUMBER(10),
   START_OFFSET       NUMBER(10),
@@ -2910,17 +2887,11 @@ alter table TIMETABLE.MEETING
   add constraint FK_MEETING_EVENT foreign key (EVENT_ID)
   references TIMETABLE.EVENT (UNIQUEID) on delete cascade;
 alter table TIMETABLE.MEETING
-  add constraint FK_MEETING_EVENT_TYPE foreign key (EVENT_TYPE)
-  references TIMETABLE.EVENT_TYPE (UNIQUEID) on delete cascade;
-alter table TIMETABLE.MEETING
   add constraint NN_MEETING_DATE
   check ("MEETING_DATE" IS NOT NULL);
 alter table TIMETABLE.MEETING
   add constraint NN_MEETING_EVENT_ID
   check ("EVENT_ID" IS NOT NULL);
-alter table TIMETABLE.MEETING
-  add constraint NN_MEETING_EVENT_TYPE
-  check ("EVENT_TYPE" IS NOT NULL);
 alter table TIMETABLE.MEETING
   add constraint NN_MEETING_OVERRIDE
   check ("CLASS_CAN_OVERRIDE" IS NOT NULL);
@@ -4927,7 +4898,7 @@ prompt
 create sequence TIMETABLE.SOLVER_PARAMETER_DEF_SEQ
 minvalue 1
 maxvalue 999999999999999999999999999
-start with 301
+start with 321
 increment by 1
 cache 20;
 
@@ -5139,6 +5110,7 @@ maxvalue 999999999999999999999999999
 start with 944
 increment by 1
 cache 20;
+
 
 commit;
 
