@@ -57,7 +57,7 @@
 		
 
 		<TR>
-			<TD>First Period Start Time:</TD>
+			<TD>1st Period Start Time:</TD>
 			<TD>
 			<html:text property="start" size="4" maxlength="4"/> (in military format)
 			&nbsp;<html:errors property="start"/>
@@ -65,7 +65,7 @@
 		</TR>
 
 		<TR>
-			<TD>First Period Length:</TD>
+			<TD>1st Period Length:</TD>
 			<TD>
 			<html:text property="length" size="4" maxlength="4"/> (in minutes)
 			&nbsp;<html:errors property="length"/>
@@ -73,7 +73,7 @@
 		</TR>
 
 		<TR>
-			<TD>Second Period Start Time:</TD>
+			<TD>2nd Period Start Time:</TD>
 			<TD>
 			<html:text property="start2" size="4" maxlength="4"/> (in military format)
 			&nbsp;<html:errors property="start2"/>
@@ -81,10 +81,58 @@
 		</TR>
 
 		<TR>
-			<TD>Second Period Length:</TD>
+			<TD>2nd Period Length:</TD>
 			<TD>
 			<html:text property="length2" size="4" maxlength="4"/> (in minutes)
 			&nbsp;<html:errors property="length2"/>
+			</TD>
+		</TR>
+
+		<TR>
+			<TD>3rd Period Start Time:</TD>
+			<TD>
+			<html:text property="start3" size="4" maxlength="4"/> (in military format)
+			&nbsp;<html:errors property="start3"/>
+			</TD>
+		</TR>
+
+		<TR>
+			<TD>3rd Period Length:</TD>
+			<TD>
+			<html:text property="length3" size="4" maxlength="4"/> (in minutes)
+			&nbsp;<html:errors property="length3"/>
+			</TD>
+		</TR>
+
+		<TR>
+			<TD>4th Period Start Time:</TD>
+			<TD>
+			<html:text property="start4" size="4" maxlength="4"/> (in military format)
+			&nbsp;<html:errors property="start4"/>
+			</TD>
+		</TR>
+
+		<TR>
+			<TD>4th Period Length:</TD>
+			<TD>
+			<html:text property="length4" size="4" maxlength="4"/> (in minutes)
+			&nbsp;<html:errors property="length4"/>
+			</TD>
+		</TR>
+
+		<TR>
+			<TD>5th Period Start Time:</TD>
+			<TD>
+			<html:text property="start5" size="4" maxlength="4"/> (in military format)
+			&nbsp;<html:errors property="start5"/>
+			</TD>
+		</TR>
+
+		<TR>
+			<TD>5th Period Length:</TD>
+			<TD>
+			<html:text property="length5" size="4" maxlength="4"/> (in minutes)
+			&nbsp;<html:errors property="length5"/>
 			</TD>
 		</TR>
 

@@ -629,18 +629,9 @@ public class PreferencesAction extends Action {
                 assignment = new ExamAssignment(exam);
             if (Exam.sExamTypeMidterm==exam.getExamType()) {
             	MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(exam.getSession(), assignment);
-            	if (epx.canDo()) {
-            		epx.load(exam);
-            		epx.load(request);
-            		epx.save(s, exam);
-            	} else {
-                	PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession(), assignment, exam.getExamType());
-                	px.load(exam);
-                	RequiredTimeTable rtt = new RequiredTimeTable(px);
-                	rtt.setName("PeriodPref");
-                	rtt.update(request);
-                	px.save(s, exam);
-                }
+                epx.load(exam);
+                epx.load(request);
+                epx.save(s, exam);
             } else {
             	PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession(), assignment, exam.getExamType());
             	px.load(exam);
@@ -810,24 +801,21 @@ public class PreferencesAction extends Action {
             assignment = new ExamAssignment(exam);
         if (Exam.sExamTypeMidterm==((ExamEditForm)frm).getExamType()) {
         	MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(exam==null?Session.getCurrentAcadSession(Web.getUser(request.getSession())):exam.getSession(), assignment);
-        	if (epx.canDo()) {
-        		if (exam!=null) epx.load(exam); else epx.invertRequired();
-        		frm.setHasNotAvailable(true);
-        		if (!op.equals("init")) epx.load(request);
-        		request.setAttribute("ExamPeriodGrid", epx.print(editable, (editable?0:exam.getLength())));
-        		return;
-        	}
+        	if (exam!=null) epx.load(exam);
+        	frm.setHasNotAvailable(true);
+        	if (!op.equals("init")) epx.load(request);
+        	request.setAttribute("ExamPeriodGrid", epx.print(editable, (editable?0:exam.getLength())));
+        } else {
+            PeriodPreferenceModel px = new PeriodPreferenceModel(exam==null?Session.getCurrentAcadSession(Web.getUser(request.getSession())):exam.getSession(), assignment, ((ExamEditForm)frm).getExamType());
+            if (exam!=null) px.load(exam);
+            User user = Web.getUser(request.getSession());
+            px.setAllowHard(user.isAdmin() || user.hasRole(Roles.EXAM_MGR_ROLE));
+            frm.setHasNotAvailable(px.hasNotAvailable());
+            RequiredTimeTable rtt = new RequiredTimeTable(px);
+            rtt.setName("PeriodPref");
+            if(!op.equals("init")) rtt.update(request);
+            request.setAttribute("ExamPeriodGrid", rtt.print(editable, timeVertical, editable, false));
         }
-        PeriodPreferenceModel px = new PeriodPreferenceModel(exam==null?Session.getCurrentAcadSession(Web.getUser(request.getSession())):exam.getSession(), assignment, ((ExamEditForm)frm).getExamType());
-        if (exam!=null) px.load(exam);
-        User user = Web.getUser(request.getSession());
-        px.setAllowHard(user.isAdmin() || user.hasRole(Roles.EXAM_MGR_ROLE));
-        frm.setHasNotAvailable(px.hasNotAvailable());
-        RequiredTimeTable rtt = new RequiredTimeTable(px);
-        rtt.setName("PeriodPref");
-        if(!op.equals("init")) 
-            rtt.update(request);
-        request.setAttribute("ExamPeriodGrid", rtt.print(editable, timeVertical, editable, false));
     }
     
     /**

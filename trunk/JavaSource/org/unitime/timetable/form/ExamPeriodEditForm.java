@@ -58,6 +58,12 @@ public class ExamPeriodEditForm extends ActionForm {
     private Integer iLength;
     private Integer iStart2;
     private Integer iLength2;
+    private Integer iStart3;
+    private Integer iLength3;
+    private Integer iStart4;
+    private Integer iLength4;
+    private Integer iStart5;
+    private Integer iLength5;
     private String iType;
     private Long iPrefLevel;
     private boolean iAutoSetup;
@@ -69,9 +75,9 @@ public class ExamPeriodEditForm extends ActionForm {
 	    if (!iAutoSetup && !CalendarUtils.isValidDate(iDate, "MM/dd/yyyy"))
 	        errors.add("date", new ActionMessage("errors.invalidDate", "Examination Date"));
 	    
-        if (iStart==null || iStart<=0)
-            errors.add("start", new ActionMessage("errors.required", ""));
-        else {
+        if (iStart==null || iStart<=0) {
+            if (!iAutoSetup) errors.add("start", new ActionMessage("errors.required", ""));
+        } else {
             int hour = iStart/100;
             int min = iStart%100;
             if (hour>=24)
@@ -80,17 +86,15 @@ public class ExamPeriodEditForm extends ActionForm {
                 errors.add("start", new ActionMessage("errors.generic","Invalid start time -- minute ("+min+") must be between 0 and 59."));
             if ((min%Constants.SLOT_LENGTH_MIN)!=0)
                 errors.add("start", new ActionMessage("errors.generic","Invalid start time -- minute ("+min+") must be divisible by "+Constants.SLOT_LENGTH_MIN+"."));
-        }
 
-	    if (iLength==null || iLength<=0)
-	        errors.add("length", new ActionMessage("errors.required", ""));
-	    else if ((iLength%Constants.SLOT_LENGTH_MIN)!=0)
-            errors.add("length", new ActionMessage("errors.generic","Invalid length -- period length must be divisible by "+Constants.SLOT_LENGTH_MIN+"."));
+            if (iLength==null || iLength<=0)
+                errors.add("length", new ActionMessage("errors.required", ""));
+            else if ((iLength%Constants.SLOT_LENGTH_MIN)!=0)
+                errors.add("length", new ActionMessage("errors.generic","Invalid length -- period length must be divisible by "+Constants.SLOT_LENGTH_MIN+"."));
+        }
 	    
 	    if (iAutoSetup) {
-	        if (iStart2==null || iStart2<=0)
-	            errors.add("start2", new ActionMessage("errors.required", ""));
-	        else {
+	        if (iStart2!=null && iStart2>0) {
 	            int hour = iStart2/100;
 	            int min = iStart2%100;
 	            if (hour>=24)
@@ -99,12 +103,56 @@ public class ExamPeriodEditForm extends ActionForm {
 	                errors.add("start2", new ActionMessage("errors.generic","Invalid start time -- minute ("+min+") must be between 0 and 59."));
 	            if ((min%Constants.SLOT_LENGTH_MIN)!=0)
 	                errors.add("start2", new ActionMessage("errors.generic","Invalid start time -- minute ("+min+") must be divisible by "+Constants.SLOT_LENGTH_MIN+"."));
+	            if (iLength2==null || iLength2<=0)
+	                errors.add("length2", new ActionMessage("errors.required", ""));
+	            else if ((iLength2%Constants.SLOT_LENGTH_MIN)!=0)
+	                errors.add("length2", new ActionMessage("errors.generic","Invalid length -- period length must be divisible by "+Constants.SLOT_LENGTH_MIN+"."));
 	        }
+	        
+            if (iStart3!=null && iStart3>0) {
+                int hour = iStart3/100;
+                int min = iStart3%100;
+                if (hour>=24)
+                    errors.add("start3", new ActionMessage("errors.generic","Invalid start time -- hour ("+hour+") must be between 0 and 23."));
+                if (min>=60)
+                    errors.add("start3", new ActionMessage("errors.generic","Invalid start time -- minute ("+min+") must be between 0 and 59."));
+                if ((min%Constants.SLOT_LENGTH_MIN)!=0)
+                    errors.add("start3", new ActionMessage("errors.generic","Invalid start time -- minute ("+min+") must be divisible by "+Constants.SLOT_LENGTH_MIN+"."));
+                if (iLength3==null || iLength3<=0)
+                    errors.add("length3", new ActionMessage("errors.required", ""));
+                else if ((iLength3%Constants.SLOT_LENGTH_MIN)!=0)
+                    errors.add("length3", new ActionMessage("errors.generic","Invalid length -- period length must be divisible by "+Constants.SLOT_LENGTH_MIN+"."));
+            }
 
-		    if (iLength2==null || iLength2<=0)
-		        errors.add("length2", new ActionMessage("errors.required", ""));
-		    else if ((iLength2%Constants.SLOT_LENGTH_MIN)!=0)
-	            errors.add("length2", new ActionMessage("errors.generic","Invalid length -- period length must be divisible by "+Constants.SLOT_LENGTH_MIN+"."));
+            if (iStart4!=null && iStart4>0) {
+                int hour = iStart4/100;
+                int min = iStart4%100;
+                if (hour>=24)
+                    errors.add("start4", new ActionMessage("errors.generic","Invalid start time -- hour ("+hour+") must be between 0 and 23."));
+                if (min>=60)
+                    errors.add("start4", new ActionMessage("errors.generic","Invalid start time -- minute ("+min+") must be between 0 and 59."));
+                if ((min%Constants.SLOT_LENGTH_MIN)!=0)
+                    errors.add("start4", new ActionMessage("errors.generic","Invalid start time -- minute ("+min+") must be divisible by "+Constants.SLOT_LENGTH_MIN+"."));
+                if (iLength4==null || iLength4<=0)
+                    errors.add("length4", new ActionMessage("errors.required", ""));
+                else if ((iLength4%Constants.SLOT_LENGTH_MIN)!=0)
+                    errors.add("length4", new ActionMessage("errors.generic","Invalid length -- period length must be divisible by "+Constants.SLOT_LENGTH_MIN+"."));
+            }
+
+            if (iStart5!=null && iStart5>0) {
+                int hour = iStart5/100;
+                int min = iStart5%100;
+                if (hour>=24)
+                    errors.add("start5", new ActionMessage("errors.generic","Invalid start time -- hour ("+hour+") must be between 0 and 23."));
+                if (min>=60)
+                    errors.add("start5", new ActionMessage("errors.generic","Invalid start time -- minute ("+min+") must be between 0 and 59."));
+                if ((min%Constants.SLOT_LENGTH_MIN)!=0)
+                    errors.add("start5", new ActionMessage("errors.generic","Invalid start time -- minute ("+min+") must be divisible by "+Constants.SLOT_LENGTH_MIN+"."));
+                if (iLength5==null || iLength5<=0)
+                    errors.add("length5", new ActionMessage("errors.required", ""));
+                else if ((iLength5%Constants.SLOT_LENGTH_MIN)!=0)
+                    errors.add("length5", new ActionMessage("errors.generic","Invalid length -- period length must be divisible by "+Constants.SLOT_LENGTH_MIN+"."));
+            }
 	    }
 	    
 	    try {
@@ -128,7 +176,11 @@ public class ExamPeriodEditForm extends ActionForm {
 	}
 	
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
-		iOp = null; iUniqueId = new Long(-1); iDate = null; iStart = null; iLength = null; iStart2 = null; iLength2 = null;
+		iOp = null; iUniqueId = new Long(-1); iDate = null; iStart = null; iLength = null; 
+		iStart2 = null; iLength2 = null;
+		iStart3 = null; iLength3 = null;
+		iStart4 = null; iLength4 = null;
+		iStart5 = null; iLength5 = null;
 		iPrefLevel = PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral).getUniqueId();
 		iType = Exam.sExamTypes[Exam.sExamTypeFinal];
 		iAutoSetup = false;
@@ -213,61 +265,86 @@ public class ExamPeriodEditForm extends ActionForm {
 		if (getAutoSetup()) {
 			setDays(request);
 			TreeSet periods = ExamPeriod.findAll(request, Exam.sExamTypeMidterm);
-			Integer firstSlot = null, lastSlot = null;
+			TreeSet<Integer> slots = new TreeSet();
 			TreeSet oldDays = new TreeSet();
 			for (Iterator i=periods.iterator();i.hasNext();) {
 				ExamPeriod period = (ExamPeriod)i.next();
-				if (firstSlot==null) {
-					firstSlot = lastSlot = period.getStartSlot();
-				} else {
-					firstSlot = Math.min(firstSlot, period.getStartSlot());
-					lastSlot = Math.max(lastSlot, period.getStartSlot());
-				}
+				slots.add(period.getStartSlot());
 				if (!iDays.contains(period.getDateOffset())) {
+				    for (Iterator j=hibSession.createQuery(
+                    "select x from Exam x where x.assignedPeriod.uniqueId=:periodId")
+                    .setLong("periodId", period.getUniqueId())
+                    .iterate();j.hasNext();) {
+				        Exam exam = (Exam)j.next();
+				        exam.unassign(Web.getUser(request.getSession()).getId(), hibSession);
+				    }
 					hibSession.delete(period);
 					i.remove();
 				} else {
 					oldDays.add(period.getDateOffset());
 				}
 			}
-		    int slot1 = ((iStart/100)*60 + (iStart%100) - Constants.FIRST_SLOT_TIME_MIN) / Constants.SLOT_LENGTH_MIN;
-		    int slot2 = ((iStart2/100)*60 + (iStart2%100) - Constants.FIRST_SLOT_TIME_MIN) / Constants.SLOT_LENGTH_MIN;
+			Hashtable<Integer,Integer> length = new Hashtable();
+			Hashtable<Integer,Integer> translate = new Hashtable();
+			TreeSet<Integer> newStarts = new TreeSet();
+			Iterator<Integer> it = slots.iterator();
+            if (iStart!=null && iStart>0) {
+                int slot = ((iStart/100)*60 + (iStart%100) - Constants.FIRST_SLOT_TIME_MIN) / Constants.SLOT_LENGTH_MIN; 
+                length.put(slot, iLength);
+                if (it.hasNext()) translate.put(it.next(), slot); else newStarts.add(slot);
+            } else if (it.hasNext()) it.next();
+            if (iStart2!=null && iStart2>0) {
+                int slot = ((iStart2/100)*60 + (iStart2%100) - Constants.FIRST_SLOT_TIME_MIN) / Constants.SLOT_LENGTH_MIN;
+                length.put(slot, iLength2);
+                if (it.hasNext()) translate.put(it.next(), slot); else newStarts.add(slot);
+            } else if (it.hasNext()) it.next();
+            if (iStart3!=null && iStart3>0) {
+                int slot = ((iStart3/100)*60 + (iStart3%100) - Constants.FIRST_SLOT_TIME_MIN) / Constants.SLOT_LENGTH_MIN;
+                length.put(slot, iLength3);
+                if (it.hasNext()) translate.put(it.next(), slot); else newStarts.add(slot);
+            } else if (it.hasNext()) it.next();
+            if (iStart4!=null && iStart4>0) {
+                int slot = ((iStart4/100)*60 + (iStart4%100) - Constants.FIRST_SLOT_TIME_MIN) / Constants.SLOT_LENGTH_MIN;
+                length.put(slot, iLength4);
+                if (it.hasNext()) translate.put(it.next(), slot); else newStarts.add(slot);
+            } else if (it.hasNext()) it.next();
+            if (iStart5!=null && iStart5>0) {
+                int slot = ((iStart5/100)*60 + (iStart5%100) - Constants.FIRST_SLOT_TIME_MIN) / Constants.SLOT_LENGTH_MIN;
+                length.put(slot, iLength5);
+                if (it.hasNext()) translate.put(it.next(), slot); else newStarts.add(slot);
+            } else if (it.hasNext()) it.next();
 			for (Iterator i=periods.iterator();i.hasNext();) {
 				ExamPeriod period = (ExamPeriod)i.next();
-				if (period.getStartSlot().equals(firstSlot)) {
-					period.setStartSlot(slot1);
-					period.setLength(iLength / Constants.SLOT_LENGTH_MIN);
-					hibSession.update(period);
-				} else if (period.getStartSlot().equals(lastSlot)) {
-					period.setStartSlot(slot2);
-					period.setLength(iLength2 / Constants.SLOT_LENGTH_MIN);
-					hibSession.update(period);
+				Integer start = translate.get(period.getStartSlot());
+				if (start==null) {
+				    for (Iterator j=hibSession.createQuery(
+				            "select x from Exam x where x.assignedPeriod.uniqueId=:periodId")
+				            .setLong("periodId", period.getUniqueId())
+				            .iterate();j.hasNext();) {
+				        Exam exam = (Exam)j.next();
+				        exam.unassign(Web.getUser(request.getSession()).getId(), hibSession);
+				    }
+				    hibSession.delete(period);
+				    i.remove();
 				} else {
-					hibSession.delete(period);
-					i.remove();
+				    period.setStartSlot(start);
+				    period.setLength(length.get(start) / Constants.SLOT_LENGTH_MIN);
+				    hibSession.update(period);
 				}
 			}
 			for (Iterator i=iDays.iterator();i.hasNext();) {
 				Integer day = (Integer)i.next();
-				if (oldDays.contains(day)) continue;
-			    ExamPeriod ep = new ExamPeriod();
-		        ep.setSession(iSession);
-		        ep.setDateOffset(day);
-		        ep.setStartSlot(slot1);
-		        ep.setLength(iLength / Constants.SLOT_LENGTH_MIN);
-		        ep.setPrefLevel(null);
-		        ep.setExamType(Exam.sExamTypeMidterm);
-		        ep.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral));
-		        hibSession.save(ep);
-			    ep = new ExamPeriod();
-		        ep.setSession(iSession);
-		        ep.setDateOffset(day);
-		        ep.setStartSlot(slot2);
-		        ep.setLength(iLength2 / Constants.SLOT_LENGTH_MIN);
-		        ep.setPrefLevel(null);
-		        ep.setExamType(Exam.sExamTypeMidterm);
-		        ep.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral));
-		        hibSession.save(ep);
+				for (int start : new TreeSet<Integer>(length.keySet())) {
+				    if (oldDays.contains(day) && !newStarts.contains(start)) continue;
+				    ExamPeriod ep = new ExamPeriod();
+				    ep.setSession(iSession);
+				    ep.setDateOffset(day);
+				    ep.setStartSlot(start);
+				    ep.setLength(length.get(start) / Constants.SLOT_LENGTH_MIN);
+				    ep.setExamType(Exam.sExamTypeMidterm);
+				    ep.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral));
+				    hibSession.save(ep);
+				}
 			}
 			return null;
 		} else {
@@ -282,9 +359,16 @@ public class ExamPeriodEditForm extends ActionForm {
 		}
 	}
 	
-	public void delete(org.hibernate.Session hibSession) throws Exception {
+	public void delete(HttpServletRequest request, org.hibernate.Session hibSession) throws Exception {
 		if (getUniqueId().longValue()<0) return;
 		ExamPeriod ep = (new ExamPeriodDAO()).get(getUniqueId(), hibSession);
+		for (Iterator j=hibSession.createQuery(
+		        "select x from Exam x where x.assignedPeriod.uniqueId=:periodId")
+		        .setLong("periodId", ep.getUniqueId())
+		        .iterate();j.hasNext();) {
+		    Exam exam = (Exam)j.next();
+            exam.unassign(Web.getUser(request.getSession()).getId(), hibSession);
+		}
 		hibSession.delete(ep);
 	}
 	
@@ -298,10 +382,22 @@ public class ExamPeriodEditForm extends ActionForm {
 	public void setStart(Integer start) { iStart = start; }
     public Integer getLength() { return iLength; }
     public void setLength(Integer length) { iLength = length; }
-	public Integer getStart2() { return iStart2; }
-	public void setStart2(Integer start2) { iStart2 = start2; }
+    public Integer getStart2() { return iStart2; }
+    public void setStart2(Integer start2) { iStart2 = start2; }
     public Integer getLength2() { return iLength2; }
     public void setLength2(Integer length2) { iLength2 = length2; }
+    public Integer getStart3() { return iStart3; }
+    public void setStart3(Integer start3) { iStart3 = start3; }
+    public Integer getLength3() { return iLength3; }
+    public void setLength3(Integer length3) { iLength3 = length3; }
+    public Integer getStart4() { return iStart4; }
+    public void setStart4(Integer start4) { iStart4 = start4; }
+    public Integer getLength4() { return iLength4; }
+    public void setLength4(Integer length4) { iLength4 = length4; }
+    public Integer getStart5() { return iStart5; }
+    public void setStart5(Integer start5) { iStart5 = start5; }
+    public Integer getLength5() { return iLength5; }
+    public void setLength5(Integer length5) { iLength5 = length5; }
     public Long getPrefLevel() { return iPrefLevel; }
     public void setPrefLevel(Long prefLevel) { iPrefLevel = prefLevel; }
     public Vector getPrefLevels() {
@@ -359,23 +455,56 @@ public class ExamPeriodEditForm extends ActionForm {
 				return false;
 			}
 		}
-		if (periods.size()!=iDays.size()*times.size() || times.size()>2) return false;
-		if (times.size()>0) {
-			int slot = Constants.SLOT_LENGTH_MIN*times.first()+Constants.FIRST_SLOT_TIME_MIN;
-			iStart = 100 * (slot / 60) + (slot % 60);
-			iLength = Constants.SLOT_LENGTH_MIN * lengths.get(times.first());
-		} else {
-			iStart = 1830; 
-			iLength = 60;
+		if (periods.size()!=iDays.size()*times.size() || times.size()>5) return false;
+		if (times.isEmpty()) {
+		    iStart = 1830; iLength = 60;
+		    iStart2 = 2000; iLength2 = 120;
+		    iStart3 = null; iLength3 = null;
+		    iStart4 = null; iLength4 = null;
+		    iStart5 = null; iLength5 = null;
 		}
-		if (times.size()>1) {
-			int slot = Constants.SLOT_LENGTH_MIN*times.last()+Constants.FIRST_SLOT_TIME_MIN;
-			iStart2 = 100 * (slot / 60) + (slot % 60);
-			iLength2 = Constants.SLOT_LENGTH_MIN * lengths.get(times.last());
-		} else {
-			iStart2 = 2000;
-			iLength2 = 120;
-		}
+		Iterator<Integer> it = times.iterator();
+        if (it.hasNext()) {
+            int slot = it.next();
+            int min = Constants.SLOT_LENGTH_MIN*times.first()+Constants.FIRST_SLOT_TIME_MIN;
+            iStart = 100 * (min / 60) + (min % 60);
+            iLength = Constants.SLOT_LENGTH_MIN * lengths.get(slot);
+        } else {
+            iStart = null; iLength = null;
+        }
+        if (it.hasNext()) {
+            int slot = it.next();
+            int min = Constants.SLOT_LENGTH_MIN*slot+Constants.FIRST_SLOT_TIME_MIN;
+            iStart2 = 100 * (min / 60) + (min % 60);
+            iLength2 = Constants.SLOT_LENGTH_MIN * lengths.get(slot);
+        } else {
+            iStart2 = null; iLength2 = null;
+        }
+        if (it.hasNext()) {
+            int slot = it.next();
+            int min = Constants.SLOT_LENGTH_MIN*slot+Constants.FIRST_SLOT_TIME_MIN;
+            iStart3 = 100 * (min / 60) + (min % 60);
+            iLength3 = Constants.SLOT_LENGTH_MIN * lengths.get(slot);
+        } else {
+            iStart3 = null; iLength3 = null;
+        }
+        if (it.hasNext()) {
+            int slot = it.next();
+            int min = Constants.SLOT_LENGTH_MIN*slot+Constants.FIRST_SLOT_TIME_MIN;
+            iStart4 = 100 * (min / 60) + (min % 60);
+            iLength4 = Constants.SLOT_LENGTH_MIN * lengths.get(slot);
+        } else {
+            iStart4 = null; iLength4 = null;
+        }
+        if (it.hasNext()) {
+            int slot = it.next();
+            int min = Constants.SLOT_LENGTH_MIN*slot+Constants.FIRST_SLOT_TIME_MIN;
+            iStart5 = 100 * (min / 60) + (min % 60);
+            iLength5 = Constants.SLOT_LENGTH_MIN * lengths.get(slot);
+        } else {
+            iStart5 = null; iLength5 = null;
+        }
+
 		return true;
 	}
 	

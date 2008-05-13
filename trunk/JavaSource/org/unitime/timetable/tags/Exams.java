@@ -208,12 +208,8 @@ public class Exams extends BodyTagSupport {
                         if (timeText || Exam.sExamTypeMidterm==exam.getExamType()) {
                             if (Exam.sExamTypeMidterm==exam.getExamType()) {
                                 MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(exam.getSession(), null);
-                                if (epx.canDo()) {
-                                    epx.load(exam);
-                                    perPref+=epx.toString();
-                                } else {
-                                    perPref += exam.getEffectivePrefHtmlForPrefType(ExamPeriodPref.class);
-                                }
+                                epx.load(exam);
+                                perPref+=epx.toString();
                             } else {
                                 perPref += exam.getEffectivePrefHtmlForPrefType(ExamPeriodPref.class);
                             }
