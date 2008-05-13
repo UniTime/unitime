@@ -144,12 +144,16 @@ public class ExamAssignment extends ExamInfo implements Serializable {
         if (Constants.SLOT_LENGTH_MIN*period.getLength()<exam.getLength()) throw new Exception("Given period is two short.");
         iPeriodPref = period.getPrefLevel().getPrefProlog();
         boolean reqPeriod = false;
+        boolean hasPeriodPref = false;
         for (Iterator i=exam.getPreferences(ExamPeriodPref.class).iterator();i.hasNext();) {
             ExamPeriodPref periodPref = (ExamPeriodPref)i.next();
             if (PreferenceLevel.sRequired.equals(periodPref.getPrefLevel().getPrefProlog())) reqPeriod = true;
-            if (periodPref.getExamPeriod().equals(period))
+            if (periodPref.getExamPeriod().equals(period)) {
                 iPeriodPref = periodPref.getPrefLevel().getPrefProlog();
+                hasPeriodPref = true;
+            }
         }
+        if (getExamType()==Exam.sExamTypeMidterm && !hasPeriodPref) iPeriodPref=PreferenceLevel.sProhibited;
         if (PreferenceLevel.sProhibited.equals(iPeriodPref)) throw new Exception("Given period is prohibited.");
         if (reqPeriod && !PreferenceLevel.sRequired.equals(iPeriodPref)) throw new Exception("Given period is not required.");
         iPeriod = period;

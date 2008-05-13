@@ -141,6 +141,7 @@ public class ExamDatabaseLoader extends ExamLoader {
     }
     
     public int pref2weight(String pref) {
+        if (pref==null) return 0;
         if (PreferenceLevel.sStronglyPreferred.equals(pref))
             return -4;
         if (PreferenceLevel.sPreferred.equals(pref))
@@ -214,11 +215,12 @@ public class ExamDatabaseLoader extends ExamLoader {
             for (Enumeration e=getModel().getPeriods().elements();e.hasMoreElements(); ) {
                 ExamPeriod period = (ExamPeriod)e.nextElement();
                 if (iProhibitedPeriods.contains(period) ||  period.getLength()<exam.getLength()) continue;
-                String pref = PreferenceLevel.sNeutral;
+                String pref = null;
                 for (Iterator j=periodPrefs.iterator();j.hasNext();) {
                     ExamPeriodPref periodPref = (ExamPeriodPref)j.next();
                     if (period.getId().equals(periodPref.getExamPeriod().getUniqueId())) { pref = periodPref.getPrefLevel().getPrefProlog(); break; }
                 }
+                if (iExamType==org.unitime.timetable.model.Exam.sExamTypeMidterm && pref==null) continue;
                 if (PreferenceLevel.sProhibited.equals(pref)) continue;
                 if (PreferenceLevel.sRequired.equals(pref)) {
                     if (!hasReqPeriod) periodPlacements.clear(); 

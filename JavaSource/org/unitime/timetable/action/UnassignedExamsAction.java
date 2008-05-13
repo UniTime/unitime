@@ -139,25 +139,8 @@ public class UnassignedExamsAction extends Action {
                     } else {
                         if (exam.getExamType()==Exam.sExamTypeMidterm) {
                             MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(exam.getExam().getSession());
-                            if (epx.canDo()) {
-                                epx.load(exam.getExam());
-                                perPref += epx.toString(true);
-                            } else {
-                                PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getExam().getSession(), exam.getExamType());
-                                px.load(exam.getExam());
-                                RequiredTimeTable rtt = new RequiredTimeTable(px);
-                                File imageFileName = null;
-                                try {
-                                    imageFileName = rtt.createImage(timeVertical);
-                                } catch (IOException ex) {
-                                    ex.printStackTrace();
-                                }
-                                String title = rtt.getModel().toString();
-                                if (imageFileName!=null)
-                                    perPref = "<img border='0' src='temp/"+(imageFileName.getName())+"' title='"+title+"'>";
-                                else
-                                    perPref += exam.getExam().getEffectivePrefHtmlForPrefType(ExamPeriodPref.class);
-                            }
+                            epx.load(exam.getExam());
+                            perPref += epx.toString(true);
                         } else {
                             PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getExam().getSession(), exam.getExamType());
                             px.load(exam.getExam());
@@ -199,16 +182,8 @@ public class UnassignedExamsAction extends Action {
                     }
                     if (exam.getExamType()==Exam.sExamTypeMidterm) {
                         MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(exam.getExam().getSession());
-                        if (epx.canDo()) {
-                            epx.load(exam.getExam());
-                            perPref += epx.toString();
-                        } else {
-                            for (Iterator j=exam.getExam().effectivePreferences(ExamPeriodPref.class).iterator();j.hasNext();) {
-                                Preference pref = (Preference)j.next();
-                                if (perPref.length()>0) perPref+=nl;
-                                perPref += PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText();
-                            }
-                        }
+                        epx.load(exam.getExam());
+                        perPref += epx.toString();
                     } else {
                         for (Iterator j=exam.getExam().effectivePreferences(ExamPeriodPref.class).iterator();j.hasNext();) {
                             Preference pref = (Preference)j.next();

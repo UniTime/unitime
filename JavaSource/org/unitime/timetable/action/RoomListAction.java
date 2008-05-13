@@ -569,19 +569,12 @@ public class RoomListAction extends Action {
 	                    if (gridAsText)
 	                        text[idx] = location.getExamPreferencesAbbreviationHtml(examType);
 	                    else {
-	                        PeriodPreferenceModel px = null;
 	                        if (examType==Exam.sExamTypeMidterm) {
 	                            MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(location.getSession());
-	                            if (epx.canDo()) {
-	                                epx.load(location);
-	                                text[idx]=epx.toString(true).replaceAll(", ", "<br>");
-	                            } else {
-	                                px = new PeriodPreferenceModel(location.getSession(), examType);
-	                            }
+	                            epx.load(location);
+	                            text[idx]=epx.toString(true).replaceAll(", ", "<br>");
 	                        } else {
-	                            px = new PeriodPreferenceModel(location.getSession(), examType);
-	                        }
-	                        if (px!=null) {
+	                            PeriodPreferenceModel px = new PeriodPreferenceModel(location.getSession(), examType);
 	                            px.load(location);
 	                            RequiredTimeTable rtt = new RequiredTimeTable(px);
 	                            File imageFileName = null;

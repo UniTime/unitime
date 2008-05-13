@@ -178,17 +178,8 @@ public class EditRoomAction extends Action {
 
             if (Exam.hasMidtermExams(location.getSession().getUniqueId())) {
                 MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(location.getSession());
-                if (epx.canDo()) {
-                    epx.load(location);
-                    request.setAttribute("PeriodEPrefs", epx.print(true));
-                } else {
-                    px = new PeriodPreferenceModel(location.getSession(), Exam.sExamTypeMidterm);
-                    px.load(location);
-                    px.setAllowRequired(false);
-                    rttPx = new RequiredTimeTable(px);
-                    rttPx.setName("PeriodEPrefs");
-                    request.setAttribute("PeriodEPrefs", rttPx.print(true, RequiredTimeTable.getTimeGridVertical(user)));
-                }
+                epx.load(location);
+                request.setAttribute("PeriodEPrefs", epx.print(true));
             }
 
             Set ownedDepts = owner.departmentsForSession(s.getUniqueId());
@@ -346,17 +337,9 @@ public class EditRoomAction extends Action {
             
             if (Exam.hasMidtermExams(location.getSession().getUniqueId()) && location.isExamEnabled(Exam.sExamTypeMidterm)) {
                 MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(location.getSession());
-                if (epx.canDo()) {
-                    epx.load(request);
-                    request.setAttribute("PeriodEPrefs", epx.print(true));
-                    epx.save(location);
-                } else {
-                    PeriodPreferenceModel px = new PeriodPreferenceModel(location.getSession(), Exam.sExamTypeMidterm);
-                    RequiredTimeTable rttPx = new RequiredTimeTable(px);
-                    rttPx.setName("PeriodEPrefs");
-                    rttPx.update(request);
-                    px.save(location);
-                }
+                epx.load(request);
+                request.setAttribute("PeriodEPrefs", epx.print(true));
+                epx.save(location);
             } else {
                 location.clearExamPreferences(Exam.sExamTypeMidterm);
             }

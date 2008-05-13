@@ -134,6 +134,7 @@ public class ExamPeriodEditAction extends Action {
 
                         if (tx!=null) tx.commit();
 	        	    } catch (Exception e) {
+	        	        e.printStackTrace();
 	        	    	if (tx!=null) tx.rollback();
 	        	    	throw e;
 	        	    }
@@ -184,10 +185,11 @@ public class ExamPeriodEditAction extends Action {
                             null, 
                             null);
 
-                    myForm.delete(hibSession);
+                    myForm.delete(request, hibSession);
 	            	
 	    			tx.commit();
 	    	    } catch (Exception e) {
+	    	        e.printStackTrace();
 	    	    	if (tx!=null) tx.rollback();
 	    	    	throw e;
 	    	    }
