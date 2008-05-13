@@ -792,7 +792,7 @@
   	</definition>
 
   	<definition name="examEditTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Examination Edit"/>
+		<put name="title" type="string" value="Edit Examination"/>
 		<put name="body" value="/user/examEdit.jsp" />
 		<put name="showNavigation" value="true" />
   	</definition>
@@ -881,7 +881,7 @@
 		<put name="showNavigation" value="true" />
   	</definition> 	
  	<definition	name="personalizedExamReportTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Examinations"/>
+		<put name="title" type="string" value="Personal Examination Schedule"/>
 		<put name="body" value="/exam/personalizedReport.jsp" />
   	</definition> 	
 </tiles-definitions>
