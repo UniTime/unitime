@@ -822,7 +822,8 @@ public class Exam extends BaseExam implements Comparable<Exam> {
     public String unassign(String managerExternalId, Session hibSession) {
         Transaction tx = null;
         try {
-            tx = hibSession.beginTransaction();
+            if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
+                tx = hibSession.beginTransaction();
             
             ExamAssignment oldAssignment = new ExamAssignment(this);
             
@@ -874,7 +875,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                     subject,
                     dept);
 
-            tx.commit();
+            if (tx!=null) tx.commit();
             return null;
         } catch (Exception e) {
             if (tx!=null) tx.rollback();

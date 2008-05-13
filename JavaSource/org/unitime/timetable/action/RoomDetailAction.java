@@ -225,18 +225,8 @@ public class RoomDetailAction extends Action {
         
         if (Exam.hasMidtermExams(location.getSession().getUniqueId()) && location.isExamEnabled(Exam.sExamTypeMidterm) && !location.getExamPreferences(Exam.sExamTypeMidterm).isEmpty()) {
             MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(location.getSession());
-            if (epx.canDo()) {
-                epx.load(location);
-                roomDetailForm.setExamEPref(epx.print(false));
-            } else {
-                PeriodPreferenceModel px = new PeriodPreferenceModel(location.getSession(), Exam.sExamTypeMidterm);
-                px.setAllowRequired(false);
-                px.load(location);
-                RequiredTimeTable rttPx = new RequiredTimeTable(px);
-                rttPx.setName("PeriodEPrefs");
-                if (!location.getExamPreferences(Exam.sExamTypeMidterm).isEmpty())
-                    roomDetailForm.setExamEPref(rttPx.print(false, timeVertical, true, false));
-            }
+            epx.load(location);
+            roomDetailForm.setExamEPref(epx.print(false));
         } 
 		
 		roomDetailForm.setCapacity(location.getCapacity());

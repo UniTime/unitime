@@ -94,6 +94,8 @@ public class ExamPdfReportAction extends Action {
         
         if (WebSolver.getExamSolver(request.getSession())!=null)
             request.setAttribute(Constants.REQUEST_WARN, "Examination PDF reports are generated from the saved solution (solver assignments are ignored).");
+        
+        TimetableManager mgr = TimetableManager.getManager(Web.getUser(request.getSession()));
 
         // Read operation to be performed
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
@@ -208,7 +210,6 @@ public class ExamPdfReportAction extends Action {
                 if (output.isEmpty())
                     myForm.log("<font color='orange'>No report generated.</font>");
                 else if (myForm.getEmail()) {
-                    TimetableManager mgr = TimetableManager.getManager(Web.getUser(request.getSession()));
                     InternetAddress from = 
                         (mgr.getEmailAddress()==null?
                                 new InternetAddress(
