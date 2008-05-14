@@ -114,14 +114,16 @@ public class PdfWebTable extends WebTable {
 		return width;
 	}
 
-	private float addText(PdfPCell cell, String text, boolean bold, boolean italic, boolean underline, Color color) {
+	private float addText(PdfPCell cell, String text, boolean bold, boolean italic, boolean underline, Color color, Color bgColor) {
 		Font font = FontFactory.getFont(FontFactory.HELVETICA, 12, (underline?Font.UNDERLINE:0)+(italic&&bold?Font.BOLDITALIC:italic?Font.ITALIC:bold?Font.BOLD:Font.NORMAL), color);
+		Chunk chunk = new Chunk(text,font);
+		if (bgColor!=null) chunk.setBackground(bgColor);
 		if (cell.getPhrase()==null) {
-			cell.setPhrase(new Paragraph(text,font));
+		    cell.setPhrase(new Paragraph(chunk));
 			cell.setVerticalAlignment(Element.ALIGN_TOP);
 			cell.setHorizontalAlignment(Element.ALIGN_CENTER);
 		} else {
-			cell.getPhrase().add(new Chunk(text,font));
+			cell.getPhrase().add(chunk);
 		}
 		float width = 0; 
 		if (text.indexOf('\n')>=0) {
@@ -133,7 +135,7 @@ public class PdfWebTable extends WebTable {
 	}
 	
 	private float addText(PdfPCell cell, String text, boolean bold, boolean italic, boolean underline, Color color,
-			boolean borderTop, boolean borderBottom, boolean borderLeft, boolean borderRight, Color borderColor ) {
+			boolean borderTop, boolean borderBottom, boolean borderLeft, boolean borderRight, Color borderColor, Color bgColor ) {
 		
     	cell.setBorderWidth(1);
     	
@@ -169,11 +171,11 @@ public class PdfWebTable extends WebTable {
 				cell.setBorderColorRight(borderColor);
 		}
 
-		return addText(cell, text, bold, italic, underline, color);
+		return addText(cell, text, bold, italic, underline, color, bgColor);
 	}	
 	
 	private float addText(PdfPCell cell, String text, boolean bold, boolean italic, boolean underline, Color color,
-			boolean border, Color borderColor ) {
+			boolean border, Color borderColor, Color bgColor) {
 		
 		if (border) {
 	    	cell.setBorderWidth(1);
@@ -184,19 +186,16 @@ public class PdfWebTable extends WebTable {
 				cell.setBorderColor(borderColor);
 		}
 		
-		return addText(cell, text, bold, italic, underline, color);
+		return addText(cell, text, bold, italic, underline, color, bgColor);
 	}	
 	
-	private float addText(PdfPCell cell, String text) {
-		return addText(cell, text);
-	}
-	
 	private float addText(PdfPCell cell, String text, boolean bold) {
-		if (text==null) return addText(cell, "", bold, false, false, Color.BLACK);
-		if (text.indexOf("@@")<0) return addText(cell, text, bold, false, false, Color.BLACK);
+		if (text==null) return addText(cell, "", bold, false, false, Color.BLACK, null);
+		if (text.indexOf("@@")<0) return addText(cell, text, bold, false, false, Color.BLACK, null);
 		
 		Color color = Color.BLACK; 
-		Color bcolor = Color.BLACK; 
+		Color bcolor = Color.BLACK;
+		Color bgColor = null;
 		boolean bd=bold, it=false, un=false;
 		boolean ba=false, bt=false, bb=false, bl=false, br=false;		
 		float maxWidth = 0; 
@@ -210,26 +209,26 @@ public class PdfWebTable extends WebTable {
 				int idx = line.indexOf("@@", pos);
 				if (idx<0) {
 					if (ba) {
-						width += addText(cell, (!first && pos==0?"\n":"")+line.substring(pos), bd, it, un, color, true, bcolor);
+						width += addText(cell, (!first && pos==0?"\n":"")+line.substring(pos), bd, it, un, color, true, bcolor, bgColor);
 					}
 					else {
 						if (bt || bb || bl || br) {
-							width += addText(cell, (!first && pos==0?"\n":"")+line.substring(pos), bd, it, un, color, bt, bb, bl, br, bcolor);
+							width += addText(cell, (!first && pos==0?"\n":"")+line.substring(pos), bd, it, un, color, bt, bb, bl, br, bcolor, bgColor);
 						}
 						else
-							width += addText(cell, (!first && pos==0?"\n":"")+line.substring(pos), bd, it, un, color);
+							width += addText(cell, (!first && pos==0?"\n":"")+line.substring(pos), bd, it, un, color, bgColor);
 					}
 					break;
 				} else {
 					if (ba) {
-						width += addText(cell, (!first && pos==0?"\n":"")+line.substring(pos, idx), bd, it, un, color, true, bcolor);
+						width += addText(cell, (!first && pos==0?"\n":"")+line.substring(pos, idx), bd, it, un, color, true, bcolor, bgColor);
 					}
 					else {
 						if (bt || bb || bl || br) {
-							width += addText(cell, (!first && pos==0?"\n":"")+line.substring(pos, idx), bd, it, un, color, bt, bb, bl, br, bcolor);
+							width += addText(cell, (!first && pos==0?"\n":"")+line.substring(pos, idx), bd, it, un, color, bt, bb, bl, br, bcolor, bgColor);
 						}
 						else
-							width += addText(cell, (!first && pos==0?"\n":"")+line.substring(pos, idx), bd, it, un, color);
+							width += addText(cell, (!first && pos==0?"\n":"")+line.substring(pos, idx), bd, it, un, color, bgColor);
 					}
 					pos = idx;
 				}
@@ -256,6 +255,14 @@ public class PdfWebTable extends WebTable {
 				if ("END_COLOR".equals(cmd)) {
 					color = Color.BLACK;
 				}
+                if ("BGCOLOR".equals(cmd)) {
+                    String hex = line.substring(pos, line.indexOf(' ',pos));
+                    pos+=hex.length()+1;
+                    bgColor = new Color(Integer.parseInt(hex,16));
+                }
+                if ("END_BGCOLOR".equals(cmd)) {
+                    bgColor = null;
+                }
 				if ("IMAGE".equals(cmd)) {
 					String name = line.substring(pos, line.indexOf(' ',pos));
 					pos+=name.length()+1;
