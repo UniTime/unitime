@@ -27,7 +27,7 @@ public class ScheduleByRoomReport extends PdfLegacyExamReport {
 
     public void printReport() throws DocumentException {
         setHeader(new String[] {
-                "Bldg  Room  Capacity  ExCap Period Date And Time                          Subj Crsnbr "+(iItype?"InsTyp ":"")+"Sect  Enrl",
+                "Bldg  Room  Capacity  ExCap Period Date And Time                          Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect  Enrl",
                 "----- ----- -------- ------ ------ -------------------------------------- ---- ------ "+(iItype?"------ ":"")+"---- -----"});
         printHeader();
         Vector periods = new Vector(ExamPeriod.findAll(getSession().getUniqueId(), getExamType()));

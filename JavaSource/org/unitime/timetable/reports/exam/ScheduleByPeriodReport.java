@@ -40,7 +40,7 @@ public class ScheduleByPeriodReport extends PdfLegacyExamReport {
             }
         }
         setHeader(new String[] {
-                "Date And Time                          Subj Crsnbr "+(iItype?"InsTyp ":"")+"Sect   Meeting Times                         Enrl"+(iDispRooms?"  Room         Cap ExCap":""),
+                "Date And Time                          Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect   Meeting Times                         Enrl"+(iDispRooms?"  Room         Cap ExCap":""),
                 "-------------------------------------- ---- ------ "+(iItype?"------ ":"")+"---- -------------------------------------- -----"+(iDispRooms?" ----------- ----- -----":"")});
         printHeader();
         for (Iterator p=ExamPeriod.findAll(getSession().getUniqueId(), getExamType()).iterator();p.hasNext();) {
