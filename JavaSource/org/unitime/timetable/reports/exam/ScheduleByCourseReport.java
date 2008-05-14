@@ -39,7 +39,7 @@ public class ScheduleByCourseReport extends PdfLegacyExamReport {
             }
         }
         setHeader(new String[] {
-                "Subj Crsnbr "+(iItype?"InsTyp ":"")+"Sect   Meeting Times                         Enrl    Date And Time                   Room         Cap ExCap ",
+                "Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect   Meeting Times                         Enrl    Date And Time                   Room         Cap ExCap ",
                 "---- ------ "+(iItype?"------ ":"")+"---- -------------------------------------- -----  -------------------------------- ----------- ----- -----"});
         printHeader();
         for (Iterator<String> i = new TreeSet<String>(subject2courseSections.keySet()).iterator(); i.hasNext();) {

@@ -83,6 +83,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
     protected boolean iUseClassSuffix = false;
     protected boolean iDispLimits = true;
     protected Date iSince = null;
+    protected boolean iExternal = false;
     
     static {
         sRegisteredReports.put("crsn", ScheduleByCourseReport.class);
@@ -117,6 +118,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
         iItype = "true".equals(System.getProperty("itype",ApplicationProperties.getProperty("tmtbl.exam.report.itype","true")));
         iTotals = "true".equals(System.getProperty("totals","true"));
         iUseClassSuffix = "true".equals(System.getProperty("suffix",ApplicationProperties.getProperty("tmtbl.exam.report.suffix","false")));
+        iExternal = "true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.external","false"));
         iDispLimits = "true".equals(System.getProperty("verlimit","true"));
         iClassSchedule = "true".equals(System.getProperty("cschedule","true"));
         if (System.getProperty("since")!=null) {
@@ -314,7 +316,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
     }
     
     public String getItype(Class_ clazz) {
-        if ("true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.external","false"))) {
+        if (iExternal) {
             String ext = clazz.getExternalUniqueId();
             return (ext==null?"":ext);
         } else
