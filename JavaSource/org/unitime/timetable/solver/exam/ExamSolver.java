@@ -1067,4 +1067,23 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
         super.autoConfigure();
         setPerturbationsCounter(null);
     }
+    
+    public TreeSet<ExamAssignment> getExamsOfRoom(long locationId) {
+        synchronized (super.currentSolution()) {
+            ExamModel model = (ExamModel)currentSolution().getModel();
+            ExamRoom room = null;
+            for (Enumeration e=model.getRooms().elements();e.hasMoreElements();) {
+                ExamRoom r = (ExamRoom)e.nextElement();
+                if (r.getId()==locationId) { room = r; break; }
+            }
+            if (room==null) return null;
+            TreeSet<ExamAssignment> ret = new TreeSet();
+            for (Enumeration e=model.getPeriods().elements();e.hasMoreElements();) {
+                ExamPeriod period = (ExamPeriod)e.nextElement();
+                if (room.getPlacement(period)!=null)
+                    ret.add(new ExamAssignment(room.getPlacement(period)));
+            }
+            return ret;
+        }
+    }
 }
