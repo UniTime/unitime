@@ -178,7 +178,7 @@ public class InstructorExamReport extends PdfLegacyExamReport {
             if (!allClasses.isEmpty()) {
                 println("");
                 setHeader(new String[]{
-                        "Subj Crsnbr "+(iItype?"InsTyp ":"")+"Sect  Dates                     Time            Room       Lead Share",
+                        "Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect  Dates                     Time            Room       Lead Share",
                         "---- ------ "+(iItype?"------ ":"")+"---- ------------------------- --------------- ----------- ---- -----"});
                 println(mpad("~ ~ ~ ~ ~ CLASS SECHEDULE ~ ~ ~ ~ ~",iNrChars));
                 for (int i=0;i<getHeader().length;i++) println(getHeader()[i]);
@@ -245,7 +245,7 @@ public class InstructorExamReport extends PdfLegacyExamReport {
         }
         println("");
         setHeader(new String[]{
-                "Subj Crsnbr "+(iItype?"InsTyp ":"")+"Sect   Meeting Times                         Enrl    Date And Time                   Room         Cap ExCap",
+                "Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect   Meeting Times                         Enrl    Date And Time                   Room         Cap ExCap",
                 "---- ------ "+(iItype?"------ ":"")+"---- -------------------------------------- -----  -------------------------------- ----------- ----- -----"});
         println(mpad("~ ~ ~ ~ ~ EXAMINATION SECHEDULE ~ ~ ~ ~ ~",iNrChars));
         for (int i=0;i<getHeader().length;i++) println(getHeader()[i]);
@@ -323,7 +323,7 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                                 setHeader(null);
                                 if (getLineNumber()+5>=iNrLines) newPage();
                                 setHeader(new String[] {
-                                        "Subj Crsnbr "+(iItype?"InsTyp ":"")+"Sect Date And Time                Type   Subj Crsnbr "+(iItype?"InsTyp ":"")+"Sect Time                 ",
+                                        "Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect Date And Time                Type   Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect Time                 ",
                                         "---- ------ "+(iItype?"------ ":"")+"---- ---------------------------- ------ ---- ------ "+(iItype?"------ ":"")+"---- ---------------------"});
                                 println(mpad("~ ~ ~ ~ ~ INSTRUCTOR CONFLICTS ~ ~ ~ ~ ~",iNrChars));
                                 for (int i=0;i<getHeader().length;i++) println(getHeader()[i]);
@@ -352,7 +352,7 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                             setHeader(null);
                             if (getLineNumber()+5>=iNrLines) newPage();
                             setHeader(new String[] {
-                                    "Subj Crsnbr "+(iItype?"InsTyp ":"")+"Sect Date And Time                Type   Subj Crsnbr "+(iItype?"InsTyp ":"")+"Sect Time                 ",
+                                    "Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect Date And Time                Type   Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect Time                 ",
                                     "---- ------ "+(iItype?"------ ":"")+"---- ---------------------------- ------ ---- ------ "+(iItype?"------ ":"")+"---- ---------------------"});
                             println(mpad("~ ~ ~ ~ ~ INSTRUCTOR CONFLICTS ~ ~ ~ ~ ~",iNrChars));
                             for (int i=0;i<getHeader().length;i++) println(getHeader()[i]);
@@ -387,7 +387,7 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                                 setHeader(null);
                                 if (getLineNumber()+5>=iNrLines) newPage();
                                 setHeader(new String[] {
-                                        "Subj Crsnbr "+(iItype?"InsTyp ":"")+"Sect Date And Time                Type   Subj Crsnbr "+(iItype?"InsTyp ":"")+"Sect Time                 ",
+                                        "Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect Date And Time                Type   Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect Time                 ",
                                         "---- ------ "+(iItype?"------ ":"")+"---- ---------------------------- ------ ---- ------ "+(iItype?"------ ":"")+"---- ---------------------"});
                                 println(mpad("~ ~ ~ ~ ~ INSTRUCTOR CONFLICTS ~ ~ ~ ~ ~",iNrChars));
                                 for (int i=0;i<getHeader().length;i++) println(getHeader()[i]);
@@ -422,7 +422,7 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                             setHeader(null);
                             if (getLineNumber()+5>=iNrLines) newPage();
                             setHeader(new String[] {
-                                    "Subj Crsnbr "+(iItype?"InsTyp ":"")+"Sect Date And Time                Type   Subj Crsnbr "+(iItype?"InsTyp ":"")+"Sect Time                 ",
+                                    "Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect Date And Time                Type   Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect Time                 ",
                                     "---- ------ "+(iItype?"------ ":"")+"---- ---------------------------- ------ ---- ------ "+(iItype?"------ ":"")+"---- ---------------------"});
                             println(mpad("~ ~ ~ ~ ~ INSTRUCTOR CONFLICTS ~ ~ ~ ~ ~",iNrChars));
                             for (int i=0;i<getHeader().length;i++) println(getHeader()[i]);
@@ -452,7 +452,7 @@ public class InstructorExamReport extends PdfLegacyExamReport {
         setHeader(null);
         if (getLineNumber()+5>=iNrLines) newPage(); else println("");
         setHeader(new String[] {
-                "Subj Crsnbr "+(iItype?"InsTyp ":"")+"Sect Date And Time                Name                      Type   Subj Crsnbr "+(iItype?"InsTyp ":"")+"Sect Time                 ",
+                "Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect Date And Time                Name                      Type   Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect Time                 ",
                 "---- ------ "+(iItype?"------ ":"")+"---- ---------------------------- ------------------------- ------ ---- ------ "+(iItype?"------ ":"")+"---- ---------------------"});
         println(mpad("~ ~ ~ ~ ~ STUDENT CONFLICTS ~ ~ ~ ~ ~",iNrChars));
         for (int i=0;i<getHeader().length;i++) println(getHeader()[i]);

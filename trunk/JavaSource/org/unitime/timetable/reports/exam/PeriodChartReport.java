@@ -12,7 +12,6 @@ import java.util.Vector;
 import net.sf.cpsolver.ifs.util.ToolBox;
 
 import org.apache.log4j.Logger;
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
@@ -24,12 +23,10 @@ import com.lowagie.text.DocumentException;
 
 public class PeriodChartReport extends PdfLegacyExamReport {
     protected static Logger sLog = Logger.getLogger(ScheduleByCourseReport.class);
-    private boolean iExternal = false;
     
     public PeriodChartReport(int mode, File file, Session session, int examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
         super(mode, file, "PERIOD ASSIGNMENT", session, examType, subjectArea, exams);
         if (iLimit>=0) setFooter("limit="+iLimit);
-        iExternal = "true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.external","false"));
     }
     
     public String setRoomCode(String roomCode) {

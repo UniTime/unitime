@@ -45,7 +45,7 @@ public class ConflictsByCourseAndInstructorReport extends PdfLegacyExamReport {
             }
         }
         setHeader(new String[] {
-                "Subj Crsnbr "+(iItype?"InsTyp ":"")+"Sect Date And Time                Name                       Type   Subj Crsnbr "+(iItype?"InsTyp ":"")+"Sect Time",
+                "Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect Date And Time                Name                       Type   Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect Time",
                 "---- ------ "+(iItype?"------ ":"")+"---- ---------------------------- ------------------------- ------ ---- ------ "+(iItype?"------ ":"")+"---- ---------------------"});
         printHeader();
         for (Iterator<String> i = new TreeSet<String>(subject2courseSections.keySet()).iterator(); i.hasNext();) {

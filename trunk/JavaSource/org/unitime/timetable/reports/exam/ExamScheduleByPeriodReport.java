@@ -26,7 +26,7 @@ public class ExamScheduleByPeriodReport extends PdfLegacyExamReport {
     
     public void printReport() throws DocumentException {
         setHeader(new String[] {
-                "Date And Time                          Subj Crsnbr "+(iItype?"InsTyp ":"")+"Sect   Meeting Times                         Enrl"+(iDispRooms?"  Room         Cap ExCap":""),
+                "Date And Time                          Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect   Meeting Times                         Enrl"+(iDispRooms?"  Room         Cap ExCap":""),
                 "-------------------------------------- ---- ------ "+(iItype?"------ ":"")+"---- -------------------------------------- -----"+(iDispRooms?" ----------- ----- -----":"")});
         printHeader();
         TreeSet<ExamAssignmentInfo> exams = new TreeSet(getExams());
