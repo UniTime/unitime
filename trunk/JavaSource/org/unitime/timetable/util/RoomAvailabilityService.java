@@ -128,6 +128,7 @@ public class RoomAvailabilityService implements RoomAvailabilityInterface {
         }
         if (waitForSync) {
             synchronized (cache) {
+                sLog.warn("Activate: waiting for update of "+time);
                 try {
                     cache.wait(iTimeout);
                 } catch (InterruptedException e) {
@@ -219,7 +220,7 @@ public class RoomAvailabilityService implements RoomAvailabilityInterface {
             setDaemon(true);
         }
         
-        public synchronized void update(CacheElement cache) throws InterruptedException {
+        public void update(CacheElement cache) throws InterruptedException {
             try {
                 sLog.debug("Updating "+cache);
                 sendRequest(createRequest(cache));
@@ -228,14 +229,14 @@ public class RoomAvailabilityService implements RoomAvailabilityInterface {
                 long waited = 0;
                 while ((response = recieveResponse())==null) {
                     sLog.debug("Waiting for response ("+(waited/1000)+"s waited so far)...");
-                    sleep(500);
-                    waited+=500;
+                    sleep(5000);
+                    waited+=5000;
                     if (waited>iTimeout) {
                         sLog.error("No response recieved after "+(iTimeout/1000)+"s.");
                         throw new Exception("Timeout");
                     }
                 }
-                sLog.debug("Reading response "+iResponseFile+"...");
+                sLog.debug("Reading response...");
                 synchronized (cache) {
                     cache.update(readResponse(response), response.getRootElement().attributeValue("created"));
                 }
