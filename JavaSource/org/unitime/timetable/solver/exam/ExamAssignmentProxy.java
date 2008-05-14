@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.solver.exam;
 
+import java.util.TreeSet;
+
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
 import org.unitime.timetable.solver.exam.ui.ExamInfo;
@@ -30,6 +32,7 @@ public interface ExamAssignmentProxy {
     public ExamInfo getInfo(long examId);
     public ExamAssignment getAssignment(long examId);
     public ExamAssignmentInfo getAssignmentInfo(long examId);
+    public TreeSet<ExamAssignment> getExamsOfRoom(long locationId);
 
     public int getExamType();
     public Long getSessionId();

@@ -128,6 +128,7 @@
 	  <form-bean name="ecbsForm" type="org.unitime.timetable.form.ExamCbsForm" />
 	  <form-bean name="eventListForm" type="org.unitime.timetable.form.EventListForm" />
 	  <form-bean name="personalizedExamReportForm" type="org.unitime.timetable.form.PersonalizedExamReportForm" />
+	  <form-bean name="roomAvailabilityForm" type="org.unitime.timetable.form.RoomAvailabilityForm" />
    </form-beans>
 
    <global-exceptions>
@@ -2153,9 +2154,9 @@
     <action
     	path="/roomAvailability"
     	type="org.unitime.timetable.action.RoomAvailabilityAction"
-    	attribute="examReportForm"
+    	attribute="roomAvailabilityForm"
     	input="roomAvailabilityTile"
-    	name="examReportForm"
+    	name="roomAvailabilityForm"
     	scope="request"
     	validate="false">
     	<forward
