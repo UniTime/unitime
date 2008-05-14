@@ -33,7 +33,7 @@
 			<tt:section-header>
 				<tt:section-title>Filter</tt:section-title>
 				<html:submit onclick="displayLoading();" accesskey="A" property="op" value="Apply"/>
-				<logic:notEmpty name="examReportForm" property="table">
+				<logic:notEmpty name="roomAvailabilityForm" property="table">
 					<html:submit onclick="displayLoading();" property="op" value="Export PDF"/>
 				</logic:notEmpty>
 				<html:submit onclick="displayLoading();" accesskey="R" property="op" value="Refresh"/>
@@ -48,6 +48,24 @@
 			</html:select>
 		</TD>
 	</TR>
+	<TR>
+  		<TD width="10%" nowrap>Room Filter:</TD>
+		<TD>
+			<html:text property="filter" size="80"/>
+		</TD>
+	</TR>
+	<TR>
+  		<TD width="10%" nowrap>Display Examinations:</TD>
+		<TD>
+			<html:checkbox property="includeExams"/>
+		</TD>
+	</TR>
+	<TR>
+  		<TD width="10%" nowrap>Compare Examinations:</TD>
+		<TD>
+			<html:checkbox property="compare"/>
+		</TD>
+	</TR>
 	<logic:notEmpty scope="request" name="timestamp">
 		<TR>
   			<TD width="10%" nowrap>Last Update:</TD>
@@ -59,16 +77,16 @@
 	</TABLE>
 
 	<BR><BR>
-	<logic:empty name="examReportForm" property="table">
+	<logic:empty name="roomAvailabilityForm" property="table">
 		<table width='95%' border='0' cellspacing='0' cellpadding='3'>
 			<tr><td><i>
 				Nothing to display.
 			</i></td></tr>
 		</table>
 	</logic:empty>
-	<logic:notEmpty name="examReportForm" property="table">
+	<logic:notEmpty name="roomAvailabilityForm" property="table">
 		<table width='95%' border='0' cellspacing='0' cellpadding='3'>
-			<bean:write name="examReportForm" property="table" filter="false"/>
+			<bean:write name="roomAvailabilityForm" property="table" filter="false"/>
 		</table>
 	</logic:notEmpty>
 	
@@ -86,7 +104,7 @@
 	<TR>
 		<TD align="right">
 			<html:submit onclick="displayLoading();" accesskey="A" property="op" value="Apply"/>
-			<logic:notEmpty name="examReportForm" property="table">
+			<logic:notEmpty name="roomAvailabilityForm" property="table">
 				<html:submit onclick="displayLoading();" property="op" value="Export PDF"/>
 			</logic:notEmpty>
 			<html:submit onclick="displayLoading();" accesskey="R" property="op" value="Refresh"/>
