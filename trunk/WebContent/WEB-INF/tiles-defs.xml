@@ -875,13 +875,20 @@
 		<put name="body" value="/user/eventDetail.jsp" />
 		<put name="showNavigation" value="true" />
   	</definition> 	
+  	
  	<definition	name="eventListTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Events"/>
 		<put name="body" value="/user/eventList.jsp" />
 		<put name="showNavigation" value="true" />
   	</definition> 	
+ 	
  	<definition	name="personalizedExamReportTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Personal Examination Schedule"/>
 		<put name="body" value="/exam/personalizedReport.jsp" />
   	</definition> 	
+ 
+ 	<definition	name="eventAddTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Add Event"/>
+		<put name="body" value="/user/eventAdd.jsp" />
+  	</definition> 	  	
 </tiles-definitions>

@@ -129,6 +129,7 @@
 	  <form-bean name="eventListForm" type="org.unitime.timetable.form.EventListForm" />
 	  <form-bean name="personalizedExamReportForm" type="org.unitime.timetable.form.PersonalizedExamReportForm" />
 	  <form-bean name="roomAvailabilityForm" type="org.unitime.timetable.form.RoomAvailabilityForm" />
+	  <form-bean name="eventAddForm" type="org.unitime.timetable.form.EventAddForm" />	
    </form-beans>
 
    <global-exceptions>
@@ -2216,7 +2217,21 @@
     		path="/login.do"/>
     </action>    
 
-   </action-mappings>
+    <action
+    	path="/eventAdd"
+    	type="org.unitime.timetable.action.EventAddAction"
+    	attribute="eventAddForm"
+    	input="eventAddTile"
+    	name="eventAddForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+    		name="show"
+    		path="eventAddTile"
+    		redirect="true" />
+    </action>
+
+    </action-mappings>
 
 	<!-- Struts Layout Controller -->
 	<controller 
