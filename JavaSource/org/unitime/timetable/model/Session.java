@@ -623,5 +623,22 @@ public class Session extends BaseSession implements Comparable {
 	public int getExamBeginOffset() {
 	    return (int)Math.round((getSessionBeginDateTime().getTime() - getExamBeginDate().getTime()) / 86.4e6); 
 	}
+	
+	public String getBorder(int day, int month) {
+		Calendar cal = Calendar.getInstance(Locale.US);
+		cal.setTime(getSessionBeginDateTime());
+		if (day==cal.get(Calendar.DAY_OF_MONTH) && ((12+month)%12)==cal.get(Calendar.MONTH))
+			return "'blue 2px solid'";
+		cal.setTime(getSessionEndDateTime());
+		if (day==cal.get(Calendar.DAY_OF_MONTH) && ((12+month)%12)==cal.get(Calendar.MONTH))
+			return "'blue 2px solid'";
+		cal.setTime(getExamBeginDate());
+		if (day==cal.get(Calendar.DAY_OF_MONTH) && ((12+month)%12)==cal.get(Calendar.MONTH))
+			return "'green 2px solid'";
+		int holiday = getHoliday(day, month);
+		if (holiday!=Session.sHolidayTypeNone)
+			return "'"+Session.sHolidayTypeColors[holiday]+" 2px solid'";
+		return "null";
+	}
 
 }
