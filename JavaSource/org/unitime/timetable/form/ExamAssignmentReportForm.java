@@ -51,13 +51,17 @@ public class ExamAssignmentReportForm extends ExamReportForm {
     public static final String sIndividualDirectInstructorConflicts = "Individual Direct Instructor Conflicts";
     public static final String sIndividualBackToBackInstructorConflicts = "Individual Back-To-Back Instructor Conflicts";
     public static final String sIndividualMore2ADayInstructorConflicts = "Individual More Than 2 Exams A Day Instructor Conflicts";
+    public static final String sIndividualStudentSchedule = "Individual Student Schedule";
+    public static final String sIndividualInstructorSchedule = "Individual Instructor Schedule";
     private static final String[] sReports = { 
             sExamAssignmentReport, sRoomAssignmentReport, 
             sPeriodUsage, sNrExamsADay, sRoomSplits, 
             sViolatedDistributions,
             sDirectStudentConflicts, sMore2ADayStudentConflicts, sBackToBackStudentConflicts, 
+            sIndividualStudentSchedule,
             sIndividualStudentConflicts, sIndividualDirectStudentConflicts, sIndividualMore2ADayStudentConflicts, sIndividualBackToBackStudentConflicts,
             sDirectInstructorConflicts, sMore2ADayInstructorConflicts, sBackToBackInstructorConflicts, 
+            sIndividualInstructorSchedule,
             sIndividualInstructorConflicts, sIndividualDirectInstructorConflicts, sIndividualBackToBackInstructorConflicts, sIndividualMore2ADayInstructorConflicts
             };
     private String iFilter = null;

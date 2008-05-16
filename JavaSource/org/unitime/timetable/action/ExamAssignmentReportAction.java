@@ -69,6 +69,7 @@ import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.BackToBackConflic
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.DirectConflict;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.DistributionConflict;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.MoreThanTwoADayConflict;
+import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamInstructorInfo;
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamSectionInfo;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.PdfWebTable;
@@ -209,6 +210,10 @@ public class ExamAssignmentReportAction extends Action {
             return generateBackToBackConflictsReport(html, form, exams, false);
         } else if (ExamAssignmentReportForm.sMore2ADayInstructorConflicts.equals(form.getReport())) {
             return generate2MoreADayConflictsReport(html, form, exams, false);
+        } else if (ExamAssignmentReportForm.sIndividualStudentSchedule.equals(form.getReport())) {
+            return generateIndividualAssignmentReport(html, form, exams, true, Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT));
+        } else if (ExamAssignmentReportForm.sIndividualInstructorSchedule.equals(form.getReport())) {
+            return generateIndividualAssignmentReport(html, form, exams, false, Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT));
         } else  return null;
     }
 	
@@ -261,7 +266,7 @@ public class ExamAssignmentReportAction extends Action {
                                 exam.getTime(html),
                                 exam.getRoomsName(html,", "),
                                 exam.getRoomsCapacity(html, ", "),
-                                exam.getInstructorName(", "),
+                                exam.getInstructorName("; "),
                                 (dc==0&&m2d==0&&btb==0&&dbtb==0?"":dcStr+", "+m2dStr+", "+btbStr),
                                 (idc==0&&im2d==0&&ibtb==0&&idbtb==0?"":idcStr+", "+im2dStr+", "+ibtbStr),
                             },
@@ -308,7 +313,7 @@ public class ExamAssignmentReportAction extends Action {
                             exam.getTime(html),
                             exam.getRoomsName(html,", "),
                             exam.getRoomsCapacity(html, ", "),
-                            exam.getInstructorName(", "),
+                            exam.getInstructorName("; "),
                             (dc==0&&m2d==0&&btb==0&&dbtb==0?"":dcStr+", "+m2dStr+", "+btbStr),
                             (idc==0&&im2d==0&&ibtb==0&&idbtb==0?"":idcStr+", "+im2dStr+", "+ibtbStr),
                         },
@@ -388,7 +393,7 @@ public class ExamAssignmentReportAction extends Action {
                                     (html?"<a name='"+exam.getExamId()+"'>":"")+section.getName()+(html?"</a>":""),
                                     String.valueOf(section.getNrStudents()),
                                     (Exam.sSeatingTypeNormal==exam.getSeatingType()?"Normal":"Exam"),
-                                    exam.getInstructorName(", "),
+                                    exam.getInstructorName("; "),
                                     (dc==0&&m2d==0&&btb==0&&dbtb==0?"":dcStr+", "+m2dStr+", "+btbStr),
                                     (idc==0&&im2d==0&&ibtb==0&&idbtb==0?"":idcStr+", "+im2dStr+", "+ibtbStr),
                                 },
@@ -440,7 +445,7 @@ public class ExamAssignmentReportAction extends Action {
                                 (html?"<a name='"+exam.getExamId()+"'>":"")+exam.getExamName()+(html?"</a>":""),
                                 String.valueOf(exam.getNrStudents()),
                                 (Exam.sSeatingTypeNormal==exam.getSeatingType()?"Normal":"Exam"),
-                                exam.getInstructorName(", "),
+                                exam.getInstructorName("; "),
                                 (dc==0&&m2d==0&&btb==0&&dbtb==0?"":dcStr+", "+m2dStr+", "+btbStr),
                                 (idc==0&&im2d==0&&ibtb==0&&idbtb==0?"":idcStr+", "+im2dStr+", "+ibtbStr),
                             },
@@ -1668,6 +1673,147 @@ public class ExamAssignmentReportAction extends Action {
             m2dReportAddLines(form, html, studentConf, table, max, exams, pos+1, line, cmp, idx, minStudents, students, match);
         }
     }
- 
+    
+    private PdfWebTable generateIndividualAssignmentReport(boolean html, ExamAssignmentReportForm form, Collection<ExamAssignmentInfo> exams, boolean student, String nameFormat) {
+        String nl = (html?"<br>":"\n");
+        PdfWebTable table =
+            (student?
+            new PdfWebTable( 7,
+                form.getReport(), "examAssignmentReport.do?ord=%%",
+                new String[] {
+                    (student?"Student Id":"Instructor Id"),
+                    "Name",
+                    (form.getShowSections()?"Class / Course":"Examination"),
+                    "Date",
+                    "Time",
+                    "Room",
+                    "Instuctor"},
+                new String[] {"left","left","left","left", "left", "left", "left"},
+                new boolean[] {true, true, true, true, true, true, true} ):
+           new PdfWebTable( 6,
+                   form.getReport(), "examAssignmentReport.do?ord=%%",
+                   new String[] {
+                       (student?"Student Id":"Instructor Id"),
+                       "Name",
+                       (form.getShowSections()?"Class / Course":"Examination"),
+                       "Date",
+                       "Time",
+                       "Room"},
+                       new String[] {"left","left","left","left", "left", "left"},
+                       new boolean[] {true, true, true, true, true, true} ));
+                    
+        table.setRowStyle("white-space:nowrap");
+        table.setBlankWhenSame(true);
+        for (ExamAssignmentInfo exam : exams) {
+            if (form.getShowSections()) {
+                for (ExamSectionInfo section : exam.getSections()) {
+                    if (student) {
+                        for (Long studentId : section.getStudentIds()) {
+                            Student s = new StudentDAO().get(studentId);
+                            if (s==null) continue;
+                            if (!match(form, s.getExternalUniqueId()) && !match(form, s.getName(nameFormat))) continue;
+                            table.addLine(
+                                    "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"",
+                                    new String[] {
+                                        s.getExternalUniqueId(),
+                                        s.getName(nameFormat),
+                                        (html?"<a name='"+exam.getExamId()+"'>":"")+section.getName()+(html?"</a>":""),
+                                        exam.getDate(html),
+                                        exam.getTime(html),
+                                        exam.getRoomsName(html,", "),
+                                        exam.getInstructorName("; ")
+                                    },
+                                    new Comparable[] {
+                                        new MultiComparable(s.getExternalUniqueId(), section.getName(), exam),
+                                        new MultiComparable(s.getName(nameFormat), s.getExternalUniqueId(), section.getName(), exam),
+                                        new MultiComparable(section.getName(), exam),
+                                        new MultiComparable(exam.getPeriodOrd(), section.getName(), exam),
+                                        new MultiComparable(exam.getPeriod()==null?-1:exam.getPeriod().getStartSlot(), section.getName(), exam),
+                                        new MultiComparable(exam.getRoomsName(":"), section.getName(), exam),
+                                        new MultiComparable(exam.getInstructorName(":"), section.getName(), exam)
+                                    });
+                        }
+                    } else {
+                        for (ExamInstructorInfo instructor : section.getExam().getInstructors()) {
+                            if (!match(form, instructor.getExternalUniqueId()) && !match(form, instructor.getName())) continue;
+                            table.addLine(
+                                    "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"",
+                                    new String[] {
+                                        instructor.getExternalUniqueId(),
+                                        instructor.getName(),
+                                        (html?"<a name='"+exam.getExamId()+"'>":"")+section.getName()+(html?"</a>":""),
+                                        exam.getDate(html),
+                                        exam.getTime(html),
+                                        exam.getRoomsName(html,", ")
+                                    },
+                                    new Comparable[] {
+                                        new MultiComparable(instructor.getExternalUniqueId(), section.getName(), exam),
+                                        new MultiComparable(instructor.getName(), instructor.getExternalUniqueId(), section.getName(), exam),
+                                        new MultiComparable(section.getName(), exam),
+                                        new MultiComparable(exam.getPeriodOrd(), section.getName(), exam),
+                                        new MultiComparable(exam.getPeriod()==null?-1:exam.getPeriod().getStartSlot(), section.getName(), exam),
+                                        new MultiComparable(exam.getRoomsName(":"), section.getName(), exam)
+                                    });
+                        }
+                    }
+                }
+            } else {
+                if (student) {
+                    HashSet<Long> studentIds = new HashSet();
+                    for (ExamSectionInfo section : exam.getSections()) {
+                        studentIds.addAll(section.getStudentIds());
+                    }
+                    for (Long studentId : studentIds) {
+                        Student s = new StudentDAO().get(studentId);
+                        if (s==null) continue;
+                        if (!match(form, s.getExternalUniqueId()) && !match(form, s.getName(nameFormat))) continue;
+                        table.addLine(
+                                "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"",
+                                new String[] {
+                                    s.getExternalUniqueId(),
+                                    s.getName(nameFormat),
+                                    (html?"<a name='"+exam.getExamId()+"'>":"")+exam.getExamName()+(html?"</a>":""),
+                                    exam.getDate(html),
+                                    exam.getTime(html),
+                                    exam.getRoomsName(html,", "),
+                                    exam.getInstructorName("; ")
+                                },
+                                new Comparable[] {
+                                    new MultiComparable(s.getExternalUniqueId(), exam),
+                                    new MultiComparable(s.getName(nameFormat), s.getExternalUniqueId(), exam),
+                                    new MultiComparable(exam),
+                                    new MultiComparable(exam.getPeriodOrd(), exam),
+                                    new MultiComparable(exam.getPeriod()==null?-1:exam.getPeriod().getStartSlot(), exam),
+                                    new MultiComparable(exam.getRoomsName(":"), exam),
+                                    new MultiComparable(exam.getInstructorName(":"), exam)
+                                });
+                    }                        
+                } else {
+                    for (ExamInstructorInfo instructor : exam.getInstructors()) {
+                        if (!match(form, instructor.getExternalUniqueId()) && !match(form, instructor.getName())) continue;
+                        table.addLine(
+                                "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"",
+                                new String[] {
+                                    instructor.getExternalUniqueId(),
+                                    instructor.getName(),
+                                    (html?"<a name='"+exam.getExamId()+"'>":"")+exam.getExamName()+(html?"</a>":""),
+                                    exam.getDate(html),
+                                    exam.getTime(html),
+                                    exam.getRoomsName(html,", ")
+                                },
+                                new Comparable[] {
+                                    new MultiComparable(instructor.getExternalUniqueId(), exam),
+                                    new MultiComparable(instructor.getName(), instructor.getExternalUniqueId(), exam),
+                                    new MultiComparable(exam),
+                                    new MultiComparable(exam.getPeriodOrd(), exam),
+                                    new MultiComparable(exam.getPeriod()==null?-1:exam.getPeriod().getStartSlot(), exam),
+                                    new MultiComparable(exam.getRoomsName(":"), exam)
+                                });
+                    }
+                }
+            }
+        }
+        return table;       
+    } 
 }
 
