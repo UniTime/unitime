@@ -21,6 +21,7 @@ package org.unitime.timetable.action;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Hashtable;
@@ -244,7 +245,7 @@ public class RoomAvailabilityAction extends Action {
                             setInteger("examType", form.getExamType()).
                             setLong("locationId", location.getUniqueId()).
                             setCacheable(true).
-                            iterate();j.hasNext();) {
+                            list().iterator();j.hasNext();) {
                         exams.add(new ExamAssignment((Exam)j.next()));
                     }
                 }
@@ -321,10 +322,14 @@ public class RoomAvailabilityAction extends Action {
                                 },
                                 location.getUniqueId().toString());
                     } else {
+                        Calendar c = Calendar.getInstance(); 
+                        c.setTime(match.getPeriod().getStartTime()); 
+                        c.add(Calendar.MINUTE, match.getLength());
+                        Date endTime = c.getTime();
                         boolean nameMatch = event.getEventName().trim().equalsIgnoreCase(match.getExamName().trim());
                         boolean dateMatch = dateFormat.format(event.getStartTime()).equals(dateFormat.format(match.getPeriod().getStartDate()));
                         boolean startMatch = event.getStartTime().equals(match.getPeriod().getStartTime());
-                        boolean endMatch = event.getEndTime().equals(match.getPeriod().getEndTime());
+                        boolean endMatch = event.getEndTime().equals(endTime);
                         if (nameMatch && dateMatch && startMatch && endMatch) continue;
                         table.addLine(
                                 null,
@@ -343,7 +348,7 @@ public class RoomAvailabilityAction extends Action {
                                     (startMatch?"":html?"</span>":" @@END_BGCOLOR ")+
                                     (html?"&nbsp;-&nbsp;":" - ")+
                                     (endMatch?"":html?"<span style='background-color:yellow;'>":"@@BGCOLOR FFFF00 ")+
-                                        timeFormat.format(match.getPeriod().getEndTime()).replaceAll("AM", "a").replaceAll("PM", "p")+
+                                        timeFormat.format(endTime).replaceAll("AM", "a").replaceAll("PM", "p")+
                                     (endMatch?"":html?"</span>":" @@END_BGCOLOR "),
                                     (nameMatch?"":html?"<span style='background-color:yellow;'>":"@@BGCOLOR FFFF00 ")+
                                         event.getEventName()+
@@ -374,6 +379,10 @@ public class RoomAvailabilityAction extends Action {
                     }
                 }
                 for (ExamAssignment exam : exams) {
+                    Calendar c = Calendar.getInstance(); 
+                    c.setTime(exam.getPeriod().getStartTime()); 
+                    c.add(Calendar.MINUTE, exam.getLength());
+                    Date endTime = c.getTime();
                     table.addLine(
                             null,
                             new String[] {
@@ -391,7 +400,7 @@ public class RoomAvailabilityAction extends Action {
                                 (html?"</span>":" @@END_BGCOLOR ")+
                                 (html?"&nbsp;-&nbsp;":" - ")+
                                 (html?"<span style='background-color:yellow;'>":"@@BGCOLOR FFFF00 ")+
-                                    timeFormat.format(exam.getPeriod().getEndTime()).replaceAll("AM", "a").replaceAll("PM", "p")+
+                                    timeFormat.format(endTime).replaceAll("AM", "a").replaceAll("PM", "p")+
                                 (html?"</span>":" @@END_BGCOLOR "),
                                 "",
                                 "",
