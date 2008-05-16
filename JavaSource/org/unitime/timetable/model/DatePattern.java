@@ -1,4 +1,5 @@
 /*
+ * UniTime 3.1 (University Timetabling Application)
  * Copyright (C) 2007, UniTime.org, and individual contributors
  * as indicated by the @authors tag.
  * 
