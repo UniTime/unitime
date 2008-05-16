@@ -19,36 +19,58 @@
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean"%> 
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html"%>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic"%>
-
+<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <html:form action="/dataImport" focus="file" enctype="multipart/form-data">
 
 	<TABLE width="95%" border="0" cellspacing="0" cellpadding="3">
 
+	<logic:messagesPresent>
+		<TR>
+			<TD colspan='2'>
+				<tt:section-title><font color='red'>Errors</font></tt:section-title>
+			</TD>
+		</TR>
+		<TR>
+			<TD colspan="2" align="left" class="errorCell">
+				<BLOCKQUOTE>
+				<UL>
+					<html:messages id="error">
+				      <LI>
+						${error}
+				      </LI>
+				    </html:messages>
+			    </UL>
+			    </BLOCKQUOTE>
+			</TD>
+		</TR>
+		<TR><TD>&nbsp;</TD></TR>
+	</logic:messagesPresent>
+	
+	<logic:notEmpty name="dataImportForm" property="log">
+		<TR>
+			<TD colspan='2'>
+				<tt:section-title>Export/Import Log</tt:section-title>
+			</TD>
+		</TR>
+		<TR>
+			<TD colspan="2" align="left">
+				<BLOCKQUOTE>
+					<bean:write name="dataImportForm" property="log" filter="false"/>
+			    </BLOCKQUOTE>
+			</TD>
+		</TR>
+		<TR><TD>&nbsp;</TD></TR>
+	</logic:notEmpty>
+
 		<TR>
 			<TD colspan="2">
-			<DIV class="WelcomeRowHead">
-				Data Import
-			</DIV>
+				<tt:section-header>
+					<tt:section-title>Data Import</tt:section-title>
+					<html:submit property="op" onclick="displayLoading()">Import</html:submit>
+				</tt:section-header>
 			</TD>
 		</TR>
 		
-		<logic:messagesPresent>
-			<TR>
-				<TD colspan="2" align="left" class="errorCell">
-						<B><U>ERRORS</U></B><BR>
-					<BLOCKQUOTE>
-					<UL>
-					    <html:messages id="error">
-					      <LI>
-							${error}
-					      </LI>
-					    </html:messages>
-				    </UL>
-				    </BLOCKQUOTE>
-				</TD>
-			</TR>
-		</logic:messagesPresent>
-
 		<TR>
 			<TD nowrap>File:</TD>
 			<TD>
@@ -58,13 +80,77 @@
 		
 		<TR>
 			<TD colspan="2">
-			<DIV class="WelcomeRowHeadBlank">&nbsp;</DIV>
+				&nbsp;
+			</TD>
+		</TR>
+		
+		<TR>
+			<TD colspan="2">
+				<tt:section-header>
+					<tt:section-title>Data Export</tt:section-title>
+					<html:submit property="op" onclick="displayLoading()">Export</html:submit>
+				</tt:section-header>
+			</TD>
+		</TR>
+	
+		<TR>
+			<TD nowrap>Course Offerings:</TD>
+			<TD>
+				<html:checkbox property="exportCourses"/>
+			</TD>
+		</TR>
+
+		<TR>
+			<TD nowrap>Final Examinations:</TD>
+			<TD>
+				<html:checkbox property="exportFinalExams"/>
+			</TD>
+		</TR>
+
+		<TR>
+			<TD nowrap>Midterm Examinations:</TD>
+			<TD>
+				<html:checkbox property="exportMidtermExams"/>
+			</TD>
+		</TR>
+
+		<TR>
+			<TD nowrap>Course Timetable:</TD>
+			<TD>
+				<html:checkbox property="exportTimetable"/>
+			</TD>
+		</TR>
+		
+		<TR>
+			<TD colspan="2">
+				&nbsp;
+			</TD>
+		</TR>
+
+		<TR>
+			<TD colspan="2">
+				<tt:section-title>Options</tt:section-title>
+			</TD>
+		</TR>
+		
+		<TR>
+			<TD nowrap>Email (Log, Export XML):</TD>
+			<TD>
+				<html:checkbox property="email" onclick="document.getElementById('eml').style.display=(this.checked?'inline':'none');"/>
+				<html:text property="address" size="70" styleId="eml" style="display:none;"/>
+			</TD>
+		</TR>
+		
+		<TR>
+			<TD colspan="2">
+				<tt:section-title/>
 			</TD>
 		</TR>
 
 		<TR>
 			<TD align="right" colspan='2'>
 				<html:submit property="op" onclick="displayLoading()">Import</html:submit>
+				<html:submit property="op" onclick="displayLoading()">Export</html:submit>
 			</TD>
 		</TR>
 		

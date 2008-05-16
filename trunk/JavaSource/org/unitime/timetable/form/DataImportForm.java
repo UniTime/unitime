@@ -26,25 +26,8 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.upload.FormFile;
-import org.dom4j.Document;
-import org.dom4j.Element;
-import org.dom4j.io.SAXReader;
-import org.unitime.timetable.dataexchange.AcadAreaReservationImportDAO;
-import org.unitime.timetable.dataexchange.AcademicAreaImportDAO;
-import org.unitime.timetable.dataexchange.AcademicClassificationImportDAO;
-import org.unitime.timetable.dataexchange.BuildingRoomImport;
-import org.unitime.timetable.dataexchange.CourseCatalogImportDAO;
-import org.unitime.timetable.dataexchange.CourseOfferingImport;
-import org.unitime.timetable.dataexchange.DepartmentImportDAO;
-import org.unitime.timetable.dataexchange.LastLikeCourseDemandImport;
-import org.unitime.timetable.dataexchange.PosMajorImportDAO;
-import org.unitime.timetable.dataexchange.PosMinorImportDAO;
-import org.unitime.timetable.dataexchange.SessionImportDAO;
-import org.unitime.timetable.dataexchange.StaffImport;
-import org.unitime.timetable.dataexchange.StudentEnrollmentImport;
-import org.unitime.timetable.dataexchange.StudentImport;
-import org.unitime.timetable.dataexchange.SubjectAreaImportDAO;
-
+import org.unitime.commons.web.Web;
+import org.unitime.timetable.model.TimetableManager;
 
 /** 
  * MyEclipse Struts
@@ -54,129 +37,61 @@ import org.unitime.timetable.dataexchange.SubjectAreaImportDAO;
  * @struts.form name="dataImportForm"
  */
 public class DataImportForm extends ActionForm {
-
-	// --------------------------------------------------------- Instance Variables
-
-	/** fileName property */
-	private FormFile file;
-
-	private String op;
-
-	// --------------------------------------------------------- Methods
-
-	/** 
-	 * Method validate
-	 * @param mapping
-	 * @param request
-	 * @return ActionErrors
-	 */
+	private FormFile iFile;
+	private String iOp;
+	private boolean iExportCourses;
+	private boolean iExportFinalExams;
+	private boolean iExportMidtermExams;
+	private boolean iExportTimetable;
+    private boolean iEmail = false;
+    private String iAddr = null;
+    private String iLog = null;
+	
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 		ActionErrors errors = new ActionErrors();
 		
-        if (file == null || file.getFileSize()<=0) {
+        if ("Import".equals(iOp) && (iFile == null || iFile.getFileSize()<=0)) {
         	errors.add("name", new ActionMessage("errors.required", "File") );
         }
-        /*
-        else {
-	        File file = new File(fileName);
-	        if(!file.exists()) {
-	        	errors.add("notFound", new ActionMessage("errors.fileNotFound", fileName) );
-	        }
-        }*/
-
+        
+        if ("Export".equals(iOp)) {
+            if (!getExportCourses() && !getExportFinalExams() && !getExportMidtermExams() && !getExportTimetable()) {
+                errors.add("export", new ActionMessage("errors.generic", "Nothing to export") );
+            }
+        }
+        
         return errors;
 	}
 
-	/** 
-	 * Method reset
-	 * @param mapping
-	 * @param request
-	 */
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
-		this.file = null;
+		iFile = null;
+		iExportCourses = false; iExportFinalExams = false; iExportMidtermExams = false; iExportTimetable = false;
+		iEmail = false; iAddr = null;
+		iLog = null;
+        TimetableManager manager = TimetableManager.getManager(Web.getUser(request.getSession()));
+        if (manager!=null && manager.getEmailAddress()!=null) setAddress(manager.getEmailAddress());
 	}
 
-	/** 
-	 * Returns the fileName.
-	 * @return String
-	 */
-	public FormFile getFile() {
-		return file;
-	}
-
-	/** 
-	 * Set the fileName.
-	 * @param fileName The fileName to set
-	 */
-	public void setFile(FormFile file) {
-		this.file = file;
-	}
-
-	public String getOp() {
-		return op;
-	}
-
-	public void setOp(String op) {
-		this.op = op;
-	}
-
-	public static void importDocument(Document document, HttpServletRequest request) throws Exception {
-        Element root = document.getRootElement();
-
-        if (root.getName().equalsIgnoreCase("academicAreas")) {
-        	new AcademicAreaImportDAO().loadFromXML(root);
-        }
-        else if(root.getName().equalsIgnoreCase("subjectAreas")) {
-        	new SubjectAreaImportDAO().loadFromXML(root, request);
-        }
-        else if(root.getName().equalsIgnoreCase("academicClassifications")) {
-        	new AcademicClassificationImportDAO().loadFromXML(root);
-        }
-        else if(root.getName().equalsIgnoreCase("departments")) {
-        	new DepartmentImportDAO().loadFromXML(root, request);
-        }
-        else if(root.getName().equalsIgnoreCase("posMajors")) {
-        	new PosMajorImportDAO().loadFromXML(root);
-        }
-        else if(root.getName().equalsIgnoreCase("posMinors")) {
-        	new PosMinorImportDAO().loadFromXML(root);
-        }
-        else if(root.getName().equalsIgnoreCase("students")) {
-        	new StudentImport().loadXml(root);
-        }
-        else if(root.getName().equalsIgnoreCase("staff")) {
-        	new StaffImport().loadXml(root, request);
-        }
-        else if(root.getName().equalsIgnoreCase("lastLikeCourseDemand")) {
-        	new LastLikeCourseDemandImport().loadXml(root);
-        }
-        else if(root.getName().equalsIgnoreCase("academicAreaReservations")) {
-        	new AcadAreaReservationImportDAO().loadFromXML(root);
-        }
-        else if(root.getName().equalsIgnoreCase("session")) {
-        	new SessionImportDAO().loadFromXML(root);
-        }
-        else if(root.getName().equalsIgnoreCase("courseCatalog")) {
-        	new CourseCatalogImportDAO().loadFromXML(root);
-        }
-        else if(root.getName().equalsIgnoreCase("buildingsRooms")) {
-        	new BuildingRoomImport().loadXml(root, request);
-        }
-        else if(root.getName().equalsIgnoreCase("offerings")) {
-        	new CourseOfferingImport().loadXml(root, request);
-        }
-        else if(root.getName().equalsIgnoreCase("studentEnrollments")) {
-        	new StudentEnrollmentImport().loadXml(root, request);
-        }
-       else {
-        	throw new Exception(root.getName() + " is an unknown data type.");
-        }
-		
-	}
-	public void doImport(HttpServletRequest request) throws Exception {
-        
-		Document document = (new SAXReader()).read(file.getInputStream());
-		importDocument(document, request);
-	}
+	public FormFile getFile() { return iFile; }
+	public void setFile(FormFile file) { iFile = file; }
+	public String getOp() { return iOp; }
+	public void setOp(String op) { iOp = op; }
+	
+    public boolean getExportCourses() { return iExportCourses; }
+    public void setExportCourses(boolean exportCourses) { iExportCourses = exportCourses; }
+    public boolean getExportFinalExams() { return iExportFinalExams; }
+    public void setExportFinalExams(boolean exportFinalExams) { iExportFinalExams = exportFinalExams; }
+    public boolean getExportMidtermExams() { return iExportMidtermExams; }
+    public void setExportMidtermExams(boolean exportMidtermExams) { iExportMidtermExams = exportMidtermExams; }
+    public boolean getExportTimetable() { return iExportTimetable; }
+    public void setExportTimetable(boolean exportTimetable) { iExportTimetable = exportTimetable; }
+    
+    public boolean getEmail() { return iEmail; }
+    public void setEmail(boolean email) { iEmail = email; }
+    public String getAddress() { return iAddr; }
+    public void setAddress(String addr) { iAddr = addr; }
+    
+    public String getLog() { return iLog; }
+    public void setLog(String log) { iLog = log; }
 }
 
