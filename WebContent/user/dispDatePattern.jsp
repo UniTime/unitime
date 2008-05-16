@@ -22,6 +22,7 @@
 <%@ page import="org.unitime.timetable.model.DatePattern" %>
 <%@ page import="org.unitime.timetable.model.dao.DatePatternDAO" %>
 <%@ page import="org.unitime.commons.web.Web" %>
+<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <%
 	Long datePatternId = Long.valueOf(request.getParameter("id"));
@@ -57,13 +58,7 @@
 		<td valign="middle" align='left'>
 			<table width='100%' cellspacing='1' cellpadding='1' border='0' style='border-bottom:black 1px solid'>
 				<tr><td align='center'>
-					<table cellspacing='1' cellpadding='1' border='0'><tr>
-						<td style='font-size: 80%;'><img border='0' align='absmiddle' src='<%=request.getContextPath()%>/images/dp-offered.png'>&nbsp;Classes Offered&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-						<td style='font-size: 80%;'><img border='0' align='absmiddle' src='<%=request.getContextPath()%>/images/dp-notoffered.png'>&nbsp;Classes Not Offered&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-						<td style='font-size: 80%;'><img border='0' align='absmiddle' src='<%=request.getContextPath()%>/images/dp-start.png'>&nbsp;Start / End&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-						<td style='font-size: 80%;'><img border='0' align='absmiddle' src='<%=request.getContextPath()%>/images/dp-holiday.png'>&nbsp;Holiday&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-						<td style='font-size: 80%;'><img border='0' align='absmiddle' src='<%=request.getContextPath()%>/images/dp-break.png'>&nbsp;Break&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-					</tr></table>
+					<tt:displayPrefLevelLegend prefs="false" dpOffered="true" dpBackgrounds="true" separator="none"/>
 				</td></tr>
 			</table>
 		</td>
