@@ -430,7 +430,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                     Collection<ExamRoomInfo> r = (x.equals(exam)?assignedRooms:getAssignedRooms(x, table));
                     if (r==null) continue;
                     if (rooms==null) rooms = r;
-                    else if (!rooms.containsAll(r) || !r.containsAll(rooms)) return false;
+                    else if (!rooms.containsAll(r) && !r.containsAll(rooms)) return false;
                 }
                 return true;
             } else { //different room
