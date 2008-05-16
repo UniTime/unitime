@@ -79,11 +79,8 @@ public class StaffImport extends BaseImport {
 
 	        Session session = Session.getSessionUsingInitiativeYearTerm(campus, year, term);
 	        
-	        if (session != null && manager == null){
-	        	manager = findDefaultManager();
-	        }
 	        if (session != null && created != null) {
-				ChangeLog.addChange(getHibSession(), manager, session, session, created, ChangeLog.Source.DATA_IMPORT_STAFF, ChangeLog.Operation.UPDATE, null, null);
+				ChangeLog.addChange(getHibSession(), getManager(), session, session, created, ChangeLog.Source.DATA_IMPORT_STAFF, ChangeLog.Operation.UPDATE, null, null);
 	        }
 	       
 	        for ( Iterator it = root.elementIterator(); it.hasNext(); ) {

@@ -700,7 +700,7 @@
   	</definition>
   	
    	<definition	name="dataImportTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Data Import"/>
+		<put name="title" type="string" value="Data Exchange"/>
 		<put name="body" value="/admin/dataImport.jsp" />
   	</definition>
   	

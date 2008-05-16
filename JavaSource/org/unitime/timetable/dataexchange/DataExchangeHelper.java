@@ -1,9 +1,14 @@
 package org.unitime.timetable.dataexchange;
 
 import java.io.PrintWriter;
+import java.util.Hashtable;
+import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.dom4j.Document;
+import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao._RootDAO;
 
 public class DataExchangeHelper {
@@ -19,6 +24,34 @@ public class DataExchangeHelper {
     protected int iFlushIfNeededCounter = 0;
     protected static int sBatchSize = 100;
     
+    public static Hashtable<String,Class> sExportRegister;
+    public static Hashtable<String,Class> sImportRegister;
+    
+    static {
+        sExportRegister = new Hashtable<String, Class>();
+        sExportRegister.put("exams", CourseOfferingExport.class);
+        sExportRegister.put("offerings", CourseOfferingExport.class);
+        sExportRegister.put("timetable", CourseTimetableExport.class);
+        sImportRegister = new Hashtable<String, Class>();
+        sImportRegister.put("academicAreaReservations", AcadAreaReservationImport.class);
+        sImportRegister.put("academicAreas",AcademicAreaImport.class);
+        sImportRegister.put("academicClassifications",AcademicClassificationImport.class);
+        sImportRegister.put("buildingsRooms", BuildingRoomImport.class);
+        sImportRegister.put("courseCatalog", CourseCatalogImport.class);
+        sImportRegister.put("offerings", CourseOfferingImport.class);
+        sImportRegister.put("courseOfferingReservations", CourseOfferingReservationImport.class);
+        sImportRegister.put("departments",DepartmentImport.class);
+        sImportRegister.put("posMajors", PosMajorImport.class);
+        sImportRegister.put("posMinors", PosMinorImport.class);
+        sImportRegister.put("session", SessionImport.class);
+        sImportRegister.put("staff", StaffImport.class);
+        sImportRegister.put("studentEnrollments", StudentEnrollmentImport.class);
+        sImportRegister.put("students", StudentImport.class);
+        sImportRegister.put("lastLikeCourseDemand", LastLikeCourseDemandImport.class);
+        sImportRegister.put("subjectAreas",SubjectAreaImport.class);
+        sImportRegister.put("request",StudentSectioningImport.class);
+    }
+    
     public DataExchangeHelper() {
     }
     
@@ -30,10 +63,14 @@ public class DataExchangeHelper {
     }
     public void log(String level, String message, Throwable t) {
         if (iTextLog==null) return;
-        if (message!=null)
-            iTextLog.println(level+": "+message);
-        if (t!=null)
-            t.printStackTrace(iTextLog);
+        if (message!=null) {
+            if (sLogLevelDebug.equals(level)) iTextLog.println("<font color='gray'>&nbsp;&nbsp;--"+message+"</font><br>");
+            else if (sLogLevelInfo.equals(level)) iTextLog.println(message+"<br>");
+            else if (sLogLevelWarn.equals(level)) iTextLog.println("<font color='orange'>"+message+"</font><br>");
+            else if (sLogLevelError.equals(level)) iTextLog.println("<font color='red'>"+message+"</font><br>");
+            else if (sLogLevelFatal.equals(level)) iTextLog.println("<font color='red'><b>"+message+"</b></font><br>");
+            else iTextLog.println(message);
+        }
     }
 
     public void debug(String msg) {
@@ -143,5 +180,29 @@ public class DataExchangeHelper {
         }
         return true;
     }
+    
+    public static BaseImport createImportBase(String type) throws Exception {
+        if (type==null) throw new Exception("Import type not provided.");
+        if (!sImportRegister.containsKey(type)) throw new Exception("Unknown import type "+type+".");
+        return (BaseImport)sImportRegister.get(type).getConstructor().newInstance();
+    }
 
+    public static BaseExport createExportBase(String type) throws Exception {
+        if (type==null) throw new Exception("Export type not provided.");
+        if (!sExportRegister.containsKey(type)) throw new Exception("Unknown export type "+type+".");
+        return (BaseExport)sExportRegister.get(type).getConstructor().newInstance();
+    }
+    
+    public static void importDocument(Document document, TimetableManager manager, PrintWriter log) throws Exception {
+        BaseImport imp = createImportBase(document.getRootElement().getName());
+        imp.setLog(log);
+        imp.setManager(manager);
+        imp.loadXml(document.getRootElement());
+    }
+    
+    public static Document exportDocument(String rootName, Session session, Properties parameters, PrintWriter log) throws Exception {
+        BaseExport exp = createExportBase(rootName);
+        exp.setLog(log);
+        return exp.saveXml(session, parameters);
+    }
 }
