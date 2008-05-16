@@ -1,5 +1,4 @@
 /*
- * UniTime 3.0 (University Course Timetabling & Student Sectioning Application)
  * Copyright (C) 2007, UniTime.org, and individual contributors
  * as indicated by the @authors tag.
  * 
@@ -243,20 +242,6 @@ public class DatePattern extends BaseDatePattern implements Comparable {
 		return(mapStartToEndDate);
 	}
 
-	public String getBorder(int day, int month) {
-		Calendar cal = Calendar.getInstance(Locale.US);
-		cal.setTime(getSession().getSessionBeginDateTime());
-		if (day==cal.get(Calendar.DAY_OF_MONTH) && month==cal.get(Calendar.MONTH))
-			return "'blue 2px solid'";
-		cal.setTime(getSession().getSessionEndDateTime());
-		if (day==cal.get(Calendar.DAY_OF_MONTH) && month==cal.get(Calendar.MONTH))
-			return "'blue 2px solid'";
-		int holiday = getSession().getHoliday(day, month);
-		if (holiday!=Session.sHolidayTypeNone)
-			return "'"+Session.sHolidayTypeColors[holiday]+" 2px solid'";
-		return "null";
-	}
-	
 	public TreeSet getUsage(Collection classes) {
 		TreeSet days = new TreeSet();
 		
@@ -360,7 +345,7 @@ public class DatePattern extends BaseDatePattern implements Comparable {
 			for (int d=1;d<=daysOfMonth;d++) {
 				dayOfYear++;
 				if (d>1) sb.append(",");
-				String border = getBorder(d,m);
+				String border = getSession().getBorder(d,m);
 				if (isUsed(d,m,usage)) 
 					border = "'green 2px solid'";
 				sb.append(border);
