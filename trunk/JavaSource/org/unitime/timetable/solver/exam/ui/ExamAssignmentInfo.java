@@ -877,40 +877,23 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         for (Iterator i=iInstructorDirects.iterator();i.hasNext();) {
             DirectConflict dc = (DirectConflict)i.next();
             for (Enumeration f=dc.getStudents().elements();f.hasMoreElements();)
-                if (section.getStudentIds().contains(f.nextElement())) ret++;
+                if (dc.getOtherEventId()!=null) {
+                    if (section.getStudentIds().contains(f.nextElement())) ret++;
+                } else ret++;
         }
         return ret;
     }
 
     public int getNrInstructorBackToBackConflicts(ExamSectionInfo section) {
-        int ret = 0;
-        for (Iterator i=iInstructorBackToBacks.iterator();i.hasNext();) {
-            BackToBackConflict btb = (BackToBackConflict)i.next();
-            for (Enumeration f=btb.getStudents().elements();f.hasMoreElements();)
-                if (section.getStudentIds().contains(f.nextElement())) ret++;
-        }
-        return ret;
+        return getNrInstructorBackToBackConflicts();
     }
     
     public int getNrInstructorDistanceBackToBackConflicts(ExamSectionInfo section) {
-        int ret = 0;
-        for (Iterator i=iInstructorBackToBacks.iterator();i.hasNext();) {
-            BackToBackConflict btb = (BackToBackConflict)i.next();
-            if (btb.isDistance())
-                for (Enumeration f=btb.getStudents().elements();f.hasMoreElements();)
-                    if (section.getStudentIds().contains(f.nextElement())) ret++;
-        }
-        return ret;
+        return getNrInstructorDistanceBackToBackConflicts();
     }
 
     public int getNrInstructorMoreThanTwoConflicts(ExamSectionInfo section) {
-        int ret = 0;
-        for (Iterator i=iInstructorMoreThanTwoADays.iterator();i.hasNext();) {
-            MoreThanTwoADayConflict m2d = (MoreThanTwoADayConflict)i.next();
-            for (Enumeration f=m2d.getStudents().elements();f.hasMoreElements();)
-                if (section.getStudentIds().contains(f.nextElement())) ret++;
-        }
-        return ret;
+        return getNrInstructorMoreThanTwoConflicts();
     }
 
     public boolean getHasInstructorConflicts() {
