@@ -137,7 +137,7 @@ public class ExamAssignmentReportAction extends Action {
 	
 	public boolean match(ExamAssignmentReportForm form, String name) {
 	    if (form.getFilter()==null || form.getFilter().trim().length()==0) return true;
-        String n = name.toUpperCase();
+	    String n = (name==null?"":name).toUpperCase();
         StringTokenizer stk1 = new StringTokenizer(form.getFilter().toUpperCase(),";");
         while (stk1.hasMoreTokens()) {
             StringTokenizer stk2 = new StringTokenizer(stk1.nextToken()," ,");
