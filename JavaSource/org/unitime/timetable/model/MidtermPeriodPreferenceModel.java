@@ -170,20 +170,7 @@ public class MidtermPeriodPreferenceModel {
 	public String getBorder(int day, int month, int start) {
 		if (iPeriod!=null && iPeriod.getDateOffset().equals(getDateOffset(day, month)) && iPeriod.getStartSlot().equals(start))
 			return "'purple 2px solid'";
-		Calendar cal = Calendar.getInstance(Locale.US);
-		cal.setTime(iSession.getSessionBeginDateTime());
-		if (day==cal.get(Calendar.DAY_OF_MONTH) && month==cal.get(Calendar.MONTH))
-			return "'blue 2px solid'";
-		cal.setTime(iSession.getSessionEndDateTime());
-		if (day==cal.get(Calendar.DAY_OF_MONTH) && month==cal.get(Calendar.MONTH))
-			return "'blue 2px solid'";
-		cal.setTime(iSession.getExamBeginDate());
-		if (day==cal.get(Calendar.DAY_OF_MONTH) && month==cal.get(Calendar.MONTH))
-			return "'green 2px solid'";
-		int holiday = iSession.getHoliday(day, month);
-		if (holiday!=Session.sHolidayTypeNone)
-			return "'"+Session.sHolidayTypeColors[holiday]+" 2px solid'";
-		return "null";
+		return iSession.getBorder(day, month);
 	}
 	
 	public String getColor(Integer pref) {
