@@ -148,7 +148,6 @@ public class CourseOfferingExport extends BaseExport {
                 info("Exporting "+offerings.size()+" offerings ...");
                 for (Iterator i=offerings.iterator();i.hasNext();) {
                     InstructionalOffering io = (InstructionalOffering)i.next();
-                    info("  -- "+io.getCourseName());
                     exportInstructionalOffering(root, io, session);
                 }
             }
