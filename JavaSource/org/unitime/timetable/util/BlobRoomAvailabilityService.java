@@ -6,6 +6,8 @@ import java.io.StringWriter;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.io.OutputFormat;
@@ -13,9 +15,11 @@ import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 import org.hibernate.engine.SessionFactoryImplementor;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.model.dao._RootDAO;
 
 public class BlobRoomAvailabilityService extends RoomAvailabilityService {
+    private static Log sLog = LogFactory.getLog(RoomAvailabilityInterface.class);
     private String iRequestSql =
         ApplicationProperties.getProperty("tmtbl.room.availability.request","{ call room_avail_interface.request(?) }");
     private String iResponseSql =
@@ -34,7 +38,7 @@ public class BlobRoomAvailabilityService extends RoomAvailabilityService {
             call.close();
             hibSessionFactory.getConnectionProvider().closeConnection(connection);
         } catch (Exception e) {
-            e.printStackTrace();
+            sLog.error("Unable to send request: "+e.getMessage(),e);
         }
     }
     
@@ -54,7 +58,7 @@ public class BlobRoomAvailabilityService extends RoomAvailabilityService {
             reader.close();
             return document;
         } catch (Exception e) {
-            e.printStackTrace();
+            sLog.error("Unable to recieve response: "+e.getMessage(),e);
             return null;
         }
     }
