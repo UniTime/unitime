@@ -162,7 +162,7 @@
 				--%>
 				leaf_item('Status Types','Manage Status Types','deptStatusTypeEdit.do');
 				leaf_item('Examination Periods','Examination Periods','examPeriodEdit.do');
-				leaf_item('Import Data','Import Data','dataImport.do');
+				leaf_item('Data Exchange','Data Import &amp; Export','dataImport.do');
 				leaf_item('Roll Forward Session','Roll Forward Session','rollForwardSession.do');
 				leaf_item('Change Log','View Change Log','lastChanges.do');
 			enditem(); //51

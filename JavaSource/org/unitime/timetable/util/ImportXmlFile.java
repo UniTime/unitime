@@ -13,7 +13,7 @@ import org.dom4j.Document;
 import org.dom4j.io.SAXReader;
 import org.unitime.commons.Debug;
 import org.unitime.commons.hibernate.util.HibernateUtil;
-import org.unitime.timetable.form.DataImportForm;
+import org.unitime.timetable.dataexchange.DataExchangeHelper;
 
 /**
  * @author says
@@ -34,7 +34,7 @@ public class ImportXmlFile {
         	try {
                 fis = new FileInputStream(fileName);
         		Document document = (new SAXReader()).read(fis);
-                DataImportForm.importDocument(document, null);           
+        		DataExchangeHelper.importDocument(document, null, null);           
 			} catch (IOException e) {
 			    throw e;
 			} finally {

@@ -69,11 +69,13 @@ public class CourseOfferingExport extends BaseExport {
     protected static SimpleDateFormat sDateFormat = new SimpleDateFormat("yyyy/MM/dd");
     protected static SimpleDateFormat sTimeFormat = new SimpleDateFormat("HHmm");
     protected Hashtable<Long, TreeSet<Exam>> iExams = null;
+    protected boolean iExportAssignments = true;
     
     public void saveXml(Document document, Session session, Properties parameters) throws Exception {
         try {
             beginTransaction();
-
+            
+            iExportAssignments= "true".equals(parameters.getProperty("tmtbl.export.timetable","true"));
             boolean examsOnly = "true".equals(parameters.getProperty("tmtbl.export.exam"));
             Element root = document.addElement(examsOnly?"exams":"offerings");
             root.addAttribute("campus", session.getAcademicInitiative());
@@ -114,28 +116,34 @@ public class CourseOfferingExport extends BaseExport {
                     setLong("sessionId",session.getUniqueId().longValue()).
                     setFetchSize(1000).list();
                 
-                info("Loading exams...");
-                List allExams = getHibSession().createQuery(
-                    "select x from Exam x left join fetch x.owners o " +
-                    "where x.session.uniqueId=:sessionId").
-                    setLong("sessionId",session.getUniqueId().longValue()).
-                    setFetchSize(1000).list();
-                
-                iExams = new Hashtable();
-                info("Checking exams...");
-                for (Iterator i=allExams.iterator();i.hasNext();) {
-                    Exam exam = (Exam)i.next();
-                    for (Iterator j=exam.getOwners().iterator();j.hasNext();) {
-                        ExamOwner owner = (ExamOwner)j.next();
-                        Long offeringId = owner.getCourse().getInstructionalOffering().getUniqueId();
-                        TreeSet<Exam> exams = iExams.get(offeringId);
-                        if (exams==null) {
-                            exams = new TreeSet();
-                            iExams.put(offeringId,exams); 
+                if (!"none".equals(parameters.getProperty("tmtbl.export.exam.type", "all"))) {
+                    info("Loading exams...");
+                    List allExams = getHibSession().createQuery(
+                            "select x from Exam x left join fetch x.owners o " +
+                            "where x.session.uniqueId=:sessionId"+
+                            ("midterm".equals(parameters.getProperty("tmtbl.export.exam.type", "all"))?" and x.examType="+Exam.sExamTypeMidterm:"")+
+                            ("final".equals(parameters.getProperty("tmtbl.export.exam.type", "all"))?" and x.examType="+Exam.sExamTypeFinal:"")
+                            ).
+                            setLong("sessionId",session.getUniqueId().longValue()).
+                            setFetchSize(1000).list();
+                    
+                    iExams = new Hashtable();
+                    info("Checking exams...");
+                    for (Iterator i=allExams.iterator();i.hasNext();) {
+                        Exam exam = (Exam)i.next();
+                        for (Iterator j=exam.getOwners().iterator();j.hasNext();) {
+                            ExamOwner owner = (ExamOwner)j.next();
+                            Long offeringId = owner.getCourse().getInstructionalOffering().getUniqueId();
+                            TreeSet<Exam> exams = iExams.get(offeringId);
+                            if (exams==null) {
+                                exams = new TreeSet();
+                                iExams.put(offeringId,exams); 
+                            }
+                            exams.add(exam);
                         }
-                        exams.add(exam);
                     }
                 }
+            
                 
                 info("Exporting "+offerings.size()+" offerings ...");
                 for (Iterator i=offerings.iterator();i.hasNext();) {
@@ -173,9 +181,11 @@ public class CourseOfferingExport extends BaseExport {
                 InstrOfferingConfig config = (InstrOfferingConfig)i.next();
                 exportConfig(offeringElement.addElement("config"), config, session);
             }
-        TreeSet<Exam> exams = iExams.get(offering.getUniqueId());
-        if (exams!=null) for (Exam exam : exams)
-            exportExam(offeringElement, offering, exam, session);
+        if (iExams!=null) {
+            TreeSet<Exam> exams = iExams.get(offering.getUniqueId());
+            if (exams!=null) for (Exam exam : exams)
+                exportExam(offeringElement, offering, exam, session);
+        }
     }
     
     protected void exportCredit(Element creditElement, CourseCreditUnitConfig credit, Session session) {
@@ -262,10 +272,12 @@ public class CourseOfferingExport extends BaseExport {
             Class_ childClazz = (Class_)i.next();
             exportClass(classElement.addElement("class"), childClazz, session);
         }
-        if (clazz.getCommittedAssignment()!=null)
-            exportAssignment(classElement, clazz.getCommittedAssignment(), session);
-        else if (clazz.getManagingDept().getSolverGroup()!=null && clazz.getManagingDept().getSolverGroup().getCommittedSolution()!=null) {
-            exportArrHours(classElement, clazz, session);
+        if (iExportAssignments) {
+            if (clazz.getCommittedAssignment()!=null)
+                exportAssignment(classElement, clazz.getCommittedAssignment(), session);
+            else if (clazz.getManagingDept().getSolverGroup()!=null && clazz.getManagingDept().getSolverGroup().getCommittedSolution()!=null) {
+                exportArrHours(classElement, clazz, session);
+            }
         }
         if (clazz.isDisplayInstructor())
             for (Iterator i=clazz.getClassInstructors().iterator();i.hasNext();) {

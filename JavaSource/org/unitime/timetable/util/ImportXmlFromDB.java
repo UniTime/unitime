@@ -16,7 +16,7 @@ import org.hibernate.engine.SessionFactoryImplementor;
 import org.unitime.commons.Debug;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
-import org.unitime.timetable.form.DataImportForm;
+import org.unitime.timetable.dataexchange.DataExchangeHelper;
 import org.unitime.timetable.model.dao._RootDAO;
 
 
@@ -50,7 +50,7 @@ public class ImportXmlFromDB {
             StringReader reader = new StringReader(response);
             Document document = (new SAXReader()).read(reader);
             reader.close();
-            DataImportForm.importDocument(document, null);           
+            DataExchangeHelper.importDocument(document, null, null);           
 		} catch (Exception e) {
 			e.printStackTrace();
 		} 
