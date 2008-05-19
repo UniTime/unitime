@@ -393,7 +393,17 @@ public class ManageSolversAction extends Action {
                                 nrWorking++;
                         }
                     }
-                    String version = server.getVersion();
+                    for (Enumeration e=server.getExamSolvers().elements();e.hasMoreElements();) {
+                        ExamSolverProxy solver = (ExamSolverProxy)e.nextElement();
+                        if (solver.isPassivated()) {
+                            nrPassivated++;
+                        } else {
+                            nrActive++;
+                            if (solver.isWorking())
+                                nrWorking++;
+                        }
+                    }
+                    String version = server.getVersion().replaceAll("@build.number@", "?");
                     Date startTime = server.getStartTime();
                     String op="<input type=\"button\" value=\"Shutdown\" onClick=\"if (confirm('Do you really want to shutdown server "+server+"?')) document.location='manageSolvers.do?op=Shutdown&solver="+server.toString()+"';\">";
                     //op+="&nbsp;&nbsp;<input type=\"button\" value=\"Disconnect\" onClick=\"if (confirm('Do you really want to disconnect server "+server+"?')) document.location='manageSolvers.do?op=Disconnect&solver="+server.toString()+"';\">";
@@ -439,6 +449,7 @@ public class ManageSolversAction extends Action {
 				int nrWorking = 0;
 				long mem = WebSolver.getAvailableMemory();
 				long usage = WebSolver.getUsage();
+				Date startTime = (SolverRegisterService.getInstance()==null?null:SolverRegisterService.getInstance().getStartTime());
 				for (Enumeration e=WebSolver.getLocalSolvers().elements();e.hasMoreElements();) {
 					SolverProxy solver = (SolverProxy)e.nextElement();
 					if (solver.isPassivated()) {
@@ -449,11 +460,21 @@ public class ManageSolversAction extends Action {
 							nrWorking++;
 					}
 				}
-				String version = Constants.VERSION+"."+Constants.BLD_NUMBER;
+                for (Enumeration e=WebSolver.getLocalExaminationSolvers().elements();e.hasMoreElements();) {
+                    ExamSolverProxy solver = (ExamSolverProxy)e.nextElement();
+                    if (solver.isPassivated()) {
+                        nrPassivated++;
+                    } else {
+                        nrActive++;
+                        if (solver.isWorking())
+                            nrWorking++;
+                    }
+                }
+				String version = (Constants.VERSION+"."+Constants.BLD_NUMBER).replaceAll("@build.number@", "?");
 				webTable.addLine(null, new String[] {
-						"local",
+				        "local",
 						(version==null||"-1".equals(version)?"<i>N/A</i>":version),
-						"<i>N/A</i>",
+						(startTime==null?"<i>N/A</i>":sDF.format(startTime)),
 						df.format(((double)mem)/1024/1024)+" MB",
 						"N/A",
 						String.valueOf(usage),
@@ -466,7 +487,7 @@ public class ManageSolversAction extends Action {
 					new Comparable[] {
 						"",
 						version,
-						new Date(),
+						startTime,
 						new Long(mem),
 						new Long(0),
 						new Long(usage),
@@ -523,8 +544,6 @@ public class ManageSolversAction extends Action {
 	                    onClick = "onClick=\"document.location='manageSolvers.do?op=Select&examPuid=" + solver.getProperties().getProperty("General.OwnerPuid") + "';\"";
 	                String status = (String)solver.getProgress().get("STATUS");
 	                
-	                String note = solver.getNote();
-	                    if (note!=null) note = note.replaceAll("\n","<br>");
 	                Hashtable info = solver.currentSolutionInfo();
 	                String assigned = (String)info.get("Assigned variables");
 	                String totVal = (String)info.get("Overall solution value");
