@@ -273,4 +273,10 @@ public class Building extends BaseBuilding implements Comparable {
 
 	}
 
+	public static List findAll(Long sessionId) {
+		return new BuildingDAO().getSession().createQuery(
+				"select b from Building b where b.session.uniqueId=:sessionId order by b.abbreviation").
+				setLong("sessionId", sessionId).setCacheable(true).list();
+	}
+	
 }
