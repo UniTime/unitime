@@ -49,6 +49,7 @@ public interface ExamSolverProxy extends ExamAssignmentProxy {
     public void reload(DataProperties properties);
     public Date getLoadedDate();
     public void save();
+    public Date getLastUsed();
     
     public void start();
     public boolean isRunning();
@@ -73,9 +74,9 @@ public interface ExamSolverProxy extends ExamAssignmentProxy {
     public String getLog(int level, boolean includeDate);
     public String getLog(int level, boolean includeDate, String fromStage);
     
-    public boolean backup(File folder);
-    public boolean restore(File folder);
-    public boolean restore(File folder, boolean removeFiles);
+    public boolean backup(File folder, String ownerId);
+    public boolean restore(File folder, String ownerId);
+    public boolean restore(File folder, String ownerId, boolean removeFiles);
     
     public Collection<ExamAssignmentInfo> getAssignedExams();
     public Collection<ExamInfo> getUnassignedExams();

@@ -63,6 +63,7 @@ import net.sf.cpsolver.ifs.extension.ConflictStatistics;
 import net.sf.cpsolver.ifs.extension.Extension;
 import net.sf.cpsolver.ifs.model.Constraint;
 import net.sf.cpsolver.ifs.model.Value;
+import net.sf.cpsolver.ifs.solution.Solution;
 import net.sf.cpsolver.ifs.solver.Solver;
 import net.sf.cpsolver.ifs.util.Callback;
 import net.sf.cpsolver.ifs.util.DataProperties;
@@ -78,6 +79,7 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
     private int iDebugLevel = Progress.MSGLEVEL_INFO;
     private boolean iWorking = false;
     private Date iLoadedDate = null;
+    private Date iLastUsed = null;
     private ExamSolverDisposeListener iDisposeListener = null;
     
     public ExamSolver(DataProperties properties, ExamSolverDisposeListener disposeListener) {
@@ -164,11 +166,11 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
     }
     
     public Object exec(Object[] cmd) throws Exception {
-        Class[] types = new Class[(cmd.length-2)/2];
-        Object[] args = new Object[(cmd.length-2)/2];
+        Class[] types = new Class[(cmd.length-3)/2];
+        Object[] args = new Object[(cmd.length-3)/2];
         for (int i=0;i<types.length;i++) {
-            types[i]=(Class)cmd[2*i+2];
-            args[i]=cmd[2*i+3];
+            types[i]=(Class)cmd[2*i+3];
+            args[i]=cmd[2*i+4];
         }
         
         return getClass().getMethod((String)cmd[0],types).invoke(this, args);
@@ -554,12 +556,12 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
         public void onDispose();
     }
     
-    public boolean backup(File folder) {
+    public boolean backup(File folder, String puid) {
         folder.mkdirs();
         if (currentSolution()==null) return false;
         synchronized (currentSolution()) {
-            File outXmlFile = new File(folder,"exam"+BackupFileFilter.sXmlExtension);
-            File outPropertiesFile = new File(folder,"exam"+BackupFileFilter.sPropertiesExtension);
+            File outXmlFile = new File(folder,"exam_"+puid+BackupFileFilter.sXmlExtension);
+            File outPropertiesFile = new File(folder,"exam_"+puid+BackupFileFilter.sPropertiesExtension);
             try {
                 getProperties().setProperty("Xml.SaveConflictTable", "false");
                 FileOutputStream fos = null;
@@ -601,14 +603,14 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
         return false;
     }
     
-    public boolean restore(File folder) {
-        return restore(folder, false);
+    public boolean restore(File folder, String puid) {
+        return restore(folder, puid, false);
     }
     
-    public boolean restore(File folder, boolean removeFiles) {
-        sLog.debug("restore(folder="+folder+",exam)");
-        File inXmlFile = new File(folder,"exam"+BackupFileFilter.sXmlExtension);
-        File inPropertiesFile = new File(folder,"exam"+BackupFileFilter.sPropertiesExtension);
+    public boolean restore(File folder, String puid, boolean removeFiles) {
+        sLog.debug("restore(folder="+folder+","+puid+",exam)");
+        File inXmlFile = new File(folder,"exam_"+puid+BackupFileFilter.sXmlExtension);
+        File inPropertiesFile = new File(folder,"exam_"+puid+BackupFileFilter.sPropertiesExtension);
         
         ExamModel model = null;
         try {
@@ -1085,5 +1087,14 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
             }
             return ret;
         }
+    }
+    
+    public Solution currentSolution() {
+        iLastUsed = new Date();
+        return super.currentSolution();
+    }
+    
+    public Date getLastUsed() {
+        return iLastUsed;
     }
 }
