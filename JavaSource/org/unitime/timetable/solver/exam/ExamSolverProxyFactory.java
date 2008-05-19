@@ -31,17 +31,19 @@ import org.unitime.timetable.solver.remote.RemoteSolverServerProxy;
 public class ExamSolverProxyFactory implements InvocationHandler {
 	private RemoteSolverServerProxy iProxy; 
 	private RemoteExamSolverProxy iExamSolverProxy;
+	private String iPuid = null;
 	
-	private ExamSolverProxyFactory(RemoteSolverServerProxy proxy) {
+	private ExamSolverProxyFactory(RemoteSolverServerProxy proxy, String puid) {
 		iProxy = proxy;
+		iPuid = puid;
 	}
 	
 	public void setExamSolverProxy(RemoteExamSolverProxy proxy) {
 	    iExamSolverProxy = proxy;
 	}
 	
-	public static ExamSolverProxy create(RemoteSolverServerProxy proxy) {
-	    ExamSolverProxyFactory handler = new ExamSolverProxyFactory(proxy);
+	public static ExamSolverProxy create(RemoteSolverServerProxy proxy, String puid) {
+	    ExamSolverProxyFactory handler = new ExamSolverProxyFactory(proxy, puid);
 	    RemoteExamSolverProxy px = (RemoteExamSolverProxy)Proxy.newProxyInstance(
 	            ExamSolverProxyFactory.class.getClassLoader(),
 				new Class[] {RemoteExamSolverProxy.class},
@@ -56,6 +58,10 @@ public class ExamSolverProxyFactory implements InvocationHandler {
 	public String getHost() {
 		return iProxy.getAddress().getHostName()+":"+iProxy.getPort();
     }
+	
+	public String getPuid() {
+	    return iPuid;
+	}
 
 	public String getHostLabel() {
 		String hostName = iProxy.getAddress().getHostName();
@@ -73,13 +79,14 @@ public class ExamSolverProxyFactory implements InvocationHandler {
 			return getClass().getMethod(method.getName(),method.getParameterTypes()).invoke(this, args);
 		} catch (NoSuchMethodException e) {}
 		
-		Object[] params = new Object[2*(args==null?0:args.length)+2];
+		Object[] params = new Object[2*(args==null?0:args.length)+3];
     	params[0] = method.getName();
     	params[1] = "EXAM";
+    	params[2] = iPuid;
     	if (args!=null) {
     		for (int i=0;i<args.length;i++) {
-    			params[2*i+2] = method.getParameterTypes()[i];
-    			params[2*i+3] = args[i];
+    			params[2*i+3] = method.getParameterTypes()[i];
+    			params[2*i+4] = args[i];
     		}
     	}
     	return iProxy.query(params);

@@ -63,8 +63,8 @@ public class WebSolver extends TimetableSolver implements ProgressListener {
 	protected static Log sLog = LogFactory.getLog(WebSolver.class);
 	public static SimpleDateFormat sDF = new SimpleDateFormat("MM/dd/yy hh:mmaa");
 	private JspWriter iJspWriter;
-	private static Hashtable sSolvers = new Hashtable();
-	private static ExamSolver sExamSolver = null;
+	private static Hashtable<String,SolverProxy> sSolvers = new Hashtable();
+	private static Hashtable<String,ExamSolverProxy> sExamSolvers = new Hashtable();
 	private static SolverPassivationThread sSolverPasivationThread = null;
 	private static long sMemoryLimit = Integer.parseInt(ApplicationProperties.getProperty("tmtbl.solver.mem_limit","200"))*1024*1024; //200 MB
 	private static boolean sBackupWhenDone = false;
@@ -73,19 +73,20 @@ public class WebSolver extends TimetableSolver implements ProgressListener {
 		super(properties);
 	}
 	
-	public static ExamSolverProxy getExamSolver(Long sessionId) {
+	public static ExamSolverProxy getExamSolver(String puid, Long sessionId) {
         try {
-            if (sExamSolver!=null) {
-                if (sessionId!=null && !sessionId.equals(sExamSolver.getProperties().getPropertyLong("General.SessionId",null))) 
+            ExamSolverProxy solver = sExamSolvers.get(puid);
+            if (solver!=null) {
+                if (sessionId!=null && !sessionId.equals(solver.getProperties().getPropertyLong("General.SessionId",null))) 
                     return null;
-                return sExamSolver;
+                return solver;
             }
             Set servers = SolverRegisterService.getInstance().getServers();
             synchronized (servers) {
                 for (Iterator i=servers.iterator();i.hasNext();) {
                     RemoteSolverServerProxy server = (RemoteSolverServerProxy)i.next();
                     if (!server.isActive()) continue;
-                    ExamSolverProxy proxy = server.getExamSolver();
+                    ExamSolverProxy proxy = server.getExamSolver(puid);
                     if (proxy!=null) {
                         if (sessionId!=null && !sessionId.equals(proxy.getProperties().getPropertyLong("General.SessionId",null))) 
                             return null;
@@ -120,24 +121,30 @@ public class WebSolver extends TimetableSolver implements ProgressListener {
         if (acadSession==null) return null;
         TimetableManager mgr = TimetableManager.getManager(user);
         if (!mgr.canTimetableExams(acadSession, user)) return null;
-        solver = getExamSolver(acadSession.getUniqueId());
+        String puid = (String)session.getAttribute("ManageSolver.examPuid");
+        if (puid!=null) {
+            solver = getExamSolver(puid, acadSession.getUniqueId());
+            if (solver!=null) {
+                session.setAttribute("ExamSolverProxy", solver);
+                return solver;
+            }
+        }
+        solver = getExamSolver(user.getId(), acadSession.getUniqueId());
         if (solver==null) return null;
         session.setAttribute("ExamSolverProxy", solver);
         return solver;
     }
 	
-	public static ExamSolverProxy getExamSolverNoSessionCheck() {
+	public static ExamSolverProxy getExamSolverNoSessionCheck(javax.servlet.http.HttpSession session) {
         try {
-            if (sExamSolver!=null) return sExamSolver;
-            Set servers = SolverRegisterService.getInstance().getServers();
-            synchronized (servers) {
-                for (Iterator i=servers.iterator();i.hasNext();) {
-                    RemoteSolverServerProxy server = (RemoteSolverServerProxy)i.next();
-                    if (!server.isActive()) continue;
-                    ExamSolverProxy proxy = server.getExamSolver();
-                    if (proxy!=null) return proxy;
-                }
+            User user = Web.getUser(session);
+            if (user==null) return null;
+            String puid = (String)session.getAttribute("ManageSolver.examPuid");
+            if (puid!=null) {
+                ExamSolverProxy solver = getExamSolver(puid, null);
+                if (solver!=null) return solver;
             }
+            return getExamSolver(user.getId(), null);
         } catch (Exception e) {
             sLog.error("Unable to retrieve solver, reason:"+e.getMessage(),e);
         }
@@ -415,7 +422,7 @@ public class WebSolver extends TimetableSolver implements ProgressListener {
 	                    RemoteSolverServerProxy server = (RemoteSolverServerProxy)i.next();
 	                    if (!server.isActive()) continue;
 	                    if (host.equals(server.getAddress().getHostName()+":"+server.getPort())) {
-	                        ExamSolverProxy solver = server.createExamSolver(properties);
+	                        ExamSolverProxy solver = server.createExamSolver(user.getId(), properties);
 	                        solver.load(properties);
 	                        return solver;
 	                    }
@@ -439,7 +446,7 @@ public class WebSolver extends TimetableSolver implements ProgressListener {
 	                }
 	            }
 	            if (bestServer!=null) {
-	                ExamSolverProxy solver = bestServer.createExamSolver(properties);
+	                ExamSolverProxy solver = bestServer.createExamSolver(user.getId(), properties);
 	                solver.load(properties);
 	                return solver;
 	            }
@@ -447,14 +454,11 @@ public class WebSolver extends TimetableSolver implements ProgressListener {
 	        
 	        if (getAvailableMemory()<sMemoryLimit)
 	            throw new Exception("Not enough resources to create a solver instance, please try again later.");
-	        sExamSolver = new ExamSolver(properties, new ExamSolverDisposeListener() {
-	            public void onDispose() {
-	                sExamSolver = null;
-	            }
-	        });
-	        sExamSolver.load(properties);
+	        ExamSolver solver = new ExamSolver(properties, new ExamSolverOnDispose(user.getId()));
+	        sExamSolvers.put(user.getId(), solver);
+	        solver.load(properties);
 	        //Progress.getInstance(sExamSolver.currentSolution().getModel()).addProgressListener(sExamSolver);
-	        return sExamSolver;
+	        return solver;
 	        } catch (Exception e) {
 	            e.printStackTrace();
 	            throw e;
@@ -560,15 +564,15 @@ public class WebSolver extends TimetableSolver implements ProgressListener {
 	
     public static void removeExamSolver(javax.servlet.http.HttpSession session) throws Exception {
         session.removeAttribute("ExamSolverProxy");
-        ExamSolverProxy solver = getExamSolverNoSessionCheck();
+        ExamSolverProxy solver = getExamSolverNoSessionCheck(session);
         if (solver!=null) {
             if (solver.isRunning()) solver.stopSolver();
             solver.dispose();
         }
     }
 
-    public static Hashtable getSolvers() throws Exception {
-		Hashtable solvers = new Hashtable(sSolvers);
+    public static Hashtable<String,SolverProxy> getSolvers() throws Exception {
+		Hashtable<String,SolverProxy> solvers = new Hashtable(sSolvers);
         Set servers = SolverRegisterService.getInstance().getServers();
         synchronized (servers) {
             for (Iterator i=servers.iterator();i.hasNext();) {
@@ -582,7 +586,22 @@ public class WebSolver extends TimetableSolver implements ProgressListener {
 		return solvers; 
 	}
 	
-	public static Hashtable getLocalSolvers() throws Exception {
+    public static Hashtable<String,ExamSolverProxy> getExamSolvers() throws Exception {
+        Hashtable<String,ExamSolverProxy> solvers = new Hashtable(sExamSolvers);
+        Set servers = SolverRegisterService.getInstance().getServers();
+        synchronized (servers) {
+            for (Iterator i=servers.iterator();i.hasNext();) {
+                RemoteSolverServerProxy server = (RemoteSolverServerProxy)i.next();
+                if (!server.isActive()) continue;
+                Hashtable serverSolvers = server.getExamSolvers();
+                if (serverSolvers!=null)
+                    solvers.putAll(serverSolvers);
+            }
+        }
+        return solvers; 
+    }
+
+    public static Hashtable getLocalSolvers() throws Exception {
 		return sSolvers;
 	}
 
@@ -699,14 +718,11 @@ public class WebSolver extends TimetableSolver implements ProgressListener {
 				File file = files[i];
 				String puid = file.getName().substring(0,file.getName().indexOf('.'));
 				
-                if ("exam".equals(puid)) {
-                    ExamSolver solver = new ExamSolver(new DataProperties(), new ExamSolverDisposeListener() {
-                        public void onDispose() {
-                            sExamSolver = null;
-                        }
-                    });
-                    if (solver.restore(folder)) {
-                        sExamSolver = solver;
+                if (puid.startsWith("exam_")) {
+                    String exPuid = puid.substring("exam_".length());
+                    ExamSolver solver = new ExamSolver(new DataProperties(), new ExamSolverOnDispose(exPuid));
+                    if (solver.restore(folder, exPuid)) {
+                        sExamSolvers.put(exPuid, solver);
                     }
                     continue;
                 }
@@ -718,9 +734,6 @@ public class WebSolver extends TimetableSolver implements ProgressListener {
 					sSolvers.put(puid,solver);
 				} 
 			}
-            if (sExamSolver!=null) {
-                sExamSolver.backup(folder);
-            }
 		}
 	}
 	
@@ -775,4 +788,13 @@ public class WebSolver extends TimetableSolver implements ProgressListener {
 		return ret;
 	}
 	
+    private static class ExamSolverOnDispose implements ExamSolverDisposeListener {
+        String iOwnerId = null;
+        public ExamSolverOnDispose(String ownerId) {
+            iOwnerId = ownerId;
+        }
+        public void onDispose() {
+            sExamSolvers.remove(iOwnerId);
+        }
+    }
 }

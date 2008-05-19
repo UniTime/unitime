@@ -26,6 +26,8 @@ import java.util.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import net.sf.cpsolver.ifs.util.ToolBox;
+
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
@@ -34,6 +36,7 @@ import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ManageSolversForm;
+import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SolverGroup;
@@ -44,6 +47,7 @@ import org.unitime.timetable.model.dao.SolverGroupDAO;
 import org.unitime.timetable.model.dao.SolverPredefinedSettingDAO;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.WebSolver;
+import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.remote.RemoteSolverServerProxy;
 import org.unitime.timetable.solver.remote.SolverRegisterService;
 import org.unitime.timetable.solver.ui.PropertiesInfo;
@@ -75,9 +79,18 @@ public class ManageSolversAction extends Action {
         	return mapping.findForward("showSolver");
         }
         
+        if ("Select".equals(op) && request.getParameter("examPuid")!=null) {
+            String puid = request.getParameter("examPuid");
+            request.getSession().setAttribute("ManageSolver.examPuid", puid);
+            request.getSession().removeAttribute("ExamSolverProxy");
+            return mapping.findForward("showExamSolver");
+        }
+
         if ("Deselect".equals(op)) {
         	request.getSession().removeAttribute("ManageSolver.puid");
         	request.getSession().removeAttribute("SolverProxy");
+            request.getSession().removeAttribute("ManageSolver.examPuid");
+            request.getSession().removeAttribute("ExamSolverProxy");
         }
         
         if ("Shutdown".equals(op)) {
@@ -163,6 +176,7 @@ public class ManageSolversAction extends Action {
 
         getSolvers(request);
         getServers(request);
+        getExamSolvers(request);
         return mapping.findForward("showSolvers");
 	}
 	
@@ -185,7 +199,7 @@ public class ManageSolversAction extends Action {
 			WebTable.setOrder(request.getSession(),"manageSolvers.ord",request.getParameter("ord"),1);
 			
 			WebTable webTable = new WebTable( 18,
-					"Manage Solvers", "manageSolvers.do?ord=%%",
+					"Manage Course Solvers", "manageSolvers.do?ord=%%",
 					new String[] {"Created", "Last Used", "Session", "Host", "Config", "Status", "Owner", "Assign", "Total", "Time", "Stud", "Room", "Distr", "Instr", "TooBig", "Useless", "Pert", "Note"},
 					new String[] {"left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left"},
 					null );
@@ -194,6 +208,9 @@ public class ManageSolversAction extends Action {
 			int nrLines = 0;
 			Long currentSessionId = Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId();
 			
+            SolverProxy x = WebSolver.getSolverNoSessionCheck(request.getSession());
+            String xId = (x==null?null:x.getProperties().getProperty("General.OwnerPuid"));
+
 			HashSet solvers = new HashSet(WebSolver.getSolvers().values());
 			for (Iterator i=solvers.iterator();i.hasNext();) {
 				SolverProxy solver = (SolverProxy)i.next();
@@ -257,6 +274,10 @@ public class ManageSolversAction extends Action {
 				Date loaded = solver.getLoadedDate();
 				Date lastUsed = solver.getLastUsed(); 
 				
+                String bgColor = null;
+                if (x!=null && ToolBox.equals(solver.getProperties().getProperty("General.OwnerPuid"), xId))
+                    bgColor = "rgb(168,187,225)";
+
 				webTable.addLine(onClick, new String[] {
 							(loaded==null?"N/A":sDF.format(loaded)),
 							(lastUsed==null?"N/A":sDF.format(lastUsed)),
@@ -294,7 +315,7 @@ public class ManageSolversAction extends Action {
 							tooBig,
 							useless,
 							pertPen,
-							(solver.getNote()==null?"":solver.getNote())});
+							(solver.getNote()==null?"":solver.getNote())}).setBgColor(bgColor);
 					nrLines++;
 			}
 			if (nrLines==0)
@@ -320,7 +341,7 @@ public class ManageSolversAction extends Action {
 			DecimalFormat df = new DecimalFormat("0.00");
 			
 			int nrLines = 0;
-
+			
             Set servers = SolverRegisterService.getInstance().getServers();
             synchronized (servers) {
                 for (Iterator i=servers.iterator();i.hasNext();) {
@@ -466,5 +487,119 @@ public class ManageSolversAction extends Action {
 	        throw new Exception(e);
 	    }
 	}
+	
+	   private void getExamSolvers(HttpServletRequest request) throws Exception {
+	        try {
+	            WebTable.setOrder(request.getSession(),"manageSolvers.ord3",request.getParameter("ord3"),1);
+	            
+	            WebTable webTable = new WebTable( 19,
+	                    "Manage Examination Solvers", "manageSolvers.do?ord3=%%",
+	                    new String[] {"Created", "Last Used", "Session", "Host", "Config", "Status", "Owner", "Type", "Assign", "Total", "StudConf", "InstConf", "Period", "Room", "RoomSplit", "RoomSize", "Distr", "Rot", "Pert"},
+	                    new String[] {"left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left"},
+	                    null );
+	            webTable.setRowStyle("white-space:nowrap");
+	            
+	            int nrLines = 0;
+	            Long currentSessionId = Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId();
+	            
+	            ExamSolverProxy x = WebSolver.getExamSolverNoSessionCheck(request.getSession());
+	            String xId = (x==null?null:x.getProperties().getProperty("General.OwnerPuid"));
+	            
+	            for (ExamSolverProxy solver : WebSolver.getExamSolvers().values()) {
+	                String runnerName = getName(solver.getProperties().getProperty("General.OwnerPuid","N/A"));
+	                int examType = solver.getExamType();
+	                if (runnerName==null)
+	                    runnerName = "N/A";
+	                Session session = (new SessionDAO()).get(solver.getProperties().getPropertyLong("General.SessionId",new Long(-1)));
+	                String sessionLabel = "N/A";
+	                if (session!=null)
+	                    sessionLabel = session.getLabel();
+	                SolverPredefinedSetting setting = (new SolverPredefinedSettingDAO()).get(solver.getProperties().getPropertyLong("General.SettingsId",new Long(-1)));
+	                String settingLabel = solver.getProperties().getProperty("Basic.Mode","N/A");
+	                if (setting!=null)
+	                    settingLabel = setting.getDescription();
+	                String onClick = null;
+	                if (session.getUniqueId().equals(currentSessionId) && solver.getProperties().getProperty("General.OwnerPuid")!=null)
+	                    onClick = "onClick=\"document.location='manageSolvers.do?op=Select&examPuid=" + solver.getProperties().getProperty("General.OwnerPuid") + "';\"";
+	                String status = (String)solver.getProgress().get("STATUS");
+	                
+	                String note = solver.getNote();
+	                    if (note!=null) note = note.replaceAll("\n","<br>");
+	                Hashtable info = solver.currentSolutionInfo();
+	                String assigned = (String)info.get("Assigned variables");
+	                String totVal = (String)info.get("Overall solution value");
+	                String dc = (String)info.get("Direct Conflicts");
+	                String m2d = (String)info.get("More Than 2 A Day Conflicts");
+	                String btb = (String)info.get("Back-To-Back Conflicts");
+	                String conf = (dc==null?"0":dc)+", "+(m2d==null?"0":m2d)+", "+(btb==null?"0":btb);
+                    String idc = (String)info.get("Instructor Direct Conflicts");
+                    String im2d = (String)info.get("Instructor More Than 2 A Day Conflicts");
+                    String ibtb = (String)info.get("Instructor Back-To-Back Conflicts");
+                    String iconf = (idc==null?"0":idc)+", "+(im2d==null?"0":im2d)+", "+(ibtb==null?"0":ibtb);
+	                String pp = (String)info.get("Period Penalty");
+	                String rp = (String)info.get("Room Penalty");
+	                String rsp = (String)info.get("Room Split Penalty");
+	                String rsz = (String)info.get("Room Size Penalty");
+	                String dp = (String)info.get("Distribution Penalty");
+	                String erp = (String)info.get("Exam Rotation Penalty");
+	                String pert = (String)info.get("Perturbation Penalty");
+	                Date loaded = solver.getLoadedDate();
+	                Date lastUsed = solver.getLastUsed(); 
+	                
+                    String bgColor = null;
+                    if (x!=null && ToolBox.equals(solver.getProperties().getProperty("General.OwnerPuid"), xId))
+                        bgColor = "rgb(168,187,225)";
+	                
+	                webTable.addLine(onClick, new String[] {
+	                            (loaded==null?"N/A":sDF.format(loaded)),
+	                            (lastUsed==null?"N/A":sDF.format(lastUsed)),
+	                            sessionLabel,
+	                            solver.getHostLabel(),
+	                            settingLabel,
+	                            status,
+	                            runnerName, 
+	                            Exam.sExamTypes[examType],
+	                            (assigned==null?"N/A":assigned.indexOf(' ')>=0?assigned.substring(0,assigned.indexOf(' ')):assigned),
+	                            (totVal==null?"N/A":totVal),
+	                            (conf==null?"N/A":conf), 
+	                            (iconf==null?"N/A":iconf),
+	                            (pp==null?"N/A":pp.indexOf(' ')>=0?pp.substring(0,pp.indexOf(' ')):pp),
+	                            (rp==null?"N/A":rp.indexOf(' ')>=0?rp.substring(0,rp.indexOf(' ')):rp),
+	                            (rsp==null?"N/A":rsp.indexOf(' ')>=0?rsp.substring(0,rsp.indexOf(' ')):rsp), 
+	                            (rsz==null?"N/A":rsz.indexOf(' ')>=0?rsz.substring(0,rsz.indexOf(' ')):rsz),
+	                            (dp==null?"N/A":dp.indexOf(' ')>=0?dp.substring(0,dp.indexOf(' ')):dp),
+	                            (erp==null?"N/A":erp.indexOf(' ')>=0?erp.substring(0,erp.indexOf(' ')):erp),
+	                            (pert==null?"N/A":pert.indexOf(' ')>=0?pert.substring(0,pert.indexOf(' ')):pert)},
+	                        new Comparable[] {
+	                            (loaded==null?new Date():loaded),
+	                            (lastUsed==null?new Date():lastUsed),
+	                            sessionLabel,
+	                            solver.getHost(),
+	                            settingLabel, 
+	                            status,
+	                            runnerName,
+	                            examType,
+	                            (assigned==null?"":assigned),
+                                (totVal==null?"":totVal),
+                                (conf==null?"":conf), 
+                                (iconf==null?"":iconf),
+                                (pp==null?"":pp), 
+                                (rp==null?"":rp),
+                                (rsp==null?"":rsp), 
+                                (rsz==null?"":rsz),
+                                (dp==null?"":dp), 
+                                (erp==null?"":erp), 
+                                (pert==null?"":pert)}).setBgColor(bgColor);
+	                    nrLines++;
+	            }
+	            if (nrLines==0)
+	                webTable.addLine(null, new String[] {"<i>No solver is running.</i>"}, null, null );
+	            request.setAttribute("ManageSolvers.xtable",webTable.printTable(WebTable.getOrder(request.getSession(),"manageSolvers.ord3")));
+	            
+	        } catch (Exception e) {
+	            throw new Exception(e);
+	        }
+	    }
+
 }
 

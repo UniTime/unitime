@@ -57,9 +57,9 @@ public class RemoteSolver extends TimetableSolver implements TimetableInfoFilePr
     private static int sUsageBase = 0;
 	
 	private static Date sStartTime = new Date();
-	private static Hashtable sSolvers = new Hashtable();
+	private static Hashtable<String,RemoteSolver> sSolvers = new Hashtable();
 	private static SolverPassivationThread sSolverPassivationThread = null;
-	private static ExamSolver sExamSolver = null;
+	private static Hashtable<String,ExamSolver> sExamSolvers = new Hashtable();
 	
 	public RemoteSolver(DataProperties properties) {
 		super(properties);
@@ -99,24 +99,28 @@ public class RemoteSolver extends TimetableSolver implements TimetableInfoFilePr
 			if (cmd==null) return null;
 			if (cmd instanceof Object[]) {
 				Object[] arr = (Object[]) cmd;
+                if ("getExamSolvers".equals(arr[0])) {
+                    return new HashSet(sExamSolvers.keySet());
+                }
                 if ("hasExamSolver".equals(arr[0])) {
-                    return new Boolean(sExamSolver!=null);
+                    return new Boolean(sExamSolvers.get((String)arr[1])!=null);
                 }
                 if ("createExamSolver".equals(arr[0])) {
-                    if (sExamSolver!=null) sExamSolver.dispose();
-                    sExamSolver = new ExamSolver((DataProperties)arr[1], new ExamSolverDisposeListener() {
-                        public void onDispose() {
-                            sExamSolver = null;
-                        }
-                    });
-                    return null;
+                    String puid = (String)arr[1];
+                    ExamSolver solver = sExamSolvers.get(puid);
+                    if (solver!=null) solver.dispose();
+                    solver = new ExamSolver((DataProperties)arr[2], new ExamSolverOnDispose(puid));
+                    sExamSolvers.put(puid, solver);
+                    return Boolean.TRUE;
                 }
-                if (arr.length>=2 && "EXAM".equals(arr[1])) {
+                if (arr.length>=3 && "EXAM".equals(arr[1])) {
+                    String puid = (String)arr[2];
+                    ExamSolver solver = sExamSolvers.get(puid);
                     if ("exists".equals(arr[0])) {
-                        return new Boolean(sExamSolver!=null);
+                        return new Boolean(solver!=null);
                     }
-                    if (sExamSolver!=null) 
-                        return sExamSolver.exec(arr);
+                    if (solver!=null) 
+                        return solver.exec(arr);
                     else
                         return null;
                 }
@@ -193,8 +197,11 @@ public class RemoteSolver extends TimetableSolver implements TimetableInfoFilePr
 				solver.backup(folder, puid);
 			}
 			
-			if (sExamSolver!=null) {
-			    sExamSolver.backup(folder);
+			for (Iterator i=sExamSolvers.entrySet().iterator();i.hasNext();) {
+			    Map.Entry entry = (Map.Entry)i.next();
+                String puid = (String)entry.getKey();
+                ExamSolver solver =(ExamSolver)entry.getValue();
+                solver.backup(folder, puid);
 			}
 		}
 	}
@@ -212,14 +219,11 @@ public class RemoteSolver extends TimetableSolver implements TimetableInfoFilePr
 				File file = files[i];
 				String puid = file.getName().substring(0,file.getName().indexOf('.'));
 				
-				if ("exam".equals(puid)) {
-				    ExamSolver solver = new ExamSolver(new DataProperties(), new ExamSolverDisposeListener() {
-                        public void onDispose() {
-                            sExamSolver = null;
-                        }
-                    });
-				    if (solver.restore(folder)) {
-				        sExamSolver = solver;
+				if (puid.startsWith("exam_")) {
+				    String exPuid = puid.substring("exam_".length());
+				    ExamSolver solver = new ExamSolver(new DataProperties(), new ExamSolverOnDispose(exPuid));
+				    if (solver.restore(folder, exPuid)) {
+				        sExamSolvers.put(exPuid,solver);
 				    }
 				    continue;
 				}
@@ -356,5 +360,15 @@ public class RemoteSolver extends TimetableSolver implements TimetableInfoFilePr
 			} catch (Exception e) {};
 		}
 		return ret;
+	}
+	
+	private static class ExamSolverOnDispose implements ExamSolverDisposeListener {
+	    String iOwnerId = null;
+	    public ExamSolverOnDispose(String ownerId) {
+	        iOwnerId = ownerId;
+	    }
+        public void onDispose() {
+            sExamSolvers.remove(iOwnerId);
+        }
 	}
 }
