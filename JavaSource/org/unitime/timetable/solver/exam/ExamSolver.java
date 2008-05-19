@@ -51,6 +51,7 @@ import org.unitime.timetable.solver.exam.ui.ExamSuggestionsInfo;
 import org.unitime.timetable.solver.remote.BackupFileFilter;
 import org.unitime.timetable.util.Constants;
 
+import net.sf.cpsolver.exam.heuristics.ExamNeighbourSelection;
 import net.sf.cpsolver.exam.model.Exam;
 import net.sf.cpsolver.exam.model.ExamInstructor;
 import net.sf.cpsolver.exam.model.ExamOwner;
@@ -1097,4 +1098,19 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
     public Date getLastUsed() {
         return iLastUsed;
     }
+    
+    public void stopSolverImmediately() {
+        super.stopSolver();
+    }
+    
+    public void stopSolver() {
+        if (getNeighbourSelection() instanceof ExamNeighbourSelection) {
+            ExamNeighbourSelection xn = (ExamNeighbourSelection)getNeighbourSelection();
+            if (xn.isFinalPhase()) stopSolverImmediately();
+            else xn.setFinalPhase(new Callback() {
+                public void execute() { iStop=true; }
+            });
+        } else stopSolverImmediately();
+    }
+    
 }
