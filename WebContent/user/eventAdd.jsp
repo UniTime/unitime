@@ -19,8 +19,6 @@
 --%>
 
 <%@ page language="java" autoFlush="true" errorPage="../error.jsp" %>
-<%@page import="org.unitime.timetable.webutil.JavascriptFunctions"%>
-<%@page import="org.unitime.commons.web.Web"%>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
@@ -34,16 +32,37 @@
 <html:form action="/eventAdd">
 	<input type="hidden" name="op2" value="">
 	<TABLE width="93%" border="0" cellspacing="0" cellpadding="3">
+		<logic:messagesPresent>
 		<TR>
-			<TD valign="middle">
+			<TD colspan="2" align="left" class="errorCell">
+					<B><U>ERRORS</U></B><BR>
+				<BLOCKQUOTE>
+				<UL>
+				    <html:messages id="error">
+				      <LI>
+						${error}
+				      </LI>
+				    </html:messages>
+			    </UL>
+			    </BLOCKQUOTE>
+			</TD>
+		</TR>
+		</logic:messagesPresent>
+		<TR>
+			<TD valign="middle" colspan='2'>
 				<tt:section-header>
 					<tt:section-title>Add New Event</tt:section-title>
 				</tt:section-header>
 			</TD>
 		</TR>
 		<TR>
-			<TD nowrap>Event Type:
-				<html:select property="eventType">
+			<TD nowrap>Event Type: </TD>
+			<TD>
+				<html:select name="eventAddForm" property="eventType"
+					onfocus="setUp();"
+					onkeypress="return selectSearch(event, this);"
+					onkeydown="return checkKey(event, this);"
+					onchange="op2.value='EventTypeChanged'; submit();">
 					<html:options name="eventAddForm" property="eventTypes"/>
 				</html:select>
 			</TD>
@@ -59,27 +78,28 @@
 			</TD>
 		</TR>
  -->	<TR>
-			<TD nowrap>Academic Session:
-			<html:select name="eventAddForm" property="sessionId"  
-				onfocus="setUp();" 
-    			onkeypress="return selectSearch(event, this);" 
-				onkeydown="return checkKey(event, this);"
-				onchange="op2.value='SessionChanged'; submit();" > 
- 				<html:optionsCollection property="academicSessions"	label="label" value="value" />
+			<TD nowrap>Academic Session: </TD>
+			<TD>
+				<html:select name="eventAddForm" property="sessionId"  
+					onfocus="setUp();" 
+    				onkeypress="return selectSearch(event, this);" 
+					onkeydown="return checkKey(event, this);"
+					onchange="op2.value='SessionChanged'; submit();" > 
+ 					<html:optionsCollection property="academicSessions"	label="label" value="value" />
 				</html:select>
 			</TD>
 		</TR>
 		<TR>
-			<TD>&nbsp;</TD>
+			<TD colspan='2'>&nbsp;</TD>
 		</TR>
 		<TR>
-			<TD>
+			<TD colspan = '2'>
 				<tt:displayPrefLevelLegend prefs="false" dpBackgrounds="true" separator=""/>
 			</TD>
 		</TR>
 		<TR>
-			<TD>
-				<bean:write name="dates" scope="request" filter="false"/>
+			<TD colspan = '2'>
+				<bean:write name="eventAddForm" property="datesTable" filter="false"/>
 			</TD>
 		</TR>
 		
@@ -91,8 +111,23 @@
 			</TD>
 		</TR>
 -->		<TR>
-			<TD nowrap colspan="4">Start Time: &nbsp;<html:text property="startTime" maxlength="10" size="10"/> &nbsp; &nbsp; 
-			Stop Time:&nbsp; <html:text property="stopTime" maxlength="10" size="10"/></TD> 
+			<TD nowrap>Time: </TD>
+			<TD> Start:&nbsp;
+				<html:select name="eventAddForm" property="startTime"
+					onfocus="setUp();" 
+    				onkeypress="return selectSearch(event, this);" 
+					onkeydown="return checkKey(event, this);">
+					<html:optionsCollection name="eventAddForm" property="times"/>
+				</html:select>
+			
+				&nbsp;&nbsp;
+				Stop: 
+				<html:select name="eventAddForm" property="stopTime"
+					onfocus="setUp();" 
+    				onkeypress="return selectSearch(event, this);" 
+					onkeydown="return checkKey(event, this);">
+					<html:optionsCollection name="eventAddForm" property="times"/>
+				</html:select> 
 		</TR>
 <!--		<TR>
 			<TD valign="middle" colspan='2'>
@@ -102,30 +137,47 @@
 			</TD>
 		</TR>
 -->		<TR>
-			<TD>Location Type:&nbsp;
-					<html:select property = "locationType">
+			<TD>Location Type:&nbsp;</TD>
+			<TD>			
+				<html:select property = "locationType">
 					<html:optionsCollection name="eventAddForm" property = "locationTypes"  label="label" value="value"/>
 				</html:select>				
 			</TD>
 		</TR>
 		<TR>
-			<TD>Building: &nbsp; <html:text property="startTime" maxlength="10" size="10"/>&nbsp;&nbsp;
-			Room Number:&nbsp; <html:text property="startTime" maxlength="10" size="10"/></TD>
+			<TD>Location: </TD>
+			<TD>Building:
+				<html:select name="eventAddForm" property="buildingId"
+					onfocus="setUp();" 
+    				onkeypress="return selectSearch(event, this);" 
+					onkeydown="return checkKey(event, this);">
+					<html:option value="-1">Select...</html:option>
+					<html:optionsCollection name="eventAddForm" property="buildings" label="abbrName" value="uniqueId"/>
+				</html:select> 			
+			&nbsp; Room Number:&nbsp; <html:text property="roomNumber" maxlength="10" size="10"/></TD>
+		</TR>
+		<TR>
+			<TD> 
+				Room Capacity:
+			</TD>
+			<TD>
+				Min: <html:text property="minCapacity" maxlength="5" size="5"/> &nbsp; Max: <html:text property="maxCapacity" maxlength="5" size="5"/>
+			</TD>
 		</TR>
 
 
 	<TR>
-		<TD>
+		<TD colspan = '2'>
 			<tt:section-title/>
 		</TD>
 	</TR>
 
 	<TR>
-		<TD>
+		<TD colspan = '2'>
 			<html:submit property="op" styleClass="btn" accesskey="S" 
 				title="Show Scheduled Events (Alt+S)" value="Show Scheduled Events"/>
 			<html:submit property="op" styleClass="btn" accesskey="A" 
-				title="Show Room Availability (Alt+A)" value="Show Room Availability"/>
+				title="Show Location Availability (Alt+A)" value="Show Availability"/>
 		</TD>
 	</TR>
 
