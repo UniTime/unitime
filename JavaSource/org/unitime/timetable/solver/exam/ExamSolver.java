@@ -36,6 +36,7 @@ import java.util.Vector;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.dom4j.Document;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
@@ -80,8 +81,18 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
     private int iDebugLevel = Progress.MSGLEVEL_INFO;
     private boolean iWorking = false;
     private Date iLoadedDate = null;
-    private Date iLastUsed = null;
     private ExamSolverDisposeListener iDisposeListener = null;
+    private ExamConflictStatisticsInfo iCbsInfo = null;
+    
+    private long iLastTimeStamp = System.currentTimeMillis();
+    private boolean iIsPassivated = false;
+    private Map iProgressBeforePassivation = null;
+    private Hashtable iCurrentSolutionInfoBeforePassivation = null;
+    private Hashtable iBestSolutionInfoBeforePassivation = null;
+    private File iPassivationFolder = null;
+    private String iPassivationPuid = null;
+    public static long sInactiveTimeToPassivate = 1800000;
+
     
     public ExamSolver(DataProperties properties, ExamSolverDisposeListener disposeListener) {
         super(properties);
@@ -89,10 +100,13 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
     }
     
     public Date getLoadedDate() {
-        if (iLoadedDate!=null) return iLoadedDate;
-        Vector log = Progress.getInstance(currentSolution().getModel()).getLog();
-        if (log!=null && !log.isEmpty()) return ((Progress.Message)log.firstElement()).getDate();
-        return null;
+        if (iLoadedDate==null && !isPassivated()) {
+            Vector log = Progress.getInstance(currentSolution().getModel()).getLog();
+            if (log!=null && !log.isEmpty()) {
+                iLoadedDate = ((Progress.Message)log.firstElement()).getDate();
+            }
+        }
+        return iLoadedDate;
     }
     
     public String getLog() {
@@ -103,12 +117,6 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
     }
     public String getLog(int level, boolean includeDate, String fromStage) {
         return Progress.getInstance(currentSolution().getModel()).getHtmlLog(level, includeDate, fromStage);
-    }
-    public String getNote() {
-        return getProperties().getProperty("General.Note");
-    }
-    public void setNote(String note) {
-        getProperties().setProperty("General.Note",note);
     }
     public void setDebugLevel(int level) { iDebugLevel = level; }
     public int getDebugLevel() { return iDebugLevel; }
@@ -127,6 +135,7 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
     }
     
     public Map getProgress() {
+        if (isPassivated()) return iProgressBeforePassivation;
         try {
             Hashtable ret = new Hashtable(); 
             Progress p = Progress.getInstance(super.currentSolution().getModel());
@@ -143,19 +152,21 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
     }
     
     public void setProperties(DataProperties properties) {
+        activateIfNeeded();
         this.getProperties().putAll(properties);
     }
     
     public void dispose() {
-        disposeNoInherit();
+        disposeNoInherit(true);
     }
     
-    private void disposeNoInherit() {
+    private void disposeNoInherit(boolean unregister) {
         super.dispose();
         if (currentSolution()!=null && currentSolution().getModel()!=null)
             Progress.removeInstance(currentSolution().getModel());
         setInitalSolution((net.sf.cpsolver.ifs.solution.Solution)null);
-        if (iDisposeListener!=null) iDisposeListener.onDispose();
+        if (unregister && iDisposeListener!=null) iDisposeListener.onDispose();
+        iCbsInfo = null;
     }
     
     public String getHost() {
@@ -178,7 +189,7 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
     }
     
     public Exam getExam(long examId) {
-        synchronized (super.currentSolution()) {
+        synchronized (currentSolution()) {
             for (Enumeration e=currentSolution().getModel().variables().elements();e.hasMoreElements();) {
                 Exam exam = (Exam)e.nextElement();
                 if (exam.getId()==examId) return exam;
@@ -188,21 +199,21 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
     }
 
     public ExamInfo getInfo(long examId) {
-        synchronized (super.currentSolution()) {
+        synchronized (currentSolution()) {
             Exam exam = getExam(examId);
             return (exam==null?null: new ExamInfo(exam));
         }
     }
     
     public ExamAssignment getAssignment(long examId) {
-        synchronized (super.currentSolution()) {
+        synchronized (currentSolution()) {
             Exam exam = getExam(examId);
             return (exam==null || exam.getAssignment()==null?null:new ExamAssignment((ExamPlacement)exam.getAssignment()));
         }
     }
     
     public ExamAssignmentInfo getAssignmentInfo(long examId) {
-        synchronized (super.currentSolution()) {
+        synchronized (currentSolution()) {
             Exam exam = getExam(examId);
             return (exam==null?null:new ExamAssignmentInfo(exam,(ExamPlacement)exam.getAssignment()));
         }
@@ -210,7 +221,7 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
     
     
     public ExamPlacement getPlacement(ExamAssignment assignment) {
-        synchronized (super.currentSolution()) {
+        synchronized (currentSolution()) {
             Exam exam = getExam(assignment.getExamId());
             if (exam==null) return null;
             ExamPeriodPlacement period = null;
@@ -234,7 +245,7 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
     }
     
     public ExamAssignmentInfo getAssignment(Long examId, Long periodId, Collection<Long> roomIds) {
-        synchronized (super.currentSolution()) {
+        synchronized (currentSolution()) {
             Exam exam = getExam(examId);
             if (exam==null) return null;
             ExamPeriodPlacement period = null;
@@ -258,7 +269,7 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
     }
     
     public String assign(ExamAssignment assignment) {
-        synchronized (super.currentSolution()) {
+        synchronized (currentSolution()) {
             Exam exam = getExam(assignment.getExamId());
             if (exam==null) return "Examination "+assignment.getExamName()+" not found.";
             ExamPeriodPlacement period = null;
@@ -280,7 +291,7 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
                 rooms.add(room);
             }
             ExamPlacement p = new ExamPlacement(exam, period, rooms);
-            Set conflicts = super.currentSolution().getModel().conflictValues(p);
+            Set conflicts = currentSolution().getModel().conflictValues(p);
             if (conflicts.isEmpty()) {
                 exam.assign(0, p);
                 return null;
@@ -292,7 +303,7 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
     }
     
     public String unassign(ExamInfo examInfo) {
-        synchronized (super.currentSolution()) {
+        synchronized (currentSolution()) {
             Exam exam = getExam(examInfo.getExamId());
             if (exam==null) return "Examination "+examInfo.getExamName()+" not found.";
             if (exam.getAssignment()==null) return "Examination "+examInfo.getExamName()+" is not assigned.";
@@ -301,18 +312,21 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
         }
     }
 
+    
     public Hashtable currentSolutionInfo() {
+        if (isPassivated()) return iCurrentSolutionInfoBeforePassivation;
         synchronized (super.currentSolution()) {
             return super.currentSolution().getInfo();
         }
     }
 
     public Hashtable bestSolutionInfo() {
+        if (isPassivated()) return iBestSolutionInfoBeforePassivation;
         synchronized (super.currentSolution()) {
             return super.currentSolution().getBestInfo();
         }
     }
-    
+
     protected void onFinish() {
         super.onFinish();
         try {
@@ -351,6 +365,7 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
     }
     
     public void load(DataProperties properties) {
+        iCbsInfo = null;
         setProperties(properties);
         ExamModel model = new ExamModel(getProperties());
         Progress.getInstance(model).addProgressListener(new ProgressWriter(System.out));
@@ -568,7 +583,11 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
                 FileOutputStream fos = null;
                 try {
                     fos = new FileOutputStream(outXmlFile);
-                    (new XMLWriter(fos,OutputFormat.createPrettyPrint())).write(((ExamModel)currentSolution().getModel()).save());
+                    Document document = ((ExamModel)currentSolution().getModel()).save();
+                    ExamConflictStatisticsInfo cbsInfo = getCbsInfo();
+                    if (cbsInfo!=null)
+                        cbsInfo.save(document.getRootElement().addElement("cbsInfo"));
+                    (new XMLWriter(fos,OutputFormat.createPrettyPrint())).write(document);
                     fos.flush(); fos.close(); fos=null;
                 } finally {
                     try {
@@ -610,13 +629,14 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
     
     public boolean restore(File folder, String puid, boolean removeFiles) {
         sLog.debug("restore(folder="+folder+","+puid+",exam)");
+        iCbsInfo = null;
         File inXmlFile = new File(folder,"exam_"+puid+BackupFileFilter.sXmlExtension);
         File inPropertiesFile = new File(folder,"exam_"+puid+BackupFileFilter.sPropertiesExtension);
         
         ExamModel model = null;
         try {
             if (isRunning()) stopSolver();
-            this.disposeNoInherit();
+            disposeNoInherit(false);
             FileInputStream fis = null;
             try {
                 fis = new FileInputStream(inPropertiesFile);
@@ -630,7 +650,12 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
             setInitalSolution(model);
             initSolver();
 
-            model.load((new SAXReader()).read(inXmlFile));
+            Document document = (new SAXReader()).read(inXmlFile); 
+            model.load(document);
+            if (document.getRootElement().element("cbsInfo")!=null) {
+                iCbsInfo = new ExamConflictStatisticsInfo();
+                iCbsInfo.load(document.getRootElement().element("cbsInfo"));
+            }
             
             Progress.getInstance(model).setStatus("Awaiting commands ...");
             
@@ -828,7 +853,10 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
                 break;
             }
         }
-        if (cbs==null || cbs.getNoGoods().isEmpty()) return null;
+        if (cbs==null || cbs.getNoGoods().isEmpty()) {
+            if (iCbsInfo!=null) return iCbsInfo;
+            return null;
+        }
         ExamConflictStatisticsInfo info = new ExamConflictStatisticsInfo();
         synchronized (currentSolution()) {
             info.load(cbs);
@@ -845,7 +873,10 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
                 break;
             }
         }
-        if (cbs==null || cbs.getNoGoods().isEmpty()) return null;
+        if (cbs==null || cbs.getNoGoods().isEmpty()) {
+            if (iCbsInfo!=null) return iCbsInfo;
+            return null;
+        }
         ExamConflictStatisticsInfo info = new ExamConflictStatisticsInfo();
         synchronized (currentSolution()) {
             info.load(cbs, examId);
@@ -909,7 +940,7 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
     }
     
     public Vector<ExamRoomInfo> getRooms(long examId, long periodId, ExamProposedChange change, int minRoomSize, int maxRoomSize, String filter, boolean allowConflicts) {
-        synchronized (super.currentSolution()) {
+        synchronized (currentSolution()) {
             //lookup exam, period etc.
             Exam exam = getExam(examId);
             if (exam==null) return null;
@@ -982,7 +1013,7 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
     }
     
     public Collection<ExamAssignmentInfo> getPeriods(long examId, ExamProposedChange change) {
-        synchronized (super.currentSolution()) {
+        synchronized (currentSolution()) {
             //lookup exam
             Exam exam = getExam(examId);
             if (exam==null) return null;
@@ -1040,7 +1071,7 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
     }
     
     public ExamSuggestionsInfo getSuggestions(long examId, ExamProposedChange change, String filter, int depth, int limit, long timeOut) {
-        synchronized (super.currentSolution()) {
+        synchronized (currentSolution()) {
             Exam exam = getExam(examId);
             if (exam==null) return null;
             ExamSuggestions s = new ExamSuggestions(this);
@@ -1072,7 +1103,7 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
     }
     
     public TreeSet<ExamAssignment> getExamsOfRoom(long locationId) {
-        synchronized (super.currentSolution()) {
+        synchronized (currentSolution()) {
             ExamModel model = (ExamModel)currentSolution().getModel();
             ExamRoom room = null;
             for (Enumeration e=model.getRooms().elements();e.hasMoreElements();) {
@@ -1090,15 +1121,6 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
         }
     }
     
-    public Solution currentSolution() {
-        iLastUsed = new Date();
-        return super.currentSolution();
-    }
-    
-    public Date getLastUsed() {
-        return iLastUsed;
-    }
-    
     public void stopSolverImmediately() {
         super.stopSolver();
     }
@@ -1113,4 +1135,71 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
         } else stopSolverImmediately();
     }
     
+    public Solution currentSolution() {
+        activateIfNeeded();
+        return super.currentSolution();
+    }
+    
+    public void start() {
+        activateIfNeeded();
+        iCbsInfo = null;
+        super.start();
+    }
+    
+    public synchronized boolean isPassivated() {
+        return iIsPassivated;
+    }
+    
+    public synchronized long timeFromLastUsed() {
+        return System.currentTimeMillis()-iLastTimeStamp;
+    }
+    
+    public synchronized boolean activateIfNeeded() {
+        iLastTimeStamp = System.currentTimeMillis();
+        if (!isPassivated()) return false;
+        sLog.debug("<activate "+iPassivationPuid+">");
+
+        iIsPassivated = false;
+
+        System.gc();
+        sLog.debug(" -- memory usage before activation:"+org.unitime.commons.Debug.getMem());
+        restore(iPassivationFolder, iPassivationPuid, true);
+        System.gc();
+        sLog.debug(" -- memory usage after activation:"+org.unitime.commons.Debug.getMem());
+        
+        return true;
+    }
+    
+    public synchronized boolean passivate(File folder, String puid) {
+        if (isPassivated() || super.currentSolution()==null || super.currentSolution().getModel()==null) return false;
+        sLog.debug("<passivate "+puid+">");
+        System.gc();
+        sLog.debug(" -- memory usage before passivation:"+org.unitime.commons.Debug.getMem());
+        iProgressBeforePassivation = getProgress();
+        if (iProgressBeforePassivation!=null)
+            iProgressBeforePassivation.put("STATUS","Pasivated");
+        iCurrentSolutionInfoBeforePassivation = currentSolutionInfo();
+        iBestSolutionInfoBeforePassivation = bestSolutionInfo();
+        
+        iPassivationFolder = folder;
+        iPassivationPuid = puid;
+        backup(iPassivationFolder, iPassivationPuid);
+
+        disposeNoInherit(false);
+        
+        System.gc();
+        sLog.debug(" -- memory usage after passivation:"+org.unitime.commons.Debug.getMem());
+        
+        iIsPassivated = true;
+        return true;
+    }
+
+    public synchronized boolean passivateIfNeeded(File folder, String puid) {
+        if (isPassivated() || timeFromLastUsed()<sInactiveTimeToPassivate || isWorking()) return false;
+        return passivate(folder, puid);
+    }
+    
+    public Date getLastUsed() {
+        return new Date(iLastTimeStamp);
+    }
 }

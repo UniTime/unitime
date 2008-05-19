@@ -605,7 +605,11 @@ public class WebSolver extends TimetableSolver implements ProgressListener {
 		return sSolvers;
 	}
 
-	public void setHtmlMessageWriter(JspWriter out) {
+    public static Hashtable getLocalExaminationSolvers() throws Exception {
+        return sExamSolvers;
+    }
+
+    public void setHtmlMessageWriter(JspWriter out) {
 		if (iJspWriter!=null && !iJspWriter.equals(out)) {
 			try {
 				iJspWriter.println("<I>Thread ended.</I>");
@@ -729,6 +733,8 @@ public class WebSolver extends TimetableSolver implements ProgressListener {
                     String exPuid = puid.substring("exam_".length());
                     ExamSolver solver = new ExamSolver(new DataProperties(), new ExamSolverOnDispose(exPuid));
                     if (solver.restore(folder, exPuid)) {
+                        if (passivateFolder!=null)
+                            solver.passivate(passivateFolder,puid);
                         sExamSolvers.put(exPuid, solver);
                     }
                     continue;
@@ -746,7 +752,7 @@ public class WebSolver extends TimetableSolver implements ProgressListener {
 	
 	public static void startSolverPasivationThread(File folder) {
 		if (sSolverPasivationThread!=null && sSolverPasivationThread.isAlive()) return;
-		sSolverPasivationThread = new SolverPassivationThread(folder, sSolvers);
+		sSolverPasivationThread = new SolverPassivationThread(folder, sSolvers, sExamSolvers);
 		sSolverPasivationThread.start();
 	}
 	
@@ -792,6 +798,15 @@ public class WebSolver extends TimetableSolver implements ProgressListener {
 				if (solver.isWorking()) ret++;
 			} catch (Exception e) {};
 		}
+        for (Iterator i=sExamSolvers.entrySet().iterator();i.hasNext();) {
+            Map.Entry entry = (Map.Entry)i.next();
+            ExamSolverProxy solver = (ExamSolverProxy)entry.getValue();
+            ret++;
+            if (!solver.isPassivated()) ret++;
+            try {
+                if (solver.isWorking()) ret++;
+            } catch (Exception e) {};
+        }
 		return ret;
 	}
 	
