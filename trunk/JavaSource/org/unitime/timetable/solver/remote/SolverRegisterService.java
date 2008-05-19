@@ -71,9 +71,10 @@ public class SolverRegisterService extends Thread {
 	private static ShutdownHook sHook = null;
 	private static int sTimeout = 300000; //5 minutes
 	private static boolean sLocalSolverInitialized = false;
+	private Date iStartTime = null;
 	
 	private SolverRegisterService() {
-		setDaemon(true);
+	    setDaemon(true);
 		setName("SolverRegister.Service");
 	}
 	
@@ -166,6 +167,7 @@ public class SolverRegisterService extends Thread {
 	}
 
 	public void run() {
+	    iStartTime = new Date();
 		try {
 			ConnectionFactory.init(ApplicationProperties.getProperties(), ApplicationProperties.getDataFolder());
 			try {
@@ -469,4 +471,5 @@ public class SolverRegisterService extends Thread {
         }
     }
     
+    public Date getStartTime() { return iStartTime; }
 }
