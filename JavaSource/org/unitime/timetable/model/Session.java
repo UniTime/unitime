@@ -215,6 +215,11 @@ public class Session extends BaseSession implements Comparable {
 	 * @return Returns the year.
 	 */
 	public int getYear() {
+		if (getSessionBeginDateTime()!=null) {
+			Calendar c = Calendar.getInstance(Locale.US);
+			c.setTime(getSessionBeginDateTime());
+			return c.get(Calendar.YEAR);
+		}
 		return Integer.parseInt(this.getAcademicYear());
 	}
 
