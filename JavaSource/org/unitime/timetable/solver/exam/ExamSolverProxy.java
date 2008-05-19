@@ -49,7 +49,6 @@ public interface ExamSolverProxy extends ExamAssignmentProxy {
     public void reload(DataProperties properties);
     public Date getLoadedDate();
     public void save();
-    public Date getLastUsed();
     
     public void start();
     public boolean isRunning();
@@ -64,8 +63,6 @@ public interface ExamSolverProxy extends ExamAssignmentProxy {
     public DataProperties getProperties();
     public void setProperties(DataProperties properties);
 
-    public String getNote();
-    public void setNote(String note);
     public int getDebugLevel();
     public void setDebugLevel(int level);
 
@@ -98,4 +95,11 @@ public interface ExamSolverProxy extends ExamAssignmentProxy {
     
     public ExamConflictStatisticsInfo getCbsInfo();
     public ExamConflictStatisticsInfo getCbsInfo(Long examId);
+    
+    public long timeFromLastUsed();
+    public boolean isPassivated();
+    public boolean activateIfNeeded();
+    public boolean passivate(File folder, String puid);
+    public boolean passivateIfNeeded(File folder, String puid);
+    public Date getLastUsed();
 }
