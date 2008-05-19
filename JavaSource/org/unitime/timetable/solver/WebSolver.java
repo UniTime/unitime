@@ -689,13 +689,12 @@ public class WebSolver extends TimetableSolver implements ProgressListener {
     }
 
     public static void backup(File folder) {
+        if (folder.exists() && !folder.isDirectory()) return;
+        folder.mkdirs();
+        File[] old = folder.listFiles(new BackupFileFilter(true,true));
+        for (int i=0;i<old.length;i++)
+            old[i].delete();
 		synchronized (sSolvers) {
-			if (folder.exists() && !folder.isDirectory()) return;
-			folder.mkdirs();
-			File[] old = folder.listFiles(new BackupFileFilter(true,true));
-			for (int i=0;i<old.length;i++)
-				old[i].delete();
-
 			for (Iterator i=sSolvers.entrySet().iterator();i.hasNext();) {
 				Map.Entry entry = (Map.Entry)i.next();
 				String puid = (String)entry.getKey();
@@ -703,6 +702,14 @@ public class WebSolver extends TimetableSolver implements ProgressListener {
 				solver.backup(folder, puid);
 			}
 		}
+        synchronized (sExamSolvers) {
+            for (Iterator i=sExamSolvers.entrySet().iterator();i.hasNext();) {
+                Map.Entry entry = (Map.Entry)i.next();
+                String puid = (String)entry.getKey();
+                ExamSolver solver =(ExamSolver)entry.getValue();
+                solver.backup(folder, puid);
+            }
+        }
 	}
 	
 	public static void restore(File folder, File passivateFolder) {
