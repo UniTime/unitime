@@ -9,6 +9,7 @@ import org.dom4j.Element;
 
 import net.sf.cpsolver.exam.model.ExamPeriod;
 import net.sf.cpsolver.ifs.util.DataProperties;
+import net.sf.cpsolver.ifs.util.Progress;
 
 public class ExamModel extends net.sf.cpsolver.exam.model.ExamModel {
     private Hashtable<ExamPeriod, Vector<ExamResourceUnavailability>>  iUnavailabilitites = null;
@@ -59,6 +60,12 @@ public class ExamModel extends net.sf.cpsolver.exam.model.ExamModel {
                 addUnavailability(unavailability);
             }
         }
+        
+        Progress p = Progress.getInstance(this);
+        if (p!=null) {
+            p.load(document.getRootElement(), true);
+            p.message(Progress.MSGLEVEL_STAGE, "Restoring from backup ...");
+        }
         return true;
     }
     
@@ -84,6 +91,10 @@ public class ExamModel extends net.sf.cpsolver.exam.model.ExamModel {
                         element.addElement("instructor").addAttribute("id", studentId.toString());
                 }
             }
+        }
+        Progress p = Progress.getInstance(this);
+        if (p!=null) {
+            Progress.getInstance(this).save(document.getRootElement());
         }
         return document;
     }
