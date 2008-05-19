@@ -137,8 +137,8 @@ public class ExamInfoForm extends ActionForm {
     public String[] getRoomOrders() { return sRoomOrds; }
     public boolean getComputeSuggestions() { return iComputeSuggestions; }
     public void setComputeSuggestions(boolean computeSuggestions) { iComputeSuggestions = computeSuggestions; }
-    public int getLimit() { System.out.println("GET "+iLimit); return iLimit; }
-    public void setLimit(int limit) { System.out.println("SET "+limit); iLimit = limit; }
+    public int getLimit() { return iLimit; }
+    public void setLimit(int limit) { iLimit = limit; }
     public int getDepth() { return iDepth; }
     public void setDepth(int depth) { iDepth = depth; }
     public long getTimeout() { return iTimeout; }
