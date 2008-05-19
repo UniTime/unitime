@@ -186,7 +186,7 @@ public class RemoteSolverServerProxy {
 		if (solver.exists()) solver.dispose();
 	}
 
-	public Hashtable getSolvers() throws Exception {
+	public Hashtable<String,RemoteSolverProxy> getSolvers() throws Exception {
 		Set puids = (Set)query(new Object[] {"getSolvers"});
 		if (puids==null) return new Hashtable();
 		Hashtable solvers = new Hashtable();
@@ -197,15 +197,26 @@ public class RemoteSolverServerProxy {
 		return solvers;
 	}
 	
-	public ExamSolverProxy getExamSolver() throws Exception {
-	    if (((Boolean)query(new Object[] {"hasExamSolver"})).booleanValue()) {
-	        return ExamSolverProxyFactory.create(this);
+    public Hashtable<String,ExamSolverProxy> getExamSolvers() throws Exception {
+        Set puids = (Set)query(new Object[] {"getExamSolvers"});
+        if (puids==null) return new Hashtable();
+        Hashtable<String,ExamSolverProxy> solvers = new Hashtable();
+        for (Iterator i=puids.iterator();i.hasNext();) {
+            String puid = (String)i.next();
+            solvers.put(puid,ExamSolverProxyFactory.create(this,puid));
+        }
+        return solvers;
+    }
+
+    public ExamSolverProxy getExamSolver(String puid) throws Exception {
+	    if (((Boolean)query(new Object[] {"hasExamSolver", puid})).booleanValue()) {
+	        return ExamSolverProxyFactory.create(this,puid);
 	    } else return null;
 	}
 	
-    public ExamSolverProxy createExamSolver(DataProperties properties) throws Exception {
-        query(new Object[] {"createExamSolver", properties});
-        return ExamSolverProxyFactory.create(this);
+    public ExamSolverProxy createExamSolver(String puid, DataProperties properties) throws Exception {
+        query(new Object[] {"createExamSolver", puid, properties});
+        return ExamSolverProxyFactory.create(this,puid);
     }
 
     public String getVersion() throws Exception {

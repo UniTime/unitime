@@ -33,6 +33,7 @@
 <jsp:directive.page import="org.unitime.timetable.model.Roles"/>
 <%@page import="org.unitime.timetable.solver.exam.ExamSolverProxy"%>
 <%@page import="org.unitime.timetable.model.dao.SessionDAO"%>
+<%@page import="org.unitime.timetable.model.Exam"%>
 <%@ include file="../checkLogin.jspf" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 
@@ -57,7 +58,7 @@
 <%=Web.metaExpireNow()%>
 <% 
 	SolverProxy solver = WebSolver.getSolver(session);
-	ExamSolverProxy examSolver = (solver==null?WebSolver.getExamSolverNoSessionCheck():null);  
+	ExamSolverProxy examSolver = (solver==null?WebSolver.getExamSolverNoSessionCheck(session):null);  
 	int tab = 0;
 	if (session.getAttribute("UserInfo.tab")!=null)
 		tab = ((Integer)session.getAttribute("UserInfo.tab")).intValue();
@@ -252,6 +253,7 @@
 	   	ownerName += getName((new SolverGroupDAO()).get(solverGroupId[i]));
    	}
    }
+   if (examSolver!=null) ownerName = Exam.sExamTypes[examSolver.getExamType()];
    if (ownerName==null || ownerName.length()==0)
 	   ownerName = "N/A";
    if (ownerName.equals("N/A"))

@@ -747,6 +747,10 @@
         name="showSolver"
         path="solverTile"
         redirect="true" />
+      <forward
+        name="showExamSolver"
+        path="examSolverTile"
+        redirect="true" />
     </action>
     <action
     	path="/cbs"

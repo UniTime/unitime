@@ -470,6 +470,7 @@ public class Constants extends net.sf.cpsolver.coursett.Constants {
 		webSession.removeAttribute("SolverProxy");
 		webSession.removeAttribute("ExamSolverProxy");
 		webSession.removeAttribute("ManageSolver.puid");
+        webSession.removeAttribute("ManageSolver.examPuid");
 		webSession.removeAttribute("Solver.selectedSolutionId");
 		webSession.removeAttribute("LastSolutionClassAssignmentProxy");
     }
