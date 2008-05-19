@@ -35,6 +35,7 @@ import org.unitime.timetable.solver.SolverPassivationThread;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.TimetableSolver;
 import org.unitime.timetable.solver.exam.ExamSolver;
+import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.exam.ExamSolver.ExamSolverDisposeListener;
 import org.unitime.timetable.solver.remote.core.RemoteSolverServer;
 import org.unitime.timetable.solver.remote.core.SolverTray;
@@ -223,6 +224,8 @@ public class RemoteSolver extends TimetableSolver implements TimetableInfoFilePr
 				    String exPuid = puid.substring("exam_".length());
 				    ExamSolver solver = new ExamSolver(new DataProperties(), new ExamSolverOnDispose(exPuid));
 				    if (solver.restore(folder, exPuid)) {
+	                    if (passivateFolder!=null)
+	                        solver.passivate(passivateFolder,puid);
 				        sExamSolvers.put(exPuid,solver);
 				    }
 				    continue;
@@ -312,7 +315,7 @@ public class RemoteSolver extends TimetableSolver implements TimetableInfoFilePr
 	        restore(sBackupDir, sPassivationDir);
 	        sLog.debug("  -- backuped solver instances restored");
 	        
-	        sSolverPassivationThread = new SolverPassivationThread(sPassivationDir, sSolvers);
+	        sSolverPassivationThread = new SolverPassivationThread(sPassivationDir, sSolvers, sExamSolvers);
 	        sSolverPassivationThread.start();
 	        sLog.debug("  -- solver passivation thread started");
 	        
@@ -359,6 +362,15 @@ public class RemoteSolver extends TimetableSolver implements TimetableInfoFilePr
 				if (solver.isWorking()) ret++;
 			} catch (Exception e) {};
 		}
+        for (Iterator i=sExamSolvers.entrySet().iterator();i.hasNext();) {
+            Map.Entry entry = (Map.Entry)i.next();
+            ExamSolverProxy solver = (ExamSolverProxy)entry.getValue();
+            ret++;
+            if (!solver.isPassivated()) ret++;
+            try {
+                if (solver.isWorking()) ret++;
+            } catch (Exception e) {};
+        }
 		return ret;
 	}
 	
