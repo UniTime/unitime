@@ -651,7 +651,11 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
             initSolver();
 
             Document document = (new SAXReader()).read(inXmlFile); 
-            model.load(document);
+            model.load(document, new Callback() {
+                public void execute() {
+                    saveBest();
+                }
+            });
             if (document.getRootElement().element("cbsInfo")!=null) {
                 iCbsInfo = new ExamConflictStatisticsInfo();
                 iCbsInfo.load(document.getRootElement().element("cbsInfo"));

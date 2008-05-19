@@ -8,6 +8,7 @@ import org.dom4j.Document;
 import org.dom4j.Element;
 
 import net.sf.cpsolver.exam.model.ExamPeriod;
+import net.sf.cpsolver.ifs.util.Callback;
 import net.sf.cpsolver.ifs.util.DataProperties;
 import net.sf.cpsolver.ifs.util.Progress;
 
@@ -34,7 +35,11 @@ public class ExamModel extends net.sf.cpsolver.exam.model.ExamModel {
     }
     
     public boolean load(Document document) {
-        if (!super.load(document)) return false;
+        return load(document, null);
+    }
+    
+    public boolean load(Document document, Callback saveBest) {
+        if (!super.load(document, saveBest)) return false;
         if (iUnavailabilitites!=null) iUnavailabilitites.clear();
         Element elements = document.getRootElement().element("notavailable");
         if (elements!=null) {
