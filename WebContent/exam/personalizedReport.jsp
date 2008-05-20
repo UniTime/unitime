@@ -28,6 +28,7 @@
 		<TR><TD align='right'>
 			<logic:equal name="personalizedExamReportForm" property="canExport" value="true">
 				<html:submit accesskey="P" property="op" value="Export PDF" title="Export PDF (Alt+P)"/>
+				<html:submit accesskey="I" property="op" value="iCalendar" title="Export iCalendar (Alt+I)"/>
 			</logic:equal>
 			<html:submit accesskey="L" property="op" value="Log Out" title="Log out (Alt+L)"/>
 		</TD></TR>
@@ -85,6 +86,7 @@
 		<TR><TD align='right'>
 			<logic:equal name="personalizedExamReportForm" property="canExport" value="true">
 				<html:submit accesskey="P" property="op" value="Export PDF" title="Export PDF (Alt+P)"/>
+				<html:submit accesskey="I" property="op" value="iCalendar" title="Export iCalendar (Alt+I)"/>
 			</logic:equal>
 			<html:submit accesskey="L" property="op" value="Log Out" title="Log out (Alt+L)"/>
 		</TD></TR>
