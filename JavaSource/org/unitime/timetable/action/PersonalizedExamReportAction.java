@@ -21,7 +21,9 @@ package org.unitime.timetable.action;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -29,6 +31,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
@@ -215,6 +218,22 @@ public class PersonalizedExamReportAction extends Action {
                 try {
                     if (out!=null) out.close();
                 } catch (IOException e) {}
+            }
+        }
+        
+        if ("iCalendar".equals(myForm.getOp())) {
+            try {
+                File file = ApplicationProperties.getTempFile("schedule", "ics");
+                
+                if (instructor!=null) {
+                    printInstructorSchedule(file, instructor, instructorExams);
+                } else {
+                    printStudentSchedule(file, student, studentExams);
+                }
+                
+                request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
         
@@ -1233,5 +1252,126 @@ public class PersonalizedExamReportAction extends Action {
                         });
         }
         return table;        
+    }
+    
+    public void printStudentSchedule(File file, Student student, HashSet<Exam> exams) throws Exception {
+        PrintWriter out = null;
+        try {
+            SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+            df.setTimeZone(TimeZone.getTimeZone("UTC"));
+            SimpleDateFormat tf = new SimpleDateFormat("HHmmss");
+            tf.setTimeZone(TimeZone.getTimeZone("UTC"));
+            out = new PrintWriter(new FileWriter(file));
+            out.println("BEGIN:VCALENDAR");
+            out.println("VERSION:2.0");
+            out.println("CALSCALE:GREGORIAN");
+            out.println("METHOD:PUBLISH");
+            out.println("X-WR-CALNAME:"+student.getName(DepartmentalInstructor.sNameFormatLastFist));
+            out.println("X-WR-TIMEZONE:"+TimeZone.getDefault().getID());
+            out.println("PRODID:-//UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+"/UniTime Personal Schedule//NONSGML v1.0//EN");
+            for (Iterator i=student.getClassEnrollments().iterator();i.hasNext();) {
+                StudentClassEnrollment sce = (StudentClassEnrollment)i.next();
+                if (sce.getClazz().getEvent()!=null) {
+                    for (Iterator k=sce.getClazz().getEvent().getMeetings().iterator();k.hasNext();) {
+                        Meeting meeting = (Meeting)k.next();
+                        out.println("BEGIN:VEVENT");
+                        out.println("UID:m"+meeting.getUniqueId());
+                        out.println("DTSTART:"+df.format(meeting.getStartTime())+"T"+tf.format(meeting.getStartTime())+"Z");
+                        out.println("DTEND:"+df.format(meeting.getStopTime())+"T"+tf.format(meeting.getStopTime())+"Z");
+                        out.println("SUMMARY:"+meeting.getEvent().getEventName()+" ("+meeting.getEvent().getEventTypeLabel()+")");
+                        if (meeting.getLocation()!=null)
+                            out.println("LOCATION:"+meeting.getLocation().getLabel());
+                        out.println("END:VEVENT");
+                    }
+                    
+                }
+            }
+            for (Exam exam: exams) {
+                for (ExamSectionInfo section: new ExamAssignment(exam).getSections()) {
+                    if (section.getStudentIds().contains(student.getUniqueId())) {
+                        out.println("BEGIN:VEVENT");
+                        out.println("UID:x"+exam.getUniqueId());
+                        out.println("DTSTART:"+df.format(exam.getAssignedPeriod().getStartTime())+"T"+tf.format(exam.getAssignedPeriod().getStartTime())+"Z");
+                        Calendar endTime = Calendar.getInstance(); endTime.setTime(exam.getAssignedPeriod().getStartTime());
+                        endTime.add(Calendar.MINUTE, exam.getLength());
+                        out.println("DTEND:"+df.format(endTime.getTime())+"T"+tf.format(endTime.getTime())+"Z");
+                        out.println("SUMMARY:"+section.getName()+" ("+Exam.sExamTypes[exam.getExamType()]+" Exam)");
+                        //out.println("DESCRIPTION:"+exam.getExamName()+" ("+Exam.sExamTypes[exam.getExamType()]+" Exam)");
+                        if (!exam.getAssignedRooms().isEmpty()) {
+                            String rooms = "";
+                            for (Iterator i=new TreeSet(exam.getAssignedRooms()).iterator();i.hasNext();) {
+                                Location location = (Location)i.next();
+                                if (rooms.length()>0) rooms+=", ";
+                                rooms+=location.getLabel();
+                            }
+                            out.println("LOCATION:"+rooms);
+                        }
+                        out.println("END:VEVENT");
+                    }
+                }
+            }
+        } finally {
+            if (out!=null) { out.flush(); out.close(); }
+        }
+    }
+    
+    public void printInstructorSchedule(File file, DepartmentalInstructor instructor, HashSet<Exam> exams) throws Exception {
+        PrintWriter out = null;
+        try {
+            SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+            df.setTimeZone(TimeZone.getTimeZone("UTC"));
+            SimpleDateFormat tf = new SimpleDateFormat("HHmmss");
+            tf.setTimeZone(TimeZone.getTimeZone("UTC"));
+            out = new PrintWriter(new FileWriter(file));
+            out.println("BEGIN:VCALENDAR");
+            out.println("VERSION:2.0");
+            out.println("CALSCALE:GREGORIAN");
+            out.println("METHOD:PUBLISH");
+            out.println("X-WR-CALNAME:"+instructor.getName(DepartmentalInstructor.sNameFormatLastFist));
+            out.println("X-WR-TIMEZONE:"+TimeZone.getDefault().getID());
+            out.println("PRODID:-//UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+"/UniTime Personal Schedule//NONSGML v1.0//EN");
+            for (Iterator i=DepartmentalInstructor.getAllForInstructor(instructor, instructor.getDepartment().getSession().getUniqueId()).iterator();i.hasNext();) {
+                DepartmentalInstructor di = (DepartmentalInstructor)i.next();
+                for (Iterator j=di.getClasses().iterator();j.hasNext();) {
+                    ClassInstructor ci = (ClassInstructor)j.next();
+                    if (ci.getClassInstructing().getEvent()!=null) {
+                        for (Iterator k=ci.getClassInstructing().getEvent().getMeetings().iterator();k.hasNext();) {
+                            Meeting meeting = (Meeting)k.next();
+                            out.println("BEGIN:VEVENT");
+                            out.println("UID:m"+meeting.getUniqueId());
+                            out.println("DTSTART:"+df.format(meeting.getStartTime())+"T"+tf.format(meeting.getStartTime())+"Z");
+                            out.println("DTEND:"+df.format(meeting.getStopTime())+"T"+tf.format(meeting.getStopTime())+"Z");
+                            out.println("SUMMARY:"+meeting.getEvent().getEventName()+" ("+meeting.getEvent().getEventTypeLabel()+")");
+                            if (meeting.getLocation()!=null)
+                                out.println("LOCATION:"+meeting.getLocation().getLabel());
+                            out.println("END:VEVENT");
+                        }
+                    }
+                }
+            }
+            for (Exam exam: exams) {
+                if (exam.getAssignedPeriod()==null) continue;
+                out.println("BEGIN:VEVENT");
+                out.println("UID:x"+exam.getUniqueId());
+                out.println("DTSTART:"+df.format(exam.getAssignedPeriod().getStartTime())+"T"+tf.format(exam.getAssignedPeriod().getStartTime())+"Z");
+                Calendar endTime = Calendar.getInstance(); endTime.setTime(exam.getAssignedPeriod().getStartTime());
+                endTime.add(Calendar.MINUTE, exam.getLength());
+                out.println("DTEND:"+df.format(endTime.getTime())+"T"+tf.format(endTime.getTime())+"Z");
+                out.println("SUMMARY:"+exam.getLabel()+" ("+Exam.sExamTypes[exam.getExamType()]+" Exam)");
+                //out.println("DESCRIPTION:"+exam.getExamName()+" ("+Exam.sExamTypes[exam.getExamType()]+" Exam)");
+                if (!exam.getAssignedRooms().isEmpty()) {
+                    String rooms = "";
+                    for (Iterator i=new TreeSet(exam.getAssignedRooms()).iterator();i.hasNext();) {
+                        Location location = (Location)i.next();
+                        if (rooms.length()>0) rooms+=", ";
+                        rooms+=location.getLabel();
+                    }
+                    out.println("LOCATION:"+rooms);
+                }
+                out.println("END:VEVENT");                
+            }
+        } finally {
+            if (out!=null) { out.flush(); out.close(); }
+        }
     }
 }
