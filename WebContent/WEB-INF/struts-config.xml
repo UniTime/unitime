@@ -130,6 +130,7 @@
 	  <form-bean name="personalizedExamReportForm" type="org.unitime.timetable.form.PersonalizedExamReportForm" />
 	  <form-bean name="roomAvailabilityForm" type="org.unitime.timetable.form.RoomAvailabilityForm" />
 	  <form-bean name="eventAddForm" type="org.unitime.timetable.form.EventAddForm" />	
+	  <form-bean name="eventRoomAvailabilityForm" type="org.unitime.timetable.form.EventRoomAvailabilityForm" />
    </form-beans>
 
    <global-exceptions>
@@ -2232,6 +2233,20 @@
     	<forward
     		name="show"
     		path="eventAddTile"
+    		redirect="true" />
+    </action>
+
+    <action
+    	path="/eventRoomAvailability"
+    	type="org.unitime.timetable.action.EventRoomAvailabilityAction"
+    	attribute="eventRoomAvailabilityForm"
+    	input="eventRoomAvailabilityTile"
+    	name="eventRoomAvailabilityForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+    		name="show"
+    		path="eventRoomAvailabilityTile"
     		redirect="true" />
     </action>
 
