@@ -3,11 +3,9 @@ package org.unitime.timetable.reports.exam;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
-import java.util.Locale;
 import java.util.TreeSet;
 import java.util.Vector;
 
@@ -15,13 +13,13 @@ import net.sf.cpsolver.ifs.util.ToolBox;
 
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.BuildingPref;
+import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseOfferingReservation;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DistributionObject;
 import org.unitime.timetable.model.DistributionPref;
-import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.ExamPeriodPref;
@@ -128,23 +126,6 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
         return "";
     }
     
-    public boolean isFullTerm(Event classEvent) {
-        if (classEvent!=null && !classEvent.getMeetings().isEmpty()) {
-            TreeSet meetings = new TreeSet(classEvent.getMeetings());
-            Meeting first = (Meeting)meetings.first();
-            Meeting last = (Meeting)meetings.last();
-            Calendar c = Calendar.getInstance(Locale.US);
-            c.setTime(getSession().getSessionBeginDateTime());
-            c.add(Calendar.WEEK_OF_YEAR, 2);
-            if (first.getMeetingDate().compareTo(c.getTime())>=0) return false;  
-            c.setTime(getSession().getClassesEndDateTime());
-            c.add(Calendar.WEEK_OF_YEAR, -2);
-            if (last.getMeetingDate().compareTo(c.getTime())<=0) return false;
-            return true;
-        }
-        return false;
-    }
-    
     public String getMeetWith(Class_ clazz, Vector<Class_> exclude) {
         TreeSet<Class_> classes = new TreeSet(new Comparator<Class_>() {
             public int compare(Class_ c1, Class_ c2) {
@@ -242,7 +223,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
             if (hasCourseExam && !hasSectionExam) message = ""; // Has other exam
             else if (!hasSectionExam && !same.firstElement().getSchedulingSubpart().getItype().isOrganized()) message = "Not organized instructional type";
             else {
-                Event classEvent = same.firstElement().getEvent();
+                ClassEvent classEvent = same.firstElement().getEvent();
                 if (classEvent==null || classEvent.getMeetings().isEmpty()) {
                     message = "Class not organized";
                 } else if (!isFullTerm(classEvent)) {
