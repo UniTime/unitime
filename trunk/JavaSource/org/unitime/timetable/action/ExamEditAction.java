@@ -35,6 +35,7 @@ import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.SolverParameterDef;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
@@ -297,9 +298,12 @@ public class ExamEditAction extends PreferencesAction {
                 frm.addExamOwner((ExamOwner)i.next());
         } else {
             try {
-                TreeSet periods = ExamPeriod.findAll(request, Exam.sExamTypeFinal);
+                TreeSet periods = ExamPeriod.findAll(request, (frm.getExamType()==null?Exam.sExamTypeFinal:frm.getExamType()));
                 if (!periods.isEmpty())
                     frm.setLength(Constants.SLOT_LENGTH_MIN*((ExamPeriod)periods.first()).getLength());
+                SolverParameterDef maxRoomsParam = SolverParameterDef.findByName("Exams.MaxRooms");
+                if (maxRoomsParam!=null && maxRoomsParam.getDefault()!=null) 
+                    frm.setMaxNbrRooms(Integer.valueOf(maxRoomsParam.getDefault()));
             } catch (Exception e) {}
         }
         
