@@ -14,6 +14,7 @@ public class ExamRoomInfo implements Serializable, Comparable<ExamRoomInfo>{
     private String iName = null;
     private int iPreference = 0;
     private int iCapacity, iExamCapacity = 0;
+    private int iX = -1, iY = -1;
     private transient Location iLocation = null;
     
     public ExamRoomInfo(ExamRoom room, int preference) {
@@ -22,6 +23,7 @@ public class ExamRoomInfo implements Serializable, Comparable<ExamRoomInfo>{
         iCapacity = room.getSize();
         iExamCapacity = room.getAltSize();
         iPreference = preference;
+        iX = room.getCoordX(); iY = room.getCoordY();
     }
     
     public ExamRoomInfo(Location location, int preference) {
@@ -31,6 +33,8 @@ public class ExamRoomInfo implements Serializable, Comparable<ExamRoomInfo>{
         iCapacity = location.getCapacity();
         iExamCapacity = (location.getExamCapacity()==null?location.getCapacity()/2:location.getExamCapacity());
         iPreference = preference;
+        iX = (location.getCoordinateX()==null?-1:location.getCoordinateX().intValue());
+        iY = (location.getCoordinateY()==null?-1:location.getCoordinateY().intValue());
     }
     
     public Long getLocationId() { return iId; }
@@ -71,4 +75,15 @@ public class ExamRoomInfo implements Serializable, Comparable<ExamRoomInfo>{
     public int hashCode() {
         return getLocationId().hashCode();
     }
+    
+    public int getCoordX() { return iX; }
+    public int getCoordY() { return iY; }
+    
+    public int getDistance(ExamRoomInfo other) {
+        if (getCoordX()<0 || getCoordY()<0 || other.getCoordX()<0 || other.getCoordY()<0) return 10000;
+        int dx = getCoordX()-other.getCoordX();
+        int dy = getCoordY()-other.getCoordY();
+        return (int)Math.sqrt(dx*dx+dy*dy);
+    }
+
 }
