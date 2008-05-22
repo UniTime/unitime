@@ -39,6 +39,7 @@ import org.apache.log4j.PropertyConfigurator;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Assignment;
+import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.DepartmentalInstructor;
@@ -84,6 +85,8 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
     protected boolean iDispLimits = true;
     protected Date iSince = null;
     protected boolean iExternal = false;
+    protected boolean iDispFullTermDates = false;
+    protected boolean iFullTermCheckDatePattern = true;
     
     static {
         sRegisteredReports.put("crsn", ScheduleByCourseReport.class);
@@ -121,6 +124,8 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
         iExternal = "true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.external","false"));
         iDispLimits = "true".equals(System.getProperty("verlimit","true"));
         iClassSchedule = "true".equals(System.getProperty("cschedule","true"));
+        iDispFullTermDates = "true".equals(System.getProperty("fullterm","false"));
+        iFullTermCheckDatePattern = "true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.fullterm.checkdp","true"));
         if (System.getProperty("since")!=null) {
             try {
                 iSince = new SimpleDateFormat(System.getProperty("sinceFormat","MM/dd/yy")).parse(System.getProperty("since"));
@@ -143,6 +148,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
     public void setDispLimits(boolean dispLimits) { iDispLimits = dispLimits; }
     public void setClassSchedule(boolean classSchedule) { iClassSchedule = classSchedule; }
     public void setSince(Date since) { iSince = since; }
+    public void setDispFullTermDates(boolean dispFullTermDates) { iDispFullTermDates = dispFullTermDates; }
     public String setRoomCode(String roomCode) {
         if (roomCode==null || roomCode.length()==0) {
             iRoomCodes = null;
@@ -232,6 +238,27 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
             df.format(m.getMeetings().last().getMeetingDate())+" "+m.getDays(DAY_NAMES_SHORT,DAY_NAMES_SHORT);
     }
     
+    public boolean isFullTerm(ClassEvent classEvent) {
+        if (iFullTermCheckDatePattern) {
+            DatePattern dp = classEvent.getClazz().effectiveDatePattern();
+            if (dp!=null) return dp.isDefault();
+        }
+        if (classEvent!=null && !classEvent.getMeetings().isEmpty()) {
+            TreeSet meetings = new TreeSet(classEvent.getMeetings());
+            Meeting first = (Meeting)meetings.first();
+            Meeting last = (Meeting)meetings.last();
+            Calendar c = Calendar.getInstance(Locale.US);
+            c.setTime(getSession().getSessionBeginDateTime());
+            c.add(Calendar.WEEK_OF_YEAR, 2);
+            if (first.getMeetingDate().compareTo(c.getTime())>=0) return false;  
+            c.setTime(getSession().getClassesEndDateTime());
+            c.add(Calendar.WEEK_OF_YEAR, -2);
+            if (last.getMeetingDate().compareTo(c.getTime())<=0) return false;
+            return true;
+        }
+        return false;
+    }
+    
     protected String getMeetingTime(ExamSectionInfo section) {
         String meetingTime = "";
         if (section.getOwner().getOwnerObject() instanceof Class_) {
@@ -240,32 +267,38 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
             Assignment assignment = clazz.getCommittedAssignment();
             TreeSet meetings = (clazz.getEvent()==null?null:new TreeSet(clazz.getEvent().getMeetings()));
             if (meetings!=null && !meetings.isEmpty()) {
-                Date first = ((Meeting)meetings.first()).getMeetingDate();
-                Date last = ((Meeting)meetings.last()).getMeetingDate();
-                meetingTime += dpf.format(first)+" - "+dpf.format(last);
-            } else if (assignment!=null && assignment.getDatePattern()!=null) {
-                DatePattern dp = assignment.getDatePattern();
-                if (dp!=null && !dp.isDefault()) {
-                    if (dp.getType().intValue()==DatePattern.sTypeAlternate)
-                        meetingTime += rpad(dp.getName(),13);
-                    else {
-                        meetingTime += dpf.format(dp.getStartDate())+" - "+dpf.format(dp.getEndDate());
-                    }
-                }
-            } else {
-                meetingTime = rpad("",13);
-            }
-            if (meetings!=null && !meetings.isEmpty()) {
                 int dayCode = getDaysCode(meetings);
                 String days = "";
                 for (int i=0;i<Constants.DAY_CODES.length;i++)
                     if ((dayCode & Constants.DAY_CODES[i])!=0) days += DAY_NAMES_SHORT[i];
-                meetingTime += " "+rpad(days,5);
+                meetingTime += rpad(days,5);
                 Meeting first = (Meeting)meetings.first();
                 meetingTime += " "+lpad(first.startTime(),6)+" - "+lpad(first.stopTime(),6);
             } else if (assignment!=null) {
                 TimeLocation t = assignment.getTimeLocation();
-                meetingTime += " "+rpad(t.getDayHeader(),5)+" "+lpad(t.getStartTimeHeader(),6)+" - "+lpad(t.getEndTimeHeader(),6);
+                meetingTime += rpad(t.getDayHeader(),5)+" "+lpad(t.getStartTimeHeader(),6)+" - "+lpad(t.getEndTimeHeader(),6);
+            } else {
+                meetingTime += rpad("",21);
+            }
+            if (meetings!=null && !meetings.isEmpty()) {
+                Date first = ((Meeting)meetings.first()).getMeetingDate();
+                Date last = ((Meeting)meetings.last()).getMeetingDate();
+                if (!iDispFullTermDates && isFullTerm(clazz.getEvent())) {
+                    meetingTime += rpad("",14);
+                } else {
+                    meetingTime += dpf.format(first)+" - "+dpf.format(last);
+                }
+            } else if (assignment!=null && assignment.getDatePattern()!=null) {
+                DatePattern dp = assignment.getDatePattern();
+                if (dp!=null && !dp.isDefault()) {
+                    if (dp.getType().intValue()==DatePattern.sTypeAlternate)
+                        meetingTime += " "+rpad(dp.getName(),13);
+                    else {
+                        meetingTime += " "+dpf.format(dp.getStartDate())+" - "+dpf.format(dp.getEndDate());
+                    }
+                }
+            } else {
+                meetingTime += rpad("",14);
             }
         }
         return meetingTime;
