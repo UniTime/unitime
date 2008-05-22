@@ -1645,4 +1645,52 @@
 				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamWeights')
 		</plsql>
 	</update>
+	<update version="28" date="22-May-2008" comment="Exam solver parameters update">
+		<mysql into="GID">select uniqueid from %SCHEMA%.solver_parameter_group where name='ExamWeights'</mysql>
+		<mysql into="ORD">select max(ord) from %SCHEMA%.solver_parameter_def where solver_param_group_id=%GID%</mysql>
+		<mysql into="ID">select next_hi from %SCHEMA%.hibernate_unique_key</mysql>
+		<mysql><![CDATA[
+			insert into %SCHEMA%.solver_parameter_def
+			(uniqueid, name, default_value, description, type, ord, visible, solver_param_group_id) values
+ 			(%ID%+0, 'Exams.RoomSplitDistanceWeight', '0.01', 'If an examination in split between two or more rooms, weight for an average distance between these rooms', 'double', %ORD%+1, 1, %GID%),
+			(%ID%+1, 'Exams.LargeSize', '-1', 'Large Exam Penalty: minimal size of a large exam (disabled if -1)', 'integer', %ORD%+2, 1, %GID%),
+			(%ID%+2, 'Exams.LargePeriod', '0.67', 'Large Exam Penalty: first discouraged period = number of periods x this factor', 'double', %ORD%+3, 1, %GID%),
+			(%ID%+3, 'Exams.LargeWeight', '1.0', 'Large Exam Penalty: weight of a large exam that is assigned on or after the first discouraged period', 'double', %ORD%+4, 1, %GID%)
+		]]></mysql>
+		<mysql>
+			update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+4
+		</mysql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Exams.RoomSplitDistanceWeight' as name,
+				'0.01' as default_vale,
+				'If an examination in split between two or more rooms, weight for an average distance between these rooms' as description,
+				'double' as type, 18 as ord, 1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Exams.LargeSize' as name,
+				'-1' as default_vale,
+				'Large Exam Penalty: minimal size of a large exam (disabled if -1)' as description,
+				'integer' as type, 19 as ord, 1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamWeights')
+		</plsql>
+		<plsql><![CDATA[
+			insert into %SCHEMA%.solver_parameter_def (select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Exams.LargePeriod' as name,
+				'0.67' as default_vale,
+				'Large Exam Penalty: first discouraged period = number of periods x this factor' as description,
+				'double' as type, 20 as ord, 1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamWeights')
+		]]></plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Exams.LargeWeight' as name,
+				'1.0' as default_vale,
+				'Large Exam Penalty: weight of a large exam that is assigned on or after the first discouraged period' as description,
+				'double' as type, 21 as ord, 1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamWeights')
+		</plsql>		
+	</update>
 </dbupdate>
