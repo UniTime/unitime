@@ -199,9 +199,11 @@ public class ListSolutionsForm extends ActionForm {
             sInfoKeys.add("Exam Rotation Penalty");
             sInfoKeys.add("Room Penalty");
             sInfoKeys.add("Room Split Penalty");
+            sInfoKeys.add("Room Split Distance Penalty");
             sInfoKeys.add("Room Size Penalty");
             sInfoKeys.add("Not-Original Room Penalty");
             sInfoKeys.add("Distribution Penalty");
+            sInfoKeys.add("Large Exams Penalty");
             sInfoKeys.add("Perturbation Penalty");
 			sInfoKeys.add("Perturbation penalty");
 			sInfoKeys.add("Perturbation variables");
