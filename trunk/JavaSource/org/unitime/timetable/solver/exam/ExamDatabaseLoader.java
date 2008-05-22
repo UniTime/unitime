@@ -129,6 +129,8 @@ public class ExamDatabaseLoader extends ExamLoader {
             loadDistributions();
             if (org.unitime.timetable.model.Exam.sExamTypeMidterm==iExamType)
                 loadAvailabilitiesFromEvents();//loadAvailabilities();
+            if (org.unitime.timetable.model.Exam.sExamTypeMidterm==iExamType)
+                makeupSameRoomConstraints();
             getModel().init();
             checkConsistency();
             assignInitial();
@@ -244,7 +246,10 @@ public class ExamDatabaseLoader extends ExamLoader {
                     0,
                     periodPlacements,
                     findRooms(exam));
-            if (exam.getAvgPeriod()!=null) x.setAveragePeriod(exam.getAvgPeriod());
+            if (org.unitime.timetable.model.Exam.sExamTypeFinal==iExamType) {
+                if (exam.getAvgPeriod()!=null) x.setAveragePeriod(exam.getAvgPeriod());
+                else x.setAveragePeriod(getModel().getPeriods().size()/2);
+            }
             x.setModel(getModel());
             
             int minSize = 0;
@@ -836,6 +841,33 @@ public class ExamDatabaseLoader extends ExamLoader {
             sLog.error(e.getMessage(),e);
             iProgress.warn("Unable to access room availability service, reason:"+e.getMessage());
         } 
-        
+    }
+    
+    private boolean sameOwners(Exam x1, Exam x2) {
+        if (x1.getOwners().isEmpty() || x1.getOwners().size()!=x2.getOwners().size()) return false;
+        for (Enumeration g=x1.getOwners().elements();g.hasMoreElements();) {
+            ExamOwner owner = (ExamOwner)g.nextElement();
+            if (!x2.getOwners().contains(owner)) return false; 
+        }
+        return true;
+    }
+    
+    public void makeupSameRoomConstraints() {
+        iProgress.setPhase("Posting same rooms...", getModel().variables().size());
+        long dc = 0;
+        for (Enumeration e=getModel().variables().elements();e.hasMoreElements();) {
+            Exam first = (Exam)e.nextElement();
+            iProgress.incProgress();
+            for (Enumeration f=getModel().variables().elements();f.hasMoreElements();) {
+                Exam second = (Exam)f.nextElement();
+                if (first.getId()>=second.getId() || !sameOwners(first,second)) continue;
+                iProgress.debug("Posting same room constraint between "+first.getName()+" and "+second.getName());
+                ExamDistributionConstraint constraint = new ExamDistributionConstraint(--dc, ExamDistributionConstraint.sDistSameRoom, false, 4);
+                constraint.addVariable(first);
+                constraint.addVariable(second);
+                getModel().addConstraint(constraint);
+                getModel().getDistributionConstraints().add(constraint);
+            }
+        }
     }
 }
