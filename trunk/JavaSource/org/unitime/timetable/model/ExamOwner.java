@@ -570,7 +570,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                 "select e.student.uniqueId, m from ClassEvent ce inner join ce.meetings m inner join ce.clazz.studentEnrollments f, StudentClassEnrollment e inner join e.clazz c, ExamPeriod p " +
                 "where c.uniqueId = :examOwnerId and e.student=f.student and "+
                 "p.uniqueId=:periodId and p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
-                "p.session=co.subjectArea.session and p.session.examBeginDate+p.dateOffset = m.meetingDate")
+                "p.session.examBeginDate+p.dateOffset = m.meetingDate")
                 .setLong("examOwnerId", getOwnerId())
                 .setInteger("travelTime", Constants.EXAM_TRAVEL_TIME_SLOTS)
                 .setLong("periodId", periodId)
@@ -588,7 +588,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "select e.student.uniqueId, m from ClassEvent ce inner join ce.meetings m inner join ce.clazz.studentEnrollments f, StudentClassEnrollment e inner join e.clazz c, ExamPeriod p " +
                     "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :examOwnerId and e.student=f.student and "+
                     "p.uniqueId=:periodId and p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
-                    "p.session=co.subjectArea.session and p.session.examBeginDate+p.dateOffset = m.meetingDate")
+                    "p.session.examBeginDate+p.dateOffset = m.meetingDate")
                     .setLong("examOwnerId", getOwnerId())
                     .setInteger("travelTime", Constants.EXAM_TRAVEL_TIME_SLOTS)
                     .setLong("periodId", periodId)
@@ -606,7 +606,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "select e.student.uniqueId, m from ClassEvent ce inner join ce.meetings m inner join ce.clazz.studentEnrollments f, StudentClassEnrollment e inner join e.courseOffering co, ExamPeriod p " +
                     "where co.uniqueId = :examOwnerId and e.student=f.student and "+
                     "p.uniqueId=:periodId and p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
-                    "p.session=co.subjectArea.session and p.session.examBeginDate+p.dateOffset = m.meetingDate")
+                    "p.session.examBeginDate+p.dateOffset = m.meetingDate")
                     .setLong("examOwnerId", getOwnerId())
                     .setInteger("travelTime", Constants.EXAM_TRAVEL_TIME_SLOTS)
                     .setLong("periodId", periodId)
@@ -624,7 +624,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "select e.student.uniqueId, m from ClassEvent ce inner join ce.meetings m inner join ce.clazz.studentEnrollments f, StudentClassEnrollment e inner join e.courseOffering co, ExamPeriod p " +
                     "where co.instructionalOffering.uniqueId = :examOwnerId and e.student=f.student and "+
                     "p.uniqueId=:periodId and p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
-                    "p.session=co.subjectArea.session and p.session.examBeginDate+p.dateOffset = m.meetingDate")
+                    "p.session.examBeginDate+p.dateOffset = m.meetingDate")
                     .setLong("examOwnerId", getOwnerId())
                     .setInteger("travelTime", Constants.EXAM_TRAVEL_TIME_SLOTS)
                     .setLong("periodId", periodId)
