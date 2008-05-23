@@ -1060,5 +1060,120 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 setLong("examId", getUniqueId()).
                 setCacheable(true).uniqueResult();
     }
+    
+    public void updateConflicts(Session hibSession) throws Exception {
+        Transaction tx = null;
+        try {
+            if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
+                tx = hibSession.beginTransaction();
+            
+            HashSet otherExams = new HashSet();
+            
+            for (Iterator j=getConflicts().iterator();j.hasNext();) {
+                ExamConflict conf = (ExamConflict)j.next();
+                for (Iterator i=conf.getExams().iterator();i.hasNext();) {
+                    Exam x = (Exam)i.next();
+                    if (!x.equals(this)) {
+                        x.getConflicts().remove(conf);
+                        otherExams.add(x);
+                    }
+                }
+                hibSession.delete(conf);
+                j.remove();
+            }
+            
+            ExamAssignmentInfo assignment = new ExamAssignmentInfo(this, false);
+            
+            for (Iterator i=assignment.getDirectConflicts().iterator();i.hasNext();) {
+                ExamAssignmentInfo.DirectConflict dc = (ExamAssignmentInfo.DirectConflict)i.next();
+                if (dc.getOtherExam()==null) continue;
+                ExamConflict conf = new ExamConflict();
+                conf.setConflictType(ExamConflict.sConflictTypeDirect);
+                conf.setStudents(getStudents(hibSession, dc.getStudents()));
+                conf.setNrStudents(conf.getStudents().size());
+                hibSession.save(conf);
+                getConflicts().add(conf);
+                Exam other = dc.getOtherExam().getExam(hibSession);
+                other.getConflicts().add(conf);
+                otherExams.add(other);
+            }
+            for (Iterator i=assignment.getBackToBackConflicts().iterator();i.hasNext();) {
+                ExamAssignmentInfo.BackToBackConflict btb = (ExamAssignmentInfo.BackToBackConflict)i.next();
+                ExamConflict conf = new ExamConflict();
+                conf.setConflictType(btb.isDistance()?ExamConflict.sConflictTypeBackToBackDist:ExamConflict.sConflictTypeBackToBack);
+                conf.setDistance(btb.getDistance());
+                conf.setStudents(getStudents(hibSession, btb.getStudents()));
+                conf.setNrStudents(conf.getStudents().size());
+                hibSession.save(conf);
+                getConflicts().add(conf);
+                Exam other = btb.getOtherExam().getExam(hibSession);
+                other.getConflicts().add(conf);
+                otherExams.add(other);
+            }
+            for (Iterator i=assignment.getMoreThanTwoADaysConflicts().iterator();i.hasNext();) {
+                ExamAssignmentInfo.MoreThanTwoADayConflict m2d = (ExamAssignmentInfo.MoreThanTwoADayConflict)i.next();
+                ExamConflict conf = new ExamConflict();
+                conf.setConflictType(ExamConflict.sConflictTypeMoreThanTwoADay);
+                conf.setStudents(getStudents(hibSession, m2d.getStudents()));
+                conf.setNrStudents(conf.getStudents().size());
+                hibSession.save(conf);
+                getConflicts().add(conf);
+                for (Iterator j=m2d.getOtherExams().iterator();j.hasNext();) {
+                    Exam otherExam = (Exam)((ExamInfo)j.next()).getExam(hibSession);
+                    otherExam.getConflicts().add(conf);
+                    otherExams.add(otherExam);
+                }
+            }
+            for (Iterator i=assignment.getInstructorDirectConflicts().iterator();i.hasNext();) {
+                ExamAssignmentInfo.DirectConflict dc = (ExamAssignmentInfo.DirectConflict)i.next();
+                if (dc.getOtherExam()==null) continue;
+                ExamConflict conf = new ExamConflict();
+                conf.setConflictType(ExamConflict.sConflictTypeDirect);
+                conf.setStudents(getInstructors(hibSession, dc.getStudents()));
+                conf.setNrStudents(conf.getStudents().size());
+                hibSession.save(conf);
+                getConflicts().add(conf);
+                Exam other = dc.getOtherExam().getExam(hibSession);
+                other.getConflicts().add(conf);
+                otherExams.add(other);
+            }
+            for (Iterator i=assignment.getInstructorBackToBackConflicts().iterator();i.hasNext();) {
+                ExamAssignmentInfo.BackToBackConflict btb = (ExamAssignmentInfo.BackToBackConflict)i.next();
+                ExamConflict conf = new ExamConflict();
+                conf.setConflictType(btb.isDistance()?ExamConflict.sConflictTypeBackToBackDist:ExamConflict.sConflictTypeBackToBack);
+                conf.setDistance(btb.getDistance());
+                conf.setStudents(getInstructors(hibSession, btb.getStudents()));
+                conf.setNrStudents(conf.getStudents().size());
+                hibSession.save(conf);
+                getConflicts().add(conf);
+                Exam other = btb.getOtherExam().getExam(hibSession);
+                other.getConflicts().add(conf);
+                otherExams.add(other);
+            }
+            for (Iterator i=assignment.getInstructorMoreThanTwoADaysConflicts().iterator();i.hasNext();) {
+                ExamAssignmentInfo.MoreThanTwoADayConflict m2d = (ExamAssignmentInfo.MoreThanTwoADayConflict)i.next();
+                ExamConflict conf = new ExamConflict();
+                conf.setConflictType(ExamConflict.sConflictTypeMoreThanTwoADay);
+                conf.setStudents(getInstructors(hibSession, m2d.getStudents()));
+                conf.setNrStudents(conf.getStudents().size());
+                hibSession.save(conf);
+                getConflicts().add(conf);
+                for (Iterator j=m2d.getOtherExams().iterator();j.hasNext();) {
+                    Exam otherExam = (Exam)((ExamInfo)j.next()).getExam(hibSession);
+                    otherExam.getConflicts().add(conf);
+                    otherExams.add(otherExam);
+                }
+            }
+            
+            hibSession.update(this);
+            for (Iterator i=otherExams.iterator();i.hasNext();)
+                hibSession.update((Exam)i.next());
+            
+            if (tx!=null) tx.commit();
+        } catch (Exception e) {
+            if (tx!=null) tx.rollback();
+            throw e;
+        }
+    }
 
 }
