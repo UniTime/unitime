@@ -32,6 +32,7 @@ import java.util.TreeSet;
 import java.util.Vector;
 import java.util.Map.Entry;
 
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
@@ -241,7 +242,15 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
     }
     
     public ExamAssignmentInfo(org.unitime.timetable.model.Exam exam) {
+        this(exam, "true".equals(ApplicationProperties.getProperty("tmtbl.exams.conflicts.cache","true")));
+    }
+    
+    public ExamAssignmentInfo(org.unitime.timetable.model.Exam exam, boolean useCache) {
         super(exam);
+        if (!useCache) {
+            generateConflicts(exam, exam.getStudentExams(), null); 
+            return;
+        }
         if (exam.getConflicts()!=null && !exam.getConflicts().isEmpty()) {
             for (Iterator i=exam.getConflicts().iterator();i.hasNext();) {
                 ExamConflict conf = (ExamConflict)i.next();
