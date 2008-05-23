@@ -92,6 +92,7 @@ public class ExamDatabaseLoader extends ExamLoader {
     private Progress iProgress = null;
     private Hashtable<Long,ExamPeriod> iPeriods = new Hashtable();
     private Hashtable<Long,ExamRoom> iRooms = new Hashtable();
+    private Hashtable<Long,org.unitime.timetable.model.ExamOwner> iOwners = new Hashtable();
     private Hashtable iExams = new Hashtable();
     private Hashtable iInstructors = new Hashtable();
     private Hashtable iStudents = new Hashtable();
@@ -127,8 +128,10 @@ public class ExamDatabaseLoader extends ExamLoader {
             loadExams();
             loadStudents();
             loadDistributions();
+            /*
             if (org.unitime.timetable.model.Exam.sExamTypeMidterm==iExamType)
                 loadAvailabilitiesFromEvents();//loadAvailabilities();
+                */
             if (org.unitime.timetable.model.Exam.sExamTypeMidterm==iExamType)
                 makeupSameRoomConstraints();
             getModel().init();
@@ -256,8 +259,8 @@ public class ExamDatabaseLoader extends ExamLoader {
             Vector<ExamOwner> owners = new Vector();
             for (Iterator j=new TreeSet(exam.getOwners()).iterator();j.hasNext();) {
                 org.unitime.timetable.model.ExamOwner owner = (org.unitime.timetable.model.ExamOwner)j.next();
-                Object ownerObject = owner.getOwnerObject();
                 ExamOwner cs = new ExamOwner(x, owner.getUniqueId(), owner.getLabel());
+                iOwners.put(owner.getUniqueId(), owner);
                 minSize += owner.getLimit();
                 x.getOwners().add(cs);
             }
@@ -845,9 +848,15 @@ public class ExamDatabaseLoader extends ExamLoader {
     
     private boolean sameOwners(Exam x1, Exam x2) {
         if (x1.getOwners().isEmpty() || x1.getOwners().size()!=x2.getOwners().size()) return false;
-        for (Enumeration g=x1.getOwners().elements();g.hasMoreElements();) {
-            ExamOwner owner = (ExamOwner)g.nextElement();
-            if (!x2.getOwners().contains(owner)) return false; 
+        owners: for (Enumeration e=x1.getOwners().elements();e.hasMoreElements();) {
+            ExamOwner o1 = (ExamOwner)e.nextElement();
+            org.unitime.timetable.model.ExamOwner w1 = iOwners.get(o1.getId());
+            for (Enumeration f=x2.getOwners().elements();f.hasMoreElements();) {
+                ExamOwner o2 = (ExamOwner)f.nextElement();
+                org.unitime.timetable.model.ExamOwner w2 = iOwners.get(o2.getId());
+                if (w1.getOwnerType().equals(w2.getOwnerType()) && w1.getOwnerId().equals(w2.getOwnerId())) continue owners; 
+            }
+            return false;
         }
         return true;
     }
