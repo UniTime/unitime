@@ -109,6 +109,7 @@
 			<TD>Parent:</TD>
 			<TD>
 				<html:select property="parent">
+					<html:option value=""></html:option>
 					<html:options collection="<%=ItypeDesc.ITYPE_ATTR_NAME%>" property="itype" labelProperty="desc" />
 				</html:select>
 				&nbsp;<html:errors property="parent"/>
