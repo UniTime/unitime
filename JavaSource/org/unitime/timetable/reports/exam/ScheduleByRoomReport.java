@@ -37,8 +37,10 @@ public class ScheduleByRoomReport extends PdfLegacyExamReport {
             iPeriodPrinted = false;
             setPageName(location.getLabel());
             setCont(location.getLabel());
+            ExamPeriod lastPeriod = null;
             for (Iterator j=periods.iterator();j.hasNext();) {
                 ExamPeriod period = (ExamPeriod)j.next();
+                if (lastPeriod!=null && !lastPeriod.getDateOffset().equals(period.getDateOffset()) && !iNewPage) println("");
                 iStudentPrinted = false;
                 TreeSet<ExamSectionInfo> sections = new TreeSet<ExamSectionInfo>();
                 for (ExamAssignmentInfo exam : getExams()) {
@@ -98,6 +100,7 @@ public class ScheduleByRoomReport extends PdfLegacyExamReport {
                     iPeriodPrinted = !iNewPage;
                     //println("");
                 }
+                lastPeriod = period;
             }
             setCont(null);
             if (i.hasNext()) {
