@@ -35,6 +35,7 @@ import net.sf.cpsolver.ifs.model.Constraint;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamOwner;
+import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.model.dao.ExamOwnerDAO;
@@ -237,6 +238,13 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
             iName = owner.getLabel();
             iStudentIds = null;
         }
+        public ExamSectionInfo(ExamOwner owner, Set<Long> studentIds) {
+            this(owner);
+            if (studentIds!=null) {
+                iNrStudents = studentIds.size();
+                iStudentIds = studentIds;
+            }
+        }
         public Set<Long> getStudentIds() {
             if (iStudentIds==null) iStudentIds = new HashSet<Long>(getOwner().getStudentIds());
             return iStudentIds;
@@ -348,5 +356,12 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
     
     public static ExamInstructorInfo createInstructorInfo(DepartmentalInstructor i) {
         return new ExamInfo().instructorInfo(i);
+    }
+    
+    public boolean isOfSubjectArea(SubjectArea subject) {
+        if (subject==null) return true;
+        for (ExamSectionInfo section: getSections())
+            if (subject.equals(section.getOwner().getCourse().getSubjectArea())) return true;
+        return false;
     }
 }
