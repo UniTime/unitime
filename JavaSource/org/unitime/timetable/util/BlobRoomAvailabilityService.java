@@ -16,6 +16,7 @@ import org.dom4j.io.XMLWriter;
 import org.hibernate.engine.SessionFactoryImplementor;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
+import org.unitime.timetable.model.base._BaseRootDAO;
 import org.unitime.timetable.model.dao._RootDAO;
 
 public class BlobRoomAvailabilityService extends RoomAvailabilityService {
@@ -32,13 +33,18 @@ public class BlobRoomAvailabilityService extends RoomAvailabilityService {
             writer.flush(); writer.close();
             SessionFactoryImplementor hibSessionFactory = (SessionFactoryImplementor)new _RootDAO().getSession().getSessionFactory();
             Connection connection = hibSessionFactory.getConnectionProvider().getConnection();
-            CallableStatement call = connection.prepareCall(iRequestSql);
-            call.setString(1, writer.getBuffer().toString());
-            call.execute();
-            call.close();
-            hibSessionFactory.getConnectionProvider().closeConnection(connection);
+            try {
+                CallableStatement call = connection.prepareCall(iRequestSql);
+                call.setString(1, writer.getBuffer().toString());
+                call.execute();
+                call.close();
+            } finally {
+                hibSessionFactory.getConnectionProvider().closeConnection(connection);
+            }
         } catch (Exception e) {
             sLog.error("Unable to send request: "+e.getMessage(),e);
+        } finally {
+            _RootDAO.closeCurrentThreadSessions();
         }
     }
     
@@ -46,12 +52,16 @@ public class BlobRoomAvailabilityService extends RoomAvailabilityService {
         try {
             SessionFactoryImplementor hibSessionFactory = (SessionFactoryImplementor)new _RootDAO().getSession().getSessionFactory();
             Connection connection = hibSessionFactory.getConnectionProvider().getConnection();
-            CallableStatement call = connection.prepareCall(iResponseSql);
-            call.registerOutParameter(1, java.sql.Types.CLOB);
-            call.execute();
-            String response = call.getString(1);
-            call.close();
-            hibSessionFactory.getConnectionProvider().closeConnection(connection);
+            String response = null;
+            try {
+                CallableStatement call = connection.prepareCall(iResponseSql);
+                call.registerOutParameter(1, java.sql.Types.CLOB);
+                call.execute();
+                response = call.getString(1);
+                call.close();
+            } finally {
+                hibSessionFactory.getConnectionProvider().closeConnection(connection);
+            }
             if (response==null || response.length()==0) return null;
             StringReader reader = new StringReader(response);
             Document document = (new SAXReader()).read(reader);
@@ -60,6 +70,8 @@ public class BlobRoomAvailabilityService extends RoomAvailabilityService {
         } catch (Exception e) {
             sLog.error("Unable to recieve response: "+e.getMessage(),e);
             return null;
+        } finally {
+            _RootDAO.closeCurrentThreadSessions();
         }
     }
 }
