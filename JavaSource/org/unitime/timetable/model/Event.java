@@ -21,6 +21,7 @@ package org.unitime.timetable.model;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -139,10 +140,14 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
 	
 	public TreeSet<MultiMeeting> getMultiMeetings() {
 	    TreeSet<MultiMeeting> ret = new TreeSet<MultiMeeting>();
-	    TreeSet<Meeting> meetings = new TreeSet<Meeting>();
+	    HashSet<Meeting> meetings = new HashSet<Meeting>();
 	    meetings.addAll(getMeetings());
 	    while (!meetings.isEmpty()) {
-	        Meeting meeting = meetings.first(); meetings.remove(meeting);
+	        Meeting meeting = null;
+	        for (Meeting m : meetings)
+	            if (meeting==null || meeting.getMeetingDate().compareTo(m.getMeetingDate())>0)
+	                meeting = m;
+	        meetings.remove(meeting);
 	        Hashtable<Long,Meeting> similar = new Hashtable(); 
 	        TreeSet<Integer> dow = new TreeSet<Integer>(); dow.add(meeting.getDayOfWeek()); 
 	        for (Meeting m : meetings) {
@@ -227,4 +232,5 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
 	    }
 	}
 	
+	public Session getSession() { return null; }
 }
