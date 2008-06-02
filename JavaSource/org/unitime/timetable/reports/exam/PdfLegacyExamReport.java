@@ -3,10 +3,12 @@ package org.unitime.timetable.reports.exam;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -16,7 +18,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
-import java.util.Vector;
 
 import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
@@ -52,9 +53,11 @@ import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.Event.MultiMeeting;
+import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.reports.PdfLegacyReport;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
+import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.Parameters;
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamInstructorInfo;
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamSectionInfo;
 import org.unitime.timetable.util.Constants;
@@ -87,6 +90,8 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
     protected boolean iExternal = false;
     protected boolean iDispFullTermDates = false;
     protected boolean iFullTermCheckDatePattern = true;
+    
+    protected static DecimalFormat sDF = new DecimalFormat("0.0");
     
     static {
         sRegisteredReports.put("crsn", ScheduleByCourseReport.class);
@@ -248,15 +253,19 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
         }
         if (classEvent!=null && !classEvent.getMeetings().isEmpty()) {
             TreeSet meetings = new TreeSet(classEvent.getMeetings());
-            Meeting first = (Meeting)meetings.first();
-            Meeting last = (Meeting)meetings.last();
+            Date first = null, last = null;
+            for (Iterator i=classEvent.getMeetings().iterator();i.hasNext();) {
+                Meeting m = (Meeting)i.next();
+                if (first==null || first.compareTo(m.getMeetingDate())>0) first = m.getMeetingDate();
+                if (last==null || last.compareTo(m.getMeetingDate())<0) last = m.getMeetingDate();
+            }
             Calendar c = Calendar.getInstance(Locale.US);
             c.setTime(getSession().getSessionBeginDateTime());
             c.add(Calendar.WEEK_OF_YEAR, 2);
-            if (first.getMeetingDate().compareTo(c.getTime())>=0) return false;  
+            if (first.compareTo(c.getTime())>=0) return false;  
             c.setTime(getSession().getClassesEndDateTime());
             c.add(Calendar.WEEK_OF_YEAR, -2);
-            if (last.getMeetingDate().compareTo(c.getTime())<=0) return false;
+            if (last.compareTo(c.getTime())<=0) return false;
             return true;
         }
         return false;
@@ -568,6 +577,162 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
             }
     }
     
+    public static TreeSet<ExamAssignmentInfo> loadExams(Long sessionId, int examType, boolean assgn) throws Exception {
+        sLog.info("Loading exams...");
+        long t0 = System.currentTimeMillis();
+        Hashtable<Long, Exam> exams = new Hashtable();
+        for (Iterator i=new ExamDAO().getSession().createQuery(
+                "select x from Exam x where x.session.uniqueId=:sessionId and x.examType=:examType"
+                ).setLong("sessionId", sessionId).setInteger("examType", examType).setCacheable(true).list().iterator();i.hasNext();) {
+            Exam exam = (Exam)i.next();
+            exams.put(exam.getUniqueId(), exam);
+        }
+        sLog.info("  Fetching related objects (class)...");
+        new ExamDAO().getSession().createQuery(
+                "select c from Class_ c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType=:examType and o.ownerType=:classType and c.uniqueId=o.ownerId")
+                .setLong("sessionId", sessionId)
+                .setInteger("examType", examType)
+                .setInteger("classType", ExamOwner.sOwnerTypeClass).setCacheable(true).list();
+        sLog.info("  Fetching related objects (config)...");
+        new ExamDAO().getSession().createQuery(
+                "select c from InstrOfferingConfig c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType=:examType and o.ownerType=:configType and c.uniqueId=o.ownerId")
+                .setLong("sessionId", sessionId)
+                .setInteger("examType", examType)
+                .setInteger("configType", ExamOwner.sOwnerTypeConfig).setCacheable(true).list();
+        sLog.info("  Fetching related objects (course)...");
+        new ExamDAO().getSession().createQuery(
+                "select c from CourseOffering c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType=:examType and o.ownerType=:courseType and c.uniqueId=o.ownerId")
+                .setLong("sessionId", sessionId)
+                .setInteger("examType", examType)
+                .setInteger("courseType", ExamOwner.sOwnerTypeCourse).setCacheable(true).list();
+        sLog.info("  Fetching related objects (offering)...");
+        new ExamDAO().getSession().createQuery(
+                "select c from InstructionalOffering c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType=:examType and o.ownerType=:offeringType and c.uniqueId=o.ownerId")
+                .setLong("sessionId", sessionId)
+                .setInteger("examType", examType)
+                .setInteger("offeringType", ExamOwner.sOwnerTypeOffering).setCacheable(true).list();
+        Hashtable<Long,Set<Long>> owner2students = new Hashtable();
+        Hashtable<Long,Set<Exam>> student2exams = new Hashtable();
+        if (assgn) {
+            sLog.info("  Loading students (class)...");
+            for (Iterator i=
+                new ExamDAO().getSession().createQuery(
+                "select x.uniqueId, o.uniqueId, e.student.uniqueId from "+
+                "Exam x inner join x.owners o, "+
+                "StudentClassEnrollment e inner join e.clazz c "+
+                "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
+                "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeClass+" and "+
+                "o.ownerId=c.uniqueId").setLong("sessionId", sessionId).setInteger("examType", examType).setCacheable(true).list().iterator();i.hasNext();) {
+                    Object[] o = (Object[])i.next();
+                    Long examId = (Long)o[0];
+                    Long ownerId = (Long)o[1];
+                    Long studentId = (Long)o[2];
+                    Set<Long> studentsOfOwner = owner2students.get(ownerId);
+                    if (studentsOfOwner==null) {
+                        studentsOfOwner = new HashSet<Long>();
+                        owner2students.put(ownerId, studentsOfOwner);
+                    }
+                    studentsOfOwner.add(studentId);
+                    Set<Exam> examsOfStudent = student2exams.get(studentId);
+                    if (examsOfStudent==null) { 
+                        examsOfStudent = new HashSet<Exam>();
+                        student2exams.put(studentId, examsOfStudent);
+                    }
+                    examsOfStudent.add(exams.get(examId));
+                }
+            sLog.info("  Loading students (config)...");
+            for (Iterator i=
+                new ExamDAO().getSession().createQuery(
+                        "select x.uniqueId, o.uniqueId, e.student.uniqueId from "+
+                        "Exam x inner join x.owners o, "+
+                        "StudentClassEnrollment e inner join e.clazz c " +
+                        "inner join c.schedulingSubpart.instrOfferingConfig ioc " +
+                        "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
+                        "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeConfig+" and "+
+                        "o.ownerId=ioc.uniqueId").setLong("sessionId", sessionId).setInteger("examType", examType).setCacheable(true).list().iterator();i.hasNext();) {
+                Object[] o = (Object[])i.next();
+                Long examId = (Long)o[0];
+                Long ownerId = (Long)o[1];
+                Long studentId = (Long)o[2];
+                Set<Long> studentsOfOwner = owner2students.get(ownerId);
+                if (studentsOfOwner==null) {
+                    studentsOfOwner = new HashSet<Long>();
+                    owner2students.put(ownerId, studentsOfOwner);
+                }
+                studentsOfOwner.add(studentId);
+                Set<Exam> examsOfStudent = student2exams.get(studentId);
+                if (examsOfStudent==null) { 
+                    examsOfStudent = new HashSet<Exam>();
+                    student2exams.put(studentId, examsOfStudent);
+                }
+                examsOfStudent.add(exams.get(examId));
+            }
+            sLog.info("  Loading students (course)...");
+            for (Iterator i=
+                new ExamDAO().getSession().createQuery(
+                        "select x.uniqueId, o.uniqueId, e.student.uniqueId from "+
+                        "Exam x inner join x.owners o, "+
+                        "StudentClassEnrollment e inner join e.courseOffering co " +
+                        "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
+                        "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeCourse+" and "+
+                        "o.ownerId=co.uniqueId").setLong("sessionId", sessionId).setInteger("examType", examType).setCacheable(true).list().iterator();i.hasNext();) {
+                Object[] o = (Object[])i.next();
+                Long examId = (Long)o[0];
+                Long ownerId = (Long)o[1];
+                Long studentId = (Long)o[2];
+                Set<Long> studentsOfOwner = owner2students.get(ownerId);
+                if (studentsOfOwner==null) {
+                    studentsOfOwner = new HashSet<Long>();
+                    owner2students.put(ownerId, studentsOfOwner);
+                }
+                studentsOfOwner.add(studentId);
+                Set<Exam> examsOfStudent = student2exams.get(studentId);
+                if (examsOfStudent==null) { 
+                    examsOfStudent = new HashSet<Exam>();
+                    student2exams.put(studentId, examsOfStudent);
+                }
+                examsOfStudent.add(exams.get(examId));
+            }
+            sLog.info("  Loading students (offering)...");
+            for (Iterator i=
+                new ExamDAO().getSession().createQuery(
+                        "select x.uniqueId, o.uniqueId, e.student.uniqueId from "+
+                        "Exam x inner join x.owners o, "+
+                        "StudentClassEnrollment e inner join e.courseOffering.instructionalOffering io " +
+                        "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
+                        "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeOffering+" and "+
+                        "o.ownerId=io.uniqueId").setLong("sessionId", sessionId).setInteger("examType", examType).setCacheable(true).list().iterator();i.hasNext();) {
+                Object[] o = (Object[])i.next();
+                Long examId = (Long)o[0];
+                Long ownerId = (Long)o[1];
+                Long studentId = (Long)o[2];
+                Set<Long> studentsOfOwner = owner2students.get(ownerId);
+                if (studentsOfOwner==null) {
+                    studentsOfOwner = new HashSet<Long>();
+                    owner2students.put(ownerId, studentsOfOwner);
+                }
+                studentsOfOwner.add(studentId);
+                Set<Exam> examsOfStudent = student2exams.get(studentId);
+                if (examsOfStudent==null) { 
+                    examsOfStudent = new HashSet<Exam>();
+                    student2exams.put(studentId, examsOfStudent);
+                }
+                examsOfStudent.add(exams.get(examId));
+            }
+        }
+        Parameters p = new Parameters(sessionId, examType);
+        sLog.info("  Creating exam assignments...");
+        TreeSet<ExamAssignmentInfo> ret = new TreeSet();
+        for (Enumeration<Exam> e = exams.elements(); e.hasMoreElements();) {
+            Exam exam = (Exam)e.nextElement();
+            ExamAssignmentInfo info = (assgn?new ExamAssignmentInfo(exam, owner2students, student2exams, p):new ExamAssignmentInfo(exam, null, null, null, null));
+            ret.add(info);
+        }
+        long t1 = System.currentTimeMillis();
+        sLog.info("Exams loaded in "+sDF.format((t1-t0)/1000.0)+"s.");
+        return ret;
+    }
+    
     public static void main(String[] args) {
         try {
             Properties props = new Properties();
@@ -601,12 +766,12 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
             if ("text".equals(System.getProperty("mode"))) mode = sModeText;
             if ("ledger".equals(System.getProperty("mode"))) mode = sModeLedger;
             sLog.info("Exam type: "+Exam.sExamTypes[examType]);
-            sLog.info("Loading exams...");
             boolean perSubject = "true".equals(System.getProperty("persubject","false"));
-            HashSet<SubjectArea> subjects = null;
+            TreeSet<SubjectArea> subjects = null;
             if (System.getProperty("subject")!=null) {
+                sLog.info("Loading subjects...");
                 perSubject = true;
-                subjects = new HashSet();
+                subjects = new TreeSet();
                 String inSubjects = "";
                 for (StringTokenizer s=new StringTokenizer(System.getProperty("subject"),",");s.hasMoreTokens();)
                     inSubjects += "'"+s.nextToken()+"'"+(s.hasMoreTokens()?",":"");
@@ -614,9 +779,16 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                         "select sa from SubjectArea sa where sa.session.uniqueId=:sessionId and sa.subjectAreaAbbreviation in ("+inSubjects+")"
                         ).setLong("sessionId", session.getUniqueId()).list());
             }
-            Vector<ExamAssignmentInfo> exams = new Vector<ExamAssignmentInfo>();
-            Hashtable<SubjectArea,Vector<ExamAssignmentInfo>> examsPerSubj = new Hashtable();
+            TreeSet<ExamAssignmentInfo> exams = loadExams(session.getUniqueId(), examType, assgn);
             if (subjects==null) {
+                subjects = new TreeSet();
+                for (ExamAssignmentInfo exam: exams)
+                    for (ExamSectionInfo section: exam.getSections())
+                        subjects.add(section.getOwner().getCourse().getSubjectArea());
+            }
+            /*
+            if (subjects==null) {
+                if (perSubject) examsPerSubj = new Hashtable();
                 for (Iterator i=Exam.findAll(session.getUniqueId(),examType).iterator();i.hasNext();) {
                     ExamAssignmentInfo exam = (assgn?new ExamAssignmentInfo((Exam)i.next()):new ExamAssignmentInfo((Exam)i.next(),null,null,null,null));
                     exams.add(exam);
@@ -641,6 +813,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                 }
                 examsPerSubj.put(subject, examsOfThisSubject);
             }
+            */
             Hashtable<String,File> output = new Hashtable();
             Hashtable<SubjectArea,Hashtable<String,File>> outputPerSubject = new Hashtable();
             Hashtable<ExamInstructorInfo,File> ireports = null;
@@ -651,28 +824,22 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                 if (reportClass==null) continue;
                 sLog.info("Report: "+reportClass.getName().substring(reportClass.getName().lastIndexOf('.')+1));
                 if (perSubject) {
-                    for (Map.Entry<SubjectArea,Vector<ExamAssignmentInfo>> entry : examsPerSubj.entrySet()) {
+                    for (SubjectArea subject : subjects) {
                         File file = new File(new File(ApplicationProperties.getProperty("output",".")),
-                            session.getAcademicTerm()+session.getYear()+(examType==Exam.sExamTypeMidterm?"evn":"fin")+"_"+reportName+"_"+entry.getKey().getSubjectAreaAbbreviation()+(mode==sModeText?".txt":".pdf"));
-                        sLog.info("Generating report "+file+" ("+entry.getKey().getSubjectAreaAbbreviation()+") ...");
-                        PdfLegacyExamReport report = (PdfLegacyExamReport)reportClass.getConstructor(int.class, File.class, Session.class, int.class, SubjectArea.class, Collection.class).newInstance(mode, file, session, examType, entry.getKey(), entry.getValue());
+                            session.getAcademicTerm()+session.getYear()+(examType==Exam.sExamTypeMidterm?"evn":"fin")+"_"+reportName+"_"+subject.getSubjectAreaAbbreviation()+(mode==sModeText?".txt":".pdf"));
+                        long t0 = System.currentTimeMillis();
+                        sLog.info("Generating report "+file+" ("+subject.getSubjectAreaAbbreviation()+") ...");
+                        PdfLegacyExamReport report = (PdfLegacyExamReport)reportClass.getConstructor(int.class, File.class, Session.class, int.class, SubjectArea.class, Collection.class).newInstance(mode, file, session, examType, subject, exams);
                         report.printReport();
                         report.close();
-                        output.put(entry.getKey().getSubjectAreaAbbreviation()+"_"+reportName+"."+(mode==sModeText?"txt":"pdf"),file);
-                        Hashtable<String,File> files = outputPerSubject.get(entry.getKey());
+                        output.put(subject.getSubjectAreaAbbreviation()+"_"+reportName+"."+(mode==sModeText?"txt":"pdf"),file);
+                        Hashtable<String,File> files = outputPerSubject.get(subject);
                         if (files==null) {
-                            files = new Hashtable(); outputPerSubject.put(entry.getKey(),files);
+                            files = new Hashtable(); outputPerSubject.put(subject,files);
                         }
-                        files.put(entry.getKey().getSubjectAreaAbbreviation()+"_"+reportName+"."+(mode==sModeText?"txt":"pdf"),file);
-                    }
-                } else {
-                    File file = new File(new File(ApplicationProperties.getProperty("output",".")),
-                            session.getAcademicTerm()+session.getYear()+(examType==Exam.sExamTypeMidterm?"evn":"fin")+"_"+reportName+(mode==sModeText?".txt":".pdf"));
-                        sLog.info("Generating report "+file+" ...");
-                        PdfLegacyExamReport report = (PdfLegacyExamReport)reportClass.getConstructor(int.class, File.class, Session.class, int.class, SubjectArea.class, Collection.class).newInstance(mode, file, session, examType, null, exams);
-                        report.printReport();
-                        report.close();
-                        output.put(reportName+"."+(mode==sModeText?"txt":"pdf"),file);
+                        files.put(subject.getSubjectAreaAbbreviation()+"_"+reportName+"."+(mode==sModeText?"txt":"pdf"),file);
+                        long t1 = System.currentTimeMillis();
+                        sLog.info("Report "+file+" generated in "+sDF.format((t1-t0)/1000.0)+"s.");
                         if (report instanceof InstructorExamReport && "true".equals(System.getProperty("email.instructors","false"))) {
                             ireports = ((InstructorExamReport)report).printInstructorReports(
                                     mode, session.getAcademicTerm()+session.getYear()+(examType==Exam.sExamTypeMidterm?"evn":"fin"), new InstructorExamReport.FileGenerator() {
@@ -685,11 +852,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                                             }
                                             return file;
                                         }
-                                    }, new InstructorExamReport.InstructorFilter() {
-                                public boolean generate(ExamInstructorInfo instructor, TreeSet<ExamAssignmentInfo> exams) {
-                                    return true;
-                                }
-                            });
+                                    });
                         } else if (report instanceof StudentExamReport && "true".equals(System.getProperty("email.students","false"))) {
                             sreports = ((StudentExamReport)report).printStudentReports(
                                     mode, session.getAcademicTerm()+session.getYear()+(examType==Exam.sExamTypeMidterm?"evn":"fin"), new InstructorExamReport.FileGenerator() {
@@ -702,18 +865,53 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                                             }
                                             return file;
                                         }
-                                    }, new StudentExamReport.StudentFilter() {
-                                public boolean generate(Student student, TreeSet<ExamSectionInfo> sections) {
-                                    return true;
-                                }
-                            });
+                                    });
                         }
+                    }
+                } else {
+                    File file = new File(new File(ApplicationProperties.getProperty("output",".")),
+                            session.getAcademicTerm()+session.getYear()+(examType==Exam.sExamTypeMidterm?"evn":"fin")+"_"+reportName+(mode==sModeText?".txt":".pdf"));
+                    long t0 = System.currentTimeMillis();
+                    sLog.info("Generating report "+file+" ...");
+                    PdfLegacyExamReport report = (PdfLegacyExamReport)reportClass.getConstructor(int.class, File.class, Session.class, int.class, SubjectArea.class, Collection.class).newInstance(mode, file, session, examType, null, exams);
+                    report.printReport();
+                    report.close();
+                    output.put(reportName+"."+(mode==sModeText?"txt":"pdf"),file);
+                    long t1 = System.currentTimeMillis();
+                    sLog.info("Report "+file.getName()+" generated in "+sDF.format((t1-t0)/1000.0)+"s.");
+                    if (report instanceof InstructorExamReport && "true".equals(System.getProperty("email.instructors","false"))) {
+                        ireports = ((InstructorExamReport)report).printInstructorReports(
+                                mode, session.getAcademicTerm()+session.getYear()+(examType==Exam.sExamTypeMidterm?"evn":"fin"), new InstructorExamReport.FileGenerator() {
+                                    public File generate(String prefix, String ext) {
+                                        int idx = 0;
+                                        File file = new File(prefix+"."+ext);
+                                        while (file.exists()) {
+                                            idx++;
+                                            file = new File(prefix+"_"+idx+"."+ext);
+                                        }
+                                        return file;
+                                    }
+                                });
+                    } else if (report instanceof StudentExamReport && "true".equals(System.getProperty("email.students","false"))) {
+                        sreports = ((StudentExamReport)report).printStudentReports(
+                                mode, session.getAcademicTerm()+session.getYear()+(examType==Exam.sExamTypeMidterm?"evn":"fin"), new InstructorExamReport.FileGenerator() {
+                                    public File generate(String prefix, String ext) {
+                                        int idx = 0;
+                                        File file = new File(prefix+"."+ext);
+                                        while (file.exists()) {
+                                            idx++;
+                                            file = new File(prefix+"_"+idx+"."+ext);
+                                        }
+                                        return file;
+                                    }
+                                });
+                    }
                 }
             }
             if ("true".equals(System.getProperty("email","false"))) {
                 sendEmails(session.getAcademicTerm()+session.getYear()+(examType==Exam.sExamTypeMidterm?"evn":"fin"), output, outputPerSubject, ireports, sreports);
             }
-            sLog.info("Done.");
+            sLog.info("All done.");
         } catch (Exception e) {
             sLog.error(e.getMessage(),e);
         }

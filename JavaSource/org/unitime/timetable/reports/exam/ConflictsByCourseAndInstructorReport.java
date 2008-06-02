@@ -13,7 +13,6 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
-import org.unitime.timetable.solver.exam.ui.ExamInfo;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.BackToBackConflict;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.DirectConflict;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.MoreThanTwoADayConflict;
@@ -31,9 +30,10 @@ public class ConflictsByCourseAndInstructorReport extends PdfLegacyExamReport {
     }
     
     public void printReport() throws DocumentException {
-        sLog.debug("  Sorting sections ...");
+        sLog.debug("  Sorting sections...");
         Hashtable<String,TreeSet<ExamSectionInfo>> subject2courseSections = new Hashtable();
-        for (ExamInfo exam : getExams()) {
+        for (ExamAssignmentInfo exam : getExams()) {
+            if (exam.getPeriod()==null) continue;
             for (ExamSectionInfo section : exam.getSections()) {
                 if (getSubjectArea()!=null && !getSubjectArea().getSubjectAreaAbbreviation().equals(section.getSubject())) continue;
                 TreeSet<ExamSectionInfo> sections = subject2courseSections.get(section.getSubject());
@@ -44,6 +44,7 @@ public class ConflictsByCourseAndInstructorReport extends PdfLegacyExamReport {
                 sections.add(section);
             }
         }
+        sLog.debug("  Printing report...");
         setHeader(new String[] {
                 "Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect Date And Time                Name                       Type   Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect Time",
                 "---- ------ "+(iItype?"------ ":"")+"---- ---------------------------- ------------------------- ------ ---- ------ "+(iItype?"------ ":"")+"---- ---------------------"});

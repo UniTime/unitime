@@ -33,6 +33,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 import java.util.Vector;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -52,12 +53,14 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ExamAssignmentReportForm;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
+import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
@@ -69,6 +72,7 @@ import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.BackToBackConflic
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.DirectConflict;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.DistributionConflict;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.MoreThanTwoADayConflict;
+import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.Parameters;
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamInstructorInfo;
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamSectionInfo;
 import org.unitime.timetable.util.Constants;
@@ -104,8 +108,12 @@ public class ExamAssignmentReportAction extends Action {
         if (myForm.getSubjectArea()!=null && myForm.getSubjectArea()!=0) {
             if (solver!=null && solver.getExamType()==myForm.getExamType())
                 assignedExams = solver.getAssignedExams(myForm.getSubjectArea());
-            else
-                assignedExams = Exam.findAssignedExams(sessionId,myForm.getSubjectArea(),myForm.getExamType());
+            else {
+                if ("true".equals(ApplicationProperties.getProperty("tmtbl.exams.conflicts.cache","true")))
+                    assignedExams = Exam.findAssignedExams(sessionId,myForm.getSubjectArea(),myForm.getExamType());
+                else
+                    assignedExams = findAssignedExams(sessionId,myForm.getSubjectArea(),myForm.getExamType());
+            }
         }
         
         WebTable.setOrder(request.getSession(),"examAssignmentReport["+myForm.getReport()+"].ord",request.getParameter("ord"),1);
@@ -134,6 +142,169 @@ public class ExamAssignmentReportAction extends Action {
 
         return mapping.findForward("show");
 	}
+	
+    public static TreeSet<ExamAssignmentInfo> findAssignedExams(Long sessionId, Long subjectAreaId, int examType) throws Exception {
+        Hashtable<Long, Exam> exams = new Hashtable();
+        for (Iterator i=new ExamDAO().getSession().createQuery(
+                "select x from Exam x where x.session.uniqueId=:sessionId and x.examType=:examType"
+                ).setLong("sessionId", sessionId).setInteger("examType", examType).setCacheable(true).list().iterator();i.hasNext();) {
+            Exam exam = (Exam)i.next();
+            exams.put(exam.getUniqueId(), exam);
+        }
+        new ExamDAO().getSession().createQuery(
+                "select c from Class_ c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType=:examType and o.ownerType=:classType and c.uniqueId=o.ownerId")
+                .setLong("sessionId", sessionId)
+                .setInteger("examType", examType)
+                .setInteger("classType", ExamOwner.sOwnerTypeClass).setCacheable(true).list();
+        new ExamDAO().getSession().createQuery(
+                "select c from InstrOfferingConfig c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType=:examType and o.ownerType=:configType and c.uniqueId=o.ownerId")
+                .setLong("sessionId", sessionId)
+                .setInteger("examType", examType)
+                .setInteger("configType", ExamOwner.sOwnerTypeConfig).setCacheable(true).list();
+        new ExamDAO().getSession().createQuery(
+                "select c from CourseOffering c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType=:examType and o.ownerType=:courseType and c.uniqueId=o.ownerId")
+                .setLong("sessionId", sessionId)
+                .setInteger("examType", examType)
+                .setInteger("courseType", ExamOwner.sOwnerTypeCourse).setCacheable(true).list();
+        new ExamDAO().getSession().createQuery(
+                "select c from InstructionalOffering c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType=:examType and o.ownerType=:offeringType and c.uniqueId=o.ownerId")
+                .setLong("sessionId", sessionId)
+                .setInteger("examType", examType)
+                .setInteger("offeringType", ExamOwner.sOwnerTypeOffering).setCacheable(true).list();
+        Hashtable<Long,Set<Long>> owner2students = new Hashtable();
+        Hashtable<Long,Set<Exam>> student2exams = new Hashtable();
+            for (Iterator i=
+                new ExamDAO().getSession().createQuery(
+                "select x.uniqueId, o.uniqueId, e.student.uniqueId from "+
+                "Exam x inner join x.owners o, "+
+                "StudentClassEnrollment e inner join e.clazz c "+
+                "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
+                "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeClass+" and "+
+                "o.ownerId=c.uniqueId").setLong("sessionId", sessionId).setInteger("examType", examType).setCacheable(true).list().iterator();i.hasNext();) {
+                    Object[] o = (Object[])i.next();
+                    Long examId = (Long)o[0];
+                    Long ownerId = (Long)o[1];
+                    Long studentId = (Long)o[2];
+                    Set<Long> studentsOfOwner = owner2students.get(ownerId);
+                    if (studentsOfOwner==null) {
+                        studentsOfOwner = new HashSet<Long>();
+                        owner2students.put(ownerId, studentsOfOwner);
+                    }
+                    studentsOfOwner.add(studentId);
+                    Set<Exam> examsOfStudent = student2exams.get(studentId);
+                    if (examsOfStudent==null) { 
+                        examsOfStudent = new HashSet<Exam>();
+                        student2exams.put(studentId, examsOfStudent);
+                    }
+                    examsOfStudent.add(exams.get(examId));
+                }
+            for (Iterator i=
+                new ExamDAO().getSession().createQuery(
+                        "select x.uniqueId, o.uniqueId, e.student.uniqueId from "+
+                        "Exam x inner join x.owners o, "+
+                        "StudentClassEnrollment e inner join e.clazz c " +
+                        "inner join c.schedulingSubpart.instrOfferingConfig ioc " +
+                        "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
+                        "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeConfig+" and "+
+                        "o.ownerId=ioc.uniqueId").setLong("sessionId", sessionId).setInteger("examType", examType).setCacheable(true).list().iterator();i.hasNext();) {
+                Object[] o = (Object[])i.next();
+                Long examId = (Long)o[0];
+                Long ownerId = (Long)o[1];
+                Long studentId = (Long)o[2];
+                Set<Long> studentsOfOwner = owner2students.get(ownerId);
+                if (studentsOfOwner==null) {
+                    studentsOfOwner = new HashSet<Long>();
+                    owner2students.put(ownerId, studentsOfOwner);
+                }
+                studentsOfOwner.add(studentId);
+                Set<Exam> examsOfStudent = student2exams.get(studentId);
+                if (examsOfStudent==null) { 
+                    examsOfStudent = new HashSet<Exam>();
+                    student2exams.put(studentId, examsOfStudent);
+                }
+                examsOfStudent.add(exams.get(examId));
+            }
+            for (Iterator i=
+                new ExamDAO().getSession().createQuery(
+                        "select x.uniqueId, o.uniqueId, e.student.uniqueId from "+
+                        "Exam x inner join x.owners o, "+
+                        "StudentClassEnrollment e inner join e.courseOffering co " +
+                        "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
+                        "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeCourse+" and "+
+                        "o.ownerId=co.uniqueId").setLong("sessionId", sessionId).setInteger("examType", examType).setCacheable(true).list().iterator();i.hasNext();) {
+                Object[] o = (Object[])i.next();
+                Long examId = (Long)o[0];
+                Long ownerId = (Long)o[1];
+                Long studentId = (Long)o[2];
+                Set<Long> studentsOfOwner = owner2students.get(ownerId);
+                if (studentsOfOwner==null) {
+                    studentsOfOwner = new HashSet<Long>();
+                    owner2students.put(ownerId, studentsOfOwner);
+                }
+                studentsOfOwner.add(studentId);
+                Set<Exam> examsOfStudent = student2exams.get(studentId);
+                if (examsOfStudent==null) { 
+                    examsOfStudent = new HashSet<Exam>();
+                    student2exams.put(studentId, examsOfStudent);
+                }
+                examsOfStudent.add(exams.get(examId));
+            }
+            for (Iterator i=
+                new ExamDAO().getSession().createQuery(
+                        "select x.uniqueId, o.uniqueId, e.student.uniqueId from "+
+                        "Exam x inner join x.owners o, "+
+                        "StudentClassEnrollment e inner join e.courseOffering.instructionalOffering io " +
+                        "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
+                        "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeOffering+" and "+
+                        "o.ownerId=io.uniqueId").setLong("sessionId", sessionId).setInteger("examType", examType).setCacheable(true).list().iterator();i.hasNext();) {
+                Object[] o = (Object[])i.next();
+                Long examId = (Long)o[0];
+                Long ownerId = (Long)o[1];
+                Long studentId = (Long)o[2];
+                Set<Long> studentsOfOwner = owner2students.get(ownerId);
+                if (studentsOfOwner==null) {
+                    studentsOfOwner = new HashSet<Long>();
+                    owner2students.put(ownerId, studentsOfOwner);
+                }
+                studentsOfOwner.add(studentId);
+                Set<Exam> examsOfStudent = student2exams.get(studentId);
+                if (examsOfStudent==null) { 
+                    examsOfStudent = new HashSet<Exam>();
+                    student2exams.put(studentId, examsOfStudent);
+                }
+                examsOfStudent.add(exams.get(examId));
+            }
+        Parameters p = new Parameters(sessionId, examType);
+        TreeSet<ExamAssignmentInfo> ret = new TreeSet();
+        if (subjectAreaId==null || subjectAreaId<0) {
+            for (Iterator i = new ExamDAO().getSession().createQuery(
+                    "select x from Exam x where " +
+                    "x.examType=:examType and "+
+                    "x.session.uniqueId=:sessionId and x.assignedPeriod!=null").
+                    setLong("sessionId", sessionId).
+                    setLong("examType", examType).
+                    setCacheable(true).list().iterator();i.hasNext();) {
+                Exam exam = (Exam)i.next();
+                ExamAssignmentInfo info = new ExamAssignmentInfo(exam, owner2students, student2exams, p);
+                ret.add(info);
+            }
+        } else {
+            for (Iterator i = new ExamDAO().getSession().createQuery(
+                    "select distinct x from Exam x inner join x.owners o where " +
+                    "o.course.subjectArea.uniqueId=:subjectAreaId and "+
+                    "x.examType=:examType and "+
+                    "x.session.uniqueId=:sessionId and x.assignedPeriod!=null").
+                    setLong("sessionId", sessionId).
+                    setLong("examType", examType).
+                    setLong("subjectAreaId", subjectAreaId).
+                    setCacheable(true).list().iterator();i.hasNext();) {
+                Exam exam = (Exam)i.next();
+                ExamAssignmentInfo info = new ExamAssignmentInfo(exam, owner2students, student2exams, p);
+                ret.add(info);
+            }
+        }
+        return ret;
+    }
 	
 	public boolean match(ExamAssignmentReportForm form, String name) {
 	    if (form.getFilter()==null || form.getFilter().trim().length()==0) return true;
@@ -183,21 +354,21 @@ public class ExamAssignmentReportAction extends Action {
 		} else if (ExamAssignmentReportForm.sViolatedDistributions.equals(form.getReport())) {
 		    return generateViolatedDistributionsReport(html, form, exams);
         } else if (ExamAssignmentReportForm.sIndividualStudentConflicts.equals(form.getReport())) {
-            return generateIndividualConflictsReport(html, form, exams, true, true, true, true, Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT));
+            return generateIndividualConflictsReport(html, sessionId, form, exams, true, true, true, true, Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT));
         } else if (ExamAssignmentReportForm.sIndividualDirectStudentConflicts.equals(form.getReport())) {
-            return generateIndividualConflictsReport(html, form, exams, true, true, false, false, Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT));
+            return generateIndividualConflictsReport(html, sessionId, form, exams, true, true, false, false, Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT));
         } else if (ExamAssignmentReportForm.sIndividualBackToBackStudentConflicts.equals(form.getReport())) {
-            return generateIndividualConflictsReport(html, form, exams, true, false, false, true, Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT));
+            return generateIndividualConflictsReport(html, sessionId, form, exams, true, false, false, true, Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT));
         } else if (ExamAssignmentReportForm.sIndividualMore2ADayStudentConflicts.equals(form.getReport())) {
-            return generateIndividualConflictsReport(html, form, exams, true, false, true, false, Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT));
+            return generateIndividualConflictsReport(html, sessionId, form, exams, true, false, true, false, Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT));
         } else if (ExamAssignmentReportForm.sIndividualInstructorConflicts.equals(form.getReport())) {
-            return generateIndividualConflictsReport(html, form, exams, false, true, true, true, Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT));
+            return generateIndividualConflictsReport(html, sessionId, form, exams, false, true, true, true, Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT));
         } else if (ExamAssignmentReportForm.sIndividualInstructorConflicts.equals(form.getReport())) {
-            return generateIndividualConflictsReport(html, form, exams, false, true, false, false, Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT));
+            return generateIndividualConflictsReport(html, sessionId, form, exams, false, true, false, false, Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT));
         } else if (ExamAssignmentReportForm.sIndividualBackToBackInstructorConflicts.equals(form.getReport())) {
-            return generateIndividualConflictsReport(html, form, exams, false, false, false, true, Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT));
+            return generateIndividualConflictsReport(html, sessionId, form, exams, false, false, false, true, Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT));
         } else if (ExamAssignmentReportForm.sIndividualMore2ADayInstructorConflicts.equals(form.getReport())) {
-            return generateIndividualConflictsReport(html, form, exams, false, false, true, false, Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT));
+            return generateIndividualConflictsReport(html, sessionId, form, exams, false, false, true, false, Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT));
         } else if (ExamAssignmentReportForm.sDirectStudentConflicts.equals(form.getReport())) {
             return generateDirectConflictsReport(html, form, exams, true);
         } else if (ExamAssignmentReportForm.sBackToBackStudentConflicts.equals(form.getReport())) {
@@ -211,9 +382,9 @@ public class ExamAssignmentReportAction extends Action {
         } else if (ExamAssignmentReportForm.sMore2ADayInstructorConflicts.equals(form.getReport())) {
             return generate2MoreADayConflictsReport(html, form, exams, false);
         } else if (ExamAssignmentReportForm.sIndividualStudentSchedule.equals(form.getReport())) {
-            return generateIndividualAssignmentReport(html, form, exams, true, Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT));
+            return generateIndividualAssignmentReport(html, sessionId, form, exams, true, Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT));
         } else if (ExamAssignmentReportForm.sIndividualInstructorSchedule.equals(form.getReport())) {
-            return generateIndividualAssignmentReport(html, form, exams, false, Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT));
+            return generateIndividualAssignmentReport(html, sessionId, form, exams, false, Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT));
         } else  return null;
     }
 	
@@ -907,7 +1078,42 @@ public class ExamAssignmentReportAction extends Action {
         return table;
 	}
 	
-	private PdfWebTable generateIndividualConflictsReport(boolean html, ExamAssignmentReportForm form, Collection<ExamAssignmentInfo> exams, boolean studentConf, boolean direct, boolean m2d, boolean btb, String nameFormat) {
+	private PdfWebTable generateIndividualConflictsReport(boolean html, Long sessionId, ExamAssignmentReportForm form, Collection<ExamAssignmentInfo> exams, boolean studentConf, boolean direct, boolean m2d, boolean btb, String nameFormat) {
+	    Hashtable<Long, Student> students = new Hashtable();
+	    if (studentConf) {
+            HashSet<Long> allStudentIds = new HashSet();
+            for (ExamAssignmentInfo exam : exams) {
+                if (direct) for (DirectConflict conflict : exam.getDirectConflicts()) {
+                    allStudentIds.addAll(conflict.getStudents());
+                }
+                if (btb) for (BackToBackConflict conflict : exam.getBackToBackConflicts()) {
+                    allStudentIds.addAll(conflict.getStudents());
+                }
+                if (m2d) for (MoreThanTwoADayConflict conflict : exam.getMoreThanTwoADaysConflicts()) {
+                    allStudentIds.addAll(conflict.getStudents());
+                }
+            }
+            String inSet = null; int idx = 0;
+            for (Iterator i=allStudentIds.iterator();i.hasNext();idx++) {
+                if (idx==1000) {
+                    for (Iterator j=StudentDAO.getInstance().getSession().createQuery("select s from Student s where s.uniqueId in ("+inSet+")").iterate();j.hasNext();) {
+                        Student s = (Student)j.next();
+                        students.put(s.getUniqueId(), s);
+                    }
+                    idx = 0; inSet = null;
+                }
+                if (inSet==null)
+                    inSet = i.next().toString();
+                else
+                    inSet += ","+i.next();
+            }
+            if (inSet!=null) {
+                for (Iterator j=StudentDAO.getInstance().getSession().createQuery("select s from Student s where s.uniqueId in ("+inSet+")").iterate();j.hasNext();) {
+                    Student s = (Student)j.next();
+                    students.put(s.getUniqueId(), s);
+                }
+            }
+	    }
         String nl = (html?"<br>":"\n");
         PdfWebTable table = new PdfWebTable( 10,
                 form.getReport(), "examAssignmentReport.do?ord=%%",
@@ -933,7 +1139,7 @@ public class ExamAssignmentReportAction extends Action {
                     for (Long studentId : conflict.getStudents()) {
                         String id = "", name = "";
                         if (studentConf) {
-                            Student student = new StudentDAO().get(studentId);
+                            Student student = students.get(studentId);
                             id = student.getExternalUniqueId();
                             name = student.getName(nameFormat);
                         } else {
@@ -1076,7 +1282,7 @@ public class ExamAssignmentReportAction extends Action {
                     for (Long studentId : conflict.getStudents()) {
                         String id = "", name = "";
                         if (studentConf) {
-                            Student student = new StudentDAO().get(studentId);
+                            Student student = students.get(studentId);
                             id = student.getExternalUniqueId();
                             name = student.getName(nameFormat);
                         } else {
@@ -1181,7 +1387,7 @@ public class ExamAssignmentReportAction extends Action {
                     for (Long studentId : conflict.getStudents()) {
                         String id = "", name = "";
                         if (studentConf) {
-                            Student student = new StudentDAO().get(studentId);
+                            Student student = students.get(studentId);
                             id = student.getExternalUniqueId();
                             name = student.getName(nameFormat);
                         } else {
@@ -1689,7 +1895,34 @@ public class ExamAssignmentReportAction extends Action {
         }
     }
     
-    private PdfWebTable generateIndividualAssignmentReport(boolean html, ExamAssignmentReportForm form, Collection<ExamAssignmentInfo> exams, boolean student, String nameFormat) {
+    private PdfWebTable generateIndividualAssignmentReport(boolean html, Long sessionId, ExamAssignmentReportForm form, Collection<ExamAssignmentInfo> exams, boolean student, String nameFormat) {
+        Hashtable<Long, Student> students = new Hashtable();
+        if (student) {
+            HashSet<Long> allStudentIds = new HashSet();
+            for (ExamAssignmentInfo exam : exams)
+                for (ExamSectionInfo section : exam.getSections())
+                    allStudentIds.addAll(section.getStudentIds());
+            String inSet = null; int idx = 0;
+            for (Iterator i=allStudentIds.iterator();i.hasNext();idx++) {
+                if (idx==1000) {
+                    for (Iterator j=StudentDAO.getInstance().getSession().createQuery("select s from Student s where s.uniqueId in ("+inSet+")").iterate();j.hasNext();) {
+                        Student s = (Student)j.next();
+                        students.put(s.getUniqueId(), s);
+                    }
+                    idx = 0; inSet = null;
+                }
+                if (inSet==null)
+                    inSet = i.next().toString();
+                else
+                    inSet += ","+i.next();
+            }
+            if (inSet!=null) {
+                for (Iterator j=StudentDAO.getInstance().getSession().createQuery("select s from Student s where s.uniqueId in ("+inSet+")").iterate();j.hasNext();) {
+                    Student s = (Student)j.next();
+                    students.put(s.getUniqueId(), s);
+                }
+            }
+        }
         String nl = (html?"<br>":"\n");
         PdfWebTable table =
             (student?
@@ -1724,7 +1957,7 @@ public class ExamAssignmentReportAction extends Action {
                 for (ExamSectionInfo section : exam.getSections()) {
                     if (student) {
                         for (Long studentId : section.getStudentIds()) {
-                            Student s = new StudentDAO().get(studentId);
+                            Student s = students.get(studentId);
                             if (s==null) continue;
                             if (!match(form, s.getExternalUniqueId()) && !match(form, s.getName(nameFormat))) continue;
                             table.addLine(
@@ -1779,7 +2012,7 @@ public class ExamAssignmentReportAction extends Action {
                         studentIds.addAll(section.getStudentIds());
                     }
                     for (Long studentId : studentIds) {
-                        Student s = new StudentDAO().get(studentId);
+                        Student s = students.get(studentId);
                         if (s==null) continue;
                         if (!match(form, s.getExternalUniqueId()) && !match(form, s.getName(nameFormat))) continue;
                         table.addLine(
