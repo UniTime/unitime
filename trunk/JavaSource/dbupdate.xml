@@ -1693,4 +1693,16 @@
 				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamWeights')
 		</plsql>		
 	</update>
+	<update version="29" date="2-Jun-2008" comment="Event speedup">
+		<mysql>create index idx_event_class on %SCHEMA%.event(class_id)</mysql>
+		<mysql>create index idx_event_exam on %SCHEMA%.event(exam_id)</mysql>
+		<mysql>create index idx_room_permid on %SCHEMA%.room(permanent_id, session_id)</mysql>
+		<mysql>create index idx_location_permid on %SCHEMA%.non_university_location(permanent_id, session_id)</mysql>
+		<mysql>create index idx_student_class_enrl_course on %SCHEMA%.student_class_enrl(course_offering_id)</mysql>
+		<plsql>create index %SCHEMA%.idx_event_class on %SCHEMA%.event(class_id)</plsql>
+		<plsql>create index %SCHEMA%.idx_event_exam on %SCHEMA%.event(exam_id)</plsql>
+		<plsql>create index %SCHEMA%.idx_room_permid on %SCHEMA%.room(permanent_id, session_id)</plsql>
+		<plsql>create index %SCHEMA%.idx_location_permid on %SCHEMA%.non_university_location(permanent_id, session_id)</plsql>
+		<plsql>create index %SCHEMA%.idx_student_class_enrl_course on %SCHEMA%.student_class_enrl(course_offering_id)</plsql>
+	</update>
 </dbupdate>
