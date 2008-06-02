@@ -16,7 +16,6 @@ import org.dom4j.io.XMLWriter;
 import org.hibernate.engine.SessionFactoryImplementor;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
-import org.unitime.timetable.model.base._BaseRootDAO;
 import org.unitime.timetable.model.dao._RootDAO;
 
 public class BlobRoomAvailabilityService extends RoomAvailabilityService {
