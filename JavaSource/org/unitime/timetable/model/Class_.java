@@ -1326,7 +1326,7 @@ public class Class_ extends BaseClass_ {
     
     public ClassEvent getEvent() {
         return (ClassEvent)new Class_DAO().getSession().createQuery(
-                "from ClassEvent where clazz.uniqueId=:classId").
+                "select e from ClassEvent e left join fetch e.meetings m where e.clazz.uniqueId=:classId").
                 setLong("classId", getUniqueId()).
                 setCacheable(true).uniqueResult();
     }
