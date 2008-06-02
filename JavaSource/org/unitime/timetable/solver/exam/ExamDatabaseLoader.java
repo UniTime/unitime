@@ -145,6 +145,25 @@ public class ExamDatabaseLoader extends ExamLoader {
         }
     }
     
+    public void loadSimple() throws Exception {
+        iProgress.setStatus("Loading input data ...");
+        org.hibernate.Session hibSession = new ExamDAO().getSession();
+        Transaction tx = null;
+        try {
+            tx = hibSession.beginTransaction();
+            loadPeriods();
+            loadExamsSimple();
+            loadStudents();
+            getModel().init();
+            assignInitial();
+            tx.commit();
+        } catch (Exception e) {
+            if (tx!=null) tx.rollback();
+            iProgress.fatal("Unable to load examination problem, reason: "+e.getMessage(),e);
+            throw e;
+        }
+    }
+    
     public int pref2weight(String pref) {
         if (pref==null) return 0;
         if (PreferenceLevel.sStronglyPreferred.equals(pref))
@@ -333,6 +352,77 @@ public class ExamDatabaseLoader extends ExamLoader {
             }
         }
     }
+    
+    protected void loadExamsSimple() {
+        if (isRemote()) HibernateUtil.clearCache();
+        Collection exams = org.unitime.timetable.model.Exam.findAll(iSessionId, iExamType);
+        iProgress.setPhase("Loading exams...", exams.size());
+        for (Iterator i=exams.iterator();i.hasNext();) {
+            iProgress.incProgress();
+            org.unitime.timetable.model.Exam exam = (org.unitime.timetable.model.Exam)i.next();
+            
+            Exam x = new Exam(
+                    exam.getUniqueId(),
+                    exam.getLabel(),
+                    exam.getLength(),
+                    (exam.getSeatingType()==org.unitime.timetable.model.Exam.sSeatingTypeExam),
+                    exam.getMaxNbrRooms(),
+                    0,
+                    new Vector(),
+                    new Vector());
+
+            x.setModel(getModel());
+            
+            int minSize = 0;
+            Vector<ExamOwner> owners = new Vector();
+            for (Iterator j=new TreeSet(exam.getOwners()).iterator();j.hasNext();) {
+                org.unitime.timetable.model.ExamOwner owner = (org.unitime.timetable.model.ExamOwner)j.next();
+                ExamOwner cs = new ExamOwner(x, owner.getUniqueId(), owner.getLabel());
+                iOwners.put(owner.getUniqueId(), owner);
+                minSize += owner.getLimit();
+                x.getOwners().add(cs);
+            }
+            
+            if (iExamType==org.unitime.timetable.model.Exam.sExamTypeMidterm && minSize>0)
+                x.setMinSize(minSize);
+            
+            iExams.put(exam.getUniqueId(), x);
+            getModel().addVariable(x);
+
+            for (Iterator j=exam.getInstructors().iterator();j.hasNext();)
+                loadInstructor((DepartmentalInstructor)j.next()).addVariable(x);
+
+            if (exam.getAssignedPeriod()!=null) {
+                ExamPeriod period = iPeriods.get(exam.getAssignedPeriod().getUniqueId());
+                if (period==null) {
+                    iProgress.warn("Unable assign exam "+getExamLabel(exam)+" to period "+exam.getAssignedPeriod().getName()+": period not allowed.");
+                    continue;
+                }
+                ExamPeriodPlacement periodPlacement = (period==null?null:new ExamPeriodPlacement(period, 0)); 
+                HashSet roomPlacements = new HashSet();
+                for (Iterator j=exam.getAssignedRooms().iterator();j.hasNext();) {
+                    Location location = (Location)j.next();
+                    ExamRoom room = iRooms.get(location.getUniqueId());
+                    if (room==null) {
+                        room = new ExamRoom(getModel(),
+                                location.getUniqueId(),
+                                location.getLabel(),
+                                location.getCapacity(),
+                                location.getExamCapacity(),
+                                (location.getCoordinateX()==null?-1:location.getCoordinateX()),
+                                (location.getCoordinateY()==null?-1:location.getCoordinateY()));
+                        getModel().addConstraint(room);
+                        getModel().getRooms().add(room);
+                        iRooms.put(room.getId(),room);
+                    }
+                    ExamRoomPlacement roomPlacement = new ExamRoomPlacement(room);
+                    roomPlacements.add(roomPlacement);
+                }
+                x.setInitialAssignment(new ExamPlacement(x, periodPlacement, roomPlacements));
+            }
+        }
+    }
+
     
     protected ExamInstructor loadInstructor(DepartmentalInstructor instructor) {
         if (instructor.getExternalUniqueId()!=null && instructor.getExternalUniqueId().trim().length()>0) {

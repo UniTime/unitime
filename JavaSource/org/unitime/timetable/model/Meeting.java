@@ -104,9 +104,26 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
 		if (getMeetingDate() == null){
 			return(null);
 		}
+		Session session = getEvent().getSession();
+		if (session!=null) {
+		    location = (Location)RoomDAO.getInstance().getSession().createQuery(
+		            "select r from Room r where r.permanentId = :permId and r.session.uniqueId=:sessionId")
+		            .setLong("sessionId", session.getUniqueId())
+		            .setLong("permId", getLocationPermanentId())
+		            .setCacheable(true)
+		            .uniqueResult();
+		    if (location==null)
+		        location = (Location)RoomDAO.getInstance().getSession().createQuery(
+		            "select r from NonUniversityLocation r where r.permanentId = :permId and r.session.uniqueId=:sessionId")
+		            .setLong("sessionId", session.getUniqueId())
+		            .setLong("permId", getLocationPermanentId())
+		            .setCacheable(true)
+		            .uniqueResult();
+		    return location;
+		}
 		Calendar mtgDt = Calendar.getInstance();
 		mtgDt.setTime(getMeetingDate());
-		List<?> locations = (RoomDAO.getInstance()).getSession().createQuery("from Room as r where r.permanentId = :permId").setLong("permId", getLocationPermanentId().longValue()).list();
+		List<?> locations = (RoomDAO.getInstance()).getSession().createQuery("from Room as r where r.permanentId = :permId").setLong("permId", getLocationPermanentId().longValue()).setCacheable(true).list();
 		if (locations != null && !locations.isEmpty()){
 			for(Iterator<?> locIt = locations.iterator(); locIt.hasNext(); ){
 				Room r = (Room) locIt.next();
@@ -131,7 +148,7 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
 			}
 			
 		} else {
-			locations = (RoomDAO.getInstance()).getSession().createQuery("from NonUniversityLocation as nul where nul.permanentId = :permId").setLong("permId", getLocationPermanentId().longValue()).list();
+			locations = (RoomDAO.getInstance()).getSession().createQuery("from NonUniversityLocation as nul where nul.permanentId = :permId").setLong("permId", getLocationPermanentId().longValue()).setCacheable(true).list();
 			for(Iterator<?> locIt = locations.iterator(); locIt.hasNext(); ){
 				NonUniversityLocation nul = (NonUniversityLocation) locIt.next();
 				Calendar sessStart = Calendar.getInstance();
