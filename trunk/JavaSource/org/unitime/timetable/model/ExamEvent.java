@@ -45,4 +45,6 @@ public abstract class ExamEvent extends BaseExamEvent {
     public Set<DepartmentalInstructor> getInstructors() {
         return getExam().getInstructors();
     }
+    
+    public Session getSession() { return getExam().getSession(); }
 }

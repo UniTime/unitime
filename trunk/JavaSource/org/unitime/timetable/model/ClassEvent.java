@@ -67,5 +67,7 @@ public class ClassEvent extends BaseClassEvent {
     }
     
     public int getEventType() { return sEventTypeClass; }
+    
+    public Session getSession() { return getClazz().getSession(); }
 
 }
