@@ -2,25 +2,18 @@ package org.unitime.timetable.reports.exam;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.Properties;
 import java.util.TreeSet;
-import java.util.Vector;
 
 import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
-import org.unitime.commons.hibernate.util.HibernateUtil;
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DepartmentalInstructor;
-import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Session;
@@ -42,20 +35,30 @@ import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamSectionInfo;
 import com.lowagie.text.DocumentException;
 
 public class StudentExamReport extends PdfLegacyExamReport {
-    protected static Logger sLog = Logger.getLogger(InstructorExamReport.class);
+    protected static Logger sLog = Logger.getLogger(StudentExamReport.class);
     Hashtable<Long,Student> iStudents = new Hashtable();
     
     public StudentExamReport(int mode, File file, Session session, int examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
         super(mode, file, "STUDENT EXAMINATION SCHEDULE", session, examType, subjectArea, exams);
-        for (Iterator i=new StudentDAO().getSession().createQuery("select s from Student s where s.session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).iterate();i.hasNext();) {
+        sLog.info("  Loading students...");
+        for (Iterator i=new StudentDAO().getSession().createQuery("select s from Student s where s.session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).setCacheable(true).iterate();i.hasNext();) {
             Student s = (Student)i.next();
             iStudents.put(s.getUniqueId(), s);
         }
     }
     
+    public boolean isOfSubjectArea(TreeSet<ExamSectionInfo> sections) {
+        if (getSubjectArea()==null) return true;
+        for (ExamSectionInfo section : sections)
+            if (getSubjectArea().equals(section.getOwner().getCourse().getSubjectArea())) return true;
+        return false;
+    }
+
     public void printReport() throws DocumentException {
+        sLog.info("  Printing report...");
         Hashtable<Student,TreeSet<ExamSectionInfo>> sections = new Hashtable();
         for (ExamAssignmentInfo exam:getExams()) {
+            if (exam.getPeriod()==null) continue;
             for (ExamSectionInfo section:exam.getSections()) {
                 for (Long studentId : section.getStudentIds()) {
                     Student student = iStudents.get(studentId);
@@ -68,28 +71,33 @@ public class StudentExamReport extends PdfLegacyExamReport {
                 }
             }
         }
-        boolean firstStudent = true;
         printHeader();
+        int index = 0;
         for (Student student : new TreeSet<Student>(sections.keySet())) {
+            TreeSet<ExamSectionInfo> sectionsThisStudent = sections.get(student);
+            if (!isOfSubjectArea(sectionsThisStudent)) continue;
             if (iSince!=null) {
-                ChangeLog last = getLastChange(sections.get(student));
+                ChangeLog last = getLastChange(sectionsThisStudent);
                 if (last==null || iSince.compareTo(last.getTimeStamp())>0) {
                     sLog.debug("No change found for "+student.getName(DepartmentalInstructor.sNameFormatLastFist));
                     continue;
                 }
             }
-            if (!firstStudent) newPage();
-            printReport(student, sections.get(student));
-            firstStudent = false;
+            if (index>0) newPage();
+            printReport(student, sectionsThisStudent);
+            index++;
+            if ((index%100)==0) sLog.debug("  "+index+" students printed");
         }
         lastPage();
     }
     
     public void printReport(Long studentId) throws DocumentException {
         TreeSet<ExamSectionInfo> sections = new TreeSet();
-        for (ExamAssignmentInfo exam : getExams())
+        for (ExamAssignmentInfo exam : getExams()) {
+            if (exam.getPeriod()==null) continue;
             for (ExamSectionInfo section : exam.getSections())
                 if (section.getStudentIds().contains(studentId)) sections.add(section);
+        }
         if (sections.isEmpty()) return;
         Student student = new StudentDAO().get(studentId);
         printHeader();
@@ -395,7 +403,8 @@ public class StudentExamReport extends PdfLegacyExamReport {
         return lastChange;
     }
     
-    public Hashtable<Student,File> printStudentReports(int mode, String filePrefix, FileGenerator gen, StudentFilter filter) throws DocumentException, IOException {
+    public Hashtable<Student,File> printStudentReports(int mode, String filePrefix, FileGenerator gen) throws DocumentException, IOException {
+        sLog.info("Printing individual student reports...");
         Hashtable<Student,File> files = new Hashtable();
         Hashtable<Student,TreeSet<ExamSectionInfo>> sections = new Hashtable();
         for (ExamAssignmentInfo exam:getExams()) {
@@ -412,95 +421,27 @@ public class StudentExamReport extends PdfLegacyExamReport {
             }
         }
         for (Student student : new TreeSet<Student>(sections.keySet())) {
-            if (!filter.generate(student, sections.get(student))) continue;
+            TreeSet<ExamSectionInfo> sectionsThisStudent = sections.get(student);
+            if (!isOfSubjectArea(sectionsThisStudent)) continue;
             if (iSince!=null) {
-                ChangeLog last = getLastChange(sections.get(student));
+                ChangeLog last = getLastChange(sectionsThisStudent);
                 if (last==null || iSince.compareTo(last.getTimeStamp())>0) {
                     sLog.debug("No change found for "+student.getName(DepartmentalInstructor.sNameFormatLastFist));
                     continue;
                 }
             }
-            sLog.debug("Generating file for "+student.getName(DepartmentalInstructor.sNameFormatLastFist));
+            sLog.debug("  Generating file for "+student.getName(DepartmentalInstructor.sNameFormatLastFist));
             File file = gen.generate(filePrefix+"_"+
                     (student.getExternalUniqueId()!=null?student.getExternalUniqueId():student.getLastName()),
                     (mode==sModeText?"txt":"pdf")); 
                 //ApplicationProperties.getTempFile(filePrefix+"_"+(instructor.getExternalUniqueId()!=null?instructor.getExternalUniqueId():instructor.getInstructor().getLastName()), (mode==sModeText?"txt":"pdf"));
             open(file, mode);
             printHeader();
-            printReport(student, sections.get(student));
+            printReport(student, sectionsThisStudent);
             lastPage();
             close();
             files.put(student,file);
         }
         return files;
     }
-    
-    public static void main(String[] args) {
-        try {
-            Properties props = new Properties();
-            props.setProperty("log4j.rootLogger", "DEBUG, A1");
-            props.setProperty("log4j.appender.A1", "org.apache.log4j.ConsoleAppender");
-            props.setProperty("log4j.appender.A1.layout", "org.apache.log4j.PatternLayout");
-            props.setProperty("log4j.appender.A1.layout.ConversionPattern","%-5p %c{2}: %m%n");
-            props.setProperty("log4j.logger.org.hibernate","INFO");
-            props.setProperty("log4j.logger.org.hibernate.cfg","WARN");
-            props.setProperty("log4j.logger.org.hibernate.cache.EhCacheProvider","ERROR");
-            props.setProperty("log4j.logger.org.unitime.commons.hibernate","INFO");
-            props.setProperty("log4j.logger.net","INFO");
-            PropertyConfigurator.configure(props);
-            
-            HibernateUtil.configureHibernate(ApplicationProperties.getProperties());
-            
-            Session session = Session.getSessionUsingInitiativeYearTerm(
-                    ApplicationProperties.getProperty("initiative", "puWestLafayetteTrdtn"),
-                    ApplicationProperties.getProperty("year","2008"),
-                    ApplicationProperties.getProperty("term","Spr")
-                    );
-            if (session==null) {
-                sLog.error("Academic session not found, use properties initiative, year, and term to set academic session.");
-                System.exit(0);
-            } else {
-                sLog.info("Session: "+session);
-            }
-            int examType = (ApplicationProperties.getProperty("type","final").equalsIgnoreCase("final")?Exam.sExamTypeFinal:Exam.sExamTypeMidterm);
-            int mode = sModeNormal;
-            if ("text".equals(System.getProperty("mode"))) mode = sModeText;
-            if ("ledger".equals(System.getProperty("mode"))) mode = sModeLedger;
-            sLog.info("Exam type: "+Exam.sExamTypes[examType]);
-            sLog.info("Loading exams...");
-            Vector<ExamAssignmentInfo> exams = new Vector<ExamAssignmentInfo>();
-            Hashtable<SubjectArea,Vector<ExamAssignmentInfo>> examsPerSubj = new Hashtable();
-            for (Iterator i=Exam.findAll(session.getUniqueId(),examType).iterator();i.hasNext();) {
-                ExamAssignmentInfo exam = new ExamAssignmentInfo((Exam)i.next());
-                exams.add(exam);
-            }
-            Date since = null;
-            if (System.getProperty("since")!=null) {
-                since = new SimpleDateFormat(System.getProperty("sinceFormat","MM/dd/yy")).parse(System.getProperty("since"));
-                sLog.info("Since: "+since);
-            }
-            StudentExamReport report = new StudentExamReport(mode, null, session, examType, null, exams);
-            report.printStudentReports(mode, session.getAcademicTerm()+session.getYear()+(examType==Exam.sExamTypeMidterm?"evn":"fin"), new FileGenerator() {
-                public File generate(String prefix, String ext) {
-                    int idx = 0;
-                    File file = new File(prefix+"."+ext);
-                    while (file.exists()) {
-                        idx++;
-                        file = new File(prefix+"_"+idx+"."+ext);
-                    }
-                    return file;
-                }
-            }, new StudentFilter() {
-                public boolean generate(Student student, TreeSet<ExamSectionInfo> sections) { return true; }
-            });
-            sLog.info("Done.");
-        } catch (Exception e) {
-            sLog.error(e.getMessage(),e);
-        }
-    }
-    
-    public static interface StudentFilter {
-        public boolean generate(Student student, TreeSet<ExamSectionInfo> sections);
-    }
-
 }

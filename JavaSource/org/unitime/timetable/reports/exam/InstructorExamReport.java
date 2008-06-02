@@ -9,19 +9,14 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.Properties;
 import java.util.TreeSet;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
-import org.unitime.commons.hibernate.util.HibernateUtil;
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.DepartmentalInstructor;
-import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Session;
@@ -53,9 +48,18 @@ public class InstructorExamReport extends PdfLegacyExamReport {
         }
     }
     
+    public boolean isOfSubjectArea(TreeSet<ExamAssignmentInfo> exams) {
+        if (getSubjectArea()==null) return true;
+        for (ExamAssignmentInfo exam : exams)
+            for (ExamSectionInfo section : exam.getSections())
+                if (getSubjectArea().equals(section.getOwner().getCourse().getSubjectArea())) return true;
+        return false;
+    }
+    
     public void printReport() throws DocumentException {
         Hashtable<ExamInstructorInfo,TreeSet<ExamAssignmentInfo>> exams = new Hashtable();
         for (ExamAssignmentInfo exam:getExams()) {
+            if (exam.getPeriod()==null) continue;
             for (ExamInstructorInfo instructor:exam.getInstructors()) {
                 TreeSet<ExamAssignmentInfo> examsThisInstructor = exams.get(instructor);
                 if (examsThisInstructor==null) {
@@ -68,24 +72,28 @@ public class InstructorExamReport extends PdfLegacyExamReport {
         boolean firstInstructor = true;
         printHeader();
         for (ExamInstructorInfo instructor : new TreeSet<ExamInstructorInfo>(exams.keySet())) {
+            TreeSet<ExamAssignmentInfo> examsThisInstructor = exams.get(instructor);
+            if (!isOfSubjectArea(examsThisInstructor)) continue;
             if (iSince!=null) {
-                ChangeLog last = getLastChange(instructor, exams.get(instructor));
+                ChangeLog last = getLastChange(instructor, examsThisInstructor);
                 if (last==null || iSince.compareTo(last.getTimeStamp())>0) {
-                    sLog.debug("No change found for "+instructor.getName());
+                    sLog.debug("    No change found for "+instructor.getName());
                     continue;
                 }
             }
             if (!firstInstructor) newPage();
-            printReport(instructor, exams.get(instructor));
+            printReport(instructor, examsThisInstructor);
             firstInstructor = false;
         }
         lastPage();
     }
     
-    public Hashtable<ExamInstructorInfo,File> printInstructorReports(int mode, String filePrefix, FileGenerator gen, InstructorFilter filter) throws DocumentException, IOException {
+    public Hashtable<ExamInstructorInfo,File> printInstructorReports(int mode, String filePrefix, FileGenerator gen) throws DocumentException, IOException {
+        sLog.info("Printing individual instructor reports...");
         Hashtable<ExamInstructorInfo,File> files = new Hashtable();
         Hashtable<ExamInstructorInfo,TreeSet<ExamAssignmentInfo>> exams = new Hashtable();
         for (ExamAssignmentInfo exam:getExams()) {
+            if (exam.getPeriod()==null) continue;
             for (ExamInstructorInfo instructor:exam.getInstructors()) {
                 TreeSet<ExamAssignmentInfo> examsThisInstructor = exams.get(instructor);
                 if (examsThisInstructor==null) {
@@ -96,22 +104,23 @@ public class InstructorExamReport extends PdfLegacyExamReport {
             }
         }
         for (ExamInstructorInfo instructor : new TreeSet<ExamInstructorInfo>(exams.keySet())) {
-            if (!filter.generate(instructor, exams.get(instructor))) continue;
+            TreeSet<ExamAssignmentInfo> examsThisInstructor = exams.get(instructor);
+            if (!isOfSubjectArea(examsThisInstructor)) continue;
             if (iSince!=null) {
-                ChangeLog last = getLastChange(instructor, exams.get(instructor));
+                ChangeLog last = getLastChange(instructor, examsThisInstructor);
                 if (last==null || iSince.compareTo(last.getTimeStamp())>0) {
-                    sLog.debug("No change found for "+instructor.getName());
+                    sLog.debug("    No change found for "+instructor.getName());
                     continue;
                 }
             }
-            sLog.debug("Generating file for "+instructor.getName());
+            sLog.debug("  Generating file for "+instructor.getName());
             File file = gen.generate(filePrefix+"_"+
                     (instructor.getExternalUniqueId()!=null?instructor.getExternalUniqueId():instructor.getInstructor().getLastName()),
                     (mode==sModeText?"txt":"pdf")); 
                 //ApplicationProperties.getTempFile(filePrefix+"_"+(instructor.getExternalUniqueId()!=null?instructor.getExternalUniqueId():instructor.getInstructor().getLastName()), (mode==sModeText?"txt":"pdf"));
             open(file, mode);
             printHeader();
-            printReport(instructor, exams.get(instructor));
+            printReport(instructor, examsThisInstructor);
             lastPage();
             close();
             files.put(instructor,file);
@@ -122,6 +131,7 @@ public class InstructorExamReport extends PdfLegacyExamReport {
     public void printReport(ExamInstructorInfo instructor) throws DocumentException {
         TreeSet<ExamAssignmentInfo> exams = new TreeSet();
         for (ExamAssignmentInfo exam:getExams()) {
+            if (exam.getPeriod()==null) continue;
             if (exam.getInstructors().contains(instructor));
         }
         if (exams.isEmpty()) return;
@@ -571,72 +581,7 @@ public class InstructorExamReport extends PdfLegacyExamReport {
         setCont(null);
     }
     
-    public static void main(String[] args) {
-        try {
-            Properties props = new Properties();
-            props.setProperty("log4j.rootLogger", "DEBUG, A1");
-            props.setProperty("log4j.appender.A1", "org.apache.log4j.ConsoleAppender");
-            props.setProperty("log4j.appender.A1.layout", "org.apache.log4j.PatternLayout");
-            props.setProperty("log4j.appender.A1.layout.ConversionPattern","%-5p %c{2}: %m%n");
-            props.setProperty("log4j.logger.org.hibernate","INFO");
-            props.setProperty("log4j.logger.org.hibernate.cfg","WARN");
-            props.setProperty("log4j.logger.org.hibernate.cache.EhCacheProvider","ERROR");
-            props.setProperty("log4j.logger.org.unitime.commons.hibernate","INFO");
-            props.setProperty("log4j.logger.net","INFO");
-            PropertyConfigurator.configure(props);
-            
-            HibernateUtil.configureHibernate(ApplicationProperties.getProperties());
-            
-            Session session = Session.getSessionUsingInitiativeYearTerm(
-                    ApplicationProperties.getProperty("initiative", "puWestLafayetteTrdtn"),
-                    ApplicationProperties.getProperty("year","2008"),
-                    ApplicationProperties.getProperty("term","Spr")
-                    );
-            if (session==null) {
-                sLog.error("Academic session not found, use properties initiative, year, and term to set academic session.");
-                System.exit(0);
-            } else {
-                sLog.info("Session: "+session);
-            }
-            int examType = (ApplicationProperties.getProperty("type","final").equalsIgnoreCase("final")?Exam.sExamTypeFinal:Exam.sExamTypeMidterm);
-            int mode = sModeNormal;
-            if ("text".equals(System.getProperty("mode"))) mode = sModeText;
-            if ("ledger".equals(System.getProperty("mode"))) mode = sModeLedger;
-            sLog.info("Exam type: "+Exam.sExamTypes[examType]);
-            sLog.info("Loading exams...");
-            Vector<ExamAssignmentInfo> exams = new Vector<ExamAssignmentInfo>();
-            Hashtable<SubjectArea,Vector<ExamAssignmentInfo>> examsPerSubj = new Hashtable();
-            for (Iterator i=Exam.findAll(session.getUniqueId(),examType).iterator();i.hasNext();) {
-                ExamAssignmentInfo exam = new ExamAssignmentInfo((Exam)i.next());
-                exams.add(exam);
-            }
-            InstructorExamReport report = new InstructorExamReport(mode, null, session, examType, null, exams);
-            report.printInstructorReports(mode, session.getAcademicTerm()+session.getYear()+(examType==Exam.sExamTypeMidterm?"evn":"fin"), new FileGenerator() {
-                public File generate(String prefix, String ext) {
-                    int idx = 0;
-                    File file = new File(prefix+"."+ext);
-                    while (file.exists()) {
-                        idx++;
-                        file = new File(prefix+"_"+idx+"."+ext);
-                    }
-                    return file;
-                }
-            }, new InstructorFilter() {
-                public boolean generate(ExamInstructorInfo instructor, TreeSet<ExamAssignmentInfo> exams) {
-                    return true;
-                }
-            });
-            sLog.info("Done.");
-        } catch (Exception e) {
-            sLog.error(e.getMessage(),e);
-        }
-    }
-    
     public static interface FileGenerator {
         public File generate(String prefix, String ext);
-    }
-
-    public static interface InstructorFilter {
-        public boolean generate(ExamInstructorInfo instructor, TreeSet<ExamAssignmentInfo> exams);
     }
 }

@@ -26,7 +26,7 @@ public class ScheduleByPeriodReport extends PdfLegacyExamReport {
     }
 
     public void printReport() throws DocumentException {
-        sLog.debug("  Sorting sections ...");
+        sLog.debug("  Sorting sections...");
         Hashtable<String,TreeSet<ExamSectionInfo>> subject2courseSections = new Hashtable();
         for (ExamInfo exam : getExams()) {
             for (ExamSectionInfo section : exam.getSections()) {
@@ -42,6 +42,7 @@ public class ScheduleByPeriodReport extends PdfLegacyExamReport {
         setHeader(new String[] {
                 "Date And Time                          Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect   Meeting Times                         Enrl"+(iDispRooms?"  Room         Cap ExCap":""),
                 "-------------------------------------- ---- ------ "+(iItype?"------ ":"")+"---- -------------------------------------- -----"+(iDispRooms?" ----------- ----- -----":"")});
+        sLog.debug("  Printing report...");
         printHeader();
         for (Iterator p=ExamPeriod.findAll(getSession().getUniqueId(), getExamType()).iterator();p.hasNext();) {
             ExamPeriod period = (ExamPeriod)p.next();

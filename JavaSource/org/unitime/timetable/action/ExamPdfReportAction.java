@@ -75,7 +75,6 @@ import org.unitime.timetable.reports.exam.StudentExamReport;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamInstructorInfo;
-import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamSectionInfo;
 import org.unitime.timetable.util.Constants;
 
 
@@ -108,12 +107,13 @@ public class ExamPdfReportAction extends Action {
                 saveErrors(request, errors);
                 return mapping.findForward("show");
             }
+                        
             Session session = Session.getCurrentAcadSession(Web.getUser(request.getSession()));
             try {
-                TreeSet<ExamAssignmentInfo> exams = new TreeSet();
-                Hashtable<SubjectArea,TreeSet<ExamAssignmentInfo>> examsPerSubject = new Hashtable();
                 myForm.setReport("");
                 myForm.log("Loading exams...");
+                TreeSet<ExamAssignmentInfo> exams = PdfLegacyExamReport.loadExams(session.getUniqueId(), myForm.getExamType(), true);
+                /*
                 if (myForm.getAll()) {
                     for (Iterator i=Exam.findAll(session.getUniqueId(), myForm.getExamType()).iterator();i.hasNext();) {
                         exams.add(new ExamAssignmentInfo((Exam)i.next()));
@@ -128,6 +128,7 @@ public class ExamPdfReportAction extends Action {
                         examsPerSubject.put(subject, examsThisSubject);
                     }
                 }
+                */
                 Hashtable<String,File> output = new Hashtable();
                 Hashtable<SubjectArea,Hashtable<String,File>> outputPerSubject = new Hashtable();
                 Hashtable<ExamInstructorInfo,File> ireports = null;
@@ -162,27 +163,22 @@ public class ExamPdfReportAction extends Action {
                         report.close();
                         output.put(reportName+"."+(myForm.getModeIdx()==PdfLegacyExamReport.sModeText?"txt":"pdf"),file);
                         if (report instanceof InstructorExamReport && myForm.getEmailInstructors()) {
-                            ireports = ((InstructorExamReport)report).printInstructorReports(
-                                    myForm.getModeIdx(), name, new FileGenerator(name), new InstructorExamReport.InstructorFilter() {
-                                public boolean generate(ExamInstructorInfo instructor, TreeSet<ExamAssignmentInfo> exams) {
-                                    return true;
-                                }
-                            });
+                            ireports = ((InstructorExamReport)report).printInstructorReports(myForm.getModeIdx(), name, new FileGenerator(name));
                         } else if (report instanceof StudentExamReport && myForm.getEmailStudents()) {
-                            sreports = ((StudentExamReport)report).printStudentReports(
-                                    myForm.getModeIdx(), name, new FileGenerator(name), new StudentExamReport.StudentFilter() {
-                                public boolean generate(Student student, TreeSet<ExamSectionInfo> sections) {
-                                    return true;
-                                }
-                            });
+                            sreports = ((StudentExamReport)report).printStudentReports(myForm.getModeIdx(), name, new FileGenerator(name));
                         }
                     } else {
-                        for (Map.Entry<SubjectArea, TreeSet<ExamAssignmentInfo>> entry : examsPerSubject.entrySet()) {
-                            File file = ApplicationProperties.getTempFile(name+"_"+entry.getKey().getSubjectAreaAbbreviation(), (myForm.getModeIdx()==PdfLegacyExamReport.sModeText?"txt":"pdf"));
-                            myForm.log("&nbsp;&nbsp;Writing <a href='temp/"+file.getName()+"'>"+entry.getKey().getSubjectAreaAbbreviation()+"_"+reportName+"."+(myForm.getModeIdx()==PdfLegacyExamReport.sModeText?"txt":"pdf")+"</a>... ("+entry.getValue().size()+" exams)");
+                        for (int j=0;j<myForm.getSubjects().length;j++) {
+                            SubjectArea subject = new SubjectAreaDAO().get(Long.valueOf(myForm.getSubjects()[j]));
+                            File file = ApplicationProperties.getTempFile(name+"_"+subject.getSubjectAreaAbbreviation(), (myForm.getModeIdx()==PdfLegacyExamReport.sModeText?"txt":"pdf"));
+                            int nrExams = 0;
+                            for (ExamAssignmentInfo exam : exams) {
+                                if (exam.isOfSubjectArea(subject)) nrExams++;
+                            }
+                            myForm.log("&nbsp;&nbsp;Writing <a href='temp/"+file.getName()+"'>"+subject.getSubjectAreaAbbreviation()+"_"+reportName+"."+(myForm.getModeIdx()==PdfLegacyExamReport.sModeText?"txt":"pdf")+"</a>... ("+nrExams+" exams)");
                             PdfLegacyExamReport report = (PdfLegacyExamReport)reportClass.
                                 getConstructor(int.class, File.class, Session.class, int.class, SubjectArea.class, Collection.class).
-                                newInstance(myForm.getModeIdx(), file, new SessionDAO().get(session.getUniqueId()), myForm.getExamType(), entry.getKey(), entry.getValue());
+                                newInstance(myForm.getModeIdx(), file, new SessionDAO().get(session.getUniqueId()), myForm.getExamType(), subject, exams);
                             report.setDirect(myForm.getDirect());
                             report.setM2d(myForm.getM2d());
                             report.setBtb(myForm.getBtb());
@@ -196,12 +192,17 @@ public class ExamPdfReportAction extends Action {
                             report.setClassSchedule(myForm.getClassSchedule());
                             report.printReport();
                             report.close();
-                            output.put(entry.getKey().getSubjectAreaAbbreviation()+"_"+reportName+"."+(myForm.getModeIdx()==PdfLegacyExamReport.sModeText?"txt":"pdf"),file);
-                            Hashtable<String,File> files = outputPerSubject.get(entry.getKey());
+                            output.put(subject.getSubjectAreaAbbreviation()+"_"+reportName+"."+(myForm.getModeIdx()==PdfLegacyExamReport.sModeText?"txt":"pdf"),file);
+                            Hashtable<String,File> files = outputPerSubject.get(subject);
                             if (files==null) {
-                                files = new Hashtable(); outputPerSubject.put(entry.getKey(),files);
+                                files = new Hashtable(); outputPerSubject.put(subject,files);
                             }
-                            files.put(entry.getKey().getSubjectAreaAbbreviation()+"_"+reportName+"."+(myForm.getModeIdx()==PdfLegacyExamReport.sModeText?"txt":"pdf"),file);
+                            files.put(subject.getSubjectAreaAbbreviation()+"_"+reportName+"."+(myForm.getModeIdx()==PdfLegacyExamReport.sModeText?"txt":"pdf"),file);
+                            if (report instanceof InstructorExamReport && myForm.getEmailInstructors()) {
+                                ireports = ((InstructorExamReport)report).printInstructorReports(myForm.getModeIdx(), name, new FileGenerator(name));
+                            } else if (report instanceof StudentExamReport && myForm.getEmailStudents()) {
+                                sreports = ((StudentExamReport)report).printStudentReports(myForm.getModeIdx(), name, new FileGenerator(name));
+                            }
                         }
                     }
                 }
@@ -447,41 +448,7 @@ public class ExamPdfReportAction extends Action {
         return mapping.findForward("show");
 	}
 	
-    
-    public static class InstructorFilter implements InstructorExamReport.InstructorFilter {
-        private ExamPdfReportForm iForm;
-        public InstructorFilter(ExamPdfReportForm form) {
-            iForm = form;
-        }
-        public boolean generate(ExamInstructorInfo instructor, TreeSet<ExamAssignmentInfo> exams) {
-            if (iForm.getAll()) return true;
-            for (int i=0;i<iForm.getSubjects().length;i++) {
-                SubjectArea subject = new SubjectAreaDAO().get(Long.valueOf(iForm.getSubjects()[i]));
-                for (ExamAssignmentInfo exam : exams)
-                    for (ExamSectionInfo section : exam.getSections())
-                        if (section.getSubject().equals(subject.getSubjectAreaAbbreviation())) return true;
-            }
-            return false;
-        }
-    }
-	
-    public static class StudentFilter implements StudentExamReport.StudentFilter {
-        private ExamPdfReportForm iForm;
-        public StudentFilter(ExamPdfReportForm form) {
-            iForm = form;
-        }
-        public boolean generate(Student student, TreeSet<ExamSectionInfo> sections) {
-            if (iForm.getAll()) return true;
-            for (int i=0;i<iForm.getSubjects().length;i++) {
-                SubjectArea subject = new SubjectAreaDAO().get(Long.valueOf(iForm.getSubjects()[i]));
-                for (ExamSectionInfo section : sections)
-                    if (section.getSubject().equals(subject.getSubjectAreaAbbreviation())) return true;
-            }
-            return false;
-        }
-    }
-    
-    public static class FileGenerator implements InstructorExamReport.FileGenerator {
+	public static class FileGenerator implements InstructorExamReport.FileGenerator {
         String iName;
         public FileGenerator(String name) {
             iName = name;
