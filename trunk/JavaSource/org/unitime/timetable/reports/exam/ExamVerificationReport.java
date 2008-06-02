@@ -5,12 +5,14 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.TreeSet;
 import java.util.Vector;
 
 import net.sf.cpsolver.ifs.util.ToolBox;
 
+import org.apache.log4j.Logger;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.ClassEvent;
@@ -46,10 +48,11 @@ import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamSectionInfo;
 import com.lowagie.text.DocumentException;
 
 public class ExamVerificationReport extends PdfLegacyExamReport {
+    protected static Logger sLog = Logger.getLogger(ExamVerificationReport.class);
     private CourseOffering iCourseOffering = null;
     private boolean iSkipHoles = true;
     private boolean iHasAssignment = false;
-
+    
     public ExamVerificationReport(int mode, File file, Session session, int examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
         super(mode, file, "EXAMINATION VERIFICATION REPORT", session, examType, subjectArea, exams);
         for (ExamAssignmentInfo exam : exams) {
@@ -194,17 +197,18 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
         return false;
     }
     
-    public String getMessage(Class_ clazz, boolean hasCourseExam, boolean hasSectionExam) {
+    public String getMessage(Class_ clazz, boolean hasCourseExam, boolean hasSectionExam, Hashtable<Long,ClassEvent> class2event) {
         TreeSet<ExamAssignmentInfo> exams = getExams(clazz);
         if (!exams.isEmpty()) return "";
         String message = "** NO EXAM **";
         if (hasCourseExam && !hasSectionExam) message = ""; // Has other exam
         else if (!hasSectionExam && !clazz.getSchedulingSubpart().getItype().isOrganized()) message = "Not organized instructional type";
         else {
-            if (clazz.getEvent()==null || clazz.getEvent().getMeetings().isEmpty()) {
+            ClassEvent event = class2event.get(clazz.getUniqueId());
+            if (event==null || event.getMeetings().isEmpty()) {
                 message = "Class not organized";
-            } else if (!isFullTerm(clazz.getEvent())) {
-                TreeSet meetings = new TreeSet(clazz.getEvent().getMeetings());
+            } else if (!isFullTerm(event)) {
+                TreeSet meetings = new TreeSet(event.getMeetings());
                 Meeting first = (Meeting)meetings.first();
                 Meeting last = (Meeting)meetings.last();
                 SimpleDateFormat df = new SimpleDateFormat("MM/dd");
@@ -214,7 +218,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
         return message;
     }
 
-    private void print(Vector<Class_> same, boolean hasCourseExam, boolean hasSectionExam, int minLimit, int maxLimit, int minEnrl, int maxEnrl) throws DocumentException {
+    private void print(Vector<Class_> same, boolean hasCourseExam, boolean hasSectionExam, int minLimit, int maxLimit, int minEnrl, int maxEnrl, Hashtable<Long,ClassEvent> class2event) throws DocumentException {
         String cmw = getMeetWith(same.firstElement(),same);
         TreeSet<ExamAssignmentInfo> exams = getExams(same.firstElement());
         iPeriodPrinted = false;
@@ -223,7 +227,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
             if (hasCourseExam && !hasSectionExam) message = ""; // Has other exam
             else if (!hasSectionExam && !same.firstElement().getSchedulingSubpart().getItype().isOrganized()) message = "Not organized instructional type";
             else {
-                ClassEvent classEvent = same.firstElement().getEvent();
+                ClassEvent classEvent = class2event.get(same.firstElement().getUniqueId());
                 if (classEvent==null || classEvent.getMeetings().isEmpty()) {
                     message = "Class not organized";
                 } else if (!isFullTerm(classEvent)) {
@@ -383,7 +387,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
     }
     
     public void printReport() throws DocumentException {
-        System.out.println("Loading courses ...");
+        sLog.info("  Loading courses ...");
         TreeSet<CourseOffering> allCourses = new TreeSet(new Comparator<CourseOffering>() {
             public int compare(CourseOffering co1, CourseOffering co2) {
                 int cmp = co1.getSubjectAreaAbbv().compareTo(co2.getSubjectAreaAbbv());
@@ -402,7 +406,28 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                     createQuery("select co from CourseOffering co where  co.subjectArea.session.uniqueId=:sessionId").
                     setLong("sessionId", getSession().getUniqueId()).list());
         if (allCourses.isEmpty()) return;
-        System.out.println("Printing report ...");
+        sLog.info("  Loading class events...");
+        Hashtable<Long,ClassEvent> class2event = new Hashtable();
+        if (getSubjectArea()!=null) {
+            for (Iterator i=new SessionDAO().getSession().createQuery(
+                    "select c.uniqueId, e from ClassEvent e inner join e.clazz c left join fetch e.meetings m "+
+                    "inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where "+
+                    "co.subjectArea.uniqueId=:subjectAreaId").
+                    setLong("subjectAreaId", getSubjectArea().getUniqueId()).list().iterator();i.hasNext();) {
+                Object[] o = (Object[])i.next();
+                class2event.put((Long)o[0], (ClassEvent)o[1]);
+            }
+        } else {
+            for (Iterator i=new SessionDAO().getSession().createQuery(
+                    "select c.uniqueId, e from ClassEvent e inner join e.clazz c left join fetch e.meetings m "+
+                    "inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where "+
+                    "co.subjectArea.session.uniqueId=:sessionId").
+                    setLong("sessionId", getSession().getUniqueId()).list().iterator();i.hasNext();) {
+                Object[] o = (Object[])i.next();
+                class2event.put((Long)o[0], (ClassEvent)o[1]);
+            }
+        }
+        sLog.info("  Printing report ...");
         SubjectArea subject = null;
         setHeader(new String[] {
                 "Course      Title                       "+(iDispLimits?"                    ":"                    ")+" Alt  Len                                                  ",
@@ -448,7 +473,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                 }
                 int enrl = 
                     ((Number)new _RootDAO().getSession().createQuery(
-                            "select count(*) from StudentClassEnrollment s where s.courseOffering.uniqueId=:courseId")
+                            "select count(distinct s.uniqueId) from StudentClassEnrollment s where s.courseOffering.uniqueId=:courseId")
                             .setLong("courseId", course.getUniqueId()).uniqueResult()).intValue();
                 TreeSet<ExamAssignmentInfo> exams = getExams(course);
                 String courseName = (course.isIsControl()?"":" ")+course.getCourseName();
@@ -605,27 +630,27 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                             ToolBox.equals(clazz.getSchedulePrintNote(), same.lastElement().getSchedulePrintNote()) && 
                             exams.equals(getExams(clazz)) && 
                             mw.equals(getMeetWith(clazz, null)) &&
-                            message.equals(getMessage(clazz, hasCourseExam, hasSectionExam))) {
+                            message.equals(getMessage(clazz, hasCourseExam, hasSectionExam, class2event))) {
                         minEnrl = Math.min(minEnrl, enrl);
                         maxEnrl = Math.max(maxEnrl, enrl);
                         minLimit = Math.min(minLimit, clazz.getClassLimit());
                         maxLimit = Math.max(maxLimit, clazz.getClassLimit());
-                        message = getMessage(clazz, hasCourseExam, hasSectionExam);
+                        message = getMessage(clazz, hasCourseExam, hasSectionExam, class2event);
                         same.add(clazz);
                         continue;
                     }
                     if (!same.isEmpty()) {
-                        print(same, hasCourseExam, hasSectionExam, minLimit, maxLimit, minEnrl, maxEnrl);
+                        print(same, hasCourseExam, hasSectionExam, minLimit, maxLimit, minEnrl, maxEnrl, class2event);
                         same.clear();
                     }
                     exams = getExams(clazz);
                     mw = getMeetWith(clazz, null);
                     minEnrl = maxEnrl = enrl;
                     minLimit = maxLimit = clazz.getClassLimit();
-                    message = getMessage(clazz, hasCourseExam, hasSectionExam);
+                    message = getMessage(clazz, hasCourseExam, hasSectionExam, class2event);
                     same.add(clazz);
                 }
-                if (!same.isEmpty()) print(same, hasCourseExam || hasSubpartExam, hasSectionExam, minLimit, maxLimit, minEnrl, maxEnrl);
+                if (!same.isEmpty()) print(same, hasCourseExam || hasSubpartExam, hasSectionExam, minLimit, maxLimit, minEnrl, maxEnrl, class2event);
 
             }
             if (!iNewPage) println("");

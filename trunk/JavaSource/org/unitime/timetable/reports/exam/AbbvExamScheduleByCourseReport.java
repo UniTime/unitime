@@ -3,6 +3,8 @@ package org.unitime.timetable.reports.exam;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.TreeSet;
 import java.util.Vector;
 
@@ -21,14 +23,24 @@ public class AbbvExamScheduleByCourseReport extends PdfLegacyExamReport {
     }
 
     public void printReport() throws DocumentException {
-        TreeSet<ExamSectionInfo> sections = new TreeSet();
         Vector<String> lines = new Vector();
         int n = iNrLines - 2;
         if (!iDispRooms) {
             ExamSectionInfo last = null; int lx = 0;
             for (ExamAssignment exam : new TreeSet<ExamAssignment>(getExams())) {
+                if (exam.getPeriod()==null || !exam.isOfSubjectArea(getSubjectArea())) continue;
                 boolean firstSection = true;
-                for (ExamSectionInfo section : exam.getSections()) {
+                TreeSet<ExamSectionInfo> sections = new TreeSet<ExamSectionInfo>(new Comparator<ExamSectionInfo>() {
+                    public int compare(ExamSectionInfo s1, ExamSectionInfo s2) {
+                        if (getSubjectArea()==null) return s1.compareTo(s2);
+                        if (getSubjectArea().equals(s1.getOwner().getCourse().getSubjectArea())) {
+                            if (!getSubjectArea().equals(s2.getOwner().getCourse().getSubjectArea())) return -1;
+                        } else if (getSubjectArea().equals(s2.getOwner().getCourse().getSubjectArea())) return 1;
+                        return s1.compareTo(s2);
+                    }
+                 });
+                 sections.addAll(exam.getSections());
+                for (ExamSectionInfo section : sections) {
                     boolean sameSubj = false, sameCrs = false, sameSct = false, sameItype = false;
                     if ((lx%n)!=0 && last!=null) {
                         if (last.getSubject().equals(section.getSubject())) { 
@@ -107,16 +119,27 @@ public class AbbvExamScheduleByCourseReport extends PdfLegacyExamReport {
         } else {
             ExamSectionInfo last = null; int lx = 0;
             for (ExamAssignment exam : new TreeSet<ExamAssignment>(getExams())) {
+                if (exam.getPeriod()==null || !exam.isOfSubjectArea(getSubjectArea())) continue;
                 Vector<String> rooms = new Vector();
                 if (exam.getRooms()==null || exam.getRooms().isEmpty()) {
                     rooms.add(rpad(iNoRoom,11));
                 } else for (ExamRoomInfo room : exam.getRooms()) {
                     rooms.add(formatRoom(room.getName()));
                 }
-                for (int i=0;i<Math.max((rooms.size()+1)/2,exam.getSections().size());i++) {
+                Vector<ExamSectionInfo> sections = new Vector(exam.getSections());
+                Collections.sort(sections, new Comparator<ExamSectionInfo>() {
+                    public int compare(ExamSectionInfo s1, ExamSectionInfo s2) {
+                        if (getSubjectArea()==null) return s1.compareTo(s2);
+                        if (getSubjectArea().equals(s1.getOwner().getCourse().getSubjectArea())) {
+                            if (!getSubjectArea().equals(s2.getOwner().getCourse().getSubjectArea())) return -1;
+                        } else if (getSubjectArea().equals(s2.getOwner().getCourse().getSubjectArea())) return 1;
+                        return s1.compareTo(s2);
+                    }
+                 });
+                for (int i=0;i<Math.max((rooms.size()+1)/2,sections.size());i++) {
                     String a = (2*i+0<rooms.size()?rooms.elementAt(2*i+0):rpad("",11));
                     String b = (2*i+1<rooms.size()?rooms.elementAt(2*i+1):rpad("",11));
-                    ExamSectionInfo section = (i<exam.getSections().size()?exam.getSections().elementAt(i):null);
+                    ExamSectionInfo section = (i<sections.size()?sections.elementAt(i):null);
                     boolean sameSubj = false, sameCrs = false, sameSct = false, sameItype = false;
                     if ((lx%n)!=0 && last!=null) {
                         if (section!=null && last.getSubject().equals(section.getSubject())) { 

@@ -17,7 +17,7 @@ import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamSectionInfo;
 import com.lowagie.text.DocumentException;
 
 public class ExamScheduleByPeriodReport extends PdfLegacyExamReport {
-    protected static Logger sLog = Logger.getLogger(ScheduleByPeriodReport.class);
+    protected static Logger sLog = Logger.getLogger(ExamScheduleByPeriodReport.class);
     
     public ExamScheduleByPeriodReport(int mode, File file, Session session, int examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
         super(mode, file, "SCHEDULE BY PERIOD", session, examType, subjectArea, exams);
@@ -29,7 +29,13 @@ public class ExamScheduleByPeriodReport extends PdfLegacyExamReport {
                 "Date And Time                          Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect   Meeting Times                         Enrl"+(iDispRooms?"  Room         Cap ExCap":""),
                 "-------------------------------------- ---- ------ "+(iItype?"------ ":"")+"---- -------------------------------------- -----"+(iDispRooms?" ----------- ----- -----":"")});
         printHeader();
-        TreeSet<ExamAssignmentInfo> exams = new TreeSet(getExams());
+        sLog.debug("  Sorting exams...");
+        TreeSet<ExamAssignmentInfo> exams = new TreeSet();
+        for (ExamAssignmentInfo exam : getExams()) {
+            if (exam.getPeriod()==null || !exam.isOfSubjectArea(getSubjectArea())) continue;
+            exams.add(exam);
+        }
+        sLog.debug("  Printing report...");
         for (Iterator p=ExamPeriod.findAll(getSession().getUniqueId(), getExamType()).iterator();p.hasNext();) {
             ExamPeriod period = (ExamPeriod)p.next();
             iPeriodPrinted = false;

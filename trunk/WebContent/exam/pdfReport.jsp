@@ -260,13 +260,10 @@
 		}
 		objSubjects.disabled=allSubjects;
 		objEmailDeputies.disabled=allSubjects; 
-		objEmailInstructors.disabled=!allSubjects || !instructorSchedule;
-		objEmailStudents.disabled=!allSubjects || !studentSchedule;
+		objEmailInstructors.disabled=!instructorSchedule;
+		objEmailStudents.disabled=!studentSchedule;
 		if (allSubjects) {
 			objEmailDeputies.checked=false;
-		} else {
-			objEmailInstructors.checked=false;
-			objEmailStudents.checked=false;
 		}
 		if (!studentSchedule) objEmailStudents.checked=false;
 		if (!instructorSchedule) objEmailInstructors.checked=false;
