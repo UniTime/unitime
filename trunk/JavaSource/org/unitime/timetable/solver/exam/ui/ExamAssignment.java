@@ -24,12 +24,15 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.Vector;
 
 import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.ExamPeriodPref;
 import org.unitime.timetable.model.Location;
@@ -135,6 +138,15 @@ public class ExamAssignment extends ExamInfo implements Serializable {
                     room.setPreference(Integer.parseInt(stk.nextToken()));
                 }
             }
+        }
+    }
+    
+    public ExamAssignment(Exam exam, Hashtable<Long, Set<Long>> owner2students) {
+        this(exam);
+        iSections = new Vector();
+        for (Iterator i=new TreeSet(getExam().getOwners()).iterator();i.hasNext();) {
+            ExamOwner owner = (ExamOwner)i.next();
+            iSections.add(new ExamSectionInfo(owner, owner2students.get(owner.getUniqueId())));
         }
     }
     

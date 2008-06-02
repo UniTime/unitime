@@ -245,6 +245,15 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         this(exam, "true".equals(ApplicationProperties.getProperty("tmtbl.exams.conflicts.cache","true")));
     }
     
+    public ExamAssignmentInfo(org.unitime.timetable.model.Exam exam, Hashtable<Long,Set<Long>> owner2students, Hashtable<Long, Set<org.unitime.timetable.model.Exam>> studentExams, Parameters p) {
+        super(exam, owner2students);
+        Hashtable<Long,Set<org.unitime.timetable.model.Exam>> examStudents = new Hashtable();
+        for (ExamSectionInfo section: getSections())
+            for (Long studentId : section.getStudentIds())
+                examStudents.put(studentId, studentExams.get(studentId));
+        generateConflicts(exam, examStudents, null, p);
+    }
+    
     public ExamAssignmentInfo(org.unitime.timetable.model.Exam exam, boolean useCache) {
         super(exam);
         if (!useCache) {
@@ -499,17 +508,11 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
     }
     
     public void generateConflicts(org.unitime.timetable.model.Exam exam, Hashtable<Long, Set<org.unitime.timetable.model.Exam>> examStudents, Hashtable<Long, ExamAssignment> table) {
+        generateConflicts(exam, examStudents, table, new Parameters(exam.getSession().getUniqueId(), exam.getExamType()));
+    }
+    
+    public void generateConflicts(org.unitime.timetable.model.Exam exam, Hashtable<Long, Set<org.unitime.timetable.model.Exam>> examStudents, Hashtable<Long, ExamAssignment> table, Parameters p) {
         if (getPeriod()==null) return;
-        
-        int btbDist = -1;
-        boolean btbDayBreak = false;
-        SolverParameterDef btbDistDef = SolverParameterDef.findByName("Exams.BackToBackDistance");
-        if (btbDistDef!=null && btbDistDef.getDefault()!=null)
-            btbDist = Integer.parseInt(btbDistDef.getDefault());
-        
-        SolverParameterDef btbDayBreakDef = SolverParameterDef.findByName("Exams.IsDayBreakBackToBack");
-        if (btbDayBreakDef!=null && btbDayBreakDef.getDefault()!=null)
-            btbDayBreak = "true".equals(btbDayBreakDef.getDefault());
         
         Hashtable<org.unitime.timetable.model.Exam,DirectConflict> directs = new Hashtable();
         Hashtable<org.unitime.timetable.model.Exam,BackToBackConflict> backToBacks = new Hashtable();
@@ -528,11 +531,11 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                     } else dc.incNrStudents();
                     dc.getStudents().add(studentExams.getKey());
                     iNrDirectConflicts++;
-                } else if (getPeriod().isBackToBack(otherPeriod,btbDayBreak)) {
+                } else if (p.isBackToBack(getPeriod(),otherPeriod)) {
                     BackToBackConflict btb = backToBacks.get(other);
                     double distance = Location.getDistance(getRooms(), getAssignedRooms(other, table));
                     if (btb==null) {
-                        btb = new BackToBackConflict(getAssignment(other, table), (btbDist<0?false:distance>btbDist), distance);
+                        btb = new BackToBackConflict(getAssignment(other, table), (p.getBackToBackDistance()<0?false:distance>p.getBackToBackDistance()), distance);
                         backToBacks.put(other, btb);
                     } else btb.incNrStudents();
                     btb.getStudents().add(studentExams.getKey());
@@ -585,11 +588,11 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                     } else dc.incNrStudents();
                     iNrInstructorDirectConflicts++;
                     dc.getStudents().add(instructor.getUniqueId());
-                } else if (getPeriod().isBackToBack(otherPeriod,btbDayBreak)) {
+                } else if (p.isBackToBack(getPeriod(),otherPeriod)) {
                     BackToBackConflict btb = ibackToBacks.get(other);
                     double distance = Location.getDistance(getRooms(), getAssignedRooms(other, table));
                     if (btb==null) {
-                        btb = new BackToBackConflict(getAssignment(other, table), (btbDist<0?false:distance>btbDist), distance);
+                        btb = new BackToBackConflict(getAssignment(other, table), (p.getBackToBackDistance()<0?false:distance>p.getBackToBackDistance()), distance);
                         ibackToBacks.put(other, btb);
                     } else btb.incNrStudents();
                     iNrInstructorBackToBackConflicts++;
@@ -1403,5 +1406,37 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             return ret;
         }
         
+    }
+    
+    public static class Parameters {
+        private int iBtbDistance = -1;
+        private boolean iBtbDayBreak = false;
+        private Set iPeriods;
+        
+        public Parameters(Long sessionId, int examType) {
+            iPeriods = ExamPeriod.findAll(sessionId, examType); 
+            
+            boolean btbDayBreak = false;
+            SolverParameterDef btbDistDef = SolverParameterDef.findByName("Exams.BackToBackDistance");
+            if (btbDistDef!=null && btbDistDef.getDefault()!=null)
+                iBtbDistance = Integer.parseInt(btbDistDef.getDefault());
+        
+            SolverParameterDef btbDayBreakDef = SolverParameterDef.findByName("Exams.IsDayBreakBackToBack");
+            if (btbDayBreakDef!=null && btbDayBreakDef.getDefault()!=null)
+                iBtbDayBreak = "true".equals(btbDayBreakDef.getDefault());
+        }
+        
+        public int getBackToBackDistance() { return iBtbDistance; }
+        public boolean isDayBreakBackToBack() { return iBtbDayBreak; }
+
+        public boolean isBackToBack(ExamPeriod p1, ExamPeriod p2) {
+            if (!isDayBreakBackToBack() && !p1.getDateOffset().equals(p2.getDateOffset())) return false;
+            for (Iterator i=iPeriods.iterator();i.hasNext();) {
+                ExamPeriod p = (ExamPeriod)i.next();
+                if (p1.compareTo(p)<0 && p.compareTo(p2)<0) return false;
+                if (p1.compareTo(p)>0 && p.compareTo(p2)>0) return false;
+            }
+            return true;
+        }
     }
 }
