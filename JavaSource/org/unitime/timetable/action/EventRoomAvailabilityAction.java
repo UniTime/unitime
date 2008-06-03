@@ -27,7 +27,11 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.unitime.timetable.form.EventRoomAvailabilityForm;
 
+/**
+ * @author Zuzana Mullerova
+ */
 public class EventRoomAvailabilityAction extends Action {
 
 	/** 
@@ -44,7 +48,9 @@ public class EventRoomAvailabilityAction extends Action {
 			HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
 
-
+		EventRoomAvailabilityForm myForm = (EventRoomAvailabilityForm) form;
+		myForm.load(request.getSession());
+		
 		return  mapping.findForward("show");
 	}
 		
