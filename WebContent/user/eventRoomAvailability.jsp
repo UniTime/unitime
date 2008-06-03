@@ -52,6 +52,38 @@
 				</tt:section-header>
 			</TD>
 		</TR>
+		<logic:iterate name="eventRoomAvailabilityForm" property="locations" id="location">
+		<TR>
+			<TD>
+				<bean:write name="location" property="label"/>
+			</TD>
+		</TR>
+		</logic:iterate>
+		<logic:iterate name="eventRoomAvailabilityForm" property="locations" id="location">
+		<TR>
+			<TD>
+				<bean:write name="location" property="label"/>
+			</TD>
+		</TR>
+		</logic:iterate>
+		
+ 		<logic:iterate name="eventRoomAvailabilityForm" property="meetings" id="mtg">
+		<TR>
+			<TD>
+				<bean:write name="mtg" property="meetingDate"/>
+				<bean:write name="mtg" property="startTime"/>
+				<bean:write name="mtg" property="location"/>
+			</TD>
+		</TR>
+		</logic:iterate>
+		
+<!-- 		<TR>
+			<TD>
+				Start:	<bean:write name="eventRoomAvailabilityForm" property="startTime"/>
+				Stop:   <bean:write name="eventRoomAvailabilityForm" property="stopTime"/>
+			</TD>
+		</TR>
+-->
 
 </TABLE>
 </html:form>
