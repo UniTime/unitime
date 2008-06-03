@@ -8,6 +8,7 @@ import java.util.TreeSet;
 import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
@@ -20,8 +21,13 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.util.ComboBoxLookup;
 import org.unitime.timetable.util.DateUtils;
 
+/**
+ * @author Zuzana Mullerova
+ */
+
 public class EventAddForm extends ActionForm {
 
+//	private EventModel iModel;
 	private String iOp;
 	private String iEventType;
 	private Long iSessionId;
@@ -80,19 +86,54 @@ public class EventAddForm extends ActionForm {
 	}
 	
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
+//		iModel = null;
 		iOp = null;
 		iEventType = Event.sEventTypes[Event.sEventTypeSpecial];
 		iSessionId = null;
 		try {
 			iSessionId = Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId();
 		} catch (Exception e) {}
-		iStartTime = 30;
-		iStopTime = 70;
+		iStartTime = 90;
+		iStopTime = 210;
 		iLocationType = null;
 		iMeetingDates.clear();
 		iMinCapacity = null;
 		iMaxCapacity = null;
 	}
+	
+	// load event info from session attribute Event
+	public void load (HttpSession session) {
+		iEventType = (String) session.getAttribute("Event.EventType");
+		iSessionId = (Long) session.getAttribute("Event.SessionId");		
+		iStartTime = (Integer) session.getAttribute("Event.StartTime");
+		iStopTime = (Integer) session.getAttribute("Event.StopTime");
+		iLocationType = (String) session.getAttribute("Event.LocationType");
+		iLocationTypes = (Vector<String>) session.getAttribute("Event.LocationTypes");
+		iMeetingDates = (TreeSet<Date>) session.getAttribute("Event.MeetingDates");
+		iMinCapacity = (String) session.getAttribute("Event.MinCapacity");
+		iMaxCapacity = (String) session.getAttribute("Event.MaxCapacity");
+		iBuildingId = (Long) session.getAttribute("Event.BuildingId");
+		iRoomNumber = (String) session.getAttribute("Event.RoomNumber");
+
+	}
+	
+	// save event parameters to session attribute Event
+	public void save (HttpSession session) {
+		session.setAttribute("Event.EventType", iEventType);
+		session.setAttribute("Event.SessionId", iSessionId);		
+		session.setAttribute("Event.StartTime", iStartTime);
+		session.setAttribute("Event.StopTime", iStopTime);
+		session.setAttribute("Event.LocationType", iLocationType);
+		session.setAttribute("Event.LocationTypes", iLocationTypes);
+		session.setAttribute("Event.MeetingDates", iMeetingDates);
+		session.setAttribute("Event.MinCapacity", iMinCapacity);
+		session.setAttribute("Event.MaxCapacity", iMaxCapacity);
+		session.setAttribute("Event.BuildingId", iBuildingId);
+		session.setAttribute("Event.RoomNumber", iRoomNumber);
+//		session.setAttribute("Event.");
+//		session.setAttribute("Event.");
+	}
+	
 	
 	// load event dates selected by user
 	public void loadDates(HttpServletRequest request) {
@@ -156,6 +197,9 @@ public class EventAddForm extends ActionForm {
             "</script>";
 	}
 	
+//	public EventModel getModel() {return iModel;}
+//	public void setModel(EventModel model) {iModel=model;}
+	
 	public String getOp (){return iOp;}
 	public void setOp (String op) {iOp = op;}
 	
@@ -197,16 +241,17 @@ public class EventAddForm extends ActionForm {
 	public String getLocationType() {return iLocationType; }
     public void setLocationType(String locationType) {iLocationType = locationType;}
     
+    //the index i goes in five minute increments, but displayed are 15 minute increments 
     public Vector<ComboBoxLookup> getTimes() {
     	Vector<ComboBoxLookup> times = new Vector();
     	int hour;
     	int minute;
     	String ampm;
-    	for (int i=0; i<96; i++) {
-    		hour = (i/4)%12;
+    	for (int i=0; i<288; i=i+3) {
+    		hour = (i/12)%12;
     		if (hour==0) hour=12; 
-    		minute = i%4*15;
-    		if (i/48==0) ampm="am"; 
+    		minute = i%12*5;
+    		if (i/144==0) ampm="am"; 
     			else ampm = "pm";
     		times.add(new ComboBoxLookup(hour+":"+(minute<10?"0":"")+minute+" "+ampm, String.valueOf(i)));
     	}
