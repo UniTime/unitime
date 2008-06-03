@@ -23,6 +23,7 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.Event.MultiMeeting;
 import org.unitime.timetable.model.comparators.ClassComparator;
+import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
@@ -38,13 +39,48 @@ import com.lowagie.text.DocumentException;
 public class InstructorExamReport extends PdfLegacyExamReport {
     protected static Logger sLog = Logger.getLogger(InstructorExamReport.class);
     Hashtable<Long,String> iStudentNames = new Hashtable();
+    Hashtable<Long,ClassEvent> iClass2event = new Hashtable();
+    Hashtable<Long,Location> iLocations = new Hashtable();
     
     public InstructorExamReport(int mode, File file, Session session, int examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
         super(mode, file, "INSTRUCTOR EXAMINATION SCHEDULE", session, examType, subjectArea, exams);
         sLog.debug("  Loading students ...");
-        for (Iterator i=new StudentDAO().getSession().createQuery("select s.uniqueId, s.externalUniqueId, s.lastName, s.firstName, s.middleName from Student s where s.session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).iterate();i.hasNext();) {
+        for (Iterator i=new StudentDAO().getSession().createQuery("select s.uniqueId, s.externalUniqueId, s.lastName, s.firstName, s.middleName from Student s where s.session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).setCacheable(true).iterate();i.hasNext();) {
             Object[] o = (Object[])i.next();
             iStudentNames.put((Long)o[0], (String)o[2]+(o[3]==null?"":" "+((String)o[3]).substring(0,1))+(o[4]==null?"":" "+((String)o[4]).substring(0,1)));
+        }
+        sLog.info("  Loading class events...");
+        if (getSubjectArea()!=null) {
+            for (Iterator i=new SessionDAO().getSession().createQuery(
+                    "select c.uniqueId, e from ClassEvent e inner join e.clazz c left join fetch e.meetings m "+
+                    "inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where "+
+                    "co.subjectArea.uniqueId=:subjectAreaId").
+                    setLong("subjectAreaId", getSubjectArea().getUniqueId()).setCacheable(true).list().iterator();i.hasNext();) {
+                Object[] o = (Object[])i.next();
+                iClass2event.put((Long)o[0], (ClassEvent)o[1]);
+            }
+        } else {
+            for (Iterator i=new SessionDAO().getSession().createQuery(
+                    "select c.uniqueId, e from ClassEvent e inner join e.clazz c left join fetch e.meetings m "+
+                    "inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where "+
+                    "co.subjectArea.session.uniqueId=:sessionId").
+                    setLong("sessionId", getSession().getUniqueId()).setCacheable(true).list().iterator();i.hasNext();) {
+                Object[] o = (Object[])i.next();
+                iClass2event.put((Long)o[0], (ClassEvent)o[1]);
+            }
+        }
+        sLog.info("  Loading locations...");
+        for (Iterator i=new SessionDAO().getSession().createQuery(
+                "select r from Room r where r.session.uniqueId=:sessionId and r.permanentId!=null").
+                setLong("sessionId", getSession().getUniqueId()).setCacheable(true).list().iterator();i.hasNext();) {
+            Location location = (Location)i.next();
+            iLocations.put(location.getUniqueId(), location);
+        }
+        for (Iterator i=new SessionDAO().getSession().createQuery(
+                "select r from NonUniversityLocation r where r.session.uniqueId=:sessionId and r.permanentId!=null").
+                setLong("sessionId", getSession().getUniqueId()).setCacheable(true).list().iterator();i.hasNext();) {
+            Location location = (Location)i.next();
+            iLocations.put(location.getUniqueId(), location);
         }
     }
     
@@ -198,7 +234,7 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                     String course = ci.getClassInstructing().getSchedulingSubpart().getControllingCourseOffering().getCourseNbr();
                     String itype =  getItype(ci.getClassInstructing());
                     String section = (iUseClassSuffix && ci.getClassInstructing().getClassSuffix()!=null?ci.getClassInstructing().getClassSuffix():ci.getClassInstructing().getSectionNumberString());
-                    ClassEvent event = ci.getClassInstructing().getEvent();
+                    ClassEvent event = iClass2event.get(ci.getClassInstructing().getUniqueId());
                     if (event==null || event.getMeetings().isEmpty()) {
                         println(
                                 rpad(subject,4)+" "+
@@ -231,7 +267,8 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                             } else {
                                 line += rpad("",42);
                             }
-                            Location location = meeting.getMeetings().first().getLocation();
+                            Long permId = meeting.getMeetings().first().getLocationPermanentId();
+                            Location location = (permId==null?null:iLocations.get(permId));
                             String loc = (location==null?"":formatRoom(location.getLabel()));
                             if (last==null || !loc.equals(lastLoc)) {
                                 line += loc + " ";
@@ -378,7 +415,7 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                                 rpad(iPeriodPrinted?"":"CLASS",6)+" "+
                                 rpad(conflict.getOtherClass().getSchedulingSubpart().getControllingCourseOffering().getSubjectAreaAbbv(),4)+" "+
                                 rpad(conflict.getOtherClass().getSchedulingSubpart().getControllingCourseOffering().getCourseNbr(),6)+" "+
-                                (iItype?rpad(conflict.getOtherClass().getSchedulingSubpart().getItypeDesc(),6)+" ":"")+
+                                (iItype?iExternal?conflict.getOtherClass().getExternalUniqueId():rpad(conflict.getOtherClass().getSchedulingSubpart().getItypeDesc(),6)+" ":"")+
                                 lpad(iUseClassSuffix && conflict.getOtherClass().getClassSuffix()!=null?conflict.getOtherClass().getClassSuffix():conflict.getOtherClass().getSectionNumberString(),4)+" "+
                                 getMeetingTime(conflict.getOtherEventTime())
                                 );
@@ -519,7 +556,7 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                                 rpad(iPeriodPrinted?"":"CLASS",6)+" "+
                                 rpad(conflict.getOtherClass().getSchedulingSubpart().getControllingCourseOffering().getSubjectAreaAbbv(),4)+" "+
                                 rpad(conflict.getOtherClass().getSchedulingSubpart().getControllingCourseOffering().getCourseNbr(),6)+" "+
-                                (iItype?rpad(conflict.getOtherClass().getSchedulingSubpart().getItypeDesc(),6)+" ":"")+
+                                (iItype?iExternal?conflict.getOtherClass().getExternalUniqueId():rpad(conflict.getOtherClass().getSchedulingSubpart().getItypeDesc(),6)+" ":"")+
                                 lpad(iUseClassSuffix && conflict.getOtherClass().getClassSuffix()!=null?conflict.getOtherClass().getClassSuffix():conflict.getOtherClass().getSectionNumberString(),4)+" "+
                                 getMeetingTime(conflict.getOtherEventTime())
                                 );

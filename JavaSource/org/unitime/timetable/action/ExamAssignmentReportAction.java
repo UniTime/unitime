@@ -51,10 +51,12 @@ import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ExamAssignmentReportForm;
+import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.ExamPeriod;
+import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Settings;
@@ -274,7 +276,25 @@ public class ExamAssignmentReportAction extends Action {
                 }
                 examsOfStudent.add(exams.get(examId));
             }
-        Parameters p = new Parameters(sessionId, examType);
+            Hashtable<Long, Set<Meeting>> period2meetings = new Hashtable();
+            for (Iterator i=new ExamDAO().getSession().createQuery(
+                    "select p.uniqueId, ce, m from ClassEvent ce inner join ce.meetings m, ExamPeriod p " +
+                    "where p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
+                    "p.session.examBeginDate+p.dateOffset = m.meetingDate and p.session.uniqueId=:sessionId and p.examType=:examType")
+                    .setInteger("travelTime", Constants.EXAM_TRAVEL_TIME_SLOTS)
+                    .setLong("sessionId", sessionId).setInteger("examType", examType)
+                    .setCacheable(true).iterate(); i.hasNext();) {
+                Object[] o = (Object[])i.next();
+                Long periodId = (Long)o[0];
+                ClassEvent event = (ClassEvent)o[1];
+                Meeting meeting = (Meeting)o[2];
+                Set<Meeting> meetings  = period2meetings.get(periodId);
+                if (meetings==null) {
+                    meetings = new HashSet(); period2meetings.put(periodId, meetings);
+                }
+                meetings.add(meeting);
+            }
+            Parameters p = new Parameters(sessionId, examType);
         TreeSet<ExamAssignmentInfo> ret = new TreeSet();
         if (subjectAreaId==null || subjectAreaId<0) {
             for (Iterator i = new ExamDAO().getSession().createQuery(
@@ -285,7 +305,7 @@ public class ExamAssignmentReportAction extends Action {
                     setLong("examType", examType).
                     setCacheable(true).list().iterator();i.hasNext();) {
                 Exam exam = (Exam)i.next();
-                ExamAssignmentInfo info = new ExamAssignmentInfo(exam, owner2students, student2exams, p);
+                ExamAssignmentInfo info = new ExamAssignmentInfo(exam, owner2students, student2exams, period2meetings, p);
                 ret.add(info);
             }
         } else {
@@ -299,7 +319,7 @@ public class ExamAssignmentReportAction extends Action {
                     setLong("subjectAreaId", subjectAreaId).
                     setCacheable(true).list().iterator();i.hasNext();) {
                 Exam exam = (Exam)i.next();
-                ExamAssignmentInfo info = new ExamAssignmentInfo(exam, owner2students, student2exams, p);
+                ExamAssignmentInfo info = new ExamAssignmentInfo(exam, owner2students, student2exams, period2meetings, p);
                 ret.add(info);
             }
         }
