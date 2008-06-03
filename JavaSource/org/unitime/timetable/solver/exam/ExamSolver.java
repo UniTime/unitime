@@ -836,7 +836,7 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
                 }
                 if (!ToolBox.equals(exam.getBestAssignment(),exam.getAssignment())) {
                     changes.add(new ExamAssignmentInfo[] {
-                            new ExamAssignmentInfo(exam,(ExamPlacement)exam.getInitialAssignment()),
+                            new ExamAssignmentInfo(exam,(ExamPlacement)exam.getBestAssignment()),
                             new ExamAssignmentInfo(exam,(ExamPlacement)exam.getAssignment())});
                 }
             }
