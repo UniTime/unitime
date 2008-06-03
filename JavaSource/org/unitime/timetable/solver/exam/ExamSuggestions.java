@@ -32,7 +32,7 @@ public class ExamSuggestions {
     private Vector<Exam> iInitialUnassignment;
     
     private TreeSet<ExamProposedChange> iSuggestions;
-    private Vector<Exam> iResolvedExams, iInitialExams;
+    private Vector<Exam> iResolvedExams;
     private Hashtable<Exam,ExamPlacement> iConflictsToResolve;
     private Exam iExam;
     
@@ -102,7 +102,6 @@ public class ExamSuggestions {
         
         iResolvedExams = new Vector();
         iConflictsToResolve = new Hashtable();
-        iInitialExams = new Vector(1);
         iNrSolutions = 0;
         iNrCombinationsConsidered = 0;
         iTimeoutReached = false;
@@ -124,8 +123,6 @@ public class ExamSuggestions {
                 placement.variable().assign(0,placement);
             }
         }
-        
-        if (!iResolvedExams.contains(exam)) iInitialExams.add(exam);
         
         iStartTime= System.currentTimeMillis();
         backtrack(iDepth);
@@ -257,21 +254,20 @@ public class ExamSuggestions {
             iTimeoutReached = true;
             return;
         }
-        for (Exam exam : (iDepth==depth?iInitialExams:iConflictsToResolve.keySet())) {
-            if (iResolvedExams.contains(exam)) continue;
-            iResolvedExams.add(exam);
-            for (Enumeration e = exam.getPeriodPlacements().elements(); e.hasMoreElements();) {
-                ExamPeriodPlacement period = (ExamPeriodPlacement)e.nextElement();
-                //if (exam.equals(iExam) && !match(period.getPeriod().toString())) continue;
-                Set rooms = findBestAvailableRooms(exam, period, true);
-                if (rooms!=null) {
-                    tryPlacement(new ExamPlacement(exam, period, rooms), depth);
-                } else {
-                    rooms = findBestAvailableRooms(exam, period, false);
-                    if (rooms!=null) tryPlacement(new ExamPlacement(exam, period, rooms), depth);
-                }
+        Exam exam = (iDepth==depth && !iResolvedExams.contains(iExam)?iExam:iConflictsToResolve.keys().nextElement());
+        if (iResolvedExams.contains(exam)) return;
+        iResolvedExams.add(exam);
+        for (Enumeration e = exam.getPeriodPlacements().elements(); e.hasMoreElements();) {
+            ExamPeriodPlacement period = (ExamPeriodPlacement)e.nextElement();
+            //if (exam.equals(iExam) && !match(period.getPeriod().toString())) continue;
+            Set rooms = findBestAvailableRooms(exam, period, true);
+            if (rooms!=null) {
+                tryPlacement(new ExamPlacement(exam, period, rooms), depth);
+            } else {
+                rooms = findBestAvailableRooms(exam, period, false);
+                if (rooms!=null) tryPlacement(new ExamPlacement(exam, period, rooms), depth);
             }
-            iResolvedExams.remove(exam);
         }
+        iResolvedExams.remove(exam);
     }
 }
