@@ -22,6 +22,7 @@ import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.Event.MultiMeeting;
 import org.unitime.timetable.model.comparators.ClassComparator;
+import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.reports.exam.InstructorExamReport.FileGenerator;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
@@ -37,6 +38,8 @@ import com.lowagie.text.DocumentException;
 public class StudentExamReport extends PdfLegacyExamReport {
     protected static Logger sLog = Logger.getLogger(StudentExamReport.class);
     Hashtable<Long,Student> iStudents = new Hashtable();
+    Hashtable<Long,ClassEvent> iClass2event = new Hashtable();
+    Hashtable<Long,Location> iLocations = new Hashtable();
     
     public StudentExamReport(int mode, File file, Session session, int examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
         super(mode, file, "STUDENT EXAMINATION SCHEDULE", session, examType, subjectArea, exams);
@@ -44,6 +47,39 @@ public class StudentExamReport extends PdfLegacyExamReport {
         for (Iterator i=new StudentDAO().getSession().createQuery("select s from Student s where s.session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).setCacheable(true).iterate();i.hasNext();) {
             Student s = (Student)i.next();
             iStudents.put(s.getUniqueId(), s);
+        }
+        sLog.info("  Loading class events...");
+        if (getSubjectArea()!=null) {
+            for (Iterator i=new SessionDAO().getSession().createQuery(
+                    "select c.uniqueId, e from ClassEvent e inner join e.clazz c left join fetch e.meetings m "+
+                    "inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where "+
+                    "co.subjectArea.uniqueId=:subjectAreaId").
+                    setLong("subjectAreaId", getSubjectArea().getUniqueId()).setCacheable(true).list().iterator();i.hasNext();) {
+                Object[] o = (Object[])i.next();
+                iClass2event.put((Long)o[0], (ClassEvent)o[1]);
+            }
+        } else {
+            for (Iterator i=new SessionDAO().getSession().createQuery(
+                    "select c.uniqueId, e from ClassEvent e inner join e.clazz c left join fetch e.meetings m "+
+                    "inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where "+
+                    "co.subjectArea.session.uniqueId=:sessionId").
+                    setLong("sessionId", getSession().getUniqueId()).setCacheable(true).list().iterator();i.hasNext();) {
+                Object[] o = (Object[])i.next();
+                iClass2event.put((Long)o[0], (ClassEvent)o[1]);
+            }
+        }
+        sLog.info("  Loading locations...");
+        for (Iterator i=new SessionDAO().getSession().createQuery(
+                "select r from Room r where r.session.uniqueId=:sessionId and r.permanentId!=null").
+                setLong("sessionId", getSession().getUniqueId()).setCacheable(true).list().iterator();i.hasNext();) {
+            Location location = (Location)i.next();
+            iLocations.put(location.getUniqueId(), location);
+        }
+        for (Iterator i=new SessionDAO().getSession().createQuery(
+                "select r from NonUniversityLocation r where r.session.uniqueId=:sessionId and r.permanentId!=null").
+                setLong("sessionId", getSession().getUniqueId()).setCacheable(true).list().iterator();i.hasNext();) {
+            Location location = (Location)i.next();
+            iLocations.put(location.getUniqueId(), location);
         }
     }
     
@@ -141,7 +177,7 @@ public class StudentExamReport extends PdfLegacyExamReport {
                     String course = clazz.getSchedulingSubpart().getControllingCourseOffering().getCourseNbr();
                     String itype =  getItype(clazz);
                     String section = (iUseClassSuffix && clazz.getClassSuffix()!=null?clazz.getClassSuffix():clazz.getSectionNumberString());
-                    ClassEvent event = clazz.getEvent();
+                    ClassEvent event = iClass2event.get(clazz.getUniqueId());
                     if (event==null || event.getMeetings().isEmpty()) {
                         println(
                                 rpad(subject,4)+" "+
@@ -173,7 +209,8 @@ public class StudentExamReport extends PdfLegacyExamReport {
                             } else {
                                 line += rpad("",39);
                             }
-                            Location location = meeting.getMeetings().first().getLocation();
+                            Long permId = meeting.getMeetings().first().getLocationPermanentId();
+                            Location location = (permId==null?null:iLocations.get(permId));
                             String loc = (location==null?"":formatRoom(location.getLabel()));
                             if (last==null || !loc.equals(lastLoc)) {
                                 line += loc + " ";
@@ -308,7 +345,7 @@ public class StudentExamReport extends PdfLegacyExamReport {
                                 rpad(iPeriodPrinted?"":"CLASS",6)+" "+
                                 rpad(conflict.getOtherClass().getSchedulingSubpart().getControllingCourseOffering().getSubjectAreaAbbv(),4)+" "+
                                 rpad(conflict.getOtherClass().getSchedulingSubpart().getControllingCourseOffering().getCourseNbr(),6)+" "+
-                                (iItype?rpad(conflict.getOtherClass().getSchedulingSubpart().getItypeDesc(),6)+" ":"")+
+                                (iItype?iExternal?conflict.getOtherClass().getExternalUniqueId():rpad(conflict.getOtherClass().getSchedulingSubpart().getItypeDesc(),6)+" ":"")+
                                 lpad(iUseClassSuffix && conflict.getOtherClass().getClassSuffix()!=null?conflict.getOtherClass().getClassSuffix():conflict.getOtherClass().getSectionNumberString(),4)+" "+
                                 getMeetingTime(conflict.getOtherEventTime())
                                 );

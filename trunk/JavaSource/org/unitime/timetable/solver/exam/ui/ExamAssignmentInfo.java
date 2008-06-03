@@ -245,13 +245,13 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         this(exam, "true".equals(ApplicationProperties.getProperty("tmtbl.exams.conflicts.cache","true")));
     }
     
-    public ExamAssignmentInfo(org.unitime.timetable.model.Exam exam, Hashtable<Long,Set<Long>> owner2students, Hashtable<Long, Set<org.unitime.timetable.model.Exam>> studentExams, Parameters p) {
+    public ExamAssignmentInfo(org.unitime.timetable.model.Exam exam, Hashtable<Long,Set<Long>> owner2students, Hashtable<Long, Set<org.unitime.timetable.model.Exam>> studentExams, Hashtable<Long, Set<Meeting>> period2meetings, Parameters p) {
         super(exam, owner2students);
         Hashtable<Long,Set<org.unitime.timetable.model.Exam>> examStudents = new Hashtable();
         for (ExamSectionInfo section: getSections())
             for (Long studentId : section.getStudentIds())
                 examStudents.put(studentId, studentExams.get(studentId));
-        generateConflicts(exam, examStudents, null, p);
+        generateConflicts(exam, examStudents, null, period2meetings, p);
     }
     
     public ExamAssignmentInfo(org.unitime.timetable.model.Exam exam, boolean useCache) {
@@ -357,6 +357,34 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
     }
     */
     
+    private void computeUnavailablility(org.unitime.timetable.model.Exam exam, Long periodId, Hashtable<Long, Set<Meeting>> period2meetings) {
+        if (period2meetings==null) {
+            computeUnavailablility(exam, periodId);
+        } else {
+            Set<Meeting> meetings = period2meetings.get(periodId);
+            if (meetings!=null) {
+                meetings: for (Meeting meeting: meetings) {
+                    for (Iterator i=iDirects.iterator();i.hasNext();) {
+                        DirectConflict dc = (DirectConflict)i.next();
+                        if (meeting.getEvent().getUniqueId().equals(dc.getOtherEventId())) {
+                            dc.addMeeting(meeting);
+                            continue meetings;
+                        }
+                    }
+                    HashSet<Long> students = new HashSet();
+                    for (Iterator i=((ClassEvent)meeting.getEvent()).getStudentIds().iterator();i.hasNext();) {
+                        Long studentId = (Long)i.next();
+                        for (ExamSectionInfo section: getSections()) 
+                            if (section.getStudentIds().contains(studentId)) {
+                                students.add(studentId); break;
+                            }
+                    }
+                    iDirects.add(new DirectConflict(meeting, students));
+                }
+            }
+        }
+    }
+
     private void computeUnavailablility(org.unitime.timetable.model.Exam exam, Long periodId) {
         meetings: for (Map.Entry<Meeting, Set<Long>> entry : exam.getOverlappingStudentMeetings(periodId).entrySet()) {
             for (Iterator i=iDirects.iterator();i.hasNext();) {
@@ -369,7 +397,40 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             iDirects.add(new DirectConflict(entry.getKey(), entry.getValue()));
         }
     }
+    
+    private void computeUnavailablility(DepartmentalInstructor instructor, ExamPeriod period, Hashtable<Long, Set<Meeting>> period2meetings) {
+        if (period2meetings==null) {
+            computeUnavailablility(instructor, period);
+        } else {
+            Set<Meeting> meetings = period2meetings.get(period.getUniqueId());
+            if (meetings!=null) {
+                meetings: for (Meeting meeting: meetings) {
+                    Class_ clazz = ((ClassEvent)meeting.getEvent()).getClazz();
+                    for (Iterator i=clazz.getClassInstructors().iterator();i.hasNext();) {
+                        ClassInstructor ci = (ClassInstructor)i.next();
+                        if (ci.isLead() && (ci.getInstructor().getUniqueId().equals(instructor.getUniqueId()) ||
+                           (ci.getInstructor().getExternalUniqueId()!=null && ci.getInstructor().getExternalUniqueId().equals(instructor.getExternalUniqueId())))) {
+                            for (Iterator j=iInstructorDirects.iterator();j.hasNext();) {
+                                DirectConflict dc = (DirectConflict)j.next();
+                                if (meeting.getEvent().getUniqueId().equals(dc.getOtherEventId())) {
+                                    dc.incNrStudents();
+                                    dc.getStudents().add(instructor.getUniqueId());
+                                    dc.addMeeting(meeting);
+                                    continue meetings;
+                                }
+                            }
+                            DirectConflict dc = new DirectConflict(meeting);
+                            dc.getStudents().add(instructor.getUniqueId());
+                            iInstructorDirects.add(dc);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
 
+    }
+    
     private void computeUnavailablility(DepartmentalInstructor instructor, ExamPeriod period) {
         for (Iterator j=instructor.getClasses().iterator();j.hasNext();) {
             ClassInstructor ci = (ClassInstructor)j.next();
@@ -489,7 +550,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
     }
 
     public ExamAssignmentInfo(org.unitime.timetable.model.Exam exam, ExamPeriod period, Collection<ExamRoomInfo> rooms) throws Exception {
-        this(exam, period, rooms, exam.getStudentExams(), null);
+        this(exam, period, rooms, (period==null?null:exam.getStudentExams()), null);
     }
     
     public ExamAssignmentInfo(org.unitime.timetable.model.Exam exam, ExamPeriod period, Collection<ExamRoomInfo> rooms, Hashtable<Long, ExamAssignment> table) throws Exception {
@@ -499,7 +560,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
     
     public ExamAssignmentInfo(org.unitime.timetable.model.Exam exam, ExamPeriod period, Collection<ExamRoomInfo> rooms, Hashtable<Long, Set<org.unitime.timetable.model.Exam>> examStudents, Hashtable<Long, ExamAssignment> table) throws Exception {
         super(exam, period, rooms);
-        generateConflicts(exam, examStudents, table);
+        if (period!=null) generateConflicts(exam, examStudents, table);
     }
    
     public ExamAssignmentInfo(org.unitime.timetable.model.Exam exam, Hashtable<Long, ExamAssignment> table) {
@@ -508,10 +569,10 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
     }
     
     public void generateConflicts(org.unitime.timetable.model.Exam exam, Hashtable<Long, Set<org.unitime.timetable.model.Exam>> examStudents, Hashtable<Long, ExamAssignment> table) {
-        generateConflicts(exam, examStudents, table, new Parameters(exam.getSession().getUniqueId(), exam.getExamType()));
+        generateConflicts(exam, examStudents, table, null, new Parameters(exam.getSession().getUniqueId(), exam.getExamType()));
     }
     
-    public void generateConflicts(org.unitime.timetable.model.Exam exam, Hashtable<Long, Set<org.unitime.timetable.model.Exam>> examStudents, Hashtable<Long, ExamAssignment> table, Parameters p) {
+    public void generateConflicts(org.unitime.timetable.model.Exam exam, Hashtable<Long, Set<org.unitime.timetable.model.Exam>> examStudents, Hashtable<Long, ExamAssignment> table, Hashtable<Long, Set<Meeting>> period2meetings, Parameters p) {
         if (getPeriod()==null) return;
         
         Hashtable<org.unitime.timetable.model.Exam,DirectConflict> directs = new Hashtable();
@@ -567,7 +628,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         iMoreThanTwoADays.addAll(m2ds.values());
         
         if (org.unitime.timetable.model.Exam.sExamTypeMidterm==getExamType())
-            computeUnavailablility(exam,getPeriodId());
+            computeUnavailablility(exam,getPeriodId(),period2meetings);
             
         Hashtable<org.unitime.timetable.model.Exam,DirectConflict> idirects = new Hashtable();
         Hashtable<org.unitime.timetable.model.Exam,BackToBackConflict> ibackToBacks = new Hashtable();
@@ -603,7 +664,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                     sameDateExams.add(other);
             }
             if (org.unitime.timetable.model.Exam.sExamTypeMidterm==getExam().getExamType())
-                computeUnavailablility(instructor, getPeriod());
+                computeUnavailablility(instructor, getPeriod(), period2meetings);
             if (sameDateExams.size()>=2) {
                 TreeSet examIds = new TreeSet();
                 TreeSet otherExams = new TreeSet();

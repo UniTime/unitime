@@ -252,7 +252,6 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
             if (dp!=null) return dp.isDefault();
         }
         if (classEvent!=null && !classEvent.getMeetings().isEmpty()) {
-            TreeSet meetings = new TreeSet(classEvent.getMeetings());
             Date first = null, last = null;
             for (Iterator i=classEvent.getMeetings().iterator();i.hasNext();) {
                 Meeting m = (Meeting)i.next();
@@ -720,12 +719,33 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                 examsOfStudent.add(exams.get(examId));
             }
         }
+        Hashtable<Long, Set<Meeting>> period2meetings = new Hashtable();
+        if (assgn && examType==Exam.sExamTypeMidterm) {
+            sLog.info("  Loading overlapping class meetings...");
+            for (Iterator i=new ExamDAO().getSession().createQuery(
+                    "select p.uniqueId, ce, m from ClassEvent ce inner join ce.meetings m, ExamPeriod p " +
+                    "where p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
+                    "p.session.examBeginDate+p.dateOffset = m.meetingDate and p.session.uniqueId=:sessionId and p.examType=:examType")
+                    .setInteger("travelTime", Constants.EXAM_TRAVEL_TIME_SLOTS)
+                    .setLong("sessionId", sessionId).setInteger("examType", examType)
+                    .setCacheable(true).iterate(); i.hasNext();) {
+                Object[] o = (Object[])i.next();
+                Long periodId = (Long)o[0];
+                ClassEvent event = (ClassEvent)o[1];
+                Meeting meeting = (Meeting)o[2];
+                Set<Meeting> meetings  = period2meetings.get(periodId);
+                if (meetings==null) {
+                    meetings = new HashSet(); period2meetings.put(periodId, meetings);
+                }
+                meetings.add(meeting);
+            }
+        }
         Parameters p = new Parameters(sessionId, examType);
         sLog.info("  Creating exam assignments...");
         TreeSet<ExamAssignmentInfo> ret = new TreeSet();
         for (Enumeration<Exam> e = exams.elements(); e.hasMoreElements();) {
             Exam exam = (Exam)e.nextElement();
-            ExamAssignmentInfo info = (assgn?new ExamAssignmentInfo(exam, owner2students, student2exams, p):new ExamAssignmentInfo(exam, null, null, null, null));
+            ExamAssignmentInfo info = (assgn?new ExamAssignmentInfo(exam, owner2students, student2exams, period2meetings, p):new ExamAssignmentInfo(exam, (ExamPeriod)null, null));
             ret.add(info);
         }
         long t1 = System.currentTimeMillis();
