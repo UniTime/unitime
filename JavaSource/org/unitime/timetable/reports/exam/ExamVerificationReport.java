@@ -40,7 +40,6 @@ import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.comparators.CourseOfferingComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
 import org.unitime.timetable.solver.exam.ui.ExamRoomInfo;
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamSectionInfo;
@@ -427,6 +426,44 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                 class2event.put((Long)o[0], (ClassEvent)o[1]);
             }
         }
+        Hashtable<Long,Integer> courseLimits = new Hashtable();
+        Hashtable<Long,Integer> classLimits = new Hashtable();
+        if (iDispLimits) {
+            sLog.info("  Loading course limits ...");
+            if (getSubjectArea()!=null)
+                for (Iterator i=new SessionDAO().getSession().createQuery(
+                        "select co.uniqueId, count(distinct s.student.uniqueId) from "+
+                        "StudentClassEnrollment s inner join s.courseOffering co where co.subjectArea.uniqueId=:subjectAreaId "+
+                        "group by co.uniqueId").setLong("subjectAreaId", getSubjectArea().getUniqueId()).list().iterator();i.hasNext();) {
+                    Object[] o = (Object[])i.next();
+                    courseLimits.put((Long)o[0],((Number)o[1]).intValue());
+                }
+            else
+                for (Iterator i=new SessionDAO().getSession().createQuery(
+                        "select co.uniqueId, count(distinct s.student.uniqueId) from "+
+                        "StudentClassEnrollment s inner join s.courseOffering co where co.subjectArea.session.uniqueId=:sessionId "+
+                        "group by co.uniqueId").setLong("sessionId", getSession().getUniqueId()).list().iterator();i.hasNext();) {
+                    Object[] o = (Object[])i.next();
+                    courseLimits.put((Long)o[0],((Number)o[1]).intValue());
+                }
+            sLog.info("  Loading class limits ...");
+            if (getSubjectArea()!=null)
+                for (Iterator i=new SessionDAO().getSession().createQuery(
+                        "select c.uniqueId, count(distinct s.student.uniqueId) from "+
+                        "StudentClassEnrollment s inner join s.clazz c inner join s.courseOffering co where co.subjectArea.uniqueId=:subjectAreaId "+
+                        "group by c.uniqueId").setLong("subjectAreaId", getSubjectArea().getUniqueId()).list().iterator();i.hasNext();) {
+                    Object[] o = (Object[])i.next();
+                    classLimits.put((Long)o[0],((Number)o[1]).intValue());
+                }
+            else
+                for (Iterator i=new SessionDAO().getSession().createQuery(
+                        "select c.uniqueId, count(distinct s.student.uniqueId) from "+
+                        "StudentClassEnrollment s inner join s.clazz c inner join s.courseOffering co where co.subjectArea.session.uniqueId=:sessionId "+
+                        "group by c.uniqueId").setLong("sessionId", getSession().getUniqueId()).list().iterator();i.hasNext();) {
+                    Object[] o = (Object[])i.next();
+                    classLimits.put((Long)o[0],((Number)o[1]).intValue());
+                }
+        }
         sLog.info("  Printing report ...");
         SubjectArea subject = null;
         setHeader(new String[] {
@@ -471,10 +508,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                     InstrOfferingConfig config = (InstrOfferingConfig)i.next();
                     if (config.isUnlimitedEnrollment().booleanValue()) unlimited=true;
                 }
-                int enrl = 
-                    ((Number)new _RootDAO().getSession().createQuery(
-                            "select count(distinct s.uniqueId) from StudentClassEnrollment s where s.courseOffering.uniqueId=:courseId")
-                            .setLong("courseId", course.getUniqueId()).uniqueResult()).intValue();
+                Integer enrl = (iDispLimits?courseLimits.get(course.getUniqueId()):null);
                 TreeSet<ExamAssignmentInfo> exams = getExams(course);
                 String courseName = (course.isIsControl()?"":" ")+course.getCourseName();
                 iCoursePrinted = false;
@@ -482,7 +516,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                     println(
                         rpad(courseName,11)+" "+
                         rpad(course.getTitle()==null?"":course.getTitle(),(iDispLimits?28:48))+" "+
-                        (iDispLimits?lpad(courseLimit<=0?unlimited?"  inf":"":String.valueOf(courseLimit),9)+" "+lpad(enrl<=0?"":String.valueOf(enrl),9)+" ":"")+
+                        (iDispLimits?lpad(courseLimit<=0?unlimited?"  inf":"":String.valueOf(courseLimit),9)+" "+lpad(enrl==null || enrl<=0?"":String.valueOf(enrl),9)+" ":"")+
                         "         "+(hasCourseExam?"** NO EXAM**":""));
                 } else for (ExamAssignmentInfo exam : exams) {
                     Vector<String> rooms = new Vector();
@@ -572,7 +606,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                         println(rpad(idx>0 || iCoursePrinted?"":courseName,11)+" "+
                                 rpad(idx>0 || iCoursePrinted?"":course.getTitle()==null?"":course.getTitle(),(iDispLimits?28:48))+" "+
                                 (iDispLimits?lpad(idx>0 || iCoursePrinted?"":courseLimit<=0?unlimited?"  inf":"":String.valueOf(courseLimit),9)+" "+
-                                        lpad(idx>0 || iCoursePrinted || enrl<=0?"":String.valueOf(enrl),9)+" ":"")+
+                                        lpad(idx>0 || iCoursePrinted || enrl==null || enrl<=0?"":String.valueOf(enrl),9)+" ":"")+
                                 lpad(idx>0?"":exam.getSeatingType()==Exam.sSeatingTypeExam?"yes":"no",4)+" "+
                                 lpad(idx>0?"":String.valueOf(exam.getLength()),3)+
                                 time+room+mw
@@ -621,18 +655,15 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                 if (allSectionsHaveExam && classes.size()>1) hasSubpartExam = true;
                 if (allSectionsHaveExam) hasCourseExam = true;
                 for (Class_ clazz : classes) {
-                    int enrl = 
-                        ((Number)new _RootDAO().getSession().createQuery(
-                                "select count(*) from StudentClassEnrollment s where s.clazz.uniqueId=:classId")
-                                .setLong("classId", clazz.getUniqueId()).uniqueResult()).intValue();
+                    Integer enrl = (iDispLimits?classLimits.get(clazz.getUniqueId()):null);
                     if (!same.isEmpty() && 
                             (iSkipHoles || same.lastElement().getSectionNumber()+1==clazz.getSectionNumber()) && 
                             ToolBox.equals(clazz.getSchedulePrintNote(), same.lastElement().getSchedulePrintNote()) && 
                             exams.equals(getExams(clazz)) && 
                             mw.equals(getMeetWith(clazz, null)) &&
                             message.equals(getMessage(clazz, hasCourseExam, hasSectionExam, class2event))) {
-                        minEnrl = Math.min(minEnrl, enrl);
-                        maxEnrl = Math.max(maxEnrl, enrl);
+                        minEnrl = Math.min(minEnrl, (enrl==null?0:enrl.intValue()));
+                        maxEnrl = Math.max(maxEnrl, (enrl==null?0:enrl.intValue()));
                         minLimit = Math.min(minLimit, clazz.getClassLimit());
                         maxLimit = Math.max(maxLimit, clazz.getClassLimit());
                         message = getMessage(clazz, hasCourseExam, hasSectionExam, class2event);
@@ -645,7 +676,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                     }
                     exams = getExams(clazz);
                     mw = getMeetWith(clazz, null);
-                    minEnrl = maxEnrl = enrl;
+                    minEnrl = maxEnrl = (enrl==null?0:enrl.intValue());
                     minLimit = maxLimit = clazz.getClassLimit();
                     message = getMessage(clazz, hasCourseExam, hasSectionExam, class2event);
                     same.add(clazz);
