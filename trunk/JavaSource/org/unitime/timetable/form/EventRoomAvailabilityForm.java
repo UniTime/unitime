@@ -34,11 +34,9 @@ import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.MeetingDAO;
-import org.unitime.timetable.webutil.EventModel;
 
 public class EventRoomAvailabilityForm extends ActionForm {
 
-	private EventModel iModel;
 	private Long iSessionId;
 	private String iLocationType;
 	private List iLocations;
