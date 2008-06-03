@@ -27,10 +27,15 @@
 
 <%
  if (exception!=null && exception.getMessage() != null
-       && exception.getMessage().startsWith("Access Denied") ) {
-       response.sendRedirect("loginRequired.jsp");
- }
- if (exception==null && session.getAttribute("exception")!=null) {
+       && exception.getMessage().startsWith("Access Denied") ) {%>
+ 	<jsp:forward page="/loginRequired.do">
+			<jsp:param name="message" value="<%=exception.getMessage()%>"/>
+	</jsp:forward>
+<%} else if (!Web.isLoggedIn(session)) {%>
+ 	<jsp:forward page="/loginRequired.do">
+			<jsp:param name="message" value="Your timetabling session has expired. Please log in again."/>
+	</jsp:forward>
+<%} else if (exception==null && session.getAttribute("exception")!=null) {
  	exception = (Exception)session.getAttribute("exception");
  	session.removeAttribute("exception");
  }
