@@ -60,9 +60,9 @@ public class ExamsAction extends Action {
 
         if ("Apply".equals(op)) {
             myForm.save(request.getSession());
-            if (myForm.getUser()!=null && myForm.getUser().length()>0 && myForm.getPassword()!=null && myForm.getPassword().length()>0) {
+            if (myForm.getUsername()!=null && myForm.getUsername().length()>0 && myForm.getPassword()!=null && myForm.getPassword().length()>0) {
                 try {
-                    UserPasswordHandler handler = new UserPasswordHandler(myForm.getUser(), myForm.getPassword());
+                    UserPasswordHandler handler = new UserPasswordHandler(myForm.getUsername(), myForm.getPassword());
                     LoginContext lc = new LoginContext("Timetabling", handler);
                     lc.login();
                     
@@ -90,7 +90,7 @@ public class ExamsAction extends Action {
                         }
                     }
                 } catch (LoginException le) {
-                    myForm.setMessage(le.getMessage());
+                    myForm.setMessage("Authentication failed");
                 }
             }
         }

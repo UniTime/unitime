@@ -103,7 +103,7 @@
 		<TR>
 			<TD nowspan>
 				User:
-				<html:text property="user" size="25"/>,&nbsp;&nbsp;&nbsp;
+				<html:text property="username" size="25"/>,&nbsp;&nbsp;&nbsp;
 				Password:
 				<html:password property="password" size="25"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 				<html:submit onclick="displayLoading();" accesskey="A" property="op" value="Apply" title="Apply (Alt+A)"/>
