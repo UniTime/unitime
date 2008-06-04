@@ -80,27 +80,34 @@ public class PersonalizedExamReportAction extends Action {
     public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
         PersonalizedExamReportForm myForm = (PersonalizedExamReportForm) form;
         
+        String back = (Boolean.TRUE.equals(request.getSession().getAttribute("loginFromExams"))?"exams":"back");
+        
         User user = Web.getUser(request.getSession());
         if (user==null) {
             request.setAttribute("message", "Login is required.");
-            return mapping.findForward("back");
+            return mapping.findForward(back);
         }
         if (user.getRole()!=null) return mapping.findForward("main");
         String externalId = user.getId();
         if (externalId==null || externalId.length()==0) {
             request.setAttribute("message", "No user id provided.");
-            return mapping.findForward("back");
+            return mapping.findForward(back);
         }
         
         if ("Log Out".equals(myForm.getOp())) {
             request.getSession().invalidate();
-            return mapping.findForward("back");
+            return mapping.findForward(back);
         }
         
         Long sessionId = (Long)request.getAttribute("PersonalizedExamReport.SessionId");
         if (request.getParameter("session")!=null) {
             sessionId = Long.valueOf(request.getParameter("session"));
             request.setAttribute("PersonalizedExamReport.SessionId", sessionId);
+        }
+        if (sessionId==null) {
+            sessionId = (Long)request.getSession().getAttribute("Exams.session");
+        } else {
+            request.getSession().setAttribute("Exams.session", sessionId);
         }
         
         HashSet<Session> sessions = new HashSet();
@@ -137,7 +144,7 @@ public class PersonalizedExamReportAction extends Action {
         
         if (instructor==null && student==null) {
             request.setAttribute("message", "No examinations found.");
-            return mapping.findForward("back");
+            return mapping.findForward(back);
         }
         
         myForm.setCanExport(false);
@@ -163,7 +170,7 @@ public class PersonalizedExamReportAction extends Action {
         
         if (instructorExams.isEmpty() && studentExams.isEmpty()) {
             request.setAttribute("message", "No examinations found.");
-            return mapping.findForward("back");
+            return mapping.findForward(back);
         }
         
         WebTable.setOrder(request.getSession(),"exams.o0",request.getParameter("o0"),1);
@@ -371,7 +378,7 @@ public class PersonalizedExamReportAction extends Action {
         String nl = (html?"<br>":"\n");
         PdfWebTable table = new PdfWebTable( 5,
                 "Available Academic Sessions for "+name,
-                "exams.do?o0=%%",
+                "personalizedExams.do?o0=%%",
                 new String[] {
                     "Term",
                     "Year",
@@ -383,7 +390,7 @@ public class PersonalizedExamReportAction extends Action {
             String bgColor = null;
             if (sessionId.equals(session.getUniqueId())) bgColor = "rgb(168,187,225)";
             table.addLine(
-                    "onClick=\"document.location='exams.do?session="+session.getUniqueId()+"';\"",
+                    "onClick=\"document.location='personalizedExams.do?session="+session.getUniqueId()+"';\"",
                     new String[] {
                         session.getAcademicTerm(),
                         session.getAcademicYear(),
@@ -401,7 +408,7 @@ public class PersonalizedExamReportAction extends Action {
         String nl = (html?"<br>":"\n");
         PdfWebTable table = new PdfWebTable( 5,
                 student.getSession().getLabel()+" Examination Schedule for "+student.getName(DepartmentalInstructor.sNameFormatLastFist),
-                "exams.do?o1=%%",
+                "personalizedExams.do?o1=%%",
                 new String[] {
                     "Class / Course",
                     "Meeting Time",
@@ -411,6 +418,7 @@ public class PersonalizedExamReportAction extends Action {
                 new String[] {"left", "left", "left", "left", "left"},
                 new boolean[] {true, true, true, true, true} );
         table.setRowStyle("white-space:nowrap");
+        String noRoom = ApplicationProperties.getProperty("tmtbl.exam.report.noroom","");
         for (ExamAssignmentInfo exam : exams) {
             for (ExamSectionInfo section : exam.getSections()) {
                 if (!section.getStudentIds().contains(student.getUniqueId())) continue;
@@ -420,7 +428,7 @@ public class PersonalizedExamReportAction extends Action {
                                 getMeetingTime(section),
                                 exam.getDate(false),
                                 exam.getTime(false),
-                                exam.getRoomsName(false,", ")
+                                (exam.getNrRooms()==0?noRoom:exam.getRoomsName(false,", "))
                         },
                         new Comparable[] {
                             new MultiComparable(section.getName(), exam),
@@ -438,7 +446,7 @@ public class PersonalizedExamReportAction extends Action {
         String nl = (html?"<br>":"\n");
         PdfWebTable table = new PdfWebTable( 6,
                 student.getSession().getLabel()+" Examination Conflicts for "+student.getName(DepartmentalInstructor.sNameFormatLastFist),
-                "exams.do?o3=%%",
+                "personalizedExams.do?o3=%%",
                 new String[] {
                     "Type",
                     "Class / Course",
@@ -449,6 +457,7 @@ public class PersonalizedExamReportAction extends Action {
                     new String[] {"left","left","left","left","left","left"},
                     new boolean[] {true,  true, true, true, true, true} );
         table.setRowStyle("white-space:nowrap");
+        String noRoom = ApplicationProperties.getProperty("tmtbl.exam.report.noroom","");
         for (ExamAssignmentInfo exam : exams) {
             for (DirectConflict conflict : exam.getDirectConflicts()) {
                 if (conflict.getOtherExam()!=null && exam.compareTo(conflict.getOtherExam())>=0 && exams.contains(conflict.getOtherExam())) continue;
@@ -464,7 +473,7 @@ public class PersonalizedExamReportAction extends Action {
                     if (firstSection) {
                         date += exam.getDate(false);
                         time += exam.getTime(false);
-                        room += exam.getRoomsName(false, ", ");
+                        room += (exam.getNrRooms()==0?noRoom:exam.getRoomsName(false,", "));
                     }
                     firstSection = false;
                 }
@@ -477,7 +486,7 @@ public class PersonalizedExamReportAction extends Action {
                         }
                         classes += section.getName();
                         if (firstSection) {
-                            room += conflict.getOtherExam().getRoomsName(false, ", ");
+                            room += (conflict.getOtherExam().getNrRooms()==0?noRoom:conflict.getOtherExam().getRoomsName(false,", "));
                         }
                         firstSection = false;
                     }
@@ -519,7 +528,7 @@ public class PersonalizedExamReportAction extends Action {
                     if (firstSection) {
                         date += exam.getDate(false);
                         time += exam.getTime(false);
-                        room += exam.getRoomsName(false, ", ");
+                        room += (exam.getNrRooms()==0?noRoom:exam.getRoomsName(false,", "));;
                     }
                     firstSection = false;
                 }
@@ -532,7 +541,7 @@ public class PersonalizedExamReportAction extends Action {
                     classes += section.getName();
                     if (firstSection) {
                         time += conflict.getOtherExam().getTime(false);
-                        room += conflict.getOtherExam().getRoomsName(false, ", ");
+                        room += (conflict.getOtherExam().getNrRooms()==0?noRoom:conflict.getOtherExam().getRoomsName(false,", "));
                     }
                     firstSection = false;
                 }
@@ -568,7 +577,7 @@ public class PersonalizedExamReportAction extends Action {
                     if (firstSection) {
                         date += exam.getDate(false);
                         time += exam.getTime(false);
-                        room += exam.getRoomsName(false, ", ");
+                        room += (exam.getNrRooms()==0?noRoom:exam.getRoomsName(false,", "));
                     }
                     firstSection = false;
                 }
@@ -582,7 +591,7 @@ public class PersonalizedExamReportAction extends Action {
                         classes += section.getName();
                         if (firstSection) {
                             time += other.getTime(false);
-                            room += other.getRoomsName(false, ", ");
+                            room += (other.getNrRooms()==0?noRoom:other.getRoomsName(false,", "));
                         }
                         firstSection = false;
                     }
@@ -615,7 +624,7 @@ public class PersonalizedExamReportAction extends Action {
         String nl = (html?"<br>":"\n");
         PdfWebTable table = new PdfWebTable( 8,
                 instructor.getDepartment().getSession().getLabel()+" Examination Instructor Schedule for "+instructor.getName(DepartmentalInstructor.sNameFormatLastFist),
-                "exams.do?o2=%%",
+                "personalizedExams.do?o2=%%",
                 new String[] {
                     "Class / Course",
                     "Enrollment",
@@ -628,6 +637,7 @@ public class PersonalizedExamReportAction extends Action {
                 new String[] {"left", "right", "center", "left", "left", "left", "left", "right"},
                 new boolean[] {true, true, true, true, true, true, true, true} );
         table.setRowStyle("white-space:nowrap");
+        String noRoom = ApplicationProperties.getProperty("tmtbl.exam.report.noroom","");
         for (ExamAssignmentInfo exam : exams) {
             for (ExamSectionInfo section : exam.getSections()) {
                 table.addLine(
@@ -638,7 +648,7 @@ public class PersonalizedExamReportAction extends Action {
                                 getMeetingTime(section),
                                 exam.getDate(false),
                                 exam.getTime(false),
-                                exam.getRoomsName(false,", "),
+                                (exam.getNrRooms()==0?noRoom:exam.getRoomsName(false,", ")),
                                 exam.getRoomsCapacity(false, ", ")
                         },
                         new Comparable[] {
@@ -660,7 +670,7 @@ public class PersonalizedExamReportAction extends Action {
         String nl = (html?"<br>":"\n");
         PdfWebTable table = new PdfWebTable( 8,
                 instructor.getDepartment().getSession().getLabel()+" Examination Instructor Conflicts for "+instructor.getName(DepartmentalInstructor.sNameFormatLastFist),
-                "exams.do?o4=%%",
+                "personalizedExams.do?o4=%%",
                 new String[] {
                     "Type",
                     "Class / Course",
@@ -673,6 +683,7 @@ public class PersonalizedExamReportAction extends Action {
                     new String[] {"left","left","right","center","left","left","left","left"},
                     new boolean[] {true,  true, true, true, true, true, true, true} );
         table.setRowStyle("white-space:nowrap");
+        String noRoom = ApplicationProperties.getProperty("tmtbl.exam.report.noroom","");
         for (ExamAssignmentInfo exam : exams) {
             for (DirectConflict conflict : exam.getInstructorDirectConflicts()) {
                 if (conflict.getOtherExam()!=null && exam.compareTo(conflict.getOtherExam())>=0 && exams.contains(conflict.getOtherExam())) continue;
@@ -685,10 +696,10 @@ public class PersonalizedExamReportAction extends Action {
                     classes += section.getName();
                     enrollment += String.valueOf(section.getNrStudents());
                     if (firstSection) {
-                        seating += Exam.sExamTypes[exam.getExamType()];
+                        seating += Exam.sSeatingTypes[exam.getSeatingType()];
                         date += exam.getDate(false);
                         time += exam.getTime(false);
-                        room += exam.getRoomsName(false, ", ");
+                        room += (exam.getNrRooms()==0?noRoom:exam.getRoomsName(false,", "));
                     }
                     firstSection = false;
                 }
@@ -701,8 +712,8 @@ public class PersonalizedExamReportAction extends Action {
                         classes += section.getName();
                         enrollment += String.valueOf(section.getNrStudents());
                         if (firstSection) {
-                            seating += Exam.sExamTypes[conflict.getOtherExam().getExamType()];
-                            room += conflict.getOtherExam().getRoomsName(false, ", ");
+                            seating += Exam.sSeatingTypes[conflict.getOtherExam().getSeatingType()];
+                            room += (conflict.getOtherExam().getNrRooms()==0?conflict.getOtherExam():exam.getRoomsName(false,", "));
                         }
                         firstSection = false;
                     }
@@ -747,10 +758,10 @@ public class PersonalizedExamReportAction extends Action {
                     classes += section.getName();
                     enrollment += String.valueOf(section.getNrStudents());
                     if (firstSection) {
-                        seating += Exam.sExamTypes[exam.getExamType()];
+                        seating += Exam.sSeatingTypes[exam.getSeatingType()];
                         date += exam.getDate(false);
                         time += exam.getTime(false);
-                        room += exam.getRoomsName(false, ", ");
+                        room += (exam.getNrRooms()==0?noRoom:exam.getRoomsName(false,", "));
                     }
                     firstSection = false;
                 }
@@ -762,9 +773,9 @@ public class PersonalizedExamReportAction extends Action {
                     classes += section.getName();
                     enrollment += String.valueOf(section.getNrStudents());
                     if (firstSection) {
-                        seating += Exam.sExamTypes[exam.getExamType()];
+                        seating += Exam.sSeatingTypes[conflict.getOtherExam().getSeatingType()];
                         time += conflict.getOtherExam().getTime(false);
-                        room += conflict.getOtherExam().getRoomsName(false, ", ");
+                        room += (conflict.getOtherExam().getNrRooms()==0?conflict.getOtherExam():exam.getRoomsName(false,", "));
                     }
                     firstSection = false;
                 }
@@ -802,10 +813,10 @@ public class PersonalizedExamReportAction extends Action {
                     classes += section.getName();
                     enrollment += String.valueOf(section.getNrStudents());
                     if (firstSection) {
-                        seating += Exam.sExamTypes[exam.getExamType()];
+                        seating += Exam.sSeatingTypes[exam.getSeatingType()];
                         date += exam.getDate(false);
                         time += exam.getTime(false);
-                        room += exam.getRoomsName(false, ", ");
+                        room += (exam.getNrRooms()==0?noRoom:exam.getRoomsName(false,", "));
                     }
                     firstSection = false;
                 }
@@ -819,9 +830,9 @@ public class PersonalizedExamReportAction extends Action {
                         classes += section.getName();
                         enrollment += String.valueOf(section.getNrStudents());
                         if (firstSection) {
-                            seating += Exam.sExamTypes[other.getExamType()];
+                            seating += Exam.sSeatingTypes[exam.getSeatingType()];
                             time += other.getTime(false);
-                            room += other.getRoomsName(false, ", ");
+                            room += (other.getNrRooms()==0?noRoom:other.getRoomsName(false,", "));
                         }
                         firstSection = false;
                     }
@@ -857,7 +868,7 @@ public class PersonalizedExamReportAction extends Action {
         String nl = (html?"<br>":"\n");
         PdfWebTable table = new PdfWebTable( 8,
                 instructor.getDepartment().getSession().getLabel()+" Examination Conflicts for "+instructor.getName(DepartmentalInstructor.sNameFormatLastFist),
-                "exams.do?o5=%%",
+                "personalizedExams.do?o5=%%",
                 new String[] {
                     "Name",
                     "Type",
@@ -870,6 +881,7 @@ public class PersonalizedExamReportAction extends Action {
                     new String[] {"left","left","left","right","center","left","left","left"},
                     new boolean[] {true, true,  true, true, true, true, true, true} );
         table.setRowStyle("white-space:nowrap");
+        String noRoom = ApplicationProperties.getProperty("tmtbl.exam.report.noroom","");
         table.setBlankWhenSame(true);
         for (ExamAssignmentInfo exam : exams) {
             for (DirectConflict conflict : exam.getDirectConflicts()) {
@@ -888,10 +900,10 @@ public class PersonalizedExamReportAction extends Action {
                         classes += section.getName();
                         enrollment += String.valueOf(section.getNrStudents());
                         if (firstSection) {
-                            seating += Exam.sExamTypes[exam.getExamType()];
+                            seating += Exam.sSeatingTypes[exam.getSeatingType()];
                             date += exam.getDate(false);
                             time += exam.getTime(false);
-                            room += exam.getRoomsName(false, ", ");
+                            room += (exam.getNrRooms()==0?noRoom:exam.getRoomsName(false,", "));
                         }
                         firstSection = false;
                     }
@@ -905,8 +917,8 @@ public class PersonalizedExamReportAction extends Action {
                             classes += section.getName();
                             enrollment += String.valueOf(section.getNrStudents());
                             if (firstSection) {
-                                seating += Exam.sExamTypes[conflict.getOtherExam().getExamType()];
-                                room += conflict.getOtherExam().getRoomsName(false, ", ");
+                                seating += Exam.sSeatingTypes[exam.getSeatingType()];
+                                room += (conflict.getOtherExam().getNrRooms()==0?noRoom:conflict.getOtherExam().getRoomsName(false,", "));
                             }
                             firstSection = false;
                         }
@@ -958,10 +970,10 @@ public class PersonalizedExamReportAction extends Action {
                         classes += section.getName();
                         enrollment += String.valueOf(section.getNrStudents());
                         if (firstSection) {
-                            seating += Exam.sExamTypes[exam.getExamType()];
+                            seating += Exam.sSeatingTypes[exam.getSeatingType()];
                             date += exam.getDate(false);
                             time += exam.getTime(false);
-                            room += exam.getRoomsName(false, ", ");
+                            room += (exam.getNrRooms()==0?noRoom:exam.getRoomsName(false,", "));
                         }
                         firstSection = false;
                     }
@@ -974,9 +986,9 @@ public class PersonalizedExamReportAction extends Action {
                         classes += section.getName();
                         enrollment += String.valueOf(section.getNrStudents());
                         if (firstSection) {
-                            seating += Exam.sExamTypes[exam.getExamType()];
+                            seating += Exam.sSeatingTypes[exam.getSeatingType()];
                             time += conflict.getOtherExam().getTime(false);
-                            room += conflict.getOtherExam().getRoomsName(false, ", ");
+                            room += (conflict.getOtherExam().getNrRooms()==0?noRoom:conflict.getOtherExam().getRoomsName(false,", "));
                         }
                         firstSection = false;
                     }
@@ -1021,10 +1033,10 @@ public class PersonalizedExamReportAction extends Action {
                         classes += section.getName();
                         enrollment += String.valueOf(section.getNrStudents());
                         if (firstSection) {
-                            seating += Exam.sExamTypes[exam.getExamType()];
+                            seating += Exam.sSeatingTypes[exam.getSeatingType()];
                             date += exam.getDate(false);
                             time += exam.getTime(false);
-                            room += exam.getRoomsName(false, ", ");
+                            room += (exam.getNrRooms()==0?noRoom:exam.getRoomsName(false,", "));
                         }
                         firstSection = false;
                     }
@@ -1039,9 +1051,9 @@ public class PersonalizedExamReportAction extends Action {
                             classes += section.getName();
                             enrollment += String.valueOf(section.getNrStudents());
                             if (firstSection) {
-                                seating += Exam.sExamTypes[other.getExamType()];
+                                seating += Exam.sSeatingTypes[exam.getSeatingType()];
                                 time += other.getTime(false);
-                                room += other.getRoomsName(false, ", ");
+                                room += (other.getNrRooms()==0?noRoom:other.getRoomsName(false,", "));
                             }
                             firstSection = false;
                         }
@@ -1154,7 +1166,7 @@ public class PersonalizedExamReportAction extends Action {
         String nl = (html?"<br>":"\n");
         PdfWebTable table = new PdfWebTable( 6,
                 student.getSession().getLabel()+" Class Schedule for "+student.getName(DepartmentalInstructor.sNameFormatLastFist),
-                "exams.do?o6=%%",
+                "personalizedExams.do?o6=%%",
                 new String[] {
                     "Course",
                     "Instruction"+nl+"Type",
@@ -1203,7 +1215,7 @@ public class PersonalizedExamReportAction extends Action {
         String nl = (html?"<br>":"\n");
         PdfWebTable table = new PdfWebTable( 6,
                 instructor.getDepartment().getSession().getLabel()+" Class Schedule for "+instructor.getName(DepartmentalInstructor.sNameFormatLastFist),
-                "exams.do?o7=%%",
+                "personalizedExams.do?o7=%%",
                 new String[] {
                     "Course",
                     "Instruction"+nl+"Type",
@@ -1287,6 +1299,7 @@ public class PersonalizedExamReportAction extends Action {
                 }
             }
             for (Exam exam: exams) {
+                if (exam.getAssignedPeriod()==null) continue;
                 for (ExamSectionInfo section: new ExamAssignment(exam).getSections()) {
                     if (section.getStudentIds().contains(student.getUniqueId())) {
                         out.println("BEGIN:VEVENT");
@@ -1295,7 +1308,7 @@ public class PersonalizedExamReportAction extends Action {
                         Calendar endTime = Calendar.getInstance(); endTime.setTime(exam.getAssignedPeriod().getStartTime());
                         endTime.add(Calendar.MINUTE, exam.getLength());
                         out.println("DTEND:"+df.format(endTime.getTime())+"T"+tf.format(endTime.getTime())+"Z");
-                        out.println("SUMMARY:"+section.getName()+" ("+Exam.sExamTypes[exam.getExamType()]+" Exam)");
+                        out.println("SUMMARY:"+section.getName()+" ("+ApplicationProperties.getProperty("tmtbl.exam.name.type."+Exam.sExamTypes[exam.getExamType()],Exam.sExamTypes[exam.getExamType()])+" Exam)");
                         //out.println("DESCRIPTION:"+exam.getExamName()+" ("+Exam.sExamTypes[exam.getExamType()]+" Exam)");
                         if (!exam.getAssignedRooms().isEmpty()) {
                             String rooms = "";
@@ -1357,7 +1370,7 @@ public class PersonalizedExamReportAction extends Action {
                 Calendar endTime = Calendar.getInstance(); endTime.setTime(exam.getAssignedPeriod().getStartTime());
                 endTime.add(Calendar.MINUTE, exam.getLength());
                 out.println("DTEND:"+df.format(endTime.getTime())+"T"+tf.format(endTime.getTime())+"Z");
-                out.println("SUMMARY:"+exam.getLabel()+" ("+Exam.sExamTypes[exam.getExamType()]+" Exam)");
+                out.println("SUMMARY:"+exam.getLabel()+" ("+ApplicationProperties.getProperty("tmtbl.exam.name.type."+Exam.sExamTypes[exam.getExamType()],Exam.sExamTypes[exam.getExamType()])+" Exam)");
                 //out.println("DESCRIPTION:"+exam.getExamName()+" ("+Exam.sExamTypes[exam.getExamType()]+" Exam)");
                 if (!exam.getAssignedRooms().isEmpty()) {
                     String rooms = "";
