@@ -121,7 +121,7 @@ public class PersonalizedExamReportAction extends Action {
             if (s.getDepartment().getSession().getStatusType()==null || !s.getDepartment().getSession().getStatusType().canNoRoleReport() || !Exam.hasTimetable(s.getDepartment().getSession().getUniqueId())) continue;
             sessions.add(s.getDepartment().getSession());
             if (sessionId==null) {
-                if (instructor==null || instructor.getDepartment().getSession().compareTo(s.getDepartment().getSession())>0) instructor = s;
+                if (instructor==null || instructor.getDepartment().getSession().compareTo(s.getDepartment().getSession())<0) instructor = s;
             } else if (sessionId.equals(s.getDepartment().getSession().getUniqueId())) {
                 instructor = s;
             }
@@ -137,7 +137,7 @@ public class PersonalizedExamReportAction extends Action {
             if (s.getSession().getStatusType()==null || !s.getSession().getStatusType().canNoRoleReport() || !Exam.hasTimetable(s.getSession().getUniqueId())) continue;
             sessions.add(s.getSession());
             if (sessionId==null) {
-                if (student==null || student.getSession().compareTo(s.getSession())>0) student = s;
+                if (student==null || student.getSession().compareTo(s.getSession())<0) student = s;
             } else if (sessionId.equals(s.getSession().getUniqueId()))
                 student = s;
         }
