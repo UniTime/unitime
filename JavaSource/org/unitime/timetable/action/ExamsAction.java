@@ -126,11 +126,11 @@ public class ExamsAction extends Action {
 	private PdfWebTable getTable(boolean html, ExamsForm form, Vector<ExamAssignment> exams) {
 	    String nl = (html?"<br>":"\n");
         PdfWebTable table = new PdfWebTable( 7,
-                "Examinations", "exams.do?ord=%%",
+                form.getSessionLabel()+" "+form.getExamTypeLabel()+" examinations"+("--ALL--".equals(form.getSubjectArea())?"":" ("+form.getSubjectArea()+")"), "exams.do?ord=%%",
                 new String[] {
                     "Subject",
                     "Course",
-                    ("true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.external","false"))?"ExtnId":"InstTp"),
+                    ("true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.external","false"))?ApplicationProperties.getProperty("tmtbl.exam.report.external.name","External Id"):"InstTp"),
                     "Section",
                     "Date",
                     "Time",

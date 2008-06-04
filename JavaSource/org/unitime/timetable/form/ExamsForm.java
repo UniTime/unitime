@@ -20,6 +20,7 @@
 package org.unitime.timetable.form;
 
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.TreeSet;
 import java.util.Vector;
@@ -85,12 +86,17 @@ public class ExamsForm extends ActionForm {
 	public void load(HttpSession session) {
 	    setSubjectArea(session.getAttribute("Exams.subjectArea")==null?null:(String)session.getAttribute("Exams.subjectArea"));
 	    iSessions = new Vector();
+        setSession(session.getAttribute("Exams.session")==null?iSessions.isEmpty()?null:Long.valueOf(((ComboBoxLookup)iSessions.lastElement()).getValue()):(Long)session.getAttribute("Exams.session"));
+        boolean hasSession = false;
 	    for (Iterator i=Session.getAllSessions().iterator();i.hasNext();) {
 	        Session s = (Session)i.next();
-	        if (s.getStatusType()!=null && s.getStatusType().canNoRoleReport() && Exam.hasTimetable(s.getUniqueId())) 
+	        if (s.getStatusType()!=null && s.getStatusType().canNoRoleReport() && Exam.hasTimetable(s.getUniqueId())) {
+	            if (s.getUniqueId().equals(getSession())) hasSession = true;
 	            iSessions.add(new ComboBoxLookup(s.getLabel(),s.getUniqueId().toString()));
+	        }
 	    }
-	    setSession(session.getAttribute("Exams.session")==null?iSessions.isEmpty()?null:Long.valueOf(((ComboBoxLookup)iSessions.lastElement()).getValue()):(Long)session.getAttribute("Exams.session"));
+	    if (!hasSession) { setSession(null); setSubjectArea(null); }
+	    if (getSession()==null && !iSessions.isEmpty()) setSession(Long.valueOf(((ComboBoxLookup)iSessions.lastElement()).getValue()));
 	    iSubjectAreas = new TreeSet(new SubjectAreaDAO().getSession().createQuery("select distinct sa.subjectAreaAbbreviation from SubjectArea sa").setCacheable(true).list());
 	    setExamType(session.getAttribute("Exams.examType")==null?iExamType:(Integer)session.getAttribute("Exams.examType"));
 	}
@@ -130,5 +136,20 @@ public class ExamsForm extends ActionForm {
     public void setPassword(String password) { iPassword = password; }
     public String getMessage() { return iMessage; }
     public void setMessage(String message) { iMessage = message; }
+    
+    public String getExamTypeLabel() {
+        for (int i=0;i<Exam.sExamTypes.length;i++) {
+            if (i==getExamType()) return ApplicationProperties.getProperty("tmtbl.exam.name.type."+Exam.sExamTypes[i],Exam.sExamTypes[i]).toLowerCase();
+        }
+        return "";
+    }
+    
+    public String getSessionLabel() {
+        if (iSessions==null) return "";
+        for (Enumeration e=iSessions.elements();e.hasMoreElements();) {
+            ComboBoxLookup s = (ComboBoxLookup)e.nextElement();
+            if (Long.valueOf(s.getValue()).equals(getSession())) return s.getLabel();
+        }
+        return "";
+    }
 }
-
