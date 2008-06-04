@@ -77,50 +77,52 @@
 		</table>
 	</logic:notEmpty>
 	
-	<BR>
-	<a name="login"></a>
-	<TABLE width="95%" border="0" cellspacing="0" cellpadding="3">
-	<TR>
-		<TD nowspan>
-			<tt:section-title>Personalized Examination Schedule</tt:section-title>
-		</TD>
-	</TR>
- 	<logic:notEmpty name="examsForm" property="message">
-	<TR>
-		<TD nowspan style='color:red;font-weight:bold;'>
-			<bean:write name="examsForm" property="message"/>
-		</TD>
-	</TR>
- 	</logic:notEmpty>
- 	<logic:notEmpty name="message" scope="request">
-	<TR>
-		<TD nowspan style='color:red;font-weight:bold;'>
-			<bean:write name="message" scope="request"/>
-		</TD>
-	</TR>
- 	</logic:notEmpty>
-	<TR>
-		<TD nowspan>
-			User:
-			<html:text property="user" size="25"/>,&nbsp;&nbsp;&nbsp;
-			Password:
-			<html:password property="password" size="25"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-			<html:submit onclick="displayLoading();" accesskey="A" property="op" value="Apply" title="Apply (Alt+A)"/>
-			<tt:hasProperty name="tmtbl.exams.login.message">
-				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-				<i><tt:property name="tmtbl.exams.login.message"/></i>
-			</tt:hasProperty>
-		</TD>
-	</TR>
-	</TABLE>
-	<logic:notEmpty name="examsForm" property="message">
-		<SCRIPT type="text/javascript" language="javascript">
-			location.hash = 'login';
-		</SCRIPT>
-	</logic:notEmpty>
-	<logic:notEmpty name="mesage" scope="request">
-		<SCRIPT type="text/javascript" language="javascript">
-			location.hash = 'login';
-		</SCRIPT>
-	</logic:notEmpty>
+	<tt:propertyEquals name="tmtbl.authentication.norole" value="true">
+		<BR>
+		<a name="login"></a>
+		<TABLE width="95%" border="0" cellspacing="0" cellpadding="3">
+		<TR>
+			<TD nowspan>
+				<tt:section-title>Personalized Examination Schedule</tt:section-title>
+			</TD>
+		</TR>
+ 		<logic:notEmpty name="examsForm" property="message">
+			<TR>
+				<TD nowspan style='color:red;font-weight:bold;'>
+					<bean:write name="examsForm" property="message"/>
+				</TD>
+			</TR>
+ 		</logic:notEmpty>
+ 		<logic:notEmpty name="message" scope="request">
+			<TR>
+				<TD nowspan style='color:red;font-weight:bold;'>
+					<bean:write name="message" scope="request"/>
+				</TD>
+			</TR>
+ 		</logic:notEmpty>
+		<TR>
+			<TD nowspan>
+				User:
+				<html:text property="user" size="25"/>,&nbsp;&nbsp;&nbsp;
+				Password:
+				<html:password property="password" size="25"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				<html:submit onclick="displayLoading();" accesskey="A" property="op" value="Apply" title="Apply (Alt+A)"/>
+				<tt:hasProperty name="tmtbl.exams.login.message">
+					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					<i><tt:property name="tmtbl.exams.login.message"/></i>
+				</tt:hasProperty>
+			</TD>
+		</TR>
+		</TABLE>
+		<logic:notEmpty name="examsForm" property="message">
+			<SCRIPT type="text/javascript" language="javascript">
+				location.hash = 'login';
+			</SCRIPT>
+		</logic:notEmpty>
+		<logic:notEmpty name="mesage" scope="request">
+			<SCRIPT type="text/javascript" language="javascript">
+				location.hash = 'login';
+			</SCRIPT>
+		</logic:notEmpty>
+	</tt:propertyEquals>
 </html:form>
