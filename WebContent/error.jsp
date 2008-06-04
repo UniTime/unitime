@@ -25,21 +25,18 @@
 <%@ page import="java.util.Vector" %>
 <%@ page import="org.unitime.timetable.ApplicationProperties" %>
 
-<%
- if (exception!=null && exception.getMessage() != null
-       && exception.getMessage().startsWith("Access Denied") ) {%>
- 	<jsp:forward page="/loginRequired.do">
+<%@ include file="/checkLogin.jspf"%>
+<%@ include file="/checkAccessLevel.jspf"%>
+
+<%	if (exception==null && session.getAttribute("exception")!=null) {
+		exception = (Exception)session.getAttribute("exception");
+ 		session.removeAttribute("exception");
+ 	}
+ 	if (exception!=null && exception.getMessage()!=null && exception.getMessage().startsWith("Access Denied") ) { %>
+ 		<jsp:forward page="/loginRequired.do">
 			<jsp:param name="message" value="<%=exception.getMessage()%>"/>
-	</jsp:forward>
-<%} else if (!Web.isLoggedIn(session)) {%>
- 	<jsp:forward page="/loginRequired.do">
-			<jsp:param name="message" value="Your timetabling session has expired. Please log in again."/>
-	</jsp:forward>
-<%} else if (exception==null && session.getAttribute("exception")!=null) {
- 	exception = (Exception)session.getAttribute("exception");
- 	session.removeAttribute("exception");
- }
-%>
+		</jsp:forward>
+<%	}%>
 <HTML>
 <HEAD>
 	<TITLE>Timetabling - Error</TITLE>
