@@ -27,14 +27,18 @@
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 	
-<tiles:importAttribute name="noLogin" scope="request"/>
-<logic:equal name="noLogin" value="false">
-	<% if (!request.getServletPath().equals("/loginRequired.do")) { %>
-		<%@ include file="/checkLogin.jspf"%>
-	<% } 
-	   if (!request.getServletPath().equals("/loginRequired.do") && !request.getServletPath().equals("/selectPrimaryRole.do")) {%>
-		<%@ include file="/checkAccessLevel.jspf" %>
-	<% } %>
+<tiles:importAttribute name="checkLogin" scope="request"/>
+<tiles:importAttribute name="checkAdmin" scope="request"/>
+<tiles:importAttribute name="checkAccessLevel" scope="request"/>
+
+<logic:equal name="checkLogin" value="true">
+	<%@ include file="/checkLogin.jspf"%>
+</logic:equal>
+<logic:equal name="checkAdmin" value="true">
+	<%@ include file="/checkAdmin.jspf"%>
+</logic:equal>
+<logic:equal name="checkAccessLevel" value="true">
+	<%@ include file="/checkAccessLevel.jspf"%>
 </logic:equal>
 
 <%String path = request.getContextPath();

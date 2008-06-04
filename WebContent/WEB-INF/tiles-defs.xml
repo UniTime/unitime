@@ -47,7 +47,9 @@
  		<put name="showNavigation" value="false" />
 		<put name="showSolverWarnings" value="false" />
  		<put name="helpFile" value="" />
- 		<put name="noLogin" value="false" />
+ 		<put name="checkLogin" value="true" />
+ 		<put name="checkAdmin" value="false" />
+ 		<put name="checkAccessLevel" value="true" />
   	</definition>
 
 	<!-- Page Layouts -->
@@ -55,11 +57,15 @@
 	<definition	name="selectPrimaryRoleTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Select User Role"/>
 		<put name="body" value="/selectPrimaryRole.jsp" />
+		<put name="checkLogin" value="false" />
+		<put name="checkAccessLevel" value="false" />
   	</definition>
 
 	<definition	name="selectAcadSessionTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Select Academic Session"/>
 		<put name="body" value="/selectPrimaryRole.jsp" />
+		<put name="checkLogin" value="false" />
+		<put name="checkAccessLevel" value="false" />
   	</definition>
 
 	<definition	name="timetableManagerEditTile" extends="pageLayoutDef">
@@ -80,6 +86,8 @@
 
   	<definition	name="loginRequiredTile" extends="pageLayoutDef">
 		<put name="header" value="/loginRequired.jsp" />
+		<put name="checkLogin" value="false" />
+		<put name="checkAccessLevel" value="false" />
   	</definition>
 
 	<definition	name="distributionTypeListTile" extends="pageLayoutDef">
@@ -886,12 +894,15 @@
  	<definition	name="personalizedExamReportTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Personal Examination Schedule"/>
 		<put name="body" value="/exam/personalizedReport.jsp" />
+		<put name="checkAccessLevel" value="false" />
+		<put name="checkLogin" value="false"/>
   	</definition> 	
  
  	<definition	name="examsTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Examination Schedule"/>
 		<put name="body" value="/exam/exams.jsp" />
-		<put name="noLogin" value="true" />
+		<put name="checkLogin" value="false" />
+		<put name="checkAccessLevel" value="false" />
   	</definition> 	
 
  	<definition	name="eventAddTile" extends="pageLayoutDef">
