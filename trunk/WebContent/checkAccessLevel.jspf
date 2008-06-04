@@ -17,15 +17,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 --%>
 <%@ page import="org.unitime.timetable.util.Constants" %>
-<%
-
-	String appAccess = (String) session.getAttribute(Constants.SESSION_APP_ACCESS_LEVEL);
-	if (appAccess==null || !appAccess.trim().equalsIgnoreCase("true")) {
-		String msg = "The Timetabling service is temporarily unavailable at this time.<br>Please try again after some time.";
-%>
+<%  String appAccess = (String) session.getAttribute(Constants.SESSION_APP_ACCESS_LEVEL);
+	if (appAccess==null || !appAccess.trim().equalsIgnoreCase("true")) { %>
 		<jsp:forward page="/loginRequired.do">
-			<jsp:param name="message" value="<%= msg%>"/>
+			<jsp:param name="message" value="The application is temporarily unavailable.<br>Please try again after some time."/>
 		</jsp:forward>
-<%	
-	}
-%>
+<%	} %>
