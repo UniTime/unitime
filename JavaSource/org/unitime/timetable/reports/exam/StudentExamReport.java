@@ -37,49 +37,61 @@ import com.lowagie.text.DocumentException;
 
 public class StudentExamReport extends PdfLegacyExamReport {
     protected static Logger sLog = Logger.getLogger(StudentExamReport.class);
-    Hashtable<Long,Student> iStudents = new Hashtable();
-    Hashtable<Long,ClassEvent> iClass2event = new Hashtable();
-    Hashtable<Long,Location> iLocations = new Hashtable();
+    Hashtable<Long,Student> iStudents = null;
+    Hashtable<Long,ClassEvent> iClass2event = null;
+    Hashtable<Long,Location> iLocations = null;
     
     public StudentExamReport(int mode, File file, Session session, int examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
         super(mode, file, "STUDENT EXAMINATION SCHEDULE", session, examType, subjectArea, exams);
-        sLog.info("  Loading students...");
-        for (Iterator i=new StudentDAO().getSession().createQuery("select s from Student s where s.session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).setCacheable(true).iterate();i.hasNext();) {
-            Student s = (Student)i.next();
-            iStudents.put(s.getUniqueId(), s);
-        }
-        sLog.info("  Loading class events...");
-        if (getSubjectArea()!=null) {
-            for (Iterator i=new SessionDAO().getSession().createQuery(
-                    "select c.uniqueId, e from ClassEvent e inner join e.clazz c left join fetch e.meetings m "+
-                    "inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where "+
-                    "co.subjectArea.uniqueId=:subjectAreaId").
-                    setLong("subjectAreaId", getSubjectArea().getUniqueId()).setCacheable(true).list().iterator();i.hasNext();) {
-                Object[] o = (Object[])i.next();
-                iClass2event.put((Long)o[0], (ClassEvent)o[1]);
+    }
+    
+    private void generateCache() {
+        if (iStudents==null) {
+            sLog.info("  Loading students...");
+            iStudents = new Hashtable();
+            for (Iterator i=new StudentDAO().getSession().createQuery("select s from Student s where s.session.uniqueId=:sessionId").setLong("sessionId", getSession().getUniqueId()).setCacheable(true).iterate();i.hasNext();) {
+                Student s = (Student)i.next();
+                iStudents.put(s.getUniqueId(), s);
             }
-        } else {
+        }
+        if (iClass2event==null) {
+            sLog.info("  Loading class events...");
+            iClass2event = new Hashtable();
+            if (getSubjectArea()!=null) {
+                for (Iterator i=new SessionDAO().getSession().createQuery(
+                        "select c.uniqueId, e from ClassEvent e inner join e.clazz c left join fetch e.meetings m "+
+                        "inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where "+
+                        "co.subjectArea.uniqueId=:subjectAreaId").
+                        setLong("subjectAreaId", getSubjectArea().getUniqueId()).setCacheable(true).list().iterator();i.hasNext();) {
+                    Object[] o = (Object[])i.next();
+                    iClass2event.put((Long)o[0], (ClassEvent)o[1]);
+                }
+            } else {
+                for (Iterator i=new SessionDAO().getSession().createQuery(
+                        "select c.uniqueId, e from ClassEvent e inner join e.clazz c left join fetch e.meetings m "+
+                        "inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where "+
+                        "co.subjectArea.session.uniqueId=:sessionId").
+                        setLong("sessionId", getSession().getUniqueId()).setCacheable(true).list().iterator();i.hasNext();) {
+                    Object[] o = (Object[])i.next();
+                    iClass2event.put((Long)o[0], (ClassEvent)o[1]);
+                }
+            }
+        }
+        if (iLocations==null) {
+            sLog.info("  Loading locations...");
+            iLocations = new Hashtable();
             for (Iterator i=new SessionDAO().getSession().createQuery(
-                    "select c.uniqueId, e from ClassEvent e inner join e.clazz c left join fetch e.meetings m "+
-                    "inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where "+
-                    "co.subjectArea.session.uniqueId=:sessionId").
+                    "select r from Room r where r.session.uniqueId=:sessionId and r.permanentId!=null").
                     setLong("sessionId", getSession().getUniqueId()).setCacheable(true).list().iterator();i.hasNext();) {
-                Object[] o = (Object[])i.next();
-                iClass2event.put((Long)o[0], (ClassEvent)o[1]);
+                Location location = (Location)i.next();
+                iLocations.put(location.getUniqueId(), location);
             }
-        }
-        sLog.info("  Loading locations...");
-        for (Iterator i=new SessionDAO().getSession().createQuery(
-                "select r from Room r where r.session.uniqueId=:sessionId and r.permanentId!=null").
-                setLong("sessionId", getSession().getUniqueId()).setCacheable(true).list().iterator();i.hasNext();) {
-            Location location = (Location)i.next();
-            iLocations.put(location.getUniqueId(), location);
-        }
-        for (Iterator i=new SessionDAO().getSession().createQuery(
-                "select r from NonUniversityLocation r where r.session.uniqueId=:sessionId and r.permanentId!=null").
-                setLong("sessionId", getSession().getUniqueId()).setCacheable(true).list().iterator();i.hasNext();) {
-            Location location = (Location)i.next();
-            iLocations.put(location.getUniqueId(), location);
+            for (Iterator i=new SessionDAO().getSession().createQuery(
+                    "select r from NonUniversityLocation r where r.session.uniqueId=:sessionId and r.permanentId!=null").
+                    setLong("sessionId", getSession().getUniqueId()).setCacheable(true).list().iterator();i.hasNext();) {
+                Location location = (Location)i.next();
+                iLocations.put(location.getUniqueId(), location);
+            }
         }
     }
     
@@ -91,6 +103,7 @@ public class StudentExamReport extends PdfLegacyExamReport {
     }
 
     public void printReport() throws DocumentException {
+        generateCache();
         sLog.info("  Printing report...");
         Hashtable<Student,TreeSet<ExamSectionInfo>> sections = new Hashtable();
         for (ExamAssignmentInfo exam:getExams()) {
@@ -177,7 +190,7 @@ public class StudentExamReport extends PdfLegacyExamReport {
                     String course = clazz.getSchedulingSubpart().getControllingCourseOffering().getCourseNbr();
                     String itype =  getItype(clazz);
                     String section = (iUseClassSuffix && clazz.getClassSuffix()!=null?clazz.getClassSuffix():clazz.getSectionNumberString());
-                    ClassEvent event = iClass2event.get(clazz.getUniqueId());
+                    ClassEvent event = (iClass2event==null?clazz.getEvent():iClass2event.get(clazz.getUniqueId()));
                     if (event==null || event.getMeetings().isEmpty()) {
                         println(
                                 rpad(subject,4)+" "+
@@ -210,7 +223,7 @@ public class StudentExamReport extends PdfLegacyExamReport {
                                 line += rpad("",39);
                             }
                             Long permId = meeting.getMeetings().first().getLocationPermanentId();
-                            Location location = (permId==null?null:iLocations.get(permId));
+                            Location location = (permId==null?null:(iLocations==null?meeting.getMeetings().first().getLocation():iLocations.get(permId)));
                             String loc = (location==null?"":formatRoom(location.getLabel()));
                             if (last==null || !loc.equals(lastLoc)) {
                                 line += loc + " ";
@@ -441,6 +454,7 @@ public class StudentExamReport extends PdfLegacyExamReport {
     }
     
     public Hashtable<Student,File> printStudentReports(int mode, String filePrefix, FileGenerator gen) throws DocumentException, IOException {
+        generateCache();
         sLog.info("Printing individual student reports...");
         Hashtable<Student,File> files = new Hashtable();
         Hashtable<Student,TreeSet<ExamSectionInfo>> sections = new Hashtable();
