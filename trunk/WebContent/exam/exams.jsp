@@ -24,6 +24,7 @@
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <tiles:importAttribute />
 <html:form action="/exams">
+	<logic:notEmpty name="examsForm" property="sessions">
 	<TABLE width="95%" border="0" cellspacing="0" cellpadding="3">
 	<TR>
 		<TD nowspan>
@@ -50,24 +51,30 @@
 		</TD>
 	</TR>
 	</TABLE>
+	</logic:notEmpty>
 
 	<BR>
 	
 	<logic:empty name="examsForm" property="table">
 		<table width='95%' border='0' cellspacing='0' cellpadding='3'>
-			<tr><td><i>
-				<logic:empty name="examsForm" property="subjectArea">
-					No subject area selected.
+			<tr><td style='color:red;font-weight:bold;'>
+				<logic:empty name="examsForm" property="session">
+					There are no examinations available at the moment. 
 				</logic:empty>
-				<logic:notEmpty name="examsForm" property="subjectArea">
-					<logic:equal name="examsForm" property="subjectArea" value="--ALL--">
-						There are no examinations for the selected term.
-					</logic:equal>
-					<logic:notEqual name="examsForm" property="subjectArea" value="0">
-						There are no examinations for <bean:write name="examsForm" property="subjectArea"/> subject area.
-					</logic:notEqual>
+				<logic:notEmpty name="examsForm" property="session">
+					<logic:empty name="examsForm" property="subjectArea">
+						No subject area selected.
+					</logic:empty>
+					<logic:notEmpty name="examsForm" property="subjectArea">
+						<logic:equal name="examsForm" property="subjectArea" value="--ALL--">
+							There are no <bean:write name="examsForm" property="examTypeLabel"/> examinations available for <bean:write name="examsForm" property="sessionLabel"/> at the moment.
+						</logic:equal>
+						<logic:notEqual name="examsForm" property="subjectArea" value="--ALL--">
+							There are no <bean:write name="examsForm" property="examTypeLabel"/> examinations available for <bean:write name="examsForm" property="subjectArea"/> subject area at the moment.
+						</logic:notEqual>
+					</logic:notEmpty>
 				</logic:notEmpty>
-			</i></td></tr>
+			</td></tr>
 		</table>
 	</logic:empty>
 	
@@ -77,6 +84,7 @@
 		</table>
 	</logic:notEmpty>
 	
+	<logic:notEmpty name="examsForm" property="session">
 	<tt:propertyEquals name="tmtbl.authentication.norole" value="true">
 		<BR>
 		<a name="login"></a>
@@ -125,4 +133,5 @@
 			</SCRIPT>
 		</logic:notEmpty>
 	</tt:propertyEquals>
+	</logic:notEmpty>
 </html:form>
