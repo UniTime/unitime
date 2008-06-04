@@ -452,7 +452,7 @@ public class ExamAssignmentReportAction extends Action {
                             new String[] {
                                 (html?"<a name='"+exam.getExamId()+"'>":"")+section.getName()+(html?"</a>":""),
                                 String.valueOf(section.getNrStudents()),
-                                (Exam.sSeatingTypeNormal==exam.getSeatingType()?"Normal":"Exam"),
+                                exam.getSeatingTypeLabel(),
                                 exam.getDate(html),
                                 exam.getTime(html),
                                 exam.getRoomsName(html,", "),
@@ -499,7 +499,7 @@ public class ExamAssignmentReportAction extends Action {
                         new String[] {
                             (html?"<a name='"+exam.getExamId()+"'>":"")+exam.getExamName()+(html?"</a>":""),
                             String.valueOf(exam.getNrStudents()),
-                            (Exam.sSeatingTypeNormal==exam.getSeatingType()?"Normal":"Exam"),
+                            exam.getSeatingTypeLabel(),
                             exam.getDate(html),
                             exam.getTime(html),
                             exam.getRoomsName(html,", "),
@@ -583,7 +583,7 @@ public class ExamAssignmentReportAction extends Action {
                                     exam.getTime(html),
                                     (html?"<a name='"+exam.getExamId()+"'>":"")+section.getName()+(html?"</a>":""),
                                     String.valueOf(section.getNrStudents()),
-                                    (Exam.sSeatingTypeNormal==exam.getSeatingType()?"Normal":"Exam"),
+                                    exam.getSeatingTypeLabel(),
                                     exam.getInstructorName("; "),
                                     (dc==0&&m2d==0&&btb==0&&dbtb==0?"":dcStr+", "+m2dStr+", "+btbStr),
                                     (idc==0&&im2d==0&&ibtb==0&&idbtb==0?"":idcStr+", "+im2dStr+", "+ibtbStr),
@@ -635,7 +635,7 @@ public class ExamAssignmentReportAction extends Action {
                                 exam.getTime(html),
                                 (html?"<a name='"+exam.getExamId()+"'>":"")+exam.getExamName()+(html?"</a>":""),
                                 String.valueOf(exam.getNrStudents()),
-                                (Exam.sSeatingTypeNormal==exam.getSeatingType()?"Normal":"Exam"),
+                                exam.getSeatingTypeLabel(),
                                 exam.getInstructorName("; "),
                                 (dc==0&&m2d==0&&btb==0&&dbtb==0?"":dcStr+", "+m2dStr+", "+btbStr),
                                 (idc==0&&im2d==0&&ibtb==0&&idbtb==0?"":idcStr+", "+im2dStr+", "+ibtbStr),
@@ -913,7 +913,7 @@ public class ExamAssignmentReportAction extends Action {
                             new String[] {
                                 (html?"<a name='"+exam.getExamId()+"'>":"")+section.getName()+(html?"</a>":""),
                                 String.valueOf(section.getNrStudents()),
-                                (Exam.sSeatingTypeNormal==exam.getSeatingType()?"Normal":"Exam"),
+                                exam.getSeatingTypeLabel(),
                                 exam.getDate(html),
                                 exam.getTime(html),
                                 ((int)(distance*10.0)==0?"":(int)(distance*10.0)+" m"),
@@ -960,7 +960,7 @@ public class ExamAssignmentReportAction extends Action {
                         new String[] {
                             (html?"<a name='"+exam.getExamId()+"'>":"")+exam.getExamName()+(html?"</a>":""),
                             String.valueOf(exam.getNrStudents()),
-                            (Exam.sSeatingTypeNormal==exam.getSeatingType()?"Normal":"Exam"),
+                            exam.getSeatingTypeLabel(),
                             exam.getDate(html),
                             exam.getTime(html),
                             ((int)(distance*10.0)==0?"":(int)(distance*10.0)+" m"),
@@ -1047,7 +1047,7 @@ public class ExamAssignmentReportAction extends Action {
                         classes += section.getName();
                         enrollment += section.getNrStudents();
                         if (firstSection) {
-                            seating += Exam.sSeatingTypes[exam.getSeatingType()];
+                            seating += exam.getSeatingTypeLabel();
                             if (exam instanceof ExamAssignment) {
                                 ExamAssignment ea = (ExamAssignment)exam;
                                 date += ea.getDate(html);
@@ -1064,7 +1064,7 @@ public class ExamAssignmentReportAction extends Action {
                     }
                     classes += exam.getExamName();
                     enrollment += exam.getNrStudents();
-                    seating += Exam.sSeatingTypes[exam.getSeatingType()];
+                    seating += exam.getSeatingTypeLabel();
                     if (exam instanceof ExamAssignment) {
                         ExamAssignment ea = (ExamAssignment)exam;
                         date += ea.getDate(html);
@@ -1179,7 +1179,7 @@ public class ExamAssignmentReportAction extends Action {
                                 classes += section.getName();
                                 enrollment += String.valueOf(section.getNrStudents());
                                 if (firstSection) {
-                                    seating += Exam.sExamTypes[exam.getExamType()];
+                                    seating += exam.getSeatingTypeLabel();
                                     date += exam.getDate(html);
                                     time += exam.getTime(html);
                                     room += exam.getRoomsName(html, ", ");
@@ -1196,7 +1196,7 @@ public class ExamAssignmentReportAction extends Action {
                                     classes += section.getName();
                                     enrollment += String.valueOf(section.getNrStudents());
                                     if (firstSection) {
-                                        seating += Exam.sExamTypes[conflict.getOtherExam().getExamType()];
+                                        seating += conflict.getOtherExam().getSeatingTypeLabel();
                                         room += conflict.getOtherExam().getRoomsName(html, ", ");
                                     }
                                     firstSection = false;
@@ -1229,7 +1229,7 @@ public class ExamAssignmentReportAction extends Action {
                                         new MultiComparable(0, exam, 0),
                                         new MultiComparable(exam, exam, 0),
                                         new MultiComparable(-exam.getNrStudents()-(conflict.getOtherExam()==null?0:conflict.getOtherExam().getNrStudents()), exam, 0),
-                                        new MultiComparable(exam.getExamType(), exam, 0),
+                                        new MultiComparable(exam.getSeatingType(), exam, 0),
                                         new MultiComparable(exam.getPeriodOrd(), exam, 0),
                                         new MultiComparable(exam.getPeriod().getStartSlot(), exam, 0),
                                         new MultiComparable(exam.getRoomsName(":"), exam, 0),
@@ -1246,7 +1246,7 @@ public class ExamAssignmentReportAction extends Action {
                                             (html?"<font color='"+PreferenceLevel.prolog2color("P")+"'>":"")+"Direct"+(html?"</font>":""),
                                             exam.getExamName()+nl+conflict.getOtherExam().getExamName(),
                                             exam.getNrStudents()+nl+conflict.getOtherExam().getNrStudents(),
-                                            Exam.sExamTypes[exam.getExamType()]+nl+Exam.sExamTypes[conflict.getOtherExam().getExamType()],
+                                            exam.getSeatingTypeLabel()+nl+conflict.getOtherExam().getSeatingTypeLabel(),
                                             exam.getDate(html)+nl,
                                             exam.getTime(html)+nl,
                                             exam.getRoomsName(html, ", ")+nl+conflict.getOtherExam().getRoomsName(html, ", "),
@@ -1257,7 +1257,7 @@ public class ExamAssignmentReportAction extends Action {
                                             new MultiComparable(0, exam, 0),
                                             new MultiComparable(exam, exam, 0),
                                             new MultiComparable(-exam.getNrStudents()-conflict.getOtherExam().getNrStudents(), exam, 0),
-                                            new MultiComparable(exam.getExamType(), exam, 0),
+                                            new MultiComparable(exam.getSeatingType(), exam, 0),
                                             new MultiComparable(exam.getPeriodOrd(), exam, 0),
                                             new MultiComparable(exam.getPeriod().getStartSlot(), exam, 0),
                                             new MultiComparable(exam.getRoomsName(":"), exam, 0),
@@ -1273,7 +1273,7 @@ public class ExamAssignmentReportAction extends Action {
                                             (html?"<font color='"+PreferenceLevel.prolog2color("P")+"'>":"")+"Direct"+(html?"</font>":""),
                                             exam.getExamName()+nl+conflict.getOtherEventName(),
                                             String.valueOf(exam.getNrStudents())+nl+conflict.getOtherEventSize(),
-                                            Exam.sExamTypes[exam.getExamType()]+nl+"Class",
+                                            exam.getSeatingTypeLabel()+nl+"Class",
                                             exam.getDate(html)+nl,//+conflict.getOtherEventDate(),
                                             exam.getTime(html)+nl+conflict.getOtherEventTime(),
                                             exam.getRoomsName(html, ", ")+nl+conflict.getOtherEventRoom(),
@@ -1284,7 +1284,7 @@ public class ExamAssignmentReportAction extends Action {
                                             new MultiComparable(0, exam, 0),
                                             new MultiComparable(exam, exam, 0),
                                             new MultiComparable(-exam.getNrStudents()-conflict.getOtherEventSize(), exam, 0),
-                                            new MultiComparable(exam.getExamType(), exam, 0),
+                                            new MultiComparable(exam.getSeatingType(), exam, 0),
                                             new MultiComparable(exam.getPeriodOrd(), exam, 0),
                                             new MultiComparable(exam.getPeriod().getStartSlot(), exam, 0),
                                             new MultiComparable(exam.getRoomsName(":"), exam, 0),
@@ -1322,7 +1322,7 @@ public class ExamAssignmentReportAction extends Action {
                                 classes += section.getName();
                                 enrollment += String.valueOf(section.getNrStudents());
                                 if (firstSection) {
-                                    seating += Exam.sExamTypes[exam.getExamType()];
+                                    seating += exam.getSeatingTypeLabel();
                                     date += exam.getDate(html);
                                     time += exam.getTime(html);
                                     room += exam.getRoomsName(html, ", ");
@@ -1338,7 +1338,7 @@ public class ExamAssignmentReportAction extends Action {
                                 classes += section.getName();
                                 enrollment += String.valueOf(section.getNrStudents());
                                 if (firstSection) {
-                                    seating += Exam.sExamTypes[exam.getExamType()];
+                                    seating += exam.getSeatingTypeLabel();
                                     time += conflict.getOtherExam().getTime(html);
                                     room += conflict.getOtherExam().getRoomsName(html, ", ");
                                 }
@@ -1363,7 +1363,7 @@ public class ExamAssignmentReportAction extends Action {
                                         new MultiComparable(2, exam, 0),
                                         new MultiComparable(exam, exam, 0),
                                         new MultiComparable(-exam.getNrStudents()-conflict.getOtherExam().getNrStudents(), exam, 0),
-                                        new MultiComparable(exam.getExamType(), exam, 0),
+                                        new MultiComparable(exam.getSeatingType(), exam, 0),
                                         new MultiComparable(exam.getPeriodOrd(), exam, 0),
                                         new MultiComparable(exam.getPeriod().getStartSlot(), exam, 0),
                                         new MultiComparable(exam.getRoomsName(":"), exam, 0),
@@ -1379,7 +1379,7 @@ public class ExamAssignmentReportAction extends Action {
                                         (html?"<font color='"+PreferenceLevel.prolog2color("1")+"'>":"")+"Back-To-Back"+(html?"</font>":""),
                                         exam.getExamName()+nl+conflict.getOtherExam().getExamName(),
                                         exam.getNrStudents()+nl+conflict.getOtherExam().getNrStudents(),
-                                        Exam.sExamTypes[exam.getExamType()]+nl+Exam.sExamTypes[conflict.getOtherExam().getExamType()],
+                                        exam.getSeatingTypeLabel()+nl+conflict.getOtherExam().getSeatingTypeLabel(),
                                         exam.getDate(html)+nl,
                                         exam.getTime(html)+nl+conflict.getOtherExam().getTime(html),
                                         exam.getRoomsName(html, ", ")+nl+conflict.getOtherExam().getRoomsName(html, ", "),
@@ -1390,7 +1390,7 @@ public class ExamAssignmentReportAction extends Action {
                                         new MultiComparable(2, exam, 0),
                                         new MultiComparable(exam, exam, 0),
                                         new MultiComparable(-exam.getNrStudents()-conflict.getOtherExam().getNrStudents(), exam, 0),
-                                        new MultiComparable(exam.getExamType(), exam, 0),
+                                        new MultiComparable(exam.getSeatingType(), exam, 0),
                                         new MultiComparable(exam.getPeriodOrd(), exam, 0),
                                         new MultiComparable(exam.getPeriod().getStartSlot(), exam, 0),
                                         new MultiComparable(exam.getRoomsName(":"), exam, 0),
@@ -1428,7 +1428,7 @@ public class ExamAssignmentReportAction extends Action {
                                 classes += section.getName();
                                 enrollment += String.valueOf(section.getNrStudents());
                                 if (firstSection) {
-                                    seating += Exam.sExamTypes[exam.getExamType()];
+                                    seating += exam.getSeatingTypeLabel();
                                     date += exam.getDate(html);
                                     time += exam.getTime(html);
                                     room += exam.getRoomsName(html, ", ");
@@ -1446,7 +1446,7 @@ public class ExamAssignmentReportAction extends Action {
                                     classes += section.getName();
                                     enrollment += String.valueOf(section.getNrStudents());
                                     if (firstSection) {
-                                        seating += Exam.sExamTypes[other.getExamType()];
+                                        seating += other.getSeatingTypeLabel();
                                         time += other.getTime(html);
                                         room += other.getRoomsName(html, ", ");
                                     }
@@ -1472,7 +1472,7 @@ public class ExamAssignmentReportAction extends Action {
                                         new MultiComparable(1, exam, 0),
                                         new MultiComparable(exam, exam, 0),
                                         new MultiComparable(-nrStudents, exam, 0),
-                                        new MultiComparable(exam.getExamType(), exam, 0),
+                                        new MultiComparable(exam.getSeatingType(), exam, 0),
                                         new MultiComparable(exam.getPeriodOrd(), exam, 0),
                                         new MultiComparable(exam.getPeriod().getStartSlot(), exam, 0),
                                         new MultiComparable(exam.getRoomsName(":"), exam, 0),
@@ -1480,13 +1480,13 @@ public class ExamAssignmentReportAction extends Action {
                                     },
                                     exam.getExamId().toString());
                         } else {
-                            String classes = exam.getExamName(), enrollment = ""+exam.getNrStudents(), seating = Exam.sExamTypes[exam.getExamType()];
+                            String classes = exam.getExamName(), enrollment = ""+exam.getNrStudents(), seating = exam.getSeatingTypeLabel();
                             String date = exam.getDate(html), time = exam.getTime(html), room = exam.getRoomsName(html, ", "), distance = "", blank="";
                             int nrStudents = exam.getNrStudents();
                             for (ExamAssignment other : conflict.getOtherExams()) {
                                 classes += nl+other.getExamName();
                                 enrollment += nl+other.getNrStudents();
-                                seating += nl+Exam.sExamTypes[other.getExamType()];
+                                seating += nl+other.getSeatingTypeLabel();
                                 time += nl+other.getTime(html);
                                 room += nl+other.getRoomsName(html, ", ");
                                 blank += nl; distance += nl;
@@ -1510,7 +1510,7 @@ public class ExamAssignmentReportAction extends Action {
                                         new MultiComparable(1, exam, 0),
                                         new MultiComparable(exam, exam, 0),
                                         new MultiComparable(-nrStudents, exam, 0),
-                                        new MultiComparable(exam.getExamType(), exam, 0),
+                                        new MultiComparable(exam.getSeatingType(), exam, 0),
                                         new MultiComparable(exam.getPeriodOrd(), exam, 0),
                                         new MultiComparable(exam.getPeriod().getStartSlot(), exam, 0),
                                         new MultiComparable(exam.getRoomsName(":"), exam, 0),
@@ -1565,10 +1565,10 @@ public class ExamAssignmentReportAction extends Action {
                                         new String[] {
                                             section1.getName(),
                                             String.valueOf(section1.getNrStudents()),
-                                            Exam.sExamTypes[exam.getExamType()],
+                                            exam.getSeatingTypeLabel(),
                                             section2.getName(),
                                             String.valueOf(section2.getNrStudents()),
-                                            Exam.sExamTypes[conflict.getOtherExam().getExamType()],
+                                            conflict.getOtherExam().getSeatingTypeLabel(),
                                             exam.getDate(html),
                                             exam.getTime(html),
                                             String.valueOf(nrStudents),
@@ -1598,7 +1598,7 @@ public class ExamAssignmentReportAction extends Action {
                                     new String[] {
                                         section1.getName(),
                                         String.valueOf(section1.getNrStudents()),
-                                        Exam.sExamTypes[exam.getExamType()],
+                                        exam.getSeatingTypeLabel(),
                                         conflict.getOtherEventName(),
                                         String.valueOf(conflict.getOtherEventSize()),
                                         "Class",
@@ -1628,10 +1628,10 @@ public class ExamAssignmentReportAction extends Action {
                                 new String[] {
                                     exam.getExamName(),
                                     String.valueOf(exam.getNrStudents()),
-                                    Exam.sExamTypes[exam.getExamType()],
+                                    exam.getSeatingTypeLabel(),
                                     other.getExamName(),
                                     String.valueOf(other.getNrStudents()),
-                                    Exam.sExamTypes[conflict.getOtherExam().getExamType()],
+                                    conflict.getOtherExam().getSeatingTypeLabel(),
                                     exam.getDate(html),
                                     exam.getTime(html),
                                     String.valueOf(conflict.getNrStudents()),
@@ -1655,7 +1655,7 @@ public class ExamAssignmentReportAction extends Action {
                                 new String[] {
                                     exam.getExamName(),
                                     String.valueOf(exam.getNrStudents()),
-                                    Exam.sExamTypes[exam.getExamType()],
+                                    exam.getSeatingTypeLabel(),
                                     conflict.getOtherEventName(),
                                     String.valueOf(conflict.getOtherEventSize()),
                                     "Class",
@@ -1724,10 +1724,10 @@ public class ExamAssignmentReportAction extends Action {
                                      new String[] {
                                          section1.getName(),
                                          String.valueOf(section1.getNrStudents()),
-                                         Exam.sExamTypes[exam.getExamType()],
+                                         exam.getSeatingTypeLabel(),
                                          section2.getName(),
                                          String.valueOf(section2.getNrStudents()),
-                                         Exam.sExamTypes[conflict.getOtherExam().getExamType()],
+                                         conflict.getOtherExam().getSeatingTypeLabel(),
                                          exam.getDate(html),
                                          exam.getTime(html),
                                          String.valueOf(nrStudents),
@@ -1755,10 +1755,10 @@ public class ExamAssignmentReportAction extends Action {
                              new String[] {
                                  exam.getExamName(),
                                  String.valueOf(exam.getNrStudents()),
-                                 Exam.sExamTypes[exam.getExamType()],
+                                 exam.getSeatingTypeLabel(),
                                  other.getExamName(),
                                  String.valueOf(other.getNrStudents()),
-                                 Exam.sExamTypes[conflict.getOtherExam().getExamType()],
+                                 conflict.getOtherExam().getSeatingTypeLabel(),
                                  exam.getDate(html),
                                  exam.getTime(html),
                                  String.valueOf(conflict.getNrStudents()),

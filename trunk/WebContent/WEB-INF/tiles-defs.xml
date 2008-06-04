@@ -47,6 +47,7 @@
  		<put name="showNavigation" value="false" />
 		<put name="showSolverWarnings" value="false" />
  		<put name="helpFile" value="" />
+ 		<put name="noLogin" value="false" />
   	</definition>
 
 	<!-- Page Layouts -->
@@ -887,6 +888,12 @@
 		<put name="body" value="/exam/personalizedReport.jsp" />
   	</definition> 	
  
+ 	<definition	name="examsTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Examination Schedule"/>
+		<put name="body" value="/exam/exams.jsp" />
+		<put name="noLogin" value="true" />
+  	</definition> 	
+
  	<definition	name="eventAddTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Add Event"/>
 		<put name="body" value="/user/eventAdd.jsp" />

@@ -23,7 +23,7 @@
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <tiles:importAttribute />
-<html:form action="/exams">
+<html:form action="/personalizedExams">
 	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
 		<TR><TD align='right'>
 			<logic:equal name="personalizedExamReportForm" property="canExport" value="true">
