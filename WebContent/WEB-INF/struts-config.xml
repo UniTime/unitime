@@ -2172,7 +2172,8 @@
 	    	redirect="true" />
          <forward
          	name="personal"
-            path="/personalizedExams.do" />
+            path="/personalizedExams.do"
+            redirect="true"/>
     </action>
 
     <action
