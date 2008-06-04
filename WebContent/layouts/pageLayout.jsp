@@ -26,20 +26,18 @@
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic"%>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
-<% 
+	
+<tiles:importAttribute name="noLogin" scope="request"/>
+<logic:equal name="noLogin" value="false">
+	<% if (!request.getServletPath().equals("/loginRequired.do")) { %>
+		<%@ include file="/checkLogin.jspf"%>
+	<% } 
+	   if (!request.getServletPath().equals("/loginRequired.do") && !request.getServletPath().equals("/selectPrimaryRole.do")) {%>
+		<%@ include file="/checkAccessLevel.jspf" %>
+	<% } %>
+</logic:equal>
 
-//long beginTime = new Date().getTime();
-
-if (!request.getServletPath().equals("/loginRequired.do")) { %>
-<%@ include file="/checkLogin.jspf"%>
-<% }
-if (!request.getServletPath().equals("/loginRequired.do") 
-	 && !request.getServletPath().equals("/selectPrimaryRole.do")) {
-%>
-<%@ include file="/checkAccessLevel.jspf" %>
-<% }
-
-String path = request.getContextPath();
+<%String path = request.getContextPath();
 String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+path+"/";
 String serverPath = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+"/";
 %>
