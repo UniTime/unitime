@@ -124,8 +124,8 @@ public class ExamsForm extends ActionForm {
     	return ret;
     }
     
-    public String getUser() { return iUser; }
-    public void setUser(String user) { iUser = user; }
+    public String getUsername() { return iUser; }
+    public void setUsername(String user) { iUser = user; }
     public String getPassword() { return iPassword; }
     public void setPassword(String password) { iPassword = password; }
     public String getMessage() { return iMessage; }
