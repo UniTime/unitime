@@ -1848,7 +1848,7 @@ public class CourseOfferingImport extends BaseImport {
 		ClassEvent origEvent = c.getEvent();
 		if(meetings != null && !meetings.isEmpty() && origEvent==null){
 			ClassEvent newEvent = new ClassEvent();
-			newEvent.setClazz(c);
+			newEvent.setClazz(c); c.setEvent(newEvent);
 			newEvent.setMaxCapacity(c.getMaxExpectedCapacity());
 			newEvent.setMinCapacity(c.getExpectedCapacity());
 			newEvent.setEventName(c.getSchedulingSubpart().getInstrOfferingConfig().getCourseName() + " " + c.getSchedulingSubpart().getItype().getAbbv().trim() + " " + c.getClassSuffix());

@@ -341,7 +341,7 @@ public class Assignment extends BaseAssignment {
         Class_ clazz = getClazz();
         if (event==null) {
             event = new ClassEvent();
-            event.setClazz(clazz);
+            event.setClazz(clazz); clazz.setEvent(event);
         }
         event.setEventName(getClassName());
         event.setMinCapacity(clazz.getClassLimit());
