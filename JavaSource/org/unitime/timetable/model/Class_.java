@@ -1324,10 +1324,16 @@ public class Class_ extends BaseClass_ {
             uniqueResult();
     }
     
+    private ClassEvent iEvent = null;
     public ClassEvent getEvent() {
-        return (ClassEvent)new Class_DAO().getSession().createQuery(
+        if (iEvent==null) 
+            iEvent = (ClassEvent)new Class_DAO().getSession().createQuery(
                 "select e from ClassEvent e left join fetch e.meetings m where e.clazz.uniqueId=:classId").
                 setLong("classId", getUniqueId()).
                 setCacheable(true).uniqueResult();
+        return iEvent;
+    }
+    public void setEvent(ClassEvent event) {
+        iEvent = event;
     }
 }

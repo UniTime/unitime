@@ -912,6 +912,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         if (event==null) {
             event = (getExamType()==sExamTypeFinal?new FinalExamEvent():new MidtermExamEvent());
             event.setExam(this);
+            setEvent(event);
         }
         if (event.getMeetings()!=null) 
             event.getMeetings().clear();
@@ -1054,11 +1055,17 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         }
     }
     
+    private ExamEvent iEvent = null;
     public ExamEvent getEvent() {
-        return (ExamEvent)new ExamDAO().getSession().createQuery(
-                "from ExamEvent where exam.uniqueId=:examId").
+        if (iEvent==null) 
+            iEvent = (ExamEvent)new ExamDAO().getSession().createQuery(
+                "select e from ExamEvent e left join fetch e.meetings m where e.exam.uniqueId=:examId").
                 setLong("examId", getUniqueId()).
                 setCacheable(true).uniqueResult();
+        return iEvent;
+    }
+    public void setEvent(ExamEvent event) {
+        iEvent = event;
     }
     
     public void updateConflicts(Session hibSession) throws Exception {
