@@ -36,7 +36,7 @@ public class SolverUnassignedClassesModel extends UnassignedClassesModel {
 		for (Enumeration e=solver.currentSolution().getModel().unassignedVariables().elements();e.hasMoreElements();) {
 			Lecture lecture = (Lecture)e.nextElement();
 			String name = lecture.getName();
-			String onClick = "window.open('suggestions.do?id="+lecture.getClassId()+"&op=Reset','suggestions','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no');";
+			String onClick = "window.open('suggestions.do?id="+lecture.getClassId()+"&op=Reset','suggestions','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();";
 			String instructorName = lecture.getInstructorName();
 			int nrStudents = lecture.students().size();
 			String initial = "";
