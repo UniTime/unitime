@@ -41,7 +41,7 @@ public class SolutionUnassignedClassesModel extends UnassignedClassesModel {
 			for (Iterator j=solution.getOwner().getNotAssignedClasses(solution).iterator();j.hasNext();) {
 				Class_ clazz = (Class_)j.next();
 				String name = clazz.getClassLabel();
-				String onClick = "window.open('suggestions.do?id="+clazz.getUniqueId()+"&op=Reset','suggestions','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no');";
+				String onClick = "window.open('suggestions.do?id="+clazz.getUniqueId()+"&op=Reset','suggestions','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();";
 				Vector leads = clazz.getLeadInstructors();
 				StringBuffer leadsSb = new StringBuffer();
 				for (Enumeration e=leads.elements();e.hasMoreElements();) {
