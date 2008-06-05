@@ -131,7 +131,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
         iUseClassSuffix = "true".equals(System.getProperty("suffix",ApplicationProperties.getProperty("tmtbl.exam.report.suffix","false")));
         iExternal = "true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.external","false"));
         iDispLimits = "true".equals(System.getProperty("verlimit","true"));
-        iClassSchedule = "true".equals(System.getProperty("cschedule","true"));
+        iClassSchedule = "true".equals(System.getProperty("cschedule",ApplicationProperties.getProperty("tmtbl.exam.report.cschedule","true")));
         iDispFullTermDates = "true".equals(System.getProperty("fullterm","false"));
         iFullTermCheckDatePattern = "true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.fullterm.checkdp","true"));
         if (System.getProperty("since")!=null) {
