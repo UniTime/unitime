@@ -182,6 +182,8 @@ public class PersonalizedExamReportAction extends Action {
         WebTable.setOrder(request.getSession(),"exams.o6",request.getParameter("o6"),1);
         WebTable.setOrder(request.getSession(),"exams.o7",request.getParameter("o7"),1);
         
+        boolean useCache = "true".equals(ApplicationProperties.getProperty("tmtbl.exams.reports.conflicts.cache","false"));
+        
         if ("Export PDF".equals(myForm.getOp())) {
             FileOutputStream out = null;
             try {
@@ -191,7 +193,7 @@ public class PersonalizedExamReportAction extends Action {
                     TreeSet<ExamAssignmentInfo> exams = new TreeSet<ExamAssignmentInfo>();
                     for (Exam exam : instructorExams) {
                         if (exam.getAssignedPeriod()==null) continue;
-                        exams.add(new ExamAssignmentInfo(exam));
+                        exams.add(new ExamAssignmentInfo(exam, useCache));
                     }
 
                     InstructorExamReport ir = new InstructorExamReport(
@@ -207,7 +209,7 @@ public class PersonalizedExamReportAction extends Action {
                     TreeSet<ExamSectionInfo> sections = new TreeSet<ExamSectionInfo>();
                     for (Exam exam : studentExams) {
                         if (exam.getAssignedPeriod()==null) continue;
-                        ExamAssignmentInfo x = new ExamAssignmentInfo(exam);
+                        ExamAssignmentInfo x = new ExamAssignmentInfo(exam, useCache);
                         exams.add(x);
                         sections.addAll(x.getSections());
                     }
@@ -256,14 +258,14 @@ public class PersonalizedExamReportAction extends Action {
             request.setAttribute("sessions", table.printTable(WebTable.getOrder(request.getSession(),"exams.o0")));
         }
         
-        if (student!=null && !student.getClassEnrollments().isEmpty()) {
+        if (student!=null && "true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.cschedule","true")) && !student.getClassEnrollments().isEmpty()) {
             PdfWebTable table =  getStudentClassSchedule(true, student);
             if (!table.getLines().isEmpty()) {
                 request.setAttribute("clsschd", table.printTable(WebTable.getOrder(request.getSession(),"exams.o6")));
             }
         }
         
-        if (instructor!=null) {
+        if (instructor!=null && "true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.cschedule","true"))) {
             PdfWebTable table = getInstructorClassSchedule(true, instructor);
             if (!table.getLines().isEmpty()) {
                 request.setAttribute("iclsschd", table.printTable(WebTable.getOrder(request.getSession(),"exams.o7")));
@@ -273,7 +275,7 @@ public class PersonalizedExamReportAction extends Action {
         if (!studentExams.isEmpty()) {
             myForm.setCanExport(true);
             TreeSet<ExamAssignmentInfo> exams = new TreeSet<ExamAssignmentInfo>();
-            for (Exam exam : studentExams) exams.add(new ExamAssignmentInfo(exam));
+            for (Exam exam : studentExams) exams.add(new ExamAssignmentInfo(exam, useCache));
             
             PdfWebTable table = getStudentExamSchedule(true, exams, student);
             request.setAttribute("schedule", table.printTable(WebTable.getOrder(request.getSession(),"exams.o1")));
@@ -286,7 +288,7 @@ public class PersonalizedExamReportAction extends Action {
         if (!instructorExams.isEmpty()) {
             myForm.setCanExport(true);
             TreeSet<ExamAssignmentInfo> exams = new TreeSet<ExamAssignmentInfo>();
-            for (Exam exam : instructorExams) exams.add(new ExamAssignmentInfo(exam));
+            for (Exam exam : instructorExams) exams.add(new ExamAssignmentInfo(exam, useCache));
             
             PdfWebTable table = getInstructorExamSchedule(true, exams, instructor);
             request.setAttribute("ischedule", table.printTable(WebTable.getOrder(request.getSession(),"exams.o2")));
@@ -1287,21 +1289,23 @@ public class PersonalizedExamReportAction extends Action {
             out.println("X-WR-CALNAME:"+student.getName(DepartmentalInstructor.sNameFormatLastFist));
             out.println("X-WR-TIMEZONE:"+TimeZone.getDefault().getID());
             out.println("PRODID:-//UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+"/UniTime Personal Schedule//NONSGML v1.0//EN");
-            for (Iterator i=student.getClassEnrollments().iterator();i.hasNext();) {
-                StudentClassEnrollment sce = (StudentClassEnrollment)i.next();
-                if (sce.getClazz().getEvent()!=null) {
-                    for (Iterator k=sce.getClazz().getEvent().getMeetings().iterator();k.hasNext();) {
-                        Meeting meeting = (Meeting)k.next();
-                        out.println("BEGIN:VEVENT");
-                        out.println("UID:m"+meeting.getUniqueId());
-                        out.println("DTSTART:"+df.format(meeting.getStartTime())+"T"+tf.format(meeting.getStartTime())+"Z");
-                        out.println("DTEND:"+df.format(meeting.getStopTime())+"T"+tf.format(meeting.getStopTime())+"Z");
-                        out.println("SUMMARY:"+meeting.getEvent().getEventName()+" ("+meeting.getEvent().getEventTypeLabel()+")");
-                        if (meeting.getLocation()!=null)
-                            out.println("LOCATION:"+meeting.getLocation().getLabel());
-                        out.println("END:VEVENT");
+            if ("true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.cschedule","true"))) {
+                for (Iterator i=student.getClassEnrollments().iterator();i.hasNext();) {
+                    StudentClassEnrollment sce = (StudentClassEnrollment)i.next();
+                    if (sce.getClazz().getEvent()!=null) {
+                        for (Iterator k=sce.getClazz().getEvent().getMeetings().iterator();k.hasNext();) {
+                            Meeting meeting = (Meeting)k.next();
+                            out.println("BEGIN:VEVENT");
+                            out.println("UID:m"+meeting.getUniqueId());
+                            out.println("DTSTART:"+df.format(meeting.getStartTime())+"T"+tf.format(meeting.getStartTime())+"Z");
+                            out.println("DTEND:"+df.format(meeting.getStopTime())+"T"+tf.format(meeting.getStopTime())+"Z");
+                            out.println("SUMMARY:"+meeting.getEvent().getEventName()+" ("+meeting.getEvent().getEventTypeLabel()+")");
+                            if (meeting.getLocation()!=null)
+                                out.println("LOCATION:"+meeting.getLocation().getLabel());
+                            out.println("END:VEVENT");
+                        }
+                        
                     }
-                    
                 }
             }
             for (Exam exam: exams) {
@@ -1349,21 +1353,23 @@ public class PersonalizedExamReportAction extends Action {
             out.println("X-WR-CALNAME:"+instructor.getName(DepartmentalInstructor.sNameFormatLastFist));
             out.println("X-WR-TIMEZONE:"+TimeZone.getDefault().getID());
             out.println("PRODID:-//UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+"/UniTime Personal Schedule//NONSGML v1.0//EN");
-            for (Iterator i=DepartmentalInstructor.getAllForInstructor(instructor, instructor.getDepartment().getSession().getUniqueId()).iterator();i.hasNext();) {
-                DepartmentalInstructor di = (DepartmentalInstructor)i.next();
-                for (Iterator j=di.getClasses().iterator();j.hasNext();) {
-                    ClassInstructor ci = (ClassInstructor)j.next();
-                    if (ci.getClassInstructing().getEvent()!=null) {
-                        for (Iterator k=ci.getClassInstructing().getEvent().getMeetings().iterator();k.hasNext();) {
-                            Meeting meeting = (Meeting)k.next();
-                            out.println("BEGIN:VEVENT");
-                            out.println("UID:m"+meeting.getUniqueId());
-                            out.println("DTSTART:"+df.format(meeting.getStartTime())+"T"+tf.format(meeting.getStartTime())+"Z");
-                            out.println("DTEND:"+df.format(meeting.getStopTime())+"T"+tf.format(meeting.getStopTime())+"Z");
-                            out.println("SUMMARY:"+meeting.getEvent().getEventName()+" ("+meeting.getEvent().getEventTypeLabel()+")");
-                            if (meeting.getLocation()!=null)
-                                out.println("LOCATION:"+meeting.getLocation().getLabel());
-                            out.println("END:VEVENT");
+            if ("true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.cschedule","true"))) {
+                for (Iterator i=DepartmentalInstructor.getAllForInstructor(instructor, instructor.getDepartment().getSession().getUniqueId()).iterator();i.hasNext();) {
+                    DepartmentalInstructor di = (DepartmentalInstructor)i.next();
+                    for (Iterator j=di.getClasses().iterator();j.hasNext();) {
+                        ClassInstructor ci = (ClassInstructor)j.next();
+                        if (ci.getClassInstructing().getEvent()!=null) {
+                            for (Iterator k=ci.getClassInstructing().getEvent().getMeetings().iterator();k.hasNext();) {
+                                Meeting meeting = (Meeting)k.next();
+                                out.println("BEGIN:VEVENT");
+                                out.println("UID:m"+meeting.getUniqueId());
+                                out.println("DTSTART:"+df.format(meeting.getStartTime())+"T"+tf.format(meeting.getStartTime())+"Z");
+                                out.println("DTEND:"+df.format(meeting.getStopTime())+"T"+tf.format(meeting.getStopTime())+"Z");
+                                out.println("SUMMARY:"+meeting.getEvent().getEventName()+" ("+meeting.getEvent().getEventTypeLabel()+")");
+                                if (meeting.getLocation()!=null)
+                                    out.println("LOCATION:"+meeting.getLocation().getLabel());
+                                out.println("END:VEVENT");
+                            }
                         }
                     }
                 }
