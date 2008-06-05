@@ -367,7 +367,7 @@ public class ExamInfoModel implements Serializable {
             for (ExamAssignmentInfo period : getPeriods()) {
                 boolean initial = (getExamOldAssignment()!=null && getExamOldAssignment().getPeriodId()!=null && getExamOldAssignment().getPeriodId().equals(period.getPeriodId()));
                 WebTable.WebTableLine line = table.addLine(
-                   "onClick=\"document.location='examInfo.do?op=Select&period="+period.getPeriodId()+"';\"",
+                   "onClick=\"displayLoading();document.location='examInfo.do?op=Select&period="+period.getPeriodId()+"';\"",
                    new String[] {
                         (initial?"<u>":"")+period.getPeriodAbbreviationWithPref()+(initial?"</u>":""),
                         period.getDistributionConflictsHtml("<br>"),
@@ -632,10 +632,10 @@ public class ExamInfoModel implements Serializable {
         ret += "    source.style.cursor='hand';source.style.cursor='pointer';";
         ret += "}";
         ret += "var sCap = -1;";
-        ret += "var sRooms = ':";
+        ret += "var sRooms = '";
         if (assigned!=null && assigned.size()>0) {
             for (ExamRoomInfo room : assigned) {
-                ret+=room.getLocationId()+"@"+room.getCapacity(getExam());
+                ret+=":"+room.getLocationId()+"@"+room.getCapacity(getExam());
             }
         }
         ret += "';";
@@ -672,7 +672,7 @@ public class ExamInfoModel implements Serializable {
         ret += "        };";
         ret += "    }";
         ret += "    roomOut(id);";
-        ret += "    if (sCap>="+getExam().getNrStudents()+") document.location='examInfo.do?op=Select&room='+sRooms;";
+        ret += "    if (sCap>="+getExam().getNrStudents()+") {displayLoading(); document.location='examInfo.do?op=Select&room='+sRooms;}";
         ret += "    var c = document.getElementById('roomCapacityCounter');";
         ret += "    if (c!=null) c.innerHTML = (sCap<"+getExam().getNrStudents()+"?'<font color=\"red\">'+sCap+'</font>':''+sCap);";
         ret += "}";
