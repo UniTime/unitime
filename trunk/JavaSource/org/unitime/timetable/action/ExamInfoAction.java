@@ -104,22 +104,26 @@ public class ExamInfoAction extends Action {
         }
         
         if ("Select".equals(op)) {
-            if (request.getParameter("period")!=null)
-                model.setPeriod(Long.valueOf(request.getParameter("period")));
-            if (request.getParameter("room")!=null)
-                model.setRooms(request.getParameter("room"));
-            if (request.getParameter("suggestion")!=null)
-                model.setSuggestion(Integer.parseInt(request.getParameter("suggestion")));
-            if (request.getParameter("delete")!=null)
-                model.delete(Long.valueOf(request.getParameter("delete")));
+            synchronized (model) {
+                if (request.getParameter("period")!=null)
+                    model.setPeriod(Long.valueOf(request.getParameter("period")));
+                if (request.getParameter("room")!=null)
+                    model.setRooms(request.getParameter("room"));
+                if (request.getParameter("suggestion")!=null)
+                    model.setSuggestion(Integer.parseInt(request.getParameter("suggestion")));
+                if (request.getParameter("delete")!=null)
+                    model.delete(Long.valueOf(request.getParameter("delete")));
+            }
         }
         
         if ("Assign".equals(op)) {
-            String message = model.assign();
-            if (message==null || message.trim().length()==0) {
-                myForm.setOp("Close");
-            } else {
-                myForm.setMessage(message);
+            synchronized (model) {
+                String message = model.assign();
+                if (message==null || message.trim().length()==0) {
+                    myForm.setOp("Close");
+                } else {
+                    myForm.setMessage(message);
+                }
             }
         }
 
