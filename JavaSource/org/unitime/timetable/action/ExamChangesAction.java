@@ -238,7 +238,7 @@ public class ExamChangesAction extends Action {
                 }
                 
         	    table.addLine(
-                        "onClick=\"window.open('examInfo.do?examId="+exam.getExamId()+"','exams','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no');\"",
+                        "onClick=\"window.open('examInfo.do?examId="+exam.getExamId()+"','exams','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();\"",
                         new String[] {
                             (html?"<a name='"+exam.getExamId()+"'>":"")+(form.getShowSections()?exam.getSectionName(nl):exam.getExamName())+(html?"</a>":""),
                             period,
