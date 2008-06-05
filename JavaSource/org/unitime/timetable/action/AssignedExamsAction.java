@@ -119,7 +119,7 @@ public class AssignedExamsAction extends Action {
                 String dbtbStr = (dbtb<=0?"":html?"<font color='"+PreferenceLevel.prolog2color("1")+"'>"+dbtb+"</font>":String.valueOf(dbtb));
                 
         	    table.addLine(
-        	            "onClick=\"window.open('examInfo.do?examId="+exam.getExamId()+"','exams','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no');\"",
+        	            "onClick=\"window.open('examInfo.do?examId="+exam.getExamId()+"','exams','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus(); \"",
                         new String[] {
                             (html?"<a name='"+exam.getExamId()+"'>":"")+(form.getShowSections()?exam.getSectionName(nl):exam.getExamName())+(html?"</a>":""),
                             (html?exam.getPeriodAbbreviationWithPref():exam.getPeriodAbbreviation()),
