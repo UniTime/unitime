@@ -189,7 +189,10 @@ public class PersonalizedExamReportAction extends Action {
                 
                 if (!instructorExams.isEmpty()) {
                     TreeSet<ExamAssignmentInfo> exams = new TreeSet<ExamAssignmentInfo>();
-                    for (Exam exam : instructorExams) exams.add(new ExamAssignmentInfo(exam));
+                    for (Exam exam : instructorExams) {
+                        if (exam.getAssignedPeriod()==null) continue;
+                        exams.add(new ExamAssignmentInfo(exam));
+                    }
 
                     InstructorExamReport ir = new InstructorExamReport(
                             InstructorExamReport.sModeNormal, file, instructor.getDepartment().getSession(),
@@ -203,6 +206,7 @@ public class PersonalizedExamReportAction extends Action {
                     TreeSet<ExamAssignmentInfo> exams = new TreeSet<ExamAssignmentInfo>();
                     TreeSet<ExamSectionInfo> sections = new TreeSet<ExamSectionInfo>();
                     for (Exam exam : studentExams) {
+                        if (exam.getAssignedPeriod()==null) continue;
                         ExamAssignmentInfo x = new ExamAssignmentInfo(exam);
                         exams.add(x);
                         sections.addAll(x.getSections());
@@ -420,6 +424,7 @@ public class PersonalizedExamReportAction extends Action {
         table.setRowStyle("white-space:nowrap");
         String noRoom = ApplicationProperties.getProperty("tmtbl.exam.report.noroom","");
         for (ExamAssignmentInfo exam : exams) {
+            if (exam.getPeriod()==null) continue;
             for (ExamSectionInfo section : exam.getSections()) {
                 if (!section.getStudentIds().contains(student.getUniqueId())) continue;
                 table.addLine(
@@ -639,6 +644,7 @@ public class PersonalizedExamReportAction extends Action {
         table.setRowStyle("white-space:nowrap");
         String noRoom = ApplicationProperties.getProperty("tmtbl.exam.report.noroom","");
         for (ExamAssignmentInfo exam : exams) {
+            if (exam.getPeriod()==null) continue;
             for (ExamSectionInfo section : exam.getSections()) {
                 table.addLine(
                         new String[] {
