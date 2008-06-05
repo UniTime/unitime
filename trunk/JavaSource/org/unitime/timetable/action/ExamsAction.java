@@ -130,7 +130,7 @@ public class ExamsAction extends Action {
                 new String[] {
                     "Subject",
                     "Course",
-                    ("true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.external","false"))?ApplicationProperties.getProperty("tmtbl.exam.report.external.name","External Id"):"InstTp"),
+                    ("true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.external","false"))?ApplicationProperties.getProperty("tmtbl.exam.report.external.name","External Id"):"Instruction Type"),
                     "Section",
                     "Date",
                     "Time",
