@@ -437,7 +437,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 		public String toHtml(boolean link, boolean newWindow) {
 			if (link) {
 				if (newWindow) {
-					return "<a class='noFancyLinks' onMouseOver=\"this.style.cursor='hand';this.style.cursor='pointer';\" onClick=\"window.open('suggestions.do?id="+iClassId+"&op=Reset','suggestions','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no');\"><font color='"+PreferenceLevel.prolog2color(iPref)+"'>"+iName+"</font></a>";
+					return "<a class='noFancyLinks' onMouseOver=\"this.style.cursor='hand';this.style.cursor='pointer';\" onClick=\"window.open('suggestions.do?id="+iClassId+"&op=Reset','suggestions','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();\"><font color='"+PreferenceLevel.prolog2color(iPref)+"'>"+iName+"</font></a>";
 				} else {
 					return "<a class='noFancyLinks' href='suggestions.do?id="+iClassId+"&op=Select'><font color='"+PreferenceLevel.prolog2color(iPref)+"'>"+iName+"</font></a>";
 				}
