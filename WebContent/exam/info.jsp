@@ -26,7 +26,7 @@
 <script language="JavaScript" type="text/javascript" src="scripts/block.js"></script>
 <tiles:importAttribute />
 <html:form action="/examInfo">
-	<html:submit property="op" value="Apply" style="display:none;"/>
+	<html:submit onclick="displayLoading();" property="op" value="Apply" style="display:none;"/>
 	<html:hidden property="depth"/>
 	<html:hidden property="timeout"/>
 	<bean:define id="model" name="examInfoForm" property="model"/>
@@ -82,7 +82,7 @@
 			<tr><td colspan='2'><bean:write name="change" property="htmlTable" filter="false"/></td></tr>
 			<logic:equal name="model" property="canAssign" value="true">
 				<tr><td colspan='2' align="right">
-					<html:submit property="op" value="Assign" onclick="return confirmAssign();" />
+					<html:submit onclick="displayLoading();" property="op" value="Assign" onclick="return confirmAssign();" />
 				</td></tr>
 			</logic:equal>
 			<logic:notEmpty name="model" property="selectedAssignment">
@@ -157,7 +157,7 @@
 								<html:options property="roomOrders"/>
 							</html:select>
 					</td><td align="right">
-						<html:submit property="op" value="Apply"/>
+						<html:submit onclick="displayLoading();" property="op" value="Apply"/>
 					</td></tr>
 				</table>
 			</td></tr>
@@ -172,7 +172,7 @@
 		</logic:greaterThan>
 		</logic:notEmpty>
 		<logic:equal name="model" property="canComputeSuggestions" value="true">
-			<tr><td colspan='2'><tt:section-title><br><html:checkbox property="computeSuggestions" onclick="submit();"/> Suggestions</tt:section-title></td></tr>
+			<tr><td colspan='2'><tt:section-title><br><html:checkbox property="computeSuggestions" onclick="displayLoading();submit();"/> Suggestions</tt:section-title></td></tr>
 			<logic:equal name="examInfoForm" property="computeSuggestions" value="true">
 				<tr><td colspan='2'>
 					<table border='0' width='100%'>
@@ -184,10 +184,10 @@
 								<html:text property="limit" size="5" maxlength="5"/>
 						</td><td align="right">
 						</td><td align="right">
-							<html:submit property="op" value="Apply"/>
-							<html:submit property="op" value="Search Deeper"/>
+							<html:submit onclick="displayLoading();" property="op" value="Apply"/>
+							<html:submit onclick="displayLoading();" property="op" value="Search Deeper"/>
 							<logic:equal name="model" property="suggestionsTimeoutReached" value="true">
-								<html:submit property="op" value="Search Longer"/>
+								<html:submit onclick="displayLoading();" property="op" value="Search Longer"/>
 							</logic:equal>
 						</td></tr>
 					</table>
