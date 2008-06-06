@@ -44,7 +44,6 @@ import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ExamAssignmentProxy;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
-import org.unitime.timetable.solver.exam.ui.ExamInfo;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.Navigation;
@@ -253,9 +252,7 @@ public class ExamListAction extends Action {
                 }
             }
             
-            ExamInfo ei = (ea==null?new ExamInfo(exam):ea);
-            int nrStudents = ei.getNrStudents();
-            //String instructors = ei.getInstructorName(nl);
+            int nrStudents = exam.getSize();
             String instructors = "";
             for (Iterator j=new TreeSet(exam.getInstructors()).iterator();j.hasNext();) {
                 DepartmentalInstructor instructor = (DepartmentalInstructor)j.next();
