@@ -64,7 +64,7 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
         iExamLabel = exam.getName();
         iLength = exam.getLength();
         iMaxRooms = exam.getMaxRooms();
-        iNrStudents = exam.getStudents().size();
+        iNrStudents = exam.getSize();//Students().size();
         iSeatingType = (exam.hasAltSeating()?Exam.sSeatingTypeExam:Exam.sSeatingTypeNormal);
         if (!exam.getOwners().isEmpty()) {
             iSections = new Vector();
