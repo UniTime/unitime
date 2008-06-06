@@ -113,10 +113,10 @@ public class ExamScheduleByPeriodReport extends PdfLegacyExamReport {
                 }
             }
             setCont(null);
-            if (p.hasNext()) {
+            if (iPeriodPrinted && p.hasNext()) {
                 newPage();
             }
         }
-        lastPage();
+        if (iPeriodPrinted) lastPage();
     }
 }
