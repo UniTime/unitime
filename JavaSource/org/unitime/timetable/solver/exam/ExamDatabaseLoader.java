@@ -35,6 +35,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Transaction;
 import org.unitime.commons.hibernate.util.HibernateUtil;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
 import org.unitime.timetable.model.Assignment;
@@ -838,7 +839,8 @@ public class ExamDatabaseLoader extends ExamLoader {
             if (isRemote()) {
                 RemoteSolverServer.query(new Object[]{"activateRoomAvailability",iSessionId,startTime,endTime});
             } else {
-                RoomAvailability.getInstance().activate(new SessionDAO().get(iSessionId), startTime, endTime, true);
+                RoomAvailability.getInstance().activate(new SessionDAO().get(iSessionId), startTime, endTime, 
+                        "true".equals(ApplicationProperties.getProperty("tmtbl.room.availability.solver.waitForSync","true")));
             }
         } catch (Exception e) {
             sLog.error(e.getMessage(),e);
