@@ -53,12 +53,12 @@ public class AbbvScheduleByCourseReport extends PdfLegacyExamReport {
                          rpad(sameCrs?"":section.getCourseNbr(),5)+" "+
                          rpad(sameItype?"":section.getItype().length()==0?"ALL":section.getItype(),5)+" "+
                          lpad(sameSct?"":section.getSection(),3))+" "+
-                        formatShortPeriod(section.getExamAssignment().getPeriod()));
+                        formatShortPeriod(section.getExamAssignment()));
                 } else {
                     lines.add(rpad(sameSubj?"":section.getSubject(),4)+" "+
                             rpad(sameCrs?"":section.getCourseNbr(),5)+" "+
                             lpad(sameSct?"":section.getSection().length()==0?"ALL":section.getSection(),3)+"  "+
-                            formatPeriod(section.getExamAssignment().getPeriod()));
+                            formatPeriod(section.getExamAssignment()));
                 }
             }
             if (iItype) {
@@ -111,14 +111,14 @@ public class AbbvScheduleByCourseReport extends PdfLegacyExamReport {
                                  rpad(sameCrs?"":section.getCourseNbr(),5)+" "+
                                  rpad(sameItype?"":section.getItype().length()==0?"ALL":section.getItype(),5)+" "+
                                  lpad(sameSct?"":section.getSection(),3)+" "+
-                                formatShortPeriod(section.getExamAssignment().getPeriod())+" "+
+                                formatShortPeriod(section.getExamAssignment())+" "+
                                 rpad(iNoRoom,23));
                         } else {
                             lines.add(
                                         rpad(sameSubj?"":section.getSubject(),4)+" "+
                                         rpad(sameCrs?"":section.getCourseNbr(),5)+" "+
                                         rpad(sameSct?"":section.getSection().length()==0?"ALL":section.getSection(),3)+"  "+
-                                    formatPeriod(section.getExamAssignment().getPeriod())+" "+
+                                    formatPeriod(section.getExamAssignment())+" "+
                                     rpad(iNoRoom,23));
                         }
                 } else {
@@ -133,7 +133,7 @@ public class AbbvScheduleByCourseReport extends PdfLegacyExamReport {
                                          rpad(sameCrs?"":section.getCourseNbr(),5)+" "+
                                          rpad(sameItype?"":section.getItype().length()==0?"ALL":section.getItype(),5)+" "+
                                          lpad(sameSct?"":section.getSection(),3)+" "+
-                                        formatShortPeriod(section.getExamAssignment().getPeriod())+" "+
+                                        formatShortPeriod(section.getExamAssignment())+" "+
                                         formatRoom(a.getName())+" "+formatRoom(b==null?"":b.getName()));
                                 } else {
                                     lines.add(
@@ -141,7 +141,7 @@ public class AbbvScheduleByCourseReport extends PdfLegacyExamReport {
                                                 rpad(sameSubj?"":section.getSubject(),4)+" "+
                                                 rpad(sameCrs?"":section.getCourseNbr(),5)+" "+
                                                 rpad(sameSct?"":section.getSection().length()==0?"ALL":section.getSection(),3))+"  "+
-                                            formatPeriod(section.getExamAssignment().getPeriod())+" "+
+                                            formatPeriod(section.getExamAssignment())+" "+
                                             formatRoom(a.getName())+" "+formatRoom(b==null?"":b.getName()));
                                 }
                         } else {

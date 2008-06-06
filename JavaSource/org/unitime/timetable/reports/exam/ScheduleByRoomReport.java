@@ -64,17 +64,18 @@ public class ScheduleByRoomReport extends PdfLegacyExamReport {
             setCont(room.getName());
             Hashtable<ExamPeriod,ExamAssignmentInfo> roomAssignments = table.get(room);
             ExamPeriod lastPeriod = null;
+            boolean somethingPrinted = false;
             for (Iterator j=periods.iterator();j.hasNext();) {
                 ExamPeriod period = (ExamPeriod)j.next();
-                if (lastPeriod!=null && !lastPeriod.getDateOffset().equals(period.getDateOffset()) && !iNewPage) println("");
                 iStudentPrinted = false;
                 ExamAssignmentInfo exam = roomAssignments.get(period);
                 if (exam!=null) {
-                    iSubjectPrinted = iCoursePrinted = iITypePrinted = false;
                     ExamSectionInfo lastSection = null;
+                    iSubjectPrinted = iCoursePrinted = iITypePrinted = false;
                     for (ExamSectionInfo section : exam.getSections()) {
                         if (getSubjectArea()!=null && !getSubjectArea().getSubjectAreaAbbreviation().equals(section.getSubject())) continue;
                         if (lastSection!=null && iSubjectPrinted) {
+                            iSubjectPrinted = iCoursePrinted = iITypePrinted = false;
                             if (section.getSubject().equals(lastSection.getSubject())) {
                                 iSubjectPrinted = true;
                                 if (section.getCourseNbr().equals(lastSection.getCourseNbr())) {
@@ -85,22 +86,27 @@ public class ScheduleByRoomReport extends PdfLegacyExamReport {
                                 }
                             }
                         }
+                        if (lastPeriod!=null && !lastPeriod.getDateOffset().equals(period.getDateOffset()) && !iNewPage) println("");
+                        lastPeriod = period;
                         println((iPeriodPrinted?rpad("",11):formatRoom(room.getName()))+" "+
                                 lpad(iPeriodPrinted?"":String.valueOf(room.getCapacity()),8)+" "+
                                 lpad(iPeriodPrinted?"":String.valueOf(room.getExamCapacity()),6)+" "+
                                 lpad(iStudentPrinted?"":String.valueOf(periods.indexOf(period)+1),6)+" "+
-                                rpad(iStudentPrinted?"":formatPeriod(period),38)+" "+
+                                rpad(iStudentPrinted?"":formatPeriod(section.getExamAssignment()),38)+" "+
                                 rpad(iSubjectPrinted?"":section.getSubject(),4)+" "+
                                 rpad(iCoursePrinted?"":section.getCourseNbr(), 6)+" "+
                                 (iItype?rpad(iITypePrinted?"":section.getItype(), 6)+" ":"")+
                                 lpad(section.getSection(),4)+" "+
                                 lpad(String.valueOf(section.getNrStudents()),5)
-                                
                                 );
                         iPeriodPrinted = iStudentPrinted = iSubjectPrinted = iCoursePrinted = iITypePrinted = !iNewPage;
                         lastSection = section;
+                        somethingPrinted = true;
                     }
-                } else {
+                }
+                /*} else {
+                    if (lastPeriod!=null && !lastPeriod.getDateOffset().equals(period.getDateOffset()) && !iNewPage) println("");
+                    lastPeriod = period;
                     println((iPeriodPrinted?rpad("",11):formatRoom(room.getName()))+" "+
                             lpad(iPeriodPrinted?"":String.valueOf(room.getCapacity()),8)+" "+
                             lpad(iPeriodPrinted?"":String.valueOf(room.getExamCapacity()),6)+" "+
@@ -109,11 +115,10 @@ public class ScheduleByRoomReport extends PdfLegacyExamReport {
                             );
                     iPeriodPrinted = !iNewPage;
                     //println("");
-                }
-                lastPeriod = period;
+                }*/
             }
             setCont(null);
-            if (i.hasNext()) {
+            if (somethingPrinted && i.hasNext()) {
                 newPage();
             }
         }

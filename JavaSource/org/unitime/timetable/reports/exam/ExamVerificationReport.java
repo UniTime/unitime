@@ -274,7 +274,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                         String pf = (PreferenceLevel.sRequired.equals(pref.getPrefLevel().getPrefProlog())?" ":"!");
                         if (pref instanceof ExamPeriodPref) {
                             ExamPeriodPref xp = (ExamPeriodPref)pref;
-                            times.add(pf+rpad(formatPeriod(xp.getExamPeriod()), 25));
+                            times.add(pf+rpad(formatPeriod(xp.getExamPeriod(), exam.getLength()), 25));
                         } else if (exam.getMaxRooms()>0) {
                             if (pref instanceof RoomPref) {
                                 RoomPref rp = (RoomPref)pref;
@@ -320,7 +320,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                             lpad(""+room.getCapacity(),4)+" "+
                             lpad(""+room.getExamCapacity(),5));
                 }
-                times.add(" "+rpad(formatPeriod(exam.getPeriod()),25));
+                times.add(" "+rpad(formatPeriod(exam),25));
             }
             Vector<String> meetsWith = new Vector();
             int cnt = 0;
@@ -531,7 +531,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                                 String pf = (PreferenceLevel.sRequired.equals(pref.getPrefLevel().getPrefProlog())?" ":"!");
                                 if (pref instanceof ExamPeriodPref) {
                                     ExamPeriodPref xp = (ExamPeriodPref)pref;
-                                    times.add(pf+rpad(formatPeriod(xp.getExamPeriod()), 25));
+                                    times.add(pf+rpad(formatPeriod(xp.getExamPeriod(),exam.getLength()), 25));
                                 } else if (exam.getMaxRooms()>0) {
                                     if (pref instanceof RoomPref) {
                                         RoomPref rp = (RoomPref)pref;
@@ -577,7 +577,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                                     lpad(""+room.getCapacity(),4)+" "+
                                     lpad(""+room.getExamCapacity(),5));
                         }
-                        times.add(" "+rpad(formatPeriod(exam.getPeriod()),25));
+                        times.add(" "+rpad(formatPeriod(exam),25));
                     }
                     Vector<String> meetsWith = new Vector();
                     int cnt = 0;

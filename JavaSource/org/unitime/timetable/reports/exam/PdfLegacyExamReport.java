@@ -56,6 +56,7 @@ import org.unitime.timetable.model.Event.MultiMeeting;
 import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.reports.PdfLegacyReport;
+import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.Parameters;
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamInstructorInfo;
@@ -83,6 +84,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
     protected boolean iItype = false;
     protected boolean iClassSchedule = false;
     protected Hashtable<String,String> iRoomCodes = new Hashtable();
+    protected String iRC = null;
     protected boolean iTotals = true;
     protected boolean iUseClassSuffix = false;
     protected boolean iDispLimits = true;
@@ -157,20 +159,18 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
     public void setClassSchedule(boolean classSchedule) { iClassSchedule = classSchedule; }
     public void setSince(Date since) { iSince = since; }
     public void setDispFullTermDates(boolean dispFullTermDates) { iDispFullTermDates = dispFullTermDates; }
-    public String setRoomCode(String roomCode) {
+    public void setRoomCode(String roomCode) {
         if (roomCode==null || roomCode.length()==0) {
             iRoomCodes = null;
-            return null;
         }
         iRoomCodes = new Hashtable<String, String>();
-        String codes = "";
+        iRC = "";
         for (StringTokenizer s = new StringTokenizer(roomCode,":;,=");s.hasMoreTokens();) {
             String room = s.nextToken(), code = s.nextToken();
             iRoomCodes.put(room, code);
-            if (codes.length()>0) codes += ", ";
-            codes += code+":"+room;
+            if (iRC.length()>0) iRC += ", ";
+            iRC += code+":"+room;
         }
-        return codes;
     }
 
 
@@ -338,7 +338,17 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
     public String formatPeriod(ExamPeriod period) {
         return period.getStartDateLabel()+" "+lpad(period.getStartTimeLabel(),6)+" - "+lpad(period.getEndTimeLabel(),6);
     }
+
+    public String formatPeriod(ExamPeriod period, int length) {
+        return period.getStartDateLabel()+" "+lpad(period.getStartTimeLabel(),6)+" - "+lpad(period.getEndTimeLabel(length),6);
+    }
     
+    public String formatPeriod(ExamAssignment assignment) {
+        return assignment.getPeriod().getStartDateLabel()+" "+
+            lpad(assignment.getPeriod().getStartTimeLabel(),6)+" - "+
+            lpad(assignment.getPeriod().getEndTimeLabel(assignment.getLength()),6);
+    }
+
     public String getShortDate(Date date) {
         Calendar c = Calendar.getInstance(Locale.US);
         c.setTime(date);
@@ -355,10 +365,14 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
         return day+" "+new SimpleDateFormat("MM/dd").format(date);
     }
     
-    public String formatShortPeriod(ExamPeriod period) {
+    public String formatShortPeriod(ExamPeriod period, int length) {
         return getShortDate(period.getStartDate())+" "+lpad(period.getStartTimeLabel(),6)+"-"+lpad(period.getEndTimeLabel(),6);
     }
     
+    public String formatShortPeriod(ExamAssignment assignment) {
+        return getShortDate(assignment.getPeriod().getStartDate())+" "+lpad(assignment.getPeriod().getStartTimeLabel(),6)+"-"+lpad(assignment.getPeriod().getEndTimeLabel(assignment.getLength()),6);
+    }
+
     public String getItype(Class_ clazz) {
         if (iExternal) {
             String ext = clazz.getExternalUniqueId();

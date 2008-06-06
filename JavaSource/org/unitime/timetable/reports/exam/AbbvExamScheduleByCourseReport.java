@@ -62,13 +62,13 @@ public class AbbvExamScheduleByCourseReport extends PdfLegacyExamReport {
                                  rpad(sameCrs?"":section.getCourseNbr(),5)+" "+
                                  rpad(sameItype?"":section.getItype().length()==0?"ALL":section.getItype(),5)+" "+
                                  lpad(sameSct?"":section.getSection(),3)+" "+
-                                formatShortPeriod(section.getExamAssignment().getPeriod()));
+                                formatShortPeriod(section.getExamAssignment()));
                         } else {
                             lines.add(
                                     rpad(sameSubj?"":section.getSubject(),4)+" "+
                                     rpad(sameCrs?"":section.getCourseNbr(),5)+" "+
                                     rpad(sameSct?"":section.getSection().length()==0?"ALL":section.getSection(),3)+"  "+
-                                    formatPeriod(exam.getPeriod()));
+                                    formatPeriod(exam));
                         }
                     } else {
                         if (iItype) {
@@ -160,14 +160,14 @@ public class AbbvExamScheduleByCourseReport extends PdfLegacyExamReport {
                                      rpad(sameCrs?"":section.getCourseNbr(),5)+" "+
                                      rpad(sameItype?"":section.getItype().length()==0?"ALL":section.getItype(),5)+" "+
                                      lpad(sameSct?"":section.getSection(),3)+" "+
-                                    formatShortPeriod(section.getExamAssignment().getPeriod())+" "+a+" "+b);
+                                    formatShortPeriod(section.getExamAssignment())+" "+a+" "+b);
                             } else {
                                 lines.add(
                                         (iItype?rpad(section.getName(),14):
                                             rpad(sameSubj?"":section.getSubject(),4)+" "+
                                             rpad(sameCrs?"":section.getCourseNbr(),5)+" "+
                                             rpad(sameSct?"":section.getSection().length()==0?"ALL":section.getSection(),3))+"  "+
-                                        formatPeriod(section.getExamAssignment().getPeriod())+" "+a+" "+b);
+                                        formatPeriod(section.getExamAssignment())+" "+a+" "+b);
                             }
                     } else if (section!=null) {
                         if (iItype) {
