@@ -384,7 +384,7 @@ public class SolverRegisterService extends Thread {
                                 new SessionDAO().get((Long)cmd[1]),
                                 (Date)cmd[2],
                                 (Date)cmd[3], 
-                                true);
+                                "true".equals(ApplicationProperties.getProperty("tmtbl.room.availability.solver.waitForSync","true")));
                     }
                     return "ack";
                 }
