@@ -145,6 +145,13 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
         return (endHour>12?endHour-12:endHour)+":"+(endMin<10?"0":"")+endMin+(endHour>=12?"p":"a");
     }
 
+    public String getEndTimeLabel(int length) {
+        int min = (getStartSlot()+length)*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
+        int endHour = min/60;
+        int endMin = min%60;
+        return (endHour>12?endHour-12:endHour)+":"+(endMin<10?"0":"")+endMin+(endHour>=12?"p":"a");
+    }
+
     public String getName() {
         return getStartDateLabel()+" "+getStartTimeLabel()+" - "+getEndTimeLabel();
     }
