@@ -57,7 +57,9 @@ public class DeptStatusTypeEditForm extends ActionForm {
     private boolean iCanExamView            = false;
     private boolean iCanExamEdit            = false;
     private boolean iCanExamTimetable       = false;
-    private boolean iCanNoRoleReport  = false;
+    private boolean iCanNoRoleReportExamFin = false;
+    private boolean iCanNoRoleReportExamMid = false;
+    private boolean iCanNoRoleReportClass   = false;
     
 
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
@@ -100,7 +102,9 @@ public class DeptStatusTypeEditForm extends ActionForm {
         iCanExamView            = false;
         iCanExamEdit            = false;
         iCanExamTimetable       = false;
-        iCanNoRoleReport  = false;
+        iCanNoRoleReportExamFin = false;
+        iCanNoRoleReportExamMid = false;
+        iCanNoRoleReportClass   = false;
 	}
     
     public void setOp(String op) { iOp = op; }
@@ -147,8 +151,12 @@ public class DeptStatusTypeEditForm extends ActionForm {
     public void setCanExamEdit(boolean canExamEdit) { iCanExamEdit = canExamEdit; }
     public boolean getCanExamTimetable() { return iCanExamTimetable; }
     public void setCanExamTimetable(boolean canExamTimetable) { iCanExamTimetable = canExamTimetable; }
-    public void setCanNoRoleReport(boolean canNoRoleReport) { iCanNoRoleReport = canNoRoleReport; }
-    public boolean getCanNoRoleReport() { return iCanNoRoleReport; }
+    public void setCanNoRoleReportExamFin(boolean canNoRoleReportExamFin) { iCanNoRoleReportExamFin = canNoRoleReportExamFin; }
+    public boolean getCanNoRoleReportExamFin() { return iCanNoRoleReportExamFin; }
+    public void setCanNoRoleReportExamMid(boolean canNoRoleReportExamMid) { iCanNoRoleReportExamMid = canNoRoleReportExamMid; }
+    public boolean getCanNoRoleReportExamMid() { return iCanNoRoleReportExamMid; }
+    public void setCanNoRoleReportClass(boolean canNoRoleReportClass) { iCanNoRoleReportClass = canNoRoleReportClass; }
+    public boolean getCanNoRoleReportClass() { return iCanNoRoleReportClass; }
     public int getRights() {
         int rights = 0;
         if (getCanManagerView()) rights += DepartmentStatusType.sCanManagerView;
@@ -163,7 +171,9 @@ public class DeptStatusTypeEditForm extends ActionForm {
         if (getCanExamView()) rights += DepartmentStatusType.sCanExamView;
         if (getCanExamEdit()) rights += DepartmentStatusType.sCanExamEdit;
         if (getCanExamTimetable()) rights += DepartmentStatusType.sCanExamTimetable;
-        if (getCanNoRoleReport()) rights += DepartmentStatusType.sCanNoRoleReport;
+        if (getCanNoRoleReportExamFin()) rights += DepartmentStatusType.sCanNoRoleReportExamFin;
+        if (getCanNoRoleReportExamMid()) rights += DepartmentStatusType.sCanNoRoleReportExamMid;
+        if (getCanNoRoleReportClass()) rights += DepartmentStatusType.sCanNoRoleReportClass;
         return rights;
     }
     public void setRights(int rights) {
@@ -179,7 +189,9 @@ public class DeptStatusTypeEditForm extends ActionForm {
         setCanExamView((rights&DepartmentStatusType.sCanExamView)==DepartmentStatusType.sCanExamView);
         setCanExamEdit((rights&DepartmentStatusType.sCanExamEdit)==DepartmentStatusType.sCanExamEdit);
         setCanExamTimetable((rights&DepartmentStatusType.sCanExamTimetable)==DepartmentStatusType.sCanExamTimetable);
-        setCanNoRoleReport((rights&DepartmentStatusType.sCanNoRoleReport)==DepartmentStatusType.sCanNoRoleReport);
+        setCanNoRoleReportExamFin((rights&DepartmentStatusType.sCanNoRoleReportExamFin)==DepartmentStatusType.sCanNoRoleReportExamFin);
+        setCanNoRoleReportExamMid((rights&DepartmentStatusType.sCanNoRoleReportExamMid)==DepartmentStatusType.sCanNoRoleReportExamMid);
+        setCanNoRoleReportClass((rights&DepartmentStatusType.sCanNoRoleReportClass)==DepartmentStatusType.sCanNoRoleReportClass);
     }
 	
 	public void load(DepartmentStatusType s) {

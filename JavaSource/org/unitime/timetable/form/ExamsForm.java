@@ -90,7 +90,7 @@ public class ExamsForm extends ActionForm {
         boolean hasSession = false;
 	    for (Iterator i=Session.getAllSessions().iterator();i.hasNext();) {
 	        Session s = (Session)i.next();
-	        if (s.getStatusType()!=null && s.getStatusType().canNoRoleReport() && Exam.hasTimetable(s.getUniqueId())) {
+	        if (s.getStatusType()!=null && (s.getStatusType().canNoRoleReportExamFinal() || s.getStatusType().canNoRoleReportExamMidterm()) && Exam.hasTimetable(s.getUniqueId())) {
 	            if (s.getUniqueId().equals(getSession())) hasSession = true;
 	            iSessions.add(new ComboBoxLookup(s.getLabel(),s.getUniqueId().toString()));
 	        }

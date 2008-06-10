@@ -118,7 +118,7 @@ public class PersonalizedExamReportAction extends Action {
                 setString("externalId",externalId).
                 setCacheable(true).list().iterator();i.hasNext();) {
             DepartmentalInstructor s = (DepartmentalInstructor)i.next();
-            if (s.getDepartment().getSession().getStatusType()==null || !s.getDepartment().getSession().getStatusType().canNoRoleReport() || !Exam.hasTimetable(s.getDepartment().getSession().getUniqueId())) continue;
+            if (!canDisplay(s.getDepartment().getSession())) continue;
             sessions.add(s.getDepartment().getSession());
             if (sessionId==null) {
                 if (instructor==null || instructor.getDepartment().getSession().compareTo(s.getDepartment().getSession())<0) instructor = s;
@@ -134,7 +134,7 @@ public class PersonalizedExamReportAction extends Action {
                 setString("externalId",externalId).
                 setCacheable(true).list().iterator();i.hasNext();) {
             Student s = (Student)i.next();
-            if (s.getSession().getStatusType()==null || !s.getSession().getStatusType().canNoRoleReport() || !Exam.hasTimetable(s.getSession().getUniqueId())) continue;
+            if (!canDisplay(s.getSession())) continue;
             sessions.add(s.getSession());
             if (sessionId==null) {
                 if (student==null || student.getSession().compareTo(s.getSession())<0) student = s;
@@ -157,15 +157,31 @@ public class PersonalizedExamReportAction extends Action {
         }
         
         HashSet<Exam> studentExams = new HashSet<Exam>();
-        if (student!=null) for (Iterator i=student.getClassEnrollments().iterator();i.hasNext();) {
-            StudentClassEnrollment sce = (StudentClassEnrollment)i.next();
-            studentExams.addAll(Exam.findAllRelated("Class_", sce.getClazz().getUniqueId()));
+        if (student!=null) {
+            for (Iterator i=student.getClassEnrollments().iterator();i.hasNext();) {
+                StudentClassEnrollment sce = (StudentClassEnrollment)i.next();
+                studentExams.addAll(Exam.findAllRelated("Class_", sce.getClazz().getUniqueId()));
+            }
+            if (!student.getSession().getStatusType().canNoRoleReportExamFinal()) {
+                for (Iterator i=studentExams.iterator();i.hasNext();) {
+                    Exam x = (Exam)i.next();
+                    if (x.getExamType()==Exam.sExamTypeFinal) i.remove();
+                }
+            }
+            if (!student.getSession().getStatusType().canNoRoleReportExamMidterm()) {
+                for (Iterator i=studentExams.iterator();i.hasNext();) {
+                    Exam x = (Exam)i.next();
+                    if (x.getExamType()==Exam.sExamTypeMidterm) i.remove();
+                }
+            }
         }
         
         HashSet<Exam> instructorExams = new HashSet<Exam>();
         if (instructor!=null) {
-            instructorExams.addAll(instructor.getExams(Exam.sExamTypeMidterm));
-            instructorExams.addAll(instructor.getExams(Exam.sExamTypeFinal));
+            if (instructor.getDepartment().getSession().getStatusType().canNoRoleReportExamMidterm())
+                instructorExams.addAll(instructor.getExams(Exam.sExamTypeMidterm));
+            if (instructor.getDepartment().getSession().getStatusType().canNoRoleReportExamFinal())
+                instructorExams.addAll(instructor.getExams(Exam.sExamTypeFinal));
         }
         
         if (instructorExams.isEmpty() && studentExams.isEmpty()) {
@@ -200,6 +216,7 @@ public class PersonalizedExamReportAction extends Action {
                             InstructorExamReport.sModeNormal, file, instructor.getDepartment().getSession(),
                             -1, null, exams);
                     ir.setM2d(true); ir.setDirect(true);
+                    ir.setClassSchedule(instructor.getDepartment().getSession().getStatusType().canNoRoleReportClass());
                     ir.printHeader();
                     ir.printReport(ExamInfo.createInstructorInfo(instructor), exams);
                     ir.lastPage();
@@ -218,6 +235,7 @@ public class PersonalizedExamReportAction extends Action {
                             StudentExamReport.sModeNormal, file, student.getSession(),
                             -1, null, exams);
                     sr.setM2d(true); sr.setBtb(true); sr.setDirect(true);
+                    sr.setClassSchedule(student.getSession().getStatusType().canNoRoleReportClass());
                     sr.printHeader();
                     sr.printReport(student, sections);
                     sr.lastPage();
@@ -258,14 +276,14 @@ public class PersonalizedExamReportAction extends Action {
             request.setAttribute("sessions", table.printTable(WebTable.getOrder(request.getSession(),"exams.o0")));
         }
         
-        if (student!=null && "true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.cschedule","true")) && !student.getClassEnrollments().isEmpty()) {
+        if (student!=null && student.getSession().getStatusType().canNoRoleReportClass() && !student.getClassEnrollments().isEmpty()) {
             PdfWebTable table =  getStudentClassSchedule(true, student);
             if (!table.getLines().isEmpty()) {
                 request.setAttribute("clsschd", table.printTable(WebTable.getOrder(request.getSession(),"exams.o6")));
             }
         }
         
-        if (instructor!=null && "true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.cschedule","true"))) {
+        if (instructor!=null && instructor.getDepartment().getSession().getStatusType().canNoRoleReportClass()) {
             PdfWebTable table = getInstructorClassSchedule(true, instructor);
             if (!table.getLines().isEmpty()) {
                 request.setAttribute("iclsschd", table.printTable(WebTable.getOrder(request.getSession(),"exams.o7")));
@@ -303,6 +321,14 @@ public class PersonalizedExamReportAction extends Action {
         }
 
         return mapping.findForward("show");
+    }
+    
+    private boolean canDisplay(Session session) {
+        if (session.getStatusType()==null) return false;
+        if (session.getStatusType().canNoRoleReportExamFinal() && Exam.hasTimetable(session.getUniqueId(),Exam.sExamTypeFinal)) return true;
+        if (session.getStatusType().canNoRoleReportExamMidterm() && Exam.hasTimetable(session.getUniqueId(),Exam.sExamTypeMidterm)) return true;
+        if (session.getStatusType().canNoRoleReportClass()) return true;
+        return false;
     }
     
     public int getDaysCode(Set meetings) {
@@ -1289,7 +1315,7 @@ public class PersonalizedExamReportAction extends Action {
             out.println("X-WR-CALNAME:"+student.getName(DepartmentalInstructor.sNameFormatLastFist));
             out.println("X-WR-TIMEZONE:"+TimeZone.getDefault().getID());
             out.println("PRODID:-//UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+"/UniTime Personal Schedule//NONSGML v1.0//EN");
-            if ("true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.cschedule","true"))) {
+            if (student.getSession().getStatusType().canNoRoleReportClass()) {
                 for (Iterator i=student.getClassEnrollments().iterator();i.hasNext();) {
                     StudentClassEnrollment sce = (StudentClassEnrollment)i.next();
                     if (sce.getClazz().getEvent()!=null) {
@@ -1353,7 +1379,7 @@ public class PersonalizedExamReportAction extends Action {
             out.println("X-WR-CALNAME:"+instructor.getName(DepartmentalInstructor.sNameFormatLastFist));
             out.println("X-WR-TIMEZONE:"+TimeZone.getDefault().getID());
             out.println("PRODID:-//UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+"/UniTime Personal Schedule//NONSGML v1.0//EN");
-            if ("true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.cschedule","true"))) {
+            if (instructor.getDepartment().getSession().getStatusType().canNoRoleReportClass()) {
                 for (Iterator i=DepartmentalInstructor.getAllForInstructor(instructor, instructor.getDepartment().getSession().getUniqueId()).iterator();i.hasNext();) {
                     DepartmentalInstructor di = (DepartmentalInstructor)i.next();
                     for (Iterator j=di.getClasses().iterator();j.hasNext();) {

@@ -299,9 +299,19 @@ public class DeptStatusTypeEditAction extends Action {
                     }
                 }
             }
-            if (s.canNoRoleReport()) {
+            if (s.canNoRoleReportExamFinal() || s.canNoRoleReportExamMidterm() || s.canNoRoleReportClass()) {
                 if (rights.length()>0) rights+="; ";
                 rights += "no-role";
+                if (s.canNoRoleReportExamFinal() && s.canNoRoleReportExamMidterm() && s.canNoRoleReportClass())
+                    rights += " all";
+                else {
+                    if (s.canNoRoleReportClass()) rights += " classes";
+                    if (s.canNoRoleReportExamFinal() && s.canNoRoleReportExamMidterm()) rights += " exams";
+                    else {
+                        if (s.canNoRoleReportExamFinal()) rights += " final exams";
+                        if (s.canNoRoleReportExamMidterm()) rights += " midterm exams";
+                    }
+                }
             }
             String ops = "";
             if (s.getOrd().intValue()>0) {
