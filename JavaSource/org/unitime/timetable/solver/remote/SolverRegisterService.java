@@ -253,6 +253,15 @@ public class SolverRegisterService extends Thread {
 		public void stopConnection() {
 			iFinish = true;
 		}
+		public void unregister() {
+		    if (iProxy!=null) {
+                synchronized (iServers) {
+                    if (iServers.remove(iProxy))
+                    sLog.info("Sever "+iProxy+" disconnected.");
+                }
+            }
+		    iProxy = null;
+		}
 		public boolean isConnected() {
 			return (iSocket!=null && !iSocket.isClosed());
 		}
@@ -275,12 +284,7 @@ public class SolverRegisterService extends Thread {
 			} catch (Exception e) {
 				sLog.error(e.getMessage(),e);
 			}
-			if (iProxy!=null) {
-                synchronized (iServers) {
-                    if (iServers.remove(iProxy))
-                	sLog.info("Sever "+iProxy+" disconnected.");
-                }
-			}
+			unregister();
 			try {
 				iSocket.close();
 			} catch (Exception e) {}
@@ -311,12 +315,7 @@ public class SolverRegisterService extends Thread {
 			    return ApplicationProperties.getProperties();
 			}
 			if ("disconnect".equals(command)) {
-				if (iProxy!=null) {
-                    synchronized (iServers) {
-                        iServers.remove(iProxy);
-                        sLog.info("Sever "+iProxy+" disconnected.");
-                    }
-				}
+			    unregister();
 				stopConnection();
 				return "ack";
 			}
