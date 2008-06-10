@@ -42,7 +42,9 @@ public class DepartmentStatusType extends BaseDepartmentStatusType implements Co
 	public static final int sCanExamView            = 512;
 	public static final int sCanExamEdit            = 1024;
 	public static final int sCanExamTimetable       = 2048;
-	public static final int sCanNoRoleReport        = 4096;
+	public static final int sCanNoRoleReportExamFin = 4096;
+	public static final int sCanNoRoleReportExamMid = 8192;
+	public static final int sCanNoRoleReportClass   = 16384;
 	
 	public static final int sApplySession    = 1;
 	public static final int sApplyDepartment = 2;
@@ -175,10 +177,26 @@ public class DepartmentStatusType extends BaseDepartmentStatusType implements Co
         return can(sCanExamTimetable);
     }
     
-    public boolean canNoRoleReport() {
-        return can(sCanNoRoleReport);
+    public boolean canNoRoleReportExamFinal() {
+        return can(sCanNoRoleReportExamFin);
     }
 
+    public boolean canNoRoleReportExamMidterm() {
+        return can(sCanNoRoleReportExamMid);
+    }
+
+    public boolean canNoRoleReportClass() {
+        return can(sCanNoRoleReportClass);
+    }
+    
+    public boolean canNoRoleReportExam() {
+        return canNoRoleReportExamFinal() || canNoRoleReportExamMidterm();
+    }
+
+    public boolean canNoRoleReport() {
+        return canNoRoleReportClass() || canNoRoleReportExam();
+    }
+    
     public boolean apply(int apply) {
 		return (getApply().intValue() & apply) == apply;
 	}

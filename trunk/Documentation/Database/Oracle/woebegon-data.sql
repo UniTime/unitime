@@ -985,7 +985,7 @@ values (265, 'initial', 'Initial Data Load', 0, 1, 0);
 insert into DEPT_STATUS_TYPE (UNIQUEID, REFERENCE, LABEL, STATUS, APPLY, ORD)
 values (266, 'input', 'Input Data Entry', 1721, 1, 1);
 insert into DEPT_STATUS_TYPE (UNIQUEID, REFERENCE, LABEL, STATUS, APPLY, ORD)
-values (267, 'timetabling', 'Timetabling', 8121, 1, 2);
+values (267, 'timetabling', 'Timetabling', 32697, 1, 2);
 insert into DEPT_STATUS_TYPE (UNIQUEID, REFERENCE, LABEL, STATUS, APPLY, ORD)
 values (268, 'publish', 'Timetable Published', 4617, 1, 4);
 insert into DEPT_STATUS_TYPE (UNIQUEID, REFERENCE, LABEL, STATUS, APPLY, ORD)
@@ -1003,7 +1003,7 @@ values (325, 'dept_readonly', 'Department Read Only', 9, 2, 10);
 insert into DEPT_STATUS_TYPE (UNIQUEID, REFERENCE, LABEL, STATUS, APPLY, ORD)
 values (326, 'dept_edit', 'Department Allow Edit', 441, 2, 11);
 insert into DEPT_STATUS_TYPE (UNIQUEID, REFERENCE, LABEL, STATUS, APPLY, ORD)
-values (414, 'exams', 'Examination Timetabling', 7689, 1, 3);
+values (414, 'exams', 'Examination Timetabling', 32265, 1, 3);
 commit;
 prompt 12 records loaded
 prompt Loading SESSIONS...
