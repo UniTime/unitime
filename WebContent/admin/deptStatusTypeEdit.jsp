@@ -33,7 +33,7 @@
 <logic:notEqual name="deptStatusTypeEditForm" property="op" value="List">
 	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
-			<TD colspan="2">
+			<TD colspan="3">
 				<tt:section-header>
 					<tt:section-title>
 						<logic:equal name="deptStatusTypeEditForm" property="op" value="Save">
@@ -58,7 +58,7 @@
 
 		<TR>
 			<TD>Reference:</TD>
-			<TD>
+			<TD colspan='2'>
 				<html:text property="reference" size="20" maxlength="20"/>
 				&nbsp;<html:errors property="reference"/>
 			</TD>
@@ -66,7 +66,7 @@
 
 		<TR>
 			<TD>Label:</TD>
-			<TD>
+			<TD colspan='2'>
 				<html:text property="label" size="60" maxlength="60"/>
 				&nbsp;<html:errors property="label"/>
 			</TD>
@@ -74,34 +74,56 @@
 
 		<TR>
 			<TD>Apply:</TD>
-			<TD>
+			<TD colspan='2'>
 			<html:select property="apply">
 				<html:optionsCollection name="deptStatusTypeEditForm" property="applyOptions" label="value" value="id"/>
 			</html:select>
 			&nbsp;<html:errors property="apply"/>
 		</TR>
 		
-		<TR><TD>Owner View:</TD><TD><html:checkbox property="canOwnerView"/></TD></TR>
-		<TR><TD>Owner Limited Edit:</TD><TD><html:checkbox property="canOwnerLimitedEdit"/></TD></TR>
-		<TR><TD>Owner Edit:</TD><TD><html:checkbox property="canOwnerEdit"/></TD></TR>
-		<TR><TD>Manager View:</TD><TD><html:checkbox property="canManagerView"/></TD></TR>
-		<TR><TD>Manager Limited Edit:</TD><TD><html:checkbox property="canManagerLimitedEdit"/></TD></TR>
-		<TR><TD>Manager Edit:</TD><TD><html:checkbox property="canManagerEdit"/></TD></TR>
-		<TR><TD>Audit:</TD><TD><html:checkbox property="canAudit"/></TD></TR>
-		<TR><TD>Timetable:</TD><TD><html:checkbox property="canTimetable"/></TD></TR>
-		<TR><TD>Commit:</TD><TD><html:checkbox property="canCommit"/></TD></TR>
-		<TR><TD>Exam View:</TD><TD><html:checkbox property="canExamView"/></TD></TR>
-		<TR><TD>Exam Edit:</TD><TD><html:checkbox property="canExamEdit"/></TD></TR>
-		<TR><TD>Exam Timetable:</TD><TD><html:checkbox property="canExamTimetable"/></TD></TR>
-		<TR><TD>No-Role Report:</TD><TD><html:checkbox property="canNoRoleReport"/></TD></TR>
+		<TR><TD colspan='3'><tt:section-title><br>Course Timetabling</tt:section-title></TD></TR>
+		<TR><TD>Owner View:</TD><TD><html:checkbox property="canOwnerView"/></TD>
+			<TD><i>The manager of the department of the subject area of a class can view class data but cannot change it.</i></TD></TR>
+		<TR><TD>Owner Limited Edit:</TD><TD><html:checkbox property="canOwnerLimitedEdit"/></TD>
+			<TD><i>The manager of the department of the subject area of a class can assign instructors.</i></TD></TR>
+		<TR><TD>Owner Edit:</TD><TD><html:checkbox property="canOwnerEdit"/></TD>
+			<TD><i>The manager of the department of the subject area of a class can edit the class data.</i></TD></TR>
+		<TR><TD>Manager View:</TD><TD><html:checkbox property="canManagerView"/></TD>
+			<TD><i>The schedule manager of the class (manager of the department that is managing the class, if externally managed) can view class data but cannot change it.</i></TD></TR>
+		<TR><TD nowrap>Manager Limited Edit:</TD><TD><html:checkbox property="canManagerLimitedEdit"/></TD>
+			<TD><i>The schedule manager of the class can assign instructors.</i></TD></TR>
+		<TR><TD>Manager Edit:</TD><TD><html:checkbox property="canManagerEdit"/></TD>
+			<TD><i>The schedule manager of the class can edit class data.</i></TD></TR>
+		<TR><TD>Audit:</TD><TD><html:checkbox property="canAudit"/></TD>
+			<TD><i>The schedule manager can run the solver, but cannot save timetables.</i></TD></TR>
+		<TR><TD>Timetable:</TD><TD><html:checkbox property="canTimetable"/></TD>
+			<TD><i>The schedule manager can create timetables and save them, but cannot commit.</i></TD></TR>
+		<TR><TD>Commit:</TD><TD><html:checkbox property="canCommit"/></TD>
+			<TD><i>The schedule manager can commit a timetable.</i></TD></TR>
+		
+		<TR><TD colspan='3'><tt:section-title><br>Examination Timetabling</tt:section-title></TD></TR>
+		<TR><TD>Exam View:</TD><TD><html:checkbox property="canExamView"/></TD>
+			<TD><i>The schedule manager of the department can view examination data of the appropriate subject areas.</i></TD></TR>
+		<TR><TD>Exam Edit:</TD><TD><html:checkbox property="canExamEdit"/></TD>
+			<TD><i>The schedule manager of the department can edit examination data of the appropriate subject areas.</i></TD></TR>
+		<TR><TD>Exam Timetable:</TD><TD><html:checkbox property="canExamTimetable"/></TD>
+			<TD><i>The examination timetabling manager can edit all examination data and create examination schedule.</i></TD></TR>
+		
+		<TR><TD colspan='3'><tt:section-title><br>No-Role Reports</tt:section-title></TD></TR>
+		<TR><TD>Class Schedule:</TD><TD><html:checkbox property="canNoRoleReportClass"/></TD>
+			<TD><i>Class schedule can be presented to unauthenticated users or authenticated users without a role.</i></TD></TR>
+		<TR><TD>Final Examination Schedule:</TD><TD><html:checkbox property="canNoRoleReportExamFin"/></TD>
+			<TD><i>Final examination schedule can be presented to unauthenticated users or authenticated users without a role.</i></TD></TR>
+		<TR><TD nowrap>Midterm Examination Schedule:</TD><TD><html:checkbox property="canNoRoleReportExamMid"/></TD>
+			<TD><i>Midterm examination schedule can be presented to unauthenticated users or authenticated users without a role.</i></TD></TR>
 		
 		<TR>
-			<TD colspan='2'>
+			<TD colspan='3'>
 				<tt:section-title/>
 			</TD>
 		</TR>
 		<TR>
-			<TD align="right" colspan="2">
+			<TD align="right" colspan="3">
 				<logic:equal name="deptStatusTypeEditForm" property="op" value="Save">
 					<html:submit property="op" value="Save" accesskey="S" title="Save Status (Alt+S)"/>
 				</logic:equal>

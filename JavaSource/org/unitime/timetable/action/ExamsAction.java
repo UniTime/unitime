@@ -44,6 +44,7 @@ import org.unitime.timetable.form.ExamsForm;
 import org.unitime.timetable.model.ApplicationConfig;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.SubjectArea;
+import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamSectionInfo;
 import org.unitime.timetable.util.Constants;
@@ -99,23 +100,27 @@ public class ExamsAction extends Action {
         WebTable.setOrder(request.getSession(),"exams.order",request.getParameter("ord"),1);
         
         if (myForm.getSession()!=null && myForm.getSubjectArea()!=null && myForm.getSubjectArea().length()>0) {
-            List exams = null;
-            if ("--ALL--".equals(myForm.getSubjectArea())) 
-                exams = Exam.findAll(myForm.getSession(), myForm.getExamType());
-            else {
-                SubjectArea sa = SubjectArea.findByAbbv(myForm.getSession(), myForm.getSubjectArea());
-                if (sa!=null) exams = Exam.findExamsOfSubjectArea(sa.getUniqueId(), myForm.getExamType());
-            }
-            if (exams!=null && !exams.isEmpty()) { 
-                Vector<ExamAssignment> assignments = new Vector();
-                for (Iterator i=exams.iterator();i.hasNext();) {
-                    Exam exam = (Exam)i.next();
-                    if (exam.getAssignedPeriod()!=null) assignments.add(new ExamAssignment(exam));
+            org.unitime.timetable.model.Session session = new SessionDAO().get(myForm.getSession());
+            if ((myForm.getExamType()==Exam.sExamTypeFinal && session.getStatusType().canNoRoleReportExamFinal()) ||
+                (myForm.getExamType()==Exam.sExamTypeMidterm && session.getStatusType().canNoRoleReportExamMidterm())) {
+                List exams = null;
+                if ("--ALL--".equals(myForm.getSubjectArea())) 
+                    exams = Exam.findAll(myForm.getSession(), myForm.getExamType());
+                else {
+                    SubjectArea sa = SubjectArea.findByAbbv(myForm.getSession(), myForm.getSubjectArea());
+                    if (sa!=null) exams = Exam.findExamsOfSubjectArea(sa.getUniqueId(), myForm.getExamType());
                 }
-                if (!assignments.isEmpty()) {
-                    PdfWebTable table = getTable(true, myForm, assignments);
-                    if (table!=null)
-                        myForm.setTable(table.printTable(WebTable.getOrder(request.getSession(),"exams.order")), table.getNrColumns(), table.getLines().size());
+                if (exams!=null && !exams.isEmpty()) { 
+                    Vector<ExamAssignment> assignments = new Vector();
+                    for (Iterator i=exams.iterator();i.hasNext();) {
+                        Exam exam = (Exam)i.next();
+                        if (exam.getAssignedPeriod()!=null) assignments.add(new ExamAssignment(exam));
+                    }
+                    if (!assignments.isEmpty()) {
+                        PdfWebTable table = getTable(true, myForm, assignments);
+                        if (table!=null)
+                            myForm.setTable(table.printTable(WebTable.getOrder(request.getSession(),"exams.order")), table.getNrColumns(), table.getLines().size());
+                    }
                 }
             }
         }

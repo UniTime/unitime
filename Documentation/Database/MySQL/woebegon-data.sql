@@ -1344,7 +1344,7 @@ VALUES (226238, '102', NULL, 'SMITH', 'JOHN', 'WILLIAM', 1, NULL, 223207, 0, NUL
 INSERT INTO `timetable`.`dept_status_type`(`uniqueid`, `reference`, `label`, `status`, `apply`, `ord`)
 VALUES (265, 'initial', 'Initial Data Load', 0, 1, 0),
   (266, 'input', 'Input Data Entry', 1721, 1, 1),
-  (267, 'timetabling', 'Timetabling', 8121, 1, 2),
+  (267, 'timetabling', 'Timetabling', 32697, 1, 2),
   (268, 'publish', 'Timetable Published', 4617, 1, 4),
   (269, 'finished', 'Session Finished', 4617, 1, 5),
   (270, 'dept_input', 'External Mgr. Input Data Entry', 135, 2, 6),
@@ -1353,7 +1353,7 @@ VALUES (265, 'initial', 'Initial Data Load', 0, 1, 0),
   (385, 'dept_readonly_ni', 'External Mgr. Timetabling (No Instructor Assignments)', 391, 2, 8),
   (325, 'dept_readonly', 'Department Read Only', 9, 2, 10),
   (326, 'dept_edit', 'Department Allow Edit', 441, 2, 11),
-  (414, 'exams', 'Examination Timetabling', 7689, 1, 3);
+  (414, 'exams', 'Examination Timetabling', 32265, 1, 3);
 
 INSERT INTO `timetable`.`dept_to_tt_mgr`(`timetable_mgr_id`, `department_id`)
 VALUES (470, 226199),
