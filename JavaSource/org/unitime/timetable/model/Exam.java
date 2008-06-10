@@ -527,7 +527,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 createQuery("select count(x) from Exam x " +
                 		"where x.session.uniqueId=:sessionId and " +
                 		"x.assignedPeriod!=null and x.examType=:examType").
-                setLong("sessionId",sessionId).uniqueResult()).longValue()>0;
+                setLong("sessionId",sessionId).setInteger("examType",examType).uniqueResult()).longValue()>0;
     }
     
     public static boolean hasTimetable(Long sessionId) {
