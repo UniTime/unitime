@@ -112,6 +112,7 @@ public class RemoteSolverServerProxy {
 	
 	public void disconnectProxy() {
 		try {
+	        iConnection.unregister();
 			iConnection.stopConnection();
 		} catch (Exception e) {}
 		try {
