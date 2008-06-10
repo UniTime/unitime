@@ -306,6 +306,10 @@ public class SolverRegisterService extends Thread {
 			}
 			if ("ping".equals(command)) {
 				iLastPing = System.currentTimeMillis();
+				if (iProxy!=null && !iServers.contains(iProxy)) {
+				    sLog.warn("Server "+iProxy+" is alive, but it is not registered.");
+				    iServers.add(iProxy);
+				}
 				return "ack";
 			}
 			if ("url".equals(command)) {
