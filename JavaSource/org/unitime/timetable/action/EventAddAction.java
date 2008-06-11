@@ -1,3 +1,23 @@
+/*
+ * UniTime 3.1 (University Timetabling Application)
+ * Copyright (C) 2008, UniTime.org, and individual contributors
+ * as indicated by the @authors tag.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
+
 package org.unitime.timetable.action;
 
 import javax.servlet.http.HttpServletRequest;
@@ -40,24 +60,30 @@ public class EventAddAction extends Action {
         }
 */		
 
-//		myForm.load(request.getSession());
-        
+       
 //Verification of user being logged in
 		if (!Web.isLoggedIn( request.getSession() )) {
             throw new Exception ("Access Denied.");
         }		
 
 //Operations
-		String op = myForm.getOp();
+		String iOp = myForm.getOp();
+
 		if (request.getParameter("op2")!=null && request.getParameter("op2").length()>0)
-			op = request.getParameter("op2");
+			iOp = request.getParameter("op2");
 		
-		// if a different session is selected, display calendar for this new session
-		if (op!=null && !"SessionChanged".equals(op)) {
+		// if user is returning from the Event Room Availability screen, 
+		// load the parameters he/she entered before
+		if ("eventRoomAvailability".equals(request.getAttribute("back"))) {
+			myForm.load(request.getSession());
+			iOp = null;
+		}
+		
+		if (iOp!=null && !"SessionChanged".equals(iOp)) {
 			myForm.loadDates(request);
 		}
 		
-        if ("Show Scheduled Events".equals(op)) {
+        if ("Show Scheduled Events".equals(iOp)) {
         	ActionMessages errors = myForm.validate(mapping, request);
         	if (!errors.isEmpty()) {
         		saveErrors(request, errors);
@@ -67,16 +93,19 @@ public class EventAddAction extends Action {
         	}
         }
 
-        if ("Show Availability".equals(op)) {
+        if ("Show Availability".equals(iOp)) {
         	ActionMessages errors = myForm.validate(mapping, request);
         	if (!errors.isEmpty()) {
         		saveErrors(request, errors);
         	} else {
         		myForm.save(request.getSession());
-        		response.sendRedirect(response.encodeURL("eventRoomAvailability.do"));
-//        		return mapping.findForward("showEventRoomAvailability");
+        		return mapping.findForward("showEventRoomAvailability");
         	}
-        }        
+        }    
+        
+        if ("Back".equals(iOp)) {
+        	return mapping.findForward("back");
+        }
 		
 //test:        System.out.println(">>> "+op+" <<<");
 

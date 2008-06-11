@@ -1,3 +1,22 @@
+/*
+ * UniTime 3.1 (University Timetabling Application)
+ * Copyright (C) 2008, UniTime.org, and individual contributors
+ * as indicated by the @authors tag.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
 package org.unitime.timetable.form;
 
 import java.util.Calendar;
@@ -33,8 +52,8 @@ public class EventAddForm extends ActionForm {
 	private Long iSessionId;
 	private int iStartTime;
 	private int iStopTime;
-	private String iLocationType;
-	private Vector<String> iLocationTypes = new Vector<String>();
+//	private String iLocationType;
+//	private Vector<String> iLocationTypes = new Vector<String>();
 	private Long iBuildingId;
 	private String iRoomNumber;
 	private TreeSet<Date> iMeetingDates = new TreeSet();
@@ -95,7 +114,7 @@ public class EventAddForm extends ActionForm {
 		} catch (Exception e) {}
 		iStartTime = 90;
 		iStopTime = 210;
-		iLocationType = null;
+//		iLocationType = null;
 		iMeetingDates.clear();
 		iMinCapacity = null;
 		iMaxCapacity = null;
@@ -107,8 +126,8 @@ public class EventAddForm extends ActionForm {
 		iSessionId = (Long) session.getAttribute("Event.SessionId");		
 		iStartTime = (Integer) session.getAttribute("Event.StartTime");
 		iStopTime = (Integer) session.getAttribute("Event.StopTime");
-		iLocationType = (String) session.getAttribute("Event.LocationType");
-		iLocationTypes = (Vector<String>) session.getAttribute("Event.LocationTypes");
+//		iLocationType = (String) session.getAttribute("Event.LocationType");
+//		iLocationTypes = (Vector<String>) session.getAttribute("Event.LocationTypes");
 		iMeetingDates = (TreeSet<Date>) session.getAttribute("Event.MeetingDates");
 		iMinCapacity = (String) session.getAttribute("Event.MinCapacity");
 		iMaxCapacity = (String) session.getAttribute("Event.MaxCapacity");
@@ -123,8 +142,8 @@ public class EventAddForm extends ActionForm {
 		session.setAttribute("Event.SessionId", iSessionId);		
 		session.setAttribute("Event.StartTime", iStartTime);
 		session.setAttribute("Event.StopTime", iStopTime);
-		session.setAttribute("Event.LocationType", iLocationType);
-		session.setAttribute("Event.LocationTypes", iLocationTypes);
+//		session.setAttribute("Event.LocationType", iLocationType);
+//		session.setAttribute("Event.LocationTypes", iLocationTypes);
 		session.setAttribute("Event.MeetingDates", iMeetingDates);
 		session.setAttribute("Event.MinCapacity", iMinCapacity);
 		session.setAttribute("Event.MaxCapacity", iMaxCapacity);
@@ -238,8 +257,8 @@ public class EventAddForm extends ActionForm {
 		return ltypes;
 	}
 
-	public String getLocationType() {return iLocationType; }
-    public void setLocationType(String locationType) {iLocationType = locationType;}
+//	public String getLocationType() {return iLocationType; }
+//    public void setLocationType(String locationType) {iLocationType = locationType;}
     
     //the index i goes in five minute increments, but displayed are 15 minute increments 
     public Vector<ComboBoxLookup> getTimes() {
