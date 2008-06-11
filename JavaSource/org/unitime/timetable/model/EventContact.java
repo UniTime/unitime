@@ -19,6 +19,8 @@
  
 package org.unitime.timetable.model;
 
+import java.util.List;
+
 import org.unitime.timetable.model.base.BaseEventContact;
 import org.unitime.timetable.model.dao.EventContactDAO;
 
@@ -61,5 +63,12 @@ public class EventContact extends BaseEventContact {
 	        setString("externalUniqueId", externalUniqueId).uniqueResult();
 	}
 
+	public static EventContact findByEmail(String email) {
+	    List<EventContact> ec = (List<EventContact>)new EventContactDAO().getSession().
+	        createQuery("select c from EventContact c where c.emailAddress=:emailAddress").
+	        setString("emailAddress", email).list();
+	    if (ec.isEmpty()) return null; 
+	    else return ec.get(0);
+	}
 
 }
