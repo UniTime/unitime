@@ -25,8 +25,6 @@
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 
-<script language='JavaScript' type='text/javascript' src='scripts/datepatt.js'></script>
-
 <tiles:importAttribute />
 
 <html:form action="/eventAdd">
@@ -51,7 +49,13 @@
 		<TR>
 			<TD valign="middle" colspan='2'>
 				<tt:section-header>
-					<tt:section-title>Add New Event</tt:section-title>
+					<tt:section-title>Add A New Event</tt:section-title>
+<!-- 			<html:submit property="op" styleClass="btn" accesskey="S" 
+					title="Show Scheduled Events (Alt+S)" value="Show Scheduled Events"/> -->
+				<html:submit property="op" styleClass="btn" accesskey="A" 
+					title="Show Location Availability (Alt+A)" value="Show Availability"/>
+				<html:submit property="op" styleClass="btn" accesskey="B"
+					title="Back to List of Events (Alt+B)" value="Back"/>
 				</tt:section-header>
 			</TD>
 		</TR>
@@ -129,22 +133,6 @@
 					<html:optionsCollection name="eventAddForm" property="times"/>
 				</html:select> 
 		</TR>
-<!--		<TR>
-			<TD valign="middle" colspan='2'>
-				<tt:section-header>
-					<tt:section-title>Locations</tt:section-title>
-				</tt:section-header>
-			</TD>
-		</TR>
--->		<TR>
-			<TD>Location Type:&nbsp;</TD>
-			<TD>			
-				<html:select property = "locationType">
-					<html:optionsCollection name="eventAddForm" property = "locationTypes"  label="label" value="value"/>
-				</html:select>				
-			</TD>
-		</TR>
-		<TR>
 			<TD>Location: </TD>
 			<TD>Building:
 				<html:select name="eventAddForm" property="buildingId"
@@ -173,11 +161,13 @@
 	</TR>
 
 	<TR>
-		<TD colspan = '2'>
-			<html:submit property="op" styleClass="btn" accesskey="S" 
-				title="Show Scheduled Events (Alt+S)" value="Show Scheduled Events"/>
+		<TD colspan = '2' align="right">
+<!--		<html:submit property="op" styleClass="btn" accesskey="S" 
+				title="Show Scheduled Events (Alt+S)" value="Show Scheduled Events"/> -->
 			<html:submit property="op" styleClass="btn" accesskey="A" 
 				title="Show Location Availability (Alt+A)" value="Show Availability"/>
+			<html:submit property="op" styleClass="btn" accesskey="B"
+				title="Back to List of Events (Alt+B)" value="Back"/>
 		</TD>
 	</TR>
 
