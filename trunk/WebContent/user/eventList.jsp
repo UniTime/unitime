@@ -104,12 +104,20 @@
 		</TR>
 		<TR>
 			<TD colspan='2' align='right'>
-				<html:submit property="op" value="Search" onclick="displayLoading();"/>
+				<html:submit property="op" value="Search" onclick="displayLoading();"/> 
+				&nbsp; 
+				<html:submit property="op" value="Add Event"/>
 			</TD>
 		</TR>
 </TABLE>
 <script language="JavaScript">blEnd('dispFilter');blStartCollapsed('dispFilter');</script>
-
+<TABLE border="0" cellspacing="0" cellpadding="3" width='90%'>	
+	<TR>
+		<TD align='right'>
+			<html:submit property="op" value="Add Event"/>
+		</TD>
+	</TR>
+</TABLE>
 <script language="JavaScript">blEndCollapsed('dispFilter');</script>
 <br>
 
