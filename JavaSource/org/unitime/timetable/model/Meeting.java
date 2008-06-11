@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.unitime.timetable.model.base.BaseMeeting;
+import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.MeetingDAO;
 import org.unitime.timetable.model.dao.RoomDAO;
 import org.unitime.timetable.util.Constants;
@@ -93,7 +94,7 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
 		if (cmp!=0) return cmp;
 		return getUniqueId().compareTo(other.getUniqueId());
 	}
-
+	
 	public Location getLocation(){
 		if (location != null){
 			return(location);
@@ -121,53 +122,18 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
 		            .uniqueResult();
 		    return location;
 		}
-		Calendar mtgDt = Calendar.getInstance();
-		mtgDt.setTime(getMeetingDate());
-		List<?> locations = (RoomDAO.getInstance()).getSession().createQuery("from Room as r where r.permanentId = :permId").setLong("permId", getLocationPermanentId().longValue()).setCacheable(true).list();
-		if (locations != null && !locations.isEmpty()){
-			for(Iterator<?> locIt = locations.iterator(); locIt.hasNext(); ){
-				Room r = (Room) locIt.next();
-				Calendar sessStart = Calendar.getInstance();
-				sessStart.setTime(r.getSession().getSessionBeginDateTime());
-				Calendar sessStop = Calendar.getInstance();
-				sessStop.setTime(r.getSession().getSessionEndDateTime());
-				if (mtgDt.compareTo(sessStart) >= 0 && mtgDt.compareTo(sessStop) <= 0){
-					location = r;
-				}
-			}
-			for(Iterator<?> locIt = locations.iterator(); locIt.hasNext(); ){
-				Room r = (Room) locIt.next();
-				Calendar sessStart = Calendar.getInstance();
-				sessStart.setTime(r.getSession().getSessionBeginDateTime());
-				sessStart.add(Calendar.DAY_OF_MONTH, -30);
-				Calendar sessStop = Calendar.getInstance();
-				sessStop.setTime(r.getSession().getSessionEndDateTime());
-				if (mtgDt.compareTo(sessStart) >= 0 && mtgDt.compareTo(sessStop) <= 0){
-					location = r;
-				}
-			}
-			
-		} else {
-			locations = (RoomDAO.getInstance()).getSession().createQuery("from NonUniversityLocation as nul where nul.permanentId = :permId").setLong("permId", getLocationPermanentId().longValue()).setCacheable(true).list();
-			for(Iterator<?> locIt = locations.iterator(); locIt.hasNext(); ){
-				NonUniversityLocation nul = (NonUniversityLocation) locIt.next();
-				Calendar sessStart = Calendar.getInstance();
-				sessStart.setTime(nul.getSession().getSessionBeginDateTime());
-				Calendar sessStop = Calendar.getInstance();
-				sessStop.setTime(nul.getSession().getSessionEndDateTime());
-				if (mtgDt.compareTo(sessStart) >= 0 && mtgDt.compareTo(sessStop) <= 0){
-					location = nul;
-				}
-			}
-			for(Iterator<?> locIt = locations.iterator(); locIt.hasNext(); ){
-				NonUniversityLocation nul = (NonUniversityLocation) locIt.next();
-				Calendar sessStart = Calendar.getInstance();
-				sessStart.setTime(nul.getSession().getSessionBeginDateTime());
-				sessStart.add(Calendar.DAY_OF_MONTH, -30);
-				Calendar sessStop = Calendar.getInstance();
-				sessStop.setTime(nul.getSession().getSessionEndDateTime());
-				if (mtgDt.compareTo(sessStart) >= 0 && mtgDt.compareTo(sessStop) <= 0){
-					location = nul;
+		long distance = -1;
+		List locations = LocationDAO.getInstance().getSession().createQuery(
+				"from Location where permanentId = :permId").
+				setLong("permId", getLocationPermanentId()).
+				setCacheable(true).list();
+		if (!locations.isEmpty()) {
+			for (Iterator it = locations.iterator(); it.hasNext(); ) {
+				Location loc = (Location)it.next();
+				long dist = loc.getSession().getDistance(getMeetingDate());
+				if (location==null || distance>dist) {
+					location = loc;
+					distance = dist;
 				}
 			}
 		}
@@ -239,9 +205,9 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
 	}
 	
 	public Date getStartTime() {
-        Calendar c = Calendar.getInstance(Locale.US);
+		Calendar c = Calendar.getInstance(Locale.US);
         c.setTime(getMeetingDate());
-        int min = (getStartPeriod().intValue()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN)+getStartOffset();
+        int min = (getStartPeriod().intValue()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN)+(getStartOffset()==null?0:getStartOffset());
         c.set(Calendar.HOUR, min/60);
         c.set(Calendar.MINUTE, min%60);
         return c.getTime();
@@ -250,7 +216,7 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
     public Date getStopTime() {
         Calendar c = Calendar.getInstance(Locale.US);
         c.setTime(getMeetingDate());
-        int min = (getStopPeriod().intValue()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN)+getStopOffset();
+        int min = (getStopPeriod().intValue()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN)+(getStopOffset()==null?0:getStopOffset());
         c.set(Calendar.HOUR, min/60);
         c.set(Calendar.MINUTE, min%60);
         return c.getTime();
