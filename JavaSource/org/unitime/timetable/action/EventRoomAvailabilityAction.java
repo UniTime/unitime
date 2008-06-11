@@ -22,11 +22,16 @@ package org.unitime.timetable.action;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.Action;
+import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.apache.struts.action.ActionMessage;
+import org.unitime.commons.User;
+import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.EventRoomAvailabilityForm;
 
 /**
@@ -48,8 +53,48 @@ public class EventRoomAvailabilityAction extends Action {
 			HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
 
+		HttpSession webSession = request.getSession();
+		User user = Web.getUser(webSession);
+			
+		if (!Web.isLoggedIn(webSession)) {
+			throw new Exception("Access Denied.");
+		}					
+		
 		EventRoomAvailabilityForm myForm = (EventRoomAvailabilityForm) form;
-		myForm.load(request.getSession());
+		try { 
+			myForm.load(webSession);
+		} catch (Exception e) {
+			ActionErrors m = new ActionErrors();
+			m.add("dates", new ActionMessage("errors.generic", e.getMessage()));
+			saveMessages(request, m);
+			return  mapping.findForward("show");
+		}
+
+		String iOp = myForm.getOp();
+		
+		if (iOp != null) {
+			
+			// if the user is returning from the Event Add Info screen
+			if ("eventAddInfo".equals(request.getAttribute("back"))) {
+				myForm.load(request.getSession());
+				iOp = null;
+			}
+			
+			//return to event list
+			if("Back".equals(iOp)) {
+				myForm.loadData(request); myForm.save(webSession);
+				request.setAttribute("back", "eventRoomAvailability");
+				return mapping.findForward("back");
+			}
+			
+			if("Proceed To Checkout".equals(iOp)) {
+				myForm.loadData(request); myForm.save(webSession);				
+				return mapping.findForward("eventAddInfo");
+			}
+			
+		}
+		
+		
 		
 		return  mapping.findForward("show");
 	}

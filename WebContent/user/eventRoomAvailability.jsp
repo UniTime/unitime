@@ -48,42 +48,85 @@
 		<TR>
 			<TD valign="middle" colspan='2'>
 				<tt:section-header>
-					<tt:section-title>Bla bla</tt:section-title>
+					<tt:section-title>
+						Available Rooms For 
+						<bean:write name="eventRoomAvailabilityForm" property="startTimeString"/>
+						 - <bean:write name="eventRoomAvailabilityForm" property="stopTimeString"/>
+					</tt:section-title>
+					<html:submit property="op" styleClass="btn" accesskey="P"
+						title="Proceed (Alt+P)" value="Proceed To Checkout"/>
+					<html:submit property="op" styleClass="btn" accesskey="B"
+						title="Back (Alt+B)" value="Back"/>
 				</tt:section-header>
 			</TD>
 		</TR>
-		<logic:iterate name="eventRoomAvailabilityForm" property="locations" id="location">
 		<TR>
 			<TD>
-				<bean:write name="location" property="label"/>
+				&nbsp;
 			</TD>
 		</TR>
-		</logic:iterate>
-		<logic:iterate name="eventRoomAvailabilityForm" property="locations" id="location">
 		<TR>
 			<TD>
-				<bean:write name="location" property="label"/>
+				<bean:write name="eventRoomAvailabilityForm" property="availabilityTable" filter="false"/>
 			</TD>
 		</TR>
-		</logic:iterate>
-		
- 		<logic:iterate name="eventRoomAvailabilityForm" property="meetings" id="mtg">
 		<TR>
 			<TD>
-				<bean:write name="mtg" property="meetingDate"/>
-				<bean:write name="mtg" property="startTime"/>
-				<bean:write name="mtg" property="location"/>
+				<tt:section-title/>
 			</TD>
 		</TR>
-		</logic:iterate>
-		
-<!-- 		<TR>
-			<TD>
-				Start:	<bean:write name="eventRoomAvailabilityForm" property="startTime"/>
-				Stop:   <bean:write name="eventRoomAvailabilityForm" property="stopTime"/>
+		<TR>
+			<TD colspan = '2' align="right">
+					<html:submit property="op" styleClass="btn" accesskey="P"
+						title="Proceed (Alt+P)" value="Proceed To Checkout"/>
+					<html:submit property="op" styleClass="btn" accesskey="B"
+						title="Back (Alt+B)" value="Back"/>
 			</TD>
 		</TR>
--->
 
 </TABLE>
 </html:form>
+<script language='JavaScript'>
+function tClick(date,location) {
+	var x = document.getElementById('x'+date+'_'+location);
+	var td = document.getElementById('td'+date+'_'+location);
+	if (x.value==1) {
+		x.value=0;
+		if (td.innerHTML=='&nbsp\;')  
+			td.style.backgroundColor='transparent';
+		else
+			td.style.backgroundColor='rgb(200,200,200)';
+	} else {
+		x.value=1;
+		td.style.backgroundColor='yellow';
+	}
+}
+function tOver(source,date,location) {
+	source.style.cursor='hand';source.style.cursor='pointer';
+}
+function tOut(date,location) {
+}
+function tAll(location, admin) {
+	var allSelected = true;
+	for (var i=0;i<tDates.length;i++) {
+		var x = document.getElementById('x'+tDates[i]+'_'+location);
+		var td = document.getElementById('td'+tDates[i]+'_'+location);
+		var unused = (td.innerHTML=='&nbsp;');
+		if ((unused||admin) && x.value==0) {
+			allSelected = false; break;
+		}
+	}
+	for (var i=0;i<tDates.length;i++) {
+		var x = document.getElementById('x'+tDates[i]+'_'+location);
+		var td = document.getElementById('td'+tDates[i]+'_'+location);
+		var unused = (td.innerHTML=='&nbsp;');
+		x.value=(allSelected?0:(unused||admin?1:0));
+		if (x.value==1)
+			td.style.backgroundColor='yellow';
+		else if (unused)
+			td.style.backgroundColor='transparent';
+		else
+			td.style.backgroundColor='rgb(200,200,200)';
+	}
+}
+</script>

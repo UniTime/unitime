@@ -915,4 +915,9 @@
 		<put name="body" value="/user/eventRoomAvailability.jsp" />
   	</definition> 	  	
 
+ 	<definition	name="eventAddInfoTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Add Event Info"/>
+		<put name="body" value="/user/eventAddInfo.jsp" />
+  	</definition> 	  	
+
 </tiles-definitions>

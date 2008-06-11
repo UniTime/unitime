@@ -132,6 +132,7 @@
 	  <form-bean name="roomAvailabilityForm" type="org.unitime.timetable.form.RoomAvailabilityForm" />
 	  <form-bean name="eventAddForm" type="org.unitime.timetable.form.EventAddForm" />	
 	  <form-bean name="eventRoomAvailabilityForm" type="org.unitime.timetable.form.EventRoomAvailabilityForm" />
+	  <form-bean name="eventAddInfoForm" type="org.unitime.timetable.form.EventAddInfoForm" />
    </form-beans>
 
    <global-exceptions>
@@ -2220,6 +2221,9 @@
     		name="show"
     		path="eventListTile"
     		redirect="true" />
+    	<forward
+    		name="addEvent"
+    		path="/eventAdd.do"/>
     </action>    
     
     <action
@@ -2256,8 +2260,16 @@
     		name="show"
     		path="eventAddTile"
     		redirect="true" />
+    	<forward
+    		name="showEventRoomAvailability"
+    		path="/eventRoomAvailability.do"
+			redirect="true" />
+		<forward
+			name="back"
+			path="/eventList.do"
+			redirect="true"/>
     </action>
-
+    
     <action
     	path="/eventRoomAvailability"
     	type="org.unitime.timetable.action.EventRoomAvailabilityAction"
@@ -2270,6 +2282,33 @@
     		name="show"
     		path="eventRoomAvailabilityTile"
     		redirect="true" />
+    	<forward
+    		name="back"
+    		path="/eventAdd.do" />
+		<forward
+			name="eventAddInfo"
+			path="/eventAddInfo.do"
+			redirect="true"/>
+    </action>
+
+    <action
+    	path="/eventAddInfo"
+    	type="org.unitime.timetable.action.EventAddInfoAction"
+    	attribute="eventAddInfoForm"
+    	input="eventAddInfoTile"
+    	name="eventAddInfoForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+    		name="show"
+    		path="eventAddInfoTile"
+    		redirect="true" />
+    	<forward 
+    		name="back"
+    		path="/eventRoomAvailability.do"/>
+    	<forward
+    		name="eventList"
+    		path="/eventList.do"/>
     </action>
 
     </action-mappings>
