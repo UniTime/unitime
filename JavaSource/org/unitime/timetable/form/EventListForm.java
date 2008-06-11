@@ -35,6 +35,9 @@ import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.UserData;
 import org.unitime.timetable.util.CalendarUtils;
 
+/**
+ * @author Zuzana Mullerova
+ */
 public class EventListForm extends ActionForm {
 	private String iOp;
 	private String iEventNameSubstring;

@@ -35,6 +35,9 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.webutil.BackTracker;
 
+/**
+ * @author Zuzana Mullerova
+ */
 public class EventListAction extends Action {
 
 	public ActionForward execute(
@@ -58,6 +61,10 @@ public class EventListAction extends Action {
         	else myForm.save(request.getSession());
         } else myForm.load(request.getSession());
 		
+        if ("Add Event".equals(op)) {
+        	return mapping.findForward("addEvent");
+        }
+        
         if (request.getParameter("backId")!=null)
             request.setAttribute("hash", request.getParameter("backId"));
 
