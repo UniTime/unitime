@@ -28,8 +28,10 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
+import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.EventAddForm;
+import org.unitime.timetable.model.TimetableManager;
 
 /**
  * @author Zuzana Mullerova
@@ -50,8 +52,9 @@ public class EventAddAction extends Action {
 			HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
 
-//Collect initial info - form & model
+//Collect initial info
 		EventAddForm myForm = (EventAddForm) form;
+		User user = Web.getUser(request.getSession());
 
 /*        EventModel model = (EventModel)request.getSession().getAttribute("Event.model");
         if (model==null) {
@@ -83,6 +86,23 @@ public class EventAddAction extends Action {
 			myForm.loadDates(request);
 		}
 		
+//		if ("EventTypeChanged".equals(iOp)) {
+//			
+//		}
+			
+        if ("Add Object".equals(iOp)) {
+            for (int i=0; i<myForm.PREF_ROWS_ADDED; i++) {
+                myForm.addRelatedCourseInfo(null);
+            }
+            request.setAttribute("hash", "objects");
+        }
+		
+        if ("Delete".equals(iOp)) {
+	        if (myForm.getSelected() >= 0) {
+	            myForm.deleteRelatedCourseInfo(myForm.getSelected());
+	        }
+        }
+        
         if ("Show Scheduled Events".equals(iOp)) {
         	ActionMessages errors = myForm.validate(mapping, request);
         	if (!errors.isEmpty()) {
@@ -107,6 +127,9 @@ public class EventAddAction extends Action {
         	return mapping.findForward("back");
         }
 		
+        
+        myForm.setSubjectAreas(TimetableManager.getSubjectAreas(user));
+        
 //test:        System.out.println(">>> "+op+" <<<");
 
 
