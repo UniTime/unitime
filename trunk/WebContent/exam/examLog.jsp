@@ -49,11 +49,11 @@
 			</TD>
 		</TR>
 	</TABLE>
-	<font size='2'>
 <%
 	ExamSolverProxy solver = WebSolver.getExamSolver(session);
 	if (solver!=null) {
 %>
+	<font size='2'>
 <%=solver.getLog()%>
 	</font>
 <%		
