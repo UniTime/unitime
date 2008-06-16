@@ -49,20 +49,12 @@
 			</TD>
 		</TR>
 	</TABLE>
-	<font size='2'>
 <%
 	SolverProxy solver = WebSolver.getSolver(session);
 	if (solver!=null) {
 %>
+	<font size='2'>
 <%=solver.getLog()%>
-<%
-		out.flush();
-		/*
-		if (solver instanceof WebSolver) {
-			((WebSolver)solver).setHtmlMessageWriter(out);
-		}
-		*/
-%>
 	</font>
 <%		
 	} else {
