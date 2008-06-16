@@ -44,8 +44,8 @@ public class RoomTypeComparator implements Comparator {
         Room r1 = (Room) o1;
         Room r2 = (Room) o2;
         
-        String c1 = Room.getSchedulingRoomTypeName(r1.getSchedulingRoomTypeInteger());
-        String c2 = Room.getSchedulingRoomTypeName(r2.getSchedulingRoomTypeInteger());
+        String c1 = r1.getRoomTypeLabel();
+        String c2 = r2.getRoomTypeLabel();
         
         if (c1.equals(c2)) {
         	Integer s1 = r1.getCapacity();

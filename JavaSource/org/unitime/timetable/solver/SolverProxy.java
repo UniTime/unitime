@@ -101,7 +101,7 @@ public interface SolverProxy extends ClassAssignmentProxy {
 	public String getHostLabel();
 	public void dispose() throws Exception;
 	
-	public RoomReport getRoomReport(int startDay, int endDay, int nrWeeks, Integer roomType) throws Exception;
+	public RoomReport getRoomReport(int startDay, int endDay, int nrWeeks, Long roomType) throws Exception;
 	public DeptBalancingReport getDeptBalancingReport() throws Exception;
 	public ViolatedDistrPreferencesReport getViolatedDistrPreferencesReport() throws Exception;
 	public DiscouragedInstructorBtbReport getDiscouragedInstructorBtbReport() throws Exception;

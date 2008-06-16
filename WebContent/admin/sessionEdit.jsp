@@ -69,7 +69,7 @@
 	<TABLE width="95%" border="0" cellspacing="0" cellpadding="3">
 
 		<TR>
-			<TD colspan="2">
+			<TD colspan="3">
 				<tt:section-header>
 					<tt:section-title>
 						
@@ -99,7 +99,7 @@
 		
 		<logic:messagesPresent>
 		<TR>
-			<TD colspan="2" align="left" class="errorCell">
+			<TD colspan="3" align="left" class="errorCell">
 					<B><U>ERRORS</U></B><BR>
 				<BLOCKQUOTE>
 				<UL>
@@ -116,21 +116,21 @@
 
 		<TR>
 			<TD>Academic Initiative:</TD>
-			<TD>
+			<TD colspan='2'>
 				<html:text property="academicInitiative" maxlength="20" size="20"/>
 			</TD>
 		</TR>
 
 		<TR>
 			<TD>Academic Term:</TD>
-			<TD>
+			<TD colspan='2'>
 				<html:text property="academicTerm" maxlength="20" size="20"/>
 			</TD>
 		</TR>
 		
 		<TR>
 			<TD>Academic Year:</TD>
-			<TD>
+			<TD colspan='2'>
 				<html:text property="academicYear" onchange="doRefresh();" maxlength="4" size="4"/>
 			</TD>
 		</TR>
@@ -138,7 +138,7 @@
 		<logic:notEqual name="sessionEditForm" property="sessionId"	value="">
 		<TR>
 			<TD>Default Date Pattern:</TD>
-			<TD>
+			<TD colspan='2'>
 				<logic:empty name="<%=DatePattern.DATE_PATTERN_LIST_ATTR %>">
 					No date patterns are available for this academic session
 					<html:hidden property="defaultDatePatternId" />
@@ -156,28 +156,28 @@
 		
 		<TR>
 			<TD>Session Start Date:</TD>
-			<TD>
+			<TD colspan='2'>
 				<html:text property="sessionStart" onchange="doRefresh();" style="border: #660000 2px solid;" styleId="session_start" maxlength="10" size="10"/>
 				<img style="cursor: pointer;" src="scripts/jscalendar/calendar_1.gif" border="0" id="show_session_start">
 			</TD>
 		</TR>
 		<TR>
 			<TD>Classes End Date:</TD>
-			<TD>
+			<TD colspan='2'>
 				<html:text property="classesEnd" onchange="doRefresh();" style="border: #339933 2px solid;" styleId="classes_end" maxlength="10" size="10"/>
 				<img style="cursor: pointer;" src="scripts/jscalendar/calendar_1.gif" border="0" id="show_classes_end">
 			</TD>
 		</TR>
 		<TR>
 			<TD>Examination Start Date:</TD>
-			<TD>
+			<TD colspan='2'>
 				<html:text property="examStart" onchange="doRefresh();" style="border: #999933 2px solid;" styleId="exam_start" maxlength="10" size="10"/>
 				<img style="cursor: pointer;" src="scripts/jscalendar/calendar_1.gif" border="0" id="show_exam_start">
 			</TD>
 		</TR>
 		<TR>
 			<TD>Session End Date:</TD>
-			<TD>
+			<TD colspan='2'>
 				<html:text property="sessionEnd" onchange="doRefresh();" style="border: #333399 2px solid;" styleId="session_end" maxlength="10" size="10"/>
 				<img style="cursor: pointer;" src="scripts/jscalendar/calendar_1.gif" border="0" id="show_session_end">
 			</TD>
@@ -185,7 +185,7 @@
 
 		<TR>
 			<TD>Session Status:</TD>
-			<TD>
+			<TD colspan='2'>
 				<html:select property="status">
 					<html:option value="<%= Constants.BLANK_OPTION_VALUE %>"><%= Constants.BLANK_OPTION_LABEL %></html:option>
 					<html:optionsCollection property="statusOptions" value="reference" label="label" />
@@ -195,20 +195,37 @@
 		
 		<% if (request.getAttribute("Sessions.holidays")!=null) { %>
 			<TR>
-				<TD>Holidays:</TD><TD></TD>
+				<TD>Holidays:</TD><TD colspan='2'></TD>
 			</TR><TR>
-				<TD colspan='2'><%=request.getAttribute("Sessions.holidays")%></TD>
+				<TD colspan='3'><%=request.getAttribute("Sessions.holidays")%></TD>
 			</TR>
 		<% } %>
 
 		<TR>
-			<TD colspan="2">
+			<TD colspan='3'>
+				<tt:section-title><br>Room Types</tt:section-title>
+			</TD>
+		</TR>
+		<TR>
+			<TD><i>Room Type</i></TD><TD><i>Event Management</i></TD><TD><i>Message</i></TD>
+		</TR>
+		<logic:iterate name="sessionEditForm" property="roomTypes" id="roomType">
+			<bean:define name="roomType" property="reference" id="ref"/>
+			<TR>
+				<TD><bean:write name="roomType" property="label"/></TD>
+				<TD><html:checkbox property="<%="roomOptionScheduleEvents("+ref+")"%>"/></TD>
+				<TD><html:text property="<%="roomOptionMessage("+ref+")"%>" maxlength="200" size="100"/></TD>
+			</TR>
+		</logic:iterate>
+
+		<TR>
+			<TD colspan="3">
 			<DIV class="WelcomeRowHeadBlank">&nbsp;</DIV>
 			</TD>
 		</TR>
 		
 		<TR>
-			<TD colspan="2" align="right">
+			<TD colspan="3" align="right">
 
 			<TABLE>
 				<TR>

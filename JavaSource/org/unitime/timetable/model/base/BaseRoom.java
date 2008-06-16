@@ -37,7 +37,7 @@ public abstract class BaseRoom extends org.unitime.timetable.model.Location  imp
 	public static String PROP_BUILDING_ABBV = "buildingAbbv";
 	public static String PROP_ROOM_NUMBER = "roomNumber";
 	public static String PROP_EXTERNAL_UNIQUE_ID = "externalUniqueId";
-	public static String PROP_SCHEDULED_ROOM_TYPE = "scheduledRoomType";
+	public static String PROP_ROOM_TYPE = "roomType";
 	public static String PROP_CLASSIFICATION = "classification";
 
 
@@ -84,11 +84,11 @@ public abstract class BaseRoom extends org.unitime.timetable.model.Location  imp
 	private java.lang.String buildingAbbv;
 	private java.lang.String roomNumber;
 	private java.lang.String externalUniqueId;
-	private java.lang.String scheduledRoomType;
 	private java.lang.String classification;
 
 	// many to one
 	private org.unitime.timetable.model.Building building;
+    private org.unitime.timetable.model.RoomType roomType;
 
 
 
@@ -147,18 +147,18 @@ public abstract class BaseRoom extends org.unitime.timetable.model.Location  imp
 
 
 	/**
-	 * Return the value associated with the column: SCHEDULED_ROOM_TYPE
+	 * Return the value associated with the column: ROOM_TYPE
 	 */
-	public java.lang.String getScheduledRoomType () {
-		return scheduledRoomType;
+	public org.unitime.timetable.model.RoomType getRoomType () {
+		return roomType;
 	}
 
 	/**
-	 * Set the value related to the column: SCHEDULED_ROOM_TYPE
-	 * @param scheduledRoomType the SCHEDULED_ROOM_TYPE value
+	 * Set the value related to the column: ROOM_TYPE
+	 * @param scheduledRoomType the ROOM_TYPE value
 	 */
-	public void setScheduledRoomType (java.lang.String scheduledRoomType) {
-		this.scheduledRoomType = scheduledRoomType;
+	public void setRoomType (org.unitime.timetable.model.RoomType roomType) {
+		this.roomType = roomType;
 	}
 
 

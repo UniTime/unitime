@@ -33,6 +33,7 @@ import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Roles;
+import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.util.Constants;
 
@@ -156,5 +157,9 @@ public class RoomListForm extends ActionForm {
     }
     public boolean getCanAddSpecial() {
         return canAddSpecial;
+    }
+    
+    public Set<RoomType> getRoomTypes() {
+        return RoomType.findAll();
     }
 }

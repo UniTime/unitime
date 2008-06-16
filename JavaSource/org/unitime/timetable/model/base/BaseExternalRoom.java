@@ -41,7 +41,7 @@ public abstract class BaseExternalRoom  implements Serializable {
 	public static String PROP_CAPACITY = "capacity";
 	public static String PROP_EXAM_CAPACITY = "examCapacity";
 	public static String PROP_CLASSIFICATION = "classification";
-	public static String PROP_SCHEDULED_ROOM_TYPE = "scheduledRoomType";
+	public static String PROP_ROOM_TYPE = "roomType";
 	public static String PROP_IS_INSTRUCTIONAL = "isInstructional";
 	public static String PROP_DISPLAY_NAME = "displayName";
 
@@ -68,7 +68,7 @@ public abstract class BaseExternalRoom  implements Serializable {
 		java.lang.String roomNumber,
 		java.lang.Integer capacity,
 		java.lang.String classification,
-		java.lang.String scheduledRoomType,
+		org.unitime.timetable.model.RoomType roomType,
 		java.lang.Boolean isInstructional) {
 
 		this.setUniqueId(uniqueId);
@@ -76,7 +76,7 @@ public abstract class BaseExternalRoom  implements Serializable {
 		this.setRoomNumber(roomNumber);
 		this.setCapacity(capacity);
 		this.setClassification(classification);
-		this.setScheduledRoomType(scheduledRoomType);
+		this.setRoomType(roomType);
 		this.setIsInstructional(isInstructional);
 		initialize();
 	}
@@ -98,12 +98,12 @@ public abstract class BaseExternalRoom  implements Serializable {
 	private java.lang.Integer capacity;
 	private java.lang.Integer examCapacity;
 	private java.lang.String classification;
-	private java.lang.String scheduledRoomType;
 	private java.lang.Boolean isInstructional;
 	private java.lang.String displayName;
 
 	// many to one
 	private org.unitime.timetable.model.ExternalBuilding building;
+	private org.unitime.timetable.model.RoomType roomType;
 
 	// collections
 	private java.util.Set roomDepartments;
@@ -253,18 +253,18 @@ public abstract class BaseExternalRoom  implements Serializable {
 
 
 	/**
-	 * Return the value associated with the column: SCHEDULED_ROOM_TYPE
+	 * Return the value associated with the column: ROOM_TYPE
 	 */
-	public java.lang.String getScheduledRoomType () {
-		return scheduledRoomType;
+	public org.unitime.timetable.model.RoomType getRoomType () {
+		return roomType;
 	}
 
 	/**
-	 * Set the value related to the column: SCHEDULED_ROOM_TYPE
-	 * @param scheduledRoomType the SCHEDULED_ROOM_TYPE value
+	 * Set the value related to the column: ROOM_TYPE
+	 * @param scheduledRoomType the ROOM_TYPE value
 	 */
-	public void setScheduledRoomType (java.lang.String scheduledRoomType) {
-		this.scheduledRoomType = scheduledRoomType;
+	public void setRoomType (org.unitime.timetable.model.RoomType roomType) {
+		this.roomType = roomType;
 	}
 
 

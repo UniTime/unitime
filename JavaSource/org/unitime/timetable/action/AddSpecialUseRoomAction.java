@@ -132,13 +132,12 @@ public class AddSpecialUseRoomAction extends Action {
         TimetableManager manager = tdao.get(new Long(mgrId));
         Set departments = manager.departmentsForSession(sessionId);
         if (!isAdmin && (departments.size() == 1)) {
-        	Department d = (Department) departments.iterator().next();
-        	specialUseRoomForm.setDeptCode(d.getDeptCode());
+            Department d = (Department) departments.iterator().next();
+            specialUseRoomForm.setDeptCode(d.getDeptCode());
         } else if (httpSession.getAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME) != null) {
-        	specialUseRoomForm.setDeptCode(httpSession.getAttribute(
-					Constants.DEPT_CODE_ATTR_ROOM_NAME).toString());
-		} 
-		
+            specialUseRoomForm.setDeptCode(httpSession.getAttribute(
+                    Constants.DEPT_CODE_ATTR_ROOM_NAME).toString());
+        } 
 		return mapping.findForward("showAdd");
 	}
 
@@ -303,7 +302,7 @@ public class AddSpecialUseRoomAction extends Action {
             room.setExamEnabled(Exam.sExamTypeFinal,Boolean.FALSE);
             room.setExamEnabled(Exam.sExamTypeMidterm,Boolean.FALSE);
 			room.setRoomNumber(roomNum);
-			room.setScheduledRoomType("specialUse");
+			room.setRoomType(extRoom.getRoomType());
 			room.setExternalUniqueId(extRoom.getExternalUniqueId());
 			room.setClassification(extRoom.getClassification());
 			room.setDisplayName(extRoom.getDisplayName());

@@ -222,5 +222,18 @@
 		 		not-null="true"		 		
 		 		/>
 		</union-subclass>
+		
+		<union-subclass
+			name="RoomType"
+			table="ROOM_TYPE"
+			abstract ="false">
+
+		 	<property
+		 		name="ord"
+		 		column="ORD"
+		 		type="java.lang.Integer"
+		 		not-null="true"		 		
+		 		/>
+		</union-subclass>
 	</class>	
 </hibernate-mapping>

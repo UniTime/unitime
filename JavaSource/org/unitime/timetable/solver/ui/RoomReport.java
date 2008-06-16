@@ -34,6 +34,7 @@ import net.sf.cpsolver.coursett.model.Placement;
 import net.sf.cpsolver.coursett.model.RoomLocation;
 import net.sf.cpsolver.coursett.model.TimeLocation;
 import net.sf.cpsolver.coursett.model.TimetableModel;
+import net.sf.cpsolver.ifs.util.ToolBox;
 
 
 /**
@@ -44,9 +45,9 @@ public class RoomReport implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private HashSet iGroups = new HashSet();
 	private int iStartDay, iEndDay, iNrWeeks;
-    private Integer iRoomType = null;
+    private Long iRoomType = null;
 
-	public RoomReport(TimetableModel model, int startDay, int endDay, int nrWeeks, Integer roomType) {
+	public RoomReport(TimetableModel model, int startDay, int endDay, int nrWeeks, Long roomType) {
 		iStartDay = startDay; iEndDay = endDay;
 		iNrWeeks = nrWeeks;
         iRoomType = roomType;
@@ -55,7 +56,7 @@ public class RoomReport implements Serializable {
 		}
 		for (Enumeration e=model.getRoomConstraints().elements();e.hasMoreElements();) {
 			RoomConstraint rc = (RoomConstraint)e.nextElement();
-            if (iRoomType!=null && !iRoomType.equals(rc.getType())) continue;
+			if (!ToolBox.equals(iRoomType,rc.getType())) continue;
 			for (Iterator i=iGroups.iterator();i.hasNext();) {
 				RoomAllocationGroup g = (RoomAllocationGroup)i.next();
 				g.add(rc);
@@ -148,7 +149,7 @@ public class RoomReport implements Serializable {
 			for (Enumeration e=lecture.roomLocations().elements();e.hasMoreElements();) {
 				RoomLocation r = (RoomLocation)e.nextElement();
                 if (r.getRoomConstraint()==null) continue;
-                if (iRoomType!=null && !iRoomType.equals(r.getRoomConstraint().getType())) continue;
+                if (!ToolBox.equals(iRoomType,r.getRoomConstraint().getType())) continue;
 				if (PreferenceLevel.sProhibited.equals(PreferenceLevel.int2prolog(r.getPreference()))) continue;
                 skip = false;
 				if (iMinRoomSize<=r.getRoomSize() && r.getRoomSize()<iMaxRoomSize)
@@ -189,13 +190,13 @@ public class RoomReport implements Serializable {
 					for (Enumeration e=placement.getRoomLocations().elements();e.hasMoreElements();) {
 						RoomLocation r = (RoomLocation)e.nextElement();
                         if (r.getRoomConstraint()==null) continue;
-                        if (iRoomType!=null && !iRoomType.equals(r.getRoomConstraint().getType())) continue;
+                        if (!ToolBox.equals(iRoomType,r.getRoomConstraint().getType())) continue;
 						if (iMinRoomSize<=r.getRoomSize() && r.getRoomSize()<iMaxRoomSize)
 							use++;
 					}
 				} else {
                     if (placement.getRoomLocation().getRoomConstraint()!=null &&
-                            (iRoomType==null || iRoomType.equals(placement.getRoomLocation().getRoomConstraint().getType())) &&
+                            ToolBox.equals(iRoomType,placement.getRoomLocation().getRoomConstraint().getType()) &&
                             iMinRoomSize<=placement.getRoomLocation().getRoomSize() && 
                             placement.getRoomLocation().getRoomSize()<iMaxRoomSize
                             )
