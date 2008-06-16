@@ -38,6 +38,7 @@ import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.ExactTimeMins;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
+import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomSharingModel;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.TimePattern;
@@ -123,7 +124,7 @@ public class SolutionGridModel extends TimetableGridModel {
 					}
 				}
 		}
-        setType(room.getSchedulingRoomTypeInteger());
+        setType(room instanceof Room ? ((Room)room).getRoomType().getUniqueId(): null);
 	}
 	
 	public SolutionGridModel(String solutionIdsStr, DepartmentalInstructor instructor, org.hibernate.Session hibSession, int firstDay, int bgMode) {
@@ -185,7 +186,7 @@ public class SolutionGridModel extends TimetableGridModel {
 			*/
 		}
         if (instructor.getPositionType()!=null)
-            setType(instructor.getPositionType().getSortOrder());
+            setType(new Long(instructor.getPositionType().getSortOrder()));
 	}
 	
 	public SolutionGridModel(String solutionIdsStr, Department dept, org.hibernate.Session hibSession, int firstDay, int bgMode) {

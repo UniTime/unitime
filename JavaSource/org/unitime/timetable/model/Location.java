@@ -474,37 +474,9 @@ public abstract class Location extends BaseLocation implements Comparable {
 		}
 		return null;
 	}
-    
-    public Integer getSchedulingRoomTypeInteger() {
-        if (this instanceof Room) {
-            Room r = (Room)this;
-            if ("genClassroom".equals(r.getScheduledRoomType()))
-                return new Integer(1);
-            else if ("computingLab".equals(r.getScheduledRoomType()))
-                return new Integer(2);
-            else if ("departmental".equals(r.getScheduledRoomType()))
-                return new Integer(3);
-            else if ("specialUse".equals(r.getScheduledRoomType()))
-                return new Integer(4);
-            else
-                return new Integer(5);
-        }
-        return new Integer(6);
-    }
-    
-    public static String getSchedulingRoomTypeName(Integer typeInt) {
-        if (typeInt==null) return "Unknown";
-        switch (typeInt.intValue()) {
-            case 1 : return "Classrooms";
-            case 2 : return "Computing Labs";
-            case 3 : return "Departmental Rooms";
-            case 4 : return "Special Use Room";
-            case 5 : return "Other Rooms";
-            case 6 : return "Non University Locations";
-            default : return "Unknown";
-        }
-    }
-    
+	
+	public abstract String getRoomTypeLabel();
+
     public Hashtable<ExamPeriod,PreferenceLevel> getExamPreferences(int examType) {
         Hashtable<ExamPeriod,PreferenceLevel> ret = new Hashtable();
         for (Iterator i=getExamPreferences().iterator();i.hasNext();) {

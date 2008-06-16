@@ -27,8 +27,10 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -66,11 +68,13 @@ import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomDept;
 import org.unitime.timetable.model.RoomGroup;
+import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.comparators.DepartmentNameComparator;
 import org.unitime.timetable.model.dao.RoomFeatureDAO;
+import org.unitime.timetable.model.dao.RoomTypeDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
@@ -243,10 +247,6 @@ public class RoomListAction extends Action {
 		if (rooms.size() == 0) {
 			errors.add("searchResult", new ActionMessage("errors.generic", "No rooms for the selected department were found."));
 			saveErrors(request, errors);
-			request.setAttribute("classrooms", null);
-			request.setAttribute("additionalRooms", null);
-			request.setAttribute("specialRooms", null);
-			request.setAttribute("nonUnivLocation", null);
 		} else {		
 			User user = Web.getUser(httpSession);
 			Long sessionId = Session.getCurrentAcadSession(user).getSessionId();
@@ -470,40 +470,23 @@ public class RoomListAction extends Action {
 				}
 			}
 	
-			// build webtables
-			WebTable.setOrder(httpSession, "classrooms.ord", request
-					.getParameter("classOrd"), 1);
-			WebTable.setOrder(httpSession, "additionalRooms.ord", request
-					.getParameter("addOrd"), 1);
-			WebTable.setOrder(httpSession, "specialRooms.ord", request
-					.getParameter("speOrd"), 1);
-			WebTable.setOrder(httpSession, "nonUniv.ord", request
-					.getParameter("nonOrd"), 1);
-			WebTable classRoomsTable = new WebTable(heading1.length, "Classrooms",
-					"roomList.do?classOrd=%%", heading1, alignment1, sorted1);
-			classRoomsTable.setRowStyle("white-space:nowrap");
-			WebTable additionalRoomsTable = new WebTable(heading1.length,
-					"Additional Instructional Rooms", "roomList.do?addOrd=%%",
-					heading1, alignment1, sorted1);
-			additionalRoomsTable.setRowStyle("white-space:nowrap");
-			WebTable specialRoomsTable = new WebTable(heading1.length,
-					"Special Use Rooms", "roomList.do?speOrd=%%", heading1,
-					alignment1, sorted1);
-			specialRoomsTable.setRowStyle("white-space:nowrap");
-			WebTable nonUnivTable = new WebTable(heading2.length,
-					"Non-University Locations", "roomList.do?nonOrd=%%",heading2,
+			TreeSet<RoomType> roomTypes = new TreeSet<RoomType>(RoomTypeDAO.getInstance().findAll());
+			Hashtable<RoomType, WebTable> tables = new Hashtable();
+			for (RoomType t:roomTypes) {
+			    WebTable.setOrder(httpSession, t.getReference()+".ord", request.getParameter(t.getReference()+"Ord"), 1);
+	            WebTable table = new WebTable(heading1.length, t.getLabel(), heading1, alignment1, sorted1);
+	            table.setRowStyle("white-space:nowrap");
+	            tables.put(t,table);
+			}
+
+			WebTable nonUnivTable = new WebTable(heading2.length, 
+			        "Non-University Locations", "roomList.do?nonOrd=%%",heading2,
 					alignment2, sorted2);
 			nonUnivTable.setRowStyle("white-space:nowrap");
 			
 			boolean timeVertical = RequiredTimeTable.getTimeGridVertical(user);
 			boolean gridAsText = RequiredTimeTable.getTimeGridAsText(user);
 			String timeGridSize = RequiredTimeTable.getTimeGridSize(user); 
-	
-			// build webtable rows
-			int classRoomsSize = 0;
-			int additonalRoomsSize = 0;
-			int specialRoomsSize = 0;
-			int nonUnivSize = 0;
 			
 			Department dept = new Department();
 			if (!roomListForm.getDeptCodeX().equalsIgnoreCase("All")) {
@@ -762,62 +745,30 @@ public class RoomListAction extends Action {
 				}
 				
 				// build rows
-				String roomType = (room==null?"":room.getScheduledRoomType().trim());
-				if (roomType.equalsIgnoreCase("genClassroom")
-						|| roomType.equalsIgnoreCase("computingLab")) {
-					classRoomsTable.addLine(
-						(editable?"onClick=\"document.location='roomDetail.do?id="+ room.getUniqueId() + "';\"":null),
-						text, 
-						comp);
-					classRoomsSize++;
-				} 
-				if (roomType.equalsIgnoreCase("departmental")) {
-					additionalRoomsTable.addLine(
-						(editable?"onClick=\"document.location='roomDetail.do?id="+ room.getUniqueId() + "';\"":null),
-						text, 
-						comp);
-					additonalRoomsSize++;
-				} 
-				if (roomType.equalsIgnoreCase("specialUse")) {
-					specialRoomsTable.addLine(
-						(editable?"onClick=\"document.location='roomDetail.do?id="+ room.getUniqueId() + "';\"":null),
-						text, 
-						comp);
-					specialRoomsSize++;
-				}
 				if (location instanceof NonUniversityLocation) {
-					nonUnivSize++;
 					nonUnivTable.addLine(
 					        (editable?"onClick=\"document.location='roomDetail.do?id="+ location.getUniqueId() + "';\"":null),
 							text, 
 							comp);
+				} else {
+				    tables.get(room.getRoomType()).addLine(
+	                        (editable?"onClick=\"document.location='roomDetail.do?id="+ room.getUniqueId() + "';\"":null),
+	                        text, 
+	                        comp);
 				}
 			}
-			Debug.debug("classRoomsSize: " + classRoomsSize);
-			Debug.debug("additonalRoomsSize: " + additonalRoomsSize);
-			Debug.debug("specialRoomsSize: " + specialRoomsSize);
 	
-			// set request attributes
-			if (classRoomsSize != 0) {
-				int ord = WebTable.getOrder(httpSession, "classrooms.ord");
-				if (ord>heading1.length) ord = 0;
-				request.setAttribute("classrooms", classRoomsTable.printTable(ord));
+			for (Map.Entry<RoomType,WebTable> entry: tables.entrySet()) {
+			    int ord = WebTable.getOrder(httpSession, entry.getKey().getReference()+".ord");
+			    if (ord>heading1.length) ord = 0;
+			    if (!entry.getValue().getLines().isEmpty()) {
+			        request.setAttribute(entry.getKey().getReference(), entry.getValue().printTable(ord));
+			    }
 			}
-			if (additonalRoomsSize != 0) {
-				int ord = WebTable.getOrder(httpSession, "additionalRooms.ord");
-				if (ord>heading1.length) ord = 0;
-				request.setAttribute("additionalRooms", additionalRoomsTable.printTable(ord));
-			}
-			if (specialRoomsSize != 0) {
-				int ord = WebTable.getOrder(httpSession, "specialRooms.ord");
-				if (ord>heading1.length) ord = 0;
-				request.setAttribute("specialRooms", specialRoomsTable.printTable(ord));
-			}
-			
-			if (nonUnivSize>0) {
+			if (!nonUnivTable.getLines().isEmpty()) {
 				int ord = WebTable.getOrder(httpSession, "nonUniv.ord");
 				if (ord>heading2.length) ord = 0;
-				request.setAttribute("nonUnivLocation", nonUnivTable.printTable(ord));
+	            request.setAttribute("nonUnivLocation", nonUnivTable.printTable(ord));
 			}
 			
 			request.setAttribute("colspan", ""+colspan);
@@ -1052,22 +1003,18 @@ public class RoomListAction extends Action {
 				}
 			}
 			
-			// build webtables
-			PdfWebTable classRoomsTable = new PdfWebTable(heading1.length, "Classrooms", null, heading1, alignment1, sorted1);
-			PdfWebTable additionalRoomsTable = new PdfWebTable(heading1.length, "Additional Instructional Rooms", null, heading1, alignment1, sorted1);
-			PdfWebTable specialRoomsTable = new PdfWebTable(heading1.length, "Special Use Rooms", null, heading1, alignment1, sorted1);
+            TreeSet<RoomType> roomTypes = new TreeSet<RoomType>(RoomTypeDAO.getInstance().findAll());
+            Hashtable<RoomType, PdfWebTable> tables = new Hashtable();
+            for (RoomType t:roomTypes) {
+                PdfWebTable table = new PdfWebTable(heading1.length, t.getLabel(), null, heading1, alignment1, sorted1);
+                tables.put(t,table);
+            }
 			PdfWebTable nonUnivTable = new PdfWebTable(heading2.length, "Non-University Locations", null, heading2, alignment2, sorted2);
 			
 			boolean timeVertical = RequiredTimeTable.getTimeGridVertical(user);
 			boolean gridAsText = RequiredTimeTable.getTimeGridAsText(user);
 			String timeGridSize = RequiredTimeTable.getTimeGridSize(user); 
 	
-			// build webtable rows
-			int classRoomsSize = 0;
-			int additonalRoomsSize = 0;
-			int specialRoomsSize = 0;
-			int nonUnivSize = 0;
-			
 			Department dept = new Department();
 			if (!roomListForm.getDeptCodeX().equalsIgnoreCase("All")) {
 				dept = Department.findByDeptCode(roomListForm.getDeptCodeX(), sessionId);
@@ -1092,19 +1039,11 @@ public class RoomListAction extends Action {
 				Building bldg = (room==null?null:room.getBuilding());
 				
 				PdfWebTable table = null;
-				String roomType = (room==null?"":room.getScheduledRoomType().trim());
-				if (roomType.equalsIgnoreCase("genClassroom") || roomType.equalsIgnoreCase("computingLab")) {
-					table = classRoomsTable;
-				} 
-				if (roomType.equalsIgnoreCase("departmental")) {
-					table = additionalRoomsTable;
-				} 
-				if (roomType.equalsIgnoreCase("specialUse")) {
-					table = specialRoomsTable;
-				}
 				if (location instanceof NonUniversityLocation) {
 					table = nonUnivTable;
-				}				
+				} else {
+				    table = tables.get(room.getRoomType());
+				}
 				
 				DecimalFormat df5 = new DecimalFormat("####0");
                 String text[] = new String[Math.max(heading1.length,heading2.length)];
@@ -1306,91 +1245,36 @@ public class RoomListAction extends Action {
 				}
 				
 				// build rows
-				if (roomType.equalsIgnoreCase("genClassroom") || roomType.equalsIgnoreCase("computingLab")) {
-					classRoomsTable.addLine(
-						(editable?"onClick=\"document.location='roomDetail.do?id="+ room.getUniqueId() + "';\"":null),
-						text, 
-						comp);
-					classRoomsSize++;
-				} 
-				if (roomType.equalsIgnoreCase("departmental")) {
-					additionalRoomsTable.addLine(
-						(editable?"onClick=\"document.location='roomDetail.do?id="+ room.getUniqueId() + "';\"":null),
-						text, 
-						comp);
-					additonalRoomsSize++;
-				} 
-				if (roomType.equalsIgnoreCase("specialUse")) {
-					specialRoomsTable.addLine(
-						(editable?"onClick=\"document.location='roomDetail.do?id="+ room.getUniqueId() + "';\"":null),
-						text, 
-						comp);
-					specialRoomsSize++;
-				}
-				if (location instanceof NonUniversityLocation) {
-					nonUnivSize++;
-					nonUnivTable.addLine(
-					        (editable?"onClick=\"document.location='roomDetail.do?id="+ location.getUniqueId() + "';\"":null),
-							text, 
-							comp);
-				}
+                table.addLine(
+                        (editable?"onClick=\"document.location='roomDetail.do?id="+ room.getUniqueId() + "';\"":null),
+                        text, 
+                        comp);
 			}
 	
 			Document doc = null;
 			// set request attributes
-			if (classRoomsSize != 0) {
-				PdfWebTable table = classRoomsTable;
-                int ord = WebTable.getOrder(httpSession, "classrooms.ord");
-                if (ord>heading1.length) ord = 0;
-    			PdfPTable pdfTable = table.printPdfTable(ord);
-    			if (doc==null) {
-    				doc = new Document(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()),30,30,30,30);
-    				PdfWriter iWriter = PdfWriter.getInstance(doc, out);
-    				iWriter.setPageEvent(new PdfEventHandler());
-    				doc.open();
-    			} else {
-    				doc.setPageSize(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()));
-    				doc.newPage();
-    			}
-    			doc.add(new Paragraph(table.getName(), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
-    			doc.add(pdfTable);
+			for (RoomType t : roomTypes) {
+			    PdfWebTable table = tables.get(t);
+			    if (!table.getLines().isEmpty()) {
+	                int ord = WebTable.getOrder(httpSession, t.getReference()+".ord");
+	                if (ord>heading1.length) ord = 0;
+	                PdfPTable pdfTable = table.printPdfTable(ord);
+	                if (doc==null) {
+	                    doc = new Document(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()),30,30,30,30);
+	                    PdfWriter iWriter = PdfWriter.getInstance(doc, out);
+	                    iWriter.setPageEvent(new PdfEventHandler());
+	                    doc.open();
+	                } else {
+	                    doc.setPageSize(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()));
+	                    doc.newPage();
+	                }
+	                doc.add(new Paragraph(table.getName(), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
+	                doc.add(pdfTable);
+			        
+			    }
 			}
-			if (additonalRoomsSize != 0) {
-				PdfWebTable table = additionalRoomsTable;
-                int ord = WebTable.getOrder(httpSession, "additionalRooms.ord");
-                if (ord>heading1.length) ord = 0;
-    			PdfPTable pdfTable = table.printPdfTable(ord);
-    			if (doc==null) {
-    				doc = new Document(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()),30,30,30,30);
-    				PdfWriter iWriter = PdfWriter.getInstance(doc, out);
-    				iWriter.setPageEvent(new PdfEventHandler());
-    				doc.open();
-    			} else {
-    				doc.setPageSize(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()));
-    				doc.newPage();
-    			}
-    			doc.add(new Paragraph(table.getName(), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
-    			doc.add(pdfTable);
-			}
-			if (specialRoomsSize != 0) {
-				PdfWebTable table = specialRoomsTable;
-                int ord = WebTable.getOrder(httpSession, "specialRooms.ord");
-                if (ord>heading1.length) ord = 0;
-    			PdfPTable pdfTable = table.printPdfTable(ord);
-    			if (doc==null) {
-    				doc = new Document(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()),30,30,30,30);
-    				PdfWriter iWriter = PdfWriter.getInstance(doc, out);
-    				iWriter.setPageEvent(new PdfEventHandler());
-    				doc.open();
-    			} else {
-    				doc.setPageSize(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()));
-    				doc.newPage();
-    			}
-    			doc.add(new Paragraph(table.getName(), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
-    			doc.add(pdfTable);
-			}
-			
-			if (nonUnivSize>0) {
+
+			if (!nonUnivTable.getLines().isEmpty()) {
 				PdfWebTable table = nonUnivTable;
                 int ord = WebTable.getOrder(httpSession, "nonUniv.ord");
                 if (ord>heading2.length) ord = 0;

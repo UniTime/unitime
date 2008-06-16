@@ -260,28 +260,13 @@ public class RoomDetailAction extends Action {
 		if (location instanceof Room) {
 			Room r = (Room) location;
 			roomDetailForm.setName(r.getLabel());
-			roomDetailForm.setType(r.getScheduledRoomType());
-            if ("genClassroom".equals(r.getScheduledRoomType())) {
-                roomDetailForm.setTypeName("Classroom");
-            } else if ("computingLab".equals(r.getScheduledRoomType())) {
-                roomDetailForm.setTypeName("Computing Laboratory");
-            } else if ("departmental".equals(r.getScheduledRoomType())) {
-                roomDetailForm.setTypeName("Additional Instructional Room");
-            } else if ("specialUse".equals(r.getScheduledRoomType())) {
-                roomDetailForm.setTypeName("Special Use Room");
-            } else
-                roomDetailForm.setTypeName(r.getScheduledRoomType()); 
-			if (r.getScheduledRoomType().trim().equalsIgnoreCase("specialUse")) {
-				roomDetailForm.setDeleteFlag(true);
-			} else {
-				roomDetailForm.setDeleteFlag(false);
-			}
+			roomDetailForm.setType(r.getRoomType().getUniqueId());
+			roomDetailForm.setTypeName(r.getRoomType().getLabel());
             roomDetailForm.setExternalId(user.isAdmin()?r.getExternalUniqueId():null);
 		} else if (location instanceof NonUniversityLocation) {
 			NonUniversityLocation nonUnivLocation = (NonUniversityLocation) location;
 			roomDetailForm.setName(nonUnivLocation.getName());
-			roomDetailForm.setType("Non Univeristy Location");		
-			roomDetailForm.setDeleteFlag(true);
+			roomDetailForm.setType(null);
             roomDetailForm.setExternalId(null);
             roomDetailForm.setTypeName("Non-University Location");
 		} else {
@@ -307,6 +292,7 @@ public class RoomDetailAction extends Action {
 			}
 		}
 		roomDetailForm.setOwner(controls || allDepts);
+		roomDetailForm.setDeleteFlag(!location.isExamEnabled(Exam.sExamTypeFinal) && !location.isExamEnabled(Exam.sExamTypeMidterm) && allDepts);
 		
 		EditRoomAction.setupDepartments(request, location);
 

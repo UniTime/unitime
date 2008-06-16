@@ -109,7 +109,7 @@ public class Room extends BaseRoom {
 		r.setIgnoreTooFar(isIgnoreTooFar());
 		r.setPattern(getPattern());
 		r.setRoomNumber(getRoomNumber());
-		r.setScheduledRoomType(getScheduledRoomType());
+		r.setRoomType(getRoomType());
 		r.setSession(getSession());
 		r.setPermanentId(getPermanentId());
 		r.setExamCapacity(getExamCapacity());
@@ -198,7 +198,7 @@ public class Room extends BaseRoom {
 				r.setIgnoreRoomCheck(new Boolean(false));
 				r.setIgnoreTooFar(new Boolean(false));
 				r.setRoomNumber(er.getRoomNumber());
-				r.setScheduledRoomType(er.getScheduledRoomType());
+				r.setRoomType(er.getRoomType());
 				r.setSession(session);
 				LocationPermIdGenerator.setPermanentId(r);
 				if (er.getRoomFeatures() != null){
@@ -222,6 +222,10 @@ public class Room extends BaseRoom {
 			}
 		}
 	
+	}
+	
+	public String getRoomTypeLabel() {
+	    return getRoomType().getLabel();
 	}
 
 }

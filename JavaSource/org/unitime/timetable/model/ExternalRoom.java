@@ -52,7 +52,7 @@ public class ExternalRoom extends BaseExternalRoom {
 		java.lang.String roomNumber,
 		java.lang.Integer capacity,
 		java.lang.String classification,
-		java.lang.String scheduledRoomType,
+		org.unitime.timetable.model.RoomType roomType,
 		java.lang.Boolean isInstructional) {
 
 		super (
@@ -61,7 +61,7 @@ public class ExternalRoom extends BaseExternalRoom {
 			roomNumber,
 			capacity,
 			classification,
-			scheduledRoomType,
+			roomType,
 			isInstructional);
 	}
 

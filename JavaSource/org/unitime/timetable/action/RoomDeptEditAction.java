@@ -229,7 +229,7 @@ public class RoomDeptEditAction extends Action {
                             location.getLabel(),
                             String.valueOf(location.getCapacity()),
                             String.valueOf(location.getExamCapacity()),
-                            Room.getSchedulingRoomTypeName(location.getSchedulingRoomTypeInteger()),
+                            location.getRoomTypeLabel(),
                             g,f
                     },
                     new Comparable[] {
@@ -237,7 +237,7 @@ public class RoomDeptEditAction extends Action {
                             location.getLabel(),
                             location.getCapacity(),
                             location.getExamCapacity(),
-                            location.getSchedulingRoomTypeInteger(),
+                            location.getRoomTypeLabel(),
                             null, null
                     });
 		    else
@@ -246,14 +246,14 @@ public class RoomDeptEditAction extends Action {
 	                            "<input type='checkbox' name='assigned' value='"+location.getUniqueId()+"' "+(checked?"checked='checked'":"")+">",
 	                            location.getLabel(),
 	                            String.valueOf(location.getCapacity()),
-	                            Room.getSchedulingRoomTypeName(location.getSchedulingRoomTypeInteger()),
+	                            location.getRoomTypeLabel(),
 	                            g,f
 	                    },
 	                    new Comparable[] {
 	                            (!checked?1:0),
 	                            location.getLabel(),
 	                            location.getCapacity(),
-	                            location.getSchedulingRoomTypeInteger(),
+	                            location.getRoomTypeLabel(),
 	                            null, null
 	                    });
 		}

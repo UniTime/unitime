@@ -27,6 +27,7 @@ import org.unitime.timetable.model.ExternalBuilding;
 import org.unitime.timetable.model.ExternalRoom;
 import org.unitime.timetable.model.ExternalRoomDepartment;
 import org.unitime.timetable.model.ExternalRoomFeature;
+import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimetableManager;
 
@@ -114,7 +115,7 @@ public class BuildingRoomImport extends BaseImport {
 			room.setExamCapacity(new Integer(0));
 		}
 		room.setIsInstructional(Boolean.valueOf(element.attributeValue("instructional")));
-		room.setScheduledRoomType(element.attributeValue("scheduledRoomType"));
+		room.setRoomType(RoomType.findByReference(element.attributeValue("scheduledRoomType")));
 		room.setBuilding(building);
 		building.addTorooms(room);
 		getHibSession().save(room);

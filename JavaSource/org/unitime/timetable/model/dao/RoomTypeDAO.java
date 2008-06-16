@@ -17,38 +17,17 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
-package org.unitime.timetable.form;
+package org.unitime.timetable.model.dao;
 
-import java.util.Set;
+import org.unitime.timetable.model.base.BaseRoomTypeDAO;
 
-import javax.servlet.http.HttpServletRequest;
 
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionMapping;
-import org.unitime.timetable.model.RoomType;
+public class RoomTypeDAO extends BaseRoomTypeDAO {
 
-/** 
- * @author Tomas Muller
- */
-public class SolutionReportForm extends ActionForm {
-	private String iOp = null;
+	/**
+	 * Default constructor.  Can be used in place of getInstance()
+	 */
+	public RoomTypeDAO () {}
 
-	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
-        ActionErrors errors = new ActionErrors();
-        
-        return errors;
-	}
 
-	public void reset(ActionMapping mapping, HttpServletRequest request) {
-		iOp = null;
-	}
-	
-	public String getOp() { return iOp; }
-	public void setOp(String op) { iOp = op; }
-	
-    public Set<RoomType> getRoomTypes() {
-        return RoomType.findAll();
-    }
 }
-

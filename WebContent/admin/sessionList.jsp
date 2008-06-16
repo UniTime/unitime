@@ -19,6 +19,7 @@
 <%@ page import="java.text.DecimalFormat"%>
 <%@ page import="java.text.DateFormat"%>
 <%@ page import="org.unitime.commons.web.*"%>
+<%@page import="org.unitime.timetable.model.RoomType"%>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld"	prefix="bean"%>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld"	prefix="html"%>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld"	prefix="logic"%>
@@ -44,13 +45,13 @@
 	<table width="90%" border="0" cellspacing="0" cellpadding="3">
 		<%
 			WebTable webTable = new WebTable(
-					9, "", "sessionList.do?order=%%",					
+					10, "", "sessionList.do?order=%%",					
 					new String[] {
 						"Default", "Academic<br>Session", "Academic<br>Initiative", "Session<br>Begins",
-						"Classes<br>End", "Session<br>Ends", "Exams<br>Begins", "Date<br>Pattern", "Status", "Subject<br>Areas" },
+						"Classes<br>End", "Session<br>Ends", "Exams<br>Begins", "Date<br>Pattern", "Status", "Subject<br>Areas", "Event<br>Management" },
 					new String[] { "center", "left", "left", "left", "left",
-						"left", "left", "left", "left", "right" }, 
-					new boolean[] { true, true, true, false, false, false, true, false, true });
+						"left", "left", "left", "left", "right", "left" }, 
+					new boolean[] { true, true, true, false, false, false, true, false, true, true });
 					
 			webTable.enableHR("#EFEFEF");
 	        webTable.setRowStyle("white-space: nowrap");
@@ -62,6 +63,15 @@
 					DecimalFormat df5 = new DecimalFormat("####0");
 					DateFormat df = DateFormat.getDateInstance();
 					org.unitime.timetable.model.Session s = (org.unitime.timetable.model.Session) sessn;
+					String roomTypes = ""; boolean all = true;
+					for (RoomType t : RoomType.findAll()) {
+						if (t.getOption(s).canScheduleEvents()) {
+							if (roomTypes.length()>0) roomTypes+=", ";
+							roomTypes+=t.getLabel();
+						} else all = false;
+					}
+					if (all) roomTypes = "<i>All</i>";
+					if (roomTypes.length()==0) roomTypes = "<i>N/A</i>";
 					webTable
 					.addLine(
 							"onClick=\"document.location='sessionEdit.do?doit=editSession&sessionId=" + s.getSessionId() + "';\"",
@@ -75,7 +85,8 @@
 								df.format(s.getExamBeginDate()) + "&nbsp;",
 								s.getDefaultDatePattern()!=null ? s.getDefaultDatePattern().getName() : "-", 
 								s.statusDisplayString() + "&nbsp;",
-								df5.format(s.getSubjectAreas().size()) },
+								df5.format(s.getSubjectAreas().size()),
+								roomTypes },
 							new Comparable[] {
 								s.getIsDefault() ? "<img src='images/tick.gif'>" : "",
 								s.getLabel(),
@@ -86,7 +97,8 @@
 								s.getExamBeginDate(),
 								s.getDefaultDatePattern()!=null ? s.getDefaultDatePattern().getName() : "-", 
 								s.statusDisplayString(),
-								df5.format(s.getSubjectAreas().size()) } );
+								df5.format(s.getSubjectAreas().size()),
+								roomTypes } );
 			%>
 
 		</logic:iterate>

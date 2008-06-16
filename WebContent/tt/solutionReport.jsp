@@ -26,34 +26,34 @@
 
 <tiles:importAttribute />
 <html:form action="/solutionReport">
+	<logic:notEmpty name="SolutionReport.message" scope="request">
+		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+			<TR>
+				<TD>
+					<I>
+						<bean:write name="SolutionReport.message" scope="request" filter="false"/>
+					</I>
+				</TD>
+			</TR>
+		</TABLE>
+	</logic:notEmpty>
+<%	boolean atLeastOneRoomReport = false; %>
+	<logic:iterate name="solutionReportForm" property="roomTypes" id="roomType">
+		<bean:define name="roomType" property="reference" id="ref"/>
+		<logic:notEmpty name="<%="SolutionReport.roomReportTable."+ref%>" scope="request">
+			<% if (!atLeastOneRoomReport) { %>
+				<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+			<%  atLeastOneRoomReport = true; } %>
+			<bean:write name="<%="SolutionReport.roomReportTable."+ref%>" scope="request" filter="false"/>
+		</logic:notEmpty>
+	</logic:iterate>
+	<logic:notEmpty name="SolutionReport.roomReportTable.nonUniv" scope="request">
+		<% if (!atLeastOneRoomReport) { %>
+			<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<%  atLeastOneRoomReport = true; } %>
+		<bean:write name="SolutionReport.roomReportTable.nonUniv" scope="request" filter="false"/>
+	</logic:notEmpty>
 <%
-	String message = (String)request.getAttribute("SolutionReport.message");
-	if (message!=null) {
-%>
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
-		<TR>
-			<TD>
-				<I><%=message%></I>
-			</TD>
-		</TR>
-	</TABLE>
-<% 
-	}
-	boolean atLeastOneRoomReport = false;
-    for (int type=1;type<=6;type++) {
-    	String roomReportTable = (String)request.getAttribute("SolutionReport.roomReportTable."+type);
-		if (roomReportTable!=null) {
-			if (!atLeastOneRoomReport) {
-%>
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
-<%
-			}			
-%>
-		<%=roomReportTable%>
-<%
-			atLeastOneRoomReport = true;
-		}
-	}
 	if (atLeastOneRoomReport) {
 %>
 		<tr><td><i>Group</i></td><td colspan='8'>group size &lt;minimum, maximum)</td></tr>

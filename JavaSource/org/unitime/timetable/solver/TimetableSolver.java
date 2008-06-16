@@ -1155,7 +1155,7 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
 		}
 	}
 	
-	public RoomReport getRoomReport(int startDay, int endDay, int nrWeeks, Integer roomType) {
+	public RoomReport getRoomReport(int startDay, int endDay, int nrWeeks, Long roomType) {
 		synchronized (currentSolution()) {
 			return new RoomReport((TimetableModel)currentSolution().getModel(), startDay, endDay, nrWeeks, roomType);
 		}

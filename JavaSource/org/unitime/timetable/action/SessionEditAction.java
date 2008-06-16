@@ -35,11 +35,14 @@ import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.apache.struts.actions.LookupDispatchAction;
 import org.hibernate.HibernateException;
+import org.hibernate.Transaction;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.SessionEditForm;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Roles;
+import org.unitime.timetable.model.RoomType;
+import org.unitime.timetable.model.RoomTypeOption;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.DatePatternDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
@@ -123,6 +126,12 @@ public class SessionEditAction extends LookupDispatchAction {
 		sessionEditForm.setClassesEnd(sdf.format(acadSession.getClassesEndDateTime()));
 		sessionEditForm.setExamStart(sdf.format(acadSession.getExamBeginDate()));
 		
+		for (RoomType t : RoomType.findAll()) {
+		    RoomTypeOption o = t.getOption(acadSession);
+		    sessionEditForm.setRoomOptionScheduleEvents(t.getReference(), o.canScheduleEvents());
+		    sessionEditForm.setRoomOptionMessage(t.getReference(), o.getMessage());
+		}
+		
         Session sessn = Session.getSessionById(id);
 		LookupTables.setupDatePatterns(request, sessn, false, Constants.BLANK_OPTION_LABEL, null, null, null);
 		request.setAttribute("Sessions.holidays", sessionEditForm.getSession().getHolidaysHtml());		
@@ -183,64 +192,84 @@ public class SessionEditAction extends LookupDispatchAction {
 		 			 new String[] {Roles.ADMIN_ROLE} )) {
 		  throw new Exception ("Access Denied.");
 		}
+        
+        Transaction tx = null;
+        org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
+        
+        try {
+            tx = hibSession.beginTransaction();
 
-		SessionEditForm sessionEditForm = (SessionEditForm) form;
-		Session sessn = sessionEditForm.getSession();
-		
-		if (sessionEditForm.getSessionId()!=null && sessn.getSessionId().intValue()!=0) 
-			sessn = (new SessionDAO()).get(sessionEditForm.getSessionId());
-		else 
-			sessn.setSessionId(null);
-		
-		String refresh = request.getParameter("refresh");
-		
-		if (refresh!=null && refresh.equals("1")) {
-			
-			ActionErrors errors = new ActionErrors(); 
-			setHolidays(request, sessionEditForm, errors, sessn);
-			if (sessn.getSessionId()!=null){
-				LookupTables.setupDatePatterns(request, sessn, false, Constants.BLANK_OPTION_LABEL, null, null, null);
-				request.setAttribute("Sessions.holidays", sessn.getHolidaysHtml());		
-				return mapping.findForward("showEdit");
-			}
-			else
-				return mapping.findForward("showAdd");
-		}
-		
-		ActionMessages errors = sessionEditForm.validate(mapping, request);
-		if (errors.size()>0) {
-			saveErrors(request, errors);
-			if (sessn.getSessionId()!=null) {
-				LookupTables.setupDatePatterns(request, sessn, false, Constants.BLANK_OPTION_LABEL, null, null, null);
-				request.setAttribute("Sessions.holidays", sessn.getHolidaysHtml());		
-				return mapping.findForward("showEdit");
-			}
-			else {
-				ActionErrors errors2 = new ActionErrors(); 
-				setHolidays(request, sessionEditForm, errors2, sessn);
-				return mapping.findForward("showAdd");
-			}
-		}
+            SessionEditForm sessionEditForm = (SessionEditForm) form;
+            Session sessn = sessionEditForm.getSession();
+            
+            if (sessionEditForm.getSessionId()!=null && sessn.getSessionId().intValue()!=0) 
+                sessn = (new SessionDAO()).get(sessionEditForm.getSessionId(),hibSession);
+            else 
+                sessn.setSessionId(null);
+            
+            String refresh = request.getParameter("refresh");
+            
+            if (refresh!=null && refresh.equals("1")) {
+                
+                ActionErrors errors = new ActionErrors(); 
+                setHolidays(request, sessionEditForm, errors, sessn);
+                if (sessn.getSessionId()!=null){
+                    LookupTables.setupDatePatterns(request, sessn, false, Constants.BLANK_OPTION_LABEL, null, null, null);
+                    request.setAttribute("Sessions.holidays", sessn.getHolidaysHtml());     
+                    return mapping.findForward("showEdit");
+                }
+                else
+                    return mapping.findForward("showAdd");
+            }
+            
+            ActionMessages errors = sessionEditForm.validate(mapping, request);
+            if (errors.size()>0) {
+                saveErrors(request, errors);
+                if (sessn.getSessionId()!=null) {
+                    LookupTables.setupDatePatterns(request, sessn, false, Constants.BLANK_OPTION_LABEL, null, null, null);
+                    request.setAttribute("Sessions.holidays", sessn.getHolidaysHtml());     
+                    return mapping.findForward("showEdit");
+                }
+                else {
+                    ActionErrors errors2 = new ActionErrors(); 
+                    setHolidays(request, sessionEditForm, errors2, sessn);
+                    return mapping.findForward("showAdd");
+                }
+            }
 
-		if (sessionEditForm.getDefaultDatePatternId()!=null && 
-		        sessionEditForm.getDefaultDatePatternId().trim().length()>0) {
-		    DatePattern d = new DatePatternDAO().get(new Long(sessionEditForm.getDefaultDatePatternId()));
-		    sessn.setDefaultDatePattern(d);
-		}
-		
-		sessn.setAcademicInitiative(sessionEditForm.getAcademicInitiative());
-		sessn.setStatusType(sessionEditForm.getStatusType());
-		setSessionData(request, sessionEditForm, sessn);
-		
-		sessn.saveOrUpdate();
-        ChangeLog.addChange(
-                null, 
-                request, 
-                sessn, 
-                ChangeLog.Source.SESSION_EDIT, 
-                ChangeLog.Operation.UPDATE, 
-                null, 
-                null);
+            if (sessionEditForm.getDefaultDatePatternId()!=null && 
+                    sessionEditForm.getDefaultDatePatternId().trim().length()>0) {
+                DatePattern d = new DatePatternDAO().get(new Long(sessionEditForm.getDefaultDatePatternId()));
+                sessn.setDefaultDatePattern(d);
+            }
+            
+            sessn.setAcademicInitiative(sessionEditForm.getAcademicInitiative());
+            sessn.setStatusType(sessionEditForm.getStatusType());
+            setSessionData(request, sessionEditForm, sessn);
+
+            hibSession.saveOrUpdate(sessn);
+
+            for (RoomType t : RoomType.findAll()) {
+                RoomTypeOption o = t.getOption(sessn);
+                o.setScheduleEvents(sessionEditForm.getRoomOptionScheduleEvents(t.getReference()));
+                o.setMessage(sessionEditForm.getRoomOptionMessage(t.getReference()));
+                hibSession.saveOrUpdate(o);
+            }
+
+            ChangeLog.addChange(
+                    hibSession, 
+                    request, 
+                    sessn, 
+                    ChangeLog.Source.SESSION_EDIT, 
+                    ChangeLog.Operation.UPDATE, 
+                    null, 
+                    null);
+            
+            tx.commit() ;
+        } catch (Exception e) {
+            if (tx!=null) tx.rollback();
+            throw e;
+        }
         
 		return mapping.findForward("showSessionList");
 	}
