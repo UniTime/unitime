@@ -283,7 +283,7 @@ public class SessionRollForward {
 					toRoom.setIgnoreTooFar(fromRoom.isIgnoreTooFar());
 					toRoom.setPattern(fromRoom.getPattern());
 					toRoom.setRoomNumber(toExternalRoom.getRoomNumber());
-					toRoom.setScheduledRoomType(toExternalRoom.getScheduledRoomType());
+					toRoom.setRoomType(toExternalRoom.getRoomType());
 					LocationPermIdGenerator.setPermanentId(toRoom);
 				} else {
 					return;

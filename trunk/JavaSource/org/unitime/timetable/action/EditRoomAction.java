@@ -58,6 +58,7 @@ import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.BuildingDAO;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
+import org.unitime.timetable.model.dao.RoomTypeDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LocationPermIdGenerator;
@@ -146,7 +147,7 @@ public class EditRoomAction extends Action {
             if (location instanceof Room) {
                 Room r = (Room)location;
                 editRoomForm.setName(r.getRoomNumber());
-                editRoomForm.setType(r.getScheduledRoomType());
+                editRoomForm.setType(r.getRoomType().getUniqueId());
                 editRoomForm.setBldgName(r.getBuildingAbbv());
                 editRoomForm.setRoom(true);
                 editRoomForm.setExternalId(r.getExternalUniqueId());
@@ -319,7 +320,7 @@ public class EditRoomAction extends Action {
             
             if (location instanceof Room) {
                 ((Room)location).setExternalUniqueId(editRoomForm.getExternalId());
-                ((Room)location).setScheduledRoomType(editRoomForm.getType());
+                ((Room)location).setRoomType(RoomTypeDAO.getInstance().get(editRoomForm.getType()));
             }
 			
 			location.setCoordinateX(editRoomForm.getCoordX()==null || editRoomForm.getCoordX().length()==0 ? new Integer(-1) : Integer.valueOf(editRoomForm.getCoordX()));
@@ -400,7 +401,7 @@ public class EditRoomAction extends Action {
             room.setIgnoreTooFar(Boolean.FALSE);
             room.setIgnoreRoomCheck(editRoomForm.isIgnoreRoomCheck()!=null && editRoomForm.isIgnoreRoomCheck().booleanValue());
             room.setExternalUniqueId(editRoomForm.getExternalId());
-            room.setScheduledRoomType(editRoomForm.getType());
+            room.setRoomType(RoomTypeDAO.getInstance().get(editRoomForm.getType()));
             room.setCoordinateX(editRoomForm.getCoordX()==null || editRoomForm.getCoordX().length()==0 ? new Integer(-1) : Integer.valueOf(editRoomForm.getCoordX()));
             room.setCoordinateY(editRoomForm.getCoordY()==null || editRoomForm.getCoordY().length()==0 ? new Integer(-1) : Integer.valueOf(editRoomForm.getCoordY()));
             room.setSession(session);

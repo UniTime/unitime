@@ -95,14 +95,14 @@
 			length="20"
 		/>
 			
-		<property
-			name="scheduledRoomType"
-			column="SCHEDULED_ROOM_TYPE"
-			type="java.lang.String"
+		<many-to-one 
+			name="roomType" 
+			class="RoomType" 
+			column="ROOM_TYPE"
 			not-null="true"
-			length="20"
-		/>
-		
+			foreign-key="FK_EXTERNAL_ROOM_TYPE"
+			/>
+	
 		<property
 			name="isInstructional"
 			column="INSTRUCTIONAL"

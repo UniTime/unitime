@@ -35,7 +35,7 @@ public abstract class TimetableGridModel implements Serializable {
 	private String[][] iBackground = null;
 	private String iName;
 	private int iSize = 0;
-    private Integer iType = null;
+    private Long iType = null;
 	private transient boolean[][][] iRendered = null;
 
 	public static final int sResourceTypeRoom = 0;
@@ -100,7 +100,7 @@ public abstract class TimetableGridModel implements Serializable {
 	
 	public void setName(String name) { iName = name;}
 	public void setSize(int size) { iSize = size; }
-    public void setType(Integer type) { iType = type; }
+    public void setType(Long type) { iType = type; }
 	public void addCell(int slot, TimetableGridCell cell) {
 		addCell(slot/Constants.SLOTS_PER_DAY,slot%Constants.SLOTS_PER_DAY,cell);
 	}
@@ -137,7 +137,7 @@ public abstract class TimetableGridModel implements Serializable {
 	
 	public int getSize() { return iSize; }
     
-    public Integer getType() { return iType; }
+    public Long getType() { return iType; }
 	
 	public void shift(int day, int slot, int idx) {
 		TimetableGridCell cell = getCell(day,slot,idx);

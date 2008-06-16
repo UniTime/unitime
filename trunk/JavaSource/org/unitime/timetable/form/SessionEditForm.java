@@ -20,6 +20,8 @@
 package org.unitime.timetable.form;
 
 import java.util.Date;
+import java.util.Hashtable;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -28,6 +30,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.unitime.timetable.model.DepartmentStatusType;
+import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.util.CalendarUtils;
 import org.unitime.timetable.util.ReferenceList;
@@ -58,6 +61,9 @@ public class SessionEditForm extends ActionForm {
 	String examStart;
 	String defaultDatePatternId;
 	String defaultDatePatternLabel;
+	
+	Hashtable<String,String> roomOptionMessage = new Hashtable();
+	Hashtable<String,Boolean> roomOptionScheduleEvents = new Hashtable();
 	
 	// --------------------------------------------------------- Methods
 	
@@ -287,4 +293,25 @@ public class SessionEditForm extends ActionForm {
         this.examStart = examStart;
     }
     
+    public Set<RoomType> getRoomTypes() {
+        return RoomType.findAll();
+    }
+    
+    public String getRoomOptionMessage(String roomType) {
+        return roomOptionMessage.get(roomType);
+    }
+    public void setRoomOptionMessage(String roomType, String message) {
+        if (message==null)
+            roomOptionMessage.remove(roomType);
+        else
+            roomOptionMessage.put(roomType, message);
+    }
+    public boolean getRoomOptionScheduleEvents(String roomType) {
+        Boolean ret = roomOptionScheduleEvents.get(roomType);
+        return (ret!=null && ret.booleanValue());
+    }
+    public void setRoomOptionScheduleEvents(String roomType, boolean enable) {
+        roomOptionScheduleEvents.put(roomType, enable);
+    }
+
 }

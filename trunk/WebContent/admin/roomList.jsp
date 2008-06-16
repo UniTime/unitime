@@ -43,18 +43,15 @@
 		<tt:section-header>
 			<tt:section-title>
 				<span style='font-weight:normal;'>
-				<% if (request.getAttribute("classrooms") != null) {%>
-					<A class="l7" href="#classrooms">Classrooms</A>&nbsp;
-				<% } %>
-				<% if (request.getAttribute("additionalRooms") != null) {%>
-				<A class="l7" href="#additionalRooms">Additional Rooms</A>&nbsp;
-				<% } %>
-				<% if (request.getAttribute("specialRooms") != null) {%>
-				<A class="l7" href="#specialRooms">Special Use Rooms</A>&nbsp;
-				<% } %>
-				<% if (request.getAttribute("nonUnivLocation") != null) {%>
-				<A class="l7" href="#nonUnivLocation">Non University Locations</A>&nbsp;
-				<% } %>
+					<logic:iterate name="<%=frmName%>" property="roomTypes" id="roomType">
+						<bean:define name="roomType" property="reference" id="ref"/>
+						<logic:notEmpty name="<%=(String)ref%>" scope="request">
+							<A class="l7" href="<%="#"+ref%>"><bean:write name="roomType" property="label"/></A>&nbsp;
+						</logic:notEmpty>
+					</logic:iterate>
+					<logic:notEmpty name="nonUnivLocation" scope="request">
+						<A class="l7" href="#nonUnivLocation">Non University Locations</A>&nbsp;
+					</logic:notEmpty>
 				</span>
 			</tt:section-title>
 			<TABLE align="right" cellspacing="0" cellpadding="2" class="FormWithNoPadding">
@@ -156,63 +153,35 @@
 	</logic:messagesPresent>
 -->
 <!-- rooms -->
-
-	<% if (request.getAttribute("classrooms") != null) {%>
-	<TR>
-		<TD valign="middle" colspan="<%=colspan%>">
-		&nbsp;<A name="classrooms"/>
-		</TD>
-	<TR>
-
-	<TR>
-		<%=request.getAttribute("classrooms")%>
-	</TR>
-
-	<%}%>
-
-	<% if (request.getAttribute("additionalRooms") != null) {%>
-	<TR>
-		<TD valign="middle" colspan="<%=colspan%>">
-		&nbsp;<A name="additionalRooms"/>
-		</TD>
-	<TR>
-
-	<TR>
-		<%=request.getAttribute("additionalRooms")%>
-	</TR>
-	<%}%>
-
-	<% if (request.getAttribute("specialRooms") != null) {%>
-	<TR>
-		<TD valign="middle" colspan="<%=colspan%>">
-		&nbsp;<A name="specialRooms"/>
-		</TD>
-	<TR>
-	<TR>
-		<%=request.getAttribute("specialRooms")%>
-	</TR>
-	<% } %>
-
-	<% if (request.getAttribute("nonUnivLocation") != null) {%>
-	<TR>
-		<TD valign="middle" colspan="<%=colspan%>">
-		&nbsp;<A name="nonUnivLocation"/>
-		</TD>
-	<TR>
-	<TR>
-		<TD valign="middle" colspan="<%=colspan%>">
-			<TABLE align="left" cellspacing="0" cellpadding="2" width="100%">
-				<TR><TD><%=request.getAttribute("nonUnivLocation")%></TD></TR>
-			</TABLE>
-		</TD>
-	</TR>
-	<% }%>
+	<% boolean empty = true; %>
+	<logic:iterate name="<%=frmName%>" property="roomTypes" id="roomType">
+		<bean:define name="roomType" property="reference" id="ref"/>
+		<logic:notEmpty name="<%=(String)ref%>" scope="request">
+			<% empty = false; %>
+			<TR>
+				<TD valign="middle" colspan="<%=colspan%>">
+					&nbsp;<A name="<%=(String)ref%>"/>
+				</TD>
+			<TR>
+			<TR>
+				<bean:write name="<%=(String)ref%>" scope="request" filter="false"/>
+			</TR>
+		</logic:notEmpty>
+	</logic:iterate>
+	<logic:notEmpty name="nonUnivLocation" scope="request">
+		<% empty = false; %>
+		<TR>
+			<TD valign="middle" colspan="<%=colspan%>">
+				&nbsp;<A name="nonUnivLocation"/>
+			</TD>
+		<TR>
+		<TR>
+			<bean:write name="nonUnivLocation" scope="request" filter="false"/>
+		</TR>
+	</logic:notEmpty>
 
 <!-- Buttons -->
-<% if (request.getAttribute("classrooms") != null
-	|| (request.getAttribute("additionalRooms") != null)
-	|| (request.getAttribute("specialRooms") != null)
-	|| (request.getAttribute("nonUnivLocation") != null)) {%>
+<% if (!empty) {%>
 
 	<TR>
 		<TD valign="middle" colspan="<%=colspan%>">&nbsp;</TD>
@@ -222,18 +191,15 @@
 		<TD valign="middle" colspan="<%=colspan%>">
 			<tt:section-header>
 			<tt:section-title>
-				<% if (request.getAttribute("classrooms") != null) {%>
-					<A class="l7" href="#classrooms"><span style='font-weight:normal;'>Classrooms</span></A>&nbsp;
-				<% } %>
-				<% if (request.getAttribute("additionalRooms") != null) {%>
-				<A class="l7" href="#additionalRooms"><span style='font-weight:normal;'>Additional Rooms</span></A>&nbsp;
-				<% } %>
-				<% if (request.getAttribute("specialRooms") != null) {%>
-				<A class="l7" href="#specialRooms"><span style='font-weight:normal;'>Special Use Rooms</span></A>&nbsp;
-				<% } %>
-				<% if (request.getAttribute("nonUnivLocation") != null) {%>
-				<A class="l7" href="#nonUnivLocation"><span style='font-weight:normal;'>Non University Locations</span></A>&nbsp;
-				<% } %>
+				<logic:iterate name="<%=frmName%>" property="roomTypes" id="roomType">
+					<bean:define name="roomType" property="reference" id="ref"/>
+					<logic:notEmpty name="<%=(String)ref%>" scope="request">
+						<A class="l7" href="<%="#"+ref%>"><bean:write name="roomType" property="label"/></A>&nbsp;
+					</logic:notEmpty>
+				</logic:iterate>
+				<logic:notEmpty name="nonUnivLocation" scope="request">
+					<A class="l7" href="#nonUnivLocation">Non University Locations</A>&nbsp;
+				</logic:notEmpty>
 			</tt:section-title>
 			</tt:section-header>
 		</TD>

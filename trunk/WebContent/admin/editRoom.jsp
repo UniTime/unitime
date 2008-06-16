@@ -147,10 +147,7 @@
 					<TD>Type:</TD>
 					<TD width='100%'>
 						<html:select property="type">
-							<html:option value="genClassroom">Classroom</html:option>
-							<html:option value="computingLab">Computing Laboratory</html:option>
-							<html:option value="departmental">Additional Instructional Room</html:option>
-							<html:option value="specialUse">Special Use Room</html:option>
+							<html:optionsCollection property="roomTypes" label="label" value="uniqueId"/>
 						</html:select>
 					<TD>
 				</TR>

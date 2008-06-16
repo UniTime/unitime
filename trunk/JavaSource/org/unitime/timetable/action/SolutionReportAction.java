@@ -43,9 +43,10 @@ import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.SolutionReportForm;
-import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
+import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.dao.RoomTypeDAO;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.interactive.ClassAssignmentDetails;
@@ -105,13 +106,19 @@ public class SolutionReportAction extends Action {
         	request.setAttribute("SolutionReport.message","Neither a solver is started nor solution is loaded.");
         } else {
         	try {
-                for (int type=1;type<=6;type++) {
-                    RoomReport roomReport = solver.getRoomReport(startDay, endDay, session.getNrWeeks(), new Integer(type));
+                for (RoomType type : RoomType.findAll()) {
+                    RoomReport roomReport = solver.getRoomReport(startDay, endDay, session.getNrWeeks(), type.getUniqueId());
                     if (roomReport!=null && !roomReport.getGroups().isEmpty()) {
-                        WebTable t = getRoomReportTable(request, roomReport, false, new Integer(type));
+                        WebTable t = getRoomReportTable(request, roomReport, false, type.getUniqueId());
                         if (t!=null)
-                            request.setAttribute("SolutionReport.roomReportTable."+type, t.printTable(WebTable.getOrder(request.getSession(),"solutionReports.roomReport.ord")));
+                            request.setAttribute("SolutionReport.roomReportTable."+type.getReference(), t.printTable(WebTable.getOrder(request.getSession(),"solutionReports.roomReport.ord")));
                     }
+                }
+                RoomReport roomReport = solver.getRoomReport(startDay, endDay, session.getNrWeeks(), null);
+                if (roomReport!=null && !roomReport.getGroups().isEmpty()) {
+                    WebTable t = getRoomReportTable(request, roomReport, false, null);
+                    if (t!=null)
+                        request.setAttribute("SolutionReport.roomReportTable.nonUniv", t.printTable(WebTable.getOrder(request.getSession(),"solutionReports.roomReport.ord")));
                 }
         		DeptBalancingReport deptBalancingReport = solver.getDeptBalancingReport();
         		if (deptBalancingReport!=null && !deptBalancingReport.getGroups().isEmpty())
@@ -149,18 +156,33 @@ public class SolutionReportAction extends Action {
         		doc.open();
         		
                 boolean atLeastOneRoomReport = false;
-                for (int type=1;type<=6;type++) {
-                    RoomReport roomReport = solver.getRoomReport(startDay, endDay, session.getNrWeeks(), new Integer(type));
+                for (RoomType type : RoomType.findAll()) {
+                    RoomReport roomReport = solver.getRoomReport(startDay, endDay, session.getNrWeeks(), type.getUniqueId());
                     if (roomReport==null || roomReport.getGroups().isEmpty()) continue;
-                    PdfWebTable table = getRoomReportTable(request, roomReport, true, new Integer(type));
+                    PdfWebTable table = getRoomReportTable(request, roomReport, true, type.getUniqueId());
                     if (table==null) continue;
                     PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(request.getSession(),"solutionReports.roomReport.ord"));
                     if (!atLeastOneRoomReport) {
                         doc.setPageSize(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()));
                         doc.newPage();
-                    }doc.add(new Paragraph(table.getName(), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
-                     doc.add(pdfTable);
-                     atLeastOneRoomReport = true;
+                    }
+                    doc.add(new Paragraph(table.getName(), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
+                    doc.add(pdfTable);
+                    atLeastOneRoomReport = true;
+                }
+                RoomReport roomReport = solver.getRoomReport(startDay, endDay, session.getNrWeeks(), null);
+                if (roomReport!=null && !roomReport.getGroups().isEmpty()) {
+                    PdfWebTable table = getRoomReportTable(request, roomReport, true, null);
+                    if (table!=null) {
+                        PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(request.getSession(),"solutionReports.roomReport.ord"));
+                        if (!atLeastOneRoomReport) {
+                            doc.setPageSize(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()));
+                            doc.newPage();
+                        }
+                        doc.add(new Paragraph(table.getName(), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
+                        doc.add(pdfTable);
+                        atLeastOneRoomReport = true;
+                    }
                 }
 
                 if (atLeastOneRoomReport) {
@@ -322,11 +344,9 @@ public class SolutionReportAction extends Action {
 		return mapping.findForward("showSolutionReport");
 	}
 	
-	public PdfWebTable getRoomReportTable(HttpServletRequest request, RoomReport report, boolean noHtml, Integer type) {
+	public PdfWebTable getRoomReportTable(HttpServletRequest request, RoomReport report, boolean noHtml, Long type) {
 		WebTable.setOrder(request.getSession(),"solutionReports.roomReport.ord",request.getParameter("room_ord"),-1);
-		String name = "Room Allocation";
-        if (type!=null) 
-            name += " - "+Location.getSchedulingRoomTypeName(type);
+		String name = "Room Allocation - "+(type==null?"Non University Locations":RoomTypeDAO.getInstance().get(type).getLabel());
         PdfWebTable webTable = new PdfWebTable( 9,
    	        	name, "solutionReport.do?room_ord=%%",
    				new String[] {"Group", "Size", "NrRooms*", "ClUse", "ClShould", "ClMust*", "HrUse", "HrShould", "HrMust*"},

@@ -46,7 +46,7 @@ public class RoomDetailForm extends ActionForm {
 	private Integer capacity;
 	private Integer coordinateX;
 	private Integer coordinateY;
-	private String type;
+	private Long type;
     private String typeName;
 	private String patterns;
 	private Collection groups;
@@ -173,11 +173,11 @@ public class RoomDetailForm extends ActionForm {
 		this.patterns = patterns;
 	}
 
-	public String getType() {
+	public Long getType() {
 		return type;
 	}
 
-	public void setType(String type) {
+	public void setType(Long type) {
 		this.type = type;
 	}
 

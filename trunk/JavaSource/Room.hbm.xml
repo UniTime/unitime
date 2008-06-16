@@ -216,14 +216,14 @@
 				length="40"
 			/>
 		
-			<property
-				name="scheduledRoomType"
-				column="SCHEDULED_ROOM_TYPE"
-				type="java.lang.String"
+			<many-to-one 
+				name="roomType" 
+				class="RoomType" 
+				column="ROOM_TYPE" 
+				foreign-key="FK_ROOM_TYPE"
 				not-null="true"
-				length="20"
-			/>
-		
+				/>
+				
 			<property
 				name="classification"
 				column="CLASSIFICATION"

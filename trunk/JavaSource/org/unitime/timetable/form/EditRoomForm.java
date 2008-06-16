@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.form;
 
+import java.util.Set;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.struts.action.ActionErrors;
@@ -27,6 +29,7 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.Room;
+import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.RoomDAO;
 
@@ -55,7 +58,7 @@ public class EditRoomForm extends ActionForm {
     private String bldgId;
 	private String coordX, coordY;
     private String externalId;
-    private String type;
+    private Long type;
 	private boolean owner;
 	private boolean room;
     private Boolean examEnabled;
@@ -175,10 +178,10 @@ public class EditRoomForm extends ActionForm {
     public void setExternalId(String externalId) {
         this.externalId = externalId;
     }
-    public String getType() {
+    public Long getType() {
         return type;
     }
-    public void setType(String type) {
+    public void setType(Long type) {
         this.type = type;
     }
 
@@ -280,6 +283,10 @@ public class EditRoomForm extends ActionForm {
 	
 	public void setExamCapacity(String examCapacity) {
 	    this.examCapacity = examCapacity;
+	}
+	
+	public Set<RoomType> getRoomTypes() {
+	    return RoomType.findAll();
 	}
     
 }

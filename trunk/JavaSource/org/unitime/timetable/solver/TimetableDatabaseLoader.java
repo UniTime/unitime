@@ -1162,7 +1162,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     				)
     			);
             
-            rc.setType(location.getSchedulingRoomTypeInteger());
+            rc.setType(location instanceof Room ? ((Room)location).getRoomType().getUniqueId() : null);
             
     		//loadRoomAvailability(location, rc, hibSession);
 
@@ -1185,7 +1185,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	if (ic==null) {
             boolean ignDist = (instructor.isIgnoreToFar()!=null && instructor.isIgnoreToFar().booleanValue());
     		ic = new InstructorConstraint(instructor.getUniqueId(),instructor.getExternalUniqueId(),instructor.getName(iInstructorFormat),ignDist);
-            ic.setType(instructor.getPositionType()==null?new Integer(Integer.MAX_VALUE):instructor.getPositionType().getSortOrder());
+            ic.setType(instructor.getPositionType()==null?new Long(Long.MAX_VALUE):new Long(instructor.getPositionType().getSortOrder()));
     		//loadInstructorAvailability(instructor, ic, hibSession);
 			getModel().addConstraint(ic);
     		iInstructors.put(instructor.getUniqueId(),ic);
