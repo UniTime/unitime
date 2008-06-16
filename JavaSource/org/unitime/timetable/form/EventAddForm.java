@@ -19,8 +19,11 @@
 */
 package org.unitime.timetable.form;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
@@ -30,21 +33,39 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.Building;
+import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Event;
+import org.unitime.timetable.model.CourseEvent;
+import org.unitime.timetable.model.ExamOwner;
+import org.unitime.timetable.model.RelatedCourseInfo;
+import org.unitime.timetable.model.InstrOfferingConfig;
+import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.Preference;
+import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.comparators.ClassComparator;
+import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
+import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
+import org.unitime.timetable.model.dao.Class_DAO;
+import org.unitime.timetable.model.dao.CourseOfferingDAO;
+import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
+import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 import org.unitime.timetable.util.ComboBoxLookup;
 import org.unitime.timetable.util.DateUtils;
+import org.unitime.timetable.util.DynamicList;
+import org.unitime.timetable.util.DynamicListObjectFactory;
+import org.unitime.timetable.util.IdValue;
 
-/**
- * @author Zuzana Mullerova
+/*
+ * A large part of this file reuses code from the ExamEditForm.java
  */
 
-public class EventAddForm extends ActionForm {
+public class EventAddForm extends PreferencesForm {
 
 //	private EventModel iModel;
 	private String iOp;
@@ -59,6 +80,15 @@ public class EventAddForm extends ActionForm {
 	private TreeSet<Date> iMeetingDates = new TreeSet();
 	private String iMinCapacity;
 	private String iMaxCapacity;
+	private boolean iLookAtNearLocations;
+	
+	// courses/classes for course related events
+    private List iSubjectArea;
+    private List iCourseNbr;
+    private List iItype;
+    private List iClassNumber;
+    private Collection iSubjectAreas;
+    private int iSelected;
 
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 		
@@ -101,6 +131,17 @@ public class EventAddForm extends ActionForm {
 			errors.add("minMaxCapacity", new ActionMessage("errors.generic", "Maximum room capacity should not be smaller than minimum room capacity."));
 		}
 		
+		if ("Course Event".equals(iEventType)) {
+			boolean hasRci = false;
+	        for (int idx=0;idx<getSubjectArea().size();idx++) {
+	            RelatedCourseInfo rci = getRelatedCourseInfo(idx);
+	            if (rci!=null) { hasRci = true; break; }
+	        }
+	        if (!hasRci) {
+	            errors.add("relatedCourseInfo", new ActionMessage("errors.generic", "At least one class/course has to be specified.") );
+	        }
+		}
+	        
 		return errors;
 	}
 	
@@ -118,6 +159,14 @@ public class EventAddForm extends ActionForm {
 		iMeetingDates.clear();
 		iMinCapacity = null;
 		iMaxCapacity = null;
+		iLookAtNearLocations = false;
+        iSubjectArea = DynamicList.getInstance(new ArrayList(), idfactory);
+        iCourseNbr = DynamicList.getInstance(new ArrayList(), idfactory);
+        iItype = DynamicList.getInstance(new ArrayList(), idfactory);
+        iClassNumber = DynamicList.getInstance(new ArrayList(), idfactory);
+        for (int i=0;i<PREF_ROWS_ADDED;i++) {
+            addRelatedCourseInfo(null);
+        }		
 	}
 	
 	// load event info from session attribute Event
@@ -133,7 +182,13 @@ public class EventAddForm extends ActionForm {
 		iMaxCapacity = (String) session.getAttribute("Event.MaxCapacity");
 		iBuildingId = (Long) session.getAttribute("Event.BuildingId");
 		iRoomNumber = (String) session.getAttribute("Event.RoomNumber");
-
+		iLookAtNearLocations = (Boolean) session.getAttribute("Event.LookAtNearLocations");
+		if (session.getAttribute("Event.SubjectArea")!=null) {
+			iSubjectArea = (List) session.getAttribute("Event.SubjectArea");
+			iCourseNbr = (List) session.getAttribute("Event.CourseNbr");
+			iItype = (List) session.getAttribute("Event.SubjectItype");
+			iClassNumber = (List) session.getAttribute("Event.ClassNumber");
+		}
 	}
 	
 	// save event parameters to session attribute Event
@@ -149,8 +204,12 @@ public class EventAddForm extends ActionForm {
 		session.setAttribute("Event.MaxCapacity", iMaxCapacity);
 		session.setAttribute("Event.BuildingId", iBuildingId);
 		session.setAttribute("Event.RoomNumber", iRoomNumber);
+		session.setAttribute("Event.LookAtNearLocations", (Boolean) iLookAtNearLocations);
 //		session.setAttribute("Event.");
-//		session.setAttribute("Event.");
+		session.setAttribute("Event.SubjectArea", iSubjectArea);
+		session.setAttribute("Event.CourseNbr", iCourseNbr);
+		session.setAttribute("Event.SubjectItype", iItype);
+		session.setAttribute("Event.ClassNumber", iClassNumber);
 	}
 	
 	
@@ -292,5 +351,251 @@ public class EventAddForm extends ActionForm {
     
     public String getMaxCapacity() {return iMaxCapacity;}
     public void setMaxCapacity (String minCapacity) {iMaxCapacity = minCapacity;}
+    
+    public Boolean getLookAtNearLocations() {return iLookAtNearLocations;}
+    public void setLookAtNearLocations (Boolean look) {iLookAtNearLocations = look;}
+    
+    
+// Methods related to course events with conflict checking    
+    public String[] getObjectTypes() { return ExamOwner.sOwnerTypes; }
+    
+    protected DynamicListObjectFactory factory = new DynamicListObjectFactory() {
+        public Object create() {
+            return new String(Preference.BLANK_PREF_VALUE);
+        }
+    };
+
+    protected DynamicListObjectFactory idfactory = new DynamicListObjectFactory() {
+        public Object create() {
+            return new Long(-1);
+        }
+    };
+    
+    
+    public List getSubjectAreaList() { return iSubjectArea; }
+    public List getSubjectArea() { return iSubjectArea; }
+    public Long getSubjectArea(int key) { return (Long)iSubjectArea.get(key); }
+    public void setSubjectArea(int key, Long value) { this.iSubjectArea.set(key, value); }
+    public void setSubjectArea(List subjectArea) { this.iSubjectArea = subjectArea; }
+    public List getCourseNbr() { return iCourseNbr; }
+    public Long getCourseNbr(int key) { return (Long)iCourseNbr.get(key); }
+    public void setCourseNbr(int key, Long value) { this.iCourseNbr.set(key, value); }
+    public void setCourseNbr(List courseNbr) { this.iCourseNbr = courseNbr; }
+    public List getItype() { return iItype; }
+    public Long getItype(int key) { return (Long)iItype.get(key); }
+    public void setItype(int key, Long value) { this.iItype.set(key, value); }
+    public void setItype(List itype) { this.iItype = itype; }
+    public List getClassNumber() { return iClassNumber; }
+    public Long getClassNumber(int key) { return (Long)iClassNumber.get(key); }
+    public void setClassNumber(int key, Long value) { this.iClassNumber.set(key, value); }
+    public void setClassNumber(List classNumber) { this.iClassNumber = classNumber; }
+    public int getSelected() {return iSelected;}
+    public void setSelected (int selected) {iSelected = selected;}
+    
+    public void deleteRelatedCourseInfo(int idx) {
+        getSubjectArea().remove(idx);
+        getCourseNbr().remove(idx);
+        getItype().remove(idx);
+        getClassNumber().remove(idx);
+    }
+    
+    public void addRelatedCourseInfo(RelatedCourseInfo rci) {
+        if (rci==null) {
+            getSubjectArea().add(new Long(-1));
+            getCourseNbr().add(new Long(-1));
+            getItype().add(new Long(-1));
+            getClassNumber().add(new Long(-1));
+        } else {
+            switch (rci.getOwnerType()) {
+            case ExamOwner.sOwnerTypeClass :
+                Class_ clazz = (Class_)rci.getOwnerObject();
+                getSubjectArea().add(clazz.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea().getUniqueId());
+                getCourseNbr().add(clazz.getSchedulingSubpart().getControllingCourseOffering().getUniqueId());
+                getItype().add(clazz.getSchedulingSubpart().getUniqueId());
+                getClassNumber().add(clazz.getUniqueId());
+                break;
+            case ExamOwner.sOwnerTypeConfig :
+                InstrOfferingConfig config = (InstrOfferingConfig)rci.getOwnerObject();
+                getSubjectArea().add(config.getControllingCourseOffering().getSubjectArea().getUniqueId());
+                getCourseNbr().add(config.getControllingCourseOffering().getUniqueId());
+                getItype().add(-config.getUniqueId());
+                getClassNumber().add(new Long(-1));
+                break;
+            case ExamOwner.sOwnerTypeCourse :
+                CourseOffering course = (CourseOffering) rci.getOwnerObject();
+                getSubjectArea().add(course.getSubjectArea().getUniqueId());
+                getCourseNbr().add(course.getUniqueId());
+                getItype().add(Long.MIN_VALUE);
+                getClassNumber().add(new Long(-1));
+                break;
+            case ExamOwner.sOwnerTypeOffering :
+                InstructionalOffering offering = (InstructionalOffering)rci.getOwnerObject();
+                getSubjectArea().add(offering.getControllingCourseOffering().getSubjectArea().getUniqueId());
+                getCourseNbr().add(offering.getControllingCourseOffering().getUniqueId());
+                getItype().add(Long.MIN_VALUE+1);
+                getClassNumber().add(new Long(-1));
+                break;
+            }
+        }
+    }
+    
+    public Collection getSubjectAreas() { return iSubjectAreas; }
+    public void setSubjectAreas(Collection subjectAreas) { this.iSubjectAreas = subjectAreas; }
+    
+    public Collection getCourseNbrs(int idx) { 
+        Vector ret = new Vector();
+        boolean contains = false;
+        if (getSubjectArea(idx)>=0) {
+            for (Iterator i= new CourseOfferingDAO().
+                    getSession().
+                    createQuery("select co.uniqueId, co.courseNbr from CourseOffering co "+
+                            "where co.uniqueCourseNbr.subjectArea.uniqueId = :subjectAreaId "+
+                            "and co.instructionalOffering.notOffered = false "+
+                            "order by co.courseNbr ").
+                    setFetchSize(200).
+                    setCacheable(true).
+                    setLong("subjectAreaId", getSubjectArea(idx)).iterate();i.hasNext();) {
+                Object[] o = (Object[])i.next();
+                ret.add(new IdValue((Long)o[0],(String)o[1]));
+                if (o[0].equals(getCourseNbr(idx))) contains = true;
+            }
+        }
+        if (!contains) setCourseNbr(idx, -1L);
+        if (ret.size()==1) setCourseNbr(idx, ((IdValue)ret.firstElement()).getId());
+        else ret.insertElementAt(new IdValue(-1L,"-"), 0);
+        return ret;
+    }
+    
+    public Collection getItypes(int idx) { 
+        Vector ret = new Vector();
+        boolean contains = false;
+        if (getCourseNbr(idx)>=0) {
+            CourseOffering course = new CourseOfferingDAO().get(getCourseNbr(idx));
+            if (course.isIsControl())
+                ret.add(new IdValue(Long.MIN_VALUE+1,"Offering"));
+            ret.add(new IdValue(Long.MIN_VALUE,"Course"));
+            if (!course.isIsControl()) {
+                setItype(idx, Long.MIN_VALUE);
+                return ret;
+            }
+            TreeSet configs = new TreeSet(new InstrOfferingConfigComparator(null));
+            configs.addAll(new InstrOfferingConfigDAO().
+                getSession().
+                createQuery("select distinct c from " +
+                        "InstrOfferingConfig c inner join c.instructionalOffering.courseOfferings co "+
+                        "where co.uniqueId = :courseOfferingId").
+                setFetchSize(200).
+                setCacheable(true).
+                setLong("courseOfferingId", course.getUniqueId()).
+                list());
+            if (!configs.isEmpty()) {
+                ret.add(new IdValue(Long.MIN_VALUE+2,"-- Configurations --"));
+                for (Iterator i=configs.iterator();i.hasNext();) {
+                    InstrOfferingConfig c = (InstrOfferingConfig)i.next();
+                    if (c.getUniqueId().equals(getItype(idx))) contains = true;
+                    ret.add(new IdValue(-c.getUniqueId(), c.getName()));
+                }
+            }
+            TreeSet subparts = new TreeSet(new SchedulingSubpartComparator(null));
+            subparts.addAll(new SchedulingSubpartDAO().
+                getSession().
+                createQuery("select distinct s from " +
+                        "SchedulingSubpart s inner join s.instrOfferingConfig.instructionalOffering.courseOfferings co "+
+                        "where co.uniqueId = :courseOfferingId").
+                setFetchSize(200).
+                setCacheable(true).
+                setLong("courseOfferingId", course.getUniqueId()).
+                list());
+            if (!configs.isEmpty() && !subparts.isEmpty())
+                ret.add(new IdValue(Long.MIN_VALUE+2,"-- Subparts --"));
+            for (Iterator i=subparts.iterator();i.hasNext();) {
+                SchedulingSubpart s = (SchedulingSubpart)i.next();
+                Long sid = s.getUniqueId();
+                String name = s.getItype().getAbbv();
+                String sufix = s.getSchedulingSubpartSuffix();
+                while (s.getParentSubpart()!=null) {
+                    name = "&nbsp;&nbsp;&nbsp;&nbsp;"+name;
+                    s = s.getParentSubpart();
+                }
+                if (s.getInstrOfferingConfig().getInstructionalOffering().getInstrOfferingConfigs().size()>1)
+                    name += " ["+s.getInstrOfferingConfig().getName()+"]";
+                if (sid.equals(getItype(idx))) contains = true;
+                ret.add(new IdValue(sid, name+(sufix==null || sufix.length()==0?"":" ("+sufix+")")));
+            }
+        } else {
+            ret.addElement(new IdValue(0L,"N/A"));
+        }
+        if (!contains) setItype(idx, ((IdValue)ret.firstElement()).getId());
+        return ret;
+    }
+    
+    public RelatedCourseInfo getRelatedCourseInfo(int idx) {
+        if (getSubjectArea(idx)<0 || getCourseNbr(idx)<0) return null;
+        CourseOffering course = new CourseOfferingDAO().get(getCourseNbr(idx));
+        if (course==null) return null;
+        if (getItype(idx)==Long.MIN_VALUE) { //course
+            RelatedCourseInfo owner = new RelatedCourseInfo();
+            owner.setOwner(course);
+            return owner;
+        } else if (getItype(idx)==Long.MIN_VALUE+1 || getItype(idx)==Long.MIN_VALUE+2) { //offering
+            RelatedCourseInfo owner = new RelatedCourseInfo();
+            owner.setOwner(course.getInstructionalOffering());
+            return owner;
+        } else if (getItype(idx)<0) { //config
+            InstrOfferingConfig config = new InstrOfferingConfigDAO().get(-getItype(idx));
+            if (config==null) return null;
+            RelatedCourseInfo owner = new RelatedCourseInfo();
+            owner.setOwner(config);
+            return owner;
+        } else if (getClassNumber(idx)>=0) { //class
+            Class_ clazz = new Class_DAO().get(getClassNumber(idx));
+            if (clazz==null) return null;
+            RelatedCourseInfo owner = new RelatedCourseInfo();
+            owner.setOwner(clazz);
+            return owner;
+        }
+        return null;
+    }
+    
+    public void setRelatedCourseInfos(CourseEvent event) {
+        if (event.getRelatedCourses()==null) event.setRelatedCourses(new HashSet());
+        event.getRelatedCourses().clear();
+        for (int idx=0;idx<getSubjectArea().size();idx++) {
+            RelatedCourseInfo course = getRelatedCourseInfo(idx);
+            if (course!=null) {
+                event.getRelatedCourses().add(course);
+                course.setEvent(event);
+            }
+        }
+    }
+    
+    public Collection getClassNumbers(int idx) {
+        Vector ret = new Vector();
+        boolean contains = false;
+        SchedulingSubpart subpart = (getItype(idx)>0?new SchedulingSubpartDAO().get(getItype(idx)):null);
+        if (subpart!=null) {
+            TreeSet classes = new TreeSet(new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
+            classes.addAll(new Class_DAO().
+                getSession().
+                createQuery("select distinct c from Class_ c "+
+                        "where c.schedulingSubpart.uniqueId=:schedulingSubpartId").
+                setFetchSize(200).
+                setCacheable(true).
+                setLong("schedulingSubpartId", getItype(idx)).
+                list());
+            for (Iterator i=classes.iterator();i.hasNext();) {
+                Class_ c = (Class_)i.next();
+                if (c.getUniqueId().equals(getClassNumber(idx))) contains = true;
+                ret.add(new IdValue(c.getUniqueId(), c.getSectionNumberString())); 
+            }
+        }
+        if (ret.isEmpty()) ret.add(new IdValue(-1L,"N/A"));
+        if (!contains) setClassNumber(idx, -1L);
+        if (ret.size()==1) setClassNumber(idx, ((IdValue)ret.firstElement()).getId());
+        else ret.insertElementAt(new IdValue(-1L,"-"), 0);
+        return ret;
+    }
+    
+    
     
 }
