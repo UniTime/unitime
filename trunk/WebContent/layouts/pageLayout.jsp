@@ -156,7 +156,21 @@ String serverPath = request.getScheme()+"://"+request.getServerName()+":"+reques
 		NumberFormat nf = NumberFormat.getInstance();
 		nf.setMaximumFractionDigits(2);	
 %>
-		<P align="right" class="font8Gray">&nbsp; Page generated in <%=nf.format(diff)%> sec. &nbsp; </P>	
+		<table border='0' class='font8Gray' width='95%'>
+			<tr>
+				<td width='33%'>&nbsp;</td>
+				<td width='33%' align='center'
+					onMouseOver="this.style.cursor='hand';this.style.cursor='pointer';"
+					onClick="window.open('http://www.unitime.org','unitime','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=yes,location=yes,directories=no,status=yes,menubar=no,copyhistory=no').focus();"
+					>
+					&copy; 2008 UniTime.org
+					<%--
+ 						[<span style='text-decoration: underline; color: #606060;' onclick="window.open('http://wiki.unitime.org/UniTime_Disclaimer','wikiHelp','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=yes,location=yes,directories=no,status=yes,menubar=no,copyhistory=no').focus(); event.cancelBubble=true;">disclaimer</span>]
+ 					--%>
+					</td>
+				<td width='33%' align='right'>Page generated in <%=nf.format(diff)%> sec.</td>
+			</tr>
+		</table>	
 	</logic:notEmpty>
 	</BLOCKQUOTE>
 	</DIV>				
