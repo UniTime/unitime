@@ -37,6 +37,8 @@ import javax.servlet.http.HttpSession;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.hibernate.Query;
+import org.unitime.commons.User;
+import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.dao.LocationDAO;
@@ -58,7 +60,8 @@ public class EventRoomAvailabilityForm extends ActionForm {
 	private String iMaxCapacity; // maximum required room capacity entered in Add Event
 	private String iOp; 
 	private Long iSessionId;
-
+	private boolean iLookAtNearLocations;
+	
 	//data calculated 
 	private Hashtable<Long, Location> iLocations; 
 	private Hashtable<Long, Hashtable<Date, TreeSet<Meeting>>> iOverlappingMeetings; // meetings that are in conflict with desired times/dates	
@@ -67,8 +70,10 @@ public class EventRoomAvailabilityForm extends ActionForm {
 	
 	//data collected in this screen (form)
 	private TreeSet<DateLocation> iDateLocations = new TreeSet();	
-
 	
+	//other
+	boolean iIsAdmin = false;
+			
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
 		iLocations = null;
 		iOp = null;
@@ -80,6 +85,8 @@ public class EventRoomAvailabilityForm extends ActionForm {
 		iMaxCapacity = null;
 		iDateLocations.clear();
 		iSessionId = null;
+		User user = Web.getUser(request.getSession());
+		iIsAdmin = user.isAdmin();
 	}
 	
 	public void load (HttpSession session) throws Exception {
@@ -92,6 +99,7 @@ public class EventRoomAvailabilityForm extends ActionForm {
 		iMaxCapacity = (String) session.getAttribute("Event.MaxCapacity");
 		iBuildingId = (Long) session.getAttribute("Event.BuildingId");
 		iRoomNumber = (String) session.getAttribute("Event.RoomNumber");
+		iLookAtNearLocations = ((Boolean) session.getAttribute("Event.LookAtNearLocations")).booleanValue();
 		iLocations = getPossibleLocations();
 		if (iLocations.isEmpty()) throw new Exception("No room is matching your criteria.");
 		iOverlappingMeetings = getOverlappingMeetings(iLocations, iMeetingDates, iStartTime, iStopTime);
@@ -120,9 +128,16 @@ public class EventRoomAvailabilityForm extends ActionForm {
 	// apply parameters from the Add Event screen to get possible locations for the event
 	public Hashtable<Long, Location> getPossibleLocations() {
 		Hashtable<Long, Location> locations = new Hashtable();
-		
-		String query = "select r from Room r where r.building.uniqueId = :buildingId";
-		
+		String query;
+		if (iLookAtNearLocations) {
+			query = "select r from Room r, Building b where b.uniqueId = :buildingId and " +
+					"(r.building=b or ((((r.coordinateX - b.coordinateX)*(r.coordinateX - b.coordinateX)) +" +
+					"((r.coordinateY - b.coordinateY)*(r.coordinateY - b.coordinateY)))" +
+					"< 67*67))";
+		} else {
+			query = "select r from Room r where r.building.uniqueId = :buildingId";
+		}
+			
 		if (iMinCapacity!=null && iMinCapacity!="") { query+= " and r.capacity>= :minCapacity";	}
 		if (iMaxCapacity!=null && iMaxCapacity!="") { query+= " and r.capacity<= :maxCapacity";	}
 		if (iRoomNumber!=null && iRoomNumber.length()>0) { query+=" and r.roomNumber like (:roomNumber)"; }
@@ -141,7 +156,6 @@ public class EventRoomAvailabilityForm extends ActionForm {
 			if (location.getPermanentId()!=null)
 				locations.put(location.getPermanentId(), location);
 		}
-		
 		return locations;
 	}
 
@@ -172,7 +186,6 @@ public class EventRoomAvailabilityForm extends ActionForm {
 			hibQuery.setDate("md"+idx, md); idx++;
 		}
 		List<Meeting> meetings = (List<Meeting>) hibQuery.setCacheable(true).list();
-		System.out.println("There are "+meetings.size()+" overlapping meetings.");
 		
 		// sort meetings by location and date
 		Hashtable<Long, Hashtable<Date, TreeSet<Meeting>>> locationDateMeetings = new Hashtable<Long, Hashtable<Date, TreeSet<Meeting>>>();
@@ -202,11 +215,22 @@ public class EventRoomAvailabilityForm extends ActionForm {
 	public String getAvailabilityTable() {
 		String ret = "";
 		ret +="<table border='1'>";
+
 		TreeSet<Location> locations = new TreeSet<Location>(new Comparator<Location>() { 
+			// sort locations first by number of available slots, then by name
 			public int compare(Location l1, Location l2) {
-				return l1.compareTo(l2);
+				int availableL1=0;
+				int availableL2=0;
+				for (Date meetingDate : iMeetingDates) {
+					if (getOverlappingMeetings(l1, meetingDate)==null) availableL1++;
+					if (getOverlappingMeetings(l2, meetingDate)==null) availableL2++;
+				}
+				if (availableL1<availableL2) return 1;
+				else if (availableL1>availableL2) return -1;
+				else return l1.compareTo(l2);
 			}
 		});
+
 		for (Enumeration<Location> e=iLocations.elements();e.hasMoreElements();) locations.add(e.nextElement());
 		ret+="<tr><td></td>";
 		String jsLocations = "";
@@ -232,11 +256,13 @@ public class EventRoomAvailabilityForm extends ActionForm {
 							"onMouseOut=\"tOut('"+df2.format(date)+"','"+location.getPermanentId()+"');\" "+
 							">&nbsp;</td>";
 				} else {
-					ret += "<td style='background-color:"+(selected?"yellow":"rgb(200,200,200)")+";' valign='top' align='center' id='td"+df2.format(date)+"_"+location.getPermanentId()+"' "+
-							//"onClick=\"tClick('"+df2.format(date)+"','"+location.getPermanentId()+"');\" "+
-							//"onMouseOver=\"tOver(this,'"+df2.format(date)+"','"+location.getPermanentId()+"');\" "+
-							//"onMouseOut=\"tOut('"+df2.format(date)+"','"+location.getPermanentId()+"');\" "+
-							">";
+					ret += "<td style='background-color:"+(selected?"yellow":"rgb(200,200,200)")+";' valign='top' align='center' id='td"+df2.format(date)+"_"+location.getPermanentId()+"' ";
+					if (iIsAdmin) {ret+=
+							"onClick=\"tClick('"+df2.format(date)+"','"+location.getPermanentId()+"');\" "+
+							"onMouseOver=\"tOver(this,'"+df2.format(date)+"','"+location.getPermanentId()+"');\" "+
+							"onMouseOut=\"tOut('"+df2.format(date)+"','"+location.getPermanentId()+"');\" ";
+					}
+					ret +=	">";
 					int idx=0;
 					for (Meeting meeting : meetings) {
 						if (idx>2) { ret+="<br>..."; break; }
