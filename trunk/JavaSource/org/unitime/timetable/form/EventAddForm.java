@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
@@ -210,6 +211,7 @@ public class EventAddForm extends PreferencesForm {
 		session.setAttribute("Event.CourseNbr", iCourseNbr);
 		session.setAttribute("Event.SubjectItype", iItype);
 		session.setAttribute("Event.ClassNumber", iClassNumber);
+		session.setAttribute("Event.StudentIds", getStudentIds());
 	}
 	
 	
@@ -567,6 +569,17 @@ public class EventAddForm extends PreferencesForm {
                 course.setEvent(event);
             }
         }
+    }
+    
+    public Set<Long> getStudentIds() {
+        HashSet<Long> ret = new HashSet();
+        for (int idx=0;idx<getSubjectArea().size();idx++) {
+            RelatedCourseInfo course = getRelatedCourseInfo(idx);
+            if (course!=null) {
+                ret.addAll(course.getStudentIds());
+            }
+        }
+        return ret;
     }
     
     public Collection getClassNumbers(int idx) {
