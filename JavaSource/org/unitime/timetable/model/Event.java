@@ -21,6 +21,7 @@ package org.unitime.timetable.model;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -229,4 +230,80 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
 	}
 	
 	public Session getSession() { return null; }
+	
+	public static Hashtable<Event,Set<Long>> findStudentConflicts(Date meetingDate, int startSlot, int endSlot, Set<Long> studentIds) {
+        Hashtable<Event,Set<Long>> ret = new Hashtable();
+        if (studentIds==null || studentIds.isEmpty()) return ret;
+
+        String students = "";
+        for (Long studentId: studentIds) students += (students.length()==0?"":",")+studentId;
+
+        //class events
+        for (Iterator i=EventDAO.getInstance().getSession().createQuery(
+                "select e, s.student.uniqueId from "+
+                "ClassEvent e inner join e.meetings m inner join e.clazz.studentEnrollments s where "+
+                "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+")")
+                .setDate("meetingDate", meetingDate)
+                .setInteger("startSlot", startSlot)
+                .setInteger("endSlot", endSlot)
+                .setCacheable(true).list().iterator();i.hasNext();) {
+            Object[] o = (Object[])i.next();
+            Event event = (Event)o[0];
+            long studentId = (Long)o[1];
+            Set<Long> conf = ret.get(event);
+            if (conf==null) { conf = new HashSet(); ret.put(event, conf); }
+            conf.add(studentId);
+        }
+        
+        //examination events
+        for (Iterator i=EventDAO.getInstance().getSession().createQuery(
+                "select e, s.student.uniqueId from "+
+                "ExamEvent e inner join e.meetings m inner join e.exam.owners o, StudentClassEnrollment s where "+
+                "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and ("+
+                "(o.ownerType=:classType and s.clazz.uniqueId=o.ownerId) or "+
+                "(o.ownerType=:configType and s.clazz.schedulingSubpart.instrOfferingConfig.uniqueId=o.ownerId) or "+
+                "(o.ownerType=:courseType and s.courseOffering.uniqueId=o.ownerId) or "+
+                "(o.ownerType=:offeringType and s.courseOffering.instructionalOffering.uniqueId=o.ownerId))")
+                .setDate("meetingDate", meetingDate)
+                .setInteger("startSlot", startSlot)
+                .setInteger("endSlot", endSlot)
+                .setInteger("classType", ExamOwner.sOwnerTypeClass)
+                .setInteger("configType", ExamOwner.sOwnerTypeConfig)
+                .setInteger("courseType", ExamOwner.sOwnerTypeCourse)
+                .setInteger("offeringType", ExamOwner.sOwnerTypeOffering)
+                .setCacheable(true).list().iterator();i.hasNext();) {
+            Object[] o = (Object[])i.next();
+            Event event = (Event)o[0];
+            long studentId = (Long)o[1];
+            Set<Long> conf = ret.get(event);
+            if (conf==null) { conf = new HashSet(); ret.put(event, conf); }
+            conf.add(studentId);
+        }
+        
+        //course events with required attendance
+        for (Iterator i=EventDAO.getInstance().getSession().createQuery(
+                "select e, s.student.uniqueId from "+
+                "CourseEvent e inner join e.meetings m inner join e.relatedCourses o, StudentClassEnrollment s where e.reqAttendance=true and "+
+                "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and ("+
+                "(o.ownerType=:classType and s.clazz.uniqueId=o.ownerId) or "+
+                "(o.ownerType=:configType and s.clazz.schedulingSubpart.instrOfferingConfig.uniqueId=o.ownerId) or "+
+                "(o.ownerType=:courseType and s.courseOffering.uniqueId=o.ownerId) or "+
+                "(o.ownerType=:offeringType and s.courseOffering.instructionalOffering.uniqueId=o.ownerId))")
+                .setDate("meetingDate", meetingDate)
+                .setInteger("startSlot", startSlot)
+                .setInteger("endSlot", endSlot)
+                .setInteger("classType", ExamOwner.sOwnerTypeClass)
+                .setInteger("configType", ExamOwner.sOwnerTypeConfig)
+                .setInteger("courseType", ExamOwner.sOwnerTypeCourse)
+                .setInteger("offeringType", ExamOwner.sOwnerTypeOffering)
+                .setCacheable(true).list().iterator();i.hasNext();) {
+            Object[] o = (Object[])i.next();
+            Event event = (Event)o[0];
+            long studentId = (Long)o[1];
+            Set<Long> conf = ret.get(event);
+            if (conf==null) { conf = new HashSet(); ret.put(event, conf); }
+            conf.add(studentId);
+        }
+        return ret;
+    }	
 }
