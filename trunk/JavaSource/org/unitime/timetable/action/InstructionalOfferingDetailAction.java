@@ -47,6 +47,7 @@ import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseOfferingReservation;
 import org.unitime.timetable.model.DistributionPref;
+import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
@@ -254,6 +255,7 @@ public class InstructionalOfferingDetailAction extends Action {
 
 			io.deleteAllDistributionPreferences(hibSession);
 	        io.deleteAllReservations(hibSession);
+            Event.deleteFromEvents(hibSession, io);
 	        Exam.deleteFromExams(hibSession, io);
 	        hibSession.delete(io);
 	        
@@ -404,9 +406,11 @@ public class InstructionalOfferingDetailAction extends Action {
             
             for (Iterator i=io.getCourseOfferings().iterator();i.hasNext();) {
                 CourseOffering co = (CourseOffering)i.next();
+                Event.deleteFromEvents(hibSession, co);
                 Exam.deleteFromExams(hibSession, co);
             }
             
+            Event.deleteFromEvents(hibSession, io);
             Exam.deleteFromExams(hibSession, io);
             
             // Set flag to not offered

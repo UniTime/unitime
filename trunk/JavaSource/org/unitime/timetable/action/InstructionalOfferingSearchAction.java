@@ -54,6 +54,7 @@ import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
@@ -607,6 +608,7 @@ public class InstructionalOfferingSearchAction extends LookupDispatchAction {
 								    io.setCourseOfferings(null);
 								    co.setIsControl(new Boolean(false));
 								    co.setInstructionalOffering(null);
+								    Event.deleteFromEvents(hibSession, io);
 								    Exam.deleteFromExams(hibSession, io);
 								    idao.delete(io);
 								    
@@ -704,9 +706,11 @@ public class InstructionalOfferingSearchAction extends LookupDispatchAction {
     	    Transaction tx = hibSession.beginTransaction();
     	    
     	    try {
+    	        Event.deleteFromEvents(hibSession, co);
                 Exam.deleteFromExams(hibSession, co);
                 
     	        if(co.isIsControl().booleanValue()) {
+    	            Event.deleteFromEvents(hibSession, io);
     	            Exam.deleteFromExams(hibSession, io);
     	            idao.delete(io);
     	        } else {
