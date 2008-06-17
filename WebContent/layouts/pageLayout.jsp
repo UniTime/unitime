@@ -1,6 +1,6 @@
 <%-- 
- * UniTime 3.0 (University Course Timetabling & Student Sectioning Application)
- * Copyright (C) 2007, UniTime.org
+ * UniTime 3.1 (University Timetabling Application)
+ * Copyright (C) 2008, UniTime LLC
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -163,7 +163,7 @@ String serverPath = request.getScheme()+"://"+request.getServerName()+":"+reques
 					onMouseOver="this.style.cursor='hand';this.style.cursor='pointer';"
 					onClick="window.open('http://www.unitime.org','unitime','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=yes,location=yes,directories=no,status=yes,menubar=no,copyhistory=no').focus();"
 					>
-					&copy; 2008 UniTime.org
+					&copy; 2008 UniTime LLC
 					<%--
  						[<span style='text-decoration: underline; color: #606060;' onclick="window.open('http://wiki.unitime.org/UniTime_Disclaimer','wikiHelp','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=yes,location=yes,directories=no,status=yes,menubar=no,copyhistory=no').focus(); event.cancelBubble=true;">disclaimer</span>]
  					--%>
