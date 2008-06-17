@@ -29,6 +29,8 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
@@ -39,6 +41,7 @@ import org.apache.struts.action.ActionMapping;
 import org.hibernate.Query;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
+import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.dao.LocationDAO;
@@ -67,6 +70,7 @@ public class EventRoomAvailabilityForm extends ActionForm {
 	private Hashtable<Long, Hashtable<Date, TreeSet<Meeting>>> iOverlappingMeetings; // meetings that are in conflict with desired times/dates	
 	private String iStartTimeString;
 	private String iStopTimeString;
+	private Set<Long> iStudentIds = null;
 	
 	//data collected in this screen (form)
 	private TreeSet<DateLocation> iDateLocations = new TreeSet();	
@@ -106,6 +110,7 @@ public class EventRoomAvailabilityForm extends ActionForm {
 		iDateLocations = (TreeSet)session.getAttribute("Event.DateLocations");
 		if (iDateLocations==null) iDateLocations = new TreeSet();
 		iSessionId = (Long) session.getAttribute("Event.SessionId");
+		iStudentIds = (Set<Long>)session.getAttribute("Event.StudentIds");
 	}
 	
 	// collect date/location combinations selected by the user in this screen
@@ -244,7 +249,32 @@ public class EventRoomAvailabilityForm extends ActionForm {
 		SimpleDateFormat df2 = new SimpleDateFormat("yyyy-MM-dd");
 		for (Date date:iMeetingDates) {
 			jsDates += (jsDates.length()>0?",":"")+"'"+df2.format(date)+"'";
-			ret += "<tr><th align='left'>"+df1.format(date)+"</th>";
+            Hashtable<Event,Set<Long>> conflicts = Event.findStudentConflicts(date, iStartTime, iStopTime, iStudentIds);
+            int totalConflicts = 0;
+            String conflictsTitle = "";
+            TreeSet<Map.Entry<Event,Set<Long>>> conflictEntries = new TreeSet(new Comparator<Map.Entry<Event,Set<Long>>>() {
+               public int compare(Map.Entry<Event,Set<Long>> e1, Map.Entry<Event,Set<Long>> e2) {
+                   int cmp = Double.compare(e1.getValue().size(),e2.getValue().size());
+                   if (cmp!=0) return -cmp;
+                   cmp = e1.getKey().getEventName().compareTo(e2.getKey().getEventName());
+                   if (cmp!=0) return cmp;
+                   return e1.getKey().getUniqueId().compareTo(e2.getKey().getUniqueId());
+               }
+            });
+            conflictEntries.addAll(conflicts.entrySet());
+            int idx = 0;
+            for (Map.Entry<Event,Set<Long>> entry : conflictEntries) {
+                totalConflicts += entry.getValue().size();
+                if (idx<3) {
+                    if (idx>0) conflictsTitle+="; ";
+                    conflictsTitle+=entry.getValue().size()+" &times; "+entry.getKey().getEventName();
+                } else if (idx==3)
+                    conflictsTitle+=";...";
+                idx++;
+            }
+			ret += "<tr><td align='left' title=\""+conflictsTitle+"\"><b>"+df1.format(date)+"</b>"+
+                (totalConflicts>0?"<br><i>("+totalConflicts+" conflicts)</i>":"")+
+                "</td>";
 			for (Location location : locations) {
 				boolean selected = iDateLocations.contains(new DateLocation(date,location));
 				ret += "<input type='hidden' name='x"+df2.format(date)+"_"+location.getPermanentId()+"' id='x"+df2.format(date)+"_"+location.getPermanentId()+"' value='"+(selected?"1":"0")+"'>";
@@ -253,8 +283,7 @@ public class EventRoomAvailabilityForm extends ActionForm {
 					ret += "<td style='background-color:"+(selected?"yellow":"transparent")+";' align='center' valign='top' id='td"+df2.format(date)+"_"+location.getPermanentId()+"' "+
 							"onClick=\"tClick('"+df2.format(date)+"','"+location.getPermanentId()+"');\" "+
 							"onMouseOver=\"tOver(this,'"+df2.format(date)+"','"+location.getPermanentId()+"');\" "+
-							"onMouseOut=\"tOut('"+df2.format(date)+"','"+location.getPermanentId()+"');\" "+
-							">&nbsp;</td>";
+							"onMouseOut=\"tOut('"+df2.format(date)+"','"+location.getPermanentId()+"');\">&nbsp;</td>";
 				} else {
 					ret += "<td style='background-color:"+(selected?"yellow":"rgb(200,200,200)")+";' valign='top' align='center' id='td"+df2.format(date)+"_"+location.getPermanentId()+"' ";
 					if (iIsAdmin) {ret+=
@@ -262,8 +291,8 @@ public class EventRoomAvailabilityForm extends ActionForm {
 							"onMouseOver=\"tOver(this,'"+df2.format(date)+"','"+location.getPermanentId()+"');\" "+
 							"onMouseOut=\"tOut('"+df2.format(date)+"','"+location.getPermanentId()+"');\" ";
 					}
-					ret +=	">";
-					int idx=0;
+					ret += ">";
+					idx=0;
 					for (Meeting meeting : meetings) {
 						if (idx>2) { ret+="<br>..."; break; }
 						ret += (idx>0?"<br>":"")+
