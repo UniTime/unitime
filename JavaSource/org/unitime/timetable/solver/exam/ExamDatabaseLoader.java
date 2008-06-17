@@ -140,8 +140,8 @@ public class ExamDatabaseLoader extends ExamLoader {
             assignInitial();
             tx.commit();
         } catch (Exception e) {
-            if (tx!=null) tx.rollback();
             iProgress.fatal("Unable to load examination problem, reason: "+e.getMessage(),e);
+            if (tx!=null) tx.rollback();
             throw e;
         }
     }
