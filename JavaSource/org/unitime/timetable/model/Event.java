@@ -99,11 +99,7 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
             relatedCourse.setOwnerId(null);
             relatedCourse.setCourse(null);
             hibSession.delete(relatedCourse);
-            if (event.getRelatedCourses().isEmpty()) {
-                hibSession.delete(event);
-            } else {
-                hibSession.saveOrUpdate(event);
-            }
+            hibSession.saveOrUpdate(event);
         }
     }
     
