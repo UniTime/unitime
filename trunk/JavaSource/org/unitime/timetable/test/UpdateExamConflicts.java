@@ -1,6 +1,6 @@
 /*
  * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2007, UniTime.org, and individual contributors
+ * Copyright (C) 2008, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
