@@ -52,6 +52,7 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseOfferingReservation;
 import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
@@ -394,6 +395,7 @@ public class CrossListsModifyAction extends Action {
 			            }
 		            }
 
+                    Event.deleteFromEvents(hibSession, co1);
 		            Exam.deleteFromExams(hibSession, co1);
 			        hibSession.delete(co1);
 			        
@@ -571,6 +573,7 @@ public class CrossListsModifyAction extends Action {
                         
 	                    // Delete course offering
                         io1.removeCourseOffering(co2);
+                        Event.deleteFromEvents(hibSession, co2);
                         Exam.deleteFromExams(hibSession, co2);
 	                    hibSession.delete(co2);
 	                    hibSession.flush();
@@ -581,6 +584,7 @@ public class CrossListsModifyAction extends Action {
 	                
 	                //io1.setCourseOfferings(offerings);
 	                //hibSession.saveOrUpdate(io1);
+	                Event.deleteFromEvents(hibSession, io1);
 	                Exam.deleteFromExams(hibSession, io1);
 	                hibSession.delete(io1);
 	                hibSession.flush();
