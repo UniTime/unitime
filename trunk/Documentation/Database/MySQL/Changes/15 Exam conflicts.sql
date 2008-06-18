@@ -26,13 +26,13 @@ create table xconflict (
 	uniqueid decimal(20,0) not null primary key,
 	conflict_type decimal(10,0) not null,
 	distance double
-);
+) engine = INNODB;
 
 create table xconflict_exam (
 	conflict_id decimal(20,0) not null,
 	exam_id decimal(20,0) not null,
 	primary key (conflict_id, exam_id)
-);
+) engine = INNODB;
 
 alter table xconflict_exam
   add constraint fk_xconflict_ex_conf foreign key (conflict_id)
@@ -46,7 +46,7 @@ create table xconflict_student (
 	conflict_id decimal(20,0) not null,
 	student_id decimal(20,0) not null,
 	primary key (conflict_id, student_id)
-);
+) engine = INNODB;
 
 alter table xconflict_student
   add constraint fk_xconflict_st_conf foreign key (conflict_id)
