@@ -101,6 +101,7 @@ public class ExamInfoAction extends Action {
             Session session = Session.getCurrentAcadSession(Web.getUser(request.getSession()));
             Date[] bounds = ExamPeriod.getBounds(session, model.getExam().getExamType());
             RoomAvailability.getInstance().activate(session,bounds[0],bounds[1],false);
+            RoomAvailability.setAvailabilityWarning(request, session, model.getExam().getExamType(), true, true);
         }
         
         if ("Select".equals(op)) {
