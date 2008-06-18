@@ -27,6 +27,52 @@
 
 <tiles:importAttribute />
 
+<script language='JavaScript'>
+function tClick(date,location) {
+	var x = document.getElementById('x'+date+'_'+location);
+	var td = document.getElementById('td'+date+'_'+location);
+	if (x.value==1) {
+		x.value=0;
+		if (td.innerHTML=='&nbsp\;')  
+			td.style.backgroundColor='transparent';
+		else
+			td.style.backgroundColor='rgb(200,200,200)';
+	} else {
+		x.value=1;
+		td.style.backgroundColor='yellow';
+	}
+}
+function tOver(source,date,location) {
+	source.style.cursor='hand';source.style.cursor='pointer';
+}
+function tOut(date,location) {
+}
+function tAll(location, admin) {
+	var allSelected = true;
+	for (var i=0;i<tDates.length;i++) {
+		var x = document.getElementById('x'+tDates[i]+'_'+location);
+		var td = document.getElementById('td'+tDates[i]+'_'+location);
+		var unused = (td.innerHTML=='&nbsp;');
+		if ((unused||admin) && x.value==0) {
+			allSelected = false; break;
+		}
+	}
+	for (var i=0;i<tDates.length;i++) {
+		var x = document.getElementById('x'+tDates[i]+'_'+location);
+		var td = document.getElementById('td'+tDates[i]+'_'+location);
+		var unused = (td.innerHTML=='&nbsp;');
+		x.value=(allSelected?0:(unused||admin?1:0));
+		if (x.value==1)
+			td.style.backgroundColor='yellow';
+		else if (unused)
+			td.style.backgroundColor='transparent';
+		else
+			td.style.backgroundColor='rgb(200,200,200)';
+	}
+}
+</script>
+
+
 <html:form action="/eventRoomAvailability">
 	<TABLE width="93%" border="0" cellspacing="0" cellpadding="3">
 		<logic:messagesPresent>
@@ -86,47 +132,3 @@
 
 </TABLE>
 </html:form>
-<script language='JavaScript'>
-function tClick(date,location) {
-	var x = document.getElementById('x'+date+'_'+location);
-	var td = document.getElementById('td'+date+'_'+location);
-	if (x.value==1) {
-		x.value=0;
-		if (td.innerHTML=='&nbsp\;')  
-			td.style.backgroundColor='transparent';
-		else
-			td.style.backgroundColor='rgb(200,200,200)';
-	} else {
-		x.value=1;
-		td.style.backgroundColor='yellow';
-	}
-}
-function tOver(source,date,location) {
-	source.style.cursor='hand';source.style.cursor='pointer';
-}
-function tOut(date,location) {
-}
-function tAll(location, admin) {
-	var allSelected = true;
-	for (var i=0;i<tDates.length;i++) {
-		var x = document.getElementById('x'+tDates[i]+'_'+location);
-		var td = document.getElementById('td'+tDates[i]+'_'+location);
-		var unused = (td.innerHTML=='&nbsp;');
-		if ((unused||admin) && x.value==0) {
-			allSelected = false; break;
-		}
-	}
-	for (var i=0;i<tDates.length;i++) {
-		var x = document.getElementById('x'+tDates[i]+'_'+location);
-		var td = document.getElementById('td'+tDates[i]+'_'+location);
-		var unused = (td.innerHTML=='&nbsp;');
-		x.value=(allSelected?0:(unused||admin?1:0));
-		if (x.value==1)
-			td.style.backgroundColor='yellow';
-		else if (unused)
-			td.style.backgroundColor='transparent';
-		else
-			td.style.backgroundColor='rgb(200,200,200)';
-	}
-}
-</script>
