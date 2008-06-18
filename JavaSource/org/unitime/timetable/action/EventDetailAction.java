@@ -34,19 +34,32 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
+import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.form.EventDetailForm;
+import org.unitime.timetable.model.ClassEvent;
+import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.CourseEvent;
+import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.EventContact;
 import org.unitime.timetable.model.EventNote;
+import org.unitime.timetable.model.ExamEvent;
+import org.unitime.timetable.model.ExamOwner;
+import org.unitime.timetable.model.InstrOfferingConfig;
+import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Meeting;
+import org.unitime.timetable.model.RelatedCourseInfo;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.StandardEventNote;
+import org.unitime.timetable.model.dao.CourseEventDAO;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.Navigation;
 
-
+/**
+ * @author Zuzana Mullerova
+ */
 public class EventDetailAction extends Action {
 
 	/** 
@@ -94,6 +107,13 @@ public class EventDetailAction extends Action {
 				return null;
 			}
 			
+			if(iOp.equals("Delete")) {
+				if ("y".equals(request.getParameter("confirm"))) {
+//					doDelete(myForm, request);
+					return mapping.findForward("showEventDetail");
+				}
+			}
+			
 		}
 
 		
@@ -106,9 +126,13 @@ public class EventDetailAction extends Action {
 			Event event = new EventDAO().get(Long.valueOf(id));
 			if (event!=null) {
 				myForm.setEventName(event.getEventName()==null?"":event.getEventName());
+				myForm.setEventType(event.getEventTypeLabel());
 				myForm.setMinCapacity(event.getMinCapacity()==null?"":event.getMinCapacity().toString());
 				myForm.setMaxCapacity(event.getMaxCapacity()==null?"":event.getMaxCapacity().toString());
 				myForm.setSponsoringOrg("N/A yet");
+				if ("Course Event".equals(myForm.getEventType())) {
+					myForm.setAttendanceRequired(((CourseEvent) event).isReqAttendance());
+				}
 				for (Iterator i = event.getNotes().iterator(); i.hasNext();) {
 					EventNote en = (EventNote) i.next();
 					if (en.getTextNote()!= null) {myForm.addNote(en.getTextNote());}
@@ -153,11 +177,66 @@ public class EventDetailAction extends Action {
 							location,approvedDate);
 				}
 				myForm.setCanEdit(user.isAdmin()||user.hasRole(Roles.EVENT_MGR_ROLE)||user.getId().equals(event.getMainContact().getExternalUniqueId()));
+				if (event instanceof ClassEvent || event instanceof ExamEvent) {
+					myForm.setCanEdit(false);
+				}
+					
 				
 		        Long nextId = Navigation.getNext(request.getSession(), Navigation.sInstructionalOfferingLevel, event.getUniqueId());
 		        Long prevId = Navigation.getPrevious(request.getSession(), Navigation.sInstructionalOfferingLevel, event.getUniqueId());
 		        myForm.setPreviousId(prevId==null?null:prevId.toString());
 		        myForm.setNextId(nextId==null?null:nextId.toString());
+
+			
+		        if ("Course Event".equals(myForm.getEventType())) {
+		            CourseEvent courseEvent = new CourseEventDAO().get(Long.valueOf(id));;
+		            if (!courseEvent.getRelatedCourses().isEmpty()) {
+			        	WebTable table = new WebTable(3, null, new String[] {"Object", "Type", "Title"}, new String[] {"left", "left", "left"}, new boolean[] {true, true, true});
+			            for (Iterator i=new TreeSet(courseEvent.getRelatedCourses()).iterator();i.hasNext();) {
+			                RelatedCourseInfo rci = (RelatedCourseInfo)i.next();
+			                String onclick = null, name = null, type = null, title = null;
+			                switch (rci.getOwnerType()) {
+			                    case ExamOwner.sOwnerTypeClass :
+			                        Class_ clazz = (Class_)rci.getOwnerObject();
+			                        if (clazz.isViewableBy(user))
+			                            onclick = "onClick=\"document.location='classDetail.do?cid="+clazz.getUniqueId()+"';\"";
+			                        name = rci.getLabel();//clazz.getClassLabel();
+			                        type = "Class";
+			                        title = clazz.getSchedulePrintNote();
+			                        if (title==null || title.length()==0) title=clazz.getSchedulingSubpart().getControllingCourseOffering().getTitle();
+			                        break;
+			                    case ExamOwner.sOwnerTypeConfig :
+			                        InstrOfferingConfig config = (InstrOfferingConfig)rci.getOwnerObject();
+			                        if (config.isViewableBy(user))
+			                            onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+config.getInstructionalOffering().getUniqueId()+"';\"";;
+			                        name = rci.getLabel();//config.getCourseName()+" ["+config.getName()+"]";
+			                        type = "Configuration";
+			                        title = config.getControllingCourseOffering().getTitle();
+			                        break;
+			                    case ExamOwner.sOwnerTypeOffering :
+			                        InstructionalOffering offering = (InstructionalOffering)rci.getOwnerObject();
+			                        if (offering.isViewableBy(user))
+			                            onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+offering.getUniqueId()+"';\"";;
+			                        name = rci.getLabel();//offering.getCourseName();
+			                        type = "Offering";
+			                        title = offering.getControllingCourseOffering().getTitle();
+			                        break;
+			                    case ExamOwner.sOwnerTypeCourse :
+			                        CourseOffering course = (CourseOffering)rci.getOwnerObject();
+			                        if (course.isViewableBy(user))
+			                            onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+course.getInstructionalOffering().getUniqueId()+"';\"";;
+			                        name = rci.getLabel();//course.getCourseName();
+			                        type = "Course";
+			                        title = course.getTitle();
+			                        break;
+			                            
+			                }
+			                table.addLine(onclick, new String[] { name, type, title}, null);
+			            }
+			            request.setAttribute("EventDetail.table",table.printTable());
+		            }			
+		        }
+			
 			} else {
 				myForm.setEventName("There is no event with this ID");
 			}	

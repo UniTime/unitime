@@ -107,6 +107,11 @@
 		</TR>
 		<TR>
 			<TD colspan='2'>
+				<html:checkbox property="attendanceRequired"/> Students are required to attend this event.
+			</TD>
+		</TR>
+		<TR>
+			<TD colspan='2'>
 				<table border='0'>
 				<tr>
 					<td width='100'><i>Subject</i></td>

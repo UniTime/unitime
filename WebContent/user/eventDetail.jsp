@@ -20,17 +20,31 @@
 
 <%-- 
 TO DO: 
-* Font of table headers for meetings (should be <font size = -1 ></font>)
-*    - how to make a style for the header???
 * Trash cans instead of Delete
 --%>
 
 <%@ page language="java" autoFlush="true" errorPage="../error.jsp" %>
+<%@page import="org.unitime.timetable.webutil.JavascriptFunctions"%>
+<%@page import="org.unitime.commons.web.Web"%>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+
+
+<SCRIPT language="javascript">
+		<%= JavascriptFunctions.getJsConfirm(Web.getUser(session)) %>
+		
+		function confirmDelete(Long mtgId) {
+			if (jsConfirm!=null && !jsConfirm)
+				return;
+
+			if (!confirm('Do you really want to delete this meeting?')) {
+				eventDetailForm.confirm.value='n';
+			}
+		}
+</SCRIPT>
 
 <tiles:importAttribute />
 
@@ -58,6 +72,10 @@ TO DO:
 					</tt:back>
 				</tt:section-header>
 			</TD>
+		</TR>
+		<TR>
+			<TD nowrap> Event Type:&nbsp;</TD>
+			<TD> <bean:write name="eventDetailForm" property="eventType"/>
 		</TR>
 		<TR>
 			<TD nowrap>Event Capacity:&nbsp;</TD>
@@ -160,36 +178,73 @@ TO DO:
 			</TD>
 		</TR>
 
-	<tr><td colspan='2'>
-	<Table width="100%" border="0" cellspacing="0" cellpadding="1">
-		<tr align="left">
-			<th><font size = -1 >Date</font></th><th><font size = -1 >Time</font></th><th><font size = -1 >Location</font></th><th><font size = -1 >Approved</font></th>
-		</tr>
-		<html:hidden property="selected"/>
-		<logic:iterate name="eventDetailForm" property="meetings" id="meeting">
-			<bean:define name="meeting" property="id" id="meetingId"/>
-			<tr>
-				<td>
-					<bean:write name="meeting" property="date" filter="false"/> 
-				</td>
-				<td>
-					<bean:write name="meeting" property="startTime"/> - <bean:write name="meeting" property="endTime"/>
-				</td>
-				<td>
-					<bean:write name="meeting" property="location"/>
-				</td>	
-				<td>
-					<bean:write name="meeting" property="approvedDate"/>
-				</td>			
-				<td>
-					<logic:equal name="eventDetailForm" property="canEdit" value="true">
-						<html:submit property="op" styleClass="btn" onclick="<%="selected.value='"+meetingId+"';"%>">Delete</html:submit>
-					</logic:equal>
-				</td>
-			</tr>	
-		</logic:iterate>
-	</Table>
-	</td></tr>
+		<TR><TD colspan='2'>
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="1">
+			<TR align="left">
+				<th><font size = -1 >Date</font></th><th><font size = -1 >Time</font></th><th><font size = -1 >Location</font></th><th><font size = -1 >Approved</font></th>
+			</TR>
+			<html:hidden property="selected"/>
+			<logic:iterate name="eventDetailForm" property="meetings" id="meeting">
+				<bean:define name="meeting" property="id" id="meetingId"/>
+				<TR>
+					<TD>
+						<bean:write name="meeting" property="date" filter="false"/> 
+					</TD>
+					<TD>
+						<bean:write name="meeting" property="startTime"/> - <bean:write name="meeting" property="endTime"/>
+					</TD>
+					<TD>
+						<bean:write name="meeting" property="location"/>
+					</TD>	
+					<TD>
+						<bean:write name="meeting" property="approvedDate"/>
+					</TD>			
+					<TD>
+						<logic:equal name="eventDetailForm" property="canEdit" value="true">
+							<html:submit property="op" styleClass="btn" title="Delete Meeting" value="Delete" onclick="<%="selected.value='"+meetingId+"'; confirmDelete(meetingId);"%>" />
+						</logic:equal>
+					</TD>
+				</TR>	
+			</logic:iterate>
+		</Table>
+		</TD></TR>
+
+<!-- Courses/Classes if this is a course event -->
+		<logic:equal name="eventDetailForm" property="eventType" value="Course Event">
+		<TR>
+			<TD colspan='2'>
+				&nbsp;
+			</TD>
+		</TR>
+		<TR>
+			<TD colspan="2" valign="middle">
+				<br>
+				<tt:section-title>
+					Related Classes / Courses
+				</tt:section-title>
+			</TD>
+		</TR>
+		<TR>
+			<TD colspan='2'>
+				<logic:empty scope="request" name="EventDetail.table">
+					<i>No relation defined for this event.</i>
+				</logic:empty>
+				<logic:notEmpty scope="request" name="EventDetail.table">
+					<table border='0' cellspacing="0" cellpadding="3" width='99%'>
+					<bean:write scope="request" name="EventDetail.table" filter="false"/>
+					</table>
+				</logic:notEmpty>
+			</TD>
+		</TR>
+		<logic:equal name="eventDetailForm" property="attendanceRequired" value="true">
+		<TR>
+			<TD colspan='2'>
+				<i>Students of the listed courses/classes are required to attend this event.</i>
+			</TD>
+		</TR>
+		</logic:equal>
+		</logic:equal>
+			
 
 <!-- Buttons -->
 	<TR>
