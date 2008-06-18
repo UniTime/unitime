@@ -52,6 +52,7 @@ import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.exam.ui.ExamInfo;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.RoomAvailability;
 import org.unitime.timetable.webutil.PdfWebTable;
 import org.unitime.timetable.webutil.RequiredTimeTable;
 
@@ -77,6 +78,9 @@ public class UnassignedExamsAction extends Action {
         }
         
         myForm.load(request.getSession());
+        
+        Session session = Session.getCurrentAcadSession(Web.getUser(request.getSession()));
+        RoomAvailability.setAvailabilityWarning(request, session, myForm.getExamType(), true, false);
         
         ExamSolverProxy solver = WebSolver.getExamSolver(request.getSession());
         Collection<ExamInfo> unassignedExams = null;
