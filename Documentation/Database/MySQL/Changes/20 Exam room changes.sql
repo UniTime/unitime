@@ -34,7 +34,7 @@ create table exam_location_pref (
 	location_id decimal(20,0) not null,
 	pref_level_id decimal(20,0) not null,
 	period_id decimal(20,0) not null
-);
+) engine = INNODB;
 
 alter table exam_location_pref
   add constraint fk_exam_location_pref_pref foreign key (pref_level_id)
