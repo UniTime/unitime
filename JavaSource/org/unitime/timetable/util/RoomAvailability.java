@@ -1,8 +1,17 @@
 package org.unitime.timetable.util;
 
+import java.util.Date;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.unitime.commons.Debug;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
+import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.ExamPeriod;
+import org.unitime.timetable.model.Session;
+import org.unitime.timetable.solver.WebSolver;
+import org.unitime.timetable.solver.exam.ExamSolverProxy;
 
 public class RoomAvailability {
     private static RoomAvailabilityInterface sInstance = null;
@@ -19,4 +28,26 @@ public class RoomAvailability {
         }
     }
     
+    public static void setAvailabilityWarning(HttpServletRequest request, Session acadSession, int examType, boolean checkSolver, boolean checkAvailability) {
+        if (acadSession==null || examType<0 || getInstance()==null) return;
+        if (checkSolver) {
+            ExamSolverProxy solver = WebSolver.getExamSolver(request.getSession());
+            if (solver!=null && solver.getExamType()==examType) {
+                String ts = solver.getProperties().getProperty("RoomAvailability.TimeStamp");
+                if (ts==null)
+                    request.setAttribute(Constants.REQUEST_WARN,"Room availability is not available for "+Exam.sExamTypes[examType].toLowerCase()+" examinations.");
+                else
+                    request.setAttribute(Constants.REQUEST_MSSG,"Room availability for "+Exam.sExamTypes[examType].toLowerCase()+" examination solver was updated on "+ts+".");
+                return;
+            }
+        }
+        if (checkAvailability) {
+            Date[] bounds = ExamPeriod.getBounds(acadSession, examType);
+            String ts = getInstance().getTimeStamp(bounds[0], bounds[1]);
+            if (ts==null)
+                request.setAttribute(Constants.REQUEST_WARN,"Room availability is not available for "+Exam.sExamTypes[examType].toLowerCase()+" examinations.");
+            else
+                request.setAttribute(Constants.REQUEST_MSSG,"Room availability for "+Exam.sExamTypes[examType].toLowerCase()+" examinations was updated on "+ts+".");
+        }
+    }
 }
