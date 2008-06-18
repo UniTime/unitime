@@ -1306,6 +1306,12 @@ div.suggestionList_element_on {
 	border-bottom: 1px black solid;	
 }
 
+.reqMsg {
+	color: black;
+	background: #DFE7F2;
+	border-bottom: 1px black solid;	
+}
+
 .reqGlobalWarn {
 	color: black;
 	background: #fcdd89;
