@@ -32,7 +32,7 @@ import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 
 
 
-public class RelatedCourseInfo extends BaseRelatedCourseInfo {
+public class RelatedCourseInfo extends BaseRelatedCourseInfo implements Comparable<RelatedCourseInfo> {
 	private static final long serialVersionUID = 1L;
 
 /*[CONSTRUCTOR MARKER BEGIN]*/
