@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -31,6 +32,7 @@ import org.unitime.timetable.model.Session;
 
 public class RoomAvailabilityService implements RoomAvailabilityInterface {
     private static Log sLog = LogFactory.getLog(RoomAvailabilityInterface.class);
+    private static DecimalFormat sDf = new DecimalFormat("0.0");
     private boolean iStop = false;
     private RefreshThread iRefreshThread = null;
     
@@ -223,6 +225,7 @@ public class RoomAvailabilityService implements RoomAvailabilityInterface {
         public void update(CacheElement cache) throws InterruptedException {
             try {
                 sLog.debug("Updating "+cache);
+                long t0 = System.currentTimeMillis();
                 sendRequest(createRequest(cache));
                 sLog.debug("Request "+iRequestFile+" created.");
                 Document response = null;
@@ -238,7 +241,16 @@ public class RoomAvailabilityService implements RoomAvailabilityInterface {
                 }
                 sLog.debug("Reading response...");
                 synchronized (cache) {
-                    cache.update(readResponse(response), response.getRootElement().attributeValue("created"));
+                    Hashtable<Room, HashSet<TimeBlock>> availability = readResponse(response);
+                    long dt = System.currentTimeMillis() - t0;
+                    String ts = response.getRootElement().attributeValue("created");
+                    if (ts==null) ts = new Date().toString();
+                    if (dt>100 && dt<60000)
+                        ts += " (retrieved in "+sDf.format(dt/1000.0)+" sec)";
+                    else if (dt>=60000) {
+                        ts += " (retrieved in "+sDf.format(dt/60000.0)+" min)";
+                    }
+                    cache.update(availability, ts);
                 }
             } catch (InterruptedException e) {
                 throw e;
