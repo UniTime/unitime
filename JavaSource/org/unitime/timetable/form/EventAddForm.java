@@ -24,6 +24,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -36,6 +37,7 @@ import javax.servlet.http.HttpSession;
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
+import org.hibernate.Query;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.Class_;
@@ -43,6 +45,7 @@ import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.CourseEvent;
 import org.unitime.timetable.model.ExamOwner;
+import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.RelatedCourseInfo;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
@@ -55,6 +58,7 @@ import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
+import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 import org.unitime.timetable.util.ComboBoxLookup;
 import org.unitime.timetable.util.DateUtils;
@@ -68,10 +72,10 @@ import org.unitime.timetable.util.IdValue;
 
 public class EventAddForm extends PreferencesForm {
 
-//	private EventModel iModel;
 	private String iOp;
 	private String iEventType;
 	private Long iSessionId;
+	private boolean iAttendanceRequired; 
 	private int iStartTime;
 	private int iStopTime;
 //	private String iLocationType;
@@ -142,12 +146,15 @@ public class EventAddForm extends PreferencesForm {
 	            errors.add("relatedCourseInfo", new ActionMessage("errors.generic", "At least one class/course has to be specified.") );
 	        }
 		}
+		
+		if (getPossibleLocations().isEmpty()) {
+			errors.add("noLocation", new ActionMessage("errors.generic", "There is no location matching your criteria."));
+		}
 	        
 		return errors;
 	}
 	
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
-//		iModel = null;
 		iOp = null;
 		iEventType = Event.sEventTypes[Event.sEventTypeSpecial];
 		iSessionId = null;
@@ -161,6 +168,7 @@ public class EventAddForm extends PreferencesForm {
 		iMinCapacity = null;
 		iMaxCapacity = null;
 		iLookAtNearLocations = false;
+		iAttendanceRequired = false;
         iSubjectArea = DynamicList.getInstance(new ArrayList(), idfactory);
         iCourseNbr = DynamicList.getInstance(new ArrayList(), idfactory);
         iItype = DynamicList.getInstance(new ArrayList(), idfactory);
@@ -184,6 +192,7 @@ public class EventAddForm extends PreferencesForm {
 		iBuildingId = (Long) session.getAttribute("Event.BuildingId");
 		iRoomNumber = (String) session.getAttribute("Event.RoomNumber");
 		iLookAtNearLocations = (Boolean) session.getAttribute("Event.LookAtNearLocations");
+		iAttendanceRequired = (Boolean) session.getAttribute("Event.AttendanceRequired");
 		if (session.getAttribute("Event.SubjectArea")!=null) {
 			iSubjectArea = (List) session.getAttribute("Event.SubjectArea");
 			iCourseNbr = (List) session.getAttribute("Event.CourseNbr");
@@ -206,12 +215,12 @@ public class EventAddForm extends PreferencesForm {
 		session.setAttribute("Event.BuildingId", iBuildingId);
 		session.setAttribute("Event.RoomNumber", iRoomNumber);
 		session.setAttribute("Event.LookAtNearLocations", (Boolean) iLookAtNearLocations);
-//		session.setAttribute("Event.");
 		session.setAttribute("Event.SubjectArea", iSubjectArea);
 		session.setAttribute("Event.CourseNbr", iCourseNbr);
 		session.setAttribute("Event.SubjectItype", iItype);
 		session.setAttribute("Event.ClassNumber", iClassNumber);
 		session.setAttribute("Event.StudentIds", getStudentIds());
+		session.setAttribute("Event.AttendanceRequired", iAttendanceRequired);
 	}
 	
 	
@@ -277,9 +286,6 @@ public class EventAddForm extends PreferencesForm {
             "</script>";
 	}
 	
-//	public EventModel getModel() {return iModel;}
-//	public void setModel(EventModel model) {iModel=model;}
-	
 	public String getOp (){return iOp;}
 	public void setOp (String op) {iOp = op;}
 	
@@ -305,7 +311,10 @@ public class EventAddForm extends PreferencesForm {
 		
 	public Long getSessionId() {return iSessionId;}
 	public void setSessionId(Long sessionId) {iSessionId = sessionId;}
-	
+
+	public boolean getAttendanceRequired() {return iAttendanceRequired;}
+	public void setAttendanceRequired(boolean attReq) {iAttendanceRequired = attReq;}
+
     public int getStartTime() {return iStartTime; }
     public void setStartTime(int startTime) {iStartTime = startTime;}
 
@@ -608,6 +617,41 @@ public class EventAddForm extends PreferencesForm {
         else ret.insertElementAt(new IdValue(-1L,"-"), 0);
         return ret;
     }
+    
+ // get possible locations for the event based on entered criteria
+	public Hashtable<Long, Location> getPossibleLocations() {
+		Hashtable<Long, Location> locations = new Hashtable();
+		String query;
+		if (iLookAtNearLocations) {
+			query = "select r from Room r, Building b where b.uniqueId = :buildingId and " +
+					"(r.building=b or ((((r.coordinateX - b.coordinateX)*(r.coordinateX - b.coordinateX)) +" +
+					"((r.coordinateY - b.coordinateY)*(r.coordinateY - b.coordinateY)))" +
+					"< 67*67))";
+		} else {
+			query = "select r from Room r where r.building.uniqueId = :buildingId";
+		}
+			
+		if (iMinCapacity!=null && iMinCapacity!="") { query+= " and r.capacity>= :minCapacity";	}
+		if (iMaxCapacity!=null && iMaxCapacity!="") { query+= " and r.capacity<= :maxCapacity";	}
+		if (iRoomNumber!=null && iRoomNumber.length()>0) { query+=" and r.roomNumber like (:roomNumber)"; }
+		
+		Query hibQuery = new LocationDAO().getSession().createQuery(query);
+
+		hibQuery.setLong("buildingId", iBuildingId);
+		if (iMinCapacity!=null && iMinCapacity!="") { hibQuery.setInteger("minCapacity", Integer.valueOf(iMinCapacity)); }
+		if (iMaxCapacity!=null && iMaxCapacity!="") { hibQuery.setInteger("maxCapacity", Integer.valueOf(iMaxCapacity)); }
+		if (iRoomNumber!=null && iRoomNumber.length()>0) { 
+			hibQuery.setString("roomNumber", iRoomNumber.replaceAll("\\*", "%")); 
+		}
+		
+		for (Iterator i=hibQuery.setCacheable(true).iterate();i.hasNext();) {
+			Location location = (Location)i.next();
+			if (location.getPermanentId()!=null)
+				locations.put(location.getPermanentId(), location);
+		}
+		return locations;
+	}
+
     
     
     

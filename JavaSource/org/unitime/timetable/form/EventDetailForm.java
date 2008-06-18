@@ -1,9 +1,3 @@
-/*
- * TO DO 
- * - getSelected
- * - setSelected
- * 
- */
 
 package org.unitime.timetable.form;
 
@@ -21,6 +15,7 @@ public class EventDetailForm extends ActionForm {
 	private String iId;
 	private String iOp;
 	private String iEventName;
+	private String iEventType;
 	private String iMinCapacity;
 	private String iMaxCapacity;
 	private String iSponsoringOrg;
@@ -32,6 +27,7 @@ public class EventDetailForm extends ActionForm {
 	private boolean iCanEdit;
 	private String iPreviousId;
 	private String iNextId;
+	private boolean iAttendanceRequired;
 	
 	/** 
 	 * Method validate
@@ -59,11 +55,15 @@ public class EventDetailForm extends ActionForm {
 		iCanEdit = false;
 		iPreviousId = null;
 		iNextId = null;
+		iAttendanceRequired = false;
 	}
 	
 
     public String getEventName() {return iEventName;}
     public void setEventName(String eventName) {iEventName = eventName;}
+    
+    public String getEventType() {return iEventType;}
+    public void setEventType(String type) {iEventType = type;}
     
     public String getMinCapacity() {return iMinCapacity;}
     public void setMinCapacity(String minCapacity) {iMinCapacity = minCapacity;}
@@ -82,6 +82,9 @@ public class EventDetailForm extends ActionForm {
 	
     public Long getSelected() {return iSelected;}
     public void setSelected(Long selectedId) {iSelected = selectedId;}
+    
+    public boolean getAttendanceRequired() {return iAttendanceRequired;}
+    public void setAttendanceRequired(boolean attReq) {iAttendanceRequired = attReq;}
     
     public Vector<MeetingBean> getMeetings() {return iMeetings;}
     public void addMeeting(String date, String startTime, String endTime, String location, String approvedDate) {
@@ -136,7 +139,8 @@ public class EventDetailForm extends ActionForm {
 
     public String getNextId () {return iNextId; }
     public void setNextId(String nextId) {iNextId = nextId;}
- 
+    
+
     
     public class MeetingBean {
     	private String iDate;

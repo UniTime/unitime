@@ -56,14 +56,6 @@ public class EventAddAction extends Action {
 		EventAddForm myForm = (EventAddForm) form;
 		User user = Web.getUser(request.getSession());
 
-/*        EventModel model = (EventModel)request.getSession().getAttribute("Event.model");
-        if (model==null) {
-            model = new EventModel();
-            request.getSession().setAttribute("Event.model", model);
-        }
-*/		
-
-       
 //Verification of user being logged in
 		if (!Web.isLoggedIn( request.getSession() )) {
             throw new Exception ("Access Denied.");
@@ -86,10 +78,6 @@ public class EventAddAction extends Action {
 			myForm.loadDates(request);
 		}
 		
-//		if ("EventTypeChanged".equals(iOp)) {
-//			
-//		}
-			
         if ("Add Object".equals(iOp)) {
             for (int i=0; i<myForm.PREF_ROWS_ADDED; i++) {
                 myForm.addRelatedCourseInfo(null);
@@ -129,14 +117,6 @@ public class EventAddAction extends Action {
 		
         
         myForm.setSubjectAreas(TimetableManager.getSubjectAreas(user));
-        
-//test:        System.out.println(">>> "+op+" <<<");
-
-
-//set the model        
-//        myForm.setModel(model);
-//        model.apply(request, myForm);
-        
         
 //Display the page        
         return mapping.findForward("show");

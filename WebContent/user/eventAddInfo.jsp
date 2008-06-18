@@ -59,14 +59,80 @@
 			</TD>
 		</TR>
 
+
+<!-- Data to be filled in about the event -->
+		<TR>
+			<TD nowrap> Event Name<font color='red'>*</font>: </TD>
+			<TD> 
+				<html:text property="eventName" maxlength="100" size="50" /> 
+			</TD>
+		</TR>
+		<TR>
+  		<TD valign='top'>Contact: </TD> 
+			<TD colspan ='2'>
+				<Table width='100%'>
+					<TR>
+						<TD nowrap> First Name: </TD>
+						<TD>
+							<html:text property="mainContactFirstName" maxlength="20" size="30" /> 
+						</TD>
+					</TR>
+					<TR>
+						<TD nowrap> Last Name: </TD>
+						<TD>
+							<html:text property="mainContactLastName" maxlength="30" size="30" /> 
+						</TD>
+					</TR>
+					<TR>
+						<TD nowrap>Email<font color='red'>*</font>: </TD>
+						<TD>
+							<html:text property="mainContactEmail" maxlength="100" size="30" />
+						</TD>
+					</TR>
+					<TR>
+						<TD nowrap>Phone<font color='red'>*</font>: </TD>
+						<TD>
+							<html:text property="mainContactPhone" maxlength="10" size="30" /> <i><font color="gray">&nbsp; Max. 10 digits </font></i>
+						</TD>
+					</TR>
+				</Table>
+			</TD>
+		</TR>
+		<TR>
+			<TD nowrap valign='top'>Additional Information: </TD>
+			<TD>
+				<html:textarea property="additionalInfo" rows="2" cols="50"></html:textarea>
+			</TD>
+		</TR>
+		<TR>
+			<TD colspan='2'>
+				<font color='red'>*</font> <i> Fields marked with a red asterix are mandatory.</i> 
+			</TD>
+		</TR>
+
+
+
 <!-- A list of selected dates & times & locations -->
+		<TR>
+			<TD colspan='2'>
+				&nbsp;
+			</TD>
+		</TR>
+		<TR>
+			<TD colspan="2" valign="middle">
+				<br>
+				<tt:section-title>
+					Meetings (as selected in previous screens)
+				</tt:section-title>
+			</TD>
+		</TR>
 		<TR><TD colspan='2'>
 		<TABLE width="100%" border="0" cellspacing="0" cellpadding="1">
-			<TR align="left">
-				<th><font size = -1 >Date</font></th><th><font size = -1 >Time</font></th><th><font size = -1 >Location</font></th>
+			<TR>
+				<td><font color="gray"><i>Date</i></font></td><td><font color="gray"><i>Time</i></font></td><td><font color="gray"><i>Location</i></font></td>
 			</TR>
 			<logic:iterate name="eventAddInfoForm" property="dateLocations" id="dl">
-				<TR>
+				<TR onmouseover="this.style.backgroundColor='rgb(223,231,242)';" onmouseout="this.style.backgroundColor='transparent';">
 					<TD>
 						<bean:write name="dl" property="dateLabel"/> 
 					</TD>
@@ -81,61 +147,36 @@
 		</TABLE>
 		</TD></TR>
 
-
-<!-- Data to be filled in about the event -->
+<!-- Courses/Classes if this is a course event -->
+		<logic:equal name="eventAddInfoForm" property="eventType" value="Course Event">
 		<TR>
-			<TD> &nbsp; </TD>
-			<TD> &nbsp; </TD>
-		</TR>
-		<TR>
-			<TD nowrap> Event Name<font color='red'>*</font>: </TD>
-			<TD> 
-				<html:text property="eventName" maxlength="50" size="50" /> 
+			<TD colspan='2'>
+				&nbsp;
 			</TD>
 		</TR>
 		<TR>
-  		<TD valign='top'>Contact: </TD> 
-			<TD colspan ='2'>
-				<Table width='100%'>
-					<TR>
-						<TD nowrap> First Name: </TD>
-						<TD>
-							<html:text property="mainContactFirstName" maxlength="50" size="50" /> 
-						</TD>
-					</TR>
-					<TR>
-						<TD nowrap> Last Name: </TD>
-						<TD>
-							<html:text property="mainContactLastName" maxlength="50" size="50" /> 
-						</TD>
-					</TR>
-					<TR>
-						<TD nowrap>Email<font color='red'>*</font>: </TD>
-						<TD>
-							<html:text property="mainContactEmail" maxlength="50" size="50" /> 
-						</TD>
-					</TR>
-					<TR>
-						<TD nowrap>Phone<font color='red'>*</font>: </TD>
-						<TD>
-							<html:text property="mainContactPhone" maxlength="50" size="50" /> 
-						</TD>
-					</TR>
-				</Table>
-			</TD>
-		</TR>
-		<TR>
-			<TD nowrap>Additional Information: </TD>
-			<TD>
-				<html:textarea property="additionalInfo" rows="2" cols="50"></html:textarea>
+			<TD colspan='2' valign="middle">
+				<br>
+				<tt:section-title>
+					Related Classes / Courses
+				</tt:section-title>
 			</TD>
 		</TR>
 		<TR>
 			<TD colspan='2'>
-				<font color='red'>*</font> <i> Fields marked with red asterix are mandatory.</i> 
+				<Table width='100%' cellspacing="0" cellpadding="3">
+					<bean:write name="eventAddInfoForm" property="relatedCoursesTable" filter="false"/>
+				</Table>
 			</TD>
 		</TR>
-
+		<logic:equal name="eventAddInfoForm" property="attendanceRequired" value="true">
+		<TR>
+			<TD colspan='2'>
+				<i>Students of the listed courses/classes are required to attend this event.</i>
+			</TD>
+		</TR>
+		</logic:equal>
+		</logic:equal>
 
 <!--  Footer - another set of buttons -->
 		<TR>
