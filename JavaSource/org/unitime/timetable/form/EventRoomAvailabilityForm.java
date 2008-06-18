@@ -25,6 +25,7 @@ import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -245,12 +246,12 @@ public class EventRoomAvailabilityForm extends ActionForm {
 		}
 		ret+="</tr>";
 		String jsDates = "";
-		SimpleDateFormat df1 = new SimpleDateFormat("EEE, MMM dd");
+		SimpleDateFormat df1 = new SimpleDateFormat("EEE, MMM d");
 		SimpleDateFormat df2 = new SimpleDateFormat("yyyy-MM-dd");
 		for (Date date:iMeetingDates) {
 			jsDates += (jsDates.length()>0?",":"")+"'"+df2.format(date)+"'";
             Hashtable<Event,Set<Long>> conflicts = Event.findStudentConflicts(date, iStartTime, iStopTime, iStudentIds);
-            int totalConflicts = 0;
+            HashSet<Long> studentsInConflict = new HashSet();
             String conflictsTitle = "";
             TreeSet<Map.Entry<Event,Set<Long>>> conflictEntries = new TreeSet(new Comparator<Map.Entry<Event,Set<Long>>>() {
                public int compare(Map.Entry<Event,Set<Long>> e1, Map.Entry<Event,Set<Long>> e2) {
@@ -264,7 +265,7 @@ public class EventRoomAvailabilityForm extends ActionForm {
             conflictEntries.addAll(conflicts.entrySet());
             int idx = 0;
             for (Map.Entry<Event,Set<Long>> entry : conflictEntries) {
-                totalConflicts += entry.getValue().size();
+                studentsInConflict.addAll(entry.getValue());
                 if (idx<3) {
                     if (idx>0) conflictsTitle+="; ";
                     conflictsTitle+=entry.getValue().size()+" &times; "+entry.getKey().getEventName();
@@ -272,8 +273,8 @@ public class EventRoomAvailabilityForm extends ActionForm {
                     conflictsTitle+=";...";
                 idx++;
             }
-			ret += "<tr><td align='left' title=\""+conflictsTitle+"\"><b>"+df1.format(date)+"</b>"+
-                (totalConflicts>0?"<br><i>("+totalConflicts+" conflicts)</i>":"")+
+			ret += "<tr><td align='center' title=\""+conflictsTitle+"\"><b>"+df1.format(date)+"</b>"+
+                (!studentsInConflict.isEmpty()?"<br><i>("+studentsInConflict.size()+" conflicts)</i>":"")+
                 "</td>";
 			for (Location location : locations) {
 				boolean selected = iDateLocations.contains(new DateLocation(date,location));
