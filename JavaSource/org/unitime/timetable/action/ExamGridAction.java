@@ -72,6 +72,7 @@ public class ExamGridAction extends Action {
             Session session = Session.getCurrentAcadSession(Web.getUser(request.getSession()));
             Date[] bounds = ExamPeriod.getBounds(session, myForm.getExamType());
             RoomAvailability.getInstance().activate(session,bounds[0],bounds[1],false);
+            RoomAvailability.setAvailabilityWarning(request, session, myForm.getExamType(), true, false);
         }
         
         PdfExamGridTable table = new PdfExamGridTable(myForm, request.getSession());

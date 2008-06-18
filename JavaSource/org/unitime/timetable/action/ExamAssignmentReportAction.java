@@ -78,6 +78,7 @@ import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.Parameters;
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamInstructorInfo;
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamSectionInfo;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.RoomAvailability;
 import org.unitime.timetable.webutil.PdfWebTable;
 
 
@@ -101,7 +102,8 @@ public class ExamAssignmentReportAction extends Action {
             myForm.reset(mapping, request);
         }
         
-        Long sessionId = Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId();
+        Session session = Session.getCurrentAcadSession(Web.getUser(request.getSession()));
+        RoomAvailability.setAvailabilityWarning(request, session, myForm.getExamType(), true, false);
         
         myForm.load(request.getSession());
         
@@ -112,25 +114,25 @@ public class ExamAssignmentReportAction extends Action {
                 assignedExams = solver.getAssignedExams(myForm.getSubjectArea());
             else {
                 if ("true".equals(ApplicationProperties.getProperty("tmtbl.exams.conflicts.cache","true")))
-                    assignedExams = Exam.findAssignedExams(sessionId,myForm.getSubjectArea(),myForm.getExamType());
+                    assignedExams = Exam.findAssignedExams(session.getUniqueId(),myForm.getSubjectArea(),myForm.getExamType());
                 else
-                    assignedExams = findAssignedExams(sessionId,myForm.getSubjectArea(),myForm.getExamType());
+                    assignedExams = findAssignedExams(session.getUniqueId(),myForm.getSubjectArea(),myForm.getExamType());
             }
         }
         
         WebTable.setOrder(request.getSession(),"examAssignmentReport["+myForm.getReport()+"].ord",request.getParameter("ord"),1);
         
-        WebTable table = getTable(sessionId, Web.getUser(request.getSession()), true, myForm, assignedExams);
+        WebTable table = getTable(session.getUniqueId(), Web.getUser(request.getSession()), true, myForm, assignedExams);
         
         if ("Export PDF".equals(op) && table!=null) {
-            PdfWebTable pdfTable = getTable(sessionId, Web.getUser(request.getSession()), false, myForm, assignedExams);
+            PdfWebTable pdfTable = getTable(session.getUniqueId(), Web.getUser(request.getSession()), false, myForm, assignedExams);
             File file = ApplicationProperties.getTempFile("xreport", "pdf");
             pdfTable.exportPdf(file, WebTable.getOrder(request.getSession(),"examAssignmentReport["+myForm.getReport()+"].ord"));
         	request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
         }
         
         if ("Export CSV".equals(op) && table!=null) {
-            WebTable csvTable = getTable(sessionId, Web.getUser(request.getSession()), false, myForm, assignedExams);
+            WebTable csvTable = getTable(session.getUniqueId(), Web.getUser(request.getSession()), false, myForm, assignedExams);
             File file = ApplicationProperties.getTempFile("xreport", "csv");
             csvTable.toCSVFile(WebTable.getOrder(request.getSession(),"examAssignmentReport["+myForm.getReport()+"].ord")).save(file);
             request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
