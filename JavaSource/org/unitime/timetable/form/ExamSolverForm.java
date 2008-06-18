@@ -111,6 +111,9 @@ public class ExamSolverForm extends ActionForm {
 		ExamSolverProxy solver = WebSolver.getExamSolver(request.getSession());
 		iExamType = Exam.sExamTypeFinal;
 		if (solver!=null) iExamType = solver.getExamType();
+		else if (request.getSession().getAttribute("Exam.Type")!=null) { 
+		    iExamType = (Integer)request.getSession().getAttribute("Exam.Type");
+		}
 		Transaction tx = null;
 		iParams.clear(); iDefaults.clear(); iParamValues.clear();
 		try {
