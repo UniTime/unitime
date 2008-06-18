@@ -836,11 +836,19 @@ public class ExamDatabaseLoader extends ExamLoader {
     
     public void roomAvailabilityActivate(Date startTime, Date endTime) {
         try {
+            String ts;
             if (isRemote()) {
-                RemoteSolverServer.query(new Object[]{"activateRoomAvailability",iSessionId,startTime,endTime});
+                ts = (String)RemoteSolverServer.query(new Object[]{"activateRoomAvailability",iSessionId,startTime,endTime});
             } else {
                 RoomAvailability.getInstance().activate(new SessionDAO().get(iSessionId), startTime, endTime, 
                         "true".equals(ApplicationProperties.getProperty("tmtbl.room.availability.solver.waitForSync","true")));
+                ts = RoomAvailability.getInstance().getTimeStamp(startTime, endTime);
+            }
+            if (ts!=null) {
+                getModel().getProperties().setProperty("RoomAvailability.TimeStamp", ts);
+                iProgress.info("Using room availability that was updated on "+ts+".");
+            } else {
+                iProgress.error("Room availability is not available.");
             }
         } catch (Exception e) {
             sLog.error(e.getMessage(),e);
