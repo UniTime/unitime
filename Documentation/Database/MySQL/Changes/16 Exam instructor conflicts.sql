@@ -26,7 +26,7 @@ create table xconflict_instructor (
 	conflict_id decimal(20,0) not null,
 	instructor_id decimal(20,0) not null,
 	primary key(conflict_id, instructor_id)
-);
+) engine = INNODB;
 
 alter table xconflict_instructor
   add constraint fk_xconflict_in_conf foreign key (conflict_id)

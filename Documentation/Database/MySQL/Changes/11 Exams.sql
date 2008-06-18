@@ -58,7 +58,7 @@ create table exam_period (
 	start_slot bigint(10)  not null,
 	length bigint(10)  not null,
 	pref_level_id decimal(20,0) not null
-);
+) engine = INNODB;
   
 alter table exam_period
   add constraint fk_exam_period_session foreign key (session_id)
@@ -103,7 +103,7 @@ create table exam (
 	max_nbr_rooms bigint(10) default 1 not null,
 	seating_type bigint(10) not null,
 	assigned_period decimal(20,0)
-);
+) engine = INNODB;
 
 alter table exam
   add constraint fk_exam_session foreign key (session_id)
@@ -123,7 +123,7 @@ create table exam_owner (
 	exam_id decimal(20,0) not null,
 	owner_id decimal(20,0) not null,
 	owner_type bigint(10) not null
-);
+) engine = INNODB;
   
 alter table exam_owner
   add constraint fk_exam_owner_exam foreign key (exam_id)
@@ -141,7 +141,7 @@ create table exam_room_assignment (
 	exam_id decimal(20,0) not null,
 	location_id decimal(20,0) not null,
 	primary key (exam_id, location_id)
-);
+) engine = INNODB;
 
 alter table exam_room_assignment
   add constraint fk_exam_room_exam foreign key (exam_id)
@@ -156,7 +156,7 @@ create table exam_period_pref (
 	owner_id decimal(20,0) not null,
 	pref_level_id decimal(20,0) not null,
 	period_id decimal(20,0) not null
-);
+) engine = INNODB;
 
 alter table exam_period_pref
   add constraint fk_exam_period_pref_pref foreign key (pref_level_id)
@@ -173,7 +173,7 @@ alter table exam_period_pref
 create table exam_instructor (
 	exam_id decimal(20,0) primary key not null,
 	instructor_id decimal(20,0) not null
-);
+) engine = INNODB;
 
 alter table exam_instructor
   add constraint fk_exam_instructor_exam foreign key (exam_id)

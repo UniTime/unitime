@@ -27,7 +27,7 @@ create table room_type (
 	reference varchar(20) not null,
 	label varchar(60) not null,
 	ord int(10) not null
-);
+) engine = INNODB;
 
 /**
  * Populate room types
@@ -84,7 +84,7 @@ create table room_type_option (
 	status int(10) not null,
 	message varchar(200),
 	primary key (room_type, session_id)
-);
+) engine = INNODB;
 
 alter table room_type_option add constraint fk_rtype_option_type foreign key (room_type)
   references room_type (uniqueid) on delete cascade;

@@ -23,7 +23,7 @@ create table EVENT_TYPE
   UNIQUEID  DECIMAL(20,0) primary key not null,
   REFERENCE VARCHAR(20) not null,
   LABEL     VARCHAR(60) not null
-);
+) engine = INNODB;
 
 select `next_hi` into @id from `timetable`.`hibernate_unique_key`;
 
@@ -47,7 +47,7 @@ create table event_contact
   firstName   varchar(20),
   middleName  varchar(20),
   lastName    varchar(30)
-);
+) engine = INNODB;
 
 -- Create event table
 create table event
@@ -59,7 +59,7 @@ create table event
   max_capacity   bigint(10),
   sponsoring_org decimal(20,0),
   main_contact_id          decimal(20,0)
-);
+) engine = INNODB;
 
 -- Create/Recreate primary, unique and foreign key constraints 
 alter table event
@@ -74,7 +74,7 @@ create table event_join_event_contact
 (
   event_id         decimal(20,0) not null,
   event_contact_id decimal(20,0) not null
-);
+) engine = INNODB;
 
 -- Create/Recreate primary, unique and foreign key constraints 
 alter table event_join_event_contact
@@ -91,7 +91,7 @@ create table related_course_info (
   owner_id decimal(20,0) not null,
   owner_type decimal(10,0) not null,
   course_id decimal (20,0) not null
-);
+) engine = INNODB;
 
 alter table related_course_info add constraint fk_event_owner_event foreign key (event_id) references event (uniqueid) on delete cascade;
 alter table related_course_info add constraint fk_event_owner_course foreign key (course_id) references course_offering (uniqueid) on delete cascade;
@@ -113,8 +113,8 @@ create table meeting
   location_perm_id   decimal(20,0),
   class_can_override int(1) not null,
   approved_date      date
-)
-;
+) engine = INNODB;
+
 -- Create/Recreate primary, unique and foreign key constraints 
 alter table meeting
   add constraint fk_meeting_event foreign key (EVENT_ID)
@@ -129,7 +129,7 @@ create table STANDARD_EVENT_NOTE
   UNIQUEID  DECIMAL(20,0) primary key not null,
   REFERENCE VARCHAR(20) not null,
   NOTE     VARCHAR(1000) not null
-);
+) engine = INNODB;
  
 -- Create table event_note
 create table event_note
@@ -138,7 +138,7 @@ create table event_note
   event_id  decimal(20,0) not null,
   note_id   decimal(20,0),
   text_note varchar(1000)
-);
+) engine = INNODB;
 
 -- Create/Recreate primary, unique and foreign key constraints 
 alter table event_note

@@ -259,7 +259,7 @@
 				start_slot bigint(10)  not null,
 				length bigint(10)  not null,
 				pref_level_id decimal(20,0) not null
-			)
+			) engine = INNODB
 		</mysql>
 		<sql>
 			alter table %SCHEMA%.exam_period add constraint fk_exam_period_session foreign key (session_id)
@@ -312,7 +312,7 @@
 				max_nbr_rooms bigint(10) default 1 not null,
 				seating_type bigint(10) not null,
 				assigned_period decimal(20,0)
-			)
+			) engine = INNODB
 		</mysql>
 		<sql>
 			alter table %SCHEMA%.exam add constraint fk_exam_session foreign key (session_id)
@@ -338,7 +338,7 @@
 				exam_id decimal(20,0) not null,
 				owner_id decimal(20,0) not null,
 				owner_type bigint(10) not null
-			)
+			) engine = INNODB
 		</mysql>
 		<sql>
 			alter table %SCHEMA%.exam_owner add constraint fk_exam_owner_exam foreign key (exam_id)
@@ -361,7 +361,7 @@
 				exam_id decimal(20,0) not null,
 				location_id decimal(20,0) not null,
 				primary key (exam_id, location_id)
-			)
+			) engine = INNODB
 		</mysql>
 		<sql>
 			alter table %SCHEMA%.exam_room_assignment add constraint fk_exam_room_exam foreign key (exam_id)
@@ -383,7 +383,7 @@
 				owner_id decimal(20,0) not null,
 				pref_level_id decimal(20,0) not null,
 				period_id decimal(20,0) not null
-			)
+			) engine = INNODB
 		</mysql>
 		<sql>
 			alter table %SCHEMA%.exam_period_pref add constraint fk_exam_period_pref_pref foreign key (pref_level_id)
@@ -405,7 +405,7 @@
 			create table %SCHEMA%.exam_instructor (
 				exam_id decimal(20,0) primary key not null,
 				instructor_id decimal(20,0) not null
-			)
+			) engine = INNODB
 		</mysql>
 		<sql>
 			alter table %SCHEMA%.exam_instructor add constraint fk_exam_instructor_exam foreign key (exam_id)
@@ -906,7 +906,7 @@
 			create table %SCHEMA%.xconflict (
 				uniqueid decimal(20,0) not null primary key,
 				conflict_type decimal(10,0) not null,
-				distance double)
+				distance double) engine = INNODB
 		</mysql>
 		<plsql>
 			create table %SCHEMA%.xconflict_exam (
@@ -921,7 +921,7 @@
   			create table %SCHEMA%.xconflict_exam (
 				conflict_id decimal(20,0) not null,
 				exam_id decimal(20,0) not null,
-				primary key (conflict_id, exam_id))
+				primary key (conflict_id, exam_id)) engine = INNODB
 		</mysql>
 		<sql>
 			alter table %SCHEMA%.xconflict_exam
@@ -947,7 +947,7 @@
   				conflict_id decimal(20,0) not null,
 				student_id decimal(20,0) not null,
 				primary key (conflict_id, student_id)
-			)
+			) engine = INNODB
   		</mysql>
   		<sql>
   			alter table %SCHEMA%.xconflict_student
@@ -982,7 +982,7 @@
 				conflict_id decimal(20,0) not null,
 				instructor_id decimal(20,0) not null,
 				primary key(conflict_id, instructor_id)
-			)
+			) engine = INNODB
   		</mysql>
   		<sql>
 			alter table %SCHEMA%.xconflict_instructor
@@ -1152,7 +1152,7 @@
   				UNIQUEID  DECIMAL(20,0) primary key not null,
   				REFERENCE VARCHAR(20) not null,
   				LABEL     VARCHAR(60) not null
-				)
+				) engine = INNODB
 		</mysql>
 		<plsql>
 			insert into %SCHEMA%.event_type values(%SCHEMA%.ref_table_seq.nextval, 'class', 'Class')
@@ -1212,7 +1212,7 @@
   				firstName   varchar(20),
   				middleName  varchar(20),
   				lastName    varchar(30)
-				)
+				) engine = INNODB
 		</mysql>
 		<plsql>
 			create table %SCHEMA%.event
@@ -1239,7 +1239,7 @@
   				max_capacity   bigint(10),
   				sponsoring_org decimal(20,0),
   				main_contact_id	decimal(20,0)
-				)
+				) engine = INNODB
 		</mysql>
 		<sql>
 			alter table %SCHEMA%.event 
@@ -1263,7 +1263,7 @@
 				(
   				event_id         decimal(20,0) not null,
   				event_contact_id decimal(20,0) not null
-				)		
+				)		 engine = INNODB
 		</mysql>
 		<sql>
 			alter table %SCHEMA%.event_join_event_contact
@@ -1296,7 +1296,7 @@
   				owner_id decimal(20,0) not null,
   				owner_type decimal(10,0) not null,
   				course_id decimal (20,0) not null
-				)
+				) engine = INNODB
 		</mysql>
 		<sql>
 			alter table %SCHEMA%.related_course_info 
@@ -1354,7 +1354,7 @@
 				location_perm_id   decimal(20,0),
 				class_can_override int(1) not null,
 				approved_date      date
-				)
+				) engine = INNODB
 		</mysql>
 		<sql>
 			alter table %SCHEMA%.meeting
@@ -1399,7 +1399,7 @@
   				UNIQUEID  DECIMAL(20,0) primary key not null,
   				REFERENCE VARCHAR(20) not null,
   				NOTE     VARCHAR(1000) not null
-				)
+				) engine = INNODB
 		</mysql>
 		<plsql>
 			create table %SCHEMA%.event_note
@@ -1421,7 +1421,7 @@
   				event_id  decimal(20,0) not null,
   				note_id   decimal(20,0),
   				text_note varchar(1000)
-				)
+				) engine = INNODB
 		</mysql>
 		<sql>
 			alter table %SCHEMA%.event_note
@@ -1462,7 +1462,7 @@
 				location_id decimal(20,0) not null,
 				pref_level_id decimal(20,0) not null,
 				period_id decimal(20,0) not null
-			)
+			) engine = INNODB
 		</mysql>
 		<sql>
 			alter table %SCHEMA%.exam_location_pref 
@@ -1721,7 +1721,7 @@
 				reference varchar(20) not null,
 				label varchar(60) not null,
 				ord int(10) not null
-			)
+			) engine = INNODB
 		</mysql>
 		<plsql>insert into %SCHEMA%.room_type(uniqueid, reference, label, ord) values (ref_table_seq.nextval, 'genClassroom', 'Classrooms', 0)</plsql>
 		<plsql>insert into %SCHEMA%.room_type(uniqueid, reference, label, ord) values (ref_table_seq.nextval, 'computingLab', 'Computing Laboratories', 1)</plsql>
@@ -1773,7 +1773,7 @@
 				status int(10) not null,
 				message varchar(200),
 				primary key (room_type, session_id)
-			)
+			) engine = INNODB
 		</mysql>
 		<sql>
 			alter table %SCHEMA%.room_type_option add constraint fk_rtype_option_type foreign key (room_type)
