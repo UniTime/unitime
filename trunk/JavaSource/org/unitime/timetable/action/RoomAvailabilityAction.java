@@ -79,28 +79,35 @@ public class RoomAvailabilityAction extends Action {
             myForm.reset(mapping, request);
         }
         
+        
         myForm.load(request.getSession());
         
         Session session = Session.getCurrentAcadSession(Web.getUser(request.getSession()));
-        Date[] bounds = ExamPeriod.getBounds(session, myForm.getExamType());
         
-        if (bounds!=null && RoomAvailability.getInstance()!=null) {
-            RoomAvailability.getInstance().activate(session, bounds[0], bounds[1], "Refresh".equals(op));
+        if (myForm.getExamType()>=0) {
+            
+            Date[] bounds = ExamPeriod.getBounds(session, myForm.getExamType());
+            
+            if (bounds!=null && RoomAvailability.getInstance()!=null) {
+                RoomAvailability.getInstance().activate(session, bounds[0], bounds[1], "Refresh".equals(op));
+            }
+            
+            WebTable.setOrder(request.getSession(),(myForm.getCompare()?"roomAvailability.cord":"roomAvailability.ord"),request.getParameter("ord"),1);
+            
+            WebTable table = (myForm.getCompare()?getCompareTable(request, session.getUniqueId(), true, myForm):getTable(request, session.getUniqueId(), true, myForm));
+            
+            if ("Export PDF".equals(op) && table!=null) {
+                PdfWebTable pdfTable = (myForm.getCompare()?getCompareTable(request, session.getUniqueId(), false, myForm):getTable(request, session.getUniqueId(), false, myForm));
+                File file = ApplicationProperties.getTempFile("roomavail", "pdf");
+                pdfTable.exportPdf(file, WebTable.getOrder(request.getSession(),(myForm.getCompare()?"roomAvailability.cord":"roomAvailability.ord")));
+                request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
+            }
+            
+            if (table!=null)
+                myForm.setTable(table.printTable(WebTable.getOrder(request.getSession(),(myForm.getCompare()?"roomAvailability.cord":"roomAvailability.ord"))), 6, table.getLines().size());
+            
+            RoomAvailability.setAvailabilityWarning(request, session, myForm.getExamType(), false, true);
         }
-        
-        WebTable.setOrder(request.getSession(),(myForm.getCompare()?"roomAvailability.cord":"roomAvailability.ord"),request.getParameter("ord"),1);
-        
-        WebTable table = (myForm.getCompare()?getCompareTable(request, session.getUniqueId(), true, myForm):getTable(request, session.getUniqueId(), true, myForm));
-        
-        if ("Export PDF".equals(op) && table!=null) {
-            PdfWebTable pdfTable = (myForm.getCompare()?getCompareTable(request, session.getUniqueId(), false, myForm):getTable(request, session.getUniqueId(), false, myForm));
-            File file = ApplicationProperties.getTempFile("roomavail", "pdf");
-            pdfTable.exportPdf(file, WebTable.getOrder(request.getSession(),(myForm.getCompare()?"roomAvailability.cord":"roomAvailability.ord")));
-            request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
-        }
-        
-        if (table!=null)
-            myForm.setTable(table.printTable(WebTable.getOrder(request.getSession(),(myForm.getCompare()?"roomAvailability.cord":"roomAvailability.ord"))), 6, table.getLines().size());
         
         if (request.getParameter("backId")!=null)
             request.setAttribute("hash", request.getParameter("backId"));

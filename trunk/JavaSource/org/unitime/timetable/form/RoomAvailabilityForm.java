@@ -24,6 +24,7 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionMapping;
+import org.apache.struts.action.ActionMessage;
 
 
 /** 
@@ -36,7 +37,7 @@ public class RoomAvailabilityForm extends ExamReportForm {
 
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 	    ActionErrors errors = super.validate(mapping, request);
-        
+	    if (getExamType()<0) errors.add("examType", new ActionMessage("errors.required", ""));
         return errors;
 	}
 
@@ -45,6 +46,7 @@ public class RoomAvailabilityForm extends ExamReportForm {
 	    iIncludeExams = false;
 	    iFilter = null;
 	    iCompare = false;
+	    setExamType(-1);
 	}
 	
 	public String getFilter() { return iFilter; }

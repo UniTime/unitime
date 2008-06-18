@@ -44,6 +44,7 @@
   		<TD width="10%" nowrap>Examination Problem:</TD>
 		<TD>
 			<html:select property="examType">
+				<html:option value="-1">Select...</html:option>
 				<html:optionsCollection property="examTypes" label="label" value="value"/>
 			</html:select>
 		</TD>
@@ -80,7 +81,12 @@
 	<logic:empty name="roomAvailabilityForm" property="table">
 		<table width='95%' border='0' cellspacing='0' cellpadding='3'>
 			<tr><td><i>
-				Nothing to display.
+				<logic:equal name="roomAvailabilityForm" property="examType" value="-1">
+					Examination problem not selected.
+				</logic:equal>
+				<logic:notEqual name="roomAvailabilityForm" property="examType" value="-1">
+					Nothing to display.
+				</logic:notEqual>
 			</i></td></tr>
 		</table>
 	</logic:empty>
