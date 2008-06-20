@@ -201,9 +201,6 @@ public class Constants extends net.sf.cpsolver.coursett.Constants {
     public static final String REQUEST_WARN = "RqWarn";
     public static final String REQUEST_MSSG = "RqMsg";
     
-    /** Exam timetabling: required minimal travel time between an exam and an event for not to overlap (in the number of time slots) */
-    public static final int EXAM_TRAVEL_TIME_SLOTS = 6;
-    
     // --------------------------------------------------------- Methods
 
     /**
