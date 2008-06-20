@@ -355,4 +355,15 @@ public class HibernateUtil {
         if (evictQueries)
             hibSessionFactory.evictQueries();
     }
+    
+    public static boolean isMySQL() {
+        return "org.hibernate.dialect.MySQLInnoDBDialect".equals(_RootDAO.getConfiguration().getProperty("dialect"));
+    }
+    
+    public static String addDate(String dateSQL, String incrementSQL) {
+        if (isMySQL())
+            return "adddate("+dateSQL+","+incrementSQL+")";
+        else
+            return dateSQL+(incrementSQL.startsWith("+")||incrementSQL.startsWith("-")?"":"+")+incrementSQL;
+    }
 }
