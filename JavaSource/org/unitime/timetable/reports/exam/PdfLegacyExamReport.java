@@ -42,6 +42,7 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.CourseEvent;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Exam;
@@ -734,18 +735,36 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
             }
         }
         Hashtable<Long, Set<Meeting>> period2meetings = new Hashtable();
-        if (assgn && examType==Exam.sExamTypeMidterm) {
+        if (assgn && "true".equals(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts."+(examType==Exam.sExamTypeFinal?"final":"midterm"),"true"))) {
             sLog.info("  Loading overlapping class meetings...");
             for (Iterator i=new ExamDAO().getSession().createQuery(
                     "select p.uniqueId, ce, m from ClassEvent ce inner join ce.meetings m, ExamPeriod p " +
                     "where p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
-                    "p.session.examBeginDate+p.dateOffset = m.meetingDate and p.session.uniqueId=:sessionId and p.examType=:examType")
-                    .setInteger("travelTime", Constants.EXAM_TRAVEL_TIME_SLOTS)
+                    HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate and p.session.uniqueId=:sessionId and p.examType=:examType")
+                    .setInteger("travelTime", Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.classEvent","6")))
                     .setLong("sessionId", sessionId).setInteger("examType", examType)
                     .setCacheable(true).iterate(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
                 Long periodId = (Long)o[0];
                 ClassEvent event = (ClassEvent)o[1];
+                Meeting meeting = (Meeting)o[2];
+                Set<Meeting> meetings  = period2meetings.get(periodId);
+                if (meetings==null) {
+                    meetings = new HashSet(); period2meetings.put(periodId, meetings);
+                }
+                meetings.add(meeting);
+            }
+            sLog.info("  Loading overlapping course meetings...");
+            for (Iterator i=new ExamDAO().getSession().createQuery(
+                    "select p.uniqueId, ce, m from CourseEvent ce inner join ce.meetings m, ExamPeriod p " +
+                    "where ce.reqAttendance=true and p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
+                    HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate and p.session.uniqueId=:sessionId and p.examType=:examType")
+                    .setInteger("travelTime", Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.courseEvent","0")))
+                    .setLong("sessionId", sessionId).setInteger("examType", examType)
+                    .setCacheable(true).iterate(); i.hasNext();) {
+                Object[] o = (Object[])i.next();
+                Long periodId = (Long)o[0];
+                CourseEvent event = (CourseEvent)o[1];
                 Meeting meeting = (Meeting)o[2];
                 Set<Meeting> meetings  = period2meetings.get(periodId);
                 if (meetings==null) {
