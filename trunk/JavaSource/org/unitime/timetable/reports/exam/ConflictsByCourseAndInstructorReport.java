@@ -86,7 +86,8 @@ public class ConflictsByCourseAndInstructorReport extends PdfLegacyExamReport {
                                 iSubjectPrinted = iCoursePrinted = iStudentPrinted = iPeriodPrinted = !iNewPage;
                             }
                         } else if (conflict.getOtherEventId()!=null) {
-                            println(
+                            if (conflict.isOtherClass()) {
+                                println(
                                     rpad(iSubjectPrinted?"":subject,4)+" "+
                                     rpad(iCoursePrinted?"":section.getCourseNbr(), 6)+" "+
                                     (iItype?rpad(iCoursePrinted?"":section.getItype(), 6)+" ":"")+
@@ -100,6 +101,19 @@ public class ConflictsByCourseAndInstructorReport extends PdfLegacyExamReport {
                                     lpad(iUseClassSuffix && conflict.getOtherClass().getClassSuffix()!=null?conflict.getOtherClass().getClassSuffix():conflict.getOtherClass().getSectionNumberString(),4)+" "+
                                     getMeetingTime(conflict.getOtherEventTime())
                                     );
+                            } else {
+                                println(
+                                        rpad(iSubjectPrinted?"":subject,4)+" "+
+                                        rpad(iCoursePrinted?"":section.getCourseNbr(), 6)+" "+
+                                        (iItype?rpad(iCoursePrinted?"":section.getItype(), 6)+" ":"")+
+                                        lpad(iCoursePrinted?"":section.getSection(),4)+" "+
+                                        rpad(iCoursePrinted?"":exam.getPeriodNameFixedLength(),28)+" "+
+                                        rpad(iStudentPrinted?"":instructor.getName(),25)+" "+
+                                        rpad(iPeriodPrinted?"":"EVENT",6)+" "+
+                                        rpad(conflict.getOtherEventName(),(iItype?23:16))+" "+
+                                        getMeetingTime(conflict.getOtherEventTime())
+                                        );
+                            }
                             iSubjectPrinted = iCoursePrinted = iStudentPrinted = iPeriodPrinted = !iNewPage;
                         }
                     }
