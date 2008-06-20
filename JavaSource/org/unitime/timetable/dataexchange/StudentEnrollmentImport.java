@@ -6,6 +6,7 @@ import java.util.Iterator;
 import org.dom4j.Element;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
@@ -14,6 +15,7 @@ import org.unitime.timetable.model.TimetableManager;
 public class StudentEnrollmentImport extends BaseImport {
 	TimetableManager manager = null;
 	HashMap<String, Class_> classes = new HashMap<String, Class_>();
+	HashMap<String, CourseOffering> controllingCourses = new HashMap<String, CourseOffering>();
 	
 	public StudentEnrollmentImport() {
 		super();
@@ -30,13 +32,13 @@ public class StudentEnrollmentImport extends BaseImport {
 	        String year   = rootElement.attributeValue("year");
 	        String term   = rootElement.attributeValue("term");
 	        String created = rootElement.attributeValue("created");
+			beginTransaction();
 	        Session session = Session.getSessionUsingInitiativeYearTerm(campus, year, term);
 	        if(session == null) {
 	           	throw new Exception("No session found for the given campus, year, and term.");
 	        }
 	        loadClasses(session.getUniqueId());
 	        info("classes loaded");
-			beginTransaction();
 	        if (manager == null){
 	        	manager = findDefaultManager();
 	        }
@@ -101,7 +103,7 @@ public class StudentEnrollmentImport extends BaseImport {
 				StudentClassEnrollment sce = new StudentClassEnrollment();
 		    	sce.setStudent(student);
 		    	sce.setClazz(clazz);
-		    	sce.setCourseOffering(clazz.getSchedulingSubpart().getControllingCourseOffering());
+		    	sce.setCourseOffering(controllingCourses.get(externalId));
 		    	sce.setTimestamp(new java.util.Date());
 		    	student.addToclassEnrollments(sce);
             }
@@ -123,6 +125,7 @@ public class StudentEnrollmentImport extends BaseImport {
 			Class_ c = (Class_) it.next();
 			if (c.getExternalUniqueId() != null){
 				classes.put(c.getExternalUniqueId(), c);
+				controllingCourses.put(c.getExternalUniqueId(), c.getSchedulingSubpart().getControllingCourseOffering());
 			} 
 		}
 	}
