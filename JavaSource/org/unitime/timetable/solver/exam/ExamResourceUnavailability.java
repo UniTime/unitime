@@ -1,6 +1,5 @@
 package org.unitime.timetable.solver.exam;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import net.sf.cpsolver.exam.model.ExamPeriod;
@@ -14,10 +13,10 @@ public class ExamResourceUnavailability {
     protected String iTime;
     protected String iRoom;
     protected int iSize;
-    protected Set<Long> iStudentIds = new HashSet<Long>();
-    protected Set<Long> iInstructorIds = new HashSet<Long>();
+    protected Set<Long> iStudentIds;
+    protected Set<Long> iInstructorIds;
     
-    public ExamResourceUnavailability(ExamPeriod period, Long id, String type, String name, String date, String time, String room, int size) {
+    public ExamResourceUnavailability(ExamPeriod period, Long id, String type, String name, String date, String time, String room, int size, Set<Long> studentIds, Set<Long> instructorIds) {
         iPeriod = period;
         iId = id;
         iType = type;
@@ -26,6 +25,8 @@ public class ExamResourceUnavailability {
         iTime = time;
         iRoom = room;
         iSize = size;
+        iStudentIds = studentIds;
+        iInstructorIds = instructorIds;
     }
     
     public ExamPeriod getPeriod() { return iPeriod; }

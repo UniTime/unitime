@@ -1,7 +1,9 @@
 package org.unitime.timetable.solver.exam;
 
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.Vector;
 
 import org.dom4j.Document;
@@ -45,7 +47,17 @@ public class ExamModel extends net.sf.cpsolver.exam.model.ExamModel {
         if (elements!=null) {
             for (Iterator i = elements.elementIterator();i.hasNext();) {
                 Element element = (Element)i.next();
-                ExamResourceUnavailability unavailability = new ExamResourceUnavailability(
+                Set<Long> studentIds = new HashSet();
+                Set<Long> instructorIds = new HashSet();
+                for (Iterator j = element.elementIterator("student");j.hasNext();) {
+                    Element e = (Element)j.next();
+                    studentIds.add(Long.valueOf(e.attributeValue("id")));
+                }
+                for (Iterator j = element.elementIterator("instructor");j.hasNext();) {
+                    Element e = (Element)j.next();
+                    instructorIds.add(Long.valueOf(e.attributeValue("id")));
+                }
+                addUnavailability(new ExamResourceUnavailability(
                         getPeriod(Long.parseLong(element.attributeValue("period"))),
                         Long.valueOf(element.attributeValue("id")),
                         element.getName(),
@@ -53,16 +65,8 @@ public class ExamModel extends net.sf.cpsolver.exam.model.ExamModel {
                         element.attributeValue("date",""),
                         element.attributeValue("time",""),
                         element.attributeValue("room",""),
-                        Integer.parseInt(element.attributeValue("size","0")));
-                for (Iterator j = element.elementIterator("student");j.hasNext();) {
-                    Element e = (Element)j.next();
-                    unavailability.getStudentIds().add(Long.valueOf(e.attributeValue("id")));
-                }
-                for (Iterator j = element.elementIterator("instructor");j.hasNext();) {
-                    Element e = (Element)j.next();
-                    unavailability.getInstructorIds().add(Long.valueOf(e.attributeValue("id")));
-                }
-                addUnavailability(unavailability);
+                        Integer.parseInt(element.attributeValue("size","0")),
+                        studentIds, instructorIds));
             }
         }
         
