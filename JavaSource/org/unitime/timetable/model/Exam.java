@@ -220,31 +220,20 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 .list();
     }
     
-    public Set getStudents() {
-        HashSet students = new HashSet();
+    public Set<Student> getStudents() {
+        HashSet<Student> students = new HashSet();
         for (Iterator i=getOwners().iterator();i.hasNext();)
             students.addAll(((ExamOwner)i.next()).getStudents());
         return students;
-        /*
-        return new ExamDAO().getSession().createQuery(
-                "select distinct e.student from " +
-                "StudentClassEnrollment e inner join e.clazz c " +
-                "inner join c.schedulingSubpart.instrOfferingConfig ioc " +
-                "inner join e.courseOffering co "+
-                "inner join co.instructionalOffering io, " +
-                "Exam x inner join x.owners o "+
-                "where x.uniqueId=:examId and ("+
-                "(o.ownerType="+ExamOwner.sOwnerTypeCourse+" and o.ownerId=co.uniqueId) or "+
-                "(o.ownerType="+ExamOwner.sOwnerTypeOffering+" and o.ownerId=io.uniqueId) or "+
-                "(o.ownerType="+ExamOwner.sOwnerTypeConfig+" and o.ownerId=ioc.uniqueId) or "+
-                "(o.ownerType="+ExamOwner.sOwnerTypeClass+" and o.ownerId=c.uniqueId) "+
-                ")")
-                .setLong("examId", getUniqueId())
-                .setCacheable(true)
-                .list();
-                */
     }
     
+    public Set<Long> getStudentIds() {
+        HashSet<Long> studentIds = new HashSet();
+        for (Iterator i=getOwners().iterator();i.hasNext();)
+            studentIds.addAll(((ExamOwner)i.next()).getStudentIds());
+        return studentIds;
+    }
+
     public Hashtable<Long, Set<Exam>> getStudentExams() {
         Hashtable<Long, Set<Exam>> studentExams = new Hashtable<Long, Set<Exam>>();
         for (Iterator i=getOwners().iterator();i.hasNext();) {
@@ -972,13 +961,13 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         
         if (getPreferences()==null) setPreferences(new HashSet());
         
-        //Prefer overlapping period for midterm classes
+        //Prefer overlapping period for evening classes
         PreferenceLevel midtermPref = PreferenceLevel.getPreferenceLevel(ApplicationProperties.getProperty(
-                "exam."+(getExamType()==Exam.sExamTypeMidterm?"midterm":"final")+".defaultPrefs.midtermClasses.pref",
+                "tmtbl.exam.defaultPrefs."+(getExamType()==Exam.sExamTypeMidterm?"midterm":"final")+".eveningClasses.pref",
                 (getExamType()==Exam.sExamTypeMidterm?PreferenceLevel.sNeutral:PreferenceLevel.sRequired)));
         if (!PreferenceLevel.sNeutral.equals(midtermPref.getPrefProlog()) && (override || getPreferences(ExamPeriodPref.class).isEmpty())) {
             int firstMidtermPeriod = Integer.parseInt(ApplicationProperties.getProperty(
-                    "exam."+(getExamType()==Exam.sExamTypeMidterm?"midterm":"final")+".defaultPrefs.midtermClasses.firstMidtermPeriod","216")); //6pm
+                    "tmtbl.exam.defaultPrefs."+(getExamType()==Exam.sExamTypeMidterm?"midterm":"final")+".eveningClasses.firstEveningPeriod","216")); //6pm
             HashSet<ExamPeriod> periods = new HashSet();
             for (Iterator i=getOwners().iterator();i.hasNext();) {
                 ExamOwner owner = (ExamOwner)i.next();
@@ -1018,7 +1007,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         
         //Prefer original room
         PreferenceLevel originalPref = PreferenceLevel.getPreferenceLevel(ApplicationProperties.getProperty(
-                "exam."+(getExamType()==Exam.sExamTypeMidterm?"midterm":"final")+".defaultPrefs.originalRoom.pref",
+                "tmtbl.exam.defaultPrefs."+(getExamType()==Exam.sExamTypeMidterm?"midterm":"final")+".originalRoom.pref",
                 (getExamType()==Exam.sExamTypeMidterm?PreferenceLevel.sNeutral:PreferenceLevel.sStronglyPreferred)));
         if (!PreferenceLevel.sNeutral.equals(originalPref.getPrefProlog()) && (override || getPreferences(RoomPref.class).isEmpty())) {
             HashSet<Location> locations = new HashSet();
