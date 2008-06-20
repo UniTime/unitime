@@ -17,7 +17,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 --%>
 <%@ page import="org.unitime.timetable.ApplicationProperties" %>
-
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <HTML>
 <HEAD>
@@ -45,13 +44,15 @@
 	<BR> 
 	<IMG src="images/timetabling.jpg" alt="Timetabling" title="Timetabling Log In">
 	<BR>
-	&nbsp;
-	
-	<BR> 
-	<%= request.getParameter("message") %> 
-	<BR>&nbsp;<BR>
-	
+	<BR>
+	<% if (request.getParameter("message")!=null && !"null".equals(request.getParameter("message"))) { %> 
+		<%=request.getParameter("message")%>
+		<BR>
+		<BR>
+	<% } %>
+	</logic:notEmpty>
 	<A class="l7" href="<%=request.getContextPath()%>/login.do" target="_top">LOG IN</A>
+	<BR><BR>
 </DIV>
 
 </BODY>
