@@ -1,5 +1,6 @@
 package org.unitime.timetable.model;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -57,5 +58,12 @@ public class CourseEvent extends BaseCourseEvent {
     }
 
     public int getEventType() { return sEventTypeCourse; }
+
+    public Collection<Long> getStudentIds() {
+        HashSet<Long> studentIds = new HashSet();
+        for (Iterator i=getRelatedCourses().iterator();i.hasNext();)
+            studentIds.addAll(((RelatedCourseInfo)i.next()).getStudentIds());
+        return studentIds;
+    }
 
 }
