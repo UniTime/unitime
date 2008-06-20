@@ -40,11 +40,9 @@ import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.BuildingPref;
-import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionObject;
 import org.unitime.timetable.model.DistributionPref;
-import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.ExamPeriodPref;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
@@ -91,6 +89,7 @@ public class ExamDatabaseLoader extends ExamLoader {
     private Progress iProgress = null;
     private Hashtable<Long,ExamPeriod> iPeriods = new Hashtable();
     private Hashtable<Long,ExamRoom> iRooms = new Hashtable();
+    private Hashtable<Long,ExamRoom> iPermId2Room = new Hashtable();
     private Hashtable<Long,org.unitime.timetable.model.ExamOwner> iOwners = new Hashtable();
     private Hashtable iExams = new Hashtable();
     private Hashtable iInstructors = new Hashtable();
@@ -192,6 +191,7 @@ public class ExamDatabaseLoader extends ExamLoader {
             getModel().addConstraint(room);
             getModel().getRooms().add(room);
             iRooms.put(room.getId(),room);
+            if (location.getPermanentId()!=null) iPermId2Room.put(location.getPermanentId(), room);
             for (Iterator j=location.getExamPreferences(iExamType).entrySet().iterator();j.hasNext();) {
                 Map.Entry entry = (Map.Entry)j.next();
                 ExamPeriod period = iPeriods.get(((org.unitime.timetable.model.ExamPeriod)entry.getKey()).getUniqueId());
@@ -616,96 +616,194 @@ public class ExamDatabaseLoader extends ExamLoader {
     */
     
     protected void loadAvailabilitiesFromEvents() {
-        Vector overlappingEvents = new Vector();
-        overlappingEvents.addAll(
+        List overlappingClassEvents = 
                 new EventDAO().getSession().createQuery(
-                        "select distinct e, p.uniqueId, m from ClassEvent e inner join e.meetings m, ExamPeriod p where " +
+                        "select distinct e.uniqueId, p.uniqueId, m from ClassEvent e inner join e.meetings m, ExamPeriod p where " +
                         "p.session.uniqueId=:sessionId and p.examType=:examType and "+
                         "p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
-                        HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate"
+                        HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate and "+
+                        "(exists elements(e.clazz.studentEnrollments) or exists elements(e.clazz.classInstructors))"
                         )
                         .setInteger("travelTime", Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.classEvent","6")))
                         .setInteger("examType", iExamType)
                         .setLong("sessionId", iSessionId)
                         .setCacheable(true)
-                        .list());
-        overlappingEvents.addAll(
+                        .list();
+        List overlappingCourseEvents =
                 new EventDAO().getSession().createQuery(
-                        "select distinct e, p.uniqueId, m from CourseEvent e inner join e.meetings m, ExamPeriod p where " +
+                        "select distinct e.uniqueId, p.uniqueId, m from CourseEvent e inner join e.meetings m, ExamPeriod p where " +
                         "e.reqAttendance=true and p.session.uniqueId=:sessionId and p.examType=:examType and "+
                         "p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
-                        HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate"
-                        )
+                        HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate")
                         .setInteger("travelTime", Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.courseEvent","0")))
                         .setInteger("examType", iExamType)
                         .setLong("sessionId", iSessionId)
                         .setCacheable(true)
-                        .list());
-        iProgress.setPhase("Loading availabilities...", overlappingEvents.size());
+                        .list();
+        iProgress.setPhase("Loading availabilities...", overlappingClassEvents.size()+overlappingCourseEvents.size());
         
-        Hashtable<Event, Collection<Long>> students = new Hashtable();
-        Hashtable<Event, Set<DepartmentalInstructor>> instructors = new Hashtable();
-        Hashtable<Event, Hashtable<ExamPeriod,ExamResourceUnavailability>> unavailabilities = new Hashtable();
+        Hashtable<Long, Set<ExamStudent>> students = new Hashtable();
+        for (Iterator i=new EventDAO().getSession().createQuery(
+                "select e.uniqueId, s.student.uniqueId from ClassEvent e inner join e.meetings m inner join e.clazz.studentEnrollments s, ExamPeriod p where " +
+                "p.session.uniqueId=:sessionId and p.examType=:examType and "+
+                "p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
+                HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate")
+                .setInteger("travelTime", Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.classEvent","6")))
+                .setInteger("examType", iExamType)
+                .setLong("sessionId", iSessionId)
+                .setCacheable(true).iterate();i.hasNext();) {
+            Object[] o = (Object[])i.next();
+            Long eventId = (Long)o[0];
+            Long studentId = (Long)o[1];
+            ExamStudent student = (ExamStudent)iStudents.get(studentId);
+            if (student==null) continue;
+            Set<ExamStudent> studentsThisEvent = students.get(eventId);
+            if (studentsThisEvent==null) { studentsThisEvent=new HashSet(); students.put(eventId, studentsThisEvent); }
+            studentsThisEvent.add(student);
+        }
         
-        for (Iterator i=overlappingEvents.iterator();i.hasNext();) {
+        Hashtable<Long, Set<ExamInstructor>> instructors = new Hashtable();
+        for (Iterator i=new EventDAO().getSession().createQuery(
+                "select e.uniqueId, i.instructor from ClassEvent e inner join e.meetings m inner join e.clazz.classInstructors i, ExamPeriod p where " +
+                "p.session.uniqueId=:sessionId and p.examType=:examType and i.lead=true and "+
+                "p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
+                HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate")
+                .setInteger("travelTime", Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.classEvent","6")))
+                .setInteger("examType", iExamType)
+                .setLong("sessionId", iSessionId)
+                .setCacheable(true).iterate();i.hasNext();) {
+            Object[] o = (Object[])i.next();
+            Long eventId = (Long)o[0];
+            ExamInstructor instructor = getInstructor((DepartmentalInstructor)o[1]);
+            if (instructor==null) continue;
+            Set<ExamInstructor> instructorsThisEvent = instructors.get(eventId);
+            if (instructorsThisEvent==null) { instructorsThisEvent=new HashSet(); instructors.put(eventId, instructorsThisEvent); }
+            instructorsThisEvent.add(instructor);
+        }
+        
+        Hashtable<Long, Hashtable<ExamPeriod,ExamResourceUnavailability>> unavailabilities = new Hashtable();
+        
+        for (Iterator i=overlappingClassEvents.iterator();i.hasNext();) {
             iProgress.incProgress();
             Object[] o = (Object[])i.next();
-            Event event = (Event)o[0];
+            Long eventId = (Long)o[0];
             ExamPeriod period = iPeriods.get((Long)o[1]);
             Meeting meeting = (Meeting)o[2];
-            if (period==null) {
-                iProgress.warn("Period "+(Long)o[1]+" not loaded.");
-                continue;
-            }
-            iProgress.debug("Event "+event.getEventName()+"/"+meeting.toString()+" overlaps with period "+period);
+            if (period==null) continue;
             
-            Collection<Long> studentsThisEvent = students.get(event);
-            if (studentsThisEvent==null) {
-                studentsThisEvent = event.getStudentIds();
-                students.put(event, studentsThisEvent);
+            Set<ExamStudent> studentsThisEvent = students.get(eventId);
+            Set<ExamInstructor> instructorsThisEvent = instructors.get(eventId);
+            
+            if ((studentsThisEvent==null || studentsThisEvent.isEmpty()) && (instructorsThisEvent==null || instructorsThisEvent.isEmpty())) continue;
+            
+            Set<Long> studentIds = new HashSet();
+            Set<Long> instructorIds = new HashSet();
+            
+            if (studentsThisEvent!=null) {
+                for (ExamStudent student : studentsThisEvent) {
+                    student.setAvailable(period.getIndex(), false);
+                    studentIds.add(student.getId());
+                }
             }
             
-            Set<DepartmentalInstructor> instructorsThisEvent = instructors.get(event);
-            if (instructorsThisEvent==null) {
-                instructorsThisEvent = event.getInstructors();
-                instructors.put(event, instructorsThisEvent);
+            if (instructorsThisEvent!=null) {
+                for (ExamInstructor instructor : instructorsThisEvent) {
+                    instructor.setAvailable(period.getIndex(), false);
+                    instructorIds.add(instructor.getId());
+                }
             }
             
-            Hashtable<ExamPeriod,ExamResourceUnavailability> unavailabilitiesThisEvent = unavailabilities.get(event);
+            if (studentIds.isEmpty() && instructorIds.isEmpty()) continue;
+            
+            Hashtable<ExamPeriod,ExamResourceUnavailability> unavailabilitiesThisEvent = unavailabilities.get(eventId);
             if (unavailabilitiesThisEvent==null) {
                 unavailabilitiesThisEvent = new Hashtable();
-                unavailabilities.put(event, unavailabilitiesThisEvent);
+                unavailabilities.put(eventId, unavailabilitiesThisEvent);
             }
+            
+            ExamRoom room = (meeting.getLocationPermanentId()==null?null:iPermId2Room.get(meeting.getLocationPermanentId()));
             
             ExamResourceUnavailability unavailability = unavailabilitiesThisEvent.get(period);
             if (unavailability!=null) {
-                if (meeting.getLocation()!=null) unavailability.addRoom(meeting.getLocation().getLabel());
+                if (room!=null) unavailability.addRoom(room.getName());
                 continue;
             }
+            
             unavailability = new ExamResourceUnavailability(
-                    period, meeting.getEvent().getUniqueId(), (event instanceof ClassEvent?"ClassEvent":"CourseEvent"), 
+                    period, meeting.getEvent().getUniqueId(), "class", 
                     meeting.getEvent().getEventName(), meeting.dateStr(), meeting.startTime()+" - "+meeting.stopTime(), 
-                    meeting.getRoomLabel(), studentsThisEvent.size());
+                    (room==null?"":room.getName()), (studentsThisEvent==null?0:studentsThisEvent.size()), studentIds, instructorIds);
+            
+            iProgress.debug("Class event "+meeting.getEvent().getEventName()+" "+meeting.getTimeLabel()+" overlaps with period "+period+" ("+studentIds.size()+" students, "+instructorIds.size()+" instructors)");
+            
             unavailabilitiesThisEvent.put(period, unavailability);
-            
-            for (Long studentId : studentsThisEvent) {
-                ExamStudent student = (ExamStudent)iStudents.get(studentId);
-                if (student!=null) {
-                    student.setAvailable(period.getIndex(), false);
-                    unavailability.getStudentIds().add(student.getId());
-                }
-            }
-            
-            for (DepartmentalInstructor di : instructorsThisEvent) {
-                ExamInstructor instructor = getInstructor(di);
-                if (instructor!=null) {
-                    instructor.setAvailable(period.getIndex(), false);
-                    unavailability.getInstructorIds().add(instructor.getId());
-                }
-            }
-            
             getModel().addUnavailability(unavailability);
         }
+        
+        for (Iterator i=overlappingCourseEvents.iterator();i.hasNext();) {
+            iProgress.incProgress();
+            Object[] o = (Object[])i.next();
+            Long eventId = (Long)o[0];
+            ExamPeriod period = iPeriods.get((Long)o[1]);
+            Meeting meeting = (Meeting)o[2];
+            if (period==null) continue;
+
+            Set<ExamStudent> studentsThisEvent = students.get(eventId);
+            if (studentsThisEvent==null) {
+                studentsThisEvent = new HashSet();
+                for (Long studentId : meeting.getEvent().getStudentIds()) {
+                    ExamStudent student = (ExamStudent)iStudents.get(studentId);
+                    if (student!=null) studentsThisEvent.add(student);
+                }
+                students.put(eventId, studentsThisEvent);
+            }
+
+            Set<ExamInstructor> instructorsThisEvent = instructors.get(eventId);
+            
+            if ((studentsThisEvent==null || studentsThisEvent.isEmpty()) && (instructorsThisEvent==null || instructorsThisEvent.isEmpty())) continue;
+            
+            Set<Long> studentIds = new HashSet();
+            Set<Long> instructorIds = new HashSet();
+            
+            if (studentsThisEvent!=null) {
+                for (ExamStudent student : studentsThisEvent) {
+                    student.setAvailable(period.getIndex(), false);
+                    studentIds.add(student.getId());
+                }
+            }
+            
+            if (instructorsThisEvent!=null) {
+                for (ExamInstructor instructor : instructorsThisEvent) {
+                    instructor.setAvailable(period.getIndex(), false);
+                    instructorIds.add(instructor.getId());
+                }
+            }
+            if (studentIds.isEmpty() && instructorIds.isEmpty()) continue;
+
+            Hashtable<ExamPeriod,ExamResourceUnavailability> unavailabilitiesThisEvent = unavailabilities.get(eventId);
+            if (unavailabilitiesThisEvent==null) {
+                unavailabilitiesThisEvent = new Hashtable();
+                unavailabilities.put(eventId, unavailabilitiesThisEvent);
+            }
+            
+            ExamRoom room = (meeting.getLocationPermanentId()==null?null:iPermId2Room.get(meeting.getLocationPermanentId()));
+            
+            ExamResourceUnavailability unavailability = unavailabilitiesThisEvent.get(period);
+            if (unavailability!=null) {
+                if (room!=null) unavailability.addRoom(room.getName());
+                continue;
+            }
+            
+            unavailability = new ExamResourceUnavailability(
+                    period, meeting.getEvent().getUniqueId(), "event", 
+                    meeting.getEvent().getEventName(), meeting.dateStr(), meeting.startTime()+" - "+meeting.stopTime(), 
+                    (room==null?"":room.getName()), (studentsThisEvent==null?0:studentsThisEvent.size()), studentIds, instructorIds);
+            
+            iProgress.debug("Class event "+meeting.getEvent().getEventName()+"/"+meeting.getTimeLabel()+" overlaps with period "+period+" ("+studentIds.size()+" students, "+instructorIds.size()+" instructors)");
+            
+            unavailabilitiesThisEvent.put(period, unavailability);
+            getModel().addUnavailability(unavailability);
+        }        
     }
     
     protected void loadDistributions() {
