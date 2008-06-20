@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.base.BaseExamOwner;
 import org.unitime.timetable.model.comparators.ClassComparator;
@@ -34,7 +35,6 @@ import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.ExamOwnerDAO;
 import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
-import org.unitime.timetable.util.Constants;
 
 public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
 	private static final long serialVersionUID = 1L;
@@ -570,9 +570,9 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                 "select e.student.uniqueId, m from ClassEvent ce inner join ce.meetings m inner join ce.clazz.studentEnrollments f, StudentClassEnrollment e inner join e.clazz c, ExamPeriod p " +
                 "where c.uniqueId = :examOwnerId and e.student=f.student and "+
                 "p.uniqueId=:periodId and p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
-                "p.session.examBeginDate+p.dateOffset = m.meetingDate")
+                HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate")
                 .setLong("examOwnerId", getOwnerId())
-                .setInteger("travelTime", Constants.EXAM_TRAVEL_TIME_SLOTS)
+                .setInteger("travelTime", Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.classEvent","6")))
                 .setLong("periodId", periodId)
                 .setCacheable(true).iterate(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
@@ -588,9 +588,9 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "select e.student.uniqueId, m from ClassEvent ce inner join ce.meetings m inner join ce.clazz.studentEnrollments f, StudentClassEnrollment e inner join e.clazz c, ExamPeriod p " +
                     "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :examOwnerId and e.student=f.student and "+
                     "p.uniqueId=:periodId and p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
-                    "p.session.examBeginDate+p.dateOffset = m.meetingDate")
+                    HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate")
                     .setLong("examOwnerId", getOwnerId())
-                    .setInteger("travelTime", Constants.EXAM_TRAVEL_TIME_SLOTS)
+                    .setInteger("travelTime", Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.classEvent","6")))
                     .setLong("periodId", periodId)
                     .setCacheable(true).iterate(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
@@ -606,9 +606,9 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "select e.student.uniqueId, m from ClassEvent ce inner join ce.meetings m inner join ce.clazz.studentEnrollments f, StudentClassEnrollment e inner join e.courseOffering co, ExamPeriod p " +
                     "where co.uniqueId = :examOwnerId and e.student=f.student and "+
                     "p.uniqueId=:periodId and p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
-                    "p.session.examBeginDate+p.dateOffset = m.meetingDate")
+                    HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate")
                     .setLong("examOwnerId", getOwnerId())
-                    .setInteger("travelTime", Constants.EXAM_TRAVEL_TIME_SLOTS)
+                    .setInteger("travelTime", Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.classEvent","6")))
                     .setLong("periodId", periodId)
                     .setCacheable(true).iterate(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
@@ -624,9 +624,9 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "select e.student.uniqueId, m from ClassEvent ce inner join ce.meetings m inner join ce.clazz.studentEnrollments f, StudentClassEnrollment e inner join e.courseOffering co, ExamPeriod p " +
                     "where co.instructionalOffering.uniqueId = :examOwnerId and e.student=f.student and "+
                     "p.uniqueId=:periodId and p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
-                    "p.session.examBeginDate+p.dateOffset = m.meetingDate")
+                    HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate")
                     .setLong("examOwnerId", getOwnerId())
-                    .setInteger("travelTime", Constants.EXAM_TRAVEL_TIME_SLOTS)
+                    .setInteger("travelTime", Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.classEvent","6")))
                     .setLong("periodId", periodId)
                     .setCacheable(true).iterate(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
