@@ -21,6 +21,7 @@ package org.unitime.timetable.model;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -86,6 +87,8 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
 	public String getEventTypeLabel() { return sEventTypes[getEventType()]; }
 	
     public abstract Set<Student> getStudents();
+    
+    public abstract Collection<Long> getStudentIds();
     
     public abstract Set<DepartmentalInstructor> getInstructors();
 

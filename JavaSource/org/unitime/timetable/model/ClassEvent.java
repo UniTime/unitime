@@ -1,8 +1,8 @@
 package org.unitime.timetable.model;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 import org.unitime.timetable.model.base.BaseClassEvent;
@@ -48,7 +48,7 @@ public class ClassEvent extends BaseClassEvent {
         return students;
     }
     
-    public List getStudentIds() {
+    public Collection<Long> getStudentIds() {
         return new RelatedCourseInfoDAO().getSession().createQuery(
                 "select distinct e.student.uniqueId from StudentClassEnrollment e where e.clazz.uniqueId = :classId")
                 .setLong("classId", getClazz().getUniqueId())
