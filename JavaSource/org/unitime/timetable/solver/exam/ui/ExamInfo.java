@@ -161,6 +161,14 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
         return iSections;
     }
     
+    public Set<Long> getStudentIds() {
+        HashSet<Long> studentIds = new HashSet();
+        for (ExamSectionInfo section : getSections()) {
+            studentIds.addAll(section.getStudentIds());
+        }
+        return studentIds;
+    }
+    
     public String getSectionName(String delim) {
         String name = "";
         for (Enumeration e=getSections().elements();e.hasMoreElements();) {
