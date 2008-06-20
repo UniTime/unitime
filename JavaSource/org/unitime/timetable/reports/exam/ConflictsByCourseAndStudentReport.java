@@ -105,20 +105,34 @@ public class ConflictsByCourseAndStudentReport extends PdfLegacyExamReport {
                                 iSubjectPrinted = iCoursePrinted = iStudentPrinted = iPeriodPrinted = !iNewPage;
                             }
                         } else if (conflict.getOtherEventId()!=null) {
-                            println(
-                                    rpad(iSubjectPrinted?"":subject,4)+" "+
-                                    rpad(iCoursePrinted?"":section.getCourseNbr(), 6)+" "+
-                                    (iItype?rpad(iCoursePrinted?"":section.getItype(), 6)+" ":"")+
-                                    lpad(iCoursePrinted?"":section.getSection(),4)+" "+
-                                    rpad(iCoursePrinted?"":exam.getPeriodNameFixedLength(),28)+" "+
-                                    rpad(iStudentPrinted?"":iStudentNames.get(studentId),10)+" "+
-                                    rpad(iPeriodPrinted?"":"CLASS",6)+" "+
-                                    rpad(conflict.getOtherClass().getSchedulingSubpart().getControllingCourseOffering().getSubjectAreaAbbv(),4)+" "+
-                                    rpad(conflict.getOtherClass().getSchedulingSubpart().getControllingCourseOffering().getCourseNbr(),6)+" "+
-                                    (iItype?rpad(iExternal?conflict.getOtherClass().getExternalUniqueId():conflict.getOtherClass().getSchedulingSubpart().getItypeDesc(),6)+" ":"")+
-                                    lpad(iUseClassSuffix && conflict.getOtherClass().getClassSuffix()!=null?conflict.getOtherClass().getClassSuffix():conflict.getOtherClass().getSectionNumberString(),4)+" "+
-                                    getMeetingTime(conflict.getOtherEventTime())
-                                    );
+                            if (conflict.isOtherClass()) {
+                                println(
+                                        rpad(iSubjectPrinted?"":subject,4)+" "+
+                                        rpad(iCoursePrinted?"":section.getCourseNbr(), 6)+" "+
+                                        (iItype?rpad(iCoursePrinted?"":section.getItype(), 6)+" ":"")+
+                                        lpad(iCoursePrinted?"":section.getSection(),4)+" "+
+                                        rpad(iCoursePrinted?"":exam.getPeriodNameFixedLength(),28)+" "+
+                                        rpad(iStudentPrinted?"":iStudentNames.get(studentId),10)+" "+
+                                        rpad(iPeriodPrinted?"":"CLASS",6)+" "+
+                                        rpad(conflict.getOtherClass().getSchedulingSubpart().getControllingCourseOffering().getSubjectAreaAbbv(),4)+" "+
+                                        rpad(conflict.getOtherClass().getSchedulingSubpart().getControllingCourseOffering().getCourseNbr(),6)+" "+
+                                        (iItype?rpad(iExternal?conflict.getOtherClass().getExternalUniqueId():conflict.getOtherClass().getSchedulingSubpart().getItypeDesc(),6)+" ":"")+
+                                        lpad(iUseClassSuffix && conflict.getOtherClass().getClassSuffix()!=null?conflict.getOtherClass().getClassSuffix():conflict.getOtherClass().getSectionNumberString(),4)+" "+
+                                        getMeetingTime(conflict.getOtherEventTime())
+                                        );
+                            } else {
+                                println(
+                                        rpad(iSubjectPrinted?"":subject,4)+" "+
+                                        rpad(iCoursePrinted?"":section.getCourseNbr(), 6)+" "+
+                                        (iItype?rpad(iCoursePrinted?"":section.getItype(), 6)+" ":"")+
+                                        lpad(iCoursePrinted?"":section.getSection(),4)+" "+
+                                        rpad(iCoursePrinted?"":exam.getPeriodNameFixedLength(),28)+" "+
+                                        rpad(iStudentPrinted?"":iStudentNames.get(studentId),10)+" "+
+                                        rpad(iPeriodPrinted?"":"EVENT",6)+" "+
+                                        rpad(conflict.getOtherEventName(),(iItype?23:16))+" "+
+                                        getMeetingTime(conflict.getOtherEventTime())
+                                        );
+                            }
                             iSubjectPrinted = iCoursePrinted = iStudentPrinted = iPeriodPrinted = !iNewPage;
                         }
                     }
