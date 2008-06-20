@@ -22,16 +22,21 @@ package org.unitime.timetable.model;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.unitime.commons.web.Web;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
 import org.unitime.timetable.model.base.BaseExamPeriod;
+import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.ExamPeriodDAO;
 import org.unitime.timetable.util.Constants;
 
@@ -225,7 +230,7 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
     }
     
     public boolean overlap(Assignment assignment) {
-        return overlap(assignment, Constants.EXAM_TRAVEL_TIME_SLOTS);
+        return overlap(assignment, Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.classEvent","6")));
     }
     
     public boolean overlap(Assignment assignment, int nrTravelSlots) {
@@ -253,7 +258,7 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
     }
     
     public boolean overlap(Meeting meeting) {
-        return overlap(meeting, Constants.EXAM_TRAVEL_TIME_SLOTS);
+        return overlap(meeting, Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.classEvent","6")));
     }
     
     public boolean overlap(Meeting meeting, int nrTravelSlots) {
@@ -261,11 +266,11 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
         return getStartSlot() - nrTravelSlots < meeting.getStopPeriod() && meeting.getStartPeriod() < getStartSlot() + getLength() + nrTravelSlots;
     }
     
-    public List findOverlappingClassMeetings() {
-        return findOverlappingClassMeetings(Constants.EXAM_TRAVEL_TIME_SLOTS);
+    public List<Meeting> findOverlappingClassMeetings() {
+        return findOverlappingClassMeetings(Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.classEvent","6")));
     }
 
-    public List findOverlappingClassMeetings(int nrTravelSlots) {
+    public List<Meeting> findOverlappingClassMeetings(int nrTravelSlots) {
         return new ExamPeriodDAO().getSession().createQuery(
                 "select m from ClassEvent e inner join e.meetings m where " +
                 "m.meetingDate=:startDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot")
@@ -276,11 +281,11 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
                 .list();
     } 
     
-    public List findOverlappingClassMeetings(Long classId) {
-        return findOverlappingClassMeetings(classId, Constants.EXAM_TRAVEL_TIME_SLOTS);
+    public List<Meeting> findOverlappingClassMeetings(Long classId) {
+        return findOverlappingClassMeetings(classId, Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.classEvent","6")));
     }
     
-    public List findOverlappingClassMeetings(Long classId, int nrTravelSlots) {
+    public List<Meeting> findOverlappingClassMeetings(Long classId, int nrTravelSlots) {
         return new ExamPeriodDAO().getSession().createQuery(
                 "select m from ClassEvent e inner join e.meetings m where " +
                 "m.meetingDate=:startDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and " +
@@ -291,6 +296,44 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
                 .setLong("classId", classId)
                 .setCacheable(true)
                 .list();
+    }
+    
+    public Hashtable<Meeting,Set<Long>> findOverlappingCourseMeetingsWithReqAttendence(Set<Long> studentIds) {
+        return findOverlappingCourseMeetingsWithReqAttendence(studentIds, Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.courseEvent","0")));
+    }
+
+    public Hashtable<Meeting,Set<Long>> findOverlappingCourseMeetingsWithReqAttendence(Set<Long> studentIds, int nrTravelSlots) {
+        Hashtable<Meeting,Set<Long>> ret = new Hashtable();
+        if (studentIds==null || studentIds.isEmpty()) return ret;
+
+        String students = "";
+        for (Long studentId: studentIds) students += (students.length()==0?"":",")+studentId;
+
+        for (Iterator i=EventDAO.getInstance().getSession().createQuery(
+                "select m, s.student.uniqueId from "+
+                "CourseEvent e inner join e.meetings m inner join e.relatedCourses o, StudentClassEnrollment s where e.reqAttendance=true and "+
+                "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and ("+
+                "(o.ownerType=:classType and s.clazz.uniqueId=o.ownerId) or "+
+                "(o.ownerType=:configType and s.clazz.schedulingSubpart.instrOfferingConfig.uniqueId=o.ownerId) or "+
+                "(o.ownerType=:courseType and s.courseOffering.uniqueId=o.ownerId) or "+
+                "(o.ownerType=:offeringType and s.courseOffering.instructionalOffering.uniqueId=o.ownerId))")
+                .setDate("meetingDate", getStartDate())
+                .setInteger("startSlot", getStartSlot()-nrTravelSlots)
+                .setInteger("endSlot", getEndSlot()+nrTravelSlots)
+                .setInteger("classType", ExamOwner.sOwnerTypeClass)
+                .setInteger("configType", ExamOwner.sOwnerTypeConfig)
+                .setInteger("courseType", ExamOwner.sOwnerTypeCourse)
+                .setInteger("offeringType", ExamOwner.sOwnerTypeOffering)
+                .setCacheable(true).list().iterator();i.hasNext();) {
+            Object[] o = (Object[])i.next();
+            Meeting meeting = (Meeting)o[0];
+            long studentId = (Long)o[1];
+            Set<Long> conf = ret.get(meeting);
+            if (conf==null) { conf = new HashSet(); ret.put(meeting, conf); }
+            conf.add(studentId);
+        }
+        
+        return ret;
     } 
     
     public int getIndex() {
