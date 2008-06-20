@@ -3,9 +3,12 @@
  */
 package org.unitime.timetable.util;
 
+import java.io.FileInputStream;
 import java.io.StringReader;
+import java.net.URL;
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.util.Iterator;
 import java.util.Properties;
 
 import net.sf.cpsolver.ifs.util.ToolBox;
@@ -18,6 +21,7 @@ import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.dataexchange.DataExchangeHelper;
 import org.unitime.timetable.model.dao._RootDAO;
+import org.unitime.timetable.solver.remote.core.RemoteSolverServer;
 
 
 
@@ -62,10 +66,12 @@ public class ImportXmlFromDB {
 	public static void main(String[] args){
 		try{
 		    ToolBox.configureLogging();
-	        HibernateUtil.configureHibernate(new Properties());
 	        if (args[0].length() == 0){
 	        	throw(new Exception("Please specify a base file name to which '.xml' and '.ready' can be appended."));
 	        }
+	        Properties properties = new Properties();
+	        properties.put("connection.url", args[1]);
+	        HibernateUtil.configureHibernate(properties);
 	        importXml(args[0]);
 	 	} catch (Exception e) {
 	        e.printStackTrace();
