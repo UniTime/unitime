@@ -1,5 +1,6 @@
 package org.unitime.timetable.model;
 
+import java.util.Collection;
 import java.util.Set;
 
 import org.unitime.timetable.model.base.BaseExamEvent;
@@ -47,4 +48,8 @@ public abstract class ExamEvent extends BaseExamEvent {
     }
     
     public Session getSession() { return getExam().getSession(); }
+    
+    public Collection<Long> getStudentIds() {
+        return getExam().getStudentIds();
+    }
 }

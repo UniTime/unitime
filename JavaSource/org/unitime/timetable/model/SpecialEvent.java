@@ -1,5 +1,6 @@
 package org.unitime.timetable.model;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -48,4 +49,5 @@ public class SpecialEvent extends BaseSpecialEvent {
     
     public int getEventType() { return sEventTypeSpecial; }
 
+    public Collection<Long> getStudentIds() { return null; }
 }
