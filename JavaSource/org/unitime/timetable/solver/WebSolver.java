@@ -313,7 +313,8 @@ public class WebSolver extends TimetableSolver implements ProgressListener {
             properties.setProperty("Xml.ExportStudentSectioning", "true");
         if (type==SolverParameterGroup.sTypeExam) {
             properties.setProperty("Exam.GreatDeluge", ("Great Deluge".equals(properties.getProperty("Exam.Algorithm","Great Deluge"))?"true":"false"));
-            properties.setProperty("Exam.Type", extraParams.get("Exam.Type").toString());
+            if (extraParams!=null && extraParams.get("Exam.Type")!=null)
+                properties.setProperty("Exam.Type", extraParams.get("Exam.Type").toString());
         }
         properties.expand();
         return properties;
