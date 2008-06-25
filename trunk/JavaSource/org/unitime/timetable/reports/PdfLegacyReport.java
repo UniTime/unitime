@@ -7,7 +7,6 @@ import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.util.Constants;
 
 import com.lowagie.text.Document;
@@ -64,7 +63,7 @@ public class PdfLegacyReport {
             iWriter = PdfWriter.getInstance(iDoc, iOut);
 
             iDoc.addTitle(iTitle);
-            iDoc.addAuthor(ApplicationProperties.getProperty("tmtbl.pdf.examreport.author","UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+", www.unitime.org"));
+            iDoc.addAuthor("UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+", www.unitime.org");
             iDoc.addSubject(iSubject);
             iDoc.addCreator("UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+", www.unitime.org");
 
@@ -163,10 +162,8 @@ public class PdfLegacyReport {
     }    
     
     public void printHeader() throws DocumentException {
-        out(renderEnd(renderMiddle(
-                ApplicationProperties.getProperty("tmtbl.pdf.examreport.author","UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")),
-                ApplicationProperties.getProperty("tmtbl.pdf.examreport.title",iTitle)
-                ),
+        out(renderEnd(
+                renderMiddle("UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?"),iTitle),
                 iTitle2));
         out(mpad(
                 new SimpleDateFormat("EEE MMM dd, yyyy").format(new Date()),
