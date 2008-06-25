@@ -65,6 +65,8 @@ public class EventRoomAvailabilityForm extends ActionForm {
 	private String iOp; 
 	private Long iSessionId;
 	private boolean iLookAtNearLocations;
+	private Long iEventId; //if adding meetings to an existing event
+	private boolean iIsAddMeetings; //if adding meetings to an existing event
 	
 	//data calculated 
 	private Hashtable<Long, Location> iLocations; 
@@ -112,6 +114,8 @@ public class EventRoomAvailabilityForm extends ActionForm {
 		if (iDateLocations==null) iDateLocations = new TreeSet();
 		iSessionId = (Long) session.getAttribute("Event.SessionId");
 		iStudentIds = (Set<Long>)session.getAttribute("Event.StudentIds");
+		iIsAddMeetings = (Boolean) (session.getAttribute("Event.IsAddMeetings"));
+		iEventId = (Long) (session.getAttribute("Event.EventId"));
 	}
 	
 	// collect date/location combinations selected by the user in this screen
@@ -334,13 +338,11 @@ public class EventRoomAvailabilityForm extends ActionForm {
 		return hour+":"+(minute<10?"0":"")+minute+" "+ampm;
 	}
 	
-	public String getStartTimeString() {
-		return getTimeString(iStartTime);
-	}
+	public String getStartTimeString() {return getTimeString(iStartTime);}
 	
-	public String getStopTimeString() {
-		return getTimeString(iStopTime);
-	}
+	public String getStopTimeString() {	return getTimeString(iStopTime);}
+	
+	public boolean getIsAddMeetings() {return iIsAddMeetings;}
 
 	// a class for storing selected date/location combinations
 	public static class DateLocation implements Serializable, Comparable<DateLocation> {

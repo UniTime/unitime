@@ -87,6 +87,11 @@ public class EventAddForm extends PreferencesForm {
 	private String iMaxCapacity;
 	private boolean iLookAtNearLocations;
 	
+	//if adding meetings to an existing event
+	private Long iEventId; 
+	private Event iEvent;
+	private boolean iIsAddMeetings;
+	
 	// courses/classes for course related events
     private List iSubjectArea;
     private List iCourseNbr;
@@ -199,8 +204,19 @@ public class EventAddForm extends PreferencesForm {
 			iItype = (List) session.getAttribute("Event.SubjectItype");
 			iClassNumber = (List) session.getAttribute("Event.ClassNumber");
 		}
+		iIsAddMeetings = (Boolean) (session.getAttribute("Event.IsAddMeetings"));
+		iEventId = (Long) (session.getAttribute("Event.EventId"));
 	}
 	
+/*	// called if 
+	public void load() {
+		if (iEventId!=null) {
+			iEvent = EventDAO.getInstance().get(iEventId);
+			iEventType = iEvent.getEventTypeLabel(); 
+			iIsAddMeetings = true;
+		}			
+	}
+*/	
 	// save event parameters to session attribute Event
 	public void save (HttpSession session) {
 		session.setAttribute("Event.EventType", iEventType);
@@ -221,6 +237,8 @@ public class EventAddForm extends PreferencesForm {
 		session.setAttribute("Event.ClassNumber", iClassNumber);
 		session.setAttribute("Event.StudentIds", getStudentIds());
 		session.setAttribute("Event.AttendanceRequired", iAttendanceRequired);
+		session.setAttribute("Event.EventId", iEventId);
+		session.setAttribute("Event.IsAddMeetings", iIsAddMeetings);
 	}
 	
 	
@@ -320,6 +338,15 @@ public class EventAddForm extends PreferencesForm {
 
     public int getStopTime() {return iStopTime; }
     public void setStopTime(int stopTime) {iStopTime = stopTime;}
+    
+    public Long getEventId() {return iEventId;}
+    public void setEventId(Long id) {iEventId = id;}
+    
+    public Event getEvent() {return iEvent;}
+    public void setEvent(Event event) {iEvent = event;}
+    
+    public boolean getIsAddMeetings() {return iIsAddMeetings;}
+    public void setIsAddMeetings (boolean isAdd) {iIsAddMeetings = isAdd;}
 
 	public Vector<ComboBoxLookup> getLocationTypes() {
 		Vector<ComboBoxLookup> ltypes = new Vector();
@@ -365,6 +392,26 @@ public class EventAddForm extends PreferencesForm {
     
     public Boolean getLookAtNearLocations() {return iLookAtNearLocations;}
     public void setLookAtNearLocations (Boolean look) {iLookAtNearLocations = look;}
+
+	public void cleanSessionAttributes(HttpSession session) {
+		session.removeAttribute("Event.DateLocations");
+		session.removeAttribute("Event.StartTime");
+		session.removeAttribute("Event.StopTime");
+		session.removeAttribute("Event.MeetingDates");
+		session.removeAttribute("Event.MinCapacity");
+		session.removeAttribute("Event.MaxCapacity");
+		session.removeAttribute("Event.BuildingId");
+		session.removeAttribute("Event.RoomNumber");
+		session.removeAttribute("Event.SessionId");
+		session.removeAttribute("back");
+		session.removeAttribute("Event.LookAtNearLocations");
+		session.removeAttribute("Event.SubjectArea");
+		session.removeAttribute("Event.CourseNbr");
+		session.removeAttribute("Event.SubjectItype");
+		session.removeAttribute("Event.ClassNumber");
+		session.removeAttribute("Event.EventId");
+		session.removeAttribute("Event.IsAddMeetings");
+	}
     
     
 // Methods related to course events with conflict checking    

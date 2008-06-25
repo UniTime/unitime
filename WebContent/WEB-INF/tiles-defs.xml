@@ -910,6 +910,10 @@
 		<put name="body" value="/user/eventAdd.jsp" />
   	</definition> 	  	
 
+  	<definition name="eventAddMtgsTile" extends="eventAddTile">
+  		<put name="title" type="string" value="Add Event Meetings"/>
+  	</definition>
+
  	<definition	name="eventRoomAvailabilityTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Event Room Availability"/>
 		<put name="body" value="/user/eventRoomAvailability.jsp" />
@@ -920,4 +924,8 @@
 		<put name="body" value="/user/eventAddInfo.jsp" />
   	</definition> 	  	
 
-</tiles-definitions>
+ 	<definition	name="eventUpdateMeetingsTile" extends="eventAddInfoTile">
+		<put name="title" type="string" value="Update Meetings"/>
+  	</definition> 	  	
+  	
+ </tiles-definitions>
