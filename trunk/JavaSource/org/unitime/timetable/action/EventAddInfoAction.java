@@ -44,9 +44,20 @@ public class EventAddInfoAction extends Action {
 	        	} else {
 	        		myForm.submit(request.getSession());
 	        		myForm.cleanSessionAttributes(request.getSession());
-	        		System.out.println("Main Contact Email: "+myForm.getMainContactEmail());
-	        		System.out.println("Event Name: " + myForm.getEventName());
-	        		return mapping.findForward("eventList");
+	        		response.sendRedirect(response.encodeURL("eventDetail.do?id="+myForm.getEventId()));
+	        		return null;
+	        	}
+			}
+			
+			if ("Update".equals(iOp)) {
+	        	ActionMessages errors = myForm.validate(mapping, request);
+	        	if (!errors.isEmpty()) {
+	        		saveErrors(request, errors);
+	        	} else {
+	        		myForm.update(request.getSession());
+	        		myForm.cleanSessionAttributes(request.getSession());
+	        		response.sendRedirect(response.encodeURL("eventDetail.do?id="+myForm.getEventId()));
+	        		return null;
 	        	}
 			}
 			
@@ -55,6 +66,11 @@ public class EventAddInfoAction extends Action {
 				return mapping.findForward("eventList");
 			}
 		
+			if ("Cancel".equals(iOp)) {
+				myForm.cleanSessionAttributes(request.getSession());
+				response.sendRedirect(response.encodeURL("eventDetail.do?id="+myForm.getEventId()));
+				return null;
+			}
 		}
 		
 		return mapping.findForward("show");

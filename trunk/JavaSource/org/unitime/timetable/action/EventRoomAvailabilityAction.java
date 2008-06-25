@@ -88,8 +88,9 @@ public class EventRoomAvailabilityAction extends Action {
 			}
 			
 			if("Proceed To Checkout".equals(iOp)) {
-				myForm.loadData(request); myForm.save(webSession);				
-				return mapping.findForward("eventAddInfo");
+				myForm.loadData(request); myForm.save(webSession);	
+				if (myForm.getIsAddMeetings()) return mapping.findForward("eventUpdateMeetings");
+				else return mapping.findForward("eventAddInfo");
 			}
 			
 		}

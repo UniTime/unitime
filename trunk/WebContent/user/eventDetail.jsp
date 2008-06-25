@@ -33,20 +33,9 @@ TO DO:
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 
 
-<SCRIPT language="javascript">
-		<%= JavascriptFunctions.getJsConfirm(Web.getUser(session)) %>
-		
-		function confirmDelete(Long mtgId) {
-			if (jsConfirm!=null && !jsConfirm)
-				return;
-
-			if (!confirm('Do you really want to delete this meeting?')) {
-				eventDetailForm.confirm.value='n';
-			}
-		}
-</SCRIPT>
-
 <tiles:importAttribute />
+
+<tt:confirm name="confirmDelete">The meeting will be deleted. Continue?</tt:confirm>
 
 <html:form action="/eventDetail">
 	<html:hidden property="id"/>
@@ -172,7 +161,8 @@ TO DO:
 				<tt:section-header>
 				<tt:section-title>Meetings</tt:section-title>
 				<logic:equal name="eventDetailForm" property="canEdit" value="true">
-					<html:submit property="op" styleClass="btn">Add Meeting</html:submit>
+					<html:submit property="op" styleClass="btn" accesskey="A"
+						title="Add Meetings (Alt+A)" value="Add Meetings"/>
 				</logic:equal>
 				</tt:section-header>
 			</TD>
@@ -185,7 +175,7 @@ TO DO:
 			</TR>
 			<html:hidden property="selected"/>
 			<logic:iterate name="eventDetailForm" property="meetings" id="meeting">
-				<bean:define name="meeting" property="id" id="meetingId"/>
+				<bean:define name="meeting" property="uniqueId" id="meetingId"/>
 				<TR>
 					<TD>
 						<bean:write name="meeting" property="date" filter="false"/> 
@@ -201,7 +191,8 @@ TO DO:
 					</TD>			
 					<TD>
 						<logic:equal name="eventDetailForm" property="canEdit" value="true">
-							<html:submit property="op" styleClass="btn" title="Delete Meeting" value="Delete" onclick="<%="selected.value='"+meetingId+"'; confirmDelete(meetingId);"%>" />
+							<html:submit property="op" styleClass="btn" title="Delete Meeting" value="Delete" 
+								onclick="<%="selected.value='"+meetingId+"'; return confirmDelete();"%>"/>
 						</logic:equal>
 					</TD>
 				</TR>	

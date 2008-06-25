@@ -29,6 +29,8 @@
 
 <html:form action="/eventAdd">
 	<input type="hidden" name="op2" value="">
+	<html:hidden property="isAddMeetings"/>
+	<html:hidden property="eventId"/>
 	<TABLE width="93%" border="0" cellspacing="0" cellpadding="3">
 		<logic:messagesPresent>
 		<TR>
@@ -49,26 +51,34 @@
 		<TR>
 			<TD valign="middle" colspan='2'>
 				<tt:section-header>
-					<tt:section-title>Add A New Event</tt:section-title>
-<!-- 			<html:submit property="op" styleClass="btn" accesskey="S" 
-					title="Show Scheduled Events (Alt+S)" value="Show Scheduled Events"/> -->
-				<html:submit property="op" styleClass="btn" accesskey="A" 
-					title="Show Location Availability (Alt+A)" value="Show Availability"/>
-				<html:submit property="op" styleClass="btn" accesskey="B"
-					title="Back to List of Events (Alt+B)" value="Back"/>
+					<tt:section-title>  		
+						<logic:equal name="eventAddForm" property="isAddMeetings" value="true">Select Dates And Locations</logic:equal>
+						<logic:notEqual name="eventAddForm" property="isAddMeetings" value="true">Add a New Event</logic:notEqual>
+					</tt:section-title>
+	<!-- 			<html:submit property="op" styleClass="btn" accesskey="S" 
+						title="Show Scheduled Events (Alt+S)" value="Show Scheduled Events"/> -->
+					<html:submit property="op" styleClass="btn" accesskey="A" 
+						title="Show Location Availability (Alt+A)" value="Show Availability"/>
+					<html:submit property="op" styleClass="btn" accesskey="B"
+						title="Back (Alt+B)" value="Back"/>
 				</tt:section-header>
 			</TD>
 		</TR>
 		<TR>
 			<TD nowrap>Event Type: </TD>
 			<TD>
-				<html:select name="eventAddForm" property="eventType"
-					onfocus="setUp();"
-					onkeypress="return selectSearch(event, this);"
-					onkeydown="return checkKey(event, this);"
-					onchange="op2.value='EventTypeChanged'; submit();">
-					<html:options name="eventAddForm" property="eventTypes"/>
-				</html:select>
+				<logic:equal name="eventAddForm" property="isAddMeetings" value="true">
+					<bean:write name="eventAddForm" property="eventType"/>
+				</logic:equal>
+				<logic:notEqual name="eventAddForm" property="isAddMeetings" value="true">
+					<html:select name="eventAddForm" property="eventType"
+						onfocus="setUp();"
+						onkeypress="return selectSearch(event, this);"
+						onkeydown="return checkKey(event, this);"
+						onchange="op2.value='EventTypeChanged'; submit();">
+						<html:options name="eventAddForm" property="eventTypes"/>
+					</html:select>
+				</logic:notEqual>
 			</TD>
 		</TR>
 <!-- 		<TR>

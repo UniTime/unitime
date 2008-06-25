@@ -2268,6 +2268,10 @@
 			name="back"
 			path="/eventList.do"
 			redirect="true"/>
+		<forward
+			name="update"
+			path="eventAddMtgsTile"
+			redirect="true"/>
     </action>
     
     <action
@@ -2288,6 +2292,10 @@
 		<forward
 			name="eventAddInfo"
 			path="/eventAddInfo.do"
+			redirect="true"/>
+		<forward
+			name="eventUpdateMeetings"
+			path="eventUpdateMeetingsTile"
 			redirect="true"/>
     </action>
 

@@ -32,6 +32,7 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.hibernate.Transaction;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
@@ -81,7 +82,8 @@ public class EventDetailAction extends Action {
 		String iOp = myForm.getOp();
 		HttpSession webSession = request.getSession();
 		User user = Web.getUser(webSession);
-			
+		Event event = EventDAO.getInstance().get(Long.valueOf(myForm.getId()));
+		
 		if (!Web.isLoggedIn(webSession)) {
 			throw new Exception("Access Denied.");
 		}			
@@ -106,14 +108,33 @@ public class EventDetailAction extends Action {
 					response.sendRedirect(response.encodeURL("eventDetail.do?id="+myForm.getNextId()));
 				return null;
 			}
-			
-			if(iOp.equals("Delete")) {
-				if ("y".equals(request.getParameter("confirm"))) {
-//					doDelete(myForm, request);
-					return mapping.findForward("showEventDetail");
-				}
+
+			if(iOp.equals("Add Meetings")) {
+				response.sendRedirect(response.encodeURL("eventAdd.do?op=view&id="+myForm.getId()));
+				return null;
 			}
 			
+			if(iOp.equals("Delete")) {
+	                org.hibernate.Session hibSession = new EventDAO().getSession();
+	                Transaction tx = null;
+	                boolean eventDeleted = false;
+	                try {
+	                    tx = hibSession.beginTransaction();
+	                    Meeting m = myForm.getSelectedMeeting();
+	                    event.getMeetings().remove(m);
+		                if (event.getMeetings().isEmpty()) {
+		                	hibSession.delete(event);
+		                	eventDeleted = true;
+		                } else {
+		                    hibSession.saveOrUpdate(event);
+		                }
+	                    tx.commit();
+	                } catch (Exception e) {
+	                    if (tx!=null) tx.rollback();
+	                    throw e;
+	                }
+	                if (eventDeleted) return mapping.findForward("showEventList");
+				}
 		}
 
 		
@@ -123,7 +144,7 @@ public class EventDetailAction extends Action {
 		
 		if (request.getParameter("id")!=null) {
 			String id = request.getParameter("id");
-			Event event = new EventDAO().get(Long.valueOf(id));
+			myForm.setEvent(event);
 			if (event!=null) {
 				myForm.setEventName(event.getEventName()==null?"":event.getEventName());
 				myForm.setEventType(event.getEventTypeLabel());
@@ -154,7 +175,6 @@ public class EventDetailAction extends Action {
 							(ec.getPhone()==null?"":ec.getPhone()));
 				}
 				SimpleDateFormat iDateFormat = new SimpleDateFormat("EEE MM/dd, yyyy", Locale.US);
-				//SimpleDateFormat dateFormatDay = new SimpleDateFormat("EEE", Locale.US);	
 				SimpleDateFormat iDateFormat2 = new SimpleDateFormat("MM/dd/yy", Locale.US);
 				for (Iterator i=new TreeSet(event.getMeetings()).iterator();i.hasNext();) {
 					Meeting meeting = (Meeting)i.next();
@@ -170,7 +190,7 @@ public class EventDetailAction extends Action {
 					int endMin = end%60;
 					String location = (meeting.getLocation()==null?"":meeting.getLocation().getLabel());
 					String approvedDate = (meeting.getApprovedDate()==null?"":iDateFormat2.format(meeting.getApprovedDate()));
-					myForm.addMeeting(
+					myForm.addMeeting(meeting.getUniqueId(),
 							iDateFormat.format(meeting.getMeetingDate()),
 							(startHour>12?startHour-12:startHour)+":"+(startMin<10?"0":"")+startMin+(startHour>=12?"p":"a"),
 							(endHour>12?endHour-12:endHour)+":"+(endMin<10?"0":"")+endMin+(endHour>=12?"p":"a"), 
@@ -244,7 +264,7 @@ public class EventDetailAction extends Action {
 		
         BackTracker.markForBack(
                 request,
-                "eventDetail.do?id=" + myForm.getId(),
+                "eventDetail.do?op=view&id=" + myForm.getId(),
                 myForm.getEventName(),
                 true, false);
 

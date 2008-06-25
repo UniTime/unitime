@@ -32,6 +32,7 @@ import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.EventAddForm;
 import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.model.dao.EventDAO;
 
 /**
  * @author Zuzana Mullerova
@@ -66,6 +67,15 @@ public class EventAddAction extends Action {
 
 		if (request.getParameter("op2")!=null && request.getParameter("op2").length()>0)
 			iOp = request.getParameter("op2");
+		
+		if (request.getParameter("id")!=null) {
+			myForm.setEventId(Long.valueOf(request.getParameter("id")));
+			if (myForm.getEventId() != null) {
+				myForm.setEvent(EventDAO.getInstance().get(myForm.getEventId()));
+				myForm.setEventType(myForm.getEvent().getEventTypeLabel()); 
+				myForm.setIsAddMeetings(true);
+			}
+		}
 		
 		// if user is returning from the Event Room Availability screen, 
 		// load the parameters he/she entered before
@@ -112,6 +122,11 @@ public class EventAddAction extends Action {
         }    
         
         if ("Back".equals(iOp)) {
+        	myForm.cleanSessionAttributes(request.getSession());
+        	if (myForm.getIsAddMeetings()) {
+        		response.sendRedirect(response.encodeURL("eventDetail.do?id="+myForm.getEventId()));
+        		return null;
+        	}
         	return mapping.findForward("back");
         }
 		
@@ -119,7 +134,7 @@ public class EventAddAction extends Action {
         myForm.setSubjectAreas(TimetableManager.getSubjectAreas(user));
         
 //Display the page        
-        return mapping.findForward("show");
+        return mapping.findForward(myForm.getEventId()!=null?"update":"show");
 	}
 }
 
