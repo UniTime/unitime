@@ -8,7 +8,10 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
+import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.EventContact;
+import org.unitime.timetable.model.Meeting;
+import org.unitime.timetable.model.dao.MeetingDAO;
 
 public class EventDetailForm extends ActionForm {
 
@@ -28,6 +31,7 @@ public class EventDetailForm extends ActionForm {
 	private String iPreviousId;
 	private String iNextId;
 	private boolean iAttendanceRequired;
+	private Event iEvent;
 	
 	/** 
 	 * Method validate
@@ -44,6 +48,7 @@ public class EventDetailForm extends ActionForm {
 	
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
 
+		iEvent = null;
 		iEventName = null;
 		iMinCapacity = null;
 		iMaxCapacity = null;
@@ -58,7 +63,9 @@ public class EventDetailForm extends ActionForm {
 		iAttendanceRequired = false;
 	}
 	
-
+	public Event getEvent() {return iEvent;}
+	public void setEvent (Event event) {iEvent = event;}
+	
     public String getEventName() {return iEventName;}
     public void setEventName(String eventName) {iEventName = eventName;}
     
@@ -87,8 +94,9 @@ public class EventDetailForm extends ActionForm {
     public void setAttendanceRequired(boolean attReq) {iAttendanceRequired = attReq;}
     
     public Vector<MeetingBean> getMeetings() {return iMeetings;}
-    public void addMeeting(String date, String startTime, String endTime, String location, String approvedDate) {
+    public void addMeeting(Long id, String date, String startTime, String endTime, String location, String approvedDate) {
     	MeetingBean meeting = new MeetingBean();
+    	meeting.setUniqueId(id);
     	meeting.setDate(date);
     	meeting.setStartTime(startTime);
     	meeting.setEndTime(endTime);
@@ -140,14 +148,17 @@ public class EventDetailForm extends ActionForm {
     public String getNextId () {return iNextId; }
     public void setNextId(String nextId) {iNextId = nextId;}
     
-
+	public Meeting getSelectedMeeting() {
+		return (MeetingDAO.getInstance()).get(iSelected);
+	} 	
     
-    public class MeetingBean {
+    public static class MeetingBean {
     	private String iDate;
     	private String iStartTime;
     	private String iEndTime;
     	private String iLocation;
     	private String iApprovedDate;
+    	private Long iUniqueId;
    	
     	public MeetingBean() {
     	}
@@ -155,7 +166,7 @@ public class EventDetailForm extends ActionForm {
     	public String getDate() { return iDate; }
     	public void setDate(String date) { iDate = date; }
  
-    	public Long getId() { return Math.round(1000.0*Math.random()); }
+//    	public Long getId() { return Math.round(1000.0*Math.random()); }
     	
     	public String getStartTime() { return iStartTime;}
     	public void setStartTime(String time) {iStartTime = time;}
@@ -169,6 +180,8 @@ public class EventDetailForm extends ActionForm {
     	public String getApprovedDate() { return iApprovedDate;}
     	public void setApprovedDate(String approvedDate) {iApprovedDate = approvedDate;}
     	
+    	public Long getUniqueId() {return iUniqueId;}
+    	public void setUniqueId(Long id) {iUniqueId = id;}
     	
     }
 

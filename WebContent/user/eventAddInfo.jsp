@@ -28,6 +28,8 @@
 <tiles:importAttribute />
 
 <html:form action="/eventAddInfo">
+	<html:hidden property = "isAddMeetings"/>
+	<html:hidden property = "eventId"/>
 	<TABLE width="93%" border="0" cellspacing="0" cellpadding="3">
 		<logic:messagesPresent>
 		<TR>
@@ -49,18 +51,98 @@
 			<TD valign="middle" colspan='2'>
 				<tt:section-header>
 					<tt:section-title>Complete the Request</tt:section-title>
+					<logic:equal name="eventAddInfoForm" property="isAddMeetings" value="true">
+					<html:submit property="op" styleClass="btn" accesskey="U"
+						title="Update Event With New Meetings (Alt+U)" value="Update"/>
+					<html:submit property="op" styleClass="btn" accesskey="C"
+						title="Cancel Request For More Meetings (Alt+C)" value="Cancel"/>
+					</logic:equal>
+					<logic:notEqual name="eventAddInfoForm" property="isAddMeetings" value="true">				
 					<html:submit property="op" styleClass="btn" accesskey="S"
 						title="Submit Reservation (Alt+S)" value="Submit"/>
 					<html:submit property="op" styleClass="btn" accesskey="C"
 						title="Cancel Event (Alt+C)" value="Cancel Event"/>
+					</logic:notEqual>
 					<html:submit property="op" styleClass="btn" accesskey="B"
 						title="Back To Event Room Availability (Alt+B)" value="Back"/>
 				</tt:section-header>
 			</TD>
 		</TR>
 
+<!--  Data about an existing event if just adding meetings -->
+	<logic:equal name="eventAddInfoForm" property="isAddMeetings" value="true">
+		<TR>
+			<TD nowrap> Event Name:&nbsp;</TD>
+			<TD> 
+				<bean:write name="eventAddInfoForm" property="eventName"/> 
+			</TD>
+		</TR>
+		<TR>
+			<TD nowrap> Event Type:&nbsp;</TD>
+			<TD> 
+				<bean:write name="eventAddInfoForm" property="eventType"/> 
+			</TD>
+		</TR>
+		<TR>
+			<TD nowrap valign="top">Contact:&nbsp;</TD>
+			<td>
+			<Table width="100%" border="0" cellspacing="0" cellpadding="1">
+				<tr align="left">
+					<td><i>Name</i></td><td><i>E-mail</i></td><td><i>Phone</i></td>
+				</tr>
+				<TR>
+					<TD>
+						<bean:write name="eventAddInfoForm" property="mainContactFirstName"/>
+						<bean:write name="eventAddInfoForm" property="mainContactLastName"/> <i>(main contact)</i>
+					</TD>
+					<td>
+						<bean:write name="eventAddInfoForm" property="mainContactEmail"/>						
+					</td>
+					<td>
+						<bean:write name="eventAddInfoForm" property="mainContactPhone"/>						
+					</td>
+				</TR>		
+			</Table>
+			</td>
+		</TR>
+		<TR>
+			<TD colspan="2" valign="middle">
+				<br>
+				<tt:section-title>
+					Existing Meetings (meetings set up earlier)
+				</tt:section-title>
+			</TD>
+		</TR>
+		<TR><TD colspan='2'>
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="1">
+			<TR align="left">
+				<td><font color="gray"><i>Date</i></font></td><td><font color="gray"><i>Time</i></font></td><td><font color="gray"><i>Location</i></font></td>
+			</TR>
+			<logic:iterate name="eventAddInfoForm" property="existingMeetings" id="meeting">
+				<TR>
+					<TD>
+						<bean:write name="meeting" property="date" filter="false"/> 
+					</TD>
+					<TD>
+						<bean:write name="meeting" property="startTime"/> - <bean:write name="meeting" property="endTime"/>
+					</TD>
+					<TD>
+						<bean:write name="meeting" property="location"/>
+					</TD>	
+				</TR>	
+			</logic:iterate>
+		</Table>
+		</TD></TR>
+		
+		
+		
+		
+		
+		
+		</logic:equal>
 
 <!-- Data to be filled in about the event -->
+		<logic:notEqual name="eventAddInfoForm" property="isAddMeetings" value="true">
 		<TR>
 			<TD nowrap> Event Name<font color='red'>*</font>: </TD>
 			<TD> 
@@ -109,20 +191,15 @@
 				<font color='red'>*</font> <i> Fields marked with a red asterix are mandatory.</i> 
 			</TD>
 		</TR>
-
+		</logic:notEqual>
 
 
 <!-- A list of selected dates & times & locations -->
 		<TR>
-			<TD colspan='2'>
-				&nbsp;
-			</TD>
-		</TR>
-		<TR>
 			<TD colspan="2" valign="middle">
 				<br>
 				<tt:section-title>
-					Meetings (as selected in previous screens)
+					New Meetings (as selected in previous screens)
 				</tt:section-title>
 			</TD>
 		</TR>
@@ -187,10 +264,18 @@
 
 		<TR>
 			<TD align='right' colspan='2'>
+					<logic:equal name="eventAddInfoForm" property="isAddMeetings" value="true">
+					<html:submit property="op" styleClass="btn" accesskey="U"
+						title="Update Event With New Meetings (Alt+U)" value="Update"/>
+					<html:submit property="op" styleClass="btn" accesskey="C"
+						title="Cancel Request For More Meetings (Alt+C)" value="Cancel"/>
+					</logic:equal>
+					<logic:notEqual name="eventAddInfoForm" property="isAddMeetings" value="true">				
 					<html:submit property="op" styleClass="btn" accesskey="S"
 						title="Submit Reservation (Alt+S)" value="Submit"/>
 					<html:submit property="op" styleClass="btn" accesskey="C"
 						title="Cancel Event (Alt+C)" value="Cancel Event"/>
+					</logic:notEqual>
 					<html:submit property="op" styleClass="btn" accesskey="B"
 						title="Back To Event Room Availability (Alt+B)" value="Back"/>
 			</TD>

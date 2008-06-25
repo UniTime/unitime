@@ -1,10 +1,12 @@
 package org.unitime.timetable.form;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.TreeSet;
 import java.util.Vector;
 
@@ -17,8 +19,11 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.unitime.commons.User;
+import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.form.EventDetailForm.ContactBean;
+import org.unitime.timetable.form.EventDetailForm.MeetingBean;
 import org.unitime.timetable.form.EventRoomAvailabilityForm.DateLocation;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseEvent;
@@ -33,13 +38,16 @@ import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.RelatedCourseInfo;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.SpecialEvent;
+import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
+import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 import org.unitime.timetable.model.dao._RootDAO;
+import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DynamicList;
 import org.unitime.timetable.util.DynamicListObjectFactory;
 import org.unitime.timetable.util.IdValue;
@@ -66,7 +74,12 @@ public class EventAddInfoForm extends ActionForm {
 	private List iItype;
 	private List iClassNumber;
 	private boolean iAttendanceRequired;
-	
+	//if adding meetings to an existing event
+	private Long iEventId; 
+	private boolean iIsAddMeetings; 
+	private Event iEvent;
+	private Vector<MeetingBean> iExistingMeetings = new Vector<MeetingBean>();
+		
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 		
 		ActionErrors errors = new ActionErrors();
@@ -110,10 +123,13 @@ public class EventAddInfoForm extends ActionForm {
         iItype = DynamicList.getInstance(new ArrayList(), idfactory);
         iClassNumber = DynamicList.getInstance(new ArrayList(), idfactory);
 		iAttendanceRequired = false;
-		load(request.getSession());
+		iExistingMeetings.clear();
+		load(request);
 	}
 	
-	public void load(HttpSession session) {
+	public void load(HttpServletRequest request) {
+		HttpSession session = request.getSession();
+		User user = Web.getUser(request.getSession());
 		iDateLocations = (TreeSet<DateLocation>) session.getAttribute("Event.DateLocations");
 		iStartTime = (Integer) session.getAttribute("Event.StartTime");
 		iStopTime = (Integer) session.getAttribute("Event.StopTime");
@@ -125,6 +141,23 @@ public class EventAddInfoForm extends ActionForm {
 			iItype = (List) session.getAttribute("Event.SubjectItype");
 			iClassNumber = (List) session.getAttribute("Event.ClassNumber");
 			iAttendanceRequired = (Boolean) session.getAttribute("Event.AttendanceRequired");
+		}
+		TimetableManager tm = TimetableManager.getManager(user);
+		iIsAddMeetings = (Boolean) (session.getAttribute("Event.IsAddMeetings"));
+		iEventId = (Long) (session.getAttribute("Event.EventId"));
+		if (iIsAddMeetings) {
+			iEvent = EventDAO.getInstance().get(iEventId);
+			iEventName = iEvent.getEventName();
+			iMainContactFirstName = iEvent.getMainContact().getFirstName();
+			iMainContactLastName = iEvent.getMainContact().getLastName();
+			iMainContactEmail = iEvent.getMainContact().getEmailAddress();
+			iMainContactPhone = iEvent.getMainContact().getPhone();
+			iEventName = iEvent.getEventName();
+			loadExistingMeetings();
+		} else if (tm!=null) {
+			iMainContactFirstName = (tm.getFirstName()==null?"":tm.getFirstName());
+			iMainContactLastName = (tm.getLastName()==null?"":tm.getLastName());
+			iMainContactEmail = (tm.getEmailAddress()==null?"":tm.getEmailAddress());
 		}
 	}
 	
@@ -139,37 +172,46 @@ public class EventAddInfoForm extends ActionForm {
 			Session hibSession = new _RootDAO().getSession();
 			tx = hibSession.beginTransaction();
 
-			// search database for a contact with this e-mail
-			// if not in db, create a new contact
-			// update information from non-empty fields
-			EventContact mainContact = EventContact.findByEmail(iMainContactEmail); 
-			if (mainContact==null) mainContact = new EventContact();
-			if (iMainContactFirstName!=null && iMainContactFirstName.length()>0) 
-				mainContact.setFirstName(iMainContactFirstName);
-			if (iMainContactLastName!=null && iMainContactLastName.length()>0)
-				mainContact.setLastName(iMainContactLastName);
-			if (iMainContactEmail!=null && iMainContactEmail.length()>0)
-				mainContact.setEmailAddress(iMainContactEmail);
-			if (iMainContactPhone!=null && iMainContactPhone.length()>0)
-				mainContact.setPhone(iMainContactPhone);
-			hibSession.saveOrUpdate(mainContact);
-			
 			// create event
-			Event event = null;
-			if ("Course Event".equals(iEventType)) {
-				event = new CourseEvent();
-				((CourseEvent) event).setReqAttendance(iAttendanceRequired);
-				setRelatedCourseInfos((CourseEvent)event);
-			} else {
-				event = new SpecialEvent();
+			Event event = null;//getEvent();
+			if (event==null) {
+				// search database for a contact with this e-mail
+				// if not in db, create a new contact
+				// update information from non-empty fields
+				EventContact mainContact = EventContact.findByEmail(iMainContactEmail); 
+				if (mainContact==null) mainContact = new EventContact();
+				if (iMainContactFirstName!=null && iMainContactFirstName.length()>0) 
+					mainContact.setFirstName(iMainContactFirstName);
+				if (iMainContactLastName!=null && iMainContactLastName.length()>0)
+					mainContact.setLastName(iMainContactLastName);
+				if (iMainContactEmail!=null && iMainContactEmail.length()>0)
+					mainContact.setEmailAddress(iMainContactEmail);
+				if (iMainContactPhone!=null && iMainContactPhone.length()>0)
+					mainContact.setPhone(iMainContactPhone);
+				hibSession.saveOrUpdate(mainContact);
+				if ("Course Event".equals(iEventType)) {
+					event = new CourseEvent();
+					((CourseEvent) event).setReqAttendance(iAttendanceRequired);
+					setRelatedCourseInfos((CourseEvent)event);
+				} else {
+					event = new SpecialEvent();
+				}
+				event.setEventName(iEventName);
+				event.setMainContact(mainContact);
+				// add event note (additional info)
+				EventNote en = new EventNote();
+				en.setEvent(event);
+				en.setTextNote(iAdditionalInfo);
+				// attach the note to event
+				event.setNotes(new HashSet());
+				event.getNotes().add(en);
+				hibSession.saveOrUpdate(event);
+				//hibSession.saveOrUpdate(en);
+				
+				event.setMeetings(new HashSet());
 			}
-			event.setEventName(iEventName);
-			event.setMainContact(mainContact);
-			
-			hibSession.saveOrUpdate(event);
 			
 			// create event meetings
-			event.setMeetings(new HashSet());
 			for (Iterator i=iDateLocations.iterator();i.hasNext();) {
 				DateLocation dl = (DateLocation) i.next();
 				Meeting m = new Meeting();
@@ -184,23 +226,44 @@ public class EventAddInfoForm extends ActionForm {
 			}
 			hibSession.saveOrUpdate(event);
 			
-			// add event note (additional info)
-			EventNote en = new EventNote();
-			en.setEvent(event);
-			en.setTextNote(iAdditionalInfo);
-			hibSession.saveOrUpdate(en);
-			// attach the note to event
-			event.setNotes(new HashSet());
-			event.getNotes().add(en);
-			hibSession.saveOrUpdate(event);
+			tx.commit();
+			iEventId = event.getUniqueId();
+		} catch (Exception e) {
+			if (tx!=null) tx.rollback();
+			e.printStackTrace();
+		}
+	}
+	
+	public void update (HttpSession session) {
 
+		Transaction tx = null;
+		try {
+			Session hibSession = new _RootDAO().getSession();
+			tx = hibSession.beginTransaction();
+
+			// create event meetings
+			for (Iterator i=iDateLocations.iterator();i.hasNext();) {
+				DateLocation dl = (DateLocation) i.next();
+				Meeting m = new Meeting();
+				m.setMeetingDate(dl.getDate());
+				m.setStartPeriod(iStartTime);
+				m.setStopPeriod(iStopTime);
+				m.setLocationPermanentId(dl.getLocation());
+				m.setClassCanOverride(true);
+				m.setEvent(iEvent);
+				hibSession.saveOrUpdate(m); // save each meeting to db
+				iEvent.getMeetings().add(m); // link each meeting with event
+			}
+			hibSession.saveOrUpdate(iEvent);
 			tx.commit();
 		} catch (Exception e) {
 			if (tx!=null) tx.rollback();
 			e.printStackTrace();
 		}
-		
 	}
+	
+	
+	public Long getEventId() {return iEventId;}	
 	
 	public int getStartTime() {return iStartTime;	}
 	public int getStopTime() {return iStopTime;}
@@ -254,7 +317,40 @@ public class EventAddInfoForm extends ActionForm {
 	
 	public String getMainContactLastName() {return iMainContactLastName;}
 	public void setMainContactLastName(String lastName) {iMainContactLastName = lastName;}
+	
+	public Event getEvent() {return iEvent;}
+	public void setEvent(Event e) {iEvent = e;}
+	
+	public boolean getIsAddMeetings() {return iIsAddMeetings;}
+	public void setIsAddMeetings(boolean isAdd) {iIsAddMeetings = isAdd;}
 
+	public void loadExistingMeetings() {
+		SimpleDateFormat iDateFormat = new SimpleDateFormat("EEE MM/dd, yyyy", Locale.US);
+		for (Iterator i=new TreeSet(iEvent.getMeetings()).iterator();i.hasNext();) {
+			Meeting meeting = (Meeting)i.next();
+			MeetingBean mb = new MeetingBean();
+			int start = Constants.SLOT_LENGTH_MIN*meeting.getStartPeriod()+
+						Constants.FIRST_SLOT_TIME_MIN+
+						(meeting.getStartOffset()==null?0:meeting.getStartOffset());
+			int startHour = start/60;
+			int startMin = start%60;
+			int end = Constants.SLOT_LENGTH_MIN*meeting.getStopPeriod()+
+			Constants.FIRST_SLOT_TIME_MIN+
+			(meeting.getStopOffset()==null?0:meeting.getStopOffset());
+			int endHour = end/60;
+			int endMin = end%60;
+//			String location = (meeting.getLocation()==null?"":meeting.getLocation().getLabel());
+			String date = iDateFormat.format(meeting.getMeetingDate());
+			mb.setDate(date);
+			mb.setStartTime((startHour>12?startHour-12:startHour)+":"+(startMin<10?"0":"")+startMin+(startHour>=12?" pm":" am"));
+			mb.setEndTime((endHour>12?endHour-12:endHour)+":"+(endMin<10?"0":"")+endMin+(endHour>=12?" pm":" am"));
+			mb.setLocation((meeting.getLocation()==null?"":meeting.getLocation().getLabel()));
+			iExistingMeetings.add(mb);
+		}
+	}
+	
+	public Vector<MeetingBean> getExistingMeetings() {return iExistingMeetings;}
+	
 	public void cleanSessionAttributes(HttpSession session) {
 		session.removeAttribute("Event.DateLocations");
 		session.removeAttribute("Event.StartTime");
@@ -271,6 +367,8 @@ public class EventAddInfoForm extends ActionForm {
 		session.removeAttribute("Event.CourseNbr");
 		session.removeAttribute("Event.SubjectItype");
 		session.removeAttribute("Event.ClassNumber");
+		session.removeAttribute("Event.EventId");
+		session.removeAttribute("Event.IsAddMeetings");
 	}
 
     protected DynamicListObjectFactory idfactory = new DynamicListObjectFactory() {
