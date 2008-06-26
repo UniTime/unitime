@@ -19,12 +19,14 @@
 */
 package org.unitime.timetable.model;
 
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
@@ -1170,6 +1172,15 @@ public class Exam extends BaseExam implements Comparable<Exam> {
             if (tx!=null) tx.rollback();
             throw e;
         }
+    }
+    
+    public Date getEndTime(ExamPeriod period) {
+        Calendar c = Calendar.getInstance(Locale.US);
+        c.setTime(getSession().getExamBeginDate());
+        c.add(Calendar.DAY_OF_YEAR, period.getDateOffset());
+        int min = period.getStartSlot()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN + getLength();
+        c.set(Calendar.HOUR, min/60); c.set(Calendar.MINUTE, min%60);
+        return c.getTime();
     }
 
 }
