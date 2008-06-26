@@ -163,6 +163,8 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
     public void setRoomCode(String roomCode) {
         if (roomCode==null || roomCode.length()==0) {
             iRoomCodes = null;
+            iRC = null;
+            return;
         }
         iRoomCodes = new Hashtable<String, String>();
         iRC = "";
