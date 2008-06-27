@@ -57,6 +57,7 @@ import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
+import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
@@ -90,6 +91,7 @@ public class EventAddForm extends PreferencesForm {
 	//if adding meetings to an existing event
 	private Long iEventId; 
 	private Event iEvent;
+	private String iEventName;
 	private boolean iIsAddMeetings;
 	
 	// courses/classes for course related events
@@ -141,7 +143,7 @@ public class EventAddForm extends PreferencesForm {
 			errors.add("minMaxCapacity", new ActionMessage("errors.generic", "Maximum room capacity should not be smaller than minimum room capacity."));
 		}
 		
-		if ("Course Event".equals(iEventType)) {
+		if ("Course Event".equals(iEventType) && !(iIsAddMeetings)) {
 			boolean hasRci = false;
 	        for (int idx=0;idx<getSubjectArea().size();idx++) {
 	            RelatedCourseInfo rci = getRelatedCourseInfo(idx);
@@ -163,6 +165,7 @@ public class EventAddForm extends PreferencesForm {
 		iOp = null;
 		iEventType = Event.sEventTypes[Event.sEventTypeSpecial];
 		iSessionId = null;
+		iEventId = null;
 		try {
 			iSessionId = Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId();
 		} catch (Exception e) {}
@@ -180,7 +183,8 @@ public class EventAddForm extends PreferencesForm {
         iClassNumber = DynamicList.getInstance(new ArrayList(), idfactory);
         for (int i=0;i<PREF_ROWS_ADDED;i++) {
             addRelatedCourseInfo(null);
-        }		
+        }
+        
 	}
 	
 	// load event info from session attribute Event
@@ -206,17 +210,13 @@ public class EventAddForm extends PreferencesForm {
 		}
 		iIsAddMeetings = (Boolean) (session.getAttribute("Event.IsAddMeetings"));
 		iEventId = (Long) (session.getAttribute("Event.EventId"));
+		if (iIsAddMeetings) {
+			iEvent = EventDAO.getInstance().get(iEventId);
+			iEventName = iEvent.getEventName();
+			iEventType = iEvent.getEventTypeLabel();
+		}
 	}
 	
-/*	// called if 
-	public void load() {
-		if (iEventId!=null) {
-			iEvent = EventDAO.getInstance().get(iEventId);
-			iEventType = iEvent.getEventTypeLabel(); 
-			iIsAddMeetings = true;
-		}			
-	}
-*/	
 	// save event parameters to session attribute Event
 	public void save (HttpSession session) {
 		session.setAttribute("Event.EventType", iEventType);
@@ -330,7 +330,10 @@ public class EventAddForm extends PreferencesForm {
 	public Long getSessionId() {return iSessionId;}
 	public void setSessionId(Long sessionId) {iSessionId = sessionId;}
 
-	public boolean getAttendanceRequired() {return iAttendanceRequired;}
+	public boolean getAttendanceRequired() {
+		return iAttendanceRequired;
+	}
+	
 	public void setAttendanceRequired(boolean attReq) {iAttendanceRequired = attReq;}
 
     public int getStartTime() {return iStartTime; }
@@ -347,6 +350,9 @@ public class EventAddForm extends PreferencesForm {
     
     public boolean getIsAddMeetings() {return iIsAddMeetings;}
     public void setIsAddMeetings (boolean isAdd) {iIsAddMeetings = isAdd;}
+    
+    public String getEventName() {return iEventName;}
+    public void setEventName(String name) {iEventName = name;}
 
 	public Vector<ComboBoxLookup> getLocationTypes() {
 		Vector<ComboBoxLookup> ltypes = new Vector();
