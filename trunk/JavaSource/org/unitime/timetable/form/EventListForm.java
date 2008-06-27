@@ -53,7 +53,7 @@ public class EventListForm extends ActionForm {
 		String df = "MM/dd/yyyy";
 		Date start = null;
 		if (iEventDateFrom==null || iEventDateFrom.trim().length()==0)
-			errors.add("eventDateFrom", new ActionMessage("errors.required", "Date (From)"));
+			;
 		else if (!CalendarUtils.isValidDate(iEventDateFrom, df))
 			errors.add("eventDateFrom", new ActionMessage("errors.invalidDate", "Date '"+iEventDateFrom+"' (From)"));
 		else
