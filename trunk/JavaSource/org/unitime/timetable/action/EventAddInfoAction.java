@@ -8,6 +8,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
+import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.EventAddInfoForm;
 
@@ -20,6 +21,7 @@ public class EventAddInfoAction extends Action {
 			HttpServletResponse response) throws Exception {
 	
 		EventAddInfoForm myForm = (EventAddInfoForm) form;
+		User user = Web.getUser(request.getSession());
 		
 //Verification of user being logged in
 		if (!Web.isLoggedIn( request.getSession() )) {
@@ -28,7 +30,6 @@ public class EventAddInfoAction extends Action {
 
 //Operations		
 		String iOp = myForm.getOp();
-		
 		if (iOp!=null) {
 			
 			if ("Back".equals(iOp)) {

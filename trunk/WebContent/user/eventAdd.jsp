@@ -52,7 +52,7 @@
 			<TD valign="middle" colspan='2'>
 				<tt:section-header>
 					<tt:section-title>  		
-						<logic:equal name="eventAddForm" property="isAddMeetings" value="true">Select Dates And Locations</logic:equal>
+						<logic:equal name="eventAddForm" property="isAddMeetings" value="true"><bean:write name="eventAddForm" property="eventName"/> - Add Meetings </logic:equal>
 						<logic:notEqual name="eventAddForm" property="isAddMeetings" value="true">Add a New Event</logic:notEqual>
 					</tt:section-title>
 	<!-- 			<html:submit property="op" styleClass="btn" accesskey="S" 
@@ -104,7 +104,40 @@
 			</TD>
 		</TR>
 
-		<logic:equal name="eventAddForm" property="eventType" value="Course Event"> 
+<!-- Courses/Classes if this is a course event -->
+		<logic:equal name="eventAddForm" property="eventType" value="Course Event">
+
+<!-- Not editable if just adding meetings -->
+		<logic:equal name="eventAddForm" property="isAddMeetings" value = "true">
+		<TR>
+			<TD colspan='2'>
+				&nbsp;
+			</TD>
+		</TR>
+		<TR>
+			<TD colspan="2" valign="middle">
+				<br>
+				<tt:section-title>
+					Related Classes / Courses
+				</tt:section-title>
+			</TD>
+		</TR>
+		<TR>
+			<TD colspan='2'>
+				<logic:empty scope="request" name="EventAddMeetings.table">
+					<i>No relation defined for this event.</i>
+				</logic:empty>
+				<logic:notEmpty scope="request" name="EventAddMeetings.table">
+					<table border='0' cellspacing="0" cellpadding="3" width='99%'>
+					<bean:write scope="request" name="EventAddMeetings.table" filter="false"/>
+					</table>
+				</logic:notEmpty>
+			</TD>
+		</TR>
+		</logic:equal>
+
+<!-- Editable if adding a new event -->
+		<logic:notEqual name="eventAddForm" property="isAddMeetings" value="true"> 
 		<TR>
 			<TD colspan="2" valign="middle">
 				<br>
@@ -164,7 +197,10 @@
 				</table>
 			</TD>
 		</TR>
+		</logic:notEqual>
 		</logic:equal>
+<!-- End of Course Event classes/courses -->
+		
 		<TR>
 			<TD colspan='2'>&nbsp;</TD>
 		</TR>

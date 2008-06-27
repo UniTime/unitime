@@ -226,6 +226,7 @@
 
 <!-- Courses/Classes if this is a course event -->
 		<logic:equal name="eventAddInfoForm" property="eventType" value="Course Event">
+		<logic:notEqual name="eventAddInfoForm" property="isAddMeetings" value="true">
 		<TR>
 			<TD colspan='2'>
 				&nbsp;
@@ -253,7 +254,44 @@
 			</TD>
 		</TR>
 		</logic:equal>
+		</logic:notEqual>
+		
+		<logic:equal name="eventAddInfoForm" property="isAddMeetings" value="true">
+		<TR>
+			<TD colspan='2'>
+				&nbsp;
+			</TD>
+		</TR>
+		<TR>
+			<TD colspan="2" valign="middle">
+				<br>
+				<tt:section-title>
+					Related Classes / Courses
+				</tt:section-title>
+			</TD>
+		</TR>
+		<TR>
+			<TD colspan='2'>
+				<logic:empty scope="request" name="EventDetail.table">
+					<i>No relation defined for this event.</i>
+				</logic:empty>
+				<logic:notEmpty scope="request" name="EventDetail.table">
+					<table border='0' cellspacing="0" cellpadding="3" width='99%'>
+					<bean:write scope="request" name="EventDetail.table" filter="false"/>
+					</table>
+				</logic:notEmpty>
+			</TD>
+		</TR>
+		<logic:equal name="eventAddInfoForm" property="attendanceRequired" value="true">
+		<TR>
+			<TD colspan='2'>
+				<i>Students of the listed courses/classes are required to attend this event.</i>
+			</TD>
+		</TR>
 		</logic:equal>
+		</logic:equal>		
+		</logic:equal>
+		
 
 <!--  Footer - another set of buttons -->
 		<TR>

@@ -24,8 +24,6 @@ TO DO:
 --%>
 
 <%@ page language="java" autoFlush="true" errorPage="../error.jsp" %>
-<%@page import="org.unitime.timetable.webutil.JavascriptFunctions"%>
-<%@page import="org.unitime.commons.web.Web"%>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
@@ -34,8 +32,6 @@ TO DO:
 
 
 <tiles:importAttribute />
-
-<tt:confirm name="confirmDelete">The meeting will be deleted. Continue?</tt:confirm>
 
 <html:form action="/eventDetail">
 	<html:hidden property="id"/>
@@ -191,8 +187,12 @@ TO DO:
 					</TD>			
 					<TD>
 						<logic:equal name="eventDetailForm" property="canEdit" value="true">
+							<bean:define name="meeting" property="date" id="meetingDate"/>
+							<bean:define name="meeting" property="startTime" id="meetingStartTime"/>
+							<bean:define name="meeting" property="endTime" id="meetingEndTime"/>
+							<bean:define name="meeting" property="location" id="meetingLocation"/>
 							<html:submit property="op" styleClass="btn" title="Delete Meeting" value="Delete" 
-								onclick="<%="selected.value='"+meetingId+"'; return confirmDelete();"%>"/>
+								onclick="<%="selected.value='"+meetingId+"'; return confirm('The "+meetingDate+" "+meetingStartTime+" - "+meetingEndTime+" "+meetingLocation+" meeting will be deleted. Continue?');"%>"/>
 						</logic:equal>
 					</TD>
 				</TR>	

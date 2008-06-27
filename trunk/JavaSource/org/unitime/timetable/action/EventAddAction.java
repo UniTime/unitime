@@ -20,6 +20,9 @@
 
 package org.unitime.timetable.action;
 
+import java.util.Iterator;
+import java.util.TreeSet;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -30,8 +33,17 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
+import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.form.EventAddForm;
+import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.CourseEvent;
+import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.ExamOwner;
+import org.unitime.timetable.model.InstrOfferingConfig;
+import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.RelatedCourseInfo;
 import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.model.dao.CourseEventDAO;
 import org.unitime.timetable.model.dao.EventDAO;
 
 /**
@@ -64,18 +76,11 @@ public class EventAddAction extends Action {
 
 //Operations
 		String iOp = myForm.getOp();
+		String id = request.getParameter("id");
 
 		if (request.getParameter("op2")!=null && request.getParameter("op2").length()>0)
 			iOp = request.getParameter("op2");
-		
-		if (request.getParameter("id")!=null) {
-			myForm.setEventId(Long.valueOf(request.getParameter("id")));
-			if (myForm.getEventId() != null) {
-				myForm.setEvent(EventDAO.getInstance().get(myForm.getEventId()));
-				myForm.setEventType(myForm.getEvent().getEventTypeLabel()); 
-				myForm.setIsAddMeetings(true);
-			}
-		}
+
 		
 		// if user is returning from the Event Room Availability screen, 
 		// load the parameters he/she entered before
@@ -84,6 +89,69 @@ public class EventAddAction extends Action {
 			iOp = null;
 		}
 		
+		
+		if (request.getParameter("id")!=null) {
+			myForm.setEventId(Long.valueOf(request.getParameter("id")));
+			if (myForm.getEventId() != null) {
+				myForm.setEvent(EventDAO.getInstance().get(myForm.getEventId()));
+				myForm.setEventType(myForm.getEvent().getEventTypeLabel()); 
+				myForm.setIsAddMeetings(true);
+				myForm.setEventName(myForm.getEvent().getEventName());
+			}
+		}
+			
+		//Table of courses for a course event when adding meetings to that event
+		if (myForm.getEventId()!=null && myForm.getEventId()!=0) {
+	        if ("Course Event".equals(myForm.getEventType())) {
+	        	CourseEvent courseEvent = new CourseEventDAO().get(myForm.getEventId());;
+	        	if (!courseEvent.getRelatedCourses().isEmpty()) {
+		        	WebTable table = new WebTable(3, null, new String[] {"Object", "Type", "Title"}, new String[] {"left", "left", "left"}, new boolean[] {true, true, true});
+		            for (Iterator i=new TreeSet(courseEvent.getRelatedCourses()).iterator();i.hasNext();) {
+		                RelatedCourseInfo rci = (RelatedCourseInfo)i.next();
+		                String onclick = null, name = null, type = null, title = null;
+		                switch (rci.getOwnerType()) {
+		                    case ExamOwner.sOwnerTypeClass :
+		                        Class_ clazz = (Class_)rci.getOwnerObject();
+		                        if (clazz.isViewableBy(user))
+		                            onclick = "onClick=\"document.location='classDetail.do?cid="+clazz.getUniqueId()+"';\"";
+		                        name = rci.getLabel();//clazz.getClassLabel();
+		                        type = "Class";
+		                        title = clazz.getSchedulePrintNote();
+		                        if (title==null || title.length()==0) title=clazz.getSchedulingSubpart().getControllingCourseOffering().getTitle();
+		                        break;
+		                    case ExamOwner.sOwnerTypeConfig :
+		                        InstrOfferingConfig config = (InstrOfferingConfig)rci.getOwnerObject();
+		                        if (config.isViewableBy(user))
+		                            onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+config.getInstructionalOffering().getUniqueId()+"';\"";;
+		                        name = rci.getLabel();//config.getCourseName()+" ["+config.getName()+"]";
+		                        type = "Configuration";
+		                        title = config.getControllingCourseOffering().getTitle();
+		                        break;
+		                    case ExamOwner.sOwnerTypeOffering :
+		                        InstructionalOffering offering = (InstructionalOffering)rci.getOwnerObject();
+		                        if (offering.isViewableBy(user))
+		                            onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+offering.getUniqueId()+"';\"";;
+		                        name = rci.getLabel();//offering.getCourseName();
+		                        type = "Offering";
+		                        title = offering.getControllingCourseOffering().getTitle();
+		                        break;
+		                    case ExamOwner.sOwnerTypeCourse :
+		                        CourseOffering course = (CourseOffering)rci.getOwnerObject();
+		                        if (course.isViewableBy(user))
+		                            onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+course.getInstructionalOffering().getUniqueId()+"';\"";;
+		                        name = rci.getLabel();//course.getCourseName();
+		                        type = "Course";
+		                        title = course.getTitle();
+		                        break;
+		                            
+		                }
+		                table.addLine(onclick, new String[] { name, type, title}, null);
+		            }
+		            request.setAttribute("EventAddMeetings.table",table.printTable());
+	            }	
+	        }		        
+		}
+	        
 		if (iOp!=null && !"SessionChanged".equals(iOp)) {
 			myForm.loadDates(request);
 		}
@@ -106,7 +174,6 @@ public class EventAddAction extends Action {
         	if (!errors.isEmpty()) {
         		saveErrors(request, errors);
         	} else {
-        		System.out.println("Event dates:"+myForm.getMeetingDates());
         		myForm.save(request.getSession());
         	}
         }
@@ -132,9 +199,12 @@ public class EventAddAction extends Action {
 		
         
         myForm.setSubjectAreas(TimetableManager.getSubjectAreas(user));
-        
+
+  
 //Display the page        
-        return mapping.findForward(myForm.getEventId()!=null?"update":"show");
+        if (myForm.getEventId()==null || myForm.getEventId()==0) return mapping.findForward("show");
+        
+        return mapping.findForward("update");
 	}
 }
 
