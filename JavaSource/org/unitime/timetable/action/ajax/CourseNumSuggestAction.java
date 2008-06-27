@@ -54,6 +54,39 @@ public class CourseNumSuggestAction extends MultipleSuggestAction {
     public Collection getMultipleSuggestionList(HttpServletRequest request, Map map) {
         
         List result = null;
+        
+        // Read form variables -- Classes Schedule Screen
+        if (map.get("session")!=null && map.get("session") instanceof String &&
+            map.get("subjectArea")!=null && map.get("subjectArea") instanceof String &&
+            map.get("courseNumber")!=null ) {
+            
+            StringBuffer query = new StringBuffer();
+            query.append("select distinct co.courseNbr ");
+            query.append("  from CourseOffering co ");
+            query.append(" where co.subjectArea.session.uniqueId = :acadSessionId ");
+            query.append("       and co.subjectArea.subjectAreaAbbreviation = :subjectArea");
+            query.append("       and co.courseNbr like :courseNbr ");
+            query.append(" order by co.courseNbr ");
+    
+            CourseOfferingDAO cdao = new CourseOfferingDAO();
+            Session hibSession = cdao.getSession();
+    
+            Query q = hibSession.createQuery(query.toString());
+            q.setFetchSize(5000);
+            q.setCacheable(true);
+            q.setFlushMode(FlushMode.MANUAL);
+            q.setInteger("acadSessionId", Integer.parseInt(map.get("session").toString()));
+            q.setString("subjectArea", map.get("subjectArea").toString());
+            q.setString("courseNbr", map.get("courseNumber").toString() + "%");
+    
+            result = q.list();
+            
+            if (result == null)
+                result = new ArrayList();
+
+            return result;
+        }
+        
         User user = Web.getUser(request.getSession());
   
         // Security Checks
@@ -146,7 +179,6 @@ public class CourseNumSuggestAction extends MultipleSuggestAction {
 	        result = q.list();
         }
         
-
         if (result == null)
             result = new ArrayList();
 
