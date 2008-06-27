@@ -59,6 +59,7 @@ import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
@@ -80,7 +81,8 @@ public class PersonalizedExamReportAction extends Action {
     public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
         PersonalizedExamReportForm myForm = (PersonalizedExamReportForm) form;
         
-        String back = (Boolean.TRUE.equals(request.getSession().getAttribute("loginFromExams"))?"exams":"back");
+        String back = (String)request.getSession().getAttribute("loginPage");
+        if (back==null) back = "back";
         
         User user = Web.getUser(request.getSession());
         if (user==null) {
@@ -104,10 +106,18 @@ public class PersonalizedExamReportAction extends Action {
             sessionId = Long.valueOf(request.getParameter("session"));
             request.setAttribute("PersonalizedExamReport.SessionId", sessionId);
         }
-        if (sessionId==null) {
-            sessionId = (Long)request.getSession().getAttribute("Exams.session");
-        } else {
-            request.getSession().setAttribute("Exams.session", sessionId);
+        if ("classes".equals(back)) {
+            if (sessionId==null) {
+                sessionId = (Long)request.getSession().getAttribute("Classes.session");
+            } else {
+                request.getSession().setAttribute("Classes.session", sessionId);
+            }
+        } else if ("exams".equals(back)) {
+            if (sessionId==null) {
+                sessionId = (Long)request.getSession().getAttribute("Exams.session");
+            } else {
+                request.getSession().setAttribute("Exams.session", sessionId);
+            }
         }
         
         HashSet<Session> sessions = new HashSet();
@@ -143,7 +153,12 @@ public class PersonalizedExamReportAction extends Action {
         }
         
         if (instructor==null && student==null) {
-            request.setAttribute("message", "No examinations found.");
+            if ("classes".equals(back))
+                request.setAttribute("message", "No classes found.");
+            else if ("exams".equals(back))
+                request.setAttribute("message", "No examinations found.");
+            else
+                request.setAttribute("message", "No schedule found.");
             return mapping.findForward(back);
         }
         
@@ -184,8 +199,31 @@ public class PersonalizedExamReportAction extends Action {
                 instructorExams.addAll(instructor.getExams(Exam.sExamTypeFinal));
         }
         
-        if (instructorExams.isEmpty() && studentExams.isEmpty()) {
-            request.setAttribute("message", "No examinations found.");
+        boolean hasClasses = false;
+        if (student!=null && student.getSession().getStatusType().canNoRoleReportClass() && !student.getClassEnrollments().isEmpty()) {
+            PdfWebTable table =  getStudentClassSchedule(true, student);
+            if (!table.getLines().isEmpty()) {
+                request.setAttribute("clsschd", table.printTable(WebTable.getOrder(request.getSession(),"exams.o6")));
+                hasClasses = true;
+                myForm.setCanExport(true);
+            }
+        }
+        if (instructor!=null && instructor.getDepartment().getSession().getStatusType().canNoRoleReportClass()) {
+            PdfWebTable table = getInstructorClassSchedule(true, instructor);
+            if (!table.getLines().isEmpty()) {
+                request.setAttribute("iclsschd", table.printTable(WebTable.getOrder(request.getSession(),"exams.o7")));
+                hasClasses = true;
+                myForm.setCanExport(true);
+            }
+        }
+        
+        if (!hasClasses && instructorExams.isEmpty() && studentExams.isEmpty()) {
+            if ("classes".equals(back))
+                request.setAttribute("message", "No classes found.");
+            else if ("exams".equals(back))
+                request.setAttribute("message", "No examinations found.");
+            else
+                request.setAttribute("message", "No schedule found.");
             return mapping.findForward(back);
         }
         
@@ -221,7 +259,7 @@ public class PersonalizedExamReportAction extends Action {
                     ir.printReport(ExamInfo.createInstructorInfo(instructor), exams);
                     ir.lastPage();
                     ir.close();
-                } else {
+                } else if (!studentExams.isEmpty()) {
                     TreeSet<ExamAssignmentInfo> exams = new TreeSet<ExamAssignmentInfo>();
                     TreeSet<ExamSectionInfo> sections = new TreeSet<ExamSectionInfo>();
                     for (Exam exam : studentExams) {
@@ -240,6 +278,28 @@ public class PersonalizedExamReportAction extends Action {
                     sr.printReport(student, sections);
                     sr.lastPage();
                     sr.close();
+                } else if (hasClasses) {
+                    if (instructor!=null) {
+                        InstructorExamReport ir = new InstructorExamReport(
+                                InstructorExamReport.sModeNormal, file, instructor.getDepartment().getSession(),
+                                -1, null, new TreeSet<ExamAssignmentInfo>());
+                        ir.setM2d(true); ir.setDirect(true);
+                        ir.setClassSchedule(instructor.getDepartment().getSession().getStatusType().canNoRoleReportClass());
+                        ir.printHeader();
+                        ir.printReport(ExamInfo.createInstructorInfo(instructor), new TreeSet<ExamAssignmentInfo>());
+                        ir.lastPage();
+                        ir.close();
+                    } else if (student!=null) {
+                        StudentExamReport sr = new StudentExamReport(
+                                StudentExamReport.sModeNormal, file, student.getSession(),
+                                -1, null, new TreeSet<ExamAssignmentInfo>());
+                        sr.setM2d(true); sr.setBtb(true); sr.setDirect(true);
+                        sr.setClassSchedule(student.getSession().getStatusType().canNoRoleReportClass());
+                        sr.printHeader();
+                        sr.printReport(student, new TreeSet<ExamSectionInfo>());
+                        sr.lastPage();
+                        sr.close();
+                    }
                 }
                 
                 request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
@@ -274,20 +334,6 @@ public class PersonalizedExamReportAction extends Action {
         } else if (student!=null && sessions.size()>1) {
             PdfWebTable table = getSessions(true, sessions, student.getName(DepartmentalInstructor.sNameFormatLastFist), student.getSession().getUniqueId());
             request.setAttribute("sessions", table.printTable(WebTable.getOrder(request.getSession(),"exams.o0")));
-        }
-        
-        if (student!=null && student.getSession().getStatusType().canNoRoleReportClass() && !student.getClassEnrollments().isEmpty()) {
-            PdfWebTable table =  getStudentClassSchedule(true, student);
-            if (!table.getLines().isEmpty()) {
-                request.setAttribute("clsschd", table.printTable(WebTable.getOrder(request.getSession(),"exams.o6")));
-            }
-        }
-        
-        if (instructor!=null && instructor.getDepartment().getSession().getStatusType().canNoRoleReportClass()) {
-            PdfWebTable table = getInstructorClassSchedule(true, instructor);
-            if (!table.getLines().isEmpty()) {
-                request.setAttribute("iclsschd", table.printTable(WebTable.getOrder(request.getSession(),"exams.o7")));
-            }
         }
         
         if (!studentExams.isEmpty()) {
@@ -327,7 +373,7 @@ public class PersonalizedExamReportAction extends Action {
         if (session.getStatusType()==null) return false;
         if (session.getStatusType().canNoRoleReportExamFinal() && Exam.hasTimetable(session.getUniqueId(),Exam.sExamTypeFinal)) return true;
         if (session.getStatusType().canNoRoleReportExamMidterm() && Exam.hasTimetable(session.getUniqueId(),Exam.sExamTypeMidterm)) return true;
-        if (session.getStatusType().canNoRoleReportClass()) return true;
+        if (session.getStatusType().canNoRoleReportClass() && Solution.hasTimetable(session.getUniqueId())) return true;
         return false;
     }
     
@@ -1123,33 +1169,35 @@ public class PersonalizedExamReportAction extends Action {
         SimpleDateFormat dpf = new SimpleDateFormat("MM/dd");
         Assignment assignment = clazz.getCommittedAssignment();
         TreeSet meetings = (clazz.getEvent()==null?null:new TreeSet(clazz.getEvent().getMeetings()));
-        if (meetings!=null && !meetings.isEmpty()) {
-            Date first = ((Meeting)meetings.first()).getMeetingDate();
-            Date last = ((Meeting)meetings.last()).getMeetingDate();
-            meetingTime += dpf.format(first)+" - "+dpf.format(last);
-        } else if (assignment!=null && assignment.getDatePattern()!=null) {
-            DatePattern dp = assignment.getDatePattern();
-            if (dp!=null && !dp.isDefault()) {
-                if (dp.getType().intValue()==DatePattern.sTypeAlternate)
-                    meetingTime += dp.getName();
-                else {
-                    meetingTime += dpf.format(dp.getStartDate())+" - "+dpf.format(dp.getEndDate());
-                }
-            }
-        }
+        DatePattern dp = (assignment==null?null:assignment.getDatePattern());
         if (meetings!=null && !meetings.isEmpty()) {
             int dayCode = getDaysCode(meetings);
             String days = "";
             for (int i=0;i<Constants.DAY_CODES.length;i++)
                 if ((dayCode & Constants.DAY_CODES[i])!=0) days += Constants.DAY_NAMES_SHORT[i];
-            meetingTime += " "+days;
+            meetingTime += days;
             Meeting first = (Meeting)meetings.first();
             meetingTime += " "+first.startTime()+" - "+first.stopTime();
         } else if (assignment!=null) {
             TimeLocation t = assignment.getTimeLocation();
-            meetingTime += " "+t.getDayHeader()+" "+t.getStartTimeHeader()+" - "+t.getEndTimeHeader();
+            meetingTime += t.getDayHeader()+" "+t.getStartTimeHeader()+" - "+t.getEndTimeHeader();
         } else {
             meetingTime += "Arr Hrs";
+        }
+        if (meetings!=null && !meetings.isEmpty()) {
+            if (dp==null || !dp.isDefault()) {
+                Date first = ((Meeting)meetings.first()).getMeetingDate();
+                Date last = ((Meeting)meetings.last()).getMeetingDate();
+                if (dp!=null && dp.getType()==DatePattern.sTypeAlternate) 
+                    meetingTime += " ("+dpf.format(first)+" - "+dpf.format(last)+" "+dp.getName()+")";
+                else
+                    meetingTime += " ("+dpf.format(first)+" - "+dpf.format(last)+")";
+            }
+        } else if (dp!=null && !dp.isDefault()) {
+            if (dp.getType()==DatePattern.sTypeAlternate) 
+                meetingTime += " ("+dpf.format(dp.getStartDate())+" - "+dpf.format(dp.getEndDate())+" "+dp.getName()+")";
+            else
+                meetingTime += " ("+dpf.format(dp.getStartDate())+" - "+dpf.format(dp.getEndDate())+")";
         }
         return meetingTime;
     }

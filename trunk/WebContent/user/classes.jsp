@@ -21,10 +21,11 @@
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
+<%@ taglib uri="/WEB-INF/tld/struts-layout.tld" prefix="layout"%>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <tiles:importAttribute />
-<html:form action="/exams">
-	<logic:notEmpty name="examsForm" property="sessions">
+<html:form action="/classes">
+	<logic:notEmpty name="classesForm" property="sessions">
 	<TABLE width="95%" border="0" cellspacing="0" cellpadding="3">
 	<TR>
 		<TD nowspan>
@@ -37,16 +38,19 @@
 			<html:select property="session">
 				<html:optionsCollection property="sessions" label="label" value="value"/>
 			</html:select>,&nbsp;&nbsp;&nbsp;
-			Exams:
-			<html:select property="examType">
-				<html:optionsCollection property="examTypes" label="label" value="value"/>
-			</html:select>,&nbsp;&nbsp;&nbsp;
 			Subject:
 			<html:select property="subjectArea">
 				<html:option value="">Select...</html:option>
 				<html:option value="--ALL--">All</html:option>
 				<html:options property="subjectAreas"/>
 			</html:select>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			Course Number:
+			<layout:suggest 
+				suggestAction="/getCourseNumbers" property="courseNumber" styleId="courseNumber" 
+				suggestCount="15" size="5" maxlength="5" layout="false" all="true" 
+			 	tooltip="Course numbers can be specified using wildcard (*). E.g. 2*"
+				onblur="hideSuggestionList('courseNumber');" />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 			<html:submit onclick="displayLoading();" accesskey="A" property="op" value="Apply" title="Apply (Alt+A)"/>
 		</TD>
 	</TR>
@@ -55,22 +59,27 @@
 
 	<BR>
 	
-	<logic:empty name="examsForm" property="table">
+	<logic:empty name="classesForm" property="table">
 		<table width='95%' border='0' cellspacing='0' cellpadding='3'>
 			<tr><td style='color:red;font-weight:bold;'>
-				<logic:empty name="examsForm" property="session">
-					There are no examinations available at the moment. 
+				<logic:empty name="classesForm" property="session">
+					There are no classes available at the moment. 
 				</logic:empty>
-				<logic:notEmpty name="examsForm" property="session">
-					<logic:empty name="examsForm" property="subjectArea">
+				<logic:notEmpty name="classesForm" property="session">
+					<logic:empty name="classesForm" property="subjectArea">
 						No subject area selected.
 					</logic:empty>
-					<logic:notEmpty name="examsForm" property="subjectArea">
-						<logic:equal name="examsForm" property="subjectArea" value="--ALL--">
-							There are no <bean:write name="examsForm" property="examTypeLabel"/> examinations available for <bean:write name="examsForm" property="sessionLabel"/> at the moment.
+					<logic:notEmpty name="classesForm" property="subjectArea">
+						<logic:equal name="classesForm" property="subjectArea" value="--ALL--">
+							There are no classes available for <bean:write name="classesForm" property="sessionLabel"/> at the moment.
 						</logic:equal>
-						<logic:notEqual name="examsForm" property="subjectArea" value="--ALL--">
-							There are no <bean:write name="examsForm" property="examTypeLabel"/> examinations available for <bean:write name="examsForm" property="subjectArea"/> subject area at the moment.
+						<logic:notEqual name="classesForm" property="subjectArea" value="--ALL--">
+							<logic:empty name="classesForm" property="courseNumber">
+								There are no classes available for <bean:write name="classesForm" property="subjectArea"/> subject area at the moment.
+							</logic:empty>
+							<logic:notEmpty name="classesForm" property="courseNumber">
+								There are no <bean:write name="classesForm" property="subjectArea"/> <bean:write name="classesForm" property="courseNumber"/> classes available at the moment.
+							</logic:notEmpty>
 						</logic:notEqual>
 					</logic:notEmpty>
 				</logic:notEmpty>
@@ -78,13 +87,13 @@
 		</table>
 	</logic:empty>
 	
-	<logic:notEmpty name="examsForm" property="table">
+	<logic:notEmpty name="classesForm" property="table">
 		<table width='95%' border='0' cellspacing='0' cellpadding='3'>
-			<bean:write name="examsForm" property="table" filter="false"/>
+			<bean:write name="classesForm" property="table" filter="false"/>
 		</table>
 	</logic:notEmpty>
 	
-	<logic:notEmpty name="examsForm" property="session">
+	<logic:notEmpty name="classesForm" property="session">
 	<tt:propertyEquals name="tmtbl.authentication.norole" value="true">
 		<BR>
 		<a name="login"></a>
@@ -94,10 +103,10 @@
 				<tt:section-title>Personal Schedule</tt:section-title>
 			</TD>
 		</TR>
- 		<logic:notEmpty name="examsForm" property="message">
+ 		<logic:notEmpty name="classesForm" property="message">
 			<TR>
 				<TD nowspan style='color:red;font-weight:bold;'>
-					<bean:write name="examsForm" property="message"/>
+					<bean:write name="classesForm" property="message"/>
 				</TD>
 			</TR>
  		</logic:notEmpty>
@@ -115,14 +124,20 @@
 				Password:
 				<html:password property="password" size="25"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 				<html:submit onclick="displayLoading();" accesskey="A" property="op" value="Apply" title="Apply (Alt+A)"/>
-				<tt:hasProperty name="tmtbl.exams.login.message">
+				<tt:hasProperty name="tmtbl.classes.login.message">
 					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-					<i><tt:property name="tmtbl.exams.login.message"/></i>
+					<i><tt:property name="tmtbl.classes.login.message"/></i>
 				</tt:hasProperty>
+				<tt:notHasProperty name="tmtbl.classes.login.message">
+					<tt:hasProperty name="tmtbl.exams.login.message">
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+						<i><tt:property name="tmtbl.exams.login.message"/></i>
+					</tt:hasProperty>
+				</tt:notHasProperty>
 			</TD>
 		</TR>
 		</TABLE>
-		<logic:notEmpty name="examsForm" property="message">
+		<logic:notEmpty name="classesForm" property="message">
 			<SCRIPT type="text/javascript" language="javascript">
 				location.hash = 'login';
 			</SCRIPT>
