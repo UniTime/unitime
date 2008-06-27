@@ -84,7 +84,7 @@ public class ExamsAction extends Action {
                                 session.setAttribute(Constants.CFG_APP_ACCESS_LEVEL, appStatus);
                                 
                                 session.setAttribute("authUserExtId", user.getId());
-                                session.setAttribute("loginFromExams", Boolean.TRUE);
+                                session.setAttribute("loginPage", "exams");
                                 return mapping.findForward("personal");
                                 //response.sendRedirect("selectPrimaryRole.do"); break;
                             }

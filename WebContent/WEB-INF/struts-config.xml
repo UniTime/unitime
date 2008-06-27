@@ -127,6 +127,7 @@
 	  <form-bean name="examAssignmentReportForm" type="org.unitime.timetable.form.ExamAssignmentReportForm" />
 	  <form-bean name="ecbsForm" type="org.unitime.timetable.form.ExamCbsForm" />
 	  <form-bean name="examsForm" type="org.unitime.timetable.form.ExamsForm" />
+	  <form-bean name="classesForm" type="org.unitime.timetable.form.ClassesForm" />
 	  <form-bean name="eventListForm" type="org.unitime.timetable.form.EventListForm" />
 	  <form-bean name="personalizedExamReportForm" type="org.unitime.timetable.form.PersonalizedExamReportForm" />
 	  <form-bean name="roomAvailabilityForm" type="org.unitime.timetable.form.RoomAvailabilityForm" />
@@ -296,7 +297,7 @@
             path="loginRequiredTile" />
          <forward
          	name="norole"
-            path="/personalizedExams.do"
+            path="/personalSchedule.do"
             redirect="true" />
       </action>
 
@@ -2173,7 +2174,25 @@
 	    	redirect="true" />
          <forward
          	name="personal"
-            path="/personalizedExams.do"
+            path="/personalSchedule.do"
+            redirect="true"/>
+    </action>
+
+    <action
+    	path="/classes"
+    	type="org.unitime.timetable.action.ClassesAction"
+    	attribute="classesForm"
+    	input="classesTile"
+    	name="classesForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+	    	name="show"
+	    	path="classesTile"
+	    	redirect="true" />
+         <forward
+         	name="personal"
+            path="/personalSchedule.do"
             redirect="true"/>
     </action>
 
@@ -2227,7 +2246,7 @@
     </action>    
     
     <action
-    	path="/personalizedExams"
+    	path="/personalSchedule"
     	type="org.unitime.timetable.action.PersonalizedExamReportAction"
     	attribute="personalizedExamReportForm"
     	input="personalizedExamReportTile"
@@ -2246,6 +2265,9 @@
     	<forward
     		name="exams"
     		path="/exams.do"/>
+    	<forward
+    		name="classes"
+    		path="/classes.do"/>
     </action>    
 
     <action
