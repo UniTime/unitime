@@ -172,7 +172,7 @@ TO DO:
 			<html:hidden property="selected"/>
 			<logic:iterate name="eventDetailForm" property="meetings" id="meeting">
 				<bean:define name="meeting" property="uniqueId" id="meetingId"/>
-				<TR>
+				<TR onmouseover="style.backgroundColor='rgb(200,200,200)';" onmouseout="style.backgroundColor='transparent';">
 					<TD>
 						<bean:write name="meeting" property="date" filter="false"/> 
 					</TD>
