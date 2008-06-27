@@ -42,6 +42,7 @@ import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
+import org.unitime.timetable.model.dao.CourseEventDAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
@@ -148,17 +149,68 @@ public class EventAddInfoForm extends ActionForm {
 		if (iIsAddMeetings) {
 			iEvent = EventDAO.getInstance().get(iEventId);
 			iEventName = iEvent.getEventName();
+			iEventType = iEvent.getEventTypeLabel();
 			iMainContactFirstName = iEvent.getMainContact().getFirstName();
 			iMainContactLastName = iEvent.getMainContact().getLastName();
 			iMainContactEmail = iEvent.getMainContact().getEmailAddress();
 			iMainContactPhone = iEvent.getMainContact().getPhone();
-			iEventName = iEvent.getEventName();
 			loadExistingMeetings();
 		} else if (tm!=null) {
 			iMainContactFirstName = (tm.getFirstName()==null?"":tm.getFirstName());
 			iMainContactLastName = (tm.getLastName()==null?"":tm.getLastName());
 			iMainContactEmail = (tm.getEmailAddress()==null?"":tm.getEmailAddress());
 		}
+		System.out.println("Event Id: " + iEventId);
+		System.out.println("Event Type: " + iEventType);
+		if ("Course Event".equals(iEventType) && iIsAddMeetings) {
+            CourseEvent courseEvent = new CourseEventDAO().get(iEventId);;
+            if (!courseEvent.getRelatedCourses().isEmpty()) {
+	        	WebTable table = new WebTable(3, null, new String[] {"Object", "Type", "Title"}, new String[] {"left", "left", "left"}, new boolean[] {true, true, true});
+	            for (Iterator i=new TreeSet(courseEvent.getRelatedCourses()).iterator();i.hasNext();) {
+	                RelatedCourseInfo rci = (RelatedCourseInfo)i.next();
+	                String onclick = null, name = null, type = null, title = null;
+	                switch (rci.getOwnerType()) {
+	                    case ExamOwner.sOwnerTypeClass :
+	                        Class_ clazz = (Class_)rci.getOwnerObject();
+	                        if (clazz.isViewableBy(user))
+	                            onclick = "onClick=\"document.location='classDetail.do?cid="+clazz.getUniqueId()+"';\"";
+	                        name = rci.getLabel();//clazz.getClassLabel();
+	                        type = "Class";
+	                        title = clazz.getSchedulePrintNote();
+	                        if (title==null || title.length()==0) title=clazz.getSchedulingSubpart().getControllingCourseOffering().getTitle();
+	                        break;
+	                    case ExamOwner.sOwnerTypeConfig :
+	                        InstrOfferingConfig config = (InstrOfferingConfig)rci.getOwnerObject();
+	                        if (config.isViewableBy(user))
+	                            onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+config.getInstructionalOffering().getUniqueId()+"';\"";;
+	                        name = rci.getLabel();//config.getCourseName()+" ["+config.getName()+"]";
+	                        type = "Configuration";
+	                        title = config.getControllingCourseOffering().getTitle();
+	                        break;
+	                    case ExamOwner.sOwnerTypeOffering :
+	                        InstructionalOffering offering = (InstructionalOffering)rci.getOwnerObject();
+	                        if (offering.isViewableBy(user))
+	                            onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+offering.getUniqueId()+"';\"";;
+	                        name = rci.getLabel();//offering.getCourseName();
+	                        type = "Offering";
+	                        title = offering.getControllingCourseOffering().getTitle();
+	                        break;
+	                    case ExamOwner.sOwnerTypeCourse :
+	                        CourseOffering course = (CourseOffering)rci.getOwnerObject();
+	                        if (course.isViewableBy(user))
+	                            onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+course.getInstructionalOffering().getUniqueId()+"';\"";;
+	                        name = rci.getLabel();//course.getCourseName();
+	                        type = "Course";
+	                        title = course.getTitle();
+	                        break;
+	                            
+	                }
+	                table.addLine(onclick, new String[] { name, type, title}, null);
+	            }
+	            request.setAttribute("EventDetail.table",table.printTable());
+            }			
+        }
+
 	}
 	
 	public void save(HttpSession session) {
