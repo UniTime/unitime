@@ -172,7 +172,7 @@
 							
 							<TD align="left">
 								<% if (r1 instanceof Room) { %>
-									<%=((Room)r1).getScheduledRoomType()%>
+									<%=((Room)r1).getRoomTypeLabel()%>
 								<% } else { %>
 									Non University
 								<% } %>
@@ -248,7 +248,7 @@
 							
 							<TD align="left">
 								<% if (r2 instanceof Room) { %>
-									<%=((Room)r2).getScheduledRoomType()%>
+									<%=((Room)r2).getRoomTypeLabel()%>
 								<% } else { %>
 									Non University
 								<% } %>
