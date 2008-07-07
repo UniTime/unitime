@@ -36,6 +36,10 @@
 </TABLE>
 <BR>
 <TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<%= request.getAttribute("ManageSolvers.stable") %> 
+</TABLE>
+<BR>
+<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
 	<%= request.getAttribute("ManageSolvers.table2") %> 
 </TABLE>
 <BR>
@@ -48,7 +52,7 @@
 			<i>Solver register service is running at <%=request.getServerName()%>:<%=SolverRegisterService.getPort()%>.</i>
 		</TD>
 		<TD align='right'>
-			<% if (session.getAttribute("ManageSolver.puid")!=null || session.getAttribute("ManageSolver.examPuid")!=null) { %>
+			<% if (session.getAttribute("ManageSolver.puid")!=null || session.getAttribute("ManageSolver.examPuid")!=null || session.getAttribute("ManageSolver.sectionPuid")!=null) { %>
 				<html:submit onclick="displayLoading();" property="op" value="Deselect"/>
 			<% } %>
 			<html:submit onclick="displayLoading();" accesskey="R" property="op" value="Refresh"/>

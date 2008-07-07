@@ -37,6 +37,8 @@ import org.unitime.timetable.solver.exam.ExamSolverProxyFactory;
 import org.unitime.timetable.solver.remote.SolverRegisterService.SolverConnection;
 import org.unitime.timetable.solver.remote.core.ConnectionFactory;
 import org.unitime.timetable.solver.remote.core.RemoteIo;
+import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
+import org.unitime.timetable.solver.studentsct.StudentSolverProxyFactory;
 
 import net.sf.cpsolver.ifs.util.DataProperties;
 
@@ -219,6 +221,29 @@ public class RemoteSolverServerProxy {
         query(new Object[] {"createExamSolver", puid, properties});
         return ExamSolverProxyFactory.create(this,puid);
     }
+
+    public Hashtable<String,StudentSolverProxy> getStudentSolvers() throws Exception {
+        Set puids = (Set)query(new Object[] {"getStudentSolvers"});
+        if (puids==null) return new Hashtable();
+        Hashtable<String,StudentSolverProxy> solvers = new Hashtable();
+        for (Iterator i=puids.iterator();i.hasNext();) {
+            String puid = (String)i.next();
+            solvers.put(puid,StudentSolverProxyFactory.create(this,puid));
+        }
+        return solvers;
+    }
+
+    public StudentSolverProxy getStudentSolver(String puid) throws Exception {
+        if (((Boolean)query(new Object[] {"hasStudentSolver", puid})).booleanValue()) {
+            return StudentSolverProxyFactory.create(this,puid);
+        } else return null;
+    }
+    
+    public StudentSolverProxy createStudentSolver(String puid, DataProperties properties) throws Exception {
+        query(new Object[] {"createStudentSolver", puid, properties});
+        return StudentSolverProxyFactory.create(this,puid);
+    }
+
 
     public String getVersion() throws Exception {
 		return (String)query(new Object[] {"getVersion"});

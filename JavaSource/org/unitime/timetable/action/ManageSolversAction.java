@@ -50,6 +50,7 @@ import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.remote.RemoteSolverServerProxy;
 import org.unitime.timetable.solver.remote.SolverRegisterService;
+import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 import org.unitime.timetable.solver.ui.PropertiesInfo;
 import org.unitime.timetable.util.Constants;
 
@@ -86,11 +87,20 @@ public class ManageSolversAction extends Action {
             return mapping.findForward("showExamSolver");
         }
 
+        if ("Select".equals(op) && request.getParameter("sectionPuid")!=null) {
+            String puid = request.getParameter("sectionPuid");
+            request.getSession().setAttribute("ManageSolver.sectionPuid", puid);
+            request.getSession().removeAttribute("StudentSolverProxy");
+            return mapping.findForward("showStudentSolver");
+        }
+
         if ("Deselect".equals(op)) {
         	request.getSession().removeAttribute("ManageSolver.puid");
         	request.getSession().removeAttribute("SolverProxy");
             request.getSession().removeAttribute("ManageSolver.examPuid");
             request.getSession().removeAttribute("ExamSolverProxy");
+            request.getSession().removeAttribute("ManageSolver.sectionPuid");
+            request.getSession().removeAttribute("StudentSolverProxy");
         }
         
         if ("Shutdown".equals(op)) {
@@ -177,6 +187,7 @@ public class ManageSolversAction extends Action {
         getSolvers(request);
         getServers(request);
         getExamSolvers(request);
+        getStudentSolvers(request);
         return mapping.findForward("showSolvers");
 	}
 	
@@ -620,5 +631,88 @@ public class ManageSolversAction extends Action {
 	        }
 	    }
 
+       private void getStudentSolvers(HttpServletRequest request) throws Exception {
+           try {
+               WebTable.setOrder(request.getSession(),"manageSolvers.ord4",request.getParameter("ord4"),1);
+               
+               WebTable webTable = new WebTable( 12,
+                       "Manage Student Sectioning Solvers", "manageSolvers.do?ord4=%%",
+                       new String[] {"Created", "Last Used", "Session", "Host", "Config", "Status", "Owner", "Assign", "Total", "CompSched", "DistConf", "Pert"},
+                       new String[] {"left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left"},
+                       null );
+               webTable.setRowStyle("white-space:nowrap");
+               
+               int nrLines = 0;
+               Long currentSessionId = Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId();
+               
+               StudentSolverProxy x = WebSolver.getStudentSolverNoSessionCheck(request.getSession());
+               String xId = (x==null?null:x.getProperties().getProperty("General.OwnerPuid"));
+               
+               for (StudentSolverProxy solver : WebSolver.getStudentSolvers().values()) {
+                   String runnerName = getName(solver.getProperties().getProperty("General.OwnerPuid","N/A"));
+                   if (runnerName==null)
+                       runnerName = "N/A";
+                   Session session = (new SessionDAO()).get(solver.getProperties().getPropertyLong("General.SessionId",new Long(-1)));
+                   String sessionLabel = "N/A";
+                   if (session!=null)
+                       sessionLabel = session.getLabel();
+                   SolverPredefinedSetting setting = (new SolverPredefinedSettingDAO()).get(solver.getProperties().getPropertyLong("General.SettingsId",new Long(-1)));
+                   String settingLabel = solver.getProperties().getProperty("Basic.Mode","N/A");
+                   if (setting!=null)
+                       settingLabel = setting.getDescription();
+                   String onClick = null;
+                   if (session.getUniqueId().equals(currentSessionId) && solver.getProperties().getProperty("General.OwnerPuid")!=null)
+                       onClick = "onClick=\"document.location='manageSolvers.do?op=Select&sectionPuid=" + solver.getProperties().getProperty("General.OwnerPuid") + "';\"";
+                   String status = (String)solver.getProgress().get("STATUS");
+                   
+                   Hashtable info = solver.currentSolutionInfo();
+                   String assigned = (String)info.get("Assigned variables");
+                   String totVal = (String)info.get("Overall solution value");
+                   String compSch = (String)info.get("Students with complete schedule");
+                   String distConf = (String)info.get("Student distance conflicts");
+                   String pert = (String)info.get("Perturbation Penalty");
+                   Date loaded = solver.getLoadedDate();
+                   Date lastUsed = solver.getLastUsed(); 
+                   
+                   String bgColor = null;
+                   if (x!=null && ToolBox.equals(solver.getProperties().getProperty("General.OwnerPuid"), xId))
+                       bgColor = "rgb(168,187,225)";
+                   
+                   webTable.addLine(onClick, new String[] {
+                               (loaded==null?"N/A":sDF.format(loaded)),
+                               (lastUsed==null?"N/A":sDF.format(lastUsed)),
+                               sessionLabel,
+                               solver.getHostLabel(),
+                               settingLabel,
+                               status,
+                               runnerName, 
+                               (assigned==null?"N/A":assigned.indexOf(' ')>=0?assigned.substring(0,assigned.indexOf(' ')):assigned),
+                               (totVal==null?"N/A":totVal),
+                               (compSch==null?"N/A":compSch), 
+                               (distConf==null?"N/A":distConf),
+                               (pert==null?"N/A":pert.indexOf(' ')>=0?pert.substring(0,pert.indexOf(' ')):pert)},
+                           new Comparable[] {
+                               (loaded==null?new Date():loaded),
+                               (lastUsed==null?new Date():lastUsed),
+                               sessionLabel,
+                               solver.getHost(),
+                               settingLabel, 
+                               status,
+                               runnerName,
+                               (assigned==null?"":assigned),
+                               (totVal==null?"":totVal),
+                               (compSch==null?"":compSch), 
+                               (distConf==null?"":distConf),
+                               (pert==null?"":pert)}).setBgColor(bgColor);
+                       nrLines++;
+               }
+               if (nrLines==0)
+                   webTable.addLine(null, new String[] {"<i>No solver is running.</i>"}, null, null );
+               request.setAttribute("ManageSolvers.stable",webTable.printTable(WebTable.getOrder(request.getSession(),"manageSolvers.ord4")));
+               
+           } catch (Exception e) {
+               throw new Exception(e);
+           }
+       }
 }
 

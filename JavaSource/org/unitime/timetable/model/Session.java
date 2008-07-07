@@ -35,6 +35,7 @@ import org.hibernate.Transaction;
 import org.unitime.commons.User;
 import org.unitime.timetable.model.base.BaseSession;
 import org.unitime.timetable.model.dao.BuildingDAO;
+import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.model.dao.RoomDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
@@ -653,6 +654,13 @@ public class Session extends BaseSession implements Comparable {
 		if (date.compareTo(getSessionEndDateTime())>0) //after session
 			return date.getTime() - getSessionEndDateTime().getTime();
 		return 0; //inside session
+	}
+	
+	public boolean hasStudentSchedule() {
+        return ((Number)new ExamDAO().getSession().
+                createQuery("select count(x) from StudentClassEnrollment x " +
+                        "where x.student.session.uniqueId=:sessionId").
+                setLong("sessionId",getUniqueId()).uniqueResult()).longValue()>0;
 	}
 
 }
