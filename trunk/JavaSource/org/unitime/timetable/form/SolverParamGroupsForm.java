@@ -84,9 +84,10 @@ public class SolverParamGroupsForm extends ActionForm {
     public int getType() { return this.type; }
     public void setType(int type) { this.type = type; }
     public Vector getTypes() {
-        Vector ret = new Vector(2);
+        Vector ret = new Vector(3);
         ret.add(new IdValue(new Long(SolverParameterGroup.sTypeCourse), "Course Timetabling"));
         ret.add(new IdValue(new Long(SolverParameterGroup.sTypeExam), "Examination Timetabling"));
+        ret.add(new IdValue(new Long(SolverParameterGroup.sTypeStudent), "Student Sectioning"));
         return ret;
     }
 }

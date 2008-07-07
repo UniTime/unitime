@@ -27,6 +27,7 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
+import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 
 /**
  * @author Tomas Muller
@@ -36,12 +37,14 @@ public class SolverPassivationThread extends Thread {
 	private File iFolder = null;
 	private Hashtable iSolvers = null;
 	private Hashtable iExamSolvers = null;
+	private Hashtable iStudentSolvers = null;
 	public static long sDelay = 30000;
 	
-	public SolverPassivationThread(File folder, Hashtable solvers, Hashtable examSolvers) {
+	public SolverPassivationThread(File folder, Hashtable solvers, Hashtable examSolvers, Hashtable studentSolvers) {
 		iFolder = folder;
 		iSolvers = solvers;
 		iExamSolvers = examSolvers;
+		iStudentSolvers = studentSolvers;
 		setName("SolverPasivationThread");
 		setDaemon(true);
 		setPriority(Thread.MIN_PRIORITY);
@@ -61,6 +64,12 @@ public class SolverPassivationThread extends Thread {
                     Map.Entry entry = (Map.Entry)i.next();
                     String puid = (String)entry.getKey();
                     ExamSolverProxy solver = (ExamSolverProxy)entry.getValue();
+                    solver.passivateIfNeeded(iFolder, puid);
+                }
+                for (Iterator i=iStudentSolvers.entrySet().iterator();i.hasNext();) {
+                    Map.Entry entry = (Map.Entry)i.next();
+                    String puid = (String)entry.getKey();
+                    StudentSolverProxy solver = (StudentSolverProxy)entry.getValue();
                     solver.passivateIfNeeded(iFolder, puid);
                 }
 				try {

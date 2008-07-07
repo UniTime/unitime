@@ -39,6 +39,9 @@ import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.exam.ExamSolver.ExamSolverDisposeListener;
 import org.unitime.timetable.solver.remote.core.RemoteSolverServer;
 import org.unitime.timetable.solver.remote.core.SolverTray;
+import org.unitime.timetable.solver.studentsct.StudentSolver;
+import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
+import org.unitime.timetable.solver.studentsct.StudentSolver.StudentSolverDisposeListener;
 import org.unitime.timetable.solver.ui.TimetableInfo;
 import org.unitime.timetable.solver.ui.TimetableInfoFileProxy;
 import org.unitime.timetable.util.Constants;
@@ -61,6 +64,7 @@ public class RemoteSolver extends TimetableSolver implements TimetableInfoFilePr
 	private static Hashtable<String,RemoteSolver> sSolvers = new Hashtable();
 	private static SolverPassivationThread sSolverPassivationThread = null;
 	private static Hashtable<String,ExamSolver> sExamSolvers = new Hashtable();
+	private static Hashtable<String,StudentSolver> sStudentSolvers = new Hashtable();
 	
 	public RemoteSolver(DataProperties properties) {
 		super(properties);
@@ -117,6 +121,31 @@ public class RemoteSolver extends TimetableSolver implements TimetableInfoFilePr
                 if (arr.length>=3 && "EXAM".equals(arr[1])) {
                     String puid = (String)arr[2];
                     ExamSolver solver = sExamSolvers.get(puid);
+                    if ("exists".equals(arr[0])) {
+                        return new Boolean(solver!=null);
+                    }
+                    if (solver!=null) 
+                        return solver.exec(arr);
+                    else
+                        return null;
+                }
+                if ("getStudentSolvers".equals(arr[0])) {
+                    return new HashSet(sStudentSolvers.keySet());
+                }
+                if ("hasStudentSolver".equals(arr[0])) {
+                    return new Boolean(sStudentSolvers.get((String)arr[1])!=null);
+                }
+                if ("createStudentSolver".equals(arr[0])) {
+                    String puid = (String)arr[1];
+                    StudentSolver solver = sStudentSolvers.get(puid);
+                    if (solver!=null) solver.dispose();
+                    solver = new StudentSolver((DataProperties)arr[2], new StudentSolverOnDispose(puid));
+                    sStudentSolvers.put(puid, solver);
+                    return Boolean.TRUE;
+                }
+                if (arr.length>=3 && "SCT".equals(arr[1])) {
+                    String puid = (String)arr[2];
+                    StudentSolver solver = sStudentSolvers.get(puid);
                     if ("exists".equals(arr[0])) {
                         return new Boolean(solver!=null);
                     }
@@ -204,6 +233,13 @@ public class RemoteSolver extends TimetableSolver implements TimetableInfoFilePr
                 ExamSolver solver =(ExamSolver)entry.getValue();
                 solver.backup(folder, puid);
 			}
+
+            for (Iterator i=sStudentSolvers.entrySet().iterator();i.hasNext();) {
+                Map.Entry entry = (Map.Entry)i.next();
+                String puid = (String)entry.getKey();
+                StudentSolver solver =(StudentSolver)entry.getValue();
+                solver.backup(folder, puid);
+            }
 		}
 	}
 	
@@ -230,6 +266,17 @@ public class RemoteSolver extends TimetableSolver implements TimetableInfoFilePr
 				    }
 				    continue;
 				}
+				
+                if (puid.startsWith("sct_")) {
+                    String exPuid = puid.substring("sct_".length());
+                    StudentSolver solver = new StudentSolver(new DataProperties(), new StudentSolverOnDispose(exPuid));
+                    if (solver.restore(folder, exPuid)) {
+                        if (passivateFolder!=null)
+                            solver.passivate(passivateFolder,puid);
+                        sStudentSolvers.put(exPuid,solver);
+                    }
+                    continue;
+                }
 				
 				RemoteSolver solver = new RemoteSolver(new DataProperties());
 				if (solver.restore(folder,puid)) {
@@ -315,7 +362,7 @@ public class RemoteSolver extends TimetableSolver implements TimetableInfoFilePr
 	        restore(sBackupDir, sPassivationDir);
 	        sLog.debug("  -- backuped solver instances restored");
 	        
-	        sSolverPassivationThread = new SolverPassivationThread(sPassivationDir, sSolvers, sExamSolvers);
+	        sSolverPassivationThread = new SolverPassivationThread(sPassivationDir, sSolvers, sExamSolvers, sStudentSolvers);
 	        sSolverPassivationThread.start();
 	        sLog.debug("  -- solver passivation thread started");
 	        
@@ -371,6 +418,15 @@ public class RemoteSolver extends TimetableSolver implements TimetableInfoFilePr
                 if (solver.isWorking()) ret++;
             } catch (Exception e) {};
         }
+        for (Iterator i=sStudentSolvers.entrySet().iterator();i.hasNext();) {
+            Map.Entry entry = (Map.Entry)i.next();
+            StudentSolverProxy solver = (StudentSolverProxy)entry.getValue();
+            ret++;
+            if (!solver.isPassivated()) ret++;
+            try {
+                if (solver.isWorking()) ret++;
+            } catch (Exception e) {};
+        }
 		return ret;
 	}
 	
@@ -383,4 +439,13 @@ public class RemoteSolver extends TimetableSolver implements TimetableInfoFilePr
             sExamSolvers.remove(iOwnerId);
         }
 	}
+    private static class StudentSolverOnDispose implements StudentSolverDisposeListener {
+        String iOwnerId = null;
+        public StudentSolverOnDispose(String ownerId) {
+            iOwnerId = ownerId;
+        }
+        public void onDispose() {
+            sStudentSolvers.remove(iOwnerId);
+        }
+    }
 }

@@ -242,6 +242,13 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
         return false;
     }
 
+    public boolean canSectionStudents(Session session, User user) {
+        if (Roles.ADMIN_ROLE.equals(user.getCurrentRole())) 
+            return true;
+        
+        return false;
+    }
+
     public boolean hasASolverGroup(Session session, User user) {
 		if (user.isAdmin() || user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE) || user.getCurrentRole().equals(Roles.EXAM_MGR_ROLE)) {
 			return !SolverGroup.findBySessionId(session.getUniqueId()).isEmpty();

@@ -134,6 +134,8 @@
 	  <form-bean name="eventAddForm" type="org.unitime.timetable.form.EventAddForm" />	
 	  <form-bean name="eventRoomAvailabilityForm" type="org.unitime.timetable.form.EventRoomAvailabilityForm" />
 	  <form-bean name="eventAddInfoForm" type="org.unitime.timetable.form.EventAddInfoForm" />
+      <form-bean name="studentSolverForm" type="org.unitime.timetable.form.StudentSolverForm" />
+	  <form-bean name="studentSolverLogForm" type="org.unitime.timetable.form.StudentSolverLogForm" />
    </form-beans>
 
    <global-exceptions>
@@ -754,6 +756,10 @@
       <forward
         name="showExamSolver"
         path="examSolverTile"
+        redirect="true" />
+      <forward
+        name="showStudentSolver"
+        path="studentSolverTile"
         redirect="true" />
     </action>
     <action
@@ -2339,6 +2345,34 @@
     	<forward
     		name="eventList"
     		path="/eventList.do"/>
+    </action>
+
+    <action
+    	path="/studentSolver"
+    	type="org.unitime.timetable.action.StudentSolverAction"
+    	attribute="studentSolverForm"
+    	input="studentSolverTile"
+    	name="studentSolverForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+    		name="showSolver"
+    		path="studentSolverTile"
+	        redirect="true" />
+    </action>
+    
+    <action
+    	path="/studentSolverLog"
+    	type="org.unitime.timetable.action.StudentSolverLogAction"
+    	attribute="studentSolverLogForm"
+    	input="studentSolverLogTile"
+    	name="studentSolverLogForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+    		name="showLog"
+    		path="studentSolverLogTile"
+    		redirect="true" />
     </action>
 
     </action-mappings>

@@ -245,14 +245,16 @@ public class SolverSettingsAction extends Action {
                         File file = ApplicationProperties.getTempFile(setting.getName(), "txt");
                         PrintWriter pw = new PrintWriter(new FileWriter(file));
                         DataProperties properties = WebSolver.createProperties(setting.getUniqueId(), null,
-                                myForm.getAppearanceIdx()==SolverPredefinedSetting.APPEARANCE_EXAM_SOLVER?SolverParameterGroup.sTypeExam:SolverParameterGroup.sTypeCourse);
+                                myForm.getAppearanceIdx()==SolverPredefinedSetting.APPEARANCE_STUDENT_SOLVER?SolverParameterGroup.sTypeStudent:myForm.getAppearanceIdx()==SolverPredefinedSetting.APPEARANCE_EXAM_SOLVER?SolverParameterGroup.sTypeExam:SolverParameterGroup.sTypeCourse);
                         pw.println("## Solver Configuration File");
                         pw.println("## Name: "+setting.getDescription());
                         pw.println("## Date: "+new Date());
                         pw.println("######################################");
                         for (Iterator i=hibSession.createQuery("select g from SolverParameterGroup g order by g.order").iterate();i.hasNext();) {
                             SolverParameterGroup g = (SolverParameterGroup)i.next();
-                            if (myForm.getAppearanceIdx()==SolverPredefinedSetting.APPEARANCE_EXAM_SOLVER) {
+                            if (myForm.getAppearanceIdx()==SolverPredefinedSetting.APPEARANCE_STUDENT_SOLVER) {
+                                if (g.getType()!=SolverParameterGroup.sTypeStudent) continue;
+                            } else if (myForm.getAppearanceIdx()==SolverPredefinedSetting.APPEARANCE_EXAM_SOLVER) {
                                 if (g.getType()!=SolverParameterGroup.sTypeExam) continue;
                             } else {
                                 if (g.getType()!=SolverParameterGroup.sTypeCourse) continue;

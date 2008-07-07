@@ -35,6 +35,7 @@ public class SolverParameterGroup extends BaseSolverParameterGroup {
 	
 	public static final int sTypeCourse = 0;
 	public static final int sTypeExam = 1;
+	public static final int sTypeStudent = 2;
 
 /*[CONSTRUCTOR MARKER BEGIN]*/
 	public SolverParameterGroup () {

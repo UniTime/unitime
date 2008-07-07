@@ -212,9 +212,9 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     			}
     		}
     	} catch (Exception e) {
-    		tx.rollback();
     		iProgress.fatal("Unable to save timetable, reason: "+e.getMessage(),e);
     		sLog.error(e.getMessage(),e);
+            tx.rollback();
     	} finally {
     		// here we need to close the session since this code may run in a separate thread
     		if (hibSession!=null && hibSession.isOpen()) hibSession.close();
