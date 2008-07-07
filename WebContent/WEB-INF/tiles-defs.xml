@@ -935,4 +935,14 @@
 		<put name="title" type="string" value="Update Meetings"/>
   	</definition> 	  	
   	
- </tiles-definitions>
+  	<definition	name="studentSolverTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Student Sectioning Solver"/>
+		<put name="body" value="/sct/studentSolver.jsp" />
+  	</definition>
+
+	<definition	name="studentSolverLogTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Student Sectioning Solver Log"/>
+		<put name="body" value="/sct/studentLog.jsp" />
+  	</definition>
+
+</tiles-definitions>

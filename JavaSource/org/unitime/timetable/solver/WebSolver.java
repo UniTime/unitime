@@ -49,6 +49,9 @@ import org.unitime.timetable.solver.remote.BackupFileFilter;
 import org.unitime.timetable.solver.remote.RemoteSolverProxy;
 import org.unitime.timetable.solver.remote.RemoteSolverServerProxy;
 import org.unitime.timetable.solver.remote.SolverRegisterService;
+import org.unitime.timetable.solver.studentsct.StudentSolver;
+import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
+import org.unitime.timetable.solver.studentsct.StudentSolver.StudentSolverDisposeListener;
 import org.unitime.timetable.tags.SolverWarnings;
 import org.unitime.timetable.util.Constants;
 
@@ -65,6 +68,7 @@ public class WebSolver extends TimetableSolver implements ProgressListener {
 	private JspWriter iJspWriter;
 	private static Hashtable<String,SolverProxy> sSolvers = new Hashtable();
 	private static Hashtable<String,ExamSolverProxy> sExamSolvers = new Hashtable();
+	private static Hashtable<String,StudentSolverProxy> sStudentSolvers = new Hashtable();
 	private static SolverPassivationThread sSolverPasivationThread = null;
 	private static long sMemoryLimit = Integer.parseInt(ApplicationProperties.getProperty("tmtbl.solver.mem_limit","200"))*1024*1024; //200 MB
 	private static boolean sBackupWhenDone = false;
@@ -150,6 +154,84 @@ public class WebSolver extends TimetableSolver implements ProgressListener {
         }
         return null;
     }
+	
+	   public static StudentSolverProxy getStudentSolver(String puid, Long sessionId) {
+	        try {
+	            StudentSolverProxy solver = sStudentSolvers.get(puid);
+	            if (solver!=null) {
+	                if (sessionId!=null && !sessionId.equals(solver.getProperties().getPropertyLong("General.SessionId",null))) 
+	                    return null;
+	                return solver;
+	            }
+	            Set servers = SolverRegisterService.getInstance().getServers();
+	            synchronized (servers) {
+	                for (Iterator i=servers.iterator();i.hasNext();) {
+	                    RemoteSolverServerProxy server = (RemoteSolverServerProxy)i.next();
+	                    if (!server.isActive()) continue;
+	                    StudentSolverProxy proxy = server.getStudentSolver(puid);
+	                    if (proxy!=null) {
+	                        if (sessionId!=null && !sessionId.equals(proxy.getProperties().getPropertyLong("General.SessionId",null))) 
+	                            return null;
+	                        return proxy;
+	                    }
+	                }
+	            }
+	        } catch (Exception e) {
+	            sLog.error("Unable to retrieve solver, reason:"+e.getMessage(),e);
+	        }
+	        return null;
+	    }
+	    
+	    public static StudentSolverProxy getStudentSolver(javax.servlet.http.HttpSession session) {
+	        StudentSolverProxy solver = (StudentSolverProxy)session.getAttribute("StudentSolverProxy");
+	        if (solver!=null) {
+	            try {
+	                if (solver instanceof RemoteExamSolverProxy && ((RemoteExamSolverProxy)solver).exists())
+	                    return solver;
+	                else
+	                    session.removeAttribute("StudentSolverProxy");
+	            } catch (Exception e) {
+	                session.removeAttribute("StudentSolverProxy");
+	            };
+	        }
+	        User user = Web.getUser(session);
+	        if (user==null) return null;
+	        Session acadSession = null;
+	        try {
+	            acadSession = Session.getCurrentAcadSession(user);
+	        } catch (Exception e) {}
+	        if (acadSession==null) return null;
+	        TimetableManager mgr = TimetableManager.getManager(user);
+	        if (!mgr.canSectionStudents(acadSession, user)) return null;
+	        String puid = (String)session.getAttribute("ManageSolver.sectionPuid");
+	        if (puid!=null) {
+	            solver = getStudentSolver(puid, acadSession.getUniqueId());
+	            if (solver!=null) {
+	                session.setAttribute("StudentSolverProxy", solver);
+	                return solver;
+	            }
+	        }
+	        solver = getStudentSolver(user.getId(), acadSession.getUniqueId());
+	        if (solver==null) return null;
+	        session.setAttribute("StudentSolverProxy", solver);
+	        return solver;
+	    }
+	    
+	    public static StudentSolverProxy getStudentSolverNoSessionCheck(javax.servlet.http.HttpSession session) {
+	        try {
+	            User user = Web.getUser(session);
+	            if (user==null) return null;
+	            String puid = (String)session.getAttribute("ManageSolver.sectionPuid");
+	            if (puid!=null) {
+	                StudentSolverProxy solver = getStudentSolver(puid, null);
+	                if (solver!=null) return solver;
+	            }
+	            return getStudentSolver(user.getId(), null);
+	        } catch (Exception e) {
+	            sLog.error("Unable to retrieve solver, reason:"+e.getMessage(),e);
+	        }
+	        return null;
+	    }
 
 	public static SolverProxy getSolver(String puid, Long sessionId) {
 		try {
@@ -282,16 +364,29 @@ public class WebSolver extends TimetableSolver implements ProgressListener {
                 ext.append("net.sf.cpsolver.ifs.extension.ViolatedInitials");
                 */
             }
+        } else if (type==SolverParameterGroup.sTypeStudent) {
+            String mode = properties.getProperty("StudentSctBasic.Mode","Initial");
+            if ("MPP".equals(mode))
+                properties.setProperty("General.MPP","true");
+            if (properties.getPropertyBoolean("StudentSct.CBS",true)) {
+                if (ext.length()>0) ext.append(";");
+                ext.append("net.sf.cpsolver.studentsct.extension.StudentConflictStatistics");
+                properties.setProperty("ConflictStatistics.Print","true");
+            }
+            if (properties.getPropertyBoolean("StudentSct.StudentDist",true)) {
+                if (ext.length()>0) ext.append(";");
+                ext.append("net.sf.cpsolver.studentsct.extension.DistanceConflict");
+            }
         }
         properties.setProperty("Extensions.Classes",ext.toString());
         if (properties.getPropertyBoolean("Basic.DisobeyHard",false)) {
         	properties.setProperty("General.InteractiveMode", "true");
         }
-        if ("No Action".equals(properties.getProperty("Basic.WhenFinished")) || "No Action".equals(properties.getProperty("ExamBasic.WhenFinished"))) {
+        if ("No Action".equals(properties.getProperty("Basic.WhenFinished")) || "No Action".equals(properties.getProperty("ExamBasic.WhenFinished")) || "No Action".equals(properties.getProperty("StudentSctBasic.WhenFinished"))) {
             properties.setProperty("General.Save","false");
             properties.setProperty("General.CreateNewSolution","false");
             properties.setProperty("General.Unload","false");
-        } else if ("Save".equals(properties.getProperty("Basic.WhenFinished")) || "Save".equals(properties.getProperty("ExamBasic.WhenFinished"))) {
+        } else if ("Save".equals(properties.getProperty("Basic.WhenFinished")) || "Save".equals(properties.getProperty("ExamBasic.WhenFinished")) || "Save".equals(properties.getProperty("StudentSctBasic.WhenFinished"))) {
             properties.setProperty("General.Save","true");
             properties.setProperty("General.CreateNewSolution","false");
             properties.setProperty("General.Unload","false");
@@ -299,7 +394,7 @@ public class WebSolver extends TimetableSolver implements ProgressListener {
             properties.setProperty("General.Save","true");
             properties.setProperty("General.CreateNewSolution","true");
             properties.setProperty("General.Unload","false");
-        } else if ("Save and Unload".equals(properties.getProperty("Basic.WhenFinished")) || "Save and Unload".equals(properties.getProperty("ExamBasic.WhenFinished"))) {
+        } else if ("Save and Unload".equals(properties.getProperty("Basic.WhenFinished")) || "Save and Unload".equals(properties.getProperty("ExamBasic.WhenFinished")) || "Save and Unload".equals(properties.getProperty("StudentSctBasic.WhenFinished"))) {
             properties.setProperty("General.Save","true");
             properties.setProperty("General.CreateNewSolution","false");
             properties.setProperty("General.Unload","true");
@@ -465,6 +560,74 @@ public class WebSolver extends TimetableSolver implements ProgressListener {
 	            throw e;
 	        }
 	    }
+	   
+       public static StudentSolverProxy createStudentSolver(Long sessionId, javax.servlet.http.HttpSession session, Long settingsId, Hashtable extraParams, boolean startSolver, String host) throws Exception {
+           try {
+               
+           User user = Web.getUser(session);
+           if (user==null) return null;
+           
+           removeExamSolver(session);
+               
+           DataProperties properties = createProperties(settingsId, extraParams, SolverParameterGroup.sTypeStudent);
+           
+           properties.setProperty("General.SessionId",sessionId.toString());
+           properties.setProperty("General.OwnerPuid", user.getId());
+           properties.setProperty("General.StartTime", String.valueOf((new Date()).getTime()));
+           properties.setProperty("General.StartSolver",Boolean.toString(startSolver));
+           String instructorFormat = Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT);
+           if (instructorFormat!=null)
+               properties.setProperty("General.InstructorFormat",instructorFormat);
+           
+           if (host!=null) {
+               Set servers = SolverRegisterService.getInstance().getServers();
+               synchronized (servers) {
+                   for (Iterator i=servers.iterator();i.hasNext();) {
+                       RemoteSolverServerProxy server = (RemoteSolverServerProxy)i.next();
+                       if (!server.isActive()) continue;
+                       if (host.equals(server.getAddress().getHostName()+":"+server.getPort())) {
+                           StudentSolverProxy solver = server.createStudentSolver(user.getId(), properties);
+                           solver.load(properties);
+                           return solver;
+                       }
+                   }
+               }
+           }
+           
+           if (!"local".equals(host) && !SolverRegisterService.getInstance().getServers().isEmpty()) {
+               RemoteSolverServerProxy bestServer = null;
+               Set servers = SolverRegisterService.getInstance().getServers();
+               synchronized (servers) {
+                   for (Iterator i=servers.iterator();i.hasNext();) {
+                       RemoteSolverServerProxy server = (RemoteSolverServerProxy)i.next();
+                       if (!server.isActive()) continue;
+                       if (server.getAvailableMemory()<sMemoryLimit) continue;
+                       if (bestServer==null) {
+                           bestServer = server;
+                       } else if (bestServer.getUsage()>server.getUsage()) {
+                           bestServer = server;
+                       }
+                   }
+               }
+               if (bestServer!=null) {
+                   StudentSolverProxy solver = bestServer.createStudentSolver(user.getId(), properties);
+                   solver.load(properties);
+                   return solver;
+               }
+           }
+           
+           if (getAvailableMemory()<sMemoryLimit)
+               throw new Exception("Not enough resources to create a solver instance, please try again later.");
+           StudentSolverProxy solver = new StudentSolver(properties, new StudentSolverOnDispose(user.getId()));
+           sStudentSolvers.put(user.getId(), solver);
+           solver.load(properties);
+           //Progress.getInstance(sExamSolver.currentSolution().getModel()).addProgressListener(sExamSolver);
+           return solver;
+           } catch (Exception e) {
+               e.printStackTrace();
+               throw e;
+           }
+       }
 	
 	public static SolverProxy reload(javax.servlet.http.HttpSession session, Long settingsId, Hashtable extraParams) throws Exception {
 		User user = Web.getUser(session);
@@ -530,6 +693,35 @@ public class WebSolver extends TimetableSolver implements ProgressListener {
         
         return solver;
     }
+    
+    public static StudentSolverProxy reloadStudentSolver(javax.servlet.http.HttpSession session, Long settingsId, Hashtable extraParams) throws Exception {
+        User user = Web.getUser(session);
+        if (user==null) return null;
+        
+        StudentSolverProxy solver = getStudentSolver(session);
+        if (solver==null) return null;
+        DataProperties oldProperties = solver.getProperties();
+        
+        if (settingsId==null)
+            settingsId = oldProperties.getPropertyLong("General.SettingsId", null);
+        
+        DataProperties properties = createProperties(settingsId, extraParams, SolverParameterGroup.sTypeStudent);
+        
+        String warn = SolverWarnings.getSolverWarning(session, oldProperties.getPropertyLongArry("General.SolverGroupId", null));
+        if (warn!=null) properties.setProperty("General.SolverWarnings",warn);
+        
+        properties.setProperty("General.SessionId",oldProperties.getProperty("General.SessionId"));
+        properties.setProperty("General.SolverGroupId",oldProperties.getProperty("General.SolverGroupId"));
+        properties.setProperty("General.OwnerPuid", oldProperties.getProperty("General.OwnerPuid"));
+        properties.setProperty("General.StartTime", String.valueOf((new Date()).getTime()));
+        String instructorFormat = Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT);
+        if (instructorFormat!=null)
+            properties.setProperty("General.InstructorFormat",instructorFormat);
+        
+        solver.reload(properties);
+        
+        return solver;
+    }
 	
 	public void dispose() {
 		super.dispose();
@@ -570,6 +762,17 @@ public class WebSolver extends TimetableSolver implements ProgressListener {
             if (solver.isRunning()) solver.stopSolver();
             solver.dispose();
         }
+        session.removeAttribute("ManageSolver.examPuid");
+    }
+
+    public static void removeStudentSolver(javax.servlet.http.HttpSession session) throws Exception {
+        session.removeAttribute("StudentSolverProxy");
+        StudentSolverProxy solver = getStudentSolverNoSessionCheck(session);
+        if (solver!=null) {
+            if (solver.isRunning()) solver.stopSolver();
+            solver.dispose();
+        }
+        session.removeAttribute("ManageSolver.sectionPuid");
     }
 
     public static Hashtable<String,SolverProxy> getSolvers() throws Exception {
@@ -602,12 +805,31 @@ public class WebSolver extends TimetableSolver implements ProgressListener {
         return solvers; 
     }
 
+    public static Hashtable<String,StudentSolverProxy> getStudentSolvers() throws Exception {
+        Hashtable<String,StudentSolverProxy> solvers = new Hashtable(sStudentSolvers);
+        Set servers = SolverRegisterService.getInstance().getServers();
+        synchronized (servers) {
+            for (Iterator i=servers.iterator();i.hasNext();) {
+                RemoteSolverServerProxy server = (RemoteSolverServerProxy)i.next();
+                if (!server.isActive()) continue;
+                Hashtable serverSolvers = server.getStudentSolvers();
+                if (serverSolvers!=null)
+                    solvers.putAll(serverSolvers);
+            }
+        }
+        return solvers; 
+    }
+
     public static Hashtable getLocalSolvers() throws Exception {
 		return sSolvers;
 	}
 
     public static Hashtable getLocalExaminationSolvers() throws Exception {
         return sExamSolvers;
+    }
+
+    public static Hashtable getLocalStudentSolvers() throws Exception {
+        return sStudentSolvers;
     }
 
     public void setHtmlMessageWriter(JspWriter out) {
@@ -715,6 +937,14 @@ public class WebSolver extends TimetableSolver implements ProgressListener {
                 solver.backup(folder, puid);
             }
         }
+        synchronized (sStudentSolvers) {
+            for (Iterator i=sStudentSolvers.entrySet().iterator();i.hasNext();) {
+                Map.Entry entry = (Map.Entry)i.next();
+                String puid = (String)entry.getKey();
+                StudentSolver solver =(StudentSolver)entry.getValue();
+                solver.backup(folder, puid);
+            }
+        }
 	}
 	
 	public static void restore(File folder, File passivateFolder) {
@@ -741,6 +971,17 @@ public class WebSolver extends TimetableSolver implements ProgressListener {
                     continue;
                 }
                 
+                if (puid.startsWith("sct_")) {
+                    String exPuid = puid.substring("sct_".length());
+                    StudentSolver solver = new StudentSolver(new DataProperties(), new StudentSolverOnDispose(exPuid));
+                    if (solver.restore(folder, exPuid)) {
+                        if (passivateFolder!=null)
+                            solver.passivate(passivateFolder,puid);
+                        sStudentSolvers.put(exPuid, solver);
+                    }
+                    continue;
+                }
+                
 				WebSolver solver = new WebSolver(new DataProperties());
 				if (solver.restore(folder,puid)) {
 					if (passivateFolder!=null)
@@ -753,7 +994,7 @@ public class WebSolver extends TimetableSolver implements ProgressListener {
 	
 	public static void startSolverPasivationThread(File folder) {
 		if (sSolverPasivationThread!=null && sSolverPasivationThread.isAlive()) return;
-		sSolverPasivationThread = new SolverPassivationThread(folder, sSolvers, sExamSolvers);
+		sSolverPasivationThread = new SolverPassivationThread(folder, sSolvers, sExamSolvers, sStudentSolvers);
 		sSolverPasivationThread.start();
 	}
 	
@@ -818,6 +1059,16 @@ public class WebSolver extends TimetableSolver implements ProgressListener {
         }
         public void onDispose() {
             sExamSolvers.remove(iOwnerId);
+        }
+    }
+
+    private static class StudentSolverOnDispose implements StudentSolverDisposeListener {
+        String iOwnerId = null;
+        public StudentSolverOnDispose(String ownerId) {
+            iOwnerId = ownerId;
+        }
+        public void onDispose() {
+            sStudentSolvers.remove(iOwnerId);
         }
     }
 }

@@ -34,6 +34,7 @@
 <%@page import="org.unitime.timetable.solver.exam.ExamSolverProxy"%>
 <%@page import="org.unitime.timetable.model.dao.SessionDAO"%>
 <%@page import="org.unitime.timetable.model.Exam"%>
+<%@page import="org.unitime.timetable.solver.studentsct.StudentSolverProxy"%>
 <%@ include file="../checkLogin.jspf" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 
@@ -58,13 +59,14 @@
 <%=Web.metaExpireNow()%>
 <% 
 	SolverProxy solver = WebSolver.getSolver(session);
-	ExamSolverProxy examSolver = (solver==null?WebSolver.getExamSolverNoSessionCheck(session):null);  
+	ExamSolverProxy examSolver = (solver==null?WebSolver.getExamSolverNoSessionCheck(session):null);
+	StudentSolverProxy studentSolver = (solver==null && examSolver==null?WebSolver.getStudentSolverNoSessionCheck(session):null);  
 	int tab = 0;
 	if (session.getAttribute("UserInfo.tab")!=null)
 		tab = ((Integer)session.getAttribute("UserInfo.tab")).intValue();
 	if (request.getParameter("tab")!=null)
 		tab = Integer.parseInt(request.getParameter("tab"));
-	if (solver==null && examSolver==null) tab=0;
+	if (solver==null && examSolver==null && studentSolver==null) tab=0;
 	session.setAttribute("UserInfo.tab",new Integer(tab));
 %>
 
@@ -154,6 +156,13 @@
 				onclick="document.location='userinfo.jsp?tab=1';"
 				title="Show Solver Status">
 				&nbsp;Examination Solver&nbsp;</TD>
+	<% } else if (studentSolver!=null) { %>
+			<TD valign="top" nowrap 
+				onmouseover="this.style.cursor='pointer';" 
+				class="UserInfoTabRight"
+				onclick="document.location='userinfo.jsp?tab=1';"
+				title="Show Solver Status">
+				&nbsp;Sectioning Solver&nbsp;</TD>
 	<% } else { %>
 			<TD valign="top" nowrap 
 				class="UserInfoTabDisabled">
@@ -165,7 +174,7 @@
 				class="UserInfoTabSelect"
 				onclick="document.location='userinfo.jsp?tab=1';"
 				title="Refresh Solver Status">
-				&nbsp;<%=examSolver!=null?"Examination Solver":"Solver Status"%>&nbsp;</TD>
+				&nbsp;<%=studentSolver!=null?"Sectioning Solver":examSolver!=null?"Examination Solver":"Solver Status"%>&nbsp;</TD>
 <% } %>
 			<TD width='50%' bgcolor="#e4e4e4" class="UserInfoTabBg">&nbsp;</TD>
 		</TR>
@@ -233,8 +242,8 @@
 
 <% } else {
    try {
-   Map progress = (examSolver!=null?examSolver.getProgress():solver.getProgress());
-   DataProperties properties = (examSolver!=null?examSolver.getProperties():solver.getProperties());
+   Map progress = (studentSolver!=null?studentSolver.getProgress():examSolver!=null?examSolver.getProgress():solver.getProgress());
+   DataProperties properties = (studentSolver!=null?studentSolver.getProperties():examSolver!=null?examSolver.getProperties():solver.getProperties());
    String progressStatus = (String)progress.get("STATUS");
    String progressPhase = (String)progress.get("PHASE");
    long progressCur = ((Long)progress.get("PROGRESS")).longValue();
@@ -269,7 +278,7 @@
 		</TR>
 		<TR align="left">
 			<TD valign="top" height="15"><FONT color="#000000">&nbsp;Host</FONT></TD>
-			<TD valign="top" height="15"><FONT color="#000040"><I><%=(examSolver!=null?examSolver.getHostLabel():solver.getHostLabel())%></I></FONT></TD>
+			<TD valign="top" height="15"><FONT color="#000040"><I><%=(studentSolver!=null?studentSolver.getHostLabel():examSolver!=null?examSolver.getHostLabel():solver.getHostLabel())%></I></FONT></TD>
 		</TR>
 		<TR align="left">
 			<TD valign="top" height="15"><FONT color="#000000">&nbsp;Solver</FONT></TD>
@@ -294,7 +303,7 @@
 		</TR>
 		<TR align="left">
 			<TD valign="top" height="15"><FONT color="#000000">&nbsp;Session</FONT></TD>
-			<TD valign="top" height="15"><FONT color="#000040"><I><%=new SessionDAO().get((examSolver!=null?examSolver.getProperties():solver.getProperties()).getPropertyLong("General.SessionId",null)).getLabel()%></I></FONT></TD>
+			<TD valign="top" height="15"><FONT color="#000040"><I><%=new SessionDAO().get(properties.getPropertyLong("General.SessionId",null)).getLabel()%></I></FONT></TD>
 		</TR>
 <% } catch (Exception e) { Debug.error(e); %>
 <script language="JavaScript">

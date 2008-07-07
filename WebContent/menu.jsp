@@ -90,9 +90,13 @@
 		enditem(); //12
 <% }} %>
 	enditem(); //1
-<% if (user!=null
-		&& user.getRole().equals(Roles.ADMIN_ROLE)) { %>
-	leaf_item('Student Sectioning','Student Sectioning','sectioningDemo.do');
+<% if (user!=null && manager!=null && acadSession!=null && manager.canSectionStudents(acadSession,user)) { %>
+	menu_item('7', 'Student Sectioning','Student Sectioning', '', 'expand');
+		menu_item('71', 'Batch Solver','Student Sectioning Solver','studentSolver.do', 'collapse');
+			leaf_item('Log','Student Sectioning Solver Log','studentSolverLog.do');
+		enditem();//71
+		leaf_item('Online Demo','Student Sectioning Online Demo','sectioningDemo.do');
+	enditem();//7
 <% } %>
 	<%  if (manager.canSeeExams(acadSession, user)) { %>
 	menu_item('2','Examination Timetabling','Examination Timetabling','','expand');

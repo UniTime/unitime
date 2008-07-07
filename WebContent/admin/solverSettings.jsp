@@ -132,7 +132,9 @@
 			SolverParameterGroup group = (SolverParameterGroup)i.next();
 			boolean groupVisible = false;
 			boolean correctType = true;
-			if (frm.getAppearanceIdx()==SolverPredefinedSetting.APPEARANCE_EXAM_SOLVER) {
+			if (frm.getAppearanceIdx()==SolverPredefinedSetting.APPEARANCE_STUDENT_SOLVER) {
+				if (group.getType()!=SolverParameterGroup.sTypeStudent) correctType=false;
+			} else if (frm.getAppearanceIdx()==SolverPredefinedSetting.APPEARANCE_EXAM_SOLVER) {
 				if (group.getType()!=SolverParameterGroup.sTypeExam) correctType=false;
 			} else {
 				if (group.getType()!=SolverParameterGroup.sTypeCourse) correctType=false;
