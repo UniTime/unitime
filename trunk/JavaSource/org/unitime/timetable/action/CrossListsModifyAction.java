@@ -40,6 +40,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.MessageResources;
+import org.hibernate.FlushMode;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
@@ -257,6 +258,7 @@ public class CrossListsModifyAction extends Action {
         InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
         InstructionalOffering io = idao.get(frm.getInstrOfferingId());
         Session hibSession = idao.getSession();
+        hibSession.setFlushMode(FlushMode.MANUAL);
         Transaction tx = null;
         HashMap saList = new HashMap();
         
@@ -567,7 +569,7 @@ public class CrossListsModifyAction extends Action {
 	                    // Remove from collection
 	                    //i.remove();
 
-    			        sa2.getCourseOfferings().remove(co2);
+                        sa2.getCourseOfferings().remove(co2);
 	                    hibSession.saveOrUpdate(sa2);
 		                saList.put(sa2.getSubjectAreaAbbreviation(), sa2);
                         
