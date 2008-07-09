@@ -708,8 +708,8 @@ VALUES (100, '1', 'Change', NULL, 'Me', 'change-me@unitime.org', NULL);
 INSERT INTO `timetable`.`tmtbl_mgr_to_roles`(`uniqueid`, `manager_id`, `role_id`, `is_primary`)
 VALUES (101, 100, 1, 1);
 
-INSERT INTO `timetable`.`sessions`(`academic_initiative`, `session_begin_date_time`, `classes_end_date_time`, `session_end_date_time`, `uniqueid`, `holidays`, `def_datepatt_id`, `status_type`, `last_modified_time`, `academic_year`, `academic_term`)
-VALUES ('default', '2007-08-20 00:00:00', '2007-12-08 23:59:00', '2007-12-15 23:59:00', 102, '00000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000022000000000000000000000000000000000000000000222200000000000000000000000000000000000000000000000000000000000000000000', 103, 14, NULL, '2007', 'Fal');
+INSERT INTO `timetable`.`sessions`(`academic_initiative`, `session_begin_date_time`, `classes_end_date_time`, `session_end_date_time`, `uniqueid`, `holidays`, `def_datepatt_id`, `status_type`, `last_modified_time`, `academic_year`, `academic_term`, `exam_begin_date`)
+VALUES ('default', '2007-08-20 00:00:00', '2007-12-08 23:59:00', '2007-12-15 23:59:00', 102, '00000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000022000000000000000000000000000000000000000000222200000000000000000000000000000000000000000000000000000000000000000000', 103, 14, NULL, '2007', 'Fal', '2007-12-10 00:00:00');
 
 INSERT INTO `timetable`.`date_pattern`(`uniqueid`, `name`, `pattern`, `offset`, `type`, `visible`, `session_id`)
 VALUES (103, 'Full Term', '111111011111100111110111111011111101111110111111000111101111110111111011111101111110111111011000001111110111111', 0, 0, 1, 102);
@@ -729,12 +729,12 @@ VALUES (106, 'Central Timetable', 'Central', 102);
 INSERT INTO `timetable`.`solver_gr_to_tt_mgr`(`solver_group_id`, `timetable_mgr_id`)
 VALUES (106, 100);
 
-update `timetable`.`hibernate_unique_key` set `next_hi`=1000;
+update `timetable`.`hibernate_unique_key` set `next_hi`=1;
 
 -- Re-enable foreign key checks
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 
-select `next_hi` into @id from `timetable`.`hibernate_unique_key`;
+select 32767 * `next_hi` into @id from `timetable`.`hibernate_unique_key`;
 
 select max(`ord`)+1 into @ord from `timetable`.`solver_parameter_group`;
 
@@ -792,6 +792,6 @@ insert into `timetable`.`distribution_type`(`uniqueid`, `reference`, `label`, `s
 	(@id+41, 'EX_SAME_ROOM', 'Same Room', 0, 37, 'P43210R', 'Exams are to be placed at the same room(s). <BR>When prohibited or (strongly) discouraged: exams are to be placed at different rooms.', 'Same Room', 0, 1), 
 	(@id+42, 'EX_PRECEDENCE', 'Precedence', 1, 38, 'P43210R', 'Exams are to be placed in the given order. <BR>When prohibited or (strongly) discouraged: exams are to be placed in the order reverse to the given one.', 'Precede', 0, 1); 
 
-update `timetable`.`hibernate_unique_key` set `next_hi`=`next_hi`+43
+update `timetable`.`hibernate_unique_key` set `next_hi`=`next_hi`+1
 
 -- End of script

@@ -17,9 +17,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-select `next_hi` into @id from `timetable`.`hibernate_unique_key`;
+select 32767 * next_hi into @id from hibernate_unique_key;
 
-select max(`ord`)+1 into @ord from `timetable`.`solver_parameter_group`;
+select max(ord)+1 into @ord from solver_parameter_group;
 
 insert into solver_parameter_group (uniqueid, name, description, ord, param_type) values
 			(@id, 'StudentSctBasic', 'Basic Parameters', @ord, 2),
@@ -59,7 +59,7 @@ insert into solver_parameter_def
 insert into solver_predef_setting (uniqueid, name, description, appearance) values 
 			(@id+30, 'StudentSct.Default', 'Default', 3);
 
-update hibernate_unique_key set next_hi=next_hi+31;
+update hibernate_unique_key set next_hi=next_hi+1;
 
 /*
  * Update database version
