@@ -2026,4 +2026,43 @@
 				values(%SCHEMA%.Solver_Predef_Setting_Seq.Nextval, 'StudentSct.Default', 'Default', 3)
 		</plsql>
 	</update>
+	<update version="32" date="9-Jul-2008" comment="Event changes">
+		<mysql>alter table %SCHEMA%.event_contact modify phone varchar(10)</mysql>
+		<mysql>alter table %SCHEMA%.event_contact modify email varchar(200)</mysql>
+		<mysql>alter table %SCHEMA%.timetable_manager modify email_address varchar(200)</mysql>
+		<plsql>alter table %SCHEMA%.event_contact drop constraint nn_event_contact_phone</plsql>
+		<plsql>alter table %SCHEMA%.event_contact drop constraint nn_event_contact_email</plsql>
+		<plsql>alter table %SCHEMA%.event_contact modify email varchar2(200)</plsql>
+		<plsql>alter table %SCHEMA%.timetable_manager modify email_address varchar2(200)</plsql>
+		<mysql into="ID">select 32767 * next_hi from %SCHEMA%.hibernate_unique_key</mysql>
+		<mysql>update %SCHEMA%.hibernate_unique_key set next_hi = next_hi+1</mysql>
+		<mysql>insert into %SCHEMA%.roles (role_id, reference, abbv) values (%ID%, 'Event Mgr', 'Event Manager')</mysql>
+		<plsql>insert into %SCHEMA%.roles (role_id, reference, abbv) values (%SCHEMA%.role_seq.nextval, 'Event Mgr', 'Event Manager')</plsql>
+		<mysql>alter table %SCHEMA%.event add email varchar(1000)</mysql>
+		<plsql>alter table %SCHEMA%.event add email varchar2(1000)</plsql>
+		<mysql>
+			create table %SCHEMA%.sponsoring_organization (
+				uniqueid decimal(20,0) primary key not null,
+				name varchar(100) not null,
+				email varchar(200)
+			)
+		</mysql>
+		<plsql>
+			create table %SCHEMA%.sponsoring_organization (
+				uniqueid number(20,0) constraint nn_sponsor_org_id not null,
+				name varchar2(100) constraint nn_sponsor_org_name not null,
+				email varchar2(200)
+			)
+		</plsql>
+		<plsql>
+			alter table %SCHEMA%.sponsoring_organization
+			add constraint pk_sponsoring_organization primary key (uniqueid)
+		</plsql>
+		<mysql>alter table %SCHEMA%.event add sponsor_org_id decimal(20,0)</mysql>
+		<plsql>alter table %SCHEMA%.event add sponsor_org_id number(20,0)</plsql>
+		<sql>
+			alter table %SCHEMA%.event add constraint fk_event_sponsor_org foreign key (sponsor_org_id)
+  			references %SCHEMA%.sponsoring_organization (uniqueid) on delete set null
+  		</sql>
+	</update>
 </dbupdate>

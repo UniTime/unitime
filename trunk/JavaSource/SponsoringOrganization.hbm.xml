@@ -24,12 +24,12 @@
 
 <hibernate-mapping package="org.unitime.timetable.model">
 	<class
-		name="EventContact"
-		abstract="false"
-		table="EVENT_CONTACT">
+		name="SponsoringOrganization"
+		table="SPONSORING_ORGANIZATION"
+		abstract="false">
 
-		<cache include="non-lazy" usage="read-write"/>
-
+		<cache usage="read-write" />
+		
 		<id 
             name="uniqueId"
             column="UNIQUEID" 
@@ -39,54 +39,21 @@
 			</generator>
             
         </id>
-        
+
 		<property
-			name="externalUniqueId"
-			column="EXTERNAL_ID"
+			name="name"
+			column="NAME"
 			type="string"
-			not-null="false"
-			length="40"
+			not-null="true"
+			length="100"
 		/>
 		
 		<property
-			name="emailAddress"
+			name="email"
 			column="EMAIL"
 			type="string"
 			not-null="false"
 			length="200"
 		/>
-		
-		<property
-			name="phone"
-			column="PHONE"
-			type="string"
-			not-null="false"
-			length="10"
-		/>
-				
-		<property
-			name="firstName"
-			column="FIRSTNAME"
-			type="string"
-			not-null="false"
-			length="20"
-		/>
-		
-		<property
-			name="middleName"
-			column="MIDDLENAME"
-			type="string"
-			not-null="false"
-			length="20"
-		/>
-		
-		<property
-			name="lastName"
-			column="LASTNAME"
-			type="string"
-			not-null="false"
-			length="30"
-		/>
-		
-	</class>
+	</class>	
 </hibernate-mapping>
