@@ -132,6 +132,7 @@
 <%  if (manager.canSeeEvents(acadSession, user)) { %>
 	menu_item('3','Event Management','Events','','expand');
 		leaf_item('Events','Events','eventList.do');
+		leaf_item('Add Event','Add Event','eventAdd.do');
 		enditem(); //3
 <% } %>
 		
