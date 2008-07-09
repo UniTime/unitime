@@ -89,7 +89,7 @@
 			column="EMAIL_ADDRESS"
 			type="string"
 			not-null="false"
-			length="135"
+			length="200"
 		/>
 		
 		<set name="departments"

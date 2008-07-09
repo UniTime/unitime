@@ -189,5 +189,6 @@
 	<mapping resource="RelatedCourseInfo.hbm.xml" />
 	<mapping resource="Meeting.hbm.xml" />
 	<mapping resource="RoomTypeOption.hbm.xml" />
+	<mapping resource="SponsoringOrganization.hbm.xml" />
 </session-factory>
 </hibernate-configuration>

@@ -18,6 +18,7 @@ public abstract class BaseEvent  implements Serializable {
 	public static String PROP_EVENT_NAME = "eventName";
 	public static String PROP_MIN_CAPACITY = "minCapacity";
 	public static String PROP_MAX_CAPACITY = "maxCapacity";
+	public static String PROP_EMAIL = "email";
 
 
 	// constructors
@@ -60,9 +61,11 @@ public abstract class BaseEvent  implements Serializable {
 	private java.lang.String eventName;
 	private java.lang.Integer minCapacity;
 	private java.lang.Integer maxCapacity;
+	private java.lang.String email;
 
 	// many to one
 	private org.unitime.timetable.model.EventContact mainContact;
+	private org.unitime.timetable.model.SponsoringOrganization sponsoringOrganization;
 
 	// collections
 	private java.util.Set additionalContacts;
@@ -142,7 +145,20 @@ public abstract class BaseEvent  implements Serializable {
 		this.maxCapacity = maxCapacity;
 	}
 
+    /**
+     * Return the value associated with the column: EMAIL
+     */
+    public java.lang.String getEmail () {
+        return email;
+    }
 
+    /**
+     * Set the value related to the column: EMAIL
+     * @param email the EMAIL value
+     */
+    public void setEmail (java.lang.String email) {
+        this.email = email;
+    }
 
 	/**
 	 * Return the value associated with the column: main_contact_id
@@ -159,6 +175,20 @@ public abstract class BaseEvent  implements Serializable {
 		this.mainContact = mainContact;
 	}
 
+    /**
+     * Return the value associated with the column: sponsor_org_id
+     */
+    public org.unitime.timetable.model.SponsoringOrganization getSponsoringOrganization () {
+        return sponsoringOrganization;
+    }
+
+    /**
+     * Set the value related to the column: sponsor_org_id
+     * @param sponsoringOrganization the sponsor_org_id value
+     */
+    public void setSponsoringOrganization (org.unitime.timetable.model.SponsoringOrganization sponsoringOrganization) {
+        this.sponsoringOrganization = sponsoringOrganization;
+    }
 
 
 	/**
