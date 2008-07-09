@@ -769,7 +769,6 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                     contact.setLastName(manager.getLastName());
                     contact.setExternalUniqueId(manager.getExternalUniqueId());
                     contact.setEmailAddress(manager.getEmailAddress());
-                    contact.setPhone("unknown");
                     hibSession.save(contact);
                 }
                 event.setMainContact(contact);
