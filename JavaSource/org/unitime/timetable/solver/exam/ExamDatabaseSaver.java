@@ -378,7 +378,6 @@ public class ExamDatabaseSaver extends ExamSaver {
             contact.setLastName(manager.getLastName());
             contact.setExternalUniqueId(manager.getExternalUniqueId());
             contact.setEmailAddress(manager.getEmailAddress());
-            contact.setPhone("unknown");
             hibSession.save(contact);
         }
         for (Enumeration e=getModel().assignedVariables().elements();e.hasMoreElements();) {
