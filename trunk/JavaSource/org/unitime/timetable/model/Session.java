@@ -33,6 +33,7 @@ import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Transaction;
 import org.unitime.commons.User;
+import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.model.base.BaseSession;
 import org.unitime.timetable.model.dao.BuildingDAO;
 import org.unitime.timetable.model.dao.ExamDAO;
@@ -92,13 +93,42 @@ public class Session extends BaseSession implements Comparable {
 		Transaction tx = null;
 		try {
 		    tx = hibSession.beginTransaction();
-		    Session session = new SessionDAO().get(id, hibSession);
+		    for (Iterator i=hibSession.createQuery("from Location").iterate();i.hasNext();) {
+                Location loc = (Location)i.next();
+                loc.getFeatures().clear();
+                loc.getRoomGroups().clear();
+                hibSession.update(loc);
+            }
+		    /*
+            for (Iterator i=hibSession.createQuery("from Exam where session.uniqueId=:sessionId").setLong("sessionId", id).iterate();i.hasNext();) {
+                Exam x = (Exam)i.next();
+                for (Iterator j=x.getConflicts().iterator();j.hasNext();) {
+                    ExamConflict conf = (ExamConflict)j.next();
+                    hibSession.delete(conf);
+                    j.remove();
+                }
+                hibSession.update(x);
+            }
+            */
+            hibSession.flush();
+		    hibSession.createQuery(
+                "delete InstructionalOffering o where o.session.uniqueId=:sessionId").
+                setLong("sessionId", id).
+                executeUpdate();
             hibSession.createQuery(
-                    "delete StudentClassEnrollment e where e.student.uniqueId in " +
-                    "(select s.uniqueId from Student s where s.session.uniqueId=:sessionId)").
-                    setLong("sessionId", id).
+                "delete Department d where d.session.uniqueId=:sessionId").
+                setLong("sessionId", id).
+                executeUpdate();
+            hibSession.createQuery(
+                "delete DistributionPref d where d.owner in (select s from Session s where s.uniqueId=:sessionId)").
+                setLong("sessionId", id).
+                executeUpdate();
+		    hibSession.createQuery(
+		            "delete Session s where s.uniqueId=:sessionId").
+		            setLong("sessionId", id).
                     executeUpdate();
-		    hibSession.delete(session);
+		    hibSession.createQuery("delete Preference where owner not in (from PreferenceGroup)").executeUpdate();
+		    hibSession.createQuery("delete ExamConflict x where x.exams is empty").executeUpdate();
 		    tx.commit();
 		} catch (HibernateException e) {
 		    try {
@@ -106,6 +136,7 @@ public class Session extends BaseSession implements Comparable {
             } catch (Exception e1) { }
             throw e;
 		}
+		HibernateUtil.clearCache();
 	}
 
 	public void saveOrUpdate() throws HibernateException {
@@ -510,7 +541,7 @@ public class Session extends BaseSession implements Comparable {
 		classesEndDate.setTime(classesEndTime);
 
         Calendar examBeginDate = Calendar.getInstance(Locale.US);
-        examBeginDate.setTime(examBeginTime);
+        if (examBeginTime!=null) examBeginDate.setTime(examBeginTime);
 
         int startMonth = DateUtils.getStartMonth(sessionBeginTime, acadYear, sNrExcessDays);
 		int endMonth = DateUtils.getEndMonth(sessionEndTime, acadYear, sNrExcessDays);
@@ -638,9 +669,11 @@ public class Session extends BaseSession implements Comparable {
 		cal.setTime(getSessionEndDateTime());
 		if (day==cal.get(Calendar.DAY_OF_MONTH) && ((12+month)%12)==cal.get(Calendar.MONTH))
 			return "'blue 2px solid'";
-		cal.setTime(getExamBeginDate());
-		if (day==cal.get(Calendar.DAY_OF_MONTH) && ((12+month)%12)==cal.get(Calendar.MONTH))
-			return "'green 2px solid'";
+		if (getExamBeginDate()!=null) {
+		    cal.setTime(getExamBeginDate());
+		    if (day==cal.get(Calendar.DAY_OF_MONTH) && ((12+month)%12)==cal.get(Calendar.MONTH))
+		        return "'green 2px solid'";
+		}
 		int holiday = getHoliday(day, month);
 		if (holiday!=Session.sHolidayTypeNone)
 			return "'"+Session.sHolidayTypeColors[holiday]+" 2px solid'";
