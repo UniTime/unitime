@@ -81,13 +81,13 @@ public class EventRoomAvailabilityAction extends Action {
 			}
 			
 			//return to event list
-			if("Back".equals(iOp)) {
+			if("Change Request".equals(iOp)) {
 				myForm.loadData(request); myForm.save(webSession);
 				request.setAttribute("back", "eventRoomAvailability");
 				return mapping.findForward("back");
 			}
 			
-			if("Proceed To Checkout".equals(iOp)) {
+			if("Continue".equals(iOp)) {
 				myForm.loadData(request); myForm.save(webSession);	
 				if (myForm.getIsAddMeetings()) return mapping.findForward("eventUpdateMeetings");
 				else return mapping.findForward("eventAddInfo");

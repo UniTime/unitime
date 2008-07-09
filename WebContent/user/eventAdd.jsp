@@ -59,8 +59,8 @@
 						title="Show Scheduled Events (Alt+S)" value="Show Scheduled Events"/> -->
 					<html:submit property="op" styleClass="btn" accesskey="A" 
 						title="Show Location Availability (Alt+A)" value="Show Availability"/>
-					<html:submit property="op" styleClass="btn" accesskey="B"
-						title="Back (Alt+B)" value="Back"/>
+	<!--  			<html:submit property="op" styleClass="btn" accesskey="B"
+						title="Back (Alt+B)" value="Back"/> -->	
 				</tt:section-header>
 			</TD>
 		</TR>
@@ -286,6 +286,20 @@
 		</TR>
 
 		<TR>
+			<TD valign='top'> 
+				Room Features:
+			</TD>
+			<TD>
+				<logic:iterate name="eventAddForm" property="allRoomFeatures" id="rf" indexId="rfIdx">
+				<html:multibox property="roomFeatures">
+						<bean:write name="rf" property="uniqueId"/>
+					</html:multibox>
+					<bean:write name="rf" property="label"/><br>
+				</logic:iterate>
+			</TD>
+		</TR>
+
+		<TR>
 			<TD colspan = '2'>
 				<tt:section-title/>
 			</TD>
@@ -297,8 +311,8 @@
 					title="Show Scheduled Events (Alt+S)" value="Show Scheduled Events"/> -->
 				<html:submit property="op" styleClass="btn" accesskey="A" 
 					title="Show Location Availability (Alt+A)" value="Show Availability"/>
-				<html:submit property="op" styleClass="btn" accesskey="B"
-				title="Back to List of Events (Alt+B)" value="Back"/>
+<!--  			<html:submit property="op" styleClass="btn" accesskey="B"
+				title="Back to List of Events (Alt+B)" value="Back"/> -->
 		</TD>
 	</TR>
 

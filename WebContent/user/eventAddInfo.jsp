@@ -63,8 +63,8 @@
 					<html:submit property="op" styleClass="btn" accesskey="C"
 						title="Cancel Event (Alt+C)" value="Cancel Event"/>
 					</logic:notEqual>
-					<html:submit property="op" styleClass="btn" accesskey="B"
-						title="Back To Event Room Availability (Alt+B)" value="Back"/>
+					<html:submit property="op" styleClass="btn" accesskey="A"
+						title="Change Selection (Alt+A)" value="Change Selection"/>
 				</tt:section-header>
 			</TD>
 		</TR>
@@ -160,7 +160,7 @@
 						</TD>
 					</TR>
 					<TR>
-						<TD nowrap> Last Name: </TD>
+						<TD nowrap> Last Name<font color='red'>*</font>: </TD>
 						<TD>
 							<html:text property="mainContactLastName" maxlength="30" size="30" /> 
 						</TD>
@@ -172,7 +172,7 @@
 						</TD>
 					</TR>
 					<TR>
-						<TD nowrap>Phone<font color='red'>*</font>: </TD>
+						<TD nowrap>Phone: </TD>
 						<TD>
 							<html:text property="mainContactPhone" maxlength="10" size="30" /> <i><font color="gray">&nbsp; Max. 10 digits </font></i>
 						</TD>
@@ -314,8 +314,8 @@
 					<html:submit property="op" styleClass="btn" accesskey="C"
 						title="Cancel Event (Alt+C)" value="Cancel Event"/>
 					</logic:notEqual>
-					<html:submit property="op" styleClass="btn" accesskey="B"
-						title="Back To Event Room Availability (Alt+B)" value="Back"/>
+					<html:submit property="op" styleClass="btn" accesskey="A"
+						title="Change Selection (Alt+A)" value="Change Selection"/>
 			</TD>
 		</TR>
 		
