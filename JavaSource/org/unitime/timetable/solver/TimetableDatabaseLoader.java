@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.solver;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 import org.apache.commons.logging.Log;
@@ -28,6 +29,9 @@ import org.hibernate.Hibernate;
 import org.hibernate.LazyInitializationException;
 import org.hibernate.Query;
 import org.hibernate.Transaction;
+import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
+import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.BuildingPref;
@@ -63,11 +67,15 @@ import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.dao.AssignmentDAO;
 import org.unitime.timetable.model.dao.Class_DAO;
+import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SolutionDAO;
 import org.unitime.timetable.model.dao.SolverGroupDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
+import org.unitime.timetable.solver.remote.core.RemoteSolverServer;
+import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
+import org.unitime.timetable.util.RoomAvailability;
 
 import net.sf.cpsolver.coursett.TimetableLoader;
 import net.sf.cpsolver.coursett.constraint.ClassLimitConstraint;
@@ -117,6 +125,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 	private Hashtable iDeptNames = new Hashtable();
 	private Hashtable iPatterns = new Hashtable();
 	private Hashtable iClasses = new Hashtable();
+	private Set iAllUsedDatePatterns = new HashSet();
 	private Set iAllClasses = null;
 	
     private boolean iDeptBalancing = true;
@@ -507,6 +516,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             iProgress.warn("Class "+getClassLabel(clazz)+" has no date pattern selected (class not loaded).");
             return null;
         }
+        
+        iAllUsedDatePatterns.add(datePattern);
 
 
         int nrRooms = (clazz.getNbrRooms()==null?1:clazz.getNbrRooms().intValue());
@@ -2655,6 +2666,11 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	
     	if (!hibSession.isOpen())
     		iProgress.fatal("Hibernate session not open.");
+    	
+        if (hasRoomAvailability()) loadRoomAvailability(RoomAvailability.getInstance());
+
+        if (!hibSession.isOpen())
+            iProgress.fatal("Hibernate session not open.");
 
     	iProgress.setPhase("Initial sectioning ...", offerings.size());
         for (Enumeration e1=offerings.keys();e1.hasMoreElements();) {
@@ -2919,4 +2935,135 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		return ((Comparable)o1).compareTo(o2);
     	}
     }
+    
+    public boolean isRemote() { return RemoteSolverServer.getServerThread()!=null; }
+    
+    public boolean hasRoomAvailability() {
+        try {
+            if (isRemote()) {
+                return (Boolean)RemoteSolverServer.query(new Object[]{"hasRoomAvailability"});
+            } else return RoomAvailability.getInstance()!=null;
+        } catch (Exception e) {
+            sLog.error(e.getMessage(),e);
+            iProgress.warn("Unable to access room availability service, reason:"+e.getMessage());
+            return false;
+        }
+    }
+    
+    public void roomAvailabilityActivate(Date startTime, Date endTime) {
+        try {
+            String ts;
+            if (isRemote()) {
+                ts = (String)RemoteSolverServer.query(new Object[]{"activateRoomAvailability",iSessionId,startTime,endTime});
+            } else {
+                RoomAvailability.getInstance().activate(new SessionDAO().get(iSessionId), startTime, endTime, 
+                        "true".equals(ApplicationProperties.getProperty("tmtbl.room.availability.solver.waitForSync","true")));
+                ts = RoomAvailability.getInstance().getTimeStamp(startTime, endTime);
+            }
+            if (ts!=null) {
+                getModel().getProperties().setProperty("RoomAvailability.TimeStamp", ts);
+                iProgress.info("Using room availability that was updated on "+ts+".");
+            } else {
+                iProgress.error("Room availability is not available.");
+            }
+        } catch (Exception e) {
+            sLog.error(e.getMessage(),e);
+            iProgress.warn("Unable to access room availability service, reason:"+e.getMessage());
+        } 
+    }
+    
+    public void loadRoomAvailability(RoomAvailabilityInterface ra) {
+        Date startDate = null, endDate = null;
+        for (Iterator i=iAllUsedDatePatterns.iterator();i.hasNext();) {
+            DatePattern dp = (DatePattern)i.next();
+            if (startDate == null || startDate.compareTo(dp.getStartDate())>0)
+                startDate = dp.getStartDate();
+            if (endDate == null || endDate.compareTo(dp.getEndDate())<0)
+                endDate = dp.getEndDate();
+        }
+        Calendar startDateCal = Calendar.getInstance(Locale.US);
+        startDateCal.setTime(startDate);
+        startDateCal.set(Calendar.HOUR_OF_DAY, 0);
+        startDateCal.set(Calendar.MINUTE, 0);
+        startDateCal.set(Calendar.SECOND, 0);
+        Calendar endDateCal = Calendar.getInstance(Locale.US);
+        endDateCal.setTime(endDate);
+        endDateCal.set(Calendar.HOUR_OF_DAY, 23);
+        endDateCal.set(Calendar.MINUTE, 59);
+        endDateCal.set(Calendar.SECOND, 59);
+        roomAvailabilityActivate(startDateCal.getTime(),endDateCal.getTime());
+        iProgress.setPhase("Loading room availability...", iRooms.size());
+        int firstDOY = iSession.getDayOfYear(1,iSession.getStartMonth());
+        int lastDOY = iSession.getDayOfYear(0,iSession.getEndMonth()+1);
+        int size = lastDOY - firstDOY;
+        Calendar c = Calendar.getInstance(Locale.US);
+        SimpleDateFormat df = new SimpleDateFormat("MM/dd");
+        long id = 0;
+        int sessionYear = iSession.getYear();
+        for (Enumeration e=iRooms.elements();e.hasMoreElements();) {
+            RoomConstraint room = (RoomConstraint)e.nextElement();
+            iProgress.incProgress();
+            Collection<TimeBlock> times = getRoomAvailability(room, startDateCal.getTime(),endDateCal.getTime());
+            if (times==null) continue;
+            for (TimeBlock time : times) {
+                iProgress.debug(room.getName()+" not available due to "+time);
+                int dayCode = 0;
+                c.setTime(time.getStartTime());
+                int m = c.get(Calendar.MONTH);
+                int d = c.get(Calendar.DAY_OF_MONTH);
+                if (c.get(Calendar.YEAR)<sessionYear) m-=12;
+                if (c.get(Calendar.YEAR)>sessionYear) m+=12;
+                BitSet weekCode = new BitSet(size);
+                int offset = iSession.getDayOfYear(d,m) - firstDOY;
+                weekCode.set(offset);
+                switch (c.get(Calendar.DAY_OF_WEEK)) {
+                    case Calendar.MONDAY    : dayCode = Constants.DAY_CODES[Constants.DAY_MON]; break;
+                    case Calendar.TUESDAY   : dayCode = Constants.DAY_CODES[Constants.DAY_TUE]; break;
+                    case Calendar.WEDNESDAY : dayCode = Constants.DAY_CODES[Constants.DAY_WED]; break;
+                    case Calendar.THURSDAY  : dayCode = Constants.DAY_CODES[Constants.DAY_THU]; break;
+                    case Calendar.FRIDAY    : dayCode = Constants.DAY_CODES[Constants.DAY_FRI]; break;
+                    case Calendar.SATURDAY  : dayCode = Constants.DAY_CODES[Constants.DAY_SAT]; break;
+                    case Calendar.SUNDAY    : dayCode = Constants.DAY_CODES[Constants.DAY_SUN]; break;
+                }
+                int startSlot = (c.get(Calendar.HOUR_OF_DAY)*60 + c.get(Calendar.MINUTE) - Constants.FIRST_SLOT_TIME_MIN) / Constants.SLOT_LENGTH_MIN;
+                c.setTime(time.getEndTime());
+                int endSlot = (c.get(Calendar.HOUR_OF_DAY)*60 + c.get(Calendar.MINUTE) - Constants.FIRST_SLOT_TIME_MIN) / Constants.SLOT_LENGTH_MIN;
+                int length = endSlot - startSlot;
+                if (length<=0) continue;
+                TimeLocation timeLocation = new TimeLocation(dayCode, startSlot, length, 0, 0, null, df.format(time.getStartTime()), weekCode, 0);
+                Vector timeLocations = new Vector(1); timeLocations.addElement(timeLocation);
+                RoomLocation roomLocation = new RoomLocation(room.getResourceId(), room.getName(), room.getBuildingId(), 0, room.getCapacity(), room.getPosX(), room.getPosY(),
+                        room.getIgnoreTooFar(), room);
+                Vector roomLocations = new Vector(1); roomLocations.add(roomLocation);
+                Lecture lecture = new Lecture(
+                        new Long(--id), null, null, time.getEventName(), 
+                        timeLocations, roomLocations, 1, 
+                        new Placement(null,timeLocation,roomLocations), 0, 0, 1.0);
+                lecture.setNote(time.getEventType());
+                Placement p = (Placement)lecture.getInitialAssignment();
+                lecture.setBestAssignment(p);
+                lecture.setCommitted(true);
+                room.setNotAvailable(p);
+                getModel().addVariable(p.variable());
+            }
+        }
+    }
+    
+    public Collection<TimeBlock> getRoomAvailability(RoomConstraint room, Date startTime, Date endTime) {
+        try {
+            if (isRemote()) {
+                return (Collection<TimeBlock>)RemoteSolverServer.query(new Object[]{"getClassRoomAvailability",room.getResourceId(),startTime,endTime});
+            } else {
+                return RoomAvailability.getInstance().getRoomAvailability(
+                        new LocationDAO().get(room.getResourceId()), startTime, endTime,
+                        new String[] {RoomAvailabilityInterface.sClassType});
+            }
+        } catch (Exception e) {
+            sLog.error(e.getMessage(),e);
+            iProgress.warn("Unable to access room availability service, reason:"+e.getMessage());
+            return null;
+        } 
+    }
+
+
 }
