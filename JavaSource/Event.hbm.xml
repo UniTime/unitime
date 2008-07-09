@@ -70,6 +70,14 @@
 			length="10"
 		/>
 
+ 		<property
+			name="email"
+			column="EMAIL"
+			type="java.lang.String"
+			not-null="false"
+			length="200"
+		/>
+
 		<many-to-one 
 			name="mainContact" 
 			class="EventContact" 
@@ -111,7 +119,15 @@
 			<key column="EVENT_ID" foreign-key="fk_meeting_event"/>
 			<one-to-many class="Meeting"/>
 		</set>			
-
+		
+		<many-to-one 
+			name="sponsoringOrganization" 
+			class="SponsoringOrganization" 
+			column="sponsor_org_id" 
+			foreign-key="fk_event_sponsor_org"
+			not-null="false"
+		/>
+		
 		<subclass 
 			name="ClassEvent" 
 			abstract="false"
