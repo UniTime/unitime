@@ -42,7 +42,7 @@
 
 <DIV align="center" class="H1">
 	<BR> 
-	<IMG src="images/timetabling.jpg" alt="Timetabling" title="Timetabling Log In">
+	<IMG src="images/timetabling-nocopy.jpg" alt="Timetabling" title="Timetabling Log In">
 	<BR>
 	<BR>
 	<% if (request.getParameter("message")!=null && !"null".equals(request.getParameter("message"))) { %> 
