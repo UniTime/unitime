@@ -32,7 +32,7 @@ public class EventAddInfoAction extends Action {
 		String iOp = myForm.getOp();
 		if (iOp!=null) {
 			
-			if ("Back".equals(iOp)) {
+			if ("Change Selection".equals(iOp)) {
 				myForm.save(request.getSession());
 				request.setAttribute("back", "eventAddInfo");
 				return mapping.findForward("back");
