@@ -482,7 +482,6 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		        contact.setLastName(manager.getLastName());
 		        contact.setExternalUniqueId(manager.getExternalUniqueId());
 		        contact.setEmailAddress(manager.getEmailAddress());
-		        contact.setPhone("unknown");
 		        hibSession.save(contact);
 		    }
 		}
