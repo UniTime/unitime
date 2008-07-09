@@ -863,16 +863,16 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		} catch (Exception e) {
 			Debug.error(e);
 		}
+		
+		hibSession.flush(); 
 
 		hibSession.createQuery(
-				"delete StudentEnrollment x where x in "+
-				" ( select s from StudentEnrollment s where s.solution.uniqueId=:solutionId ) ")
+				"delete StudentEnrollment x where x.solution.uniqueId=:solutionId ")
 				.setInteger("solutionId", getUniqueId().intValue())
 				.executeUpdate();
 		
 		hibSession.createQuery(
-				"delete JointEnrollment x where x in "+
-				" ( select j from JointEnrollment j where j.solution.uniqueId=:solutionId ) ")
+				"delete JointEnrollment x where x.solution.uniqueId=:solutionId ) ")
 				.setInteger("solutionId", getUniqueId().intValue())
 				.executeUpdate();
 
@@ -895,8 +895,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 				);
 		
 		hibSession.createQuery(
-				"delete Assignment x where x in "+
-				" ( select a from Assignment a where a.solution.uniqueId=:solutionId ) ")
+				"delete Assignment x where x.solution.uniqueId=:solutionId ) ")
 				.setInteger("solutionId", getUniqueId().intValue())
 				.executeUpdate();
 		
@@ -1455,7 +1454,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
         hibSessionFactory.evictCollection(Solution.class.getName()+".assignments", solutionId);
         for (Iterator i=hibSession.createQuery("select c.uniqueId from "+
                     "Class_ c, Solution s where s.uniqueId=:solutionId and "+
-                    "c.managingDept.uniqueId in (s.owner.departments.uniqueId)").
+                    "c.managingDept.uniqueId in elements (s.owner.departments)").
                     setLong("solutionId", solutionId.longValue()).iterate(); i.hasNext();) {
             Number classId = (Number)i.next();
             hibSession.getSessionFactory().evict(Class_.class, classId);
