@@ -99,10 +99,10 @@ function tAll(location, admin) {
 						<bean:write name="eventRoomAvailabilityForm" property="startTimeString"/>
 						 - <bean:write name="eventRoomAvailabilityForm" property="stopTimeString"/>
 					</tt:section-title>
-					<html:submit property="op" styleClass="btn" accesskey="P"
-						title="Proceed (Alt+P)" value="Proceed To Checkout"/>
+					<html:submit property="op" styleClass="btn" accesskey="N"
+						title="Continue With Reservation (Alt+N)" value="Continue"/>
 					<html:submit property="op" styleClass="btn" accesskey="B"
-						title="Back (Alt+B)" value="Back"/>
+						title="Change Request (Alt+R)" value="Change Request"/>
 				</tt:section-header>
 			</TD>
 		</TR>
@@ -123,10 +123,10 @@ function tAll(location, admin) {
 		</TR>
 		<TR>
 			<TD colspan = '2' align="right">
-					<html:submit property="op" styleClass="btn" accesskey="P"
-						title="Proceed (Alt+P)" value="Proceed To Checkout"/>
+					<html:submit property="op" styleClass="btn" accesskey="N"
+						title="Continue With Reservation (Alt+N)" value="Continue"/>
 					<html:submit property="op" styleClass="btn" accesskey="B"
-						title="Back (Alt+B)" value="Back"/>
+						title="Change Request (Alt+R)" value="Change Request"/>
 			</TD>
 		</TR>
 

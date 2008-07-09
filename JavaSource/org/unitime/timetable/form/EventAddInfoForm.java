@@ -93,8 +93,8 @@ public class EventAddInfoForm extends ActionForm {
 			errors.add("mcEmail", new ActionMessage("errors.generic", "The contact email is mandatory."));
 		}
 
-		if (iMainContactPhone==null || iMainContactPhone.length()==0) {
-			errors.add("mcPhone", new ActionMessage("errors.generic", "The contact phone number is mandatory."));
+		if (iMainContactLastName==null || iMainContactLastName.length()==0) {
+			errors.add("mcLastName", new ActionMessage("errors.generic", "The contact's last name is mandatory."));
 		}
 
 		if (iAdditionalInfo.length()>999) {
@@ -134,7 +134,13 @@ public class EventAddInfoForm extends ActionForm {
 		iDateLocations = (TreeSet<DateLocation>) session.getAttribute("Event.DateLocations");
 		iStartTime = (Integer) session.getAttribute("Event.StartTime");
 		iStopTime = (Integer) session.getAttribute("Event.StopTime");
-		iEventType = (String) session.getAttribute("Event.EventType");		
+		iEventType = (String) session.getAttribute("Event.EventType");
+		iEventName = (String) session.getAttribute("Event.Name");
+		iMainContactEmail = (String) session.getAttribute("Event.mcEmail");
+		iMainContactFirstName = (String) session.getAttribute("Event.mcFName");
+		iMainContactLastName = (String) session.getAttribute("Event.mcLName");
+		iMainContactPhone = (String) session.getAttribute("Event.mcPhone");
+		iAdditionalInfo = (String) session.getAttribute("Event.AdditionalInfo");
 		if (session.getAttribute("Event.SubjectArea")!=null) {
 			iSubjectArea = (List) session.getAttribute("Event.SubjectArea");
 			iSubjectAreas = (Collection) iSubjectArea;
@@ -155,13 +161,13 @@ public class EventAddInfoForm extends ActionForm {
 			iMainContactEmail = iEvent.getMainContact().getEmailAddress();
 			iMainContactPhone = iEvent.getMainContact().getPhone();
 			loadExistingMeetings();
-		} else if (tm!=null) {
-			iMainContactFirstName = (tm.getFirstName()==null?"":tm.getFirstName());
-			iMainContactLastName = (tm.getLastName()==null?"":tm.getLastName());
-			iMainContactEmail = (tm.getEmailAddress()==null?"":tm.getEmailAddress());
+		} else if (iEventName==null) {
+			if (tm!=null) {
+					iMainContactFirstName = (tm.getFirstName()==null?"":tm.getFirstName());
+					iMainContactLastName = (tm.getLastName()==null?"":tm.getLastName());
+					iMainContactEmail = (tm.getEmailAddress()==null?"":tm.getEmailAddress());
+			}
 		}
-		System.out.println("Event Id: " + iEventId);
-		System.out.println("Event Type: " + iEventType);
 		if ("Course Event".equals(iEventType) && iIsAddMeetings) {
             CourseEvent courseEvent = new CourseEventDAO().get(iEventId);;
             if (!courseEvent.getRelatedCourses().isEmpty()) {
@@ -214,7 +220,12 @@ public class EventAddInfoForm extends ActionForm {
 	}
 	
 	public void save(HttpSession session) {
-		
+		session.setAttribute("Event.Name", iEventName);
+		session.setAttribute("Event.mcEmail", iMainContactEmail);
+		session.setAttribute("Event.mcFName", iMainContactFirstName);
+		session.setAttribute("Event.mcLName", iMainContactLastName);
+		session.setAttribute("Event.mcPhone", iMainContactPhone);
+		session.setAttribute("Event.AdditionalInfo", iAdditionalInfo);
 	}
 	
 	public void submit(HttpSession session) {
@@ -421,6 +432,13 @@ public class EventAddInfoForm extends ActionForm {
 		session.removeAttribute("Event.ClassNumber");
 		session.removeAttribute("Event.EventId");
 		session.removeAttribute("Event.IsAddMeetings");
+		session.removeAttribute("Event.Name");
+		session.removeAttribute("Event.mcEmail");
+		session.removeAttribute("Event.mcFName");
+		session.removeAttribute("Event.mcLName");
+		session.removeAttribute("Event.mcPhone");
+		session.removeAttribute("Event.AdditionalInfo");
+		session.removeAttribute("Event.RoomFeatures");
 	}
 
     protected DynamicListObjectFactory idfactory = new DynamicListObjectFactory() {

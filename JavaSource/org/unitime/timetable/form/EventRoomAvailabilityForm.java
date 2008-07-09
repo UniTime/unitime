@@ -67,6 +67,7 @@ public class EventRoomAvailabilityForm extends ActionForm {
 	private boolean iLookAtNearLocations;
 	private Long iEventId; //if adding meetings to an existing event
 	private boolean iIsAddMeetings; //if adding meetings to an existing event
+	private Long[] iRoomFeatures;
 	
 	//data calculated 
 	private Hashtable<Long, Location> iLocations; 
@@ -107,6 +108,7 @@ public class EventRoomAvailabilityForm extends ActionForm {
 		iBuildingId = (Long) session.getAttribute("Event.BuildingId");
 		iRoomNumber = (String) session.getAttribute("Event.RoomNumber");
 		iLookAtNearLocations = ((Boolean) session.getAttribute("Event.LookAtNearLocations")).booleanValue();
+		iRoomFeatures = (Long[]) session.getAttribute("Event.RoomFeatures");
 		iLocations = getPossibleLocations();
 		if (iLocations.isEmpty()) throw new Exception("No room is matching your criteria.");
 		iOverlappingMeetings = getOverlappingMeetings(iLocations, iMeetingDates, iStartTime, iStopTime);
@@ -139,18 +141,27 @@ public class EventRoomAvailabilityForm extends ActionForm {
 	public Hashtable<Long, Location> getPossibleLocations() {
 		Hashtable<Long, Location> locations = new Hashtable();
 		String query;
+		String a = "", b = "";
+		if (iRoomFeatures!=null && iRoomFeatures.length>0) {
+			for (int i=0;i<iRoomFeatures.length;i++) {
+				a+= ", GlobalRoomFeature f"+i;
+				b+= " and f"+i+".uniqueId="+iRoomFeatures[i]+" and f"+i+" in elements(r.features)";
+			}
+		}
+	
 		if (iLookAtNearLocations) {
-			query = "select r from Room r, Building b where b.uniqueId = :buildingId and " +
+			query = "select r from Room r, Building b"+a+" where b.uniqueId = :buildingId and " +
 					"(r.building=b or ((((r.coordinateX - b.coordinateX)*(r.coordinateX - b.coordinateX)) +" +
 					"((r.coordinateY - b.coordinateY)*(r.coordinateY - b.coordinateY)))" +
 					"< 67*67))";
 		} else {
-			query = "select r from Room r where r.building.uniqueId = :buildingId";
+			query = "select r from Room r"+a+" where r.building.uniqueId = :buildingId";
 		}
 			
 		if (iMinCapacity!=null && iMinCapacity!="") { query+= " and r.capacity>= :minCapacity";	}
 		if (iMaxCapacity!=null && iMaxCapacity!="") { query+= " and r.capacity<= :maxCapacity";	}
 		if (iRoomNumber!=null && iRoomNumber.length()>0) { query+=" and r.roomNumber like (:roomNumber)"; }
+		query += b;
 		
 		Query hibQuery = new LocationDAO().getSession().createQuery(query);
 
@@ -242,10 +253,12 @@ public class EventRoomAvailabilityForm extends ActionForm {
 		});
 
 		for (Enumeration<Location> e=iLocations.elements();e.hasMoreElements();) locations.add(e.nextElement());
-		ret+="<tr><td></td>";
+		ret+="<tr align='middle'><td></td>";
 		String jsLocations = "";
 		for (Location location : locations) {
-			ret += "<th onClick=\"tAll('"+location.getPermanentId()+"',false);\" onMouseOver=\"this.style.cursor='hand';this.style.cursor='pointer';\">"+location.getLabel()+"</th>";
+			ret += "<td onClick=\"tAll('"+location.getPermanentId()+"',false);\" " +
+					"onMouseOver=\"this.style.cursor='hand';this.style.cursor='pointer';\">" +
+					"<b>"+location.getLabel()+"</b><br>("+location.getCapacity().toString()+")</td>";
 			jsLocations += (jsLocations.length()>0?",":"")+"'"+location.getPermanentId()+"'";
 		}
 		ret+="</tr>";

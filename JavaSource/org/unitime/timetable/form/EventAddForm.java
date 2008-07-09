@@ -50,6 +50,7 @@ import org.unitime.timetable.model.RelatedCourseInfo;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Preference;
+import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.comparators.ClassComparator;
@@ -67,8 +68,8 @@ import org.unitime.timetable.util.DynamicList;
 import org.unitime.timetable.util.DynamicListObjectFactory;
 import org.unitime.timetable.util.IdValue;
 
-/*
- * A large part of this file reuses code from the ExamEditForm.java
+/**
+ * @author Zuzana Mullerova
  */
 
 public class EventAddForm extends PreferencesForm {
@@ -87,6 +88,7 @@ public class EventAddForm extends PreferencesForm {
 	private String iMinCapacity;
 	private String iMaxCapacity;
 	private boolean iLookAtNearLocations;
+	private Long[] iRoomFeatures = null;
 	
 	//if adding meetings to an existing event
 	private Long iEventId; 
@@ -115,10 +117,6 @@ public class EventAddForm extends PreferencesForm {
 		
 		if (iMeetingDates.isEmpty()) {
 			errors.add("dates", new ActionMessage("errors.generic", "No event dates are selected."));
-		}
-
-		if (iBuildingId == -1) {
-			errors.add("building", new ActionMessage("errors.generic", "No building has been selected."));
 		}
 
 		int min = 0;
@@ -153,8 +151,10 @@ public class EventAddForm extends PreferencesForm {
 	            errors.add("relatedCourseInfo", new ActionMessage("errors.generic", "At least one class/course has to be specified.") );
 	        }
 		}
-		
-		if (getPossibleLocations().isEmpty()) {
+
+		if (iBuildingId == -1) {
+			errors.add("building", new ActionMessage("errors.generic", "No building has been selected."));
+		} else if (getPossibleLocations().isEmpty()) {
 			errors.add("noLocation", new ActionMessage("errors.generic", "There is no location matching your criteria."));
 		}
 	        
@@ -215,6 +215,7 @@ public class EventAddForm extends PreferencesForm {
 			iEventName = iEvent.getEventName();
 			iEventType = iEvent.getEventTypeLabel();
 		}
+		iRoomFeatures = (Long[]) session.getAttribute("Event.RoomFeatures");
 	}
 	
 	// save event parameters to session attribute Event
@@ -239,6 +240,7 @@ public class EventAddForm extends PreferencesForm {
 		session.setAttribute("Event.AttendanceRequired", iAttendanceRequired);
 		session.setAttribute("Event.EventId", iEventId);
 		session.setAttribute("Event.IsAddMeetings", iIsAddMeetings);
+		session.setAttribute("Event.RoomFeatures", iRoomFeatures);
 	}
 	
 	
@@ -398,6 +400,13 @@ public class EventAddForm extends PreferencesForm {
     
     public Boolean getLookAtNearLocations() {return iLookAtNearLocations;}
     public void setLookAtNearLocations (Boolean look) {iLookAtNearLocations = look;}
+    
+    public Collection<RoomFeature> getAllRoomFeatures() {
+    	return RoomFeature.getAllGlobalRoomFeatures();
+    }
+    
+	public Long[] getRoomFeatures() { return iRoomFeatures; }
+	public void setRoomFeatures(Long[] rfs) { iRoomFeatures = rfs; }
 
 	public void cleanSessionAttributes(HttpSession session) {
 		session.removeAttribute("Event.DateLocations");
@@ -417,6 +426,13 @@ public class EventAddForm extends PreferencesForm {
 		session.removeAttribute("Event.ClassNumber");
 		session.removeAttribute("Event.EventId");
 		session.removeAttribute("Event.IsAddMeetings");
+		session.removeAttribute("Event.Name");
+		session.removeAttribute("Event.mcEmail");
+		session.removeAttribute("Event.mcFName");
+		session.removeAttribute("Event.mcLName");
+		session.removeAttribute("Event.mcPhone");
+		session.removeAttribute("Event.AdditionalInfo");
+		session.removeAttribute("Event.RoomFeatures");
 	}
     
     
@@ -675,19 +691,27 @@ public class EventAddForm extends PreferencesForm {
 	public Hashtable<Long, Location> getPossibleLocations() {
 		Hashtable<Long, Location> locations = new Hashtable();
 		String query;
+		String a = "", b = "";
+		if (iRoomFeatures!=null && iRoomFeatures.length>0) {
+			for (int i=0;i<iRoomFeatures.length;i++) {
+				a+= ", GlobalRoomFeature f"+i;
+				b+= " and f"+i+".uniqueId="+iRoomFeatures[i]+" and f"+i+" in elements(r.features)";
+			}
+		}
 		if (iLookAtNearLocations) {
-			query = "select r from Room r, Building b where b.uniqueId = :buildingId and " +
+			query = "select r from Room r, Building b"+a+" where b.uniqueId = :buildingId and " +
 					"(r.building=b or ((((r.coordinateX - b.coordinateX)*(r.coordinateX - b.coordinateX)) +" +
 					"((r.coordinateY - b.coordinateY)*(r.coordinateY - b.coordinateY)))" +
 					"< 67*67))";
 		} else {
-			query = "select r from Room r where r.building.uniqueId = :buildingId";
+			query = "select r from Room r"+a+" where r.building.uniqueId = :buildingId";
 		}
 			
 		if (iMinCapacity!=null && iMinCapacity!="") { query+= " and r.capacity>= :minCapacity";	}
 		if (iMaxCapacity!=null && iMaxCapacity!="") { query+= " and r.capacity<= :maxCapacity";	}
 		if (iRoomNumber!=null && iRoomNumber.length()>0) { query+=" and r.roomNumber like (:roomNumber)"; }
-		
+ 		query += b;
+
 		Query hibQuery = new LocationDAO().getSession().createQuery(query);
 
 		hibQuery.setLong("buildingId", iBuildingId);
