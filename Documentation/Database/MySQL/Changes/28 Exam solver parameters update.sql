@@ -25,7 +25,7 @@ select uniqueid into @gid from solver_parameter_group where name='ExamWeights';
 
 select max(ord) into @ord from solver_parameter_def where solver_param_group_id=@gid;
  
-select `next_hi` into @id from `timetable`.`hibernate_unique_key`;
+select 32767 * next_hi into @id from hibernate_unique_key;
  
 insert into solver_parameter_def
 			(uniqueid, name, default_value, description, type, ord, visible, solver_param_group_id) values
@@ -34,7 +34,7 @@ insert into solver_parameter_def
 			(@id+2, 'Exams.LargePeriod', '0.67', 'Large Exam Penalty: first discouraged period = number of periods x this factor', 'double', @ord+3, 1, @gid),
 			(@id+3, 'Exams.LargeWeight', '1.0', 'Large Exam Penalty: weight of a large exam that is assigned on or after the first discouraged period', 'double', @ord+4, 1, @gid);
 			
-update hibernate_unique_key set next_hi=next_hi+4;
+update hibernate_unique_key set next_hi=next_hi+1;
  
 /*
  * Update database version

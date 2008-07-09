@@ -33,7 +33,7 @@ create table room_type (
  * Populate room types
  **/
 
-select next_hi into @id from hibernate_unique_key;
+select 32767 * next_hi into @id from hibernate_unique_key;
 
 insert into room_type(uniqueid, reference, label, ord) values
 (@id+0, 'genClassroom', 'Classrooms', 0),
@@ -42,7 +42,7 @@ insert into room_type(uniqueid, reference, label, ord) values
 (@id+3, 'specialUse', 'Special Use Rooms', 3); 
 
 
-update hibernate_unique_key set next_hi=next_hi+4;
+update hibernate_unique_key set next_hi=next_hi+1;
 
 /**
  * Create room_type attribute of room table

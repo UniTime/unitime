@@ -2539,10 +2539,10 @@ SET FOREIGN_KEY_CHECKS = 1;
 
 DROP TABLE IF EXISTS `timetable`.`hibernate_unique_key`;
 CREATE TABLE  `timetable`.`hibernate_unique_key` (
-  `next_hi` decimal(20,0) default 10000000
+  `next_hi` decimal(20,0) default 32
 )
 ENGINE = INNODB;
 
 delete from `timetable`.`hibernate_unique_key`;
 
-insert into `timetable`.`hibernate_unique_key` values (10000000);
+insert into `timetable`.`hibernate_unique_key` values (32);
