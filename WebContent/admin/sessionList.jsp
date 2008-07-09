@@ -82,7 +82,7 @@
 								df.format(s.getSessionBeginDateTime()) + "&nbsp;",
 								df.format(s.getClassesEndDateTime()) + "&nbsp;",
 								df.format(s.getSessionEndDateTime()) + "&nbsp;",
-								df.format(s.getExamBeginDate()) + "&nbsp;",
+								(s.getExamBeginDate()==null?"N/A":df.format(s.getExamBeginDate())) + "&nbsp;",
 								s.getDefaultDatePattern()!=null ? s.getDefaultDatePattern().getName() : "-", 
 								s.statusDisplayString() + "&nbsp;",
 								df5.format(s.getSubjectAreas().size()),

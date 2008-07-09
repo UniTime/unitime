@@ -124,7 +124,7 @@ public class SessionEditAction extends LookupDispatchAction {
 		sessionEditForm.setSessionStart(sdf.format(acadSession.getSessionBeginDateTime()));
 		sessionEditForm.setSessionEnd(sdf.format(acadSession.getSessionEndDateTime()));
 		sessionEditForm.setClassesEnd(sdf.format(acadSession.getClassesEndDateTime()));
-		sessionEditForm.setExamStart(sdf.format(acadSession.getExamBeginDate()));
+		sessionEditForm.setExamStart(acadSession.getExamBeginDate()==null?"":sdf.format(acadSession.getExamBeginDate()));
 		
 		for (RoomType t : RoomType.findAll()) {
 		    RoomTypeOption o = t.getOption(acadSession);
@@ -157,9 +157,19 @@ public class SessionEditAction extends LookupDispatchAction {
             return mapping.findForward("showEdit");
             
         }
-
+        
+        Session current = Session.getCurrentAcadSession(Web.getUser(request.getSession()));
+        
 		SessionEditForm sessionEditForm = (SessionEditForm) form;		
 		Long id =  new Long(Long.parseLong(request.getParameter("sessionId")));
+		
+        if (current!=null && id.equals(current.getUniqueId())) {
+            ActionMessages errors = new ActionMessages();
+            errors.add("sessionId", new ActionMessage("errors.generic", "Current academic session cannot be deleted -- please change your session first."));
+            saveErrors(request, errors);
+            return mapping.findForward("showEdit");
+        }
+
         Session sessn = Session.getSessionById(id);
 		Session.deleteSessionById(id);
 		return mapping.findForward("showSessionList");
