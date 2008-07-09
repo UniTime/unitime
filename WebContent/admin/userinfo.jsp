@@ -35,6 +35,9 @@
 <%@page import="org.unitime.timetable.model.dao.SessionDAO"%>
 <%@page import="org.unitime.timetable.model.Exam"%>
 <%@page import="org.unitime.timetable.solver.studentsct.StudentSolverProxy"%>
+<%@page import="java.util.Iterator"%>
+<%@page import="org.unitime.timetable.model.Department"%>
+<%@page import="java.util.TreeSet"%>
 <%@ include file="../checkLogin.jspf" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 
@@ -101,26 +104,36 @@
  	if (user==null)
  		loginName = "Not logged in.";
  	else {
+ 		Object objYearTerm = user.getAttribute(Constants.ACAD_YRTERM_LABEL_ATTR_NAME);
+ 		if(objYearTerm!=null) yearTerm = objYearTerm.toString();
+
+		Long sessionId = (Long)user.getAttribute(Constants.SESSION_ID_ATTR_NAME); 
+		if (sessionId!=null) { 		
+	 		Session acadSession = Session.getSessionById((Long)sessionId);
+	 		sessionStatus=acadSession.getStatusType().getLabel();
+	 		if (objYearTerm==null) yearTerm = acadSession.getLabel();
+	 	}
+
  		loginName = user.getLogin();
  		userName = Constants.toInitialCase(user.getName(), "-".toCharArray());
  		
- 		java.util.Vector depts = user.getDepartments();
- 		for (int i=0; i<depts.size() ; i++) {
-	 		dept += depts.elementAt(i).toString();
-	 		if (i<depts.size()-1)
-	 			dept += ",";
+ 		TimetableManager manager = TimetableManager.getManager(user);
+ 		if (manager!=null) {
+ 			for (Iterator i=manager.getDepartments().iterator();i.hasNext();) {
+ 				Department d = (Department)i.next();
+ 				if (d.getSessionId().equals(sessionId)) {
+ 					if (dept.length()>0) dept += ",";
+ 					dept += "<span title='"+d.getHtmlTitle()+"'>"+d.getShortLabel()+"</span>";
+ 				}
+ 			}
+ 		} else {
+ 			TreeSet depts = new TreeSet(user.getDepartments());
+ 			for (Iterator i=depts.iterator();i.hasNext();) {
+ 				dept += i.next().toString();
+ 				if (i.hasNext()) dept += ",";
+ 			}
  		}
  		role = user.getRole();
-
- 		Object objYearTerm = user.getAttribute(Constants.ACAD_YRTERM_LABEL_ATTR_NAME);
- 		if(objYearTerm!=null) {
-	 		yearTerm = objYearTerm.toString();
-	 		Object sessionId = user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
-	 		if (sessionId!=null) {
-		 		Session acadSession = Session.getSessionById((Long)sessionId);
-		 		sessionStatus=acadSession.getStatusType().getLabel();
-		 	}
-	 	}
  	}
 %>
 <DIV align="left"><TABLE class="MenuBody" height='15' width="100%" border="0" cellspacing="0" cellpadding="2" style="border-top:2px solid #e4e4e4;">
