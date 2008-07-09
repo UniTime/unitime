@@ -402,6 +402,16 @@ public class SolverRegisterService extends Thread {
                     }
                     return null;
                 }
+                if ("getClassRoomAvailability".equals(cmd[0])) {
+                    if (RoomAvailability.getInstance()!=null) {
+                        return RoomAvailability.getInstance().getRoomAvailability(
+                                new LocationDAO().get((Long)cmd[1]),
+                                (Date)cmd[2],
+                                (Date)cmd[3],
+                                new String[] {RoomAvailabilityInterface.sClassType});
+                    }
+                    return null;
+                }
 			}
 			sLog.warn("Unknown command "+command);
 			return null;
