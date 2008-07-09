@@ -28,14 +28,14 @@ alter table distribution_type add exam_pref int(1) default 0;
 /*
  * Added few exam distribution types (same period, same room, precedence)
  */
-select next_hi into @id from hibernate_unique_key;
+select 32767 * next_hi into @id from hibernate_unique_key;
 
 insert into distribution_type (uniqueid, reference, label, sequencing_required, req_id, allowed_pref, description, abbreviation, instructor_pref, exam_pref) values 
 	(@id, 'EX_SAME_PER', 'Same Period', 0, 36, 'P43210R', 'Exams are to be placed at the same period. <BR>When prohibited or (strongly) discouraged: exams are to be placed at different periods.', 'Same Per', 0, 1), 
 	(@id+1, 'EX_SAME_ROOM', 'Same Room', 0, 37, 'P43210R', 'Exams are to be placed at the same room(s). <BR>When prohibited or (strongly) discouraged: exams are to be placed at different rooms.', 'Same Room', 0, 1), 
 	(@id+2, 'EX_PRECEDENCE', 'Precedence', 1, 38, 'P43210R', 'Exams are to be placed in the given order. <BR>When prohibited or (strongly) discouraged: exams are to be placed in the order reverse to the given one.', 'Precede', 0, 1); 
 
-update hibernate_unique_key set next_hi=next_hi+3;
+update hibernate_unique_key set next_hi=next_hi+1;
 
  /*
  * Add exam start date to sessions

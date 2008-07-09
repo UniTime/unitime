@@ -87,7 +87,7 @@
 			uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='OnFlySectioning')
 		</plsql>
 		<mysql into="ID">
-			select next_hi from %SCHEMA%.hibernate_unique_key			
+			select 32767 * next_hi from %SCHEMA%.hibernate_unique_key			
 		</mysql>
 		<mysql into="ORD">
 			select max(ord)+1 from %SCHEMA%.solver_parameter_group
@@ -104,7 +104,7 @@
 			(%ID%+3, 'OnFlySectioning.ConfigAsWell', 'false', 'Resection students between configurations as well', 'boolean', 2, 1, %ID%) 
 		</mysql>
 		<mysql>
-			update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+4
+			update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1
 		</mysql>
 	</update>
 	<update version="4" date="22-Aug-2007" comment="Timetable Grid Fix">
@@ -225,7 +225,7 @@
 		 	(%SCHEMA%.ref_table_seq.nextval, 'EX_PRECEDENCE', 'Precedence', 1, 38, 'P43210R', 'Exams are to be placed in the given order. <BR>When prohibited or (strongly) discouraged: exams are to be placed in the order reverse to the given one.', 'Precede', 0, 1)
 		 ]]></plsql>
 		<mysql into="ID">
-			select next_hi from %SCHEMA%.hibernate_unique_key			
+			select 32767 * next_hi from %SCHEMA%.hibernate_unique_key			
 		</mysql>
 		<mysql> <![CDATA[
 			insert into %SCHEMA%.distribution_type (uniqueid, reference, label, sequencing_required, req_id, allowed_pref, description, abbreviation, instructor_pref, exam_pref) values 
@@ -287,7 +287,7 @@
 		<!-- Create exam manager role -->
 		<plsql>insert into %SCHEMA%.roles (role_id, reference, abbv) values (%SCHEMA%.ROLE_SEQ.nextval, 'Exam Mgr', 'Examination Timetabling Manager')</plsql>
 		<mysql>insert into %SCHEMA%.roles (role_id, reference, abbv) values (%ID%+3, 'Exam Mgr', 'Examination Timetabling Manager')</mysql>
-		<mysql>update %SCHEMA%.hibernate_unique_key set next_hi=%ID%+4</mysql>
+		<mysql>update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1</mysql>
 		<!-- Create table exam -->
 		<plsql>
 			create table %SCHEMA%.exam (
@@ -837,7 +837,7 @@
 		</plsql>
 		<mysql>alter table %SCHEMA%.solver_parameter_group add param_type bigint(10) default 0</mysql>
 		<mysql into="ID">
-			select next_hi from %SCHEMA%.hibernate_unique_key			
+			select 32767 * next_hi from %SCHEMA%.hibernate_unique_key			
 		</mysql>
 		<mysql into="ORD">
 			select max(ord)+1 from %SCHEMA%.solver_parameter_group
@@ -888,7 +888,7 @@
 			(%ID%+34, 'Exam.Default', 'Default', 2)
 		</mysql>
 		<mysql>
-			update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+35
+			update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1
 		</mysql>
 	</update>
 	<update version="15" date="25-Feb-2008" comment="Exam conflicts">
@@ -1072,7 +1072,7 @@
 				set nul.permanent_id = %SCHEMA%.loc_perm_id_seq.nextval
 		</plsql>
 		<mysql into="ID">
-			select next_hi from %SCHEMA%.hibernate_unique_key
+			select 32767 * next_hi from %SCHEMA%.hibernate_unique_key
 		</mysql>
 		<mysql>
 			insert into temp_perm_id (external_uid, perm_id) values ('DUMMY', %ID%-1)
@@ -1086,7 +1086,7 @@
 				union (select distinct cast(nul.uniqueid as char) as eid from %SCHEMA%.non_university_location nul)) s
 		</mysql>
 		<mysql>
-			update %SCHEMA%.hibernate_unique_key set next_hi = (select max(perm_id)+1 from %SCHEMA%.temp_perm_id)
+			update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1
 		</mysql>
 		<mysql>
 			update %SCHEMA%.room r
@@ -1173,7 +1173,7 @@
 			insert into %SCHEMA%.event_type values(%SCHEMA%.ref_table_seq.nextval, 'special', 'Special Event')
 		</plsql>
 		<mysql into="ID">
-			select next_hi from %SCHEMA%.hibernate_unique_key
+			select 32767 * next_hi from %SCHEMA%.hibernate_unique_key
 		</mysql>
 		<mysql>
 			insert into %SCHEMA%.event_type (uniqueid, reference, label) values
@@ -1185,7 +1185,7 @@
 				(%ID%+5, 'special', 'Special Event')
 		</mysql>
 		<mysql>
-			update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+6
+			update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1
 		</mysql>
 		<plsql>
 			create table %SCHEMA%.event_contact
@@ -1587,7 +1587,7 @@
 		<mysql>delete from %SCHEMA%.solver_parameter_def where name='Exams.NotOriginalRoomWeight'</mysql>
 		<mysql><![CDATA[update %SCHEMA%.solver_parameter_def set ord = ord - 1 where solver_param_group_id=%GID% and ord>%ORD%]]></mysql>
 		<mysql into="ORD">select max(ord) from %SCHEMA%.solver_parameter_def where solver_param_group_id=%GID%</mysql>
-		<mysql into="ID">select next_hi from %SCHEMA%.hibernate_unique_key</mysql>
+		<mysql into="ID">select 32767 * next_hi from %SCHEMA%.hibernate_unique_key</mysql>
 		<mysql>
 			insert into %SCHEMA%.solver_parameter_def
 				(uniqueid, name, default_value, description, type, ord, visible, solver_param_group_id) values
@@ -1597,7 +1597,7 @@
 				(%ID%+3, 'Exams.InstructorDistanceBackToBackConflictWeight', '0.0', 'Distance back-to-back instructor conflict weight', 'double', %ORD%+4, 1, %GID%),
 				(%ID%+4, 'Exams.PerturbationWeight', '0.01', 'Perturbation penalty weight', 'double', %ORD%+5, 1, %GID%)
 		</mysql>
-		<mysql>update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+5</mysql>
+		<mysql>update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1</mysql>
 		<plsql><![CDATA[
 			update %SCHEMA%.solver_parameter_def x set x.ord = x.ord - 1 where
 			x.solver_param_group_id = (select g.uniqueid from %SCHEMA%.solver_parameter_group g where g.name='ExamWeights') and
@@ -1648,7 +1648,7 @@
 	<update version="28" date="22-May-2008" comment="Exam solver parameters update">
 		<mysql into="GID">select uniqueid from %SCHEMA%.solver_parameter_group where name='ExamWeights'</mysql>
 		<mysql into="ORD">select max(ord) from %SCHEMA%.solver_parameter_def where solver_param_group_id=%GID%</mysql>
-		<mysql into="ID">select next_hi from %SCHEMA%.hibernate_unique_key</mysql>
+		<mysql into="ID">select 32767 * next_hi from %SCHEMA%.hibernate_unique_key</mysql>
 		<mysql><![CDATA[
 			insert into %SCHEMA%.solver_parameter_def
 			(uniqueid, name, default_value, description, type, ord, visible, solver_param_group_id) values
@@ -1658,7 +1658,7 @@
 			(%ID%+3, 'Exams.LargeWeight', '1.0', 'Large Exam Penalty: weight of a large exam that is assigned on or after the first discouraged period', 'double', %ORD%+4, 1, %GID%)
 		]]></mysql>
 		<mysql>
-			update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+4
+			update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1
 		</mysql>
 		<plsql>
 			insert into %SCHEMA%.solver_parameter_def (select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
@@ -1727,7 +1727,7 @@
 		<plsql>insert into %SCHEMA%.room_type(uniqueid, reference, label, ord) values (ref_table_seq.nextval, 'computingLab', 'Computing Laboratories', 1)</plsql>
 		<plsql>insert into %SCHEMA%.room_type(uniqueid, reference, label, ord) values (ref_table_seq.nextval, 'departmental', 'Additional Instructional Rooms', 2)</plsql>
 		<plsql>insert into %SCHEMA%.room_type(uniqueid, reference, label, ord) values (ref_table_seq.nextval, 'specialUse', 'Special Use Rooms',3)</plsql>
-		<mysql into="ID">select next_hi from %SCHEMA%.hibernate_unique_key</mysql>
+		<mysql into="ID">select 32767 * next_hi from %SCHEMA%.hibernate_unique_key</mysql>
 		<mysql>
 			insert into %SCHEMA%.room_type(uniqueid, reference, label, ord) values
 			(%ID%+0, 'genClassroom', 'Classrooms', 0),
@@ -1735,7 +1735,7 @@
 			(%ID%+2, 'departmental', 'Additional Instructional Rooms', 2),
 			(%ID%+3, 'specialUse', 'Special Use Rooms', 3)
 		</mysql>
-		<mysql>update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+4</mysql>
+		<mysql>update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1</mysql>
 		<plsql>alter table %SCHEMA%.room add room_type number(20,0)</plsql>
 		<mysql>alter table %SCHEMA%.room add room_type decimal(20,0)</mysql>
 		<sql>update %SCHEMA%.room r set r.room_type = (select t.uniqueid from %SCHEMA%.room_type t where t.reference=r.scheduled_room_type)</sql>
@@ -1785,7 +1785,7 @@
 		</sql>
 	</update>
 	<update version="31" date="7-Jul-2008" comment="Student sectioning solver parameters">
-		<mysql into="ID">select next_hi from %SCHEMA%.hibernate_unique_key</mysql>
+		<mysql into="ID">select 32767 * next_hi from %SCHEMA%.hibernate_unique_key</mysql>
 		<mysql into="ORD">select max(ord)+1 from %SCHEMA%.solver_parameter_group</mysql>
 		<mysql>
 			insert into %SCHEMA%.solver_parameter_group (uniqueid, name, description, ord, param_type) values
@@ -1828,7 +1828,7 @@
 			insert into %SCHEMA%.solver_predef_setting (uniqueid, name, description, appearance) values 
 			(%ID%+30, 'StudentSct.Default', 'Default', 3)
 		</mysql>
-		<mysql>update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+31</mysql>
+		<mysql>update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1</mysql>
 		<plsql>
 			insert into %SCHEMA%.SOLVER_PARAMETER_GROUP (UNIQUEID, NAME, DESCRIPTION, CONDITION, ORD, PARAM_TYPE) values
 			(%SCHEMA%.SOLVER_PARAMETER_GROUP_SEQ.nextval, 'StudentSctBasic', 'Basic Parameters', '', -1,2)

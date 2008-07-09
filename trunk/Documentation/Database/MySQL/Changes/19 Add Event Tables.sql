@@ -25,7 +25,7 @@ create table EVENT_TYPE
   LABEL     VARCHAR(60) not null
 ) engine = INNODB;
 
-select `next_hi` into @id from `timetable`.`hibernate_unique_key`;
+select 32767 * next_hi into @id from hibernate_unique_key;
 
 insert into event_type values(@id, 'class', 'Class');
 insert into event_type values(@id+1, 'final', 'Final Exam');
@@ -34,7 +34,7 @@ insert into event_type values(@id+3, 'otherWithConflict', 'Other Course Event wi
 insert into event_type values(@id+4, 'otherNoConflict', 'Other Course Event with No Conflict Checking');
 insert into event_type values(@id+5, 'special', 'Special Event');
 
-update `timetable`.`hibernate_unique_key` set `next_hi`=`next_hi`+6; 
+update hibernate_unique_key set next_hi=next_hi+1; 
 
  
  -- Create table event_contact

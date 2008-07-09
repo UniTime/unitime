@@ -19,9 +19,9 @@
 
 alter table solver_parameter_group add param_type bigint(10) default 0;
 
-select `next_hi` into @id from `timetable`.`hibernate_unique_key`;
+select 32767 * next_hi into @id from hibernate_unique_key;
 
-select max(`ord`)+1 into @ord from `timetable`.`solver_parameter_group`;
+select max(ord)+1 into @ord from solver_parameter_group;
 
 insert into solver_parameter_group (uniqueid, name, description, ord, param_type) values
 			(@id, 'ExamBasic', 'Basic Parameters', @ord, 1),
@@ -65,7 +65,7 @@ insert into solver_parameter_def
 insert into solver_predef_setting (uniqueid, name, description, appearance) values 
 			(@id+34, 'Exam.Default', 'Default', 2);
 
-update hibernate_unique_key set next_hi=next_hi+35
+update hibernate_unique_key set next_hi=next_hi+1
 
 /*
  * Update database version

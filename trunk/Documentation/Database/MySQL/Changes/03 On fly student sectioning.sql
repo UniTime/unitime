@@ -17,7 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-select `next_hi` into @id from `timetable`.`hibernate_unique_key`;
+select 32767 * `next_hi` into @id from `timetable`.`hibernate_unique_key`;
 
 select max(`ord`)+1 into @ord from `timetable`.`solver_parameter_group`;
 
@@ -31,7 +31,7 @@ insert into `timetable`.`solver_parameter_def`
 	(@id+2, 'OnFlySectioning.Recursive', 'true', 'Recursively resection lectures affected by a student swap', 'boolean', 1, 1, @id),
 	(@id+3, 'OnFlySectioning.ConfigAsWell', 'false', 'Resection students between configurations as well', 'boolean', 2, 1, @id); 
 
-update `timetable`.`hibernate_unique_key` set `next_hi`=`next_hi`+4;
+update `timetable`.`hibernate_unique_key` set `next_hi`=`next_hi`+1;
 		
 /* 
 -- Uncomment the following lines to enable on fly student sectioning in the default solver configuration
@@ -40,7 +40,6 @@ select s.`uniqueid` into @ds from `timetable`.`solver_predef_setting` s where s.
 insert into `timetable`.`solver_parameter`
 	(`uniqueid`, `value`, `solver_param_def_id`, `solution_id`, `solver_predef_setting_id`) values
 	(@id+4, 'on', @id+1, NULL, @ds);
-update `timetable`.`hibernate_unique_key` set `next_hi`=`next_hi`+1;
 
 */
 

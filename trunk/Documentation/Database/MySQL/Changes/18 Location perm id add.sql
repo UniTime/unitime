@@ -32,12 +32,12 @@ create table temp_perm_id
 -- populate temp_perm_id table
 insert into temp_perm_id 
 select s.eid, @id := @id + 1 from (select distinct r.external_uid as eid 
-from room r, (select @id := next_hi from hibernate_unique_key) x
+from room r, (select @id := 32767 * next_hi from hibernate_unique_key) x
 where r.external_uid is not null
 union (select distinct cast(r1.uniqueid as char) as eid from room r1 where r1.external_uid is null)
 union (select distinct cast(nul.uniqueid as char) as eid from non_university_location nul)) s;
 
-update hibernate_unique_key set next_hi = (select max(perm_id)+1 from temp_perm_id);
+update hibernate_unique_key set next_hi = next_hi + 1;
 
 -- populate  permanent_id for rooms with external ids
 update room r

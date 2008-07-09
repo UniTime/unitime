@@ -35,7 +35,7 @@ update solver_parameter_def set ord = ord - 1 where solver_param_group_id=@gid a
  
 select max(ord) into @ord from solver_parameter_def where solver_param_group_id=@gid;
  
-select `next_hi` into @id from `timetable`.`hibernate_unique_key`;
+select 32767 * next_hi into @id from hibernate_unique_key;
  
 insert into solver_parameter_def
 			(uniqueid, name, default_value, description, type, ord, visible, solver_param_group_id) values
@@ -45,7 +45,7 @@ insert into solver_parameter_def
 			(@id+3, 'Exams.InstructorDistanceBackToBackConflictWeight', '0.0', 'Distance back-to-back instructor conflict weight', 'double', @ord+4, 1, @gid),
 			(@id+4, 'Exams.PerturbationWeight', '0.01', 'Perturbation penalty weight', 'double', @ord+5, 1, @gid);
 			
-update hibernate_unique_key set next_hi=next_hi+5;
+update hibernate_unique_key set next_hi=next_hi+1;
  
 /*
  * Update database version
