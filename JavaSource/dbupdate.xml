@@ -2045,7 +2045,7 @@
 				uniqueid decimal(20,0) primary key not null,
 				name varchar(100) not null,
 				email varchar(200)
-			)
+			) engine = INNODB
 		</mysql>
 		<plsql>
 			create table %SCHEMA%.sponsoring_organization (
