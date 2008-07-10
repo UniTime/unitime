@@ -43,7 +43,7 @@ public class EventAddInfoAction extends Action {
 	        	if (!errors.isEmpty()) {
 	        		saveErrors(request, errors);
 	        	} else {
-	        		myForm.submit(request.getSession());
+	        		myForm.submit(request);
 	        		myForm.cleanSessionAttributes(request.getSession());
 	        		response.sendRedirect(response.encodeURL("eventDetail.do?id="+myForm.getEventId()));
 	        		return null;
@@ -55,7 +55,7 @@ public class EventAddInfoAction extends Action {
 	        	if (!errors.isEmpty()) {
 	        		saveErrors(request, errors);
 	        	} else {
-	        		myForm.update(request.getSession());
+	        		myForm.update(request);
 	        		myForm.cleanSessionAttributes(request.getSession());
 	        		response.sendRedirect(response.encodeURL("eventDetail.do?id="+myForm.getEventId()));
 	        		return null;
