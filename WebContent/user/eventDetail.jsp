@@ -151,7 +151,9 @@ TO DO:
 				</TD>
 			</TR>		
 		</logic:equal>
-
+		<tt:last-change type='Event'>
+			<bean:write name="eventDetailForm" property="id"/>
+		</tt:last-change>		
 
 
 		<TR>
