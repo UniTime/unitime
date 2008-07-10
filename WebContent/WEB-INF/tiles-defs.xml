@@ -944,5 +944,19 @@
 		<put name="title" type="string" value="Student Sectioning Solver Log"/>
 		<put name="body" value="/sct/studentLog.jsp" />
   	</definition>
+  	
+ 	<definition	name="sponsoringOrgListTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Sponsoring Organizations"/>
+		<put name="body" value="/admin/sponsoringOrgList.jsp" />
+  	</definition>
 
+ 	<definition	name="sponsoringOrgEditTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Edit Sponsoring Organization"/>
+		<put name="body" value="/admin/sponsoringOrgEdit.jsp" />
+  	</definition>
+
+ 	<definition	name="sponsoringOrgAddTile" extends="sponsoringOrgEditTile">
+		<put name="title" type="string" value="Add Sponsoring Organization"/>
+  	</definition>
+  	
 </tiles-definitions>
