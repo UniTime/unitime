@@ -43,6 +43,7 @@ import org.unitime.timetable.authenticate.jaas.UserPasswordHandler;
 import org.unitime.timetable.form.ExamsForm;
 import org.unitime.timetable.model.ApplicationConfig;
 import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
@@ -59,6 +60,28 @@ public class ExamsAction extends Action {
 
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
 
+        if (request.getParameter("select")!=null) {
+            myForm.load(request.getSession());
+            if (request.getParameter("subject")!=null) {
+                myForm.setSubjectArea(request.getParameter("subject"));
+            } else {
+                myForm.setSubjectArea("--ALL--");
+            }
+            if (request.getParameter("year")!=null && request.getParameter("term")!=null && request.getParameter("campus")!=null) {
+                Session session = Session.getSessionUsingInitiativeYearTerm(
+                        request.getParameter("campus"), 
+                        request.getParameter("year"), 
+                        request.getParameter("term"));
+                if (session!=null) myForm.setSession(session.getUniqueId());
+            }
+            if (request.getParameter("type")!=null) {
+                myForm.setExamType("final".equals(request.getParameter("type"))?Exam.sExamTypeFinal:Exam.sExamTypeMidterm);
+            } else {
+                myForm.setExamType(Exam.sExamTypeFinal);
+            }
+            op = "Apply";
+        }
+        
         if ("Apply".equals(op)) {
             myForm.save(request.getSession());
             if (myForm.getUsername()!=null && myForm.getUsername().length()>0 && myForm.getPassword()!=null && myForm.getPassword().length()>0) {
