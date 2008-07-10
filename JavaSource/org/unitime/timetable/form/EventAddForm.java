@@ -433,6 +433,7 @@ public class EventAddForm extends PreferencesForm {
 		session.removeAttribute("Event.mcPhone");
 		session.removeAttribute("Event.AdditionalInfo");
 		session.removeAttribute("Event.RoomFeatures");
+		session.removeAttribute("Event.AdditionalEmails");
 	}
     
     

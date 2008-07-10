@@ -150,7 +150,7 @@
 			</TD>
 		</TR>
 		<TR>
-  		<TD valign='top'>Contact: </TD> 
+  		<TD valign='top'>Main Contact: </TD> 
 			<TD colspan ='2'>
 				<Table width='100%'>
 					<TR>
@@ -178,6 +178,13 @@
 						</TD>
 					</TR>
 				</Table>
+			</TD>
+		</TR>
+		<TR>
+			<TD valign='top'>Additional E-mails:<br>
+			<font color="gray"><i>(will be notified about event changes)</i> </font></TD>
+			<TD>
+				<html:textarea property="additionalEmails" rows="2" cols="50"></html:textarea>
 			</TD>
 		</TR>
 		<TR>
