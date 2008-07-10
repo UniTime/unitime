@@ -37,6 +37,7 @@ import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.form.EventDetailForm;
+import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseEvent;
@@ -120,12 +121,30 @@ public class EventDetailAction extends Action {
 	                boolean eventDeleted = false;
 	                try {
 	                    tx = hibSession.beginTransaction();
+	        			
 	                    Meeting m = myForm.getSelectedMeeting();
+	                    String msg = "Deleted meeting "+m.toString()+" of "+event.getEventName()+" ("+event.getEventTypeLabel()+")";
 	                    event.getMeetings().remove(m);
 		                if (event.getMeetings().isEmpty()) {
+		        			ChangeLog.addChange(
+		                            hibSession,
+		                            request,
+		                            event,
+		                            msg,
+		                            ChangeLog.Source.EVENT_EDIT,
+		                            ChangeLog.Operation.DELETE,
+		                            null,null);
 		                	hibSession.delete(event);
 		                	eventDeleted = true;
 		                } else {
+		        			ChangeLog.addChange(
+		                            hibSession,
+		                            request,
+		                            event,
+		                            msg,
+		                            ChangeLog.Source.EVENT_EDIT,
+		                            ChangeLog.Operation.UPDATE,
+		                            null,null);
 		                    hibSession.saveOrUpdate(event);
 		                }
 	                    tx.commit();

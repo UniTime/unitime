@@ -25,6 +25,7 @@ import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.form.EventDetailForm.ContactBean;
 import org.unitime.timetable.form.EventDetailForm.MeetingBean;
 import org.unitime.timetable.form.EventRoomAvailabilityForm.DateLocation;
+import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseEvent;
 import org.unitime.timetable.model.CourseOffering;
@@ -236,8 +237,9 @@ public class EventAddInfoForm extends ActionForm {
 		session.setAttribute("Event.AdditionalInfo", iAdditionalInfo);
 	}
 	
-	public void submit(HttpSession session) {
+	public void submit(HttpServletRequest request) {
 
+		HttpSession session = request.getSession();
 		Transaction tx = null;
 		try {
 			Session hibSession = new _RootDAO().getSession();
@@ -299,6 +301,14 @@ public class EventAddInfoForm extends ActionForm {
 			}
 			hibSession.saveOrUpdate(event);
 			
+			ChangeLog.addChange(
+                    hibSession,
+                    request,
+                    event,
+                    ChangeLog.Source.EVENT_EDIT,
+                    ChangeLog.Operation.CREATE,
+                    null,null);
+			
 			tx.commit();
 			iEventId = event.getUniqueId();
 		} catch (Exception e) {
@@ -307,8 +317,9 @@ public class EventAddInfoForm extends ActionForm {
 		}
 	}
 	
-	public void update (HttpSession session) {
+	public void update (HttpServletRequest request) {
 
+		HttpSession session = request.getSession();
 		Transaction tx = null;
 		try {
 			Session hibSession = new _RootDAO().getSession();
@@ -328,6 +339,15 @@ public class EventAddInfoForm extends ActionForm {
 				iEvent.getMeetings().add(m); // link each meeting with event
 			}
 			hibSession.saveOrUpdate(iEvent);
+
+			ChangeLog.addChange(
+                    hibSession,
+                    request,
+                    iEvent,
+                    ChangeLog.Source.EVENT_EDIT,
+                    ChangeLog.Operation.UPDATE,
+                    null,null);
+			
 			tx.commit();
 		} catch (Exception e) {
 			if (tx!=null) tx.rollback();
