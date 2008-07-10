@@ -136,6 +136,8 @@
 	  <form-bean name="eventAddInfoForm" type="org.unitime.timetable.form.EventAddInfoForm" />
       <form-bean name="studentSolverForm" type="org.unitime.timetable.form.StudentSolverForm" />
 	  <form-bean name="studentSolverLogForm" type="org.unitime.timetable.form.StudentSolverLogForm" />
+  	  <form-bean name="sponsoringOrgListForm" type="org.unitime.timetable.form.SponsoringOrgListForm" />
+  	  <form-bean name="sponsoringOrgEditForm" type="org.unitime.timetable.form.SponsoringOrgEditForm" />  	  
    </form-beans>
 
    <global-exceptions>
@@ -2375,6 +2377,46 @@
     		redirect="true" />
     </action>
 
+    <action
+    	path="/sponsoringOrgList"
+    	type="org.unitime.timetable.action.SponsoringOrgListAction"
+    	attribute="sponsoringOrgListForm"
+    	input="sponsoringOrgListTile"
+    	name="sponsoringOrgListForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+    		name="show"
+    		path="sponsoringOrgListTile"
+    		redirect="true" />
+    	<forward 
+    		name="edit"
+    		path="/sponsoringOrgEdit.do"
+    		redirect="true" />
+    	<forward 
+    		name="add"
+    		path="sponsoringOrgAddTile"
+    		redirect="true" />
+    </action>
+
+    <action
+    	path="/sponsoringOrgEdit"
+    	type="org.unitime.timetable.action.SponsoringOrgEditAction"
+    	attribute="sponsoringOrgEditForm"
+    	input="sponsoringOrgEditTile"
+    	name="sponsoringOrgEditForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+    		name="show"
+    		path="sponsoringOrgEditTile"
+    		redirect="true" />
+    	<forward 
+    		name="list"
+    		path="/sponsoringOrgList.do"
+    		redirect="true" />
+    </action>
+    
     </action-mappings>
 
 	<!-- Struts Layout Controller -->

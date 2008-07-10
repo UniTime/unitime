@@ -133,6 +133,7 @@
 	menu_item('3','Event Management','Events','','expand');
 		leaf_item('Events','Events','eventList.do');
 		leaf_item('Add Event','Add Event','eventAdd.do');
+		leaf_item('Sponsoring Organizations','Sponsoring Organizations','sponsoringOrgList.do');
 		enditem(); //3
 <% } %>
 		
