@@ -103,7 +103,7 @@ TO DO:
 		</TR>
 		<logic:equal name="eventDetailForm" property="canEdit" value="true">
 			<TR>
-				<TD nowrap valign="top">Contact:&nbsp;</TD>
+				<TD nowrap valign="top">Main Contact:&nbsp;</TD>
 				<td>
 				<Table width="100%" border="0" cellspacing="0" cellpadding="1">
 					<tr align="left">
@@ -115,7 +115,7 @@ TO DO:
 						<TD>
 							<bean:write name="mc" property="firstName"/>
 							<bean:write name="mc" property="middleName"/> 
-							<bean:write name="mc" property="lastName"/> <i>(main contact)</i>
+							<bean:write name="mc" property="lastName"/>
 						</TD>
 						<td>
 							<bean:write name="mc" property="email"/>						
@@ -143,6 +143,12 @@ TO DO:
 					
 				</table>
 				</td>
+			</TR>
+			<TR>
+				<TD nowrap valign="top">Additional E-mails:&nbsp;</TD>
+				<TD>
+					<bean:write name="eventDetailForm" property="additionalEmails"/>
+				</TD>
 			</TR>		
 		</logic:equal>
 

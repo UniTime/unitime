@@ -151,6 +151,7 @@ public class EventDetailAction extends Action {
 				myForm.setMinCapacity(event.getMinCapacity()==null?"":event.getMinCapacity().toString());
 				myForm.setMaxCapacity(event.getMaxCapacity()==null?"":event.getMaxCapacity().toString());
 				myForm.setSponsoringOrg("N/A yet");
+				myForm.setAdditionalEmails(event.getEmail());
 				if ("Course Event".equals(myForm.getEventType())) {
 					myForm.setAttendanceRequired(((CourseEvent) event).isReqAttendance());
 				}

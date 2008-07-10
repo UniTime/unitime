@@ -63,6 +63,7 @@ public class EventAddInfoForm extends ActionForm {
 	private String iStopTimeString;
 	private String iEventName;
 	private ContactBean iMainContact;
+	private String iAdditionalEmails;
 	private String iAdditionalInfo;
 	private String iMainContactEmail;
 	private String iMainContactPhone;
@@ -97,6 +98,10 @@ public class EventAddInfoForm extends ActionForm {
 			errors.add("mcLastName", new ActionMessage("errors.generic", "The contact's last name is mandatory."));
 		}
 
+		if (iAdditionalEmails.length()>999) {
+			errors.add("emails", new ActionMessage("errors.generic", "Additional e-mails are too long. Please, limit the field to no more than 1000 characters."));
+		}
+		
 		if (iAdditionalInfo.length()>999) {
 			errors.add("note", new ActionMessage("errors.generic", "Additional information is too long. Please, limit it to no more than 1000 characters."));
 		}
@@ -113,6 +118,7 @@ public class EventAddInfoForm extends ActionForm {
 		iStopTimeString = null;
 		iEventName = null;
 		iMainContact = null;
+		iAdditionalEmails = "";
 		iAdditionalInfo = "";
 		iMainContactEmail = null;
 		iMainContactPhone = null;
@@ -140,6 +146,7 @@ public class EventAddInfoForm extends ActionForm {
 		iMainContactFirstName = (String) session.getAttribute("Event.mcFName");
 		iMainContactLastName = (String) session.getAttribute("Event.mcLName");
 		iMainContactPhone = (String) session.getAttribute("Event.mcPhone");
+		iAdditionalEmails = (String) session.getAttribute("Event.AdditionalEmails");
 		iAdditionalInfo = (String) session.getAttribute("Event.AdditionalInfo");
 		if (session.getAttribute("Event.SubjectArea")!=null) {
 			iSubjectArea = (List) session.getAttribute("Event.SubjectArea");
@@ -225,6 +232,7 @@ public class EventAddInfoForm extends ActionForm {
 		session.setAttribute("Event.mcFName", iMainContactFirstName);
 		session.setAttribute("Event.mcLName", iMainContactLastName);
 		session.setAttribute("Event.mcPhone", iMainContactPhone);
+		session.setAttribute("Event.AdditionalEmails", iAdditionalEmails);
 		session.setAttribute("Event.AdditionalInfo", iAdditionalInfo);
 	}
 	
@@ -268,6 +276,8 @@ public class EventAddInfoForm extends ActionForm {
 				// attach the note to event
 				event.setNotes(new HashSet());
 				event.getNotes().add(en);
+				// add additional e-mails
+				event.setEmail(iAdditionalEmails);
 				hibSession.saveOrUpdate(event);
 				//hibSession.saveOrUpdate(en);
 				
@@ -336,6 +346,9 @@ public class EventAddInfoForm extends ActionForm {
 	
 	public boolean getAttendanceRequired() {return iAttendanceRequired;}
 	public void setAttendanceRequired(boolean save) {iAttendanceRequired = save;}
+	
+	public String getAdditionalEmails() {return iAdditionalEmails;}
+	public void setAdditionalEmails(String emails) {iAdditionalEmails = emails;}
 	
 	public TreeSet<DateLocation> getDateLocations() {
 		return iDateLocations;
@@ -439,6 +452,7 @@ public class EventAddInfoForm extends ActionForm {
 		session.removeAttribute("Event.mcPhone");
 		session.removeAttribute("Event.AdditionalInfo");
 		session.removeAttribute("Event.RoomFeatures");
+		session.removeAttribute("Event.AdditionalEmails");
 	}
 
     protected DynamicListObjectFactory idfactory = new DynamicListObjectFactory() {
