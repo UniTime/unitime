@@ -56,7 +56,7 @@ create table sponsoring_organization (
 	uniqueid decimal(20,0) primary key not null,
 	name varchar(100) not null,
 	email varchar(200)
-);
+) engine = INNODB;
 
 alter table event add sponsor_org_id decimal(20,0);
 
