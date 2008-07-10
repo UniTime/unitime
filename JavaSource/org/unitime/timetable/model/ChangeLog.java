@@ -133,7 +133,8 @@ public class ChangeLog extends BaseChangeLog implements Comparable {
         DATA_IMPORT_EXT_BUILDING_ROOM,
         DATA_IMPORT_STAFF,
         EXAM_INFO,
-        EXAM_SOLVER
+        EXAM_SOLVER,
+        EVENT_EDIT
     }
     
     public static SimpleDateFormat sDF = new SimpleDateFormat("MM/dd/yy hh:mmaa");
@@ -248,6 +249,7 @@ public class ChangeLog extends BaseChangeLog implements Comparable {
             }
             Number objectUniqueId = (Number)object.getClass().getMethod("getUniqueId", new Class[]{}).invoke(object, new Object[]{});
             String objectType = object.getClass().getName();
+            if (object instanceof Event) objectType = Event.class.getName();
             if (objectType.indexOf("$$")>=0)
                 objectType = objectType.substring(0,objectType.indexOf("$$"));
             if (objectTitle==null || objectTitle.length()==0) {
