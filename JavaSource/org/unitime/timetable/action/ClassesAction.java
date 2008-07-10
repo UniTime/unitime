@@ -57,6 +57,7 @@ import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
+import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
@@ -72,6 +73,28 @@ public class ClassesAction extends Action {
 	    ClassesForm myForm = (ClassesForm)form;
 
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
+        
+        if (request.getParameter("select")!=null) {
+            myForm.load(request.getSession());
+            if (request.getParameter("subject")!=null) {
+                myForm.setSubjectArea(request.getParameter("subject"));
+            } else {
+                myForm.setSubjectArea("--ALL--");
+            }
+            if (request.getParameter("year")!=null && request.getParameter("term")!=null && request.getParameter("campus")!=null) {
+                Session session = Session.getSessionUsingInitiativeYearTerm(
+                        request.getParameter("campus"), 
+                        request.getParameter("year"), 
+                        request.getParameter("term"));
+                if (session!=null) myForm.setSession(session.getUniqueId());
+            } 
+            if (request.getParameter("course")!=null) {
+                myForm.setCourseNumber(request.getParameter("course"));
+            } else {
+                myForm.setCourseNumber(null);
+            }
+            op = "Apply";
+        }
 
         if ("Apply".equals(op)) {
             myForm.save(request.getSession());
