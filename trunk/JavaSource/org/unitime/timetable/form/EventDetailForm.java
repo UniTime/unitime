@@ -27,6 +27,7 @@ public class EventDetailForm extends ActionForm {
 	private Vector<NoteBean> iNotes = new Vector<NoteBean>();
 	private ContactBean iMainContact;
 	private Vector<ContactBean> iAdditionalContacts = new Vector<ContactBean>();
+	private String iAdditionalEmails; 
 	private boolean iCanEdit;
 	private String iPreviousId;
 	private String iNextId;
@@ -61,6 +62,7 @@ public class EventDetailForm extends ActionForm {
 		iPreviousId = null;
 		iNextId = null;
 		iAttendanceRequired = false;
+		iAdditionalEmails = null;
 	}
 	
 	public Event getEvent() {return iEvent;}
@@ -92,6 +94,9 @@ public class EventDetailForm extends ActionForm {
     
     public boolean getAttendanceRequired() {return iAttendanceRequired;}
     public void setAttendanceRequired(boolean attReq) {iAttendanceRequired = attReq;}
+    
+    public String getAdditionalEmails() {return iAdditionalEmails;}
+    public void setAdditionalEmails(String emails) {iAdditionalEmails = emails;}
     
     public Vector<MeetingBean> getMeetings() {return iMeetings;}
     public void addMeeting(Long id, String date, String startTime, String endTime, String location, String approvedDate) {
