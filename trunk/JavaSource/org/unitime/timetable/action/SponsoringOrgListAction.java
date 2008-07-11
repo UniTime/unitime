@@ -8,6 +8,7 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.SponsoringOrgListForm;
 
 public class SponsoringOrgListAction extends Action {
@@ -22,6 +23,12 @@ public class SponsoringOrgListAction extends Action {
 		String op = myForm.getOp();
 		HttpSession session = request.getSession();
 		
+        if(!Web.isLoggedIn( session )) {
+            throw new Exception ("Access Denied.");
+        }
+        
+		
+        
 		if("Add Organization".equals(op)) {
 			request.setAttribute("op", "add");
 			return mapping.findForward("add");
