@@ -38,6 +38,25 @@
 			</tt:section-header>
 		</TD>
 	</TR>
+	<TR>
+		<TD>
+			<Table width='100%' cellspacing="0" cellpadding="3">
+				<bean:write name="sponsoringOrgListForm" property="table" filter="false"/>
+			</Table>
+		</TD>
+	</TR>
+	<TR>
+		<TD>
+			<tt:section-title/>
+		</TD>
+	</TR>
+	<TR>
+		<TD align='right'>
+			<html:submit property="op" styleClass="btn" accesskey="A" 
+			title="Add Sponsoring Organization (Alt+A)" value="Add Organization"/>
+		</TD>
+	</TR>
+
 </TABLE>
 
 </html:form>
