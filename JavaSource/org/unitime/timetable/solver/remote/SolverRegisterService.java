@@ -388,7 +388,7 @@ public class SolverRegisterService extends Thread {
                                 (Date)cmd[2],
                                 (Date)cmd[3], 
                                 "true".equals(ApplicationProperties.getProperty("tmtbl.room.availability.solver.waitForSync","true")));
-                        return RoomAvailability.getInstance().getTimeStamp((Date)cmd[2], (Date)cmd[3]);
+                        return "ack";
                     }
                     return null;
                 }
@@ -409,6 +409,14 @@ public class SolverRegisterService extends Thread {
                                 (Date)cmd[2],
                                 (Date)cmd[3],
                                 new String[] {RoomAvailabilityInterface.sClassType});
+                    }
+                    return null;
+                }
+                if ("getRoomAvailabilityTimeStamp".equals(cmd[0])) {
+                    if (RoomAvailability.getInstance()!=null) {
+                        return RoomAvailability.getInstance().getTimeStamp(
+                                (Date)cmd[1],
+                                (Date)cmd[2]);
                     }
                     return null;
                 }
