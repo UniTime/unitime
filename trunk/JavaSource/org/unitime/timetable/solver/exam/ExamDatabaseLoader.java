@@ -98,6 +98,8 @@ public class ExamDatabaseLoader extends ExamLoader {
     private Set<ExamPeriod> iProhibitedPeriods = new HashSet();
     private boolean iLoadEventConflicts = false;
     private boolean iMakeupSameRoom = false;
+    
+    private boolean iRoomAvailabilityTimeStampIsSet = false;
 
     public ExamDatabaseLoader(ExamModel model) {
         super(model);
@@ -935,36 +937,41 @@ public class ExamDatabaseLoader extends ExamLoader {
     }
     
     public Collection<TimeBlock> getRoomAvailability(Location location, Date startTime, Date endTime) {
+        Collection<TimeBlock> ret = null;
+        String ts = null;
         try {
             if (isRemote()) {
-                return (Collection<TimeBlock>)RemoteSolverServer.query(new Object[]{"getExamRoomAvailability",location.getUniqueId(),startTime,endTime,iExamType});
+                ret = (Collection<TimeBlock>)RemoteSolverServer.query(new Object[]{"getExamRoomAvailability",location.getUniqueId(),startTime,endTime,iExamType});
+                if (!iRoomAvailabilityTimeStampIsSet) ts = (String)RemoteSolverServer.query(new Object[]{"getRoomAvailabilityTimeStamp",startTime, endTime});
             } else {
-                return RoomAvailability.getInstance().getRoomAvailability(
+                ret = RoomAvailability.getInstance().getRoomAvailability(
                         location, startTime, endTime,
                         new String[] {(iExamType==org.unitime.timetable.model.Exam.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sMidtermExamType)});
+                if (!iRoomAvailabilityTimeStampIsSet) ts = RoomAvailability.getInstance().getTimeStamp(startTime, endTime);
             }
         } catch (Exception e) {
             sLog.error(e.getMessage(),e);
             iProgress.warn("Unable to access room availability service, reason:"+e.getMessage());
-            return null;
         } 
-    }
-    
-    public void roomAvailabilityActivate(Date startTime, Date endTime) {
-        try {
-            String ts;
-            if (isRemote()) {
-                ts = (String)RemoteSolverServer.query(new Object[]{"activateRoomAvailability",iSessionId,startTime,endTime});
-            } else {
-                RoomAvailability.getInstance().activate(new SessionDAO().get(iSessionId), startTime, endTime, 
-                        "true".equals(ApplicationProperties.getProperty("tmtbl.room.availability.solver.waitForSync","true")));
-                ts = RoomAvailability.getInstance().getTimeStamp(startTime, endTime);
-            }
+        if (!iRoomAvailabilityTimeStampIsSet) {
+            iRoomAvailabilityTimeStampIsSet = true;
             if (ts!=null) {
                 getModel().getProperties().setProperty("RoomAvailability.TimeStamp", ts);
                 iProgress.info("Using room availability that was updated on "+ts+".");
             } else {
                 iProgress.error("Room availability is not available.");
+            }
+        }
+        return ret;
+    }
+    
+    public void roomAvailabilityActivate(Date startTime, Date endTime) {
+        try {
+            if (isRemote()) {
+                RemoteSolverServer.query(new Object[]{"activateRoomAvailability",iSessionId,startTime,endTime});
+            } else {
+                RoomAvailability.getInstance().activate(new SessionDAO().get(iSessionId), startTime, endTime, 
+                        "true".equals(ApplicationProperties.getProperty("tmtbl.room.availability.solver.waitForSync","true")));
             }
         } catch (Exception e) {
             sLog.error(e.getMessage(),e);

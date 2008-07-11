@@ -157,6 +157,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     private String iAutoSameStudentsConstraint = "SAME_STUDENTS";
     private String iInstructorFormat = null;
     
+    private boolean iRoomAvailabilityTimeStampIsSet = false;
+    
     public TimetableDatabaseLoader(TimetableModel model) {
         super(model);
         Progress.sTraceEnabled=false;
@@ -2952,19 +2954,11 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     
     public void roomAvailabilityActivate(Date startTime, Date endTime) {
         try {
-            String ts;
             if (isRemote()) {
-                ts = (String)RemoteSolverServer.query(new Object[]{"activateRoomAvailability",iSessionId,startTime,endTime});
+                RemoteSolverServer.query(new Object[]{"activateRoomAvailability",iSessionId,startTime,endTime});
             } else {
                 RoomAvailability.getInstance().activate(new SessionDAO().get(iSessionId), startTime, endTime, 
                         "true".equals(ApplicationProperties.getProperty("tmtbl.room.availability.solver.waitForSync","true")));
-                ts = RoomAvailability.getInstance().getTimeStamp(startTime, endTime);
-            }
-            if (ts!=null) {
-                getModel().getProperties().setProperty("RoomAvailability.TimeStamp", ts);
-                iProgress.info("Using room availability that was updated on "+ts+".");
-            } else {
-                iProgress.error("Room availability is not available.");
             }
         } catch (Exception e) {
             sLog.error(e.getMessage(),e);
@@ -3050,20 +3044,31 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     }
     
     public Collection<TimeBlock> getRoomAvailability(RoomConstraint room, Date startTime, Date endTime) {
+        Collection<TimeBlock> ret = null;
+        String ts = null;
         try {
             if (isRemote()) {
-                return (Collection<TimeBlock>)RemoteSolverServer.query(new Object[]{"getClassRoomAvailability",room.getResourceId(),startTime,endTime});
+                ret = (Collection<TimeBlock>)RemoteSolverServer.query(new Object[]{"getClassRoomAvailability",room.getResourceId(),startTime,endTime});
+                if (!iRoomAvailabilityTimeStampIsSet) ts = (String)RemoteSolverServer.query(new Object[]{"getRoomAvailabilityTimeStamp",startTime, endTime});
             } else {
-                return RoomAvailability.getInstance().getRoomAvailability(
-                        new LocationDAO().get(room.getResourceId()), startTime, endTime,
+                ret = RoomAvailability.getInstance().getRoomAvailability(
+                        LocationDAO.getInstance().get(room.getResourceId()), startTime, endTime,
                         new String[] {RoomAvailabilityInterface.sClassType});
+                if (!iRoomAvailabilityTimeStampIsSet) ts = RoomAvailability.getInstance().getTimeStamp(startTime, endTime);
             }
         } catch (Exception e) {
             sLog.error(e.getMessage(),e);
             iProgress.warn("Unable to access room availability service, reason:"+e.getMessage());
-            return null;
         } 
+        if (!iRoomAvailabilityTimeStampIsSet) {
+            iRoomAvailabilityTimeStampIsSet = true;
+            if (ts!=null) {
+                getModel().getProperties().setProperty("RoomAvailability.TimeStamp", ts);
+                iProgress.info("Using room availability that was updated on "+ts+".");
+            } else {
+                iProgress.error("Room availability is not available.");
+            }
+        }
+        return ret;
     }
-
-
 }
