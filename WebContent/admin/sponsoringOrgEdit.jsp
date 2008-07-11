@@ -28,15 +28,36 @@
 
 <html:form action="/sponsoringOrgEdit">
 <html:hidden property="screen"/>
+<html:hidden property="id"/>
 
 	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<logic:messagesPresent>
+		<TR>
+			<TD colspan="2" align="left" class="errorCell">
+					<B><U>ERRORS</U></B><BR>
+				<BLOCKQUOTE>
+				<UL>
+				    <html:messages id="error">
+				      <LI>
+						${error}
+				      </LI>
+				    </html:messages>
+			    </UL>
+			    </BLOCKQUOTE>
+			</TD>
+		</TR>
+		</logic:messagesPresent>
 		<TR>
 			<TD colspan='2'>
 					<logic:notEqual name="sponsoringOrgEditForm" property="screen" value="add">		
 						<tt:section-header>
-						<tt:section-title> Edit (name of org to come here)</tt:section-title>
+						<tt:section-title> Edit <bean:write name="sponsoringOrgEditForm" property="orgName"/></tt:section-title>
 						<html:submit property="op" styleClass="btn" accesskey="U" 
 							title="Update (Alt+U)" value="Update"/>
+						<html:submit property="op" styleClass="btn" accesskey="D" 
+							title="Delete (Alt+D)" value="Delete"/>
+						<html:submit property="op" styleClass="btn" accesskey="B" 
+							title="Back to Sponsoring Organizations (Alt+B)" value="Back"/>
 						</tt:section-header>
 					</logic:notEqual>
 					<logic:equal name="sponsoringOrgEditForm" property="screen" value="add">
@@ -44,12 +65,13 @@
 						<tt:section-title> Add a New Sponsoring Organization</tt:section-title>
 						<html:submit property="op" styleClass="btn" accesskey="S" 
 							title="Save (Alt+S)" value="Save"/>
+						<html:submit property="op" styleClass="btn" accesskey="B" 
+							title="Back to Sponsoring Organizations (Alt+B)" value="Back"/>
 						</tt:section-header>
 					</logic:equal>
 			</TD>
 		</TR>
 		
-		<logic:equal name="sponsoringOrgEditForm" property="screen" value="add">
 		<tr>
 			<td> Name: </td> 
 			<td> <html:text property="orgName" maxlength="100" size="50" /></td>
@@ -58,8 +80,31 @@
 			<td> E-mail: </td>
 			<td> <html:text property="orgEmail" maxlength="100" size="50" /></td>
 		</tr>
-		</logic:equal>
+
+		<TR>
+			<td colspan='2'>
+				<tt:section-title/>
+			</td>
+		</TR>
 		
+		<TR>
+			<TD colspan='2' align='right'>
+				<logic:notEqual name="sponsoringOrgEditForm" property="screen" value="add">		
+					<html:submit property="op" styleClass="btn" accesskey="U" 
+						title="Update (Alt+U)" value="Update"/>
+					<html:submit property="op" styleClass="btn" accesskey="D" 
+						title="Delete (Alt+D)" value="Delete"/>
+					<html:submit property="op" styleClass="btn" accesskey="B" 
+						title="Back to Sponsoring Organizations (Alt+B)" value="Back"/>
+				</logic:notEqual>
+				<logic:equal name="sponsoringOrgEditForm" property="screen" value="add">
+					<html:submit property="op" styleClass="btn" accesskey="S" 
+						title="Save (Alt+S)" value="Save"/>
+					<html:submit property="op" styleClass="btn" accesskey="B" 
+						title="Back to Sponsoring Organizations (Alt+B)" value="Back"/>
+				</logic:equal>
+			</TD>
+		</TR>
 	</TABLE>
 
 </html:form>
