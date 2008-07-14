@@ -152,7 +152,7 @@ public class EventAddForm extends PreferencesForm {
 	        }
 		}
 
-		if (iBuildingId == -1) {
+		if (iBuildingId==null || iBuildingId == -1) {
 			errors.add("building", new ActionMessage("errors.generic", "No building has been selected."));
 		} else if (getPossibleLocations().isEmpty()) {
 			errors.add("noLocation", new ActionMessage("errors.generic", "There is no location matching your criteria."));
@@ -708,16 +708,16 @@ public class EventAddForm extends PreferencesForm {
 			query = "select r from Room r"+a+" where r.building.uniqueId = :buildingId";
 		}
 			
-		if (iMinCapacity!=null && iMinCapacity!="") { query+= " and r.capacity>= :minCapacity";	}
-		if (iMaxCapacity!=null && iMaxCapacity!="") { query+= " and r.capacity<= :maxCapacity";	}
+		if (iMinCapacity!=null && iMinCapacity.length()>0) { query+= " and r.capacity>= :minCapacity";	}
+		if (iMaxCapacity!=null && iMaxCapacity.length()>0) { query+= " and r.capacity<= :maxCapacity";	}
 		if (iRoomNumber!=null && iRoomNumber.length()>0) { query+=" and r.roomNumber like (:roomNumber)"; }
  		query += b;
 
 		Query hibQuery = new LocationDAO().getSession().createQuery(query);
 
 		hibQuery.setLong("buildingId", iBuildingId);
-		if (iMinCapacity!=null && iMinCapacity!="") { hibQuery.setInteger("minCapacity", Integer.valueOf(iMinCapacity)); }
-		if (iMaxCapacity!=null && iMaxCapacity!="") { hibQuery.setInteger("maxCapacity", Integer.valueOf(iMaxCapacity)); }
+		if (iMinCapacity!=null && iMinCapacity.length()>0) { hibQuery.setInteger("minCapacity", Integer.valueOf(iMinCapacity)); }
+		if (iMaxCapacity!=null && iMaxCapacity.length()>0) { hibQuery.setInteger("maxCapacity", Integer.valueOf(iMaxCapacity)); }
 		if (iRoomNumber!=null && iRoomNumber.length()>0) { 
 			hibQuery.setString("roomNumber", iRoomNumber.replaceAll("\\*", "%")); 
 		}

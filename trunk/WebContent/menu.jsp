@@ -106,7 +106,7 @@
 				leaf_item('Features','Room Features','roomFeatureSearch.do?default=Exam');
 				leaf_item('Groups','Room Groups','roomGroupSearch.do?default=Exam');
 <%				if (RoomAvailability.getInstance()!=null) { %>
-				leaf_item('Availability','Room A','roomAvailability.do');
+				leaf_item('Availability','Room Availability','roomAvailability.do');
 <%				} %>
 			enditem(); //200
 			leaf_item('Examinations','View/Edit Examinations','examList.do');
@@ -133,7 +133,10 @@
 	menu_item('3','Event Management','Events','','expand');
 		leaf_item('Events','Events','eventList.do');
 		leaf_item('Add Event','Add Event','eventAdd.do');
+		leaf_item('Room Availability', 'Event Room Availability', 'eventGrid.do');
+<%      if (user!=null && user.getRole().equals(Roles.ADMIN_ROLE)) { %>		
 		leaf_item('Sponsoring Organizations','Sponsoring Organizations','sponsoringOrgList.do');
+<% 		} %>
 		enditem(); //3
 <% } %>
 		
