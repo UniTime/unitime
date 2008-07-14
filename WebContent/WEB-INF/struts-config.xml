@@ -137,7 +137,8 @@
       <form-bean name="studentSolverForm" type="org.unitime.timetable.form.StudentSolverForm" />
 	  <form-bean name="studentSolverLogForm" type="org.unitime.timetable.form.StudentSolverLogForm" />
   	  <form-bean name="sponsoringOrgListForm" type="org.unitime.timetable.form.SponsoringOrgListForm" />
-  	  <form-bean name="sponsoringOrgEditForm" type="org.unitime.timetable.form.SponsoringOrgEditForm" />  	  
+  	  <form-bean name="sponsoringOrgEditForm" type="org.unitime.timetable.form.SponsoringOrgEditForm" />
+  	  <form-bean name="eventGridForm" type="org.unitime.timetable.form.EventGridForm"/>
    </form-beans>
 
    <global-exceptions>
@@ -2414,6 +2415,20 @@
     	<forward 
     		name="list"
     		path="/sponsoringOrgList.do"
+    		redirect="true" />
+    </action>
+    
+    <action
+    	path="/eventGrid"
+    	type="org.unitime.timetable.action.EventGridAction"
+    	attribute="eventGridForm"
+    	input="eventGridTile"
+    	name="eventGridForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+    		name="show"
+    		path="eventGridTile"
     		redirect="true" />
     </action>
     
