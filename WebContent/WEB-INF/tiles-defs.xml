@@ -959,4 +959,8 @@
 		<put name="title" type="string" value="Add Sponsoring Organization"/>
   	</definition>
   	
+ 	<definition	name="eventGridTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Event Room Availability"/>
+		<put name="body" value="/user/eventGrid.jsp" />
+  	</definition>
 </tiles-definitions>
