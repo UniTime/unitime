@@ -141,20 +141,18 @@
 			<% } %>
 		</logic:equal>
 		
-		<logic:equal name="<%=frmName%>" property="room" value="true">
-			<% if (admin) { %>
-				<TR>
-					<TD>Type:</TD>
-					<TD width='100%'>
-						<html:select property="type">
-							<html:optionsCollection property="roomTypes" label="label" value="uniqueId"/>
-						</html:select>
-					<TD>
-				</TR>
-			<% } else { %>
-				<html:hidden property="type"/>
-			<% } %>
-		</logic:equal>
+		<% if (admin) { %>
+			<TR>
+				<TD>Type:</TD>
+				<TD width='100%'>
+					<html:select property="type">
+						<html:optionsCollection property="roomTypes" label="label" value="uniqueId"/>
+					</html:select>
+				<TD>
+			</TR>
+		<% } else { %>
+			<html:hidden property="type"/>
+		<% } %>
 
 		<TR>
 			<TD>Capacity:</TD>

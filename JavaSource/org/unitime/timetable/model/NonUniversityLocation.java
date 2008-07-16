@@ -106,7 +106,7 @@ public class NonUniversityLocation extends BaseNonUniversityLocation {
 	}
 	
     public String getRoomTypeLabel() {
-        return "Non University Locations";
+        return getRoomType().getLabel();
     }
 
 }

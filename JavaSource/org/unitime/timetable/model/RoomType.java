@@ -62,6 +62,10 @@ public class RoomType extends BaseRoomType implements Comparable<RoomType> {
 	    return new TreeSet<RoomType>(RoomTypeDAO.getInstance().findAll());
 	}
 
+    public static TreeSet<RoomType> findAll(boolean isRoom) {
+        return new TreeSet<RoomType>(RoomTypeDAO.getInstance().getSession().createCriteria(RoomType.class).add(Restrictions.eq("room", isRoom)).setCacheable(true).list());
+    }
+
     public static RoomType findByReference(String ref) {
         return (RoomType)RoomTypeDAO.getInstance().getSession().createCriteria(RoomType.class).add(Restrictions.eq("reference", ref)).setCacheable(true).uniqueResult();
     }
@@ -79,5 +83,11 @@ public class RoomType extends BaseRoomType implements Comparable<RoomType> {
         if (opt==null) opt = new RoomTypeOption(this, session);
         if (opt.getStatus()==null) opt.setStatus(RoomTypeOption.sStatusNoOptions);
         return opt;
+    }
+    
+    public int countRooms() {
+        return ((Number)RoomTypeDAO.getInstance().getSession().createQuery(
+                "select count(r) from "+(isRoom()?"Room":"NonUniversityLocation")+" r where r.roomType.uniqueId=:roomTypeId"
+        ).setLong("roomTypeId", getUniqueId()).setCacheable(true).uniqueResult()).intValue();
     }
 }

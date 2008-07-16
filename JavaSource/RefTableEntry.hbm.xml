@@ -234,6 +234,13 @@
 		 		type="java.lang.Integer"
 		 		not-null="true"		 		
 		 		/>
+		 		
+		 	<property
+		 		name="room"
+		 		column="IS_ROOM"
+		 		type="java.lang.Boolean"
+		 		not-null="true"		 		
+		 		/>
 		</union-subclass>
 	</class>	
 </hibernate-mapping>

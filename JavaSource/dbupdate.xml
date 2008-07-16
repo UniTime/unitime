@@ -2065,4 +2065,32 @@
   			references %SCHEMA%.sponsoring_organization (uniqueid) on delete set null
   		</sql>
 	</update>
+	<update version="33" date="16-Jul-2008" comment="Room Type">
+		<mysql>alter table %SCHEMA%.room_type add is_room int(1) not null default 1</mysql>
+		<mysql into="ID">select 32767 * next_hi from %SCHEMA%.hibernate_unique_key</mysql>
+		<mysql>
+			insert into %SCHEMA%.room_type(uniqueid, reference, label, ord, is_room) values
+			(%ID%, 'nonUniversity', 'Non-University Locations', 4, 0)
+		</mysql>
+		<mysql>update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1</mysql>
+		<mysql>alter table %SCHEMA%.non_university_location add room_type decimal(20,0)</mysql>
+		<plsql>alter table %SCHEMA%.room_type add is_room number(1) default 1 constraint nn_room_type_room not null</plsql>
+		<plsql>
+			insert into %SCHEMA%.room_type(uniqueid, reference, label, ord, is_room) 
+			values (%SCHEMA%.ref_table_seq.nextval, 'nonUniversity', 'Non-University Locations', 4, 0)
+		</plsql>
+		<plsql>alter table %SCHEMA%.non_university_location add room_type number(20,0)</plsql>
+		<sql>
+			update %SCHEMA%.non_university_location r set r.room_type = 
+			(select t.uniqueid from %SCHEMA%.room_type t where t.reference='nonUniversity')
+		</sql>
+		<sql>
+			alter table %SCHEMA%.non_university_location 
+			add constraint nn_location_type check (room_type is not null)
+		</sql>
+		<sql>
+			alter table %SCHEMA%.non_university_location add constraint fk_location_type 
+			foreign key (room_type)	references %SCHEMA%.room_type (uniqueid) on delete cascade
+		</sql>
+	</update>
 </dbupdate>

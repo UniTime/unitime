@@ -83,6 +83,15 @@
 			</TR>
 			
 			<TR>
+				<TD>Type:</TD>
+				<TD width='100%'>
+					<html:select property="type">
+						<html:optionsCollection property="roomTypes" label="label" value="uniqueId"/>
+					</html:select>
+				<TD>
+			</TR>
+
+			<TR>
 				<TD>Capacity:</TD>
 				<TD>
 					<html:text property="capacity" maxlength="15" size="10"/>

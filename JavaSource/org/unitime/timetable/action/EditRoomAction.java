@@ -147,17 +147,16 @@ public class EditRoomAction extends Action {
             if (location instanceof Room) {
                 Room r = (Room)location;
                 editRoomForm.setName(r.getRoomNumber());
-                editRoomForm.setType(r.getRoomType().getUniqueId());
                 editRoomForm.setBldgName(r.getBuildingAbbv());
                 editRoomForm.setRoom(true);
                 editRoomForm.setExternalId(r.getExternalUniqueId());
             } else {
                 editRoomForm.setName(((NonUniversityLocation)location).getName());
-                editRoomForm.setType(null);
                 editRoomForm.setBldgName("");
                 editRoomForm.setRoom(false);
                 editRoomForm.setExternalId(null);
             }
+            editRoomForm.setType(location.getRoomType().getUniqueId());
             editRoomForm.setCapacity(location.getCapacity().toString());
             if (location.getExamCapacity() != null){
             	editRoomForm.setExamCapacity(location.getExamCapacity().toString());           
@@ -320,8 +319,9 @@ public class EditRoomAction extends Action {
             
             if (location instanceof Room) {
                 ((Room)location).setExternalUniqueId(editRoomForm.getExternalId());
-                ((Room)location).setRoomType(RoomTypeDAO.getInstance().get(editRoomForm.getType()));
             }
+            
+            location.setRoomType(RoomTypeDAO.getInstance().get(editRoomForm.getType()));
 			
 			location.setCoordinateX(editRoomForm.getCoordX()==null || editRoomForm.getCoordX().length()==0 ? new Integer(-1) : Integer.valueOf(editRoomForm.getCoordX()));
 			location.setCoordinateY(editRoomForm.getCoordY()==null || editRoomForm.getCoordY().length()==0 ? new Integer(-1) : Integer.valueOf(editRoomForm.getCoordY()));

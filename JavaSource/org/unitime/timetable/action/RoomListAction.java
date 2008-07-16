@@ -474,16 +474,12 @@ public class RoomListAction extends Action {
 			Hashtable<RoomType, WebTable> tables = new Hashtable();
 			for (RoomType t:roomTypes) {
 			    WebTable.setOrder(httpSession, t.getReference()+".ord", request.getParameter(t.getReference()+"Ord"), 1);
-	            WebTable table = new WebTable(heading1.length, t.getLabel(), heading1, alignment1, sorted1);
+	            WebTable table = (t.isRoom()?new WebTable(heading1.length, t.getLabel(), "roomList.do?"+t.getReference()+"Ord=%%", heading1, alignment1, sorted1):
+	                                         new WebTable(heading2.length, t.getLabel(), "roomList.do?"+t.getReference()+"Ord=%%", heading2, alignment2, sorted2));
 	            table.setRowStyle("white-space:nowrap");
 	            tables.put(t,table);
 			}
 
-			WebTable nonUnivTable = new WebTable(heading2.length, 
-			        "Non-University Locations", "roomList.do?nonOrd=%%",heading2,
-					alignment2, sorted2);
-			nonUnivTable.setRowStyle("white-space:nowrap");
-			
 			boolean timeVertical = RequiredTimeTable.getTimeGridVertical(user);
 			boolean gridAsText = RequiredTimeTable.getTimeGridAsText(user);
 			String timeGridSize = RequiredTimeTable.getTimeGridSize(user); 
@@ -746,7 +742,7 @@ public class RoomListAction extends Action {
 				
 				// build rows
 				if (location instanceof NonUniversityLocation) {
-					nonUnivTable.addLine(
+				    tables.get(location.getRoomType()).addLine(
 					        (editable?"onClick=\"document.location='roomDetail.do?id="+ location.getUniqueId() + "';\"":null),
 							text, 
 							comp);
@@ -764,11 +760,6 @@ public class RoomListAction extends Action {
 			    if (!entry.getValue().getLines().isEmpty()) {
 			        request.setAttribute(entry.getKey().getReference(), entry.getValue().printTable(ord));
 			    }
-			}
-			if (!nonUnivTable.getLines().isEmpty()) {
-				int ord = WebTable.getOrder(httpSession, "nonUniv.ord");
-				if (ord>heading2.length) ord = 0;
-	            request.setAttribute("nonUnivLocation", nonUnivTable.printTable(ord));
 			}
 			
 			request.setAttribute("colspan", ""+colspan);
@@ -1006,10 +997,11 @@ public class RoomListAction extends Action {
             TreeSet<RoomType> roomTypes = new TreeSet<RoomType>(RoomTypeDAO.getInstance().findAll());
             Hashtable<RoomType, PdfWebTable> tables = new Hashtable();
             for (RoomType t:roomTypes) {
-                PdfWebTable table = new PdfWebTable(heading1.length, t.getLabel(), null, heading1, alignment1, sorted1);
+                PdfWebTable table = (t.isRoom()?
+                        new PdfWebTable(heading1.length, t.getLabel(), null, heading1, alignment1, sorted1):
+                        new PdfWebTable(heading2.length, t.getLabel(), null, heading2, alignment2, sorted2));
                 tables.put(t,table);
             }
-			PdfWebTable nonUnivTable = new PdfWebTable(heading2.length, "Non-University Locations", null, heading2, alignment2, sorted2);
 			
 			boolean timeVertical = RequiredTimeTable.getTimeGridVertical(user);
 			boolean gridAsText = RequiredTimeTable.getTimeGridAsText(user);
@@ -1038,12 +1030,7 @@ public class RoomListAction extends Action {
 				Room room = (location instanceof Room ? (Room)location : null);
 				Building bldg = (room==null?null:room.getBuilding());
 				
-				PdfWebTable table = null;
-				if (location instanceof NonUniversityLocation) {
-					table = nonUnivTable;
-				} else {
-				    table = tables.get(room.getRoomType());
-				}
+				PdfWebTable table = tables.get(location.getRoomType());
 				
 				DecimalFormat df5 = new DecimalFormat("####0");
                 String text[] = new String[Math.max(heading1.length,heading2.length)];
@@ -1246,7 +1233,7 @@ public class RoomListAction extends Action {
 				
 				// build rows
                 table.addLine(
-                        (editable?"onClick=\"document.location='roomDetail.do?id="+ room.getUniqueId() + "';\"":null),
+                        (editable?"onClick=\"document.location='roomDetail.do?id="+ location.getUniqueId() + "';\"":null),
                         text, 
                         comp);
 			}
@@ -1274,24 +1261,6 @@ public class RoomListAction extends Action {
 			    }
 			}
 
-			if (!nonUnivTable.getLines().isEmpty()) {
-				PdfWebTable table = nonUnivTable;
-                int ord = WebTable.getOrder(httpSession, "nonUniv.ord");
-                if (ord>heading2.length) ord = 0;
-    			PdfPTable pdfTable = table.printPdfTable(ord);
-    			if (doc==null) {
-    				doc = new Document(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()),30,30,30,30);
-    				PdfWriter iWriter = PdfWriter.getInstance(doc, out);
-    				iWriter.setPageEvent(new PdfEventHandler());
-    				doc.open();
-    			} else {
-    				doc.setPageSize(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()));
-    				doc.newPage();
-    			}
-    			doc.add(new Paragraph(table.getName(), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
-    			doc.add(pdfTable);
-			}
-			
 			if (doc==null) return;
 			
     		doc.close();

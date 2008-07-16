@@ -35,6 +35,7 @@ public abstract class BaseNonUniversityLocation extends org.unitime.timetable.mo
 
 	public static String REF = "NonUniversityLocation";
 	public static String PROP_NAME = "name";
+    public static String PROP_ROOM_TYPE = "roomType";
 
 
 	// constructors
@@ -79,7 +80,8 @@ public abstract class BaseNonUniversityLocation extends org.unitime.timetable.mo
 	// fields
 	private java.lang.String name;
 
-
+	// many to one
+    private org.unitime.timetable.model.RoomType roomType;
 
 
 
@@ -100,6 +102,20 @@ public abstract class BaseNonUniversityLocation extends org.unitime.timetable.mo
 	}
 
 
+    /**
+     * Return the value associated with the column: ROOM_TYPE
+     */
+    public org.unitime.timetable.model.RoomType getRoomType () {
+        return roomType;
+    }
+
+    /**
+     * Set the value related to the column: ROOM_TYPE
+     * @param scheduledRoomType the ROOM_TYPE value
+     */
+    public void setRoomType (org.unitime.timetable.model.RoomType roomType) {
+        this.roomType = roomType;
+    }
 
 
 
