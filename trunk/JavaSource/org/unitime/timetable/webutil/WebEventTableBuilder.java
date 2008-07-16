@@ -212,7 +212,7 @@ public class WebEventTableBuilder {
     
     private TableCell buildSponsoringOrg(Event e) {
     	TableCell cell = this.initCell(true, null, 1, true);
-    	cell.addContent("");
+    	cell.addContent(e.getSponsoringOrganization()==null?"":e.getSponsoringOrganization().getName());
     	return(cell);
     }
 

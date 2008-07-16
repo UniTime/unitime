@@ -21,7 +21,7 @@ public class EventDetailForm extends ActionForm {
 	private String iEventType;
 	private String iMinCapacity;
 	private String iMaxCapacity;
-	private String iSponsoringOrg;
+	private String iSponsoringOrgName;
 	private Long iSelected;
 	private Vector<MeetingBean> iMeetings = new Vector<MeetingBean>();
 	private Vector<NoteBean> iNotes = new Vector<NoteBean>();
@@ -53,7 +53,7 @@ public class EventDetailForm extends ActionForm {
 		iEventName = null;
 		iMinCapacity = null;
 		iMaxCapacity = null;
-		iSponsoringOrg = null;
+		iSponsoringOrgName = null;
 		iMainContact = null;
 		iAdditionalContacts.clear();
 		iMeetings.clear();
@@ -80,8 +80,8 @@ public class EventDetailForm extends ActionForm {
     public String getMaxCapacity() {return iMaxCapacity;}
     public void setMaxCapacity(String maxCapacity) {iMaxCapacity = maxCapacity;}
     
-    public String getSponsoringOrg() {return iSponsoringOrg;}
-    public void setSponsoringOrg(String sponsoringOrg) {iSponsoringOrg = sponsoringOrg;}
+    public String getSponsoringOrgName() {return iSponsoringOrgName;}
+    public void setSponsoringOrgName(String name) {iSponsoringOrgName = name;}
     
 	public String getId() {return iId;}
 	public void setId(String id) {this.iId = id;}

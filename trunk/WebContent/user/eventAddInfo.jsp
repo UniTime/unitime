@@ -83,6 +83,14 @@
 				<bean:write name="eventAddInfoForm" property="eventType"/> 
 			</TD>
 		</TR>
+		<logic:equal name="eventAddInfoForm" property="eventType" value="Special Event">
+		<TR>
+			<TD nowrap> Sponsoring Organization: </TD>
+			<TD>
+				<bean:write name="eventAddInfoForm" property="sponsoringOrgName"/>
+			</TD>
+		</TR>
+		</logic:equal>
 		<TR>
 			<TD nowrap valign="top">Contact:&nbsp;</TD>
 			<td>
@@ -119,7 +127,7 @@
 				<td><font color="gray"><i>Date</i></font></td><td><font color="gray"><i>Time</i></font></td><td><font color="gray"><i>Location</i></font></td>
 			</TR>
 			<logic:iterate name="eventAddInfoForm" property="existingMeetings" id="meeting">
-				<TR>
+				<TR onmouseover="this.style.backgroundColor='rgb(223,231,242)';" onmouseout="this.style.backgroundColor='transparent';">
 					<TD>
 						<bean:write name="meeting" property="date" filter="false"/> 
 					</TD>
@@ -149,6 +157,19 @@
 				<html:text property="eventName" maxlength="100" size="50" /> 
 			</TD>
 		</TR>
+		<logic:equal name="eventAddInfoForm" property="eventType" value="Special Event">
+		<TR>
+			<TD nowrap> Sponsoring Organization: </TD>
+			<TD>
+				<html:select name="eventAddInfoForm" property="sponsoringOrgId"
+					onfocus="setUp();" 
+    				onkeypress="return selectSearch(event, this);" 
+					onkeydown="return checkKey(event, this);">
+					<html:optionsCollection name="eventAddInfoForm" property="sponsoringOrgs" label="name" value="uniqueId"/>
+				</html:select>				
+			</TD>
+		</TR>
+		</logic:equal>		
 		<TR>
   		<TD valign='top'>Main Contact: </TD> 
 			<TD colspan ='2'>
