@@ -50,6 +50,7 @@ import org.unitime.timetable.model.RoomDept;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.NonUniversityLocationDAO;
+import org.unitime.timetable.model.dao.RoomTypeDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LocationPermIdGenerator;
@@ -180,6 +181,7 @@ public class AddNonUnivLocationAction extends Action {
 			nonUniv.setExamEnabled(Exam.sExamTypeFinal,Boolean.FALSE);
 			nonUniv.setExamEnabled(Exam.sExamTypeMidterm,Boolean.FALSE);
 			nonUniv.setExamCapacity(0);
+			nonUniv.setRoomType(RoomTypeDAO.getInstance().get(nonUnivLocationForm.getType()));
 			
 			LocationPermIdGenerator.setPermanentId(nonUniv);
 			

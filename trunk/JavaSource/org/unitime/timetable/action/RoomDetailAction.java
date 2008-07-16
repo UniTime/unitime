@@ -260,21 +260,19 @@ public class RoomDetailAction extends Action {
 		if (location instanceof Room) {
 			Room r = (Room) location;
 			roomDetailForm.setName(r.getLabel());
-			roomDetailForm.setType(r.getRoomType().getUniqueId());
-			roomDetailForm.setTypeName(r.getRoomType().getLabel());
             roomDetailForm.setExternalId(user.isAdmin()?r.getExternalUniqueId():null);
 		} else if (location instanceof NonUniversityLocation) {
 			NonUniversityLocation nonUnivLocation = (NonUniversityLocation) location;
 			roomDetailForm.setName(nonUnivLocation.getName());
-			roomDetailForm.setType(null);
-            roomDetailForm.setExternalId(null);
-            roomDetailForm.setTypeName("Non-University Location");
+			roomDetailForm.setExternalId(null);
 		} else {
 			ActionMessages errors = new ActionMessages();
 			errors.add("roomDetail", 
                     new ActionMessage("errors.lookup.notFound", "Room") );
 			saveErrors(request, errors);
 		}
+		roomDetailForm.setType(location.getRoomType().getUniqueId());
+        roomDetailForm.setTypeName(location.getRoomType().getLabel());
 		
 		roomDetailForm.setOwner(true);
 		roomDetailForm.setControl(null);

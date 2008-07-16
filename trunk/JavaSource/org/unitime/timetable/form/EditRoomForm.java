@@ -286,7 +286,7 @@ public class EditRoomForm extends ActionForm {
 	}
 	
 	public Set<RoomType> getRoomTypes() {
-	    return RoomType.findAll();
+	    return RoomType.findAll(room);
 	}
     
 }
