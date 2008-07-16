@@ -112,8 +112,8 @@ public class EventAddAction extends Action {
 		                switch (rci.getOwnerType()) {
 		                    case ExamOwner.sOwnerTypeClass :
 		                        Class_ clazz = (Class_)rci.getOwnerObject();
-		                        if (clazz.isViewableBy(user))
-		                            onclick = "onClick=\"document.location='classDetail.do?cid="+clazz.getUniqueId()+"';\"";
+		                    //    if (clazz.isViewableBy(user))
+		                    //        onclick = "onClick=\"document.location='classDetail.do?cid="+clazz.getUniqueId()+"';\"";
 		                        name = rci.getLabel();//clazz.getClassLabel();
 		                        type = "Class";
 		                        title = clazz.getSchedulePrintNote();
@@ -121,24 +121,24 @@ public class EventAddAction extends Action {
 		                        break;
 		                    case ExamOwner.sOwnerTypeConfig :
 		                        InstrOfferingConfig config = (InstrOfferingConfig)rci.getOwnerObject();
-		                        if (config.isViewableBy(user))
-		                            onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+config.getInstructionalOffering().getUniqueId()+"';\"";;
+		                     //   if (config.isViewableBy(user))
+		                     //       onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+config.getInstructionalOffering().getUniqueId()+"';\"";;
 		                        name = rci.getLabel();//config.getCourseName()+" ["+config.getName()+"]";
 		                        type = "Configuration";
 		                        title = config.getControllingCourseOffering().getTitle();
 		                        break;
 		                    case ExamOwner.sOwnerTypeOffering :
 		                        InstructionalOffering offering = (InstructionalOffering)rci.getOwnerObject();
-		                        if (offering.isViewableBy(user))
-		                            onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+offering.getUniqueId()+"';\"";;
+		                      //  if (offering.isViewableBy(user))
+		                      //      onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+offering.getUniqueId()+"';\"";;
 		                        name = rci.getLabel();//offering.getCourseName();
 		                        type = "Offering";
 		                        title = offering.getControllingCourseOffering().getTitle();
 		                        break;
 		                    case ExamOwner.sOwnerTypeCourse :
 		                        CourseOffering course = (CourseOffering)rci.getOwnerObject();
-		                        if (course.isViewableBy(user))
-		                            onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+course.getInstructionalOffering().getUniqueId()+"';\"";;
+		                    //    if (course.isViewableBy(user))
+		                    //        onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+course.getInstructionalOffering().getUniqueId()+"';\"";;
 		                        name = rci.getLabel();//course.getCourseName();
 		                        type = "Course";
 		                        title = course.getTitle();

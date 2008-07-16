@@ -169,11 +169,11 @@ public class EventDetailAction extends Action {
 				myForm.setEventType(event.getEventTypeLabel());
 				myForm.setMinCapacity(event.getMinCapacity()==null?"":event.getMinCapacity().toString());
 				myForm.setMaxCapacity(event.getMaxCapacity()==null?"":event.getMaxCapacity().toString());
-				myForm.setSponsoringOrg("N/A yet");
 				myForm.setAdditionalEmails(event.getEmail());
 				if ("Course Event".equals(myForm.getEventType())) {
 					myForm.setAttendanceRequired(((CourseEvent) event).isReqAttendance());
-				}
+				} else
+					myForm.setSponsoringOrgName(event.getSponsoringOrganization()==null?"":event.getSponsoringOrganization().getName());
 				for (Iterator i = event.getNotes().iterator(); i.hasNext();) {
 					EventNote en = (EventNote) i.next();
 					if (en.getTextNote()!= null) {myForm.addNote(en.getTextNote());}
