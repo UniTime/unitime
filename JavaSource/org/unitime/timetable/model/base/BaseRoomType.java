@@ -66,9 +66,13 @@ public abstract class BaseRoomType extends org.unitime.timetable.model.RefTableE
 
 	//fields
 	private Integer ord;
+	private Boolean room;
 	
 	public Integer getOrd() { return ord; }
 	public void setOrd(Integer ord) { this.ord = ord; }
+
+	public Boolean isRoom() { return room; }
+    public void setRoom(Boolean room) { this.room = room; }
 
 	public boolean equals (Object obj) {
 		if (null == obj) return false;

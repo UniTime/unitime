@@ -49,9 +49,6 @@
 							<A class="l7" href="<%="#"+ref%>"><bean:write name="roomType" property="label"/></A>&nbsp;
 						</logic:notEmpty>
 					</logic:iterate>
-					<logic:notEmpty name="nonUnivLocation" scope="request">
-						<A class="l7" href="#nonUnivLocation">Non University Locations</A>&nbsp;
-					</logic:notEmpty>
 				</span>
 			</tt:section-title>
 			<TABLE align="right" cellspacing="0" cellpadding="2" class="FormWithNoPadding">
@@ -168,17 +165,6 @@
 			</TR>
 		</logic:notEmpty>
 	</logic:iterate>
-	<logic:notEmpty name="nonUnivLocation" scope="request">
-		<% empty = false; %>
-		<TR>
-			<TD valign="middle" colspan="<%=colspan%>">
-				&nbsp;<A name="nonUnivLocation"/>
-			</TD>
-		<TR>
-		<TR>
-			<bean:write name="nonUnivLocation" scope="request" filter="false"/>
-		</TR>
-	</logic:notEmpty>
 
 <!-- Buttons -->
 <% if (!empty) {%>
@@ -191,15 +177,14 @@
 		<TD valign="middle" colspan="<%=colspan%>">
 			<tt:section-header>
 			<tt:section-title>
+				<span style='font-weight:normal;'>
 				<logic:iterate name="<%=frmName%>" property="roomTypes" id="roomType">
 					<bean:define name="roomType" property="reference" id="ref"/>
 					<logic:notEmpty name="<%=(String)ref%>" scope="request">
 						<A class="l7" href="<%="#"+ref%>"><bean:write name="roomType" property="label"/></A>&nbsp;
 					</logic:notEmpty>
 				</logic:iterate>
-				<logic:notEmpty name="nonUnivLocation" scope="request">
-					<A class="l7" href="#nonUnivLocation">Non University Locations</A>&nbsp;
-				</logic:notEmpty>
+				</span>
 			</tt:section-title>
 			</tt:section-header>
 		</TD>

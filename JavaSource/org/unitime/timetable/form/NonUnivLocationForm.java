@@ -32,6 +32,7 @@ import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Roles;
+import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimetableManager;
 
@@ -53,6 +54,7 @@ public class NonUnivLocationForm extends ActionForm {
 	private boolean ignoreRoomCheck;
 	private String deptCode;
 	private int deptSize;
+    private Long type;
 	
 	// --------------------------------------------------------- Methods
 
@@ -197,5 +199,16 @@ public class NonUnivLocationForm extends ActionForm {
 		}
 		return dept.getName();		
 	}
+	
+    public Long getType() {
+        return type;
+    }
+    public void setType(Long type) {
+        this.type = type;
+    }
+    public Set<RoomType> getRoomTypes() {
+        return RoomType.findAll(false);
+    }
+
 }
 
