@@ -2412,6 +2412,10 @@
     		name="show"
     		path="sponsoringOrgEditTile"
     		redirect="true" />
+    	<forward
+    		name="add"
+    		path="sponsoringOrgAddTile"
+    		redirect="true" />
     	<forward 
     		name="list"
     		path="/sponsoringOrgList.do"
