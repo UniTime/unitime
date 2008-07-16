@@ -176,13 +176,17 @@
 		document.getElementById('b'+tableId+'.'+row).style.backgroundColor='rgb(223,231,242)';
 		source.style.cursor='hand';
 		source.style.cursor='pointer';
-		if (lastTableId==tableId && lastRow==row) {
+		if (lastTableId==tableId) {
 			var c0 = (lastCol<col?lastCol:col);
 			var c1 = (lastCol<col?col:lastCol);
+			var r0 = (lastRow<row?lastRow:row);
+			var r1 = (lastRow<row?row:lastRow);
 			for (var c=c0;c<=c1;c++) {
-				var d = document.getElementById('d'+tableId+'.'+row+'.'+c);
-				if (c!=col && d!=null) {
-					d.style.backgroundColor = 'rgb(223,231,242)';
+				for (var r=r0;r<=r1;r++) {
+					var d = document.getElementById('d'+tableId+'.'+r+'.'+c);
+					if ((c!=col || r!=row) && d!=null) {
+						d.style.backgroundColor = 'rgb(223,231,242)';
+					}
 				}
 			}
 		}
@@ -192,13 +196,17 @@
 		source.style.backgroundColor=(ch.checked?'rgb(168,187,225)':'transparent');
 		document.getElementById('a'+tableId+'.'+col).style.backgroundColor='transparent';
 		document.getElementById('b'+tableId+'.'+row).style.backgroundColor='transparent';
-		if (lastTableId==tableId && lastRow==row) {
+		if (lastTableId==tableId) {
 			var c0 = (lastCol<col?lastCol:col);
 			var c1 = (lastCol<col?col:lastCol);
+			var r0 = (lastRow<row?lastRow:row);
+			var r1 = (lastRow<row?row:lastRow);
 			for (var c=c0;c<=c1;c++) {
-				var d = document.getElementById('d'+tableId+'.'+row+'.'+c);
-				if (c!=col && d!=null) {
-					d.style.backgroundColor = (document.getElementById('c'+tableId+'.'+row+'.'+c).checked?'rgb(168,187,225)':'transparent');
+				for (var r=r0;r<=r1;r++) {
+					var d = document.getElementById('d'+tableId+'.'+r+'.'+c);
+					if ((c!=col || r!=row) && d!=null) {
+						d.style.backgroundColor = (document.getElementById('c'+tableId+'.'+r+'.'+c).checked?'rgb(168,187,225)':'transparent');
+					}
 				}
 			}
 		}
@@ -212,16 +220,20 @@
 	}
 	
 	function avUp(source, event, tableId, row, col) {
-		if (lastTableId==tableId && lastRow==row && col!=lastCol) {
+		if (lastTableId==tableId && (lastRow!=row || col!=lastCol)) {
 			var c0 = (lastCol<col?lastCol:col);
 			var c1 = (lastCol<col?col:lastCol);
+			var r0 = (lastRow<row?lastRow:row);
+			var r1 = (lastRow<row?row:lastRow);
 			for (var c=c0;c<=c1;c++) {
-				var ch = document.getElementById('c'+tableId+'.'+row+'.'+c);
-				if (ch!=null) {
-					ch.checked = lastCheck;//!ch.checked;
-					if (col!=c) {
-						var d = document.getElementById('d'+tableId+'.'+row+'.'+c);
-						d.style.backgroundColor = (ch.checked?'rgb(168,187,225)':'transparent');
+				for (var r=r0;r<=r1;r++) {
+					var ch = document.getElementById('c'+tableId+'.'+r+'.'+c);
+					if (ch!=null) {
+						ch.checked = lastCheck;//!ch.checked;
+						if (c!=col || r!=row) {
+							var d = document.getElementById('d'+tableId+'.'+r+'.'+c);
+							d.style.backgroundColor = (ch.checked?'rgb(168,187,225)':'transparent');
+						}
 					}
 				}
 			}
