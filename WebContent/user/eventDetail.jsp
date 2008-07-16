@@ -80,14 +80,14 @@ TO DO:
 
  			</TD>
 		</TR>
+		<logic:equal name="eventDetailForm" property="eventType" value="Special Event">
 		<TR>
 			<TD nowrap>Sponsoring Organization:&nbsp;</TD>
 			<TD width='100%'>
-				<font color="gray">
-				<bean:write name="eventDetailForm" property="sponsoringOrg"/>
-				</font>
+				<bean:write name="eventDetailForm" property="sponsoringOrgName"/>
 			</TD>
 		</TR>
+		</logic:equal>
 		<TR>
 			<TD nowrap valign="top">Additional Information:&nbsp;</TD>
 			<td>
@@ -107,7 +107,9 @@ TO DO:
 				<td>
 				<Table width="100%" border="0" cellspacing="0" cellpadding="1">
 					<tr align="left">
-						<td><i>Name</i></td><td><i>E-mail</i></td><td><i>Phone</i></td>
+						<td><font color="gray"><i>Name</i></font></td>
+						<td><font color="gray"><i>E-mail</i></font></td>
+						<td><font color="gray"><i>Phone</i></font></td>
 					</tr>
 					<logic:notEmpty name="eventDetailForm" property="mainContact">
 					<bean:define name="eventDetailForm" property="mainContact" id="mc"/>
@@ -175,12 +177,12 @@ TO DO:
 		<TR><TD colspan='2'>
 		<TABLE width="100%" border="0" cellspacing="0" cellpadding="1">
 			<TR align="left">
-				<th><font size = -1 >Date</font></th><th><font size = -1 >Time</font></th><th><font size = -1 >Location</font></th><th><font size = -1 >Approved</font></th>
+				<td><font color="gray"><i>Date</i></font></td><td><font color="gray"><i>Time</i></font></td><td><font color="gray"><i>Location</i></font></td><td><font color="gray"><i>Approved</i></font></td>
 			</TR>
 			<html:hidden property="selected"/>
 			<logic:iterate name="eventDetailForm" property="meetings" id="meeting">
 				<bean:define name="meeting" property="uniqueId" id="meetingId"/>
-				<TR onmouseover="style.backgroundColor='rgb(200,200,200)';" onmouseout="style.backgroundColor='transparent';">
+				<TR onmouseover="style.backgroundColor='rgb(223,231,242)';" onmouseout="style.backgroundColor='transparent';">
 					<TD>
 						<bean:write name="meeting" property="date" filter="false"/> 
 					</TD>

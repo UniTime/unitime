@@ -39,6 +39,7 @@ import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.RelatedCourseInfo;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.SpecialEvent;
+import org.unitime.timetable.model.SponsoringOrganization;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
@@ -48,6 +49,7 @@ import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
+import org.unitime.timetable.model.dao.SponsoringOrganizationDAO;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DynamicList;
@@ -77,7 +79,9 @@ public class EventAddInfoForm extends ActionForm {
 	private List iItype;
 	private List iClassNumber;
 	private boolean iAttendanceRequired;
+	private Long iSponsoringOrgId;
 	//if adding meetings to an existing event
+	private String iSponsoringOrgName;
 	private Long iEventId; 
 	private boolean iIsAddMeetings; 
 	private Event iEvent;
@@ -99,11 +103,11 @@ public class EventAddInfoForm extends ActionForm {
 			errors.add("mcLastName", new ActionMessage("errors.generic", "The contact's last name is mandatory."));
 		}
 
-		if (iAdditionalEmails.length()>999) {
+		if (iAdditionalEmails!=null && iAdditionalEmails.length()>999) {
 			errors.add("emails", new ActionMessage("errors.generic", "Additional e-mails are too long. Please, limit the field to no more than 1000 characters."));
 		}
 		
-		if (iAdditionalInfo.length()>999) {
+		if (iAdditionalInfo!=null && iAdditionalInfo.length()>999) {
 			errors.add("note", new ActionMessage("errors.generic", "Additional information is too long. Please, limit it to no more than 1000 characters."));
 		}
 		
@@ -126,6 +130,8 @@ public class EventAddInfoForm extends ActionForm {
 		iMainContactFirstName = null;
 		iMainContactLastName = null;
 		iEventType = null;
+		iSponsoringOrgId = null;
+		iSponsoringOrgName = null;
         iSubjectArea = DynamicList.getInstance(new ArrayList(), idfactory);
         iCourseNbr = DynamicList.getInstance(new ArrayList(), idfactory);
         iItype = DynamicList.getInstance(new ArrayList(), idfactory);
@@ -168,14 +174,16 @@ public class EventAddInfoForm extends ActionForm {
 			iMainContactLastName = iEvent.getMainContact().getLastName();
 			iMainContactEmail = iEvent.getMainContact().getEmailAddress();
 			iMainContactPhone = iEvent.getMainContact().getPhone();
+			iAdditionalEmails = iEvent.getEmail();
+			if ("Special Event".equals(iEventType)) iSponsoringOrgName = iEvent.getSponsoringOrganization().getName();
 			loadExistingMeetings();
-		} else if (iEventName==null) {
+		}/* else if (iEventName==null) {
 			if (tm!=null) {
 					iMainContactFirstName = (tm.getFirstName()==null?"":tm.getFirstName());
 					iMainContactLastName = (tm.getLastName()==null?"":tm.getLastName());
 					iMainContactEmail = (tm.getEmailAddress()==null?"":tm.getEmailAddress());
 			}
-		}
+		}*/
 		if ("Course Event".equals(iEventType) && iIsAddMeetings) {
             CourseEvent courseEvent = new CourseEventDAO().get(iEventId);;
             if (!courseEvent.getRelatedCourses().isEmpty()) {
@@ -186,8 +194,8 @@ public class EventAddInfoForm extends ActionForm {
 	                switch (rci.getOwnerType()) {
 	                    case ExamOwner.sOwnerTypeClass :
 	                        Class_ clazz = (Class_)rci.getOwnerObject();
-	                        if (clazz.isViewableBy(user))
-	                            onclick = "onClick=\"document.location='classDetail.do?cid="+clazz.getUniqueId()+"';\"";
+	                        //if (clazz.isViewableBy(user))
+	                        //    onclick = "onClick=\"document.location='classDetail.do?cid="+clazz.getUniqueId()+"';\"";
 	                        name = rci.getLabel();//clazz.getClassLabel();
 	                        type = "Class";
 	                        title = clazz.getSchedulePrintNote();
@@ -195,24 +203,24 @@ public class EventAddInfoForm extends ActionForm {
 	                        break;
 	                    case ExamOwner.sOwnerTypeConfig :
 	                        InstrOfferingConfig config = (InstrOfferingConfig)rci.getOwnerObject();
-	                        if (config.isViewableBy(user))
-	                            onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+config.getInstructionalOffering().getUniqueId()+"';\"";;
+	                        //if (config.isViewableBy(user))
+	                        //    onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+config.getInstructionalOffering().getUniqueId()+"';\"";;
 	                        name = rci.getLabel();//config.getCourseName()+" ["+config.getName()+"]";
 	                        type = "Configuration";
 	                        title = config.getControllingCourseOffering().getTitle();
 	                        break;
 	                    case ExamOwner.sOwnerTypeOffering :
 	                        InstructionalOffering offering = (InstructionalOffering)rci.getOwnerObject();
-	                        if (offering.isViewableBy(user))
-	                            onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+offering.getUniqueId()+"';\"";;
+	                        //if (offering.isViewableBy(user))
+	                        //    onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+offering.getUniqueId()+"';\"";;
 	                        name = rci.getLabel();//offering.getCourseName();
 	                        type = "Offering";
 	                        title = offering.getControllingCourseOffering().getTitle();
 	                        break;
 	                    case ExamOwner.sOwnerTypeCourse :
 	                        CourseOffering course = (CourseOffering)rci.getOwnerObject();
-	                        if (course.isViewableBy(user))
-	                            onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+course.getInstructionalOffering().getUniqueId()+"';\"";;
+	                        //if (course.isViewableBy(user))
+	                        //    onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+course.getInstructionalOffering().getUniqueId()+"';\"";;
 	                        name = rci.getLabel();//course.getCourseName();
 	                        type = "Course";
 	                        title = course.getTitle();
@@ -268,6 +276,9 @@ public class EventAddInfoForm extends ActionForm {
 					setRelatedCourseInfos((CourseEvent)event);
 				} else {
 					event = new SpecialEvent();
+					System.out.println("Sponsoring org id = "+iSponsoringOrgId);
+					SponsoringOrganization spor = SponsoringOrganizationDAO.getInstance().get(iSponsoringOrgId);
+					event.setSponsoringOrganization(spor);
 				}
 				event.setEventName(iEventName);
 				event.setMainContact(mainContact);
@@ -395,6 +406,15 @@ public class EventAddInfoForm extends ActionForm {
 
 	public String getEventName() {return iEventName;}
 	public void setEventName(String name) {iEventName = name;}
+	
+	public List getSponsoringOrgs() {
+		return SponsoringOrganization.findAll();
+	}
+	public Long getSponsoringOrgId() {return iSponsoringOrgId;}
+	public void setSponsoringOrgId(Long id) {iSponsoringOrgId = id;}
+	
+	public String getSponsoringOrgName() {return iSponsoringOrgName;}
+	public void setSponsoringOrgName(String name) {iSponsoringOrgName = name;}
 	
 	public ContactBean getMainContact() {return iMainContact;}
 	public void setMainContact (ContactBean contact) {iMainContact = contact;}	

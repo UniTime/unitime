@@ -153,7 +153,7 @@ public class EventAddForm extends PreferencesForm {
 		}
 
 		if (iBuildingId==null || iBuildingId == -1) {
-			errors.add("building", new ActionMessage("errors.generic", "No building has been selected."));
+			errors.add("building", new ActionMessage("errors.generic", "No building is selected."));
 		} else if (getPossibleLocations().isEmpty()) {
 			errors.add("noLocation", new ActionMessage("errors.generic", "There is no location matching your criteria."));
 		}
