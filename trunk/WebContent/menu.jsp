@@ -134,9 +134,6 @@
 		leaf_item('Events','Events','eventList.do');
 		leaf_item('Add Event','Add Event','eventAdd.do');
 		leaf_item('Room Availability', 'Event Room Availability', 'eventGrid.do');
-<%      if (user!=null && user.getRole().equals(Roles.ADMIN_ROLE)) { %>		
-		leaf_item('Sponsoring Organizations','Sponsoring Organizations','sponsoringOrgList.do');
-<% 		} %>
 		enditem(); //3
 <% } %>
 		
@@ -165,11 +162,9 @@
 				menu_item('511','Time Patterns','Manage Time Patterns','timePatternEdit.do','expand');
 					leaf_item('Exact Time','Exact Time Pattern','exactTimeEdit.do');
 				enditem(); //511
-				leaf_item('Instructional Types','Manage Instructional Types','itypeDescList.do');
 				<%--
 				leaf_item('Preference Levels','Preference Levels','preferenceLevelList.do');
 				--%>
-				leaf_item('Status Types','Manage Status Types','deptStatusTypeEdit.do');
 				leaf_item('Examination Periods','Examination Periods','examPeriodEdit.do');
 				leaf_item('Data Exchange','Data Import &amp; Export','dataImport.do');
 				leaf_item('Roll Forward Session','Roll Forward Session','rollForwardSession.do');
@@ -184,6 +179,13 @@
 				leaf_item('Distribution Types','Manage Distribution Types','distributionTypeList.do');
 				// leaf_item('Definitions', 'Manage Solution Info Definitions','solverInfoDef.do');
 			enditem(); //52
+			
+			menu_item('56','Other','Other (Academic Session Independent) Management','','expand');
+				leaf_item('Instructional Types','Manage Instructional Types','itypeDescList.do');
+				leaf_item('Status Types','Manage Status Types','deptStatusTypeEdit.do');
+				leaf_item('Room Types', 'Manage Room Types','roomTypeEdit.do');
+				leaf_item('Sponsoring Organizations','Sponsoring Organizations','sponsoringOrgList.do');
+			enditem(); //56
 
 			<tt:hasProperty name="tmtbl.menu.admin.extra">
 				menu_item('53','Custom','Custom Menus','','expand');
