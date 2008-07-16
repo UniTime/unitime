@@ -139,6 +139,7 @@
   	  <form-bean name="sponsoringOrgListForm" type="org.unitime.timetable.form.SponsoringOrgListForm" />
   	  <form-bean name="sponsoringOrgEditForm" type="org.unitime.timetable.form.SponsoringOrgEditForm" />
   	  <form-bean name="eventGridForm" type="org.unitime.timetable.form.EventGridForm"/>
+      <form-bean name="roomTypeEditForm" type="org.unitime.timetable.form.RoomTypeEditForm" />
    </form-beans>
 
    <global-exceptions>
@@ -2436,6 +2437,19 @@
     		redirect="true" />
     </action>
     
+    <action
+       path="/roomTypeEdit"
+       type="org.unitime.timetable.action.RoomTypeEditAction"
+       attribute="roomTypeEditForm"
+       input="roomTypeEditTile"
+       name="roomTypeEditForm"
+       scope="request"
+       validate="false" >
+       <forward name="list" path="roomTypeListTile" />
+       <forward name="add" path="roomTypeAddTile" />
+       <forward name="edit" path="roomTypeEditTile" />
+    </action>
+
     </action-mappings>
 
 	<!-- Struts Layout Controller -->
