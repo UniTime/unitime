@@ -103,18 +103,20 @@ public class AssignedExamsAction extends Action {
         if (exams==null || exams.isEmpty()) return null;
         String nl = (html?"<br>":"\n");
 		PdfWebTable table =
-            new PdfWebTable( 10,
+            new PdfWebTable( 11,
                     "Assigned Examinations", "assignedExams.do?ord=%%",
-                    new String[] {(form.getShowSections()?"Classes / Courses":"Examination"), "Period", "Room", "Seating"+nl+"Type", "Size", "Instructor", "Violated"+nl+"Distributions", "Direct", ">2 A Day", "Back-To-Back"},
-       				new String[] {"left", "left", "left", "center", "right", "left", "left", "right", "right", "right"},
-       				new boolean[] {true, true, true, true, false, true, true, false, false, false} );
+                    new String[] {(form.getShowSections()?"Classes / Courses":"Examination"), "Period", "Room", "Seating"+nl+"Type", "Size", "Instructor", "Violated"+nl+"Distributions", "Direct", "Student N/A", ">2 A Day", "Back-To-Back"},
+       				new String[] {"left", "left", "left", "center", "right", "left", "left", "right", "right", "right", "right"},
+       				new boolean[] {true, true, true, true, false, true, true, false, false, false, false} );
 		table.setRowStyle("white-space:nowrap");
 		
         try {
         	for (ExamAssignmentInfo exam : exams) {
 
         	    int dc = exam.getNrDirectConflicts();
+                int edc = exam.getNrNotAvailableDirectConflicts(); dc -= edc;
                 String dcStr = (dc<=0?"":html?"<font color='"+PreferenceLevel.prolog2color("P")+"'>"+dc+"</font>":String.valueOf(dc));
+                String edcStr = (edc<=0?"":html?"<font color='"+PreferenceLevel.prolog2color("P")+"'>"+edc+"</font>":String.valueOf(edc));
                 int m2d = exam.getNrMoreThanTwoConflicts();
                 String m2dStr = (m2d<=0?"":html?"<font color='"+PreferenceLevel.prolog2color("2")+"'>"+m2d+"</font>":String.valueOf(m2d));
                 int btb = exam.getNrBackToBackConflicts();
@@ -133,6 +135,7 @@ public class AssignedExamsAction extends Action {
                             exam.getInstructorName(", "),
                             (html?exam.getDistributionConflictsHtml(", "):exam.getDistributionConflictsList(", ")),
                             dcStr,
+                            edcStr,
                             m2dStr,
                             btbStr
                         },
@@ -145,6 +148,7 @@ public class AssignedExamsAction extends Action {
                             exam.getInstructorName(":"),
                             exam.getDistributionConflictsList(", "),
                             dc,
+                            edc,
                             m2d,
                             btb
                         },
