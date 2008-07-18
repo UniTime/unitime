@@ -719,8 +719,8 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 if (dc.getOtherExam()==null) continue;
                 ExamConflict conf = new ExamConflict();
                 conf.setConflictType(ExamConflict.sConflictTypeDirect);
-                conf.setStudents(getInstructors(hibSession, dc.getStudents()));
-                conf.setNrStudents(conf.getStudents().size());
+                conf.setInstructors(getInstructors(hibSession, dc.getStudents()));
+                conf.setNrInstructors(conf.getInstructors().size());
                 hibSession.save(conf);
                 getConflicts().add(conf);
                 Exam other = dc.getOtherExam().getExam(hibSession);
@@ -732,8 +732,8 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 ExamConflict conf = new ExamConflict();
                 conf.setConflictType(btb.isDistance()?ExamConflict.sConflictTypeBackToBackDist:ExamConflict.sConflictTypeBackToBack);
                 conf.setDistance(btb.getDistance());
-                conf.setStudents(getInstructors(hibSession, btb.getStudents()));
-                conf.setNrStudents(conf.getStudents().size());
+                conf.setInstructors(getInstructors(hibSession, btb.getStudents()));
+                conf.setNrInstructors(conf.getInstructors().size());
                 hibSession.save(conf);
                 getConflicts().add(conf);
                 Exam other = btb.getOtherExam().getExam(hibSession);
@@ -744,8 +744,8 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 ExamAssignmentInfo.MoreThanTwoADayConflict m2d = (ExamAssignmentInfo.MoreThanTwoADayConflict)i.next();
                 ExamConflict conf = new ExamConflict();
                 conf.setConflictType(ExamConflict.sConflictTypeMoreThanTwoADay);
-                conf.setStudents(getInstructors(hibSession, m2d.getStudents()));
-                conf.setNrStudents(conf.getStudents().size());
+                conf.setInstructors(getInstructors(hibSession, m2d.getStudents()));
+                conf.setNrInstructors(conf.getInstructors().size());
                 hibSession.save(conf);
                 getConflicts().add(conf);
                 for (Iterator j=m2d.getOtherExams().iterator();j.hasNext();) {
