@@ -1132,7 +1132,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             return getOtherEvent()!=null && (getOtherEvent() instanceof ClassEvent);
         }
         public Class_ getOtherClass() {
-            return (getOtherEvent()==null || ((getOtherEvent() instanceof ClassEvent))?null:((ClassEvent)getOtherEvent()).getClazz());
+            return (getOtherEvent()==null || !(getOtherEvent() instanceof ClassEvent)?null:((ClassEvent)getOtherEvent()).getClazz());
         }
         public int compareTo(DirectConflict c) {
             int cmp = -Double.compare(getNrStudents(), c.getNrStudents());
