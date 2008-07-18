@@ -185,6 +185,7 @@
 				leaf_item('Status Types','Manage Status Types','deptStatusTypeEdit.do');
 				leaf_item('Room Types', 'Manage Room Types','roomTypeEdit.do');
 				leaf_item('Sponsoring Organizations','Sponsoring Organizations','sponsoringOrgList.do');
+				leaf_item('Standard Notes', 'Standard Event Notes', 'eventStandardNotes.do');
 			enditem(); //56
 
 			<tt:hasProperty name="tmtbl.menu.admin.extra">
