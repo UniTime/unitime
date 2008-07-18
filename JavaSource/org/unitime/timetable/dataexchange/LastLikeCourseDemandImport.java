@@ -63,8 +63,8 @@ public class LastLikeCourseDemandImport extends BaseImport {
 
 			beginTransaction();
             
-            getHibSession().createQuery("delete LastLikeCourseDemand ll where ll.student.uniqueId in " +
-                    "(select s.uniqueId from Student s where s.session.uniqueId=:sessionId)").
+            getHibSession().createQuery("delete LastLikeCourseDemand ll where ll.subjectArea.uniqueId in " +
+                    "(select s.uniqueId from SubjectArea s where s.session.uniqueId=:sessionId)").
                     setLong("sessionId", session.getUniqueId()).executeUpdate();
             
             flush(true);
