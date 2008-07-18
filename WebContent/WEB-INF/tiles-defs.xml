@@ -976,4 +976,19 @@
    	<definition	name="roomTypeEditTile" extends="roomTypeListTile">
 		<put name="title" type="string" value="Edit Room Type"/>
   	</definition>
+  	
+ 	<definition	name="eventStandardNotesTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Standard Event Notes"/>
+		<put name="body" value="/admin/eventStandardNotes.jsp" />
+  	</definition>
+
+ 	<definition	name="eventStandardNoteEditTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Edit Standard Event Note"/>
+		<put name="body" value="/admin/eventStandardNoteEdit.jsp" />
+  	</definition>
+
+ 	<definition	name="eventStandardNoteAddTile" extends="eventStandardNoteEditTile">
+		<put name="title" type="string" value="Add Standard Event Note"/>
+  	</definition>
+   	
 </tiles-definitions>
