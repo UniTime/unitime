@@ -33,11 +33,14 @@ import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
+import org.unitime.timetable.model.dao.CourseRequestDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.model.dao.ExamPeriodDAO;
+import org.unitime.timetable.model.dao.LastLikeCourseDemandDAO;
 import org.unitime.timetable.model.dao.RoomFeatureDAO;
 import org.unitime.timetable.model.dao.RoomGroupDAO;
+import org.unitime.timetable.model.dao.StudentClassEnrollmentDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
 
 
@@ -90,6 +93,8 @@ public class RollForwardSessionForm extends ActionForm {
 	private Long sessionToRollExamConfigurationForwardFrom;
 	private Boolean rollForwardMidtermExams;
 	private Boolean rollForwardFinalExams;
+	private Boolean rollForwardStudents;
+	private Integer rollForwardStudentsMode;
 
 	/** 
 	 * Method validate
@@ -189,6 +194,19 @@ public class RollForwardSessionForm extends ActionForm {
 			ExamDAO epDao = new ExamDAO();
 			validateRollForwardSessionHasNoDataOfType(errors, s, "Final Exams", epDao.getQuery("from Exam e where e.session.uniqueId = " + s.getUniqueId().toString() +" and e.examType = " + Exam.sExamTypeFinal).list());			
 		}
+		
+		if (getRollForwardStudents().booleanValue()) {
+		    if (getRollForwardStudentsMode().intValue()==0) {
+		        validateRollForwardSessionHasNoDataOfType(errors, s, "Last-like Student Course Requests", 
+		                LastLikeCourseDemandDAO.getInstance().getQuery("from LastLikeCourseDemand d where d.subjectArea.session.uniqueId = " + s.getUniqueId().toString()).list());
+		    } else if (getRollForwardStudentsMode().intValue()==1) {
+		        validateRollForwardSessionHasNoDataOfType(errors, s, "Student Class Enrollments", 
+		                StudentClassEnrollmentDAO.getInstance().getQuery("from StudentClassEnrollment d where d.courseOffering.subjectArea.session.uniqueId = " + s.getUniqueId().toString()).list());
+		    } else {
+                validateRollForwardSessionHasNoDataOfType(errors, s, "Course Requests", 
+                        CourseRequestDAO.getInstance().getQuery("from CourseRequest r where r.courseOffering.subjectArea.session.uniqueId = " + s.getUniqueId().toString()).list());
+		    }
+		}
 
 	}
 	
@@ -231,6 +249,8 @@ public class RollForwardSessionForm extends ActionForm {
 		sessionToRollExamConfigurationForwardFrom = null;
 		rollForwardMidtermExams = new Boolean(false);
 		rollForwardFinalExams = new Boolean(false);
+		rollForwardStudents = new Boolean(false);
+		rollForwardStudentsMode = new Integer(0);
 	}
 
 	/** 
@@ -563,6 +583,20 @@ public class RollForwardSessionForm extends ActionForm {
 			Long sessionToRollExamConfigurationForwardFrom) {
 		this.sessionToRollExamConfigurationForwardFrom = sessionToRollExamConfigurationForwardFrom;
 	}
-
-
+	
+	public Boolean getRollForwardStudents() {
+	    return rollForwardStudents;
+	}
+	
+	public void setRollForwardStudents(Boolean rollForwardStudents) {
+	    this.rollForwardStudents = rollForwardStudents;
+	}
+	
+    public Integer getRollForwardStudentsMode() {
+        return rollForwardStudentsMode;
+    }
+    
+    public void setRollForwardStudentsMode(Integer rollForwardStudentsMode) {
+        this.rollForwardStudentsMode = rollForwardStudentsMode;
+    }
 }

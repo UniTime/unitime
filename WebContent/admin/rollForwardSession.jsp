@@ -160,11 +160,20 @@
 			</td>			
 		</tr>
 		<tr>
-			<td valign="top" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardMidtermExams"/> Roll Midterm Exams Forward From Session
+			<td valign="top" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardMidtermExams"/> Roll Midterm Exams Forward
 			</td>	
 		</tr>
 		<tr>
-			<td valign="top" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardFinalExams"/> Roll Final Exams Forward From Session
+			<td valign="top" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardFinalExams"/> Roll Final Exams Forward
+			</td>		
+		</tr>
+		<tr>
+			<td valign="top" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardStudents"/> Import Last-Like Course Demands
+				<html:select property="rollForwardStudentsMode">
+					<html:option value="0">Copy Last-like Course Demands From Previous Session</html:option>
+					<html:option value="1">Import Last-like Course Demands From Student Class Enrollments Of Previous Session</html:option>
+					<html:option value="2">Import Last-like Course Demands From Course Requests Of Previous Session</html:option>
+				</html:select>
 			</td>		
 		</tr>
 		<tr><td>&nbsp;<br>&nbsp;<br></td></tr>

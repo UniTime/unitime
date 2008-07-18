@@ -54,6 +54,7 @@ import org.unitime.timetable.model.ExternalRoomFeature;
 import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.LastLikeCourseDemand;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.NonUniversityLocation;
 import org.unitime.timetable.model.PreferenceGroup;
@@ -68,6 +69,7 @@ import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SolverGroup;
+import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePref;
@@ -87,6 +89,7 @@ import org.unitime.timetable.model.dao.ExternalRoomDepartmentDAO;
 import org.unitime.timetable.model.dao.ExternalRoomFeatureDAO;
 import org.unitime.timetable.model.dao.GlobalRoomFeatureDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
+import org.unitime.timetable.model.dao.LastLikeCourseDemandDAO;
 import org.unitime.timetable.model.dao.NonUniversityLocationDAO;
 import org.unitime.timetable.model.dao.RoomDAO;
 import org.unitime.timetable.model.dao.RoomDeptDAO;
@@ -1786,197 +1789,58 @@ public class SessionRollForward {
 		}
 
 	}
-	
-	public void cloneCourseToCourses(RollForwardSessionForm rollForwardSessionForm) {
-		Session session = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
 
-//		//set 1 - "VCS 565D"
-//		String[] courses = {
-//				"CPB 584 ",
-//				"CPB 585 ",
-//				"CPB 586 ",
-//				"CPB 586Y",
-//				"CPB 586Z",
-//				"CPB 587 ",
-//				"CPB 588 ",
-//				"CPB 589 ",
-//				"CPB 589Y",
-//				"V M 510 ",
-//				"V M 578 ",
-//				"VCS 560 ",
-//				"VCS 561 ",
-//				"VCS 562 ",
-//				"VCS 563 ",
-//				"VCS 563Y",
-//				"VCS 565 ",
-//				"VCS 565E",
-//				"VCS 565F",
-//				"VCS 565G",
-//				"VCS 565M",
-//				"VCS 565N",
-//				"VCS 566 ",
-//				"VCS 567 ",
-//				"VCS 567A",
-//				"VCS 567Y",
-//				"VCS 568 ",
-//				"VCS 571 ",
-//				"VCS 571D",
-//				"VCS 571M",
-//				"VCS 571N",
-//				"VCS 571O",
-//				"VCS 571P",
-//				"VCS 571R",
-//				"VCS 571S",
-//				"VCS 571V",
-//				"VCS 571W",
-//				"VCS 571Y",
-//				"VCS 571Z",
-//				"VCS 572Y",
-//				"VCS 575 ",
-//				"VCS 575D",
-//				"VCS 575Y",
-//				"VCS 575Z",
-//				"VCS 576Y",
-//				"VCS 576Z",
-//				"VCS 577Y",
-//				"VCS 577Z",
-//				"VCS 578Y",
-//				"VCS 578Z",
-//				"VCS 579V",
-//				"VCS 579W",
-//				"VCS 579Y",
-//				"VCS 579Z",
-//				"VCS 580Y",
-//				"VCS 580Z",
-//				"VCS 582 ",
-//				"VCS 583 ",
-//				"VCS 585 ",
-//				"VCS 585E",
-//				"VCS 585F",
-//				"VCS 588Y",
-//				"VCS 591 ",
-//				"VCS 591E",
-//				"VCS 591F",
-//				"VCS 591M",
-//				"VCS 591N",
-//				"VCS 591S",
-//				"VCS 591T",
-//				"VCS 594 ",
-//				"VCS 594Y",
-//				"VCS 594Z"
-//		};
-//		cloneCourses(courses, "VCS 565D", session);
-//		//set 2 - LYNN G409 - "VCS 565E"
-//		String[] courses2 = {
-//				"VCS 575E",
-//				"VCS 575F",
-//				"VCS 575G",
-//				"VCS 575M",
-//				"VCS 575N"
-//		};
-//		cloneCourses(courses2, "VCS 565E", session);
-
-//		//set 3 - LYNN 1240 - "VCS 562 "
-//		String[] courses3 = {
-//				"VCS 572 ",
-//				"VCS 582G",
-//				"VCS 582O",
-//				"VCS 582S"
-//		};
-//		cloneCourses(courses3, "VCS 562 ", session);
-//		//set 4 - LYNN G269 - "VCS 561 "
-//		String[] courses4 = {
-//				"VCS 581 "
-//		};
-//		cloneCourses(courses4, "VCS 561 ", session);
-//		//set 5 - LYNN G397 - "VCS 566 "
-//		String[] courses5 = {
-//				"VCS 576 ",
-//				"VCS 577 ",
-//				"VCS 578 ",
-//				"VCS 579 ",
-//				"VCS 580 ",
-//				"VCS 588 "
-//		};
-//		cloneCourses(courses5, "VCS 566 ", session);
-//		//set 6 - LYNN G490A - "VCS 585F"
-//		String[] courses6 = {
-//				"VCS 586 ",
-//				"VCS 586Y"
-//		};
-//		cloneCourses(courses6, "VCS 585F", session);
-//		// Pharmacy Courses
-//		String[] courses = {
-//				"CLPH585B",
-//				"CLPH585C",
-//				"CLPH585D",
-//				"CLPH585E",
-//				"CLPH585N",
-//				"CLPH585R",
-//				"CLPH585S",
-//				"CLPH585T",
-//				"CLPH585U",
-//				"CLPH588A",
-//				"CLPH588B",
-//				"CLPH588C",
-//				"CLPH588D",
-//				"CLPH588E",
-//				"CLPH588N",
-//				"CLPH588R",
-//				"CLPH588S",
-//				"CLPH588T",
-//				"CLPH588U",
-//				"CLPH589A",
-//				"CLPH589B",
-//				"CLPH589C",
-//				"CLPH589D",
-//				"CLPH589E",
-//				"CLPH589N",
-//				"CLPH589R",
-//				"CLPH589S",
-//				"CLPH589T",
-//				"CLPH589U",
-//				"PHPR498A",
-//				"PHPR498B",
-//				"PHPR498C",
-//				"PHPR498D",
-//				"PHPR498E",
-//				"PHPR498N",
-//				"PHPR498R",
-//				"PHPR498S",
-//				"PHPR498T",
-//				"PHPR498U",
-//				"PHPR499A",
-//				"PHPR499B",
-//				"PHPR499C",
-//				"PHPR499D",
-//				"PHPR499E",
-//				"PHPR499N",
-//				"PHPR499R",
-//				"PHPR499S",
-//				"PHPR499T",
-//				"PHPR499U",
-//				"NUPH595A",
-//				"NUPH595B",
-//				"NUPH595C",
-//				"NUPH595D",
-//				"NUPH595E"
-//		};
-//		cloneCourses(courses, "CLPH585A", rollForwardSessionForm);
-//		// PPE Courses
-//		String[] courses = {
-//				"PPE 305 ",
-//				"PPE 353 "
-//		};
-//		cloneCourses(courses, "PPE 151 ", rollForwardSessionForm);
-//		// PPT Courses
-//		String[] courses2 = {
-//				"PPT 305 ",
-//				"PPT 353 "
-//		};
-//		cloneCourses(courses2, "PPT 151 ", rollForwardSessionForm);
-
-	}
-
+	public void rollStudentsForward(ActionMessages errors, RollForwardSessionForm rollForwardSessionForm){
+        Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
+        
+        String[] query = null;
+        
+        switch (rollForwardSessionForm.getRollForwardStudentsMode().intValue()) {
+        case 0 : // Last-like Course Demands
+             query = new String[] {
+                     "select distinct d.student, co, d.priority from LastLikeCourseDemand d, CourseOffering co, CourseOffering last "+
+                     "where co.subjectArea.session.uniqueId=:toSessionId and co.uniqueIdRolledForwardFrom=last.uniqueId and "+
+                     "((d.coursePermId is null and d.subjectArea.uniqueId = last.subjectArea.uniqueId and d.courseNbr=last.courseNbr) or " +
+                     "(d.coursePermId is not null and d.coursePermId=last.permId))"};
+             break;
+        case 1 : // Student Class Enrollments
+            query = new String[] {
+                    "select distinct e.student, co, e.courseRequest.courseDemand.priority from StudentClassEnrollment e, CourseOffering co "+
+                    "where co.subjectArea.session.uniqueId=:toSessionId and co.uniqueIdRolledForwardFrom=e.courseOffering.uniqueId",
+                    "select distinct e.student, co, -1 from StudentClassEnrollment e, CourseOffering co "+
+                    "where co.subjectArea.session.uniqueId=:toSessionId and co.uniqueIdRolledForwardFrom=e.courseOffering.uniqueId and "+
+                    "e.courseRequest is null"};
+            break;
+        case 2 : // Course Requests
+            query = new String[] {
+                    "select r.courseDemand.student, co, r.courseDemand.priority from CourseRequest r, CourseOffering co "+
+                    "where co.subjectArea.session.uniqueId=:toSessionId and co.uniqueIdRolledForwardFrom=r.courseOffering.uniqueId and " +
+                    "r.order=0 and r.courseDemand.alternative=false"};
+        }
+        
+        org.hibernate.Session hibSession = LastLikeCourseDemandDAO.getInstance().getSession();
+        hibSession.createQuery("delete LastLikeCourseDemand d where d.subjectArea.uniqueId in " +
+        		"(select s.uniqueId from SubjectArea s where s.session.uniqueId=:toSessionId)")
+        		.setLong("toSessionId", toSession.getUniqueId());
+        
+        int total = 0;
+        for (int i=0;i<query.length;i++) {
+            for (Iterator j=hibSession.createQuery(query[i]).setLong("toSessionId", toSession.getUniqueId()).list().iterator();j.hasNext();) {
+                Object[] o = (Object[])j.next();
+                Student s = (Student)o[0];
+                CourseOffering co = (CourseOffering)o[1];
+                Number priority = (Number)o[2];
+                LastLikeCourseDemand d = new LastLikeCourseDemand();
+                d.setPriority(priority.intValue());
+                d.setSubjectArea(co.getSubjectArea());
+                d.setCourseNbr(co.getCourseNbr());
+                d.setCoursePermId(co.getPermId());
+                d.setStudent(s);
+                hibSession.saveOrUpdate(d);
+                total ++;
+            }
+        }
+        hibSession.flush(); hibSession.clear();
+    }
 
 }
