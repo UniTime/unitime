@@ -275,12 +275,15 @@ public class StudentSectioningTest {
             Enrollment enrl = (Enrollment)g.nextElement();
             boolean overlaps = false;
             for (Enumeration h=courseRequest.getStudent().getRequests().elements();h.hasMoreElements();) {
-                CourseRequest otherCourseRequest = (CourseRequest)h.nextElement();
-                if (otherCourseRequest.equals(courseRequest)) continue;
-                Enrollment otherErollment = (Enrollment)otherCourseRequest.getAssignment();
-                if (otherErollment==null) continue;
-                if (enrl.isOverlapping(otherErollment)) {
-                    overlaps = true; break;
+                Request otherRequest = (Request)h.nextElement();
+                if (otherRequest instanceof CourseRequest) {
+                    CourseRequest otherCourseRequest = (CourseRequest)otherRequest;
+                    if (otherCourseRequest.equals(courseRequest)) continue;
+                    Enrollment otherErollment = (Enrollment)otherCourseRequest.getAssignment();
+                    if (otherErollment==null) continue;
+                    if (enrl.isOverlapping(otherErollment)) {
+                        overlaps = true; break;
+                    }
                 }
             }
             if (!overlaps)
