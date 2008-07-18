@@ -101,13 +101,23 @@
 		<item>
 			<name>Course Timetabling</name>
 			<description>
-				<line>Solver load: added checking for room availability (same service as for examination timetabling).</line>
+				<line>Solver Load: added checking for room availability (same service as for examination timetabling).</line>
 			</description>
 		</item>
 		<item>
 			<name>Student Sectioning</name>
 			<description>
 				<line>Added interface to the batch student sectioning solver.</line>
+			</description>
+		</item>
+		<item>
+			<name>Roll Forward</name>
+			<description>
+				<line>Added import of last-like course demands in one of the following modes
+					<line>copy last-like course demands from previous term</line>
+					<line>import last-like course demands from actual student class enrollments of previous term</line>
+					<line>import last-like course demands from actual course requests of previous term (alternatives are ignored)</line>
+				</line>
 			</description>
 		</item>
 	</category>
