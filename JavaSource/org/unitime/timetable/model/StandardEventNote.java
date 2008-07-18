@@ -19,7 +19,10 @@
  
 package org.unitime.timetable.model;
 
+import java.util.List;
+
 import org.unitime.timetable.model.base.BaseStandardEventNote;
+import org.unitime.timetable.model.dao.StandardEventNoteDAO;
 
 
 
@@ -52,5 +55,10 @@ public class StandardEventNote extends BaseStandardEventNote {
 
 /*[CONSTRUCTOR MARKER END]*/
 
+   public static List findAll() {
+        return new StandardEventNoteDAO().getSession().createQuery(
+                "select sen from StandardEventNote sen order by sen.note"
+                ).setCacheable(true).list();
+    }	
 
 }

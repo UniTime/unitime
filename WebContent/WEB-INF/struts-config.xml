@@ -140,6 +140,8 @@
   	  <form-bean name="sponsoringOrgEditForm" type="org.unitime.timetable.form.SponsoringOrgEditForm" />
   	  <form-bean name="eventGridForm" type="org.unitime.timetable.form.EventGridForm"/>
       <form-bean name="roomTypeEditForm" type="org.unitime.timetable.form.RoomTypeEditForm" />
+  	  <form-bean name="eventStandardNotesForm" type="org.unitime.timetable.form.EventStandardNotesForm" />
+  	  <form-bean name="eventStandardNoteEditForm" type="org.unitime.timetable.form.EventStandardNoteEditForm" />
    </form-beans>
 
    <global-exceptions>
@@ -2448,6 +2450,50 @@
        <forward name="list" path="roomTypeListTile" />
        <forward name="add" path="roomTypeAddTile" />
        <forward name="edit" path="roomTypeEditTile" />
+    </action>
+    
+        <action
+    	path="/eventStandardNotes"
+    	type="org.unitime.timetable.action.EventStandardNotesAction"
+    	attribute="eventStandardNotesForm"
+    	input="eventStandardNotesTile"
+    	name="eventStandardNotesForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+    		name="show"
+    		path="eventStandardNotesTile"
+    		redirect="true" />
+    	<forward 
+    		name="edit"
+    		path="/eventStandardNoteEdit.do"
+    		redirect="true" />
+    	<forward 
+    		name="add"
+    		path="eventStandardNoteAddTile"
+    		redirect="true" />
+    </action>
+
+    <action
+    	path="/eventStandardNoteEdit"
+    	type="org.unitime.timetable.action.EventStandardNoteEditAction"
+    	attribute="eventStandardNoteEditForm"
+    	input="eventStandardNoteEditTile"
+    	name="eventStandardNoteEditForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+    		name="show"
+    		path="eventStandardNoteEditTile"
+    		redirect="true" />
+    	<forward
+    		name="add"
+    		path="eventStandardNoteAddTile"
+    		redirect="true" />
+    	<forward 
+    		name="list"
+    		path="/eventStandardNotes.do"
+    		redirect="true" />
     </action>
 
     </action-mappings>
