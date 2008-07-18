@@ -22,10 +22,101 @@
 <release-history>
 
 <doc-title>Timetabling - Release Notes</doc-title>
-
 <release>
 	<version>3.1.@build.number@</version>
 	<release-date>@release.date@</release-date>
+	<category>
+		<title>BUG FIXES</title>
+		<item>
+			<name>SQL Grammar Execption on Reports Page (ORA-01795: maximum number of expressions in a list is 1000)</name>
+			<description>
+				<line>problem with computing student class conflicts of exams with >1000 students corrected</line>
+			</description>
+		</item>
+		<item>
+			<name>Examination reassignment problem</name>
+			<description>
+				<line>fixed problem with saving instructor conflicts</line>
+			</description>
+		</item>
+		<item>
+			<name>PDF Reports</name>
+			<description>
+				<line>fixed NullPointerException on student conflicts report</line>
+				<line>abbreviated schedule report -- left column was shifted one character left</line>
+			</description>
+		</item>
+		<item>
+			<name>Examination Assignment page</name>
+			<description>
+				<line>do not generate solver warnings "Selected room(s) are two small" messages</line>
+				<line>(it is trying to assign an exam into a period without any rooms to find out how many conflict there will be)</line>
+			</description>
+		</item>
+		<item>
+			<name>Examination Schedule, Class Schedule pages</name>
+			<description>
+				<line>Added ability to pass the selection in URL, e.g.:
+					<line>classes.do?select=1&amp;year=2007&amp;term=Fal&amp;campus=woebegon&amp;subject=BIOL&amp;course=101</line>
+					<line>exams.do?select=1&amp;year=2007&amp;term=Fal&amp;campus=woebegon&amp;subject=--ALL--&amp;type=final</line>
+				</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>OTHER IMPROVEMENTS</title>
+		<item>
+			<name>Examination Detail, Examination Assignment page</name>
+			<description>
+				<line>mark direct conflicts with other classes as "Class" (displayed instead of "Direct")</line>
+			</description>
+		</item>
+		<item>
+			<name>Assigned Examaminations page</name>
+			<description>
+				<line>display direct conflicts with other classes in a separate column (called Student N/A -- direct conflicts caused by students unavailability)</line>
+			</description>
+		</item>
+		<item>
+			<name>Examination Solver page</name>
+			<description>
+				<line>Curent/Best Timetable: display number of class conflicts next to the total number of direct conflicts, for instance:
+					<line>
+						Direct Conflicts: 10 (5 N/A) means that there are 10 student direct conflicts 5 of which are caused by the fact 
+						that a student is not available (there is a class he/she is attending)
+					</line>
+				</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>OTHER DEVELOPMENT</title>
+		<item>
+			<name>Event Management related development</name>
+			<description>
+				<line>Continuous improvement and development of the event management functionality.</line>
+				<line>Room Types are now customizable and available for both rooms and non-university locations</line>
+			</description>
+		</item>
+		<item>
+			<name>Course Timetabling</name>
+			<description>
+				<line>Solver load: added checking for room availability (same service as for examination timetabling).</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Sectioning</name>
+			<description>
+				<line>Added interface to the batch student sectioning solver.</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+
+<release>
+	<version>3.1.70</version>
+	<release-date>Mon, 7 Jul 2008</release-date>
 	<category>
 		<title>OTHER</title>
 		<item>
