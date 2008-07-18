@@ -125,6 +125,9 @@ public class RollForwardSessionAction extends Action {
         	if (errors.size() == 0 && rollForwardSessionForm.getRollForwardFinalExams().booleanValue()){
         		sessionRollForward.rollFinalExamsForward(errors, rollForwardSessionForm);
         	}
+        	if (errors.isEmpty() && rollForwardSessionForm.getRollForwardStudents().booleanValue()) {
+        	    sessionRollForward.rollStudentsForward(errors, rollForwardSessionForm);
+        	}
 
             if (errors.size() != 0) {
                 saveErrors(request, errors);
