@@ -47,6 +47,7 @@ import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.SolverParameterDef;
 import org.unitime.timetable.model.Student;
+import org.unitime.timetable.model.dao.ClassEventDAO;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.ExamPeriodDAO;
 import org.unitime.timetable.solver.exam.ExamModel;
@@ -729,6 +730,15 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         return ret;
     }
 
+    public int getNrNotAvailableDirectConflicts() {
+        int ret = 0;
+        for (Iterator i=iDirects.iterator();i.hasNext();) {
+            DirectConflict dc = (DirectConflict)i.next();
+            if (dc.getOtherExam()==null) ret += dc.getNrStudents();
+        }
+        return ret;
+    }
+
     public int getNrBackToBackConflicts() {
         int ret = 0;
         for (Iterator i=iBackToBacks.iterator();i.hasNext();) {
@@ -1129,10 +1139,13 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             return iOtherEventSize;
         }
         public boolean isOtherClass() {
-            return getOtherEvent()!=null && (getOtherEvent() instanceof ClassEvent);
+            return getOtherEvent()!=null && getOtherEvent().getEventType()==Event.sEventTypeClass;
         }
         public Class_ getOtherClass() {
-            return (getOtherEvent()==null || !(getOtherEvent() instanceof ClassEvent)?null:((ClassEvent)getOtherEvent()).getClazz());
+            if (!isOtherClass()) return null;
+            if (!(iOtherEvent instanceof ClassEvent)) 
+                iOtherEvent = new ClassEventDAO().get(getOtherEventId()); //proxy
+            return ((ClassEvent)iOtherEvent).getClazz();
         }
         public int compareTo(DirectConflict c) {
             int cmp = -Double.compare(getNrStudents(), c.getNrStudents());
@@ -1154,7 +1167,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             ret += String.valueOf(getNrStudents());
             ret += "</td>";
             ret += "<td style='font-weight:bold;color:"+PreferenceLevel.prolog2color("P")+";'>";
-            ret += "Direct";
+            ret += (getOtherExam()==null?(isOtherClass()?"Class":"Event"):"Direct");
             ret += "</td>";
             if (getOtherExam()==null) {
                 if (iOtherEventName!=null) {
