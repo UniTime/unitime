@@ -90,4 +90,37 @@ public class RoomType extends BaseRoomType implements Comparable<RoomType> {
                 "select count(r) from "+(isRoom()?"Room":"NonUniversityLocation")+" r where r.roomType.uniqueId=:roomTypeId"
         ).setLong("roomTypeId", getUniqueId()).setCacheable(true).uniqueResult()).intValue();
     }
+
+    public int countRooms(Long sessionId) {
+        return ((Number)RoomTypeDAO.getInstance().getSession().createQuery(
+                "select count(r) from "+(isRoom()?"Room":"NonUniversityLocation")+" r where r.roomType.uniqueId=:roomTypeId and r.session.uniqueId=:sessionId"
+        ).setLong("roomTypeId", getUniqueId()).setLong("sessionId",sessionId).setCacheable(true).uniqueResult()).intValue();
+    }
+
+    public int countManagableRooms() {
+        return ((Number)RoomTypeDAO.getInstance().getSession().createQuery(
+                "select count(r) from "+(isRoom()?"Room":"NonUniversityLocation")+" r " +
+                "inner join r.roomDepts rd inner join rd.department.timetableManagers m inner join m.managerRoles mr " +
+                "where r.roomType.uniqueId=:roomTypeId and "+
+                "rd.control=true and mr.role.reference=:eventMgr"
+        ).setLong("roomTypeId", getUniqueId()).setString("eventMgr", Roles.EVENT_MGR_ROLE).setCacheable(true).uniqueResult()).intValue();
+    }
+
+    public int countManagableRooms(Long sessionId) {
+        return ((Number)RoomTypeDAO.getInstance().getSession().createQuery(
+                "select count(r) from "+(isRoom()?"Room":"NonUniversityLocation")+" r " +
+                "inner join r.roomDepts rd inner join rd.department.timetableManagers m inner join m.managerRoles mr " +
+                "where r.roomType.uniqueId=:roomTypeId and r.session.uniqueId=:sessionId and "+
+                "rd.control=true and mr.role.reference=:eventMgr"
+        ).setLong("roomTypeId", getUniqueId()).setLong("sessionId",sessionId).setString("eventMgr", Roles.EVENT_MGR_ROLE).setCacheable(true).uniqueResult()).intValue();
+    }
+
+    public int countManagableRoomsOfBuilding(Long buildingId) {
+        return ((Number)RoomTypeDAO.getInstance().getSession().createQuery(
+                "select count(r) from Room r " +
+                "inner join r.roomDepts rd inner join rd.department.timetableManagers m inner join m.managerRoles mr " +
+                "where r.roomType.uniqueId=:roomTypeId and r.building.uniqueId=:buildingId and "+
+                "rd.control=true and mr.role.reference=:eventMgr"
+        ).setLong("roomTypeId", getUniqueId()).setLong("buildingId",buildingId).setString("eventMgr", Roles.EVENT_MGR_ROLE).setCacheable(true).uniqueResult()).intValue();
+    }
 }
