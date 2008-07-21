@@ -259,7 +259,10 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
 
     //needs to be implemented
     public boolean canSeeEvents (Session session, User user) {
-    	return true;
+    	for (RoomType roomType : RoomType.findAll()) {
+    	    if (roomType.countManagableRooms()>0) return true;
+    	}
+    	return false;
     }
 
 	public Collection getClasses(Session session) {
