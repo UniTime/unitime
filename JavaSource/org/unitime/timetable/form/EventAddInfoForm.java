@@ -280,9 +280,11 @@ public class EventAddInfoForm extends ActionForm {
 					setRelatedCourseInfos((CourseEvent)event);
 				} else {
 					event = new SpecialEvent();
-					System.out.println("Sponsoring org id = "+iSponsoringOrgId);
-					SponsoringOrganization spor = SponsoringOrganizationDAO.getInstance().get(iSponsoringOrgId);
-					event.setSponsoringOrganization(spor);
+					if (iSponsoringOrgId!=null) {
+					    System.out.println("Sponsoring org id = "+iSponsoringOrgId);
+					    SponsoringOrganization spor = SponsoringOrganizationDAO.getInstance().get(iSponsoringOrgId);
+					    event.setSponsoringOrganization(spor);
+					}
 				}
 				event.setEventName(iEventName);
 				event.setMainContact(mainContact);
