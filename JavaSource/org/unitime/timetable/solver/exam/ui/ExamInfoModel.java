@@ -38,6 +38,8 @@ import net.sf.cpsolver.coursett.preference.MinMaxPreferenceCombination;
 import net.sf.cpsolver.coursett.preference.PreferenceCombination;
 import net.sf.cpsolver.coursett.preference.SumPreferenceCombination;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.form.ExamInfoForm;
@@ -63,6 +65,7 @@ import org.unitime.timetable.util.RoomAvailability;
  * @author Tomas Muller
  */
 public class ExamInfoModel implements Serializable {
+    private static Log sLog = LogFactory.getLog(ExamInfoModel.class);
     private transient ExamSolverProxy iSolver = null;
     private ExamInfo iExam = null;
     private ExamInfoForm iForm = null;
@@ -601,124 +604,135 @@ public class ExamInfoModel implements Serializable {
     }
     
     public String getRoomTable() {
-        Vector<ExamRoomInfo> rooms = getRooms();
-        ExamAssignment examAssignment = (iChange==null?null:iChange.getCurrent(iExam));
-        Collection<ExamRoomInfo> assigned = (examAssignment!=null?examAssignment.getRooms():isExamAssigned()?getExamAssignment().getRooms():null);
-        Collection<ExamRoomInfo> original = (getExamOldAssignment()!=null?getExamOldAssignment().getRooms():null);
-        if (rooms==null || rooms.isEmpty()) return "";
-        Collections.sort(rooms, new Comparator<ExamRoomInfo>() {
-            public int compare(ExamRoomInfo r1, ExamRoomInfo r2) {
-                int cmp = 0;
-                if (ExamInfoForm.sRoomOrdNameAsc.equals(iForm.getRoomOrder())) {
-                    cmp = r1.getName().compareTo(r2.getName());
-                } else if (ExamInfoForm.sRoomOrdNameDesc.equals(iForm.getRoomOrder())) {
-                    cmp = -r1.getName().compareTo(r2.getName());
-                } else if (ExamInfoForm.sRoomOrdSizeAsc.equals(iForm.getRoomOrder())) {
-                    cmp = Double.compare(r1.getCapacity(getExam()),r2.getCapacity(getExam()));
-                } else  if (ExamInfoForm.sRoomOrdSizeDesc.equals(iForm.getRoomOrder())) {
-                    cmp = -Double.compare(r1.getCapacity(getExam()),r2.getCapacity(getExam()));
-                } else {
-                    cmp = r1.getName().compareTo(r2.getName());
+        try {
+            Vector<ExamRoomInfo> rooms = getRooms();
+            ExamAssignment examAssignment = (iChange==null?null:iChange.getCurrent(iExam));
+            Collection<ExamRoomInfo> assigned = (examAssignment!=null?examAssignment.getRooms():isExamAssigned()?getExamAssignment().getRooms():null);
+            Collection<ExamRoomInfo> original = (getExamOldAssignment()!=null?getExamOldAssignment().getRooms():null);
+            if (rooms==null || rooms.isEmpty()) return "";
+            Collections.sort(rooms, new Comparator<ExamRoomInfo>() {
+                public int compare(ExamRoomInfo r1, ExamRoomInfo r2) {
+                    int cmp = 0;
+                    if (ExamInfoForm.sRoomOrdNameAsc.equals(iForm.getRoomOrder())) {
+                        cmp = r1.getName().compareTo(r2.getName());
+                    } else if (ExamInfoForm.sRoomOrdNameDesc.equals(iForm.getRoomOrder())) {
+                        cmp = -r1.getName().compareTo(r2.getName());
+                    } else if (ExamInfoForm.sRoomOrdSizeAsc.equals(iForm.getRoomOrder())) {
+                        cmp = Double.compare(r1.getCapacity(getExam()),r2.getCapacity(getExam()));
+                    } else  if (ExamInfoForm.sRoomOrdSizeDesc.equals(iForm.getRoomOrder())) {
+                        cmp = -Double.compare(r1.getCapacity(getExam()),r2.getCapacity(getExam()));
+                    } else {
+                        cmp = r1.getName().compareTo(r2.getName());
+                    }
+                    if (cmp!=0) return cmp;
+                    cmp = r1.getName().compareTo(r2.getName());;
+                    if (cmp!=0) return cmp;
+                    return r1.getLocationId().compareTo(r2.getLocationId());
                 }
-                if (cmp!=0) return cmp;
-                cmp = r1.getName().compareTo(r2.getName());;
-                if (cmp!=0) return cmp;
-                return r1.getLocationId().compareTo(r2.getLocationId());
+            });
+            String ret = "";
+            ret += "<script language='javascript'>";
+            ret += "function roomOver(source, id) { ";
+            ret += "    document.getElementById('r'+id).style.backgroundColor='rgb(223,231,242)';";
+            ret += "    document.getElementById('c'+id).style.backgroundColor='rgb(223,231,242)';";
+            ret += "    source.style.cursor='hand';source.style.cursor='pointer';";
+            ret += "}";
+            ret += "var sCap = -1;";
+            ret += "var sRooms = '";
+            if (assigned!=null && assigned.size()>0) {
+                for (ExamRoomInfo room : assigned) {
+                    ret+=":"+room.getLocationId()+"@"+room.getCapacity(getExam());
+                }
             }
-        });
-        String ret = "";
-        ret += "<script language='javascript'>";
-        ret += "function roomOver(source, id) { ";
-        ret += "    document.getElementById('r'+id).style.backgroundColor='rgb(223,231,242)';";
-        ret += "    document.getElementById('c'+id).style.backgroundColor='rgb(223,231,242)';";
-        ret += "    source.style.cursor='hand';source.style.cursor='pointer';";
-        ret += "}";
-        ret += "var sCap = -1;";
-        ret += "var sRooms = '";
-        if (assigned!=null && assigned.size()>0) {
-            for (ExamRoomInfo room : assigned) {
-                ret+=":"+room.getLocationId()+"@"+room.getCapacity(getExam());
+            ret += "';";
+            ret += "var sNrRooms = "+(assigned!=null?assigned.size():0)+";";
+            ret += "function roomSelected(id) {";
+            ret += "    return sRooms.indexOf(':'+id+'@')>=0;";
+            ret += "}";
+            ret += "function roomOut(id) { ";
+            ret += "    var bg = 'transparent';";
+            ret += "    if (roomSelected(id)) bg='rgb(168,187,225)';";
+            ret += "    document.getElementById('r'+id).style.backgroundColor=bg;";
+            ret += "    document.getElementById('c'+id).style.backgroundColor=bg;";
+            ret += "}";
+            ret += "function roomClick(source, id, cap) { ";
+            ret += "    if (sCap<0) {";
+            ret += "        sCap = 0; sRooms=''; sNrRooms=0;";
+            if (assigned!=null && assigned.size()>0) {
+                for (ExamRoomInfo room : assigned) ret+="        roomOut("+room.getLocationId()+");";
             }
-        }
-        ret += "';";
-        ret += "var sNrRooms = "+(assigned!=null?assigned.size():0)+";";
-        ret += "function roomSelected(id) {";
-        ret += "    return sRooms.indexOf(':'+id+'@')>=0;";
-        ret += "}";
-        ret += "function roomOut(id) { ";
-        ret += "    var bg = 'transparent';";
-        ret += "    if (roomSelected(id)) bg='rgb(168,187,225)';";
-        ret += "    document.getElementById('r'+id).style.backgroundColor=bg;";
-        ret += "    document.getElementById('c'+id).style.backgroundColor=bg;";
-        ret += "}";
-        ret += "function roomClick(source, id, cap) { ";
-        ret += "    if (sCap<0) {";
-        ret += "        sCap = 0; sRooms=''; sNrRooms=0;";
-        if (assigned!=null && assigned.size()>0) {
-            for (ExamRoomInfo room : assigned) ret+="        roomOut("+room.getLocationId()+");";
-        }
-        ret += "    }";
-        ret += "    var i = sRooms.indexOf(':'+id+'@');";
-        ret += "    if (i>=0) {";
-        ret += "        var j = sRooms.indexOf(':',i+1);";
-        ret += "        sRooms = sRooms.substring(0, i)+(j>=0?sRooms.substring(j):'');";
-        ret += "        sCap -= cap; sNrRooms--;";
-        ret += "    } else {";
-        ret += "        sRooms = sRooms + ':' + id + '@' + cap;";
-        ret += "        sCap += cap; sNrRooms++;";
-        ret += "        if (sNrRooms>"+getExam().getMaxRooms()+") {";
-        ret += "            var fid = sRooms.substring(1, sRooms.indexOf('@'));";
-        ret += "            var fcap = sRooms.substring(sRooms.indexOf('@')+1, sRooms.indexOf(':',1));";
-        ret += "            sRooms = sRooms.substring(sRooms.indexOf(':',1));";
-        ret += "            sCap -= fcap; sNrRooms--; roomOut(fid);";
-        ret += "        };";
-        ret += "    }";
-        ret += "    roomOut(id);";
-        ret += "    if (sCap>="+getExam().getNrStudents()+") {displayLoading(); document.location='examInfo.do?op=Select&room='+sRooms;}";
-        ret += "    var c = document.getElementById('roomCapacityCounter');";
-        ret += "    if (c!=null) c.innerHTML = (sCap<"+getExam().getNrStudents()+"?'<font color=\"red\">'+sCap+'</font>':''+sCap);";
-        ret += "}";
-        ret += "</script>";
-        ret += "<table border='0' cellspacing='0' cellpadding='3'>";
-        int idx = 0;
-        int step = 6;
-        for (ExamRoomInfo room : rooms) {
-            if ((idx%step)==0) {
-                if (idx>0) ret +="</tr>";
-                ret += "<tr>";
+            ret += "    }";
+            ret += "    var i = sRooms.indexOf(':'+id+'@');";
+            ret += "    if (i>=0) {";
+            ret += "        var j = sRooms.indexOf(':',i+1);";
+            ret += "        sRooms = sRooms.substring(0, i)+(j>=0?sRooms.substring(j):'');";
+            ret += "        sCap -= cap; sNrRooms--;";
+            ret += "    } else {";
+            ret += "        sRooms = sRooms + ':' + id + '@' + cap;";
+            ret += "        sCap += cap; sNrRooms++;";
+            ret += "        if (sNrRooms>"+getExam().getMaxRooms()+") {";
+            ret += "            var fid = sRooms.substring(1, sRooms.indexOf('@'));";
+            ret += "            var fcap = sRooms.substring(sRooms.indexOf('@')+1, sRooms.indexOf(':',1));";
+            ret += "            sRooms = sRooms.substring(sRooms.indexOf(':',1));";
+            ret += "            sCap -= fcap; sNrRooms--; roomOut(fid);";
+            ret += "        };";
+            ret += "    }";
+            ret += "    roomOut(id);";
+            ret += "    if (sCap>="+getExam().getNrStudents()+") {displayLoading(); document.location='examInfo.do?op=Select&room='+sRooms;}";
+            ret += "    var c = document.getElementById('roomCapacityCounter');";
+            ret += "    if (c!=null) c.innerHTML = (sCap<"+getExam().getNrStudents()+"?'<font color=\"red\">'+sCap+'</font>':''+sCap);";
+            ret += "}";
+            ret += "</script>";
+            ret += "<table border='0' cellspacing='0' cellpadding='3'>";
+            int idx = 0;
+            int step = 6;
+            for (ExamRoomInfo room : rooms) {
+                if ((idx%step)==0) {
+                    if (idx>0) ret +="</tr>";
+                    ret += "<tr>";
+                }
+                String style = "";
+                if (assigned!=null && assigned.contains(room))
+                    style += "background-color:rgb(168,187,225);";
+                if (original!=null && original.contains(room))
+                    style += "text-decoration:underline;";
+                String mouse = 
+                    "onMouseOver=\"roomOver(this,"+room.getLocationId()+");\" "+
+                    "onMouseOut=\"roomOut("+room.getLocationId()+");\" "+
+                    "onClick=\"roomClick(this,"+room.getLocationId()+","+room.getCapacity(getExam())+");\"";
+                ret += "<td nowrap id='r"+room.getLocationId()+"' " +
+                        (style.length()>0?"style='"+style+"' ":"")+mouse+">"+
+                        room.toString()+"</td>";
+                if ((idx%step)<step-1)
+                    style += "border-right: #646464 1px dashed;";
+                ret += "<td id='c"+room.getLocationId()+"' "+
+                        (style.length()>0?"style='"+style+"' ":"")+mouse+">"+
+                        room.getCapacity(getExam())+"</td>";
+                idx ++;
             }
-            String style = "";
-            if (assigned!=null && assigned.contains(room))
-                style += "background-color:rgb(168,187,225);";
-            if (original!=null && original.contains(room))
-                style += "text-decoration:underline;";
-            String mouse = 
-                "onMouseOver=\"roomOver(this,"+room.getLocationId()+");\" "+
-                "onMouseOut=\"roomOut("+room.getLocationId()+");\" "+
-                "onClick=\"roomClick(this,"+room.getLocationId()+","+room.getCapacity(getExam())+");\"";
-            ret += "<td nowrap id='r"+room.getLocationId()+"' " +
-                    (style.length()>0?"style='"+style+"' ":"")+mouse+">"+
-                    room.toString()+"</td>";
-            if ((idx%step)<step-1)
-                style += "border-right: #646464 1px dashed;";
-            ret += "<td id='c"+room.getLocationId()+"' "+
-                    (style.length()>0?"style='"+style+"' ":"")+mouse+">"+
-                    room.getCapacity(getExam())+"</td>";
-            idx ++;
+            while ((idx%step)!=0) {
+                ret += "<td colspan='2'>&nbsp;</td>";
+                idx++;
+            }
+            ret += "</tr>";
+            ret += "</table>";
+            return ret;
+        } catch (Exception e) {
+            sLog.error(e.getMessage(),e);
+            return "";
         }
-        while ((idx%step)!=0) {
-            ret += "<td colspan='2'>&nbsp;</td>";
-            idx++;
-        }
-        ret += "</tr>";
-        ret += "</table>";
-        return ret;
     }
     
     public Vector<ExamRoomInfo> getRooms() {
         if (getExam().getMaxRooms()==0) return null;
-        int minRoomSize = (iForm.getMinRoomSize()==null || iForm.getMinRoomSize().length()==0 ? -1 : Integer.parseInt(iForm.getMinRoomSize()));
-        int maxRoomSize = (iForm.getMaxRoomSize()==null || iForm.getMaxRoomSize().length()==0 ? -1 : Integer.parseInt(iForm.getMaxRoomSize()));
+        int minRoomSize = -1;
+        try {
+            minRoomSize = (iForm.getMinRoomSize()==null || iForm.getMinRoomSize().length()==0 ? -1 : Integer.parseInt(iForm.getMinRoomSize().trim()));
+        } catch (Exception e) {}
+        int maxRoomSize = -1;
+        try {
+            maxRoomSize = (iForm.getMaxRoomSize()==null || iForm.getMaxRoomSize().length()==0 ? -1 : Integer.parseInt(iForm.getMaxRoomSize().trim()));
+        } catch (Exception e) {}
         try {
             if (getSelectedAssignment()==null && !isExamAssigned()) return null;
             if (iRooms==null) {
@@ -732,7 +746,7 @@ public class ExamInfoModel implements Serializable {
             }
             return iRooms;
         } catch (Exception e) {
-            e.printStackTrace();
+            sLog.error(e.getMessage(),e);
             return null;
         }
     }
@@ -785,7 +799,7 @@ public class ExamInfoModel implements Serializable {
             if (iSuggestions==null) {
                 try {
                     iSuggestions = getSolver().getSuggestions(iExam.getExamId(), iChange, iForm.getFilter(), iForm.getDepth(), iForm.getLimit(), iForm.getTimeout());
-                } catch (Exception e) { e.printStackTrace(); }
+                } catch (Exception e) { sLog.error(e.getMessage(),e); }
             }
             return iSuggestions;
         }
