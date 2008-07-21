@@ -160,13 +160,13 @@ public class ExamEditAction extends PreferencesAction {
             
             if (op.equals(rsc.getMessage("button.addInstructor"))) {
                 List lst = frm.getInstructors();
-                for (int i=0; i<frm.PREF_ROWS_ADDED; i++) {
+                for (int i=0; i<Constants.PREF_ROWS_ADDED; i++) {
                     frm.getInstructors().add(Preference.BLANK_PREF_VALUE);
                 }
             }
             
             if (op.equals(rsc.getMessage("button.addObject"))) {
-                for (int i=0; i<frm.PREF_ROWS_ADDED; i++) {
+                for (int i=0; i<Constants.PREF_ROWS_ADDED; i++) {
                     frm.addExamOwner(null);
                 }
                 request.setAttribute("hash", "objects");
@@ -344,7 +344,7 @@ public class ExamEditAction extends PreferencesAction {
             }
         }
         
-        for (int i=0;i<frm.PREF_ROWS_ADDED;i++) {
+        for (int i=0;i<Constants.PREF_ROWS_ADDED;i++) {
             frm.addExamOwner(null);
             frm.getInstructors().add(Constants.BLANK_OPTION_VALUE);
         }

@@ -190,7 +190,7 @@ public class PreferencesAction extends Action {
     	
         List lst = frm.getRoomGroups();
         if(frm.checkPrefs(lst)) {
-            for (int i=0; i<frm.PREF_ROWS_ADDED; i++) {
+            for (int i=0; i<Constants.PREF_ROWS_ADDED; i++) {
 	            frm.addToRoomGroups(
 	                    Preference.BLANK_PREF_VALUE, 
 	                    Preference.BLANK_PREF_VALUE );
@@ -220,7 +220,7 @@ public class PreferencesAction extends Action {
  
         List lst = frm.getBldgPrefs();
         if(frm.checkPrefs(lst)) {
-            for (int i=0; i<frm.PREF_ROWS_ADDED; i++) {
+            for (int i=0; i<Constants.PREF_ROWS_ADDED; i++) {
 	            frm.addToBldgPrefs(
 	                    Preference.BLANK_PREF_VALUE, 
 	                    Preference.BLANK_PREF_VALUE );
@@ -243,7 +243,7 @@ public class PreferencesAction extends Action {
  
         List lst = frm.getDistPrefs();
         if(frm.checkPrefs(lst)) {
-            for (int i=0; i<frm.PREF_ROWS_ADDED; i++) {
+            for (int i=0; i<Constants.PREF_ROWS_ADDED; i++) {
 	            frm.addToDistPrefs(
 	                    Preference.BLANK_PREF_VALUE, 
 	                    Preference.BLANK_PREF_VALUE );
@@ -272,7 +272,7 @@ public class PreferencesAction extends Action {
 
         List lst = frm.getRoomFeaturePrefs();
         if(frm.checkPrefs(lst)) {
-            for (int i=0; i<frm.PREF_ROWS_ADDED; i++) {
+            for (int i=0; i<Constants.PREF_ROWS_ADDED; i++) {
 	            frm.addToRoomFeatPrefs(
 	                    Preference.BLANK_PREF_VALUE, 
 	                    Preference.BLANK_PREF_VALUE );
@@ -334,7 +334,7 @@ public class PreferencesAction extends Action {
         
         List lst = frm.getRoomPrefs();
         if(frm.checkPrefs(lst)) {
-            for (int i=0; i<frm.PREF_ROWS_ADDED; i++) {
+            for (int i=0; i<Constants.PREF_ROWS_ADDED; i++) {
 	            frm.addToRoomPrefs(
 	                    Preference.BLANK_PREF_VALUE, 
 	                    Preference.BLANK_PREF_VALUE );
