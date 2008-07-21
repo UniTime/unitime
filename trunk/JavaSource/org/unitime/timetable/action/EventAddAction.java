@@ -45,6 +45,7 @@ import org.unitime.timetable.model.RelatedCourseInfo;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.CourseEventDAO;
 import org.unitime.timetable.model.dao.EventDAO;
+import org.unitime.timetable.util.Constants;
 
 /**
  * @author Zuzana Mullerova
@@ -157,7 +158,7 @@ public class EventAddAction extends Action {
 		}
 		
         if ("Add Object".equals(iOp)) {
-            for (int i=0; i<myForm.PREF_ROWS_ADDED; i++) {
+            for (int i=0; i<Constants.PREF_ROWS_ADDED; i++) {
                 myForm.addRelatedCourseInfo(null);
             }
             request.setAttribute("hash", "objects");
