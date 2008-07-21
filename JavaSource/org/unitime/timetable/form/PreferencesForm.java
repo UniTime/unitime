@@ -47,8 +47,6 @@ import org.unitime.timetable.util.DynamicListObjectFactory;
  */
 public class PreferencesForm extends ActionForm {
 
-    public final int PREF_ROWS_ADDED = 2;   
-    
     // --------------------------------------------------------- Instance Variables
     
     protected String op;
@@ -663,7 +661,7 @@ public class PreferencesForm extends ActionForm {
     }
 
     public void addBlankPrefRows() {
-        for (int i=0; i<PREF_ROWS_ADDED; i++) {
+        for (int i=0; i<Constants.PREF_ROWS_ADDED; i++) {
 	        addToBldgPrefs(Preference.BLANK_PREF_VALUE, Preference.BLANK_PREF_VALUE);
 	        addToRoomPrefs(Preference.BLANK_PREF_VALUE, Preference.BLANK_PREF_VALUE);
 	        addToRoomFeatPrefs(Preference.BLANK_PREF_VALUE, Preference.BLANK_PREF_VALUE);

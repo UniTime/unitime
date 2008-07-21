@@ -502,4 +502,6 @@ public class Constants extends net.sf.cpsolver.coursett.Constants {
 		}
 		return true;
 	}
+	
+	public static final int PREF_ROWS_ADDED = 2;
 }
