@@ -45,6 +45,7 @@ import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
+import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.MeetingDAO;
 
@@ -68,6 +69,8 @@ public class EventRoomAvailabilityForm extends ActionForm {
 	private Long iEventId; //if adding meetings to an existing event
 	private boolean iIsAddMeetings; //if adding meetings to an existing event
 	private Long[] iRoomFeatures;
+    private Long[] iRoomTypes = null;
+    private Long[] iRoomGroups = null;
 	
 	//data calculated 
 	private Hashtable<Long, Location> iLocations; 
@@ -108,6 +111,8 @@ public class EventRoomAvailabilityForm extends ActionForm {
 		iBuildingId = (Long) session.getAttribute("Event.BuildingId");
 		iRoomNumber = (String) session.getAttribute("Event.RoomNumber");
 		iLookAtNearLocations = ((Boolean) session.getAttribute("Event.LookAtNearLocations")).booleanValue();
+        iRoomTypes = (Long[]) session.getAttribute("Event.RoomTypes");
+        iRoomGroups = (Long[]) session.getAttribute("Event.RoomGroups");
 		iRoomFeatures = (Long[]) session.getAttribute("Event.RoomFeatures");
 		iLocations = getPossibleLocations();
 		if (iLocations.isEmpty()) throw new Exception("No room is matching your criteria.");
@@ -137,48 +142,78 @@ public class EventRoomAvailabilityForm extends ActionForm {
 		session.setAttribute("Event.DateLocations", iDateLocations);
 	}
 	
-	// apply parameters from the Add Event screen to get possible locations for the event
-	public Hashtable<Long, Location> getPossibleLocations() {
-		Hashtable<Long, Location> locations = new Hashtable();
-		String query;
-		String a = "", b = "";
-		if (iRoomFeatures!=null && iRoomFeatures.length>0) {
-			for (int i=0;i<iRoomFeatures.length;i++) {
-				a+= ", GlobalRoomFeature f"+i;
-				b+= " and f"+i+".uniqueId="+iRoomFeatures[i]+" and f"+i+" in elements(r.features)";
-			}
-		}
-	
-		if (iLookAtNearLocations) {
-			query = "select r from Room r, Building b"+a+" where b.uniqueId = :buildingId and " +
-					"(r.building=b or ((((r.coordinateX - b.coordinateX)*(r.coordinateX - b.coordinateX)) +" +
-					"((r.coordinateY - b.coordinateY)*(r.coordinateY - b.coordinateY)))" +
-					"< 67*67))";
-		} else {
-			query = "select r from Room r"+a+" where r.building.uniqueId = :buildingId";
-		}
-			
-		if (iMinCapacity!=null && iMinCapacity!="") { query+= " and r.capacity>= :minCapacity";	}
-		if (iMaxCapacity!=null && iMaxCapacity!="") { query+= " and r.capacity<= :maxCapacity";	}
-		if (iRoomNumber!=null && iRoomNumber.length()>0) { query+=" and r.roomNumber like (:roomNumber)"; }
-		query += b;
-		
-		Query hibQuery = new LocationDAO().getSession().createQuery(query);
+	 // get possible locations for the event based on entered criteria
+    public Hashtable<Long, Location> getPossibleLocations() {
+        Hashtable<Long, Location> locations = new Hashtable();
+        String query;
+        String a = "", b = "";
+        if (iRoomFeatures!=null && iRoomFeatures.length>0) {
+            for (int i=0;i<iRoomFeatures.length;i++) {
+                a+= ", GlobalRoomFeature f"+i;
+                b+= " and f"+i+".uniqueId="+iRoomFeatures[i]+" and f"+i+" in elements(r.features)";
+            }
+        }
+        if (iRoomGroups!=null && iRoomGroups.length>0) {
+            b+= " and (";
+            for (int i=0;i<iRoomGroups.length;i++) {
+                if (i>0) b+=" or";
+                a+= ", RoomGroup g"+i;
+                b+= " (g"+i+".uniqueId="+iRoomGroups[i]+" and g"+i+" in elements(r.roomGroups))";
+            }
+            b+=")";
+        }
+        if (iRoomTypes!=null && iRoomTypes.length>0) {
+            b+= " and r.roomType.uniqueId in (";
+            for (int i=0;i<iRoomTypes.length;i++) {
+                if (i>0) b+=",";
+                b+= iRoomTypes[i];
+            }
+            b+=")";
+        }
+        if (iBuildingId!=0) {
+            if (iLookAtNearLocations) {
+                query = "select r from Room r " +
+                        "inner join r.roomDepts rd inner join rd.department.timetableManagers m inner join m.managerRoles mr, "+
+                        "Building b"+a+" where b.uniqueId = :buildingId and " +
+                        "rd.control=true and mr.role.reference=:eventMgr and "+
+                        "(r.building=b or ((((r.coordinateX - b.coordinateX)*(r.coordinateX - b.coordinateX)) +" +
+                        "((r.coordinateY - b.coordinateY)*(r.coordinateY - b.coordinateY)))" +
+                        "< 67*67))";
+            } else {
+                query = "select r from Room r " +
+                        "inner join r.roomDepts rd inner join rd.department.timetableManagers m inner join m.managerRoles mr"+
+                a+" where r.building.uniqueId=:buildingId and rd.control=true and mr.role.reference=:eventMgr";
+            }
+        } else {
+            query = "select r from NonUniversityLocation r " +
+                "inner join r.roomDepts rd inner join rd.department.timetableManagers m inner join m.managerRoles mr"+
+                a+" where rd.control=true and mr.role.reference=:eventMgr";
+        }
+            
+        if (iMinCapacity!=null && iMinCapacity.length()>0) { query+= " and r.capacity>= :minCapacity";  }
+        if (iMaxCapacity!=null && iMaxCapacity.length()>0) { query+= " and r.capacity<= :maxCapacity";  }
+        if (iRoomNumber!=null && iRoomNumber.length()>0) {
+            query+=(iBuildingId==0?" and r.name like (:roomNumber)":" and r.roomNumber like (:roomNumber)"); 
+        }
+        query += b;
 
-		hibQuery.setLong("buildingId", iBuildingId);
-		if (iMinCapacity!=null && iMinCapacity!="") { hibQuery.setInteger("minCapacity", Integer.valueOf(iMinCapacity)); }
-		if (iMaxCapacity!=null && iMaxCapacity!="") { hibQuery.setInteger("maxCapacity", Integer.valueOf(iMaxCapacity)); }
-		if (iRoomNumber!=null && iRoomNumber.length()>0) { 
-			hibQuery.setString("roomNumber", iRoomNumber.replaceAll("\\*", "%")); 
-		}
-		
-		for (Iterator i=hibQuery.setCacheable(true).iterate();i.hasNext();) {
-			Location location = (Location)i.next();
-			if (location.getPermanentId()!=null)
-				locations.put(location.getPermanentId(), location);
-		}
-		return locations;
-	}
+        Query hibQuery = new LocationDAO().getSession().createQuery(query);
+
+        if (iBuildingId!=0) hibQuery.setLong("buildingId", iBuildingId);
+        hibQuery.setString("eventMgr", Roles.EVENT_MGR_ROLE);
+        if (iMinCapacity!=null && iMinCapacity.length()>0) { hibQuery.setInteger("minCapacity", Integer.valueOf(iMinCapacity)); }
+        if (iMaxCapacity!=null && iMaxCapacity.length()>0) { hibQuery.setInteger("maxCapacity", Integer.valueOf(iMaxCapacity)); }
+        if (iRoomNumber!=null && iRoomNumber.length()>0) { 
+            hibQuery.setString("roomNumber", iRoomNumber.replaceAll("\\*", "%")); 
+        }
+        
+        for (Iterator i=hibQuery.setCacheable(true).iterate();i.hasNext();) {
+            Location location = (Location)i.next();
+            if (location.getPermanentId()!=null)
+                locations.put(location.getPermanentId(), location);
+        }
+        return locations;
+    }
 
 	// get events that have been already scheduled in the possible locations during requested times/dates
 	public Hashtable<Long, Hashtable<Date, TreeSet<Meeting>>> getOverlappingMeetings (Hashtable<Long,Location> locations, TreeSet<Date> meetingDates, int startTime, int stopTime) {

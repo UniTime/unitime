@@ -35,6 +35,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.ActionErrors;
+import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.hibernate.Query;
@@ -50,7 +51,10 @@ import org.unitime.timetable.model.RelatedCourseInfo;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Preference;
+import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.RoomFeature;
+import org.unitime.timetable.model.RoomGroup;
+import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.comparators.ClassComparator;
@@ -62,7 +66,9 @@ import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
+import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.util.ComboBoxLookup;
+import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
 import org.unitime.timetable.util.DynamicList;
 import org.unitime.timetable.util.DynamicListObjectFactory;
@@ -72,7 +78,7 @@ import org.unitime.timetable.util.IdValue;
  * @author Zuzana Mullerova
  */
 
-public class EventAddForm extends PreferencesForm {
+public class EventAddForm extends ActionForm {
 
 	private String iOp;
 	private String iEventType;
@@ -89,6 +95,8 @@ public class EventAddForm extends PreferencesForm {
 	private String iMaxCapacity;
 	private boolean iLookAtNearLocations;
 	private Long[] iRoomFeatures = null;
+	private Long[] iRoomTypes = null;
+	private Long[] iRoomGroups = null;
 	
 	//if adding meetings to an existing event
 	private Long iEventId; 
@@ -119,7 +127,7 @@ public class EventAddForm extends PreferencesForm {
 			errors.add("dates", new ActionMessage("errors.generic", "No event dates are selected."));
 		}
 
-		int min = 0;
+        int min = 0;
 		if (iMinCapacity!=null && iMinCapacity.length()>0) {
 			try {
 				min = Integer.parseInt(iMinCapacity);
@@ -152,12 +160,16 @@ public class EventAddForm extends PreferencesForm {
 	        }
 		}
 
-		if (iBuildingId==null || iBuildingId == -1) {
-			errors.add("building", new ActionMessage("errors.generic", "No building is selected."));
-		} else if (getPossibleLocations().isEmpty()) {
-			errors.add("noLocation", new ActionMessage("errors.generic", "There is no location matching your criteria."));
-		}
-	        
+        //if (iRoomTypes==null || iRoomTypes.length==0) {
+        //    errors.add("roomTypes", new ActionMessage("errors.generic", "No room type is selected."));
+        //} else {
+            if (iBuildingId==null || iBuildingId == -1) {
+                errors.add("building", new ActionMessage("errors.generic", "No building is selected."));
+            } else if (getPossibleLocations().isEmpty()) {
+                errors.add("noLocation", new ActionMessage("errors.generic", "There is no location matching your criteria."));
+            }
+        //}
+
 		return errors;
 	}
 	
@@ -181,7 +193,7 @@ public class EventAddForm extends PreferencesForm {
         iCourseNbr = DynamicList.getInstance(new ArrayList(), idfactory);
         iItype = DynamicList.getInstance(new ArrayList(), idfactory);
         iClassNumber = DynamicList.getInstance(new ArrayList(), idfactory);
-        for (int i=0;i<PREF_ROWS_ADDED;i++) {
+        for (int i=0;i<Constants.PREF_ROWS_ADDED;i++) {
             addRelatedCourseInfo(null);
         }
         
@@ -215,6 +227,8 @@ public class EventAddForm extends PreferencesForm {
 			iEventName = iEvent.getEventName();
 			iEventType = iEvent.getEventTypeLabel();
 		}
+        iRoomTypes = (Long[]) session.getAttribute("Event.RoomTypes");
+        iRoomGroups = (Long[]) session.getAttribute("Event.RoomGroups");
 		iRoomFeatures = (Long[]) session.getAttribute("Event.RoomFeatures");
 	}
 	
@@ -240,7 +254,9 @@ public class EventAddForm extends PreferencesForm {
 		session.setAttribute("Event.AttendanceRequired", iAttendanceRequired);
 		session.setAttribute("Event.EventId", iEventId);
 		session.setAttribute("Event.IsAddMeetings", iIsAddMeetings);
-		session.setAttribute("Event.RoomFeatures", iRoomFeatures);
+		session.setAttribute("Event.RoomTypes", iRoomTypes);
+        session.setAttribute("Event.RoomGroups", iRoomGroups);
+        session.setAttribute("Event.RoomFeatures", iRoomFeatures);
 	}
 	
 	
@@ -383,7 +399,18 @@ public class EventAddForm extends PreferencesForm {
     }
     
     public List getBuildings() {
-    	return (iSessionId==null?null:Building.findAll(iSessionId)); 
+        if (iSessionId==null) return null;
+        List ret = Building.findAll(iSessionId);
+        buildings: for (Iterator i=ret.iterator();i.hasNext();) {
+            Building b = (Building)i.next();
+            try {
+            for (RoomType roomType : RoomType.findAll(true)) {
+                if (roomType.getOption(b.getSession()).canScheduleEvents() && roomType.countManagableRoomsOfBuilding(b.getUniqueId())>0) continue buildings;
+            }
+            } catch (Exception e) {e.printStackTrace(); }
+            i.remove();
+        }
+        return ret;
     }
     
     public Long getBuildingId() { return iBuildingId;}
@@ -405,10 +432,33 @@ public class EventAddForm extends PreferencesForm {
     	return RoomFeature.getAllGlobalRoomFeatures();
     }
     
-	public Long[] getRoomFeatures() { return iRoomFeatures; }
-	public void setRoomFeatures(Long[] rfs) { iRoomFeatures = rfs; }
+    public Collection<RoomGroup> getAllRoomGroups() {
+        return RoomGroup.getAllGlobalRoomGroups();
+    }
 
-	public void cleanSessionAttributes(HttpSession session) {
+    public Collection<RoomType> getAllRoomTypes() {
+        Collection<RoomType> ret = RoomType.findAll();
+        if (getSessionId()!=null) {
+            Session session = new SessionDAO().get(getSessionId());
+            for (Iterator<RoomType> i=ret.iterator(); i.hasNext();) {
+                RoomType t = (RoomType)i.next();
+                if (t.countManagableRooms(getSessionId())<=0) {i.remove(); continue; }
+                if (!t.getOption(session).canScheduleEvents()) {i.remove(); continue; }
+            }
+        }
+        return ret;
+    }
+    
+    public Long[] getRoomTypes() { return iRoomTypes; }
+	public void setRoomTypes(Long[] rts) { iRoomTypes = rts; }
+
+    public Long[] getRoomGroups() { return iRoomGroups; }
+    public void setRoomGroups(Long[] rgs) { iRoomGroups= rgs; }
+
+    public Long[] getRoomFeatures() { return iRoomFeatures; }
+    public void setRoomFeatures(Long[] rfs) { iRoomFeatures = rfs; }
+
+    public void cleanSessionAttributes(HttpSession session) {
 		session.removeAttribute("Event.DateLocations");
 		session.removeAttribute("Event.StartTime");
 		session.removeAttribute("Event.StopTime");
@@ -434,6 +484,8 @@ public class EventAddForm extends PreferencesForm {
 		session.removeAttribute("Event.AdditionalInfo");
 		session.removeAttribute("Event.RoomFeatures");
 		session.removeAttribute("Event.AdditionalEmails");
+		session.removeAttribute("Event.RoomGroups");
+		session.removeAttribute("Event.RoomTypes");
 	}
     
     
@@ -699,23 +751,54 @@ public class EventAddForm extends PreferencesForm {
 				b+= " and f"+i+".uniqueId="+iRoomFeatures[i]+" and f"+i+" in elements(r.features)";
 			}
 		}
-		if (iLookAtNearLocations) {
-			query = "select r from Room r, Building b"+a+" where b.uniqueId = :buildingId and " +
-					"(r.building=b or ((((r.coordinateX - b.coordinateX)*(r.coordinateX - b.coordinateX)) +" +
-					"((r.coordinateY - b.coordinateY)*(r.coordinateY - b.coordinateY)))" +
-					"< 67*67))";
-		} else {
-			query = "select r from Room r"+a+" where r.building.uniqueId = :buildingId";
-		}
+        if (iRoomGroups!=null && iRoomGroups.length>0) {
+            b+= " and (";
+            for (int i=0;i<iRoomGroups.length;i++) {
+                if (i>0) b+=" or";
+                a+= ", RoomGroup g"+i;
+                b+= " (g"+i+".uniqueId="+iRoomGroups[i]+" and g"+i+" in elements(r.roomGroups))";
+            }
+            b+=")";
+        }
+        if (iRoomTypes!=null && iRoomTypes.length>0) {
+            b+= " and r.roomType.uniqueId in (";
+            for (int i=0;i<iRoomTypes.length;i++) {
+                if (i>0) b+=",";
+                b+= iRoomTypes[i];
+            }
+            b+=")";
+        }
+        if (iBuildingId!=0) {
+            if (iLookAtNearLocations) {
+                query = "select r from Room r " +
+                        "inner join r.roomDepts rd inner join rd.department.timetableManagers m inner join m.managerRoles mr, "+
+                        "Building b"+a+" where b.uniqueId = :buildingId and " +
+                        "rd.control=true and mr.role.reference=:eventMgr and "+
+                        "(r.building=b or ((((r.coordinateX - b.coordinateX)*(r.coordinateX - b.coordinateX)) +" +
+                        "((r.coordinateY - b.coordinateY)*(r.coordinateY - b.coordinateY)))" +
+                        "< 67*67))";
+            } else {
+                query = "select r from Room r " +
+                        "inner join r.roomDepts rd inner join rd.department.timetableManagers m inner join m.managerRoles mr"+
+                a+" where r.building.uniqueId=:buildingId and rd.control=true and mr.role.reference=:eventMgr";
+            }
+        } else {
+            query = "select r from NonUniversityLocation r " +
+                "inner join r.roomDepts rd inner join rd.department.timetableManagers m inner join m.managerRoles mr"+
+                a+" where rd.control=true and mr.role.reference=:eventMgr";
+        }
 			
 		if (iMinCapacity!=null && iMinCapacity.length()>0) { query+= " and r.capacity>= :minCapacity";	}
 		if (iMaxCapacity!=null && iMaxCapacity.length()>0) { query+= " and r.capacity<= :maxCapacity";	}
-		if (iRoomNumber!=null && iRoomNumber.length()>0) { query+=" and r.roomNumber like (:roomNumber)"; }
+		if (iRoomNumber!=null && iRoomNumber.length()>0) {
+		    query+=(iBuildingId==0?" and r.name like (:roomNumber)":" and r.roomNumber like (:roomNumber)"); 
+		}
  		query += b;
 
 		Query hibQuery = new LocationDAO().getSession().createQuery(query);
 
-		hibQuery.setLong("buildingId", iBuildingId);
+		if (iBuildingId!=0) hibQuery.setLong("buildingId", iBuildingId);
+		hibQuery.setString("eventMgr", Roles.EVENT_MGR_ROLE);
 		if (iMinCapacity!=null && iMinCapacity.length()>0) { hibQuery.setInteger("minCapacity", Integer.valueOf(iMinCapacity)); }
 		if (iMaxCapacity!=null && iMaxCapacity.length()>0) { hibQuery.setInteger("maxCapacity", Integer.valueOf(iMaxCapacity)); }
 		if (iRoomNumber!=null && iRoomNumber.length()>0) { 
@@ -730,7 +813,14 @@ public class EventAddForm extends PreferencesForm {
 		return locations;
 	}
 
-    
-    
-    
+
+	public boolean isHasOutsideLocations() {
+	    if (getSessionId()==null) return false;
+	    Session s = Session.getSessionById(iSessionId);
+	    boolean hasRoomType = false;
+        for (RoomType roomType : RoomType.findAll(false)) {
+            if (roomType.getOption(s).canScheduleEvents() && roomType.countManagableRooms(iSessionId)>0) return true;
+        }
+        return false;
+	}
 }
