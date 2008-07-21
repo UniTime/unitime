@@ -26,6 +26,20 @@
 	<version>3.1.@build.number@</version>
 	<release-date>@release.date@</release-date>
 	<category>
+		<title>DEVELOPMENT</title>
+		<item>
+			<name>Event Management</name>
+			<description>
+				<line>Continuous improvement and development of the event management functionality.</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.1.79</version>
+	<release-date>Sat, 19 Jul 2008</release-date>
+	<category>
 		<title>BUG FIXES</title>
 		<item>
 			<name>SQL Grammar Execption on Reports Page (ORA-01795: maximum number of expressions in a list is 1000)</name>
