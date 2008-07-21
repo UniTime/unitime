@@ -35,6 +35,7 @@ import org.unitime.timetable.model.EventNote;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.RelatedCourseInfo;
 import org.unitime.timetable.model.SchedulingSubpart;
@@ -48,6 +49,7 @@ import org.unitime.timetable.model.dao.CourseEventDAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
+import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 import org.unitime.timetable.model.dao.SponsoringOrganizationDAO;
 import org.unitime.timetable.model.dao._RootDAO;
@@ -86,6 +88,7 @@ public class EventAddInfoForm extends ActionForm {
 	private boolean iIsAddMeetings; 
 	private Event iEvent;
 	private Vector<MeetingBean> iExistingMeetings = new Vector<MeetingBean>();
+	private Vector<MeetingBean> iNewMeetings = new Vector<MeetingBean>();
 		
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 		
@@ -175,7 +178,7 @@ public class EventAddInfoForm extends ActionForm {
 			iMainContactEmail = iEvent.getMainContact().getEmailAddress();
 			iMainContactPhone = iEvent.getMainContact().getPhone();
 			iAdditionalEmails = iEvent.getEmail();
-			if ("Special Event".equals(iEventType)) iSponsoringOrgName = iEvent.getSponsoringOrganization().getName();
+			if ("Special Event".equals(iEventType)) iSponsoringOrgName = (iEvent.getSponsoringOrganization()==null?"":iEvent.getSponsoringOrganization().getName());
 			loadExistingMeetings();
 		}/* else if (iEventName==null) {
 			if (tm!=null) {
@@ -184,6 +187,7 @@ public class EventAddInfoForm extends ActionForm {
 					iMainContactEmail = (tm.getEmailAddress()==null?"":tm.getEmailAddress());
 			}
 		}*/
+		loadNewMeetings();
 		if ("Course Event".equals(iEventType) && iIsAddMeetings) {
             CourseEvent courseEvent = new CourseEventDAO().get(iEventId);;
             if (!courseEvent.getRelatedCourses().isEmpty()) {
@@ -461,11 +465,31 @@ public class EventAddInfoForm extends ActionForm {
 			mb.setStartTime((startHour>12?startHour-12:startHour)+":"+(startMin<10?"0":"")+startMin+(startHour>=12?" pm":" am"));
 			mb.setEndTime((endHour>12?endHour-12:endHour)+":"+(endMin<10?"0":"")+endMin+(endHour>=12?" pm":" am"));
 			mb.setLocation((meeting.getLocation()==null?"":meeting.getLocation().getLabel()));
+			mb.setLocationCapacity((meeting.getLocation()==null?"":meeting.getLocation().getCapacity().toString()));
 			iExistingMeetings.add(mb);
 		}
 	}
 	
 	public Vector<MeetingBean> getExistingMeetings() {return iExistingMeetings;}
+
+	public void loadNewMeetings() {
+		SimpleDateFormat iDateFormat = new SimpleDateFormat("EEE MM/dd, yyyy", Locale.US);
+		for (Iterator i= iDateLocations.iterator();i.hasNext();) {
+			DateLocation dl = (DateLocation) i.next();
+			MeetingBean mb = new MeetingBean();
+//			String location = (meeting.getLocation()==null?"":meeting.getLocation().getLabel());
+			String date = iDateFormat.format(dl.getDate());
+			mb.setDate(date);
+			mb.setStartTime(getTimeString(iStartTime));
+			mb.setEndTime(getTimeString(iStopTime));
+			Location location = LocationDAO.getInstance().get(dl.getLocUniqueId());
+			mb.setLocation((location==null?"":location.getLabel()));
+			mb.setLocationCapacity((location==null?"":location.getCapacity().toString()));
+			iNewMeetings.add(mb);
+		}
+	}	
+	
+	public Vector<MeetingBean> getNewMeetings() {return iNewMeetings;}
 	
 	public void cleanSessionAttributes(HttpSession session) {
 		session.removeAttribute("Event.DateLocations");

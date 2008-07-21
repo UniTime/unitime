@@ -124,7 +124,7 @@
 		<TR><TD colspan='2'>
 		<TABLE width="100%" border="0" cellspacing="0" cellpadding="1">
 			<TR align="left">
-				<td><font color="gray"><i>Date</i></font></td><td><font color="gray"><i>Time</i></font></td><td><font color="gray"><i>Location</i></font></td>
+				<td><font color="gray"><i>Date</i></font></td><td><font color="gray"><i>Time</i></font></td><td><font color="gray"><i>Location</i></font></td><td><font color="gray"><i>Capacity</i></font></td>
 			</TR>
 			<logic:iterate name="eventAddInfoForm" property="existingMeetings" id="meeting">
 				<TR onmouseover="this.style.backgroundColor='rgb(223,231,242)';" onmouseout="this.style.backgroundColor='transparent';">
@@ -136,6 +136,9 @@
 					</TD>
 					<TD>
 						<bean:write name="meeting" property="location"/>
+					</TD>	
+					<TD>
+						<bean:write name="meeting" property="locationCapacity"/>
 					</TD>	
 				</TR>	
 			</logic:iterate>
@@ -234,18 +237,21 @@
 		<TR><TD colspan='2'>
 		<TABLE width="100%" border="0" cellspacing="0" cellpadding="1">
 			<TR>
-				<td><font color="gray"><i>Date</i></font></td><td><font color="gray"><i>Time</i></font></td><td><font color="gray"><i>Location</i></font></td>
+				<td><font color="gray"><i>Date</i></font></td><td><font color="gray"><i>Time</i></font></td><td><font color="gray"><i>Location</i></font></td><td><font color="gray"><i>Capacity</i></font></td>
 			</TR>
-			<logic:iterate name="eventAddInfoForm" property="dateLocations" id="dl">
+			<logic:iterate name="eventAddInfoForm" property="newMeetings" id="meeting">
 				<TR onmouseover="this.style.backgroundColor='rgb(223,231,242)';" onmouseout="this.style.backgroundColor='transparent';">
 					<TD>
-						<bean:write name="dl" property="dateLabel"/> 
+						<bean:write name="meeting" property="date"/> 
 					</TD>
 					<TD>
-						<bean:write name="eventAddInfoForm" property="startTimeString"/> - <bean:write name="eventAddInfoForm" property="stopTimeString"/>
+						<bean:write name="meeting" property="startTime"/> - <bean:write name="meeting" property="endTime"/>
 					</TD>
 					<TD>
-						<bean:write name="dl" property="locationLabel"/>
+						<bean:write name="meeting" property="location"/>
+					</TD>	
+					<TD>
+						&nbsp; <bean:write name="meeting" property="locationCapacity"/>
 					</TD>	
 				</TR>	
 			</logic:iterate>

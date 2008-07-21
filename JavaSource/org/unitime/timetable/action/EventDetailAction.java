@@ -209,12 +209,13 @@ public class EventDetailAction extends Action {
 					int endHour = end/60;
 					int endMin = end%60;
 					String location = (meeting.getLocation()==null?"":meeting.getLocation().getLabel());
+					String locationCapacity = meeting.getLocation().getCapacity().toString();
 					String approvedDate = (meeting.getApprovedDate()==null?"":iDateFormat2.format(meeting.getApprovedDate()));
 					myForm.addMeeting(meeting.getUniqueId(),
 							iDateFormat.format(meeting.getMeetingDate()),
 							(startHour>12?startHour-12:startHour)+":"+(startMin<10?"0":"")+startMin+(startHour>=12?"p":"a"),
 							(endHour>12?endHour-12:endHour)+":"+(endMin<10?"0":"")+endMin+(endHour>=12?"p":"a"), 
-							location,approvedDate);
+							location, locationCapacity, approvedDate);
 				}
 				myForm.setCanEdit(user.isAdmin()||user.hasRole(Roles.EVENT_MGR_ROLE)||user.getId().equals(event.getMainContact().getExternalUniqueId()));
 				if (event instanceof ClassEvent || event instanceof ExamEvent) {
