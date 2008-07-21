@@ -177,7 +177,7 @@ TO DO:
 		<TR><TD colspan='2'>
 		<TABLE width="100%" border="0" cellspacing="0" cellpadding="1">
 			<TR align="left">
-				<td><font color="gray"><i>Date</i></font></td><td><font color="gray"><i>Time</i></font></td><td><font color="gray"><i>Location</i></font></td><td><font color="gray"><i>Approved</i></font></td>
+				<td><font color="gray"><i>Date</i></font></td><td><font color="gray"><i>Time</i></font></td><td><font color="gray"><i>Location</i></font></td><td><font color="gray"><i>Capacity</i></font></td><td><font color="gray"><i>Approved</i></font></td>
 			</TR>
 			<html:hidden property="selected"/>
 			<logic:iterate name="eventDetailForm" property="meetings" id="meeting">
@@ -191,6 +191,9 @@ TO DO:
 					</TD>
 					<TD>
 						<bean:write name="meeting" property="location"/>
+					</TD>	
+					<TD>
+						&nbsp; <bean:write name="meeting" property="locationCapacity"/>
 					</TD>	
 					<TD>
 						<bean:write name="meeting" property="approvedDate"/>

@@ -99,13 +99,14 @@ public class EventDetailForm extends ActionForm {
     public void setAdditionalEmails(String emails) {iAdditionalEmails = emails;}
     
     public Vector<MeetingBean> getMeetings() {return iMeetings;}
-    public void addMeeting(Long id, String date, String startTime, String endTime, String location, String approvedDate) {
+    public void addMeeting(Long id, String date, String startTime, String endTime, String location, String locationCapacity, String approvedDate) {
     	MeetingBean meeting = new MeetingBean();
     	meeting.setUniqueId(id);
     	meeting.setDate(date);
     	meeting.setStartTime(startTime);
     	meeting.setEndTime(endTime);
     	meeting.setLocation(location);
+    	meeting.setLocationCapacity(locationCapacity);
     	meeting.setApprovedDate(approvedDate);
     	iMeetings.add(meeting);
     }
@@ -162,6 +163,7 @@ public class EventDetailForm extends ActionForm {
     	private String iStartTime;
     	private String iEndTime;
     	private String iLocation;
+    	private String iLocationCapacity;
     	private String iApprovedDate;
     	private Long iUniqueId;
    	
@@ -181,6 +183,9 @@ public class EventDetailForm extends ActionForm {
 
     	public String getLocation() { return iLocation;}
     	public void setLocation(String location) {iLocation = location;}
+    	
+    	public String getLocationCapacity() {return iLocationCapacity;}
+    	public void setLocationCapacity(String capacity) {iLocationCapacity = capacity;}
 
     	public String getApprovedDate() { return iApprovedDate;}
     	public void setApprovedDate(String approvedDate) {iApprovedDate = approvedDate;}

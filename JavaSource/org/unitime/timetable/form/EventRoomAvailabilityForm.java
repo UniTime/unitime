@@ -361,12 +361,14 @@ public class EventRoomAvailabilityForm extends ActionForm {
 	public static class DateLocation implements Serializable, Comparable<DateLocation> {
 		private Date iDate;
 		private Long iLocation; //permanentId
+		private Long iLocUniqueId;
 		private String iLocationLabel;
 		private SimpleDateFormat sdf = new SimpleDateFormat("EEE MM/dd, yyyy", Locale.US);
 		
 		public DateLocation(Date date, Location location) {
 			iDate = date; 
-			iLocation = location.getPermanentId(); 
+			iLocation = location.getPermanentId();
+			iLocUniqueId = location.getUniqueId();
 			iLocationLabel = location.getLabel();
 		}
 
@@ -382,6 +384,10 @@ public class EventRoomAvailabilityForm extends ActionForm {
 			return iLocation;
 		}
 
+		public Long getLocUniqueId() {
+			return iLocUniqueId;
+		}
+		
 		public String getLocationLabel() {
 			return iLocationLabel;
 		}
