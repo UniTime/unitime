@@ -225,8 +225,8 @@ public class WebEventTableBuilder {
     private TableCell buildMainContactName(Event e) {
     	TableCell cell = this.initCell(true, null, 1, true);
     	if (e.getMainContact()!=null)
-    	    cell.addContent(e.getMainContact().getLastName()==null?"":(e.getMainContact().getLastName()+", ")+
-    	    			e.getMainContact().getFirstName()==null?"":e.getMainContact().getFirstName());
+    	    cell.addContent((e.getMainContact().getLastName()==null?"":(e.getMainContact().getLastName()+", "))+
+    	    			(e.getMainContact().getFirstName()==null?"":e.getMainContact().getFirstName()));
     	return(cell);
     }
     
