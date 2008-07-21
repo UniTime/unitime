@@ -63,7 +63,7 @@
 					onkeydown="return checkKey(event, this);">
 					<html:optionsCollection name="eventGridForm" property="times"/>
 				</html:select>
-			
+				
 				&nbsp;&nbsp;
 				Stop: 
 				<html:select name="eventGridForm" property="stopTime"
@@ -73,8 +73,31 @@
 					<html:optionsCollection name="eventGridForm" property="times"/>
 				</html:select> 
 		</TR>
+
 		<TR>
-			<TD>Location: </TD>
+			<TD valign='top' rowspan='2'> 
+				Location:
+			</TD>
+			<TD>
+				<table border='0'>
+					<tr>
+						<logic:iterate name="eventGridForm" property="allRoomTypes" id="rf" indexId="rfIdx">
+							<td nowrap>
+								<html:multibox property="roomTypes">
+								<bean:write name="rf" property="uniqueId"/>
+								</html:multibox>
+								<bean:write name="rf" property="label"/>&nbsp;&nbsp;&nbsp;
+							</td>
+							<% if (rfIdx%4==3) { %>
+								</tr><tr>
+							<% } %>
+						</logic:iterate>
+					</tr>
+				</table>
+			</TD>
+		</TR>
+
+		<TR>
 			<TD>Building:
 				<html:select name="eventGridForm" property="buildingId"
 					onfocus="setUp();" 
@@ -82,6 +105,9 @@
 					onkeydown="return checkKey(event, this);">
 					<html:option value="-1">Select...</html:option>
 					<html:optionsCollection name="eventGridForm" property="buildings" label="abbrName" value="uniqueId"/>
+					<logic:equal name="eventGridForm" property="hasOutsideLocations" value="true">
+						<html:option value="0">Outside Locations</html:option>
+					</logic:equal>
 				</html:select> 			
 				&nbsp; Room Number:&nbsp; <html:text property="roomNumber" maxlength="10" size="10"/>
 				&nbsp;&nbsp;&nbsp; <html:checkbox property="lookAtNearLocations"/> Include close by locations
@@ -93,6 +119,29 @@
 			</TD>
 			<TD>
 				Min: <html:text property="minCapacity" maxlength="5" size="5"/> &nbsp; Max: <html:text property="maxCapacity" maxlength="5" size="5"/>
+			</TD>
+		</TR>
+
+		<TR>
+			<TD valign='top'> 
+				Room Groups:
+			</TD>
+			<TD>
+				<table border='0'>
+					<tr>
+						<logic:iterate name="eventGridForm" property="allRoomGroups" id="rf" indexId="rfIdx">
+							<td nowrap>
+								<html:multibox property="roomGroups">
+								<bean:write name="rf" property="uniqueId"/>
+								</html:multibox>
+								<bean:write name="rf" property="name"/>&nbsp;&nbsp;&nbsp;
+							</td>
+							<% if (rfIdx%4==3) { %>
+								</tr><tr>
+							<% } %>
+						</logic:iterate>
+					</tr>
+				</table>
 			</TD>
 		</TR>
 
