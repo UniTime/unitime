@@ -148,8 +148,7 @@ public class SessionRollForward {
 				}
 			}
 		} catch (Exception e) {
-			Debug.error(e.getStackTrace().toString());
-			Debug.error(e.getMessage());
+			Debug.error(e);
 			errors.add("rollForward", new ActionMessage("errors.rollForward", "Room Groups", fromSession.getLabel(), toSession.getLabel(), "Failed to roll all room groups forward."));
 		}
 	}
@@ -200,8 +199,7 @@ public class SessionRollForward {
 				
 			}
 		} catch (Exception e) {
-			Debug.error(e.getStackTrace().toString());
-			Debug.error(e.getMessage());
+			Debug.error(e);
 			errors.add("rollForward", new ActionMessage("errors.rollForward", "Room Features", fromSession.getLabel(), toSession.getLabel(), "Failed to roll all room features forward."));
 		}	
 	}
@@ -379,8 +377,7 @@ public class SessionRollForward {
 				rDao.getSession().evict(fromRoom);
 			}								
 		} catch (Exception e) {
-			Debug.error(e.getStackTrace().toString());
-			Debug.error(e.getMessage());
+			Debug.error(e);
 			errors.add("rollForward", new ActionMessage("errors.rollForward", "Rooms", fromSession.getLabel(), toSession.getLabel(), "Failed to roll all rooms forward."));
 		}
 	}
@@ -498,8 +495,7 @@ public class SessionRollForward {
 				nulDao.getSession().evict(fromNonUniversityLocation);
 			}					
 		} catch (Exception e) {
-			Debug.error(e.getStackTrace().toString());
-			Debug.error(e.getMessage());
+			Debug.error(e);
 			errors.add("rollForward", new ActionMessage("errors.rollForward", "Non University Locations", fromSession.getLabel(), toSession.getLabel(), "Failed to roll all non university locations forward."));
 		}		
 	}
@@ -558,8 +554,7 @@ public class SessionRollForward {
 					bDao.getSession().evict(fromBldg);	
 				}
 			} catch (Exception e) {
-				Debug.error(e.getStackTrace().toString());
-				Debug.error(e.getMessage());
+				Debug.error(e);
 				errors.add("rollForward", new ActionMessage("errors.rollForward", "Buildings", fromSession.getLabel(), toSession.getLabel(), "Failed to roll all buildings forward."));
 			}
 		}
@@ -596,8 +591,7 @@ public class SessionRollForward {
 			tmDao.getSession().flush();
 			tmDao.getSession().clear();			
 		} catch (Exception e) {
-			Debug.error(e.getStackTrace().toString());
-			Debug.error(e.getMessage());
+			Debug.error(e);
 			errors.add("rollForward", new ActionMessage("errors.rollForward", "Timetable Managers", fromSession.getLabel(), toSession.getLabel(), "Failed to roll all timetable managers forward."));
 		}
 	}
@@ -689,8 +683,7 @@ public class SessionRollForward {
 			dDao.getSession().flush();
 			dDao.getSession().clear();
 		} catch (Exception e) {
-			Debug.error(e.getStackTrace().toString());
-			Debug.error(e.getMessage());
+			Debug.error(e);
 			errors.add("rollForward", new ActionMessage("errors.rollForward", "Departments", fromSession.getLabel(), toSession.getLabel(), "Failed to roll all departments forward."));
 		}
 
@@ -724,8 +717,7 @@ public class SessionRollForward {
 			dpDao.getSession().flush();
 			dpDao.getSession().clear();
 		} catch (Exception e) {
-			Debug.error(e.getStackTrace().toString());
-			Debug.error(e.getMessage());
+			Debug.error(e);
 			errors.add("rollForward", new ActionMessage("errors.rollForward", "Date Patterns", fromSession.getLabel(), toSession.getLabel(), "Failed to roll all date patterns forward."));
 		}		
 	}
@@ -864,8 +856,7 @@ public class SessionRollForward {
 			sDao.getSession().flush();
 			sDao.getSession().clear();
 		} catch (Exception e) {
-			Debug.error(e.getStackTrace().toString());
-			Debug.error(e.getMessage());
+			Debug.error(e);
 			errors.add("rollForward", new ActionMessage("errors.rollForward", "Subject Areas", fromSession.getLabel(), toSession.getLabel(), "Failed to roll all subject areas forward."));
 		}
 	}
@@ -1276,8 +1267,7 @@ public class SessionRollForward {
 				rollForwardExam((Exam) examIt.next(), toSession);
 			}
 		} catch (Exception e) {
-			Debug.error(e.getStackTrace().toString());
-			Debug.error(e.getMessage());
+			Debug.error(e);
 			errors.add("rollForward", new ActionMessage("errors.rollForward", "Midterm Exam", "previous session", toSession.getLabel(), "Failed to roll all midterm exams forward."));
 		}		
 	}
@@ -1291,8 +1281,7 @@ public class SessionRollForward {
 				rollForwardExam((Exam) examIt.next(), toSession);
 			}
 		} catch (Exception e) {
-			Debug.error(e.getStackTrace().toString());
-			Debug.error(e.getMessage());
+			Debug.error(e);
 			errors.add("rollForward", new ActionMessage("errors.rollForward", "Final Exam", "previous session", toSession.getLabel(), "Failed to roll all final exams forward."));
 		}		
 	}
@@ -1305,8 +1294,7 @@ public class SessionRollForward {
 			rollForwardExamPeriods(toSession, fromSession);
 			rollForwardExamLocationPrefs(toSession, fromSession);
 		} catch (Exception e) {
-			Debug.error(e.getStackTrace().toString());
-			Debug.error(e.getMessage());
+			Debug.error(e);
 			errors.add("rollForward", new ActionMessage("errors.rollForward", "Exam Configuration", fromSession.getLabel(), toSession.getLabel(), "Failed to roll exam configuration forward."));
 		}
 		
@@ -1387,8 +1375,7 @@ public class SessionRollForward {
 			}
 			
 		} catch (Exception e) {
-			Debug.error(e.getStackTrace().toString());
-			Debug.error(e.getMessage());
+			Debug.error(e);
 			errors.add("rollForward", new ActionMessage("errors.rollForward", "Instructors", fromSession.getLabel(), toSession.getLabel(), "Failed to roll all instructors forward."));
 		}
 	}
@@ -1636,8 +1623,7 @@ public class SessionRollForward {
 			tpDao.getSession().flush();
 			tpDao.getSession().clear();
 		} catch (Exception e) {
-			Debug.error(e.getStackTrace().toString());
-			Debug.error(e.getMessage());
+			Debug.error(e);
 			errors.add("rollForward", new ActionMessage("errors.rollForward", "Time Patterns", fromSession.getLabel(), toSession.getLabel(), "Failed to roll all time patterns forward."));
 		}		
 	}
