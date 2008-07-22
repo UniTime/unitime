@@ -229,4 +229,9 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
     }
     
     public boolean isApproved() { return getApprovedDate()!=null; }
+    
+    public boolean overlaps(Meeting meeting) {
+        if (!getMeetingDate().equals(meeting.getMeetingDate())) return false;
+        return getStartPeriod()<meeting.getStopPeriod() && meeting.getStartPeriod()<getStopPeriod();
+    }
 }
