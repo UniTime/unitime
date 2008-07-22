@@ -39,10 +39,12 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.hibernate.Query;
+import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.CourseEvent;
 import org.unitime.timetable.model.ExamOwner;
@@ -57,6 +59,7 @@ import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
@@ -111,6 +114,8 @@ public class EventAddForm extends ActionForm {
     private List iClassNumber;
     private Collection iSubjectAreas;
     private int iSelected;
+    private boolean iAdmin;
+    private Set iManagingDepts = null;
 
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 		
@@ -196,7 +201,12 @@ public class EventAddForm extends ActionForm {
         for (int i=0;i<Constants.PREF_ROWS_ADDED;i++) {
             addRelatedCourseInfo(null);
         }
-        
+        User user = Web.getUser(request.getSession());
+        iAdmin = (user!=null && user.isAdmin());
+        if (Roles.EVENT_MGR_ROLE.equals(user.getRole())) {
+            TimetableManager mgr = (user==null?null:TimetableManager.getManager(user));
+            if (mgr!=null) iManagingDepts = mgr.getDepartments();
+        }
 	}
 	
 	// load event info from session attribute Event
@@ -285,6 +295,7 @@ public class EventAddForm extends ActionForm {
 	}
 	
 	public TreeSet<Date> getMeetingDates() { return iMeetingDates; }
+	public void setMeetingDates(TreeSet<Date> dates) { iMeetingDates = dates; }
 	
 	// display calendar for event dates
 	public String getDatesTable() {
@@ -403,11 +414,9 @@ public class EventAddForm extends ActionForm {
         List ret = Building.findAll(iSessionId);
         buildings: for (Iterator i=ret.iterator();i.hasNext();) {
             Building b = (Building)i.next();
-            try {
             for (RoomType roomType : RoomType.findAll(true)) {
-                if (roomType.getOption(b.getSession()).canScheduleEvents() && roomType.countManagableRoomsOfBuilding(b.getUniqueId())>0) continue buildings;
+                if ((iAdmin || roomType.getOption(b.getSession()).canScheduleEvents()) && roomType.countManagableRoomsOfBuilding(b.getUniqueId())>0) continue buildings;
             }
-            } catch (Exception e) {e.printStackTrace(); }
             i.remove();
         }
         return ret;
@@ -443,7 +452,7 @@ public class EventAddForm extends ActionForm {
             for (Iterator<RoomType> i=ret.iterator(); i.hasNext();) {
                 RoomType t = (RoomType)i.next();
                 if (t.countManagableRooms(getSessionId())<=0) {i.remove(); continue; }
-                if (!t.getOption(session).canScheduleEvents()) {i.remove(); continue; }
+                if (!iAdmin && !t.getOption(session).canScheduleEvents()) {i.remove(); continue; }
             }
         }
         return ret;
@@ -819,8 +828,15 @@ public class EventAddForm extends ActionForm {
 	    Session s = Session.getSessionById(iSessionId);
 	    boolean hasRoomType = false;
         for (RoomType roomType : RoomType.findAll(false)) {
-            if (roomType.getOption(s).canScheduleEvents() && roomType.countManagableRooms(iSessionId)>0) return true;
+            if ((iAdmin || roomType.getOption(s).canScheduleEvents()) && roomType.countManagableRooms(iSessionId)>0) return true;
         }
         return false;
+	}
+	
+	public boolean isAdmin() {
+	    return iAdmin;
+	}
+	public Set<Department> getManagingDepartments() {
+	    return iManagingDepts;
 	}
 }

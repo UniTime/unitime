@@ -19,6 +19,8 @@
 --%>
 
 <%@ page language="java" autoFlush="true" errorPage="../error.jsp" %>
+<%@page import="org.unitime.timetable.form.EventGridForm"%>
+<%@page import="org.unitime.timetable.action.EventGridAction"%>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
@@ -167,6 +169,17 @@
 				</table>
 			</TD>
 		</TR>
+
+		<TR>
+			<TD valign='top'> 
+				Mode:
+			</TD>
+			<TD>
+				<html:select property="mode">
+					<html:options property="modes"/>
+				</html:select>
+			</TD>
+		</TR>
 		<TR>
 			<TD colspan='2' align='right'>
 				<html:submit onclick="displayLoading();" property="op" accesskey="C" value="Change" title="Update Filter (Alt+C)"/>
@@ -197,9 +210,7 @@
 		</TABLE>
 	</logic:messagesPresent>
 	<br>
-	<logic:notEmpty name="eventGridForm" property="table">
-		<bean:write name="eventGridForm" property="table" filter="false"/>
-	</logic:notEmpty>
+	<% EventGridAction.printTable((EventGridForm)request.getAttribute("eventGridForm"), out); %>
 </TABLE>
 	<logic:notEmpty scope="request" name="hash">
 		<SCRIPT type="text/javascript" language="javascript">

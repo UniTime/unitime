@@ -20,19 +20,35 @@
 package org.unitime.timetable.form;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.TreeSet;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import org.apache.struts.action.ActionMapping;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
 
 public class EventGridForm extends EventAddForm {
-    private String iTable = null;
+    private String iMode = null;
+    public static String sModeAll = "All Events";
+    public static String sModeApproved = "All Approved Events";
+    public static String sModeWaiting = "All Events Waiting Approval";
+    public static String[] sModes = new String[] {
+        sModeAll,
+        sModeApproved,
+        sModeWaiting
+    };
     
-    public void setTable(String table) { iTable = table; }
-    public String getTable() { return iTable; }
+    public void reset(ActionMapping mapping, HttpServletRequest request) {
+        super.reset(mapping, request);
+        iMode = sModeAll;
+    }
 
     public Collection<RoomType> getAllRoomTypes() {
         Collection<RoomType> ret = RoomType.findAll();
@@ -68,5 +84,45 @@ public class EventGridForm extends EventAddForm {
         return ret;
     }
 
+    public String getMode() { return iMode; }
+    public void setMode(String mode) { iMode = mode; }
+    public String[] getModes() {
+        return sModes;
+    }
 
+    public void save (HttpSession session) {
+        session.setAttribute("EventGrid.EventType", getEventType());
+        session.setAttribute("EventGrid.SessionId", getSessionId());        
+        session.setAttribute("EventGrid.StartTime", getStartTime());
+        session.setAttribute("EventGrid.StopTime", getStopTime());
+        session.setAttribute("EventGrid.MeetingDates", getMeetingDates());
+        session.setAttribute("EventGrid.MinCapacity", getMinCapacity());
+        session.setAttribute("EventGrid.MaxCapacity", getMaxCapacity());
+        session.setAttribute("EventGrid.BuildingId", getBuildingId());
+        session.setAttribute("EventGrid.RoomNumber", getRoomNumber());
+        session.setAttribute("EventGrid.LookAtNearLocations", getLookAtNearLocations());
+        session.setAttribute("EventGrid.IsAddMeetings", getIsAddMeetings());
+        session.setAttribute("EventGrid.RoomTypes", getRoomTypes());
+        session.setAttribute("EventGrid.RoomGroups", getRoomGroups());
+        session.setAttribute("EventGrid.RoomFeatures", getRoomFeatures());
+        session.setAttribute("EventGrid.Mode", getMode());
+    }
+    
+    public void load (HttpSession session) {
+        setEventType((String) session.getAttribute("EventGrid.EventType"));
+        setSessionId((Long) session.getAttribute("EventGrid.SessionId"));        
+        setStartTime((Integer) session.getAttribute("EventGrid.StartTime"));
+        setStopTime((Integer) session.getAttribute("EventGrid.StopTime"));
+        setMeetingDates((TreeSet<Date>) session.getAttribute("EventGrid.MeetingDates"));
+        setMinCapacity((String) session.getAttribute("EventGrid.MinCapacity"));
+        setMaxCapacity((String) session.getAttribute("EventGrid.MaxCapacity"));
+        setBuildingId((Long) session.getAttribute("EventGrid.BuildingId"));
+        setRoomNumber((String) session.getAttribute("EventGrid.RoomNumber"));
+        setLookAtNearLocations((Boolean) session.getAttribute("EventGrid.LookAtNearLocations"));
+        setIsAddMeetings((Boolean)session.getAttribute("EventGrid.IsAddMeetings"));
+        setRoomTypes((Long[]) session.getAttribute("EventGrid.RoomTypes"));
+        setRoomGroups((Long[]) session.getAttribute("EventGrid.RoomGroups"));
+        setRoomFeatures((Long[]) session.getAttribute("EventGrid.RoomFeatures"));
+        setMode((String)session.getAttribute("EventGrid.Mode"));
+    }
 }
