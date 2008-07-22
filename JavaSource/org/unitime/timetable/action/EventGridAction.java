@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.action;
 
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -31,6 +32,7 @@ import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.jsp.JspWriter;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
@@ -70,15 +72,15 @@ public class EventGridAction extends Action{
             op = request.getParameter("op2");
         
         if ("Change".equals(op)) {
-            myForm.save(request.getSession());
             myForm.loadDates(request);
+            myForm.save(request.getSession());
         }
         
         if (request.getParameter("backId")!=null) {
             request.setAttribute("hash", request.getParameter("backId"));
         }
         
-        if (request.getSession().getAttribute("Event.StartTime")!=null) {
+        if (request.getSession().getAttribute("EventGrid.StartTime")!=null) {
             myForm.load(request.getSession());
         }
 
@@ -101,45 +103,49 @@ public class EventGridAction extends Action{
             }
         }
         
-        myForm.setTable(getTable(myForm));
-        
         return mapping.findForward("show");
     }
     
-    public String getTable(EventGridForm form) {
+    public static void printTable(EventGridForm form, JspWriter out) throws IOException {
         Vector<Date> dates = new Vector(form.getMeetingDates());
+        if (dates.isEmpty()) return;
         TreeSet<TableModel> model = new TreeSet();
         int step = 3;
-        for (Enumeration<Location> e = form.getPossibleLocations().elements();e.hasMoreElements();)
-            model.add(new TableModel(e.nextElement(), dates, form.getStartTime(), form.getStopTime(), step));
+        for (Enumeration<Location> e = form.getPossibleLocations().elements();e.hasMoreElements();) {
+            Location location = e.nextElement();
+            model.add(new TableModel(location, dates, form.getStartTime(), form.getStopTime(), step, 
+                    form.isAdmin() || location.getRoomType().getOption(location.getSession()).canScheduleEvents(), form.getMode(),
+                    form.isAdmin() || (form.getManagingDepartments()!=null && form.getManagingDepartments().contains(location.getControllingDepartment()))));
+        }
+        if (model.isEmpty()) return;
         
-        String table = "<table border='0' cellpadding='2' cellspacing='0'>";
+        out.println("<table border='0' cellpadding='2' cellspacing='0'>");
         if (dates.size()>1) {
             for (TableModel m : model) {
                 boolean split = false;
                 for (Date date : dates) 
                     if (m.getColSpan(date)>1) split = true;
-                table += "<tr valign='top' align='center'>";
-                table += "<td class='TimetableHeadCell"+(split?"EOD":"")+"'><b>"+m.getLocation().getLabel()+"</b><br><i>("+m.getLocation().getCapacity()+" seats)</i></td>";
+                out.println("<tr valign='top' align='center'>");
+                out.println("<td class='TimetableHeadCell"+(split?"EOD":"")+"'><b>"+m.getLocation().getLabel()+"</b><br><i>("+m.getLocation().getCapacity()+" seats)</i></td>");
                 DateFormat df1 = new SimpleDateFormat("EEEE");
                 DateFormat df2 = new SimpleDateFormat("MMM dd, yyyy");
                 DateFormat df3 = new SimpleDateFormat("MM/dd");
                 for (Date date : dates) {
                     boolean last = dates.lastElement().equals(date);
-                    table += "<td colspan='"+m.getColSpan(date)+"' class='TimetableHeadCell"+(last?"EOL":split?"EOD":"")+"' id='b"+m.getLocation().getUniqueId()+"."+dates.indexOf(date)+"'><b>"+df1.format(date)+"<br>"+df2.format(date)+"</b></td>";
+                    out.println("<td colspan='"+m.getColSpan(date)+"' class='TimetableHeadCell"+(last?"EOL":split?"EOD":"")+"' id='b"+m.getLocation().getUniqueId()+"."+dates.indexOf(date)+"'><b>"+df1.format(date)+"<br>"+df2.format(date)+"</b></td>");
                 }
-                table += "</tr>";
+                out.println("</tr>");
                 HashSet<Meeting> rendered = new HashSet();
                 int lastCol = (form.getStopTime()-form.getStartTime())/step;
                 TreeSet<Integer> aboveBlank = new TreeSet<Integer>();
                 for (int col = 0; col<lastCol; col++) {
                     int start = form.getStartTime() + col*step;
-                    table += "<tr valign='top' align='center'><td class='TimetableCell"+(split?"EOD":"")+"' id='a"+m.getLocation().getUniqueId()+"."+col+"'>";
+                    out.println("<tr valign='top' align='center'><td class='TimetableCell"+(split?"EOD":"")+"' id='a"+m.getLocation().getUniqueId()+"."+col+"'>");
                     int min = start*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
                     int startHour = min/60;
                     int startMin = min%60;
-                    table += "<b>"+(startHour>12?startHour-12:startHour)+":"+(startMin<10?"0":"")+startMin+(startHour>=12?"p":"a")+"</b>";
-                    table += "</td>";
+                    out.println("<b>"+(startHour>12?startHour-12:startHour)+":"+(startMin<10?"0":"")+startMin+(startHour>=12?"p":"a")+"</b>");
+                    out.println("</td>");
                     TreeSet<Integer> blank = new TreeSet<Integer>();
                     for (int row = 0; row < dates.size(); row++ ) {
                         boolean last = (row+1==dates.size());
@@ -162,17 +168,19 @@ public class EventGridAction extends Action{
                         for (MeetingCell mc: todo) {
                             Meeting meeting = mc.getMeeting();
                             int mcol = cols.first(); cols.remove(mcol); mc.setCol(mcol);
-                            table += "<td rowspan='"+mc.getLength()+"' nowrap class='TimetableCell"+(mcol+1==span?(last?"EOL":split?"EOD":""):"")+"' "+
+                            out.println("<td rowspan='"+mc.getLength()+"' nowrap class='TimetableCell"+(mcol+1==span?(last?"EOL":split?"EOD":""):"")+"' "+
                                 (aboveBlank.contains(mcol)?"style='border-top:#646464 1px solid;'":"")+
                                 " onMouseOver=\"evOver(this,event,"+meeting.getEvent().getUniqueId()+","+meeting.getUniqueId()+");\""+
                                 " onMouseOut=\"evOut(this,event,"+meeting.getEvent().getUniqueId()+","+meeting.getUniqueId()+");\""+
                                 " onClick=\"evClick(this,event,"+meeting.getEvent().getUniqueId()+","+meeting.getUniqueId()+");\""+
                                 " title=\""+df3.format(dates.elementAt(row))+" "+meeting.startTime()+" - "+meeting.stopTime()+" "+meeting.getEvent().getEventName()+" ("+meeting.getEvent().getEventTypeLabel()+")"+"\""+
-                                "><a name='A"+meeting.getEvent().getUniqueId()+"'>";
-                            if (mc.getLength()>=2) table += meeting.startTime()+" - "+meeting.stopTime()+"<br>";
-                            table += meeting.getEvent().getEventName();
-                            if (mc.getLength()>=3) table+="<br><i>"+meeting.getEvent().getEventTypeLabel().replaceAll("Event", "")+"</i>";
-                            table += "</a></td>";
+                                "><a name='A"+meeting.getEvent().getUniqueId()+"'>");
+                            if (mc.getLength()>=2) out.println(meeting.startTime()+" - "+meeting.stopTime()+"<br>");
+                            if (meeting.getApprovedDate()!=null) out.println("<b>");
+                            out.println(meeting.getEvent().getEventName());
+                            if (meeting.getApprovedDate()!=null) out.println("</b>");
+                            if (mc.getLength()>=3) out.println("<br><i>"+meeting.getEvent().getEventTypeLabel().replaceAll("Event", "")+"</i>");
+                            out.println("</a></td>");
                             idx++;
                         }
                         boolean isAvailable = (idx==0);
@@ -180,30 +188,33 @@ public class EventGridAction extends Action{
                         while (idx<span) {
                             int mcol = cols.first(); cols.remove(mcol);
                             if (!isAvailable) {
-                                table += "<td class='TimetableCell"+(mcol+1==span?(last?"EOL":split?"EOD":""):"")+"' style='background-color:#E0E0E0;"+
+                                out.println("<td class='TimetableCell"+(mcol+1==span?(last?"EOL":split?"EOD":""):"")+"' style='background-color:#E0E0E0;"+
                                     (col+1<lastCol?"border-bottom:none;":"")+
                                     (prev+1==mcol?"border-left:none;":"")+
-                                    "'>&nbsp;</td>";
+                                    "'>&nbsp;</td>");
                                 blank.add(mcol);
                                 prev = mcol;
-                            } else {
-                                table += "<td class='TimetableCell"+(mcol+1==span?(last?"EOL":split?"EOD":""):"")+"'"+
+                            } else if (m.isEditable() && cell.isEditable()) {
+                                out.println("<td class='TimetableCell"+(mcol+1==span?(last?"EOL":split?"EOD":""):"")+"'"+
                                         " onMouseOver=\"avOver(this,event,"+m.getLocation().getUniqueId()+","+row+","+col+");\" "+
                                         " onMouseOut=\"avOut(this,event,"+m.getLocation().getUniqueId()+","+row+","+col+");\" "+
                                         " onMouseDown=\"avDown(this,event,"+m.getLocation().getUniqueId()+","+row+","+col+"); return false;\" "+
                                         " onMouseUp=\"avUp(this,event,"+m.getLocation().getUniqueId()+","+row+","+col+");\" "+
                                         " onClick=\"avClick(this,event,"+m.getLocation().getUniqueId()+","+row+","+col+");\"" +
                                         " onSelectStart=\"return false;\" "+
-                                        " id='d"+m.getLocation().getUniqueId()+"."+row+"."+col+"'>";
-                                table+="<input type='checkbox' name='select' value='"+m.getLocation().getUniqueId()+":"+date.getTime()+":"+start+":"+(start+step)+"' id='c"+m.getLocation().getUniqueId()+"."+row+"."+col+"' style='display:none;'>";
-                                table+="&nbsp;";
-                                table+="</td>";
+                                        " id='d"+m.getLocation().getUniqueId()+"."+row+"."+col+"'>");
+                                out.println("<input type='checkbox' name='select' value='"+m.getLocation().getUniqueId()+":"+date.getTime()+":"+start+":"+(start+step)+"' id='c"+m.getLocation().getUniqueId()+"."+row+"."+col+"' style='display:none;'>");
+                                out.println("&nbsp;");
+                                out.println("</td>");
+                            } else {
+                                out.println("<td class='TimetableCell"+(mcol+1==span?(last?"EOL":split?"EOD":""):"")+"' style='background-color:#E0E0E0;'>" +
+                                		"&nbsp;</td>");
                             }
                             idx++;
                         }
                     }
                     aboveBlank = blank;
-                    table += "</tr>";
+                    out.println("</tr>");
                 }
             }
         } else {
@@ -214,26 +225,26 @@ public class EventGridAction extends Action{
             DateFormat df1 = new SimpleDateFormat("EEEE");
             DateFormat df2 = new SimpleDateFormat("MMM dd, yyyy");
             DateFormat df3 = new SimpleDateFormat("MM/dd");
-            table += "<tr valign='top' align='center'>";
-            table += "<td class='TimetableHeadCell"+(split?"EOD":"")+"'><b>"+df1.format(date)+"<br>"+df2.format(date)+"</b></td>";
+            out.println("<tr valign='top' align='center'>");
+            out.println("<td class='TimetableHeadCell"+(split?"EOD":"")+"'><b>"+df1.format(date)+"<br>"+df2.format(date)+"</b></td>");
             int row = 0;
             for (TableModel m : model) {
                 boolean last = model.last().equals(m);
-                table += "<td colspan='"+m.getColSpan(date)+"' class='TimetableHeadCell"+(last?"EOL":split?"EOD":"")+"' id='b0."+row+"'><b>"+m.getLocation().getLabel()+"</b><br><i>("+m.getLocation().getCapacity()+" seats)</i></td>";
+                out.println("<td colspan='"+m.getColSpan(date)+"' class='TimetableHeadCell"+(last?"EOL":split?"EOD":"")+"' id='b0."+row+"'><b>"+m.getLocation().getLabel()+"</b><br><i>("+m.getLocation().getCapacity()+" seats)</i></td>");
                 row++;
             }
-            table += "</tr>";
+            out.println("</tr>");
             HashSet<Meeting> rendered = new HashSet();
             int lastCol = (form.getStopTime()-form.getStartTime())/step;
             TreeSet<Integer> aboveBlank = new TreeSet<Integer>();
             for (int col = 0; col<lastCol; col++) {
                 int start = form.getStartTime() + col*step;
-                table += "<tr valign='top' align='center'><td class='TimetableCell"+(split?"EOD":"")+"' id='a0."+col+"'>";
+                out.println("<tr valign='top' align='center'><td class='TimetableCell"+(split?"EOD":"")+"' id='a0."+col+"'>");
                 int min = start*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
                 int startHour = min/60;
                 int startMin = min%60;
-                table += "<b>"+(startHour>12?startHour-12:startHour)+":"+(startMin<10?"0":"")+startMin+(startHour>=12?"p":"a")+"</b>";
-                table += "</td>";
+                out.println("<b>"+(startHour>12?startHour-12:startHour)+":"+(startMin<10?"0":"")+startMin+(startHour>=12?"p":"a")+"</b>");
+                out.println("</td>");
                 TreeSet<Integer> blank = new TreeSet<Integer>();
                 row = 0;
                 for (TableModel m : model) {
@@ -256,17 +267,19 @@ public class EventGridAction extends Action{
                     for (MeetingCell mc: todo) {
                         Meeting meeting = mc.getMeeting();
                         int mcol = cols.first(); cols.remove(mcol); mc.setCol(mcol);
-                        table += "<td rowspan='"+mc.getLength()+"' nowrap class='TimetableCell"+(mcol+1==span?(last?"EOL":split?"EOD":""):"")+"' "+
+                        out.println("<td rowspan='"+mc.getLength()+"' nowrap class='TimetableCell"+(mcol+1==span?(last?"EOL":split?"EOD":""):"")+"' "+
                             (aboveBlank.contains(mcol)?"style='border-top:#646464 1px solid;'":"")+
                             " onMouseOver=\"evOver(this,event,"+meeting.getEvent().getUniqueId()+","+meeting.getUniqueId()+");\""+
                             " onMouseOut=\"evOut(this,event,"+meeting.getEvent().getUniqueId()+","+meeting.getUniqueId()+");\""+
                             " onClick=\"evClick(this,event,"+meeting.getEvent().getUniqueId()+","+meeting.getUniqueId()+");\""+
                             " title=\""+df3.format(date)+" "+meeting.startTime()+" - "+meeting.stopTime()+" "+meeting.getEvent().getEventName()+" ("+meeting.getEvent().getEventTypeLabel()+")"+"\""+
-                            "><a name='A"+meeting.getEvent().getUniqueId()+"'>";
-                        if (mc.getLength()>=2) table += meeting.startTime()+" - "+meeting.stopTime()+"<br>";
-                        table += meeting.getEvent().getEventName();
-                        if (mc.getLength()>=3) table+="<br><i>"+meeting.getEvent().getEventTypeLabel().replaceAll("Event", "")+"</i>";
-                        table += "</a></td>";
+                            "><a name='A"+meeting.getEvent().getUniqueId()+"'>");
+                        if (mc.getLength()>=2) out.println(meeting.startTime()+" - "+meeting.stopTime()+"<br>");
+                        if (meeting.getApprovedDate()!=null) out.println("<b>");
+                        out.println(meeting.getEvent().getEventName());
+                        if (meeting.getApprovedDate()!=null) out.println("</b>");
+                        if (mc.getLength()>=3) out.println("<br><i>"+meeting.getEvent().getEventTypeLabel().replaceAll("Event", "")+"</i>");
+                        out.println("</a></td>");
                         idx++;
                     }
                     boolean isAvailable = (idx==0);
@@ -274,35 +287,37 @@ public class EventGridAction extends Action{
                     while (idx<span) {
                         int mcol = cols.first(); cols.remove(mcol);
                         if (!isAvailable) {
-                            table += "<td class='TimetableCell"+(mcol+1==span?(last?"EOL":split?"EOD":""):"")+"' style='background-color:#E0E0E0;"+
+                            out.println("<td class='TimetableCell"+(mcol+1==span?(last?"EOL":split?"EOD":""):"")+"' style='background-color:#E0E0E0;"+
                                 (col+1<lastCol?"border-bottom:none;":"")+
                                 (prev+1==mcol?"border-left:none;":"")+
-                                "'>&nbsp;</td>";
+                                "'>&nbsp;</td>");
                             blank.add(mcol);
                             prev = mcol;
-                        } else {
-                            table += "<td class='TimetableCell"+(mcol+1==span?(last?"EOL":split?"EOD":""):"")+"'"+
+                        } else if (m.isEditable() && cell.isEditable()) {
+                            out.println("<td class='TimetableCell"+(mcol+1==span?(last?"EOL":split?"EOD":""):"")+"'"+
                             " onMouseOver=\"avOver(this,event,0,"+row+","+col+");\" "+
                             " onMouseOut=\"avOut(this,event,0,"+row+","+col+");\" "+
                             " onMouseDown=\"avDown(this,event,0,"+row+","+col+"); return false;\" "+
                             " onMouseUp=\"avUp(this,event,0,"+row+","+col+");\" "+
                             " onClick=\"avClick(this,event,0,"+row+","+col+");\"" +
                             " onSelectStart=\"return false;\" "+
-                            " id='d0."+row+"."+col+"'>";
-                            table+="<input type='checkbox' name='select' value='"+m.getLocation().getUniqueId()+":"+date.getTime()+":"+start+":"+(start+step)+"' id='c0."+row+"."+col+"' style='display:none;'>";
-                            table+="&nbsp;";
-                            table+="</td>";
+                            " id='d0."+row+"."+col+"'>");
+                            out.println("<input type='checkbox' name='select' value='"+m.getLocation().getUniqueId()+":"+date.getTime()+":"+start+":"+(start+step)+"' id='c0."+row+"."+col+"' style='display:none;'>");
+                            out.println("&nbsp;");
+                            out.println("</td>");
+                        } else {
+                            out.println("<td class='TimetableCell"+(mcol+1==span?(last?"EOL":split?"EOD":""):"")+"' style='background-color:#E0E0E0;'>" +
+                                    "&nbsp;</td>");
                         }
                         idx++;
                     }
                     row++;
                 }
                 aboveBlank = blank;
-                table += "</tr>";
+                out.println("</tr>");
             }
         }
-        table += "</table>";
-        return table;
+        out.println("</table>");
     }
     
     public static class TableModel implements Comparable<TableModel> {
@@ -311,7 +326,9 @@ public class EventGridAction extends Action{
         private List<Meeting> iMeetings = null;
         private int iStartSlot, iEndSlot, iCellLength;
         private TableCell[][] iTable;
-        public TableModel(Location location, Vector<Date> dates, int startSlot, int endSlot, int cellLength) {
+        private boolean iEdit;
+        public TableModel(Location location, Vector<Date> dates, int startSlot, int endSlot, int cellLength, boolean edit, String mode, boolean manager) {
+            iEdit = edit;
             iLocation = location;
             iDates = dates;
             iStartSlot = startSlot; iEndSlot = endSlot; iCellLength = cellLength;
@@ -341,8 +358,26 @@ public class EventGridAction extends Action{
                 }
             }
             for (Meeting meeting : iMeetings) {
-                MeetingCell mc = new MeetingCell(meeting);
                 TableCell[] row = iTable[iDates.indexOf(new Date(meeting.getMeetingDate().getTime()))];
+                boolean skip = false;
+                if (EventGridForm.sModeApproved.equals(mode) && meeting.getApprovedDate()==null) {
+                    skip = true;
+                }
+                if (EventGridForm.sModeWaiting.equals(mode) && meeting.getApprovedDate()!=null) {
+                    skip = true;
+                }
+                if (skip) {
+                    if (!manager) {
+                        for (int col = 0; col<row.length; col++) {
+                            int start = iStartSlot + col*iCellLength;
+                            if (meeting.getStartPeriod()<start+iCellLength && start<meeting.getStopPeriod()) {
+                                row[col].setEditable(false);
+                            }
+                        }
+                    }
+                    continue;
+                }
+                MeetingCell mc = new MeetingCell(meeting);
                 for (int col = 0; col<row.length; col++) {
                     int start = iStartSlot + col*iCellLength;
                     if (meeting.getStartPeriod()<start+iCellLength && start<meeting.getStopPeriod()) {
@@ -352,6 +387,9 @@ public class EventGridAction extends Action{
                     }
                 }
             }
+        }
+        public boolean isEditable() {
+            return iEdit;
         }
         public int compareTo(TableModel t) {
             return iLocation.compareTo(t.iLocation);
@@ -368,14 +406,18 @@ public class EventGridAction extends Action{
         public TableCell[][] getTable() { return iTable; }
         
         public class TableCell {
+            private boolean iEdit = true;
             public TreeSet<MeetingCell> iMeetings = new TreeSet();
             
             public TreeSet<MeetingCell> getMeetings() { return iMeetings; }
+            public boolean isEditable() { return iEdit; }
+            public void setEditable(boolean edit) { iEdit = edit; }
         }
         
         public class MeetingCell implements Comparable<MeetingCell> {
             private Meeting iMeeting;
             private int iStart = -1, iLength = 0, iCol = -1;
+            private boolean iEdit = false;
             
             public MeetingCell(Meeting meeting) {
                 iMeeting = meeting;
