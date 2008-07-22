@@ -72,7 +72,7 @@
 					onfocus="setUp();" 
     				onkeypress="return selectSearch(event, this);" 
 					onkeydown="return checkKey(event, this);">
-					<html:optionsCollection name="eventGridForm" property="times"/>
+					<html:optionsCollection name="eventGridForm" property="stopTimes"/>
 				</html:select> 
 		</TR>
 
