@@ -22,6 +22,7 @@ package org.unitime.timetable.action;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -107,6 +108,7 @@ public class EventGridAction extends Action{
     }
     
     public static void printTable(EventGridForm form, JspWriter out) throws IOException {
+        if (form.getStartTime()>=form.getStopTime()) return;
         Vector<Date> dates = new Vector(form.getMeetingDates());
         if (dates.isEmpty()) return;
         TreeSet<TableModel> model = new TreeSet();
@@ -189,13 +191,13 @@ public class EventGridAction extends Action{
                             int mcol = cols.first(); cols.remove(mcol);
                             if (!isAvailable) {
                                 out.println("<td class='TimetableCell"+(mcol+1==span?(last?"EOL":split?"EOD":""):"")+"' style='background-color:#E0E0E0;"+
-                                    (col+1<lastCol?"border-bottom:none;":"")+
+                                    (col+1<lastCol && !m.getTable()[0][col+1].getMeetings().isEmpty()?"border-bottom:none;":"")+
                                     (prev+1==mcol?"border-left:none;":"")+
                                     "'>&nbsp;</td>");
                                 blank.add(mcol);
                                 prev = mcol;
                             } else if (m.isEditable() && cell.isEditable()) {
-                                out.println("<td class='TimetableCell"+(mcol+1==span?(last?"EOL":split?"EOD":""):"")+"'"+
+                                out.println("<td colspan='"+span+"' class='TimetableCell"+(last?"EOL":split?"EOD":"")+"'"+
                                         " onMouseOver=\"avOver(this,event,"+m.getLocation().getUniqueId()+","+row+","+col+");\" "+
                                         " onMouseOut=\"avOut(this,event,"+m.getLocation().getUniqueId()+","+row+","+col+");\" "+
                                         " onMouseDown=\"avDown(this,event,"+m.getLocation().getUniqueId()+","+row+","+col+"); return false;\" "+
@@ -207,9 +209,10 @@ public class EventGridAction extends Action{
                                 out.println("&nbsp;");
                                 out.println("</td>");
                             } else {
-                                out.println("<td class='TimetableCell"+(mcol+1==span?(last?"EOL":split?"EOD":""):"")+"' style='background-color:#E0E0E0;'>" +
+                                out.println("<td colspan='"+span+"' class='TimetableCell"+(last?"EOL":split?"EOD":"")+"' style='background-color:#E0E0E0;'>" +
                                 		"&nbsp;</td>");
                             }
+                            if (isAvailable) break;
                             idx++;
                         }
                     }
@@ -288,13 +291,13 @@ public class EventGridAction extends Action{
                         int mcol = cols.first(); cols.remove(mcol);
                         if (!isAvailable) {
                             out.println("<td class='TimetableCell"+(mcol+1==span?(last?"EOL":split?"EOD":""):"")+"' style='background-color:#E0E0E0;"+
-                                (col+1<lastCol?"border-bottom:none;":"")+
+                                (col+1<lastCol && !m.getTable()[0][col+1].getMeetings().isEmpty()?"border-bottom:none;":"")+
                                 (prev+1==mcol?"border-left:none;":"")+
                                 "'>&nbsp;</td>");
                             blank.add(mcol);
                             prev = mcol;
                         } else if (m.isEditable() && cell.isEditable()) {
-                            out.println("<td class='TimetableCell"+(mcol+1==span?(last?"EOL":split?"EOD":""):"")+"'"+
+                            out.println("<td colspan='"+span+"' class='TimetableCell"+(last?"EOL":split?"EOD":"")+"'"+
                             " onMouseOver=\"avOver(this,event,0,"+row+","+col+");\" "+
                             " onMouseOut=\"avOut(this,event,0,"+row+","+col+");\" "+
                             " onMouseDown=\"avDown(this,event,0,"+row+","+col+"); return false;\" "+
@@ -306,9 +309,10 @@ public class EventGridAction extends Action{
                             out.println("&nbsp;");
                             out.println("</td>");
                         } else {
-                            out.println("<td class='TimetableCell"+(mcol+1==span?(last?"EOL":split?"EOD":""):"")+"' style='background-color:#E0E0E0;'>" +
+                            out.println("<td colspan='"+span+"' class='TimetableCell"+(last?"EOL":split?"EOD":"")+"' style='background-color:#E0E0E0;'>" +
                                     "&nbsp;</td>");
                         }
+                        if (isAvailable) break;
                         idx++;
                     }
                     row++;
@@ -381,10 +385,15 @@ public class EventGridAction extends Action{
                 for (int col = 0; col<row.length; col++) {
                     int start = iStartSlot + col*iCellLength;
                     if (meeting.getStartPeriod()<start+iCellLength && start<meeting.getStopPeriod()) {
-                        row[col].getMeetings().add(mc);
+                        row[col].addMeeting(mc);
                         mc.setLength(mc.getLength()+1);
                         if (mc.getStart()<0) { mc.setStart(start); }
                     }
+                }
+            }
+            for (int row = 0; row<iTable.length; row++) {
+                for (int col = 0; col<iTable[row].length; col++) {
+                    iTable[row][col].checkMeetings();
                 }
             }
         }
@@ -407,11 +416,38 @@ public class EventGridAction extends Action{
         
         public class TableCell {
             private boolean iEdit = true;
-            public TreeSet<MeetingCell> iMeetings = new TreeSet();
+            public TreeSet<MeetingCell> iMeetingCells = new TreeSet();
             
-            public TreeSet<MeetingCell> getMeetings() { return iMeetings; }
+            public TreeSet<MeetingCell> getMeetings() { return iMeetingCells; }
+            public boolean addMeeting(MeetingCell meeting) {
+                return iMeetingCells.add(meeting);
+            }
             public boolean isEditable() { return iEdit; }
             public void setEditable(boolean edit) { iEdit = edit; }
+            public void checkMeetings() {
+                if (iMeetingCells.size()<2) return;
+                Vector<MeetingCell> bad = new Vector();
+                Comparator<MeetingCell> cmp = new Comparator<MeetingCell>() {
+                    public int compare(MeetingCell m1, MeetingCell m2) {
+                        int cmp = m1.getMeeting().getStartPeriod().compareTo(m2.getMeeting().getStartPeriod());
+                        if (cmp!=0) return cmp;
+                        return m1.getMeeting().getUniqueId().compareTo(m2.getMeeting().getUniqueId());
+                    }
+                };
+                for (MeetingCell m1 : iMeetingCells) {
+                    for (MeetingCell m2 : iMeetingCells) {
+                        if (cmp.compare(m1,m2)>=0) continue;
+                        if (!m1.getMeeting().overlaps(m2.getMeeting())) {
+                            bad.add(m2.getLength()==1?m1:m2);
+                        }
+                    }
+                }
+                for (MeetingCell m : bad) {
+                    if (m.getLength()<=1) continue;
+                    iMeetingCells.remove(m);
+                    m.setLength(m.getLength()-1);
+                }
+            }
         }
         
         public class MeetingCell implements Comparable<MeetingCell> {
@@ -429,14 +465,19 @@ public class EventGridAction extends Action{
             public int getLength() { return iLength; }
             public void setLength(int length) { iLength = length; }
             public int compareTo(MeetingCell mc) {
-                int cmp = Double.compare(getStart(), mc.getStart());
+                int cmp = getMeeting().getStartTime().compareTo(mc.getMeeting().getStartTime());
                 if (cmp!=0) return cmp;
-                cmp = Double.compare(getLength(), mc.getLength());
+                cmp = getMeeting().getStopTime().compareTo(mc.getMeeting().getStopTime());
                 if (cmp!=0) return cmp;
-                return getMeeting().compareTo(mc.getMeeting());
+                return getMeeting().getUniqueId().compareTo(mc.getMeeting().getUniqueId());
             }
             public int getCol() { return iCol; }
             public void setCol(int col) { iCol = col; }
+            public String toString() {
+                return new SimpleDateFormat("MM/dd").format(getMeeting().getMeetingDate())+" "+
+                    getMeeting().startTime()+" - "+getMeeting().stopTime()+" "+
+                    getMeeting().getEvent().getEventName()+" ("+getMeeting().getEvent().getEventTypeLabel()+")";
+            }
         }
     }
     
