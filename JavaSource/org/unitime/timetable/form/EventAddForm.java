@@ -409,6 +409,22 @@ public class EventAddForm extends ActionForm {
     	return times;
     }
     
+    public Vector<ComboBoxLookup> getStopTimes() {
+        Vector<ComboBoxLookup> times = new Vector();
+        int hour;
+        int minute;
+        String ampm;
+        for (int i=3; i<=288; i=i+3) {
+            hour = (i/12)%12;
+            if (hour==0) hour=12; 
+            minute = i%12*5;
+            if (i/144==0) ampm="am"; 
+                else ampm = "pm";
+            times.add(new ComboBoxLookup(hour+":"+(minute<10?"0":"")+minute+" "+ampm, String.valueOf(i)));
+        }
+        return times;
+    }
+
     public List getBuildings() {
         if (iSessionId==null) return null;
         List ret = Building.findAll(iSessionId);
