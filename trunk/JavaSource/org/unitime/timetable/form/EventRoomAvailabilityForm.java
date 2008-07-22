@@ -230,8 +230,8 @@ public class EventRoomAvailabilityForm extends ActionForm {
 			dates += ":md"+idx;
 		}
 		String query = "Select m from Meeting m where " +
-				"m.startPeriod<=:stopTime and 	" +
-				"m.stopPeriod>=:startTime and " +
+				"m.startPeriod<:stopTime and 	" +
+				"m.stopPeriod>:startTime and " +
 				"m.locationPermanentId in ("+locIds+") and "+
 				"m.meetingDate in ("+dates+")";
 		Query hibQuery = new MeetingDAO().getSession().createQuery(query);
