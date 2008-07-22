@@ -1042,7 +1042,7 @@ create table TIMETABLE.TIMETABLE_MANAGER
   FIRST_NAME         VARCHAR2(20),
   MIDDLE_NAME        VARCHAR2(20),
   LAST_NAME          VARCHAR2(30),
-  EMAIL_ADDRESS      VARCHAR2(135),
+  EMAIL_ADDRESS      VARCHAR2(200),
   LAST_MODIFIED_TIME TIMESTAMP(6)
 )
 ;
@@ -2104,7 +2104,7 @@ create table TIMETABLE.EVENT_CONTACT
 (
   UNIQUEID    NUMBER(20),
   EXTERNAL_ID VARCHAR2(40),
-  EMAIL       VARCHAR2(100),
+  EMAIL       VARCHAR2(200),
   PHONE       VARCHAR2(10),
   FIRSTNAME   VARCHAR2(20),
   MIDDLENAME  VARCHAR2(20),
@@ -2113,12 +2113,6 @@ create table TIMETABLE.EVENT_CONTACT
 ;
 alter table TIMETABLE.EVENT_CONTACT
   add constraint PK_EVENT_CONTACT_UNIQUEID primary key (UNIQUEID);
-alter table TIMETABLE.EVENT_CONTACT
-  add constraint NN_EVENT_CONTACT_EMAIL
-  check ("EMAIL" IS NOT NULL);
-alter table TIMETABLE.EVENT_CONTACT
-  add constraint NN_EVENT_CONTACT_PHONE
-  check ("PHONE" IS NOT NULL);
 alter table TIMETABLE.EVENT_CONTACT
   add constraint NN_EVENT_CONTACT_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
@@ -2210,6 +2204,26 @@ alter table TIMETABLE.EXAM
   check ("UNIQUEID" IS NOT NULL);
 
 prompt
+prompt Creating table SPONSORING_ORGANIZATION
+prompt ======================================
+prompt
+create table TIMETABLE.SPONSORING_ORGANIZATION
+(
+  UNIQUEID NUMBER(20),
+  NAME     VARCHAR2(100),
+  EMAIL    VARCHAR2(200)
+)
+;
+alter table TIMETABLE.SPONSORING_ORGANIZATION
+  add constraint PK_SPONSORING_ORGANIZATION primary key (UNIQUEID);
+alter table TIMETABLE.SPONSORING_ORGANIZATION
+  add constraint NN_SPONSOR_ORG_ID
+  check ("UNIQUEID" IS NOT NULL);
+alter table TIMETABLE.SPONSORING_ORGANIZATION
+  add constraint NN_SPONSOR_ORG_NAME
+  check ("NAME" IS NOT NULL);
+
+prompt
 prompt Creating table EVENT
 prompt ====================
 prompt
@@ -2224,7 +2238,9 @@ create table TIMETABLE.EVENT
   CLASS_ID        NUMBER(20),
   EXAM_ID         NUMBER(20),
   EVENT_TYPE      NUMBER(10),
-  REQ_ATTD        NUMBER(1)
+  REQ_ATTD        NUMBER(1),
+  EMAIL           VARCHAR2(1000),
+  SPONSOR_ORG_ID  NUMBER(20)
 )
 ;
 alter table TIMETABLE.EVENT
@@ -2239,8 +2255,13 @@ alter table TIMETABLE.EVENT
   add constraint FK_EVENT_MAIN_CONTACT foreign key (MAIN_CONTACT_ID)
   references TIMETABLE.EVENT_CONTACT (UNIQUEID) on delete set null;
 alter table TIMETABLE.EVENT
+  add constraint FK_EVENT_SPONSOR_ORG foreign key (SPONSOR_ORG_ID)
+  references TIMETABLE.SPONSORING_ORGANIZATION (UNIQUEID) on delete set null;
+alter table TIMETABLE.EVENT
   add constraint NN_EVENT_TYPE
   check (event_type is not null);
+create index TIMETABLE.IDX_EVENT_CLASS on TIMETABLE.EVENT (CLASS_ID);
+create index TIMETABLE.IDX_EVENT_EXAM on TIMETABLE.EVENT (EXAM_ID);
 
 prompt
 prompt Creating table EVENT_JOIN_EVENT_CONTACT
@@ -2527,27 +2548,61 @@ alter table TIMETABLE.EXTERNAL_BUILDING
 create index TIMETABLE.IDX_EXTERNAL_BUILDING on TIMETABLE.EXTERNAL_BUILDING (SESSION_ID, ABBREVIATION);
 
 prompt
+prompt Creating table ROOM_TYPE
+prompt ========================
+prompt
+create table TIMETABLE.ROOM_TYPE
+(
+  UNIQUEID  NUMBER(20),
+  REFERENCE VARCHAR2(20),
+  LABEL     VARCHAR2(60),
+  ORD       NUMBER(10),
+  IS_ROOM   NUMBER(1) default 1
+)
+;
+alter table TIMETABLE.ROOM_TYPE
+  add constraint PK_ROOM_TYPE primary key (UNIQUEID);
+alter table TIMETABLE.ROOM_TYPE
+  add constraint NN_ROOM_TYPE_LABEL
+  check ("LABEL" IS NOT NULL);
+alter table TIMETABLE.ROOM_TYPE
+  add constraint NN_ROOM_TYPE_ORD
+  check ("ORD" IS NOT NULL);
+alter table TIMETABLE.ROOM_TYPE
+  add constraint NN_ROOM_TYPE_REF
+  check ("REFERENCE" IS NOT NULL);
+alter table TIMETABLE.ROOM_TYPE
+  add constraint NN_ROOM_TYPE_ROOM
+  check ("IS_ROOM" IS NOT NULL);
+alter table TIMETABLE.ROOM_TYPE
+  add constraint NN_ROOM_TYPE_UID
+  check ("UNIQUEID" IS NOT NULL);
+
+prompt
 prompt Creating table EXTERNAL_ROOM
 prompt ============================
 prompt
 create table TIMETABLE.EXTERNAL_ROOM
 (
-  UNIQUEID            NUMBER(20) not null,
-  EXTERNAL_BLDG_ID    NUMBER(20),
-  EXTERNAL_UID        VARCHAR2(40),
-  ROOM_NUMBER         VARCHAR2(10),
-  COORDINATE_X        NUMBER(10),
-  COORDINATE_Y        NUMBER(10),
-  CAPACITY            NUMBER(10),
-  CLASSIFICATION      VARCHAR2(20),
-  SCHEDULED_ROOM_TYPE VARCHAR2(20),
-  INSTRUCTIONAL       NUMBER(1),
-  DISPLAY_NAME        VARCHAR2(100),
-  EXAM_CAPACITY       NUMBER(10)
+  UNIQUEID         NUMBER(20) not null,
+  EXTERNAL_BLDG_ID NUMBER(20),
+  EXTERNAL_UID     VARCHAR2(40),
+  ROOM_NUMBER      VARCHAR2(10),
+  COORDINATE_X     NUMBER(10),
+  COORDINATE_Y     NUMBER(10),
+  CAPACITY         NUMBER(10),
+  CLASSIFICATION   VARCHAR2(20),
+  INSTRUCTIONAL    NUMBER(1),
+  DISPLAY_NAME     VARCHAR2(100),
+  EXAM_CAPACITY    NUMBER(10),
+  ROOM_TYPE        NUMBER(20)
 )
 ;
 alter table TIMETABLE.EXTERNAL_ROOM
   add constraint PK_EXTERNAL_ROOM primary key (UNIQUEID);
+alter table TIMETABLE.EXTERNAL_ROOM
+  add constraint FK_EXTERNAL_ROOM_TYPE foreign key (ROOM_TYPE)
+  references TIMETABLE.ROOM_TYPE (UNIQUEID) on delete cascade;
 alter table TIMETABLE.EXTERNAL_ROOM
   add constraint FK_EXT_ROOM_BUILDING foreign key (EXTERNAL_BLDG_ID)
   references TIMETABLE.EXTERNAL_BUILDING (UNIQUEID) on delete cascade;
@@ -2567,8 +2622,8 @@ alter table TIMETABLE.EXTERNAL_ROOM
   add constraint NN_EXTERNAL_RM_NBR
   check ("ROOM_NUMBER" IS NOT NULL);
 alter table TIMETABLE.EXTERNAL_ROOM
-  add constraint NN_EXTERNAL_RM_SCHED_TYPE
-  check ("SCHEDULED_ROOM_TYPE" IS NOT NULL);
+  add constraint NN_EXTERNAL_ROOM_TYPE
+  check (room_type is not null);
 create index TIMETABLE.IDX_EXTERNAL_ROOM on TIMETABLE.EXTERNAL_ROOM (EXTERNAL_BLDG_ID, ROOM_NUMBER);
 
 prompt
@@ -2924,14 +2979,21 @@ create table TIMETABLE.NON_UNIVERSITY_LOCATION
   DISPLAY_NAME      VARCHAR2(100),
   EXAM_CAPACITY     NUMBER(10) default 0,
   PERMANENT_ID      NUMBER(20) not null,
-  EXAM_TYPE         NUMBER(10) default 0
+  EXAM_TYPE         NUMBER(10) default 0,
+  ROOM_TYPE         NUMBER(20)
 )
 ;
 alter table TIMETABLE.NON_UNIVERSITY_LOCATION
   add constraint PK_NON_UNIV_LOC primary key (UNIQUEID);
 alter table TIMETABLE.NON_UNIVERSITY_LOCATION
+  add constraint FK_LOCATION_TYPE foreign key (ROOM_TYPE)
+  references TIMETABLE.ROOM_TYPE (UNIQUEID) on delete cascade;
+alter table TIMETABLE.NON_UNIVERSITY_LOCATION
   add constraint FK_NON_UNIV_LOC_SESSION foreign key (SESSION_ID)
   references TIMETABLE.SESSIONS (UNIQUEID) on delete cascade;
+alter table TIMETABLE.NON_UNIVERSITY_LOCATION
+  add constraint NN_LOCATION_TYPE
+  check (room_type is not null);
 alter table TIMETABLE.NON_UNIVERSITY_LOCATION
   add constraint NN_NON_UNIV_LOC_CAPACITY
   check ("CAPACITY" IS NOT NULL);
@@ -2956,6 +3018,7 @@ alter table TIMETABLE.NON_UNIVERSITY_LOCATION
 alter table TIMETABLE.NON_UNIVERSITY_LOCATION
   add constraint NN_NON_UNIV_LOC_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
+create index TIMETABLE.IDX_LOCATION_PERMID on TIMETABLE.NON_UNIVERSITY_LOCATION (PERMANENT_ID, SESSION_ID);
 create index TIMETABLE.IDX_NON_UNIV_LOC_SESSION on TIMETABLE.NON_UNIVERSITY_LOCATION (SESSION_ID);
 
 prompt
@@ -3281,24 +3344,24 @@ prompt ===================
 prompt
 create table TIMETABLE.ROOM
 (
-  UNIQUEID            NUMBER(20),
-  EXTERNAL_UID        VARCHAR2(40),
-  SESSION_ID          NUMBER(20),
-  BUILDING_ID         NUMBER(20),
-  ROOM_NUMBER         VARCHAR2(10),
-  CAPACITY            NUMBER(10),
-  COORDINATE_X        NUMBER(10),
-  COORDINATE_Y        NUMBER(10),
-  SCHEDULED_ROOM_TYPE VARCHAR2(20),
-  IGNORE_TOO_FAR      NUMBER(1),
-  MANAGER_IDS         VARCHAR2(200),
-  PATTERN             VARCHAR2(350),
-  IGNORE_ROOM_CHECK   NUMBER(1) default (0),
-  CLASSIFICATION      VARCHAR2(20),
-  DISPLAY_NAME        VARCHAR2(100),
-  EXAM_CAPACITY       NUMBER(10) default 0,
-  PERMANENT_ID        NUMBER(20) not null,
-  EXAM_TYPE           NUMBER(10) default 0
+  UNIQUEID          NUMBER(20),
+  EXTERNAL_UID      VARCHAR2(40),
+  SESSION_ID        NUMBER(20),
+  BUILDING_ID       NUMBER(20),
+  ROOM_NUMBER       VARCHAR2(10),
+  CAPACITY          NUMBER(10),
+  COORDINATE_X      NUMBER(10),
+  COORDINATE_Y      NUMBER(10),
+  IGNORE_TOO_FAR    NUMBER(1),
+  MANAGER_IDS       VARCHAR2(200),
+  PATTERN           VARCHAR2(350),
+  IGNORE_ROOM_CHECK NUMBER(1) default (0),
+  CLASSIFICATION    VARCHAR2(20),
+  DISPLAY_NAME      VARCHAR2(100),
+  EXAM_CAPACITY     NUMBER(10) default 0,
+  PERMANENT_ID      NUMBER(20) not null,
+  EXAM_TYPE         NUMBER(10) default 0,
+  ROOM_TYPE         NUMBER(20)
 )
 ;
 alter table TIMETABLE.ROOM
@@ -3311,6 +3374,9 @@ alter table TIMETABLE.ROOM
 alter table TIMETABLE.ROOM
   add constraint FK_ROOM_SESSION foreign key (SESSION_ID)
   references TIMETABLE.SESSIONS (UNIQUEID) on delete cascade;
+alter table TIMETABLE.ROOM
+  add constraint FK_ROOM_TYPE foreign key (ROOM_TYPE)
+  references TIMETABLE.ROOM_TYPE (UNIQUEID) on delete cascade;
 alter table TIMETABLE.ROOM
   add constraint NN_ROOM_BUILDING_ID
   check ("BUILDING_ID" IS NOT NULL);
@@ -3333,15 +3399,16 @@ alter table TIMETABLE.ROOM
   add constraint NN_ROOM_ROOM_NUMBER
   check ("ROOM_NUMBER" IS NOT NULL);
 alter table TIMETABLE.ROOM
-  add constraint NN_ROOM_SCHEDULED_ROOM_TYPE
-  check ("SCHEDULED_ROOM_TYPE" IS NOT NULL);
-alter table TIMETABLE.ROOM
   add constraint NN_ROOM_SESSION_ID
   check ("SESSION_ID" IS NOT NULL);
+alter table TIMETABLE.ROOM
+  add constraint NN_ROOM_TYPE
+  check (room_type is not null);
 alter table TIMETABLE.ROOM
   add constraint NN_ROOM_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
 create index TIMETABLE.IDX_ROOM_BUILDING on TIMETABLE.ROOM (BUILDING_ID);
+create index TIMETABLE.IDX_ROOM_PERMID on TIMETABLE.ROOM (PERMANENT_ID, SESSION_ID);
 
 prompt
 prompt Creating table ROOM_DEPT
@@ -3589,6 +3656,36 @@ alter table TIMETABLE.ROOM_PREF
   check ("UNIQUEID" IS NOT NULL);
 create index TIMETABLE.IDX_ROOM_PREF_LEVEL on TIMETABLE.ROOM_PREF (PREF_LEVEL_ID);
 create index TIMETABLE.IDX_ROOM_PREF_OWNER on TIMETABLE.ROOM_PREF (OWNER_ID);
+
+prompt
+prompt Creating table ROOM_TYPE_OPTION
+prompt ===============================
+prompt
+create table TIMETABLE.ROOM_TYPE_OPTION
+(
+  ROOM_TYPE  NUMBER(20),
+  SESSION_ID NUMBER(20),
+  STATUS     NUMBER(10),
+  MESSAGE    VARCHAR2(200)
+)
+;
+alter table TIMETABLE.ROOM_TYPE_OPTION
+  add constraint PK_ROOM_TYPE_OPTION primary key (ROOM_TYPE, SESSION_ID);
+alter table TIMETABLE.ROOM_TYPE_OPTION
+  add constraint FK_RTYPE_OPTION_SESSION foreign key (SESSION_ID)
+  references TIMETABLE.SESSIONS (UNIQUEID) on delete cascade;
+alter table TIMETABLE.ROOM_TYPE_OPTION
+  add constraint FK_RTYPE_OPTION_TYPE foreign key (ROOM_TYPE)
+  references TIMETABLE.ROOM_TYPE (UNIQUEID) on delete cascade;
+alter table TIMETABLE.ROOM_TYPE_OPTION
+  add constraint NN_RTYPE_OPT_SESSION
+  check ("SESSION_ID" IS NOT NULL);
+alter table TIMETABLE.ROOM_TYPE_OPTION
+  add constraint NN_RTYPE_OPT_STATUS
+  check ("STATUS" IS NOT NULL);
+alter table TIMETABLE.ROOM_TYPE_OPTION
+  add constraint NN_RTYPE_OPT_TYPE
+  check ("ROOM_TYPE" IS NOT NULL);
 
 prompt
 prompt Creating table SECTIONING_INFO
@@ -3880,6 +3977,7 @@ alter table TIMETABLE.STUDENT_CLASS_ENRL
   add constraint NN_STUDENT_CLASS_ENRL_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
 create index TIMETABLE.IDX_STUDENT_CLASS_ENRL_CLASS on TIMETABLE.STUDENT_CLASS_ENRL (CLASS_ID);
+create index TIMETABLE.IDX_STUDENT_CLASS_ENRL_COURSE on TIMETABLE.STUDENT_CLASS_ENRL (COURSE_OFFERING_ID);
 create index TIMETABLE.IDX_STUDENT_CLASS_ENRL_REQ on TIMETABLE.STUDENT_CLASS_ENRL (COURSE_REQUEST_ID);
 create index TIMETABLE.IDX_STUDENT_CLASS_ENRL_STUDENT on TIMETABLE.STUDENT_CLASS_ENRL (STUDENT_ID);
 
@@ -4689,7 +4787,7 @@ prompt
 create sequence TIMETABLE.LOC_PERM_ID_SEQ
 minvalue 1
 maxvalue 99999999999999999999
-start with 21
+start with 41
 increment by 1
 cache 20;
 
@@ -4711,7 +4809,7 @@ prompt
 create sequence TIMETABLE.PREF_GROUP_SEQ
 minvalue 1
 maxvalue 99999999999999999999
-start with 231179
+start with 231379
 increment by 1
 cache 20;
 
@@ -4733,7 +4831,7 @@ prompt
 create sequence TIMETABLE.PREF_SEQ
 minvalue 1
 maxvalue 99999999999999999999
-start with 123160
+start with 123240
 increment by 1
 cache 20;
 
@@ -4755,7 +4853,7 @@ prompt
 create sequence TIMETABLE.REF_TABLE_SEQ
 minvalue 1
 maxvalue 1000000
-start with 425
+start with 445
 increment by 1
 cache 20;
 
@@ -4777,7 +4875,7 @@ prompt
 create sequence TIMETABLE.ROLE_SEQ
 minvalue 1
 maxvalue 999999999999999999999999999
-start with 81
+start with 101
 increment by 1
 cache 20;
 
@@ -4821,7 +4919,7 @@ prompt
 create sequence TIMETABLE.ROOM_SEQ
 minvalue 1
 maxvalue 999999999999999999999999999
-start with 7995
+start with 8015
 increment by 1
 cache 20;
 
@@ -4832,7 +4930,7 @@ prompt
 create sequence TIMETABLE.ROOM_SHARING_GROUP_SEQ
 minvalue 1
 maxvalue 9999999999
-start with 12627
+start with 12647
 increment by 1
 cache 20;
 
@@ -4898,7 +4996,7 @@ prompt
 create sequence TIMETABLE.SOLVER_PARAMETER_DEF_SEQ
 minvalue 1
 maxvalue 999999999999999999999999999
-start with 321
+start with 361
 increment by 1
 cache 20;
 
@@ -4909,7 +5007,7 @@ prompt
 create sequence TIMETABLE.SOLVER_PARAMETER_GROUP_SEQ
 minvalue 1
 maxvalue 999999999999999999999999999
-start with 101
+start with 121
 increment by 1
 cache 20;
 
@@ -4931,7 +5029,7 @@ prompt
 create sequence TIMETABLE.SOLVER_PREDEF_SETTING_SEQ
 minvalue 1
 maxvalue 999999999999999999999999999
-start with 121
+start with 141
 increment by 1
 cache 20;
 
@@ -5030,7 +5128,7 @@ prompt
 create sequence TIMETABLE.TIMETABLE_MGR_SEQ
 minvalue 1
 maxvalue 99999999999999999999
-start with 510
+start with 530
 increment by 1
 cache 20;
 
@@ -5096,7 +5194,7 @@ prompt
 create sequence TIMETABLE.TMTBL_MGR_TO_ROLES_SEQ
 minvalue 1
 maxvalue 9999999999
-start with 550
+start with 570
 increment by 1
 cache 20;
 
