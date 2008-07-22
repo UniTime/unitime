@@ -247,7 +247,7 @@
 					onfocus="setUp();" 
     				onkeypress="return selectSearch(event, this);" 
 					onkeydown="return checkKey(event, this);">
-					<html:optionsCollection name="eventAddForm" property="times"/>
+					<html:optionsCollection name="eventAddForm" property="stopTimes"/>
 				</html:select> 
 		</TR>
 		<TR>
