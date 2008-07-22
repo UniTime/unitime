@@ -418,7 +418,7 @@ public class EventAddForm extends ActionForm {
             hour = (i/12)%12;
             if (hour==0) hour=12; 
             minute = i%12*5;
-            if (i/144==0) ampm="am"; 
+            if ((i/144)%2==0) ampm="am"; 
                 else ampm = "pm";
             times.add(new ComboBoxLookup(hour+":"+(minute<10?"0":"")+minute+" "+ampm, String.valueOf(i)));
         }
