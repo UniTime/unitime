@@ -121,7 +121,7 @@ public class EventAddForm extends ActionForm {
 		
 		ActionErrors errors = new ActionErrors();
 
-		if (iStartTime>iStopTime)
+		if (iStartTime>=iStopTime)
 			errors.add("stopDate", new ActionMessage("errors.generic", "Start Time must be earlier than Stop Time. It is not possible to enter overnight events."));
 		
 		if (iSessionId==null) {
