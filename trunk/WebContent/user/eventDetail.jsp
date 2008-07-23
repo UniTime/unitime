@@ -177,12 +177,23 @@ TO DO:
 		<TR><TD colspan='2'>
 		<TABLE width="100%" border="0" cellspacing="0" cellpadding="1">
 			<TR align="left">
-				<td><font color="gray"><i>Date</i></font></td><td><font color="gray"><i>Time</i></font></td><td><font color="gray"><i>Location</i></font></td><td><font color="gray"><i>Capacity</i></font></td><td><font color="gray"><i>Approved</i></font></td>
+				<td></td><td><font color="gray"><i>Date</i></font></td><td><font color="gray"><i>Time</i></font></td><td><font color="gray"><i>Location</i></font></td><td><font color="gray"><i>Capacity</i></font></td><td><font color="gray"><i>Approved</i></font></td>
 			</TR>
 			<html:hidden property="selected"/>
 			<logic:iterate name="eventDetailForm" property="meetings" id="meeting">
 				<bean:define name="meeting" property="uniqueId" id="meetingId"/>
 				<TR onmouseover="style.backgroundColor='rgb(223,231,242)';" onmouseout="style.backgroundColor='transparent';">
+					<TD>
+						<logic:equal name="meeting" property="canEdit" value="true">
+							<bean:define name="meeting" property="date" id="meetingDate"/>
+							<bean:define name="meeting" property="startTime" id="meetingStartTime"/>
+							<bean:define name="meeting" property="endTime" id="meetingEndTime"/>
+							<bean:define name="meeting" property="location" id="meetingLocation"/>
+							<html:multibox property="selectedMeetings">
+								<bean:write name="meetingId"/>
+							</html:multibox>
+						</logic:equal>
+					</TD>
 					<TD>
 						<bean:write name="meeting" property="date" filter="false"/> 
 					</TD>
@@ -198,18 +209,24 @@ TO DO:
 					<TD>
 						<bean:write name="meeting" property="approvedDate"/>
 					</TD>			
-					<TD>
-						<logic:equal name="eventDetailForm" property="canEdit" value="true">
-							<bean:define name="meeting" property="date" id="meetingDate"/>
-							<bean:define name="meeting" property="startTime" id="meetingStartTime"/>
-							<bean:define name="meeting" property="endTime" id="meetingEndTime"/>
-							<bean:define name="meeting" property="location" id="meetingLocation"/>
-							<html:submit property="op" styleClass="btn" title="Delete Meeting" value="Delete" 
-								onclick="<%="selected.value='"+meetingId+"'; return confirm('The "+meetingDate+" "+meetingStartTime+" - "+meetingEndTime+" "+meetingLocation+" meeting will be deleted. Continue?');"%>"/>
-						</logic:equal>
-					</TD>
 				</TR>	
 			</logic:iterate>
+			<TR>
+				<TD colspan='6'>
+				<logic:equal name="eventDetailForm" property="canDelete" value="true">
+					<html:submit property="op" styleClass="btn" accesskey="D"
+						title="Delete Selected Meetings (Alt+D)" value="Delete"/>
+				</logic:equal>
+				<logic:notEqual name="eventDetailForm" property="canDelete" value="true">
+					<logic:equal name="eventDetailForm" property="canEdit" value="true">
+						<html:submit property="op" styleClass="btn" accesskey="P"
+							title="Approve Selected Meetings (Alt+P)" value="Approve"/>
+						<html:submit property="op" styleClass="btn" accesskey="R"
+							title="Reject Selected Meetings (Alt+R)" value="Reject"/>
+					</logic:equal>
+				</logic:notEqual>
+				</TD>
+			</TR>
 		</Table>
 		</TD></TR>
 
