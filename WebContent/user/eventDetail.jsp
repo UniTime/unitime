@@ -182,8 +182,19 @@ TO DO:
 			<html:hidden property="selected"/>
 			<logic:iterate name="eventDetailForm" property="meetings" id="meeting">
 				<bean:define name="meeting" property="uniqueId" id="meetingId"/>
-				<TR onmouseover="style.backgroundColor='rgb(223,231,242)';" onmouseout="style.backgroundColor='transparent';">
+				<logic:equal name="meeting" property="isPast" value="true">
+					<TR onmouseover="style.backgroundColor='rgb(223,231,242)';" onmouseout="style.backgroundColor='transparent';"  style="color:gray; font-style: italic">
+				</logic:equal>
+				<logic:notEqual name="meeting" property="isPast" value="true">
+					<logic:equal name="meeting" property="approvedDate" value = "">
+						<TR onmouseover="style.backgroundColor='rgb(223,231,242)';" onmouseout="style.backgroundColor='transparent';"  style="color:red;">
+					</logic:equal>
+					<logic:notEqual name="meeting" property="approvedDate" value = "">
+						<TR onmouseover="style.backgroundColor='rgb(223,231,242)';" onmouseout="style.backgroundColor='transparent';">					
+					</logic:notEqual>
+				</logic:notEqual>
 					<TD>
+						<logic:equal name="eventDetailForm" property="canEdit" value="true">
 						<logic:equal name="meeting" property="canEdit" value="true">
 							<bean:define name="meeting" property="date" id="meetingDate"/>
 							<bean:define name="meeting" property="startTime" id="meetingStartTime"/>
@@ -192,6 +203,7 @@ TO DO:
 							<html:multibox property="selectedMeetings">
 								<bean:write name="meetingId"/>
 							</html:multibox>
+						</logic:equal>
 						</logic:equal>
 					</TD>
 					<TD>
@@ -211,6 +223,52 @@ TO DO:
 					</TD>			
 				</TR>	
 			</logic:iterate>
+		</Table>
+		</TD></TR>
+		<logic:notEqual name="eventDetailForm" property="canDelete" value="true">
+		<logic:equal name="eventDetailForm" property="canEdit" value="true">
+			<TR>
+				<TD colspan="2">
+					<tt:section-title/>
+				</TD>
+			</TR>
+			<TR>
+				<TD colspan="2">
+				<font color="gray"><i>Attach notes to your approval/rejection of above selected meetings</i></font>
+				</TD>
+			</TR>
+			<TR>
+				<TD valign="top">
+				Standard Notes:
+				</TD>
+				<TD>
+					<html:select size="3"
+								name="eventDetailForm" 
+								styleClass="cmb" 
+								property="selectedStandardNotes" 
+								multiple="true" 
+								onfocus="setUp();" 
+								onkeypress="return selectSearch(event, this);" 
+								onkeydown="return checkKey(event, this);">
+						<html:optionsCollection property="standardNotes" 
+								label="note" 
+								value="uniqueId" />
+					</html:select>
+				</TD>			
+			</TR>
+			<TR>
+				<TD valign="top">
+				Notes:
+				</TD>
+				<TD>
+					<html:textarea rows="3" cols="50"  
+								name="eventDetailForm"  
+								property="newEventNote">
+					</html:textarea>
+				</TD>			
+			</TR>
+			</logic:equal>
+			</logic:notEqual>
 			<TR>
 				<TD colspan='6'>
 				<logic:equal name="eventDetailForm" property="canDelete" value="true">
@@ -227,8 +285,6 @@ TO DO:
 				</logic:notEqual>
 				</TD>
 			</TR>
-		</Table>
-		</TD></TR>
 
 <!-- Courses/Classes if this is a course event -->
 		<logic:equal name="eventDetailForm" property="eventType" value="Course Event">
