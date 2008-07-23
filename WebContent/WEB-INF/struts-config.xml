@@ -2496,6 +2496,12 @@
     		redirect="true" />
     </action>
 
+	  <action
+         path="/peopleLookupAjax"
+         type="org.unitime.timetable.action.ajax.PeopleLookupAjax"
+         scope="request"
+         validate="false" />
+
     </action-mappings>
 
 	<!-- Struts Layout Controller -->
