@@ -1,6 +1,7 @@
 
 package org.unitime.timetable.form;
 
+import java.util.Collection;
 import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
@@ -11,6 +12,7 @@ import org.apache.struts.action.ActionMapping;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.EventContact;
 import org.unitime.timetable.model.Meeting;
+import org.unitime.timetable.model.StandardEventNote;
 import org.unitime.timetable.model.dao.MeetingDAO;
 
 public class EventDetailForm extends ActionForm {
@@ -23,6 +25,8 @@ public class EventDetailForm extends ActionForm {
 	private String iMaxCapacity;
 	private String iSponsoringOrgName;
 	private Long iSelected;
+	private Long[] iSelectedStandardNotes;
+	private String iNewEventNote;
 	private Vector<MeetingBean> iMeetings = new Vector<MeetingBean>();
 	private Vector<NoteBean> iNotes = new Vector<NoteBean>();
 	private ContactBean iMainContact;
@@ -105,7 +109,7 @@ public class EventDetailForm extends ActionForm {
     public Vector<MeetingBean> getMeetings() {return iMeetings;}
     public void addMeeting(Long id, String date, String startTime, String endTime, 
     		String location, String locationCapacity, String approvedDate,
-    		boolean canEdit, boolean canDelete) {
+    		boolean isPast, boolean canEdit, boolean canDelete) {
     	MeetingBean meeting = new MeetingBean();
     	meeting.setUniqueId(id);
     	meeting.setDate(date);
@@ -114,6 +118,7 @@ public class EventDetailForm extends ActionForm {
     	meeting.setLocation(location);
     	meeting.setLocationCapacity(locationCapacity);
     	meeting.setApprovedDate(approvedDate);
+    	meeting.setIsPast(isPast);
     	meeting.setCanEdit(canEdit);
     	meeting.setCanDelete(canDelete);
     	iMeetings.add(meeting);
@@ -153,6 +158,16 @@ public class EventDetailForm extends ActionForm {
     	iNotes.add(note);
     }
     
+    public Collection<StandardEventNote> getStandardNotes() {
+    	return StandardEventNote.findAll();
+    }
+    
+    public Long[] getSelectedStandardNotes() {return iSelectedStandardNotes;}
+    public void setSelectedStandardNotes(Long[] selected) {iSelectedStandardNotes = selected;}
+    
+    public String getNewEventNote() {return iNewEventNote;}
+    public void setNewEventNote(String note) {iNewEventNote = note;}
+    
     public boolean getCanEdit() {return iCanEdit;}
     public void setCanEdit(boolean canEdit) {iCanEdit = canEdit;}
 
@@ -180,6 +195,7 @@ public class EventDetailForm extends ActionForm {
     	private String iLocationCapacity;
     	private String iApprovedDate;
     	private Long iUniqueId;
+    	private Boolean iIsPast;
     	private Boolean iCanEditMeeting;
     	private Boolean iCanDeleteMeeting;
    	
@@ -208,6 +224,9 @@ public class EventDetailForm extends ActionForm {
     	
     	public Long getUniqueId() {return iUniqueId;}
     	public void setUniqueId(Long id) {iUniqueId = id;}
+    	
+    	public Boolean getIsPast() {return iIsPast;}
+    	public void setIsPast(Boolean isPast) {iIsPast = isPast;}
     	
     	public Boolean getCanEdit() {return iCanEditMeeting;}
     	public void setCanEdit(Boolean canEdit) {iCanEditMeeting = canEdit;}
