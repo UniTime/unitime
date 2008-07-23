@@ -359,6 +359,10 @@ public class ExamPdfReportAction extends Action {
                                     " (Univesity Timetabling Application, http://www.unitime.org).");
                             body.addBodyPart(text);
                             mail.addRecipient(RecipientType.TO, new InternetAddress(email));
+                            if (myForm.getCc()!=null) for (StringTokenizer s=new StringTokenizer(myForm.getCc(),";,\n\r ");s.hasMoreTokens();) 
+                                mail.addRecipient(RecipientType.CC, new InternetAddress(s.nextToken()));
+                            if (myForm.getBcc()!=null) for (StringTokenizer s=new StringTokenizer(myForm.getBcc(),";,\n\r ");s.hasMoreTokens();) 
+                                mail.addRecipient(RecipientType.BCC, new InternetAddress(s.nextToken()));
                             if (from!=null) mail.setFrom(from);
                             BodyPart attachement = new MimeBodyPart();
                             attachement.setDataHandler(new DataHandler(new FileDataSource(report)));
@@ -375,7 +379,7 @@ public class ExamPdfReportAction extends Action {
                         myForm.log("Emails sent.");
                     }
                     if (myForm.getEmailStudents() && sreports!=null && !sreports.isEmpty()) {
-                        myForm.log("Emailing instructors...");
+                        myForm.log("Emailing students...");
                         for (Student student : new TreeSet<Student>(sreports.keySet())) {
                             File report = sreports.get(student);
                             String email = student.getEmail();
@@ -395,6 +399,10 @@ public class ExamPdfReportAction extends Action {
                                     " (Univesity Timetabling Application, http://www.unitime.org).");
                             body.addBodyPart(text);
                             mail.addRecipient(RecipientType.TO, new InternetAddress(email));
+                            if (myForm.getCc()!=null) for (StringTokenizer s=new StringTokenizer(myForm.getCc(),";,\n\r ");s.hasMoreTokens();) 
+                                mail.addRecipient(RecipientType.CC, new InternetAddress(s.nextToken()));
+                            if (myForm.getBcc()!=null) for (StringTokenizer s=new StringTokenizer(myForm.getBcc(),";,\n\r ");s.hasMoreTokens();) 
+                                mail.addRecipient(RecipientType.BCC, new InternetAddress(s.nextToken()));
                             if (from!=null) mail.setFrom(from);
                             BodyPart attachement = new MimeBodyPart();
                             attachement.setDataHandler(new DataHandler(new FileDataSource(report)));
