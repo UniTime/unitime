@@ -342,7 +342,7 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 
 		Query q = hibSession.createQuery(query.toString());
 		q.setFetchSize(1000);
-		q.setInteger("subjectAreaId", Integer.parseInt(subjectAreaId));
+		q.setLong("subjectAreaId", Long.parseLong(subjectAreaId));
 		q.setLong("sessionId", acadSessionId.longValue());
 		q.setCacheable(true);
 
