@@ -140,7 +140,8 @@ public class EventDetailAction extends Action {
 						approvedMeeting.setApprovedDate(new Date());
 						hibSession.saveOrUpdate(approvedMeeting);
 					}
-                    tx.commit();
+					myForm.setSelectedMeetings(null);
+					tx.commit();
                 } catch (Exception e) {
                     if (tx!=null) tx.rollback();
                     throw e;
@@ -244,7 +245,9 @@ public class EventDetailAction extends Action {
 					String approvedDate = (meeting.getApprovedDate()==null?"":iDateFormat2.format(meeting.getApprovedDate()));
 					boolean canEdit = false;
 					boolean canDelete = false;
+					boolean isPast = true;
 					if (meeting.getStartTime().after(new Date())) {
+						isPast=false;
 						if (user.isAdmin()) {
 							canEdit = true;
 						} else if (user.getId().equals(event.getMainContact().getExternalUniqueId())) {
@@ -259,13 +262,12 @@ public class EventDetailAction extends Action {
 							iDateFormat.format(meeting.getMeetingDate()),
 							(startHour>12?startHour-12:startHour)+":"+(startMin<10?"0":"")+startMin+(startHour>=12?"p":"a"),
 							(endHour>12?endHour-12:endHour)+":"+(endMin<10?"0":"")+endMin+(endHour>=12?"p":"a"), 
-							locationLabel, locationCapacity, approvedDate, canEdit, canDelete);
+							locationLabel, locationCapacity, approvedDate, isPast, canEdit, canDelete);
 				}
 //				myForm.setCanEdit(user.isAdmin()||user.hasRole(Roles.EVENT_MGR_ROLE)||user.getId().equals(event.getMainContact().getExternalUniqueId()));
 				if (event instanceof ClassEvent || event instanceof ExamEvent) {
 					myForm.setCanEdit(false);
-				}
-					
+				}					
 				
 		        Long nextId = Navigation.getNext(request.getSession(), Navigation.sInstructionalOfferingLevel, event.getUniqueId());
 		        Long prevId = Navigation.getPrevious(request.getSession(), Navigation.sInstructionalOfferingLevel, event.getUniqueId());
