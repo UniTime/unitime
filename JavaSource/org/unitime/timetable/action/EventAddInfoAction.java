@@ -11,6 +11,9 @@ import org.apache.struts.action.ActionMessages;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.EventAddInfoForm;
+import org.unitime.timetable.model.EventContact;
+import org.unitime.timetable.model.Roles;
+import org.unitime.timetable.model.TimetableManager;
 
 public class EventAddInfoAction extends Action {
 
@@ -26,7 +29,34 @@ public class EventAddInfoAction extends Action {
 //Verification of user being logged in
 		if (!Web.isLoggedIn( request.getSession() )) {
             throw new Exception ("Access Denied.");
-        }		
+        }
+		
+		myForm.setMainContactLookup(user.isAdmin() || Roles.EVENT_MGR_ROLE.equals(user.getRole()));
+		if (!myForm.getMainContactLookup()) {
+		    myForm.setMainContactExternalId(user.getId());
+		    TimetableManager m = TimetableManager.getManager(user);
+		    EventContact c = EventContact.findByExternalUniqueId(user.getId());
+		    if (c!=null) {
+                if (myForm.getMainContactFirstName()==null || myForm.getMainContactFirstName().length()==0)
+                    myForm.setMainContactFirstName(c.getFirstName());
+                if (myForm.getMainContactLastName()==null || myForm.getMainContactLastName().length()==0)
+                    myForm.setMainContactLastName(c.getLastName());
+                if (myForm.getMainContactEmail()==null || myForm.getMainContactEmail().length()==0)
+                    myForm.setMainContactEmail(c.getEmailAddress());
+                if (myForm.getMainContactPhone()==null || myForm.getMainContactPhone().length()==0)
+                    myForm.setMainContactPhone(c.getPhone());
+		    } else if (m!=null) {
+		        if (myForm.getMainContactFirstName()==null || myForm.getMainContactFirstName().length()==0)
+		            myForm.setMainContactFirstName(m.getFirstName());
+		        if (myForm.getMainContactLastName()==null || myForm.getMainContactLastName().length()==0)
+		            myForm.setMainContactLastName(m.getLastName());
+		        if (myForm.getMainContactEmail()==null || myForm.getMainContactEmail().length()==0)
+		            myForm.setMainContactEmail(m.getEmailAddress());
+		    } else {
+		        if (myForm.getMainContactLastName()==null || myForm.getMainContactLastName().length()==0)
+		            myForm.setMainContactLastName(user.getName());
+		    }
+		}
 
 //Operations		
 		String iOp = myForm.getOp();

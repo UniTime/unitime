@@ -74,6 +74,8 @@ public class EventAddInfoForm extends ActionForm {
 	private String iMainContactPhone;
 	private String iMainContactFirstName;	
 	private String iMainContactLastName;
+	private String iMainContactExternalId;
+	private boolean iMainContactLookup;
 	private String iEventType;
 	private List iSubjectArea;
 	private Collection iSubjectAreas;
@@ -132,6 +134,7 @@ public class EventAddInfoForm extends ActionForm {
 		iMainContactPhone = null;
 		iMainContactFirstName = null;
 		iMainContactLastName = null;
+		iMainContactExternalId = null;
 		iEventType = null;
 		iSponsoringOrgId = null;
 		iSponsoringOrgName = null;
@@ -141,6 +144,7 @@ public class EventAddInfoForm extends ActionForm {
         iClassNumber = DynamicList.getInstance(new ArrayList(), idfactory);
 		iAttendanceRequired = false;
 		iExistingMeetings.clear();
+		iMainContactLookup = false;
 		load(request);
 	}
 	
@@ -155,6 +159,7 @@ public class EventAddInfoForm extends ActionForm {
 		iMainContactEmail = (String) session.getAttribute("Event.mcEmail");
 		iMainContactFirstName = (String) session.getAttribute("Event.mcFName");
 		iMainContactLastName = (String) session.getAttribute("Event.mcLName");
+		iMainContactExternalId = (String) session.getAttribute("Event.mcUid");
 		iMainContactPhone = (String) session.getAttribute("Event.mcPhone");
 		iAdditionalEmails = (String) session.getAttribute("Event.AdditionalEmails");
 		iAdditionalInfo = (String) session.getAttribute("Event.AdditionalInfo");
@@ -175,6 +180,7 @@ public class EventAddInfoForm extends ActionForm {
 			iEventType = iEvent.getEventTypeLabel();
 			iMainContactFirstName = iEvent.getMainContact().getFirstName();
 			iMainContactLastName = iEvent.getMainContact().getLastName();
+			iMainContactExternalId = iEvent.getMainContact().getExternalUniqueId();
 			iMainContactEmail = iEvent.getMainContact().getEmailAddress();
 			iMainContactPhone = iEvent.getMainContact().getPhone();
 			iAdditionalEmails = iEvent.getEmail();
@@ -244,6 +250,10 @@ public class EventAddInfoForm extends ActionForm {
 		session.setAttribute("Event.mcEmail", iMainContactEmail);
 		session.setAttribute("Event.mcFName", iMainContactFirstName);
 		session.setAttribute("Event.mcLName", iMainContactLastName);
+		if (iMainContactExternalId==null)
+		    session.removeAttribute("Event.mcUid");
+		else
+		    session.setAttribute("Event.mcUid", iMainContactExternalId);
 		session.setAttribute("Event.mcPhone", iMainContactPhone);
 		session.setAttribute("Event.AdditionalEmails", iAdditionalEmails);
 		session.setAttribute("Event.AdditionalInfo", iAdditionalInfo);
@@ -263,7 +273,9 @@ public class EventAddInfoForm extends ActionForm {
 				// search database for a contact with this e-mail
 				// if not in db, create a new contact
 				// update information from non-empty fields
-				EventContact mainContact = EventContact.findByEmail(iMainContactEmail); 
+			    EventContact mainContact = null;
+			    if (iMainContactExternalId!=null) mainContact = EventContact.findByExternalUniqueId(iMainContactExternalId);
+			    if (mainContact==null) mainContact = EventContact.findByEmail(iMainContactEmail); 
 				if (mainContact==null) mainContact = new EventContact();
 				if (iMainContactFirstName!=null && iMainContactFirstName.length()>0) 
 					mainContact.setFirstName(iMainContactFirstName);
@@ -273,6 +285,8 @@ public class EventAddInfoForm extends ActionForm {
 					mainContact.setEmailAddress(iMainContactEmail);
 				if (iMainContactPhone!=null && iMainContactPhone.length()>0)
 					mainContact.setPhone(iMainContactPhone);
+                if (iMainContactExternalId!=null && iMainContactExternalId.length()>0)
+                    mainContact.setExternalUniqueId(iMainContactExternalId);
 				hibSession.saveOrUpdate(mainContact);
 				if ("Course Event".equals(iEventType)) {
 					event = new CourseEvent();
@@ -440,7 +454,10 @@ public class EventAddInfoForm extends ActionForm {
 	public String getMainContactLastName() {return iMainContactLastName;}
 	public void setMainContactLastName(String lastName) {iMainContactLastName = lastName;}
 	
-	public Event getEvent() {return iEvent;}
+    public String getMainContactExternalId() {return iMainContactExternalId;}
+    public void setMainContactExternalId(String externalId) {iMainContactExternalId = externalId;}
+
+    public Event getEvent() {return iEvent;}
 	public void setEvent(Event e) {iEvent = e;}
 	
 	public boolean getIsAddMeetings() {return iIsAddMeetings;}
@@ -728,5 +745,8 @@ public class EventAddInfoForm extends ActionForm {
         }
         return (table.getLines().isEmpty()?"":table.printTable());
     }
+    
+    public boolean getMainContactLookup() { return iMainContactLookup; }
+    public void setMainContactLookup(boolean lookup) { iMainContactLookup = lookup; }
     
 }

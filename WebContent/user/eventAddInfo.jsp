@@ -177,28 +177,32 @@
   		<TD valign='top'>Main Contact: </TD> 
 			<TD colspan ='2'>
 				<Table width='100%'>
+					<html:hidden property="mainContactExternalId" styleId="uid"/>
 					<TR>
 						<TD nowrap> First Name: </TD>
 						<TD>
-							<html:text property="mainContactFirstName" maxlength="20" size="30" /> 
+							<html:text property="mainContactFirstName" maxlength="20" size="30" styleId="fname" />
+							<logic:equal name="eventAddInfoForm" property="mainContactLookup" value="true">
+								<input type='button' value='Lookup' onclick="window.open('user/peopleLookup.jsp?query='+mainContactFirstName.value+' '+mainContactLastName.value,'peopleLookup','width=800,height=600,resizable=no,scrollbars=yes,toolbar=no,location=no,directories=no,status=no,menubar=no,copyhistory=no').focus();" style="btn"> 
+							</logic:equal>
 						</TD>
 					</TR>
 					<TR>
 						<TD nowrap> Last Name<font color='red'>*</font>: </TD>
 						<TD>
-							<html:text property="mainContactLastName" maxlength="30" size="30" /> 
+							<html:text property="mainContactLastName" maxlength="30" size="30" styleId="lname"/> 
 						</TD>
 					</TR>
 					<TR>
 						<TD nowrap>Email<font color='red'>*</font>: </TD>
 						<TD>
-							<html:text property="mainContactEmail" maxlength="100" size="30" />
+							<html:text property="mainContactEmail" maxlength="100" size="30" styleId="email"/>
 						</TD>
 					</TR>
 					<TR>
 						<TD nowrap>Phone: </TD>
 						<TD>
-							<html:text property="mainContactPhone" maxlength="10" size="30" /> <i><font color="gray">&nbsp; Max. 10 digits </font></i>
+							<html:text property="mainContactPhone" maxlength="10" size="30" styleId="phone"/> <i><font color="gray">&nbsp; Max. 10 digits </font></i>
 						</TD>
 					</TR>
 				</Table>
