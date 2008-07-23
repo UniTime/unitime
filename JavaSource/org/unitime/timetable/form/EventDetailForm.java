@@ -33,6 +33,8 @@ public class EventDetailForm extends ActionForm {
 	private String iNextId;
 	private boolean iAttendanceRequired;
 	private Event iEvent;
+	private Long[] iSelectedMeetings;
+	private Boolean iCanDelete;
 	
 	/** 
 	 * Method validate
@@ -59,10 +61,12 @@ public class EventDetailForm extends ActionForm {
 		iMeetings.clear();
 		iNotes.clear();
 		iCanEdit = false;
+		iCanDelete = false;
 		iPreviousId = null;
 		iNextId = null;
 		iAttendanceRequired = false;
 		iAdditionalEmails = null;
+		iSelectedMeetings = null;
 	}
 	
 	public Event getEvent() {return iEvent;}
@@ -99,7 +103,9 @@ public class EventDetailForm extends ActionForm {
     public void setAdditionalEmails(String emails) {iAdditionalEmails = emails;}
     
     public Vector<MeetingBean> getMeetings() {return iMeetings;}
-    public void addMeeting(Long id, String date, String startTime, String endTime, String location, String locationCapacity, String approvedDate) {
+    public void addMeeting(Long id, String date, String startTime, String endTime, 
+    		String location, String locationCapacity, String approvedDate,
+    		boolean canEdit, boolean canDelete) {
     	MeetingBean meeting = new MeetingBean();
     	meeting.setUniqueId(id);
     	meeting.setDate(date);
@@ -108,6 +114,8 @@ public class EventDetailForm extends ActionForm {
     	meeting.setLocation(location);
     	meeting.setLocationCapacity(locationCapacity);
     	meeting.setApprovedDate(approvedDate);
+    	meeting.setCanEdit(canEdit);
+    	meeting.setCanDelete(canDelete);
     	iMeetings.add(meeting);
     }
     
@@ -147,6 +155,9 @@ public class EventDetailForm extends ActionForm {
     
     public boolean getCanEdit() {return iCanEdit;}
     public void setCanEdit(boolean canEdit) {iCanEdit = canEdit;}
+
+    public boolean getCanDelete() {return iCanDelete;}
+    public void setCanDelete(boolean canDelete) {iCanDelete = canDelete;}
     
     public String getPreviousId () {return iPreviousId;}
     public void setPreviousId(String prevId) {iPreviousId = prevId;}
@@ -157,6 +168,9 @@ public class EventDetailForm extends ActionForm {
 	public Meeting getSelectedMeeting() {
 		return (MeetingDAO.getInstance()).get(iSelected);
 	} 	
+	
+	public Long[] getSelectedMeetings() { return iSelectedMeetings; }
+	public void setSelectedMeetings(Long[] selectedMeetings) { iSelectedMeetings = selectedMeetings; }
     
     public static class MeetingBean {
     	private String iDate;
@@ -166,6 +180,8 @@ public class EventDetailForm extends ActionForm {
     	private String iLocationCapacity;
     	private String iApprovedDate;
     	private Long iUniqueId;
+    	private Boolean iCanEditMeeting;
+    	private Boolean iCanDeleteMeeting;
    	
     	public MeetingBean() {
     	}
@@ -193,6 +209,11 @@ public class EventDetailForm extends ActionForm {
     	public Long getUniqueId() {return iUniqueId;}
     	public void setUniqueId(Long id) {iUniqueId = id;}
     	
+    	public Boolean getCanEdit() {return iCanEditMeeting;}
+    	public void setCanEdit(Boolean canEdit) {iCanEditMeeting = canEdit;}
+    	
+    	public Boolean getCanDelete() {return iCanDeleteMeeting;}
+    	public void setCanDelete(Boolean canDelete) {iCanDeleteMeeting = canDelete;}
     }
 
     public class ContactBean {
