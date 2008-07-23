@@ -25,6 +25,7 @@ import java.util.TreeSet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
@@ -49,6 +50,7 @@ import org.unitime.timetable.reports.exam.StudentExamReport;
  * @author Tomas Muller
  */
 public class ExamPdfReportForm extends ExamReportForm {
+    protected static Logger sLog = Logger.getLogger(ExamPdfReportForm.class);
     private String[] iReports = null; 
     private String iMode = null;
     private boolean iAll = false;
@@ -241,7 +243,10 @@ public class ExamPdfReportForm extends ExamReportForm {
     }
     public String getReport() { return iReport; }
     public void setReport(String report) { iReport = report; }
-    public void log(String message) { iReport += message+"<br>"; }
+    public void log(String message) {
+        sLog.info(message);
+        iReport += message+"<br>"; 
+    }
     public String getMessage() { return iMessage; }
     public void setMessage(String message) { iMessage = message; }
     public String getSubject() { return iSubject; }
