@@ -345,4 +345,13 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
         
         return null;
     }
+    
+    public Roles getPrimaryRole() {
+        for (Iterator i=getManagerRoles().iterator();i.hasNext();) {
+            ManagerRole role = (ManagerRole)i.next();
+            if (role.isPrimary()) return role.getRole();
+        }
+        if (getManagerRoles().size()==1) return ((ManagerRole)getManagerRoles().iterator().next()).getRole();
+        return null;
+    }
 }
