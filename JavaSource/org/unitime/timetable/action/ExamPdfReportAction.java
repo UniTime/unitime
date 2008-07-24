@@ -367,6 +367,7 @@ public class ExamPdfReportAction extends Action {
                             BodyPart attachement = new MimeBodyPart();
                             attachement.setDataHandler(new DataHandler(new FileDataSource(report)));
                             attachement.setFileName(session.getAcademicTerm()+session.getYear()+(myForm.getExamType()==Exam.sExamTypeMidterm?"evn":"fin")+(myForm.getModeIdx()==PdfLegacyExamReport.sModeText?".txt":".pdf"));
+                            body.addBodyPart(attachement);
                             mail.setSentDate(new Date());
                             mail.setContent(body);
                             try {
@@ -407,6 +408,7 @@ public class ExamPdfReportAction extends Action {
                             BodyPart attachement = new MimeBodyPart();
                             attachement.setDataHandler(new DataHandler(new FileDataSource(report)));
                             attachement.setFileName(session.getAcademicTerm()+session.getYear()+(myForm.getExamType()==Exam.sExamTypeMidterm?"evn":"fin")+(myForm.getModeIdx()==PdfLegacyExamReport.sModeText?".txt":".pdf"));
+                            body.addBodyPart(attachement);
                             mail.setSentDate(new Date());
                             mail.setContent(body);
                             try {
