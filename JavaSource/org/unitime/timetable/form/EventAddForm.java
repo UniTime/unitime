@@ -310,13 +310,14 @@ public class EventAddForm extends ActionForm {
         today.set(Calendar.MONTH, (startMonth+12)%12);
         today.set(Calendar.YEAR, year+(startMonth<0?-1:0)+(startMonth>=12?1:0));
         String pattern = "[", border = "[";
+        Date now = new Date();
         for (int m=startMonth;m<=endMonth;m++) {
             if (m!=startMonth) {pattern+=","; border+=","; }
              pattern+="["; border+="[";
              int daysOfMonth = DateUtils.getNrDaysOfMonth(m, year);
              for (int d=1;d<=daysOfMonth;d++) {
             	 if (d>1) {pattern+=","; border+=","; }
-            	 pattern+=(iMeetingDates.contains(today.getTime())?"'1'":"'0'");
+            	 pattern+=(today.getTime().before(now)?"'@'":iMeetingDates.contains(today.getTime())?"'1'":"'0'");
             	 today.add(Calendar.DAY_OF_YEAR,1);
             	 border += s.getBorder(d, m);
              }
@@ -326,9 +327,9 @@ public class EventAddForm extends ActionForm {
         return "<script language='JavaScript' type='text/javascript' src='scripts/datepatt.js'></script>"+
         	"<script language='JavaScript'>"+
         	"calGenerate("+year+","+startMonth+","+endMonth+","+
-            pattern+","+"['1','0'],"+
-            "['Selected','Not Selected'],"+
-            "['rgb(240,240,50)','rgb(240,240,240)'],"+
+            pattern+","+"['1','0','@'],"+
+            "['Selected','Not Selected','Past'],"+
+            "['rgb(240,240,50)','rgb(240,240,240)','rgb(150,150,150)'],"+
             "'1',"+border+",true,true);"+
             "</script>";
 	}
