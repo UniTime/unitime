@@ -539,10 +539,15 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                             " (Univesity Timetabling Application, http://www.unitime.org).");
                     body.addBodyPart(text);
                     mail.addRecipient(RecipientType.TO, new InternetAddress(email));
+                    if (System.getProperty("email.cc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.to"),";,\n\r ");s.hasMoreTokens();) 
+                        mail.addRecipient(RecipientType.CC, new InternetAddress(s.nextToken()));
+                    if (System.getProperty("email.bcc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.to"),";,\n\r ");s.hasMoreTokens();) 
+                        mail.addRecipient(RecipientType.BCC, new InternetAddress(s.nextToken()));
                     if (from!=null) mail.setFrom(from);
                     BodyPart attachement = new MimeBodyPart();
                     attachement.setDataHandler(new DataHandler(new FileDataSource(report)));
                     attachement.setFileName(prefix+(report.getName().endsWith(".txt")?".txt":".pdf"));
+                    body.addBodyPart(attachement);
                     mail.setSentDate(new Date());
                     mail.setContent(body);
                     try {
@@ -576,10 +581,15 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                             " (Univesity Timetabling Application, http://www.unitime.org).");
                     body.addBodyPart(text);
                     mail.addRecipient(RecipientType.TO, new InternetAddress(email));
+                    if (System.getProperty("email.cc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.to"),";,\n\r ");s.hasMoreTokens();) 
+                        mail.addRecipient(RecipientType.CC, new InternetAddress(s.nextToken()));
+                    if (System.getProperty("email.bcc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.to"),";,\n\r ");s.hasMoreTokens();) 
+                        mail.addRecipient(RecipientType.BCC, new InternetAddress(s.nextToken()));
                     if (from!=null) mail.setFrom(from);
                     BodyPart attachement = new MimeBodyPart();
                     attachement.setDataHandler(new DataHandler(new FileDataSource(report)));
                     attachement.setFileName(prefix+(report.getName().endsWith(".txt")?".txt":".pdf"));
+                    body.addBodyPart(attachement);
                     mail.setSentDate(new Date());
                     mail.setContent(body);
                     try {
