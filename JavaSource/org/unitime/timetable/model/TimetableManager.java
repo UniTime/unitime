@@ -90,6 +90,7 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
 	}
 	
 	public static TimetableManager getManager(User user){
+	    if (user==null) return null;
 		String idString = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
 		if (idString != null && idString.length() > 0){
 			return(getWithUniqueId(new Long(idString)));
