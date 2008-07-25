@@ -125,4 +125,8 @@ public class EventGridForm extends EventAddForm {
         setRoomFeatures((Long[]) session.getAttribute("EventGrid.RoomFeatures"));
         setMode((String)session.getAttribute("EventGrid.Mode"));
     }
+    
+    public String getDatesTable() {
+        return getDatesTable(false);
+    }
 }

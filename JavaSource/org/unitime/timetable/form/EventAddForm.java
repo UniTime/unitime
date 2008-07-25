@@ -297,8 +297,12 @@ public class EventAddForm extends ActionForm {
 	public TreeSet<Date> getMeetingDates() { return iMeetingDates; }
 	public void setMeetingDates(TreeSet<Date> dates) { iMeetingDates = dates; }
 	
-	// display calendar for event dates
 	public String getDatesTable() {
+	    return getDatesTable(true);
+	}
+	
+	// display calendar for event dates
+	public String getDatesTable(boolean disblePast) {
         if (iSessionId==null) return null;
 		Session s = Session.getSessionById(iSessionId);
         int startMonth = s.getStartMonth(); 
@@ -317,7 +321,7 @@ public class EventAddForm extends ActionForm {
              int daysOfMonth = DateUtils.getNrDaysOfMonth(m, year);
              for (int d=1;d<=daysOfMonth;d++) {
             	 if (d>1) {pattern+=","; border+=","; }
-            	 pattern+=(today.getTime().before(now)?"'@'":iMeetingDates.contains(today.getTime())?"'1'":"'0'");
+            	 pattern+=(disblePast && today.getTime().before(now)?"'@'":iMeetingDates.contains(today.getTime())?"'1'":"'0'");
             	 today.add(Calendar.DAY_OF_YEAR,1);
             	 border += s.getBorder(d, m);
              }
