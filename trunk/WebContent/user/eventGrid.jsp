@@ -20,7 +20,7 @@
 
 <%@ page language="java" autoFlush="true" errorPage="../error.jsp" %>
 <%@page import="org.unitime.timetable.form.EventGridForm"%>
-<%@page import="org.unitime.timetable.action.EventGridAction"%>
+<%@page import="org.unitime.timetable.webutil.timegrid.EventGridTable"%>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
@@ -210,7 +210,7 @@
 		</TABLE>
 	</logic:messagesPresent>
 	<br>
-	<% EventGridAction.printTable((EventGridForm)request.getAttribute("eventGridForm"), out); %>
+	<% new EventGridTable((EventGridForm)request.getAttribute("eventGridForm")).printTable(out); %>
 </TABLE>
 	<logic:notEmpty scope="request" name="hash">
 		<SCRIPT type="text/javascript" language="javascript">
