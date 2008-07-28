@@ -88,19 +88,6 @@ TO DO:
 			</TD>
 		</TR>
 		</logic:equal>
-		<TR>
-			<TD nowrap valign="top">Additional Information:&nbsp;</TD>
-			<td>
-			<table>
-				<logic:iterate name="eventDetailForm" property="notes" id="note">
-				<tr><td><bean:write name="note" property="textNote"/></td></tr>
-				</logic:iterate>
-				<logic:iterate name="eventDetailForm" property="notes" id="note">
-				<tr><td><bean:write name="note" property="standardNote"/></td></tr>
-				</logic:iterate>
-			</table>
-			</td>
-		</TR>
 		<logic:equal name="eventDetailForm" property="canEdit" value="true">
 			<TR>
 				<TD nowrap valign="top">Main Contact:&nbsp;</TD>
@@ -234,7 +221,7 @@ TO DO:
 			</TR>
 			<TR>
 				<TD colspan="2">
-				<font color="gray"><i>Attach notes to your approval/rejection of above selected meetings</i></font>
+				<font color="gray"><i>Attach notes to your approval/rejection of above selected meetings. Double click on a standard note to add it to notes below. Only the Notes: section will be sent to the requester.</i></font>
 				</TD>
 			</TR>
 			<TR>
@@ -245,11 +232,12 @@ TO DO:
 					<html:select size="3"
 								name="eventDetailForm" 
 								styleClass="cmb" 
-								property="selectedStandardNotes" 
-								multiple="true" 
+								property="selectedStandardNote" 
 								onfocus="setUp();" 
-								onkeypress="return selectSearch(event, this);" 
-								onkeydown="return checkKey(event, this);">
+								onkeypress="return selectSearch(event, this);"
+								onkeydown="return checkKey(event, this);"
+								ondblclick="if (newEventNote.value.length>0) newEventNote.value+='\n'; newEventNote.value+=this.options[this.selectedIndex].text; newEventNote.focus();"
+								>
 						<html:optionsCollection property="standardNotes" 
 								label="note" 
 								value="uniqueId" />
@@ -260,7 +248,7 @@ TO DO:
 				<TD valign="top">
 				Notes:
 				</TD>
-				<TD>
+				<TD colspan='2'>
 					<html:textarea rows="3" cols="50"  
 								name="eventDetailForm"  
 								property="newEventNote">
@@ -321,7 +309,27 @@ TO DO:
 		</TR>
 		</logic:equal>
 		</logic:equal>
-			
+
+<!-- Notes exchanged between requester and approver; visible only by those who can edit -->
+   		<logic:equal name="eventDetailForm" property="canEdit" value="true">
+		<TR>
+			<TD colspan='2'>&nbsp;</TD>
+		</TR>
+		<TR>
+			<TD colspan='2'>
+				<tt:section-header>
+					<tt:section-title>Notes</tt:section-title>
+				</tt:section-header>
+			</TD>
+		</TR>
+		<logic:iterate name="eventDetailForm" property="notes" id="note">
+		<TR>
+			<td colspan='2'>
+				<bean:write name="note" property="textNote"/>
+			</td>
+		</TR>
+		</logic:iterate>
+		</logic:equal>
 
 <!-- Buttons -->
 	<TR>
