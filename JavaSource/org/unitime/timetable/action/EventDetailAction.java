@@ -128,19 +128,31 @@ public class EventDetailAction extends Action {
 			}
 			
 			if(iOp.equals("Approve") && myForm.getSelectedMeetings()!=null && myForm.getSelectedMeetings().length>0) {
-				System.out.println("Meetings selected for approval:");
 				Long[] selectedMeetings = myForm.getSelectedMeetings();
                 org.hibernate.Session hibSession = new EventDAO().getSession();
                 Transaction tx = null;
                 try {
                     tx = hibSession.beginTransaction();
+                    String note="The meetings ";
 					for (int i=0; i<selectedMeetings.length; i++) {
 						Meeting approvedMeeting = MeetingDAO.getInstance().get(selectedMeetings[i]);
-						System.out.println(selectedMeetings[i]+": "+approvedMeeting);
 						approvedMeeting.setApprovedDate(new Date());
 						hibSession.saveOrUpdate(approvedMeeting);
+						note+= "on " + approvedMeeting.getTimeLabel() + " in " + approvedMeeting.getRoomLabel() + ", ";
 					}
+					note += " have been approved";
+					EventNote en = new EventNote();
+					String date = new Date().toString();
+					if (myForm.getNewEventNote()!=null && myForm.getNewEventNote().length()>0) {
+						note+= " with the note \"" + myForm.getNewEventNote()+"\"";
+					}
+					en.setTextNote(date+": approve : "+note);
+					en.setEvent(event);
+					hibSession.saveOrUpdate(en);
+					event.getNotes().add(en);
+					hibSession.saveOrUpdate(event);					
 					myForm.setSelectedMeetings(null);
+					myForm.setNewEventNote(null);
 					tx.commit();
                 } catch (Exception e) {
                     if (tx!=null) tx.rollback();
@@ -148,6 +160,67 @@ public class EventDetailAction extends Action {
                 }		                
 
 			}
+			
+			if (iOp.equals("Reject") && myForm.getSelectedMeetings()!=null && myForm.getSelectedMeetings().length>0) {
+				Long[] selectedMeetings = myForm.getSelectedMeetings();
+				org.hibernate.Session hibSession = new EventDAO().getSession();
+                Transaction tx = null;
+                boolean eventDeleted = false;
+                try {
+                    tx = hibSession.beginTransaction();
+                    String note="The meetings ";
+        			
+					for (int i=0; i<selectedMeetings.length; i++) {
+						Meeting rejectedMeeting = MeetingDAO.getInstance().get(selectedMeetings[i]);
+	                    String msg = "Deleted meeting "+ rejectedMeeting.toString()+
+	                    	" of "+event.getEventName()+" ("+event.getEventTypeLabel()+")";
+						note+= "on " + rejectedMeeting.getTimeLabel() + " in " + rejectedMeeting.getRoomLabel() + ", ";
+	                    event.getMeetings().remove(rejectedMeeting);
+	        			ChangeLog.addChange(
+	                            hibSession,
+	                            request,
+	                            event,
+	                            msg,
+	                            ChangeLog.Source.EVENT_EDIT,
+	                            ChangeLog.Operation.UPDATE,
+	                            null,null);
+					}
+					note += " have been rejected";
+					EventNote en = new EventNote();
+					String date = new Date().toString();
+					if (myForm.getNewEventNote()!=null && myForm.getNewEventNote().length()>0) {
+						note+= " with the note \"" + myForm.getNewEventNote()+"\"";
+					}
+					en.setTextNote(date+": reject : "+note);
+					en.setEvent(event);
+					hibSession.saveOrUpdate(en);
+					event.getNotes().add(en);
+					hibSession.saveOrUpdate(event);					
+
+					myForm.setSelectedMeetings(null);
+					myForm.setNewEventNote(null);
+	                if (event.getMeetings().isEmpty()) {
+	                	String msg = "All meetings of "+event.getEventName()+" ("+event.getEventTypeLabel()+") have been deleted.";
+	        			ChangeLog.addChange(
+	                            hibSession,
+	                            request,
+	                            event,
+	                            msg,
+	                            ChangeLog.Source.EVENT_EDIT,
+	                            ChangeLog.Operation.DELETE,
+	                            null,null);
+	                	hibSession.delete(event);
+	                	eventDeleted = true;
+	                } else {
+	                    hibSession.saveOrUpdate(event);
+	                }
+                    tx.commit();
+                } catch (Exception e) {
+                    if (tx!=null) tx.rollback();
+                    throw e;
+                }
+                if (eventDeleted) return mapping.findForward("showEventList");
+			}				
 			
 			if(iOp.equals("Delete")) {
 	                org.hibernate.Session hibSession = new EventDAO().getSession();
@@ -188,6 +261,7 @@ public class EventDetailAction extends Action {
 	                }
 	                if (eventDeleted) return mapping.findForward("showEventList");
 				}
+
 		}
 
 		

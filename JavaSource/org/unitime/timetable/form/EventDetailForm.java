@@ -25,7 +25,7 @@ public class EventDetailForm extends ActionForm {
 	private String iMaxCapacity;
 	private String iSponsoringOrgName;
 	private Long iSelected;
-	private Long[] iSelectedStandardNotes;
+	private Long iSelectedStandardNote;
 	private String iNewEventNote;
 	private Vector<MeetingBean> iMeetings = new Vector<MeetingBean>();
 	private Vector<NoteBean> iNotes = new Vector<NoteBean>();
@@ -162,8 +162,8 @@ public class EventDetailForm extends ActionForm {
     	return StandardEventNote.findAll();
     }
     
-    public Long[] getSelectedStandardNotes() {return iSelectedStandardNotes;}
-    public void setSelectedStandardNotes(Long[] selected) {iSelectedStandardNotes = selected;}
+    public Long getSelectedStandardNote() {return iSelectedStandardNote;}
+    public void setSelectedStandardNote(Long selected) {iSelectedStandardNote = selected;}
     
     public String getNewEventNote() {return iNewEventNote;}
     public void setNewEventNote(String note) {iNewEventNote = note;}
