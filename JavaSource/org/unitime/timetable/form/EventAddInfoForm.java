@@ -3,6 +3,7 @@ package org.unitime.timetable.form;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -303,14 +304,19 @@ public class EventAddInfoForm extends ActionForm {
 				event.setEventName(iEventName);
 				event.setMainContact(mainContact);
 				// add event note (additional info)
-				EventNote en = new EventNote();
-				en.setEvent(event);
-				en.setTextNote(iAdditionalInfo);
-				// attach the note to event
-				event.setNotes(new HashSet());
-				event.getNotes().add(en);
+				if (iAdditionalInfo!=null && iAdditionalInfo.length()>0) {
+					EventNote en = new EventNote();
+					String date = new Date().toString();
+					en.setEvent(event);
+					en.setTextNote(date+": request : "+iAdditionalInfo);
+					// attach the note to event
+					event.setNotes(new HashSet());
+					event.getNotes().add(en);
+				}
 				// add additional e-mails
-				event.setEmail(iAdditionalEmails);
+				if (iAdditionalEmails!=null && iAdditionalEmails.length()>0) {
+					event.setEmail(iAdditionalEmails);
+				}
 				hibSession.saveOrUpdate(event);
 				//hibSession.saveOrUpdate(en);
 				
