@@ -164,7 +164,9 @@ TO DO:
 		<TR><TD colspan='2'>
 		<TABLE width="100%" border="0" cellspacing="0" cellpadding="1">
 			<TR align="left">
-				<td></td><td><font color="gray"><i>Date</i></font></td><td><font color="gray"><i>Time</i></font></td><td><font color="gray"><i>Location</i></font></td><td><font color="gray"><i>Capacity</i></font></td><td><font color="gray"><i>Approved</i></font></td>
+				<td>
+					<input type='checkbox' onclick='selectAll(this.checked);' title="Select All">
+				</td><td><font color="gray"><i>Date</i></font></td><td><font color="gray"><i>Time</i></font></td><td><font color="gray"><i>Location</i></font></td><td><font color="gray"><i>Capacity</i></font></td><td><font color="gray"><i>Approved</i></font></td>
 			</TR>
 			<html:hidden property="selected"/>
 			<logic:iterate name="eventDetailForm" property="meetings" id="meeting">
@@ -357,6 +359,13 @@ TO DO:
 
 
 	</TABLE>
+
+	<script language='JavaScript'>
+		function selectAll(checked) {
+			var selected = document.getElementsByName('selectedMeetings');
+			for (var i=0;i<selected.length;i++) selected[i].checked = checked;
+		}
+	</script>
 
 </html:form>
 
