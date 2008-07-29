@@ -408,7 +408,7 @@ public class EventDetailAction extends Action {
 		        }
 			
 			} else {
-				myForm.setEventName("There is no event with this ID");
+				throw new Exception("There is no event with this ID");
 			}	
 		}
 		
