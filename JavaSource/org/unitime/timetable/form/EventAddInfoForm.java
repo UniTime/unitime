@@ -39,6 +39,7 @@ import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.RelatedCourseInfo;
+import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.SpecialEvent;
 import org.unitime.timetable.model.SponsoringOrganization;
@@ -303,27 +304,17 @@ public class EventAddInfoForm extends ActionForm {
 				}
 				event.setEventName(iEventName);
 				event.setMainContact(mainContact);
-				// add event note (additional info)
-				if (iAdditionalInfo!=null && iAdditionalInfo.length()>0) {
-					EventNote en = new EventNote();
-					String date = new Date().toString();
-					en.setEvent(event);
-					en.setTextNote(date+": request : "+iAdditionalInfo);
-					// attach the note to event
-					event.setNotes(new HashSet());
-					event.getNotes().add(en);
-				}
 				// add additional e-mails
 				if (iAdditionalEmails!=null && iAdditionalEmails.length()>0) {
 					event.setEmail(iAdditionalEmails);
 				}
 				hibSession.saveOrUpdate(event);
-				//hibSession.saveOrUpdate(en);
-				
+
 				event.setMeetings(new HashSet());
 			}
 			
 			// create event meetings
+			HashSet<Meeting> createdMeetings = new HashSet();
 			for (Iterator i=iDateLocations.iterator();i.hasNext();) {
 				DateLocation dl = (DateLocation) i.next();
 				Meeting m = new Meeting();
@@ -335,7 +326,30 @@ public class EventAddInfoForm extends ActionForm {
 				m.setEvent(event);
 				hibSession.saveOrUpdate(m); // save each meeting to db
 				event.getMeetings().add(m); // link each meeting with event
+				createdMeetings.add(m);
 			}
+			User user = Web.getUser(request.getSession());
+			String uname = event.getMainContact().getShortName();
+	        if (user!=null && (user.isAdmin() || Roles.EVENT_MGR_ROLE.equals(user.getRole()))) {
+	            TimetableManager mgr = TimetableManager.getManager(user);
+	            if (mgr!=null) uname = mgr.getShortName();
+	        }
+	        if (uname==null) uname = user.getName();
+	        
+            // add event note (additional info)
+            EventNote en = new EventNote();
+            en.setNoteType(EventNote.sEventNoteTypeCreateEvent);
+            en.setTimeStamp(new Date());
+            en.setMeetingCollection(createdMeetings);
+            en.setUser(null);
+            en.setTextNote(iAdditionalInfo);
+            en.setUser(uname);
+            en.setEvent(event);
+            //hibSession.saveOrUpdate(en);
+            // attach the note to event
+            if (event.getNotes()==null) event.setNotes(new HashSet());
+            event.getNotes().add(en);
+
 			hibSession.saveOrUpdate(event);
 			
 			ChangeLog.addChange(

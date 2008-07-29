@@ -34,7 +34,11 @@ import java.io.Serializable;
 public abstract class BaseEventNote  implements Serializable {
 
 	public static String REF = "EventNote";
+	public static String PROP_NOTE_TYPE = "noteType";
 	public static String PROP_TEXT_NOTE = "textNote";
+	public static String PROP_TIME_STAMP = "timeStamp";
+	public static String PROP_USER = "user";
+	public static String PROP_MEETINGS = "meetings";
 
 
 	// constructors
@@ -55,10 +59,14 @@ public abstract class BaseEventNote  implements Serializable {
 	 */
 	public BaseEventNote (
 		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Event event) {
+		org.unitime.timetable.model.Event event,
+		java.lang.Integer noteType,
+		java.util.Date timeStamp) {
 
 		this.setUniqueId(uniqueId);
 		this.setEvent(event);
+		this.setNoteType(noteType);
+		this.setTimeStamp(timeStamp);
 		initialize();
 	}
 
@@ -72,11 +80,14 @@ public abstract class BaseEventNote  implements Serializable {
 	private java.lang.Long uniqueId;
 
 	// fields
+	private java.lang.Integer noteType;
 	private java.lang.String textNote;
+	private java.util.Date timeStamp;
+	private java.lang.String user;
+	private java.lang.String meetings;
 
 	// many to one
 	private org.unitime.timetable.model.Event event;
-	private org.unitime.timetable.model.StandardEventNote standardNote;
 
 
 
@@ -103,6 +114,23 @@ public abstract class BaseEventNote  implements Serializable {
 
 
 	/**
+	 * Return the value associated with the column: NOTE_TYPE
+	 */
+	public java.lang.Integer getNoteType () {
+		return noteType;
+	}
+
+	/**
+	 * Set the value related to the column: NOTE_TYPE
+	 * @param noteType the NOTE_TYPE value
+	 */
+	public void setNoteType (java.lang.Integer noteType) {
+		this.noteType = noteType;
+	}
+
+
+
+	/**
 	 * Return the value associated with the column: TEXT_NOTE
 	 */
 	public java.lang.String getTextNote () {
@@ -120,6 +148,57 @@ public abstract class BaseEventNote  implements Serializable {
 
 
 	/**
+	 * Return the value associated with the column: TIME_STAMP
+	 */
+	public java.util.Date getTimeStamp () {
+		return timeStamp;
+	}
+
+	/**
+	 * Set the value related to the column: TIME_STAMP
+	 * @param timeStamp the TIME_STAMP value
+	 */
+	public void setTimeStamp (java.util.Date timeStamp) {
+		this.timeStamp = timeStamp;
+	}
+
+
+
+	/**
+	 * Return the value associated with the column: USER
+	 */
+	public java.lang.String getUser () {
+		return user;
+	}
+
+	/**
+	 * Set the value related to the column: USER
+	 * @param user the USER value
+	 */
+	public void setUser (java.lang.String user) {
+		this.user = user;
+	}
+
+
+
+	/**
+	 * Return the value associated with the column: MEETINGS
+	 */
+	public java.lang.String getMeetings () {
+		return meetings;
+	}
+
+	/**
+	 * Set the value related to the column: MEETINGS
+	 * @param meetings the MEETINGS value
+	 */
+	public void setMeetings (java.lang.String meetings) {
+		this.meetings = meetings;
+	}
+
+
+
+	/**
 	 * Return the value associated with the column: EVENT_ID
 	 */
 	public org.unitime.timetable.model.Event getEvent () {
@@ -132,23 +211,6 @@ public abstract class BaseEventNote  implements Serializable {
 	 */
 	public void setEvent (org.unitime.timetable.model.Event event) {
 		this.event = event;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: NOTE_ID
-	 */
-	public org.unitime.timetable.model.StandardEventNote getStandardNote () {
-		return standardNote;
-	}
-
-	/**
-	 * Set the value related to the column: NOTE_ID
-	 * @param standardNote the NOTE_ID value
-	 */
-	public void setStandardNote (org.unitime.timetable.model.StandardEventNote standardNote) {
-		this.standardNote = standardNote;
 	}
 
 

@@ -28,7 +28,7 @@ public class EventDetailForm extends ActionForm {
 	private Long iSelectedStandardNote;
 	private String iNewEventNote;
 	private Vector<MeetingBean> iMeetings = new Vector<MeetingBean>();
-	private Vector<NoteBean> iNotes = new Vector<NoteBean>();
+	private Vector<String> iNotes = new Vector<String>();
 	private ContactBean iMainContact;
 	private Vector<ContactBean> iAdditionalContacts = new Vector<ContactBean>();
 	private String iAdditionalEmails; 
@@ -145,17 +145,9 @@ public class EventDetailForm extends ActionForm {
     	iAdditionalContacts.add(contact);
     }
     
-    public Vector<NoteBean> getNotes() {return iNotes;}
-    public void addNote (String textNote) {
-    	NoteBean note = new NoteBean();
-    	note.setTextNote(textNote);
-    	iNotes.add(note);
-    }
-
-    public void addStandardNote (String standardNote) {
-    	NoteBean note = new NoteBean();
-    	note.setStandardNote(standardNote);
-    	iNotes.add(note);
+    public Vector<String> getNotes() {return iNotes;}
+    public void addNote (String note) {
+        iNotes.add(note);
     }
     
     public Collection<StandardEventNote> getStandardNotes() {
@@ -187,6 +179,13 @@ public class EventDetailForm extends ActionForm {
 	public Long[] getSelectedMeetings() { return iSelectedMeetings; }
 	public void setSelectedMeetings(Long[] selectedMeetings) { iSelectedMeetings = selectedMeetings; }
     
+    public boolean getCanSelectAll() {
+        for (MeetingBean m:getMeetings()) {
+            if (m.getCanEdit()) return true;
+        }
+        return false;
+    }
+
     public static class MeetingBean {
     	private String iDate;
     	private String iStartTime;
@@ -261,21 +260,6 @@ public class EventDetailForm extends ActionForm {
     	public String getPhone() {return iPhone;}
     	public void setPhone(String phone) {iPhone = phone;}
    	
-    }
-    
-    public class NoteBean {
- 
-    	private String iTextNote;
-    	private String iStandardNote;
-    	
-    	public NoteBean () {
-    	}
-    	
-    	public String getTextNote() {return iTextNote;	}
-    	public void setTextNote(String textNote) {iTextNote = textNote;	}
-
-    	public String getStandardNote() {return iStandardNote;	}
-    	public void setStandardNote(String standardNote) {iStandardNote = standardNote;	}
     }
     
 }
