@@ -19,6 +19,7 @@
 -->
 
 <%@ page language="java" autoFlush="true" errorPage="../error.jsp" %>
+<%@ page import="org.unitime.timetable.util.Constants" %>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
@@ -101,7 +102,7 @@
 				<TR>
 					<TD>
 						<bean:write name="eventAddInfoForm" property="mainContactFirstName"/>
-						<bean:write name="eventAddInfoForm" property="mainContactLastName"/> <i>(main contact)</i>
+						<bean:write name="eventAddInfoForm" property="mainContactLastName"/>
 					</TD>
 					<td>
 						<bean:write name="eventAddInfoForm" property="mainContactEmail"/>						
@@ -112,6 +113,12 @@
 				</TR>		
 			</Table>
 			</td>
+		</TR>
+		<TR>
+			<TD nowrap valign='top'>Additional Information: </TD>
+			<TD>
+				<html:textarea property="additionalInfo" rows="2" cols="50"></html:textarea>
+			</TD>
 		</TR>
 		<TR>
 			<TD colspan="2" valign="middle">
@@ -168,6 +175,7 @@
 					onfocus="setUp();" 
     				onkeypress="return selectSearch(event, this);" 
 					onkeydown="return checkKey(event, this);">
+					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
 					<html:optionsCollection name="eventAddInfoForm" property="sponsoringOrgs" label="name" value="uniqueId"/>
 				</html:select>				
 			</TD>
