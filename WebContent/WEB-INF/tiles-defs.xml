@@ -922,7 +922,7 @@
   	</definition>
 
  	<definition	name="eventRoomAvailabilityTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Event Room Availability"/>
+		<put name="title" type="string" value="Event Room Selection"/>
 		<put name="body" value="/user/eventRoomAvailability.jsp" />
   	</definition> 	  	
 
