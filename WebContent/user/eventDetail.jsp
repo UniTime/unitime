@@ -165,7 +165,9 @@ TO DO:
 		<TABLE width="100%" border="0" cellspacing="0" cellpadding="1">
 			<TR align="left">
 				<td>
-					<input type='checkbox' onclick='selectAll(this.checked);' title="Select All">
+					<logic:equal name="eventDetailForm" property="canSelectAll" value="true">
+						<input type='checkbox' onclick='selectAll(this.checked);' title="Select All">
+					</logic:equal>
 				</td><td><font color="gray"><i>Date</i></font></td><td><font color="gray"><i>Time</i></font></td><td><font color="gray"><i>Location</i></font></td><td><font color="gray"><i>Capacity</i></font></td><td><font color="gray"><i>Approved</i></font></td>
 			</TR>
 			<html:hidden property="selected"/>
@@ -314,6 +316,7 @@ TO DO:
 
 <!-- Notes exchanged between requester and approver; visible only by those who can edit -->
    		<logic:equal name="eventDetailForm" property="canEdit" value="true">
+   		<logic:notEmpty name="eventDetailForm" property="notes">
 		<TR>
 			<TD colspan='2'>&nbsp;</TD>
 		</TR>
@@ -324,13 +327,23 @@ TO DO:
 				</tt:section-header>
 			</TD>
 		</TR>
-		<logic:iterate name="eventDetailForm" property="notes" id="note">
 		<TR>
 			<td colspan='2'>
-				<bean:write name="note" property="textNote"/>
+				<table width="100%" border="0" cellspacing="0" cellpadding="3">
+					<tr style='color:gray;font-style:italic;'>
+						<td>Date</td>
+						<td>User</td>
+						<td>Action</td>
+						<td>Meetings</td>
+						<td>Note</td>
+					</tr>
+					<logic:iterate name="eventDetailForm" property="notes" id="note">
+						<bean:write name="note" filter="false"/>
+					</logic:iterate>
+				</table>
 			</td>
 		</TR>
-		</logic:iterate>
+		</logic:notEmpty>
 		</logic:equal>
 
 <!-- Buttons -->
