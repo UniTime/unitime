@@ -91,7 +91,9 @@ public class ChangeLog extends BaseChangeLog implements Comparable {
         CLEAR_PREF,
         CLEAR_ALL_PREF,
         ASSIGN,
-        UNASSIGN
+        UNASSIGN,
+        APPROVE,
+        REJECT
     }
     
     public static enum Source {

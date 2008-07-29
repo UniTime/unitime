@@ -41,6 +41,7 @@ import org.apache.struts.action.ActionMessage;
 import org.hibernate.Query;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
@@ -298,7 +299,7 @@ public class EventAddForm extends ActionForm {
 	public void setMeetingDates(TreeSet<Date> dates) { iMeetingDates = dates; }
 	
 	public String getDatesTable() {
-	    return getDatesTable(true);
+	    return getDatesTable(!"true".equals(ApplicationProperties.getProperty("tmtbl.event.allowEditPast","false")));
 	}
 	
 	// display calendar for event dates

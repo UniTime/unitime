@@ -139,46 +139,49 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
 	}
 	
 	public TreeSet<MultiMeeting> getMultiMeetings() {
-	    TreeSet<MultiMeeting> ret = new TreeSet<MultiMeeting>();
-	    HashSet<Meeting> meetings = new HashSet<Meeting>();
-	    meetings.addAll(getMeetings());
-	    while (!meetings.isEmpty()) {
-	        Meeting meeting = null;
-	        for (Meeting m : meetings)
-	            if (meeting==null || meeting.getMeetingDate().compareTo(m.getMeetingDate())>0)
-	                meeting = m;
-	        meetings.remove(meeting);
-	        Hashtable<Long,Meeting> similar = new Hashtable(); 
-	        TreeSet<Integer> dow = new TreeSet<Integer>(); dow.add(meeting.getDayOfWeek()); 
-	        for (Meeting m : meetings) {
-	            if (ToolBox.equals(m.getStartPeriod(),meeting.getStartPeriod()) &&
-	                ToolBox.equals(m.getStartOffset(),meeting.getStartOffset()) &&
-	                ToolBox.equals(m.getStopPeriod(),meeting.getStopPeriod()) &&
-	                ToolBox.equals(m.getStopOffset(),meeting.getStopOffset()) &&
-	                ToolBox.equals(m.getLocationPermanentId(),meeting.getLocationPermanentId()) &&
-	                m.isApproved()==meeting.isApproved()) {
-	                dow.add(m.getDayOfWeek());
-	                similar.put(m.getMeetingDate().getTime(),m);
-	            }
-	        }
-            TreeSet<Meeting> multi = new TreeSet<Meeting>(); multi.add(meeting);
-	        if (!similar.isEmpty()) {
-	            Calendar c = Calendar.getInstance(Locale.US);
-	            c.setTimeInMillis(meeting.getMeetingDate().getTime());
-	            while (true) {
-	                do {
-	                    c.add(Calendar.DAY_OF_YEAR, 1);
-	                } while (!dow.contains(c.get(Calendar.DAY_OF_WEEK)));
-	                Meeting m = similar.get(c.getTimeInMillis()); 
-	                if (m==null) break;
-	                multi.add(m);
-	                meetings.remove(m);
-	            }
-	        }
-	        ret.add(new MultiMeeting(multi));
-	    }
-	    return ret;
+	    return getMultiMeetings(getMeetings());
 	}
+	
+    public static TreeSet<MultiMeeting> getMultiMeetings(Collection meetings) {
+        TreeSet<MultiMeeting> ret = new TreeSet<MultiMeeting>();
+        HashSet<Meeting> meetingSet = new HashSet<Meeting>(meetings);
+        while (!meetingSet.isEmpty()) {
+            Meeting meeting = null;
+            for (Meeting m : meetingSet)
+                if (meeting==null || meeting.getMeetingDate().compareTo(m.getMeetingDate())>0)
+                    meeting = m;
+            meetingSet.remove(meeting);
+            Hashtable<Long,Meeting> similar = new Hashtable(); 
+            TreeSet<Integer> dow = new TreeSet<Integer>(); dow.add(meeting.getDayOfWeek()); 
+            for (Meeting m : meetingSet) {
+                if (ToolBox.equals(m.getStartPeriod(),meeting.getStartPeriod()) &&
+                    ToolBox.equals(m.getStartOffset(),meeting.getStartOffset()) &&
+                    ToolBox.equals(m.getStopPeriod(),meeting.getStopPeriod()) &&
+                    ToolBox.equals(m.getStopOffset(),meeting.getStopOffset()) &&
+                    ToolBox.equals(m.getLocationPermanentId(),meeting.getLocationPermanentId()) &&
+                    m.isApproved()==meeting.isApproved()) {
+                    dow.add(m.getDayOfWeek());
+                    similar.put(m.getMeetingDate().getTime(),m);
+                }
+            }
+            TreeSet<Meeting> multi = new TreeSet<Meeting>(); multi.add(meeting);
+            if (!similar.isEmpty()) {
+                Calendar c = Calendar.getInstance(Locale.US);
+                c.setTimeInMillis(meeting.getMeetingDate().getTime());
+                while (true) {
+                    do {
+                        c.add(Calendar.DAY_OF_YEAR, 1);
+                    } while (!dow.contains(c.get(Calendar.DAY_OF_WEEK)));
+                    Meeting m = similar.get(c.getTimeInMillis()); 
+                    if (m==null) break;
+                    multi.add(m);
+                    meetingSet.remove(m);
+                }
+            }
+            ret.add(new MultiMeeting(multi));
+        }
+        return ret;
+    }
 	
 	public static class MultiMeeting implements Comparable<MultiMeeting> {
 	    private TreeSet<Meeting> iMeetings;
@@ -230,7 +233,15 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
 	            getMeetings().first().stopTime()+
 	            (getMeetings().first().getLocation()==null?"":" "+getMeetings().first().getLocation().getLabel());
 	    }
-	}
+
+	       public String toShortString() {
+	            return getDays(Constants.DAY_NAMES_SHORT, Constants.DAY_NAMES_SHORT)+" "+
+	                new SimpleDateFormat("MM/dd").format(getMeetings().first().getMeetingDate())+
+	                (getMeetings().size()>1?" - "+new SimpleDateFormat("MM/dd").format(getMeetings().last().getMeetingDate()):"")+" "+
+	                getMeetings().first().startTime()+
+	                (getMeetings().first().getLocation()==null?"":" "+getMeetings().first().getLocation().getLabel());
+	        }
+}
 	
 	public Session getSession() { return null; }
 	

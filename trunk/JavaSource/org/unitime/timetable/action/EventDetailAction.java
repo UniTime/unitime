@@ -21,6 +21,7 @@ package org.unitime.timetable.action;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Set;
@@ -38,6 +39,7 @@ import org.hibernate.Transaction;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.EventDetailForm;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.ClassEvent;
@@ -56,7 +58,6 @@ import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.RelatedCourseInfo;
 import org.unitime.timetable.model.Roles;
-import org.unitime.timetable.model.StandardEventNote;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.CourseEventDAO;
 import org.unitime.timetable.model.dao.EventDAO;
@@ -86,20 +87,28 @@ public class EventDetailAction extends Action {
 
 		EventDetailForm myForm = (EventDetailForm) form;
 		
-		String iOp = myForm.getOp();
-		HttpSession webSession = request.getSession();
+        HttpSession webSession = request.getSession();
+        if (!Web.isLoggedIn(webSession)) {
+            throw new Exception("Access Denied.");
+        }           
+
+        String iOp = myForm.getOp();
 		User user = Web.getUser(webSession);
 		Event event = EventDAO.getInstance().get(Long.valueOf(myForm.getId()));
-		
-		Set<Department> userDepartments = null;
+
+        Set<Department> userDepartments = null;
+		String uname = (event==null?user.getName():event.getMainContact().getShortName()); 
 		if (user!=null && Roles.EVENT_MGR_ROLE.equals(user.getRole())) {
 			TimetableManager mgr = TimetableManager.getManager(user);
-			if (mgr!=null) userDepartments = mgr.getDepartments();
+			if (mgr!=null) {
+			    userDepartments = mgr.getDepartments();
+			    uname = mgr.getShortName();
+			}
+		} else if (user!=null && user.isAdmin()) {
+		    TimetableManager mgr = TimetableManager.getManager(user);
+            if (mgr!=null) uname = mgr.getShortName();
 		}
 		
-		if (!Web.isLoggedIn(webSession)) {
-			throw new Exception("Access Denied.");
-		}			
 		
 		if (iOp != null) {
 		
@@ -133,20 +142,27 @@ public class EventDetailAction extends Action {
                 Transaction tx = null;
                 try {
                     tx = hibSession.beginTransaction();
-                    String note="The meetings ";
+                    HashSet<Meeting> meetings = new HashSet();
 					for (int i=0; i<selectedMeetings.length; i++) {
 						Meeting approvedMeeting = MeetingDAO.getInstance().get(selectedMeetings[i]);
 						approvedMeeting.setApprovedDate(new Date());
+						meetings.add(approvedMeeting);
 						hibSession.saveOrUpdate(approvedMeeting);
-						note+= "on " + approvedMeeting.getTimeLabel() + " in " + approvedMeeting.getRoomLabel() + ", ";
+                        ChangeLog.addChange(
+                                hibSession,
+                                request,
+                                event,
+                                approvedMeeting.toString()+" of "+event.getEventName(),
+                                ChangeLog.Source.EVENT_EDIT,
+                                ChangeLog.Operation.APPROVE,
+                                null,null);
 					}
-					note += " have been approved";
 					EventNote en = new EventNote();
-					String date = new Date().toString();
-					if (myForm.getNewEventNote()!=null && myForm.getNewEventNote().length()>0) {
-						note+= " with the note \"" + myForm.getNewEventNote()+"\"";
-					}
-					en.setTextNote(date+": approve : "+note);
+					en.setTimeStamp(new Date());
+					en.setNoteType(EventNote.sEventNoteTypeApproval);
+					en.setUser(uname);
+					en.setMeetingCollection(meetings);
+					en.setTextNote(myForm.getNewEventNote());
 					en.setEvent(event);
 					hibSession.saveOrUpdate(en);
 					event.getNotes().add(en);
@@ -168,31 +184,27 @@ public class EventDetailAction extends Action {
                 boolean eventDeleted = false;
                 try {
                     tx = hibSession.beginTransaction();
-                    String note="The meetings ";
-        			
+                    HashSet<Meeting> meetings = new HashSet();        			
 					for (int i=0; i<selectedMeetings.length; i++) {
 						Meeting rejectedMeeting = MeetingDAO.getInstance().get(selectedMeetings[i]);
-	                    String msg = "Deleted meeting "+ rejectedMeeting.toString()+
-	                    	" of "+event.getEventName()+" ("+event.getEventTypeLabel()+")";
-						note+= "on " + rejectedMeeting.getTimeLabel() + " in " + rejectedMeeting.getRoomLabel() + ", ";
 	                    event.getMeetings().remove(rejectedMeeting);
+	                    meetings.add(rejectedMeeting);
 	        			ChangeLog.addChange(
 	                            hibSession,
 	                            request,
 	                            event,
-	                            msg,
+	                            rejectedMeeting.toString()+" of "+event.getEventName(),
 	                            ChangeLog.Source.EVENT_EDIT,
-	                            ChangeLog.Operation.UPDATE,
+	                            ChangeLog.Operation.REJECT,
 	                            null,null);
 					}
-					note += " have been rejected";
 					EventNote en = new EventNote();
-					String date = new Date().toString();
-					if (myForm.getNewEventNote()!=null && myForm.getNewEventNote().length()>0) {
-						note+= " with the note \"" + myForm.getNewEventNote()+"\"";
-					}
-					en.setTextNote(date+": reject : "+note);
-					en.setEvent(event);
+                    en.setTimeStamp(new Date());
+                    en.setNoteType(EventNote.sEventNoteTypeRejection);
+                    en.setUser(uname);
+                    en.setMeetingCollection(meetings);
+                    en.setTextNote(myForm.getNewEventNote());
+                    en.setEvent(event);
 					hibSession.saveOrUpdate(en);
 					event.getNotes().add(en);
 					hibSession.saveOrUpdate(event);					
@@ -282,11 +294,9 @@ public class EventDetailAction extends Action {
 					myForm.setAttendanceRequired(((CourseEvent) event).isReqAttendance());
 				} else
 					myForm.setSponsoringOrgName(event.getSponsoringOrganization()==null?"":event.getSponsoringOrganization().getName());
-				for (Iterator i = event.getNotes().iterator(); i.hasNext();) {
+				for (Iterator i = new TreeSet(event.getNotes()).iterator(); i.hasNext();) {
 					EventNote en = (EventNote) i.next();
-					StandardEventNote sen = en.getStandardNote();
-					if (sen!=null) {myForm.addNote(sen.getNote());}
-					if (en.getTextNote()!= null) {myForm.addNote(en.getTextNote());}
+					myForm.addNote(en.toHtmlString());
 				}
 				if (event.getMainContact()!=null)
 				    myForm.setMainContact(event.getMainContact());
@@ -319,9 +329,8 @@ public class EventDetailAction extends Action {
 					String approvedDate = (meeting.getApprovedDate()==null?"":iDateFormat2.format(meeting.getApprovedDate()));
 					boolean canEdit = false;
 					boolean canDelete = false;
-					boolean isPast = true;
-					if (meeting.getStartTime().after(new Date())) {
-						isPast=false;
+					boolean isPast = meeting.getStartTime().before(new Date());
+					if (!isPast || "true".equals(ApplicationProperties.getProperty("tmtbl.event.allowEditPast","false"))) {
 						if (user.isAdmin()) {
 							canEdit = true;
 						} else if (user.getId().equals(event.getMainContact().getExternalUniqueId())) {

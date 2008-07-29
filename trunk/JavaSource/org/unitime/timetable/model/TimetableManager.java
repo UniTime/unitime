@@ -302,16 +302,16 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
     }
     
 	public String getShortName() {
-		StringBuffer sb = new StringBuffer();
-		if (getFirstName()!=null && getFirstName().length()>0) {
-			sb.append(getFirstName().substring(0,1).toUpperCase());
-			sb.append(". ");
-		}
-		if (getLastName()!=null && getLastName().length()>0) {
-			sb.append(getLastName().substring(0,1).toUpperCase());
-			sb.append(getLastName().substring(1).toLowerCase().trim());
-		}
-		return sb.toString();
+        StringBuffer sb = new StringBuffer();
+        if (getFirstName()!=null && getFirstName().length()>0) {
+            sb.append(getFirstName().substring(0,1).toUpperCase());
+            sb.append(". ");
+        }
+        if (getLastName()!=null && getLastName().length()>0) {
+            sb.append(getLastName().substring(0,1).toUpperCase());
+            sb.append(getLastName().substring(1,Math.min(10,getLastName().length())).toLowerCase().trim());
+        }
+        return sb.toString();
 	}
 	
 	public int compareTo(Object o) {
