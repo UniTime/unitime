@@ -29,7 +29,7 @@
 <script language="JavaScript" type="text/javascript" src="scripts/block.js"></script>
 
 <tiles:importAttribute />
-<tt:back-mark back="true" clear="true" title="Event Room Allocation" uri="eventGrid.do"/>
+<tt:back-mark back="true" clear="true" title="Event Room Availability" uri="eventGrid.do"/>
 <html:form action="/eventGrid">
 	<input type="hidden" name="op2" value="">
 	<script language="JavaScript">blToggleHeader('Filter','dispFilter');blStart('dispFilter');</script>
