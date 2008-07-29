@@ -341,7 +341,6 @@ public class EventAddInfoForm extends ActionForm {
             en.setNoteType(EventNote.sEventNoteTypeCreateEvent);
             en.setTimeStamp(new Date());
             en.setMeetingCollection(createdMeetings);
-            en.setUser(null);
             en.setTextNote(iAdditionalInfo);
             en.setUser(uname);
             en.setEvent(event);
@@ -377,6 +376,7 @@ public class EventAddInfoForm extends ActionForm {
 			tx = hibSession.beginTransaction();
 
 			// create event meetings
+			HashSet<Meeting> createdMeetings = new HashSet();
 			for (Iterator i=iDateLocations.iterator();i.hasNext();) {
 				DateLocation dl = (DateLocation) i.next();
 				Meeting m = new Meeting();
@@ -388,7 +388,30 @@ public class EventAddInfoForm extends ActionForm {
 				m.setEvent(iEvent);
 				hibSession.saveOrUpdate(m); // save each meeting to db
 				iEvent.getMeetings().add(m); // link each meeting with event
+				createdMeetings.add(m);
 			}
+
+			User user = Web.getUser(request.getSession());
+			String uname = iEvent.getMainContact().getShortName();
+	        if (user!=null && (user.isAdmin() || Roles.EVENT_MGR_ROLE.equals(user.getRole()))) {
+	            TimetableManager mgr = TimetableManager.getManager(user);
+	            if (mgr!=null) uname = mgr.getShortName();
+	        }
+	        if (uname==null) uname = user.getName();
+	        
+            // add event note (additional info)
+            EventNote en = new EventNote();
+            en.setNoteType(EventNote.sEventNoteTypeAddMeetings);
+            en.setTimeStamp(new Date());
+            en.setMeetingCollection(createdMeetings);
+            en.setTextNote(iAdditionalInfo);
+            en.setUser(uname);
+            en.setEvent(iEvent);
+            //hibSession.saveOrUpdate(en);
+            // attach the note to event
+            if (iEvent.getNotes()==null) iEvent.setNotes(new HashSet());
+            iEvent.getNotes().add(en);
+
 			hibSession.saveOrUpdate(iEvent);
 
 			ChangeLog.addChange(
