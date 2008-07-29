@@ -26,20 +26,22 @@
 	<tr><td colspan='5' nowrap>
 		<tt:section-header>
 			<tt:section-title>Buildings</tt:section-title>
+				<table border='0'><tr><td>
 				<html:form action="buildingEdit" styleClass="FormWithNoPadding">
 					<html:hidden property="op" value="Add"/>
 					<html:submit onclick="displayLoading();" styleClass="btn" accesskey="A" title="Add Building (Alt+B)" value="Add Building"/>
 				</html:form>
-				</td><td nowrap>
+				</td><td>
 				<html:form action="buildingEdit" styleClass="FormWithNoPadding">
 					<html:hidden property="op" value="Export PDF"/>
 					<html:submit onclick="displayLoading();" styleClass="btn" accesskey="P" title="Export PDF (Alt+P)" value="Export PDF"/>
 				</html:form>
-				</td><td nowrap>
+				</td><td>
 				<html:form action="buildingEdit" styleClass="FormWithNoPadding">
 					<html:hidden property="op" value="Update Data"/>
-					<html:submit onclick="displayLoading();" styleClass="btn" accesskey="U" title="Export PDF (Alt+U)" value="Update Data"/>
+					<html:submit onclick="displayLoading();" styleClass="btn" accesskey="U" title="Synchronize classrooms and computing labs with external rooms (Alt+U)" value="Update Data"/>
 				</html:form>
+				</td></tr></table>
 		</tt:section-header>
 	</td></tr>
 <%
@@ -84,16 +86,23 @@ webTable.addLine(
 		</TD>
 	</TR>
 	<TR>
-		<TD colspan='4' align="right" nowrap width="99%">
+		<TD colspan='5' align="right" nowrap width="99%">
+				<table border='0'><tr><td>
 				<html:form action="buildingEdit" styleClass="FormWithNoPadding">
 					<html:hidden property="op" value="Add"/>
 					<html:submit onclick="displayLoading();" styleClass="btn" accesskey="A" title="Add Building (Alt+B)" value="Add Building"/>
 				</html:form>
-		</td><td nowrap align="right" >
+				</td><td>
 				<html:form action="buildingEdit" styleClass="FormWithNoPadding">
 					<html:hidden property="op" value="Export PDF"/>
 					<html:submit onclick="displayLoading();" styleClass="btn" accesskey="P" title="Export PDF (Alt+P)" value="Export PDF"/>
 				</html:form>
+				</td><td>
+				<html:form action="buildingEdit" styleClass="FormWithNoPadding">
+					<html:hidden property="op" value="Update Data"/>
+					<html:submit onclick="displayLoading();" styleClass="btn" accesskey="U" title="Synchronize classrooms and computing labs with external rooms (Alt+U)" value="Update Data"/>
+				</html:form>
+				</td></tr></table>
 		</TD>
 	</TR>
 </table>
