@@ -235,17 +235,41 @@ public class EventDetailAction extends Action {
 			}				
 			
 			if(iOp.equals("Delete")) {
+					Long[] selectedMeetings = myForm.getSelectedMeetings();
 	                org.hibernate.Session hibSession = new EventDAO().getSession();
 	                Transaction tx = null;
 	                boolean eventDeleted = false;
 	                try {
 	                    tx = hibSession.beginTransaction();
-	        			
-	                    Meeting m = myForm.getSelectedMeeting();
-	                    String msg = "Deleted meeting "+m.toString()+" of "+event.getEventName()+" ("+event.getEventTypeLabel()+")";
-	                    event.getMeetings().remove(m);
-		                if (event.getMeetings().isEmpty()) {
+	                    HashSet<Meeting> meetings = new HashSet();
+						for (int i=0; i<selectedMeetings.length; i++) {
+							Meeting deletedMeeting = MeetingDAO.getInstance().get(selectedMeetings[i]);
+		                    meetings.add(deletedMeeting);
+		                    event.getMeetings().remove(deletedMeeting);
 		        			ChangeLog.addChange(
+		                            hibSession,
+		                            request,
+		                            event,
+		                            deletedMeeting.toString()+" of "+event.getEventName(),
+		                            ChangeLog.Source.EVENT_EDIT,
+		                            ChangeLog.Operation.UPDATE,
+		                            null,null);
+						}	  
+
+						EventNote en = new EventNote();
+	                    en.setTimeStamp(new Date());
+	                    en.setNoteType(EventNote.sEventNoteTypeDeletion);
+	                    en.setUser(uname);
+	                    en.setMeetingCollection(meetings);
+	                    en.setTextNote(myForm.getNewEventNote());
+	                    en.setEvent(event);
+						hibSession.saveOrUpdate(en);
+						event.getNotes().add(en);
+						hibSession.saveOrUpdate(event);			
+
+		                if (event.getMeetings().isEmpty()) {
+		                	String msg = "All meetings of "+event.getEventName()+" ("+event.getEventTypeLabel()+") have been deleted.";
+		                	ChangeLog.addChange(
 		                            hibSession,
 		                            request,
 		                            event,
@@ -256,14 +280,6 @@ public class EventDetailAction extends Action {
 		                	hibSession.delete(event);
 		                	eventDeleted = true;
 		                } else {
-		        			ChangeLog.addChange(
-		                            hibSession,
-		                            request,
-		                            event,
-		                            msg,
-		                            ChangeLog.Source.EVENT_EDIT,
-		                            ChangeLog.Operation.UPDATE,
-		                            null,null);
 		                    hibSession.saveOrUpdate(event);
 		                }
 	                    tx.commit();
@@ -339,7 +355,7 @@ public class EventDetailAction extends Action {
 							myForm.setCanDelete(true);
 						} else if (userDepartments!=null && location!=null && location.getControllingDepartment()!=null)
 							canEdit = userDepartments.contains(location.getControllingDepartment());
-						myForm.setCanEdit(canEdit);
+						if (canEdit) myForm.setCanEdit(true);
 					}
 					myForm.addMeeting(meeting.getUniqueId(),
 							iDateFormat.format(meeting.getMeetingDate()),
@@ -347,7 +363,7 @@ public class EventDetailAction extends Action {
 							(endHour>12?endHour-12:endHour)+":"+(endMin<10?"0":"")+endMin+(endHour>=12?"p":"a"), 
 							locationLabel, locationCapacity, approvedDate, isPast, canEdit, canDelete);
 				}
-//				myForm.setCanEdit(user.isAdmin()||user.hasRole(Roles.EVENT_MGR_ROLE)||user.getId().equals(event.getMainContact().getExternalUniqueId()));
+				if (user.isAdmin()||user.hasRole(Roles.EVENT_MGR_ROLE)||user.getId().equals(event.getMainContact().getExternalUniqueId())) myForm.setCanEdit(true);
 				if (event instanceof ClassEvent || event instanceof ExamEvent) {
 					myForm.setCanEdit(false);
 				}					
@@ -356,7 +372,6 @@ public class EventDetailAction extends Action {
 		        Long prevId = Navigation.getPrevious(request.getSession(), Navigation.sInstructionalOfferingLevel, event.getUniqueId());
 		        myForm.setPreviousId(prevId==null?null:prevId.toString());
 		        myForm.setNextId(nextId==null?null:nextId.toString());
-
 			
 		        if ("Course Event".equals(myForm.getEventType())) {
 		            CourseEvent courseEvent = new CourseEventDAO().get(Long.valueOf(id));;
