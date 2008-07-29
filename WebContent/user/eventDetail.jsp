@@ -42,16 +42,16 @@ TO DO:
 			<TD valign="middle" colspan='2'>
 				<tt:section-header>
 					<tt:section-title><bean:write name="eventDetailForm" property="eventName"/></tt:section-title>
-					<logic:notEmpty name="eventDetailForm" property="previousId">
+					<logic:greaterEqual name="eventDetailForm" property="previousId" value="0">
 						<html:submit property="op" styleClass="btn" accesskey="P" 
 							title="Previous Event (Alt+P)" value="Previous"/>
-					</logic:notEmpty>
-					&nbsp;
-					<logic:notEmpty name="eventDetailForm" property="nextId">
+						&nbsp;
+					</logic:greaterEqual>
+					<logic:greaterEqual name="eventDetailForm" property="nextId" value="0">
 						<html:submit property="op" styleClass="btn" accesskey="N"
 							title="Next Event (Alt+N)" value="Next"/>
-					</logic:notEmpty>
-					&nbsp;
+						&nbsp;
+					</logic:greaterEqual>
 					<tt:back styleClass="btn" name="Back" title="Return to %% (Alt+B)" accesskey="B" type="PreferenceGroup">
 						A<bean:write name="eventDetailForm" property="id"/>
 					</tt:back>
@@ -354,16 +354,16 @@ TO DO:
 	</TR>
 	<TR>
 		<TD colspan="2" align="right">
-				<logic:notEmpty name="eventDetailForm" property="previousId">
+				<logic:greaterEqual name="eventDetailForm" property="previousId" value="0">
 					<html:submit property="op" styleClass="btn" accesskey="P" 
 						title="Go To Previous Event (Alt+P)" value="Previous"/>
-				</logic:notEmpty>
-				&nbsp;
-				<logic:notEmpty name="eventDetailForm" property="nextId">
+					&nbsp;
+				</logic:greaterEqual>
+				<logic:greaterEqual name="eventDetailForm" property="nextId" value="0">
 					<html:submit property="op" styleClass="btn" accesskey="N"
 						title="Next Event (Alt+N)" value="Next"/>
-				</logic:notEmpty>
-				&nbsp;
+					&nbsp;
+				</logic:greaterEqual>
 				<tt:back styleClass="btn" name="Back" title="Return to %% (Alt+B)" accesskey="B" type="PreferenceGroup">
 					A<bean:write name="eventDetailForm" property="id"/>
 				</tt:back>
