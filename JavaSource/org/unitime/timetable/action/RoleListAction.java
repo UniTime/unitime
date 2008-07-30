@@ -87,7 +87,7 @@ public class RoleListAction extends Action {
         TimetableManager tm = TimetableManager.getManager(user);        
         if(tm==null) {
             if ("true".equals(ApplicationProperties.getProperty("tmtbl.authentication.norole","false")))
-                return mapping.findForward("norole");
+                return mapping.findForward(TimetableManager.canSeeEvents(user)?"success":"norole");
             return(mapping.findForward("loginRequired"));
         }
  

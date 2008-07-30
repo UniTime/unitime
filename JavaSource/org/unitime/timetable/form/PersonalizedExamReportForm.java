@@ -26,8 +26,9 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 
 public class PersonalizedExamReportForm extends ActionForm {
-    public String iOp = null;
-    public boolean iCanExport = false;
+    private String iOp = null;
+    private boolean iCanExport = false;
+    private String iMessage = null;
     
     public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
         ActionErrors errors = new ActionErrors();
@@ -38,10 +39,13 @@ public class PersonalizedExamReportForm extends ActionForm {
     public void reset(ActionMapping mapping, HttpServletRequest request) {
         iOp = null;
         iCanExport = false;
+        iMessage = null;
     }
     
     public String getOp() { return iOp; }
     public void setOp(String op) { iOp = op; }
     public boolean getCanExport() { return iCanExport; }
     public void setCanExport(boolean canExport) { iCanExport = canExport;}
+    public String getMessage() { return iMessage; }
+    public void setMessage(String m) { iMessage = m; }
 }

@@ -101,6 +101,7 @@ public class EventAddForm extends ActionForm {
 	private Long[] iRoomFeatures = null;
 	private Long[] iRoomTypes = null;
 	private Long[] iRoomGroups = null;
+	private boolean iHasRole = false;
 	
 	//if adding meetings to an existing event
 	private Long iEventId; 
@@ -187,6 +188,10 @@ public class EventAddForm extends ActionForm {
 		try {
 			iSessionId = Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId();
 		} catch (Exception e) {}
+		if (iSessionId==null) {
+		    TreeSet<Session> sessions = Session.getAllSessions();
+		    if (!sessions.isEmpty()) iSessionId = sessions.last().getUniqueId();
+		}
 		iStartTime = 90;
 		iStopTime = 210;
 //		iLocationType = null;
@@ -204,6 +209,7 @@ public class EventAddForm extends ActionForm {
         }
         User user = Web.getUser(request.getSession());
         iAdmin = (user!=null && user.isAdmin());
+        iHasRole = (user.getRole()!=null);
         if (Roles.EVENT_MGR_ROLE.equals(user.getRole())) {
             TimetableManager mgr = (user==null?null:TimetableManager.getManager(user));
             if (mgr!=null) iManagingDepts = mgr.getDepartments();
@@ -343,7 +349,9 @@ public class EventAddForm extends ActionForm {
 	public void setOp (String op) {iOp = op;}
 	
 	public String[] getEventTypes() {
-		String[] types = new String[] {Event.sEventTypes[Event.sEventTypeCourse], Event.sEventTypes[Event.sEventTypeSpecial]}; 
+		String[] types = (iHasRole ?
+		        new String[] {Event.sEventTypes[Event.sEventTypeCourse], Event.sEventTypes[Event.sEventTypeSpecial]} :
+		        new String[] {Event.sEventTypes[Event.sEventTypeSpecial]});; 
 		return types;
 	}
 	

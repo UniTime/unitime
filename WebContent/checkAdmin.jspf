@@ -19,6 +19,7 @@
 <%@ page import="org.unitime.timetable.model.Roles" %>
 <%@ page import="org.unitime.commons.web.Web" %>
 <%@ include file="checkLogin.jspf" %>
+<%@ include file="checkRole.jspf" %>
 <%	if (!Web.getUser(session).isAdmin()) { %>
  	<jsp:forward page="/loginRequired.do">
 			<jsp:param name="message" value="Insufficient user privileges."/>

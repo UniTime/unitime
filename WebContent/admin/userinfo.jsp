@@ -92,13 +92,13 @@
 	String loginName="";
 	String dept="";
 	String role="";
-	String yearTerm=" - ";
+	String yearTerm="";
 	String sessionStatus="";
 
 	User user = Web.getUser(session);
 	
 	boolean chameleon = (tab==0 && 
-		(user!=null && user.getRole().equals(Roles.ADMIN_ROLE))
+		(user!=null && Roles.ADMIN_ROLE.equals(user.getRole()))
 		|| (session.getAttribute("hdnAdminAlias")!=null && session.getAttribute("hdnAdminAlias").toString().equals("1") ));
 	
  	if (user==null)
@@ -134,6 +134,7 @@
  			}
  		}
  		role = user.getRole();
+ 		if (role==null) role = "No Role";
  	}
 %>
 <DIV align="left"><TABLE class="MenuBody" height='15' width="100%" border="0" cellspacing="0" cellpadding="2" style="border-top:2px solid #e4e4e4;">
@@ -197,8 +198,8 @@
 	<TBODY>
 <% if (tab==0) { %>
 		<TR align="left">
-			<TD valign="top"><FONT color="#000000">&nbsp;Name</FONT></TD>
-			<TD valign="top">
+			<TD valign="top" height="15"><FONT color="#000000">&nbsp;Name</FONT></TD>
+			<TD valign="top" height="15">
 				<% if (chameleon) { %>
 					<A href="../chameleon.do" target="__idContentFrame" title="Switch user">
 				<% } %>
@@ -209,19 +210,22 @@
 			</TD>
 		</TR>
 
-		<TR align="left">
-			<TD valign="top"><FONT color="#000000">&nbsp;Dept</FONT></TD>
-			<TD valign="top"><FONT color="#000040"><I><%=dept%></I></FONT></TD>
-		</TR>
+		<% if (dept.length()>0) { %>
+			<TR align="left">
+				<TD valign="top" height="15"><FONT color="#000000">&nbsp;Dept</FONT></TD>
+				<TD valign="top" height="15"><FONT color="#000040"><I><%=dept%></I></FONT></TD>
+			</TR>
+		<% } %>
 
 		<TR align="left">
-			<TD valign="top"><FONT color="#000000">&nbsp;Role</FONT></TD>
-			<TD valign="top"><FONT color="#000040"><I><%=role%></I></FONT></TD>
+			<TD valign="top" height="15"><FONT color="#000000">&nbsp;Role</FONT></TD>
+			<TD valign="top" height="15"><FONT color="#000040"><I><%=role%></I></FONT></TD>
 		</TR>
 
+		<% if (yearTerm.length()>0) { %>
 		<TR align="left">
-			<TD valign="top"><FONT color="#000000">&nbsp;Session</FONT></TD>
-			<TD valign="top">
+			<TD valign="top" height="15"><FONT color="#000000">&nbsp;Session</FONT></TD>
+			<TD valign="top" height="15">
 				<A href="../selectPrimaryRole.do?list=Y" target="__idContentFrame" title="Change academic session">
 					<FONT color="#000040"><I><%=yearTerm%></I></FONT>
 				</A>
@@ -229,9 +233,10 @@
 		</TR>
 
 		<TR align="left">
-			<TD valign="top"><FONT color="#000000">&nbsp;Status</FONT></TD>
-			<TD valign="top"><FONT color="#000040"><I><%=sessionStatus%></I></FONT></TD>
+			<TD valign="top" height="15"><FONT color="#000000">&nbsp;Status</FONT></TD>
+			<TD valign="top" height="15"><FONT color="#000040"><I><%=sessionStatus%></I></FONT></TD>
 		</TR>
+		<% } %>
 
 		<tt:propertyEquals name="tmtbl.userinfo.show_database" value="true">
 			<TR align="left">
