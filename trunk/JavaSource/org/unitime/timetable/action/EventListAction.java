@@ -31,7 +31,6 @@ import org.apache.struts.action.ActionMessages;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.EventListForm;
-import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.webutil.BackTracker;
 
@@ -49,8 +48,7 @@ public class EventListAction extends Action {
 		
         User user = Web.getUser(request.getSession()); 
         TimetableManager manager = (user==null?null:TimetableManager.getManager(user)); 
-        Session session = (user==null?null:Session.getCurrentAcadSession(user));
-        if (user==null || session==null || !manager.canSeeEvents(session, user)) 
+        if (user==null || !TimetableManager.canSeeEvents(user)) 
         	throw new Exception ("Access Denied.");
 
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));

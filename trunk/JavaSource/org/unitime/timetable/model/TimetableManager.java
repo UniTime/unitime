@@ -102,7 +102,7 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
 	public static Set getSubjectAreas(User user) throws Exception {
 	    Set saList = new TreeSet();
 	    Session session = Session.getCurrentAcadSession(user);
-	    if (user.isAdmin() || user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE) || user.getCurrentRole().equals(Roles.EXAM_MGR_ROLE)){
+	    if (user.isAdmin() || Roles.VIEW_ALL_ROLE.equals(user.getCurrentRole()) || Roles.EXAM_MGR_ROLE.equals(user.getCurrentRole())){
 	    	return(session.getSubjectAreas());
 	    }
 		TimetableManager tm = TimetableManager.getManager(user);
@@ -259,7 +259,7 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
 	}
 
     //needs to be implemented
-    public boolean canSeeEvents (Session session, User user) {
+    public static boolean canSeeEvents (User user) {
     	for (RoomType roomType : RoomType.findAll()) {
     	    if (roomType.countManagableRooms()>0) return true;
     	}

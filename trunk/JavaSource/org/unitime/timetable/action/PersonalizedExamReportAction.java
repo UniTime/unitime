@@ -82,6 +82,38 @@ import org.unitime.timetable.webutil.PdfWebTable;
 public class PersonalizedExamReportAction extends Action {
     private static Log sLog = LogFactory.getLog(PersonalizedExamReportAction.class);
     
+    public static boolean hasPersonalReport(User user) {
+        if (user.getRole()!=null) return false;
+        HashSet<Session> sessions = new HashSet();
+        DepartmentalInstructor instructor = null;
+        for (Iterator i=new DepartmentalInstructorDAO().
+                getSession().
+                createQuery("select i from DepartmentalInstructor i where i.externalUniqueId=:externalId").
+                setString("externalId",user.getId()).
+                setCacheable(true).list().iterator();i.hasNext();) {
+            DepartmentalInstructor s = (DepartmentalInstructor)i.next();
+            if (!canDisplay(s.getDepartment().getSession())) continue;
+            sessions.add(s.getDepartment().getSession());
+            if (instructor==null || instructor.getDepartment().getSession().compareTo(s.getDepartment().getSession())<0) instructor = s;
+        }
+        
+        Student student = null;
+        for (Iterator i=new StudentDAO().
+                getSession().
+                createQuery("select s from Student s where s.externalUniqueId=:externalId").
+                setString("externalId",user.getId()).
+                setCacheable(true).list().iterator();i.hasNext();) {
+            Student s = (Student)i.next();
+            if (!canDisplay(s.getSession())) continue;
+            sessions.add(s.getSession());
+            if (student==null || student.getSession().compareTo(s.getSession())<0) student = s;
+        }
+        
+        if (instructor==null && student==null) return false;
+
+        return true;
+    }
+    
     public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
         PersonalizedExamReportForm myForm = (PersonalizedExamReportForm) form;
         
@@ -245,13 +277,12 @@ public class PersonalizedExamReportAction extends Action {
         
         if (!hasClasses && instructorExams.isEmpty() && studentExams.isEmpty()) {
             if ("classes".equals(back))
-                request.setAttribute("message", "No classes found.");
+                myForm.setMessage("No classes found in "+(instructor!=null?instructor.getDepartment().getSession():student.getSession()).getLabel()+".");
             else if ("exams".equals(back))
-                request.setAttribute("message", "No examinations found.");
+                myForm.setMessage("No examinations found in "+(instructor!=null?instructor.getDepartment().getSession():student.getSession()).getLabel()+".");
             else
-                request.setAttribute("message", "No schedule found.");
+                myForm.setMessage("No classes or examinations found in "+(instructor!=null?instructor.getDepartment().getSession():student.getSession()).getLabel()+".");
             sLog.info("No classes or exams found for "+(instructor!=null?instructor.getName(DepartmentalInstructor.sNameFormatShort):student.getName(DepartmentalInstructor.sNameFormatShort)));
-            return mapping.findForward(back);
         }
         
         boolean useCache = "true".equals(ApplicationProperties.getProperty("tmtbl.exams.reports.conflicts.cache","false"));
@@ -390,7 +421,7 @@ public class PersonalizedExamReportAction extends Action {
         return mapping.findForward("show");
     }
     
-    private boolean canDisplay(Session session) {
+    private static boolean canDisplay(Session session) {
         if (session.getStatusType()==null) return false;
         if (session.getStatusType().canNoRoleReportExamFinal() && Exam.hasTimetable(session.getUniqueId(),Exam.sExamTypeFinal)) return true;
         if (session.getStatusType().canNoRoleReportExamMidterm() && Exam.hasTimetable(session.getUniqueId(),Exam.sExamTypeMidterm)) return true;

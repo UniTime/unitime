@@ -39,6 +39,12 @@
 			<bean:write scope="request" name="sessions" filter="false"/>
 		</TABLE>
 	</logic:notEmpty>
+	<logic:notEmpty name="personalizedExamReportForm" property="message">
+		<BR>
+		<div style='font-weight:bold;color:red;'>
+			<bean:write name="personalizedExamReportForm" property="message"/>
+		</div>
+	</logic:notEmpty>
 	<logic:notEmpty scope="request" name="iclsschd">
 		<BR>
 		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">

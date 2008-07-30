@@ -48,6 +48,7 @@
 		<put name="showSolverWarnings" value="false" />
  		<put name="helpFile" value="" />
  		<put name="checkLogin" value="true" />
+ 		<put name="checkRole" value="true" />
  		<put name="checkAdmin" value="false" />
  		<put name="checkAccessLevel" value="true" />
   	</definition>
@@ -57,14 +58,14 @@
 	<definition	name="selectPrimaryRoleTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Select User Role"/>
 		<put name="body" value="/selectPrimaryRole.jsp" />
-		<put name="checkLogin" value="false" />
+		<put name="checkRole" value="false" />
 		<put name="checkAccessLevel" value="false" />
   	</definition>
 
 	<definition	name="selectAcadSessionTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Select Academic Session"/>
 		<put name="body" value="/selectPrimaryRole.jsp" />
-		<put name="checkLogin" value="false" />
+		<put name="checkRole" value="false" />
 		<put name="checkAccessLevel" value="false" />
   	</definition>
 
@@ -87,6 +88,7 @@
   	<definition	name="loginRequiredTile" extends="pageLayoutDef">
 		<put name="header" value="/loginRequired.jsp" />
 		<put name="checkLogin" value="false" />
+		<put name="checkRole" value="false" />
 		<put name="checkAccessLevel" value="false" />
   	</definition>
 
@@ -706,6 +708,8 @@
    	<definition	name="inquiryTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Contact Us"/>
 		<put name="body" value="/user/inquiry.jsp" />
+		<put name="checkAccessLevel" value="false" />
+		<put name="checkRole" value="false" />
   	</definition>
   	
    	<definition	name="dataImportTile" extends="pageLayoutDef">
@@ -883,25 +887,30 @@
 		<put name="title" type="string" value="Event Detail"/>
 		<put name="body" value="/user/eventDetail.jsp" />
 		<put name="showNavigation" value="true" />
+		<put name="checkAccessLevel" value="false" />
+		<put name="checkRole" value="false" />
   	</definition> 	
   	
  	<definition	name="eventListTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Events"/>
 		<put name="body" value="/user/eventList.jsp" />
 		<put name="showNavigation" value="true" />
+		<put name="checkAccessLevel" value="false" />
+		<put name="checkRole" value="false" />
   	</definition> 	
  	
  	<definition	name="personalizedExamReportTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Personal Schedule"/>
 		<put name="body" value="/exam/personalizedReport.jsp" />
 		<put name="checkAccessLevel" value="false" />
-		<put name="checkLogin" value="false"/>
+		<put name="checkRole" value="false" />
   	</definition> 	
  
  	<definition	name="examsTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Examination Schedule"/>
 		<put name="body" value="/exam/exams.jsp" />
 		<put name="checkLogin" value="false" />
+		<put name="checkRole" value="false" />
 		<put name="checkAccessLevel" value="false" />
   	</definition> 	
 
@@ -909,24 +918,27 @@
 		<put name="title" type="string" value="Class Schedule"/>
 		<put name="body" value="/user/classes.jsp" />
 		<put name="checkLogin" value="false" />
+		<put name="checkRole" value="false" />
 		<put name="checkAccessLevel" value="false" />
   	</definition> 	
 
  	<definition	name="eventAddTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Add Event"/>
 		<put name="body" value="/user/eventAdd.jsp" />
+		<put name="checkAccessLevel" value="false" />
+		<put name="checkRole" value="false" />
   	</definition> 	  	
 
   	<definition name="eventAddMtgsTile" extends="eventAddTile">
   		<put name="title" type="string" value="Add Event Meetings"/>
   	</definition>
 
- 	<definition	name="eventRoomAvailabilityTile" extends="pageLayoutDef">
+ 	<definition	name="eventRoomAvailabilityTile" extends="eventAddTile">
 		<put name="title" type="string" value="Event Room Selection"/>
 		<put name="body" value="/user/eventRoomAvailability.jsp" />
   	</definition> 	  	
 
- 	<definition	name="eventAddInfoTile" extends="pageLayoutDef">
+ 	<definition	name="eventAddInfoTile" extends="eventAddTile">
 		<put name="title" type="string" value="Add Event Info"/>
 		<put name="body" value="/user/eventAddInfo.jsp" />
   	</definition> 	  	
@@ -962,6 +974,8 @@
  	<definition	name="eventGridTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Event Room Availability"/>
 		<put name="body" value="/user/eventGrid.jsp" />
+		<put name="checkAccessLevel" value="false" />
+		<put name="checkRole" value="false" />
   	</definition>
   	
    	<definition	name="roomTypeListTile" extends="pageLayoutDef">
