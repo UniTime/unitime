@@ -610,17 +610,17 @@ public class ExamAssignmentReportAction extends Action {
                                     (idc==0&&im2d==0&&ibtb==0&&idbtb==0?"":idcStr+", "+im2dStr+", "+ibtbStr),
                                 },
                                 new Comparable[] {
-                                    new MultiComparable(room),
-                                    new MultiComparable(-room.getCapacity(), room),
-                                    new MultiComparable(-room.getExamCapacity(), room),
-                                    new MultiComparable(room, exam.getPeriodOrd(), section.getName(), exam),
-                                    new MultiComparable(room, exam.getPeriod().getStartSlot(), section.getName(), exam),
-                                    new MultiComparable(room, section.getName(), exam),
-                                    new MultiComparable(room, -section.getNrStudents(), section.getName(), exam),
-                                    new MultiComparable(room, exam.getSeatingType(), section.getName(), exam),
-                                    new MultiComparable(room, exam.getInstructorName(":"), section.getName(), exam),
-                                    new MultiComparable(room, -dc,-m2d,-btb,-dbtb,section.getName(),exam),
-                                    new MultiComparable(room, -idc,-im2d,-ibtb,-idbtb,section.getName(),exam)
+                                    new MultiComparable(room.getName()),
+                                    new MultiComparable(-room.getCapacity(), room.getName()),
+                                    new MultiComparable(-room.getExamCapacity(), room.getName()),
+                                    new MultiComparable(room.getName(), exam.getPeriodOrd(), section.getName(), exam),
+                                    new MultiComparable(room.getName(), exam.getPeriod().getStartSlot(), section.getName(), exam),
+                                    new MultiComparable(room.getName(), section.getName(), exam),
+                                    new MultiComparable(room.getName(), -section.getNrStudents(), section.getName(), exam),
+                                    new MultiComparable(room.getName(), exam.getSeatingType(), section.getName(), exam),
+                                    new MultiComparable(room.getName(), exam.getInstructorName(":"), section.getName(), exam),
+                                    new MultiComparable(room.getName(), -dc,-m2d,-btb,-dbtb,section.getName(),exam),
+                                    new MultiComparable(room.getName(), -idc,-im2d,-ibtb,-idbtb,section.getName(),exam)
                                 },
                                 (firstRoom?exam.getExamId().toString():null));
                         firstRoom = false;
@@ -662,17 +662,17 @@ public class ExamAssignmentReportAction extends Action {
                                 (idc==0&&im2d==0&&ibtb==0&&idbtb==0?"":idcStr+", "+im2dStr+", "+ibtbStr),
                             },
                             new Comparable[] {
-                                new MultiComparable(room),
-                                new MultiComparable(-room.getCapacity(), room),
-                                new MultiComparable(-room.getExamCapacity(), room),
-                                new MultiComparable(room, exam.getPeriodOrd(), exam),
-                                new MultiComparable(room, exam.getPeriod().getStartSlot(), exam),
-                                new MultiComparable(room, exam),
-                                new MultiComparable(room, -exam.getNrStudents(), exam),
-                                new MultiComparable(room, exam.getSeatingType(), exam),
-                                new MultiComparable(room, exam.getInstructorName(":"), exam),
-                                new MultiComparable(room, -dc,-m2d,-btb,-dbtb,exam),
-                                new MultiComparable(room, -idc,-im2d,-ibtb,-idbtb,exam)
+                                new MultiComparable(room.getName()),
+                                new MultiComparable(-room.getCapacity(), room.getName()),
+                                new MultiComparable(-room.getExamCapacity(), room.getName()),
+                                new MultiComparable(room.getName(), exam.getPeriodOrd(), exam),
+                                new MultiComparable(room.getName(), exam.getPeriod().getStartSlot(), exam),
+                                new MultiComparable(room.getName(), exam),
+                                new MultiComparable(room.getName(), -exam.getNrStudents(), exam),
+                                new MultiComparable(room.getName(), exam.getSeatingType(), exam),
+                                new MultiComparable(room.getName(), exam.getInstructorName(":"), exam),
+                                new MultiComparable(room.getName(), -dc,-m2d,-btb,-dbtb,exam),
+                                new MultiComparable(room.getName(), -idc,-im2d,-ibtb,-idbtb,exam)
                             },
                             (firstRoom?exam.getExamId().toString():null));
                     firstRoom = false;
