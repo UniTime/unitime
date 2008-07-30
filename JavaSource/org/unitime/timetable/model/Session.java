@@ -213,15 +213,12 @@ public class Session extends BaseSession implements Comparable {
 	 * @return Session object of found, throws Exception otherwise
 	 * @throws HibernateException
 	 */
-	public static Session getCurrentAcadSession(User user) throws Exception {
+	public static Session getCurrentAcadSession(User user) {
 		Object sessionId = user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
 		if (sessionId == null || sessionId.toString().trim().length() == 0)
-			throw new Exception(
-					"Current Academic Session cannot be determined for user");
-		else {
-			Session s = Session.getSessionById(new Long(sessionId.toString()));
-			return s;
-		}
+		    return null;
+		else
+			return Session.getSessionById(new Long(sessionId.toString()));
 	}
 
 	/**

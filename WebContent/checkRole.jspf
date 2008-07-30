@@ -17,14 +17,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 --%>
 <%@ page import="org.unitime.commons.web.Web" %>
-<% if (!Web.isLoggedIn(session)) {%>
-	<% if (session.isNew()) { %>
- 		<jsp:forward page="/loginRequired.do">
-			<jsp:param name="message" value="Your timetabling session has expired. Please log in again."/>
-		</jsp:forward>
-	<% } else { %>
- 		<jsp:forward page="/loginRequired.do">
-			<jsp:param name="message" value="Login is required to use timetabling application."/>
-		</jsp:forward>
-	<% } %>
+<%@ include file="checkLogin.jspf" %>
+<%if (Web.getUser(session).getCurrentRole()==null) {%>
+ 	<jsp:forward page="/loginRequired.do">
+			<jsp:param name="message" value="Insufficient user privileges."/>
+	</jsp:forward>
 <%}%>

@@ -122,8 +122,7 @@ public class User {
 	 * @return true if the user has the specified role
 	 */
 	public boolean hasRole(String role) {
-
-		return getRole().equalsIgnoreCase(role);
+	    return role.equalsIgnoreCase(getRole());
 	}
 
 	/**

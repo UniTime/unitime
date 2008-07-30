@@ -23,6 +23,7 @@
 <%@ page import="org.unitime.timetable.model.Session" %>
 <%@ page import="org.unitime.timetable.model.TimetableManager" %>
 <%@page import="org.unitime.timetable.util.RoomAvailability"%>
+<%@page import="org.unitime.timetable.action.PersonalizedExamReportAction"%>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <%@ include file="/checkLogin.jspf" %>
 <html>
@@ -129,7 +130,7 @@
 	enditem(); //2
 	<% } %>
 
-<%  if (manager.canSeeEvents(acadSession, user)) { %>
+<%  if (TimetableManager.canSeeEvents(user)) { %>
 	menu_item('3','Event Management','Events','','expand');
 		leaf_item('Events','Events','eventList.do');
 		leaf_item('Add Event','Add Event','eventAdd.do');
@@ -235,6 +236,37 @@
 	<%--
 	leaf_item('System Messages','View System Messages','blank.jsp');
 	--%>
+	leaf_item('Log Out','Exit Timetabling Appplication','logOut.do');
+<% } else { %>
+<% if (PersonalizedExamReportAction.hasPersonalReport(user)) { %>	
+	leaf_item('Personal Schedule','Personal Schedule','personalSchedule.do');
+<% } %>
+<% if (TimetableManager.canSeeEvents(user)) { %>
+	menu_item('3','Event Management','Events','','expand');
+		leaf_item('Events','Events','eventList.do');
+		leaf_item('Add Event','Add Event','eventAdd.do');
+		leaf_item('Room Availability', 'Event Room Availability', 'eventGrid.do');
+		enditem(); //3
+<% } %>
+	<tt:hasProperty name="tmtbl.help.root">
+	menu_item('6','Help','Help Manual','%tmtbl.help.root%','expand','_help');
+	</tt:hasProperty>
+	<tt:notHasProperty name="tmtbl.help.root">
+	menu_item('6','Help','Help Manual','','expand');
+	</tt:notHasProperty>
+		<tt:hasProperty name="tmtbl.help.tricks">
+			leaf_item('Tips &amp; Tricks','Tips &amp; Tricks','%tmtbl.help.tricks%', '_help');
+		</tt:hasProperty>
+		<tt:hasProperty name="tmtbl.help.faq">
+			leaf_item('FAQ','Frequently Asked Questions','%tmtbl.help.faq%', '_help');
+		</tt:hasProperty>
+		<tt:hasProperty name="tmtbl.help.release_notes">
+			leaf_item('Release Notes','Release Notes','%tmtbl.help.release_notes%', '_help');
+		</tt:hasProperty>
+		<tt:hasProperty name="tmtbl.inquiry.email">
+			leaf_item('Contact Us','Contact Us','inquiry.do');
+		</tt:hasProperty>
+	enditem(); //6
 	leaf_item('Log Out','Exit Timetabling Appplication','logOut.do');
 <% } %>
 </script>
