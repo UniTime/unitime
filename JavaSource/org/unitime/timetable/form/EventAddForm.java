@@ -823,7 +823,7 @@ public class EventAddForm extends ActionForm {
             }
             b+=")";
         }
-        if (iLookAtNearLocations && iBuildingId>=0) {
+        if (iLookAtNearLocations && iBuildingId!=null && iBuildingId>=0) {
             query = "select r from Room r " +
                     "inner join r.roomDepts rd inner join rd.department.timetableManagers m inner join m.managerRoles mr, "+
                     "Building b"+a+" where b.uniqueId = :buildingId and " +
@@ -835,7 +835,7 @@ public class EventAddForm extends ActionForm {
             query = "select r from Room r " +
                     "inner join r.roomDepts rd inner join rd.department.timetableManagers m inner join m.managerRoles mr"+a+
                     " where rd.control=true and mr.role.reference=:eventMgr";
-            if (iBuildingId>=0) { query += " and r.building.uniqueId=:buildingId"; }   
+            if (iBuildingId!=null && iBuildingId>=0) { query += " and r.building.uniqueId=:buildingId"; }   
         }
 			
 		if (iMinCapacity!=null && iMinCapacity.length()>0) { query+= " and r.capacity>= :minCapacity";	}
@@ -845,7 +845,7 @@ public class EventAddForm extends ActionForm {
 
 		Query hibQuery = new LocationDAO().getSession().createQuery(query);
 
-		if (iBuildingId>=0) hibQuery.setLong("buildingId", iBuildingId);
+		if (iBuildingId!=null && iBuildingId>=0) hibQuery.setLong("buildingId", iBuildingId);
 		hibQuery.setString("eventMgr", Roles.EVENT_MGR_ROLE);
 		if (iMinCapacity!=null && iMinCapacity.length()>0) { hibQuery.setInteger("minCapacity", Integer.valueOf(iMinCapacity)); }
 		if (iMaxCapacity!=null && iMaxCapacity.length()>0) { hibQuery.setInteger("maxCapacity", Integer.valueOf(iMaxCapacity)); }
@@ -859,7 +859,7 @@ public class EventAddForm extends ActionForm {
 				locations.put(location.getPermanentId(), location);
 		}
 		
-        if (iBuildingId<0) {
+        if (iBuildingId==null || iBuildingId<0) {
             query = "select r from NonUniversityLocation r " +
                 "inner join r.roomDepts rd inner join rd.department.timetableManagers m inner join m.managerRoles mr"+
                 a+" where rd.control=true and mr.role.reference=:eventMgr";
