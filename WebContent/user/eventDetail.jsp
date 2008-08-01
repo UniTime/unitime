@@ -18,11 +18,6 @@
  * <bean:write name="eventDetailForm" property="additionalInfo"/> 
 --%>
 
-<%-- 
-TO DO: 
-* Trash cans instead of Delete
---%>
-
 <%@ page language="java" autoFlush="true" errorPage="../error.jsp" %>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
