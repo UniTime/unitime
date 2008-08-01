@@ -64,8 +64,10 @@
 					<html:submit property="op" styleClass="btn" accesskey="C"
 						title="Cancel Event (Alt+C)" value="Cancel Event"/>
 					</logic:notEqual>
+					<logic:equal name="eventAddInfoForm" property="canChangeSelection" value="true">
 					<html:submit property="op" styleClass="btn" accesskey="A"
 						title="Change Selection (Alt+A)" value="Change Selection"/>
+					</logic:equal>
 				</tt:section-header>
 			</TD>
 		</TR>
@@ -82,6 +84,18 @@
 			<TD nowrap> Event Type:&nbsp;</TD>
 			<TD> 
 				<bean:write name="eventAddInfoForm" property="eventType"/> 
+			</TD>
+		</TR>
+		<TR>
+			<logic:equal name="eventAddInfoForm" property="eventType" value="Special Event">
+				<TD nowrap>Expected Size:&nbsp;</TD>
+			</logic:equal>
+			<logic:notEqual name="eventAddInfoForm" property="eventType" value="Special Event">
+				<TD nowrap>Event Capacity:&nbsp;</TD>
+			</logic:notEqual>
+			<TD>
+				<bean:write name="eventAddInfoForm" property="capacity"/>
+				<html:hidden property="capacity"/>
 			</TD>
 		</TR>
 		<logic:equal name="eventAddInfoForm" property="eventType" value="Special Event">
@@ -134,7 +148,26 @@
 				<td><font color="gray"><i>Date</i></font></td><td><font color="gray"><i>Time</i></font></td><td><font color="gray"><i>Location</i></font></td><td><font color="gray"><i>Capacity</i></font></td>
 			</TR>
 			<logic:iterate name="eventAddInfoForm" property="existingMeetings" id="meeting">
-				<TR onmouseover="this.style.backgroundColor='rgb(223,231,242)';" onmouseout="this.style.backgroundColor='transparent';">
+				<bean:define name="meeting" property="uniqueId" id="meetingId"/>
+				<bean:define id="bg" value="transparent"/>
+				<bean:define id="color" value="black"/>
+				<bean:define id="fs" value="normal"/>
+				<logic:equal name="meeting" property="isPast" value="true">
+					<bean:define id="fs" value="italic"/>
+					<bean:define id="color" value="gray"/>
+				</logic:equal>
+				<logic:notEmpty name="meeting" property="overlaps">
+					<bean:define id="color" value="red"/>
+				</logic:notEmpty>
+				<logic:notEqual name="meeting" property="isPast" value="true">
+					<logic:empty name="meeting" property="approvedDate">
+						<bean:define id="bg" value="#FFFFDD"/>
+					</logic:empty>
+					<logic:notEmpty name="meeting" property="approvedDate">
+						<bean:define id="bg" value="#DDFFDD"/>
+					</logic:notEmpty>
+				</logic:notEqual>
+				<TR onmouseover="style.backgroundColor='rgb(223,231,242)';" onmouseout="style.backgroundColor='<%=bg%>';" style="color:<%=color%>;background-color:<%=bg%>;font-style:<%=fs%>;">
 					<TD>
 						<bean:write name="meeting" property="date" filter="false"/> 
 					</TD>
@@ -148,6 +181,21 @@
 						<bean:write name="meeting" property="locationCapacity"/>
 					</TD>	
 				</TR>	
+				<logic:iterate name="meeting" property="overlaps" id="overlap">
+					<TR style="background-color:#FFD7D7;">
+						<TD>&nbsp;&nbsp;&nbsp;Conflicts with <bean:write name="overlap" property="name"/> (<bean:write name="overlap" property="type"/>)</TD>
+						<TD><bean:write name="overlap" property="startTime"/> - <bean:write name="overlap" property="endTime"/></TD>
+						<TD></TD>
+						<TD>
+							<logic:empty name="overlap" property="approvedDate">
+								<i>Not Approved</i>
+							</logic:empty>
+							<logic:notEmpty name="overlap" property="approvedDate">
+								<i>Approved</i>
+							</logic:notEmpty>
+						</TD>
+					</TR>
+				</logic:iterate>
 			</logic:iterate>
 		</Table>
 		</TD></TR>
@@ -266,6 +314,21 @@
 						&nbsp; <bean:write name="meeting" property="locationCapacity"/>
 					</TD>	
 				</TR>	
+				<logic:iterate name="meeting" property="overlaps" id="overlap">
+					<TR style="background-color:#FFD7D7;">
+						<TD>&nbsp;&nbsp;&nbsp;Conflicts with <bean:write name="overlap" property="name"/> (<bean:write name="overlap" property="type"/>)</TD>
+						<TD><bean:write name="overlap" property="startTime"/> - <bean:write name="overlap" property="endTime"/></TD>
+						<TD></TD>
+						<TD>
+							<logic:empty name="overlap" property="approvedDate">
+								<i>Not Approved</i>
+							</logic:empty>
+							<logic:notEmpty name="overlap" property="approvedDate">
+								<i>Approved</i>
+							</logic:notEmpty>
+						</TD>
+					</TR>
+				</logic:iterate>
 			</logic:iterate>
 		</TABLE>
 		</TD></TR>
@@ -360,8 +423,10 @@
 					<html:submit property="op" styleClass="btn" accesskey="C"
 						title="Cancel Event (Alt+C)" value="Cancel Event"/>
 					</logic:notEqual>
+					<logic:equal name="eventAddInfoForm" property="canChangeSelection" value="true">
 					<html:submit property="op" styleClass="btn" accesskey="A"
 						title="Change Selection (Alt+A)" value="Change Selection"/>
+					</logic:equal>
 			</TD>
 		</TR>
 		

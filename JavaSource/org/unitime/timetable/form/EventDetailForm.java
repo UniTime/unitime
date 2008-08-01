@@ -1,7 +1,11 @@
 
 package org.unitime.timetable.form;
 
+import java.text.SimpleDateFormat;
 import java.util.Collection;
+import java.util.Date;
+import java.util.Locale;
+import java.util.TreeSet;
 import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
@@ -11,9 +15,11 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.EventContact;
+import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.StandardEventNote;
 import org.unitime.timetable.model.dao.MeetingDAO;
+import org.unitime.timetable.util.Constants;
 
 public class EventDetailForm extends ActionForm {
 
@@ -39,6 +45,7 @@ public class EventDetailForm extends ActionForm {
 	private Event iEvent;
 	private Long[] iSelectedMeetings;
 	private Boolean iCanDelete;
+	private Boolean iNotesHaveUser;
 	
 	/** 
 	 * Method validate
@@ -71,6 +78,7 @@ public class EventDetailForm extends ActionForm {
 		iAttendanceRequired = false;
 		iAdditionalEmails = null;
 		iSelectedMeetings = null;
+		iNotesHaveUser = false;
 	}
 	
 	public Event getEvent() {return iEvent;}
@@ -107,20 +115,7 @@ public class EventDetailForm extends ActionForm {
     public void setAdditionalEmails(String emails) {iAdditionalEmails = emails;}
     
     public Vector<MeetingBean> getMeetings() {return iMeetings;}
-    public void addMeeting(Long id, String date, String startTime, String endTime, 
-    		String location, String locationCapacity, String approvedDate,
-    		boolean isPast, boolean canEdit, boolean canDelete) {
-    	MeetingBean meeting = new MeetingBean();
-    	meeting.setUniqueId(id);
-    	meeting.setDate(date);
-    	meeting.setStartTime(startTime);
-    	meeting.setEndTime(endTime);
-    	meeting.setLocation(location);
-    	meeting.setLocationCapacity(locationCapacity);
-    	meeting.setApprovedDate(approvedDate);
-    	meeting.setIsPast(isPast);
-    	meeting.setCanEdit(canEdit);
-    	meeting.setCanDelete(canDelete);
+    public void addMeeting(MeetingBean meeting) {
     	iMeetings.add(meeting);
     }
     
@@ -185,21 +180,65 @@ public class EventDetailForm extends ActionForm {
         }
         return false;
     }
+    
+    public void setNotesHaveUser(Boolean notesHaveUser) { iNotesHaveUser = notesHaveUser; }
+    public Boolean getNotesHaveUser() { return iNotesHaveUser; }
 
-    public static class MeetingBean {
+    public static class MeetingBean implements Comparable<MeetingBean> {
     	private String iDate;
     	private String iStartTime;
     	private String iEndTime;
     	private String iLocation;
-    	private String iLocationCapacity;
-    	private String iApprovedDate;
-    	private Long iUniqueId;
-    	private Boolean iIsPast;
-    	private Boolean iCanEditMeeting;
-    	private Boolean iCanDeleteMeeting;
-   	
-    	public MeetingBean() {
+    	private int iLocationCapacity;
+    	private String iApprovedDate = null;
+    	private Long iUniqueId = null;
+    	private boolean iIsPast = false;
+    	private boolean iCanEditMeeting = true;
+    	private boolean iCanDeleteMeeting = true;
+    	private TreeSet<MeetingBean> iOverlaps = new TreeSet();
+        private Long iEventId = null;
+    	private String iName = null;
+    	private String iType = null;
+    	
+    	public MeetingBean(Date date, int startTime, int endTime, Location location) {
+    	    iDate = new SimpleDateFormat("EEE MM/dd, yyyy", Locale.US).format(date);
+            int start = Constants.SLOT_LENGTH_MIN*startTime+Constants.FIRST_SLOT_TIME_MIN;
+            int startHour = start/60;
+            int startMin = start%60;
+    	    iStartTime = (startHour>12?startHour-12:startHour)+":"+(startMin<10?"0":"")+startMin+(startHour>=12?"p":"a");
+            int end = Constants.SLOT_LENGTH_MIN*endTime+Constants.FIRST_SLOT_TIME_MIN;
+            int endHour = end/60;
+            int endMin = end%60;
+    	    iEndTime = (endHour>12?endHour-12:endHour)+":"+(endMin<10?"0":"")+endMin+(endHour>=12?"p":"a");;
+    	    iLocation = (location==null?"":location.getLabel());
+    	    iLocationCapacity = (location==null?0:location.getCapacity());
     	}
+    	
+    	public MeetingBean(Meeting meeting) {
+    	    iEventId = meeting.getEvent().getUniqueId();
+    	    iName = meeting.getEvent().getEventName();
+    	    iType = meeting.getEvent().getEventTypeAbbv();
+    	    iUniqueId = meeting.getUniqueId();
+            int start = Constants.SLOT_LENGTH_MIN*meeting.getStartPeriod()+Constants.FIRST_SLOT_TIME_MIN+(meeting.getStartOffset()==null?0:meeting.getStartOffset());
+            int startHour = start/60;
+            int startMin = start%60;
+            iStartTime = (startHour>12?startHour-12:startHour)+":"+(startMin<10?"0":"")+startMin+(startHour>=12?"p":"a");
+            int end = Constants.SLOT_LENGTH_MIN*meeting.getStopPeriod()+Constants.FIRST_SLOT_TIME_MIN+(meeting.getStopOffset()==null?0:meeting.getStopOffset());
+            int endHour = end/60;
+            int endMin = end%60;
+            iEndTime = (endHour>12?endHour-12:endHour)+":"+(endMin<10?"0":"")+endMin+(endHour>=12?"p":"a");
+            Location location = meeting.getLocation();
+            iLocation = (location==null?"":location.getLabel());
+            iLocationCapacity = (location==null?0:location.getCapacity());
+            iApprovedDate = (meeting.getApprovedDate()==null?"":new SimpleDateFormat("MM/dd/yy", Locale.US).format(meeting.getApprovedDate()));
+            iDate = new SimpleDateFormat("EEE MM/dd, yyyy", Locale.US).format(meeting.getMeetingDate());
+            iIsPast = meeting.getStartTime().before(new Date());
+    	}
+    	
+    	public Long getEventId() { return iEventId; }
+    	public String getName() { return iName; }
+    	public String getType() { return iType; }
+    	public TreeSet<MeetingBean> getOverlaps() { return iOverlaps; }
     	
     	public String getDate() { return iDate; }
     	public void setDate(String date) { iDate = date; }
@@ -215,8 +254,8 @@ public class EventDetailForm extends ActionForm {
     	public String getLocation() { return iLocation;}
     	public void setLocation(String location) {iLocation = location;}
     	
-    	public String getLocationCapacity() {return iLocationCapacity;}
-    	public void setLocationCapacity(String capacity) {iLocationCapacity = capacity;}
+    	public int getLocationCapacity() {return iLocationCapacity;}
+    	public void setLocationCapacity(int capacity) {iLocationCapacity = capacity;}
 
     	public String getApprovedDate() { return iApprovedDate;}
     	public void setApprovedDate(String approvedDate) {iApprovedDate = approvedDate;}
@@ -224,14 +263,20 @@ public class EventDetailForm extends ActionForm {
     	public Long getUniqueId() {return iUniqueId;}
     	public void setUniqueId(Long id) {iUniqueId = id;}
     	
-    	public Boolean getIsPast() {return iIsPast;}
-    	public void setIsPast(Boolean isPast) {iIsPast = isPast;}
+    	public boolean getIsPast() {return iIsPast;}
+    	public void setIsPast(boolean isPast) {iIsPast = isPast;}
     	
-    	public Boolean getCanEdit() {return iCanEditMeeting;}
-    	public void setCanEdit(Boolean canEdit) {iCanEditMeeting = canEdit;}
+    	public boolean getCanEdit() {return iCanEditMeeting;}
+    	public void setCanEdit(boolean canEdit) {iCanEditMeeting = canEdit;}
     	
-    	public Boolean getCanDelete() {return iCanDeleteMeeting;}
-    	public void setCanDelete(Boolean canDelete) {iCanDeleteMeeting = canDelete;}
+    	public boolean getCanDelete() {return iCanDeleteMeeting;}
+    	public void setCanDelete(boolean canDelete) {iCanDeleteMeeting = canDelete;}
+    	
+    	public int compareTo(MeetingBean meeting) {
+    	    int cmp = iName.compareTo(meeting.iName);
+    	    if (cmp!=0) return cmp;
+    	    return iUniqueId.compareTo(meeting.iUniqueId);
+    	}
     }
 
     public class ContactBean {
@@ -261,5 +306,4 @@ public class EventDetailForm extends ActionForm {
     	public void setPhone(String phone) {iPhone = phone;}
    	
     }
-    
 }

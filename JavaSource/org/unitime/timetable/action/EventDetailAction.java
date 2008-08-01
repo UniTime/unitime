@@ -41,6 +41,7 @@ import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.EventDetailForm;
+import org.unitime.timetable.form.EventDetailForm.MeetingBean;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.Class_;
@@ -62,7 +63,6 @@ import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.CourseEventDAO;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.MeetingDAO;
-import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.Navigation;
 
@@ -310,9 +310,10 @@ public class EventDetailAction extends Action {
 					myForm.setAttendanceRequired(((CourseEvent) event).isReqAttendance());
 				} else
 					myForm.setSponsoringOrgName(event.getSponsoringOrganization()==null?"":event.getSponsoringOrganization().getName());
+				myForm.setNotesHaveUser(user.isAdmin()||user.hasRole(Roles.EVENT_MGR_ROLE));
 				for (Iterator i = new TreeSet(event.getNotes()).iterator(); i.hasNext();) {
 					EventNote en = (EventNote) i.next();
-					myForm.addNote(en.toHtmlString());
+					myForm.addNote(en.toHtmlString(myForm.getNotesHaveUser()));
 				}
 				if (event.getMainContact()!=null)
 				    myForm.setMainContact(event.getMainContact());
@@ -326,42 +327,24 @@ public class EventDetailAction extends Action {
 							(ec.getPhone()==null?"":ec.getPhone()));
 				}
 				SimpleDateFormat iDateFormat = new SimpleDateFormat("EEE MM/dd, yyyy", Locale.US);
-				SimpleDateFormat iDateFormat2 = new SimpleDateFormat("MM/dd/yy", Locale.US);
 				for (Iterator i=new TreeSet(event.getMeetings()).iterator();i.hasNext();) {
 					Meeting meeting = (Meeting)i.next();
-					int start = Constants.SLOT_LENGTH_MIN*meeting.getStartPeriod()+
-								Constants.FIRST_SLOT_TIME_MIN+
-								(meeting.getStartOffset()==null?0:meeting.getStartOffset());
-					int startHour = start/60;
-					int startMin = start%60;
-					int end = Constants.SLOT_LENGTH_MIN*meeting.getStopPeriod()+
-					Constants.FIRST_SLOT_TIME_MIN+
-					(meeting.getStopOffset()==null?0:meeting.getStopOffset());
-					int endHour = end/60;
-					int endMin = end%60;
 					Location location = meeting.getLocation();
-					String locationLabel = (location==null?"":location.getLabel());
-					String locationCapacity = location.getCapacity().toString();
-					String approvedDate = (meeting.getApprovedDate()==null?"":iDateFormat2.format(meeting.getApprovedDate()));
-					boolean canEdit = false;
-					boolean canDelete = false;
-					boolean isPast = meeting.getStartTime().before(new Date());
-					if (!isPast || "true".equals(ApplicationProperties.getProperty("tmtbl.event.allowEditPast","false"))) {
+					MeetingBean mb = new MeetingBean(meeting);
+					if (!mb.getIsPast() || "true".equals(ApplicationProperties.getProperty("tmtbl.event.allowEditPast","false"))) {
 						if (user.isAdmin()) {
-							canEdit = true;
+							mb.setCanEdit(true);
 						} else if (user.getId().equals(event.getMainContact().getExternalUniqueId())) {
-							canEdit = true;
-							canDelete = true;
+						    mb.setCanEdit(true);
+						    mb.setCanDelete(true);
 							myForm.setCanDelete(true);
 						} else if (userDepartments!=null && location!=null && location.getControllingDepartment()!=null)
-							canEdit = userDepartments.contains(location.getControllingDepartment());
-						if (canEdit) myForm.setCanEdit(true);
+						    mb.setCanEdit(userDepartments.contains(location.getControllingDepartment()));
+						if (mb.getCanEdit()) myForm.setCanEdit(true);
 					}
-					myForm.addMeeting(meeting.getUniqueId(),
-							iDateFormat.format(meeting.getMeetingDate()),
-							(startHour>12?startHour-12:startHour)+":"+(startMin<10?"0":"")+startMin+(startHour>=12?"p":"a"),
-							(endHour>12?endHour-12:endHour)+":"+(endMin<10?"0":"")+endMin+(endHour>=12?"p":"a"), 
-							locationLabel, locationCapacity, approvedDate, isPast, canEdit, canDelete);
+					for (Meeting overlap : meeting.getTimeRoomOverlaps())
+					    mb.getOverlaps().add(new MeetingBean(overlap));
+					myForm.addMeeting(mb);
 				}
 				if (user.isAdmin()||user.hasRole(Roles.EVENT_MGR_ROLE)||user.getId().equals(event.getMainContact().getExternalUniqueId())) myForm.setCanEdit(true);
 				if (event instanceof ClassEvent || event instanceof ExamEvent) {
@@ -376,23 +359,26 @@ public class EventDetailAction extends Action {
 		        if ("Course Event".equals(myForm.getEventType())) {
 		            CourseEvent courseEvent = new CourseEventDAO().get(Long.valueOf(id));;
 		            if (!courseEvent.getRelatedCourses().isEmpty()) {
-			        	WebTable table = new WebTable(3, null, new String[] {"Object", "Type", "Title"}, new String[] {"left", "left", "left"}, new boolean[] {true, true, true});
+			        	WebTable table = new WebTable(5, null, new String[] {"Object", "Type", "Title","Limit","Assignment"}, new String[] {"left", "left", "left","right","left"}, new boolean[] {true, true, true, true,true});
 			            for (Iterator i=new TreeSet(courseEvent.getRelatedCourses()).iterator();i.hasNext();) {
 			                RelatedCourseInfo rci = (RelatedCourseInfo)i.next();
-			                String onclick = null, name = null, type = null, title = null;
+			                String onclick = null, name = null, type = null, title = null, assignment = null;
+		                    String students = String.valueOf(rci.countStudents());
 			                switch (rci.getOwnerType()) {
 			                    case ExamOwner.sOwnerTypeClass :
 			                        Class_ clazz = (Class_)rci.getOwnerObject();
-			                        if (clazz.isViewableBy(user))
+			                        if (user.getRole()!=null && clazz.isViewableBy(user))
 			                            onclick = "onClick=\"document.location='classDetail.do?cid="+clazz.getUniqueId()+"';\"";
 			                        name = rci.getLabel();//clazz.getClassLabel();
 			                        type = "Class";
 			                        title = clazz.getSchedulePrintNote();
 			                        if (title==null || title.length()==0) title=clazz.getSchedulingSubpart().getControllingCourseOffering().getTitle();
+		                            if (clazz.getCommittedAssignment()!=null)
+		                                assignment = clazz.getCommittedAssignment().getPlacement().getLongName();
 			                        break;
 			                    case ExamOwner.sOwnerTypeConfig :
 			                        InstrOfferingConfig config = (InstrOfferingConfig)rci.getOwnerObject();
-			                        if (config.isViewableBy(user))
+			                        if (user.getRole()!=null && config.isViewableBy(user))
 			                            onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+config.getInstructionalOffering().getUniqueId()+"';\"";;
 			                        name = rci.getLabel();//config.getCourseName()+" ["+config.getName()+"]";
 			                        type = "Configuration";
@@ -400,7 +386,7 @@ public class EventDetailAction extends Action {
 			                        break;
 			                    case ExamOwner.sOwnerTypeOffering :
 			                        InstructionalOffering offering = (InstructionalOffering)rci.getOwnerObject();
-			                        if (offering.isViewableBy(user))
+			                        if (user.getRole()!=null && offering.isViewableBy(user))
 			                            onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+offering.getUniqueId()+"';\"";;
 			                        name = rci.getLabel();//offering.getCourseName();
 			                        type = "Offering";
@@ -408,7 +394,7 @@ public class EventDetailAction extends Action {
 			                        break;
 			                    case ExamOwner.sOwnerTypeCourse :
 			                        CourseOffering course = (CourseOffering)rci.getOwnerObject();
-			                        if (course.isViewableBy(user))
+			                        if (user.getRole()!=null && course.isViewableBy(user))
 			                            onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+course.getInstructionalOffering().getUniqueId()+"';\"";;
 			                        name = rci.getLabel();//course.getCourseName();
 			                        type = "Course";
@@ -416,7 +402,7 @@ public class EventDetailAction extends Action {
 			                        break;
 			                            
 			                }
-			                table.addLine(onclick, new String[] { name, type, title}, null);
+			                table.addLine(onclick, new String[] { name, type, title, students, assignment}, null);
 			            }
 			            request.setAttribute("EventDetail.table",table.printTable());
 		            }			

@@ -27,7 +27,6 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -37,99 +36,60 @@ import java.util.TreeSet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import org.apache.struts.action.ActionForm;
+import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionMapping;
+import org.apache.struts.action.ActionMessage;
 import org.hibernate.Query;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
-import org.unitime.timetable.model.Roles;
-import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.MeetingDAO;
 
 /**
  * @author Zuzana Mullerova
  */
-public class EventRoomAvailabilityForm extends ActionForm {
-
-	// data loaded from Add Event
-//	private String iLocationType; 
-	private int iStartTime; // start time from Add Event
-	private int iStopTime; // stop time from Add Event
-	private TreeSet<Date> iMeetingDates = new TreeSet(); //meeting dates selected in Add Event
-	private Long iBuildingId; // building selected in Add Event
-	private String iRoomNumber; // room number entered in Add Event (can include wild cards such as "1*")
-	private String iMinCapacity; // minimum required room capacity entered in Add Event
-	private String iMaxCapacity; // maximum required room capacity entered in Add Event
-	private String iOp; 
-	private Long iSessionId;
-	private boolean iLookAtNearLocations;
-	private Long iEventId; //if adding meetings to an existing event
-	private boolean iIsAddMeetings; //if adding meetings to an existing event
-	private Long[] iRoomFeatures;
-    private Long[] iRoomTypes = null;
-    private Long[] iRoomGroups = null;
+public class EventRoomAvailabilityForm extends EventAddForm {
 	
 	//data calculated 
 	private Hashtable<Long, Location> iLocations; 
 	private Hashtable<Long, Hashtable<Date, TreeSet<Meeting>>> iOverlappingMeetings; // meetings that are in conflict with desired times/dates	
-	private String iStartTimeString;
-	private String iStopTimeString;
 	private Set<Long> iStudentIds = null;
 	
 	//data collected in this screen (form)
 	private TreeSet<DateLocation> iDateLocations = new TreeSet();	
 	
-	//other
-	boolean iIsAdmin = false;
+    public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
+        
+        ActionErrors errors = new ActionErrors();
+
+        if (iDateLocations.isEmpty()) {
+            errors.add("dateLocations", new ActionMessage("errors.generic", "No meeting selected."));
+        }
+        
+        return errors;
+    }	
 			
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
+	    super.reset(mapping, request);
 		iLocations = null;
-		iOp = null;
-		iStartTime = 90;
-		iStopTime = 210;
-//		iLocationType = null;
-		iMeetingDates.clear();
-		iMinCapacity = null;
-		iMaxCapacity = null;
 		iDateLocations.clear();
-		iSessionId = null;
-		User user = Web.getUser(request.getSession());
-		iIsAdmin = user.isAdmin();
 	}
 	
 	public void load (HttpSession session) throws Exception {
-		iMeetingDates = (TreeSet<Date>) session.getAttribute("Event.MeetingDates");
-		iStartTime = (Integer) session.getAttribute("Event.StartTime");
-		iStopTime = (Integer) session.getAttribute("Event.StopTime");
-//		iLocationType = (String) session.getAttribute("Event.LocationType");
-		iMeetingDates = (TreeSet<Date>) session.getAttribute("Event.MeetingDates");
-		iMinCapacity = (String) session.getAttribute("Event.MinCapacity");
-		iMaxCapacity = (String) session.getAttribute("Event.MaxCapacity");
-		iBuildingId = (Long) session.getAttribute("Event.BuildingId");
-		iRoomNumber = (String) session.getAttribute("Event.RoomNumber");
-		iLookAtNearLocations = ((Boolean) session.getAttribute("Event.LookAtNearLocations")).booleanValue();
-        iRoomTypes = (Long[]) session.getAttribute("Event.RoomTypes");
-        iRoomGroups = (Long[]) session.getAttribute("Event.RoomGroups");
-		iRoomFeatures = (Long[]) session.getAttribute("Event.RoomFeatures");
+	    super.load(session);
 		iLocations = getPossibleLocations();
 		if (iLocations.isEmpty()) throw new Exception("No room is matching your criteria.");
-		iOverlappingMeetings = getOverlappingMeetings(iLocations, iMeetingDates, iStartTime, iStopTime);
+		iOverlappingMeetings = getOverlappingMeetings(iLocations, getMeetingDates(), getStartTime(), getStopTime());
 		iDateLocations = (TreeSet)session.getAttribute("Event.DateLocations");
 		if (iDateLocations==null) iDateLocations = new TreeSet();
-		iSessionId = (Long) session.getAttribute("Event.SessionId");
 		iStudentIds = (Set<Long>)session.getAttribute("Event.StudentIds");
-		iIsAddMeetings = (Boolean) (session.getAttribute("Event.IsAddMeetings"));
-		iEventId = (Long) (session.getAttribute("Event.EventId"));
 	}
 	
 	// collect date/location combinations selected by the user in this screen
 	public void loadData (HttpServletRequest request) {
 		iDateLocations.clear();
 		SimpleDateFormat df2 = new SimpleDateFormat("yyyy-MM-dd");
-		for (Date date : iMeetingDates) {
+		for (Date date : getMeetingDates()) {
 			for (Enumeration<Location> e=iLocations.elements();e.hasMoreElements();) {
 				Location location = (Location)e.nextElement();
 				if ("1".equals(request.getParameter("x"+df2.format(date)+"_"+location.getPermanentId())))
@@ -140,81 +100,9 @@ public class EventRoomAvailabilityForm extends ActionForm {
 	
 	public void save (HttpSession session) {
 		session.setAttribute("Event.DateLocations", iDateLocations);
+		session.setAttribute("Event.MaxRooms", getMaxRooms());
 	}
 	
-	 // get possible locations for the event based on entered criteria
-    public Hashtable<Long, Location> getPossibleLocations() {
-        Hashtable<Long, Location> locations = new Hashtable();
-        String query;
-        String a = "", b = "";
-        if (iRoomFeatures!=null && iRoomFeatures.length>0) {
-            for (int i=0;i<iRoomFeatures.length;i++) {
-                a+= ", GlobalRoomFeature f"+i;
-                b+= " and f"+i+".uniqueId="+iRoomFeatures[i]+" and f"+i+" in elements(r.features)";
-            }
-        }
-        if (iRoomGroups!=null && iRoomGroups.length>0) {
-            b+= " and (";
-            for (int i=0;i<iRoomGroups.length;i++) {
-                if (i>0) b+=" or";
-                a+= ", RoomGroup g"+i;
-                b+= " (g"+i+".uniqueId="+iRoomGroups[i]+" and g"+i+" in elements(r.roomGroups))";
-            }
-            b+=")";
-        }
-        if (iRoomTypes!=null && iRoomTypes.length>0) {
-            b+= " and r.roomType.uniqueId in (";
-            for (int i=0;i<iRoomTypes.length;i++) {
-                if (i>0) b+=",";
-                b+= iRoomTypes[i];
-            }
-            b+=")";
-        }
-        if (iBuildingId!=0) {
-            if (iLookAtNearLocations) {
-                query = "select r from Room r " +
-                        "inner join r.roomDepts rd inner join rd.department.timetableManagers m inner join m.managerRoles mr, "+
-                        "Building b"+a+" where b.uniqueId = :buildingId and " +
-                        "rd.control=true and mr.role.reference=:eventMgr and "+
-                        "(r.building=b or ((((r.coordinateX - b.coordinateX)*(r.coordinateX - b.coordinateX)) +" +
-                        "((r.coordinateY - b.coordinateY)*(r.coordinateY - b.coordinateY)))" +
-                        "< 67*67))";
-            } else {
-                query = "select r from Room r " +
-                        "inner join r.roomDepts rd inner join rd.department.timetableManagers m inner join m.managerRoles mr"+
-                a+" where r.building.uniqueId=:buildingId and rd.control=true and mr.role.reference=:eventMgr";
-            }
-        } else {
-            query = "select r from NonUniversityLocation r " +
-                "inner join r.roomDepts rd inner join rd.department.timetableManagers m inner join m.managerRoles mr"+
-                a+" where rd.control=true and mr.role.reference=:eventMgr";
-        }
-            
-        if (iMinCapacity!=null && iMinCapacity.length()>0) { query+= " and r.capacity>= :minCapacity";  }
-        if (iMaxCapacity!=null && iMaxCapacity.length()>0) { query+= " and r.capacity<= :maxCapacity";  }
-        if (iRoomNumber!=null && iRoomNumber.length()>0) {
-            query+=(iBuildingId==0?" and r.name like (:roomNumber)":" and r.roomNumber like (:roomNumber)"); 
-        }
-        query += b;
-
-        Query hibQuery = new LocationDAO().getSession().createQuery(query);
-
-        if (iBuildingId!=0) hibQuery.setLong("buildingId", iBuildingId);
-        hibQuery.setString("eventMgr", Roles.EVENT_MGR_ROLE);
-        if (iMinCapacity!=null && iMinCapacity.length()>0) { hibQuery.setInteger("minCapacity", Integer.valueOf(iMinCapacity)); }
-        if (iMaxCapacity!=null && iMaxCapacity.length()>0) { hibQuery.setInteger("maxCapacity", Integer.valueOf(iMaxCapacity)); }
-        if (iRoomNumber!=null && iRoomNumber.length()>0) { 
-            hibQuery.setString("roomNumber", iRoomNumber.replaceAll("\\*", "%")); 
-        }
-        
-        for (Iterator i=hibQuery.setCacheable(true).iterate();i.hasNext();) {
-            Location location = (Location)i.next();
-            if (location.getPermanentId()!=null)
-                locations.put(location.getPermanentId(), location);
-        }
-        return locations;
-    }
-
 	// get events that have been already scheduled in the possible locations during requested times/dates
 	public Hashtable<Long, Hashtable<Date, TreeSet<Meeting>>> getOverlappingMeetings (Hashtable<Long,Location> locations, TreeSet<Date> meetingDates, int startTime, int stopTime) {
 		
@@ -235,8 +123,8 @@ public class EventRoomAvailabilityForm extends ActionForm {
 				"m.locationPermanentId in ("+locIds+") and "+
 				"m.meetingDate in ("+dates+")";
 		Query hibQuery = new MeetingDAO().getSession().createQuery(query);
-		hibQuery.setInteger("startTime", iStartTime);
-		hibQuery.setInteger("stopTime", iStopTime);
+		hibQuery.setInteger("startTime", getStartTime());
+		hibQuery.setInteger("stopTime", getStopTime());
 		int idx = 0;
 		for (Date md : meetingDates) {
 			hibQuery.setDate("md"+idx, md); idx++;
@@ -271,13 +159,18 @@ public class EventRoomAvailabilityForm extends ActionForm {
 	public String getAvailabilityTable() {
 		String ret = "";
 		ret +="<table border='1'>";
+		
+		int maxRooms = -1;
+		try {
+		    maxRooms = Integer.parseInt(getMaxRooms());
+		} catch (Exception e) {}
 
 		TreeSet<Location> locations = new TreeSet<Location>(new Comparator<Location>() { 
 			// sort locations first by number of available slots, then by name
 			public int compare(Location l1, Location l2) {
 				int availableL1=0;
 				int availableL2=0;
-				for (Date meetingDate : iMeetingDates) {
+				for (Date meetingDate : getMeetingDates()) {
 					if (getOverlappingMeetings(l1, meetingDate)==null) availableL1++;
 					if (getOverlappingMeetings(l2, meetingDate)==null) availableL2++;
 				}
@@ -286,8 +179,12 @@ public class EventRoomAvailabilityForm extends ActionForm {
 				else return l1.compareTo(l2);
 			}
 		});
-
+		
 		for (Enumeration<Location> e=iLocations.elements();e.hasMoreElements();) locations.add(e.nextElement());
+		
+		while (maxRooms>0 && locations.size()>maxRooms)
+		    locations.remove(locations.last());
+
 		ret+="<tr align='middle'><td></td>";
 		String jsLocations = "";
 		for (Location location : locations) {
@@ -300,9 +197,9 @@ public class EventRoomAvailabilityForm extends ActionForm {
 		String jsDates = "";
 		SimpleDateFormat df1 = new SimpleDateFormat("EEE, MMM d");
 		SimpleDateFormat df2 = new SimpleDateFormat("yyyy-MM-dd");
-		for (Date date:iMeetingDates) {
+		for (Date date:getMeetingDates()) {
 			jsDates += (jsDates.length()>0?",":"")+"'"+df2.format(date)+"'";
-            Hashtable<Event,Set<Long>> conflicts = Event.findStudentConflicts(date, iStartTime, iStopTime, iStudentIds);
+            Hashtable<Event,Set<Long>> conflicts = Event.findStudentConflicts(date, getStartTime(), getStopTime(), iStudentIds);
             HashSet<Long> studentsInConflict = new HashSet();
             String conflictsTitle = "";
             TreeSet<Map.Entry<Event,Set<Long>>> conflictEntries = new TreeSet(new Comparator<Map.Entry<Event,Set<Long>>>() {
@@ -339,7 +236,7 @@ public class EventRoomAvailabilityForm extends ActionForm {
 							"onMouseOut=\"tOut('"+df2.format(date)+"','"+location.getPermanentId()+"');\">&nbsp;</td>";
 				} else {
 					ret += "<td style='background-color:"+(selected?"yellow":"rgb(200,200,200)")+";' valign='top' align='center' id='td"+df2.format(date)+"_"+location.getPermanentId()+"' ";
-					if (iIsAdmin) {ret+=
+					if (isAdmin()) {ret+=
 							"onClick=\"tClick('"+df2.format(date)+"','"+location.getPermanentId()+"');\" "+
 							"onMouseOver=\"tOver(this,'"+df2.format(date)+"','"+location.getPermanentId()+"');\" "+
 							"onMouseOut=\"tOut('"+df2.format(date)+"','"+location.getPermanentId()+"');\" ";
@@ -370,15 +267,6 @@ public class EventRoomAvailabilityForm extends ActionForm {
 	public Hashtable<Long, Location> getLocations() {return iLocations;}
 	public void setLocations(Hashtable<Long, Location> locations) {iLocations=locations;}
 	
-	public int getStartTime() {return iStartTime;}
-	public void setStartTime(int startTime) {iStartTime = startTime;}
-	
-	public int getStopTime() {return iStopTime;}
-	public void setStopTime(int stopTime) {iStopTime = stopTime;}
-	
-	public String getOp() {return iOp;}
-	public void setOp(String op) {iOp = op;}
-	
 	public String getTimeString(int time) {
 	    int hour = (time/12)%12;
     	int minute = time%12*5;
@@ -386,12 +274,10 @@ public class EventRoomAvailabilityForm extends ActionForm {
 		return hour+":"+(minute<10?"0":"")+minute+" "+ampm;
 	}
 	
-	public String getStartTimeString() {return getTimeString(iStartTime);}
+	public String getStartTimeString() {return getTimeString(getStartTime());}
 	
-	public String getStopTimeString() {	return getTimeString(iStopTime);}
+	public String getStopTimeString() {	return getTimeString(getStopTime());}
 	
-	public boolean getIsAddMeetings() {return iIsAddMeetings;}
-
 	// a class for storing selected date/location combinations
 	public static class DateLocation implements Serializable, Comparable<DateLocation> {
 		private Date iDate;
@@ -399,12 +285,18 @@ public class EventRoomAvailabilityForm extends ActionForm {
 		private Long iLocUniqueId;
 		private String iLocationLabel;
 		private SimpleDateFormat sdf = new SimpleDateFormat("EEE MM/dd, yyyy", Locale.US);
+		private int iStartTime = -1, iStopTime = -1;
 		
 		public DateLocation(Date date, Location location) {
+		    this(date, location, -1, -1);
+		}
+		
+		public DateLocation(Date date, Location location, int startTime, int stopTime) {
 			iDate = date; 
 			iLocation = location.getPermanentId();
 			iLocUniqueId = location.getUniqueId();
 			iLocationLabel = location.getLabel();
+			iStartTime = startTime; iStopTime = stopTime;
 		}
 
 		public Date getDate() {
@@ -434,12 +326,19 @@ public class EventRoomAvailabilityForm extends ActionForm {
 		public boolean equals(Object o) {
 			if (o==null || !(o instanceof DateLocation)) return false;
 			DateLocation dl = (DateLocation)o;
-			return getDate().equals(dl.getDate()) && getLocation().equals(dl.getLocation());
+			return getDate().equals(dl.getDate()) && getLocation().equals(dl.getLocation()) && getStartTime()==dl.getStartTime() && getStopTime()==dl.getStopTime();
 		}
+		
+		public int getStartTime() { return iStartTime; }
+		public void setStartTime(int startTime) { iStartTime = startTime; }
+        public int getStopTime() { return iStopTime; }
+        public void setStopTime(int stopTime) { iStopTime = stopTime; }
 		
 		public int compareTo(DateLocation dl) {
 			int cmp = iDate.compareTo(dl.getDate());
 			if (cmp!=0) return cmp;
+            cmp = Double.compare(iStartTime,dl.getStartTime());
+            if (cmp!=0) return cmp;
 			cmp = iLocationLabel.compareTo(dl.getLocationLabel());
 			if (cmp!=0) return cmp;
 			return iLocation.compareTo(dl.getLocation());

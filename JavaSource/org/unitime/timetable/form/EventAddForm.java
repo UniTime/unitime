@@ -118,6 +118,9 @@ public class EventAddForm extends ActionForm {
     private int iSelected;
     private boolean iAdmin;
     private Set iManagingDepts = null;
+    
+    private String iCapacity = null;
+    private String iMaxRooms = null;
 
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 		
@@ -166,16 +169,16 @@ public class EventAddForm extends ActionForm {
 	            errors.add("relatedCourseInfo", new ActionMessage("errors.generic", "At least one class/course has to be specified.") );
 	        }
 		}
-
-        //if (iRoomTypes==null || iRoomTypes.length==0) {
-        //    errors.add("roomTypes", new ActionMessage("errors.generic", "No room type is selected."));
-        //} else {
+		
+		if (iLookAtNearLocations) {
             if (iBuildingId==null || iBuildingId == -1) {
-                errors.add("building", new ActionMessage("errors.generic", "No building is selected."));
-            } else if (getPossibleLocations().isEmpty()) {
+                errors.add("building", new ActionMessage("errors.generic", "Building is not selected (it is needed for close by locations)."));
+            }
+		}
+
+        if (getPossibleLocations().isEmpty()) {
                 errors.add("noLocation", new ActionMessage("errors.generic", "There is no location matching your criteria."));
             }
-        //}
 
 		return errors;
 	}
@@ -198,6 +201,7 @@ public class EventAddForm extends ActionForm {
 		iMeetingDates.clear();
 		iMinCapacity = null;
 		iMaxCapacity = null;
+		iCapacity = null;
 		iLookAtNearLocations = false;
 		iAttendanceRequired = false;
         iSubjectArea = DynamicList.getInstance(new ArrayList(), idfactory);
@@ -214,10 +218,11 @@ public class EventAddForm extends ActionForm {
             TimetableManager mgr = (user==null?null:TimetableManager.getManager(user));
             if (mgr!=null) iManagingDepts = mgr.getDepartments();
         }
+        iMaxRooms = "10";
 	}
 	
 	// load event info from session attribute Event
-	public void load (HttpSession session) {
+	public void load (HttpSession session) throws Exception {
 		iEventType = (String) session.getAttribute("Event.EventType");
 		iSessionId = (Long) session.getAttribute("Event.SessionId");		
 		iStartTime = (Integer) session.getAttribute("Event.StartTime");
@@ -247,6 +252,9 @@ public class EventAddForm extends ActionForm {
         iRoomTypes = (Long[]) session.getAttribute("Event.RoomTypes");
         iRoomGroups = (Long[]) session.getAttribute("Event.RoomGroups");
 		iRoomFeatures = (Long[]) session.getAttribute("Event.RoomFeatures");
+		iCapacity = (String)session.getAttribute("Event.Capacity");
+		iMaxRooms = (String)session.getAttribute("Event.MaxRooms");
+		if (iMaxRooms==null) { iMaxRooms = "10"; }
 	}
 	
 	// save event parameters to session attribute Event
@@ -274,6 +282,8 @@ public class EventAddForm extends ActionForm {
 		session.setAttribute("Event.RoomTypes", iRoomTypes);
         session.setAttribute("Event.RoomGroups", iRoomGroups);
         session.setAttribute("Event.RoomFeatures", iRoomFeatures);
+        session.setAttribute("Event.Capacity", iCapacity);
+        session.setAttribute("Event.MaxRooms", iMaxRooms);
 	}
 	
 	
@@ -321,14 +331,19 @@ public class EventAddForm extends ActionForm {
         today.set(Calendar.MONTH, (startMonth+12)%12);
         today.set(Calendar.YEAR, year+(startMonth<0?-1:0)+(startMonth>=12?1:0));
         String pattern = "[", border = "[";
-        Date now = new Date();
+        Calendar now = Calendar.getInstance();
+        now.setTime(new Date());
+        now.set(Calendar.HOUR_OF_DAY,0);
+        now.set(Calendar.MINUTE,0);
+        now.set(Calendar.SECOND,0);
+        now.set(Calendar.MILLISECOND,0);
         for (int m=startMonth;m<=endMonth;m++) {
             if (m!=startMonth) {pattern+=","; border+=","; }
              pattern+="["; border+="[";
              int daysOfMonth = DateUtils.getNrDaysOfMonth(m, year);
              for (int d=1;d<=daysOfMonth;d++) {
             	 if (d>1) {pattern+=","; border+=","; }
-            	 pattern+=(disblePast && today.getTime().before(now)?"'@'":iMeetingDates.contains(today.getTime())?"'1'":"'0'");
+            	 pattern+=(disblePast && today.before(now)?"'@'":iMeetingDates.contains(today.getTime())?"'1'":"'0'");
             	 today.add(Calendar.DAY_OF_YEAR,1);
             	 border += s.getBorder(d, m);
              }
@@ -525,6 +540,7 @@ public class EventAddForm extends ActionForm {
 		session.removeAttribute("Event.AdditionalEmails");
 		session.removeAttribute("Event.RoomGroups");
 		session.removeAttribute("Event.RoomTypes");
+		session.removeAttribute("Event.Capacity");
 	}
     
     
@@ -807,36 +823,29 @@ public class EventAddForm extends ActionForm {
             }
             b+=")";
         }
-        if (iBuildingId!=0) {
-            if (iLookAtNearLocations) {
-                query = "select r from Room r " +
-                        "inner join r.roomDepts rd inner join rd.department.timetableManagers m inner join m.managerRoles mr, "+
-                        "Building b"+a+" where b.uniqueId = :buildingId and " +
-                        "rd.control=true and mr.role.reference=:eventMgr and "+
-                        "(r.building=b or ((((r.coordinateX - b.coordinateX)*(r.coordinateX - b.coordinateX)) +" +
-                        "((r.coordinateY - b.coordinateY)*(r.coordinateY - b.coordinateY)))" +
-                        "< 67*67))";
-            } else {
-                query = "select r from Room r " +
-                        "inner join r.roomDepts rd inner join rd.department.timetableManagers m inner join m.managerRoles mr"+
-                a+" where r.building.uniqueId=:buildingId and rd.control=true and mr.role.reference=:eventMgr";
-            }
+        if (iLookAtNearLocations && iBuildingId>=0) {
+            query = "select r from Room r " +
+                    "inner join r.roomDepts rd inner join rd.department.timetableManagers m inner join m.managerRoles mr, "+
+                    "Building b"+a+" where b.uniqueId = :buildingId and " +
+                    "rd.control=true and mr.role.reference=:eventMgr and "+
+                    "(r.building=b or ((((r.coordinateX - b.coordinateX)*(r.coordinateX - b.coordinateX)) +" +
+                    "((r.coordinateY - b.coordinateY)*(r.coordinateY - b.coordinateY)))" +
+                    "< 67*67))";
         } else {
-            query = "select r from NonUniversityLocation r " +
-                "inner join r.roomDepts rd inner join rd.department.timetableManagers m inner join m.managerRoles mr"+
-                a+" where rd.control=true and mr.role.reference=:eventMgr";
+            query = "select r from Room r " +
+                    "inner join r.roomDepts rd inner join rd.department.timetableManagers m inner join m.managerRoles mr"+a+
+                    " where rd.control=true and mr.role.reference=:eventMgr";
+            if (iBuildingId>=0) { query += " and r.building.uniqueId=:buildingId"; }   
         }
 			
 		if (iMinCapacity!=null && iMinCapacity.length()>0) { query+= " and r.capacity>= :minCapacity";	}
 		if (iMaxCapacity!=null && iMaxCapacity.length()>0) { query+= " and r.capacity<= :maxCapacity";	}
-		if (iRoomNumber!=null && iRoomNumber.length()>0) {
-		    query+=(iBuildingId==0?" and r.name like (:roomNumber)":" and r.roomNumber like (:roomNumber)"); 
-		}
+		if (iRoomNumber!=null && iRoomNumber.length()>0) { query+=" and r.roomNumber like (:roomNumber)"; }
  		query += b;
 
 		Query hibQuery = new LocationDAO().getSession().createQuery(query);
 
-		if (iBuildingId!=0) hibQuery.setLong("buildingId", iBuildingId);
+		if (iBuildingId>=0) hibQuery.setLong("buildingId", iBuildingId);
 		hibQuery.setString("eventMgr", Roles.EVENT_MGR_ROLE);
 		if (iMinCapacity!=null && iMinCapacity.length()>0) { hibQuery.setInteger("minCapacity", Integer.valueOf(iMinCapacity)); }
 		if (iMaxCapacity!=null && iMaxCapacity.length()>0) { hibQuery.setInteger("maxCapacity", Integer.valueOf(iMaxCapacity)); }
@@ -849,9 +858,40 @@ public class EventAddForm extends ActionForm {
 			if (location.getPermanentId()!=null)
 				locations.put(location.getPermanentId(), location);
 		}
+		
+        if (iBuildingId<0) {
+            query = "select r from NonUniversityLocation r " +
+                "inner join r.roomDepts rd inner join rd.department.timetableManagers m inner join m.managerRoles mr"+
+                a+" where rd.control=true and mr.role.reference=:eventMgr";
+            
+            if (iMinCapacity!=null && iMinCapacity.length()>0) { query+= " and r.capacity>= :minCapacity";  }
+            if (iMaxCapacity!=null && iMaxCapacity.length()>0) { query+= " and r.capacity<= :maxCapacity";  }
+            if (iRoomNumber!=null && iRoomNumber.length()>0) {
+                query+=" and r.name like (:roomNumber)"; 
+            }
+            query += b;
+            hibQuery = new LocationDAO().getSession().createQuery(query);
+            hibQuery.setString("eventMgr", Roles.EVENT_MGR_ROLE);
+            if (iMinCapacity!=null && iMinCapacity.length()>0) { hibQuery.setInteger("minCapacity", Integer.valueOf(iMinCapacity)); }
+            if (iMaxCapacity!=null && iMaxCapacity.length()>0) { hibQuery.setInteger("maxCapacity", Integer.valueOf(iMaxCapacity)); }
+            if (iRoomNumber!=null && iRoomNumber.length()>0) { 
+                hibQuery.setString("roomNumber", iRoomNumber.replaceAll("\\*", "%")); 
+            }
+            
+            for (Iterator i=hibQuery.setCacheable(true).iterate();i.hasNext();) {
+                Location location = (Location)i.next();
+                if (location.getPermanentId()!=null)
+                    locations.put(location.getPermanentId(), location);
+            }
+        }
+		
 		return locations;
 	}
-
+	
+	public String getCapacity() { return iCapacity; }
+	public void setCapacity(String capacity) { iCapacity = capacity; }
+    public String getMaxRooms() { return iMaxRooms; }
+    public void setMaxRooms(String maxRooms) { iMaxRooms = maxRooms; }
 
 	public boolean isHasOutsideLocations() {
 	    if (getSessionId()==null) return false;

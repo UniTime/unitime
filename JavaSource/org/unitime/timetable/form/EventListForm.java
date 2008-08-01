@@ -22,7 +22,9 @@ package org.unitime.timetable.form;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -31,9 +33,15 @@ import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
+import org.unitime.commons.User;
+import org.unitime.commons.web.Web;
+import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Event;
+import org.unitime.timetable.model.Roles;
+import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.UserData;
 import org.unitime.timetable.util.CalendarUtils;
+import org.unitime.timetable.util.ComboBoxLookup;
 
 /**
  * @author Zuzana Mullerova
@@ -45,6 +53,19 @@ public class EventListForm extends ActionForm {
 	private String iEventDateFrom;
 	private String iEventDateTo;
 	private Integer[] iEventTypes = null;
+	
+	public static final int sModeMyEvents = 0;
+	public static final int sModeEvents4Approval = 1;
+	public static final int sModeAllEvents = 2;
+	public static final int sModeAllApprovedEvents = 3;
+	public static final int sModeAllEventsWaitingApproval = 4;
+	
+	private int iMode = sModeMyEvents;
+	private boolean iAdmin = false;
+	private boolean iEventMgr = false;
+	private boolean iNoRole = false;
+	private String iUserId = null;
+	private Set iManagingDepts = null;
 	
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 		
@@ -82,6 +103,19 @@ public class EventListForm extends ActionForm {
 				Event.sEventTypeMidtermExam
 		};
 		iOp = null;
+		User user = Web.getUser(request.getSession());
+		iAdmin = false; iEventMgr = false; iNoRole = false;
+		if (user==null || user.getRole()==null) {
+		    iMode = sModeMyEvents; iNoRole = true;
+		} else if (Roles.EVENT_MGR_ROLE.equals(user.getRole())) {
+		    iMode = sModeEvents4Approval; iEventMgr = true;
+		    TimetableManager mgr = (user==null?null:TimetableManager.getManager(user));
+            if (mgr!=null) iManagingDepts = mgr.getDepartments();
+		} else if (user.isAdmin()) {
+		    iMode = sModeAllEvents;
+		    iAdmin = true;
+		}
+		iUserId = (user==null?null:user.getId());
 	}
 	
 	public void load(HttpSession session) {
@@ -96,6 +130,8 @@ public class EventListForm extends ActionForm {
  		if (session.getAttribute("EventList.EventDateFrom")!=null)
  			iEventDateFrom = (String)session.getAttribute("EventList.EventDateFrom");
 		iEventDateTo = (String)session.getAttribute("EventList.EventDateTo");		
+		if (session.getAttribute("EventList.Mode")!=null)
+		    iMode = (Integer)session.getAttribute("EventList.Mode");
 	}
 	
 	public void save(HttpSession session) {
@@ -123,7 +159,9 @@ public class EventListForm extends ActionForm {
 		if (iEventDateTo==null)
 			session.removeAttribute("EventList.EventDateTo");
 		else
-			session.setAttribute("EventList.EventDateTo", iEventDateTo);		
+			session.setAttribute("EventList.EventDateTo", iEventDateTo);
+		
+		session.setAttribute("EventList.Mode", iMode);      
 	}
 
 	public String getEventNameSubstring () {
@@ -156,4 +194,30 @@ public class EventListForm extends ActionForm {
 	public String[] getAllEventTypes() {
 	    return Event.sEventTypes;
 	}
+	
+	public boolean isAdmin() { return iAdmin; }
+	public boolean isNoRole() { return iNoRole; }
+	public boolean isEventManager() { return iEventMgr; }
+	
+	public int getMode() { return iMode; }
+	public void setMode(int mode) { iMode = mode; }
+	
+	public String getUserId() { return iUserId; }
+	
+	public Vector<ComboBoxLookup> getModes() {
+	    Vector<ComboBoxLookup> modes = new Vector();
+	    if (!isAdmin()) modes.add(new ComboBoxLookup("My Events", String.valueOf(sModeMyEvents)));
+	    if (isEventManager()) modes.add(new ComboBoxLookup("Events Waiting My Approval", String.valueOf(sModeEvents4Approval)));
+	    modes.add(new ComboBoxLookup("All Events", String.valueOf(sModeAllEvents)));
+	    if (!isNoRole()) {
+	        modes.add(new ComboBoxLookup("All Approved Events", String.valueOf(sModeAllApprovedEvents)));
+	        modes.add(new ComboBoxLookup("All Events Waiting Approval", String.valueOf(sModeAllEventsWaitingApproval)));
+	    }
+	    return modes;
+	}
+
+	public Set<Department> getManagingDepartments() {
+	    return iManagingDepts;
+	}
+
 }
