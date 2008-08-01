@@ -47,7 +47,6 @@ import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
-import org.unitime.timetable.model.dao.CourseEventDAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
@@ -55,7 +54,6 @@ import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 import org.unitime.timetable.model.dao.SponsoringOrganizationDAO;
 import org.unitime.timetable.model.dao._RootDAO;
-import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DynamicList;
 import org.unitime.timetable.util.DynamicListObjectFactory;
 import org.unitime.timetable.util.IdValue;
@@ -93,6 +91,7 @@ public class EventAddInfoForm extends ActionForm {
 	private Event iEvent;
 	private Vector<MeetingBean> iExistingMeetings = new Vector<MeetingBean>();
 	private Vector<MeetingBean> iNewMeetings = new Vector<MeetingBean>();
+	private String iCapacity;
 		
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 		
@@ -147,6 +146,7 @@ public class EventAddInfoForm extends ActionForm {
 		iAttendanceRequired = false;
 		iExistingMeetings.clear();
 		iMainContactLookup = false;
+		iCapacity = null;
 		load(request);
 	}
 	
@@ -165,6 +165,7 @@ public class EventAddInfoForm extends ActionForm {
 		iMainContactPhone = (String) session.getAttribute("Event.mcPhone");
 		iAdditionalEmails = (String) session.getAttribute("Event.AdditionalEmails");
 		iAdditionalInfo = (String) session.getAttribute("Event.AdditionalInfo");
+		iCapacity = (String) session.getAttribute("Event.Capacity");
 		if (session.getAttribute("Event.SubjectArea")!=null) {
 			iSubjectArea = (List) session.getAttribute("Event.SubjectArea");
 			iSubjectAreas = (Collection) iSubjectArea;
@@ -196,55 +197,6 @@ public class EventAddInfoForm extends ActionForm {
 			}
 		}*/
 		loadNewMeetings();
-		if ("Course Event".equals(iEventType) && iIsAddMeetings) {
-            CourseEvent courseEvent = new CourseEventDAO().get(iEventId);;
-            if (!courseEvent.getRelatedCourses().isEmpty()) {
-	        	WebTable table = new WebTable(3, null, new String[] {"Object", "Type", "Title"}, new String[] {"left", "left", "left"}, new boolean[] {true, true, true});
-	            for (Iterator i=new TreeSet(courseEvent.getRelatedCourses()).iterator();i.hasNext();) {
-	                RelatedCourseInfo rci = (RelatedCourseInfo)i.next();
-	                String onclick = null, name = null, type = null, title = null;
-	                switch (rci.getOwnerType()) {
-	                    case ExamOwner.sOwnerTypeClass :
-	                        Class_ clazz = (Class_)rci.getOwnerObject();
-	                        //if (clazz.isViewableBy(user))
-	                        //    onclick = "onClick=\"document.location='classDetail.do?cid="+clazz.getUniqueId()+"';\"";
-	                        name = rci.getLabel();//clazz.getClassLabel();
-	                        type = "Class";
-	                        title = clazz.getSchedulePrintNote();
-	                        if (title==null || title.length()==0) title=clazz.getSchedulingSubpart().getControllingCourseOffering().getTitle();
-	                        break;
-	                    case ExamOwner.sOwnerTypeConfig :
-	                        InstrOfferingConfig config = (InstrOfferingConfig)rci.getOwnerObject();
-	                        //if (config.isViewableBy(user))
-	                        //    onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+config.getInstructionalOffering().getUniqueId()+"';\"";;
-	                        name = rci.getLabel();//config.getCourseName()+" ["+config.getName()+"]";
-	                        type = "Configuration";
-	                        title = config.getControllingCourseOffering().getTitle();
-	                        break;
-	                    case ExamOwner.sOwnerTypeOffering :
-	                        InstructionalOffering offering = (InstructionalOffering)rci.getOwnerObject();
-	                        //if (offering.isViewableBy(user))
-	                        //    onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+offering.getUniqueId()+"';\"";;
-	                        name = rci.getLabel();//offering.getCourseName();
-	                        type = "Offering";
-	                        title = offering.getControllingCourseOffering().getTitle();
-	                        break;
-	                    case ExamOwner.sOwnerTypeCourse :
-	                        CourseOffering course = (CourseOffering)rci.getOwnerObject();
-	                        //if (course.isViewableBy(user))
-	                        //    onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+course.getInstructionalOffering().getUniqueId()+"';\"";;
-	                        name = rci.getLabel();//course.getCourseName();
-	                        type = "Course";
-	                        title = course.getTitle();
-	                        break;
-	                            
-	                }
-	                table.addLine(onclick, new String[] { name, type, title}, null);
-	            }
-	            request.setAttribute("EventDetail.table",table.printTable());
-            }			
-        }
-
 	}
 	
 	public void save(HttpSession session) {
@@ -259,6 +211,7 @@ public class EventAddInfoForm extends ActionForm {
 		session.setAttribute("Event.mcPhone", iMainContactPhone);
 		session.setAttribute("Event.AdditionalEmails", iAdditionalEmails);
 		session.setAttribute("Event.AdditionalInfo", iAdditionalInfo);
+		session.setAttribute("Event.Capacity", iCapacity);
 	}
 	
 	public void submit(HttpServletRequest request) {
@@ -302,6 +255,10 @@ public class EventAddInfoForm extends ActionForm {
 					    event.setSponsoringOrganization(spor);
 					}
 				}
+				try {
+				    event.setMinCapacity(Integer.parseInt(iCapacity));
+				    event.setMaxCapacity(Integer.parseInt(iCapacity));
+				} catch (Exception e) {}
 				event.setEventName(iEventName);
 				event.setMainContact(mainContact);
 				// add additional e-mails
@@ -319,8 +276,8 @@ public class EventAddInfoForm extends ActionForm {
 				DateLocation dl = (DateLocation) i.next();
 				Meeting m = new Meeting();
 				m.setMeetingDate(dl.getDate());
-				m.setStartPeriod(iStartTime);
-				m.setStopPeriod(iStopTime);
+				m.setStartPeriod(dl.getStartTime()>=0?dl.getStartTime():iStartTime);
+				m.setStopPeriod(dl.getStopTime()>=0?dl.getStopTime():iStopTime);
 				m.setLocationPermanentId(dl.getLocation());
 				m.setClassCanOverride(true);
 				m.setEvent(event);
@@ -381,8 +338,8 @@ public class EventAddInfoForm extends ActionForm {
 				DateLocation dl = (DateLocation) i.next();
 				Meeting m = new Meeting();
 				m.setMeetingDate(dl.getDate());
-				m.setStartPeriod(iStartTime);
-				m.setStopPeriod(iStopTime);
+				m.setStartPeriod(dl.getStartTime()>=0?dl.getStartTime():iStartTime);
+				m.setStopPeriod(dl.getStopTime()>=0?dl.getStopTime():iStopTime);
 				m.setLocationPermanentId(dl.getLocation());
 				m.setClassCanOverride(true);
 				m.setEvent(iEvent);
@@ -510,44 +467,24 @@ public class EventAddInfoForm extends ActionForm {
 		SimpleDateFormat iDateFormat = new SimpleDateFormat("EEE MM/dd, yyyy", Locale.US);
 		for (Iterator i=new TreeSet(iEvent.getMeetings()).iterator();i.hasNext();) {
 			Meeting meeting = (Meeting)i.next();
-			MeetingBean mb = new MeetingBean();
-			int start = Constants.SLOT_LENGTH_MIN*meeting.getStartPeriod()+
-						Constants.FIRST_SLOT_TIME_MIN+
-						(meeting.getStartOffset()==null?0:meeting.getStartOffset());
-			int startHour = start/60;
-			int startMin = start%60;
-			int end = Constants.SLOT_LENGTH_MIN*meeting.getStopPeriod()+
-			Constants.FIRST_SLOT_TIME_MIN+
-			(meeting.getStopOffset()==null?0:meeting.getStopOffset());
-			int endHour = end/60;
-			int endMin = end%60;
-//			String location = (meeting.getLocation()==null?"":meeting.getLocation().getLabel());
-			String date = iDateFormat.format(meeting.getMeetingDate());
-			mb.setDate(date);
-			mb.setStartTime((startHour>12?startHour-12:startHour)+":"+(startMin<10?"0":"")+startMin+(startHour>=12?" pm":" am"));
-			mb.setEndTime((endHour>12?endHour-12:endHour)+":"+(endMin<10?"0":"")+endMin+(endHour>=12?" pm":" am"));
-			mb.setLocation((meeting.getLocation()==null?"":meeting.getLocation().getLabel()));
-			mb.setLocationCapacity((meeting.getLocation()==null?"":meeting.getLocation().getCapacity().toString()));
-			iExistingMeetings.add(mb);
+			MeetingBean mb = new MeetingBean(meeting);
+            for (Meeting overlap : meeting.getTimeRoomOverlaps())
+                mb.getOverlaps().add(new MeetingBean(overlap));
+            iExistingMeetings.add(mb);
 		}
 	}
 	
 	public Vector<MeetingBean> getExistingMeetings() {return iExistingMeetings;}
 
 	public void loadNewMeetings() {
-		SimpleDateFormat iDateFormat = new SimpleDateFormat("EEE MM/dd, yyyy", Locale.US);
 		for (Iterator i= iDateLocations.iterator();i.hasNext();) {
 			DateLocation dl = (DateLocation) i.next();
-			MeetingBean mb = new MeetingBean();
-//			String location = (meeting.getLocation()==null?"":meeting.getLocation().getLabel());
-			String date = iDateFormat.format(dl.getDate());
-			mb.setDate(date);
-			mb.setStartTime(getTimeString(iStartTime));
-			mb.setEndTime(getTimeString(iStopTime));
 			Location location = LocationDAO.getInstance().get(dl.getLocUniqueId());
-			mb.setLocation((location==null?"":location.getLabel()));
-			mb.setLocationCapacity((location==null?"":location.getCapacity().toString()));
-			iNewMeetings.add(mb);
+			MeetingBean mb = new MeetingBean(dl.getDate(),(dl.getStartTime()>=0?dl.getStartTime():iStartTime),(dl.getStopTime()>=0?dl.getStopTime():iStopTime),location);
+			if (location!=null)
+			    for (Meeting overlap : Meeting.findOverlaps(dl.getDate(), iStartTime, iStopTime, location.getPermanentId()))
+			        mb.getOverlaps().add(new MeetingBean(overlap));
+            iNewMeetings.add(mb);
 		}
 	}	
 	
@@ -579,6 +516,7 @@ public class EventAddInfoForm extends ActionForm {
 		session.removeAttribute("Event.AdditionalInfo");
 		session.removeAttribute("Event.RoomFeatures");
 		session.removeAttribute("Event.AdditionalEmails");
+		session.removeAttribute("Event.Capacity");
 	}
 
     protected DynamicListObjectFactory idfactory = new DynamicListObjectFactory() {
@@ -737,59 +675,53 @@ public class EventAddInfoForm extends ActionForm {
     }
 
     public String getRelatedCoursesTable() {
-        WebTable table = new WebTable(3, null, new String[] {"Object", "Type", "Title"}, new String[] {"left", "left", "left"}, new boolean[] {true, true, true});
+        WebTable table = new WebTable(5, null, new String[] {"Object", "Type", "Title", "Students", "Assignment"}, new String[] {"left", "left", "left", "right", "left"}, new boolean[] {true, true, true, true, true});
         for (int idx=0;idx<iSubjectArea.size();idx++) {
             RelatedCourseInfo rci = getRelatedCourseInfo(idx);
             if (rci==null) continue;
-            String onclick = null, name = null, type = null, students = String.valueOf(rci.countStudents()), limit = /*String.valueOf(rci.getLimit())*/ "no limit", manager = null, assignment = null, title = null;
+            String name = null, type = null, title = null, assignment = null;
+            int students = rci.countStudents(); 
             switch (rci.getOwnerType()) {
                 case ExamOwner.sOwnerTypeClass :
                     Class_ clazz = (Class_)rci.getOwnerObject();
-            //        if (clazz.isViewableBy(user))
-            //            onclick = "onClick=\"document.location='classDetail.do?cid="+clazz.getUniqueId()+"';\"";
                     name = rci.getLabel();//clazz.getClassLabel();
                     type = "Class";
-                    manager = clazz.getManagingDept().getShortLabel();
-                    if (clazz.getCommittedAssignment()!=null)
-                        assignment = clazz.getCommittedAssignment().getPlacement().getLongName();
                     title = clazz.getSchedulePrintNote();
                     if (title==null || title.length()==0) title=clazz.getSchedulingSubpart().getControllingCourseOffering().getTitle();
+                    if (clazz.getCommittedAssignment()!=null)
+                        assignment = clazz.getCommittedAssignment().getPlacement().getLongName();
                     break;
                 case ExamOwner.sOwnerTypeConfig :
                     InstrOfferingConfig config = (InstrOfferingConfig)rci.getOwnerObject();
-            //        if (config.isViewableBy(user))
-            //            onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+config.getInstructionalOffering().getUniqueId()+"';\"";;
                     name = rci.getLabel();//config.getCourseName()+" ["+config.getName()+"]";
                     type = "Configuration";
-                    manager = config.getInstructionalOffering().getControllingCourseOffering().getDepartment().getShortLabel();
                     title = config.getControllingCourseOffering().getTitle();
                     break;
                 case ExamOwner.sOwnerTypeOffering :
                     InstructionalOffering offering = (InstructionalOffering)rci.getOwnerObject();
-            //        if (offering.isViewableBy(user))
-            //            onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+offering.getUniqueId()+"';\"";;
                     name = rci.getLabel();//offering.getCourseName();
                     type = "Offering";
-                    manager = offering.getControllingCourseOffering().getDepartment().getShortLabel();
                     title = offering.getControllingCourseOffering().getTitle();
                     break;
                 case ExamOwner.sOwnerTypeCourse :
                     CourseOffering course = (CourseOffering)rci.getOwnerObject();
-             //       if (course.isViewableBy(user))
-             //           onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+course.getInstructionalOffering().getUniqueId()+"';\"";;
                     name = rci.getLabel();//course.getCourseName();
                     type = "Course";
-                    manager = course.getDepartment().getShortLabel();
                     title = course.getTitle();
                     break;
                         
             }
-            table.addLine(onclick, new String[] { name, type, title}, null);
+            table.addLine(null, new String[] { name, type, title, String.valueOf(students), assignment}, null);
         }
         return (table.getLines().isEmpty()?"":table.printTable());
     }
     
     public boolean getMainContactLookup() { return iMainContactLookup; }
     public void setMainContactLookup(boolean lookup) { iMainContactLookup = lookup; }
+    
+    public boolean getCanChangeSelection() { return iStartTime>=0; }
+    
+    public String getCapacity() { return iCapacity; }
+    public void setCapacity(String capacity) { iCapacity = capacity; }
     
 }

@@ -63,7 +63,12 @@ TO DO:
 			<TD> <bean:write name="eventDetailForm" property="eventType"/>
 		</TR>
 		<TR>
-			<TD nowrap>Event Capacity:&nbsp;</TD>
+			<logic:equal name="eventDetailForm" property="eventType" value="Special Event">
+				<TD nowrap>Expected Size:&nbsp;</TD>
+			</logic:equal>
+			<logic:notEqual name="eventDetailForm" property="eventType" value="Special Event">
+				<TD nowrap>Event Capacity:&nbsp;</TD>
+			</logic:notEqual>
 			<TD width='100%'>
 				<bean:define name="eventDetailForm" property="minCapacity" id="min"/>
  				<logic:equal name="eventDetailForm" property="maxCapacity" value="<%=min.toString()%>">
@@ -173,17 +178,25 @@ TO DO:
 			<html:hidden property="selected"/>
 			<logic:iterate name="eventDetailForm" property="meetings" id="meeting">
 				<bean:define name="meeting" property="uniqueId" id="meetingId"/>
+				<bean:define id="bg" value="transparent"/>
+				<bean:define id="color" value="black"/>
+				<bean:define id="fs" value="normal"/>
 				<logic:equal name="meeting" property="isPast" value="true">
-					<TR onmouseover="style.backgroundColor='rgb(223,231,242)';" onmouseout="style.backgroundColor='transparent';"  style="color:gray; font-style: italic">
+					<bean:define id="fs" value="italic"/>
+					<bean:define id="color" value="gray"/>
 				</logic:equal>
+				<logic:notEmpty name="meeting" property="overlaps">
+					<bean:define id="color" value="red"/>
+				</logic:notEmpty>
 				<logic:notEqual name="meeting" property="isPast" value="true">
-					<logic:equal name="meeting" property="approvedDate" value = "">
-						<TR onmouseover="style.backgroundColor='rgb(223,231,242)';" onmouseout="style.backgroundColor='transparent';"  style="color:red;">
-					</logic:equal>
-					<logic:notEqual name="meeting" property="approvedDate" value = "">
-						<TR onmouseover="style.backgroundColor='rgb(223,231,242)';" onmouseout="style.backgroundColor='transparent';">					
-					</logic:notEqual>
+					<logic:empty name="meeting" property="approvedDate">
+						<bean:define id="bg" value="#FFFFDD"/>
+					</logic:empty>
+					<logic:notEmpty name="meeting" property="approvedDate">
+						<bean:define id="bg" value="#DDFFDD"/>
+					</logic:notEmpty>
 				</logic:notEqual>
+				<TR onmouseover="style.backgroundColor='rgb(223,231,242)';" onmouseout="style.backgroundColor='<%=bg%>';" style="color:<%=color%>;background-color:<%=bg%>;font-style:<%=fs%>;">
 					<TD>
 						<logic:equal name="eventDetailForm" property="canEdit" value="true">
 						<logic:equal name="meeting" property="canEdit" value="true">
@@ -213,6 +226,23 @@ TO DO:
 						<bean:write name="meeting" property="approvedDate"/>
 					</TD>			
 				</TR>	
+				<logic:iterate name="meeting" property="overlaps" id="overlap">
+					<bean:define name="overlap" property="eventId" id="overlapEventId"/>
+					<TR onmouseover="this.style.cursor='hand';this.style.cursor='pointer';" onclick="<%="document.location='eventDetail.do?id="+overlapEventId+"';\""%>">
+						<TD></TD>
+						<TD style="background-color:#FFD7D7;">&nbsp;&nbsp;&nbsp;Conflicts with <bean:write name="overlap" property="name"/> (<bean:write name="overlap" property="type"/>)</TD>
+						<TD style="background-color:#FFD7D7;"><bean:write name="overlap" property="startTime"/> - <bean:write name="overlap" property="endTime"/></TD>
+						<TD style="background-color:#FFD7D7;" colspan='2'></TD>
+						<TD style="background-color:#FFD7D7;">
+							<logic:empty name="overlap" property="approvedDate">
+								<i>Not Approved</i>
+							</logic:empty>
+							<logic:notEmpty name="overlap" property="approvedDate">
+								<i>Approved</i>
+							</logic:notEmpty>
+						</TD>
+					</TR>
+				</logic:iterate>
 			</logic:iterate>
 		</Table>
 		</TD></TR>
@@ -332,7 +362,9 @@ TO DO:
 				<table width="100%" border="0" cellspacing="0" cellpadding="3">
 					<tr style='color:gray;font-style:italic;'>
 						<td>Date</td>
-						<td>User</td>
+						<logic:equal name="eventDetailForm" property="notesHaveUser" value="true">
+							<td>User</td>
+						</logic:equal>
 						<td>Action</td>
 						<td>Meetings</td>
 						<td>Note</td>

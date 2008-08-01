@@ -20,12 +20,13 @@
 package org.unitime.timetable.action;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
@@ -37,6 +38,9 @@ import org.unitime.commons.Debug;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.EventGridForm;
+import org.unitime.timetable.form.EventRoomAvailabilityForm.DateLocation;
+import org.unitime.timetable.model.Event;
+import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.timegrid.PdfEventGridTable;
@@ -83,10 +87,29 @@ public class EventGridAction extends Action{
         if ("Add Event".equals(op)) {
             if (request.getParameter("select")!=null) {
                 String[] select = (String[])request.getParameterValues("select");
-                for (int i=0;i<select.length;i++) {
+                TreeSet<DateLocation> locations = new TreeSet();
+                select: for (int i=0;i<select.length;i++) {
                     StringTokenizer stk = new StringTokenizer(select[i],":");
-                    System.out.println("Meeting "+LocationDAO.getInstance().get(Long.valueOf(stk.nextToken())).getLabel()+" "+new SimpleDateFormat("MM/dd").format(new Date(Long.parseLong(stk.nextToken())))+" "+stk.nextToken()+" ... "+stk.nextToken());
+                    Location location = LocationDAO.getInstance().get(Long.valueOf(stk.nextToken()));
+                    Date date = new Date(Long.parseLong(stk.nextToken()));
+                    int startTime = Integer.valueOf(stk.nextToken());
+                    int stopTime = Integer.valueOf(stk.nextToken());
+                    for (DateLocation last : locations) {
+                        if (last.getDate().equals(date) && last.getLocation().equals(location.getPermanentId()) && startTime==last.getStopTime()) {
+                            last.setStopTime(stopTime);
+                            continue select;
+                        }
+                    }
+                    locations.add(new DateLocation(date, location, startTime, stopTime));
                 }
+                HttpSession session = request.getSession();
+                session.setAttribute("Event.DateLocations", locations);
+                session.setAttribute("Event.EventType", Event.sEventTypes[Event.sEventTypeSpecial]);
+                session.setAttribute("Event.SessionId", myForm.getSessionId());
+                session.setAttribute("Event.StartTime", -1);
+                session.setAttribute("Event.StopTime", -1);
+                session.setAttribute("Event.IsAddMeetings", false);
+                return mapping.findForward("add");
             } else {
                 errors.add("select", new ActionMessage("errors.generic", "No available time/room selected."));
                 saveErrors(request, errors);

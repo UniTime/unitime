@@ -103,6 +103,24 @@
 				</html:select>
 			</TD>
 		</TR>
+		<logic:equal name="eventAddForm" property="eventType" value="Special Event">
+			<TR>
+				<TD nowrap>Expected Size: </TD>
+				<TD>
+					<logic:notEqual name="eventAddForm" property="isAddMeetings" value="true">
+						<html:text property="capacity" maxlength="10" size="5"/>
+					</logic:notEqual>
+					<logic:equal name="eventAddForm" property="isAddMeetings" value="true">
+						<bean:write name="eventAddForm" property="capacity"/>
+						<html:hidden property="capacity"/>
+					</logic:equal>
+				</TD>
+			</TR>
+		</logic:equal>
+		<logic:notEqual name="eventAddForm" property="eventType" value="Special Event">
+			<html:hidden property="capacity"/>
+		</logic:notEqual>
+		
 
 <!-- Courses/Classes if this is a course event -->
 		<logic:equal name="eventAddForm" property="eventType" value="Course Event">
@@ -292,9 +310,6 @@
 					onkeydown="return checkKey(event, this);">
 					<html:option value="-1">Select...</html:option>
 					<html:optionsCollection name="eventAddForm" property="buildings" label="abbrName" value="uniqueId"/>
-					<logic:equal name="eventAddForm" property="hasOutsideLocations" value="true">
-						<html:option value="0">Outside Locations</html:option>
-					</logic:equal>
 				</html:select> 			
 			&nbsp; Room Number:&nbsp; <html:text property="roomNumber" maxlength="10" size="10"/>
 			&nbsp;&nbsp;&nbsp; <html:checkbox property="lookAtNearLocations"/> Include close by locations

@@ -3,17 +3,20 @@ package org.unitime.timetable.webutil.timegrid;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.TreeSet;
 import java.util.Vector;
 
 import javax.servlet.jsp.JspWriter;
 
 import org.hibernate.Query;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.EventGridForm;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
@@ -104,7 +107,7 @@ public class EventGridTable {
                             if (meeting.getApprovedDate()!=null) out.println("<b>");
                             out.println(meeting.getEvent().getEventName());
                             if (meeting.getApprovedDate()!=null) out.println("</b>");
-                            if (mc.getLength()>=3) out.println("<br><i>"+meeting.getEvent().getEventTypeLabel().replaceAll("Event", "")+"</i>");
+                            if (mc.getLength()>=3) out.println("<br><i>"+meeting.getEvent().getEventTypeAbbv()+"</i>");
                             out.println("</a></td>");
                             idx++;
                         }
@@ -204,7 +207,7 @@ public class EventGridTable {
                         if (meeting.getApprovedDate()!=null) out.println("<b>");
                         out.println(meeting.getEvent().getEventName());
                         if (meeting.getApprovedDate()!=null) out.println("</b>");
-                        if (mc.getLength()>=3) out.println("<br><i>"+meeting.getEvent().getEventTypeLabel().replaceAll("Event", "")+"</i>");
+                        if (mc.getLength()>=3) out.println("<br><i>"+meeting.getEvent().getEventTypeAbbv()+"</i>");
                         out.println("</a></td>");
                         idx++;
                     }
@@ -276,12 +279,17 @@ public class EventGridTable {
             iMeetings = query.setCacheable(true).list();
             iTable = new TableCell[iDates.size()][(iEndSlot-iStartSlot)/iStep];
             Date now = new Date();
+            boolean allowPast = "true".equals(ApplicationProperties.getProperty("tmtbl.event.allowEditPast","false"));
             for (int row = 0; row<iTable.length; row++) {
-                Date date = iDates.elementAt(row);
-                boolean cellEdit = !date.before(now);
+                Calendar date = Calendar.getInstance(Locale.US);
+                date.setTime(iDates.elementAt(row));
+                boolean cellEdit = allowPast || !date.before(now);
                 for (int col = 0; col<iTable[row].length; col++) {
                     iTable[row][col] = new TableCell();
-                    if (!cellEdit) iTable[row][col].setEditable(false);
+                    int stopTime = (iStartSlot + (1+col)*iStep)*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
+                    date.set(Calendar.HOUR_OF_DAY, stopTime/60);
+                    date.set(Calendar.MINUTE, stopTime%60);
+                    if (!allowPast && date.getTime().before(now)) iTable[row][col].setEditable(false);
                 }
             }
             for (Meeting meeting : iMeetings) {

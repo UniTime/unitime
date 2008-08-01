@@ -103,6 +103,15 @@
 			<TD>
 		</TR>
 		<TR>
+		<TR>
+			<TD valign="top">Mode:</TD>
+			<TD>
+				<html:select property="mode">
+					<html:optionsCollection property="modes" label="label" value="value"/>
+				</html:select>
+			<TD>
+		</TR>
+		<TR>
 			<TD colspan='2' align='right'>
 				<html:submit property="op" value="Search" onclick="displayLoading();"/> 
 				&nbsp; 
