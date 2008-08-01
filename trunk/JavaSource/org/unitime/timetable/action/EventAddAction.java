@@ -38,11 +38,12 @@ import org.unitime.timetable.form.EventAddForm;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseEvent;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.RelatedCourseInfo;
-import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.CourseEventDAO;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.util.Constants;
@@ -94,7 +95,10 @@ public class EventAddAction extends Action {
 		if (request.getParameter("id")!=null) {
 			myForm.setEventId(Long.valueOf(request.getParameter("id")));
 			if (myForm.getEventId() != null) {
-				myForm.setEvent(EventDAO.getInstance().get(myForm.getEventId()));
+			    Event event = EventDAO.getInstance().get(myForm.getEventId());
+				myForm.setEvent(event);
+				if (event.getMinCapacity()!=null)
+				    myForm.setCapacity(String.valueOf(event.getMinCapacity()));
 				myForm.setEventType(myForm.getEvent().getEventTypeLabel()); 
 				myForm.setIsAddMeetings(true);
 				myForm.setEventName(myForm.getEvent().getEventName());
@@ -199,7 +203,8 @@ public class EventAddAction extends Action {
         }
 		
         
-        myForm.setSubjectAreas(TimetableManager.getSubjectAreas(user));
+        if (myForm.getSessionId()!=null)
+            myForm.setSubjectAreas(new TreeSet(SubjectArea.getSubjectAreaList(myForm.getSessionId())));
 
   
 //Display the page        

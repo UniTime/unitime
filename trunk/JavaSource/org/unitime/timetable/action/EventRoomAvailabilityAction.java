@@ -25,11 +25,11 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
+import org.apache.struts.action.ActionMessages;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.EventRoomAvailabilityForm;
@@ -64,9 +64,9 @@ public class EventRoomAvailabilityAction extends Action {
 		try { 
 			myForm.load(webSession);
 		} catch (Exception e) {
-			ActionErrors m = new ActionErrors();
-			m.add("dates", new ActionMessage("errors.generic", e.getMessage()));
-			saveMessages(request, m);
+		    ActionMessages errors = myForm.validate(mapping, request);
+			errors.add("dates", new ActionMessage("errors.generic", e.getMessage()));
+			saveErrors(request, errors);
 			return  mapping.findForward("show");
 		}
 
@@ -88,9 +88,19 @@ public class EventRoomAvailabilityAction extends Action {
 			}
 			
 			if("Continue".equals(iOp)) {
-				myForm.loadData(request); myForm.save(webSession);	
+                myForm.loadData(request); myForm.save(webSession);  
+                ActionMessages errors = myForm.validate(mapping, request);
+                if (!errors.isEmpty()) {
+                    saveErrors(request, errors);
+                    return  mapping.findForward("show");
+                }
 				if (myForm.getIsAddMeetings()) return mapping.findForward("eventUpdateMeetings");
 				else return mapping.findForward("eventAddInfo");
+			}
+			
+			if("Change".equals(iOp)) {
+			    myForm.setMaxRooms(request.getParameter("maxRooms"));
+			    myForm.save(webSession);
 			}
 			
 		}

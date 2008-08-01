@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 
 import javax.servlet.http.HttpSession;
 import javax.servlet.jsp.JspWriter;
@@ -70,8 +71,8 @@ public class WebEventTableBuilder {
    	
     }
     
-    protected String getRowMouseOut(boolean isHeaderRow){
-        return ("this.style.backgroundColor='"  + (isHeaderRow ?oddRowBGColor:"transparent") + "';");   	
+    protected String getRowMouseOut(String color){
+        return ("this.style.backgroundColor='"+ (color==null?"transparent":color) +"';");   	
     }
 
     protected TableRow initRow(boolean isHeaderRow){
@@ -138,46 +139,39 @@ public class WebEventTableBuilder {
         
     }
     
-    protected void buildTableHeader(TableStream table){  
+    protected void buildTableHeader(TableStream table, boolean mainContact){  
     	TableRow row = new TableRow();
     	row.setBgColor(headerBGColor1);
     	TableRow row2 = new TableRow();
     	row2.setBgColor(headerBGColor2);
      	TableHeaderCell cell = null;
-//    	if (isShowLabel()){
-    		cell = this.headerCell(LABEL, 1, 1);
-    		row.addContent(cell);
-    		cell = this.headerCell(EMPTY, 1, 1);    		
-        	cell.setStyle("border-bottom: gray 1px solid");
-    		row2.addContent(cell);
-//    	}
-//    	if (isShowDivSec()){
-    		cell = this.headerCell(EVENT_CAPACITY, 1, 1);
-    		row.addContent(cell);
-    		cell = this.headerCell(MEETING_DATE, 1, 1);
-        	cell.setStyle("border-bottom: gray 1px solid");
-    		row2.addContent(cell);
-//    	}   	
-//    	if (isShowDemand()){
-    		cell = this.headerCell(SPONSORING_ORG, 1, 1);
-    		row.addContent(cell);
-    		cell = this.headerCell(MEETING_TIME, 1, 1);
-        	cell.setStyle("border-bottom: gray 1px solid");
-    		row2.addContent(cell);
-//    	}
-//    	if (isShowProjectedDemand()){
-    		cell = this.headerCell(EVENT_TYPE, 1, 1);
-    		row.addContent(cell);
-    		cell = this.headerCell(MEETING_LOCATION, 1, 1);
-        	cell.setStyle("border-bottom: gray 1px solid");
-    		row2.addContent(cell);
-//    	if (isShowManager()){
+        cell = this.headerCell(LABEL, 1, 1);
+        row.addContent(cell);
+        cell = this.headerCell(EMPTY, 1, 1);            
+        cell.setStyle("border-bottom: gray 1px solid");
+        row2.addContent(cell);
+        cell = this.headerCell(EVENT_CAPACITY, 1, 1);
+        row.addContent(cell);
+        cell = this.headerCell(MEETING_DATE, 1, 1);
+        cell.setStyle("border-bottom: gray 1px solid");
+        row2.addContent(cell);
+        cell = this.headerCell(SPONSORING_ORG, 1, 1);
+        row.addContent(cell);
+        cell = this.headerCell(MEETING_TIME, 1, 1);
+        cell.setStyle("border-bottom: gray 1px solid");
+        row2.addContent(cell);
+        cell = this.headerCell(EVENT_TYPE, 1, 1);
+        row.addContent(cell);
+        cell = this.headerCell(MEETING_LOCATION, 1, 1);
+        cell.setStyle("border-bottom: gray 1px solid");
+        row2.addContent(cell);
+    	if (mainContact) {
     		cell = this.headerCell(MAIN_CONTACT, 1, 1);
     		row.addContent(cell);
     		cell = this.headerCell(APPROVED_DATE, 1, 1);
         	cell.setStyle("border-bottom: gray 1px solid");
     		row2.addContent(cell);
-//    	}
+    	}
     	table.addContent(row);
     	table.addContent(row2);
    }
@@ -308,10 +302,10 @@ public class WebEventTableBuilder {
         return(cell);
     }
 
-    private void addEventsRowsToTable(TableStream table, Event e) {
+    private void addEventsRowsToTable(TableStream table, Event e, boolean mainContact, TreeSet<MultiMeeting> meetings) {
         TableRow row = (this.initRow(true));
         row.setOnMouseOver(this.getRowMouseOver(true, true));
-        row.setOnMouseOut(this.getRowMouseOut(true));
+        row.setOnMouseOut(this.getRowMouseOut(oddRowBGColor));
         row.setOnClick(subjectOnClickAction(e.getUniqueId()));
         
         TableCell cell = null;
@@ -319,38 +313,39 @@ public class WebEventTableBuilder {
         row.addContent(buildEventCapacity(e));
         row.addContent(buildSponsoringOrg(e));
         row.addContent(buildEventType(e));
-        row.addContent(buildMainContactName(e));
+        if (mainContact)
+            row.addContent(buildMainContactName(e));
+        boolean allPast = true;
+        for (MultiMeeting meeting : meetings) {
+            if (!meeting.isPast()) { allPast = false; break; }
+        }
+        if (allPast) row.setStyle("font-style:italic;color:gray;");
         table.addContent(row);
     }
     
-    private void addMeetingRowsToTable (TableStream table, Meeting m) {
-        TableRow row = (this.initRow(false));
-        row.setOnMouseOver(this.getRowMouseOver(false, true));
-        row.setOnMouseOut(this.getRowMouseOut(false));
-        row.setOnClick(subjectOnClickAction(m.getEvent().getUniqueId()));
-        
-        TableCell cell = null;
-        row.addContent(buildEmptyMeetingInfo());
-        row.addContent(buildDate(m));
-        row.addContent(buildTime(m));
-        row.addContent(buildLocation(m));
-        row.addContent(buildApproved(m));
-        table.addContent(row);
-    }
-    
-    private void addMeetingRowsToTable (TableStream table, MultiMeeting mm) {
+    private void addMeetingRowsToTable (TableStream table, MultiMeeting mm, boolean mainContact) {
         Meeting m = mm.getMeetings().first();
         TableRow row = (this.initRow(false));
         row.setOnMouseOver(this.getRowMouseOver(false, true));
-        row.setOnMouseOut(this.getRowMouseOut(false));
         row.setOnClick(subjectOnClickAction(m.getEvent().getUniqueId()));
-        
-        TableCell cell = null;
         row.addContent(buildEmptyMeetingInfo());
         row.addContent(mm.getMeetings().size()==1?buildDate(m):buildDate(mm));
         row.addContent(buildTime(m));
         row.addContent(buildLocation(m));
-        row.addContent(mm.getMeetings().size()==1?buildApproved(m):buildApproved(mm));
+        String bgColor = null;
+        if (mainContact)
+            row.addContent(mm.getMeetings().size()==1?buildApproved(m):buildApproved(mm));
+        if (mm.isPast()) {
+            row.setStyle("font-style:italic;color:gray;");
+        } else {
+            if (m.isApproved()) {
+                //bgColor = "#DDFFDD";
+            } else {
+                bgColor = "#FFFFDD";
+            }
+        }
+        row.setBgColor(bgColor);
+        row.setOnMouseOut(getRowMouseOut(bgColor));
         table.addContent(row);
     }
     
@@ -390,6 +385,23 @@ public class WebEventTableBuilder {
         		query += " and (e.mainContact.firstName like '%"+token+"%' or e.mainContact.middleName like '%"+token+"%' or e.mainContact.lastName like '%"+token+"%')";
         	}
         }
+        
+        switch (form.getMode()) {
+            case EventListForm.sModeMyEvents :
+                query += " and e.mainContact.externalUniqueId = :userId";
+                break;
+            case EventListForm.sModeAllApprovedEvents :
+                query += " and m.approvedDate is not null";
+                break;
+            case EventListForm.sModeAllEventsWaitingApproval :
+                query += " and m.approvedDate is null";
+                break;
+            case EventListForm.sModeEvents4Approval :
+                query += " and m.approvedDate is null";
+                break;
+            case EventListForm.sModeAllEvents : 
+                break;
+        }
 
         query += " order by e.eventName, e.uniqueId";
         
@@ -413,7 +425,24 @@ public class WebEventTableBuilder {
         	} catch (ParseException ex) {
         		hibQuery.setDate("eventDateTo", new Date());
         	}
-        }        
+        }
+        
+        switch (form.getMode()) {
+            case EventListForm.sModeMyEvents :
+                hibQuery.setString("userId", form.getUserId());
+                break;
+            case EventListForm.sModeAllApprovedEvents :
+            case EventListForm.sModeAllEventsWaitingApproval :
+            case EventListForm.sModeEvents4Approval :
+                Calendar today = Calendar.getInstance(Locale.US);
+                today.setTime(new Date());
+                today.set(Calendar.HOUR_OF_DAY,0);
+                today.set(Calendar.MINUTE,0);
+                today.set(Calendar.SECOND,0);
+                today.set(Calendar.MILLISECOND,0);
+                //hibQuery.setDate("today", today.getTime());
+                break;
+        }
         
         List events = hibQuery.setCacheable(true).list();
         int numberOfEvents = events.size();
@@ -440,7 +469,7 @@ public class WebEventTableBuilder {
         */
         
         TableStream eventsTable = this.initTable(outputStream);
-        if (numberOfEvents>100) {
+        if (numberOfEvents>100 && form.getMode()!=EventListForm.sModeEvents4Approval) {
         	TableRow row = new TableRow();
         	TableCell cell = initCell(true, null, 5, false);
         	cell.addContent("Warning: There are more than 100 events matching your search criteria. Only the first 100 events are displayed. Please, redefine the search criteria in your filter.");
@@ -455,22 +484,26 @@ public class WebEventTableBuilder {
         	cell.setStyle("padding-bottom:10px;color:red;font-weight:bold;");
         	row.addContent(cell);
         	eventsTable.addContent(row);
-        } else buildTableHeader(eventsTable);
+        } else buildTableHeader(eventsTable, form.isAdmin() || form.isEventManager());
 
         int idx = 0;
         for (Iterator it = events.iterator();it.hasNext();idx++){
-        	if (idx==100) break;
             Event event = (Event) it.next();
+            if (form.getMode()==EventListForm.sModeEvents4Approval) {
+                boolean myApproval = false;
+                for (Iterator j=event.getMeetings().iterator();j.hasNext();) {
+                    Meeting m = (Meeting)j.next();
+                    if (m.getApprovedDate()==null && m.getLocation()!=null && form.getManagingDepartments().contains(m.getLocation().getControllingDepartment())) {
+                        myApproval = true; break;
+                    }
+                }
+                if (!myApproval) continue;
+            } else  if (idx==100) break;
             eventIds.add(event.getUniqueId());
-            addEventsRowsToTable(eventsTable, event);
-            for (MultiMeeting meeting : event.getMultiMeetings()) 
-                addMeetingRowsToTable(eventsTable, meeting);
-            /*
-			for (Iterator i=new TreeSet(event.getMeetings()).iterator();i.hasNext();) {
-				Meeting meeting = (Meeting)i.next();
-				addMeetingRowsToTable(eventsTable, meeting);
-			}
-			*/
+            TreeSet<MultiMeeting> meetings = event.getMultiMeetings();
+            addEventsRowsToTable(eventsTable, event, form.isAdmin() || form.isEventManager(), meetings);
+            for (MultiMeeting meeting : meetings) 
+                addMeetingRowsToTable(eventsTable, meeting, form.isAdmin() || form.isEventManager());
         }
 
         eventsTable.tableComplete();

@@ -93,8 +93,8 @@ public class EventAddInfoAction extends Action {
 			}
 			
 			if ("Cancel Event".equals(iOp)) {
-        		myForm.cleanSessionAttributes(request.getSession());				
-				return mapping.findForward("eventList");
+        		myForm.cleanSessionAttributes(request.getSession());			
+				return mapping.findForward(myForm.getStartTime()>=0?"eventList":"eventGrid");
 			}
 		
 			if ("Cancel".equals(iOp)) {

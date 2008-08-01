@@ -133,7 +133,7 @@ public class PdfEventGridTable extends EventGridTable {
                                 } else if (line==1) {
                                     table.addCell(!last,aboveBlank.contains(mcol),idx==0 && split,meeting.getEvent().getEventName(),meeting.getApprovedDate()!=null);
                                 } else if (line==2) {
-                                    table.addCell(!last,aboveBlank.contains(mcol),idx==0 && split,meeting.getEvent().getEventTypeLabel().replaceAll("Event", "").replaceAll("Examination", "Exam"), false);
+                                    table.addCell(!last,aboveBlank.contains(mcol),idx==0 && split,meeting.getEvent().getEventTypeAbbv(), false);
                                 } else {
                                     table.addCell(!last,aboveBlank.contains(mcol),idx==0 && split,null,false);
                                 }
@@ -203,7 +203,7 @@ public class PdfEventGridTable extends EventGridTable {
                             } else if (line==1) {
                                 table.addCell(!last,aboveBlank.contains(idx),idx==0 && split,meeting.getEvent().getEventName(),meeting.getApprovedDate()!=null);
                             } else if (line==2) {
-                                table.addCell(!last,aboveBlank.contains(idx),idx==0 && split,meeting.getEvent().getEventTypeLabel().replaceAll("Event", ""),false);
+                                table.addCell(!last,aboveBlank.contains(idx),idx==0 && split,meeting.getEvent().getEventTypeAbbv(),false);
                             } else {
                                 table.addCell(!last,aboveBlank.contains(idx),idx==0 && split,null,false);
                             }

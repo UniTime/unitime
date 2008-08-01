@@ -77,7 +77,7 @@ function tAll(location, admin) {
 	<TABLE width="93%" border="0" cellspacing="0" cellpadding="3">
 		<logic:messagesPresent>
 		<TR>
-			<TD colspan="2" align="left" class="errorCell">
+			<TD align="left" class="errorCell">
 					<B><U>ERRORS</U></B><BR>
 				<BLOCKQUOTE>
 				<UL>
@@ -109,6 +109,12 @@ function tAll(location, admin) {
 		<TR>
 			<TD>
 				&nbsp;
+			</TD>
+		</TR>
+		<TR>
+			<TD nowrap>Maximal Number of Rooms: 
+				<html:text property="maxRooms" maxlength="10" size="5"/>
+				<html:submit property="op" styleClass="btn" accesskey="C" title="Change (Alt+C)" value="Change"/>
 			</TD>
 		</TR>
 		<TR>

@@ -21,6 +21,7 @@ package org.unitime.timetable.model;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
@@ -140,25 +141,53 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
 		return(location);
 	}
 	
-	public List<?> getTimeRoomOverlaps(){
-		return (MeetingDAO.getInstance()).getSession().createQuery("from Meeting m where m.meetingDate=:meetingDate and m.startPeriod < :stopPeriod and m.stopPeriod > :startPeriod and m.locationPermanentId = :locPermId and m.uniqueId != :uniqueId")
-		.setDate("meetingDate", getMeetingDate())
-		.setInteger("stopPeriod", getStopPeriod())
-		.setInteger("startPeriod", getStartPeriod())
-		.setLong("locPermId", getLocationPermanentId())
-		.setLong("uniqueId", this.getUniqueId())
-		.list();
+	public List<Meeting> getTimeRoomOverlaps(){
+	    if (getLocationPermanentId()==null) return new ArrayList<Meeting>();
+		return (MeetingDAO.getInstance()).getSession().createQuery(
+		        "from Meeting m where m.meetingDate=:meetingDate and m.startPeriod < :stopPeriod and m.stopPeriod > :startPeriod and " +
+		        "m.locationPermanentId = :locPermId and m.uniqueId != :uniqueId")
+		        .setDate("meetingDate", getMeetingDate())
+		        .setInteger("stopPeriod", getStopPeriod())
+		        .setInteger("startPeriod", getStartPeriod())
+		        .setLong("locPermId", getLocationPermanentId())
+		        .setLong("uniqueId", this.getUniqueId())
+		        .list();
 	}
 
-	public boolean hasTimeRoomOverlaps(){
-		Long count = (Long)MeetingDAO.getInstance().getSession().createQuery("select count(m) from Meeting m where m.meetingDate=:meetingDate and m.startPeriod < :stopPeriod and m.stopPeriod > :startPeriod and m.locationPermanentId = :locPermId and m.uniqueId != :uniqueId")
-		.setDate("meetingDate", getMeetingDate())
-		.setInteger("stopPeriod", getStopPeriod())
-		.setInteger("startPeriod", getStartPeriod())
-		.setLong("locPermId", getLocationPermanentId())
-		.setLong("uniqueId", this.getUniqueId())
-		.uniqueResult();
-		return(count > 0);
+    public List<Meeting> getApprovedTimeRoomOverlaps(){
+        if (getLocationPermanentId()==null) return new ArrayList<Meeting>();
+        return (MeetingDAO.getInstance()).getSession().createQuery(
+                "from Meeting m where m.meetingDate=:meetingDate and m.startPeriod < :stopPeriod and m.stopPeriod > :startPeriod and " +
+                "m.locationPermanentId = :locPermId and m.uniqueId != :uniqueId and m.approvedDate != null")
+                .setDate("meetingDate", getMeetingDate())
+                .setInteger("stopPeriod", getStopPeriod())
+                .setInteger("startPeriod", getStartPeriod())
+                .setLong("locPermId", getLocationPermanentId())
+                .setLong("uniqueId", this.getUniqueId())
+                .list();
+    }
+    
+    public static List<Meeting> findOverlaps(Date meetingDate, int startPeriod, int stopPeriod, Long locationPermId){
+        return (MeetingDAO.getInstance()).getSession().createQuery(
+                "from Meeting m where m.meetingDate=:meetingDate and m.startPeriod < :stopPeriod and m.stopPeriod > :startPeriod and " +
+                "m.locationPermanentId = :locPermId")
+                .setDate("meetingDate", meetingDate)
+                .setInteger("stopPeriod", stopPeriod)
+                .setInteger("startPeriod", startPeriod)
+                .setLong("locPermId", locationPermId)
+                .list();
+    }
+
+    public boolean hasTimeRoomOverlaps(){
+        return ((Number)MeetingDAO.getInstance().getSession().createQuery(
+                "select count(m) from Meeting m where m.meetingDate=:meetingDate and m.startPeriod < :stopPeriod and m.stopPeriod > :startPeriod and " +
+                "m.locationPermanentId = :locPermId and m.uniqueId != :uniqueId")
+                .setDate("meetingDate", getMeetingDate())
+                .setInteger("stopPeriod", getStopPeriod())
+                .setInteger("startPeriod", getStartPeriod())
+                .setLong("locPermId", getLocationPermanentId())
+                .setLong("uniqueId", this.getUniqueId())
+                .uniqueResult()).longValue()>0;
 	}
 	
 	public String toString() {

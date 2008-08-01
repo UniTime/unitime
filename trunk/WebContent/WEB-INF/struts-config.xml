@@ -2351,6 +2351,9 @@
     	<forward
     		name="eventList"
     		path="/eventList.do"/>
+    	<forward
+    		name="eventGrid"
+    		path="/eventGrid.do"/>
     </action>
 
     <action
@@ -2436,6 +2439,10 @@
     	<forward
     		name="show"
     		path="eventGridTile"
+    		redirect="true" />
+    	<forward
+    		name="add"
+    		path="/eventAddInfo.do"
     		redirect="true" />
     </action>
     

@@ -107,9 +107,6 @@
 					onkeydown="return checkKey(event, this);">
 					<html:option value="-1">Select...</html:option>
 					<html:optionsCollection name="eventGridForm" property="buildings" label="abbrName" value="uniqueId"/>
-					<logic:equal name="eventGridForm" property="hasOutsideLocations" value="true">
-						<html:option value="0">Outside Locations</html:option>
-					</logic:equal>
 				</html:select> 			
 				&nbsp; Room Number:&nbsp; <html:text property="roomNumber" maxlength="10" size="10"/>
 				&nbsp;&nbsp;&nbsp; <html:checkbox property="lookAtNearLocations"/> Include close by locations

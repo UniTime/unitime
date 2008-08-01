@@ -81,10 +81,19 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
 	    "Course Event",
 	    "Special Event"
 	};
+    public static final String[] sEventTypesAbbv = new String[] {
+        "Class",
+        "Final Exam",
+        "Midterm Exam",
+        "Course",
+        "Special"
+    };
 
 	public abstract int getEventType();
 	
 	public String getEventTypeLabel() { return sEventTypes[getEventType()]; }
+	
+	public String getEventTypeAbbv() { return sEventTypesAbbv[getEventType()]; }
 	
     public abstract Set<Student> getStudents();
     
@@ -143,6 +152,7 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
 	}
 	
     public static TreeSet<MultiMeeting> getMultiMeetings(Collection meetings) {
+        Date now = new Date();
         TreeSet<MultiMeeting> ret = new TreeSet<MultiMeeting>();
         HashSet<Meeting> meetingSet = new HashSet<Meeting>(meetings);
         while (!meetingSet.isEmpty()) {
@@ -152,13 +162,15 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
                     meeting = m;
             meetingSet.remove(meeting);
             Hashtable<Long,Meeting> similar = new Hashtable(); 
-            TreeSet<Integer> dow = new TreeSet<Integer>(); dow.add(meeting.getDayOfWeek()); 
+            TreeSet<Integer> dow = new TreeSet<Integer>(); dow.add(meeting.getDayOfWeek());
+            boolean past = meeting.getStartTime().before(now);
             for (Meeting m : meetingSet) {
                 if (ToolBox.equals(m.getStartPeriod(),meeting.getStartPeriod()) &&
                     ToolBox.equals(m.getStartOffset(),meeting.getStartOffset()) &&
                     ToolBox.equals(m.getStopPeriod(),meeting.getStopPeriod()) &&
                     ToolBox.equals(m.getStopOffset(),meeting.getStopOffset()) &&
                     ToolBox.equals(m.getLocationPermanentId(),meeting.getLocationPermanentId()) &&
+                    past==m.getStartTime().before(now) &&
                     m.isApproved()==meeting.isApproved()) {
                     dow.add(m.getDayOfWeek());
                     similar.put(m.getMeetingDate().getTime(),m);
@@ -178,17 +190,21 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
                     meetingSet.remove(m);
                 }
             }
-            ret.add(new MultiMeeting(multi));
+            ret.add(new MultiMeeting(multi,past));
         }
         return ret;
     }
 	
 	public static class MultiMeeting implements Comparable<MultiMeeting> {
 	    private TreeSet<Meeting> iMeetings;
+	    private boolean iPast = false;
 	    
-	    public MultiMeeting(TreeSet<Meeting> meetings) {
+	    public MultiMeeting(TreeSet<Meeting> meetings, boolean past) {
 	        iMeetings = meetings;
+	        iPast = past;
 	    }
+	    
+	    public boolean isPast() { return iPast; }
 	    
 	    public TreeSet<Meeting> getMeetings() { return iMeetings; }
 
