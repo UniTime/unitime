@@ -33,6 +33,22 @@
 	<html:hidden property="nextId"/>
 	<html:hidden property="previousId"/>	
 	<TABLE width="93%" border="0" cellspacing="0" cellpadding="3">
+		<logic:messagesPresent>
+		<TR>
+			<TD colspan="2" align="left" class="errorCell">
+					<B><U>ERRORS</U></B><BR>
+				<BLOCKQUOTE>
+				<UL>
+				    <html:messages id="error">
+				      <LI>
+						${error}
+				      </LI>
+				    </html:messages>
+			    </UL>
+			    </BLOCKQUOTE>
+			</TD>
+		</TR>
+		</logic:messagesPresent>
 		<TR>
 			<TD valign="middle" colspan='2'>
 				<tt:section-header>
