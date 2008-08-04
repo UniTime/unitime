@@ -77,6 +77,7 @@ import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.util.DynamicList;
 import org.unitime.timetable.util.DynamicListObjectFactory;
 import org.unitime.timetable.util.IdValue;
+import org.unitime.timetable.webutil.EventEmail;
 
 public class EventAddInfoForm extends ActionForm {
 
@@ -336,6 +337,8 @@ public class EventAddInfoForm extends ActionForm {
                     ChangeLog.Operation.CREATE,
                     null,null);
 			
+			new EventEmail(event, EventEmail.sActionCreate, event.getMultiMeetings(), iAdditionalInfo).send(request);
+			
 			tx.commit();
 			iEventId = event.getUniqueId();
 		} catch (Exception e) {
@@ -398,6 +401,8 @@ public class EventAddInfoForm extends ActionForm {
                     ChangeLog.Source.EVENT_EDIT,
                     ChangeLog.Operation.UPDATE,
                     null,null);
+			
+			new EventEmail(iEvent, EventEmail.sActionAddMeeting, Event.getMultiMeetings(createdMeetings), iAdditionalInfo).send(request);
 			
 			tx.commit();
 		} catch (Exception e) {

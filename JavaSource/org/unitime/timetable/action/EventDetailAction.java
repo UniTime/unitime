@@ -35,6 +35,8 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.apache.struts.action.ActionMessage;
+import org.apache.struts.action.ActionMessages;
 import org.hibernate.Transaction;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
@@ -64,6 +66,7 @@ import org.unitime.timetable.model.dao.CourseEventDAO;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.MeetingDAO;
 import org.unitime.timetable.webutil.BackTracker;
+import org.unitime.timetable.webutil.EventEmail;
 import org.unitime.timetable.webutil.Navigation;
 
 /**
@@ -171,6 +174,14 @@ public class EventDetailAction extends Action {
 					hibSession.saveOrUpdate(en);
 					event.getNotes().add(en);
 					hibSession.saveOrUpdate(event);					
+					
+					String error = new EventEmail(event, EventEmail.sActionApprove, Event.getMultiMeetings(meetings), myForm.getNewEventNote()).send(request);
+					if (error!=null) {
+					    ActionMessages errors = new ActionMessages();
+					    errors.add("email", new ActionMessage("errors.generic", error));
+					    saveErrors(request, errors);
+					}
+					
 					myForm.setSelectedMeetings(null);
 					myForm.setNewEventNote(null);
 					tx.commit();
@@ -211,7 +222,14 @@ public class EventDetailAction extends Action {
                     en.setEvent(event);
 					hibSession.saveOrUpdate(en);
 					event.getNotes().add(en);
-					hibSession.saveOrUpdate(event);					
+					hibSession.saveOrUpdate(event);		
+					
+					String error = new EventEmail(event, EventEmail.sActionReject, Event.getMultiMeetings(meetings), myForm.getNewEventNote()).send(request);
+                    if (error!=null) {
+                        ActionMessages errors = new ActionMessages();
+                        errors.add("email", new ActionMessage("errors.generic", error));
+                        saveErrors(request, errors);
+                    }
 
 					myForm.setSelectedMeetings(null);
 					myForm.setNewEventNote(null);
@@ -269,7 +287,14 @@ public class EventDetailAction extends Action {
 	                    en.setEvent(event);
 						hibSession.saveOrUpdate(en);
 						event.getNotes().add(en);
-						hibSession.saveOrUpdate(event);			
+						hibSession.saveOrUpdate(event);		
+						
+						String error = new EventEmail(event, EventEmail.sActionDelete, Event.getMultiMeetings(meetings), myForm.getNewEventNote()).send(request);
+	                    if (error!=null) {
+	                        ActionMessages errors = new ActionMessages();
+	                        errors.add("email", new ActionMessage("errors.generic", error));
+	                        saveErrors(request, errors);
+	                    }
 
 		                if (event.getMeetings().isEmpty()) {
 		                	String msg = "All meetings of "+event.getEventName()+" ("+event.getEventTypeLabel()+") have been deleted.";
