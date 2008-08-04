@@ -37,6 +37,11 @@
 			<TD valign="middle" colspan='2'>
 				<tt:section-header>
 					<tt:section-title><bean:write name="eventDetailForm" property="eventName"/></tt:section-title>
+					<logic:equal name="eventDetailForm" property="canEdit" value="true">
+						<html:submit property="op" styleClass="btn" accesskey="E" 
+							title="Edit Event (Alt+E)" value="Edit Event"/>
+						&nbsp;
+					</logic:equal>
 					<logic:greaterEqual name="eventDetailForm" property="previousId" value="0">
 						<html:submit property="op" styleClass="btn" accesskey="P" 
 							title="Previous Event (Alt+P)" value="Previous"/>
@@ -384,6 +389,11 @@
 	</TR>
 	<TR>
 		<TD colspan="2" align="right">
+				<logic:equal name="eventDetailForm" property="canEdit" value="true">
+					<html:submit property="op" styleClass="btn" accesskey="E" 
+						title="Edit Event (Alt+E)" value="Edit Event"/>
+						&nbsp;
+				</logic:equal>
 				<logic:greaterEqual name="eventDetailForm" property="previousId" value="0">
 					<html:submit property="op" styleClass="btn" accesskey="P" 
 						title="Go To Previous Event (Alt+P)" value="Previous"/>
