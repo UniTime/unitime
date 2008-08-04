@@ -569,6 +569,8 @@ public class Class_ extends BaseClass_ {
 		TimetableManager tm = TimetableManager.getManager(user);
 		if (tm == null) return false;
 
+		if (!Roles.DEPT_SCHED_MGR_ROLE.equals(user.getRole())) return false;
+
 		if (tm.getDepartments().contains(getManagingDept())) {
 			//I am manager, return true if manager can edit the class
 			if (getManagingDept().effectiveStatusType().canManagerEdit()) return true;
@@ -613,7 +615,9 @@ public class Class_ extends BaseClass_ {
 		TimetableManager tm = TimetableManager.getManager(user);
 		if (tm == null) return false;
 
-		if (tm.getDepartments().contains(getManagingDept())) {
+        if (!Roles.DEPT_SCHED_MGR_ROLE.equals(user.getRole())) return false;
+
+        if (tm.getDepartments().contains(getManagingDept())) {
 			//I am manager, return true if manager can view the class
 			if (getManagingDept().effectiveStatusType().canManagerLimitedEdit()) return true;
 		}

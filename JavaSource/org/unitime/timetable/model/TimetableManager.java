@@ -227,7 +227,7 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
             return true;
         
         //timetable manager or view all 
-        if (Roles.DEPT_SCHED_MGR_ROLE.equals(user.getCurrentRole()) || Roles.VIEW_ALL_ROLE.equals(user.getCurrentRole()))
+        if (Roles.DEPT_SCHED_MGR_ROLE.equals(user.getCurrentRole()) || Roles.VIEW_ALL_ROLE.equals(user.getCurrentRole()) || Roles.EVENT_MGR_ROLE.equals(user.getCurrentRole()))
             return session.getStatusType().canExamView();
         
         return false;
