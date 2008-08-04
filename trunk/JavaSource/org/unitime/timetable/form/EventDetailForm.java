@@ -193,8 +193,8 @@ public class EventDetailForm extends ActionForm {
     	private String iApprovedDate = null;
     	private Long iUniqueId = null;
     	private boolean iIsPast = false;
-    	private boolean iCanEditMeeting = true;
-    	private boolean iCanDeleteMeeting = true;
+    	private boolean iCanEditMeeting = false;
+    	private boolean iCanDeleteMeeting = false;
     	private TreeSet<MeetingBean> iOverlaps = new TreeSet();
         private Long iEventId = null;
     	private String iName = null;
