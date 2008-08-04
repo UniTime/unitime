@@ -57,6 +57,7 @@
 			<TD nowrap> Event Type:&nbsp;</TD>
 			<TD> <bean:write name="eventDetailForm" property="eventType"/>
 		</TR>
+		<logic:notEmpty name="eventDetailForm" property="minCapacity">
 		<TR>
 			<logic:equal name="eventDetailForm" property="eventType" value="Special Event">
 				<TD nowrap>Expected Size:&nbsp;</TD>
@@ -77,16 +78,18 @@
 						<bean:write name="eventDetailForm" property="minCapacity"/> - <bean:write name="eventDetailForm" property="maxCapacity"/>
 					</logic:notEqual>
 				</logic:notEqual>
-
  			</TD>
 		</TR>
+		</logic:notEmpty>
 		<logic:equal name="eventDetailForm" property="eventType" value="Special Event">
+		<logic:notEmpty name="eventDetailForm" property="sponsoringOrgName">
 		<TR>
 			<TD nowrap>Sponsoring Organization:&nbsp;</TD>
 			<TD width='100%'>
 				<bean:write name="eventDetailForm" property="sponsoringOrgName"/>
 			</TD>
 		</TR>
+		</logic:notEmpty>
 		</logic:equal>
 		<logic:equal name="eventDetailForm" property="canEdit" value="true">
 			<TR>
