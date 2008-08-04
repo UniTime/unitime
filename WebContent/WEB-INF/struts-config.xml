@@ -142,6 +142,7 @@
       <form-bean name="roomTypeEditForm" type="org.unitime.timetable.form.RoomTypeEditForm" />
   	  <form-bean name="eventStandardNotesForm" type="org.unitime.timetable.form.EventStandardNotesForm" />
   	  <form-bean name="eventStandardNoteEditForm" type="org.unitime.timetable.form.EventStandardNoteEditForm" />
+  	  <form-bean name="eventEditForm" type="org.unitime.timetable.form.EventEditForm" />
    </form-beans>
 
    <global-exceptions>
@@ -2500,6 +2501,20 @@
     	<forward 
     		name="list"
     		path="/eventStandardNotes.do"
+    		redirect="true" />
+    </action>
+
+    <action
+    	path="/eventEdit"
+    	type="org.unitime.timetable.action.EventEditAction"
+    	attribute="eventEditForm"
+    	input="eventEditTile"
+    	name="eventEditForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+    		name="show"
+    		path="eventEditTile"
     		redirect="true" />
     </action>
 
