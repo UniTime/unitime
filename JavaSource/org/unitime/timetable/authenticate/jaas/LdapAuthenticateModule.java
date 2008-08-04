@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.authenticate.jaas;
 
+import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -225,6 +226,10 @@ public class LdapAuthenticateModule extends AuthenticateModule {
             if (isDebug()) System.out.println("Ldap authentication passed ... ");
             setAuthSucceeded(true);
             iExternalUid = (String)idAttribute.get();
+            try {
+                if (iExternalUid!=null && ApplicationProperties.getProperty("tmtbl.authenticate.ldap.externalId.format")!=null)
+                    iExternalUid = new DecimalFormat(ApplicationProperties.getProperty("tmtbl.authenticate.ldap.externalId.format")).format(Long.parseLong(iExternalUid));
+            } catch (NumberFormatException e) {}
             setUser(n);
             return true;
         }
