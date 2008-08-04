@@ -22,6 +22,7 @@ package org.unitime.timetable.form;
 
 import java.util.Date;
 import java.util.HashSet;
+import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -38,9 +39,11 @@ import org.unitime.timetable.model.EventNote;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.SponsoringOrganization;
 import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.model.Event.MultiMeeting;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.SponsoringOrganizationDAO;
 import org.unitime.timetable.model.dao._RootDAO;
+import org.unitime.timetable.webutil.EventEmail;
 
 
 /**
@@ -140,6 +143,8 @@ public class EventEditForm extends EventAddInfoForm {
             event.getNotes().add(en);
 
 			hibSession.saveOrUpdate(event);
+			
+            new EventEmail(event, EventEmail.sActionUpdate, new TreeSet<MultiMeeting>(), getAdditionalInfo()).send(request);
 			
 			ChangeLog.addChange(
                     hibSession,
