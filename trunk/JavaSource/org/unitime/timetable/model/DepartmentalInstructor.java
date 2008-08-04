@@ -258,6 +258,9 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 	protected boolean canUserEdit(User user) {
 	    if (user.getRole().equals(Roles.EXAM_MGR_ROLE) && 
 	        getDepartment().effectiveStatusType().canExamTimetable()) return true;
+	    
+        if (!Roles.DEPT_SCHED_MGR_ROLE.equals(user.getRole())) return false;
+
 		return getDepartment().canUserEdit(user);
 	}
 	
