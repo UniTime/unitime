@@ -299,6 +299,8 @@ public class CourseOffering extends BaseCourseOffering {
 		
 		TimetableManager tm = TimetableManager.getManager(user);
 		if (tm==null) return false;
+		
+		if (!Roles.DEPT_SCHED_MGR_ROLE.equals(user.getRole())) return false;
 
 		if (!tm.getDepartments().contains(getDepartment())) return false;
 		
@@ -314,6 +316,8 @@ public class CourseOffering extends BaseCourseOffering {
         
         TimetableManager tm = TimetableManager.getManager(user);
         if (tm==null) return false;
+
+        if (!Roles.DEPT_SCHED_MGR_ROLE.equals(user.getRole())) return false;
 
         if (!tm.getDepartments().contains(getDepartment())) return false;
         

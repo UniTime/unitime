@@ -163,6 +163,8 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
 		TimetableManager tm = TimetableManager.getManager(user);
 		if (tm == null) return false;
 		
+        if (!Roles.DEPT_SCHED_MGR_ROLE.equals(user.getRole())) return false;
+
 		if (tm.getDepartments().contains(getManagingDept())) {
 			//I am manager, return true if manager can edit the class
 			if (getManagingDept().effectiveStatusType().canManagerEdit()) return true;
@@ -179,7 +181,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
 	protected boolean canUserView(User user){
 		TimetableManager tm = TimetableManager.getManager(user);
 		if (tm == null) return false;
-
+		
 		if (getClasses()==null || getClasses().isEmpty()) {
 			if (tm.getDepartments().contains(getControllingDept())) {
 				//I am owner, return true if owner can edit the class
@@ -204,6 +206,8 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
 		
 		TimetableManager tm = TimetableManager.getManager(user);
 		if (tm == null) return false;
+		
+        if (!Roles.DEPT_SCHED_MGR_ROLE.equals(user.getRole())) return false;
 		
 		if (getClasses()==null || getClasses().isEmpty()) {
 			if (tm.getDepartments().contains(getControllingDept())) {
