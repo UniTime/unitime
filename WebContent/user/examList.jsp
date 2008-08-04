@@ -69,6 +69,7 @@
 					<bean:message key="button.exportPDF" />
 				</html:submit> 
 			</TD>
+			<logic:equal name="examListForm" property="canAddExam" value="true">
 			<TD valign="top">
 				&nbsp;
 				<html:submit
@@ -77,6 +78,7 @@
 					<bean:message key="button.addExam" />
 				</html:submit> 
 			</TD>
+			</logic:equal>
 		</TR>
 		<TR>
 			<TD colspan="5" align="center">

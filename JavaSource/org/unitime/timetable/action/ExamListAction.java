@@ -59,6 +59,7 @@ public class ExamListAction extends Action {
         TimetableManager manager = (user==null?null:TimetableManager.getManager(user)); 
         Session session = (user==null?null:Session.getCurrentAcadSession(user));
         if (user==null || session==null || !manager.canSeeExams(session, user)) throw new Exception ("Access Denied.");
+        myForm.setCanAddExam(manager!=null && manager.canEditExams(session, user));
         
         // Read operation to be performed
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
