@@ -112,6 +112,10 @@ public class EventDetailAction extends Action {
 		
 		if (iOp != null) {
 		
+			if("Edit Event".equals(iOp)) {
+				response.sendRedirect("eventEdit.do?id="+myForm.getId());
+			}
+			
 			//return to event list
 			if(iOp.equals("Back")) {
 				if (myForm.getId()!=null)

@@ -65,12 +65,13 @@ public class EventNote extends BaseEventNote implements Comparable<EventNote> {
 	public static final int sEventNoteTypeApproval = 2;
 	public static final int sEventNoteTypeRejection = 3;
 	public static final int sEventNoteTypeDeletion = 4;
+	public static final int sEventNoteTypeEditEvent = 5;
 	
 	public static final String[] sEventNoteTypeBgColor = new String[] {
-	    "transparent", "transparent", "#D7FFD7", "#FFD7D7", "transparent" 
+	    "transparent", "transparent", "#D7FFD7", "#FFD7D7", "transparent", "transparent" 
 	};
 	public static final String[] sEventNoteTypeName = new String[] {
-	    "Create", "Update", "Approve", "Reject", "Delete"
+	    "Create", "Update", "Approve", "Reject", "Delete", "Edit"
 	};
 
 	public int compareTo(EventNote n) {
