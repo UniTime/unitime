@@ -1008,6 +1008,8 @@
    	<definition	name="eventEditTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Edit Event"/>
 		<put name="body" value="/user/eventEdit.jsp" />
+		<put name="checkAccessLevel" value="false" />
+		<put name="checkRole" value="false" />
   	</definition>
    	
 </tiles-definitions>
