@@ -70,6 +70,7 @@ public class EventEmail {
             }
             javax.mail.Session mailSession = javax.mail.Session.getDefaultInstance(p, a);
             MimeMessage mail = new MimeMessage(mailSession);
+            mail.setFrom(from);
             
             switch (iAction) {
             case sActionCreate : 
@@ -79,7 +80,7 @@ public class EventEmail {
                 mail.setSubject("Event "+iEvent.getEventName()+" approved.");
                 break;
             case sActionReject :
-                mail.setSubject("Event "+iEvent.getEventName()+" approved.");
+                mail.setSubject("Event "+iEvent.getEventName()+" rejected.");
                 break;
             case sActionUpdate :
                 mail.setSubject("Event "+iEvent.getEventName()+" updated.");
@@ -92,7 +93,20 @@ public class EventEmail {
                 break;
             }
 
-            String message = "<table border='0' width='800' align='center' cellspacing='10'>";
+            String message = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">";
+            message += "<html><head>";
+            message += "<title>"+mail.getSubject()+"</title>";
+            message += "<meta http-equiv='Content-Type' content='text/html; charset=windows-1250'>";
+            message += "<meta name='Author' content='UniTime LLC'>";
+            message += "<style type='text/css'>";
+            message += "<!--" +
+            		"A:link     { color: blue; text-decoration: none; }" +
+            		"A:visited  { color: blue; text-decoration: none; }" +
+            		"A:active   { color: blue; text-decoration: none; }" +
+            		"A:hover    { color: blue; text-decoration: none; }" +
+            		"-->";
+            message += "</style></head><body bgcolor='#ffffff' style='font-size: 10pt; font-family: arial;'>";
+            message += "<table border='0' width='800' align='center' cellspacing='10'>";
             
             message += "<tr><td colspan='2' style='border-bottom: 2px #2020FF solid;'><font size='+2'>";
             message += iEvent.getEventName();
@@ -177,7 +191,7 @@ public class EventEmail {
                     message += "</td></tr>";
                 } else {
                     message += "<tr><td colspan='2'>";
-                    message += "<table border='0' width='100%' cellspacing='0' cellpadding='3'>";
+                    message += "<table border='0' width='100%'>";
                     message += "<tr><td><i>Date</i></td><td><i>Time</i></td><td><i>Location</i></td><td><i>Capacity</i></td><td><i>Approved</i></td></tr>";
                     for (MultiMeeting m : iEvent.getMultiMeetings()) {
                         message += "<tr><td>";
@@ -205,7 +219,7 @@ public class EventEmail {
                 message += "<tr><td colspan='2' style='border-bottom: 1px #2020FF solid; font-variant:small-caps;'>";
                 message += "<br><font size='+1'>All Notes of "+iEvent.getEventName()+"</font>";
                 message += "</td></tr><tr><td colspan='2'>";
-                message += "<table border='0' width='100%'>";
+                message += "<table border='0' width='100%' cellspacing='0' cellpadding='3'>";
                 message += "<tr><td><i>Date</i></td><td><i>Action</i></td><td><i>Meetings</i></td><td><i>Note</i></td></tr>";
                 for (EventNote note : new TreeSet<EventNote>(iEvent.getNotes())) {
                     message += "<tr style=\"background-color:"+EventNote.sEventNoteTypeBgColor[note.getNoteType()]+";\" valign='top'>";
@@ -218,6 +232,7 @@ public class EventEmail {
                 message += "</table></td></tr>";
             }
             
+            message += "<tr><td colspan='2'>&nbsp;</td></tr>";
             message += "<tr><td colspan='2' style='border-top: 1px #2020FF solid;' align='center'>";
             message += "This email was automatically generated at ";
             message += request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+request.getContextPath();
