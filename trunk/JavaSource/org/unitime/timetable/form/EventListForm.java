@@ -207,11 +207,11 @@ public class EventListForm extends ActionForm {
 	public Vector<ComboBoxLookup> getModes() {
 	    Vector<ComboBoxLookup> modes = new Vector();
 	    if (!isAdmin()) modes.add(new ComboBoxLookup("My Events", String.valueOf(sModeMyEvents)));
-	    if (isEventManager()) modes.add(new ComboBoxLookup("Events Waiting My Approval", String.valueOf(sModeEvents4Approval)));
+	    if (isEventManager()) modes.add(new ComboBoxLookup("Events Awaiting My Approval", String.valueOf(sModeEvents4Approval)));
 	    modes.add(new ComboBoxLookup("All Events", String.valueOf(sModeAllEvents)));
 	    if (!isNoRole()) {
 	        modes.add(new ComboBoxLookup("All Approved Events", String.valueOf(sModeAllApprovedEvents)));
-	        modes.add(new ComboBoxLookup("All Events Waiting Approval", String.valueOf(sModeAllEventsWaitingApproval)));
+	        modes.add(new ComboBoxLookup("All Events Awaiting Approval", String.valueOf(sModeAllEventsWaitingApproval)));
 	    }
 	    return modes;
 	}

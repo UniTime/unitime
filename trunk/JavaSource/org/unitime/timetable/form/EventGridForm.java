@@ -38,7 +38,7 @@ public class EventGridForm extends EventAddForm {
     private String iMode = null;
     public static String sModeAll = "All Events";
     public static String sModeApproved = "All Approved Events";
-    public static String sModeWaiting = "All Events Waiting Approval";
+    public static String sModeWaiting = "All Events Awaiting Approval";
     public static String[] sModes = new String[] {
         sModeAll,
         sModeApproved,
