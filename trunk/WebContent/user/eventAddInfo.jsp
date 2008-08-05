@@ -258,7 +258,7 @@
 					<TR>
 						<TD nowrap>Phone: </TD>
 						<TD>
-							<html:text property="mainContactPhone" maxlength="10" size="30" styleId="phone"/> <i><font color="gray">&nbsp; Max. 10 digits </font></i>
+							<html:text property="mainContactPhone" maxlength="25" size="30" styleId="phone"/>
 						</TD>
 					</TR>
 				</Table>

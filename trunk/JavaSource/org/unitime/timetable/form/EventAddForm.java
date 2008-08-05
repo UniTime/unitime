@@ -292,22 +292,12 @@ public class EventAddForm extends ActionForm {
         iMeetingDates.clear();
         if (iSessionId==null) return;
 		Session s = Session.getSessionById(iSessionId);
-        int startMonth = s.getStartMonth(); 
-        int endMonth = s.getEndMonth();
-        int year = s.getYear();
         Calendar today = Calendar.getInstance();
-        today.setTime(s.getSessionBeginDateTime());
-        today.set(Calendar.DAY_OF_MONTH,1);
-        today.set(Calendar.MONTH, (startMonth+12)%12);
-        today.set(Calendar.YEAR, year+(startMonth<0?-1:0)+(startMonth>=12?1:0));
-        for (int m=startMonth;m<=endMonth;m++) {
-            int daysOfMonth = DateUtils.getNrDaysOfMonth(m, year);
-            for (int d=1;d<=daysOfMonth;d++) {
-                if ("1".equals(request.getParameter("cal_val_"+((12+m)%12)+"_"+d))) {
-                    iMeetingDates.add(today.getTime());
-                }
-                today.add(Calendar.DAY_OF_YEAR,1);
-            }
+        today.setTime(s.getEventBeginDate());
+        while (!today.getTime().after(s.getEventEndDate())) {
+            if ("1".equals(request.getParameter("cal_val_"+today.get(Calendar.MONTH)+"_"+today.get(Calendar.DAY_OF_MONTH))))
+                iMeetingDates.add(today.getTime());
+            today.add(Calendar.DAY_OF_YEAR,1);
         }
 	}
 	
@@ -322,14 +312,15 @@ public class EventAddForm extends ActionForm {
 	public String getDatesTable(boolean disblePast) {
         if (iSessionId==null) return null;
 		Session s = Session.getSessionById(iSessionId);
-        int startMonth = s.getStartMonth(); 
-        int endMonth = s.getEndMonth();
         int year = s.getYear();
         Calendar today = Calendar.getInstance();
-        today.setTime(s.getSessionBeginDateTime());
+        today.setTime(s.getEventEndDate());
+        int endMonth = today.get(Calendar.MONTH);
+        if (today.get(Calendar.YEAR)>year) endMonth+=12;
+        today.setTime(s.getEventBeginDate());
+        int startMonth = today.get(Calendar.MONTH);
+        if (today.get(Calendar.YEAR)<year) startMonth-=12;
         today.set(Calendar.DAY_OF_MONTH,1);
-        today.set(Calendar.MONTH, (startMonth+12)%12);
-        today.set(Calendar.YEAR, year+(startMonth<0?-1:0)+(startMonth>=12?1:0));
         String pattern = "[", border = "[";
         Calendar now = Calendar.getInstance();
         now.setTime(new Date());
@@ -343,7 +334,8 @@ public class EventAddForm extends ActionForm {
              int daysOfMonth = DateUtils.getNrDaysOfMonth(m, year);
              for (int d=1;d<=daysOfMonth;d++) {
             	 if (d>1) {pattern+=","; border+=","; }
-            	 pattern+=(disblePast && today.before(now)?"'@'":iMeetingDates.contains(today.getTime())?"'1'":"'0'");
+            	 boolean dis = today.getTime().before(s.getEventBeginDate()) || today.getTime().after(s.getEventEndDate());
+            	 pattern+=(dis || (disblePast && today.before(now))?"'@'":iMeetingDates.contains(today.getTime())?"'1'":"'0'");
             	 today.add(Calendar.DAY_OF_YEAR,1);
             	 border += s.getBorder(d, m);
              }
@@ -354,7 +346,7 @@ public class EventAddForm extends ActionForm {
         	"<script language='JavaScript'>"+
         	"calGenerate("+year+","+startMonth+","+endMonth+","+
             pattern+","+"['1','0','@'],"+
-            "['Selected','Not Selected','Past'],"+
+            "['Selected','Not Selected','"+(disblePast?"Past / Outside Session":"Outside Session")+"'],"+
             "['rgb(240,240,50)','rgb(240,240,240)','rgb(150,150,150)'],"+
             "'1',"+border+",true,true);"+
             "</script>";

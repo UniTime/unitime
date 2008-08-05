@@ -133,6 +133,7 @@
 <%  if (TimetableManager.canSeeEvents(user)) { %>
 	menu_item('3','Event Management','Events','','expand');
 		leaf_item('Events','Events','eventList.do');
+		leaf_item('Meetings','Meetings','meetingList.do');
 		leaf_item('Add Event','Add Event','eventAdd.do');
 		leaf_item('Room Availability', 'Event Room Availability', 'eventGrid.do');
 		enditem(); //3
@@ -244,6 +245,7 @@
 <% if (TimetableManager.canSeeEvents(user)) { %>
 	menu_item('3','Event Management','Events','','expand');
 		leaf_item('Events','Events','eventList.do');
+		leaf_item('Meetings','Meetings','meetingList.do');
 		leaf_item('Add Event','Add Event','eventAdd.do');
 		leaf_item('Room Availability', 'Event Room Availability', 'eventGrid.do');
 		enditem(); //3

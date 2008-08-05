@@ -182,6 +182,20 @@
 				<img style="cursor: pointer;" src="scripts/jscalendar/calendar_1.gif" border="0" id="show_session_end">
 			</TD>
 		</TR>
+		<TR>
+			<TD>Event Start Date:</TD>
+			<TD colspan='2'>
+				<html:text property="eventStart" onchange="doRefresh();" style="border: yellow 2px solid;" styleId="event_start" maxlength="10" size="10"/>
+				<img style="cursor: pointer;" src="scripts/jscalendar/calendar_1.gif" border="0" id="show_event_start">
+			</TD>
+		</TR>
+		<TR>
+			<TD>Event End Date:</TD>
+			<TD colspan='2'>
+				<html:text property="eventEnd" onchange="doRefresh();" style="border: red 2px solid;" styleId="event_end" maxlength="10" size="10"/>
+				<img style="cursor: pointer;" src="scripts/jscalendar/calendar_1.gif" border="0" id="show_event_end">
+			</TD>
+		</TR>
 
 		<TR>
 			<TD>Session Status:</TD>
@@ -311,6 +325,30 @@
 	    date		: <%=request.getParameter("examStart")%>,
 	    <% }%>
 		button     : "show_exam_start"	// ID of the button
+	} );
+
+	Calendar.setup( {
+		cache      : true, 					// Single object used for all calendars
+		electric   : false, 				// Changes date only when calendar is closed
+		inputField : "event_start",		// ID of the input field
+	    ifFormat   : "%m/%d/%Y", 			// Format of the input field
+	    showOthers : true,					// Show overlap of dates from other months	    
+	    <% if (request.getParameter("eventStart")!=null && request.getParameter("eventStart").length()>=10) { %>
+	    date		: <%=request.getParameter("eventStart")%>,
+	    <% }%>
+		button     : "show_event_start"	// ID of the button
+	} );
+
+	Calendar.setup( {
+		cache      : true, 					// Single object used for all calendars
+		electric   : false, 				// Changes date only when calendar is closed
+		inputField : "event_end",		// ID of the input field
+	    ifFormat   : "%m/%d/%Y", 			// Format of the input field
+	    showOthers : true,					// Show overlap of dates from other months	    
+	    <% if (request.getParameter("eventEnd")!=null && request.getParameter("eventEnd").length()>=10) { %>
+	    date		: <%=request.getParameter("eventEnd")%>,
+	    <% }%>
+		button     : "show_event_end"	// ID of the button
 	} );
 
 </script>

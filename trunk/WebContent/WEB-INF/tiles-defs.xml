@@ -1012,4 +1012,12 @@
 		<put name="checkRole" value="false" />
   	</definition>
    	
+ 	<definition	name="meetingListTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Meetings"/>
+		<put name="body" value="/user/meetingList.jsp" />
+		<put name="showNavigation" value="true" />
+		<put name="checkAccessLevel" value="false" />
+		<put name="checkRole" value="false" />
+  	</definition> 	
+
 </tiles-definitions>

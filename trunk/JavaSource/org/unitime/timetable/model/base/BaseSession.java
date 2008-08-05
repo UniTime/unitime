@@ -41,6 +41,8 @@ public abstract class BaseSession extends org.unitime.timetable.model.Preference
 	public static String PROP_CLASSES_END_DATE_TIME = "classesEndDateTime";
 	public static String PROP_SESSION_END_DATE_TIME = "sessionEndDateTime";
 	public static String PROP_EXAM_BEGIN_DATE = "examBeginDate";
+	public static String PROP_EVENT_BEGIN_DATE = "eventBeginDate";
+	public static String PROP_EVENT_END_DATE = "eventEndDate";
 	public static String PROP_HOLIDAYS = "holidays";
 
 
@@ -69,6 +71,8 @@ public abstract class BaseSession extends org.unitime.timetable.model.Preference
 	private java.util.Date classesEndDateTime;
 	private java.util.Date sessionEndDateTime;
 	private java.util.Date examBeginDate;
+    private java.util.Date eventBeginDate;
+    private java.util.Date eventEndDate;
 	private java.lang.String holidays;
 
 	// many to one
@@ -204,7 +208,36 @@ public abstract class BaseSession extends org.unitime.timetable.model.Preference
 		this.examBeginDate = examBeginDate;
 	}
 
+    /**
+     * Return the value associated with the column: EVENT_BEGIN_DATE
+     */
+    public java.util.Date getEventBeginDate () {
+        return eventBeginDate;
+    }
 
+    /**
+     * Set the value related to the column: EVENT_BEGIN_DATE
+     * @param eventBeginDate the EVENT_BEGIN_DATE value
+     */
+    public void setEventBeginDate (java.util.Date eventBeginDate) {
+        this.eventBeginDate = eventBeginDate;
+    }
+
+    /**
+     * Return the value associated with the column: EVENT_END_DATE
+     */
+    public java.util.Date getEventEndDate () {
+        return eventEndDate;
+    }
+
+    /**
+     * Set the value related to the column: EVENT_END_DATE
+     * @param eventEndDate the EVENT_END_DATE value
+     */
+    public void setEventEndDate (java.util.Date eventEndDate) {
+        this.eventEndDate = eventEndDate;
+    }
+    
 
 	/**
 	 * Return the value associated with the column: HOLIDAYS
