@@ -62,6 +62,7 @@ public class EventListForm extends ActionForm {
 	public static final int sModeAllEvents = 2;
 	public static final int sModeAllApprovedEvents = 3;
 	public static final int sModeAllEventsWaitingApproval = 4;
+	public static final int sModeAllConflictingEvents = 5;
 	
 	private int iMode = sModeMyEvents;
 	private boolean iAdmin = false;
@@ -69,6 +70,7 @@ public class EventListForm extends ActionForm {
 	private boolean iNoRole = false;
 	private String iUserId = null;
 	private Set iManagingDepts = null;
+	private boolean iConf = false;
 	
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 		
@@ -119,6 +121,7 @@ public class EventListForm extends ActionForm {
 		}
 		iUserId = (user==null?null:user.getId());
 		iSponsorOrgId = null;
+		iConf = false;
 	}
 	
 	public void load(HttpSession session) {
@@ -136,6 +139,9 @@ public class EventListForm extends ActionForm {
 		if (session.getAttribute("EventList.Mode")!=null)
 		    iMode = (Integer)session.getAttribute("EventList.Mode");
 		iSponsorOrgId = (Long)session.getAttribute("EventList.SponsoringOrganizationId");
+		if (session.getAttribute("EventList.Conf")!=null) {
+		    iConf = (Boolean) session.getAttribute("EventList.Conf");
+		}
 	}
 	
 	public void save(HttpSession session) {
@@ -170,7 +176,8 @@ public class EventListForm extends ActionForm {
 		else
 		    session.setAttribute("EventList.SponsoringOrganizationId", iSponsorOrgId);
 		
-		session.setAttribute("EventList.Mode", iMode);      
+		session.setAttribute("EventList.Mode", iMode);  
+		session.setAttribute("EventList.Conf", iConf);
 	}
 
 	public String getEventNameSubstring () {
@@ -221,6 +228,7 @@ public class EventListForm extends ActionForm {
 	    if (!isNoRole()) {
 	        modes.add(new ComboBoxLookup("All Approved Events", String.valueOf(sModeAllApprovedEvents)));
 	        modes.add(new ComboBoxLookup("All Events Awaiting Approval", String.valueOf(sModeAllEventsWaitingApproval)));
+	        modes.add(new ComboBoxLookup("All Conflicting Events", String.valueOf(sModeAllConflictingEvents)));
 	    }
 	    return modes;
 	}
@@ -235,5 +243,8 @@ public class EventListForm extends ActionForm {
     public Collection<SponsoringOrganization> getSponsoringOrganizations() {
 	    return SponsoringOrganization.findAll();
 	}
+    
+    public boolean getDispConflicts() { return iConf; }
+    public void setDispConflicts(boolean conf) { iConf = conf; }
 
 }

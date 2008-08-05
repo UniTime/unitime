@@ -165,7 +165,8 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
             TreeSet<Integer> dow = new TreeSet<Integer>(); dow.add(meeting.getDayOfWeek());
             boolean past = meeting.getStartTime().before(now);
             for (Meeting m : meetingSet) {
-                if (ToolBox.equals(m.getStartPeriod(),meeting.getStartPeriod()) &&
+                if (ToolBox.equals(m.getEvent().getUniqueId(),meeting.getEvent().getUniqueId()) &&
+                    ToolBox.equals(m.getStartPeriod(),meeting.getStartPeriod()) &&
                     ToolBox.equals(m.getStartOffset(),meeting.getStartOffset()) &&
                     ToolBox.equals(m.getStopPeriod(),meeting.getStopPeriod()) &&
                     ToolBox.equals(m.getStopOffset(),meeting.getStopOffset()) &&
