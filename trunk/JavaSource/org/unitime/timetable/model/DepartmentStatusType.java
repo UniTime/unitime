@@ -211,6 +211,6 @@ public class DepartmentStatusType extends BaseDepartmentStatusType implements Co
 	
 	/** Status is active when someone can edit, timetable or commit*/
 	public boolean isActive() {
-	    return canTimetable() || canCommit() || canManagerEdit() || canOwnerEdit() || canManagerLimitedEdit() || canOwnerLimitedEdit();
+	    return canTimetable() || canCommit() || canManagerEdit() || canOwnerEdit() || canManagerLimitedEdit() || canOwnerLimitedEdit() || canExamEdit() || canExamTimetable();
 	}
 }
