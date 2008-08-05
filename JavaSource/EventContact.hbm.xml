@@ -61,7 +61,7 @@
 			column="PHONE"
 			type="string"
 			not-null="false"
-			length="10"
+			length="35"
 		/>
 				
 		<property

@@ -59,6 +59,8 @@ public class SessionEditForm extends ActionForm {
 	String sessionEnd;
 	String classesEnd;
 	String examStart;
+	String eventStart;
+	String eventEnd;
 	String defaultDatePatternId;
 	String defaultDatePatternLabel;
 	
@@ -139,6 +141,15 @@ public class SessionEditForm extends ActionForm {
 						} else {
 						    if (!CalendarUtils.isValidDate(examStart, df))
 						        errors.add("examStart", new ActionMessage("errors.invalidDate", "Examinations Start Date"));
+                            if (!CalendarUtils.isValidDate(eventStart, df))
+                                errors.add("eventStart", new ActionMessage("errors.invalidDate", "Event Start Date"));
+                            if (!CalendarUtils.isValidDate(eventEnd, df))
+                                errors.add("eventEnd", new ActionMessage("errors.invalidDate", "Event End Date"));
+                            Date d4 = CalendarUtils.getDate(eventStart, df);
+                            Date d5 = CalendarUtils.getDate(eventEnd, df);
+                            if (!d4.before(d5)) {
+                                errors.add("eventEnd", new ActionMessage("errors.generic", "Event End Date must occur AFTER Event Start Date"));
+                            }
 						}
 					}
 				}
@@ -291,6 +302,18 @@ public class SessionEditForm extends ActionForm {
     }
     public void setExamStart(String examStart) {
         this.examStart = examStart;
+    }
+    public String getEventStart() {
+        return eventStart;
+    }
+    public void setEventStart(String eventStart) {
+        this.eventStart = eventStart;
+    }
+    public String getEventEnd() {
+        return eventEnd;
+    }
+    public void setEventEnd(String eventEnd) {
+        this.eventEnd = eventEnd;
     }
     
     public Set<RoomType> getRoomTypes() {

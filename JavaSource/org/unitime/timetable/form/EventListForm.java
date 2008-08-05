@@ -21,6 +21,7 @@
 package org.unitime.timetable.form;
 
 import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -38,6 +39,7 @@ import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Roles;
+import org.unitime.timetable.model.SponsoringOrganization;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.UserData;
 import org.unitime.timetable.util.CalendarUtils;
@@ -53,6 +55,7 @@ public class EventListForm extends ActionForm {
 	private String iEventDateFrom;
 	private String iEventDateTo;
 	private Integer[] iEventTypes = null;
+	private Long iSponsorOrgId = null;
 	
 	public static final int sModeMyEvents = 0;
 	public static final int sModeEvents4Approval = 1;
@@ -99,8 +102,7 @@ public class EventListForm extends ActionForm {
 		iEventDateFrom = new SimpleDateFormat("MM/dd/yyyy").format(new Date());
 		iEventDateTo = null;
 		iEventTypes = new Integer[] {
-				Event.sEventTypeFinalExam,
-				Event.sEventTypeMidtermExam
+				Event.sEventTypeSpecial
 		};
 		iOp = null;
 		User user = Web.getUser(request.getSession());
@@ -116,6 +118,7 @@ public class EventListForm extends ActionForm {
 		    iAdmin = true;
 		}
 		iUserId = (user==null?null:user.getId());
+		iSponsorOrgId = null;
 	}
 	
 	public void load(HttpSession session) {
@@ -132,6 +135,7 @@ public class EventListForm extends ActionForm {
 		iEventDateTo = (String)session.getAttribute("EventList.EventDateTo");		
 		if (session.getAttribute("EventList.Mode")!=null)
 		    iMode = (Integer)session.getAttribute("EventList.Mode");
+		iSponsorOrgId = (Long)session.getAttribute("EventList.SponsoringOrganizationId");
 	}
 	
 	public void save(HttpSession session) {
@@ -160,6 +164,11 @@ public class EventListForm extends ActionForm {
 			session.removeAttribute("EventList.EventDateTo");
 		else
 			session.setAttribute("EventList.EventDateTo", iEventDateTo);
+		
+		if (iSponsorOrgId==null)
+		    session.removeAttribute("EventList.SponsoringOrganizationId");
+		else
+		    session.setAttribute("EventList.SponsoringOrganizationId", iSponsorOrgId);
 		
 		session.setAttribute("EventList.Mode", iMode);      
 	}
@@ -218,6 +227,13 @@ public class EventListForm extends ActionForm {
 
 	public Set<Department> getManagingDepartments() {
 	    return iManagingDepts;
+	}
+	
+    public Long getSponsoringOrganization() { return iSponsorOrgId; }
+    public void setSponsoringOrganization(Long org) { iSponsorOrgId = org; }
+
+    public Collection<SponsoringOrganization> getSponsoringOrganizations() {
+	    return SponsoringOrganization.findAll();
 	}
 
 }

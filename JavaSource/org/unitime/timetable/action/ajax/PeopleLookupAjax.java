@@ -232,7 +232,7 @@ public class PeopleLookupAjax extends Action {
             if (iMName!=null && iFName!=null && iMName.indexOf(iFName)>=0) iMName = iMName.replaceAll(iFName+" ?", "");
             if (iMName!=null && iLName!=null && iMName.indexOf(iLName)>=0) iMName = iMName.replaceAll(" ?"+iLName, "");
             iEmail = email; iPhone = phone; iDept = dept; iPos = pos;
-            if (iPhone!=null) iPhone = iPhone.replaceAll("\\+? ?\\-?\\(?\\)?","");
+            //if (iPhone!=null) iPhone = iPhone.replaceAll("\\+? ?\\-?\\(?\\)?","");
         }
         private Person(String id, String cname, String email, String phone, String dept, String pos, String source) {
             iId = id; iSource = source;
@@ -244,7 +244,7 @@ public class PeopleLookupAjax extends Action {
                 iMName = iLName.substring(0, iLName.lastIndexOf(' ')); iLName = iLName.substring(iLName.lastIndexOf(' ')+1);
             }
             iEmail = email; iPhone = phone; iDept = dept; iPos = pos;
-            if (iPhone!=null) iPhone = iPhone.replaceAll("\\+? ?\\-?\\(?\\)?","");
+            //if (iPhone!=null) iPhone = iPhone.replaceAll("\\+? ?\\-?\\(?\\)?","");
         }
         public Person(Staff staff) {
             this(translate(staff.getExternalUniqueId(), Source.Staff), 

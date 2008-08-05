@@ -44,7 +44,7 @@
     <table border='0' width='750'>
     	<tr>
     		<td style='border-bottom:1px black solid;' align='center'>
-    			<input type='text' name='query' size='100' id='query'>&nbsp;
+    			<input type='text' name='query' size='95' id='query'>&nbsp;
     			<input type='button' value='Search' onClick="doQuery(query.value);">&nbsp;
     			<input type='button' value='Close' onClick="window.close();">
     		</td>

@@ -732,6 +732,26 @@
 	            not-null="true"
 	        />
 	
+	       <property
+	            name="eventBeginDate"
+	            type="java.sql.Date"
+	            update="true"
+	            insert="true"
+	            access="property"
+	            column="EVENT_BEGIN_DATE"
+	            not-null="true"
+	        />
+
+	       <property
+	            name="eventEndDate"
+	            type="java.sql.Date"
+	            update="true"
+	            insert="true"
+	            access="property"
+	            column="EVENT_END_DATE"
+	            not-null="true"
+	        />
+
 	       <many-to-one
 	            name="statusType"
 	            class="DepartmentStatusType"

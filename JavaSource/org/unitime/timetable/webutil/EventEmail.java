@@ -48,6 +48,9 @@ public class EventEmail {
     
     public String send(HttpServletRequest request) {
         try {
+            if (!"true".equals(ApplicationProperties.getProperty("tmtbl.event.confirmationEmail","true")))
+                return "Conformation emails are disabled.";
+            
             InternetAddress from = 
                         new InternetAddress(
                                 ApplicationProperties.getProperty("tmtbl.inquiry.sender",ApplicationProperties.getProperty("tmtbl.contact.email")),

@@ -143,6 +143,7 @@
   	  <form-bean name="eventStandardNotesForm" type="org.unitime.timetable.form.EventStandardNotesForm" />
   	  <form-bean name="eventStandardNoteEditForm" type="org.unitime.timetable.form.EventStandardNoteEditForm" />
   	  <form-bean name="eventEditForm" type="org.unitime.timetable.form.EventEditForm" />
+  	  <form-bean name="meetingListForm" type="org.unitime.timetable.form.MeetingListForm" />
    </form-beans>
 
    <global-exceptions>
@@ -2258,6 +2259,23 @@
     		path="/eventAdd.do"/>
     </action>    
     
+    <action
+    	path="/meetingList"
+    	type="org.unitime.timetable.action.MeetingListAction"
+    	attribute="meetingListForm"
+    	input="meetingListTile"
+    	name="meetingListForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+    		name="show"
+    		path="meetingListTile"
+    		redirect="true" />
+    	<forward
+    		name="addEvent"
+    		path="/eventAdd.do"/>
+    </action>    
+
     <action
     	path="/personalSchedule"
     	type="org.unitime.timetable.action.PersonalizedExamReportAction"
