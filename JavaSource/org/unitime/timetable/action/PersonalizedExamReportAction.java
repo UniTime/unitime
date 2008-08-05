@@ -46,12 +46,15 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.unitime.commons.Debug;
 import org.unitime.commons.MultiComparable;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.PersonalizedExamReportForm;
+import org.unitime.timetable.interfaces.ExternalUidTranslation;
+import org.unitime.timetable.interfaces.ExternalUidTranslation.Source;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
@@ -80,7 +83,21 @@ import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.PdfWebTable;
 
 public class PersonalizedExamReportAction extends Action {
+    public static ExternalUidTranslation sTranslation;
     private static Log sLog = LogFactory.getLog(PersonalizedExamReportAction.class);
+    
+    static {
+        if (ApplicationProperties.getProperty("tmtbl.externalUid.translation")!=null) {
+            try {
+                sTranslation = (ExternalUidTranslation)Class.forName(ApplicationProperties.getProperty("tmtbl.externalUid.translation")).getConstructor().newInstance();
+            } catch (Exception e) { Debug.error("Unable to instantiate external uid translation class, "+e.getMessage()); }
+        }
+    }
+    
+    public static String translate(String uid, Source target) {
+        if (sTranslation==null || uid==null || target.equals(Source.User)) return uid;
+        return sTranslation.translate(uid, Source.User, target);
+    }
     
     public static boolean hasPersonalReport(User user) {
         if (user.getRole()!=null) return false;
@@ -136,11 +153,6 @@ public class PersonalizedExamReportAction extends Action {
             request.setAttribute("message", "No user id provided.");
             return mapping.findForward(back);
         }
-        if (ApplicationProperties.getProperty("tmtbl.personal.reports.externalIdFormat")!=null) {
-            try {
-                externalId = new DecimalFormat(ApplicationProperties.getProperty("tmtbl.personal.reports.externalIdFormat")).format(Long.valueOf(externalId));
-            } catch (NumberFormatException e) {}
-        }
         
         if ("Log Out".equals(myForm.getOp())) {
             sLog.info("Logging out user "+user.getName()+", forwarding to main page.");
@@ -172,7 +184,7 @@ public class PersonalizedExamReportAction extends Action {
         for (Iterator i=new DepartmentalInstructorDAO().
                 getSession().
                 createQuery("select i from DepartmentalInstructor i where i.externalUniqueId=:externalId").
-                setString("externalId",externalId).
+                setString("externalId",translate(externalId,Source.Staff)).
                 setCacheable(true).list().iterator();i.hasNext();) {
             DepartmentalInstructor s = (DepartmentalInstructor)i.next();
             if (!canDisplay(s.getDepartment().getSession())) continue;
@@ -188,7 +200,7 @@ public class PersonalizedExamReportAction extends Action {
         for (Iterator i=new StudentDAO().
                 getSession().
                 createQuery("select s from Student s where s.externalUniqueId=:externalId").
-                setString("externalId",externalId).
+                setString("externalId",translate(externalId,Source.Student)).
                 setCacheable(true).list().iterator();i.hasNext();) {
             Student s = (Student)i.next();
             if (!canDisplay(s.getSession())) continue;
@@ -206,7 +218,7 @@ public class PersonalizedExamReportAction extends Action {
                 request.setAttribute("message", "No examinations found.");
             else
                 request.setAttribute("message", "No schedule found.");
-            sLog.info("No matching instructor or student found for "+user.getName()+" ("+externalId+"), forwarding back ("+back+").");
+            sLog.info("No matching instructor or student found for "+user.getName()+" ("+translate(externalId,Source.Student)+"), forwarding back ("+back+").");
             return mapping.findForward(back);
         }
         

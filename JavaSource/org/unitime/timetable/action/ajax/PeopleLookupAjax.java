@@ -41,7 +41,10 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.unitime.commons.Debug;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.interfaces.ExternalUidTranslation;
+import org.unitime.timetable.interfaces.ExternalUidTranslation.Source;
 import org.unitime.timetable.model.EventContact;
 import org.unitime.timetable.model.Staff;
 import org.unitime.timetable.model.Student;
@@ -58,6 +61,16 @@ import org.unitime.timetable.util.Constants;
  *
  */
 public class PeopleLookupAjax extends Action {
+    public static ExternalUidTranslation sTranslation;
+    
+    static {
+        if (ApplicationProperties.getProperty("tmtbl.externalUid.translation")!=null) {
+            try {
+                sTranslation = (ExternalUidTranslation)Class.forName(ApplicationProperties.getProperty("tmtbl.externalUid.translation")).getConstructor().newInstance();
+            } catch (Exception e) { Debug.error("Unable to instantiate external uid translation class, "+e.getMessage()); }
+        }
+    }
+    
     public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
         
         response.addHeader("Content-Type", "text/xml");
@@ -77,6 +90,11 @@ public class PeopleLookupAjax extends Action {
         
         return null;        
 
+    }
+    
+    public static String translate(String uid, Source source) {
+        if (sTranslation==null || uid==null || source.equals(Source.User)) return uid;
+        return sTranslation.translate(uid, source, Source.User);
     }
     
     protected void print(ServletOutputStream out, String id, String fname, String mname, String lname, String email, String phone, String source) throws IOException {
@@ -208,7 +226,7 @@ public class PeopleLookupAjax extends Action {
 
     public static class Person implements Comparable<Person> {
         private String iId, iFName, iMName, iLName, iEmail, iPhone, iDept, iPos, iSource;
-        public Person(String id, String fname, String mname, String lname, String email, String phone, String dept, String pos, String source) {
+        private Person(String id, String fname, String mname, String lname, String email, String phone, String dept, String pos, String source) {
             iId = id; iSource = source;
             iFName = fname; iMName = mname; iLName = lname;
             if (iMName!=null && iFName!=null && iMName.indexOf(iFName)>=0) iMName = iMName.replaceAll(iFName+" ?", "");
@@ -216,7 +234,7 @@ public class PeopleLookupAjax extends Action {
             iEmail = email; iPhone = phone; iDept = dept; iPos = pos;
             if (iPhone!=null) iPhone = iPhone.replaceAll("\\+? ?\\-?\\(?\\)?","");
         }
-        public Person(String id, String cname, String email, String phone, String dept, String pos, String source) {
+        private Person(String id, String cname, String email, String phone, String dept, String pos, String source) {
             iId = id; iSource = source;
             iLName = cname;
             if (iLName!=null && iLName.indexOf(' ')>0) {
@@ -229,35 +247,35 @@ public class PeopleLookupAjax extends Action {
             if (iPhone!=null) iPhone = iPhone.replaceAll("\\+? ?\\-?\\(?\\)?","");
         }
         public Person(Staff staff) {
-            this(staff.getExternalUniqueId(), 
+            this(translate(staff.getExternalUniqueId(), Source.Staff), 
                  staff.getFirstName(), staff.getMiddleName(), staff.getLastName(),
                  staff.getEmail(), null, staff.getDept(), 
                  (staff.getPositionCode()==null?null:staff.getPositionCode().getPositionType()==null?staff.getPositionCode().getPositionCode():staff.getPositionCode().getPositionType().getLabel()),
                  "Staff");
         }
         public Person(Student student) {
-            this(student.getExternalUniqueId(), 
+            this(translate(student.getExternalUniqueId(), Source.Student), 
                  student.getFirstName(), student.getMiddleName(), student.getLastName(),
                  student.getEmail(), null, null, 
                  "Student",
                  "Students");
         }
         public Person(EventContact contact) {
-            this(contact.getExternalUniqueId(), 
+            this(translate(contact.getExternalUniqueId(), Source.User), 
                     contact.getFirstName(), contact.getMiddleName(), contact.getLastName(),
                  contact.getEmailAddress(), contact.getPhone(), null, 
                  null,
                  "Event Contacts");
         }
         public Person(TimetableManager manager) {
-            this(manager.getExternalUniqueId(), 
+            this(translate(manager.getExternalUniqueId(), Source.User), 
                     manager.getFirstName(), manager.getMiddleName(), manager.getLastName(),
                     manager.getEmailAddress(), null, null, 
                  (manager.getPrimaryRole()==null?null:manager.getPrimaryRole().getAbbv()),
                  "Timetable Managers");
         }
         public Person(Attributes a) throws NamingException{
-            this(getAttribute(a,"uid"),
+            this(translate(getAttribute(a,"uid"), Source.LDAP),
                  Constants.toInitialCase(getAttribute(a,"givenName")),
                  Constants.toInitialCase(getAttribute(a,"cn")),
                  Constants.toInitialCase(getAttribute(a,"sn")),
