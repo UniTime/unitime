@@ -36,6 +36,7 @@ import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.RoomListForm;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.TimetableManager;
@@ -124,7 +125,7 @@ public class RoomSearchAction extends Action {
             
             TimetableManager owner = new TimetableManagerDAO().get(Long.valueOf((String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME)));
             
-            if (owner.isExternalManager()) {
+            if (!user.getRole().equals(Roles.ADMIN_ROLE) && !user.getRole().equals(Roles.EXAM_MGR_ROLE)) {
                 Set depts = Department.findAllOwned(sessionId, owner, true);
                 if (depts.size()==1) {
                     roomListForm.setDeptCodeX(((Department)depts.iterator().next()).getDeptCode());
