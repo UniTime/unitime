@@ -50,7 +50,7 @@ import org.unitime.timetable.util.ReferenceList;
  */
 public class Session extends BaseSession implements Comparable {
 
-	public static int sNrExcessDays = 31;
+	public static int sNrExcessDays = 0;
 	
 	public static int sHolidayTypeNone = 0;
 
@@ -463,11 +463,14 @@ public class Session extends BaseSession implements Comparable {
 	}
 
 	public int getStartMonth() {		
-		return DateUtils.getStartMonth(getSessionBeginDateTime(), getYear(), sNrExcessDays);
+		return DateUtils.getStartMonth(
+		        (getEventBeginDate()!=null?getEventBeginDate():getSessionBeginDateTime()),
+		        getYear(), sNrExcessDays);
 	}
 
 	public int getEndMonth() {
-		return DateUtils.getEndMonth(getSessionEndDateTime(), getYear(), sNrExcessDays);
+		return DateUtils.getEndMonth(
+		        (getEventEndDate()!=null?getEventEndDate():getSessionEndDateTime()), getYear(), sNrExcessDays);
 	}
 
 	public int getDayOfYear(int day, int month) {
@@ -501,7 +504,7 @@ public class Session extends BaseSession implements Comparable {
 	}
 
 	public String getHolidaysHtml(boolean editable) {
-		return getHolidaysHtml(getSessionBeginDateTime(), getSessionEndDateTime(), getClassesEndDateTime(), getExamBeginDate(),  getYear(), getHolidays(), editable);
+		return getHolidaysHtml(getSessionBeginDateTime(), getSessionEndDateTime(), getClassesEndDateTime(), getExamBeginDate(), getEventBeginDate(), getEventEndDate(), getYear(), getHolidays(), editable);
 	}
 
 	public static String getHolidaysHtml(
@@ -509,6 +512,8 @@ public class Session extends BaseSession implements Comparable {
 			Date sessionEndTime, 
 			Date classesEndTime,
 			Date examBeginTime,
+			Date eventBeginTime,
+			Date eventEndTime,
 			int acadYear, 
 			String holidays,
 			boolean editable) {
@@ -540,8 +545,14 @@ public class Session extends BaseSession implements Comparable {
         Calendar examBeginDate = Calendar.getInstance(Locale.US);
         if (examBeginTime!=null) examBeginDate.setTime(examBeginTime);
 
-        int startMonth = DateUtils.getStartMonth(sessionBeginTime, acadYear, sNrExcessDays);
-		int endMonth = DateUtils.getEndMonth(sessionEndTime, acadYear, sNrExcessDays);
+        Calendar eventBeginDate = Calendar.getInstance(Locale.US);
+        if (eventBeginDate!=null) eventBeginDate.setTime(eventBeginTime);
+
+        Calendar eventEndDate = Calendar.getInstance(Locale.US);
+        if (eventEndDate!=null) eventEndDate.setTime(eventEndTime);
+
+        int startMonth = DateUtils.getStartMonth(eventBeginTime!=null?eventBeginTime:sessionBeginTime, acadYear, sNrExcessDays);
+		int endMonth = DateUtils.getEndMonth(eventEndTime!=null?eventEndTime:sessionEndTime, acadYear, sNrExcessDays);
 		
 		for (int m = startMonth; m <= endMonth; m++) {
 			if (m != startMonth) {
@@ -558,17 +569,23 @@ public class Session extends BaseSession implements Comparable {
 				}
 				holidayArray.append("'" + getHoliday(d, m, acadYear, startMonth, holidays) + "'");
 				if (d == sessionBeginDate.get(Calendar.DAY_OF_MONTH)
-						&& m == sessionBeginDate.get(Calendar.MONTH))
+						&& (m%12) == sessionBeginDate.get(Calendar.MONTH))
 					borderArray.append("'#660000 2px solid'");
 				else if (d == sessionEndDate.get(Calendar.DAY_OF_MONTH)
-						&& m == sessionEndDate.get(Calendar.MONTH))
+						&& (m%12) == sessionEndDate.get(Calendar.MONTH))
 					borderArray.append("'#333399 2px solid'");
 				else if (d == classesEndDate.get(Calendar.DAY_OF_MONTH)
-						&& m == classesEndDate.get(Calendar.MONTH))
+						&& (m%12) == classesEndDate.get(Calendar.MONTH))
 					borderArray.append("'#339933 2px solid'");
                 else if (d == examBeginDate.get(Calendar.DAY_OF_MONTH)
-                        && m == examBeginDate.get(Calendar.MONTH))
+                        && (m%12) == examBeginDate.get(Calendar.MONTH))
                     borderArray.append("'#999933 2px solid'");
+                else if (d == eventBeginDate.get(Calendar.DAY_OF_MONTH)
+                        && (m%12) == eventBeginDate.get(Calendar.MONTH))
+                    borderArray.append("'yellow 2px solid'");
+                else if (d == eventEndDate.get(Calendar.DAY_OF_MONTH)
+                        && (m%12) == eventEndDate.get(Calendar.MONTH))
+                    borderArray.append("'red 2px solid'");
 				else
 					borderArray.append("null");
 			}

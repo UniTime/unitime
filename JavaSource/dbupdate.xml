@@ -2111,4 +2111,20 @@
 		<plsql>alter table %SCHEMA%.event_note add uname varchar2(100)</plsql>
 		<plsql>alter table %SCHEMA%.event_note add meetings varchar2(1000)</plsql>
 	</update>
+	<update version="35" date="5-Aug-2008" comment="Event phone, session dates">
+		<mysql>alter table event_contact modify phone varchar(25)</mysql>
+		<mysql>alter table sessions add event_begin_date date</mysql>
+		<mysql>update sessions set event_begin_date = adddate(session_begin_date_time,-31)</mysql>
+		<mysql>alter table sessions add constraint nn_sessions_event_begin_date check (event_begin_date is not null)</mysql>
+		<mysql>alter table sessions add event_end_date date</mysql>
+		<mysql>update sessions set event_end_date = adddate(session_end_date_time,31)</mysql>
+		<mysql>alter table sessions add constraint nn_sessions_event_end_date check (event_end_date is not null)</mysql>
+		<plsql>alter table event_contact modify phone varchar2(25)</plsql>
+		<plsql>alter table sessions add event_begin_date date</plsql>
+		<plsql>update sessions set event_begin_date = session_begin_date_time-31</plsql>
+		<plsql>alter table sessions add constraint nn_sessions_event_begin_date check (event_begin_date is not null)</plsql>
+		<plsql>alter table sessions add event_end_date date</plsql>
+		<plsql>update sessions set event_end_date = session_end_date_time+31</plsql>
+		<plsql>alter table sessions add constraint nn_sessions_event_end_date check (event_end_date is not null)</plsql>
+	</update>
 </dbupdate>

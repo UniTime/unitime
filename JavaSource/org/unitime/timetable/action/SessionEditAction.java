@@ -125,6 +125,8 @@ public class SessionEditAction extends LookupDispatchAction {
 		sessionEditForm.setSessionEnd(sdf.format(acadSession.getSessionEndDateTime()));
 		sessionEditForm.setClassesEnd(sdf.format(acadSession.getClassesEndDateTime()));
 		sessionEditForm.setExamStart(acadSession.getExamBeginDate()==null?"":sdf.format(acadSession.getExamBeginDate()));
+		sessionEditForm.setEventStart(acadSession.getEventBeginDate()==null?"":sdf.format(acadSession.getEventBeginDate()));
+		sessionEditForm.setEventEnd(acadSession.getEventEndDate()==null?"":sdf.format(acadSession.getEventEndDate()));
 		
 		for (RoomType t : RoomType.findAll()) {
 		    RoomTypeOption o = t.getOption(acadSession);
@@ -320,6 +322,8 @@ public class SessionEditAction extends LookupDispatchAction {
 		sessn.setSessionEndDateTime(sdf.parse(sessionEditForm.getSessionEnd()));
 		sessn.setClassesEndDateTime(sdf.parse(sessionEditForm.getClassesEnd()));
 		sessn.setExamBeginDate(sdf.parse(sessionEditForm.getExamStart()));
+		sessn.setEventBeginDate(sdf.parse(sessionEditForm.getEventStart()));
+		sessn.setEventEndDate(sdf.parse(sessionEditForm.getEventEnd()));
 		sessn.setHolidays(request);
 	}
 

@@ -15,11 +15,10 @@
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- * <bean:write name="eventDetailForm" property="additionalInfo"/> 
 --%>
 
 <%@ page language="java" autoFlush="true" errorPage="../error.jsp" %>
-<%@page import="org.unitime.timetable.form.EventListForm"%>
+<%@page import="org.unitime.timetable.form.MeetingListForm"%>
 <%@page import="org.unitime.timetable.webutil.WebEventTableBuilder"%>
 
 <%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
@@ -31,7 +30,7 @@
 <script language="JavaScript" type="text/javascript" src="scripts/block.js"></script>
 
 <tiles:importAttribute />
-<html:form action="/eventList">
+<html:form action="/meetingList">
 <script language="JavaScript">blToggleHeader('Filter','dispFilter');blStart('dispFilter');</script>
 <TABLE border="0" cellspacing="0" cellpadding="3" width='90%'>
 		<logic:messagesPresent>
@@ -56,7 +55,7 @@
 				<html:text property="eventNameSubstring" maxlength="50" size="50" /> 
 			<TD>
 		</TR>
-		<logic:equal name="eventListForm" property="noRole" value="false">
+		<logic:equal name="meetingListForm" property="noRole" value="false">
 		<TR>
 			<TD>Requested By: </TD>
 			<TD>
@@ -65,10 +64,16 @@
 		</TR>
 		</logic:equal>
 		<TR>
+			<TD>Location: </TD>
+			<TD>
+				<html:text property="location" maxlength="50" size="50" /> 
+			</TD> 
+		</TR>
+		<TR>
 			<TD>Sponsoring Organization: </TD>
 			<TD>
 				<html:select property="sponsoringOrganization">
-					<html:option value="-1">Select ...</html:option>
+					<html:option value="-1">All Organizations</html:option>
 					<html:optionsCollection property="sponsoringOrganizations" label="name" value="uniqueId"/>
 				</html:select>
 			</TD> 
@@ -85,19 +90,10 @@
 				border="0" id="show_event_date_to">  
 			</TD> 
 		</TR>
-		<%--
-		<TR>
-			<TD>Time: </TD>
-			<TD>
-				From: <html:text property="eventTimeFrom" maxlength="10" size="10" /> 
-				To: <html:text property="eventTimeTo" maxlength="10" size="10" />  
-			</TD> 
-		</TR>
-		--%>
 		<TR>
 			<TD valign="top">Event Type:</TD>
 			<TD>
-				<logic:iterate name="eventListForm" property="allEventTypes" id="type" indexId="typeIdx">
+				<logic:iterate name="meetingListForm" property="allEventTypes" id="type" indexId="typeIdx">
 					<html:multibox property="eventTypes">
 						<bean:write name="typeIdx"/>
 					</html:multibox>
@@ -114,6 +110,15 @@
 				</html:select>
 			<TD>
 		</TR>
+		<TR>
+			<TD>Sort By: </TD>
+			<TD>
+				<html:select property="orderBy">
+					<html:options property="orderBys"/>
+				</html:select>
+			</TD> 
+		</TR>
+		
 		<TR>
 			<TD colspan='2' align='right'>
 				<html:submit property="op" value="Search" onclick="displayLoading();"/> 
@@ -134,8 +139,8 @@
 <br>
 
 	<% 
-		EventListForm form = (EventListForm)request.getAttribute("eventListForm");
-		new WebEventTableBuilder().htmlTableForEvents(session,form,out);
+		MeetingListForm form = (MeetingListForm)request.getAttribute("meetingListForm");
+		new WebEventTableBuilder().htmlTableForMeetings(session,form,out);
 	%>
 
 	<logic:notEmpty scope="request" name="hash">

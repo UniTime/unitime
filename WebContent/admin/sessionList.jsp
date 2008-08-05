@@ -45,13 +45,14 @@
 	<table width="90%" border="0" cellspacing="0" cellpadding="3">
 		<%
 			WebTable webTable = new WebTable(
-					10, "", "sessionList.do?order=%%",					
+					12, "", "sessionList.do?order=%%",					
 					new String[] {
 						"Default", "Academic<br>Session", "Academic<br>Initiative", "Session<br>Begins",
-						"Classes<br>End", "Session<br>Ends", "Exams<br>Begins", "Date<br>Pattern", "Status", "Subject<br>Areas", "Event<br>Management" },
+						"Classes<br>End", "Session<br>Ends", "Exams<br>Begins", "Date<br>Pattern", "Status", "Subject<br>Areas", 
+						"Events<br>Begins", "Events<br>Ends", "Event<br>Management" },
 					new String[] { "center", "left", "left", "left", "left",
-						"left", "left", "left", "left", "right", "left" }, 
-					new boolean[] { true, true, true, false, false, false, true, false, true, true });
+						"left", "left", "left", "left", "right", "left", "left", "left" }, 
+					new boolean[] { true, true, true, false, false, false, true, false, true, true, true, true });
 					
 			webTable.enableHR("#EFEFEF");
 	        webTable.setRowStyle("white-space: nowrap");
@@ -86,6 +87,8 @@
 								s.getDefaultDatePattern()!=null ? s.getDefaultDatePattern().getName() : "-", 
 								s.statusDisplayString() + "&nbsp;",
 								df5.format(s.getSubjectAreas().size()),
+								(s.getEventBeginDate()==null?"N/A":df.format(s.getEventBeginDate())) + "&nbsp;",
+								(s.getEventEndDate()==null?"N/A":df.format(s.getEventEndDate())) + "&nbsp;",
 								roomTypes },
 							new Comparable[] {
 								s.getIsDefault() ? "<img src='images/tick.gif'>" : "",
@@ -98,6 +101,8 @@
 								s.getDefaultDatePattern()!=null ? s.getDefaultDatePattern().getName() : "-", 
 								s.statusDisplayString(),
 								df5.format(s.getSubjectAreas().size()),
+								s.getEventBeginDate(),
+								s.getEventEndDate(),
 								roomTypes } );
 			%>
 
