@@ -112,6 +112,9 @@
 				<html:select property="mode">
 					<html:optionsCollection property="modes" label="label" value="value"/>
 				</html:select>
+				<logic:equal name="eventListForm" property="noRole" value="false">
+					&nbsp;&nbsp;&nbsp;<html:checkbox property="dispConflicts"/> Display Conflicts
+				</logic:equal>
 			<TD>
 		</TR>
 		<TR>

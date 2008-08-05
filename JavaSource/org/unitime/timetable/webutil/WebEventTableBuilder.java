@@ -371,7 +371,7 @@ public class WebEventTableBuilder {
         table.addContent(row);
     }
     
-    private void addMeetingRowsToTable (TableStream table, MultiMeeting mm, boolean mainContact) {
+    private void addMeetingRowsToTable (TableStream table, MultiMeeting mm, boolean mainContact, boolean printOverlaps) {
         Meeting m = mm.getMeetings().first();
         TableRow row = (this.initRow(false));
         row.setOnMouseOver(this.getRowMouseOver(false, true));
@@ -395,9 +395,41 @@ public class WebEventTableBuilder {
         row.setBgColor(bgColor);
         row.setOnMouseOut(getRowMouseOut(bgColor));
         table.addContent(row);
+        if (printOverlaps) {
+            TreeSet<Meeting> overlaps = new TreeSet();
+            for (Meeting mx: mm.getMeetings()) {
+                overlaps.addAll(mx.getTimeRoomOverlaps());
+            }
+            if (!overlaps.isEmpty()) {
+                for (MultiMeeting o: Event.getMultiMeetings(overlaps))
+                    addOverlappingMeetingToTable(table, o, mainContact);
+            }
+        }
     }
     
-    private void addMeetingRowsToTable (TableStream table, Meeting m, boolean mainContact, Event lastEvent, Date now, boolean line) {
+    private void addOverlappingMeetingToTable(TableStream table, MultiMeeting mm, boolean mainContact) {
+        Meeting m = mm.getMeetings().first();
+        TableRow row = (this.initRow(false));
+        row.setOnMouseOver(this.getRowMouseOver(false, true));
+        row.setOnClick(subjectOnClickAction(m.getEvent().getUniqueId()));
+        TableCell cell = this.initCell(true, null, 1, true);
+        cell.addContent("&nbsp;&nbsp;&nbsp;Conflicts with "+m.getEvent().getEventName()+" ("+m.getEvent().getEventTypeAbbv()+")");
+        row.addContent(cell);
+        row.addContent(mm.getMeetings().size()==1?buildDate(m):buildDate(mm));
+        row.addContent(buildTime(m));
+        row.addContent(buildLocation(m));
+        String bgColor = null;
+        if (mainContact)
+            row.addContent(mm.getMeetings().size()==1?buildApproved(m):buildApproved(mm));
+        if (mm.isPast()) {
+            row.setStyle("font-style:italic;color:gray;");
+        }        
+        row.setBgColor("#FFD7D7");
+        row.setOnMouseOut(getRowMouseOut("#FFD7D7"));
+        table.addContent(row);
+    }
+    
+    private void addMeetingRowsToTable (TableStream table, Meeting m, boolean mainContact, Event lastEvent, Date now, boolean line, boolean printOverlaps) {
         TableRow row = (this.initRow(false));
         row.setOnMouseOver(this.getRowMouseOver(false, true));
         row.setOnClick(subjectOnClickAction(m.getEvent().getUniqueId()));
@@ -444,13 +476,54 @@ public class WebEventTableBuilder {
                 ((TableCell)i.next()).setStyle("border-top: gray 1px solid;");
         }
         table.addContent(row);
+        if (printOverlaps) {
+            TreeSet<Meeting> overlaps = new TreeSet(m.getTimeRoomOverlaps());
+            if (!overlaps.isEmpty()) {
+                for (Meeting o: overlaps)
+                    addOverlappingMeetingToTable(table, o, mainContact, now);
+            }
+        }
     }
     
+    private void addOverlappingMeetingToTable(TableStream table, Meeting m, boolean mainContact, Date now) {
+        TableRow row = (this.initRow(false));
+        row.setOnMouseOver(this.getRowMouseOver(false, true));
+        row.setOnClick(subjectOnClickAction(m.getEvent().getUniqueId()));
+        TableCell cell = this.initCell(true, null, 1, true);        
+        cell.addContent("&nbsp;&nbsp;&nbsp;Conflicts with "+(m.getEvent().getEventName()==null?"":m.getEvent().getEventName()));
+        this.endCell(cell, true);
+        row.addContent(cell);
+        row.addContent(buildEventTypeAbbv(m.getEvent()));
+        row.addContent(buildEventCapacity(m.getEvent()));
+        row.addContent(buildSponsoringOrg(m.getEvent()));
+        row.addContent(buildDate(m));
+        row.addContent(buildTime(m));
+        row.addContent(buildLocation(m));
+        if (mainContact) {
+            row.addContent(buildMainContactName(m.getEvent()));
+            row.addContent(buildApproved(m));
+        }
+        if (m.getStartTime().before(now)) {
+            row.setStyle("font-style:italic;color:gray;");
+        }
+        row.setBgColor("#FFD7D7");
+        row.setOnMouseOut(getRowMouseOut("#FFD7D7"));
+        table.addContent(row);
+    }    
+    
     public void htmlTableForEvents (HttpSession httpSession, EventListForm form, JspWriter outputStream){
-
+        boolean conf = (form.getMode()==EventListForm.sModeAllConflictingEvents);
+        
         ArrayList eventIds = new ArrayList();
         
         String query = "select distinct e from Event e inner join e.meetings m where e.class in (";
+        
+        if (conf) {
+            query = "select distinct e from Event e inner join e.meetings m, Meeting mx where "+
+                    "mx.uniqueId!=m.uniqueId and m.meetingDate=mx.meetingDate and m.startPeriod < mx.stopPeriod and m.stopPeriod > mx.startPeriod and " +
+                    "m.locationPermanentId = mx.locationPermanentId and e.class in (";
+        }
+        
         for (int i=0;i<form.getEventTypes().length;i++) {
         	if (i>0) query+=",";
         	switch (form.getEventTypes()[i].intValue()) {
@@ -580,7 +653,7 @@ public class WebEventTableBuilder {
             TreeSet<MultiMeeting> meetings = event.getMultiMeetings();
             addEventsRowsToTable(eventsTable, event, form.isAdmin() || form.isEventManager(), meetings);
             for (MultiMeeting meeting : meetings) 
-                addMeetingRowsToTable(eventsTable, meeting, form.isAdmin() || form.isEventManager());
+                addMeetingRowsToTable(eventsTable, meeting, form.isAdmin() || form.isEventManager(), form.getDispConflicts());
         }
 
         eventsTable.tableComplete();
@@ -610,10 +683,18 @@ public class WebEventTableBuilder {
     }
 
     public void htmlTableForMeetings(HttpSession httpSession, MeetingListForm form, JspWriter outputStream){
-
+        boolean conf = (form.getMode()==EventListForm.sModeAllConflictingEvents);
+        
         ArrayList eventIds = new ArrayList();
         
         String query = "select m from Event e inner join e.meetings m where e.class in (";
+        
+        if (conf) {
+            query = "select m from Event e inner join e.meetings m, Meeting mx where "+
+                    "mx.uniqueId!=m.uniqueId and m.meetingDate=mx.meetingDate and m.startPeriod < mx.stopPeriod and m.stopPeriod > mx.startPeriod and " +
+                    "m.locationPermanentId = mx.locationPermanentId and e.class in (";
+        }
+        
         for (int i=0;i<form.getEventTypes().length;i++) {
             if (i>0) query+=",";
             switch (form.getEventTypes()[i].intValue()) {
@@ -774,11 +855,12 @@ public class WebEventTableBuilder {
         Event lastEvent = null;
         Date now = new Date();
         boolean line = MeetingListForm.sOrderByName.equals(form.getOrderBy());
+        
         for (Iterator it = meetings.iterator();it.hasNext();idx++){
             Meeting meeting = (Meeting) it.next();
             if (idx==500) break;
             if (eventIdsHash.add(meeting.getEvent().getUniqueId())) eventIds.add(meeting.getEvent().getUniqueId());
-            addMeetingRowsToTable(eventsTable, meeting, form.isAdmin() || form.isEventManager(), lastEvent, now, line);
+            addMeetingRowsToTable(eventsTable, meeting, form.isAdmin() || form.isEventManager(), lastEvent, now, line, form.getDispConflicts());
             lastEvent = meeting.getEvent();
         }
 
