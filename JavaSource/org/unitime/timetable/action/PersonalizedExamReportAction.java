@@ -136,6 +136,11 @@ public class PersonalizedExamReportAction extends Action {
             request.setAttribute("message", "No user id provided.");
             return mapping.findForward(back);
         }
+        if (ApplicationProperties.getProperty("tmtbl.personal.reports.externalIdFormat")!=null) {
+            try {
+                externalId = new DecimalFormat(ApplicationProperties.getProperty("tmtbl.personal.reports.externalIdFormat")).format(Long.valueOf(externalId));
+            } catch (NumberFormatException e) {}
+        }
         
         if ("Log Out".equals(myForm.getOp())) {
             sLog.info("Logging out user "+user.getName()+", forwarding to main page.");
@@ -201,7 +206,7 @@ public class PersonalizedExamReportAction extends Action {
                 request.setAttribute("message", "No examinations found.");
             else
                 request.setAttribute("message", "No schedule found.");
-            sLog.info("No matching instructor or student found, forwarding back.");
+            sLog.info("No matching instructor or student found for "+user.getName()+" ("+externalId+"), forwarding back ("+back+").");
             return mapping.findForward(back);
         }
         
