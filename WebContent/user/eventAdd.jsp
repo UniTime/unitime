@@ -59,8 +59,8 @@
 						title="Show Scheduled Events (Alt+S)" value="Show Scheduled Events"/> -->
 					<html:submit property="op" styleClass="btn" accesskey="A" 
 						title="Show Location Availability (Alt+A)" value="Show Availability"/>
-	<!--  			<html:submit property="op" styleClass="btn" accesskey="B"
-						title="Back (Alt+B)" value="Back"/> -->	
+		 			<html:submit property="op" styleClass="btn" accesskey="B"
+						title="Back (Alt+B)" value="Back"/> 
 				</tt:section-header>
 			</TD>
 		</TR>
@@ -390,8 +390,8 @@
 					title="Show Scheduled Events (Alt+S)" value="Show Scheduled Events"/> -->
 				<html:submit property="op" styleClass="btn" accesskey="A" 
 					title="Show Location Availability (Alt+A)" value="Show Availability"/>
-<!--  			<html:submit property="op" styleClass="btn" accesskey="B"
-				title="Back to List of Events (Alt+B)" value="Back"/> -->
+	  			<html:submit property="op" styleClass="btn" accesskey="B"
+				title="Back to List of Events (Alt+B)" value="Back"/>
 		</TD>
 	</TR>
 
