@@ -46,10 +46,13 @@ public class EventEmail {
         iNote = note;
     }
     
-    public String send(HttpServletRequest request) {
+    public void send(HttpServletRequest request) {
+        String subject = null;
         try {
-            if (!"true".equals(ApplicationProperties.getProperty("tmtbl.event.confirmationEmail","true")))
-                return "Conformation emails are disabled.";
+            if (!"true".equals(ApplicationProperties.getProperty("tmtbl.event.confirmationEmail","true"))) {
+                request.getSession().setAttribute(Constants.REQUEST_MSSG, "Confirmation emails are disabled.");
+                return;
+            }
             
             InternetAddress from = 
                         new InternetAddress(
@@ -77,28 +80,29 @@ public class EventEmail {
             
             switch (iAction) {
             case sActionCreate : 
-                mail.setSubject("Event "+iEvent.getEventName()+" created.");
+                subject = "Event "+iEvent.getEventName()+" created.";
                 break;
             case sActionApprove :
-                mail.setSubject("Event "+iEvent.getEventName()+" approved.");
+                subject = "Event "+iEvent.getEventName()+" approved.";
                 break;
             case sActionReject :
-                mail.setSubject("Event "+iEvent.getEventName()+" rejected.");
+                subject = "Event "+iEvent.getEventName()+" rejected.";
                 break;
             case sActionUpdate :
-                mail.setSubject("Event "+iEvent.getEventName()+" updated.");
+                subject = "Event "+iEvent.getEventName()+" updated.";
                 break;
             case sActionAddMeeting :
-                mail.setSubject("Event "+iEvent.getEventName()+" updated (one or more meetings added).");
+                subject = "Event "+iEvent.getEventName()+" updated (one or more meetings added).";
                 break;
             case sActionDelete : 
-                mail.setSubject("Event "+iEvent.getEventName()+" updated (one or more meetings deleted).");
+                subject = "Event "+iEvent.getEventName()+" updated (one or more meetings deleted).";
                 break;
             }
+            mail.setSubject(subject);
 
             String message = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">";
             message += "<html><head>";
-            message += "<title>"+mail.getSubject()+"</title>";
+            message += "<title>"+subject+"</title>";
             message += "<meta http-equiv='Content-Type' content='text/html; charset=windows-1250'>";
             message += "<meta name='Author' content='UniTime LLC'>";
             message += "<style type='text/css'>";
@@ -246,26 +250,34 @@ public class EventEmail {
             MimeBodyPart text = new MimeBodyPart(); text.setContent(message, "text/html");
             Multipart body = new MimeMultipart(); body.addBodyPart(text);
             
-            if (iEvent.getMainContact()!=null && iEvent.getMainContact().getEmailAddress()!=null)
-                mail.addRecipient(RecipientType.TO, new InternetAddress(iEvent.getMainContact().getEmailAddress()));
+            String to = "";
+            if (iEvent.getMainContact()!=null && iEvent.getMainContact().getEmailAddress()!=null) {
+                mail.addRecipient(RecipientType.TO, new InternetAddress(iEvent.getMainContact().getEmailAddress(),iEvent.getMainContact().getName()));
+                to = "<a href='mailto:"+iEvent.getMainContact().getEmailAddress()+"'>"+iEvent.getMainContact().getShortName()+"</a>";
+            }
             if (iEvent.getEmail()!=null && iEvent.getEmail().length()>0) {
                 for (StringTokenizer stk = new StringTokenizer(iEvent.getEmail(),";:,\n\r\t");stk.hasMoreTokens();) {
-                    mail.addRecipient(RecipientType.CC, new InternetAddress(stk.nextToken()));
+                    String email = stk.nextToken();
+                    mail.addRecipient(RecipientType.CC, new InternetAddress(email));
+                    if (to.length()>0) to+=", ";
+                    to += email;
                 }
             }
             if (iEvent.getSponsoringOrganization()!=null && iEvent.getSponsoringOrganization().getEmail()!=null && iEvent.getSponsoringOrganization().getEmail().length()>0) {
-                mail.addRecipient(RecipientType.TO, new InternetAddress(iEvent.getSponsoringOrganization().getEmail()));
+                mail.addRecipient(RecipientType.TO, new InternetAddress(iEvent.getSponsoringOrganization().getEmail(),iEvent.getSponsoringOrganization().getName()));
+                if (to.length()>0) to+=", ";
+                to += "<a href='mailto:"+iEvent.getSponsoringOrganization().getEmail()+"'>"+iEvent.getSponsoringOrganization().getName()+"</a>";
             }
             
             mail.setSentDate(new Date());
             mail.setContent(body);
             
-            Transport.send(mail);            
+            Transport.send(mail);
             
-            return null;
+            request.getSession().setAttribute(Constants.REQUEST_MSSG, subject+" Confirmation email sent to "+to+".");
         } catch (Exception e) {
             sLog.error(e.getMessage(),e);
-            return "Unable to send conformation email, reason: "+e.getMessage();
+            request.getSession().setAttribute(Constants.REQUEST_WARN, (subject==null?"":subject+" ")+"Unable to send confirmation email, reason: "+e.getMessage());
         }
     }
 }
