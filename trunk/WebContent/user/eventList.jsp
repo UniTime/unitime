@@ -68,7 +68,7 @@
 			<TD>Sponsoring Organization: </TD>
 			<TD>
 				<html:select property="sponsoringOrganization">
-					<html:option value="-1">Select ...</html:option>
+					<html:option value="-1">All Organizations</html:option>
 					<html:optionsCollection property="sponsoringOrganizations" label="name" value="uniqueId"/>
 				</html:select>
 			</TD> 
