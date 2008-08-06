@@ -7,10 +7,10 @@ import java.util.TreeSet;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.PropertyConfigurator;
-import org.hibernate.Transaction;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.ExamPeriodPref;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.Session;
@@ -26,9 +26,11 @@ public class ExamResetRoomPrefs {
             for (Iterator j=exam.getPreferences().iterator();j.hasNext();) {
                 Preference p = (Preference)j.next();
                 if (p instanceof RoomPref) { j.remove(); }
+                else if (p instanceof ExamPeriodPref) { j.remove(); }
             }
             exam.generateDefaultPreferences(true);
             hibSession.saveOrUpdate(exam);
+            hibSession.flush();
         }
     }
 
@@ -62,18 +64,8 @@ public class ExamResetRoomPrefs {
             
             int examType = (ApplicationProperties.getProperty("type","final").equalsIgnoreCase("final")?Exam.sExamTypeFinal:Exam.sExamTypeMidterm);
             
-            org.hibernate.Session hibSession = new _RootDAO().getSession();
-            Transaction tx = null;
-            try {
-                tx = hibSession.beginTransaction();
-                
-                doUpdate(session.getUniqueId(), examType, hibSession);
-                
-                tx.commit();
-            } catch (Exception e) {
-                if (tx!=null) tx.rollback();
-                throw e;
-            }
+            doUpdate(session.getUniqueId(), examType, new _RootDAO().getSession());
+
         } catch (Exception e) {
             e.printStackTrace();
         }
