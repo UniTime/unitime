@@ -124,7 +124,9 @@
 		
 		<TR>
 			<TD colspan='2' align='right'>
-				<html:submit property="op" value="Search" onclick="displayLoading();"/> 
+				<html:submit property="op" value="Search" onclick="displayLoading();"/>
+				&nbsp; 
+				<html:submit property="op" value="Export PDF" onclick="displayLoading();"/> 
 				&nbsp; 
 				<html:submit property="op" value="Add Event"/>
 			</TD>
