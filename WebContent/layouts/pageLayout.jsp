@@ -107,11 +107,23 @@ String serverPath = request.getScheme()+"://"+request.getServerName()+":"+reques
 				<%=request.getAttribute(Constants.REQUEST_WARN)%>
 		</td></tr></table>
 	<% } %>
+	<% if (session.getAttribute(Constants.REQUEST_WARN)!=null) { %>
+		<table width='100%' border='0' cellpadding='3' cellspacing='0'><tr><td class="reqWarn" width='5'>&nbsp;</td><td class="reqWarn" >
+				<%=session.getAttribute(Constants.REQUEST_WARN)%>
+		</td></tr></table>
+	<% session.removeAttribute(Constants.REQUEST_WARN);
+	   } %>
 	<% if (request.getAttribute(Constants.REQUEST_MSSG)!=null) { %>
 		<table width='100%' border='0' cellpadding='3' cellspacing='0'><tr><td class="reqMsg" width='5'>&nbsp;</td><td class="reqMsg" >
 				<%=request.getAttribute(Constants.REQUEST_MSSG)%>
 		</td></tr></table>
 	<% } %>
+	<% if (session.getAttribute(Constants.REQUEST_MSSG)!=null) { %>
+		<table width='100%' border='0' cellpadding='3' cellspacing='0'><tr><td class="reqMsg" width='5'>&nbsp;</td><td class="reqMsg" >
+				<%=session.getAttribute(Constants.REQUEST_MSSG)%>
+		</td></tr></table>
+	<% session.removeAttribute(Constants.REQUEST_MSSG);
+	   } %>
 	<tiles:importAttribute name="showSolverWarnings" scope="request"/>
 	<logic:equal name="showSolverWarnings" value="true">
 		<tt:solver-warnings/>
