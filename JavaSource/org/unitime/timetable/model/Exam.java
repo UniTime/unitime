@@ -1019,7 +1019,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 if (event==null) continue;
                 for (Iterator j=event.getMeetings().iterator();j.hasNext();) {
                     Meeting meeting = (Meeting)j.next();
-                    if (meeting.getLocation().isExamEnabled(getExamType())) locations.add(meeting.getLocation());
+                    if (meeting.getLocation()!=null && meeting.getLocation().isExamEnabled(getExamType())) locations.add(meeting.getLocation());
                 }
             }
             if (!locations.isEmpty()) {
