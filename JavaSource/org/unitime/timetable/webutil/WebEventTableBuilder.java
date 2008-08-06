@@ -413,7 +413,7 @@ public class WebEventTableBuilder {
         row.setOnMouseOver(this.getRowMouseOver(false, true));
         row.setOnClick(subjectOnClickAction(m.getEvent().getUniqueId()));
         TableCell cell = this.initCell(true, null, 1, true);
-        cell.addContent("&nbsp;&nbsp;&nbsp;Conflicts with "+m.getEvent().getEventName()+" ("+m.getEvent().getEventTypeAbbv()+")");
+        cell.addContent("&nbsp;&nbsp;&nbsp;Conf/w "+m.getEvent().getEventName()+" ("+m.getEvent().getEventTypeAbbv()+")");
         row.addContent(cell);
         row.addContent(mm.getMeetings().size()==1?buildDate(m):buildDate(mm));
         row.addContent(buildTime(m));
@@ -489,11 +489,11 @@ public class WebEventTableBuilder {
         TableRow row = (this.initRow(false));
         row.setOnMouseOver(this.getRowMouseOver(false, true));
         row.setOnClick(subjectOnClickAction(m.getEvent().getUniqueId()));
-        TableCell cell = this.initCell(true, null, 1, true);        
-        cell.addContent("&nbsp;&nbsp;&nbsp;Conflicts with "+(m.getEvent().getEventName()==null?"":m.getEvent().getEventName()));
+        TableCell cell = this.initCell(true, null, 2, true);        
+        cell.addContent("&nbsp;&nbsp;&nbsp;Conf/w "+(m.getEvent().getEventName()==null?"":m.getEvent().getEventName())+" ("+m.getEvent().getEventTypeAbbv()+")");
         this.endCell(cell, true);
         row.addContent(cell);
-        row.addContent(buildEventTypeAbbv(m.getEvent()));
+        //row.addContent(buildEventTypeAbbv(m.getEvent()));
         row.addContent(buildEventCapacity(m.getEvent()));
         row.addContent(buildSponsoringOrg(m.getEvent()));
         row.addContent(buildDate(m));
@@ -509,12 +509,11 @@ public class WebEventTableBuilder {
         row.setBgColor("#FFD7D7");
         row.setOnMouseOut(getRowMouseOut("#FFD7D7"));
         table.addContent(row);
-    }    
+    }
     
-    public void htmlTableForEvents (HttpSession httpSession, EventListForm form, JspWriter outputStream){
+    protected List loadEvents(EventListForm form) {
         boolean conf = (form.getMode()==EventListForm.sModeAllConflictingEvents);
         
-        ArrayList eventIds = new ArrayList();
         
         String query = "select distinct e from Event e inner join e.meetings m where e.class in (";
         
@@ -525,35 +524,35 @@ public class WebEventTableBuilder {
         }
         
         for (int i=0;i<form.getEventTypes().length;i++) {
-        	if (i>0) query+=",";
-        	switch (form.getEventTypes()[i].intValue()) {
-        	case Event.sEventTypeClass : query += "ClassEvent"; break;
-        	case Event.sEventTypeFinalExam : query += "FinalExamEvent"; break;
-        	case Event.sEventTypeMidtermExam : query += "MidtermExamEvent"; break;
-        	case Event.sEventTypeCourse : query += "CourseEvent"; break;
-        	case Event.sEventTypeSpecial : query += "SpecialEvent"; break;
-        	}
-        	//query += form.getEventTypes()[i];
+            if (i>0) query+=",";
+            switch (form.getEventTypes()[i].intValue()) {
+            case Event.sEventTypeClass : query += "ClassEvent"; break;
+            case Event.sEventTypeFinalExam : query += "FinalExamEvent"; break;
+            case Event.sEventTypeMidtermExam : query += "MidtermExamEvent"; break;
+            case Event.sEventTypeCourse : query += "CourseEvent"; break;
+            case Event.sEventTypeSpecial : query += "SpecialEvent"; break;
+            }
+            //query += form.getEventTypes()[i];
         }
         query += ")";
         
         if (form.getEventNameSubstring()!=null && form.getEventNameSubstring().trim().length()>0) {
-        	query += " and upper(e.eventName) like :eventNameSubstring";
+            query += " and upper(e.eventName) like :eventNameSubstring";
         }
         
         if (form.getEventDateFrom()!=null && form.getEventDateFrom().trim().length()>0) {
-        	query += " and m.meetingDate>=:eventDateFrom";
+            query += " and m.meetingDate>=:eventDateFrom";
         }
         
         if (form.getEventDateTo()!=null && form.getEventDateTo().trim().length()>0) {
-        	query += " and m.meetingDate<=:eventDateTo";
+            query += " and m.meetingDate<=:eventDateTo";
         }
                 
         if (form.getEventMainContactSubstring()!=null && form.getEventMainContactSubstring().trim().length()>0) {
-        	for (StringTokenizer s=new StringTokenizer(form.getEventMainContactSubstring().trim(),", ");s.hasMoreTokens();) {
-        		String token = s.nextToken();
-        		query += " and (e.mainContact.firstName like '%"+token+"%' or e.mainContact.middleName like '%"+token+"%' or e.mainContact.lastName like '%"+token+"%')";
-        	}
+            for (StringTokenizer s=new StringTokenizer(form.getEventMainContactSubstring().trim(),", ");s.hasMoreTokens();) {
+                String token = s.nextToken();
+                query += " and (e.mainContact.firstName like '%"+token+"%' or e.mainContact.middleName like '%"+token+"%' or e.mainContact.lastName like '%"+token+"%')";
+            }
         }
         
         switch (form.getMode()) {
@@ -582,23 +581,23 @@ public class WebEventTableBuilder {
         Query hibQuery = new EventDAO().getSession().createQuery(query);
         
         if (form.getEventNameSubstring()!=null && form.getEventNameSubstring().trim().length()>0) {
-        	hibQuery.setString("eventNameSubstring", "%"+form.getEventNameSubstring().toUpperCase().trim()+"%");
+            hibQuery.setString("eventNameSubstring", "%"+form.getEventNameSubstring().toUpperCase().trim()+"%");
         }
         
         if (form.getEventDateFrom()!=null && form.getEventDateFrom().trim().length()>0) {
-        	try {
-        		hibQuery.setDate("eventDateFrom", new SimpleDateFormat("MM/dd/yyyy").parse(form.getEventDateFrom()));
-        	} catch (ParseException ex) {
-        		hibQuery.setDate("eventDateFrom", new Date());
-        	}
+            try {
+                hibQuery.setDate("eventDateFrom", new SimpleDateFormat("MM/dd/yyyy").parse(form.getEventDateFrom()));
+            } catch (ParseException ex) {
+                hibQuery.setDate("eventDateFrom", new Date());
+            }
         }
         
         if (form.getEventDateTo()!=null && form.getEventDateTo().trim().length()>0) {
-        	try {
-        		hibQuery.setDate("eventDateTo", new SimpleDateFormat("MM/dd/yyyy").parse(form.getEventDateTo()));
-        	} catch (ParseException ex) {
-        		hibQuery.setDate("eventDateTo", new Date());
-        	}
+            try {
+                hibQuery.setDate("eventDateTo", new SimpleDateFormat("MM/dd/yyyy").parse(form.getEventDateTo()));
+            } catch (ParseException ex) {
+                hibQuery.setDate("eventDateTo", new Date());
+            }
         }
         
         if (form.getSponsoringOrganization()!=null && form.getSponsoringOrganization()>=0) {
@@ -615,7 +614,11 @@ public class WebEventTableBuilder {
                 break;
         }
         
-        List events = hibQuery.setCacheable(true).list();
+        return hibQuery.setCacheable(true).list();        
+    }
+    
+    public void htmlTableForEvents (HttpSession httpSession, EventListForm form, JspWriter outputStream){
+        List events = loadEvents(form);
         int numberOfEvents = events.size();
         
         TableStream eventsTable = this.initTable(outputStream);
@@ -636,6 +639,7 @@ public class WebEventTableBuilder {
         	eventsTable.addContent(row);
         } else buildTableHeader(eventsTable, form.isAdmin() || form.isEventManager());
 
+        ArrayList eventIds = new ArrayList();
         int idx = 0;
         for (Iterator it = events.iterator();it.hasNext();idx++){
             Event event = (Event) it.next();
@@ -660,7 +664,7 @@ public class WebEventTableBuilder {
         Navigation.set(httpSession, Navigation.sInstructionalOfferingLevel, eventIds);
     }
     
-    public boolean match(String filter, String name) {
+    protected boolean match(String filter, String name) {
         if (filter==null || filter.trim().length()==0) return true;
         String n = (name==null?"":name).toUpperCase();
         StringTokenizer stk1 = new StringTokenizer(filter.toUpperCase(),";");
@@ -681,11 +685,9 @@ public class WebEventTableBuilder {
         }
         return false;
     }
-
-    public void htmlTableForMeetings(HttpSession httpSession, MeetingListForm form, JspWriter outputStream){
+    
+    protected List<Meeting> loadMeetings(MeetingListForm form) {
         boolean conf = (form.getMode()==EventListForm.sModeAllConflictingEvents);
-        
-        ArrayList eventIds = new ArrayList();
         
         String query = "select m from Event e inner join e.meetings m where e.class in (";
         
@@ -799,7 +801,7 @@ public class WebEventTableBuilder {
                 }
             }
         }
-        int numberOfMeetings = meetings.size();
+
         Comparator<Meeting> cmp = null;
         if (MeetingListForm.sOrderByName.equals(form.getOrderBy())) {
             cmp = new Comparator<Meeting>() {
@@ -821,7 +823,7 @@ public class WebEventTableBuilder {
                     return m1.compareTo(m2);
                 }
             };
-        } else if (MeetingListForm.sOrderByLocation.equals(form.getOrderBy())) {
+        } else if (MeetingListForm.sOrderByTime.equals(form.getOrderBy())) {
             cmp = new Comparator<Meeting>() {
                 public int compare(Meeting m1, Meeting m2) {
                     return m1.compareTo(m2);
@@ -830,13 +832,20 @@ public class WebEventTableBuilder {
         }
 
         if (cmp!=null)
-            Collections.sort(meetings,cmp); 
+            Collections.sort(meetings,cmp);
+        
+        return meetings;
+    }
+
+    public void htmlTableForMeetings(HttpSession httpSession, MeetingListForm form, JspWriter outputStream){
+        List meetings = loadMeetings(form);
+        int numberOfMeetings = meetings.size();
         
         TableStream eventsTable = this.initTable(outputStream);
         if (numberOfMeetings>100 && form.getMode()!=EventListForm.sModeEvents4Approval) {
             TableRow row = new TableRow();
             TableCell cell = initCell(true, null, 5, false);
-            cell.addContent("Warning: There are more than 500 meetings matching your search criteria. Only the first 500 meetings are displayed. Please, redefine the search criteria in your filter.");
+            cell.addContent("Warning: There are more than 100 meetings matching your search criteria. Only the first 100 meetings are displayed. Please, redefine the search criteria in your filter.");
             cell.setStyle("padding-bottom:10px;color:red;font-weight:bold;");
             row.addContent(cell);
             eventsTable.addContent(row);
@@ -855,10 +864,11 @@ public class WebEventTableBuilder {
         Event lastEvent = null;
         Date now = new Date();
         boolean line = MeetingListForm.sOrderByName.equals(form.getOrderBy());
+        ArrayList eventIds = new ArrayList();
         
         for (Iterator it = meetings.iterator();it.hasNext();idx++){
             Meeting meeting = (Meeting) it.next();
-            if (idx==500) break;
+            if (idx==100) break;
             if (eventIdsHash.add(meeting.getEvent().getUniqueId())) eventIds.add(meeting.getEvent().getUniqueId());
             addMeetingRowsToTable(eventsTable, meeting, form.isAdmin() || form.isEventManager(), lastEvent, now, line, form.getDispConflicts());
             lastEvent = meeting.getEvent();
