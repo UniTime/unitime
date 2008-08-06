@@ -84,4 +84,9 @@ public class EventContact extends BaseEventContact {
         return sb.toString();
     }
 
+    public String getName() {
+        return ((getLastName() == null ? "" : getLastName().trim()) + ", "+ 
+                (getFirstName() == null ? "" : getFirstName().trim()) + " "+
+                (getMiddleName() == null ? "" : getMiddleName().trim()));
+    }
 }
