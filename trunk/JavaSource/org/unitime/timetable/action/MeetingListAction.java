@@ -20,6 +20,8 @@
 
 package org.unitime.timetable.action;
 
+import java.io.File;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -32,7 +34,9 @@ import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.MeetingListForm;
 import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.BackTracker;
+import org.unitime.timetable.webutil.pdf.PdfEventTableBuilder;
 
 /**
  * @author Tomas Muller
@@ -53,7 +57,7 @@ public class MeetingListAction extends Action {
 
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
 
-        if ("Search".equals(op)) {
+        if ("Search".equals(op) || "Export PDF".equals(op)) {
         	ActionMessages errors = myForm.validate(mapping, request);
         	if (!errors.isEmpty()) saveErrors(request, errors);
         	else myForm.save(request.getSession());
@@ -63,6 +67,11 @@ public class MeetingListAction extends Action {
             return mapping.findForward("addEvent");
         }
         
+        if ("Export PDF".equals(op)) {
+            File pdfFile = new PdfEventTableBuilder().pdfTableForMeetings(myForm);
+            if (pdfFile!=null) request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+pdfFile.getName());
+        }
+
         if (request.getParameter("backId")!=null)
             request.setAttribute("hash", request.getParameter("backId"));
 
