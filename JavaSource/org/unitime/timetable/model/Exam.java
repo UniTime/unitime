@@ -963,11 +963,11 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         if (getPreferences()==null) setPreferences(new HashSet());
         
         //Prefer overlapping period for evening classes
-        PreferenceLevel midtermPref = PreferenceLevel.getPreferenceLevel(ApplicationProperties.getProperty(
+        PreferenceLevel eveningPref = PreferenceLevel.getPreferenceLevel(ApplicationProperties.getProperty(
                 "tmtbl.exam.defaultPrefs."+(getExamType()==Exam.sExamTypeMidterm?"midterm":"final")+".eveningClasses.pref",
                 (getExamType()==Exam.sExamTypeMidterm?PreferenceLevel.sNeutral:PreferenceLevel.sRequired)));
-        if (!PreferenceLevel.sNeutral.equals(midtermPref.getPrefProlog()) && (override || getPreferences(ExamPeriodPref.class).isEmpty())) {
-            int firstMidtermPeriod = Integer.parseInt(ApplicationProperties.getProperty(
+        if (!PreferenceLevel.sNeutral.equals(eveningPref.getPrefProlog()) && (override || getPreferences(ExamPeriodPref.class).isEmpty())) {
+            int firstEveningPeriod = Integer.parseInt(ApplicationProperties.getProperty(
                     "tmtbl.exam.defaultPrefs."+(getExamType()==Exam.sExamTypeMidterm?"midterm":"final")+".eveningClasses.firstEveningPeriod","216")); //6pm
             HashSet<ExamPeriod> periods = new HashSet();
             for (Iterator i=getOwners().iterator();i.hasNext();) {
@@ -977,11 +977,15 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 if (event==null) continue;
                 for (Iterator j=event.getMeetings().iterator();j.hasNext();) {
                     Meeting meeting = (Meeting)j.next();
-                    if (meeting.getStartPeriod()<firstMidtermPeriod) continue;
+                    if (meeting.getStopPeriod()<=firstEveningPeriod) continue;
+                    ExamPeriod lastPeriod = null;
                     for (Iterator k=allPeriods.iterator();k.hasNext();) {
                         ExamPeriod period = (ExamPeriod)k.next();
-                        if (period.weakOverlap(meeting)) periods.add(period);
+                        if (period.getDayOfWeek()!=meeting.getDayOfWeek()) continue;
+                        if (lastPeriod==null || lastPeriod.getStartSlot()<period.getStartSlot())
+                            lastPeriod = period;
                     }
+                    if (lastPeriod!=null) periods.add(lastPeriod);
                 }
             }
             if (!periods.isEmpty()) {
@@ -989,8 +993,8 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                     ExamPeriodPref pref = (ExamPeriodPref)i.next();
                     if (periods.contains(pref.getExamPeriod())) {
                         periods.remove(pref.getExamPeriod());
-                        if (!pref.getPrefLevel().equals(midtermPref)) {
-                            pref.setPrefLevel(midtermPref);
+                        if (!pref.getPrefLevel().equals(eveningPref)) {
+                            pref.setPrefLevel(eveningPref);
                         }
                     } else {
                         getPreferences().remove(pref);
@@ -998,7 +1002,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 }
                 for (ExamPeriod period : periods) {
                     ExamPeriodPref pref = new ExamPeriodPref();
-                    pref.setPrefLevel(midtermPref);
+                    pref.setPrefLevel(eveningPref);
                     pref.setOwner(this);
                     pref.setExamPeriod(period);
                     getPreferences().add(pref);
