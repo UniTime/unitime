@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.model;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -39,6 +40,7 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.base.BaseExam;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.ExamDAO;
+import org.unitime.timetable.model.dao.ExamEventDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
@@ -509,6 +511,11 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                     "i.uniqueId=:instructorId and (xi.uniqueId=i.uniqueId or ("+
                     "i.externalUniqueId is not null and i.externalUniqueId=xi.externalUniqueId))").
                     setLong("instructorId", id).setCacheable(true).list();
+        } else if ("ExamEvent".equals(type)) {
+            List ret = new ArrayList();
+            ExamEvent event = new ExamEventDAO().get(id);
+            if (event!=null && event.getExam()!=null) ret.add(event.getExam());
+            return ret;
         } else throw new RuntimeException("Unsupported type "+type);
     }
     
