@@ -19,9 +19,12 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.unitime.commons.User;
+import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.EventNote;
+import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Event.MultiMeeting;
 import org.unitime.timetable.util.Constants;
 
@@ -49,34 +52,10 @@ public class EventEmail {
     public void send(HttpServletRequest request) {
         String subject = null;
         try {
-            if (!"true".equals(ApplicationProperties.getProperty("tmtbl.event.confirmationEmail","true"))) {
-                request.getSession().setAttribute(Constants.REQUEST_MSSG, "Confirmation emails are disabled.");
-                return;
+            User user = Web.getUser(request.getSession());
+            if (Roles.ADMIN_ROLE.equals(user.getRole()) || Roles.EVENT_MGR_ROLE.endsWith(user.getRole())) {
+                if (iAction!=sActionReject && iAction!=sActionApprove) return;
             }
-            
-            InternetAddress from = 
-                        new InternetAddress(
-                                ApplicationProperties.getProperty("tmtbl.inquiry.sender",ApplicationProperties.getProperty("tmtbl.contact.email")),
-                                ApplicationProperties.getProperty("tmtbl.inquiry.sender.name"));
-            Properties p = ApplicationProperties.getProperties();
-            if (p.getProperty("mail.smtp.host")==null && p.getProperty("tmtbl.smtp.host")!=null)
-                p.setProperty("mail.smtp.host", p.getProperty("tmtbl.smtp.host"));
-            
-            Authenticator a = null;
-            if (ApplicationProperties.getProperty("tmtbl.mail.user")!=null && ApplicationProperties.getProperty("tmtbl.mail.pwd")!=null) {
-                p.setProperty("mail.smtp.user", ApplicationProperties.getProperty("tmtbl.mail.user"));
-                p.setProperty("mail.smtp.auth", "true");
-                a = new Authenticator() {
-                    public PasswordAuthentication getPasswordAuthentication() {
-                        return new PasswordAuthentication(
-                                ApplicationProperties.getProperty("tmtbl.mail.user"),
-                                ApplicationProperties.getProperty("tmtbl.mail.pwd"));
-                    }
-                };
-            }
-            javax.mail.Session mailSession = javax.mail.Session.getDefaultInstance(p, a);
-            MimeMessage mail = new MimeMessage(mailSession);
-            mail.setFrom(from);
             
             switch (iAction) {
             case sActionCreate : 
@@ -98,8 +77,12 @@ public class EventEmail {
                 subject = "Event "+iEvent.getEventName()+" updated (one or more meetings deleted).";
                 break;
             }
-            mail.setSubject(subject);
 
+            if (!"true".equals(ApplicationProperties.getProperty("tmtbl.event.confirmationEmail","true"))) {
+                request.getSession().setAttribute(Constants.REQUEST_MSSG, "Confirmation emails are disabled.");
+                return;
+            }
+            
             String message = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">";
             message += "<html><head>";
             message += "<title>"+subject+"</title>";
@@ -247,6 +230,32 @@ public class EventEmail {
             message += " (Univesity Timetabling Application, http://www.unitime.org).";
             message += "</td></tr></table>";
             
+            Properties p = ApplicationProperties.getProperties();
+            if (p.getProperty("mail.smtp.host")==null && p.getProperty("tmtbl.smtp.host")!=null)
+                p.setProperty("mail.smtp.host", p.getProperty("tmtbl.smtp.host"));
+            
+            Authenticator a = null;
+            if (ApplicationProperties.getProperty("tmtbl.mail.user")!=null && ApplicationProperties.getProperty("tmtbl.mail.pwd")!=null) {
+                p.setProperty("mail.smtp.user", ApplicationProperties.getProperty("tmtbl.mail.user"));
+                p.setProperty("mail.smtp.auth", "true");
+                a = new Authenticator() {
+                    public PasswordAuthentication getPasswordAuthentication() {
+                        return new PasswordAuthentication(
+                                ApplicationProperties.getProperty("tmtbl.mail.user"),
+                                ApplicationProperties.getProperty("tmtbl.mail.pwd"));
+                    }
+                };
+            }
+            javax.mail.Session mailSession = javax.mail.Session.getDefaultInstance(p, a);
+            MimeMessage mail = new MimeMessage(mailSession);
+            mail.setSubject(subject);
+            
+            InternetAddress from = 
+                new InternetAddress(
+                        ApplicationProperties.getProperty("tmtbl.inquiry.sender",ApplicationProperties.getProperty("tmtbl.contact.email")),
+                        ApplicationProperties.getProperty("tmtbl.inquiry.sender.name"));
+            mail.setFrom(from);
+
             MimeBodyPart text = new MimeBodyPart(); text.setContent(message, "text/html");
             Multipart body = new MimeMultipart(); body.addBodyPart(text);
             
