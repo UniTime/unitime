@@ -224,7 +224,7 @@ public class WebEventTableBuilder {
     
     private TableCell buildEventName(Event e) {
         TableCell cell = this.initCell(true, null, 1, true);    	
-        cell.addContent("<a name='A"+e.getUniqueId()+"'>"+(e.getEventName()==null?"":"<b>"+e.getEventName()+"</b>")+"</a>");
+        cell.addContent("<a name='A"+e.getUniqueId()+"'>"+(e.getEventName()==null?"&nbsp;":"<b>"+e.getEventName()+"</b>")+"</a>");
         this.endCell(cell, true);
         return (cell);
     }
@@ -267,20 +267,22 @@ public class WebEventTableBuilder {
     private TableCell buildMainContactName(Event e) {
     	TableCell cell = this.initCell(true, null, 1, true);
     	if (e.getMainContact()!=null)
-    	    cell.addContent((e.getMainContact().getLastName()==null?"":(e.getMainContact().getLastName()+", "))+
+    	    cell.addContent((e.getMainContact().getLastName()==null?"&nbsp;":(e.getMainContact().getLastName()+", "))+
     	    			(e.getMainContact().getFirstName()==null?"":e.getMainContact().getFirstName()));
+    	else
+    	    cell.addContent("&nbsp;");
     	return(cell);
     }
     
     private TableCell buildEmptyEventInfo() {
     	TableCell cell = this.initCell(true, null, 1, true);
-    	cell.addContent("");
+    	cell.addContent("&nbsp;");
     	return(cell);
     }
     
     private TableCell buildEmptyMeetingInfo() {
     	TableCell cell = this.initCell(true, null, 1, true);
-    	cell.addContent("");
+    	cell.addContent("&nbsp;");
     	return(cell);
     }
  
@@ -329,7 +331,7 @@ public class WebEventTableBuilder {
     
     private TableCell buildLocation (Meeting m) {
     	TableCell cell = this.initCell(true, null, 1, true);
-    	cell.addContent(m.getLocation()==null?"":m.getLocation().getLabel());
+    	cell.addContent(m.getLocation()==null?"&nbsp;":m.getLocation().getLabel());
     	return(cell);
     }
     
@@ -550,8 +552,8 @@ public class WebEventTableBuilder {
                 
         if (form.getEventMainContactSubstring()!=null && form.getEventMainContactSubstring().trim().length()>0) {
             for (StringTokenizer s=new StringTokenizer(form.getEventMainContactSubstring().trim(),", ");s.hasMoreTokens();) {
-                String token = s.nextToken();
-                query += " and (e.mainContact.firstName like '%"+token+"%' or e.mainContact.middleName like '%"+token+"%' or e.mainContact.lastName like '%"+token+"%')";
+                String token = s.nextToken().toUpperCase();
+                query += " and (upper(e.mainContact.firstName) like '%"+token+"%' or upper(e.mainContact.middleName) like '%"+token+"%' or upper(e.mainContact.lastName) like '%"+token+"%')";
             }
         }
         
@@ -724,8 +726,8 @@ public class WebEventTableBuilder {
                 
         if (form.getEventMainContactSubstring()!=null && form.getEventMainContactSubstring().trim().length()>0) {
             for (StringTokenizer s=new StringTokenizer(form.getEventMainContactSubstring().trim(),", ");s.hasMoreTokens();) {
-                String token = s.nextToken();
-                query += " and (e.mainContact.firstName like '%"+token+"%' or e.mainContact.middleName like '%"+token+"%' or e.mainContact.lastName like '%"+token+"%')";
+                String token = s.nextToken().toUpperCase();
+                query += " and (upper(e.mainContact.firstName) like '%"+token+"%' or upper(e.mainContact.middleName) like '%"+token+"%' or upper(e.mainContact.lastName) like '%"+token+"%')";
             }
         }
         
