@@ -93,7 +93,7 @@ public class EventListForm extends ActionForm {
 		else
 			end = CalendarUtils.getDate(iEventDateTo, df);
 		
-		if (end!=null && !start.equals(end) && !start.before(end))
+		if (end!=null && start!=null && !start.equals(end) && !start.before(end))
 			errors.add("eventDateTo", new ActionMessage("errors.generic", "Date From cannot occur after Date To"));
 
 		return errors;
