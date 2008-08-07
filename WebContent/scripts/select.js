@@ -39,7 +39,7 @@ function selectSearch(event, field) {
 	
 	//displayStatus();
 
-	// KeyCodes: 9=tab, 13=Enter
+	// KeyCodes: 9=tab, 13=Enter, 46=Delete
 	if (code == 9 || code == 13 || code == 46) {
 		matchString = "";
 		return true;
@@ -59,16 +59,68 @@ function selectSearch(event, field) {
 	
 	displayStatus();
 	
-	elementCnt  = field.length - 1;
-
-	for (i = elementCnt; i >= 0; i--) {
+	for (i = 0; i < field.options.length; i++) {
 		selectText = field.options[i].text.toLowerCase();
 		if (selectText.substr(0, matchString.length) == matchString.toLowerCase()) {
 			field.options[i].selected = true;
+			return false;
 		}
 	}
+	
+	return true;
+}
 
-	return false;
+function selectSearchTime(event, field) {
+	var code = -1;
+	
+	if (event.keyCode) code = event.keyCode;
+	else if (event.which) code = event.which;
+	
+	//displayStatus();
+
+	// KeyCodes: 9=tab, 13=Enter, 46=Delete
+	if (code == 9 || code == 13 || code == 46) {
+		matchString = "";
+		return true;
+	}
+
+	if(code > 31 && code < 127) {
+		if ( (code<=33) || (code >=38 && code<=127) ) {
+			keyVal = String.fromCharCode(code);
+			matchString = matchString + keyVal;
+			wasModified = true;
+		}
+		else {
+			wasModified = true;
+			return true;
+		}
+	}
+	
+	displayStatus();
+	
+	var pat1 = new RegExp("\\d?\\d","g");
+	var pat2 = new RegExp("[ap]","g");
+
+	var hour = pat1.exec(matchString);
+	var am = pat2.exec(matchString);
+	var min = pat1.exec(matchString);
+	
+	if (!hour) hour = 12;
+	if (!am) am = (hour<7?'p':'a'); 
+	if (!min) min = 0;
+	if (hour>23) { min = (''+hour).substr(1,1) + min; hour = (''+hour).substr(0,1); }
+	if (hour>12) { hour -= 12; am = 'p'; }
+	
+	var matchTime = hour+':'+((''+min).length<2?'0':'')+min+' '+am+'m';
+	
+	for (i = 0; i < field.options.length; i++) {
+		if (field.options[i].text == matchTime) {
+			field.options[i].selected = true;
+			return false;
+		}
+	}
+	
+	return true;
 }
 
 function checkKey(event, field) {
@@ -78,7 +130,7 @@ function checkKey(event, field) {
 	if (event.keyCode) code = event.keyCode;
 	else if (event.which) code = event.which;
 	
-	// KeyCodes: 8=BackSpace, 46=Delete
+	// KeyCodes: 8=BackSpace, 46=Delete, 9==Tab
 	if(code == 8) {
 		if(matchString.length >= 1) {
 			matchString = matchString.substr(0, (matchString.length - 1));
@@ -112,6 +164,5 @@ function isModified() {
 }
 
 function displayStatus() {
-
 	window.status = 'Searching for: "' + matchString.toLowerCase() + '" ( use BACKSPACE key to modify, DELETE key to clear the search string)';
 }
