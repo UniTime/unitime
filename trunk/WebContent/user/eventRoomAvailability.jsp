@@ -100,9 +100,9 @@ function tAll(location, admin) {
 						 - <bean:write name="eventRoomAvailabilityForm" property="stopTimeString"/>
 					</tt:section-title>
 					<html:submit property="op" styleClass="btn" accesskey="N"
-						title="Continue With Reservation (Alt+N)" value="Continue"/>
+						title="Next: Continue With Reservation (Alt+N)" value="Continue"/>
 					<html:submit property="op" styleClass="btn" accesskey="B"
-						title="Change Request (Alt+R)" value="Change Request"/>
+						title="Back: Change Request (Alt+B)" value="Change Request"/>
 				</tt:section-header>
 			</TD>
 		</TR>
@@ -129,10 +129,10 @@ function tAll(location, admin) {
 		</TR>
 		<TR>
 			<TD colspan = '2' align="right">
-					<html:submit property="op" styleClass="btn" accesskey="N"
-						title="Continue With Reservation (Alt+N)" value="Continue"/>
-					<html:submit property="op" styleClass="btn" accesskey="B"
-						title="Change Request (Alt+R)" value="Change Request"/>
+				<html:submit property="op" styleClass="btn" accesskey="N"
+					title="Next: Continue With Reservation (Alt+N)" value="Continue"/>
+				<html:submit property="op" styleClass="btn" accesskey="B"
+					title="Back: Change Request (Alt+B)" value="Change Request"/>
 			</TD>
 		</TR>
 
