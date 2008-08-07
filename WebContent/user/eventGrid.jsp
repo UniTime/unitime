@@ -61,7 +61,7 @@
 			<TD> Start:&nbsp;
 				<html:select name="eventGridForm" property="startTime"
 					onfocus="setUp();" 
-    				onkeypress="return selectSearch(event, this);" 
+    				onkeypress="return selectSearchTime(event, this);" 
 					onkeydown="return checkKey(event, this);">
 					<html:optionsCollection name="eventGridForm" property="times"/>
 				</html:select>
@@ -70,7 +70,7 @@
 				Stop: 
 				<html:select name="eventGridForm" property="stopTime"
 					onfocus="setUp();" 
-    				onkeypress="return selectSearch(event, this);" 
+    				onkeypress="return selectSearchTime(event, this);" 
 					onkeydown="return checkKey(event, this);">
 					<html:optionsCollection name="eventGridForm" property="stopTimes"/>
 				</html:select> 
