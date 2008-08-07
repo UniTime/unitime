@@ -57,8 +57,8 @@
 					</tt:section-title>
 	<!-- 			<html:submit property="op" styleClass="btn" accesskey="S" 
 						title="Show Scheduled Events (Alt+S)" value="Show Scheduled Events"/> -->
-					<html:submit property="op" styleClass="btn" accesskey="A" 
-						title="Show Location Availability (Alt+A)" value="Show Availability"/>
+					<html:submit property="op" styleClass="btn" accesskey="N" 
+						title="Next: Show Location Availability (Alt+N)" value="Show Availability"/>
 		 			<html:submit property="op" styleClass="btn" accesskey="B"
 						title="Back (Alt+B)" value="Back"/> 
 				</tt:section-header>
@@ -254,7 +254,7 @@
 			<TD> Start:&nbsp;
 				<html:select name="eventAddForm" property="startTime"
 					onfocus="setUp();" 
-    				onkeypress="return selectSearch(event, this);" 
+    				onkeypress="return selectSearchTime(event, this);" 
 					onkeydown="return checkKey(event, this);">
 					<html:optionsCollection name="eventAddForm" property="times"/>
 				</html:select>
@@ -263,7 +263,7 @@
 				Stop: 
 				<html:select name="eventAddForm" property="stopTime"
 					onfocus="setUp();" 
-    				onkeypress="return selectSearch(event, this);" 
+    				onkeypress="return selectSearchTime(event, this);" 
 					onkeydown="return checkKey(event, this);">
 					<html:optionsCollection name="eventAddForm" property="stopTimes"/>
 				</html:select> 
@@ -388,8 +388,8 @@
 		<TD colspan = '2' align="right">
 <!-- 			<html:submit property="op" styleClass="btn" accesskey="S" 
 					title="Show Scheduled Events (Alt+S)" value="Show Scheduled Events"/> -->
-				<html:submit property="op" styleClass="btn" accesskey="A" 
-					title="Show Location Availability (Alt+A)" value="Show Availability"/>
+					<html:submit property="op" styleClass="btn" accesskey="N" 
+						title="Next: Show Location Availability (Alt+N)" value="Show Availability"/>
 	  			<html:submit property="op" styleClass="btn" accesskey="B"
 				title="Back to List of Events (Alt+B)" value="Back"/>
 		</TD>
