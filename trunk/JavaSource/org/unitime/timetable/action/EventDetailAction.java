@@ -60,6 +60,7 @@ import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.RelatedCourseInfo;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.model.dao.ClassEventDAO;
 import org.unitime.timetable.model.dao.CourseEventDAO;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.MeetingDAO;
@@ -98,7 +99,7 @@ public class EventDetailAction extends Action {
 		Event event = EventDAO.getInstance().get(Long.valueOf(myForm.getId()));
 
         Set<Department> userDepartments = null;
-		String uname = (event==null?user.getName():event.getMainContact().getShortName()); 
+		String uname = (event==null || event.getMainContact()==null?user.getName():event.getMainContact().getShortName()); 
 		if (user!=null && Roles.EVENT_MGR_ROLE.equals(user.getRole())) {
 			TimetableManager mgr = TimetableManager.getManager(user);
 			if (mgr!=null) {
@@ -346,7 +347,7 @@ public class EventDetailAction extends Action {
 					if (!mb.getIsPast() || "true".equals(ApplicationProperties.getProperty("tmtbl.event.allowEditPast","false"))) {
 						if (user.isAdmin()) {
 							mb.setCanEdit(true);
-						} else if (user.getId().equals(event.getMainContact().getExternalUniqueId())) {
+						} else if (event.getMainContact()!=null && user.getId().equals(event.getMainContact().getExternalUniqueId())) {
 						    mb.setCanEdit(true);
 						    mb.setCanDelete(true);
 							myForm.setCanDelete(true);
@@ -358,7 +359,7 @@ public class EventDetailAction extends Action {
 					    mb.getOverlaps().add(new MeetingBean(overlap));
 					myForm.addMeeting(mb);
 				}
-				if (user.isAdmin()||user.hasRole(Roles.EVENT_MGR_ROLE)||user.getId().equals(event.getMainContact().getExternalUniqueId())) myForm.setCanEdit(true);
+				if (user.isAdmin()||user.hasRole(Roles.EVENT_MGR_ROLE)||(event.getMainContact()!=null && user.getId().equals(event.getMainContact().getExternalUniqueId()))) myForm.setCanEdit(true);
 				if (event instanceof ClassEvent || event instanceof ExamEvent) {
 					myForm.setCanEdit(false);
 				}					
@@ -368,8 +369,8 @@ public class EventDetailAction extends Action {
 		        myForm.setPreviousId(prevId==null?null:prevId.toString());
 		        myForm.setNextId(nextId==null?null:nextId.toString());
 			
-		        if ("Course Event".equals(myForm.getEventType())) {
-		            CourseEvent courseEvent = new CourseEventDAO().get(Long.valueOf(id));;
+		        if (Event.sEventTypes[Event.sEventTypeCourse].equals(myForm.getEventType())) {
+		            CourseEvent courseEvent = new CourseEventDAO().get(Long.valueOf(id));
 		            if (!courseEvent.getRelatedCourses().isEmpty()) {
 			        	WebTable table = new WebTable(5, null, new String[] {"Object", "Type", "Title","Limit","Assignment"}, new String[] {"left", "left", "left","right","left"}, new boolean[] {true, true, true, true,true});
 			            for (Iterator i=new TreeSet(courseEvent.getRelatedCourses()).iterator();i.hasNext();) {
@@ -391,7 +392,7 @@ public class EventDetailAction extends Action {
 			                    case ExamOwner.sOwnerTypeConfig :
 			                        InstrOfferingConfig config = (InstrOfferingConfig)rci.getOwnerObject();
 			                        if (user.getRole()!=null && config.isViewableBy(user))
-			                            onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+config.getInstructionalOffering().getUniqueId()+"';\"";;
+			                            onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+config.getInstructionalOffering().getUniqueId()+"';\"";
 			                        name = rci.getLabel();//config.getCourseName()+" ["+config.getName()+"]";
 			                        type = "Configuration";
 			                        title = config.getControllingCourseOffering().getTitle();
@@ -399,7 +400,7 @@ public class EventDetailAction extends Action {
 			                    case ExamOwner.sOwnerTypeOffering :
 			                        InstructionalOffering offering = (InstructionalOffering)rci.getOwnerObject();
 			                        if (user.getRole()!=null && offering.isViewableBy(user))
-			                            onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+offering.getUniqueId()+"';\"";;
+			                            onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+offering.getUniqueId()+"';\"";
 			                        name = rci.getLabel();//offering.getCourseName();
 			                        type = "Offering";
 			                        title = offering.getControllingCourseOffering().getTitle();
@@ -407,7 +408,7 @@ public class EventDetailAction extends Action {
 			                    case ExamOwner.sOwnerTypeCourse :
 			                        CourseOffering course = (CourseOffering)rci.getOwnerObject();
 			                        if (user.getRole()!=null && course.isViewableBy(user))
-			                            onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+course.getInstructionalOffering().getUniqueId()+"';\"";;
+			                            onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+course.getInstructionalOffering().getUniqueId()+"';\"";
 			                        name = rci.getLabel();//course.getCourseName();
 			                        type = "Course";
 			                        title = course.getTitle();
@@ -419,7 +420,77 @@ public class EventDetailAction extends Action {
 			            request.setAttribute("EventDetail.table",table.printTable());
 		            }			
 		        }
-			
+		        /*
+                if (Event.sEventTypes[Event.sEventTypeFinalExam].equals(myForm.getEventType()) || Event.sEventTypes[Event.sEventTypeMidtermExam].equals(myForm.getEventType())) {
+                    ExamEvent examEvent = new ExamEventDAO().get(Long.valueOf(id));
+                    if (examEvent.getExam()!=null && !examEvent.getExam().getOwners().isEmpty()) {
+                        WebTable table = new WebTable(5, null, new String[] {"Object", "Type", "Title","Limit","Assignment"}, new String[] {"left", "left", "left","right","left"}, new boolean[] {true, true, true, true,true});
+                        for (Iterator i=new TreeSet(examEvent.getExam().getOwners()).iterator();i.hasNext();) {
+                            ExamOwner owner = (ExamOwner)i.next();
+                            String onclick = null, name = null, type = null, title = null, assignment = null;
+                            String students = String.valueOf(owner.countStudents());
+                            switch (owner.getOwnerType()) {
+                                case ExamOwner.sOwnerTypeClass :
+                                    Class_ clazz = (Class_)owner.getOwnerObject();
+                                    if (user.getRole()!=null && clazz.isViewableBy(user))
+                                        onclick = "onClick=\"document.location='classDetail.do?cid="+clazz.getUniqueId()+"';\"";
+                                    name = owner.getLabel();//clazz.getClassLabel();
+                                    type = "Class";
+                                    title = clazz.getSchedulePrintNote();
+                                    if (title==null || title.length()==0) title=clazz.getSchedulingSubpart().getControllingCourseOffering().getTitle();
+                                    if (clazz.getCommittedAssignment()!=null)
+                                        assignment = clazz.getCommittedAssignment().getPlacement().getLongName();
+                                    break;
+                                case ExamOwner.sOwnerTypeConfig :
+                                    InstrOfferingConfig config = (InstrOfferingConfig)owner.getOwnerObject();
+                                    if (user.getRole()!=null && config.isViewableBy(user))
+                                        onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+config.getInstructionalOffering().getUniqueId()+"';\"";
+                                    name = owner.getLabel();//config.getCourseName()+" ["+config.getName()+"]";
+                                    type = "Configuration";
+                                    title = config.getControllingCourseOffering().getTitle();
+                                    break;
+                                case ExamOwner.sOwnerTypeOffering :
+                                    InstructionalOffering offering = (InstructionalOffering)owner.getOwnerObject();
+                                    if (user.getRole()!=null && offering.isViewableBy(user))
+                                        onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+offering.getUniqueId()+"';\"";
+                                    name = owner.getLabel();//offering.getCourseName();
+                                    type = "Offering";
+                                    title = offering.getControllingCourseOffering().getTitle();
+                                    break;
+                                case ExamOwner.sOwnerTypeCourse :
+                                    CourseOffering course = (CourseOffering)owner.getOwnerObject();
+                                    if (user.getRole()!=null && course.isViewableBy(user))
+                                        onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+course.getInstructionalOffering().getUniqueId()+"';\"";
+                                    name = owner.getLabel();//course.getCourseName();
+                                    type = "Course";
+                                    title = course.getTitle();
+                                    break;
+                                        
+                            }
+                            table.addLine(onclick, new String[] { name, type, title, students, assignment}, null);
+                        }
+                        request.setAttribute("EventDetail.table",table.printTable());
+                    }           
+                }
+                */
+                if (Event.sEventTypes[Event.sEventTypeClass].equals(myForm.getEventType())) {
+                    ClassEvent classEvent = new ClassEventDAO().get(Long.valueOf(id));
+                    if (classEvent.getClazz()!=null) {
+                        WebTable table = new WebTable(4, null, new String[] {"Name","Title","Limit","Assignment"}, new String[] {"left","left","right","left"}, new boolean[] {true, true, true, true});
+                        Class_ clazz = (Class_)classEvent.getClazz();
+                        String onclick = null, assignment = null;
+                        if (user.getRole()!=null && clazz.isViewableBy(user))
+                            onclick = "onClick=\"document.location='classDetail.do?cid="+clazz.getUniqueId()+"';\"";
+                        String name = clazz.getClassLabel();
+                        String title = clazz.getSchedulePrintNote();
+                        String students = String.valueOf(clazz.getStudentEnrollments().size());
+                        if (title==null || title.length()==0) title=clazz.getSchedulingSubpart().getControllingCourseOffering().getTitle();
+                        if (clazz.getCommittedAssignment()!=null)
+                            assignment = clazz.getCommittedAssignment().getPlacement().getLongName();
+                        table.addLine(onclick, new String[] { name, title, students, assignment}, null);
+                        request.setAttribute("EventDetail.table",table.printTable());
+                    }           
+                }   
 			} else {
 				throw new Exception("There is no event with this ID");
 			}	

@@ -102,22 +102,21 @@ public class Exams extends BodyTagSupport {
             if (user==null)return EVAL_PAGE; 
             TimetableManager manager = TimetableManager.getManager(user);
             Session session = Session.getCurrentAcadSession(user);
-            if (manager==null || session==null || !manager.canSeeExams(session, user))
-                return EVAL_PAGE;
             
             String objectIdStr = (getBodyContent()==null?null:getBodyContent().getString().trim());
             if (objectIdStr==null || objectIdStr.length()==0) objectIdStr = (getId()==null?null:getId().trim());
             if (objectIdStr==null || objectIdStr.length()==0) return EVAL_PAGE;
             Long objectId = Long.parseLong(objectIdStr);
             
-            boolean edit = manager.canEditExams(session, user);
+            boolean edit = (manager==null || session==null? false : manager.canEditExams(session, user));
+            boolean view = (manager==null || session==null? false : manager.canSeeExams(session, user));
             
             List exams = Exam.findAllRelated(getType(),objectId);
             if (exams==null || exams.isEmpty()) {
                 if (!edit || !iAdd) return EVAL_PAGE;
             }
             
-            String title = "Examinations";
+            String title = (exams.size()==1?"Examination":"Examinations");
             if (edit && iAdd) 
                 title = "<table width='100%'><tr><td width='100%'>" + 
                     "<DIV class=\"WelcomeRowHeadNoLine\">Examinations</DIV>"+
@@ -160,121 +159,183 @@ public class Exams extends BodyTagSupport {
                         hasSolution = true; break;
                     }
                 }
+                if (view) {
+                    if (hasSolution)
+                        table = new WebTable(10, title,
+                                new String[] { "Classes / Courses", "Type", "Length", "Seating<br>Type", "Size", "Max<br>Rooms", 
+                                "Instructor", "Assigned<br>Period", "Assigned<br>Room", "Student<br>Conflicts"},
+                            new String[] {"left", "left", "right", "center", "right", "right", "left", 
+                                "left", "left", "left"},
+                                new boolean[] {true, true, true, true, true, true, true, true, true}
+                            );
                 
-                if (hasSolution)
-                    table = new WebTable(10, title,
-                            new String[] { "Classes / Courses", "Type", "Length", "Seating<br>Type", "Size", "Max<br>Rooms", 
-                            "Instructor", "Assigned<br>Period", "Assigned<br>Room", "Student<br>Conflicts"},
-                        new String[] {"left", "left", "right", "center", "right", "right", "left", 
-                            "left", "left", "left"},
-                            new boolean[] {true, true, true, true, true, true, true, true, true}
-                        );
-            
-                for (Iterator i=new TreeSet(exams).iterator();i.hasNext();) {
-                    Exam exam = (Exam)i.next();
-                
-                    String objects = "", instructors = "", perPref = "", roomPref = "", distPref = "";
+                    for (Iterator i=new TreeSet(exams).iterator();i.hasNext();) {
+                        Exam exam = (Exam)i.next();
                     
-                    ExamAssignmentInfo assignment = null;
-                    if (solver!=null && solverType==exam.getExamType())
-                        assignment = solver.getAssignmentInfo(exam.getUniqueId());
-                    else if (exam.getAssignedPeriod()!=null)
-                        assignment = new ExamAssignmentInfo(exam);
-                    
-                    for (Enumeration e=exam.getOwnerObjects().elements();e.hasMoreElements();) {
-                        Object object = e.nextElement();
-                        if (objects.length()>0) objects+="<br>";
-                        if (object instanceof Class_)
-                            objects += ((Class_)object).getClassLabel();
-                        else if (object instanceof InstrOfferingConfig)
-                            objects += ((InstrOfferingConfig)object).toString();
-                        else if (object instanceof InstructionalOffering)
-                            objects += ((InstructionalOffering)object).getCourseName();
-                        else if (object instanceof CourseOffering)
-                            objects += ((CourseOffering)object).getCourseName();
-                        else
-                            objects += object.toString();
-                    }
-                    
-                    if (!hasSolution || assignment==null || assignment.getPeriodId()==null) {
-                        roomPref += exam.getEffectivePrefHtmlForPrefType(RoomPref.class);
-                        if (roomPref.length()>0 && !roomPref.endsWith("<br>")) roomPref+="<br>";
-                        roomPref += exam.getEffectivePrefHtmlForPrefType(BuildingPref.class);
-                        if (roomPref.length()>0 && !roomPref.endsWith("<br>")) roomPref+="<br>";
-                        roomPref += exam.getEffectivePrefHtmlForPrefType(RoomFeaturePref.class);
-                        if (roomPref.length()>0 && !roomPref.endsWith("<br>")) roomPref+="<br>";
-                        roomPref += exam.getEffectivePrefHtmlForPrefType(RoomGroupPref.class);
-                        if (roomPref.endsWith("<br>")) roomPref = roomPref.substring(0, roomPref.length()-"<br>".length());
-                        if (timeText || Exam.sExamTypeMidterm==exam.getExamType()) {
-                            if (Exam.sExamTypeMidterm==exam.getExamType()) {
-                                MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(exam.getSession(), null);
-                                epx.load(exam);
-                                perPref+=epx.toString();
-                            } else {
-                                perPref += exam.getEffectivePrefHtmlForPrefType(ExamPeriodPref.class);
-                            }
-                        } else {
-                            PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession(), null, exam.getExamType());
-                            px.load(exam);
-                            RequiredTimeTable rtt = new RequiredTimeTable(px);
-                            File imageFileName = null;
-                            try {
-                                imageFileName = rtt.createImage(timeVertical);
-                            } catch (IOException ex) {
-                                ex.printStackTrace();
-                            }
-                            String rttTitle = rtt.getModel().toString();
-                            if (imageFileName!=null)
-                                perPref = "<img border='0' src='temp/"+(imageFileName.getName())+"' title='"+rttTitle+"'>";
+                        String objects = "", instructors = "", perPref = "", roomPref = "", distPref = "";
+                        
+                        ExamAssignmentInfo assignment = null;
+                        if (solver!=null && solverType==exam.getExamType())
+                            assignment = solver.getAssignmentInfo(exam.getUniqueId());
+                        else if (exam.getAssignedPeriod()!=null)
+                            assignment = new ExamAssignmentInfo(exam);
+                        
+                        for (Enumeration e=exam.getOwnerObjects().elements();e.hasMoreElements();) {
+                            Object object = e.nextElement();
+                            if (objects.length()>0) objects+="<br>";
+                            if (object instanceof Class_)
+                                objects += ((Class_)object).getClassLabel();
+                            else if (object instanceof InstrOfferingConfig)
+                                objects += ((InstrOfferingConfig)object).toString();
+                            else if (object instanceof InstructionalOffering)
+                                objects += ((InstructionalOffering)object).getCourseName();
+                            else if (object instanceof CourseOffering)
+                                objects += ((CourseOffering)object).getCourseName();
                             else
-                                perPref += exam.getEffectivePrefHtmlForPrefType(ExamPeriodPref.class);
+                                objects += object.toString();
                         }
-                        if (!hasSolution)
-                            distPref += exam.getEffectivePrefHtmlForPrefType(DistributionPref.class);
-                        else
-                            distPref = "<i>Not Assigned</i>";
-                    } else {
-                        perPref = assignment.getPeriodAbbreviationWithPref();
-                        roomPref = assignment.getRoomsNameWithPref("<br>"); 
-                        int dc = assignment.getNrDirectConflicts();
-                        String dcStr = (dc<=0?"<font color='gray'>0</font>":"<font color='"+PreferenceLevel.prolog2color("P")+"'>"+dc+"</font>");
-                        int m2d = assignment.getNrMoreThanTwoConflicts();
-                        String m2dStr = (m2d<=0?"<font color='gray'>0</font>":"<font color='"+PreferenceLevel.prolog2color("2")+"'>"+m2d+"</font>");
-                        int btb = assignment.getNrBackToBackConflicts();
-                        int dbtb = assignment.getNrDistanceBackToBackConflicts();
-                        String btbStr = (btb<=0 && dbtb<=0?"<font color='gray'>0</font>":"<font color='"+PreferenceLevel.prolog2color("1")+"'>"+btb+(dbtb>0?" (d:"+dbtb+")":"")+"</font>");
-                        distPref = dcStr+", "+m2dStr+", "+btbStr; 
+                        
+                        if (!hasSolution || assignment==null || assignment.getPeriodId()==null) {
+                            roomPref += exam.getEffectivePrefHtmlForPrefType(RoomPref.class);
+                            if (roomPref.length()>0 && !roomPref.endsWith("<br>")) roomPref+="<br>";
+                            roomPref += exam.getEffectivePrefHtmlForPrefType(BuildingPref.class);
+                            if (roomPref.length()>0 && !roomPref.endsWith("<br>")) roomPref+="<br>";
+                            roomPref += exam.getEffectivePrefHtmlForPrefType(RoomFeaturePref.class);
+                            if (roomPref.length()>0 && !roomPref.endsWith("<br>")) roomPref+="<br>";
+                            roomPref += exam.getEffectivePrefHtmlForPrefType(RoomGroupPref.class);
+                            if (roomPref.endsWith("<br>")) roomPref = roomPref.substring(0, roomPref.length()-"<br>".length());
+                            if (timeText || Exam.sExamTypeMidterm==exam.getExamType()) {
+                                if (Exam.sExamTypeMidterm==exam.getExamType()) {
+                                    MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(exam.getSession(), null);
+                                    epx.load(exam);
+                                    perPref+=epx.toString();
+                                } else {
+                                    perPref += exam.getEffectivePrefHtmlForPrefType(ExamPeriodPref.class);
+                                }
+                            } else {
+                                PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession(), null, exam.getExamType());
+                                px.load(exam);
+                                RequiredTimeTable rtt = new RequiredTimeTable(px);
+                                File imageFileName = null;
+                                try {
+                                    imageFileName = rtt.createImage(timeVertical);
+                                } catch (IOException ex) {
+                                    ex.printStackTrace();
+                                }
+                                String rttTitle = rtt.getModel().toString();
+                                if (imageFileName!=null)
+                                    perPref = "<img border='0' src='temp/"+(imageFileName.getName())+"' title='"+rttTitle+"'>";
+                                else
+                                    perPref += exam.getEffectivePrefHtmlForPrefType(ExamPeriodPref.class);
+                            }
+                            if (!hasSolution)
+                                distPref += exam.getEffectivePrefHtmlForPrefType(DistributionPref.class);
+                            else
+                                distPref = "<i>Not Assigned</i>";
+                        } else {
+                            perPref = (view?assignment.getPeriodAbbreviationWithPref():assignment.getPeriodAbbreviation());
+                            roomPref = (view?assignment.getRoomsNameWithPref("<br>"):assignment.getRoomsName("<br>")); 
+                            int dc = assignment.getNrDirectConflicts();
+                            String dcStr = (dc<=0?"<font color='gray'>0</font>":"<font color='"+PreferenceLevel.prolog2color("P")+"'>"+dc+"</font>");
+                            int m2d = assignment.getNrMoreThanTwoConflicts();
+                            String m2dStr = (m2d<=0?"<font color='gray'>0</font>":"<font color='"+PreferenceLevel.prolog2color("2")+"'>"+m2d+"</font>");
+                            int btb = assignment.getNrBackToBackConflicts();
+                            int dbtb = assignment.getNrDistanceBackToBackConflicts();
+                            String btbStr = (btb<=0 && dbtb<=0?"<font color='gray'>0</font>":"<font color='"+PreferenceLevel.prolog2color("1")+"'>"+btb+(dbtb>0?" (d:"+dbtb+")":"")+"</font>");
+                            distPref = (view?dcStr+", "+m2dStr+", "+btbStr:"<i>N/A</i>"); 
+                        }
+                        
+                        for (Iterator j=new TreeSet(exam.getInstructors()).iterator();j.hasNext();) {
+                            DepartmentalInstructor instructor = (DepartmentalInstructor)j.next();
+                            if (instructors.length()>0) instructors+="<br>";
+                            instructors += instructor.getName(instructorNameFormat);
+                        }
+                        
+                        int nrStudents = exam.getSize();
+                        
+                        if (exam.getUniqueId().toString().equals(backId)) {
+                            objects = "<A name='examHash'>"+objects+"</A>";
+                            hasExamHash = true;
+                        }
+                        
+                        table.addLine(
+                                (view?"onClick=\"document.location='examDetail.do?examId="+exam.getUniqueId()+"';\"":null),
+                                new String[] {
+                                    objects,
+                                    Exam.sExamTypes[exam.getExamType()],
+                                    exam.getLength().toString(),
+                                    (Exam.sSeatingTypeNormal==exam.getSeatingType()?"Normal":"Exam"),
+                                    String.valueOf(nrStudents),
+                                    exam.getMaxNbrRooms().toString(),
+                                    instructors,
+                                    perPref,
+                                    roomPref,
+                                    distPref
+                                },
+                                null,
+                                exam.getUniqueId().toString());
                     }
+                } else {
+                    if (!hasSolution) return EVAL_PAGE;
+                    table = new WebTable(5, title,
+                            new String[] { "Classes / Courses", "Type", "Instructor", "Period", "Room"},
+                            new String[] {"left", "left", "left", "left", "left"},
+                            new boolean[] {true, true, true, true, true}
+                        );
                     
-                    for (Iterator j=new TreeSet(exam.getInstructors()).iterator();j.hasNext();) {
-                        DepartmentalInstructor instructor = (DepartmentalInstructor)j.next();
-                        if (instructors.length()>0) instructors+="<br>";
-                        instructors += instructor.getName(instructorNameFormat);
+                    for (Iterator i=new TreeSet(exams).iterator();i.hasNext();) {
+                        Exam exam = (Exam)i.next();
+                    
+                        String objects = "", instructors = "", perPref = "", roomPref = "";
+                        
+                        ExamAssignmentInfo assignment = null;
+                        if (solver!=null && solverType==exam.getExamType())
+                            assignment = solver.getAssignmentInfo(exam.getUniqueId());
+                        else if (exam.getAssignedPeriod()!=null)
+                            assignment = new ExamAssignmentInfo(exam);
+                        
+                        for (Enumeration e=exam.getOwnerObjects().elements();e.hasMoreElements();) {
+                            Object object = e.nextElement();
+                            if (objects.length()>0) objects+="<br>";
+                            if (object instanceof Class_)
+                                objects += ((Class_)object).getClassLabel();
+                            else if (object instanceof InstrOfferingConfig)
+                                objects += ((InstrOfferingConfig)object).toString();
+                            else if (object instanceof InstructionalOffering)
+                                objects += ((InstructionalOffering)object).getCourseName();
+                            else if (object instanceof CourseOffering)
+                                objects += ((CourseOffering)object).getCourseName();
+                            else
+                                objects += object.toString();
+                        }
+                        
+                        if (assignment==null || assignment.getPeriodId()==null) continue;
+
+                        perPref = assignment.getPeriodName();
+                        roomPref = assignment.getRoomsName("<br>"); 
+                        
+                        for (Iterator j=new TreeSet(exam.getInstructors()).iterator();j.hasNext();) {
+                            DepartmentalInstructor instructor = (DepartmentalInstructor)j.next();
+                            if (instructors.length()>0) instructors+="<br>";
+                            instructors += instructor.getName(instructorNameFormat);
+                        }
+                        
+                        if (exam.getUniqueId().toString().equals(backId)) {
+                            objects = "<A name='examHash'>"+objects+"</A>";
+                            hasExamHash = true;
+                        }
+                        
+                        table.addLine(
+                                null,
+                                new String[] {
+                                    objects,
+                                    Exam.sExamTypes[exam.getExamType()],
+                                    instructors,
+                                    perPref,
+                                    roomPref},
+                                null,
+                                exam.getUniqueId().toString());
                     }
-                    
-                    int nrStudents = exam.getSize();
-                    
-                    if (exam.getUniqueId().toString().equals(backId)) {
-                        objects = "<A name='examHash'>"+objects+"</A>";
-                        hasExamHash = true;
-                    }
-                    
-                    table.addLine(
-                            "onClick=\"document.location='examDetail.do?examId="+exam.getUniqueId()+"';\"",
-                            new String[] {
-                                objects,
-                                Exam.sExamTypes[exam.getExamType()],
-                                exam.getLength().toString(),
-                                (Exam.sSeatingTypeNormal==exam.getSeatingType()?"Normal":"Exam"),
-                                String.valueOf(nrStudents),
-                                exam.getMaxNbrRooms().toString(),
-                                instructors,
-                                perPref,
-                                roomPref,
-                                distPref
-                            },
-                            null,
-                            exam.getUniqueId().toString());
                 }
             }
             

@@ -112,7 +112,8 @@
 		</TR>
 		</logic:notEmpty>
 		</logic:equal>
-		<logic:equal name="eventDetailForm" property="canEdit" value="true">
+		<logic:equal name="eventDetailForm" property="notesHaveUser" value="true">
+			<logic:notEmpty name="eventDetailForm" property="mainContact">
 			<TR>
 				<TD nowrap valign="top">Main Contact:&nbsp;</TD>
 				<td>
@@ -122,7 +123,6 @@
 						<td><font color="gray"><i>E-mail</i></font></td>
 						<td><font color="gray"><i>Phone</i></font></td>
 					</tr>
-					<logic:notEmpty name="eventDetailForm" property="mainContact">
 					<bean:define name="eventDetailForm" property="mainContact" id="mc"/>
 					<TR>
 						<TD>
@@ -137,7 +137,6 @@
 							<bean:write name="mc" property="phone"/>						
 						</td>
 					</TR>		
-					</logic:notEmpty>
 					<logic:iterate name="eventDetailForm" property="additionalContacts" id="additionalContact">
 						<tr>
 							<td>
@@ -157,12 +156,17 @@
 				</table>
 				</td>
 			</TR>
+			</logic:notEmpty>
+			<logic:notEmpty name="eventDetailForm" property="additionalEmails">
 			<TR>
 				<TD nowrap valign="top">Additional E-mails:&nbsp;</TD>
 				<TD>
 					<bean:write name="eventDetailForm" property="additionalEmails"/>
 				</TD>
 			</TR>		
+			</logic:notEmpty>
+		</logic:equal>
+		<logic:equal name="eventDetailForm" property="canEdit" value="true">
 			<tt:last-change type='Event'>
 				<bean:write name="eventDetailForm" property="id"/>
 			</tt:last-change>		
@@ -189,8 +193,10 @@
 		<TABLE width="100%" border="0" cellspacing="0" cellpadding="1">
 			<TR align="left">
 				<td>
-					<logic:equal name="eventDetailForm" property="canSelectAll" value="true">
+					<logic:equal name="eventDetailForm" property="canEdit" value="true">
+						<logic:equal name="eventDetailForm" property="canSelectAll" value="true">
 						<input type='checkbox' onclick='selectAll(this.checked);' title="Select All">
+						</logic:equal>
 					</logic:equal>
 				</td><td><font color="gray"><i>Date</i></font></td><td><font color="gray"><i>Time</i></font></td><td><font color="gray"><i>Location</i></font></td><td><font color="gray"><i>Capacity</i></font></td><td><font color="gray"><i>Approved</i></font></td>
 			</TR>
@@ -326,9 +332,25 @@
 				</logic:notEqual>
 				</TD>
 			</TR>
-
+<!-- Exam -->
+	<logic:equal name="eventDetailForm" property="notesHaveUser" value="true">
+	<logic:equal name="eventDetailForm" property="eventType" value="Final Examination Event">
+		<TR>
+			<TD colspan='2'>
+				<tt:exams type="ExamEvent" add="false"><bean:write name="eventDetailForm" property="id"/></tt:exams>
+			</TD>
+		</TR>
+	</logic:equal>
+	<logic:equal name="eventDetailForm" property="eventType" value="Midterm Examination Event">
+		<TR>
+			<TD colspan='2'>
+				<tt:exams type="ExamEvent" add="false"><bean:write name="eventDetailForm" property="id"/></tt:exams>
+			</TD>
+		</TR>
+	</logic:equal>
+	</logic:equal>
 <!-- Courses/Classes if this is a course event -->
-		<logic:equal name="eventDetailForm" property="eventType" value="Course Event">
+	<logic:equal name="eventDetailForm" property="eventType" value="Course Event">
 		<TR>
 			<TD colspan='2'>
 				&nbsp;
@@ -361,7 +383,33 @@
 			</TD>
 		</TR>
 		</logic:equal>
-		</logic:equal>
+	</logic:equal>
+	<logic:equal name="eventDetailForm" property="notesHaveUser" value="true">
+	<logic:equal name="eventDetailForm" property="eventType" value="Class Event">
+		<logic:notEmpty scope="request" name="EventDetail.table">
+		<TR>
+			<TD colspan='2'>
+				&nbsp;
+			</TD>
+		</TR>
+		<TR>
+			<TD colspan="2" valign="middle">
+				<br>
+				<tt:section-title>
+					Class
+				</tt:section-title>
+			</TD>
+		</TR>
+		<TR>
+			<TD colspan='2'>
+				<table border='0' cellspacing="0" cellpadding="3" width='99%'>
+				<bean:write scope="request" name="EventDetail.table" filter="false"/>
+				</table>
+			</TD>
+		</TR>
+		</logic:notEmpty>
+	</logic:equal>
+	</logic:equal>
 
 <!-- Notes exchanged between requester and approver; visible only by those who can edit -->
    		<logic:equal name="eventDetailForm" property="canEdit" value="true">
