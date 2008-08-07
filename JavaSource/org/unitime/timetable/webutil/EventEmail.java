@@ -53,7 +53,7 @@ public class EventEmail {
         String subject = null;
         try {
             User user = Web.getUser(request.getSession());
-            if (Roles.ADMIN_ROLE.equals(user.getRole()) || Roles.EVENT_MGR_ROLE.endsWith(user.getRole())) {
+            if (Roles.ADMIN_ROLE.equals(user.getRole()) || Roles.EVENT_MGR_ROLE.equals(user.getRole())) {
                 if (iAction!=sActionReject && iAction!=sActionApprove) return;
             }
             
