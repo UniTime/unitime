@@ -65,8 +65,8 @@
 						title="Cancel Event (Alt+C)" value="Cancel Event"/>
 					</logic:notEqual>
 					<logic:equal name="eventAddInfoForm" property="canChangeSelection" value="true">
-					<html:submit property="op" styleClass="btn" accesskey="A"
-						title="Change Selection (Alt+A)" value="Change Selection"/>
+						<html:submit property="op" styleClass="btn" accesskey="B"
+							title="Back: Change Selection (Alt+B)" value="Change Selection"/>
 					</logic:equal>
 				</tt:section-header>
 			</TD>
@@ -424,8 +424,8 @@
 						title="Cancel Event (Alt+C)" value="Cancel Event"/>
 					</logic:notEqual>
 					<logic:equal name="eventAddInfoForm" property="canChangeSelection" value="true">
-					<html:submit property="op" styleClass="btn" accesskey="A"
-						title="Change Selection (Alt+A)" value="Change Selection"/>
+						<html:submit property="op" styleClass="btn" accesskey="B"
+							title="Back: Change Selection (Alt+B)" value="Change Selection"/>
 					</logic:equal>
 			</TD>
 		</TR>
