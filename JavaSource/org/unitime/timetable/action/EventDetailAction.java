@@ -35,6 +35,8 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.apache.struts.action.ActionMessage;
+import org.apache.struts.action.ActionMessages;
 import org.hibernate.Transaction;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
@@ -148,9 +150,17 @@ public class EventDetailAction extends Action {
                 Transaction tx = null;
                 try {
                     tx = hibSession.beginTransaction();
+                    ActionMessages errors = new ActionMessages();
                     HashSet<Meeting> meetings = new HashSet();
 					for (int i=0; i<selectedMeetings.length; i++) {
 						Meeting approvedMeeting = MeetingDAO.getInstance().get(selectedMeetings[i]);
+						if (Roles.EVENT_MGR_ROLE.equals(user.getRole())) {
+						    Location location = approvedMeeting.getLocation();
+						    if (location!=null && (userDepartments==null || location.getControllingDepartment()==null || !userDepartments.contains(location.getControllingDepartment()))) {
+						        errors.add("approve", new ActionMessage("errors.generic", "Insufficient rights to approve "+approvedMeeting.toString()+" (controlling department does not match)."));
+						        continue;
+						    }
+                        }
 						approvedMeeting.setApprovedDate(new Date());
 						meetings.add(approvedMeeting);
 						hibSession.saveOrUpdate(approvedMeeting);
@@ -163,22 +173,26 @@ public class EventDetailAction extends Action {
                                 ChangeLog.Operation.APPROVE,
                                 null,null);
 					}
-					EventNote en = new EventNote();
-					en.setTimeStamp(new Date());
-					en.setNoteType(EventNote.sEventNoteTypeApproval);
-					en.setUser(uname);
-					en.setMeetingCollection(meetings);
-					en.setTextNote(myForm.getNewEventNote());
-					en.setEvent(event);
-					hibSession.saveOrUpdate(en);
-					event.getNotes().add(en);
-					hibSession.saveOrUpdate(event);					
-					
-					new EventEmail(event, EventEmail.sActionApprove, Event.getMultiMeetings(meetings), myForm.getNewEventNote()).send(request);
-					
-					myForm.setSelectedMeetings(null);
-					myForm.setNewEventNote(null);
-					tx.commit();
+					if (!meetings.isEmpty()) {
+	                    EventNote en = new EventNote();
+	                    en.setTimeStamp(new Date());
+	                    en.setNoteType(EventNote.sEventNoteTypeApproval);
+	                    en.setUser(uname);
+	                    en.setMeetingCollection(meetings);
+	                    en.setTextNote(myForm.getNewEventNote());
+	                    en.setEvent(event);
+	                    hibSession.saveOrUpdate(en);
+	                    event.getNotes().add(en);
+	                    hibSession.saveOrUpdate(event);                 
+	                    
+	                    new EventEmail(event, EventEmail.sActionApprove, Event.getMultiMeetings(meetings), myForm.getNewEventNote()).send(request);
+	                    
+	                    myForm.setSelectedMeetings(null);
+	                    myForm.setNewEventNote(null);
+					}
+                    tx.commit();
+					if (!errors.isEmpty())
+					    saveErrors(request, errors);
                 } catch (Exception e) {
                     if (tx!=null) tx.rollback();
                     throw e;
@@ -193,9 +207,17 @@ public class EventDetailAction extends Action {
                 boolean eventDeleted = false;
                 try {
                     tx = hibSession.beginTransaction();
+                    ActionMessages errors = new ActionMessages();
                     HashSet<Meeting> meetings = new HashSet();        			
 					for (int i=0; i<selectedMeetings.length; i++) {
 						Meeting rejectedMeeting = MeetingDAO.getInstance().get(selectedMeetings[i]);
+                        if (Roles.EVENT_MGR_ROLE.equals(user.getRole())) {
+                            Location location = rejectedMeeting.getLocation();
+                            if (location!=null && (userDepartments==null || location.getControllingDepartment()==null || !userDepartments.contains(location.getControllingDepartment()))) {
+                                errors.add("approve", new ActionMessage("errors.generic", "Insufficient rights to reject "+rejectedMeeting.toString()+" (controlling department does not match)."));
+                                continue;
+                            }
+                        }
 	                    event.getMeetings().remove(rejectedMeeting);
 	                    meetings.add(rejectedMeeting);
 	        			ChangeLog.addChange(
@@ -207,21 +229,23 @@ public class EventDetailAction extends Action {
 	                            ChangeLog.Operation.REJECT,
 	                            null,null);
 					}
-					EventNote en = new EventNote();
-                    en.setTimeStamp(new Date());
-                    en.setNoteType(EventNote.sEventNoteTypeRejection);
-                    en.setUser(uname);
-                    en.setMeetingCollection(meetings);
-                    en.setTextNote(myForm.getNewEventNote());
-                    en.setEvent(event);
-					hibSession.saveOrUpdate(en);
-					event.getNotes().add(en);
-					hibSession.saveOrUpdate(event);		
-					
-					new EventEmail(event, EventEmail.sActionReject, Event.getMultiMeetings(meetings), myForm.getNewEventNote()).send(request);
+					if (!meetings.isEmpty()) {
+	                    EventNote en = new EventNote();
+	                    en.setTimeStamp(new Date());
+	                    en.setNoteType(EventNote.sEventNoteTypeRejection);
+	                    en.setUser(uname);
+	                    en.setMeetingCollection(meetings);
+	                    en.setTextNote(myForm.getNewEventNote());
+	                    en.setEvent(event);
+	                    hibSession.saveOrUpdate(en);
+	                    event.getNotes().add(en);
+	                    hibSession.saveOrUpdate(event);     
+	                    
+	                    new EventEmail(event, EventEmail.sActionReject, Event.getMultiMeetings(meetings), myForm.getNewEventNote()).send(request);
 
-					myForm.setSelectedMeetings(null);
-					myForm.setNewEventNote(null);
+	                    myForm.setSelectedMeetings(null);
+	                    myForm.setNewEventNote(null);
+					}
 	                if (event.getMeetings().isEmpty()) {
 	                	String msg = "All meetings of "+event.getEventName()+" ("+event.getEventTypeLabel()+") have been deleted.";
 	        			ChangeLog.addChange(
@@ -238,6 +262,8 @@ public class EventDetailAction extends Action {
 	                    hibSession.saveOrUpdate(event);
 	                }
                     tx.commit();
+                    if (!errors.isEmpty())
+                        saveErrors(request, errors);
                 } catch (Exception e) {
                     if (tx!=null) tx.rollback();
                     throw e;
@@ -323,10 +349,10 @@ public class EventDetailAction extends Action {
 					myForm.setAttendanceRequired(((CourseEvent) event).isReqAttendance());
 				} else
 					myForm.setSponsoringOrgName(event.getSponsoringOrganization()==null?"":event.getSponsoringOrganization().getName());
-				myForm.setNotesHaveUser(user.isAdmin()||user.hasRole(Roles.EVENT_MGR_ROLE));
+				myForm.setIsManager(user.isAdmin()||user.hasRole(Roles.EVENT_MGR_ROLE));
 				for (Iterator i = new TreeSet(event.getNotes()).iterator(); i.hasNext();) {
 					EventNote en = (EventNote) i.next();
-					myForm.addNote(en.toHtmlString(myForm.getNotesHaveUser()));
+					myForm.addNote(en.toHtmlString(myForm.getIsManager()));
 				}
 				if (event.getMainContact()!=null)
 				    myForm.setMainContact(event.getMainContact());
@@ -340,30 +366,38 @@ public class EventDetailAction extends Action {
 							(ec.getPhone()==null?"":ec.getPhone()));
 				}
 				SimpleDateFormat iDateFormat = new SimpleDateFormat("EEE MM/dd, yyyy", Locale.US);
+				if (event.getMainContact()!=null && user.getId().equals(event.getMainContact().getExternalUniqueId())) {
+				    myForm.setCanDelete(true);
+				    myForm.setCanEdit(true);
+				}
+                if (user.isAdmin()||user.hasRole(Roles.EVENT_MGR_ROLE)) {
+                    myForm.setCanApprove(true);
+                    myForm.setCanEdit(true);
+                }
+                if (event instanceof ClassEvent || event instanceof ExamEvent) {
+                    myForm.setCanEdit(false);
+                    myForm.setCanApprove(false);
+                    myForm.setCanDelete(false);
+                }
 				for (Iterator i=new TreeSet(event.getMeetings()).iterator();i.hasNext();) {
 					Meeting meeting = (Meeting)i.next();
 					Location location = meeting.getLocation();
 					MeetingBean mb = new MeetingBean(meeting);
-					if (!mb.getIsPast() || "true".equals(ApplicationProperties.getProperty("tmtbl.event.allowEditPast","false"))) {
-						if (user.isAdmin()) {
-							mb.setCanEdit(true);
-						} else if (event.getMainContact()!=null && user.getId().equals(event.getMainContact().getExternalUniqueId())) {
-						    mb.setCanEdit(true);
-						    mb.setCanDelete(true);
-							myForm.setCanDelete(true);
-						} else if (userDepartments!=null && location!=null && location.getControllingDepartment()!=null)
-						    mb.setCanEdit(userDepartments.contains(location.getControllingDepartment()));
-						if (mb.getCanEdit()) myForm.setCanEdit(true);
+					if (myForm.getCanEdit() && (!mb.getIsPast() || "true".equals(ApplicationProperties.getProperty("tmtbl.event.allowEditPast","false")))) {
+                        if (myForm.getCanDelete()) {
+                            mb.setCanSelect(true);
+                        } else if (user.isAdmin()) {
+							mb.setCanSelect(true);
+						} else if (userDepartments!=null && location!=null && location.getControllingDepartment()!=null) {
+						    mb.setCanSelect(userDepartments.contains(location.getControllingDepartment()));
+						}
 					}
 					for (Meeting overlap : meeting.getTimeRoomOverlaps())
 					    mb.getOverlaps().add(new MeetingBean(overlap));
 					myForm.addMeeting(mb);
 				}
-				if (user.isAdmin()||user.hasRole(Roles.EVENT_MGR_ROLE)||(event.getMainContact()!=null && user.getId().equals(event.getMainContact().getExternalUniqueId()))) myForm.setCanEdit(true);
-				if (event instanceof ClassEvent || event instanceof ExamEvent) {
-					myForm.setCanEdit(false);
-				}					
-				
+				if (myForm.getCanApprove() && !myForm.getCanSelectAll())
+				    myForm.setCanApprove(false);
 		        Long nextId = Navigation.getNext(request.getSession(), Navigation.sInstructionalOfferingLevel, event.getUniqueId());
 		        Long prevId = Navigation.getPrevious(request.getSession(), Navigation.sInstructionalOfferingLevel, event.getUniqueId());
 		        myForm.setPreviousId(prevId==null?null:prevId.toString());

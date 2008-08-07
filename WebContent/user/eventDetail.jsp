@@ -112,7 +112,7 @@
 		</TR>
 		</logic:notEmpty>
 		</logic:equal>
-		<logic:equal name="eventDetailForm" property="notesHaveUser" value="true">
+		<logic:equal name="eventDetailForm" property="isManager" value="true">
 			<logic:notEmpty name="eventDetailForm" property="mainContact">
 			<TR>
 				<TD nowrap valign="top">Main Contact:&nbsp;</TD>
@@ -193,10 +193,8 @@
 		<TABLE width="100%" border="0" cellspacing="0" cellpadding="1">
 			<TR align="left">
 				<td>
-					<logic:equal name="eventDetailForm" property="canEdit" value="true">
-						<logic:equal name="eventDetailForm" property="canSelectAll" value="true">
+					<logic:equal name="eventDetailForm" property="canSelectAll" value="true">
 						<input type='checkbox' onclick='selectAll(this.checked);' title="Select All">
-						</logic:equal>
 					</logic:equal>
 				</td><td><font color="gray"><i>Date</i></font></td><td><font color="gray"><i>Time</i></font></td><td><font color="gray"><i>Location</i></font></td><td><font color="gray"><i>Capacity</i></font></td><td><font color="gray"><i>Approved</i></font></td>
 			</TR>
@@ -223,8 +221,7 @@
 				</logic:notEqual>
 				<TR onmouseover="style.backgroundColor='rgb(223,231,242)';" onmouseout="style.backgroundColor='<%=bg%>';" style="color:<%=color%>;background-color:<%=bg%>;font-style:<%=fs%>;">
 					<TD>
-						<logic:equal name="eventDetailForm" property="canEdit" value="true">
-						<logic:equal name="meeting" property="canEdit" value="true">
+						<logic:equal name="meeting" property="canSelect" value="true">
 							<bean:define name="meeting" property="date" id="meetingDate"/>
 							<bean:define name="meeting" property="startTime" id="meetingStartTime"/>
 							<bean:define name="meeting" property="endTime" id="meetingEndTime"/>
@@ -232,7 +229,6 @@
 							<html:multibox property="selectedMeetings">
 								<bean:write name="meetingId"/>
 							</html:multibox>
-						</logic:equal>
 						</logic:equal>
 					</TD>
 					<TD>
@@ -271,8 +267,7 @@
 			</logic:iterate>
 		</Table>
 		</TD></TR>
-		<logic:notEqual name="eventDetailForm" property="canDelete" value="true">
-		<logic:equal name="eventDetailForm" property="canEdit" value="true">
+		<logic:equal name="eventDetailForm" property="canApprove" value="true">
 			<TR>
 				<TD colspan="2">
 					<tt:section-title/>
@@ -315,25 +310,22 @@
 				</TD>			
 			</TR>
 			</logic:equal>
-			</logic:notEqual>
 			<TR>
 				<TD colspan='6'>
 				<logic:equal name="eventDetailForm" property="canDelete" value="true">
 					<html:submit property="op" styleClass="btn" accesskey="D"
 						title="Delete Selected Meetings (Alt+D)" value="Delete"/>
 				</logic:equal>
-				<logic:notEqual name="eventDetailForm" property="canDelete" value="true">
-					<logic:equal name="eventDetailForm" property="canEdit" value="true">
-						<html:submit property="op" styleClass="btn" accesskey="P"
-							title="Approve Selected Meetings (Alt+P)" value="Approve"/>
-						<html:submit property="op" styleClass="btn" accesskey="R"
-							title="Reject Selected Meetings (Alt+R)" value="Reject"/>
-					</logic:equal>
-				</logic:notEqual>
+				<logic:equal name="eventDetailForm" property="canApprove" value="true">
+					<html:submit property="op" styleClass="btn" accesskey="P"
+						title="Approve Selected Meetings (Alt+P)" value="Approve"/>
+					<html:submit property="op" styleClass="btn" accesskey="R"
+						title="Reject Selected Meetings (Alt+R)" value="Reject"/>
+				</logic:equal>
 				</TD>
 			</TR>
 <!-- Exam -->
-	<logic:equal name="eventDetailForm" property="notesHaveUser" value="true">
+	<logic:equal name="eventDetailForm" property="isManager" value="true">
 	<logic:equal name="eventDetailForm" property="eventType" value="Final Examination Event">
 		<TR>
 			<TD colspan='2'>
@@ -384,7 +376,7 @@
 		</TR>
 		</logic:equal>
 	</logic:equal>
-	<logic:equal name="eventDetailForm" property="notesHaveUser" value="true">
+	<logic:equal name="eventDetailForm" property="isManager" value="true">
 	<logic:equal name="eventDetailForm" property="eventType" value="Class Event">
 		<logic:notEmpty scope="request" name="EventDetail.table">
 		<TR>
@@ -429,7 +421,7 @@
 				<table width="100%" border="0" cellspacing="0" cellpadding="3">
 					<tr style='color:gray;font-style:italic;'>
 						<td>Date</td>
-						<logic:equal name="eventDetailForm" property="notesHaveUser" value="true">
+						<logic:equal name="eventDetailForm" property="isManager" value="true">
 							<td>User</td>
 						</logic:equal>
 						<td>Action</td>

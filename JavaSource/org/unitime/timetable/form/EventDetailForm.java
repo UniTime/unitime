@@ -45,7 +45,8 @@ public class EventDetailForm extends ActionForm {
 	private Event iEvent;
 	private Long[] iSelectedMeetings;
 	private Boolean iCanDelete;
-	private Boolean iNotesHaveUser;
+	private Boolean iCanApprove;
+	private Boolean iIsManager;
 	
 	/** 
 	 * Method validate
@@ -73,12 +74,13 @@ public class EventDetailForm extends ActionForm {
 		iNotes.clear();
 		iCanEdit = false;
 		iCanDelete = false;
+		iCanApprove = false;
 		iPreviousId = null;
 		iNextId = null;
 		iAttendanceRequired = false;
 		iAdditionalEmails = null;
 		iSelectedMeetings = null;
-		iNotesHaveUser = false;
+		iIsManager = false;
 	}
 	
 	public Event getEvent() {return iEvent;}
@@ -161,6 +163,9 @@ public class EventDetailForm extends ActionForm {
     public boolean getCanDelete() {return iCanDelete;}
     public void setCanDelete(boolean canDelete) {iCanDelete = canDelete;}
     
+    public boolean getCanApprove() {return iCanApprove;}
+    public void setCanApprove(boolean canApprove) {iCanApprove = canApprove;}
+
     public String getPreviousId () {return iPreviousId;}
     public void setPreviousId(String prevId) {iPreviousId = prevId;}
 
@@ -176,13 +181,13 @@ public class EventDetailForm extends ActionForm {
     
     public boolean getCanSelectAll() {
         for (MeetingBean m:getMeetings()) {
-            if (m.getCanEdit()) return true;
+            if (m.getCanSelect()) return true;
         }
         return false;
     }
     
-    public void setNotesHaveUser(Boolean notesHaveUser) { iNotesHaveUser = notesHaveUser; }
-    public Boolean getNotesHaveUser() { return iNotesHaveUser; }
+    public void setIsManager(Boolean isManager) { iIsManager = isManager; }
+    public Boolean getIsManager() { return iIsManager; }
 
     public static class MeetingBean implements Comparable<MeetingBean> {
     	private String iDate;
@@ -193,8 +198,7 @@ public class EventDetailForm extends ActionForm {
     	private String iApprovedDate = null;
     	private Long iUniqueId = null;
     	private boolean iIsPast = false;
-    	private boolean iCanEditMeeting = false;
-    	private boolean iCanDeleteMeeting = false;
+    	private boolean iCanSelectMeeting = false;
     	private TreeSet<MeetingBean> iOverlaps = new TreeSet();
         private Long iEventId = null;
     	private String iName = null;
@@ -266,11 +270,8 @@ public class EventDetailForm extends ActionForm {
     	public boolean getIsPast() {return iIsPast;}
     	public void setIsPast(boolean isPast) {iIsPast = isPast;}
     	
-    	public boolean getCanEdit() {return iCanEditMeeting;}
-    	public void setCanEdit(boolean canEdit) {iCanEditMeeting = canEdit;}
-    	
-    	public boolean getCanDelete() {return iCanDeleteMeeting;}
-    	public void setCanDelete(boolean canDelete) {iCanDeleteMeeting = canDelete;}
+    	public boolean getCanSelect() {return iCanSelectMeeting;}
+    	public void setCanSelect(boolean canSelect) {iCanSelectMeeting = canSelect;}
     	
     	public int compareTo(MeetingBean meeting) {
     	    int cmp = iName.compareTo(meeting.iName);
