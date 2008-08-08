@@ -89,8 +89,15 @@ public class CourseOfferingImport extends BaseImport {
 	boolean useMeetsWithElement = false;
 	PreferenceLevel requiredPrefLevel = null;
 	MakeAssignmentsForClassEvents assignmentHelper = null;
+	boolean trimLeadingZerosFromExternalId = false;
 	
 	public void loadXml(Element rootElement) throws Exception {
+		String trimLeadingZeros =
+	        ApplicationProperties.getProperty("tmtbl.data.exchange.trim.externalId","false");
+		if (trimLeadingZeros.equals("true")){
+			trimLeadingZerosFromExternalId = true;
+		}
+
 		int changeCount = 0;
 		try {
 			String rootElementName = "offerings";
@@ -965,6 +972,14 @@ public class CourseOfferingImport extends BaseImport {
         	for (Iterator<?> it = element.elementIterator(elementName); it.hasNext();){
 				Element instructorElement = (Element) it.next();
 				String id = getRequiredStringAttribute(instructorElement, "id", elementName);
+	            if (trimLeadingZerosFromExternalId){
+	            	try {
+	            		Integer num = new Integer(id);
+	            		id = num.toString();
+					} catch (Exception e) {
+						// do nothing
+					}
+	            }
 				ids.add(id);
 				firstNames.put(id, getOptionalStringAttribute(instructorElement, "fname"));
 				middleNames.put(id, getOptionalStringAttribute(instructorElement, "mname"));
