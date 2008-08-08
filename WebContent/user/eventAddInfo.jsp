@@ -116,6 +116,7 @@
 				<TR>
 					<TD>
 						<bean:write name="eventAddInfoForm" property="mainContactFirstName"/>
+						<bean:write name="eventAddInfoForm" property="mainContactMiddleName"/>
 						<bean:write name="eventAddInfoForm" property="mainContactLastName"/>
 					</TD>
 					<td>
@@ -172,7 +173,7 @@
 						<bean:write name="meeting" property="date" filter="false"/> 
 					</TD>
 					<TD>
-						<bean:write name="meeting" property="startTime"/> - <bean:write name="meeting" property="endTime"/>
+						<bean:write name="meeting" property="time"/>
 					</TD>
 					<TD>
 						<bean:write name="meeting" property="location"/>
@@ -184,7 +185,7 @@
 				<logic:iterate name="meeting" property="overlaps" id="overlap">
 					<TR style="background-color:#FFD7D7;">
 						<TD>&nbsp;&nbsp;&nbsp;Conflicts with <bean:write name="overlap" property="name"/> (<bean:write name="overlap" property="type"/>)</TD>
-						<TD><bean:write name="overlap" property="startTime"/> - <bean:write name="overlap" property="endTime"/></TD>
+						<TD><bean:write name="overlap" property="time"/></TD>
 						<TD></TD>
 						<TD>
 							<logic:empty name="overlap" property="approvedDate">
@@ -241,6 +242,12 @@
 							<logic:equal name="eventAddInfoForm" property="mainContactLookup" value="true">
 								<input type='button' value='Lookup' onclick="window.open('user/peopleLookup.jsp?query='+mainContactFirstName.value+' '+mainContactLastName.value,'peopleLookup','width=800,height=600,resizable=no,scrollbars=yes,toolbar=no,location=no,directories=no,status=no,menubar=no,copyhistory=no').focus();" style="btn"> 
 							</logic:equal>
+						</TD>
+					</TR>
+					<TR>
+						<TD nowrap> Middle Name: </TD>
+						<TD>
+							<html:text property="mainContactMiddleName" maxlength="20" size="30" styleId="mname" />
 						</TD>
 					</TR>
 					<TR>
@@ -305,7 +312,7 @@
 						<bean:write name="meeting" property="date"/> 
 					</TD>
 					<TD>
-						<bean:write name="meeting" property="startTime"/> - <bean:write name="meeting" property="endTime"/>
+						<bean:write name="meeting" property="time"/>
 					</TD>
 					<TD>
 						<bean:write name="meeting" property="location"/>
@@ -317,7 +324,7 @@
 				<logic:iterate name="meeting" property="overlaps" id="overlap">
 					<TR style="background-color:#FFD7D7;">
 						<TD>&nbsp;&nbsp;&nbsp;Conflicts with <bean:write name="overlap" property="name"/> (<bean:write name="overlap" property="type"/>)</TD>
-						<TD><bean:write name="overlap" property="startTime"/> - <bean:write name="overlap" property="endTime"/></TD>
+						<TD><bean:write name="overlap" property="time"/></TD>
 						<TD></TD>
 						<TD>
 							<logic:empty name="overlap" property="approvedDate">

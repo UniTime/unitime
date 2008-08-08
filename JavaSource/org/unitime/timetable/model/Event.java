@@ -246,8 +246,7 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
 	        return getDays()+" "+
 	            new SimpleDateFormat("MM/dd").format(getMeetings().first().getMeetingDate())+
 	            (getMeetings().size()>1?" - "+new SimpleDateFormat("MM/dd").format(getMeetings().last().getMeetingDate()):"")+" "+
-	            getMeetings().first().startTime()+" - "+
-	            getMeetings().first().stopTime()+
+	            (getMeetings().first().isAllDay()?"All Day":getMeetings().first().startTime()+" - "+getMeetings().first().stopTime())+
 	            (getMeetings().first().getLocation()==null?"":" "+getMeetings().first().getLocation().getLabel());
 	    }
 
@@ -255,7 +254,7 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
 	            return getDays(Constants.DAY_NAMES_SHORT, Constants.DAY_NAMES_SHORT)+" "+
 	                new SimpleDateFormat("MM/dd").format(getMeetings().first().getMeetingDate())+
 	                (getMeetings().size()>1?" - "+new SimpleDateFormat("MM/dd").format(getMeetings().last().getMeetingDate()):"")+" "+
-	                getMeetings().first().startTime()+
+	                (getMeetings().first().isAllDay()?"All Day":getMeetings().first().startTime())+
 	                (getMeetings().first().getLocation()==null?"":" "+getMeetings().first().getLocation().getLabel());
 	        }
 }

@@ -44,6 +44,7 @@ import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.dao.MeetingDAO;
+import org.unitime.timetable.util.Constants;
 
 /**
  * @author Zuzana Mullerova
@@ -236,7 +237,8 @@ public class EventRoomAvailabilityForm extends EventAddForm {
 							"onMouseOut=\"tOut('"+df2.format(date)+"','"+location.getPermanentId()+"');\">&nbsp;</td>";
 				} else {
 					ret += "<td style='background-color:"+(selected?"yellow":"rgb(200,200,200)")+";' valign='top' align='center' id='td"+df2.format(date)+"_"+location.getPermanentId()+"' ";
-					if (isAdmin()) {ret+=
+					if (isAdmin() || (getManagingDepartments()!=null && location.getControllingDepartment()!=null && getManagingDepartments().contains(location.getControllingDepartment()))) {
+					    ret+=
 							"onClick=\"tClick('"+df2.format(date)+"','"+location.getPermanentId()+"');\" "+
 							"onMouseOver=\"tOver(this,'"+df2.format(date)+"','"+location.getPermanentId()+"');\" "+
 							"onMouseOut=\"tOut('"+df2.format(date)+"','"+location.getPermanentId()+"');\" ";
@@ -267,16 +269,12 @@ public class EventRoomAvailabilityForm extends EventAddForm {
 	public Hashtable<Long, Location> getLocations() {return iLocations;}
 	public void setLocations(Hashtable<Long, Location> locations) {iLocations=locations;}
 	
-	public String getTimeString(int time) {
-	    int hour = (time/12)%12;
-    	int minute = time%12*5;
-    	String ampm = (time/144==0?"am":"pm");
-		return hour+":"+(minute<10?"0":"")+minute+" "+ampm;
+	public String getTimeString() {
+	    return (getStartTime()==0 && getStopTime()==Constants.SLOTS_PER_DAY?
+	            "All Day":
+	            Constants.toTime(Constants.SLOT_LENGTH_MIN*getStartTime()+Constants.FIRST_SLOT_TIME_MIN)+" - "+
+	            Constants.toTime(Constants.SLOT_LENGTH_MIN*getStopTime()+Constants.FIRST_SLOT_TIME_MIN));
 	}
-	
-	public String getStartTimeString() {return getTimeString(getStartTime());}
-	
-	public String getStopTimeString() {	return getTimeString(getStopTime());}
 	
 	// a class for storing selected date/location combinations
 	public static class DateLocation implements Serializable, Comparable<DateLocation> {

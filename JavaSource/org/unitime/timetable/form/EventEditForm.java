@@ -66,6 +66,7 @@ public class EventEditForm extends EventAddInfoForm {
 		setEventName(getEvent().getEventName());
 		setEventType(getEvent().getEventTypeLabel());
 		setMainContactFirstName(getEvent().getMainContact().getFirstName());
+		setMainContactMiddleName(getEvent().getMainContact().getMiddleName());
 		setMainContactLastName(getEvent().getMainContact().getLastName());
 		setMainContactExternalId(getEvent().getMainContact().getExternalUniqueId());
 		setMainContactEmail(getEvent().getMainContact().getEmailAddress());
@@ -97,6 +98,7 @@ public class EventEditForm extends EventAddInfoForm {
 			if (mainContact==null) mainContact = new EventContact();
 			if (getMainContactFirstName()!=null && getMainContactFirstName().length()>0) 
 				mainContact.setFirstName(getMainContactFirstName());
+            mainContact.setMiddleName(getMainContactMiddleName());
 			if (getMainContactLastName()!=null && getMainContactLastName().length()>0)
 				mainContact.setLastName(getMainContactLastName());
 			if (getMainContactEmail()!=null && getMainContactEmail().length()>0)

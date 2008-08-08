@@ -191,7 +191,9 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
 	}
 	
 	public String toString() {
-		return (DateFormat.getDateInstance(DateFormat.SHORT).format(getMeetingDate()) + " " + startTime() + " - " + stopTime() +  (getLocation() == null?"":", " + getLocation().getLabel()));
+		return (DateFormat.getDateInstance(DateFormat.SHORT).format(getMeetingDate())+" "+
+		        (isAllDay()?"All Day":startTime()+" - "+stopTime())+
+		        (getLocation()==null?"":", "+getLocation().getLabel()));
 	}
 	
 	public String getTimeLabel() {
@@ -203,22 +205,10 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
     }
 	
 	private String periodToTime(Integer slot, Integer offset){
-		if (slot == null){
-			return("");
-		}
+		if (slot==null) return("");
 		int min = slot.intValue()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
 		if (offset!=null) min += offset;
-		int hours = (min/60);
-		int minutes = min%60;
-		String amPm = "a";
-		if (hours >= 12){
-			amPm = "p";
-			hours -= 12;
-		}
-		if (hours == 0) {
-			hours = 12;
-		}
-		return(hours + ":" + (minutes<10?"0":"") + minutes + amPm);
+		return Constants.toTime(min);
 	}
 	
 	public String startTime(){
@@ -262,5 +252,9 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
     public boolean overlaps(Meeting meeting) {
         if (getMeetingDate().getTime()!=meeting.getMeetingDate().getTime()) return false;
         return getStartPeriod()<meeting.getStopPeriod() && meeting.getStartPeriod()<getStopPeriod();
+    }
+    
+    public boolean isAllDay() {
+        return getStartPeriod()==0 && getStopPeriod()==Constants.SLOTS_PER_DAY;
     }
 }

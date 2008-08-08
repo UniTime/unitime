@@ -100,10 +100,7 @@ public class PdfEventGridTable extends EventGridTable {
                 TreeSet<Integer> aboveBlank = new TreeSet<Integer>();
                 for (int col = 0; col<lastCol; col++) {
                     int start = iStartSlot + col*iStep;
-                    int min = start*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
-                    int startHour = min/60;
-                    int startMin = min%60;
-                    table.addRow((startHour>12?startHour-12:startHour)+":"+(startMin<10?"0":"")+startMin+(startHour>=12?"p":"a"));
+                    table.addRow(Constants.toTime(start*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN));
                     TreeSet<Integer> blank = new TreeSet<Integer>();
                     int mcol = 0;
                     for (int row = 0; row < iDates.size(); row++ ) {
@@ -128,7 +125,7 @@ public class PdfEventGridTable extends EventGridTable {
                                 int line = mc.getPrinted(); mc.setPrinted(line+1);
                                 boolean last = (line+1==mc.getLength());
                                 if (line==0) {
-                                    if (!last) table.addCell(!last, aboveBlank.contains(mcol), idx==0 && split, meeting.startTime()+" - "+meeting.stopTime(), false);
+                                    if (!last) table.addCell(!last, aboveBlank.contains(mcol), idx==0 && split, (meeting.isAllDay()?"All Day":meeting.startTime()+" - "+meeting.stopTime()), false);
                                     else table.addCell(!last,aboveBlank.contains(mcol),idx==0 && split,meeting.getEvent().getEventName(),meeting.getApprovedDate()!=null);
                                 } else if (line==1) {
                                     table.addCell(!last,aboveBlank.contains(mcol),idx==0 && split,meeting.getEvent().getEventName(),meeting.getApprovedDate()!=null);
@@ -172,10 +169,7 @@ public class PdfEventGridTable extends EventGridTable {
             TreeSet<Integer> aboveBlank = new TreeSet<Integer>();
             for (int col = 0; col<lastCol; col++) {
                 int start = iStartSlot + col*iStep;
-                int min = start*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
-                int startHour = min/60;
-                int startMin = min%60;
-                table.addRow((startHour>12?startHour-12:startHour)+":"+(startMin<10?"0":"")+startMin+(startHour>=12?"p":"a"));
+                table.addRow(Constants.toTime(start*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN));
                 TreeSet<Integer> blank = new TreeSet<Integer>();
                 for (TableModel m : iModel) {
                     TableCell cell = m.getTable()[0][col];
@@ -198,7 +192,7 @@ public class PdfEventGridTable extends EventGridTable {
                             int line = mc.getPrinted(); mc.setPrinted(line+1);
                             boolean last = (line+1==mc.getLength());
                             if (line==0) {
-                                if (!last) table.addCell(!last,aboveBlank.contains(idx),idx==0 && split,meeting.startTime()+" - "+meeting.stopTime(),false);
+                                if (!last) table.addCell(!last,aboveBlank.contains(idx),idx==0 && split,(meeting.isAllDay()?"All Day":meeting.startTime()+" - "+meeting.stopTime()),false);
                                 else table.addCell(!last,aboveBlank.contains(idx),idx==0 && split,meeting.getEvent().getEventName(),meeting.getApprovedDate()!=null);
                             } else if (line==1) {
                                 table.addCell(!last,aboveBlank.contains(idx),idx==0 && split,meeting.getEvent().getEventName(),meeting.getApprovedDate()!=null);

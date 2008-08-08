@@ -314,18 +314,10 @@ public class WebEventTableBuilder {
 
     private TableCell buildTime (Meeting m) {
     	TableCell cell = this.initCell(true, null, 1, true);
-		int start = Constants.SLOT_LENGTH_MIN*m.getStartPeriod()+
-			Constants.FIRST_SLOT_TIME_MIN+
-			(m.getStartOffset()==null?0:m.getStartOffset());
-		int startHour = start/60;
-		int startMin = start%60;
-		int end = Constants.SLOT_LENGTH_MIN*m.getStopPeriod()+
-			Constants.FIRST_SLOT_TIME_MIN+
-			(m.getStopOffset()==null?0:m.getStopOffset());
-		int endHour = end/60;
-		int endMin = end%60;
-		cell.addContent((startHour>12?startHour-12:startHour)+":"+(startMin<10?"0":"")+startMin+(startHour>=12?"p":"a")+ "-" + 
-						(endHour>12?endHour-12:endHour)+":"+(endMin<10?"0":"")+endMin+(endHour>=12?"p":"a")); //time cannot be null
+		cell.addContent(
+		        m.isAllDay()?"All Day":
+		        Constants.toTime(Constants.SLOT_LENGTH_MIN*m.getStartPeriod()+Constants.FIRST_SLOT_TIME_MIN+(m.getStartOffset()==null?0:m.getStartOffset()))+" - "+
+		        Constants.toTime(Constants.SLOT_LENGTH_MIN*m.getStopPeriod()+Constants.FIRST_SLOT_TIME_MIN+(m.getStopOffset()==null?0:m.getStopOffset())));
 		return(cell);
     }
     

@@ -191,8 +191,7 @@ public class EventDetailForm extends ActionForm {
 
     public static class MeetingBean implements Comparable<MeetingBean> {
     	private String iDate;
-    	private String iStartTime;
-    	private String iEndTime;
+    	private String iTime;
     	private String iLocation;
     	private int iLocationCapacity;
     	private String iApprovedDate = null;
@@ -206,14 +205,9 @@ public class EventDetailForm extends ActionForm {
     	
     	public MeetingBean(Date date, int startTime, int endTime, Location location) {
     	    iDate = new SimpleDateFormat("EEE MM/dd, yyyy", Locale.US).format(date);
-            int start = Constants.SLOT_LENGTH_MIN*startTime+Constants.FIRST_SLOT_TIME_MIN;
-            int startHour = start/60;
-            int startMin = start%60;
-    	    iStartTime = (startHour>12?startHour-12:startHour)+":"+(startMin<10?"0":"")+startMin+(startHour>=12?"p":"a");
-            int end = Constants.SLOT_LENGTH_MIN*endTime+Constants.FIRST_SLOT_TIME_MIN;
-            int endHour = end/60;
-            int endMin = end%60;
-    	    iEndTime = (endHour>12?endHour-12:endHour)+":"+(endMin<10?"0":"")+endMin+(endHour>=12?"p":"a");;
+    	    iTime = (startTime==0 && endTime==Constants.SLOTS_PER_DAY?"All Day":
+    	            Constants.toTime(Constants.SLOT_LENGTH_MIN*startTime+Constants.FIRST_SLOT_TIME_MIN)+" - "+
+    	            Constants.toTime(Constants.SLOT_LENGTH_MIN*endTime+Constants.FIRST_SLOT_TIME_MIN));
     	    iLocation = (location==null?"":location.getLabel());
     	    iLocationCapacity = (location==null?0:location.getCapacity());
     	}
@@ -223,14 +217,9 @@ public class EventDetailForm extends ActionForm {
     	    iName = meeting.getEvent().getEventName();
     	    iType = meeting.getEvent().getEventTypeAbbv();
     	    iUniqueId = meeting.getUniqueId();
-            int start = Constants.SLOT_LENGTH_MIN*meeting.getStartPeriod()+Constants.FIRST_SLOT_TIME_MIN+(meeting.getStartOffset()==null?0:meeting.getStartOffset());
-            int startHour = start/60;
-            int startMin = start%60;
-            iStartTime = (startHour>12?startHour-12:startHour)+":"+(startMin<10?"0":"")+startMin+(startHour>=12?"p":"a");
-            int end = Constants.SLOT_LENGTH_MIN*meeting.getStopPeriod()+Constants.FIRST_SLOT_TIME_MIN+(meeting.getStopOffset()==null?0:meeting.getStopOffset());
-            int endHour = end/60;
-            int endMin = end%60;
-            iEndTime = (endHour>12?endHour-12:endHour)+":"+(endMin<10?"0":"")+endMin+(endHour>=12?"p":"a");
+    	    iTime = (meeting.isAllDay()?"All Day":
+    	        Constants.toTime(Constants.SLOT_LENGTH_MIN*meeting.getStartPeriod()+Constants.FIRST_SLOT_TIME_MIN+(meeting.getStartOffset()==null?0:meeting.getStartOffset()))+" - "+
+    	        Constants.toTime(Constants.SLOT_LENGTH_MIN*meeting.getStopPeriod()+Constants.FIRST_SLOT_TIME_MIN+(meeting.getStopOffset()==null?0:meeting.getStopOffset())));
             Location location = meeting.getLocation();
             iLocation = (location==null?"":location.getLabel());
             iLocationCapacity = (location==null?0:location.getCapacity());
@@ -249,12 +238,9 @@ public class EventDetailForm extends ActionForm {
  
 //    	public Long getId() { return Math.round(1000.0*Math.random()); }
     	
-    	public String getStartTime() { return iStartTime;}
-    	public void setStartTime(String time) {iStartTime = time;}
+    	public String getTime() { return iTime;}
+    	public void setTime(String time) {iTime = time;}
     	
-    	public String getEndTime() { return iEndTime;}
-    	public void setEndTime(String time) {iEndTime = time;}
-
     	public String getLocation() { return iLocation;}
     	public void setLocation(String location) {iLocation = location;}
     	
