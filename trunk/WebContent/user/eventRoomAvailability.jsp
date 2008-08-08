@@ -96,8 +96,7 @@ function tAll(location, admin) {
 				<tt:section-header>
 					<tt:section-title>
 						Available Rooms For 
-						<bean:write name="eventRoomAvailabilityForm" property="startTimeString"/>
-						 - <bean:write name="eventRoomAvailabilityForm" property="stopTimeString"/>
+						<bean:write name="eventRoomAvailabilityForm" property="timeString"/>
 					</tt:section-title>
 					<html:submit property="op" styleClass="btn" accesskey="N"
 						title="Next: Continue With Reservation (Alt+N)" value="Continue"/>

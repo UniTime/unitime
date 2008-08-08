@@ -78,6 +78,8 @@ public class EventEditAction extends Action {
 		    if (c!=null) {
                 if (myForm.getMainContactFirstName()==null || myForm.getMainContactFirstName().length()==0)
                     myForm.setMainContactFirstName(c.getFirstName());
+                if (myForm.getMainContactMiddleName()==null || myForm.getMainContactMiddleName().length()==0)
+                    myForm.setMainContactMiddleName(c.getMiddleName());
                 if (myForm.getMainContactLastName()==null || myForm.getMainContactLastName().length()==0)
                     myForm.setMainContactLastName(c.getLastName());
                 if (myForm.getMainContactEmail()==null || myForm.getMainContactEmail().length()==0)
@@ -87,6 +89,8 @@ public class EventEditAction extends Action {
 		    } else if (m!=null) {
 		        if (myForm.getMainContactFirstName()==null || myForm.getMainContactFirstName().length()==0)
 		            myForm.setMainContactFirstName(m.getFirstName());
+                if (myForm.getMainContactMiddleName()==null || myForm.getMainContactMiddleName().length()==0)
+                    myForm.setMainContactMiddleName(m.getMiddleName());
 		        if (myForm.getMainContactLastName()==null || myForm.getMainContactLastName().length()==0)
 		            myForm.setMainContactLastName(m.getLastName());
 		        if (myForm.getMainContactEmail()==null || myForm.getMainContactEmail().length()==0)

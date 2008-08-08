@@ -93,7 +93,8 @@ public class EventAddInfoForm extends ActionForm {
 	private String iAdditionalInfo;
 	private String iMainContactEmail;
 	private String iMainContactPhone;
-	private String iMainContactFirstName;	
+	private String iMainContactFirstName;
+	private String iMainContactMiddleName;
 	private String iMainContactLastName;
 	private String iMainContactExternalId;
 	private boolean iMainContactLookup;
@@ -155,6 +156,7 @@ public class EventAddInfoForm extends ActionForm {
 		iMainContactEmail = null;
 		iMainContactPhone = null;
 		iMainContactFirstName = null;
+		iMainContactMiddleName = null;
 		iMainContactLastName = null;
 		iMainContactExternalId = null;
 		iEventType = null;
@@ -181,6 +183,7 @@ public class EventAddInfoForm extends ActionForm {
 		iEventName = (String) session.getAttribute("Event.Name");
 		iMainContactEmail = (String) session.getAttribute("Event.mcEmail");
 		iMainContactFirstName = (String) session.getAttribute("Event.mcFName");
+		iMainContactMiddleName = (String) session.getAttribute("Event.mcMName");
 		iMainContactLastName = (String) session.getAttribute("Event.mcLName");
 		iMainContactExternalId = (String) session.getAttribute("Event.mcUid");
 		iMainContactPhone = (String) session.getAttribute("Event.mcPhone");
@@ -203,6 +206,7 @@ public class EventAddInfoForm extends ActionForm {
 			iEventName = iEvent.getEventName();
 			iEventType = iEvent.getEventTypeLabel();
 			iMainContactFirstName = iEvent.getMainContact().getFirstName();
+			iMainContactMiddleName = iEvent.getMainContact().getMiddleName();
 			iMainContactLastName = iEvent.getMainContact().getLastName();
 			iMainContactExternalId = iEvent.getMainContact().getExternalUniqueId();
 			iMainContactEmail = iEvent.getMainContact().getEmailAddress();
@@ -224,6 +228,7 @@ public class EventAddInfoForm extends ActionForm {
 		session.setAttribute("Event.Name", iEventName);
 		session.setAttribute("Event.mcEmail", iMainContactEmail);
 		session.setAttribute("Event.mcFName", iMainContactFirstName);
+		session.setAttribute("Event.mcMName", iMainContactMiddleName);
 		session.setAttribute("Event.mcLName", iMainContactLastName);
 		if (iMainContactExternalId==null)
 		    session.removeAttribute("Event.mcUid");
@@ -255,6 +260,7 @@ public class EventAddInfoForm extends ActionForm {
 				if (mainContact==null) mainContact = new EventContact();
 				if (iMainContactFirstName!=null && iMainContactFirstName.length()>0) 
 					mainContact.setFirstName(iMainContactFirstName);
+                mainContact.setMiddleName(iMainContactMiddleName);
 				if (iMainContactLastName!=null && iMainContactLastName.length()>0)
 					mainContact.setLastName(iMainContactLastName);
 				if (iMainContactEmail!=null && iMainContactEmail.length()>0)
@@ -476,7 +482,10 @@ public class EventAddInfoForm extends ActionForm {
 	public String getMainContactFirstName() {return iMainContactFirstName;}
 	public void setMainContactFirstName(String firstName) {iMainContactFirstName = firstName;}
 	
-	public String getMainContactLastName() {return iMainContactLastName;}
+    public String getMainContactMiddleName() {return iMainContactMiddleName;}
+    public void setMainContactMiddleName(String middleName) {iMainContactMiddleName = middleName;}
+
+    public String getMainContactLastName() {return iMainContactLastName;}
 	public void setMainContactLastName(String lastName) {iMainContactLastName = lastName;}
 	
     public String getMainContactExternalId() {return iMainContactExternalId;}
