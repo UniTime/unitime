@@ -85,42 +85,43 @@
 			<TD>ID:</TD>
 			<TD>
 				<bean:write name="<%=frmName%>"  property="puId" />	
-				<html:hidden name="<%=frmName%>"  property="puId" />
+				<html:hidden name="<%=frmName%>"  property="puId" styleId="uid"/>
 			<TD>
 		</TR>
 		
 		<TR>
 			<TD>Career Account:</TD>
 			<TD>
-				<html:text property="careerAcct" maxlength="20" size="20" /> 
+				<html:text property="careerAcct" maxlength="20" size="20"/> 
 			<TD>
 		</TR>
 		
 		<TR>
 			<TD>First Name:</TD>
 			<TD>
-				<html:text property="fname" maxlength="20" size="20" />
+				<html:text property="fname" maxlength="20" size="20" styleId="fname" />
+				<input type='button' value='Lookup' onclick="window.open('user/peopleLookup.jsp?query='+fname.value+' '+lname.value,'peopleLookup','width=800,height=600,resizable=no,scrollbars=yes,toolbar=no,location=no,directories=no,status=no,menubar=no,copyhistory=no').focus();" style="btn">
 			<TD>
 		</TR>	
 		
 		<TR>
 			<TD>Middle Name:</TD>
 			<TD>
-				<html:text property="mname" maxlength="20" size="20" />
+				<html:text property="mname" maxlength="20" size="20" styleId="mname" />
 			<TD>
 		</TR>	
 		
 		<TR>
 			<TD>Last Name: <font class="reqField">*</font></TD>
 			<TD>
-				<html:text property="lname" maxlength="26" size="26" />
+				<html:text property="lname" maxlength="26" size="26" styleId="lname" />
 			<TD>
 		</TR>
 		
 		<TR>
 			<TD>Email:</TD>
 			<TD>
-				<html:text property="email" maxlength="200" size="50" /> 
+				<html:text property="email" maxlength="200" size="50" styleId="email" /> 
 			<TD>
 		</TR>
 
