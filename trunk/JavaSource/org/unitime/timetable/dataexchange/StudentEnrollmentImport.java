@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import org.dom4j.Element;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
@@ -16,7 +17,7 @@ public class StudentEnrollmentImport extends BaseImport {
 	TimetableManager manager = null;
 	HashMap<String, Class_> classes = new HashMap<String, Class_>();
 	HashMap<String, CourseOffering> controllingCourses = new HashMap<String, CourseOffering>();
-	
+	boolean trimLeadingZerosFromExternalId = false;
 	public StudentEnrollmentImport() {
 		super();
 	}
@@ -24,6 +25,12 @@ public class StudentEnrollmentImport extends BaseImport {
 	@Override
 	public void loadXml(Element rootElement) throws Exception {
 		String rootElementName = "studentEnrollments";
+		String trimLeadingZeros =
+	        ApplicationProperties.getProperty("tmtbl.data.exchange.trim.externalId","false");
+		if (trimLeadingZeros.equals("true")){
+			trimLeadingZerosFromExternalId = true;
+		}
+
         if (!rootElement.getName().equalsIgnoreCase(rootElementName)) {
         	throw new Exception("Given XML file is not a Student Enrollments load file.");
         }
@@ -62,7 +69,9 @@ public class StudentEnrollmentImport extends BaseImport {
  	        for ( Iterator it = rootElement.elementIterator(); it.hasNext(); ) {
 	            Element studentElement = (Element) it.next();
 	            String externalId = getRequiredStringAttribute(studentElement, "externalId", elementName);
-	            
+	            if (trimLeadingZerosFromExternalId){
+	            	externalId = (new Integer(externalId)).toString();
+	            }
             	Student student = fetchStudent(externalId, session.getUniqueId());
             	if (student == null){
             		student = new Student();
