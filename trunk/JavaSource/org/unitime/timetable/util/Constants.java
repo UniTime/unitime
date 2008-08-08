@@ -421,9 +421,7 @@ public class Constants extends net.sf.cpsolver.coursett.Constants {
 
  	
   	public static String slot2str(int slot) {
-		int hour = (slot*Constants.SLOT_LENGTH_MIN+Constants.FIRST_SLOT_TIME_MIN)/60;
-		int min = (slot*Constants.SLOT_LENGTH_MIN+Constants.FIRST_SLOT_TIME_MIN)%60;
-		return (hour>12?hour-12:hour)+":"+(min<10?"0":"")+min+(hour>=12?"p":"a");
+  	    return toTime(slot*Constants.SLOT_LENGTH_MIN+Constants.FIRST_SLOT_TIME_MIN);
   	}
   	
   	/**
@@ -504,4 +502,10 @@ public class Constants extends net.sf.cpsolver.coursett.Constants {
 	}
 	
 	public static final int PREF_ROWS_ADDED = 2;
+	
+	public static String toTime(int minutesSinceMidnight) {
+	    int hour = minutesSinceMidnight/60;
+	    int min = minutesSinceMidnight%60;
+	    return (hour==0?12:hour>12?hour-12:hour)+":"+(min<10?"0":"")+min+(hour<24 && hour>=12?"p":"a");
+	}
 }

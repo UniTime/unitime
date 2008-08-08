@@ -300,14 +300,12 @@ public class TimetableGridTable {
 			for (int day=startDay();(isDispModeInRow() && day<=endDay()) || (isDispModePerWeek() && day==startDay());day++) {
 				for (int slot=firstSlot();slot<=lastSlot();slot+=6) {
 					int time = slot*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
-					int hour = time/60;
-					int min = time%60;
 					boolean eod = (slot+5==lastSlot());
 					boolean eol = (eod && (isDispModePerWeek() || day==endDay()));
 					out.println("<th width='40' height='40' colspan='6' class='Timetable" + (rowNumber==0?"Head":"") + "Cell" + (eol?"EOL":eod?"EOD":"") + "'>");
 					if (isDispModeInRow())
 						out.println(Constants.DAY_NAME[day]+"<br>");
-					out.println((hour>12?hour-12:hour)+":"+(min<10?"0":"")+min+(hour>=12?"p":"a"));
+					out.println(Constants.toTime(time));
 					out.println("</th>");
 				}
 			}
@@ -473,11 +471,9 @@ public class TimetableGridTable {
 			int step = 6;
 			for (int slot=firstSlot();slot<=lastSlot();slot+=step) {
 				int time = slot * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
-				int hour = time/60;
-				int min = time%60;
                 int slotsToEnd = lastSlot()-slot+1;
                 if ((slot%6) == 0) {
-                	out.println("<th width='40' height='40' class='TimetableHeadCell"+(slot==firstSlot()?"":"In")+"Vertical'>" + (hour>12?hour-12:hour) + ":" + (min<10?"0":"") + min + (hour>=12?"p":"a") + "</th>");
+                	out.println("<th width='40' height='40' class='TimetableHeadCell"+(slot==firstSlot()?"":"In")+"Vertical'>" + Constants.toTime(time) + "</th>");
                 } else {
                 	out.println("<th width='40' height='40' class='TimetableHeadCellInVertical'>&nbsp;</th>");
                 }

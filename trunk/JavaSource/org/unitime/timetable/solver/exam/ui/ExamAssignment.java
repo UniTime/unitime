@@ -207,15 +207,9 @@ public class ExamAssignment extends ExamInfo implements Serializable {
 
     public String getPeriodName() {
         if (getPeriod()==null) return "";
-        int min = getPeriod().getStartSlot()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
-        int startHour = min / 60;
-        int startMin = min % 60;
-        min += getLength();
-        int endHour = min / 60;
-        int endMin = min % 60;
-        return sDateFormat.format(getPeriod().getStartDate())+" "+
-                (startHour>12?startHour-12:startHour)+":"+(startMin<10?"0":"")+startMin+(startHour>=12?"p":"a")+" - "+
-                (endHour>12?endHour-12:endHour)+":"+(endMin<10?"0":"")+endMin+(endHour>=12?"p":"a");
+        int start = getPeriod().getStartSlot()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
+        int end = start + getLength();
+        return sDateFormat.format(getPeriod().getStartDate())+" "+Constants.toTime(start)+" - "+Constants.toTime(end);
     }
     
     public String getPeriodNameFixedLength() {
@@ -227,8 +221,8 @@ public class ExamAssignment extends ExamInfo implements Serializable {
         int endHour = min / 60;
         int endMin = min % 60;
         return sDateFormat.format(getPeriod().getStartDate())+" "+
-            s2Z.format(startHour>12?startHour-12:startHour)+":"+s2Z.format(startMin)+(startHour>=12?"p":"a")+" - "+
-            s2Z.format(endHour>12?endHour-12:endHour)+":"+s2Z.format(endMin)+(endHour>=12?"p":"a");
+            s2Z.format(startHour==0?12:startHour>12?startHour-12:startHour)+":"+s2Z.format(startMin)+(startHour<24 && startHour>=12?"p":"a")+" - "+
+            s2Z.format(endHour==0?12:endHour>12?endHour-12:endHour)+":"+s2Z.format(endMin)+(endHour<24 && endHour>=12?"p":"a");
     }
     
     public String getPeriodAbbreviation() {
@@ -263,21 +257,14 @@ public class ExamAssignment extends ExamInfo implements Serializable {
 
     public String getTime(boolean pref) {
         if (getPeriod()==null) return "";
-        int min = getPeriod().getStartSlot()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
-        int startHour = min / 60;
-        int startMin = min % 60;
-        min += getLength();
-        int endHour = min / 60;
-        int endMin = min % 60;
+        int start = getPeriod().getStartSlot()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
+        int end = start + getLength();
         if (!pref || iPeriodPref==null || PreferenceLevel.sNeutral.equals(iPeriodPref))
-            return 
-            (startHour>12?startHour-12:startHour)+":"+(startMin<10?"0":"")+startMin+(startHour>=12?"p":"a")+" - "+
-            (endHour>12?endHour-12:endHour)+":"+(endMin<10?"0":"")+endMin+(endHour>=12?"p":"a");
-        return
-        "<span title='"+PreferenceLevel.prolog2string(iPeriodPref)+" "+getPeriodName()+"' style='color:"+PreferenceLevel.prolog2color(iPeriodPref)+";'>"+
-        (startHour>12?startHour-12:startHour)+":"+(startMin<10?"0":"")+startMin+(startHour>=12?"p":"a")+" - "+
-        (endHour>12?endHour-12:endHour)+":"+(endMin<10?"0":"")+endMin+(endHour>=12?"p":"a")+
-        "</span>";
+            return Constants.toTime(start)+" - "+Constants.toTime(end); 
+        return 
+            "<span title='"+PreferenceLevel.prolog2string(iPeriodPref)+" "+getPeriodName()+"' style='color:"+PreferenceLevel.prolog2color(iPeriodPref)+";'>"+
+            Constants.toTime(start)+" - "+Constants.toTime(end)+
+            "</span>";
     }
     
     public String getTimeFixedLength() {
@@ -289,8 +276,8 @@ public class ExamAssignment extends ExamInfo implements Serializable {
         int endHour = min / 60;
         int endMin = min % 60;
         return 
-            s2Z.format(startHour>12?startHour-12:startHour)+":"+s2Z.format(startMin)+(startHour>=12?"p":"a")+" - "+
-            s2Z.format(endHour>12?endHour-12:endHour)+":"+s2Z.format(endMin)+(endHour>=12?"p":"a");
+            s2Z.format(startHour==0?12:startHour>12?startHour-12:startHour)+":"+s2Z.format(startMin)+(startHour<24 && startHour>=12?"p":"a")+" - "+
+            s2Z.format(endHour==0?12:endHour>12?endHour-12:endHour)+":"+s2Z.format(endMin)+(endHour<24 && endHour>=12?"p":"a");
     }
 
     public TreeSet<ExamRoomInfo> getRooms() {
