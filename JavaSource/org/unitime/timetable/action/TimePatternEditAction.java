@@ -264,10 +264,7 @@ public class TimePatternEditAction extends Action {
             		}
             		name += " ";
             		int startSlot = tpref.getTimePatternModel().getExactStartSlot();
-            		int startTime = Constants.FIRST_SLOT_TIME_MIN + (Constants.SLOT_LENGTH_MIN*startSlot);
-                    int startHour = startTime / 60;
-                    int startMinute = startTime % 60;
-                    name+= (startHour>12?startHour-12:startHour)+":"+(startMinute<10?"0":"")+startMinute+(startHour>=12?"p":"a");
+                    name+= Constants.toTime(Constants.FIRST_SLOT_TIME_MIN + (Constants.SLOT_LENGTH_MIN*startSlot));
             		int minPerMtg = (nrDays==0?0:clazz.getSchedulingSubpart().getMinutesPerWk().intValue()/nrDays);
             		if (nrDays==0)
 	                    Debug.warning("Class "+clazz.getClassLabel()+" has zero number of days.");

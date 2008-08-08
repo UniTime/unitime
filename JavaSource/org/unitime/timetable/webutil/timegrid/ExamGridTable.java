@@ -295,10 +295,7 @@ public class ExamGridTable {
     }
     
     public String getSlotName(int slot) {
-        int time = slot*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
-        int hour = time/60;
-        int min = time%60;
-        return (hour>12?hour-12:hour)+":"+(min<10?"0":"")+min+(hour>=12?"p":"a");
+        return Constants.toTime(slot*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN);
     }
     
     public void printHeaderCell(PrintWriter out, String name, boolean vertical, boolean eod, boolean eol) {

@@ -284,12 +284,8 @@ public class MidtermPeriodPreferenceModel {
         int legendIdx = (starts.size()==1?0:starts.size()==2?1:starts.size()/2);
         int idx = 0;
         for (Integer start: starts) {
-            int startHour = (Constants.SLOT_LENGTH_MIN*start+Constants.FIRST_SLOT_TIME_MIN) / 60;
-            int startMin = (Constants.SLOT_LENGTH_MIN*start+Constants.FIRST_SLOT_TIME_MIN) % 60;
-            String startTime = (startHour>12?startHour-12:startHour)+":"+(startMin<10?"0":"")+startMin+(startHour>=12?"p":"a");
-            int endHour = (Constants.SLOT_LENGTH_MIN*(start+iLength.get(start))+Constants.FIRST_SLOT_TIME_MIN) / 60;
-            int endMin = (Constants.SLOT_LENGTH_MIN*(start+iLength.get(start))+Constants.FIRST_SLOT_TIME_MIN) % 60;
-            String endTime = (endHour>12?endHour-12:endHour)+":"+(endMin<10?"0":"")+endMin+(endHour>=12?"p":"a");
+            String startTime = Constants.toTime(Constants.SLOT_LENGTH_MIN*start+Constants.FIRST_SLOT_TIME_MIN);
+            String endTime = Constants.toTime(Constants.SLOT_LENGTH_MIN*(start+iLength.get(start))+Constants.FIRST_SLOT_TIME_MIN);
             sb.append(
                     "calGenerate("+getYear()+","+
                         getStartMonth()+","+
@@ -338,12 +334,8 @@ public class MidtermPeriodPreferenceModel {
                 } else if (!iLocation && PreferenceLevel.sProhibited.equals(lastPref)) {
                     //
                 } else {
-                    int startHour = (Constants.SLOT_LENGTH_MIN*fStart+Constants.FIRST_SLOT_TIME_MIN) / 60;
-                    int startMin = (Constants.SLOT_LENGTH_MIN*fStart+Constants.FIRST_SLOT_TIME_MIN) % 60;
-                    String startTime = (startHour>12?startHour-12:startHour)+":"+(startMin<10?"0":"")+startMin+(startHour>=12?"p":"a");
-                    int endHour = (Constants.SLOT_LENGTH_MIN*(lStart+iLength.get(lStart))+Constants.FIRST_SLOT_TIME_MIN) / 60;
-                    int endMin = (Constants.SLOT_LENGTH_MIN*(lStart+iLength.get(lStart))+Constants.FIRST_SLOT_TIME_MIN) % 60;
-                    String endTime = (endHour>12?endHour-12:endHour)+":"+(endMin<10?"0":"")+endMin+(endHour>=12?"p":"a");
+                    String startTime = Constants.toTime(Constants.SLOT_LENGTH_MIN*fStart+Constants.FIRST_SLOT_TIME_MIN);
+                    String endTime = Constants.toTime(Constants.SLOT_LENGTH_MIN*(lStart+iLength.get(lStart))+Constants.FIRST_SLOT_TIME_MIN);
                     if (ret.length()>0) ret+=", ";
                     if (html) {
                         ret+="<span style='color:"+PreferenceLevel.prolog2color(lastPref)+";' "+
@@ -365,12 +357,8 @@ public class MidtermPeriodPreferenceModel {
             } else if (!iLocation && PreferenceLevel.sProhibited.equals(lastPref)) {
                 //
             } else {
-                int startHour = (Constants.SLOT_LENGTH_MIN*fStart+Constants.FIRST_SLOT_TIME_MIN) / 60;
-                int startMin = (Constants.SLOT_LENGTH_MIN*fStart+Constants.FIRST_SLOT_TIME_MIN) % 60;
-                String startTime = (startHour>12?startHour-12:startHour)+":"+(startMin<10?"0":"")+startMin+(startHour>=12?"p":"a");
-                int endHour = (Constants.SLOT_LENGTH_MIN*(lStart+iLength.get(lStart))+Constants.FIRST_SLOT_TIME_MIN) / 60;
-                int endMin = (Constants.SLOT_LENGTH_MIN*(lStart+iLength.get(lStart))+Constants.FIRST_SLOT_TIME_MIN) % 60;
-                String endTime = (endHour>12?endHour-12:endHour)+":"+(endMin<10?"0":"")+endMin+(endHour>=12?"p":"a");
+                String startTime = Constants.toTime(Constants.SLOT_LENGTH_MIN*fStart+Constants.FIRST_SLOT_TIME_MIN);
+                String endTime = Constants.toTime(Constants.SLOT_LENGTH_MIN*(lStart+iLength.get(lStart))+Constants.FIRST_SLOT_TIME_MIN);
                 if (fStart==iStarts.first()) {
                     if (html) {
                         ret+="<span style='color:"+PreferenceLevel.prolog2color(lastPref)+";' "+

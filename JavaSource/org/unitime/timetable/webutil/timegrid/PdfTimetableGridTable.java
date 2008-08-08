@@ -205,12 +205,10 @@ public class PdfTimetableGridTable {
 		if (iTable.isDispModePerWeekVertical()) {
 			for (int slot=iTable.lastSlot();slot>=iTable.firstSlot();slot-=6) {
 				int time = (slot-5)*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
-				int hour = time/60;
-				int min = time%60;
 				PdfPCell c = createCell();
 				c.setColspan(6);
 				if (slot<iTable.lastSlot()) c.setBorderWidthLeft(0);
-				addTextVertical(c, (hour>12?hour-12:hour)+":"+(min<10?"0":"")+min+(hour>=12?"p":"a"), true);
+				addTextVertical(c, Constants.toTime(time), true);
 				iPdfTable.addCell(c);
 			}
 			PdfPCell c = createCell();
@@ -228,12 +226,10 @@ public class PdfTimetableGridTable {
 			iPdfTable.addCell(c);
 			for (int slot=iTable.firstSlot();slot<=iTable.lastSlot();slot+=6) {
 				int time = slot*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
-				int hour = time/60;
-				int min = time%60;
 				c = createCell();
 				c.setBorderWidthLeft(0);
 				c.setColspan(6);
-				addText(c, (hour>12?hour-12:hour)+":"+(min<10?"0":"")+min+(hour>=12?"p":"a"), true);
+				addText(c, Constants.toTime(time), true);
 				iPdfTable.addCell(c);
 			}
 		}
@@ -452,12 +448,10 @@ public class PdfTimetableGridTable {
 			int step = 6;
 			for (int slot=iTable.firstSlot();slot<=iTable.lastSlot();slot+=step) {
 				int time = slot * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
-				int hour = time/60;
-				int min = time%60;
                 int slotsToEnd = iTable.lastSlot()-slot+1;
                 if ((slot%6) == 0) {
     				c = createCell("TimetableHeadCell"+(slot==iTable.firstSlot()?"":"In")+"Vertical");
-    				addText(c, (hour>12?hour-12:hour) + ":" + (min<10?"0":"") + min + (hour>=12?"p":"a"), true);
+    				addText(c, Constants.toTime(time), true);
     				iPdfTable.addCell(c);
                 } else {
                 	c = createCell("TimetableHeadCellInVertical");

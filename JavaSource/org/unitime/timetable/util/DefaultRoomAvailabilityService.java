@@ -127,14 +127,9 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
         public String toString() {
             SimpleDateFormat df = new SimpleDateFormat("MM/dd/yy");
             int start = getStartSlot()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
-            int startHour = start/60;
-            int startMin = start%60;
             int end = getEndSlot()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
-            int endHour = end/60;
-            int endMin = end%60;
             return df.format(getStartDate())+" - "+df.format(getEndDate())+" "+
-                (startHour>12?startHour-12:startHour)+":"+(startMin<10?"0":"")+startMin+(startHour>=12?"p":"a")+" - "+
-                (endHour>12?endHour-12:endHour)+":"+(endMin<10?"0":"")+endMin+(endHour>=12?"p":"a");
+                Constants.toTime(start)+" - "+Constants.toTime(end);
         }
     }
 
