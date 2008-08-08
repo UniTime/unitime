@@ -112,7 +112,7 @@
 		</TR>
 		</logic:notEmpty>
 		</logic:equal>
-		<logic:equal name="eventDetailForm" property="isManager" value="true">
+		<logic:equal name="eventDetailForm" property="canEdit" value="true">
 			<logic:notEmpty name="eventDetailForm" property="mainContact">
 			<TR>
 				<TD nowrap valign="top">Main Contact:&nbsp;</TD>
@@ -166,7 +166,7 @@
 			</TR>		
 			</logic:notEmpty>
 		</logic:equal>
-		<logic:equal name="eventDetailForm" property="canEdit" value="true">
+		<logic:equal name="eventDetailForm" property="isManager" value="true">
 			<tt:last-change type='Event'>
 				<bean:write name="eventDetailForm" property="id"/>
 			</tt:last-change>		
@@ -182,8 +182,14 @@
 				<tt:section-header>
 				<tt:section-title>Meetings</tt:section-title>
 				<logic:equal name="eventDetailForm" property="canEdit" value="true">
-					<html:submit property="op" styleClass="btn" accesskey="A"
-						title="Add Meetings (Alt+A)" value="Add Meetings"/>
+					<logic:equal name="eventDetailForm" property="eventType" value="Special Event">
+						<html:submit property="op" styleClass="btn" accesskey="A"
+							title="Add Meetings (Alt+A)" value="Add Meetings"/>
+					</logic:equal>
+					<logic:equal name="eventDetailForm" property="eventType" value="Course Event">
+						<html:submit property="op" styleClass="btn" accesskey="A"
+							title="Add Meetings (Alt+A)" value="Add Meetings"/>
+					</logic:equal>
 				</logic:equal>
 				</tt:section-header>
 			</TD>
@@ -222,10 +228,6 @@
 				<TR onmouseover="style.backgroundColor='rgb(223,231,242)';" onmouseout="style.backgroundColor='<%=bg%>';" style="color:<%=color%>;background-color:<%=bg%>;font-style:<%=fs%>;">
 					<TD>
 						<logic:equal name="meeting" property="canSelect" value="true">
-							<bean:define name="meeting" property="date" id="meetingDate"/>
-							<bean:define name="meeting" property="startTime" id="meetingStartTime"/>
-							<bean:define name="meeting" property="endTime" id="meetingEndTime"/>
-							<bean:define name="meeting" property="location" id="meetingLocation"/>
 							<html:multibox property="selectedMeetings">
 								<bean:write name="meetingId"/>
 							</html:multibox>
@@ -235,7 +237,7 @@
 						<bean:write name="meeting" property="date" filter="false"/> 
 					</TD>
 					<TD>
-						<bean:write name="meeting" property="startTime"/> - <bean:write name="meeting" property="endTime"/>
+						<bean:write name="meeting" property="time"/>
 					</TD>
 					<TD>
 						<bean:write name="meeting" property="location"/>
@@ -252,7 +254,7 @@
 					<TR onmouseover="this.style.cursor='hand';this.style.cursor='pointer';" onclick="<%="document.location='eventDetail.do?id="+overlapEventId+"';\""%>">
 						<TD></TD>
 						<TD style="background-color:#FFD7D7;">&nbsp;&nbsp;&nbsp;Conflicts with <bean:write name="overlap" property="name"/> (<bean:write name="overlap" property="type"/>)</TD>
-						<TD style="background-color:#FFD7D7;"><bean:write name="overlap" property="startTime"/> - <bean:write name="overlap" property="endTime"/></TD>
+						<TD style="background-color:#FFD7D7;"><bean:write name="overlap" property="time"/></TD>
 						<TD style="background-color:#FFD7D7;" colspan='2'></TD>
 						<TD style="background-color:#FFD7D7;">
 							<logic:empty name="overlap" property="approvedDate">

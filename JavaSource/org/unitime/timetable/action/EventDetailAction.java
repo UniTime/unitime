@@ -375,7 +375,7 @@ public class EventDetailAction extends Action {
                     myForm.setCanEdit(true);
                 }
                 if (event instanceof ClassEvent || event instanceof ExamEvent) {
-                    myForm.setCanEdit(false);
+                    //myForm.setCanEdit(false);
                     myForm.setCanApprove(false);
                     myForm.setCanDelete(false);
                 }
@@ -387,9 +387,9 @@ public class EventDetailAction extends Action {
                         if (myForm.getCanDelete()) {
                             mb.setCanSelect(true);
                         } else if (user.isAdmin()) {
-							mb.setCanSelect(true);
+							mb.setCanSelect(myForm.getCanApprove());
 						} else if (userDepartments!=null && location!=null && location.getControllingDepartment()!=null) {
-						    mb.setCanSelect(userDepartments.contains(location.getControllingDepartment()));
+						    mb.setCanSelect(myForm.getCanApprove() && userDepartments.contains(location.getControllingDepartment()));
 						}
 					}
 					for (Meeting overlap : meeting.getTimeRoomOverlaps())

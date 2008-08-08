@@ -69,10 +69,7 @@ public class EventGridTable {
                 for (int col = 0; col<lastCol; col++) {
                     int start = iStartSlot + col*iStep;
                     out.println("<tr valign='top' align='center'><td class='TimetableCell"+(split?"EOD":"")+"' id='a"+m.getLocation().getUniqueId()+"."+col+"'>");
-                    int min = start*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
-                    int startHour = min/60;
-                    int startMin = min%60;
-                    out.println("<b>"+(startHour>12?startHour-12:startHour)+":"+(startMin<10?"0":"")+startMin+(startHour>=12?"p":"a")+"</b>");
+                    out.println("<b>"+Constants.toTime(start*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN)+"</b>");
                     out.println("</td>");
                     TreeSet<Integer> blank = new TreeSet<Integer>();
                     for (int row = 0; row < iDates.size(); row++ ) {
@@ -101,9 +98,9 @@ public class EventGridTable {
                                 " onMouseOver=\"evOver(this,event,"+meeting.getEvent().getUniqueId()+","+meeting.getUniqueId()+");\""+
                                 " onMouseOut=\"evOut(this,event,"+meeting.getEvent().getUniqueId()+","+meeting.getUniqueId()+");\""+
                                 " onClick=\"evClick(this,event,"+meeting.getEvent().getUniqueId()+","+meeting.getUniqueId()+");\""+
-                                " title=\""+df3.format(iDates.elementAt(row))+" "+meeting.startTime()+" - "+meeting.stopTime()+" "+meeting.getEvent().getEventName()+" ("+meeting.getEvent().getEventTypeLabel()+")"+"\""+
+                                " title=\""+df3.format(iDates.elementAt(row))+" "+(meeting.isAllDay()?"All Day":meeting.startTime()+" - "+meeting.stopTime())+" "+meeting.getEvent().getEventName()+" ("+meeting.getEvent().getEventTypeLabel()+")"+"\""+
                                 "><a name='A"+meeting.getEvent().getUniqueId()+"'>");
-                            if (mc.getLength()>=2) out.println(meeting.startTime()+" - "+meeting.stopTime()+"<br>");
+                            if (mc.getLength()>=2) out.println((meeting.isAllDay()?"All Day":meeting.startTime()+" - "+meeting.stopTime())+"<br>");
                             if (meeting.getApprovedDate()!=null) out.println("<b>");
                             out.println(meeting.getEvent().getEventName());
                             if (meeting.getApprovedDate()!=null) out.println("</b>");
@@ -169,10 +166,7 @@ public class EventGridTable {
             for (int col = 0; col<lastCol; col++) {
                 int start = iStartSlot + col*iStep;
                 out.println("<tr valign='top' align='center'><td class='TimetableCell"+(split?"EOD":"")+"' id='a0."+col+"'>");
-                int min = start*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
-                int startHour = min/60;
-                int startMin = min%60;
-                out.println("<b>"+(startHour>12?startHour-12:startHour)+":"+(startMin<10?"0":"")+startMin+(startHour>=12?"p":"a")+"</b>");
+                out.println("<b>"+Constants.toTime(start*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN)+"</b>");
                 out.println("</td>");
                 TreeSet<Integer> blank = new TreeSet<Integer>();
                 row = 0;
@@ -201,9 +195,9 @@ public class EventGridTable {
                             " onMouseOver=\"evOver(this,event,"+meeting.getEvent().getUniqueId()+","+meeting.getUniqueId()+");\""+
                             " onMouseOut=\"evOut(this,event,"+meeting.getEvent().getUniqueId()+","+meeting.getUniqueId()+");\""+
                             " onClick=\"evClick(this,event,"+meeting.getEvent().getUniqueId()+","+meeting.getUniqueId()+");\""+
-                            " title=\""+df3.format(date)+" "+meeting.startTime()+" - "+meeting.stopTime()+" "+meeting.getEvent().getEventName()+" ("+meeting.getEvent().getEventTypeLabel()+")"+"\""+
+                            " title=\""+df3.format(date)+" "+(meeting.isAllDay()?"All Day":meeting.startTime()+" - "+meeting.stopTime())+" "+meeting.getEvent().getEventName()+" ("+meeting.getEvent().getEventTypeLabel()+")"+"\""+
                             "><a name='A"+meeting.getEvent().getUniqueId()+"'>");
-                        if (mc.getLength()>=2) out.println(meeting.startTime()+" - "+meeting.stopTime()+"<br>");
+                        if (mc.getLength()>=2) out.println((meeting.isAllDay()?"All Day":meeting.startTime()+" - "+meeting.stopTime())+"<br>");
                         if (meeting.getApprovedDate()!=null) out.println("<b>");
                         out.println(meeting.getEvent().getEventName());
                         if (meeting.getApprovedDate()!=null) out.println("</b>");
@@ -408,7 +402,7 @@ public class EventGridTable {
         public void setCol(int col) { iCol = col; }
         public String toString() {
             return new SimpleDateFormat("MM/dd").format(getMeeting().getMeetingDate())+" "+
-                getMeeting().startTime()+" - "+getMeeting().stopTime()+" "+
+                (getMeeting().isAllDay()?"All Day":getMeeting().startTime()+" - "+getMeeting().stopTime())+" "+
                 getMeeting().getEvent().getEventName()+" ("+getMeeting().getEvent().getEventTypeLabel()+")";
         }
         public int getPrinted() { return iPrinted; }

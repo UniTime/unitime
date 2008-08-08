@@ -96,6 +96,12 @@
 						</TD>
 					</TR>
 					<TR>
+						<TD nowrap> Middle Name: </TD>
+						<TD>
+							<html:text property="mainContactMiddleName" maxlength="20" size="30" styleId="mname" />
+						</TD>
+					</TR>
+					<TR>
 						<TD nowrap> Last Name<font color='red'>*</font>: </TD>
 						<TD>
 							<html:text property="mainContactLastName" maxlength="30" size="30" styleId="lname"/> 
@@ -155,7 +161,7 @@
 						<bean:write name="meeting" property="date" filter="false"/> 
 					</TD>
 					<TD>
-						<bean:write name="meeting" property="startTime"/> - <bean:write name="meeting" property="endTime"/>
+						<bean:write name="meeting" property="time"/>
 					</TD>
 					<TD>
 						<bean:write name="meeting" property="location"/>
