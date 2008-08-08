@@ -122,31 +122,33 @@
 			<TD><%= Web.getUser(session).getAttribute(Constants.ACAD_YRTERM_LABEL_ATTR_NAME) %></TD>
 		</TR>
 		
-		<logic:equal name="mgrForm" property="lookupEnabled" value="false">
+		<%-- <logic:equal name="mgrForm" property="lookupEnabled" value="false"> --%>
 			<TR>
 				<TD>First Name:</TD>
 				<TD>
-					<html:text name="mgrForm" property="firstName" size="20" maxlength="20"></html:text>
+					<html:text name="mgrForm" property="firstName" size="20" maxlength="20" styleId="fname"></html:text>
+					<input type='button' value='Lookup' onclick="window.open('user/peopleLookup.jsp?query='+firstName.value+' '+lastName.value,'peopleLookup','width=800,height=600,resizable=no,scrollbars=yes,toolbar=no,location=no,directories=no,status=no,menubar=no,copyhistory=no').focus();" style="btn">
 				</TD>
 			</TR>
 			<TR>
 				<TD>Middle Name:</TD>
 				<TD>
-					<html:text name="mgrForm" property="middleName" size="20" maxlength="20"></html:text>
+					<html:text name="mgrForm" property="middleName" size="20" maxlength="20" styleId="mname"></html:text>
 				</TD>
 			</TR>
 			<TR>
 				<TD>Last Name:</TD>
 				<TD>
-					<html:text name="mgrForm" property="lastName" size="30" maxlength="30"></html:text>
+					<html:text name="mgrForm" property="lastName" size="30" maxlength="30" styleId="lname"></html:text>
 				</TD>
 			</TR>
-		</logic:equal>
+		<%-- </logic:equal> --%>
 
 		<TR>
 			<TD>External ID: </TD>
 			<TD>
-				<html:text name="mgrForm" property="externalId" size="12" maxlength="12"/>
+				<html:text name="mgrForm" property="externalId" size="12" maxlength="12" styleId="uid"/>
+				<%--
 				&nbsp; <bean:write name="mgrForm" property="lookupResult"/>
 				&nbsp;
 				<html:hidden name="mgrForm" property="lookupEnabled"/>
@@ -156,13 +158,14 @@
 						<bean:message key="button.lookupManager" />
 					</html:submit>
 				</logic:equal>
+				--%>
 			</TD>
 		</TR>
 
 		<TR>
 			<TD>Email Address: </TD>
 			<TD>
-				<html:text name="mgrForm" property="email" size="30" maxlength="100"/>
+				<html:text name="mgrForm" property="email" size="30" maxlength="100" styleId="email"/>
 			</TD>
 		</TR>
 
