@@ -165,29 +165,15 @@ public class TimePatternModel implements RequiredTimeTableModel {
     }
 
     public String getStartTime(int time) {
-        int startHour = iMinutes[time] / 60;
-        int startMinute = iMinutes[time] % 60;
-
-        return (startHour>12?startHour-12:startHour)+":"+(startMinute<10?"0":"")+startMinute+(startHour>=12?"p":"a");
+        return Constants.toTime(iMinutes[time]);
     }
     
     public String getEndTime(int time) {
-    	int startHour = iMinutes[time] / 60;
-        int startMinute = iMinutes[time] % 60;
-
-        int endTime = iMinutes[time] + getSlotsPerMtg()*Constants.SLOT_LENGTH_MIN - iBreakTime;
-
-        int endHour = endTime / 60;
-        int endMinute = endTime % 60;
-
-        return  (endHour>12?endHour-12:endHour)+":"+(endMinute<10?"0":"")+endMinute+(endHour>=12?"p":"a");
+        return Constants.toTime(iMinutes[time] + getSlotsPerMtg()*Constants.SLOT_LENGTH_MIN - iBreakTime);
     }
 
     public String getTimeHeaderShort(int time) {
-        int startHour = iMinutes[time] / 60;
-        int startMinute = iMinutes[time] % 60;
-
-        return (startHour>12?startHour-12:startHour)+":"+(startMinute<10?"0":"")+startMinute+(startHour>=12?"p":"a");
+        return Constants.toTime(iMinutes[time]);
     }
     
     public static int slot2min(int slot) {
@@ -462,10 +448,7 @@ public class TimePatternModel implements RequiredTimeTableModel {
     				sb.append(Constants.DAY_NAMES_SHORT[i]);
     		}
     		sb.append(" ");
-    		int startMin = startSlot * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
-            int startHour = startMin / 60;
-            int startMinute = startMin % 60;
-    		sb.append((startHour>12?startHour-12:startHour)+":"+(startMinute<10?"0":"")+startMinute+(startHour>=12?"p":"a"));
+    		sb.append(Constants.toTime(startSlot * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN));
     		return sb.toString();
     	} else {
     		boolean canMergeDays = true;
@@ -539,15 +522,9 @@ public class TimePatternModel implements RequiredTimeTableModel {
              		  //all day
              	  } else {
              		  sb.append(" ");
-             		  int startHour = iMinutes[j] / 60;
-             		  int startMinute = iMinutes[j] % 60;
-             		  sb.append((startHour>12?startHour-12:startHour)+":"+(startMinute<10?"0":"")+startMinute+(startHour>=12?"p":"a"));
+             		  sb.append(Constants.toTime(iMinutes[j]));
              		  sb.append(" - ");
-                  
-             		  int endMins = iMinutes[endTime] + getSlotsPerMtg()*Constants.SLOT_LENGTH_MIN - iBreakTime;
-             		  int endHour = endMins / 60;
-             		  int endMinute = endMins % 60;
-             		  sb.append((endHour>12?endHour-12:endHour)+":"+(endMinute<10?"0":"")+endMinute+(endHour>=12?"p":"a"));
+                      sb.append(Constants.toTime(iMinutes[endTime] + getSlotsPerMtg()*Constants.SLOT_LENGTH_MIN - iBreakTime));
              	  }
                 }
     		return sb.toString();

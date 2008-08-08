@@ -330,16 +330,10 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 			return iStartSlot;
 		}
 		public String getStartTime() {
-			int min = iStartSlot * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
-	        int h = min/60;
-	        int m = min%60;
-	        return (h>12?h-12:h)+":"+(m<10?"0":"")+m+(h>=12?"p":"a");
+		    return Constants.toTime(iStartSlot * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN);
 		}
 		public String getEndTime() {
-			int min = (iStartSlot+iLength) * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN - iBreakTime;
-	        int h = min/60;
-	        int m = min%60;
-			return (h>12?h-12:h)+":"+(m<10?"0":"")+m+(h>=12?"p":"a");
+            return Constants.toTime((iStartSlot+iLength) * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN - iBreakTime);
 		}
 		public int getLength() {
 			return iLength;
@@ -542,16 +536,10 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 			return iStartSlot;
 		}
 		public String getStartTime() {
-			int min = iStartSlot * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
-	        int h = min/60;
-	        int m = min%60;
-	        return (h>12?h-12:h)+":"+(m<10?"0":"")+m+(h>=12?"p":"a");
+		    return Constants.toTime(iStartSlot * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN);
 		}
 		public String getEndTime() {
-			int min = (iStartSlot+iLength) * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN - iBreakTime;
-	        int h = min/60;
-	        int m = min%60;
-			return (h>12?h-12:h)+":"+(m<10?"0":"")+m+(h>=12?"p":"a");
+		    return Constants.toTime((iStartSlot+iLength) * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN - iBreakTime);
 		}
 		public Long getPatternId() {
 			return iPatternId;

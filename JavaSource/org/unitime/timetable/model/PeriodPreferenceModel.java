@@ -106,9 +106,7 @@ public class PeriodPreferenceModel implements RequiredTimeTableModel {
     public String getStartTime(int time) {
         Integer slot = (Integer)iStarts.toArray()[time];
         int start = slot*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
-        int startHour = start / 60;
-        int startMinute = start % 60;
-        return (startHour>12?startHour-12:startHour)+":"+(startMinute<10?"0":"")+startMinute+(startHour>=12?"p":"a");
+        return Constants.toTime(start);
     }
     
     public String getEndTime(int time) {
@@ -119,9 +117,7 @@ public class PeriodPreferenceModel implements RequiredTimeTableModel {
             if (p.getStartSlot().equals(slot)) { period = p; break; }
         }
         int end = (slot+period.getLength())*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
-        int endHour = end / 60;
-        int endMinute = end % 60;
-        return (endHour>12?endHour-12:endHour)+":"+(endMinute<10?"0":"")+endMinute+(endHour>=12?"p":"a");
+        return Constants.toTime(end);
     }
     
     public String getDayHeader(int day) {

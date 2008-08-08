@@ -492,16 +492,10 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 			return ret.toString(); 
 		}
 		public String getStartTime() {
-			int min = iStartSlot * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
-	        int h = min/60;
-	        int m = min%60;
-	        return (h>12?h-12:h)+":"+(m<10?"0":"")+m+(h>=12?"p":"a");
+			return Constants.toTime(iStartSlot * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN);
 		}
 		public String getEndTime() {
-			int min = iStartSlot * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN + iMin;
-	        int h = min/60;
-	        int m = min%60;
-	        return (h>12?h-12:h)+":"+(m<10?"0":"")+m+(h>=12?"p":"a");
+		    return Constants.toTime(iStartSlot * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN + iMin);
 		}
 		public boolean equals(Object o) {
 			if (o==null || !(o instanceof TimeInfo)) return false;

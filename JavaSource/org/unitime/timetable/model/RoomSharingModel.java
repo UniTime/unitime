@@ -183,19 +183,11 @@ public class RoomSharingModel extends net.sf.cpsolver.coursett.model.RoomSharing
 	public String getName() { return null; }
 	
 	public String getStartTime(int time) {
-		int min = 6*time*Constants.SLOT_LENGTH_MIN+Constants.FIRST_SLOT_TIME_MIN / 10;
-        int startHour = min / 60;
-        int startMinute = min % 60;
-
-        return (startHour>12?startHour-12:startHour)+":"+(startMinute<10?"0":"")+startMinute+(startHour>=12?"p":"a");
+	    return Constants.toTime(6*time*Constants.SLOT_LENGTH_MIN+Constants.FIRST_SLOT_TIME_MIN);
 	}
 	
 	public String getEndTime(int time) {
-		int min = 6*(time+1)*Constants.SLOT_LENGTH_MIN+Constants.FIRST_SLOT_TIME_MIN / 10;
-        int endHour = min / 60;
-        int endMinute = min % 60;
-
-        return (endHour>12?endHour-12:endHour)+":"+(endMinute<10?"0":"")+endMinute+(endHour>=12?"p":"a");
+        return Constants.toTime(6*(time+1)*Constants.SLOT_LENGTH_MIN+Constants.FIRST_SLOT_TIME_MIN);
 	}
 	
 	public String getDayHeader(int day) {
@@ -455,16 +447,9 @@ public class RoomSharingModel extends net.sf.cpsolver.coursett.model.RoomSharing
          		   //all day
          	   } else {
          		  sb.append(" ");
-         		  int startMins = 6*j*Constants.SLOT_LENGTH_MIN+Constants.FIRST_SLOT_TIME_MIN / 10;
-         		  int startHour = startMins / 60;
-         		  int startMinute = startMins % 60;
-         		  sb.append((startHour>12?startHour-12:startHour)+":"+(startMinute<10?"0":"")+startMinute+(startHour>=12?"p":"a"));
+         		  sb.append(Constants.toTime(6*j*Constants.SLOT_LENGTH_MIN+Constants.FIRST_SLOT_TIME_MIN));
          		  sb.append(" - ");
-              
-         		  int endMins = 6*(endTime+1)*Constants.SLOT_LENGTH_MIN+Constants.FIRST_SLOT_TIME_MIN / 10;
-         		  int endHour = endMins / 60;
-         		  int endMinute = endMins % 60;
-         		  sb.append((endHour>12?endHour-12:endHour)+":"+(endMinute<10?"0":"")+endMinute+(endHour>=12?"p":"a"));
+                  sb.append(Constants.toTime(6*(endTime+1)*Constants.SLOT_LENGTH_MIN+Constants.FIRST_SLOT_TIME_MIN));
          	   }
             }
 		return sb.toString();
