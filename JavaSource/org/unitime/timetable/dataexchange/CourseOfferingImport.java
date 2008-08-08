@@ -1844,7 +1844,7 @@ public class CourseOfferingImport extends BaseImport {
 	
 	private boolean addUpdateClassEvent(Class_ c, Vector<Meeting> meetings) {
 		boolean changed = false;
-		
+		Date approvedTime = new Date();
 		ClassEvent origEvent = c.getEvent();
 		if(meetings != null && !meetings.isEmpty() && origEvent==null){
 			ClassEvent newEvent = new ClassEvent();
@@ -1855,6 +1855,7 @@ public class CourseOfferingImport extends BaseImport {
 			for(Iterator<Meeting> mIt = meetings.iterator(); mIt.hasNext(); ){
 				Meeting meeting = (Meeting) mIt.next();
 				meeting.setEvent(newEvent);
+				meeting.setApprovedDate(approvedTime);
 				newEvent.addTomeetings(meeting);
 			}
 			getHibSession().save(newEvent);
@@ -1880,6 +1881,7 @@ public class CourseOfferingImport extends BaseImport {
                     if (!found){
                         addNote("\tdid not find matching meeting, adding new meeting to event: " + c.getClassLabel());
                         newMeeting.setEvent(origEvent);
+                        newMeeting.setApprovedDate(approvedTime);
                         origEvent.addTomeetings(newMeeting);
                         changed = true;
                     }
