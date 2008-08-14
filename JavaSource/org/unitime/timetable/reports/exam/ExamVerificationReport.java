@@ -259,7 +259,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
             if (titleSeparateLine)
                 println(lpad("",11)+"  "+title);
             if (mwSeparateLine)
-                println(lpad("",11)+"  Meets with "+cmw);
+                println(lpad("",11)+"  Meets with "+(cmw.length()>109?cmw.substring(0,106)+"...":cmw));
             iITypePrinted = !iNewPage;
         } else for (ExamAssignmentInfo exam : exams) {
             Vector<String> rooms = new Vector();
@@ -379,7 +379,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                 if (idx==0 && titleSeparateLine)
                     println(lpad("",11)+"  "+title);
                 if (idx==0 && mwSeparateLine)
-                    println(lpad("",11)+"  Meets with "+cmw);
+                    println(lpad("",11)+"  Meets with "+(cmw.length()>109?cmw.substring(0,106)+"...":cmw));
             }
             iITypePrinted = iPeriodPrinted = !iNewPage;
         }
@@ -468,7 +468,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
         SubjectArea subject = null;
         setHeader(new String[] {
                 "Course      Title                       "+(iDispLimits?"                    ":"                    ")+" Alt  Len                                                  ",
-                "   InsType    Sections                  "+(iDispLimits?" Limit     Enrollmnt":"                    ")+" Seat ght Date & Time               Room         Cap ExCap Exam with",
+                "   InsType    Sections                  "+(iDispLimits?" Limit     Enrollmnt":"                    ")+" Seat gth Date & Time               Room         Cap ExCap Exam with",
                 "----------- ----------------------------"+(iDispLimits?" --------- ---------":"--------------------")+" ---- --- ------------------------- ----------- ---- ----- --------------"});
         printHeader();
         for (CourseOffering co : allCourses) {
