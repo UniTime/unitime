@@ -26,11 +26,74 @@
 	<version>3.1.@build.number@</version>
 	<release-date>@release.date@</release-date>
 	<category>
-		<title>DEVELOPMENT</title>
+		<title>EVENT MANAGEMENT</title>
 		<item>
-			<name>Event Management</name>
+			<name>Event Room Availability</name>
 			<description>
-				<line>Continuous improvement and development of the event management functionality.</line>
+				<line>Change of academic session corrected.</line>
+			</description>
+		</item>
+		<item>
+			<name>Add Event, Edit Event</name>
+			<description>
+				<line>Added ability to set middle name for the main contact.</line>
+			</description>
+		</item>
+		<item>
+			<name>General</name>
+			<description>
+				<line>Event manager can now overbook his/her rooms.</line>
+				<line>Display time statement 12:00a - 12:00a as All Day.</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>OTHER CHANGES</title>
+		<item>
+			<name>Examination/Class Schedule</name>
+			<description>
+				<line>Added ability to display message set in application property tmtbl.exams.message (examination schedule) and tmtbl.classes.message (classes schedule).</line>
+			</description>
+		</item>
+		<item>
+			<name>Exam Verification Report (PDF Reports)</name>
+			<description>
+				<line>Fixed title Length (was Lenght), check for meets with being too long.</line>
+			</description>
+		</item>
+		<item>
+			<name>Data Import</name>
+			<description>
+				<line>Set approved date on class  meetings to date loaded when importing offerings from xml.</line>
+				<line>Added property to control removing of leading zeros on external ids for students, staff and instructors during staff xml load, student enrollment xml load and offerings xml load.</line>
+			</description>
+		</item>
+		<item>
+			<name>General</name>
+			<description>
+				<line>Unified displaying of time through the application (using method Constants.toTime(int minutesSinceMidnight)).
+					<line>Corrected display of midnight time.</line>
+				</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.1.92</version>
+	<release-date>Fri, 8 Aug 2008</release-date>
+	<category>
+		<title>GENERAL</title>
+		<item>
+			<name>First production version of UniTime 3.1</name>
+		</item>
+	</category>
+	<category>
+		<title>OTHER DEVELOPMENT</title>
+		<item>
+			<name>Event Management related development</name>
+			<description>
+				<line>All of the desired functionality implemented.</line>
 			</description>
 		</item>
 	</category>
