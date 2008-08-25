@@ -70,6 +70,10 @@ public class EventGridAction extends Action{
             myForm.save(request.getSession());
         }
         
+        if ("SessionChanged".equals(op)) {
+            myForm.save(request.getSession());
+        }
+        
         if (request.getParameter("backId")!=null) {
             request.setAttribute("hash", request.getParameter("backId"));
         }
