@@ -148,6 +148,10 @@ public class ExamsAction extends Action {
             }
         }
 		
+        String msg = ApplicationProperties.getProperty("tmtbl.exams.message");
+        if (msg!=null && msg.length()>0)
+            request.setAttribute(Constants.REQUEST_MSSG, msg);
+
         return mapping.findForward("show");
 	}
 	
