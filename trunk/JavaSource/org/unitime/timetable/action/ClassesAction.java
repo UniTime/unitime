@@ -174,6 +174,10 @@ public class ClassesAction extends Action {
                 }
             }
         }
+        
+        String msg = ApplicationProperties.getProperty("tmtbl.classes.message");
+        if (msg!=null && msg.length()>0)
+            request.setAttribute(Constants.REQUEST_MSSG, msg);
 		
         return mapping.findForward("show");
 	}
