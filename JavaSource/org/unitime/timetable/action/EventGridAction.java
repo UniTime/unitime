@@ -65,7 +65,7 @@ public class EventGridAction extends Action{
         if (request.getParameter("op2")!=null && request.getParameter("op2").length()>0)
             op = request.getParameter("op2");
         
-        if ("Change".equals(op) || "Export PDF".equals(op)) {
+        if ("Show Availability".equals(op) || "Export PDF".equals(op)) {
             myForm.loadDates(request);
             myForm.save(request.getSession());
         }
