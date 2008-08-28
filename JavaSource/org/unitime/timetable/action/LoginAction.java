@@ -111,6 +111,8 @@ public class LoginAction extends Action {
 					session.setAttribute(Constants.CFG_APP_ACCESS_LEVEL, appStatus);
                     
                     session.setAttribute("authUserExtId", user.getId());
+                    
+                    session.setMaxInactiveInterval(Integer.parseInt(ApplicationProperties.getProperty("tmtbl.maxInactiveInterval","1800")));
 					
 				    response.sendRedirect("selectPrimaryRole.do");
 					break;
