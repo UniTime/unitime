@@ -40,6 +40,12 @@
 			</description>
 		</item>
 		<item>
+			<name>Events, Meetings</name>
+			<description>
+				<line>Added ability to export meetings to iCalendar (ICS).</line>
+			</description>
+		</item>
+		<item>
 			<name>General</name>
 			<description>
 				<line>Event manager can now overbook his/her rooms.</line>
