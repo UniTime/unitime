@@ -124,7 +124,7 @@ public class EventEmail {
                     message += iEvent.getMainContact().getLastName();
                 if (iEvent.getMainContact().getFirstName()!=null)
                     message += ", "+iEvent.getMainContact().getFirstName();
-                if (iEvent.getMainContact().getMiddleName()!=null)
+                if (iEvent.getMainContact().getMiddleName()!=null && iEvent.getMainContact().getMiddleName().length()>0)
                     message += ", "+iEvent.getMainContact().getMiddleName();
                 message += "</a></td></tr>";
             }
