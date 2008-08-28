@@ -119,11 +119,13 @@
 		</TR>
 		<TR>
 			<TD colspan='2' align='right'>
-				<html:submit property="op" value="Search" onclick="displayLoading();"/> 
+				<html:submit property="op" value="Search" onclick="displayLoading();" accesskey="S" title="Search (Alt+S)"/> 
 				&nbsp; 
-				<html:submit property="op" value="Export PDF" onclick="displayLoading();"/> 
+				<html:submit property="op" value="Export PDF" onclick="displayLoading();" accesskey="P" title="Export to PDF (Alt+P)"/> 
 				&nbsp; 
-				<html:submit property="op" value="Add Event"/>
+				<html:submit property="op" value="iCalendar" onclick="displayLoading();" accesskey="I" title="Export iCalendar (Alt+I)"/> 
+				&nbsp; 
+				<html:submit property="op" value="Add Event" accesskey="A" title="Add Event (Alt+A)"/>
 			</TD>
 		</TR>
 </TABLE>
@@ -131,9 +133,11 @@
 <TABLE border="0" cellspacing="0" cellpadding="3" width='90%'>	
 	<TR>
 		<TD align='right'>
-			<html:submit property="op" value="Export PDF" onclick="displayLoading();"/> 
+			<html:submit property="op" value="Export PDF" onclick="displayLoading();" accesskey="P" title="Export to PDF (Alt+P)"/> 
 			&nbsp; 
-			<html:submit property="op" value="Add Event"/>
+			<html:submit property="op" value="iCalendar" onclick="displayLoading();" accesskey="I" title="Export iCalendar (Alt+I)"/> 
+			&nbsp; 
+			<html:submit property="op" value="Add Event" accesskey="A" title="Add Event"/>
 		</TD>
 	</TR>
 </TABLE>
