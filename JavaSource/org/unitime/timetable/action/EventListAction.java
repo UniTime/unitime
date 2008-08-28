@@ -36,6 +36,7 @@ import org.unitime.timetable.form.EventListForm;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.BackTracker;
+import org.unitime.timetable.webutil.CalendarEventTableBuilder;
 import org.unitime.timetable.webutil.pdf.PdfEventTableBuilder;
 
 /**
@@ -69,6 +70,11 @@ public class EventListAction extends Action {
         
         if ("Export PDF".equals(op)) {
             File pdfFile = new PdfEventTableBuilder().pdfTableForEvents(myForm);
+            if (pdfFile!=null) request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+pdfFile.getName());
+        }
+
+        if ("iCalendar".equals(op)) {
+            File pdfFile = new CalendarEventTableBuilder().calendarTableForEvents(myForm);
             if (pdfFile!=null) request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+pdfFile.getName());
         }
 
