@@ -1,5 +1,8 @@
 package org.unitime.timetable.webutil;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
@@ -51,6 +54,7 @@ public class EventEmail {
     
     public void send(HttpServletRequest request) {
         String subject = null;
+        File conf = null;
         try {
             User user = Web.getUser(request.getSession());
             if (Roles.ADMIN_ROLE.equals(user.getRole()) || Roles.EVENT_MGR_ROLE.equals(user.getRole())) {
@@ -96,7 +100,7 @@ public class EventEmail {
             		"A:hover    { color: blue; text-decoration: none; }" +
             		"-->";
             message += "</style></head><body bgcolor='#ffffff' style='font-size: 10pt; font-family: arial;'>";
-            message += "<table border='0' width='800' align='center' cellspacing='10'>";
+            message += "<table border='0' width='95%' align='center' cellspacing='10'>";
             
             message += "<tr><td colspan='2' style='border-bottom: 2px #2020FF solid;'><font size='+2'>";
             message += iEvent.getEventName();
@@ -258,6 +262,15 @@ public class EventEmail {
 
             MimeBodyPart text = new MimeBodyPart(); text.setContent(message, "text/html");
             Multipart body = new MimeMultipart(); body.addBodyPart(text);
+
+            conf = ApplicationProperties.getTempFile("email", "html");
+            PrintWriter pw = null;
+            try {
+                pw = new PrintWriter(new FileWriter(conf));
+                pw.println(message);
+                pw.flush(); pw.close(); pw=null;
+            } catch (Exception e) {}
+            finally { if (pw!=null) pw.close(); }
             
             String to = "";
             if (iEvent.getMainContact()!=null && iEvent.getMainContact().getEmailAddress()!=null) {
@@ -283,10 +296,16 @@ public class EventEmail {
             
             Transport.send(mail);
             
-            request.getSession().setAttribute(Constants.REQUEST_MSSG, subject+" Confirmation email sent to "+to+".");
+            request.getSession().setAttribute(Constants.REQUEST_MSSG, 
+                    (conf==null || !conf.exists()?"":"<a class='noFancyLinks' href='temp/"+conf.getName()+"'>")+
+                    subject+" Confirmation email sent to "+to+"."+
+                    (conf==null || !conf.exists()?"":"</a>"));
         } catch (Exception e) {
             sLog.error(e.getMessage(),e);
-            request.getSession().setAttribute(Constants.REQUEST_WARN, (subject==null?"":subject+" ")+"Unable to send confirmation email, reason: "+e.getMessage());
+            request.getSession().setAttribute(Constants.REQUEST_WARN,
+                    (conf==null || !conf.exists()?"":"<a class='noFancyLinks' href='temp/"+conf.getName()+"'>")+
+                    (subject==null?"":subject+" ")+"Unable to send confirmation email, reason: "+e.getMessage()+
+                    (conf==null || !conf.exists()?"":"</a>"));
         }
     }
 }
