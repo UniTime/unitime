@@ -31,12 +31,15 @@
 			<name>Event Room Availability</name>
 			<description>
 				<line>Change of academic session corrected.</line>
+				<line>Added Clear button (filter is cleared, only selected academic session is kept).</line>
+				<line>When session is changed, the rest of the filter is kept (except of the selected dates).</line>
 			</description>
 		</item>
 		<item>
 			<name>Add Event, Edit Event</name>
 			<description>
 				<line>Added ability to set middle name for the main contact.</line>
+				<line>Fixed bug on Event Add Info page (while adding meetings to an existing course event): related courses/classes were not displayed.</line>
 			</description>
 		</item>
 		<item>
