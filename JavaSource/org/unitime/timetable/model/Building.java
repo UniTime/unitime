@@ -259,21 +259,25 @@ public class Building extends BaseBuilding implements Comparable {
 	}
 	
 	public static Building findByExternalIdAndSession(String externalId, Session session){
-		BuildingDAO bDao = new BuildingDAO();
-		List bldgs = bDao.getSession().createCriteria(Building.class)
-			.add(Restrictions.eq("externalUniqueId", externalId))
-			.add(Restrictions.eq("session.uniqueId", session.getUniqueId()))
-			.setCacheable(true).list();
-			
-		if (bldgs != null && bldgs.size() == 1){
-			return((Building) bldgs.get(0));
-		}
-
-		return(null);
-
+	    return findByExternalIdAndSession(externalId, session.getUniqueId());
 	}
 
-	public static List findAll(Long sessionId) {
+    public static Building findByExternalIdAndSession(String externalId, Long sessionId){
+        BuildingDAO bDao = new BuildingDAO();
+        List bldgs = bDao.getSession().createCriteria(Building.class)
+            .add(Restrictions.eq("externalUniqueId", externalId))
+            .add(Restrictions.eq("session.uniqueId", sessionId))
+            .setCacheable(true).list();
+            
+        if (bldgs != null && bldgs.size() == 1){
+            return((Building) bldgs.get(0));
+        }
+
+        return(null);
+
+    }
+
+    public static List findAll(Long sessionId) {
 		return new BuildingDAO().getSession().createQuery(
 				"select b from Building b where b.session.uniqueId=:sessionId order by b.abbreviation").
 				setLong("sessionId", sessionId).setCacheable(true).list();
