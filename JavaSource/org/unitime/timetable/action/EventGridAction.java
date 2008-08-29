@@ -39,8 +39,10 @@ import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.EventGridForm;
 import org.unitime.timetable.form.EventRoomAvailabilityForm.DateLocation;
+import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.dao.BuildingDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.timegrid.PdfEventGridTable;
@@ -70,7 +72,25 @@ public class EventGridAction extends Action{
             myForm.save(request.getSession());
         }
         
+        if ("Clear".equals(op)) {
+            Long sessionId = myForm.getSessionId();
+            myForm.reset(mapping, request);
+            myForm.setSessionId(sessionId);
+            myForm.save(request.getSession());
+        }
+        
         if ("SessionChanged".equals(op)) {
+            if (myForm.getBuildingId()!=null) {
+                Building b = BuildingDAO.getInstance().get(myForm.getBuildingId());
+                Building nb = null;
+                if (b!=null && !b.getSession().getUniqueId().equals(myForm.getSessionId())) {
+                    if (b.getExternalUniqueId()!=null)
+                        nb = Building.findByExternalIdAndSession(b.getExternalUniqueId(), myForm.getSessionId());
+                    else
+                        nb = Building.findByBldgAbbv(b.getAbbreviation(), myForm.getSessionId());
+                }
+                myForm.setBuildingId(nb==null?null:nb.getUniqueId());
+            }
             myForm.save(request.getSession());
         }
         

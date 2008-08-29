@@ -180,6 +180,7 @@
 		<TR>
 			<TD colspan='2' align='right'>
 				<html:submit onclick="displayLoading();" property="op" accesskey="N" value="Show Availability" title="Show Location Availability (Alt+N)"/>
+				<html:submit onclick="displayLoading();" property="op" accesskey="C" value="Clear" title="Clear Filter (Alt+C)"/>
 				<html:submit onclick="displayLoading();" property="op" accesskey="A" value="Add Event" title="Add Event (Alt+A)"/>
 				<html:submit onclick="displayLoading();" property="op" accesskey="P" value="Export PDF" title="Export PDF (Alt+P)"/>
 				<html:submit onclick="displayLoading();" property="op" accesskey="R" value="Refresh" title="Refresh Page (Alt+R)"/>
