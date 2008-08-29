@@ -219,6 +219,11 @@ public class EventAddForm extends ActionForm {
             if (mgr!=null) iManagingDepts = mgr.getDepartments();
         }
         iMaxRooms = "10";
+        iBuildingId = null;
+        iRoomTypes = null;
+        iRoomFeatures = null;
+        iRoomGroups = null;
+        iRoomNumber = null;
 	}
 	
 	// load event info from session attribute Event
