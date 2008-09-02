@@ -51,7 +51,7 @@ public class EventStandardNotesForm extends ActionForm {
 
 		WebTable table = new WebTable( 2,
 					null, 
-					new String[] {"Note", "Reference"}, 
+					new String[] {"Reference", "Note"}, 
 		    	    new String[] {"left", "left"}, 
 		    	    new boolean[] {true, true});    
 		
@@ -59,7 +59,7 @@ public class EventStandardNotesForm extends ActionForm {
 	    	StandardEventNote sen = (StandardEventNote) i.next();
 			table.addLine(
 		        "onclick=\"document.location='eventStandardNoteEdit.do?op=Edit&id="+sen.getUniqueId()+"';\"",
-	        	new String[] {sen.getNote(), sen.getReference()},
+	        	new String[] {sen.getReference(), sen.getNote().replaceAll("\\n", "<br>")},
 	        	new Comparable[] {null, null});
 		    }
 
