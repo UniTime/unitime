@@ -73,12 +73,12 @@
 		</TR>
 		
 		<tr>
-			<td> Note: </td> 
-			<td> <html:text property="note" maxlength="100" size="50" /></td>
-		</tr>
-		<tr>
 			<td> Reference: </td>
 			<td> <html:text property="reference" maxlength="100" size="50" /></td>
+		</tr>
+		<tr>
+			<td> Note: </td> 
+			<td> <html:textarea property="note" rows="5" cols="80"/></td>
 		</tr>
 
 		<TR>

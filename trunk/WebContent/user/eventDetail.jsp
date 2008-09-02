@@ -275,6 +275,7 @@
 					<tt:section-title/>
 				</TD>
 			</TR>
+			<logic:notEmpty name="eventDetailForm" property="standardNotes">
 			<TR>
 				<TD colspan="2">
 				<font color="gray"><i>Attach notes to your approval/rejection of above selected meetings. Double click on a standard note to add it to notes below. Only the Notes: section will be sent to the requester.</i></font>
@@ -286,26 +287,28 @@
 				</TD>
 				<TD>
 					<html:select size="3"
+								style="max-width:600;"
 								name="eventDetailForm" 
 								styleClass="cmb" 
 								property="selectedStandardNote" 
 								onfocus="setUp();" 
 								onkeypress="return selectSearch(event, this);"
 								onkeydown="return checkKey(event, this);"
-								ondblclick="if (newEventNote.value.length>0) newEventNote.value+='\n'; newEventNote.value+=this.options[this.selectedIndex].text; newEventNote.focus();"
+								ondblclick="if (newEventNote.value.length>0) newEventNote.value+='\n'; newEventNote.value+=this.options[this.selectedIndex].value; newEventNote.focus();"
 								>
 						<html:optionsCollection property="standardNotes" 
-								label="note" 
-								value="uniqueId" />
+								label="label" 
+								value="note" />
 					</html:select>
 				</TD>			
 			</TR>
+			</logic:notEmpty>
 			<TR>
 				<TD valign="top">
 				Notes:
 				</TD>
 				<TD colspan='2'>
-					<html:textarea rows="3" cols="50"  
+					<html:textarea rows="5" cols="80"  
 								name="eventDetailForm"  
 								property="newEventNote">
 					</html:textarea>
