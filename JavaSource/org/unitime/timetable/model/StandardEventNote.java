@@ -57,8 +57,12 @@ public class StandardEventNote extends BaseStandardEventNote {
 
    public static List findAll() {
         return new StandardEventNoteDAO().getSession().createQuery(
-                "select sen from StandardEventNote sen order by sen.note"
+                "select sen from StandardEventNote sen order by sen.reference"
                 ).setCacheable(true).list();
     }	
+   
+   public String getLabel() {
+       return getReference()+": "+getNote();
+   }
 
 }

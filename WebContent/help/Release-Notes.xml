@@ -49,6 +49,19 @@
 			</description>
 		</item>
 		<item>
+			<name>Standard Notes</name>
+			<description>
+				<line>Standard notes can be longer (limit is 1000 characters), they may contain line breaks as well.</line>
+				<line>Order standard notes by reference.</line>
+				<line>Event Detail page:
+					<line>Display standard note reference as well.</line>
+					<line>Limit the width of standard notes field.</line>
+					<line>Do not display standard notes, if no standard note is defined.</line>
+					<line>Notes field made bigger (5 lines, 80 columns).</line>
+				</line> 
+			</description>
+		</item>
+		<item>
 			<name>General</name>
 			<description>
 				<line>Event manager can now overbook his/her rooms.</line>
