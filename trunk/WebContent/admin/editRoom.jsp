@@ -95,7 +95,7 @@
 			<TR>
 				<TD>Room Number:</TD>
 				<TD width='100%'>
-					<html:text property="name" maxlength="20" size="20" />
+					<html:text property="name" maxlength="10" size="10" />
 				<TD>
 			</TR>
 
@@ -122,7 +122,12 @@
 				<% } else {%>
 				<TD width='100%'>
 					<bean:write name="<%=frmName%>" property="bldgName"/>
-					<html:text property="name" maxlength="20" size="20" />
+					<logic:empty name="<%=frmName%>" property="bldgName">
+						<html:text property="name" maxlength="20" size="20" />
+					</logic:empty>
+					<logic:notEmpty name="<%=frmName%>" property="bldgName">
+						<html:text property="name" maxlength="10" size="10" />
+					</logic:notEmpty>
 				<TD>
 				<% } %>
 			</TR>
