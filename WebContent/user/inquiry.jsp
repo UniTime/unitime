@@ -34,7 +34,7 @@
 	}
 </SCRIPT>				
 
-<html:form action="/inquiry" focus="name">
+<html:form action="/inquiry" focus="type">
 	<INPUT type="hidden" name="deleteId" id="deleteId" value="">
 	
 	<logic:equal name="inquiryForm" property="op" value="Sent">
@@ -80,7 +80,8 @@
 				&nbsp;<html:errors property="type"/>
 			</TD>
 		</TR>
-
+		
+		<logic:equal name="inquiryForm" property="noRole" value="false">
 		<TR>
 			<TD>CC:</TD>
 			<TD>
@@ -100,8 +101,6 @@
 		</TR>
 
 		<logic:notEmpty name="inquiryForm" property="carbonCopy">
-		<bean:define id="addresses" name="inquiryForm" property="carbonCopy" />	
-		<% if ( ((java.util.List)addresses).size() > 0 ) { %>
 		<TR>
 			<TD>&nbsp;</TD>
 			<TD>
@@ -116,8 +115,8 @@
 				</logic:iterate>
 			</TD>
 		</TR>
-		<% } %>
 		</logic:notEmpty>
+		</logic:equal>
 		
 		<TR>
 			<TD>Subject:</TD>
