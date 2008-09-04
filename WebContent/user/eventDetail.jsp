@@ -287,7 +287,7 @@
 				</TD>
 				<TD>
 					<html:select size="3"
-								style="max-width:600;"
+								style="width:40em;"
 								name="eventDetailForm" 
 								styleClass="cmb" 
 								property="selectedStandardNote" 
