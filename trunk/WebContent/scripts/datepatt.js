@@ -36,6 +36,22 @@ function calGenVariables(name, year, startMonth, endMonth, cal, prefTable, prefC
 		document.writeln("return 'rgb(240,240,240)';");
 	document.writeln("}");
 	document.writeln("<"+"/script>");
+	var nrPrefs = 0, a1 = -1, a2 = -1;
+	for (var i=0;i<prefTable.length;i++) {
+		if (prefTable[i]!='@') { 
+			nrPrefs++;
+			if (a1==-1) a1=i; else a2=i;
+		}
+	}
+	document.writeln("<script language='javascript'>");
+	document.writeln("function calAltPref(pref) {");
+	if (nrPrefs==2) {
+		document.writeln("return (pref=='"+prefTable[a1]+"'?'"+prefTable[a2]+"':'"+prefTable[a1]+"');");
+	} else {
+		document.writeln("return '@';");
+	}
+	document.writeln("}");
+	document.writeln("<"+"/script>");
 }
 
 function calGetCurrentPreference(name) {
@@ -49,9 +65,27 @@ function calPrefSelected(name, pref) {
 function calGetPreference(name, date) {
 	return document.getElementById(name+"_val_"+date.getMonth()+"_"+date.getDate()).value;
 }
-function calSetPreference(name, date, pref) {
-	document.getElementById(name+"_val_"+date.getMonth()+"_"+date.getDate()).value=pref;
-	document.getElementById(name+"_"+date.getMonth()+"_"+date.getDate()).style.backgroundColor=calPref2Color(pref);
+function calSetPreference(name, dates) {
+	var pref = calGetCurrentPreference(name);
+	var altPref = calAltPref(pref);
+	if (altPref!='@') {
+		var allTheSame = true;
+		var samePref = '@';
+		for (var i=0;i<dates.length;i++) {
+			if (samePref=='@') {
+				samePref=document.getElementById(name+"_val_"+dates[i].getMonth()+"_"+dates[i].getDate()).value;
+			} else if (samePref!=document.getElementById(name+"_val_"+dates[i].getMonth()+"_"+dates[i].getDate()).value) {
+				allTheSame = false;
+				break;
+			}
+		}
+		if (allTheSame && pref==samePref) pref = altPref;
+	}
+	var prefColor = calPref2Color(pref);
+	for (var i=0;i<dates.length;i++) {
+		document.getElementById(name+"_val_"+dates[i].getMonth()+"_"+dates[i].getDate()).value=pref;
+		document.getElementById(name+"_"+dates[i].getMonth()+"_"+dates[i].getDate()).style.backgroundColor=prefColor;
+	}
 }
 
 function calGetWeekNumber(date) {
@@ -72,11 +106,18 @@ function calGenDayHeader(name, year, month, day, editable) {
 		while (d.getDay()!=day) {
 			d.setDate(d.getDate()+1);
 		}
+		var dates = "";
 		do {
-			if (calGetPreference(name, d)!='@')
-				onclick += "calSetPreference('"+name+"', new Date("+d.getFullYear()+","+d.getMonth()+","+d.getDate()+"),calGetCurrentPreference('"+name+"'));";
+			if (calGetPreference(name, d)!='@') {
+				if (dates.length>0) dates += ",";
+				dates += "new Date("+d.getFullYear()+","+d.getMonth()+","+d.getDate()+")";
+				//onclick += "calSetPreference('"+name+"', new Date("+d.getFullYear()+","+d.getMonth()+","+d.getDate()+"),calGetCurrentPreference('"+name+"'));";
+			}
 			d.setDate(d.getDate()+7);
 		} while (d.getMonth()==month);
+		if (dates.length>0) {
+			onclick = "calSetPreference('"+name+"', ["+dates+"]);";
+		}
 		if (onclick.length>0) {
 			document.writeln("<th width='20' height='20' "+
  	  		"style=\"border:rgb(100,100,100) 1px solid;background-color:"+(day==0||day==6?"rgb(200,200,200);":"rgb(220,220,220);")+"\" "+
@@ -103,11 +144,18 @@ function calGenDayHeaderBlank(name, year, month, editable) {
 	if (editable) {
 		var onclick = "";
 		var d = new Date(year,month,1);
+		var dates = "";
 		do {
-			if (calGetPreference(name, d)!='@')
-				onclick += "calSetPreference('"+name+"', new Date("+d.getFullYear()+","+d.getMonth()+","+d.getDate()+"),calGetCurrentPreference('"+name+"'));";
+			if (calGetPreference(name, d)!='@') {
+				if (dates.length>0) dates += ",";
+				dates += "new Date("+d.getFullYear()+","+d.getMonth()+","+d.getDate()+")";
+				//onclick += "calSetPreference('"+name+"', new Date("+d.getFullYear()+","+d.getMonth()+","+d.getDate()+"),calGetCurrentPreference('"+name+"'));";
+			}
 			d.setDate(d.getDate()+1);
 		} while (d.getMonth()==month);
+		if (dates.length>0) {
+			onclick = "calSetPreference('"+name+"', ["+dates+"]);";
+		}
 		if (onclick.length>0) {
 			document.writeln("<th width='20' height='20' "+
  	  		"style=\"border:rgb(100,100,100) 1px solid;background-color:rgb(220,220,220);\" "+
@@ -134,11 +182,18 @@ function calGenWeekHeader(name, date, editable) {
 	if (editable) {
 		var onclick = "";
 		var d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+		var dates = "";
 		do {
-			if (calGetPreference(name, d)!='@')
-				onclick += "calSetPreference('"+name+"', new Date("+d.getFullYear()+","+d.getMonth()+","+d.getDate()+"),calGetCurrentPreference('"+name+"'));";
+			if (calGetPreference(name, d)!='@') {
+				if (dates.length>0) dates += ",";
+				dates += "new Date("+d.getFullYear()+","+d.getMonth()+","+d.getDate()+")";
+				//onclick += "calSetPreference('"+name+"', new Date("+d.getFullYear()+","+d.getMonth()+","+d.getDate()+"),calGetCurrentPreference('"+name+"'));";
+			}
 			d.setDate(d.getDate()+1);
 		} while (d.getDay()!=0 && d.getMonth()==date.getMonth());
+		if (dates.length>0) {
+			onclick = "calSetPreference('"+name+"', ["+dates+"]);";
+		}
 		if (onclick.length>0) {
 			document.writeln("<th width='20' height='20' "+
  	  		"style=\"border:rgb(100,100,100) 1px solid;background-color:rgb(220,220,220);\" "+
@@ -177,7 +232,7 @@ function calGenField(name, monthIdx, date, highlight, editable) {
  		  	"style=\"border:"+border+";background-color:"+calPref2Color(calGetPreference(name, date))+";\" "+
  			"onmouseover=\"this.style.border='"+borderSelect+"';this.style.cursor='pointer';\" "+
  			"onmouseout=\"this.style.border='"+border+"';\" "+
- 			"onclick=\"calSetPreference('"+name+"', new Date("+date.getFullYear()+","+date.getMonth()+","+date.getDate()+"),calGetCurrentPreference('"+name+"'));\">"+
+ 			"onclick=\"calSetPreference('"+name+"', [new Date("+date.getFullYear()+","+date.getMonth()+","+date.getDate()+")]);\">"+
  			"<font size=1>"+date.getDate()+"</font>"+
  			"</td>");
  	else
