@@ -50,6 +50,8 @@ public class InquiryForm extends ActionForm {
 	private List carbonCopy;
 
 	private String puid=null;
+	
+	private boolean iNoRole;
 
 	public static String[] sTypeMsgs = new String[] { Constants.BLANK_OPTION_LABEL,
 			"Ask a question", "Report an error", "Make a suggestion",
@@ -60,6 +62,9 @@ public class InquiryForm extends ActionForm {
 			"Request a course cross-listing", "Request a room to be shared",
 			"Request any other administrative change",
 			"LLR/LAB data entry is done", "Other" };
+	
+	public static String[] sTypeMsgsNoRole = new String[] { Constants.BLANK_OPTION_LABEL,
+        "Ask a question", "Report an error", "Make a suggestion"};
 
 	public static String[] sDefaultMessage = new String[] {
 			"",
@@ -186,8 +191,8 @@ public class InquiryForm extends ActionForm {
 
 	public Vector getTypeOptions() {
 		Vector ret = new Vector();
-		for (int i = 0; i < sTypeMsgs.length; i++)
-			ret.add(new IdValue(new Long(i), sTypeMsgs[i]));
+		for (int i = 0; i < (iNoRole?sTypeMsgsNoRole:sTypeMsgs).length; i++)
+			ret.add(new IdValue(new Long(i), (iNoRole?sTypeMsgsNoRole:sTypeMsgs)[i]));
 		return ret;
 	}
 
@@ -211,6 +216,9 @@ public class InquiryForm extends ActionForm {
 		else
 			this.puid = puid;
 	}
+	
+	public boolean getNoRole() { return  iNoRole; }
+	public void setNoRole(boolean noRole) { iNoRole = noRole; }
 
 	public List getCarbonCopy() {
 		return carbonCopy;
