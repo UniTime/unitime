@@ -821,13 +821,14 @@ public class EventAddForm extends ActionForm {
             b+=")";
         }
         if (iLookAtNearLocations && iBuildingId!=null && iBuildingId>=0) {
+            int d = Integer.parseInt(ApplicationProperties.getProperty("tmtbl.events.nearByDistance","67"));
             query = "select r from Room r " +
                     "inner join r.roomDepts rd inner join rd.department.timetableManagers m inner join m.managerRoles mr, "+
                     "Building b"+a+" where b.uniqueId = :buildingId and " +
                     "rd.control=true and mr.role.reference=:eventMgr and "+
                     "(r.building=b or ((((r.coordinateX - b.coordinateX)*(r.coordinateX - b.coordinateX)) +" +
                     "((r.coordinateY - b.coordinateY)*(r.coordinateY - b.coordinateY)))" +
-                    "< 67*67))";
+                    "< "+(d*d)+"))";
         } else {
             query = "select r from Room r " +
                     "inner join r.roomDepts rd inner join rd.department.timetableManagers m inner join m.managerRoles mr"+a+
@@ -837,7 +838,7 @@ public class EventAddForm extends ActionForm {
 			
 		if (iMinCapacity!=null && iMinCapacity.length()>0) { query+= " and r.capacity>= :minCapacity";	}
 		if (iMaxCapacity!=null && iMaxCapacity.length()>0) { query+= " and r.capacity<= :maxCapacity";	}
-		if (iRoomNumber!=null && iRoomNumber.length()>0) { query+=" and r.roomNumber like (:roomNumber)"; }
+		if (iRoomNumber!=null && iRoomNumber.length()>0) { query+=" and upper(r.roomNumber) like (:roomNumber)"; }
  		query += b;
 
 		Query hibQuery = new LocationDAO().getSession().createQuery(query);
@@ -847,7 +848,7 @@ public class EventAddForm extends ActionForm {
 		if (iMinCapacity!=null && iMinCapacity.length()>0) { hibQuery.setInteger("minCapacity", Integer.valueOf(iMinCapacity)); }
 		if (iMaxCapacity!=null && iMaxCapacity.length()>0) { hibQuery.setInteger("maxCapacity", Integer.valueOf(iMaxCapacity)); }
 		if (iRoomNumber!=null && iRoomNumber.length()>0) { 
-			hibQuery.setString("roomNumber", iRoomNumber.replaceAll("\\*", "%")); 
+			hibQuery.setString("roomNumber", iRoomNumber.replaceAll("\\*", "%").toUpperCase()); 
 		}
 		
 		for (Iterator i=hibQuery.setCacheable(true).iterate();i.hasNext();) {
@@ -864,7 +865,7 @@ public class EventAddForm extends ActionForm {
             if (iMinCapacity!=null && iMinCapacity.length()>0) { query+= " and r.capacity>= :minCapacity";  }
             if (iMaxCapacity!=null && iMaxCapacity.length()>0) { query+= " and r.capacity<= :maxCapacity";  }
             if (iRoomNumber!=null && iRoomNumber.length()>0) {
-                query+=" and r.name like (:roomNumber)"; 
+                query+=" and upper(r.name) like (:roomNumber)"; 
             }
             query += b;
             hibQuery = new LocationDAO().getSession().createQuery(query);
@@ -872,7 +873,7 @@ public class EventAddForm extends ActionForm {
             if (iMinCapacity!=null && iMinCapacity.length()>0) { hibQuery.setInteger("minCapacity", Integer.valueOf(iMinCapacity)); }
             if (iMaxCapacity!=null && iMaxCapacity.length()>0) { hibQuery.setInteger("maxCapacity", Integer.valueOf(iMaxCapacity)); }
             if (iRoomNumber!=null && iRoomNumber.length()>0) { 
-                hibQuery.setString("roomNumber", iRoomNumber.replaceAll("\\*", "%")); 
+                hibQuery.setString("roomNumber", iRoomNumber.replaceAll("\\*", "%").toUpperCase()); 
             }
             
             for (Iterator i=hibQuery.setCacheable(true).iterate();i.hasNext();) {
