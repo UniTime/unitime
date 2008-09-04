@@ -108,7 +108,7 @@
 					<html:option value="-1">Select...</html:option>
 					<html:optionsCollection name="eventGridForm" property="buildings" label="abbrName" value="uniqueId"/>
 				</html:select> 			
-				&nbsp; Room Number:&nbsp; <html:text property="roomNumber" maxlength="10" size="10"/>
+				&nbsp; Room Number:&nbsp; <html:text property="roomNumber" maxlength="20" size="10"/>
 				&nbsp;&nbsp;&nbsp; <html:checkbox property="lookAtNearLocations"/> Include close by locations
 			</TD>
 		</TR>
