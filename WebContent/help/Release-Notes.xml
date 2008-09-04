@@ -28,6 +28,17 @@
 	<category>
 		<title>EVENT MANAGEMENT</title>
 		<item>
+			<name>Add Event, Event Room Availability (filter)</name>
+			<description>
+				<line>Room number is made case insensitive.</line>
+				<line>Distance for include close by locations can be customized using tmtbl.events.nearByDistance application property.</line>
+				<line>Date selection: alter between the selected / not selected preferences on click, that is
+					<line>when clicked on a day that is already selected, it become unselected (and vice versa)</line>
+					<line>when clicked on a column (day of week), a row (week), a table (month): if all relevant days are selected, they become unselected etc.</line>
+				</line> 
+			</description>
+		</item>
+		<item>
 			<name>Event Room Availability</name>
 			<description>
 				<line>Change of academic session corrected.</line>
