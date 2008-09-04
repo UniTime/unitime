@@ -839,6 +839,7 @@ public class EventAddForm extends ActionForm {
 		if (iMinCapacity!=null && iMinCapacity.length()>0) { query+= " and r.capacity>= :minCapacity";	}
 		if (iMaxCapacity!=null && iMaxCapacity.length()>0) { query+= " and r.capacity<= :maxCapacity";	}
 		if (iRoomNumber!=null && iRoomNumber.length()>0) { query+=" and upper(r.roomNumber) like (:roomNumber)"; }
+		query += " and r.session.uniqueId=:sessionId";
  		query += b;
 
 		Query hibQuery = new LocationDAO().getSession().createQuery(query);
@@ -850,6 +851,7 @@ public class EventAddForm extends ActionForm {
 		if (iRoomNumber!=null && iRoomNumber.length()>0) { 
 			hibQuery.setString("roomNumber", iRoomNumber.replaceAll("\\*", "%").toUpperCase()); 
 		}
+		hibQuery.setLong("sessionId", iSessionId);
 		
 		for (Iterator i=hibQuery.setCacheable(true).iterate();i.hasNext();) {
 			Location location = (Location)i.next();
@@ -868,6 +870,7 @@ public class EventAddForm extends ActionForm {
                 query+=" and upper(r.name) like (:roomNumber)"; 
             }
             query += b;
+            query += " and r.session.uniqueId=:sessionId";
             hibQuery = new LocationDAO().getSession().createQuery(query);
             hibQuery.setString("eventMgr", Roles.EVENT_MGR_ROLE);
             if (iMinCapacity!=null && iMinCapacity.length()>0) { hibQuery.setInteger("minCapacity", Integer.valueOf(iMinCapacity)); }
@@ -875,6 +878,7 @@ public class EventAddForm extends ActionForm {
             if (iRoomNumber!=null && iRoomNumber.length()>0) { 
                 hibQuery.setString("roomNumber", iRoomNumber.replaceAll("\\*", "%").toUpperCase()); 
             }
+            hibQuery.setLong("sessionId", iSessionId);
             
             for (Iterator i=hibQuery.setCacheable(true).iterate();i.hasNext();) {
                 Location location = (Location)i.next();
