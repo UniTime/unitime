@@ -193,7 +193,10 @@ public class EventAddForm extends ActionForm {
 		} catch (Exception e) {}
 		if (iSessionId==null) {
 		    TreeSet<Session> sessions = Session.getAllSessions();
-		    if (!sessions.isEmpty()) iSessionId = sessions.last().getUniqueId();
+		    if (!sessions.isEmpty()) {
+		        Session s = Session.defaultSession(sessions);
+		        iSessionId = (s==null?sessions.last().getUniqueId():s.getUniqueId());
+		    }
 		}
 		iStartTime = 90;
 		iStopTime = 210;
