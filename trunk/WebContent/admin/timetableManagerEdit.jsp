@@ -148,10 +148,10 @@
 			<TD>External ID: </TD>
 			<TD>
 				<html:text name="mgrForm" property="externalId" size="12" maxlength="12" styleId="uid"/>
+				<html:hidden name="mgrForm" property="lookupEnabled"/>
 				<%--
 				&nbsp; <bean:write name="mgrForm" property="lookupResult"/>
 				&nbsp;
-				<html:hidden name="mgrForm" property="lookupEnabled"/>
 				<logic:equal name="mgrForm" property="lookupEnabled" value="true">
 					<html:submit property="op" 
 						styleClass="btn" accesskey="L" titleKey="title.lookupManager">
