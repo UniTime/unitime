@@ -22,9 +22,24 @@
 <release-history>
 
 <doc-title>Timetabling - Release Notes</doc-title>
+
 <release>
 	<version>3.1.@build.number@</version>
 	<release-date>@release.date@</release-date>
+	<category>
+		<title>OTHER CHANGES</title>
+		<item>
+			<name>Timetable Managers</name>
+			<description>
+				<line>Fixed a NullPointerException thrown while adding a new manager (introduced by the last change -- added lookup).</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.1.101</version>
+	<release-date>Fri, 5 Sep 2008</release-date>
 	<category>
 		<title>EVENT MANAGEMENT</title>
 		<item>
