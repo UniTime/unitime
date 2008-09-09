@@ -414,7 +414,23 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
     }
     
     public boolean overlap(TimeBlock time) {
-        return getStartTime().compareTo(time.getEndTime())<0 && time.getStartTime().compareTo(getEndTime()) < 0;
+        int breakTimeStart = Integer.parseInt(ApplicationProperties.getProperty("tmtbl.room.availability.breakTime.start", "0"));
+        int breakTimeStop = Integer.parseInt(ApplicationProperties.getProperty("tmtbl.room.availability.breakTime.stop", "0"));
+        Date start = time.getStartTime();
+        if (breakTimeStart!=0) {
+            Calendar c = Calendar.getInstance(Locale.US); 
+            c.setTime(start);
+            c.add(Calendar.MINUTE, -breakTimeStart);
+            start = c.getTime();
+        }
+        Date stop = time.getEndTime();
+        if (breakTimeStop!=0) {
+            Calendar c = Calendar.getInstance(Locale.US); 
+            c.setTime(stop);
+            c.add(Calendar.MINUTE, breakTimeStop);
+            stop = c.getTime();
+        }
+        return getStartTime().compareTo(stop)<0 && start.compareTo(getEndTime()) < 0;
     }
     
     public static Date[] getBounds(Session session, int examType) {
