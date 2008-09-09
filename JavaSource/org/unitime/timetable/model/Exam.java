@@ -280,6 +280,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
     }
 
     public int getSize() {
+        if (getExamSize()!=null) return getExamSize().intValue();
         int size = 0;
         for (Iterator i=getOwners().iterator();i.hasNext();)
             size += ((ExamOwner)i.next()).getSize();
