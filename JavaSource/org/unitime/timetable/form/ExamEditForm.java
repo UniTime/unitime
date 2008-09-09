@@ -1,3 +1,22 @@
+/*
+ * UniTime 3.1 (University Timetabling Application)
+ * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * as indicated by the @authors tag.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
 package org.unitime.timetable.form;
 
 import java.util.ArrayList;
@@ -43,6 +62,8 @@ public class ExamEditForm extends PreferencesForm {
     
     private Integer maxNbrRooms;
     private Integer length;
+    private String size;
+    private String sizeNote;
     private String seatingType;
     
     private List instructors;
@@ -73,6 +94,10 @@ public class ExamEditForm extends PreferencesForm {
     public void setMaxNbrRooms(Integer maxNbrRooms) { this.maxNbrRooms = maxNbrRooms; }
     public Integer getLength() { return length; }
     public void setLength(Integer length) { this.length = length; }
+    public String getSize() { return size; }
+    public void setSize(String size) { this.size = size; }
+    public String getSizeNote() { return sizeNote; }
+    public void setSizeNote(String sizeNote) { this.sizeNote = sizeNote; }
     public String getSeatingType() { return seatingType; }
     public void setSeatingType(String seatingType) { this.seatingType = seatingType; }
     public String[] getSeatingTypes() { return Exam.sSeatingTypes; }
@@ -101,6 +126,8 @@ public class ExamEditForm extends PreferencesForm {
         note = null;
         maxNbrRooms = 1;
         length = null;
+        size = null;
+        sizeNote = null;
         avgPeriod = null;
         seatingType = Exam.sSeatingTypes[Exam.sSeatingTypeExam];
         instructors = DynamicList.getInstance(new ArrayList(), factory);
@@ -351,6 +378,14 @@ public class ExamEditForm extends PreferencesForm {
         
         if (length==null || length.intValue()<0)
             errors.add("length", new ActionMessage("errors.integerGtEq", "Length", "0") );
+        
+        if (size!=null && size.length()>0) {
+            try {
+                Integer.parseInt(size);
+            } catch (NumberFormatException e) {
+                errors.add("size", new ActionMessage("errors.numeric", "Size", "0") );
+            }
+        }
         
         // Notes has 1000 character limit
         if(note!=null && note.length()>999)
