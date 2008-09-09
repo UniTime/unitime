@@ -27,6 +27,49 @@
 	<version>3.1.@build.number@</version>
 	<release-date>@release.date@</release-date>
 	<category>
+		<title>EXAMINATION TIMETABLING</title>
+		<item>
+			<name>Examination Edit</name>
+			<description>
+				<line>When an exam is changed, propagate new name and length to the event (if it already exists).</line>
+			</description>
+		</item>
+		<item>
+			<name>Examination Assignment</name>
+			<description>
+				<line>Eliminated shadow back-to-back conflicts when used with the solver.</line> 
+			</description>
+		</item>
+		<item>
+			<name>Examination Size</name>
+			<description>
+				<line>Added ability to customize computation of examination size
+					<line>when tmtbl.exam.useLimit.Final / tmtbl.exam.useLimit.Midterm is true (default: false for final, true for midterm):
+						<line>limit is a maximum of
+							<line>number of students enrolled in the exam</line>
+							<line>total limit of courses/classes associated with the exam</line>
+						</line>
+					</line>
+					<line>otherwise it is just the number of students enrolled in the exam.</line>
+				</line>
+				<line>Added ability to override examination size on an exam (optional field Exam.examSize added).</line>
+			</description>
+		</item>
+		<item>
+			<name>Room Availability</name>
+			<description>
+				<line>Added ability to add break times (before and after) the exam for checking of room availability, using the following properties:
+					<line>tmtbl.room.availability.breakTime.start -- required break time before an examination starts</line>
+					<line>tmtbl.room.availability.breakTime.stop -- required break time after an examination stops</line>
+				</line>
+				<line>When tmtbl.room.availability.breakTime.compensate is true (default is false) the above break times 
+					are compensated when comparing exams with examination events on examination room availability page
+					<line>Needed when the event management systems returns examination meetings that include break times.</line>
+				</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>OTHER CHANGES</title>
 		<item>
 			<name>Timetable Managers</name>

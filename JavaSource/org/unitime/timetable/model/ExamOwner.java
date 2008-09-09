@@ -701,29 +701,14 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
     }
     
     public int getSize() {
-        if (getExam().getExamType()==Exam.sExamTypeFinal)
-            return countStudents();
-        else
-            return Math.max(countStudents(), getLimit());
+        boolean considerLimit = "true".equals(
+                ApplicationProperties.getProperty("tmtbl.exam.useLimit."+Exam.sExamTypes[getExam().getExamType()],
+                (getExam().getExamType()==Exam.sExamTypeFinal?"false":"true")));
+        return (considerLimit?Math.max(countStudents(), getLimit()):countStudents());
     }
     
     public String getLabel() {
         return genName(ApplicationProperties.getProperty("tmtbl.exam.name."+ExamOwner.sOwnerTypes[getOwnerType()]));
-        /*
-        Object owner = getOwnerObject();
-        switch (getOwnerType()) {
-            case sOwnerTypeClass : 
-                
-                return ((Class_)owner).getClassLabel();
-            case sOwnerTypeConfig : 
-                return ((InstrOfferingConfig)owner).toString();
-            case sOwnerTypeCourse : 
-                return ((CourseOffering)owner).getCourseName();
-            case sOwnerTypeOffering : 
-                return ((InstructionalOffering)owner).getCourseName();
-            default : throw new RuntimeException("Unknown owner type "+getOwnerType());
-        }
-        */
     }
 
     public String getSubject() {

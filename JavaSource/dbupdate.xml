@@ -2127,4 +2127,8 @@
 		<plsql>update sessions set event_end_date = session_end_date_time+31</plsql>
 		<plsql>alter table sessions add constraint nn_sessions_event_end_date check (event_end_date is not null)</plsql>
 	</update>
+	<update version="36" date="9-Sep-2008" comment="Added (optional) exam size">
+		<mysql>alter table exam add exam_size int(10)</mysql>
+		<plsql>alter table exam add exam_size number(10,0)</plsql>
+	</update>
 </dbupdate>
