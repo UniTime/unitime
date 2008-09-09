@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
@@ -234,6 +235,9 @@ public class RoomAvailabilityAction extends Action {
         SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mmaa");
         String ts = null;
         String eventType = (form.getExamType()==Exam.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sMidtermExamType);
+        boolean compensateForBreakTimes = "true".equals(ApplicationProperties.getProperty("tmtbl.room.availability.breakTime.compensate","false"));
+        int breakTimeStart = Integer.parseInt(ApplicationProperties.getProperty("tmtbl.room.availability.breakTime.start", "0"));
+        int breakTimeStop = Integer.parseInt(ApplicationProperties.getProperty("tmtbl.room.availability.breakTime.stop", "0"));
         ExamAssignmentProxy examAssignment = WebSolver.getExamSolver(request.getSession());
         if (examAssignment!=null && examAssignment.getExamType()!=form.getExamType()) examAssignment = null;
         try {
@@ -335,8 +339,22 @@ public class RoomAvailabilityAction extends Action {
                         Date endTime = c.getTime();
                         boolean nameMatch = event.getEventName().trim().equalsIgnoreCase(match.getExamName().trim());
                         boolean dateMatch = dateFormat.format(event.getStartTime()).equals(dateFormat.format(match.getPeriod().getStartDate()));
-                        boolean startMatch = event.getStartTime().equals(match.getPeriod().getStartTime());
-                        boolean endMatch = event.getEndTime().equals(endTime);
+                        Date start = event.getStartTime();
+                        if (compensateForBreakTimes && breakTimeStart!=0) {
+                            c = Calendar.getInstance(Locale.US); 
+                            c.setTime(start);
+                            c.add(Calendar.MINUTE, breakTimeStart);
+                            start = c.getTime();
+                        }
+                        Date stop = event.getEndTime();
+                        if (compensateForBreakTimes && breakTimeStop!=0) {
+                            c = Calendar.getInstance(Locale.US); 
+                            c.setTime(stop);
+                            c.add(Calendar.MINUTE, -breakTimeStop);
+                            stop = c.getTime();
+                        }
+                        boolean startMatch = start.equals(match.getPeriod().getStartTime());
+                        boolean endMatch = stop.equals(endTime);
                         if (nameMatch && dateMatch && startMatch && endMatch) continue;
                         table.addLine(
                                 null,
