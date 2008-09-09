@@ -2131,4 +2131,14 @@
 		<mysql>alter table exam add exam_size int(10)</mysql>
 		<plsql>alter table exam add exam_size number(10,0)</plsql>
 	</update>
+	<update version="37" date="9-Sep-2008" comment="Float data types">
+		<sql onFail="next">alter table class_ modify room_ratio float</sql>
+		<sql onFail="next">alter table course_subpart_credit modify fixed_min_credit float</sql>
+		<sql onFail="next">alter table course_subpart_credit modify max_credit float</sql>
+		<sql onFail="next">alter table course_credit_unit_config modify fixed_units float</sql>
+		<sql onFail="next">alter table course_credit_unit_config modify min_units float</sql>
+		<sql onFail="next">alter table course_credit_unit_config modify max_units float</sql>
+		<sql onFail="next">alter table course_catalog modify fixed_min_credit float</sql>
+		<sql onFail="next">alter table course_catalog modify max_credit float</sql>
+	</update>
 </dbupdate>
