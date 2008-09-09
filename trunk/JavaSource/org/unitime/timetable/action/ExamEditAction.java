@@ -1,3 +1,22 @@
+/*
+ * UniTime 3.1 (University Timetabling Application)
+ * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * as indicated by the @authors tag.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
 package org.unitime.timetable.action;
 
 import java.util.HashSet;
@@ -19,6 +38,7 @@ import org.apache.struts.util.MessageResources;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ExamEditForm;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
@@ -27,10 +47,12 @@ import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.ExamEvent;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.SchedulingSubpart;
@@ -156,6 +178,14 @@ public class ExamEditAction extends PreferencesAction {
                 }
             }
             
+            if ("true".equals(
+                    ApplicationProperties.getProperty("tmtbl.exam.useLimit."+Exam.sExamTypes[frm.getExamType()],
+                    (frm.getExamType()==Exam.sExamTypeFinal?"false":"true"))))
+                frm.setSizeNote("A number of enrolled students or a total limit of selected classes/courses (whichever is bigger) is used when blank");
+            else
+                frm.setSizeNote("A number of enrolled students is used when blank");
+
+            
             frm.setLabel(frm.getClone() || exam==null?"New Examination":exam.getLabel());
             
             if (op.equals(rsc.getMessage("button.addInstructor"))) {
@@ -275,6 +305,7 @@ public class ExamEditAction extends PreferencesAction {
             frm.setName(exam.generateName().equals(exam.getName())?null:exam.getName());
             frm.setNote(exam.getNote());
             frm.setLength(exam.getLength());
+            frm.setSize(exam.getExamSize()==null?null:exam.getExamSize().toString());
             frm.setSeatingType(Exam.sSeatingTypes[exam.getSeatingType()]);
             frm.setMaxNbrRooms(exam.getMaxNbrRooms());
             
@@ -418,7 +449,13 @@ public class ExamEditAction extends PreferencesAction {
         
         exam.setNote(frm.getNote());
         exam.setSeatingType(frm.getSeatingTypeIdx());
+        Integer oldLength = exam.getLength();
         exam.setLength(Integer.valueOf(frm.getLength()));
+        if (frm.getSize()==null || frm.getSize().length()==0) {
+            exam.setExamSize(null);
+        } else {
+            exam.setExamSize(Integer.valueOf(frm.getSize()));
+        }
         exam.setMaxNbrRooms(Integer.valueOf(frm.getMaxNbrRooms()));
         
         if (exam.getInstructors()==null) exam.setInstructors(new HashSet());
@@ -444,6 +481,16 @@ public class ExamEditAction extends PreferencesAction {
             exam.setName(exam.generateName());            
         } else {
             exam.setName(frm.getName());
+        }
+        ExamEvent event = exam.getEvent();
+        if (event!=null) {
+            event.setEventName(exam.getName());
+            if (exam.getAssignedPeriod()!=null && !exam.getLength().equals(oldLength)) {
+                for (Iterator i=event.getMeetings().iterator();i.hasNext();) {
+                    Meeting m = (Meeting)i.next();
+                    m.setStopOffset(exam.getLength()-Constants.SLOT_LENGTH_MIN*exam.getAssignedPeriod().getLength());
+                }
+            }
         }
         
         exam.generateDefaultPreferences(false);
