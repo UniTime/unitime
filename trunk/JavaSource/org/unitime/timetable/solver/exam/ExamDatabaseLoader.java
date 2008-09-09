@@ -210,6 +210,9 @@ public class ExamDatabaseLoader extends ExamLoader {
     protected void loadExams() {
         if (isRemote()) HibernateUtil.clearCache();
         Collection exams = org.unitime.timetable.model.Exam.findAll(iSessionId, iExamType);
+        boolean considerLimit = "true".equals(
+                ApplicationProperties.getProperty("tmtbl.exam.useLimit."+org.unitime.timetable.model.Exam.sExamTypes[iExamType],
+                (iExamType==org.unitime.timetable.model.Exam.sExamTypeFinal?"false":"true")));
         iProgress.setPhase("Loading exams...", exams.size());
         for (Iterator i=exams.iterator();i.hasNext();) {
             iProgress.incProgress();
@@ -265,8 +268,9 @@ public class ExamDatabaseLoader extends ExamLoader {
                 minSize += owner.getLimit();
                 x.getOwners().add(cs);
             }
+            x.setSizeOverride(exam.getExamSize());
             
-            if (iExamType==org.unitime.timetable.model.Exam.sExamTypeMidterm && minSize>0)
+            if (considerLimit && minSize>0)
                 x.setMinSize(minSize);
             
             if (x.getMaxRooms()>0) {

@@ -43,6 +43,7 @@ public abstract class BaseExam extends org.unitime.timetable.model.PreferenceGro
 	public static String PROP_EXAM_TYPE = "examType";
 	public static String PROP_AVG_PERIOD = "avgPeriod";
 	public static String PROP_UNIQUE_ID_ROLLED_FORWARD_FROM = "uniqueIdRolledForwardFrom";
+	public static String PROP_EXAM_SIZE = "examSize";
 
 
 	// constructors
@@ -67,6 +68,7 @@ public abstract class BaseExam extends org.unitime.timetable.model.PreferenceGro
 	private java.lang.String name;
 	private java.lang.String note;
 	private java.lang.Integer length;
+	private java.lang.Integer examSize;
 	private java.lang.Integer maxNbrRooms;
 	private java.lang.Integer seatingType;
 	private java.lang.String assignedPreference;
@@ -138,6 +140,20 @@ public abstract class BaseExam extends org.unitime.timetable.model.PreferenceGro
 		this.length = length;
 	}
 
+    /**
+     * Return the value associated with the column: EXAM_SIZE
+     */
+    public java.lang.Integer getExamSize () {
+        return examSize;
+    }
+
+    /**
+     * Set the value related to the column: EXAM_SIZE
+     * @param length the EXAM_SIZE value
+     */
+    public void setExamSize (java.lang.Integer examSize) {
+        this.examSize = examSize;
+    }
 
 
 	/**
