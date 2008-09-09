@@ -103,6 +103,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                         Set exams = student.getExams(placement.getPeriod().prev());
                         for (Iterator i=exams.iterator();i.hasNext();) {
                             Exam other = (Exam)i.next();
+                            if (other.equals(exam)) continue;
                             double distance = placement.getDistance((ExamPlacement)other.getAssignment());
                             BackToBackConflict btb = backToBacks.get(other);
                             if (btb==null) {
@@ -119,6 +120,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                         Set exams = student.getExams(placement.getPeriod().next());
                         for (Iterator i=exams.iterator();i.hasNext();) {
                             Exam other = (Exam)i.next();
+                            if (other.equals(exam)) continue;
                             BackToBackConflict btb = backToBacks.get(other);
                             double distance = placement.getDistance((ExamPlacement)other.getAssignment());
                             if (btb==null) {
@@ -179,6 +181,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                         Set exams = instructor.getExams(placement.getPeriod().prev());
                         for (Iterator i=exams.iterator();i.hasNext();) {
                             Exam other = (Exam)i.next();
+                            if (other.equals(exam)) continue;
                             double distance = placement.getDistance((ExamPlacement)other.getAssignment());
                             BackToBackConflict btb = ibackToBacks.get(other);
                             if (btb==null) {
@@ -195,6 +198,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                         Set exams = instructor.getExams(placement.getPeriod().next());
                         for (Iterator i=exams.iterator();i.hasNext();) {
                             Exam other = (Exam)i.next();
+                            if (other.equals(exam)) continue;
                             BackToBackConflict btb = ibackToBacks.get(other);
                             double distance = placement.getDistance((ExamPlacement)other.getAssignment());
                             if (btb==null) {
