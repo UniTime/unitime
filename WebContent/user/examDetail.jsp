@@ -137,6 +137,10 @@
 		<TR>
 			<TD nowrap>Maximum Number of Rooms:</TD><TD> <bean:write name="<%=frmName%>" property="maxNbrRooms" /></TD>
 		</TR>
+		</TR>
+		<TR>
+			<TD>Size:</TD><TD> <bean:write name="<%=frmName%>" property="size" /></TD>
+		</TR>
 		<logic:notEmpty name="<%=frmName%>" property="instructors">
 			<TR>
 				<TD valign="top">Instructors:</TD>

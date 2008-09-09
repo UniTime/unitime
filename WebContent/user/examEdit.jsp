@@ -128,6 +128,9 @@
 			<TD nowrap>Maximum Number of Rooms:</TD><TD><html:text property="maxNbrRooms" size="5" maxlength="5"/></TD>
 		</TR>
 		<TR>
+			<TD>Size:</TD><TD><html:text property="size" size="5" maxlength="5"/> <i>(<bean:write name="<%=frmName%>" property="sizeNote" />)</i></TD>
+		</TR>
+		<TR>
 			<TD valign="top">Notes</TD>
 			<TD>
 				<html:textarea property="note" cols="80" rows="5"/>
