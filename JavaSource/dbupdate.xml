@@ -2246,5 +2246,9 @@
 				references %SCHEMA%.course_offering (uniqueid) on delete cascade
 		</sql>
 	</update>
-	
+	<update version="39" date="10-Sep-2008" comment="Curricula changes">
+		<mysql>alter table %SCHEMA%.curricula_course modify group_nr varchar(20) null</mysql>
+		<plsql>alter table %SCHEMA%.curricula_course drop constraints nn_curricula_course_group_nr</plsql>
+		<plsql>alter table %SCHEMA%.curricula_course modify group_nr varchar2(20)</plsql>
+	</update>
 </dbupdate>
