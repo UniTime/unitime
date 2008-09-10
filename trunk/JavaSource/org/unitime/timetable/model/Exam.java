@@ -1059,6 +1059,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
     
     private ExamEvent iEvent = null;
     public ExamEvent getEvent() {
+        if (getUniqueId()==null) return null;
         if (iEvent==null) 
             iEvent = (ExamEvent)new ExamDAO().getSession().createQuery(
                 "select e from ExamEvent e left join fetch e.meetings m where e.exam.uniqueId=:examId").
