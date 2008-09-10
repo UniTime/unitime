@@ -1019,5 +1019,10 @@
 		<put name="checkAccessLevel" value="false" />
 		<put name="checkRole" value="false" />
   	</definition> 	
+  	
+  	<definition	name="curriculumListTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Curricula"/>
+		<put name="body" value="/user/curriculumList.jsp" />
+  	</definition>
 
 </tiles-definitions>
