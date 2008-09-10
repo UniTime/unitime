@@ -144,6 +144,7 @@
   	  <form-bean name="eventStandardNoteEditForm" type="org.unitime.timetable.form.EventStandardNoteEditForm" />
   	  <form-bean name="eventEditForm" type="org.unitime.timetable.form.EventEditForm" />
   	  <form-bean name="meetingListForm" type="org.unitime.timetable.form.MeetingListForm" />
+  	  <form-bean name="curriculumListForm" type="org.unitime.timetable.form.CurriculumListForm" />
    </form-beans>
 
    <global-exceptions>
@@ -2541,6 +2542,20 @@
          type="org.unitime.timetable.action.ajax.PeopleLookupAjax"
          scope="request"
          validate="false" />
+
+    <action
+    	path="/curriculumList"
+    	type="org.unitime.timetable.action.CurriculumListAction"
+    	attribute="curriculumListForm"
+    	input="curriculumListTile"
+    	name="curriculumListForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+    		name="show"
+    		path="curriculumListTile"
+    		redirect="true" />
+    </action>    
 
     </action-mappings>
 
