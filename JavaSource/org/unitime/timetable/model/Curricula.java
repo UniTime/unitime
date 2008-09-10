@@ -1,6 +1,9 @@
 package org.unitime.timetable.model;
 
+import java.util.List;
+
 import org.unitime.timetable.model.base.BaseCurricula;
+import org.unitime.timetable.model.dao.CurriculaDAO;
 
 
 
@@ -37,5 +40,17 @@ public class Curricula extends BaseCurricula {
 
 /*[CONSTRUCTOR MARKER END]*/
 
+	public static List<Curricula> findAll(Long sessionId) {
+	    return CurriculaDAO.getInstance().getSession()
+	        .createQuery("select c from Curricula c where c.department.session.uniqueId=:sessionId")
+	        .setLong("sessionId", sessionId)
+	        .setCacheable(true).list();
+	}
 
+    public static List<Curricula> findByDepartment(Long deptId) {
+        return CurriculaDAO.getInstance().getSession()
+            .createQuery("select c from Curricula c where c.department.uniqueId=:deptId")
+            .setLong("deptId", deptId)
+            .setCacheable(true).list();
+    }
 }
