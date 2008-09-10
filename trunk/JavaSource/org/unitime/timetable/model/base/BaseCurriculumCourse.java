@@ -12,9 +12,9 @@ import java.io.Serializable;
  *  table="curricula_course"
  */
 
-public abstract class BaseCurriculaCourse  implements Serializable {
+public abstract class BaseCurriculumCourse  implements Serializable {
 
-	public static String REF = "CurriculaCourse";
+	public static String REF = "CurriculumCourse";
 	public static String PROP_PERC_SHARE = "percShare";
 	public static String PROP_LL_SHARE = "llShare";
 	public static String PROP_GROUP = "group";
@@ -23,14 +23,14 @@ public abstract class BaseCurriculaCourse  implements Serializable {
 
 
 	// constructors
-	public BaseCurriculaCourse () {
+	public BaseCurriculumCourse () {
 		initialize();
 	}
 
 	/**
 	 * Constructor for primary key
 	 */
-	public BaseCurriculaCourse (java.lang.Long uniqueId) {
+	public BaseCurriculumCourse (java.lang.Long uniqueId) {
 		this.setUniqueId(uniqueId);
 		initialize();
 	}
@@ -38,9 +38,9 @@ public abstract class BaseCurriculaCourse  implements Serializable {
 	/**
 	 * Constructor for required fields
 	 */
-	public BaseCurriculaCourse (
+	public BaseCurriculumCourse (
 		java.lang.Long uniqueId,
-		org.unitime.timetable.model.CurriculaClassification classification,
+		org.unitime.timetable.model.CurriculumClassification classification,
 		org.unitime.timetable.model.CourseOffering course,
 		java.lang.Float percShare,
 		java.lang.Integer ord) {
@@ -70,7 +70,7 @@ public abstract class BaseCurriculaCourse  implements Serializable {
 	private java.lang.Integer llEnrollment;
 
 	// many to one
-	private org.unitime.timetable.model.CurriculaClassification classification;
+	private org.unitime.timetable.model.CurriculumClassification classification;
 	private org.unitime.timetable.model.CourseOffering course;
 
 
@@ -185,7 +185,7 @@ public abstract class BaseCurriculaCourse  implements Serializable {
 	/**
 	 * Return the value associated with the column: cur_clasf_id
 	 */
-	public org.unitime.timetable.model.CurriculaClassification getClassification () {
+	public org.unitime.timetable.model.CurriculumClassification getClassification () {
 		return classification;
 	}
 
@@ -193,7 +193,7 @@ public abstract class BaseCurriculaCourse  implements Serializable {
 	 * Set the value related to the column: cur_clasf_id
 	 * @param classification the cur_clasf_id value
 	 */
-	public void setClassification (org.unitime.timetable.model.CurriculaClassification classification) {
+	public void setClassification (org.unitime.timetable.model.CurriculumClassification classification) {
 		this.classification = classification;
 	}
 
@@ -220,11 +220,11 @@ public abstract class BaseCurriculaCourse  implements Serializable {
 
 	public boolean equals (Object obj) {
 		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.CurriculaCourse)) return false;
+		if (!(obj instanceof org.unitime.timetable.model.CurriculumCourse)) return false;
 		else {
-			org.unitime.timetable.model.CurriculaCourse curriculaCourse = (org.unitime.timetable.model.CurriculaCourse) obj;
-			if (null == this.getUniqueId() || null == curriculaCourse.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(curriculaCourse.getUniqueId()));
+			org.unitime.timetable.model.CurriculumCourse curriculumCourse = (org.unitime.timetable.model.CurriculumCourse) obj;
+			if (null == this.getUniqueId() || null == curriculumCourse.getUniqueId()) return false;
+			else return (this.getUniqueId().equals(curriculumCourse.getUniqueId()));
 		}
 	}
 
