@@ -2,65 +2,65 @@ package org.unitime.timetable.model.base;
 
 import org.hibernate.Hibernate;
 import org.hibernate.Session;
-import org.unitime.timetable.model.dao.CurriculaDAO;
+import org.unitime.timetable.model.dao.CurriculumCourseDAO;
 import org.hibernate.criterion.Order;
 
 /**
  * This is an automatically generated DAO class which should not be edited.
  */
-public abstract class BaseCurriculaDAO extends org.unitime.timetable.model.dao._RootDAO {
+public abstract class BaseCurriculumCourseDAO extends org.unitime.timetable.model.dao._RootDAO {
 
 	// query name references
 
 
-	public static CurriculaDAO instance;
+	public static CurriculumCourseDAO instance;
 
 	/**
 	 * Return a singleton of the DAO
 	 */
-	public static CurriculaDAO getInstance () {
-		if (null == instance) instance = new CurriculaDAO();
+	public static CurriculumCourseDAO getInstance () {
+		if (null == instance) instance = new CurriculumCourseDAO();
 		return instance;
 	}
 
 	public Class getReferenceClass () {
-		return org.unitime.timetable.model.Curricula.class;
+		return org.unitime.timetable.model.CurriculumCourse.class;
 	}
 
     public Order getDefaultOrder () {
-		return Order.asc("name");
+		return null;
     }
 
 	/**
-	 * Cast the object as a org.unitime.timetable.model.Curricula
+	 * Cast the object as a org.unitime.timetable.model.CurriculumCourse
 	 */
-	public org.unitime.timetable.model.Curricula cast (Object object) {
-		return (org.unitime.timetable.model.Curricula) object;
+	public org.unitime.timetable.model.CurriculumCourse cast (Object object) {
+		return (org.unitime.timetable.model.CurriculumCourse) object;
 	}
 
-	public org.unitime.timetable.model.Curricula get(java.lang.Long key)
+	public org.unitime.timetable.model.CurriculumCourse get(java.lang.Long key)
 	{
-		return (org.unitime.timetable.model.Curricula) get(getReferenceClass(), key);
+		return (org.unitime.timetable.model.CurriculumCourse) get(getReferenceClass(), key);
 	}
 
-	public org.unitime.timetable.model.Curricula get(java.lang.Long key, Session s)
+	public org.unitime.timetable.model.CurriculumCourse get(java.lang.Long key, Session s)
 	{
-		return (org.unitime.timetable.model.Curricula) get(getReferenceClass(), key, s);
+		return (org.unitime.timetable.model.CurriculumCourse) get(getReferenceClass(), key, s);
 	}
 
-	public org.unitime.timetable.model.Curricula load(java.lang.Long key)
+	public org.unitime.timetable.model.CurriculumCourse load(java.lang.Long key)
 	{
-		return (org.unitime.timetable.model.Curricula) load(getReferenceClass(), key);
+		return (org.unitime.timetable.model.CurriculumCourse) load(getReferenceClass(), key);
 	}
 
-	public org.unitime.timetable.model.Curricula load(java.lang.Long key, Session s)
+	public org.unitime.timetable.model.CurriculumCourse load(java.lang.Long key, Session s)
 	{
-		return (org.unitime.timetable.model.Curricula) load(getReferenceClass(), key, s);
+		return (org.unitime.timetable.model.CurriculumCourse) load(getReferenceClass(), key, s);
 	}
 
-	public org.unitime.timetable.model.Curricula loadInitialize(java.lang.Long key, Session s) 
+	public org.unitime.timetable.model.CurriculumCourse loadInitialize(java.lang.Long key, Session s) 
 	{ 
-		org.unitime.timetable.model.Curricula obj = load(key, s); 
+		org.unitime.timetable.model.CurriculumCourse obj = load(key, s); 
 		if (!Hibernate.isInitialized(obj)) {
 			Hibernate.initialize(obj);
 		} 
@@ -71,36 +71,36 @@ public abstract class BaseCurriculaDAO extends org.unitime.timetable.model.dao._
 	/**
 	 * Persist the given transient instance, first assigning a generated identifier. (Or using the current value
 	 * of the identifier property if the assigned generator is used.) 
-	 * @param curricula a transient instance of a persistent class 
+	 * @param curriculumCourse a transient instance of a persistent class 
 	 * @return the class identifier
 	 */
-	public java.lang.Long save(org.unitime.timetable.model.Curricula curricula)
+	public java.lang.Long save(org.unitime.timetable.model.CurriculumCourse curriculumCourse)
 	{
-		return (java.lang.Long) super.save(curricula);
+		return (java.lang.Long) super.save(curriculumCourse);
 	}
 
 	/**
 	 * Persist the given transient instance, first assigning a generated identifier. (Or using the current value
 	 * of the identifier property if the assigned generator is used.) 
 	 * Use the Session given.
-	 * @param curricula a transient instance of a persistent class
+	 * @param curriculumCourse a transient instance of a persistent class
 	 * @param s the Session
 	 * @return the class identifier
 	 */
-	public java.lang.Long save(org.unitime.timetable.model.Curricula curricula, Session s)
+	public java.lang.Long save(org.unitime.timetable.model.CurriculumCourse curriculumCourse, Session s)
 	{
-		return (java.lang.Long) save((Object) curricula, s);
+		return (java.lang.Long) save((Object) curriculumCourse, s);
 	}
 
 	/**
 	 * Either save() or update() the given instance, depending upon the value of its identifier property. By default
 	 * the instance is always saved. This behaviour may be adjusted by specifying an unsaved-value attribute of the
 	 * identifier property mapping. 
-	 * @param curricula a transient instance containing new or updated state 
+	 * @param curriculumCourse a transient instance containing new or updated state 
 	 */
-	public void saveOrUpdate(org.unitime.timetable.model.Curricula curricula)
+	public void saveOrUpdate(org.unitime.timetable.model.CurriculumCourse curriculumCourse)
 	{
-		saveOrUpdate((Object) curricula);
+		saveOrUpdate((Object) curriculumCourse);
 	}
 
 	/**
@@ -108,34 +108,34 @@ public abstract class BaseCurriculaDAO extends org.unitime.timetable.model.dao._
 	 * instance is always saved. This behaviour may be adjusted by specifying an unsaved-value attribute of the identifier
 	 * property mapping. 
 	 * Use the Session given.
-	 * @param curricula a transient instance containing new or updated state.
+	 * @param curriculumCourse a transient instance containing new or updated state.
 	 * @param s the Session.
 	 */
-	public void saveOrUpdate(org.unitime.timetable.model.Curricula curricula, Session s)
+	public void saveOrUpdate(org.unitime.timetable.model.CurriculumCourse curriculumCourse, Session s)
 	{
-		saveOrUpdate((Object) curricula, s);
+		saveOrUpdate((Object) curriculumCourse, s);
 	}
 
 	/**
 	 * Update the persistent state associated with the given identifier. An exception is thrown if there is a persistent
 	 * instance with the same identifier in the current session.
-	 * @param curricula a transient instance containing updated state
+	 * @param curriculumCourse a transient instance containing updated state
 	 */
-	public void update(org.unitime.timetable.model.Curricula curricula) 
+	public void update(org.unitime.timetable.model.CurriculumCourse curriculumCourse) 
 	{
-		update((Object) curricula);
+		update((Object) curriculumCourse);
 	}
 
 	/**
 	 * Update the persistent state associated with the given identifier. An exception is thrown if there is a persistent
 	 * instance with the same identifier in the current session.
 	 * Use the Session given.
-	 * @param curricula a transient instance containing updated state
+	 * @param curriculumCourse a transient instance containing updated state
 	 * @param the Session
 	 */
-	public void update(org.unitime.timetable.model.Curricula curricula, Session s)
+	public void update(org.unitime.timetable.model.CurriculumCourse curriculumCourse, Session s)
 	{
-		update((Object) curricula, s);
+		update((Object) curriculumCourse, s);
 	}
 
 	/**
@@ -163,23 +163,23 @@ public abstract class BaseCurriculaDAO extends org.unitime.timetable.model.dao._
 	/**
 	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
 	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * @param curricula the instance to be removed
+	 * @param curriculumCourse the instance to be removed
 	 */
-	public void delete(org.unitime.timetable.model.Curricula curricula)
+	public void delete(org.unitime.timetable.model.CurriculumCourse curriculumCourse)
 	{
-		delete((Object) curricula);
+		delete((Object) curriculumCourse);
 	}
 
 	/**
 	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
 	 * Session or a transient instance with an identifier associated with existing persistent state. 
 	 * Use the Session given.
-	 * @param curricula the instance to be removed
+	 * @param curriculumCourse the instance to be removed
 	 * @param s the Session
 	 */
-	public void delete(org.unitime.timetable.model.Curricula curricula, Session s)
+	public void delete(org.unitime.timetable.model.CurriculumCourse curriculumCourse, Session s)
 	{
-		delete((Object) curricula, s);
+		delete((Object) curriculumCourse, s);
 	}
 	
 	/**
@@ -192,9 +192,9 @@ public abstract class BaseCurriculaDAO extends org.unitime.timetable.model.dao._
 	 * <li>after inserting a Blob or Clob</li>
 	 * </ul>
 	 */
-	public void refresh (org.unitime.timetable.model.Curricula curricula, Session s)
+	public void refresh (org.unitime.timetable.model.CurriculumCourse curriculumCourse, Session s)
 	{
-		refresh((Object) curricula, s);
+		refresh((Object) curriculumCourse, s);
 	}
 
 

@@ -3,31 +3,31 @@ package org.unitime.timetable.model;
 import java.util.Iterator;
 import java.util.TreeSet;
 
-import org.unitime.timetable.model.base.BaseCurriculaCourse;
+import org.unitime.timetable.model.base.BaseCurriculumCourse;
 
 
 
-public class CurriculaCourse extends BaseCurriculaCourse implements Comparable<CurriculaCourse> {
+public class CurriculumCourse extends BaseCurriculumCourse implements Comparable<CurriculumCourse> {
 	private static final long serialVersionUID = 1L;
 
 /*[CONSTRUCTOR MARKER BEGIN]*/
-	public CurriculaCourse () {
+	public CurriculumCourse () {
 		super();
 	}
 
 	/**
 	 * Constructor for primary key
 	 */
-	public CurriculaCourse (java.lang.Long uniqueId) {
+	public CurriculumCourse (java.lang.Long uniqueId) {
 		super(uniqueId);
 	}
 
 	/**
 	 * Constructor for required fields
 	 */
-	public CurriculaCourse (
+	public CurriculumCourse (
 		java.lang.Long uniqueId,
-		org.unitime.timetable.model.CurriculaClassification classification,
+		org.unitime.timetable.model.CurriculumClassification classification,
 		org.unitime.timetable.model.CourseOffering course,
 		java.lang.Float percShare,
 		java.lang.Integer ord) {
@@ -42,13 +42,13 @@ public class CurriculaCourse extends BaseCurriculaCourse implements Comparable<C
 
 /*[CONSTRUCTOR MARKER END]*/
 
-	public int compareTo(CurriculaCourse c) {
+	public int compareTo(CurriculumCourse c) {
 	    if (getOrd()!=null && c.getOrd()!=null && !getOrd().equals(c.getOrd())) return getOrd().compareTo(c.getOrd());
 	    if (getCourse().equals(c.getCourse())) return getClassification().compareTo(c.getClassification());
-	    for (CurriculaClassification cc1: new TreeSet<CurriculaClassification>(getClassification().getCurricula().getClassifications())) {
-	        CurriculaClassification cc2 = null;
-	        for (Iterator i=c.getClassification().getCurricula().getClassifications().iterator();i.hasNext();) {
-	            CurriculaClassification cc = (CurriculaClassification)i.next();
+	    for (CurriculumClassification cc1: new TreeSet<CurriculumClassification>(getClassification().getCurriculum().getClassifications())) {
+	        CurriculumClassification cc2 = null;
+	        for (Iterator i=c.getClassification().getCurriculum().getClassifications().iterator();i.hasNext();) {
+	            CurriculumClassification cc = (CurriculumClassification)i.next();
 	            if (cc1.getAcademicClassification()!=null && cc1.getAcademicClassification().equals(cc.getAcademicClassification())) {
 	                cc2 = cc; break;
 	            }
@@ -58,12 +58,12 @@ public class CurriculaCourse extends BaseCurriculaCourse implements Comparable<C
 	        }
 	        float s1 = 0f, s2 = 0f;
 	        for (Iterator i=cc1.getCourses().iterator();i.hasNext();) {
-	            CurriculaCourse x = (CurriculaCourse)i.next();
+	            CurriculumCourse x = (CurriculumCourse)i.next();
 	            if (x.getCourse().equals(getCourse())) { s1 = x.getPercShare(); break; }
 	        }
 	        if (cc2!=null)
 	            for (Iterator i=cc2.getCourses().iterator();i.hasNext();) {
-	                CurriculaCourse x = (CurriculaCourse)i.next();
+	                CurriculumCourse x = (CurriculumCourse)i.next();
 	                if (x.getCourse().equals(c.getCourse())) { s2 = x.getPercShare(); break; }
 	            }
 	        int cmp = -Double.compare(s1, s2);

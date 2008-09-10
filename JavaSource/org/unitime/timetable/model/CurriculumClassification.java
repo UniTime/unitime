@@ -1,37 +1,37 @@
 package org.unitime.timetable.model;
 
-import org.unitime.timetable.model.base.BaseCurriculaClassification;
+import org.unitime.timetable.model.base.BaseCurriculumClassification;
 
 
 
-public class CurriculaClassification extends BaseCurriculaClassification implements Comparable<CurriculaClassification> {
+public class CurriculumClassification extends BaseCurriculumClassification implements Comparable<CurriculumClassification> {
 	private static final long serialVersionUID = 1L;
 
 /*[CONSTRUCTOR MARKER BEGIN]*/
-	public CurriculaClassification () {
+	public CurriculumClassification () {
 		super();
 	}
 
 	/**
 	 * Constructor for primary key
 	 */
-	public CurriculaClassification (java.lang.Long uniqueId) {
+	public CurriculumClassification (java.lang.Long uniqueId) {
 		super(uniqueId);
 	}
 
 	/**
 	 * Constructor for required fields
 	 */
-	public CurriculaClassification (
+	public CurriculumClassification (
 		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Curricula curricula,
+		org.unitime.timetable.model.Curriculum curriculum,
 		java.lang.String name,
 		java.lang.Integer nrStudents,
 		java.lang.Integer ord) {
 
 		super (
 			uniqueId,
-			curricula,
+			curriculum,
 			name,
 			nrStudents,
 			ord);
@@ -39,7 +39,7 @@ public class CurriculaClassification extends BaseCurriculaClassification impleme
 
 /*[CONSTRUCTOR MARKER END]*/
 
-	public int compareTo(CurriculaClassification cc) {
+	public int compareTo(CurriculumClassification cc) {
 	    if (getOrd()!=null && cc.getOrd()!=null && !getOrd().equals(cc.getOrd()))
 	        return getOrd().compareTo(cc.getOrd());
 	    int cmp = getName().compareToIgnoreCase(cc.getName());

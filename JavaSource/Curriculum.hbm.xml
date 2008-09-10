@@ -24,8 +24,8 @@
 
 <hibernate-mapping package="org.unitime.timetable.model">
 	<class
-		name="Curricula"
-		table="curricula"
+		name="Curriculum"
+		table="curriculum"
 		>
 
  		<cache include="non-lazy" usage="read-write"/>
@@ -61,7 +61,7 @@
 			class="AcademicArea" 
 			column="acad_area_id" 
 			not-null="false"
-			foreign-key="fk_curricula_acad_area"
+			foreign-key="fk_curriculum_acad_area"
 		/>
 		
 		<many-to-one 
@@ -69,7 +69,7 @@
 			class="Department" 
 			column="dept_id" 
 			not-null="true"
-			foreign-key="fk_curricula_dept"
+			foreign-key="fk_curriculum_dept"
 		/>
 		
 		<set
@@ -79,14 +79,14 @@
 			inverse="true"
 			>
 			<cache include="non-lazy" usage="read-write"/>
-			<key column="curricula_id" foreign-key="fk_curricula_clasf_curricula"/>
-			<one-to-many class="CurriculaClassification"/>
+			<key column="curriculum_id" foreign-key="fk_curriculum_clasf_curriculum"/>
+			<one-to-many class="CurriculumClassification"/>
 		</set>			
 	</class>
 	
 	<class
-		name="CurriculaClassification"
-		table="curricula_clasf"
+		name="CurriculumClassification"
+		table="curriculum_clasf"
 		>
 
  		<cache include="non-lazy" usage="read-write"/>
@@ -102,11 +102,11 @@
         </id>
         
         <many-to-one 
-			name="curricula" 
-			class="Curricula" 
-			column="curricula_id" 
+			name="curriculum" 
+			class="Curriculum" 
+			column="curriculum_id" 
 			not-null="true"
-			foreign-key="fk_curricula_clasf_curricula"
+			foreign-key="fk_curriculum_clasf_curriculum"
 		/>
         
  		<property
@@ -122,7 +122,7 @@
 			class="AcademicClassification" 
 			column="acad_clasf_id" 
 			not-null="false"
-			foreign-key="fk_curricula_clasf_acad_clasf"
+			foreign-key="fk_curriculum_clasf_acad_clasf"
 		/>
 		
  		<property
@@ -143,8 +143,8 @@
 			name="llEnrollment"
 			type="java.lang.Integer"
 			formula="(select count(distinct aa.student_id) 
-				from %SCHEMA%.student_acad_area aa, %SCHEMA%.curricula c where
-				c.uniqueid = curricula_id and aa.acad_clasf_id = acad_clasf_id and aa.acad_area_id = c.acad_area_id)"
+				from %SCHEMA%.student_acad_area aa, %SCHEMA%.curriculum c where
+				c.uniqueid = curriculum_id and aa.acad_clasf_id = acad_clasf_id and aa.acad_area_id = c.acad_area_id)"
 		/>
 
  		<property
@@ -161,14 +161,14 @@
 			inverse="true"
 			>
 			<cache include="non-lazy" usage="read-write"/>
-			<key column="cur_clasf_id" foreign-key="fk_curricula_course_clasf"/>
-			<one-to-many class="CurriculaCourse"/>
+			<key column="cur_clasf_id" foreign-key="fk_curriculum_course_clasf"/>
+			<one-to-many class="CurriculumCourse"/>
 		</set>			
 	</class>
 
 	<class
-		name="CurriculaCourse"
-		table="curricula_course"
+		name="CurriculumCourse"
+		table="curriculum_course"
 		>
 
  		<cache include="non-lazy" usage="read-write"/>
@@ -185,10 +185,10 @@
         
         <many-to-one 
 			name="classification" 
-			class="CurriculaClassification" 
+			class="CurriculumClassification" 
 			column="cur_clasf_id" 
 			not-null="true"
-			foreign-key="fk_curricula_course_clasf"
+			foreign-key="fk_curriculum_course_clasf"
 		/>
         
         <many-to-one 
@@ -196,7 +196,7 @@
 			class="CourseOffering" 
 			column="course_id" 
 			not-null="true"
-			foreign-key="fk_curricula_course_course"
+			foreign-key="fk_curriculum_course_course"
 		/>
 
  		<property
