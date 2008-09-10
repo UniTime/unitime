@@ -2251,4 +2251,70 @@
 		<plsql>alter table %SCHEMA%.curricula_course drop constraints nn_curricula_course_group_nr</plsql>
 		<plsql>alter table %SCHEMA%.curricula_course modify group_nr varchar2(20)</plsql>
 	</update>
+	<update version="40" date="10-Sep-2008" comment="Curricula renames">
+		<sql>alter table curricula rename to curriculum</sql>
+		<sql>alter table curricula_clasf rename to curriculum_clasf</sql>
+		<sql>alter table curricula_course rename to curriculum_course</sql>
+		<plsql>alter table curriculum rename constraint nn_curricula_uniqueid to nn_curriculum_uniqueid</plsql>
+		<plsql>alter table curriculum rename constraint nn_curricula_abbv to nn_curriculum_abbv</plsql>
+		<plsql>alter table curriculum rename constraint nn_curricula_name to nn_curriculum_name</plsql>
+		<plsql>alter table curriculum rename constraint nn_curricula_dept to nn_curriculum_dept</plsql>
+		<plsql>alter table curriculum rename constraint pk_curricula to pk_curriculum</plsql>
+		<plsql>alter table curriculum rename constraint fk_curricula_dept to fk_curriculum_dept</plsql>
+		<plsql>alter table curriculum rename constraint fk_curricula_acad_area to fk_curriculum_acad_area</plsql>
+		<plsql>alter table curriculum_clasf rename constraint nn_curricula_clasf_uniqueid to nn_curriculum_clasf_uniqueid</plsql>
+		<plsql>alter table curriculum_clasf rename constraint nn_curricula_clasf_cur_id to nn_curriculum_clasf_cur_id</plsql>
+		<plsql>alter table curriculum_clasf rename constraint nn_curricula_clasf_name to nn_curriculum_clasf_name</plsql>
+		<plsql>alter table curriculum_clasf rename constraint nn_curricula_clasf_nr_students to nn_curriculum_clasf_nrstudents</plsql>
+		<plsql>alter table curriculum_clasf rename constraint nn_curricula_clasf_ord to nn_curriculum_clasf_ord</plsql>
+		<plsql>alter table curriculum_clasf rename constraint pk_curricula_clasf to pk_curriculum_clasf</plsql>
+		<plsql>alter table curriculum_clasf rename constraint fk_curricula_clasf_curricula to fk_curriculum_clasf_curriculum</plsql>
+		<plsql>alter table curriculum_clasf rename constraint fk_curricula_clasf_acad_clasf to fk_curriculum_clasf_acad_clasf</plsql>
+		<plsql>alter table curriculum_course rename constraint nn_curricula_course_uniqueid to nn_curriculum_course_uniqueid</plsql>
+		<plsql>alter table curriculum_course rename constraint nn_curricula_course_course_id to nn_curriculum_course_course_id</plsql>
+		<plsql>alter table curriculum_course rename constraint nn_curricula_cur_clasf_id to nn_curriculum_cur_clasf_id</plsql>
+		<plsql>alter table curriculum_course rename constraint nn_curricula_course_prsh to nn_curriculum_course_prsh</plsql>
+		<plsql>alter table curriculum_course rename constraint nn_curricula_course_ord to nn_curriculum_course_ord</plsql>
+		<plsql>alter table curriculum_course rename constraint pk_curricula_course to pk_curriculum_course</plsql>
+		<plsql>alter table curriculum_course rename constraint fk_curricula_course_clasf to fk_curriculum_course_clasf</plsql>
+		<plsql>alter table curriculum_course rename constraint fk_curricula_course_course to fk_curriculum_course_course</plsql>
+		<plsql>alter table curriculum_clasf rename column curricula_id to curriculum_id</plsql>
+		<mysql>alter table curriculum drop foreign key fk_curricula_dept</mysql>
+		<mysql>alter table curriculum drop foreign key fk_curricula_acad_area</mysql>
+		<mysql>alter table curriculum_clasf drop foreign key fk_curricula_clasf_curricula</mysql>
+		<mysql>alter table curriculum_clasf drop foreign key fk_curricula_clasf_acad_clasf</mysql>
+		<mysql>alter table curriculum_course drop foreign key fk_curricula_course_clasf</mysql>
+		<mysql>alter table curriculum_course drop foreign key fk_curricula_course_course</mysql>
+		<mysql>alter table curriculum_clasf change column curricula_id curriculum_id decimal(20,0) not null</mysql>
+		<mysql>
+			alter table curriculum
+				add constraint fk_curriculum_dept foreign key (dept_id)
+				references department (uniqueid) on delete cascade
+		</mysql>
+		<mysql>
+			alter table curriculum
+				add constraint fk_curriculum_acad_area foreign key (acad_area_id)
+				references academic_area (uniqueid) on delete set null
+		</mysql>
+		<mysql>
+			alter table curriculum_clasf
+				add constraint fk_curriculum_clasf_curriculum foreign key (curriculum_id)
+				references curriculum (uniqueid) on delete cascade
+		</mysql>
+		<mysql>
+			alter table curriculum_clasf
+				add constraint fk_curriculum_clasf_acad_clasf foreign key (acad_clasf_id)
+				references academic_classification (uniqueid) on delete set null
+		</mysql>
+		<mysql>
+			alter table curriculum_course
+				add constraint fk_curriculum_course_clasf foreign key (cur_clasf_id)
+				references curriculum_clasf (uniqueid) on delete cascade
+		</mysql>
+		<mysql>
+			alter table curriculum_course
+				add constraint fk_curriculum_course_course foreign key (course_id)
+				references course_offering (uniqueid) on delete cascade
+		</mysql>
+	</update>
 </dbupdate>

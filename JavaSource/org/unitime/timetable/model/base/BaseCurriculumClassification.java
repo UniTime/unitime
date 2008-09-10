@@ -12,9 +12,9 @@ import java.io.Serializable;
  *  table="curricula_clasf"
  */
 
-public abstract class BaseCurriculaClassification  implements Serializable {
+public abstract class BaseCurriculumClassification  implements Serializable {
 
-	public static String REF = "CurriculaClassification";
+	public static String REF = "CurriculumClassification";
 	public static String PROP_NAME = "name";
 	public static String PROP_NR_STUDENTS = "nrStudents";
 	public static String PROP_LL_STUDENTS = "llStudents";
@@ -23,14 +23,14 @@ public abstract class BaseCurriculaClassification  implements Serializable {
 
 
 	// constructors
-	public BaseCurriculaClassification () {
+	public BaseCurriculumClassification () {
 		initialize();
 	}
 
 	/**
 	 * Constructor for primary key
 	 */
-	public BaseCurriculaClassification (java.lang.Long uniqueId) {
+	public BaseCurriculumClassification (java.lang.Long uniqueId) {
 		this.setUniqueId(uniqueId);
 		initialize();
 	}
@@ -38,15 +38,15 @@ public abstract class BaseCurriculaClassification  implements Serializable {
 	/**
 	 * Constructor for required fields
 	 */
-	public BaseCurriculaClassification (
+	public BaseCurriculumClassification (
 		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Curricula curricula,
+		org.unitime.timetable.model.Curriculum curriculum,
 		java.lang.String name,
 		java.lang.Integer nrStudents,
 		java.lang.Integer ord) {
 
 		this.setUniqueId(uniqueId);
-		this.setCurricula(curricula);
+		this.setCurriculum(curriculum);
 		this.setName(name);
 		this.setNrStudents(nrStudents);
 		this.setOrd(ord);
@@ -70,7 +70,7 @@ public abstract class BaseCurriculaClassification  implements Serializable {
 	private java.lang.Integer ord;
 
 	// many to one
-	private org.unitime.timetable.model.Curricula curricula;
+	private org.unitime.timetable.model.Curriculum curriculum;
 	private org.unitime.timetable.model.AcademicClassification academicClassification;
 
 	// collections
@@ -188,16 +188,16 @@ public abstract class BaseCurriculaClassification  implements Serializable {
 	/**
 	 * Return the value associated with the column: curricula_id
 	 */
-	public org.unitime.timetable.model.Curricula getCurricula () {
-		return curricula;
+	public org.unitime.timetable.model.Curriculum getCurriculum () {
+		return curriculum;
 	}
 
 	/**
 	 * Set the value related to the column: curricula_id
-	 * @param curricula the curricula_id value
+	 * @param curriculum the curricula_id value
 	 */
-	public void setCurricula (org.unitime.timetable.model.Curricula curricula) {
-		this.curricula = curricula;
+	public void setCurriculum (org.unitime.timetable.model.Curriculum curriculum) {
+		this.curriculum = curriculum;
 	}
 
 
@@ -234,9 +234,9 @@ public abstract class BaseCurriculaClassification  implements Serializable {
 		this.courses = courses;
 	}
 
-	public void addTocourses (org.unitime.timetable.model.CurriculaCourse curriculaCourse) {
+	public void addTocourses (org.unitime.timetable.model.CurriculumCourse curriculumCourse) {
 		if (null == getCourses()) setCourses(new java.util.HashSet());
-		getCourses().add(curriculaCourse);
+		getCourses().add(curriculumCourse);
 	}
 
 
@@ -245,11 +245,11 @@ public abstract class BaseCurriculaClassification  implements Serializable {
 
 	public boolean equals (Object obj) {
 		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.CurriculaClassification)) return false;
+		if (!(obj instanceof org.unitime.timetable.model.CurriculumClassification)) return false;
 		else {
-			org.unitime.timetable.model.CurriculaClassification curriculaClassification = (org.unitime.timetable.model.CurriculaClassification) obj;
-			if (null == this.getUniqueId() || null == curriculaClassification.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(curriculaClassification.getUniqueId()));
+			org.unitime.timetable.model.CurriculumClassification curriculumClassification = (org.unitime.timetable.model.CurriculumClassification) obj;
+			if (null == this.getUniqueId() || null == curriculumClassification.getUniqueId()) return false;
+			else return (this.getUniqueId().equals(curriculumClassification.getUniqueId()));
 		}
 	}
 
