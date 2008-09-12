@@ -120,7 +120,7 @@
 				<Table width="100%" border="0" cellspacing="0" cellpadding="1">
 					<tr align="left">
 						<td><font color="gray"><i>Name</i></font></td>
-						<td><font color="gray"><i>E-mail</i></font></td>
+						<td><font color="gray"><i>Email</i></font></td>
 						<td><font color="gray"><i>Phone</i></font></td>
 					</tr>
 					<bean:define name="eventDetailForm" property="mainContact" id="mc"/>
@@ -159,7 +159,7 @@
 			</logic:notEmpty>
 			<logic:notEmpty name="eventDetailForm" property="additionalEmails">
 			<TR>
-				<TD nowrap valign="top">Additional E-mails:&nbsp;</TD>
+				<TD nowrap valign="top">Additional Emails:&nbsp;</TD>
 				<TD>
 					<bean:write name="eventDetailForm" property="additionalEmails"/>
 				</TD>

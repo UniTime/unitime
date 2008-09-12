@@ -111,7 +111,7 @@ public class EventEditForm extends EventAddInfoForm {
            
             event.setEventName(getEventName());
 			event.setMainContact(mainContact);
-			// add additional e-mails
+			// add additional emails
 			if (getAdditionalEmails()!=null && getAdditionalEmails().length()>0) {
 				event.setEmail(getAdditionalEmails());
 			}
