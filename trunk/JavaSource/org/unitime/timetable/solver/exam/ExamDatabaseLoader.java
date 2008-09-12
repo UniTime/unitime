@@ -889,7 +889,7 @@ public class ExamDatabaseLoader extends ExamLoader {
                     ExamRoomPlacement r = (ExamRoomPlacement)exam.getRoomPlacements().elementAt(i);
                     capacity += r.getSize(exam.hasAltSeating());
                 }
-                if (capacity<exam.getStudents().size()) {
+                if (capacity<exam.getSize()) {
                     iProgress.error("Exam "+getExamLabel(exam)+" has not room placement available.");
                     continue;
                 }
