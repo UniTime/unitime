@@ -123,7 +123,7 @@
 			</TD>
 		</TR>
 		<TR>
-			<TD valign='top'>Additional E-mails:<br>
+			<TD valign='top'>Additional Emails:<br>
 			<font color="gray"><i>(will be notified about event changes)</i> </font></TD>
 			<TD>
 				<html:textarea property="additionalEmails" rows="2" cols="50"></html:textarea>

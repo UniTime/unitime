@@ -132,7 +132,7 @@ public class EventAddInfoForm extends ActionForm {
 		}
 
 		if (iAdditionalEmails!=null && iAdditionalEmails.length()>999) {
-			errors.add("emails", new ActionMessage("errors.generic", "Additional e-mails are too long. Please, limit the field to no more than 1000 characters."));
+			errors.add("emails", new ActionMessage("errors.generic", "Additional emails are too long. Please, limit the field to no more than 1000 characters."));
 		}
 		
 		if (iAdditionalInfo!=null && iAdditionalInfo.length()>999) {
@@ -251,7 +251,7 @@ public class EventAddInfoForm extends ActionForm {
 			// create event
 			Event event = null;//getEvent();
 			if (event==null) {
-				// search database for a contact with this e-mail
+				// search database for a contact with this email
 				// if not in db, create a new contact
 				// update information from non-empty fields
 			    EventContact mainContact = null;
@@ -288,7 +288,7 @@ public class EventAddInfoForm extends ActionForm {
 				} catch (Exception e) {}
 				event.setEventName(iEventName);
 				event.setMainContact(mainContact);
-				// add additional e-mails
+				// add additional emails
 				if (iAdditionalEmails!=null && iAdditionalEmails.length()>0) {
 					event.setEmail(iAdditionalEmails);
 				}

@@ -111,7 +111,7 @@
 			<td>
 			<Table width="100%" border="0" cellspacing="0" cellpadding="1">
 				<tr align="left">
-					<td><i>Name</i></td><td><i>E-mail</i></td><td><i>Phone</i></td>
+					<td><i>Name</i></td><td><i>Email</i></td><td><i>Phone</i></td>
 				</tr>
 				<TR>
 					<TD>
@@ -272,7 +272,7 @@
 			</TD>
 		</TR>
 		<TR>
-			<TD valign='top'>Additional E-mails:<br>
+			<TD valign='top'>Additional Emails:<br>
 			<font color="gray"><i>(will be notified about event changes)</i> </font></TD>
 			<TD>
 				<html:textarea property="additionalEmails" rows="2" cols="50"></html:textarea>

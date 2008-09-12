@@ -77,7 +77,7 @@
 			<td> <html:text property="orgName" maxlength="100" size="50" /></td>
 		</tr>
 		<tr>
-			<td> E-mail: </td>
+			<td> Email: </td>
 			<td> <html:text property="orgEmail" maxlength="100" size="50" /></td>
 		</tr>
 
