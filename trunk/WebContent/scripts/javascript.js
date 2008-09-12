@@ -72,7 +72,7 @@ function checkValue(field, property, type, required) {
 	}
 }
 
-// Return true if value is an e-mail address
+// Return true if value is an email address
 function isEmail(value) {
 	invalidChars = " /:,;";
 	if (value=="") return false;

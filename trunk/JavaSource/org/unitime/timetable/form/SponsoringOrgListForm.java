@@ -52,7 +52,7 @@ public class SponsoringOrgListForm extends ActionForm {
 		// Create new table
 		WebTable table = new WebTable( 2,
 		    	    null, 
-		    	    new String[] {"Name", "E-mail"}, 
+		    	    new String[] {"Name", "Email"}, 
 		    	    new String[] {"left", "left"}, 
 		    	    new boolean[] {true, true});    
 		
