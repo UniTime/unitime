@@ -335,6 +335,8 @@ public class RoomAvailabilityAction extends Action {
                     } else {
                         Calendar c = Calendar.getInstance(); 
                         c.setTime(match.getPeriod().getStartTime()); 
+                        c.add(Calendar.MINUTE, match.getPrintOffset());
+                        Date startTime = c.getTime();
                         c.add(Calendar.MINUTE, match.getLength());
                         Date endTime = c.getTime();
                         boolean nameMatch = event.getEventName().trim().equalsIgnoreCase(match.getExamName().trim());
@@ -353,7 +355,7 @@ public class RoomAvailabilityAction extends Action {
                             c.add(Calendar.MINUTE, -breakTimeStop);
                             stop = c.getTime();
                         }
-                        boolean startMatch = start.equals(match.getPeriod().getStartTime());
+                        boolean startMatch = start.equals(startTime);
                         boolean endMatch = stop.equals(endTime);
                         if (nameMatch && dateMatch && startMatch && endMatch) continue;
                         table.addLine(
@@ -369,7 +371,7 @@ public class RoomAvailabilityAction extends Action {
                                         (html?dateFormat.format(match.getPeriod().getStartDate()).replaceAll(" ","&nbsp;"):dateFormat.format(match.getPeriod().getStartDate()))+
                                     (dateMatch?"":html?"</span>":" @@END_BGCOLOR "),
                                     (startMatch?"":html?"<span style='background-color:yellow;'>":"@@BGCOLOR FFFF00 ")+
-                                        timeFormat.format(match.getPeriod().getStartTime()).replaceAll("AM", "a").replaceAll("PM", "p")+
+                                        timeFormat.format(startTime).replaceAll("AM", "a").replaceAll("PM", "p")+
                                     (startMatch?"":html?"</span>":" @@END_BGCOLOR ")+
                                     (html?"&nbsp;-&nbsp;":" - ")+
                                     (endMatch?"":html?"<span style='background-color:yellow;'>":"@@BGCOLOR FFFF00 ")+

@@ -274,7 +274,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                         String pf = (PreferenceLevel.sRequired.equals(pref.getPrefLevel().getPrefProlog())?" ":"!");
                         if (pref instanceof ExamPeriodPref) {
                             ExamPeriodPref xp = (ExamPeriodPref)pref;
-                            times.add(pf+rpad(formatPeriod(xp.getExamPeriod(), exam.getLength()), 25));
+                            times.add(pf+rpad(formatPeriod(xp.getExamPeriod(), exam.getLength(), exam.getPrintOffset()), 25));
                         } else if (exam.getMaxRooms()>0) {
                             if (pref instanceof RoomPref) {
                                 RoomPref rp = (RoomPref)pref;
@@ -531,7 +531,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                                 String pf = (PreferenceLevel.sRequired.equals(pref.getPrefLevel().getPrefProlog())?" ":"!");
                                 if (pref instanceof ExamPeriodPref) {
                                     ExamPeriodPref xp = (ExamPeriodPref)pref;
-                                    times.add(pf+rpad(formatPeriod(xp.getExamPeriod(),exam.getLength()), 25));
+                                    times.add(pf+rpad(formatPeriod(xp.getExamPeriod(),exam.getLength(), exam.getPrintOffset()), 25));
                                 } else if (exam.getMaxRooms()>0) {
                                     if (pref instanceof RoomPref) {
                                         RoomPref rp = (RoomPref)pref;

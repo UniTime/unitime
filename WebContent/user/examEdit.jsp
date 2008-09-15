@@ -131,6 +131,9 @@
 			<TD>Size:</TD><TD><html:text property="size" size="5" maxlength="5"/> <i>(<bean:write name="<%=frmName%>" property="sizeNote" />)</i></TD>
 		</TR>
 		<TR>
+			<TD>Print Offset:</TD><TD><html:text property="printOffset" size="5" maxlength="5"/> <i>(in minutes, only used for reports)</i></TD>
+		</TR>
+		<TR>
 			<TD valign="top">Notes</TD>
 			<TD>
 				<html:textarea property="note" cols="80" rows="5"/>

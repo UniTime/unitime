@@ -2317,4 +2317,8 @@
 				references course_offering (uniqueid) on delete cascade
 		</mysql>
 	</update>
+	<update version="41" date="15-Sep-2008" comment="Exam print offset">
+		<mysql>alter table exam add print_offset int(10)</mysql>
+		<plsql>alter table exam add print_offset number(10,0)</plsql>
+	</update>
 </dbupdate>

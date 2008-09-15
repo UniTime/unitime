@@ -306,6 +306,7 @@ public class ExamEditAction extends PreferencesAction {
             frm.setNote(exam.getNote());
             frm.setLength(exam.getLength());
             frm.setSize(exam.getExamSize()==null?null:exam.getExamSize().toString());
+            frm.setPrintOffset(exam.getPrintOffset()==null || exam.getPrintOffset()==0?null:exam.getPrintOffset().toString());
             frm.setSeatingType(Exam.sSeatingTypes[exam.getSeatingType()]);
             frm.setMaxNbrRooms(exam.getMaxNbrRooms());
             
@@ -456,6 +457,12 @@ public class ExamEditAction extends PreferencesAction {
         } else {
             exam.setExamSize(Integer.valueOf(frm.getSize()));
         }
+        int oldPrintOffset = (exam.getPrintOffset()==null?0:exam.getPrintOffset());
+        if (frm.getPrintOffset()==null || frm.getPrintOffset().length()==0) {
+            exam.setPrintOffset(null);
+        } else {
+            exam.setPrintOffset(Integer.valueOf(frm.getPrintOffset()));
+        }
         exam.setMaxNbrRooms(Integer.valueOf(frm.getMaxNbrRooms()));
         
         if (exam.getInstructors()==null) exam.setInstructors(new HashSet());
@@ -485,10 +492,11 @@ public class ExamEditAction extends PreferencesAction {
         ExamEvent event = exam.getEvent();
         if (event!=null) {
             event.setEventName(exam.getName());
-            if (exam.getAssignedPeriod()!=null && !exam.getLength().equals(oldLength)) {
+            if (exam.getAssignedPeriod()!=null && (!exam.getLength().equals(oldLength) || oldPrintOffset!=(exam.getPrintOffset()==null?0:exam.getPrintOffset()))) {
                 for (Iterator i=event.getMeetings().iterator();i.hasNext();) {
                     Meeting m = (Meeting)i.next();
-                    m.setStopOffset(exam.getLength()-Constants.SLOT_LENGTH_MIN*exam.getAssignedPeriod().getLength());
+                    m.setStartOffset(exam.getPrintOffset()==null?0:exam.getPrintOffset().intValue());
+                    m.setStopOffset(exam.getLength()-Constants.SLOT_LENGTH_MIN*exam.getAssignedPeriod().getLength()+(exam.getPrintOffset()==null?0:exam.getPrintOffset().intValue()));
                 }
             }
         }

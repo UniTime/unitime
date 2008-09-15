@@ -22,7 +22,6 @@ package org.unitime.timetable.action;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.TreeSet;
@@ -185,6 +184,7 @@ public class ExamListAction extends Action {
         for (Iterator i=exams.iterator();i.hasNext();) {
             Exam exam = (Exam)i.next();
             String objects = "", perPref = "", roomPref = "", distPref = "", per = "", rooms = "";
+            Comparable perCmp = null;
             
             for (Iterator j=new TreeSet(exam.getOwners()).iterator();j.hasNext();) {
                 ExamOwner owner = (ExamOwner)j.next();
@@ -195,6 +195,7 @@ public class ExamListAction extends Action {
             ExamAssignment ea = (examAssignment!=null?examAssignment.getAssignment(exam.getUniqueId()):exam.getAssignedPeriod()!=null?new ExamAssignment(exam):null);
             if (ea!=null) {
                 per = (html?ea.getPeriodAbbreviationWithPref():ea.getPeriodAbbreviation());
+                perCmp = ea.getPeriodOrd();
                 rooms = (html?ea.getRoomsNameWithPref(nl):ea.getRoomsName(nl));
             }
             
@@ -305,7 +306,7 @@ public class ExamListAction extends Action {
                         perPref,
                         roomPref,
                         distPref,
-                        (exam.getAssignedPeriod()==null?new Date(0):exam.getAssignedPeriod().getStartTime()),
+                        perCmp,
                         rooms
                     },
                     exam.getUniqueId().toString());

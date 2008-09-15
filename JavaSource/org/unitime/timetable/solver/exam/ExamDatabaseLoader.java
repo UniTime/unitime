@@ -269,6 +269,7 @@ public class ExamDatabaseLoader extends ExamLoader {
                 x.getOwners().add(cs);
             }
             x.setSizeOverride(exam.getExamSize());
+            x.setPrintOffset(exam.getPrintOffset());
             
             if (considerLimit && minSize>0)
                 x.setMinSize(minSize);

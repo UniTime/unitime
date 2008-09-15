@@ -52,6 +52,7 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
     protected int iLength;
     protected int iMaxRooms;
     protected int iSeatingType;
+    protected int iPrintOffset;
     protected Vector<ExamSectionInfo> iSections = null;
     protected Vector<ExamInstructorInfo> iInstructors = null;
     
@@ -84,6 +85,7 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
                 iInstructors.add(new ExamInstructorInfo(instructor.getId(), null, instructor.getName()));
             }
         }
+        iPrintOffset = (exam.getPrintOffset()==null?0:exam.getPrintOffset());
     }
 
     public ExamInfo(Exam exam) {
@@ -95,6 +97,7 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
         iLength = exam.getLength();
         iNrStudents = -1;
         iSeatingType = exam.getSeatingType().intValue();
+        iPrintOffset = (exam.getPrintOffset()==null?0:exam.getPrintOffset());
     }
     
     public int getExamType() {
@@ -107,6 +110,10 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
     
     public Long getExamId() {
         return iExamId;
+    }
+    
+    public int getPrintOffset() {
+        return iPrintOffset;
     }
     
     public Exam getExam() {

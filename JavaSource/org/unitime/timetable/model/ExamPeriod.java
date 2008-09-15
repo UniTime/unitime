@@ -141,13 +141,18 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
         return Constants.toTime(min);
     }
 
+    public String getStartTimeLabel(int printOffset) {
+        int min = getStartSlot()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN + printOffset;
+        return Constants.toTime(min);
+    }
+
     public String getEndTimeLabel() {
         int min = (getStartSlot()+getLength())*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
         return Constants.toTime(min);
     }
 
-    public String getEndTimeLabel(int length) {
-        int min = getStartSlot()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN + length;
+    public String getEndTimeLabel(int length, int printOffset) {
+        int min = getStartSlot()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN + length + printOffset;
         return Constants.toTime(min);
     }
 

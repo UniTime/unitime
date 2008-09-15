@@ -207,14 +207,14 @@ public class ExamAssignment extends ExamInfo implements Serializable {
 
     public String getPeriodName() {
         if (getPeriod()==null) return "";
-        int start = getPeriod().getStartSlot()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
+        int start = getPeriod().getStartSlot()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN + getPrintOffset();
         int end = start + getLength();
         return sDateFormat.format(getPeriod().getStartDate())+" "+Constants.toTime(start)+" - "+Constants.toTime(end);
     }
     
     public String getPeriodNameFixedLength() {
         if (getPeriod()==null) return "";
-        int min = getPeriod().getStartSlot()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
+        int min = getPeriod().getStartSlot()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN + getPrintOffset();
         int startHour = min / 60;
         int startMin = min % 60;
         min += getLength();
@@ -226,8 +226,10 @@ public class ExamAssignment extends ExamInfo implements Serializable {
     }
     
     public String getPeriodAbbreviation() {
-        ExamPeriod period = getPeriod();
-        return period==null?"":period.getAbbreviation();
+        if (getPeriod()==null) return "";
+        int start = getPeriod().getStartSlot()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN + getPrintOffset();
+        int end = start + getLength();
+        return sDateFormat.format(getPeriod().getStartDate())+" "+Constants.toTime(start);
     }
 
     public String getPeriodNameWithPref() {
@@ -257,7 +259,7 @@ public class ExamAssignment extends ExamInfo implements Serializable {
 
     public String getTime(boolean pref) {
         if (getPeriod()==null) return "";
-        int start = getPeriod().getStartSlot()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
+        int start = getPeriod().getStartSlot()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN + getPrintOffset();
         int end = start + getLength();
         if (!pref || iPeriodPref==null || PreferenceLevel.sNeutral.equals(iPeriodPref))
             return Constants.toTime(start)+" - "+Constants.toTime(end); 
@@ -269,7 +271,7 @@ public class ExamAssignment extends ExamInfo implements Serializable {
     
     public String getTimeFixedLength() {
         if (getPeriod()==null) return "";
-        int min = getPeriod().getStartSlot()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
+        int min = getPeriod().getStartSlot()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN + getPrintOffset();
         int startHour = min / 60;
         int startMin = min % 60;
         min += getLength();

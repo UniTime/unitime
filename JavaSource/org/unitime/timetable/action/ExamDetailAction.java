@@ -311,6 +311,7 @@ public class ExamDetailAction extends PreferencesAction {
         frm.setNote(exam.getNote()==null?null:exam.getNote().replaceAll("\n", "<br>"));
         frm.setLength(exam.getLength());
         frm.setSize(String.valueOf(exam.getSize()));
+        frm.setPrintOffset(exam.getPrintOffset()==null || exam.getPrintOffset()==0 ? null: (exam.getPrintOffset()>0?"+":"")+exam.getPrintOffset());
         frm.setSeatingType(Exam.sSeatingTypes[exam.getSeatingType()]);
         frm.setMaxNbrRooms(exam.getMaxNbrRooms());
         frm.setExamType(exam.getExamType());

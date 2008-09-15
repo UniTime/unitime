@@ -29,6 +29,28 @@
 	<category>
 		<title>EXAMINATION TIMETABLING</title>
 		<item>
+			<name>Examination Print Offset</name>
+			<description>
+				<line>Optional examination property Print Offset introduced:
+					<line>When set (on Examination Edit page), it is used as a difference between 
+						examination period start time and the examination start time.
+						<line>For instance, an hour long examination assigned to 8:00pm - 10:00pm period and 15 print offset will 
+						  be have 8:15pm - 9:15pm in its time statement.</line>
+					</line>
+					<line>Used only for printing and reporting purposes, e.g., the requested room still needs to 
+					be available during the whole requested period.</line>
+				</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.1.104</version>
+	<release-date>Thu, 11 Sep 2008</release-date>
+	<category>
+		<title>EXAMINATION TIMETABLING</title>
+		<item>
 			<name>Examination Edit</name>
 			<description>
 				<line>When an exam is changed, propagate new name and length to the event (if it already exists).</line>
