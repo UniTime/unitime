@@ -65,6 +65,7 @@ public class ExamEditForm extends PreferencesForm {
     private String size;
     private String sizeNote;
     private String seatingType;
+    private String printOffset;
     
     private List instructors;
     
@@ -98,6 +99,8 @@ public class ExamEditForm extends PreferencesForm {
     public void setSize(String size) { this.size = size; }
     public String getSizeNote() { return sizeNote; }
     public void setSizeNote(String sizeNote) { this.sizeNote = sizeNote; }
+    public String getPrintOffset() { return printOffset; }
+    public void setPrintOffset(String printOffset) { this.printOffset = printOffset; }
     public String getSeatingType() { return seatingType; }
     public void setSeatingType(String seatingType) { this.seatingType = seatingType; }
     public String[] getSeatingTypes() { return Exam.sSeatingTypes; }
@@ -128,6 +131,7 @@ public class ExamEditForm extends PreferencesForm {
         length = null;
         size = null;
         sizeNote = null;
+        printOffset = null;
         avgPeriod = null;
         seatingType = Exam.sSeatingTypes[Exam.sSeatingTypeExam];
         instructors = DynamicList.getInstance(new ArrayList(), factory);
@@ -383,10 +387,18 @@ public class ExamEditForm extends PreferencesForm {
             try {
                 Integer.parseInt(size);
             } catch (NumberFormatException e) {
-                errors.add("size", new ActionMessage("errors.numeric", "Size", "0") );
+                errors.add("size", new ActionMessage("errors.numeric", "Size") );
             }
         }
         
+        if (printOffset!=null && printOffset.length()>0) {
+            try {
+                Integer.parseInt(printOffset);
+            } catch (NumberFormatException e) {
+                errors.add("printOffset", new ActionMessage("errors.numeric", "Print Offset") );
+            }
+        }
+
         // Notes has 1000 character limit
         if(note!=null && note.length()>999)
             errors.add("note", new ActionMessage("errors.maxlength", "Note", "999") );

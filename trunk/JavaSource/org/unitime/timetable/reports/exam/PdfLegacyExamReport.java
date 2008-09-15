@@ -342,14 +342,16 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
         return period.getStartDateLabel()+" "+lpad(period.getStartTimeLabel(),6)+" - "+lpad(period.getEndTimeLabel(),6);
     }
 
-    public String formatPeriod(ExamPeriod period, int length) {
-        return period.getStartDateLabel()+" "+lpad(period.getStartTimeLabel(),6)+" - "+lpad(period.getEndTimeLabel(length),6);
+    public String formatPeriod(ExamPeriod period, int length, Integer printOffset) {
+        return period.getStartDateLabel()+" "+
+            lpad(period.getStartTimeLabel(printOffset==null?0:printOffset.intValue()),6)+" - "+
+            lpad(period.getEndTimeLabel(length, (printOffset==null?0:printOffset.intValue())),6);
     }
     
     public String formatPeriod(ExamAssignment assignment) {
         return assignment.getPeriod().getStartDateLabel()+" "+
-            lpad(assignment.getPeriod().getStartTimeLabel(),6)+" - "+
-            lpad(assignment.getPeriod().getEndTimeLabel(assignment.getLength()),6);
+            lpad(assignment.getPeriod().getStartTimeLabel(assignment.getPrintOffset()),6)+" - "+
+            lpad(assignment.getPeriod().getEndTimeLabel(assignment.getLength(), assignment.getPrintOffset()),6);
     }
 
     public String getShortDate(Date date) {
@@ -368,12 +370,16 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
         return day+" "+new SimpleDateFormat("MM/dd").format(date);
     }
     
-    public String formatShortPeriod(ExamPeriod period, int length) {
-        return getShortDate(period.getStartDate())+" "+lpad(period.getStartTimeLabel(),6)+"-"+lpad(period.getEndTimeLabel(),6);
+    public String formatShortPeriod(ExamPeriod period, int length, Integer printOffset) {
+        return getShortDate(period.getStartDate())+" "+
+            lpad(period.getStartTimeLabel(printOffset==null?0:printOffset.intValue()),6)+"-"+
+            lpad(period.getEndTimeLabel(length,printOffset==null?0:printOffset.intValue()),6);
     }
     
     public String formatShortPeriod(ExamAssignment assignment) {
-        return getShortDate(assignment.getPeriod().getStartDate())+" "+lpad(assignment.getPeriod().getStartTimeLabel(),6)+"-"+lpad(assignment.getPeriod().getEndTimeLabel(assignment.getLength()),6);
+        return getShortDate(assignment.getPeriod().getStartDate())+" "+
+            lpad(assignment.getPeriod().getStartTimeLabel(assignment.getPrintOffset()),6)+"-"+
+            lpad(assignment.getPeriod().getEndTimeLabel(assignment.getLength(),assignment.getPrintOffset()),6);
     }
 
     public String getItype(Class_ clazz) {

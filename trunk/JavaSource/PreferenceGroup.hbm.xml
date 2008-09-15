@@ -1044,6 +1044,14 @@
 			/>
 			
 			<property
+				name="printOffset"
+				column="PRINT_OFFSET"
+				type="java.lang.Integer"
+				not-null="false"
+				length="10"
+			/>
+
+			<property
 				name="maxNbrRooms"
 				column="MAX_NBR_ROOMS"
 				type="java.lang.Integer"
