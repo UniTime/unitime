@@ -87,7 +87,7 @@ public class RoomType extends BaseRoomType implements Comparable<RoomType> {
     
     public int countRooms() {
         return ((Number)RoomTypeDAO.getInstance().getSession().createQuery(
-                "select count(r) from "+(isRoom()?"Room":"NonUniversityLocation")+" r where r.roomType.uniqueId=:roomTypeId"
+                "select count(distinct r.permanentId) from "+(isRoom()?"Room":"NonUniversityLocation")+" r where r.roomType.uniqueId=:roomTypeId"
         ).setLong("roomTypeId", getUniqueId()).setCacheable(true).uniqueResult()).intValue();
     }
 
@@ -99,7 +99,7 @@ public class RoomType extends BaseRoomType implements Comparable<RoomType> {
 
     public int countManagableRooms() {
         return ((Number)RoomTypeDAO.getInstance().getSession().createQuery(
-                "select count(r) from "+(isRoom()?"Room":"NonUniversityLocation")+" r " +
+                "select count(distinct r.permanentId) from "+(isRoom()?"Room":"NonUniversityLocation")+" r " +
                 "inner join r.roomDepts rd inner join rd.department.timetableManagers m inner join m.managerRoles mr " +
                 "where r.roomType.uniqueId=:roomTypeId and "+
                 "rd.control=true and mr.role.reference=:eventMgr"
