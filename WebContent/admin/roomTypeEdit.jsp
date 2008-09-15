@@ -50,7 +50,9 @@
 					</logic:equal>
 					<logic:notEqual name="roomTypeEditForm" property="op" value="Save">
 						<html:submit property="op" value="Update" accesskey="U" title="Update Room Type (Alt+U)"/>
-						<html:submit property="op" value="Delete" onclick="return confirmDelete();" accesskey="D" title="Delete Room Type (Alt+D)"/> 
+						<logic:equal name="roomTypeEditForm" property="canEdit" value="true">
+							<html:submit property="op" value="Delete" onclick="return confirmDelete();" accesskey="D" title="Delete Room Type (Alt+D)"/>
+						</logic:equal> 
 					</logic:notEqual>
 					<html:submit property="op" value="Back" title="Return to Room Types (Alt+B)" accesskey="B"/>
 				</tt:section-header>
@@ -100,7 +102,9 @@
 				</logic:equal>
 				<logic:notEqual name="roomTypeEditForm" property="op" value="Save">
 					<html:submit property="op" value="Update" accesskey="U" title="Update Room Type (Alt+U)"/>
-					<html:submit property="op" value="Delete" onclick="return confirmDelete();" accesskey="D" title="Delete Room Type (Alt+D)"/>
+					<logic:equal name="roomTypeEditForm" property="canEdit" value="true">
+						<html:submit property="op" value="Delete" onclick="return confirmDelete();" accesskey="D" title="Delete Room Type (Alt+D)"/>
+					</logic:equal>
 				</logic:notEqual>
 				<html:submit property="op" value="Back" title="Return to Room Types (Alt+B)" accesskey="B"/>
 			</TD>
