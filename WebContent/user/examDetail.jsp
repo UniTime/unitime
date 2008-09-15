@@ -141,6 +141,11 @@
 		<TR>
 			<TD>Size:</TD><TD> <bean:write name="<%=frmName%>" property="size" /></TD>
 		</TR>
+		<logic:notEmpty name="<%=frmName%>" property="printOffset">
+			<TR>
+				<TD>Print Offset:</TD><TD> <bean:write name="<%=frmName%>" property="printOffset" /> minutes</TD>
+			</TR>
+		</logic:notEmpty>
 		<logic:notEmpty name="<%=frmName%>" property="instructors">
 			<TR>
 				<TD valign="top">Instructors:</TD>
