@@ -33,10 +33,12 @@ public class ConflictsByCourseAndStudentReport extends PdfLegacyExamReport {
         sLog.debug("  Loading students ...");
         for (Iterator i=new StudentDAO().getSession().createQuery("select s.uniqueId, s.externalUniqueId, s.lastName, s.firstName, s.middleName from Student s where s.session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).iterate();i.hasNext();) {
             Object[] o = (Object[])i.next();
-            if (o[1]!=null)
+            if (o[2]!=null)
+                iStudentNames.put((Long)o[0], (String)o[2]+(o[3]==null?"":" "+((String)o[3]).substring(0,1))+(o[4]==null?"":" "+((String)o[4]).substring(0,1)));
+            else if (o[1]!=null)
                 iStudentNames.put((Long)o[0], (String)o[1]);
             else
-                iStudentNames.put((Long)o[0], (String)o[2]+(o[3]==null?"":" "+((String)o[3]).substring(0,1))+(o[4]==null?"":" "+((String)o[4]).substring(0,1)));
+                iStudentNames.put((Long)o[0], "N/A");
         }
     }
 
@@ -57,8 +59,8 @@ public class ConflictsByCourseAndStudentReport extends PdfLegacyExamReport {
         }
         sLog.debug("  Printing report...");
         setHeader(new String[] {
-                "Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect Date And Time                Name       Type   Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect Time",
-                "---- ------ "+(iItype?"------ ":"")+"---- ---------------------------- ---------- ------ ---- ------ "+(iItype?"------ ":"")+"---- ---------------------"});
+                "Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect Date And Time                Name                       Type   Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect Time",
+                "---- ------ "+(iItype?"------ ":"")+"---- ---------------------------- ------------------------- ------ ---- ------ "+(iItype?"------ ":"")+"---- ---------------------"});
         printHeader();
         for (Iterator<String> i = new TreeSet<String>(subject2courseSections.keySet()).iterator(); i.hasNext();) {
             String subject = i.next();
@@ -94,7 +96,7 @@ public class ConflictsByCourseAndStudentReport extends PdfLegacyExamReport {
                                         (iItype?rpad(iCoursePrinted?"":section.getItype(), 6)+" ":"")+
                                         lpad(iCoursePrinted?"":section.getSection(),4)+" "+
                                         rpad(iCoursePrinted?"":exam.getPeriodNameFixedLength(),28)+" "+
-                                        rpad(iStudentPrinted?"":iStudentNames.get(studentId),10)+" "+
+                                        rpad(iStudentPrinted?"":iStudentNames.get(studentId),25)+" "+
                                         rpad(iPeriodPrinted?"":"DIRECT",6)+" "+
                                         rpad(other.getSubject(),4)+" "+
                                         rpad(other.getCourseNbr(),6)+" "+
@@ -112,7 +114,7 @@ public class ConflictsByCourseAndStudentReport extends PdfLegacyExamReport {
                                         (iItype?rpad(iCoursePrinted?"":section.getItype(), 6)+" ":"")+
                                         lpad(iCoursePrinted?"":section.getSection(),4)+" "+
                                         rpad(iCoursePrinted?"":exam.getPeriodNameFixedLength(),28)+" "+
-                                        rpad(iStudentPrinted?"":iStudentNames.get(studentId),10)+" "+
+                                        rpad(iStudentPrinted?"":iStudentNames.get(studentId),25)+" "+
                                         rpad(iPeriodPrinted?"":"CLASS",6)+" "+
                                         rpad(conflict.getOtherClass().getSchedulingSubpart().getControllingCourseOffering().getSubjectAreaAbbv(),4)+" "+
                                         rpad(conflict.getOtherClass().getSchedulingSubpart().getControllingCourseOffering().getCourseNbr(),6)+" "+
@@ -127,7 +129,7 @@ public class ConflictsByCourseAndStudentReport extends PdfLegacyExamReport {
                                         (iItype?rpad(iCoursePrinted?"":section.getItype(), 6)+" ":"")+
                                         lpad(iCoursePrinted?"":section.getSection(),4)+" "+
                                         rpad(iCoursePrinted?"":exam.getPeriodNameFixedLength(),28)+" "+
-                                        rpad(iStudentPrinted?"":iStudentNames.get(studentId),10)+" "+
+                                        rpad(iStudentPrinted?"":iStudentNames.get(studentId),25)+" "+
                                         rpad(iPeriodPrinted?"":"EVENT",6)+" "+
                                         rpad(conflict.getOtherEventName(),(iItype?23:16))+" "+
                                         getMeetingTime(conflict.getOtherEventTime())
@@ -148,7 +150,7 @@ public class ConflictsByCourseAndStudentReport extends PdfLegacyExamReport {
                                         (iItype?rpad(iCoursePrinted?"":section.getItype(), 6)+" ":"")+
                                         lpad(iCoursePrinted?"":section.getSection(),4)+" "+
                                         rpad(iCoursePrinted?"":exam.getPeriodNameFixedLength(),28)+" "+
-                                        rpad(iStudentPrinted?"":iStudentNames.get(studentId),10)+" "+
+                                        rpad(iStudentPrinted?"":iStudentNames.get(studentId),25)+" "+
                                         rpad(iPeriodPrinted?"":">2-DAY",6)+" "+
                                         rpad(other.getSubject(),4)+" "+
                                         rpad(other.getCourseNbr(),6)+" "+
@@ -171,7 +173,7 @@ public class ConflictsByCourseAndStudentReport extends PdfLegacyExamReport {
                                     (iItype?rpad(iCoursePrinted?"":section.getItype(), 6)+" ":"")+
                                     lpad(iCoursePrinted?"":section.getSection(),4)+" "+
                                     rpad(iCoursePrinted?"":exam.getPeriodNameFixedLength(),28)+" "+
-                                    rpad(iStudentPrinted?"":iStudentNames.get(studentId),10)+" "+
+                                    rpad(iStudentPrinted?"":iStudentNames.get(studentId),25)+" "+
                                     rpad(iPeriodPrinted?"":"BTB",6)+" "+
                                     rpad(other.getSubject(),4)+" "+
                                     rpad(other.getCourseNbr(),6)+" "+
