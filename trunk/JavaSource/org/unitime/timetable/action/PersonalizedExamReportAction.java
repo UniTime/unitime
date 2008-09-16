@@ -100,7 +100,7 @@ public class PersonalizedExamReportAction extends Action {
     }
     
     public static boolean hasPersonalReport(User user) {
-        if (user.getRole()!=null) return false;
+        //if (user.getRole()!=null) return false;
         HashSet<Session> sessions = new HashSet();
         DepartmentalInstructor instructor = null;
         for (Iterator i=new DepartmentalInstructorDAO().
@@ -143,10 +143,12 @@ public class PersonalizedExamReportAction extends Action {
             request.setAttribute("message", "Login is required.");
             return mapping.findForward(back);
         }
+        /*
         if (user.getRole()!=null) {
             sLog.info("User "+user.getName()+" has role "+user.getRole()+", forwarding to main page.");
             return mapping.findForward("main");
         }
+        */
         String externalId = user.getId();
         if (externalId==null || externalId.length()==0) {
             sLog.info("User "+user.getName()+" has no external id, forwarding to main page.");
