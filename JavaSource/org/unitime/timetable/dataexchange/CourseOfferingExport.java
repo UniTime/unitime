@@ -516,7 +516,7 @@ public class CourseOfferingExport extends BaseExport {
         if (exam.getAssignedPeriod()!=null) {
             Element periodElement = examElement.addElement("period");
             periodElement.addAttribute("date", sDateFormat.format(exam.getAssignedPeriod().getStartDate()));
-            periodElement.addAttribute("startTime", sTimeFormat.format(exam.getAssignedPeriod().getStartTime()));
+            periodElement.addAttribute("startTime", sTimeFormat.format(exam.getStartTime(exam.getAssignedPeriod())));
             periodElement.addAttribute("endTime", sTimeFormat.format(exam.getEndTime(exam.getAssignedPeriod())));
             for (Iterator i=exam.getAssignedRooms().iterator();i.hasNext();) {
                 Location location = (Location)i.next();

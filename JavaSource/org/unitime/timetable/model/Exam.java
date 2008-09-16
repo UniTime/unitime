@@ -1190,7 +1190,16 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         Calendar c = Calendar.getInstance(Locale.US);
         c.setTime(getSession().getExamBeginDate());
         c.add(Calendar.DAY_OF_YEAR, period.getDateOffset());
-        int min = period.getStartSlot()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN + getLength();
+        int min = period.getStartSlot()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN + (getPrintOffset()==null?0:getPrintOffset().intValue())+ getLength();
+        c.set(Calendar.HOUR, min/60); c.set(Calendar.MINUTE, min%60);
+        return c.getTime();
+    }
+
+    public Date getStartTime(ExamPeriod period) {
+        Calendar c = Calendar.getInstance(Locale.US);
+        c.setTime(getSession().getExamBeginDate());
+        c.add(Calendar.DAY_OF_YEAR, period.getDateOffset());
+        int min = period.getStartSlot()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN + (getPrintOffset()==null?0:getPrintOffset().intValue());
         c.set(Calendar.HOUR, min/60); c.set(Calendar.MINUTE, min%60);
         return c.getTime();
     }
