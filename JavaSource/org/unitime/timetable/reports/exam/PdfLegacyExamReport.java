@@ -609,7 +609,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
             }
     }
     
-    public static TreeSet<ExamAssignmentInfo> loadExams(Long sessionId, int examType, boolean assgn) throws Exception {
+    public static TreeSet<ExamAssignmentInfo> loadExams(Long sessionId, int examType, boolean assgn, boolean ignNoEnrl) throws Exception {
         sLog.info("Loading exams...");
         long t0 = System.currentTimeMillis();
         Hashtable<Long, Exam> exams = new Hashtable();
@@ -797,6 +797,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
         for (Enumeration<Exam> e = exams.elements(); e.hasMoreElements();) {
             Exam exam = (Exam)e.nextElement();
             ExamAssignmentInfo info = (assgn?new ExamAssignmentInfo(exam, owner2students, student2exams, period2meetings, p):new ExamAssignmentInfo(exam, (ExamPeriod)null, null));
+            if (ignNoEnrl && info.getStudentIds().isEmpty()) continue;
             ret.add(info);
         }
         long t1 = System.currentTimeMillis();
@@ -833,6 +834,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
             }
             int examType = (ApplicationProperties.getProperty("type","final").equalsIgnoreCase("final")?Exam.sExamTypeFinal:Exam.sExamTypeMidterm);
             boolean assgn = "true".equals(System.getProperty("assgn","true"));
+            boolean ignempty = "true".equals(System.getProperty("ignempty","true"));
             int mode = sModeNormal;
             if ("text".equals(System.getProperty("mode"))) mode = sModeText;
             if ("ledger".equals(System.getProperty("mode"))) mode = sModeLedger;
@@ -850,7 +852,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                         "select sa from SubjectArea sa where sa.session.uniqueId=:sessionId and sa.subjectAreaAbbreviation in ("+inSubjects+")"
                         ).setLong("sessionId", session.getUniqueId()).list());
             }
-            TreeSet<ExamAssignmentInfo> exams = loadExams(session.getUniqueId(), examType, assgn);
+            TreeSet<ExamAssignmentInfo> exams = loadExams(session.getUniqueId(), examType, assgn, ignempty);
             if (subjects==null) {
                 subjects = new TreeSet();
                 for (ExamAssignmentInfo exam: exams)

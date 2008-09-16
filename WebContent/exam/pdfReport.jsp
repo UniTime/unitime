@@ -135,7 +135,8 @@
 	</TR>
 	<TR>
   		<TD width="10%" nowrap valign='top'>All Reports:</TD>
-		<TD><html:checkbox property="itype"/>Display Instructional Type</TD>
+		<TD><html:checkbox property="itype"/>Display Instructional Type<br>
+			<html:checkbox property="ignoreEmptyExams"/>Skip Exams with No Enrollment</TD>
 	</TR>
 	<TR>
   		<TD width="10%" nowrap valign='top'>Conflicts Reports:</TD>
