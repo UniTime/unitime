@@ -75,6 +75,7 @@ public class ExamPdfReportForm extends ExamReportForm {
     private String iSince = null;
     private boolean iEmailInstructors, iEmailStudents;
     private boolean iClassSchedule = false;
+    private boolean iIgnoreEmptyExams = false;
     
     public static Hashtable<String,Class> sRegisteredReports = new Hashtable();
     public static String[] sModes = {"PDF (Letter)", "PDF (Ledger)", "Text"};
@@ -133,6 +134,7 @@ public class ExamPdfReportForm extends ExamReportForm {
         iEmailInstructors = false; 
         iEmailStudents = false;
         iClassSchedule = false;
+        iIgnoreEmptyExams = false;
         iItype = false;
         if (getAddress()==null) {
             TimetableManager manager = TimetableManager.getManager(Web.getUser(request.getSession()));
@@ -167,6 +169,7 @@ public class ExamPdfReportForm extends ExamReportForm {
         setEmailStudents(UserData.getPropertyBoolean(session,"ExamPdfReport.emailStudents", false));
         setItype(UserData.getPropertyBoolean(session,"ExamPdfReport.itype", "true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.itype","true"))));
         setClassSchedule(UserData.getPropertyBoolean(session,"ExamPdfReport.cschedule", true));
+        setIgnoreEmptyExams(UserData.getPropertyBoolean(session,"ExamPdfReport.ignempty", true));
     }
     
     public void save(HttpSession session) {
@@ -196,6 +199,7 @@ public class ExamPdfReportForm extends ExamReportForm {
         UserData.setPropertyBoolean(session,"ExamPdfReport.emailStudents", getEmailStudents());
         UserData.setPropertyBoolean(session,"ExamPdfReport.itype", getItype());
         UserData.setPropertyBoolean(session,"ExamPdfReport.cschedule", getClassSchedule());
+        UserData.setPropertyBoolean(session,"ExamPdfReport.ignempty", getIgnoreEmptyExams());
     }
 
     public String[] getReports() { return iReports;}
@@ -269,4 +273,6 @@ public class ExamPdfReportForm extends ExamReportForm {
     public void setItype(boolean itype) { iItype = itype; }
     public boolean getClassSchedule() { return iClassSchedule; }
     public void setClassSchedule(boolean classSchedule) { iClassSchedule = classSchedule; }
+    public boolean getIgnoreEmptyExams() { return iIgnoreEmptyExams; }
+    public void setIgnoreEmptyExams(boolean ignoreEmptyExams) { iIgnoreEmptyExams = ignoreEmptyExams; }
 }
