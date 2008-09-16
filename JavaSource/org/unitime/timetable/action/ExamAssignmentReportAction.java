@@ -939,13 +939,13 @@ public class ExamAssignmentReportAction extends Action {
                                 exam.getTime(html),
                                 ((int)(distance*10.0)==0?"":(int)(distance*10.0)+" m"),
                                 (rooms[0]==null?"":html?rooms[0].toString():rooms[0].getName()),
-                                (rooms[0]==null?"":html?"<font color='"+PreferenceLevel.int2color(rooms[0].getPreference())+"'>"+rooms[0].getCapacity()+"</font>":String.valueOf(rooms[0].getCapacity())),
+                                (rooms[0]==null?"":html?"<font color='"+PreferenceLevel.int2color(rooms[0].getPreference())+"'>"+rooms[0].getCapacity(exam)+"</font>":String.valueOf(rooms[0].getCapacity(exam))),
                                 (rooms[1]==null?"":html?rooms[1].toString():rooms[1].getName()),
-                                (rooms[1]==null?"":html?"<font color='"+PreferenceLevel.int2color(rooms[1].getPreference())+"'>"+rooms[1].getCapacity()+"</font>":String.valueOf(rooms[1].getCapacity())),
+                                (rooms[1]==null?"":html?"<font color='"+PreferenceLevel.int2color(rooms[1].getPreference())+"'>"+rooms[1].getCapacity(exam)+"</font>":String.valueOf(rooms[1].getCapacity(exam))),
                                 (rooms[2]==null?"":html?rooms[2].toString():rooms[2].getName()),
-                                (rooms[2]==null?"":html?"<font color='"+PreferenceLevel.int2color(rooms[2].getPreference())+"'>"+rooms[2].getCapacity()+"</font>":String.valueOf(rooms[2].getCapacity())),
+                                (rooms[2]==null?"":html?"<font color='"+PreferenceLevel.int2color(rooms[2].getPreference())+"'>"+rooms[2].getCapacity(exam)+"</font>":String.valueOf(rooms[2].getCapacity(exam))),
                                 (rooms[3]==null?"":html?rooms[3].toString():rooms[2].getName()),
-                                (rooms[3]==null?"":html?"<font color='"+PreferenceLevel.int2color(rooms[3].getPreference())+"'>"+rooms[3].getCapacity()+"</font>":String.valueOf(rooms[3].getCapacity()))
+                                (rooms[3]==null?"":html?"<font color='"+PreferenceLevel.int2color(rooms[3].getPreference())+"'>"+rooms[3].getCapacity(exam)+"</font>":String.valueOf(rooms[3].getCapacity(exam)))
                             },
                             new Comparable[] {
                                 new MultiComparable(section.getName(), exam),
@@ -955,13 +955,13 @@ public class ExamAssignmentReportAction extends Action {
                                 new MultiComparable(exam.getPeriod().getStartSlot(), section.getName(), exam),
                                 new MultiComparable(-distance, section.getName(), exam),
                                 new MultiComparable((rooms[0]==null?"":rooms[0].getName()), section.getName(), exam),
-                                new MultiComparable((rooms[0]==null?0:rooms[0].getCapacity()), section.getName(), exam),
+                                new MultiComparable((rooms[0]==null?0:rooms[0].getCapacity(exam)), section.getName(), exam),
                                 new MultiComparable((rooms[1]==null?"":rooms[1].getName()), section.getName(), exam),
-                                new MultiComparable((rooms[1]==null?0:rooms[1].getCapacity()), section.getName(), exam),
+                                new MultiComparable((rooms[1]==null?0:rooms[1].getCapacity(exam)), section.getName(), exam),
                                 new MultiComparable((rooms[2]==null?"":rooms[2].getName()), section.getName(), exam),
-                                new MultiComparable((rooms[2]==null?0:rooms[2].getCapacity()), section.getName(), exam),
+                                new MultiComparable((rooms[2]==null?0:rooms[2].getCapacity(exam)), section.getName(), exam),
                                 new MultiComparable((rooms[3]==null?"":rooms[3].getName()), section.getName(), exam),
-                                new MultiComparable((rooms[3]==null?0:rooms[3].getCapacity()), section.getName(), exam)
+                                new MultiComparable((rooms[3]==null?0:rooms[3].getCapacity(exam)), section.getName(), exam)
                             },
                             (firstSection?exam.getExamId().toString():null));
                     firstSection = false;
@@ -986,13 +986,13 @@ public class ExamAssignmentReportAction extends Action {
                             exam.getTime(html),
                             ((int)(distance*10.0)==0?"":(int)(distance*10.0)+" m"),
                             (rooms[0]==null?"":html?rooms[0].toString():rooms[0].getName()),
-                            (rooms[0]==null?"":html?"<font color='"+PreferenceLevel.int2color(rooms[0].getPreference())+"'>"+rooms[0].getCapacity()+"</font>":String.valueOf(rooms[0].getCapacity())),
+                            (rooms[0]==null?"":html?"<font color='"+PreferenceLevel.int2color(rooms[0].getPreference())+"'>"+rooms[0].getCapacity(exam)+"</font>":String.valueOf(rooms[0].getCapacity(exam))),
                             (rooms[1]==null?"":html?rooms[1].toString():rooms[1].getName()),
-                            (rooms[1]==null?"":html?"<font color='"+PreferenceLevel.int2color(rooms[1].getPreference())+"'>"+rooms[1].getCapacity()+"</font>":String.valueOf(rooms[1].getCapacity())),
+                            (rooms[1]==null?"":html?"<font color='"+PreferenceLevel.int2color(rooms[1].getPreference())+"'>"+rooms[1].getCapacity(exam)+"</font>":String.valueOf(rooms[1].getCapacity(exam))),
                             (rooms[2]==null?"":html?rooms[2].toString():rooms[2].getName()),
-                            (rooms[2]==null?"":html?"<font color='"+PreferenceLevel.int2color(rooms[2].getPreference())+"'>"+rooms[2].getCapacity()+"</font>":String.valueOf(rooms[2].getCapacity())),
+                            (rooms[2]==null?"":html?"<font color='"+PreferenceLevel.int2color(rooms[2].getPreference())+"'>"+rooms[2].getCapacity(exam)+"</font>":String.valueOf(rooms[2].getCapacity(exam))),
                             (rooms[3]==null?"":html?rooms[3].toString():rooms[2].getName()),
-                            (rooms[3]==null?"":html?"<font color='"+PreferenceLevel.int2color(rooms[3].getPreference())+"'>"+rooms[3].getCapacity()+"</font>":String.valueOf(rooms[3].getCapacity()))
+                            (rooms[3]==null?"":html?"<font color='"+PreferenceLevel.int2color(rooms[3].getPreference())+"'>"+rooms[3].getCapacity(exam)+"</font>":String.valueOf(rooms[3].getCapacity(exam)))
                         },
                         new Comparable[] {
                             new MultiComparable(exam),
@@ -1002,13 +1002,13 @@ public class ExamAssignmentReportAction extends Action {
                             new MultiComparable(exam.getPeriod().getStartSlot(), exam),
                             new MultiComparable(-distance, exam),
                             new MultiComparable((rooms[0]==null?"":rooms[0].getName()), exam),
-                            new MultiComparable((rooms[0]==null?0:rooms[0].getCapacity()), exam),
+                            new MultiComparable((rooms[0]==null?0:rooms[0].getCapacity(exam)), exam),
                             new MultiComparable((rooms[1]==null?"":rooms[1].getName()), exam),
-                            new MultiComparable((rooms[1]==null?0:rooms[1].getCapacity()), exam),
+                            new MultiComparable((rooms[1]==null?0:rooms[1].getCapacity(exam)), exam),
                             new MultiComparable((rooms[2]==null?"":rooms[2].getName()), exam),
-                            new MultiComparable((rooms[2]==null?0:rooms[2].getCapacity()), exam),
+                            new MultiComparable((rooms[2]==null?0:rooms[2].getCapacity(exam)), exam),
                             new MultiComparable((rooms[3]==null?"":rooms[3].getName()), exam),
-                            new MultiComparable((rooms[3]==null?0:rooms[3].getCapacity()), exam)
+                            new MultiComparable((rooms[3]==null?0:rooms[3].getCapacity(exam)), exam)
                         },
                         exam.getExamId().toString());
             }
