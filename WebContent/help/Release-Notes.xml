@@ -42,6 +42,27 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Examination Reports</name>
+			<description>
+				<line>Room Split: display room normal/examination capacities based on examination type.</line>
+			</description>
+		</item>
+		<item>
+			<name>Examination PDF Reports</name>
+			<description>
+				<line>Added an option to do not print exams that have no student enrollment (set to true by default).</line>
+				<line>Corrected order of some of the exams in the report.</line>
+				<line>Student Conflict: display student names instead of student external ids</line>
+				<line>Abbreviated Schedule: print a break line every 9 lines</line>
+			</description> 
+		</item>
+		<item>
+			<name>Personalized Schedule</name>
+			<description>
+				<line>Allow users with a role to see the page (if they have a schedule).</line>
+			</description>
+		</item>
 	</category>
 </release>
 
