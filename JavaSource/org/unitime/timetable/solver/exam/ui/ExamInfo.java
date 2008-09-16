@@ -304,7 +304,7 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
             return getOwner().getSection();
         }
         public int compareTo(ExamSectionInfo info) {
-            int cmp = getOwner().compareTo(getOwner());
+            int cmp = getOwner().compareTo(info.getOwner());
             if (cmp!=0) return cmp;
             return getExam().compareTo(info.getExam());
         }
@@ -314,6 +314,9 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
         public boolean equals(Object o) {
             if (o==null || !(o instanceof ExamSectionInfo)) return false;
             return getId().equals(((ExamSectionInfo)o).getId());
+        }
+        public String toString() {
+            return getName();
         }
     }
     
