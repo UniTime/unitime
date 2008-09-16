@@ -112,7 +112,7 @@ public class ExamPdfReportAction extends Action {
             try {
                 myForm.setReport("");
                 myForm.log("Loading exams...");
-                TreeSet<ExamAssignmentInfo> exams = PdfLegacyExamReport.loadExams(session.getUniqueId(), myForm.getExamType(), true);
+                TreeSet<ExamAssignmentInfo> exams = PdfLegacyExamReport.loadExams(session.getUniqueId(), myForm.getExamType(), true, myForm.getIgnoreEmptyExams());
                 /*
                 if (myForm.getAll()) {
                     for (Iterator i=Exam.findAll(session.getUniqueId(), myForm.getExamType()).iterator();i.hasNext();) {
