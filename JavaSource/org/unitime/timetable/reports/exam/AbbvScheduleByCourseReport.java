@@ -29,12 +29,15 @@ public class AbbvScheduleByCourseReport extends PdfLegacyExamReport {
             }
         }
         Vector<String> lines = new Vector();
-        int n = iNrLines - 2;
+        String separator = null;
+        int split = 9;
+        int n = iNrLines - 2 - ((iNrLines - 2) / (split + 1));
+        sLog.debug("n="+n);
         if (!iDispRooms) {
             ExamSectionInfo last = null; int lx = 0;
             for (ExamSectionInfo section : sections) {
                 boolean sameSubj = false, sameCrs = false, sameSct = false, sameItype = false;
-                if ((lx%n)!=0 && last!=null) {
+                if ((lx%n)!=0 && ((lx%n)%split)!=0 && last!=null) {
                     if (last.getSubject().equals(section.getSubject())) { 
                         sameSubj = true;
                         if (last.getCourseNbr().equals(section.getCourseNbr())) {
@@ -62,18 +65,22 @@ public class AbbvScheduleByCourseReport extends PdfLegacyExamReport {
                 }
             }
             if (iItype) {
-                if (iExternal)
+                if (iExternal) {
                     setHeader(new String[] {
                             "Subj CrsNr ExtID Sct Date    Time          | Subj CrsNr ExtID Sct Date    Time          | Subj CrsNr ExtID Sct Date    Time         ",
                             "---- ----- ----- --- ------- ------------- | ---- ----- ----- --- ------- ------------- | ---- ----- ----- --- ------- -------------"});
-                else
+                    separator = "---- ----- ----- --- ------- ------------- | ---- ----- ----- --- ------- ------------- | ---- ----- ----- --- ------- -------------";
+                } else {
                     setHeader(new String[] {
                             "Subj CrsNr InsTp Sct Date    Time          | Subj CrsNr InsTp Sct Date    Time          | Subj CrsNr InsTp Sct Date    Time         ",
                             "---- ----- ----- --- ------- ------------- | ---- ----- ----- --- ------- ------------- | ---- ----- ----- --- ------- -------------"});
+                    separator = "---- ----- ----- --- ------- ------------- | ---- ----- ----- --- ------- ------------- | ---- ----- ----- --- ------- -------------";
+                }
             } else {
                 setHeader(new String[] {
                     "  Subj CrsNr Sct  Date      Time            | Subj CrsNr Sct  Date      Time            | Subj CrsNr Sct  Date      Time           ",
                     "  ---- ----- ---  --------- --------------- | ---- ----- ---  --------- --------------- | ---- ----- ---  --------- ---------------"});
+                separator = "  ---- ----- ---  --------- --------------- | ---- ----- ---  --------- --------------- | ---- ----- ---  --------- ---------------";
             }
             printHeader();
             for (int idx=0; idx<lines.size(); idx+=3*n) {
@@ -85,13 +92,14 @@ public class AbbvScheduleByCourseReport extends PdfLegacyExamReport {
                         println(rpad(a,42)+" | "+rpad(b,42)+" | "+c);
                     else
                         println("  "+rpad(a,41)+" | "+rpad(b,41)+" | "+c);
+                    if ((i%split)==split-1) println(separator);
                 }
             }
         } else {
             ExamSectionInfo last = null; int lx = 0;
             for (ExamSectionInfo section : sections) {
                 boolean sameSubj = false, sameCrs = false, sameSct = false, sameItype = false;
-                if ((lx%n)!=0 && last!=null) {
+                if ((lx%n)!=0 && ((lx%n)%split)!=0 && last!=null) {
                     if (last.getSubject().equals(section.getSubject())) { 
                         sameSubj = true;
                         if (last.getCourseNbr().equals(section.getCourseNbr())) {
@@ -154,18 +162,22 @@ public class AbbvScheduleByCourseReport extends PdfLegacyExamReport {
                 }
             }
             if (iItype) {
-                if (iExternal)
+                if (iExternal) {
                     setHeader(new String[] {
                             "Subj CrsNr ExtID Sct Date    Time          Bldg  Room  Bldg  Room | Subj CrsNr ExtID Sct Date    Time          Bldg  Room  Bldg  Room",
                             "---- ----- ----- --- ------- ------------- ----- ----- ----- ---- | ---- ----- ----- --- ------- ------------- ----- ----- ----- ----"});
-                else
+                    separator = "---- ----- ----- --- ------- ------------- ----- ----- ----- ---- | ---- ----- ----- --- ------- ------------- ----- ----- ----- ----";
+                } else {
                     setHeader(new String[] {
                             "Subj CrsNr InsTp Sct Date    Time          Bldg  Room  Bldg  Room | Subj CrsNr InsTp Sct Date    Time          Bldg  Room  Bldg  Room",
                             "---- ----- ----- --- ------- ------------- ----- ----- ----- ---- | ---- ----- ----- --- ------- ------------- ----- ----- ----- ----"});
+                    separator = "---- ----- ----- --- ------- ------------- ----- ----- ----- ---- | ---- ----- ----- --- ------- ------------- ----- ----- ----- ----";
+                }
             } else {
                 setHeader(new String[] {
                     "Subj CrsNr Sct  Date      Time            Bldg  Room  Bldg  Room  | Subj CrsNr Sct  Date      Time            Bldg  Room  Bldg  Room ",
                     "---- ----- ---  --------- --------------- ----- ----- ----- ----- | ---- ----- ---  --------- --------------- ----- ----- ----- -----"});
+                separator = "---- ----- ---  --------- --------------- ----- ----- ----- ----- | ---- ----- ---  --------- --------------- ----- ----- ----- -----";
             }
             printHeader();
             for (int idx=0; idx<lines.size(); idx+=2*n) {
@@ -173,6 +185,7 @@ public class AbbvScheduleByCourseReport extends PdfLegacyExamReport {
                     String a = (i+idx+0*n<lines.size()?lines.elementAt(i+idx+0*n):"");
                     String b = (i+idx+1*n<lines.size()?lines.elementAt(i+idx+1*n):"");
                     println(rpad(a,66)+"| "+b);
+                    if ((i%split)==split-1) println(separator);
                 }
             }
         }
