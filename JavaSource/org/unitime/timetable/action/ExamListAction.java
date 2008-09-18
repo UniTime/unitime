@@ -51,6 +51,7 @@ import org.unitime.timetable.model.ExamPeriodPref;
 import org.unitime.timetable.model.PeriodPreferenceModel;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceLevel;
+import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.RoomFeaturePref;
 import org.unitime.timetable.model.RoomGroupPref;
 import org.unitime.timetable.model.RoomPref;
@@ -78,6 +79,7 @@ public class ExamListAction extends Action {
         Session session = (user==null?null:Session.getCurrentAcadSession(user));
         if (user==null || session==null || !manager.canSeeExams(session, user)) throw new Exception ("Access Denied.");
         myForm.setCanAddExam(manager!=null && manager.canEditExams(session, user));
+        myForm.setCanSeeAll(Roles.ADMIN_ROLE.equals(user.getCurrentRole()) || Roles.EXAM_MGR_ROLE.equals(user.getCurrentRole()));
         
         // Read operation to be performed
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));

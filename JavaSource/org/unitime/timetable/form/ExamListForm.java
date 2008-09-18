@@ -40,7 +40,8 @@ public class ExamListForm extends ActionForm {
     private Collection iSubjectAreas = null;
     private int iExamType = 0;
     private boolean iHasMidtermExams = false;
-    private boolean iCanAddExam = false; 
+    private boolean iCanAddExam = false;
+    private boolean iCanSeeAll = false;
     
     public String getSubjectAreaId() { return iSubjectAreaId; }
     public void setSubjectAreaId(String subjectAreaId) { iSubjectAreaId = subjectAreaId; }
@@ -56,7 +57,7 @@ public class ExamListForm extends ActionForm {
     
     public void reset(ActionMapping mapping, HttpServletRequest request) {
         iSubjectAreaId = null; iCourseNbr = null; iOp = null;
-        iExamType = Exam.sExamTypeFinal; iCanAddExam = false;
+        iExamType = Exam.sExamTypeFinal; iCanAddExam = false; iCanSeeAll=false;
         try {
             iHasMidtermExams = Exam.hasMidtermExams(Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId());
         } catch (Exception e) {}
@@ -80,5 +81,6 @@ public class ExamListForm extends ActionForm {
     
     public boolean getCanAddExam() { return iCanAddExam; }
     public void setCanAddExam(boolean exam) { iCanAddExam = exam; }
-
+    public boolean getCanSeeAll() { return iCanSeeAll; }
+    public void setCanSeeAll(boolean seeAll) { iCanSeeAll = seeAll; }
 }

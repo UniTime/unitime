@@ -64,6 +64,7 @@ public class ExamDistributionPrefsForm extends ActionForm {
 	private String filterCourseNbr;
 	
 	private boolean canAdd;
+	private boolean canSeeAll;
     
 
     protected DynamicListObjectFactory factory = new DynamicListObjectFactory() {
@@ -120,7 +121,7 @@ public class ExamDistributionPrefsForm extends ActionForm {
         iExamType = Exam.sExamTypeFinal;
         if (request.getSession().getAttribute("Exam.Type")!=null)
         	iExamType = (Integer)request.getSession().getAttribute("Exam.Type");
-        canAdd = false;
+        canAdd = false; canSeeAll = false;
         try {
             iHasMidtermExams = Exam.hasMidtermExams(Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId());
         } catch (Exception e) {}
@@ -154,6 +155,9 @@ public class ExamDistributionPrefsForm extends ActionForm {
     
     public boolean getCanAdd() { return canAdd; }
     public void setCanAdd(boolean canAdd) { this.canAdd = canAdd; }
+
+    public boolean getCanSeeAll() { return canSeeAll; }
+    public void setCanSeeAll(boolean canSeeAll) { this.canSeeAll = canSeeAll; }
 
     public void deleteExam(int key) {
         subjectArea.remove(key);

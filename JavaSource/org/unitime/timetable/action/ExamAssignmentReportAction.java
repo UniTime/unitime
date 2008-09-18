@@ -60,6 +60,7 @@ import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.PreferenceLevel;
+import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.Student;
@@ -104,7 +105,11 @@ public class ExamAssignmentReportAction extends Action {
             myForm.reset(mapping, request);
         }
         
-        Session session = Session.getCurrentAcadSession(Web.getUser(request.getSession()));
+        User user = Web.getUser(request.getSession());
+        
+        myForm.setCanSeeAll(Roles.ADMIN_ROLE.equals(user.getCurrentRole()) || Roles.EXAM_MGR_ROLE.equals(user.getCurrentRole()));
+        
+        Session session = Session.getCurrentAcadSession(user);
         RoomAvailability.setAvailabilityWarning(request, session, myForm.getExamType(), true, false);
         
         myForm.load(request.getSession());
