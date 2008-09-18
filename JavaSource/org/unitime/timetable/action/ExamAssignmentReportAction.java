@@ -64,6 +64,7 @@ import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.Student;
+import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
@@ -91,8 +92,8 @@ import org.unitime.timetable.webutil.PdfWebTable;
 public class ExamAssignmentReportAction extends Action {
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 	    ExamAssignmentReportForm myForm = (ExamAssignmentReportForm) form;
-
-        // Check Access
+	    
+	    // Check Access
         if (!Web.isLoggedIn( request.getSession() )) {
             throw new Exception ("Access Denied.");
         }
@@ -113,6 +114,8 @@ public class ExamAssignmentReportAction extends Action {
         RoomAvailability.setAvailabilityWarning(request, session, myForm.getExamType(), true, false);
         
         myForm.load(request.getSession());
+        
+        myForm.setSubjectAreas(TimetableManager.getSubjectAreas(user));
         
         ExamSolverProxy solver = WebSolver.getExamSolver(request.getSession());
         Collection<ExamAssignmentInfo> assignedExams = null;
