@@ -37,6 +37,7 @@ import org.unitime.timetable.reports.exam.AbbvExamScheduleByCourseReport;
 import org.unitime.timetable.reports.exam.AbbvScheduleByCourseReport;
 import org.unitime.timetable.reports.exam.ConflictsByCourseAndInstructorReport;
 import org.unitime.timetable.reports.exam.ConflictsByCourseAndStudentReport;
+import org.unitime.timetable.reports.exam.ExamPeriodChartReport;
 import org.unitime.timetable.reports.exam.ExamScheduleByPeriodReport;
 import org.unitime.timetable.reports.exam.ExamVerificationReport;
 import org.unitime.timetable.reports.exam.InstructorExamReport;
@@ -90,6 +91,7 @@ public class ExamPdfReportForm extends ExamReportForm {
         sRegisteredReports.put("Schedule by Period (Exams)", ExamScheduleByPeriodReport.class);
         sRegisteredReports.put("Schedule by Room", ScheduleByRoomReport.class);
         sRegisteredReports.put("Period Chart", PeriodChartReport.class);
+        sRegisteredReports.put("Period Chart (Exams)", ExamPeriodChartReport.class);
         sRegisteredReports.put("Verification", ExamVerificationReport.class);
         sRegisteredReports.put("Abbreviated Schedule", AbbvScheduleByCourseReport.class);
         sRegisteredReports.put("Abbreviated Schedule (Exams)", AbbvExamScheduleByCourseReport.class);
