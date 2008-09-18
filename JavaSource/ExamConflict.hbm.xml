@@ -70,6 +70,7 @@
 		<set
 			name="exams"
 			table="XCONFLICT_EXAM"
+			inverse="true"
 			lazy="false">
 			<cache include="non-lazy" usage="read-write"/>
 			<key column="CONFLICT_ID" foreign-key="FK_XCONFLICT_EX_CONF"/>
