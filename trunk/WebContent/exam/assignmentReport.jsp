@@ -68,7 +68,9 @@
 				onkeypress="return selectSearch(event, this);" 
 				onkeydown="return checkKey(event, this);" >
 				<html:option value="">Select...</html:option>
-				<html:option value="-1">All</html:option>
+				<logic:equal name="examAssignmentReportForm" property="canSeeAll" value="true">
+					<html:option value="-1">All</html:option>
+				</logic:equal>
 				<html:optionsCollection property="subjectAreas"	label="subjectAreaAbbreviation" value="uniqueId" />
 			</html:select>
 		</TD>

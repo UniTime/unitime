@@ -54,6 +54,7 @@ import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.PreferenceLevel;
+import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimetableManager;
@@ -80,10 +81,10 @@ public class ExamDistributionPrefsAction extends Action {
         Session session = (user==null?null:Session.getCurrentAcadSession(user));
         if (user==null || session==null || !manager.canSeeExams(session, user)) throw new Exception ("Access Denied.");
         
-        		MessageResources rsc = getResources(request);
+        MessageResources rsc = getResources(request);
 		ActionMessages errors = new ActionMessages();
         ExamDistributionPrefsForm frm = (ExamDistributionPrefsForm) form;
-        
+
         String deleteId = request.getParameter("deleteId");
         String deleteType = request.getParameter("deleteType");
         String distPrefId = request.getParameter("dp");
@@ -261,7 +262,8 @@ public class ExamDistributionPrefsAction extends Action {
         }
         
         frm.setCanAdd(manager.canEditExams(session, user));
-        
+        frm.setCanSeeAll(Roles.ADMIN_ROLE.equals(user.getCurrentRole()) || Roles.EXAM_MGR_ROLE.equals(user.getCurrentRole()));
+
         if ("view".equals(op) && (frm.getDistPrefId()==null || frm.getDistPrefId().length()==0)) {
             ExamDistributionPrefsTableBuilder tbl = new ExamDistributionPrefsTableBuilder();
         	if (frm.getFilterSubjectAreaId()==null) {

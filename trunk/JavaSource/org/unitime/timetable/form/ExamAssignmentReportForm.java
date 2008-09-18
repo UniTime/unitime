@@ -65,6 +65,7 @@ public class ExamAssignmentReportForm extends ExamReportForm {
             sIndividualInstructorConflicts, sIndividualDirectInstructorConflicts, sIndividualBackToBackInstructorConflicts, sIndividualMore2ADayInstructorConflicts
             };
     private String iFilter = null;
+    private boolean iCanSeeAll = false;
     
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
         ActionErrors errors = super.validate(mapping, request);
@@ -74,7 +75,7 @@ public class ExamAssignmentReportForm extends ExamReportForm {
 
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
 	    super.reset(mapping, request);
-	    iReport = null;
+	    iReport = null; iCanSeeAll = false;
 	}
 	
 	public String getReport() { return iReport; }
@@ -101,5 +102,8 @@ public class ExamAssignmentReportForm extends ExamReportForm {
         else
             session.setAttribute("ExamReport.Report",getReport());
     }
+
+    public boolean getCanSeeAll() { return iCanSeeAll; }
+    public void setCanSeeAll(boolean seeAll) { iCanSeeAll = seeAll; }
 }
 
