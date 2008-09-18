@@ -85,6 +85,7 @@ public class ExamReportForm extends ActionForm {
 	public String getSubjectAreaAbbv() { return new SubjectAreaDAO().get(iSubjectArea).getSubjectAreaAbbreviation(); }
 	public void setSubjectArea(Long subjectArea) { iSubjectArea = subjectArea; } 
 	public Collection getSubjectAreas() { return iSubjectAreas; }
+	public void setSubjectAreas(Collection subjectAreas) { iSubjectAreas = subjectAreas; }
 	
 	public void load(HttpSession session) {
 	    setShowSections(UserData.getPropertyBoolean(session,"ExamReport.showSections", true));
