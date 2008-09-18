@@ -286,7 +286,9 @@
 						onkeypress="return selectSearch(event, this);" 
 						onkeydown="return checkKey(event, this);" >
 						<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
-						<html:option value="<%=Constants.ALL_OPTION_VALUE%>"><%=Constants.ALL_OPTION_LABEL%></html:option>
+						<logic:equal name="examDistributionPrefsForm" property="canSeeAll" value="true">
+							<html:option value="<%=Constants.ALL_OPTION_VALUE%>"><%=Constants.ALL_OPTION_LABEL%></html:option>
+						</logic:equal>
 						<html:optionsCollection property="filterSubjectAreas" label="subjectAreaAbbreviation" value="uniqueId" />
 					</html:select>
 					<B>Course Number: </B>
