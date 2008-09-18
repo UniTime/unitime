@@ -45,7 +45,7 @@
 	leaf_item('Personal Schedule','Personal Schedule','personalSchedule.do');
 <% } %>
 <% if (user!=null && manager!=null && acadSession!=null) { %>
-<% if (manager.canSeeExams(acadSession,user)) { %>
+<% if (manager.canSeeCourses(acadSession,user)) { %>
 	menu_item('1','Course Timetabling','Course Timetabling','','collapse');
 		menu_item('10','Input Data','Course Timetabling Input Data','','collapse');
 			leaf_item('Instructional Offerings','Instructional Offerings','instructionalOfferingShowSearch.do');
