@@ -111,7 +111,6 @@ public class InquiryAction extends Action {
 	            errors = myForm.validate(mapping, request);
 	            if(errors.size()>0) {
 	                saveErrors(request, errors);
-	                return mapping.findForward("display");
 	            } else {
 	            	Session session = Session.getCurrentAcadSession(user);
 	            	
