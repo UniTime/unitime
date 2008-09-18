@@ -610,7 +610,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
             }
     }
     
-    public static TreeSet<ExamAssignmentInfo> loadExams(Long sessionId, int examType, boolean assgn, boolean ignNoEnrl) throws Exception {
+    public static TreeSet<ExamAssignmentInfo> loadExams(Long sessionId, int examType, boolean assgn, boolean ignNoEnrl, boolean eventConf) throws Exception {
         sLog.info("Loading exams...");
         long t0 = System.currentTimeMillis();
         Hashtable<Long, Exam> exams = new Hashtable();
@@ -754,7 +754,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
             }
         }
         Hashtable<Long, Set<Meeting>> period2meetings = new Hashtable();
-        if (assgn && "true".equals(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts."+(examType==Exam.sExamTypeFinal?"final":"midterm"),"true"))) {
+        if (assgn && eventConf && "true".equals(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts."+(examType==Exam.sExamTypeFinal?"final":"midterm"),"true"))) {
             sLog.info("  Loading overlapping class meetings...");
             for (Iterator i=new ExamDAO().getSession().createQuery(
                     "select p.uniqueId, ce, m from ClassEvent ce inner join ce.meetings m, ExamPeriod p " +
@@ -853,7 +853,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                         "select sa from SubjectArea sa where sa.session.uniqueId=:sessionId and sa.subjectAreaAbbreviation in ("+inSubjects+")"
                         ).setLong("sessionId", session.getUniqueId()).list());
             }
-            TreeSet<ExamAssignmentInfo> exams = loadExams(session.getUniqueId(), examType, assgn, ignempty);
+            TreeSet<ExamAssignmentInfo> exams = loadExams(session.getUniqueId(), examType, assgn, ignempty, true);
             if (subjects==null) {
                 subjects = new TreeSet();
                 for (ExamAssignmentInfo exam: exams)
