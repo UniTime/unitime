@@ -218,6 +218,26 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
         return false;
 	}
 	
+    public boolean canSeeCourses(Session session, User user) {
+        //can edit -> can view
+        if (canSeeTimetable(session, user)) return true;
+        
+        //admin or exam manager
+        if (Roles.ADMIN_ROLE.equals(user.getCurrentRole()) || Roles.VIEW_ALL_ROLE.equals(user.getCurrentRole()) || Roles.EXAM_MGR_ROLE.equals(user.getCurrentRole())) return true;
+        
+        if (Roles.DEPT_SCHED_MGR_ROLE.equals(user.getCurrentRole())) {
+            TimetableManager mgr = getManager(user);
+            for (Iterator i=mgr.getDepartments().iterator();i.hasNext();) {
+                Department d = (Department)i.next();
+                if (d.isExternalManager() && d.getStatusType().canManagerView()) return true;
+                if (!d.isExternalManager() && d.getStatusType().canOwnerView()) return true;
+            }
+        }
+        
+        return false;
+    }
+
+	
 	public boolean canSeeExams(Session session, User user) {
         //can edit -> can view
         if (canEditExams(session, user)) return true;
@@ -227,7 +247,7 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
             return true;
         
         //timetable manager or view all 
-        if (Roles.DEPT_SCHED_MGR_ROLE.equals(user.getCurrentRole()) || Roles.VIEW_ALL_ROLE.equals(user.getCurrentRole()) || Roles.EVENT_MGR_ROLE.equals(user.getCurrentRole()))
+        if (Roles.DEPT_SCHED_MGR_ROLE.equals(user.getCurrentRole()) || Roles.VIEW_ALL_ROLE.equals(user.getCurrentRole()))
             return session.getStatusType().canExamView();
         
         return false;
