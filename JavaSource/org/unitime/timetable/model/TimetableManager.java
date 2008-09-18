@@ -219,15 +219,11 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
 	}
 	
     public boolean canSeeCourses(Session session, User user) {
-        //can edit -> can view
-        if (canSeeTimetable(session, user)) return true;
-        
         //admin or exam manager
         if (Roles.ADMIN_ROLE.equals(user.getCurrentRole()) || Roles.VIEW_ALL_ROLE.equals(user.getCurrentRole()) || Roles.EXAM_MGR_ROLE.equals(user.getCurrentRole())) return true;
         
         if (Roles.DEPT_SCHED_MGR_ROLE.equals(user.getCurrentRole())) {
-            TimetableManager mgr = getManager(user);
-            for (Iterator i=mgr.getDepartments().iterator();i.hasNext();) {
+            for (Iterator i=getDepartments().iterator();i.hasNext();) {
                 Department d = (Department)i.next();
                 if (d.isExternalManager() && d.effectiveStatusType().canManagerView()) return true;
                 if (!d.isExternalManager() && d.effectiveStatusType().canOwnerView()) return true;
