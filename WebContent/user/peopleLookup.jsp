@@ -30,6 +30,7 @@
 		Object x = user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
 		if (x!=null) sid = x.toString();
 	}
+	boolean submit = "true".equals(request.getParameter("submit"));
  %>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
@@ -140,6 +141,9 @@
   	if (x!=null) x.value = dept;
   	x = window.opener.document.getElementById('pos');
   	if (x!=null) x.value = pos;
+  	<%if (submit) {%>
+  	window.opener.document.forms[0].submit();
+  	<%}%>
   }
   var qObj = document.getElementById('query');
   <% if (q.length()>0) { %> qObj.value='<%=q%>'; doQuery('<%=q%>'); <% } %>
