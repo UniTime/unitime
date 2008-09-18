@@ -229,8 +229,8 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
             TimetableManager mgr = getManager(user);
             for (Iterator i=mgr.getDepartments().iterator();i.hasNext();) {
                 Department d = (Department)i.next();
-                if (d.isExternalManager() && d.getStatusType().canManagerView()) return true;
-                if (!d.isExternalManager() && d.getStatusType().canOwnerView()) return true;
+                if (d.isExternalManager() && d.effectiveStatusType().canManagerView()) return true;
+                if (!d.isExternalManager() && d.effectiveStatusType().canOwnerView()) return true;
             }
         }
         
