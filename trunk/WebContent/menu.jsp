@@ -45,7 +45,7 @@
 	leaf_item('Personal Schedule','Personal Schedule','personalSchedule.do');
 <% } %>
 <% if (user!=null && manager!=null && acadSession!=null) { %>
-	
+<% if (manager.canSeeExams(acadSession,user)) { %>
 	menu_item('1','Course Timetabling','Course Timetabling','','collapse');
 		menu_item('10','Input Data','Course Timetabling Input Data','','collapse');
 			leaf_item('Instructional Offerings','Instructional Offerings','instructionalOfferingShowSearch.do');
@@ -94,7 +94,8 @@
 		enditem(); //12
 <% }} %>
 	enditem(); //1
-<% if (user!=null && manager!=null && acadSession!=null && manager.canSectionStudents(acadSession,user)) { %>
+<% } %>
+<% if (manager.canSectionStudents(acadSession,user)) { %>
 	menu_item('7', 'Student Sectioning','Student Sectioning', '', 'expand');
 		menu_item('71', 'Batch Solver','Student Sectioning Solver','studentSolver.do', 'collapse');
 			leaf_item('Log','Student Sectioning Solver Log','studentSolverLog.do');
