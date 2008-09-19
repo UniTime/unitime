@@ -235,9 +235,9 @@ public class RoomAvailabilityAction extends Action {
         SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mmaa");
         String ts = null;
         String eventType = (form.getExamType()==Exam.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sMidtermExamType);
-        boolean compensateForBreakTimes = "true".equals(ApplicationProperties.getProperty("tmtbl.room.availability.breakTime.compensate","false"));
-        int breakTimeStart = Integer.parseInt(ApplicationProperties.getProperty("tmtbl.room.availability.breakTime.start", "0"));
-        int breakTimeStop = Integer.parseInt(ApplicationProperties.getProperty("tmtbl.room.availability.breakTime.stop", "0"));
+        boolean compensateForBreakTimes = "true".equals(ApplicationProperties.getProperty("tmtbl.room.availability."+Exam.sExamTypes[form.getExamType()].toLowerCase()+".breakTime.compensate","false"));
+        int breakTimeStart = Integer.parseInt(ApplicationProperties.getProperty("tmtbl.room.availability."+Exam.sExamTypes[form.getExamType()].toLowerCase()+".breakTime.start", "0"));
+        int breakTimeStop = Integer.parseInt(ApplicationProperties.getProperty("tmtbl.room.availability."+Exam.sExamTypes[form.getExamType()].toLowerCase()+".breakTime.stop", "0"));
         ExamAssignmentProxy examAssignment = WebSolver.getExamSolver(request.getSession());
         if (examAssignment!=null && examAssignment.getExamType()!=form.getExamType()) examAssignment = null;
         try {
