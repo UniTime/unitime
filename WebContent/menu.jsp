@@ -41,9 +41,6 @@
    TimetableManager manager = (user==null?null:TimetableManager.getManager(user)); 
    Session acadSession = (user==null?null:Session.getCurrentAcadSession(user));
 %>
-<% if (PersonalizedExamReportAction.hasPersonalReport(user)) { %>	
-	leaf_item('Personal Schedule','Personal Schedule','personalSchedule.do');
-<% } %>
 <% if (user!=null && manager!=null && acadSession!=null) { %>
 <% if (manager.canSeeCourses(acadSession,user)) { %>
 	menu_item('1','Course Timetabling','Course Timetabling','','collapse');
@@ -134,6 +131,9 @@
 	enditem(); //2
 	<% } %>
 
+<% if (PersonalizedExamReportAction.hasPersonalReport(user) || Roles.ADMIN_ROLE.equals(user.getRole())) { %>	
+	leaf_item('Personal Schedule','Personal Schedule','personalSchedule.do');
+<% } %>
 <%  if (TimetableManager.canSeeEvents(user)) { %>
 	menu_item('3','Event Management','Events','','expand');
 		leaf_item('Events','Events','eventList.do');
@@ -243,6 +243,9 @@
 	--%>
 	leaf_item('Log Out','Exit Timetabling Appplication','logOut.do');
 <% } else {%>
+<% if (PersonalizedExamReportAction.hasPersonalReport(user)) { %>	
+	leaf_item('Personal Schedule','Personal Schedule','personalSchedule.do');
+<% } %>
 <% if (TimetableManager.canSeeEvents(user)) { %>
 	menu_item('3','Event Management','Events','','expand');
 		leaf_item('Events','Events','eventList.do');

@@ -143,6 +143,18 @@ public class PersonalizedExamReportAction extends Action {
             request.setAttribute("message", "Login is required.");
             return mapping.findForward(back);
         }
+        
+        myForm.setAdmin(user.isAdmin());
+        myForm.setLogout(!"back".equals(back));
+        
+        if (myForm.getAdmin() && myForm.getUid()!=null && myForm.getUid().length()>0) {
+            user = new User();
+            user.setId(myForm.getUid());
+            user.setName(
+                    (myForm.getLname()==null || myForm.getLname().length()==0?"":" "+Constants.toInitialCase(myForm.getLname()))+
+                    (myForm.getFname()==null || myForm.getFname().length()==0?"":" "+myForm.getFname().substring(0,1).toUpperCase())+
+                    (myForm.getMname()==null || myForm.getMname().length()==0?"":" "+myForm.getMname().substring(0,1).toUpperCase()));
+        }
         /*
         if (user.getRole()!=null) {
             sLog.info("User "+user.getName()+" has role "+user.getRole()+", forwarding to main page.");
@@ -213,7 +225,7 @@ public class PersonalizedExamReportAction extends Action {
                 student = s;
         }
         
-        if (instructor==null && student==null) {
+        if (instructor==null && student==null && !myForm.getAdmin()) {
             if ("classes".equals(back))
                 request.setAttribute("message", "No classes found.");
             else if ("exams".equals(back))
@@ -235,7 +247,7 @@ public class PersonalizedExamReportAction extends Action {
         long t0 = System.currentTimeMillis();
         if (instructor!=null) {
             sLog.info("Requesting schedule for "+instructor.getName(DepartmentalInstructor.sNameFormatShort)+" (instructor)");
-        } else {
+        } else if (student!=null) {
             sLog.info("Requesting schedule for "+student.getName(DepartmentalInstructor.sNameFormatShort)+" (student)");
         }
         
@@ -299,9 +311,13 @@ public class PersonalizedExamReportAction extends Action {
                 myForm.setMessage("No classes found in "+(instructor!=null?instructor.getDepartment().getSession():student.getSession()).getLabel()+".");
             else if ("exams".equals(back))
                 myForm.setMessage("No examinations found in "+(instructor!=null?instructor.getDepartment().getSession():student.getSession()).getLabel()+".");
-            else
+            else if (student!=null || instructor!=null)
                 myForm.setMessage("No classes or examinations found in "+(instructor!=null?instructor.getDepartment().getSession():student.getSession()).getLabel()+".");
-            sLog.info("No classes or exams found for "+(instructor!=null?instructor.getName(DepartmentalInstructor.sNameFormatShort):student.getName(DepartmentalInstructor.sNameFormatShort)));
+            else if (user.isAdmin()) 
+                myForm.setMessage("No classes or examinations found in "+Session.getCurrentAcadSession(user).getLabel()+".");
+            else
+                myForm.setMessage("No classes or examinations found for "+user.getName()+".");
+            sLog.info("No classes or exams found for "+(instructor!=null?instructor.getName(DepartmentalInstructor.sNameFormatShort):student!=null?student.getName(DepartmentalInstructor.sNameFormatShort):user.getName()));
         }
         
         boolean useCache = "true".equals(ApplicationProperties.getProperty("tmtbl.exams.reports.conflicts.cache","false"));
@@ -436,7 +452,7 @@ public class PersonalizedExamReportAction extends Action {
                 request.setAttribute("sconf", table.printTable(WebTable.getOrder(request.getSession(),"exams.o5")));
         }
         long t1 = System.currentTimeMillis();
-        sLog.info("Request processed in "+new DecimalFormat("0.00").format(((double)(t1-t0))/1000.0)+" s for "+(instructor!=null?instructor.getName(DepartmentalInstructor.sNameFormatShort):student.getName(DepartmentalInstructor.sNameFormatShort)));
+        sLog.info("Request processed in "+new DecimalFormat("0.00").format(((double)(t1-t0))/1000.0)+" s for "+(instructor!=null?instructor.getName(DepartmentalInstructor.sNameFormatShort):student!=null?student.getName(DepartmentalInstructor.sNameFormatShort):user.getName()));
         return mapping.findForward("show");
     }
     
