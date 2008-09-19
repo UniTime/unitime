@@ -33,6 +33,7 @@ public class ExamAssignmentReportForm extends ExamReportForm {
     private String iReport = null; 
     public static final String sExamAssignmentReport = "Exam Assignment Report";
     public static final String sRoomAssignmentReport = "Room Assignment Report";
+    public static final String sStatistics = "Statistics";
     public static final String sPeriodUsage = "Period Usage";
     public static final String sNrExamsADay = "Number of Exams A Day";
     public static final String sRoomSplits = "Room Splits";
@@ -54,7 +55,7 @@ public class ExamAssignmentReportForm extends ExamReportForm {
     public static final String sIndividualStudentSchedule = "Individual Student Schedule";
     public static final String sIndividualInstructorSchedule = "Individual Instructor Schedule";
     private static final String[] sReports = { 
-            sExamAssignmentReport, sRoomAssignmentReport, 
+            sExamAssignmentReport, sRoomAssignmentReport, sStatistics, 
             sPeriodUsage, sNrExamsADay, sRoomSplits, 
             sViolatedDistributions,
             sDirectStudentConflicts, sMore2ADayStudentConflicts, sBackToBackStudentConflicts, 
