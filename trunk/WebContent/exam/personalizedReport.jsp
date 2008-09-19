@@ -26,11 +26,20 @@
 <html:form action="/personalSchedule">
 	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
 		<TR><TD align='right'>
+			<logic:equal name="personalizedExamReportForm" property="admin" value="true">
+				<html:hidden property="uid" styleId="uid" onchange="submit();"/>
+				<html:hidden property="fname" styleId="fname"/>
+				<html:hidden property="mname" styleId="mname"/>
+				<html:hidden property="lname" styleId="lname"/>
+				<input type='button' value='Lookup' onclick="window.open('user/peopleLookup.jsp?query='+fname.value+' '+lname.value+'&submit=true','peopleLookup','width=800,height=600,resizable=no,scrollbars=yes,toolbar=no,location=no,directories=no,status=no,menubar=no,copyhistory=no').focus();" style="btn">
+			</logic:equal>
 			<logic:equal name="personalizedExamReportForm" property="canExport" value="true">
 				<html:submit accesskey="P" property="op" value="Export PDF" title="Export PDF (Alt+P)"/>
 				<html:submit accesskey="I" property="op" value="iCalendar" title="Export iCalendar (Alt+I)"/>
 			</logic:equal>
-			<html:submit accesskey="L" property="op" value="Log Out" title="Log out (Alt+L)"/>
+			<logic:equal name="personalizedExamReportForm" property="logout" value="true">
+				<html:submit accesskey="L" property="op" value="Log Out" title="Log out (Alt+L)"/>
+			</logic:equal>
 		</TD></TR>
 	</TABLE>
 	<logic:notEmpty scope="request" name="sessions">
@@ -90,11 +99,16 @@
 	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
 		<TR><TD><tt:section-title/></TD></TR>
 		<TR><TD align='right'>
+			<logic:equal name="personalizedExamReportForm" property="admin" value="true">
+				<input type='button' value='Lookup' onclick="window.open('user/peopleLookup.jsp?query='+fname.value+' '+lname.value+'&submit=true','peopleLookup','width=800,height=600,resizable=no,scrollbars=yes,toolbar=no,location=no,directories=no,status=no,menubar=no,copyhistory=no').focus();" style="btn">
+			</logic:equal>
 			<logic:equal name="personalizedExamReportForm" property="canExport" value="true">
 				<html:submit accesskey="P" property="op" value="Export PDF" title="Export PDF (Alt+P)"/>
 				<html:submit accesskey="I" property="op" value="iCalendar" title="Export iCalendar (Alt+I)"/>
 			</logic:equal>
-			<html:submit accesskey="L" property="op" value="Log Out" title="Log out (Alt+L)"/>
+			<logic:equal name="personalizedExamReportForm" property="logout" value="true">
+				<html:submit accesskey="L" property="op" value="Log Out" title="Log out (Alt+L)"/>
+			</logic:equal>
 		</TD></TR>
 	</TABLE>
 </html:form>
