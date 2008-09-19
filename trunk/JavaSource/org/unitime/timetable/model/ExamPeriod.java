@@ -419,8 +419,8 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
     }
     
     public boolean overlap(TimeBlock time) {
-        int breakTimeStart = Integer.parseInt(ApplicationProperties.getProperty("tmtbl.room.availability.breakTime.start", "0"));
-        int breakTimeStop = Integer.parseInt(ApplicationProperties.getProperty("tmtbl.room.availability.breakTime.stop", "0"));
+        int breakTimeStart = Integer.parseInt(ApplicationProperties.getProperty("tmtbl.room.availability."+Exam.sExamTypes[getExamType()].toLowerCase()+".breakTime.start", "0"));
+        int breakTimeStop = Integer.parseInt(ApplicationProperties.getProperty("tmtbl.room.availability."+Exam.sExamTypes[getExamType()].toLowerCase()+".breakTime.stop", "0"));
         Date start = time.getStartTime();
         if (breakTimeStart!=0) {
             Calendar c = Calendar.getInstance(Locale.US); 
