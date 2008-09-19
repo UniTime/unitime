@@ -46,10 +46,7 @@
 			<name>Examination Reports</name>
 			<description>
 				<line>Room Split: display room normal/examination capacities based on examination type.</line>
-				<line>Period Chart (Exams) added: similar to Period Chart report but:
-					<line>the limit is applied to the enrollment size of exam (instead of particular course/class),</line>
-					<line>courses/classes of the same exam are printed next to each other (the size of the exam is printed next to the first class/course).</line>
-				</line>
+				<line>Statistics added: total number of exams, students, student exam enrollments, direct/m2d/back-to-back conflicts etc.</line>
 			</description>
 		</item>
 		<item>
@@ -59,6 +56,10 @@
 				<line>Corrected order of some of the exams in the report.</line>
 				<line>Student Conflict: display student names instead of student external ids</line>
 				<line>Abbreviated Schedule: print a break line every 9 lines</line>
+				<line>Period Chart (Exams) added: similar to Period Chart report but:
+					<line>the limit is applied to the enrollment size of exam (instead of particular course/class),</line>
+					<line>courses/classes of the same exam are printed next to each other (the size of the exam is printed next to the first class/course).</line>
+				</line>
 			</description> 
 		</item>
 		<item>
@@ -66,6 +67,31 @@
 			<description>
 				<line>Allow users with a role to see the page (if they have a schedule).</line>
 				<line>Administrator can see the page and use People Lookup to see a schedule of another people.</line> 
+			</description>
+		</item>
+		<item>
+			<name>Room Availability</name>
+			<description>
+				<line>Break times (before and after) the exam for checking of room availability made problem specific, using the following properties:
+					<line>tmtbl.room.availability.final.breakTime.start -- required break time before an examination starts (final exams)</line>
+					<line>tmtbl.room.availability.final.breakTime.stop -- required break time after an examination stops (final exams)</line>
+					<line>tmtbl.room.availability.midterm.breakTime.start -- required break time before an examination starts (midterm exams)</line>
+					<line>tmtbl.room.availability.midterm.breakTime.stop -- required break time after an examination stops (midterm exams)</line>
+				</line>
+				<line>When tmtbl.room.availability.final.breakTime.compensate (final exams) or tmtbl.room.availability.midterm.breakTime.compensate 
+					(midterm exams) is true (default is false) the above break times are compensated when comparing exams with examination 
+					events on examination room availability page
+					<line>Needed when the event management systems returns examination meetings that include break times.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Enrollment Import (Data Exchange)</name>
+			<description>
+				<line>When application property tmtbl.data.import.studentEnrl.finalExam.updateConflicts is true, update student conflicts
+					for final exams after the import is finished (default is false).</line> 
+				<line>When application property tmtbl.data.import.studentEnrl.midtermExam.updateConflicts is true, update student conflicts
+					for midterm exams after the import is finished (default is false).</line> 
 			</description>
 		</item>
 	</category>
