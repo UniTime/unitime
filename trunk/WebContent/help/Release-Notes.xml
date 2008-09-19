@@ -46,6 +46,10 @@
 			<name>Examination Reports</name>
 			<description>
 				<line>Room Split: display room normal/examination capacities based on examination type.</line>
+				<line>Period Chart (Exams) added: similar to Period Chart report but:
+					<line>the limit is applied to the enrollment size of exam (instead of particular course/class),</line>
+					<line>courses/classes of the same exam are printed next to each other (the size of the exam is printed next to the first class/course).</line>
+				</line>
 			</description>
 		</item>
 		<item>
@@ -61,6 +65,7 @@
 			<name>Personalized Schedule</name>
 			<description>
 				<line>Allow users with a role to see the page (if they have a schedule).</line>
+				<line>Administrator can see the page and use People Lookup to see a schedule of another people.</line> 
 			</description>
 		</item>
 	</category>
