@@ -31,6 +31,7 @@ import org.apache.log4j.PropertyConfigurator;
 import org.hibernate.Transaction;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.dataexchange.DataExchangeHelper;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamConflict;
@@ -48,6 +49,7 @@ import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.MoreThanTwoADayCo
 
 public class UpdateExamConflicts {
     private static Log sLog = LogFactory.getLog(UpdateExamConflicts.class);
+    private static boolean sDebug = false;
     
     private static int sCreate = 0;
     private static int sUpdate = 1;
@@ -57,6 +59,27 @@ public class UpdateExamConflicts {
     private int[][][] iCnt;
     private int[][] iTotal;
     
+    private DataExchangeHelper iHelper = null;
+    
+    public UpdateExamConflicts() {}
+    
+    public UpdateExamConflicts(DataExchangeHelper helper) { iHelper = helper; }
+    
+    private void debug(String message) {
+        if (!sDebug) return;
+        if (iHelper==null) 
+            sLog.debug(message);
+        else
+            iHelper.debug(message);
+    }
+    
+    private void info(String message) {
+        if (iHelper==null) 
+            sLog.info(message);
+        else
+            iHelper.info(message);
+    }
+
     public void updateConflicts(ExamAssignmentInfo assignment, org.hibernate.Session hibSession) throws Exception {
         Transaction tx = null;
         try {
@@ -87,7 +110,7 @@ public class UpdateExamConflicts {
                 if (exam.getUniqueId().compareTo(dc.getOtherExam().getExamId())<0) 
                     iTotal[sStudents][ExamConflict.sConflictTypeDirect]+=students.size();
                 if (conf==null) {
-                    sLog.debug("    new direct "+assignment.getExamName()+" "+dc.getOtherExam().getExamName()+" ("+students.size()+" students)");
+                    debug("    new direct "+assignment.getExamName()+" "+dc.getOtherExam().getExamName()+" ("+students.size()+" students)");
                     conf = new ExamConflict();
                     conf.setConflictType(ExamConflict.sConflictTypeDirect);
                     conf.setStudents(students);
@@ -103,9 +126,9 @@ public class UpdateExamConflicts {
                     iCnt[sStudents][conf.getConflictType()][sCreate]+=conf.getNrStudents();
                 } else {
                     conflicts.remove(conf);
-                    boolean change = (students.size()!=conf.getStudents().size() && !students.containsAll(conf.getStudents()));
+                    boolean change = (students.size()!=conf.getStudents().size() || !students.containsAll(conf.getStudents()));
                     if (change) {
-                        sLog.debug("    update direct "+assignment.getExamName()+" "+dc.getOtherExam().getExamName()+" ("+conf.getNrStudents()+"->"+students.size()+" students)");
+                        debug("    update direct "+assignment.getExamName()+" "+dc.getOtherExam().getExamName()+" ("+conf.getNrStudents()+"->"+students.size()+" students)");
                         conf.setStudents(students);
                         conf.setNrStudents(students.size());
                         hibSession.update(conf);
@@ -131,7 +154,7 @@ public class UpdateExamConflicts {
                 if (exam.getUniqueId().compareTo(dc.getOtherExam().getExamId())<0) 
                     iTotal[sInstructors][ExamConflict.sConflictTypeDirect]+=instructors.size();
                 if (conf==null) {
-                    sLog.debug("    new direct "+assignment.getExamName()+" "+dc.getOtherExam().getExamName()+" ("+instructors.size()+" instructors)");
+                    debug("    new direct "+assignment.getExamName()+" "+dc.getOtherExam().getExamName()+" ("+instructors.size()+" instructors)");
                     conf = new ExamConflict();
                     conf.setConflictType(ExamConflict.sConflictTypeDirect);
                     conf.setInstructors(instructors);
@@ -147,9 +170,9 @@ public class UpdateExamConflicts {
                     iCnt[sInstructors][conf.getConflictType()][sCreate]+=conf.getNrInstructors();
                 } else {
                     conflicts.remove(conf);
-                    boolean change = (instructors.size()!=conf.getStudents().size() && !instructors.containsAll(conf.getInstructors()));
+                    boolean change = (instructors.size()!=conf.getInstructors().size() || !instructors.containsAll(conf.getInstructors()));
                     if (change) {
-                        sLog.debug("    update direct "+assignment.getExamName()+" "+dc.getOtherExam().getExamName()+" ("+conf.getNrInstructors()+"->"+instructors.size()+" instructors)");
+                        debug("    update direct "+assignment.getExamName()+" "+dc.getOtherExam().getExamName()+" ("+conf.getNrInstructors()+"->"+instructors.size()+" instructors)");
                         conf.setInstructors(instructors);
                         conf.setNrInstructors(instructors.size());
                         hibSession.update(conf);
@@ -177,7 +200,7 @@ public class UpdateExamConflicts {
                 if (exam.getUniqueId().compareTo(btb.getOtherExam().getExamId())<0) 
                     iTotal[sStudents][type]+=students.size();
                 if (conf==null) {
-                    sLog.debug("    new btb "+assignment.getExamName()+" "+btb.getOtherExam().getExamName()+" ("+students.size()+" students)");
+                    debug("    new btb "+assignment.getExamName()+" "+btb.getOtherExam().getExamName()+" ("+students.size()+" students)");
                     conf = new ExamConflict();
                     conf.setConflictType(type);
                     conf.setStudents(students);
@@ -194,20 +217,20 @@ public class UpdateExamConflicts {
                     iCnt[sStudents][conf.getConflictType()][sCreate]+=conf.getNrStudents();
                 } else {
                     conflicts.remove(conf);
-                    boolean change = (students.size()!=conf.getStudents().size() && !students.containsAll(conf.getStudents()));
+                    boolean change = (students.size()!=conf.getStudents().size() || !students.containsAll(conf.getStudents()));
                     if (change) {
-                        sLog.debug("    update btb "+assignment.getExamName()+" "+btb.getOtherExam().getExamName()+" ("+conf.getNrStudents()+"->"+students.size()+" students)");
+                        debug("    update btb "+assignment.getExamName()+" "+btb.getOtherExam().getExamName()+" ("+conf.getNrStudents()+"->"+students.size()+" students)");
                         conf.setStudents(students);
                         conf.setNrStudents(students.size());
                         conf.setDistance(btb.getDistance());
                         hibSession.update(conf);
                         iCnt[sStudents][conf.getConflictType()][sUpdate]+=conf.getNrStudents();
                     } else if (conf.getDistance()==null || Math.abs(conf.getDistance()-btb.getDistance())>1.0) {
-                        sLog.debug("    update btb "+assignment.getExamName()+" "+btb.getOtherExam().getExamName()+" (distance "+conf.getDistance()+" -> "+btb.getDistance()+")");
+                        debug("    update btb "+assignment.getExamName()+" "+btb.getOtherExam().getExamName()+" (distance "+conf.getDistance()+" -> "+btb.getDistance()+")");
                         conf.setDistance(btb.getDistance());
                         hibSession.update(conf);
                         iCnt[sStudents][conf.getConflictType()][sUpdate]+=conf.getNrStudents();
-                    }
+                    } 
                 }
             }
             for (BackToBackConflict btb : assignment.getInstructorBackToBackConflicts()) {
@@ -226,9 +249,10 @@ public class UpdateExamConflicts {
                     conf = c; break;
                 }
                 HashSet<DepartmentalInstructor> instructors = getInstructors(hibSession, btb.getStudents());
-                iTotal[sInstructors][type]+=instructors.size();
+                if (exam.getUniqueId().compareTo(btb.getOtherExam().getExamId())<0)
+                    iTotal[sInstructors][type]+=instructors.size();
                 if (conf==null) {
-                    sLog.debug("    new btb "+assignment.getExamName()+" "+btb.getOtherExam().getExamName()+" ("+instructors.size()+" instructors)");
+                    debug("    new btb "+assignment.getExamName()+" "+btb.getOtherExam().getExamName()+" ("+instructors.size()+" instructors)");
                     conf = new ExamConflict();
                     conf.setConflictType(type);
                     conf.setInstructors(instructors);
@@ -245,16 +269,16 @@ public class UpdateExamConflicts {
                     iCnt[sInstructors][conf.getConflictType()][sCreate]+=conf.getNrInstructors();
                 } else {
                     conflicts.remove(conf);
-                    boolean change = (instructors.size()!=conf.getStudents().size() && !instructors.containsAll(conf.getInstructors()));
+                    boolean change = (instructors.size()!=conf.getStudents().size() || !instructors.containsAll(conf.getInstructors()));
                     if (change) {
-                        sLog.debug("    update btb "+assignment.getExamName()+" "+btb.getOtherExam().getExamName()+" ("+conf.getNrInstructors()+"->"+instructors.size()+" instructors)");
+                        debug("    update btb "+assignment.getExamName()+" "+btb.getOtherExam().getExamName()+" ("+conf.getNrInstructors()+"->"+instructors.size()+" instructors)");
                         conf.setInstructors(instructors);
                         conf.setNrInstructors(instructors.size());
                         conf.setDistance(btb.getDistance());
                         hibSession.update(conf);
                         iCnt[sInstructors][conf.getConflictType()][sUpdate]+=conf.getNrInstructors();
                     } else if (conf.getDistance()==null || Math.abs(conf.getDistance()-btb.getDistance())>1.0) {
-                        sLog.debug("    update btb "+assignment.getExamName()+" "+btb.getOtherExam().getExamName()+" (distance "+conf.getDistance()+" -> "+btb.getDistance()+")");
+                        debug("    update btb "+assignment.getExamName()+" "+btb.getOtherExam().getExamName()+" (distance "+conf.getDistance()+" -> "+btb.getDistance()+")");
                         conf.setDistance(btb.getDistance());
                         hibSession.update(conf);
                         iCnt[sInstructors][conf.getConflictType()][sUpdate]+=conf.getNrInstructors();
@@ -289,7 +313,7 @@ public class UpdateExamConflicts {
                 String name = assignment.getExamName();
                 for (ExamAssignment x:m2d.getOtherExams()) { name += " "+x.getExamName(); }
                 if (conf==null) {
-                    sLog.debug("    new m2d "+name+" ("+students.size()+" students)");
+                    debug("    new m2d "+name+" ("+students.size()+" students)");
                     conf = new ExamConflict();
                     conf.setConflictType(ExamConflict.sConflictTypeMoreThanTwoADay);
                     conf.setStudents(students);
@@ -307,9 +331,9 @@ public class UpdateExamConflicts {
                     iCnt[sStudents][conf.getConflictType()][sCreate]+=conf.getNrStudents();
                 } else {
                     conflicts.remove(conf);
-                    boolean change = (students.size()!=conf.getStudents().size() && !students.containsAll(conf.getStudents()));
+                    boolean change = (students.size()!=conf.getStudents().size() || !students.containsAll(conf.getStudents()));
                     if (change) {
-                        sLog.debug("    update m2d "+name+" ("+conf.getNrStudents()+"->"+students.size()+" students)");
+                        debug("    update m2d "+name+" ("+conf.getNrStudents()+"->"+students.size()+" students)");
                         conf.setStudents(students);
                         conf.setNrStudents(students.size());
                         hibSession.update(conf);
@@ -344,7 +368,7 @@ public class UpdateExamConflicts {
                 String name = assignment.getExamName();
                 for (ExamAssignment x:m2d.getOtherExams()) { name += " "+x.getExamName(); }
                 if (conf==null) {
-                    sLog.debug("    new btb "+name+" ("+instructors.size()+" instructors)");
+                    debug("    new btb "+name+" ("+instructors.size()+" instructors)");
                     conf = new ExamConflict();
                     conf.setConflictType(ExamConflict.sConflictTypeMoreThanTwoADay);
                     conf.setInstructors(instructors);
@@ -362,9 +386,9 @@ public class UpdateExamConflicts {
                     iCnt[sInstructors][conf.getConflictType()][sCreate]+=conf.getNrInstructors();
                 } else {
                     conflicts.remove(conf);
-                    boolean change = (instructors.size()!=conf.getStudents().size() && !instructors.containsAll(conf.getInstructors()));
+                    boolean change = (instructors.size()!=conf.getStudents().size() || !instructors.containsAll(conf.getInstructors()));
                     if (change) {
-                        sLog.debug("    update btb "+name+" ("+conf.getNrInstructors()+"->"+instructors.size()+" instructors)");
+                        debug("    update btb "+name+" ("+conf.getNrInstructors()+"->"+instructors.size()+" instructors)");
                         conf.setInstructors(instructors);
                         conf.setNrInstructors(instructors.size());
                         hibSession.update(conf);
@@ -389,7 +413,7 @@ public class UpdateExamConflicts {
                     other.getConflicts().remove(conf);
                     if (!other.equals(exam)) otherExams.add(other);
                 }
-                sLog.debug("  delete "+name+" ("+(conf.getNrStudents()!=null && conf.getNrStudents()>0?conf.getNrStudents()+" students":"")+(conf.getNrInstructors()!=null && conf.getNrInstructors()>0?conf.getNrInstructors()+" instructors":"")+")");
+                debug("  delete "+name+" ("+(conf.getNrStudents()!=null && conf.getNrStudents()>0?conf.getNrStudents()+" students":"")+(conf.getNrInstructors()!=null && conf.getNrInstructors()>0?conf.getNrInstructors()+" instructors":"")+")");
                 hibSession.delete(conf);
             }
             
@@ -412,6 +436,7 @@ public class UpdateExamConflicts {
             Long studentId = (Long)i.next();
             Student student = new StudentDAO().get(studentId, hibSession);
             if (student!=null) students.add(student);
+            else sLog.warn("Student "+studentId+" not found.");
         }
         return students;
     }
@@ -423,8 +448,30 @@ public class UpdateExamConflicts {
             Long instructorId = (Long)i.next();
             DepartmentalInstructor instructor = new DepartmentalInstructorDAO().get(instructorId, hibSession);
             if (instructor!=null) instructors.add(instructor);
+            else sLog.warn("Instructor "+instructorId+" not found.");
         }
         return instructors;
+    }
+    
+    public void simpleCheck(ExamAssignmentInfo e1, ExamAssignmentInfo e2) {
+        if (e1.getNrDirectConflicts()!=e2.getNrDirectConflicts()) {
+            sLog.warn("Wrong number of direct student conflicts for "+e1.getExamName()+" ("+e1.getNrDirectConflicts()+"!="+e2.getNrDirectConflicts()+")");
+        }
+        if (e1.getNrBackToBackConflicts()!=e2.getNrBackToBackConflicts()) {
+            sLog.warn("Wrong number of back-to-back student conflicts for "+e1.getExamName()+" ("+e1.getNrBackToBackConflicts()+"!="+e2.getNrBackToBackConflicts()+")");
+        }
+        if (e1.getNrMoreThanTwoConflicts()!=e2.getNrMoreThanTwoConflicts()) {
+            sLog.warn("Wrong number of >2 exams a day student conflicts for "+e1.getExamName()+" ("+e1.getNrMoreThanTwoConflicts()+"!="+e2.getNrMoreThanTwoConflicts()+")");
+        }
+        if (e1.getNrInstructorDirectConflicts()!=e2.getNrInstructorDirectConflicts()) {
+            sLog.warn("Wrong number of direct instructor conflicts for "+e1.getExamName()+" ("+e1.getNrInstructorDirectConflicts()+"!="+e2.getNrInstructorDirectConflicts()+")");
+        }
+        if (e1.getNrInstructorBackToBackConflicts()!=e2.getNrInstructorBackToBackConflicts()) {
+            sLog.warn("Wrong number of back-to-back instructor conflicts for "+e1.getExamName()+" ("+e1.getNrInstructorBackToBackConflicts()+"!="+e2.getNrInstructorBackToBackConflicts()+")");
+        }
+        if (e1.getNrInstructorMoreThanTwoConflicts()!=e2.getNrInstructorMoreThanTwoConflicts()) {
+            sLog.warn("Wrong number of >2 exams a day instructor conflicts for "+e1.getExamName()+" ("+e1.getNrInstructorMoreThanTwoConflicts()+"!="+e2.getNrInstructorMoreThanTwoConflicts()+")");
+        }
     }
     
     public void update(Long sessionId, Integer examType, org.hibernate.Session hibSession) throws Exception {
@@ -432,71 +479,67 @@ public class UpdateExamConflicts {
         iTotal = new int[][] {{0,0,0,0},{0,0,0,0}};
         TreeSet<ExamAssignmentInfo> exams = PdfLegacyExamReport.loadExams(sessionId, examType, true, false, false);
         for (ExamAssignmentInfo exam : exams) {
-            sLog.info("Checking "+exam.getExamName()+" ...");
-            try {
-                updateConflicts(exam, hibSession);
-            } catch (Exception e) {
-                sLog.error("Update of "+exam.getExamName()+" failed, reason: "+e.getMessage(),e);
-                throw e;
-            }
+            debug("Checking "+exam.getExamName()+" ...");
+            updateConflicts(exam, hibSession);
+            //simpleCheck(exam, new ExamAssignmentInfo(exam.getExam(),true));
         }
         
         if (iTotal[sStudents][ExamConflict.sConflictTypeDirect]>0) {
-            sLog.info("Direct student conflicts: "+iTotal[sStudents][ExamConflict.sConflictTypeDirect]);
-            sLog.info("    created: "+iCnt[sStudents][ExamConflict.sConflictTypeDirect][sCreate]);
-            sLog.info("    updated: "+iCnt[sStudents][ExamConflict.sConflictTypeDirect][sUpdate]);
-            sLog.info("    deleted: "+iCnt[sStudents][ExamConflict.sConflictTypeDirect][sDelete]);
-            sLog.info("  unchanged: "+(iTotal[sStudents][ExamConflict.sConflictTypeDirect]-iCnt[sStudents][ExamConflict.sConflictTypeDirect][sCreate]-iCnt[sStudents][ExamConflict.sConflictTypeDirect][sUpdate]-iCnt[sStudents][ExamConflict.sConflictTypeDirect][sDelete]));
+            info("Direct student conflicts: "+iTotal[sStudents][ExamConflict.sConflictTypeDirect]);
+            info("    created: "+iCnt[sStudents][ExamConflict.sConflictTypeDirect][sCreate]);
+            info("    updated: "+iCnt[sStudents][ExamConflict.sConflictTypeDirect][sUpdate]);
+            info("    deleted: "+iCnt[sStudents][ExamConflict.sConflictTypeDirect][sDelete]);
+            info("  unchanged: "+(iTotal[sStudents][ExamConflict.sConflictTypeDirect]-iCnt[sStudents][ExamConflict.sConflictTypeDirect][sCreate]-iCnt[sStudents][ExamConflict.sConflictTypeDirect][sUpdate]-iCnt[sStudents][ExamConflict.sConflictTypeDirect][sDelete]));
         }
         if (iTotal[sStudents][ExamConflict.sConflictTypeMoreThanTwoADay]>0) {
-            sLog.info(">2 exams a day student conflicts: "+iTotal[sStudents][ExamConflict.sConflictTypeMoreThanTwoADay]);
-            sLog.info("    created: "+iCnt[sStudents][ExamConflict.sConflictTypeMoreThanTwoADay][sCreate]);
-            sLog.info("    updated: "+iCnt[sStudents][ExamConflict.sConflictTypeMoreThanTwoADay][sUpdate]);
-            sLog.info("    deleted: "+iCnt[sStudents][ExamConflict.sConflictTypeMoreThanTwoADay][sDelete]);
-            sLog.info("  unchanged: "+(iTotal[sStudents][ExamConflict.sConflictTypeMoreThanTwoADay]-iCnt[sStudents][ExamConflict.sConflictTypeMoreThanTwoADay][sCreate]-iCnt[sStudents][ExamConflict.sConflictTypeMoreThanTwoADay][sUpdate]-iCnt[sStudents][ExamConflict.sConflictTypeMoreThanTwoADay][sDelete]));
+            info(">2 exams a day student conflicts: "+iTotal[sStudents][ExamConflict.sConflictTypeMoreThanTwoADay]);
+            info("    created: "+iCnt[sStudents][ExamConflict.sConflictTypeMoreThanTwoADay][sCreate]);
+            info("    updated: "+iCnt[sStudents][ExamConflict.sConflictTypeMoreThanTwoADay][sUpdate]);
+            info("    deleted: "+iCnt[sStudents][ExamConflict.sConflictTypeMoreThanTwoADay][sDelete]);
+            info("  unchanged: "+(iTotal[sStudents][ExamConflict.sConflictTypeMoreThanTwoADay]-iCnt[sStudents][ExamConflict.sConflictTypeMoreThanTwoADay][sCreate]-iCnt[sStudents][ExamConflict.sConflictTypeMoreThanTwoADay][sUpdate]-iCnt[sStudents][ExamConflict.sConflictTypeMoreThanTwoADay][sDelete]));
         }
         if (iTotal[sStudents][ExamConflict.sConflictTypeBackToBack]>0) {
-            sLog.info("Back-to-back student conflicts: "+iTotal[sStudents][ExamConflict.sConflictTypeBackToBack]);
-            sLog.info("    created: "+iCnt[sStudents][ExamConflict.sConflictTypeBackToBack][sCreate]);
-            sLog.info("    updated: "+iCnt[sStudents][ExamConflict.sConflictTypeBackToBack][sUpdate]);
-            sLog.info("    deleted: "+iCnt[sStudents][ExamConflict.sConflictTypeBackToBack][sDelete]);
-            sLog.info("  unchanged: "+(iTotal[sStudents][ExamConflict.sConflictTypeBackToBack]-iCnt[sStudents][ExamConflict.sConflictTypeBackToBack][sCreate]-iCnt[sStudents][ExamConflict.sConflictTypeBackToBack][sUpdate]-iCnt[sStudents][ExamConflict.sConflictTypeBackToBack][sDelete]));
+            info("Back-to-back student conflicts: "+iTotal[sStudents][ExamConflict.sConflictTypeBackToBack]);
+            info("    created: "+iCnt[sStudents][ExamConflict.sConflictTypeBackToBack][sCreate]);
+            info("    updated: "+iCnt[sStudents][ExamConflict.sConflictTypeBackToBack][sUpdate]);
+            info("    deleted: "+iCnt[sStudents][ExamConflict.sConflictTypeBackToBack][sDelete]);
+            info("  unchanged: "+(iTotal[sStudents][ExamConflict.sConflictTypeBackToBack]-iCnt[sStudents][ExamConflict.sConflictTypeBackToBack][sCreate]-iCnt[sStudents][ExamConflict.sConflictTypeBackToBack][sUpdate]-iCnt[sStudents][ExamConflict.sConflictTypeBackToBack][sDelete]));
         }
         if (iTotal[sStudents][ExamConflict.sConflictTypeBackToBackDist]>0) {
-            sLog.info("Distance back-to-back student conflicts: "+iTotal[sStudents][ExamConflict.sConflictTypeBackToBackDist]);
-            sLog.info("    created: "+iCnt[sStudents][ExamConflict.sConflictTypeBackToBackDist][sCreate]);
-            sLog.info("    updated: "+iCnt[sStudents][ExamConflict.sConflictTypeBackToBackDist][sUpdate]);
-            sLog.info("    deleted: "+iCnt[sStudents][ExamConflict.sConflictTypeBackToBackDist][sDelete]);
-            sLog.info("  unchanged: "+(iTotal[sStudents][ExamConflict.sConflictTypeBackToBackDist]-iCnt[sStudents][ExamConflict.sConflictTypeBackToBackDist][sCreate]-iCnt[sStudents][ExamConflict.sConflictTypeBackToBackDist][sUpdate]-iCnt[sStudents][ExamConflict.sConflictTypeBackToBackDist][sDelete]));
+            info("Distance back-to-back student conflicts: "+iTotal[sStudents][ExamConflict.sConflictTypeBackToBackDist]);
+            info("    created: "+iCnt[sStudents][ExamConflict.sConflictTypeBackToBackDist][sCreate]);
+            info("    updated: "+iCnt[sStudents][ExamConflict.sConflictTypeBackToBackDist][sUpdate]);
+            info("    deleted: "+iCnt[sStudents][ExamConflict.sConflictTypeBackToBackDist][sDelete]);
+            info("  unchanged: "+(iTotal[sStudents][ExamConflict.sConflictTypeBackToBackDist]-iCnt[sStudents][ExamConflict.sConflictTypeBackToBackDist][sCreate]-iCnt[sStudents][ExamConflict.sConflictTypeBackToBackDist][sUpdate]-iCnt[sStudents][ExamConflict.sConflictTypeBackToBackDist][sDelete]));
         }
         
         if (iTotal[sInstructors][ExamConflict.sConflictTypeDirect]>0) {
-            sLog.info("Direct instructor conflicts: "+iTotal[sInstructors][ExamConflict.sConflictTypeDirect]);
-            sLog.info("    created: "+iCnt[sInstructors][ExamConflict.sConflictTypeDirect][sCreate]);
-            sLog.info("    updated: "+iCnt[sInstructors][ExamConflict.sConflictTypeDirect][sUpdate]);
-            sLog.info("    deleted: "+iCnt[sInstructors][ExamConflict.sConflictTypeDirect][sDelete]);
-            sLog.info("  unchanged: "+(iTotal[sInstructors][ExamConflict.sConflictTypeDirect]-iCnt[sInstructors][ExamConflict.sConflictTypeDirect][sCreate]-iCnt[sInstructors][ExamConflict.sConflictTypeDirect][sUpdate]-iCnt[sInstructors][ExamConflict.sConflictTypeDirect][sDelete]));
+            info("Direct instructor conflicts: "+iTotal[sInstructors][ExamConflict.sConflictTypeDirect]);
+            info("    created: "+iCnt[sInstructors][ExamConflict.sConflictTypeDirect][sCreate]);
+            info("    updated: "+iCnt[sInstructors][ExamConflict.sConflictTypeDirect][sUpdate]);
+            info("    deleted: "+iCnt[sInstructors][ExamConflict.sConflictTypeDirect][sDelete]);
+            info("  unchanged: "+(iTotal[sInstructors][ExamConflict.sConflictTypeDirect]-iCnt[sInstructors][ExamConflict.sConflictTypeDirect][sCreate]-iCnt[sInstructors][ExamConflict.sConflictTypeDirect][sUpdate]-iCnt[sInstructors][ExamConflict.sConflictTypeDirect][sDelete]));
         }
         if (iTotal[sInstructors][ExamConflict.sConflictTypeMoreThanTwoADay]>0) {
-            sLog.info(">2 exams a day instructor conflicts: "+iTotal[sInstructors][ExamConflict.sConflictTypeMoreThanTwoADay]);
-            sLog.info("    created: "+iCnt[sInstructors][ExamConflict.sConflictTypeMoreThanTwoADay][sCreate]);
-            sLog.info("    updated: "+iCnt[sInstructors][ExamConflict.sConflictTypeMoreThanTwoADay][sUpdate]);
-            sLog.info("    deleted: "+iCnt[sInstructors][ExamConflict.sConflictTypeMoreThanTwoADay][sDelete]);
-            sLog.info("  unchanged: "+(iTotal[sInstructors][ExamConflict.sConflictTypeMoreThanTwoADay]-iCnt[sInstructors][ExamConflict.sConflictTypeMoreThanTwoADay][sCreate]-iCnt[sInstructors][ExamConflict.sConflictTypeMoreThanTwoADay][sUpdate]-iCnt[sInstructors][ExamConflict.sConflictTypeMoreThanTwoADay][sDelete]));
+            info(">2 exams a day instructor conflicts: "+iTotal[sInstructors][ExamConflict.sConflictTypeMoreThanTwoADay]);
+            info("    created: "+iCnt[sInstructors][ExamConflict.sConflictTypeMoreThanTwoADay][sCreate]);
+            info("    updated: "+iCnt[sInstructors][ExamConflict.sConflictTypeMoreThanTwoADay][sUpdate]);
+            info("    deleted: "+iCnt[sInstructors][ExamConflict.sConflictTypeMoreThanTwoADay][sDelete]);
+            info("  unchanged: "+(iTotal[sInstructors][ExamConflict.sConflictTypeMoreThanTwoADay]-iCnt[sInstructors][ExamConflict.sConflictTypeMoreThanTwoADay][sCreate]-iCnt[sInstructors][ExamConflict.sConflictTypeMoreThanTwoADay][sUpdate]-iCnt[sInstructors][ExamConflict.sConflictTypeMoreThanTwoADay][sDelete]));
         }
         if (iTotal[sInstructors][ExamConflict.sConflictTypeBackToBack]>0) {
-            sLog.info("Back-to-back instructor conflicts: "+iTotal[sInstructors][ExamConflict.sConflictTypeBackToBack]);
-            sLog.info("    created: "+iCnt[sInstructors][ExamConflict.sConflictTypeBackToBack][sCreate]);
-            sLog.info("    updated: "+iCnt[sInstructors][ExamConflict.sConflictTypeBackToBack][sUpdate]);
-            sLog.info("    deleted: "+iCnt[sInstructors][ExamConflict.sConflictTypeBackToBack][sDelete]);
-            sLog.info("  unchanged: "+(iTotal[sInstructors][ExamConflict.sConflictTypeBackToBack]-iCnt[sInstructors][ExamConflict.sConflictTypeBackToBack][sCreate]-iCnt[sInstructors][ExamConflict.sConflictTypeBackToBack][sUpdate]-iCnt[sInstructors][ExamConflict.sConflictTypeBackToBack][sDelete]));
+            info("Back-to-back instructor conflicts: "+iTotal[sInstructors][ExamConflict.sConflictTypeBackToBack]);
+            info("    created: "+iCnt[sInstructors][ExamConflict.sConflictTypeBackToBack][sCreate]);
+            info("    updated: "+iCnt[sInstructors][ExamConflict.sConflictTypeBackToBack][sUpdate]);
+            info("    deleted: "+iCnt[sInstructors][ExamConflict.sConflictTypeBackToBack][sDelete]);
+            info("  unchanged: "+(iTotal[sInstructors][ExamConflict.sConflictTypeBackToBack]-iCnt[sInstructors][ExamConflict.sConflictTypeBackToBack][sCreate]-iCnt[sInstructors][ExamConflict.sConflictTypeBackToBack][sUpdate]-iCnt[sInstructors][ExamConflict.sConflictTypeBackToBack][sDelete]));
         }
         if (iTotal[sInstructors][ExamConflict.sConflictTypeBackToBackDist]>0) {
-            sLog.info("Distance back-to-back instructor conflicts: "+iTotal[sInstructors][ExamConflict.sConflictTypeBackToBackDist]);
-            sLog.info("    created: "+iCnt[sInstructors][ExamConflict.sConflictTypeBackToBackDist][sCreate]);
-            sLog.info("    updated: "+iCnt[sInstructors][ExamConflict.sConflictTypeBackToBackDist][sUpdate]);
-            sLog.info("    deleted: "+iCnt[sInstructors][ExamConflict.sConflictTypeBackToBackDist][sDelete]);
-            sLog.info("  unchanged: "+(iTotal[sInstructors][ExamConflict.sConflictTypeBackToBackDist]-iCnt[sInstructors][ExamConflict.sConflictTypeBackToBackDist][sCreate]-iCnt[sInstructors][ExamConflict.sConflictTypeBackToBackDist][sUpdate]-iCnt[sInstructors][ExamConflict.sConflictTypeBackToBackDist][sDelete]));
+            info("Distance back-to-back instructor conflicts: "+iTotal[sInstructors][ExamConflict.sConflictTypeBackToBackDist]);
+            info("    created: "+iCnt[sInstructors][ExamConflict.sConflictTypeBackToBackDist][sCreate]);
+            info("    updated: "+iCnt[sInstructors][ExamConflict.sConflictTypeBackToBackDist][sUpdate]);
+            info("    deleted: "+iCnt[sInstructors][ExamConflict.sConflictTypeBackToBackDist][sDelete]);
+            info("  unchanged: "+(iTotal[sInstructors][ExamConflict.sConflictTypeBackToBackDist]-iCnt[sInstructors][ExamConflict.sConflictTypeBackToBackDist][sCreate]-iCnt[sInstructors][ExamConflict.sConflictTypeBackToBackDist][sUpdate]-iCnt[sInstructors][ExamConflict.sConflictTypeBackToBackDist][sDelete]));
         }
     }
     

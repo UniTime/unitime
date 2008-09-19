@@ -8,10 +8,12 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.test.UpdateExamConflicts;
 
 public class StudentEnrollmentImport extends BaseImport {
 	TimetableManager manager = null;
@@ -34,13 +36,15 @@ public class StudentEnrollmentImport extends BaseImport {
         if (!rootElement.getName().equalsIgnoreCase(rootElementName)) {
         	throw new Exception("Given XML file is not a Student Enrollments load file.");
         }
+        
+        Session session = null;
 		try {
 	        String campus = rootElement.attributeValue("campus");
 	        String year   = rootElement.attributeValue("year");
 	        String term   = rootElement.attributeValue("term");
 	        String created = rootElement.attributeValue("created");
 			beginTransaction();
-	        Session session = Session.getSessionUsingInitiativeYearTerm(campus, year, term);
+	        session = Session.getSessionUsingInitiativeYearTerm(campus, year, term);
 	        if(session == null) {
 	           	throw new Exception("No session found for the given campus, year, and term.");
 	        }
@@ -99,6 +103,26 @@ public class StudentEnrollmentImport extends BaseImport {
 			rollbackTransaction();
 			throw e;
 		}
+        if (session!=null && "true".equals(ApplicationProperties.getProperty("tmtbl.data.import.studentEnrl.finalExam.updateConflicts","false"))) {
+            try {
+                beginTransaction();
+                new UpdateExamConflicts(this).update(session.getUniqueId(), Exam.sExamTypeFinal, getHibSession());
+                commitTransaction();
+            } catch (Exception e) {
+                fatal("Exception: " + e.getMessage(), e);
+                rollbackTransaction();
+            }
+        }
+        if (session!=null && "true".equals(ApplicationProperties.getProperty("tmtbl.data.import.studentEnrl.midtermExam.updateConflicts","false"))) {
+            try {
+                beginTransaction();
+                new UpdateExamConflicts(this).update(session.getUniqueId(), Exam.sExamTypeMidterm, getHibSession());
+                commitTransaction();
+            } catch (Exception e) {
+                fatal("Exception: " + e.getMessage(), e);
+                rollbackTransaction();
+            }
+        }
 	}
 	
 	private void elementClass(Element studentElement, Student student) throws Exception{
