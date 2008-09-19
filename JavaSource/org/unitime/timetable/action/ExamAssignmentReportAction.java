@@ -434,6 +434,8 @@ public class ExamAssignmentReportAction extends Action {
             return generateIndividualAssignmentReport(html, sessionId, form, exams, true, Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT));
         } else if (ExamAssignmentReportForm.sIndividualInstructorSchedule.equals(form.getReport())) {
             return generateIndividualAssignmentReport(html, sessionId, form, exams, false, Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT));
+        } else if (ExamAssignmentReportForm.sStatistics.equals(form.getReport())) {
+            return generateStatisticsReport(html, sessionId, form, exams);
         } else  return null;
     }
 	
@@ -692,20 +694,22 @@ public class ExamAssignmentReportAction extends Action {
 	
 	private PdfWebTable generatePeriodUsageReport(boolean html, ExamAssignmentReportForm form, Collection<ExamAssignmentInfo> exams, Long sessionId) {
 	    String nl = (html?"<br>":"\n");
-	    PdfWebTable table = new PdfWebTable( 7,
+	    PdfWebTable table = new PdfWebTable( 8,
                 form.getReport(), "examAssignmentReport.do?ord=%%",
                 new String[] {
                     "Date",
                     "Time",
                     (form.getShowSections()?"Classes / Courses":"Examinations"),
-                    "Size",
+                    "Total Enrollment",
                     (form.getShowSections()?"Classes / Courses":"Examinations")+nl+"with 10+ students",
                     (form.getShowSections()?"Classes / Courses":"Examinations")+nl+"with 50+ students",
-                    (form.getShowSections()?"Classes / Courses":"Examinations")+nl+"with 100+ students"},
-                new String[] {"left","left","right","right","right","right","right"},
-                new boolean[] {true, true, true, true, true, true, true} );
+                    (form.getShowSections()?"Classes / Courses":"Examinations")+nl+"with 100+ students",
+                    (form.getShowSections()?"Classes / Courses":"Examinations")+nl+"with 500+ students"
+                    },
+                new String[] {"left","left","right","right","right","right","right","right"},
+                new boolean[] {true, true, true, true, true, true, true, true} );
+        int tnrExams = 0, tnrStudents = 0, tnrExams10=0, tnrExams50=0, tnrExams100=0, tnrExams500=0;
         table.setRowStyle("white-space:nowrap");
-        int tnrExams = 0, tnrStudents = 0, tnrExams10=0, tnrExams50=0, tnrExams100=0;
         for (Iterator i=ExamPeriod.findAll(sessionId, form.getExamType()).iterator();i.hasNext();) {
             ExamPeriod period = (ExamPeriod)i.next();
             String periodDate = period.getStartDateLabel();
@@ -714,7 +718,7 @@ public class ExamAssignmentReportAction extends Action {
                 periodDate = "<font color='"+PreferenceLevel.prolog2color(period.getPrefLevel().getPrefProlog())+"'>"+periodDate+"</font>";
                 periodTime = "<font color='"+PreferenceLevel.prolog2color(period.getPrefLevel().getPrefProlog())+"'>"+periodTime+"</font>";
             }
-            int nrExams = 0, nrStudents = 0, nrExams10=0, nrExams50=0, nrExams100=0;
+            int nrExams = 0, nrStudents = 0, nrExams10=0, nrExams50=0, nrExams100=0, nrExams500=0;
             for (ExamAssignmentInfo exam : exams) {
                 if (!period.getUniqueId().equals(exam.getPeriodId())) continue;
                 if (form.getShowSections()) {
@@ -722,17 +726,20 @@ public class ExamAssignmentReportAction extends Action {
                         if (!match(form,section.getName())) continue;
                         nrExams++;
                         nrStudents+=section.getNrStudents();
-                        if (section.getNrStudents()>10) nrExams10++;
-                        if (section.getNrStudents()>50) nrExams50++;
-                        if (section.getNrStudents()>100) nrExams100++;
+                        if (section.getNrStudents()>=10) nrExams10++;
+                        if (section.getNrStudents()>=50) nrExams50++;
+                        if (section.getNrStudents()>=100) nrExams100++;
+                        if (section.getNrStudents()>=500) nrExams500++;
                     }
                 } else {
                     if (!match(form,exam.getExamName())) continue;
                     nrExams++;
-                    nrStudents+=exam.getNrStudents();
-                    if (exam.getNrStudents()>10) nrExams10++;
-                    if (exam.getNrStudents()>50) nrExams50++;
-                    if (exam.getNrStudents()>100) nrExams100++;
+                    int nrStudentsThisExam = exam.getStudentIds().size(); 
+                    nrStudents+=nrStudentsThisExam;
+                    if (nrStudentsThisExam>=10) nrExams10++;
+                    if (nrStudentsThisExam>=50) nrExams50++;
+                    if (nrStudentsThisExam>=100) nrExams100++;
+                    if (nrStudentsThisExam>=500) nrExams500++;
                 }
             }
             if (nrExams==0) continue;
@@ -744,7 +751,8 @@ public class ExamAssignmentReportAction extends Action {
                             String.valueOf(nrStudents),
                             String.valueOf(nrExams10),
                             String.valueOf(nrExams50),
-                            String.valueOf(nrExams100)},
+                            String.valueOf(nrExams100),
+                            String.valueOf(nrExams500)},
                     new Comparable[] {
                             new MultiComparable(0,period),
                             new MultiComparable(0,period.getStartSlot(), period.getDateOffset(), period),
@@ -752,12 +760,14 @@ public class ExamAssignmentReportAction extends Action {
                             new MultiComparable(0,nrStudents),
                             new MultiComparable(0,nrExams10),
                             new MultiComparable(0,nrExams50),
-                            new MultiComparable(0,nrExams100)
+                            new MultiComparable(0,nrExams100),
+                            new MultiComparable(0,nrExams500)
                     });
             tnrExams += nrExams;
             tnrExams10 += nrExams10;
             tnrExams50 += nrExams50;
             tnrExams100 += nrExams100;
+            tnrExams500 += nrExams500;
             tnrStudents += nrStudents;
         }
         table.addLine(
@@ -768,7 +778,8 @@ public class ExamAssignmentReportAction extends Action {
                         (html?"<b>"+tnrStudents+"</b>":String.valueOf(tnrStudents)),
                         (html?"<b>"+tnrExams10+"</b>":String.valueOf(tnrExams10)),
                         (html?"<b>"+tnrExams50+"</b>":String.valueOf(tnrExams50)),
-                        (html?"<b>"+tnrExams100+"</b>":String.valueOf(tnrExams100))},
+                        (html?"<b>"+tnrExams100+"</b>":String.valueOf(tnrExams100)),
+                        (html?"<b>"+tnrExams500+"</b>":String.valueOf(tnrExams500))},
                 new Comparable[] {
                         new MultiComparable(1,null),
                         new MultiComparable(1,0,0, null),
@@ -776,7 +787,8 @@ public class ExamAssignmentReportAction extends Action {
                         new MultiComparable(1,tnrStudents),
                         new MultiComparable(1,tnrExams10),
                         new MultiComparable(1,tnrExams50),
-                        new MultiComparable(1,tnrExams100)
+                        new MultiComparable(1,tnrExams100),
+                        new MultiComparable(1,tnrExams500)
                 });
         return table;	    
 	}
@@ -2111,6 +2123,220 @@ public class ExamAssignmentReportAction extends Action {
             }
         }
         return table;       
-    } 
+    }
+    
+    private PdfWebTable generateStatisticsReport(boolean html, long sessionId, ExamAssignmentReportForm form, Collection<ExamAssignmentInfo> exams) {
+        String nl = (html?"<br>":"\n");
+        String indent = (html?"&nbsp;&nbsp;&nbsp;&nbsp;":"    ");
+        PdfWebTable table = new PdfWebTable( 2,
+                form.getReport(), "examAssignmentReport.do?ord=%%",
+                new String[] {"Name","Value"},
+                new String[] {"left", "right"},
+                new boolean[] {true, true} );
+        table.setRowStyle("white-space:nowrap");
+        int row=0;
+        
+        int sdc=0,sdcna=0,sbtb=0,sdbtb=0,sm2d=0;
+        int idc=0,idcna=0,ibtb=0,idbtb=0,im2d=0;
+        HashSet<Long>[] sct = new HashSet[] {new HashSet(),new HashSet(),new HashSet(),new HashSet()};
+        HashSet<Long> students = new HashSet();
+        int studentExams = 0;
+        DecimalFormat df1 = new DecimalFormat("0.00");
+        DecimalFormat df2 = new DecimalFormat("#,##0");
+        int instructorExams = 0;
+        HashSet<Long> instructors = new HashSet();
+        
+        for (ExamAssignmentInfo exam:exams) {
+            for (ExamSectionInfo section:exam.getSections()) {
+                sct[section.getOwnerType()].add(section.getOwnerId());
+                students.addAll(section.getStudentIds());
+            }
+            studentExams += exam.getStudentIds().size();
+            instructorExams += exam.getInstructors().size(); 
+            for (DirectConflict dc : exam.getDirectConflicts()) {
+                if (dc.getOtherExam()!=null && exam.compareTo(dc.getOtherExam())>=0 && exams.contains(dc.getOtherExam())) continue;
+                sdc+=dc.getNrStudents(); 
+                if (dc.getOtherExam()==null) sdcna+=dc.getNrStudents();
+            }
+            for (DirectConflict dc : exam.getInstructorDirectConflicts()) {
+                if (dc.getOtherExam()!=null && exam.compareTo(dc.getOtherExam())>=0 && exams.contains(dc.getOtherExam())) continue;
+                idc+=dc.getNrStudents();
+                if (dc.getOtherExam()==null) idcna+=dc.getNrStudents();
+            }
+            for (BackToBackConflict btb : exam.getBackToBackConflicts()) {
+                if (btb.getOtherExam()!=null && exam.compareTo(btb.getOtherExam())>=0 && exams.contains(btb.getOtherExam())) continue;
+                sbtb+=btb.getNrStudents();
+                if (btb.isDistance()) sdbtb+=btb.getNrStudents();
+            }
+            for (BackToBackConflict btb : exam.getInstructorBackToBackConflicts()) {
+                if (btb.getOtherExam()!=null && exam.compareTo(btb.getOtherExam())>=0 && exams.contains(btb.getOtherExam())) continue;
+                ibtb+=btb.getNrStudents();
+                if (btb.isDistance()) idbtb+=btb.getNrStudents();
+            }
+            m2d: for (MoreThanTwoADayConflict m2d: exam.getMoreThanTwoADaysConflicts()) {
+                for (ExamAssignment other : m2d.getOtherExams())
+                    if (exam.compareTo(other)>=0 && exams.contains(other)) continue m2d;
+                sm2d+=m2d.getNrStudents();
+            }
+            m2d: for (MoreThanTwoADayConflict m2d: exam.getInstructorMoreThanTwoADaysConflicts()) {
+                for (ExamAssignment other : m2d.getOtherExams())
+                    if (exam.compareTo(other)>=0 && exams.contains(other)) continue m2d;
+                im2d+=m2d.getNrStudents();
+            }
+        }
+        table.addLine(new String[] {
+                "Number of exams", df2.format(exams.size())
+                }, new Comparable[] {row++,null,null});
+        for (int i=0;i<ExamOwner.sOwnerTypes.length;i++)
+            if (!sct[i].isEmpty()) 
+                table.addLine(new String[] {
+                        indent+(i==ExamOwner.sOwnerTypeClass?"Classes":i==ExamOwner.sOwnerTypeConfig?"Configs":i==ExamOwner.sOwnerTypeCourse?"Courses":"Offerings")+" with an exam", df2.format(sct[i].size())
+                        }, new Comparable[] {row++,null,null});
+        
+        table.addLine(new String[] {"&nbsp;",""}, new Comparable[] {row++,null,null});
+
+        table.addLine(new String[] {
+                "Registered students", 
+                df2.format(new StudentDAO().getSession().createQuery("select count(s) from Student s where s.session.uniqueId=:sessionId")
+                .setLong("sessionId", sessionId).uniqueResult())
+                
+                }, new Comparable[] {row++,null,null});
+        table.addLine(new String[] {
+                indent+"Students having an exam", df2.format(students.size())
+                }, new Comparable[] {row++,null,null});
+        table.addLine(new String[] {
+                indent+"Student exam enrollments", df2.format(studentExams)
+                }, new Comparable[] {row++,null,null});
+
+        table.addLine(new String[] {"&nbsp;",""}, new Comparable[] {row++,null,null});
+                                    
+        if (!instructors.isEmpty()) {
+            table.addLine(new String[] {
+                    "Registered instructors", 
+                    df2.format(new StudentDAO().getSession().createQuery("select count(i.externalUniqueId) from DepartmentalInstructor i where i.department.session.uniqueId=:sessionId")
+                    .setLong("sessionId", sessionId).uniqueResult())
+                    
+                    }, new Comparable[] {row++,null,null});
+            table.addLine(new String[] {
+                    indent+"Instructors having an exam", df2.format(instructors.size())
+                    }, new Comparable[] {row++,null,null});
+            table.addLine(new String[] {
+                    indent+"Instructor exam enrollments", df2.format(instructorExams)
+                    }, new Comparable[] {row++,null,null});
+            table.addLine(new String[] {"&nbsp;",""}, new Comparable[] {row++,null,null});
+        }
+
+        if (sdc>0)
+            table.addLine(new String[] {
+                    "Direct student conflicts", df2.format(sdc)
+                    }, new Comparable[] {row++,null,null});
+        if (sdcna>0) {
+            table.addLine(new String[] {
+                    indent+"Conflict with other exam", df2.format(sdc-sdcna)
+                    }, new Comparable[] {row++,null,null});
+            table.addLine(new String[] {
+                    indent+"Student not available", df2.format(sdcna)
+                    }, new Comparable[] {row++,null,null});
+        }
+        if (sm2d>0)
+            table.addLine(new String[] {
+                    "More than 2 exams a day student conflicts", ""+df2.format(sm2d)
+                    }, new Comparable[] {row++,null,null});
+        if (sbtb>0)
+            table.addLine(new String[] {
+                    "Back-to-back student conflicts", df2.format(sbtb)
+                    }, new Comparable[] {row++,null,null});
+        if (sdbtb>0)
+            table.addLine(new String[] {
+                    indent+"Distance back-to-back student conflicts", df2.format(sdbtb)
+                    }, new Comparable[] {row++,null,null});
+        
+        if (idc>0 || im2d>0 || ibtb>0) 
+            table.addLine(new String[] {"&nbsp;",""}, new Comparable[] {row++,null,null});
+
+        if (idc>0)
+            table.addLine(new String[] {
+                    "Direct instructor conflicts", df2.format(idc)
+                    }, new Comparable[] {row++,null,null});
+        if (idcna>0) {
+            table.addLine(new String[] {
+                    indent+"Conflict with other exam", df2.format(idc-idcna)
+                    }, new Comparable[] {row++,null,null});
+            table.addLine(new String[] {
+                    indent+"Student not available", df2.format(idcna)
+                    }, new Comparable[] {row++,null,null});
+        }
+        if (im2d>0)
+            table.addLine(new String[] {
+                    "More than 2 exams a day instructor conflicts", df2.format(im2d)
+                    }, new Comparable[] {row++,null,null});
+        if (ibtb>0)
+            table.addLine(new String[] {
+                    "Back-to-back instructor conflicts", df2.format(ibtb)
+                    }, new Comparable[] {row++,null,null});
+        if (idbtb>0)
+            table.addLine(new String[] {
+                    indent+"Distance back-to-back instructor conflicts", df2.format(idbtb)
+                    }, new Comparable[] {row++,null,null});
+        
+        table.addLine(new String[] {"&nbsp;",""}, new Comparable[] {row++,null,null});
+
+        if (sdc>0)
+            table.addLine(new String[] {
+                    "Direct student conflicts", df1.format(100.0*sdc/studentExams)+"%"
+                    }, new Comparable[] {row++,null,null});
+        if (sdcna>0) {
+            table.addLine(new String[] {
+                    indent+"Conflict with other exam", df1.format(100.0*(sdc-sdcna)/studentExams)+"%"
+                    }, new Comparable[] {row++,null,null});
+            table.addLine(new String[] {
+                    indent+"Student not available", df1.format(100.0*sdcna/studentExams)+"%"
+                    }, new Comparable[] {row++,null,null});
+        }
+        if (sm2d>0)
+            table.addLine(new String[] {
+                    "More than 2 exams a day student conflicts", ""+df1.format(100.0*sm2d/studentExams)+"%"
+                    }, new Comparable[] {row++,null,null});
+        if (sbtb>0)
+            table.addLine(new String[] {
+                    "Back-to-back student conflicts", df1.format(100.0*sbtb/studentExams)+"%"
+                    }, new Comparable[] {row++,null,null});
+        if (sdbtb>0)
+            table.addLine(new String[] {
+                    indent+"Distance back-to-back student conflicts", df1.format(100.0*sdbtb/studentExams)+"%"
+                    }, new Comparable[] {row++,null,null});
+        
+        if (idc>0 || im2d>0 || ibtb>0) 
+            table.addLine(new String[] {"&nbsp;",""}, new Comparable[] {row++,null,null});
+
+        if (idc>0)
+            table.addLine(new String[] {
+                    "Direct instructor conflicts", df1.format(100.0*idc/studentExams)+"%"
+                    }, new Comparable[] {row++,null,null});
+        if (idcna>0) {
+            table.addLine(new String[] {
+                    indent+"Conflict with other exam", df1.format(100.0*(idc-idcna)/studentExams)+"%"
+                    }, new Comparable[] {row++,null,null});
+            table.addLine(new String[] {
+                    indent+"Student not available", df1.format(100.0*idcna/studentExams)+"%"
+                    }, new Comparable[] {row++,null,null});
+        }
+        if (im2d>0)
+            table.addLine(new String[] {
+                    "More than 2 exams a day instructor conflicts", df1.format(100.0*im2d/studentExams)+"%"
+                    }, new Comparable[] {row++,null,null});
+        if (ibtb>0)
+            table.addLine(new String[] {
+                    "Back-to-back instructor conflicts", df1.format(100.0*ibtb/studentExams)+"%"
+                    }, new Comparable[] {row++,null,null});
+        if (idbtb>0)
+            table.addLine(new String[] {
+                    indent+"Distance back-to-back instructor conflicts", df1.format(100.0*idbtb/studentExams)+"%"
+                    }, new Comparable[] {row++,null,null});
+
+        table.setRowStyle("white-space:nowrap");
+
+        return table;       
+    }
 }
 
