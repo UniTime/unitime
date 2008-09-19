@@ -28,7 +28,13 @@ import org.apache.struts.action.ActionMapping;
 public class PersonalizedExamReportForm extends ActionForm {
     private String iOp = null;
     private boolean iCanExport = false;
+    private boolean iAdmin = false;
+    private boolean iLogout = false;
     private String iMessage = null;
+    private String iUid = null;
+    private String iFname = null;
+    private String iMname = null;
+    private String iLname = null;
     
     public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
         ActionErrors errors = new ActionErrors();
@@ -40,6 +46,8 @@ public class PersonalizedExamReportForm extends ActionForm {
         iOp = null;
         iCanExport = false;
         iMessage = null;
+        iUid = null;
+        iAdmin = false;
     }
     
     public String getOp() { return iOp; }
@@ -48,4 +56,16 @@ public class PersonalizedExamReportForm extends ActionForm {
     public void setCanExport(boolean canExport) { iCanExport = canExport;}
     public String getMessage() { return iMessage; }
     public void setMessage(String m) { iMessage = m; }
+    public boolean getAdmin() { return iAdmin; }
+    public void setAdmin(boolean admin) { iAdmin = admin; }
+    public boolean getLogout() { return iLogout; }
+    public void setLogout(boolean logout) { iLogout = logout; }
+    public String getUid() { return iUid; }
+    public void setUid(String uid) { iUid = uid; }
+    public String getFname() { return iFname; }
+    public void setFname(String fname) { iFname = fname; }
+    public String getMname() { return iMname; }
+    public void setMname(String mname) { iMname = mname; }
+    public String getLname() { return iLname; }
+    public void setLname(String lname) { iLname = lname; }
 }
