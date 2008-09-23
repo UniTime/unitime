@@ -74,7 +74,7 @@ public class StudentEnrollmentImport extends BaseImport {
 	            Element studentElement = (Element) it.next();
 	            String externalId = getRequiredStringAttribute(studentElement, "externalId", elementName);
 	            if (trimLeadingZerosFromExternalId){
-	            	externalId = (new Integer(externalId)).toString();
+	            	while (externalId.startsWith("0")) externalId = externalId.substring(1);
 	            }
             	Student student = fetchStudent(externalId, session.getUniqueId());
             	if (student == null){
