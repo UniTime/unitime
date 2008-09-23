@@ -196,7 +196,9 @@ public class ListSolutionsForm extends ActionForm {
             sInfoKeys.add("Instructor Back-To-Back Conflicts");
             sInfoKeys.add("Instructor Distance Back-To-Back Conflicts");
             sInfoKeys.add("Period Penalty");
+            sInfoKeys.add("Period&times;Size Penalty");
             sInfoKeys.add("Exam Rotation Penalty");
+            sInfoKeys.add("Average Period");
             sInfoKeys.add("Room Penalty");
             sInfoKeys.add("Room Split Penalty");
             sInfoKeys.add("Room Split Distance Penalty");
@@ -206,6 +208,7 @@ public class ListSolutionsForm extends ActionForm {
             sInfoKeys.add("Large Exams Penalty");
             sInfoKeys.add("Perturbation Penalty");
 			sInfoKeys.add("Perturbation penalty");
+            sInfoKeys.add("Room Perturbation Penalty");
 			sInfoKeys.add("Perturbation variables");
 			sInfoKeys.add("Perturbations: Total penalty");
 			sInfoKeys.add("Time");
