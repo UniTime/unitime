@@ -60,6 +60,7 @@
 					<line>the limit is applied to the enrollment size of exam (instead of particular course/class),</line>
 					<line>courses/classes of the same exam are printed next to each other (the size of the exam is printed next to the first class/course).</line>
 				</line>
+				<line>When application property tmtbl.exam.pdfReports.canUseSolution is set to true (default is false), it is allowed to generate PDF reports directly from the solver.</line>
 			</description> 
 		</item>
 		<item>
@@ -92,6 +93,21 @@
 					for final exams after the import is finished (default is false).</line> 
 				<line>When application property tmtbl.data.import.studentEnrl.midtermExam.updateConflicts is true, update student conflicts
 					for midterm exams after the import is finished (default is false).</line> 
+			</description>
+		</item>
+		<item>
+			<name>Examination Solver</name>
+			<description>
+				<line>Room Swap neighbor:
+					<line>Check for the case when one of the rooms of a room split is changed 
+						for a bigger room so that another room of the room split no longer needs to be used.
+					</line>
+				</line>
+				<line>Following optimization criteria added:
+					<line>Period x Size Penalty (exam period penalty multiplied by examination size)</line>
+					<line>Period Index Penalty / Average Period (index of assigned period)</line>
+					<line>Room Perturbation Penalty (number of changed room assignments)</line>
+				</line>  
 			</description>
 		</item>
 	</category>
