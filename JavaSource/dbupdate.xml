@@ -2252,73 +2252,120 @@
 		<plsql>alter table %SCHEMA%.curricula_course modify group_nr varchar2(20)</plsql>
 	</update>
 	<update version="40" date="10-Sep-2008" comment="Curricula renames">
-		<sql>alter table curricula rename to curriculum</sql>
-		<sql>alter table curricula_clasf rename to curriculum_clasf</sql>
-		<sql>alter table curricula_course rename to curriculum_course</sql>
-		<plsql>alter table curriculum rename constraint nn_curricula_uniqueid to nn_curriculum_uniqueid</plsql>
-		<plsql>alter table curriculum rename constraint nn_curricula_abbv to nn_curriculum_abbv</plsql>
-		<plsql>alter table curriculum rename constraint nn_curricula_name to nn_curriculum_name</plsql>
-		<plsql>alter table curriculum rename constraint nn_curricula_dept to nn_curriculum_dept</plsql>
-		<plsql>alter table curriculum rename constraint pk_curricula to pk_curriculum</plsql>
-		<plsql>alter table curriculum rename constraint fk_curricula_dept to fk_curriculum_dept</plsql>
-		<plsql>alter table curriculum rename constraint fk_curricula_acad_area to fk_curriculum_acad_area</plsql>
-		<plsql>alter table curriculum_clasf rename constraint nn_curricula_clasf_uniqueid to nn_curriculum_clasf_uniqueid</plsql>
-		<plsql>alter table curriculum_clasf rename constraint nn_curricula_clasf_cur_id to nn_curriculum_clasf_cur_id</plsql>
-		<plsql>alter table curriculum_clasf rename constraint nn_curricula_clasf_name to nn_curriculum_clasf_name</plsql>
-		<plsql>alter table curriculum_clasf rename constraint nn_curricula_clasf_nr_students to nn_curriculum_clasf_nrstudents</plsql>
-		<plsql>alter table curriculum_clasf rename constraint nn_curricula_clasf_ord to nn_curriculum_clasf_ord</plsql>
-		<plsql>alter table curriculum_clasf rename constraint pk_curricula_clasf to pk_curriculum_clasf</plsql>
-		<plsql>alter table curriculum_clasf rename constraint fk_curricula_clasf_curricula to fk_curriculum_clasf_curriculum</plsql>
-		<plsql>alter table curriculum_clasf rename constraint fk_curricula_clasf_acad_clasf to fk_curriculum_clasf_acad_clasf</plsql>
-		<plsql>alter table curriculum_course rename constraint nn_curricula_course_uniqueid to nn_curriculum_course_uniqueid</plsql>
-		<plsql>alter table curriculum_course rename constraint nn_curricula_course_course_id to nn_curriculum_course_course_id</plsql>
-		<plsql>alter table curriculum_course rename constraint nn_curricula_cur_clasf_id to nn_curriculum_cur_clasf_id</plsql>
-		<plsql>alter table curriculum_course rename constraint nn_curricula_course_prsh to nn_curriculum_course_prsh</plsql>
-		<plsql>alter table curriculum_course rename constraint nn_curricula_course_ord to nn_curriculum_course_ord</plsql>
-		<plsql>alter table curriculum_course rename constraint pk_curricula_course to pk_curriculum_course</plsql>
-		<plsql>alter table curriculum_course rename constraint fk_curricula_course_clasf to fk_curriculum_course_clasf</plsql>
-		<plsql>alter table curriculum_course rename constraint fk_curricula_course_course to fk_curriculum_course_course</plsql>
-		<plsql>alter table curriculum_clasf rename column curricula_id to curriculum_id</plsql>
-		<mysql>alter table curriculum drop foreign key fk_curricula_dept</mysql>
-		<mysql>alter table curriculum drop foreign key fk_curricula_acad_area</mysql>
-		<mysql>alter table curriculum_clasf drop foreign key fk_curricula_clasf_curricula</mysql>
-		<mysql>alter table curriculum_clasf drop foreign key fk_curricula_clasf_acad_clasf</mysql>
-		<mysql>alter table curriculum_course drop foreign key fk_curricula_course_clasf</mysql>
-		<mysql>alter table curriculum_course drop foreign key fk_curricula_course_course</mysql>
-		<mysql>alter table curriculum_clasf change column curricula_id curriculum_id decimal(20,0) not null</mysql>
+		<sql>alter table %SCHEMA%.curricula rename to %SCHEMA%.curriculum</sql>
+		<sql>alter table %SCHEMA%.curricula_clasf rename to %SCHEMA%.curriculum_clasf</sql>
+		<sql>alter table %SCHEMA%.curricula_course rename to %SCHEMA%.curriculum_course</sql>
+		<plsql>alter table %SCHEMA%.curriculum rename constraint nn_curricula_uniqueid to nn_curriculum_uniqueid</plsql>
+		<plsql>alter table %SCHEMA%.curriculum rename constraint nn_curricula_abbv to nn_curriculum_abbv</plsql>
+		<plsql>alter table %SCHEMA%.curriculum rename constraint nn_curricula_name to nn_curriculum_name</plsql>
+		<plsql>alter table %SCHEMA%.curriculum rename constraint nn_curricula_dept to nn_curriculum_dept</plsql>
+		<plsql>alter table %SCHEMA%.curriculum rename constraint pk_curricula to pk_curriculum</plsql>
+		<plsql>alter table %SCHEMA%.curriculum rename constraint fk_curricula_dept to fk_curriculum_dept</plsql>
+		<plsql>alter table %SCHEMA%.curriculum rename constraint fk_curricula_acad_area to fk_curriculum_acad_area</plsql>
+		<plsql>alter table %SCHEMA%.curriculum_clasf rename constraint nn_curricula_clasf_uniqueid to nn_curriculum_clasf_uniqueid</plsql>
+		<plsql>alter table %SCHEMA%.curriculum_clasf rename constraint nn_curricula_clasf_cur_id to nn_curriculum_clasf_cur_id</plsql>
+		<plsql>alter table %SCHEMA%.curriculum_clasf rename constraint nn_curricula_clasf_name to nn_curriculum_clasf_name</plsql>
+		<plsql>alter table %SCHEMA%.curriculum_clasf rename constraint nn_curricula_clasf_nr_students to nn_curriculum_clasf_nrstudents</plsql>
+		<plsql>alter table %SCHEMA%.curriculum_clasf rename constraint nn_curricula_clasf_ord to nn_curriculum_clasf_ord</plsql>
+		<plsql>alter table %SCHEMA%.curriculum_clasf rename constraint pk_curricula_clasf to pk_curriculum_clasf</plsql>
+		<plsql>alter table %SCHEMA%.curriculum_clasf rename constraint fk_curricula_clasf_curricula to fk_curriculum_clasf_curriculum</plsql>
+		<plsql>alter table %SCHEMA%.curriculum_clasf rename constraint fk_curricula_clasf_acad_clasf to fk_curriculum_clasf_acad_clasf</plsql>
+		<plsql>alter table %SCHEMA%.curriculum_course rename constraint nn_curricula_course_uniqueid to nn_curriculum_course_uniqueid</plsql>
+		<plsql>alter table %SCHEMA%.curriculum_course rename constraint nn_curricula_course_course_id to nn_curriculum_course_course_id</plsql>
+		<plsql>alter table %SCHEMA%.curriculum_course rename constraint nn_curricula_cur_clasf_id to nn_curriculum_cur_clasf_id</plsql>
+		<plsql>alter table %SCHEMA%.curriculum_course rename constraint nn_curricula_course_prsh to nn_curriculum_course_prsh</plsql>
+		<plsql>alter table %SCHEMA%.curriculum_course rename constraint nn_curricula_course_ord to nn_curriculum_course_ord</plsql>
+		<plsql>alter table %SCHEMA%.curriculum_course rename constraint pk_curricula_course to pk_curriculum_course</plsql>
+		<plsql>alter table %SCHEMA%.curriculum_course rename constraint fk_curricula_course_clasf to fk_curriculum_course_clasf</plsql>
+		<plsql>alter table %SCHEMA%.curriculum_course rename constraint fk_curricula_course_course to fk_curriculum_course_course</plsql>
+		<plsql>alter table %SCHEMA%.curriculum_clasf rename column curricula_id to curriculum_id</plsql>
+		<mysql>alter table %SCHEMA%.curriculum drop foreign key fk_curricula_dept</mysql>
+		<mysql>alter table %SCHEMA%.curriculum drop foreign key fk_curricula_acad_area</mysql>
+		<mysql>alter table %SCHEMA%.curriculum_clasf drop foreign key fk_curricula_clasf_curricula</mysql>
+		<mysql>alter table %SCHEMA%.curriculum_clasf drop foreign key fk_curricula_clasf_acad_clasf</mysql>
+		<mysql>alter table %SCHEMA%.curriculum_course drop foreign key fk_curricula_course_clasf</mysql>
+		<mysql>alter table %SCHEMA%.curriculum_course drop foreign key fk_curricula_course_course</mysql>
+		<mysql>alter table %SCHEMA%.curriculum_clasf change column curricula_id curriculum_id decimal(20,0) not null</mysql>
 		<mysql>
-			alter table curriculum
+			alter table %SCHEMA%.curriculum
 				add constraint fk_curriculum_dept foreign key (dept_id)
-				references department (uniqueid) on delete cascade
+				references %SCHEMA%.department (uniqueid) on delete cascade
 		</mysql>
 		<mysql>
-			alter table curriculum
+			alter table %SCHEMA%.curriculum
 				add constraint fk_curriculum_acad_area foreign key (acad_area_id)
-				references academic_area (uniqueid) on delete set null
+				references %SCHEMA%.academic_area (uniqueid) on delete set null
 		</mysql>
 		<mysql>
-			alter table curriculum_clasf
+			alter table %SCHEMA%.curriculum_clasf
 				add constraint fk_curriculum_clasf_curriculum foreign key (curriculum_id)
-				references curriculum (uniqueid) on delete cascade
+				references %SCHEMA%.curriculum (uniqueid) on delete cascade
 		</mysql>
 		<mysql>
-			alter table curriculum_clasf
+			alter table %SCHEMA%.curriculum_clasf
 				add constraint fk_curriculum_clasf_acad_clasf foreign key (acad_clasf_id)
-				references academic_classification (uniqueid) on delete set null
+				references %SCHEMA%.academic_classification (uniqueid) on delete set null
 		</mysql>
 		<mysql>
-			alter table curriculum_course
+			alter table %SCHEMA%.curriculum_course
 				add constraint fk_curriculum_course_clasf foreign key (cur_clasf_id)
-				references curriculum_clasf (uniqueid) on delete cascade
+				references %SCHEMA%.curriculum_clasf (uniqueid) on delete cascade
 		</mysql>
 		<mysql>
-			alter table curriculum_course
+			alter table %SCHEMA%.curriculum_course
 				add constraint fk_curriculum_course_course foreign key (course_id)
-				references course_offering (uniqueid) on delete cascade
+				references %SCHEMA%.course_offering (uniqueid) on delete cascade
 		</mysql>
 	</update>
 	<update version="41" date="15-Sep-2008" comment="Exam print offset">
-		<mysql>alter table exam add print_offset int(10)</mysql>
-		<plsql>alter table exam add print_offset number(10,0)</plsql>
+		<mysql>alter table %SCHEMA%.exam add print_offset int(10)</mysql>
+		<plsql>alter table %SCHEMA%.exam add print_offset number(10,0)</plsql>
+	</update>
+	<update version="42" date="23-Sep-2008" comment="Exam solver parameter update">
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select solver_parameter_def_seq.nextval as uniqueid,
+				'Exams.PeriodSizeWeight' as name, '1.0' as default_vale, 'Examination period x examination size weight' as description,
+				'double' as type, 22 as ord, 1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select solver_parameter_def_seq.nextval as uniqueid,
+				'Exams.PeriodIndexWeight' as name, '0.0000001' as default_vale, 'Examination period index weight' as description,
+				'double' as type, 23 as ord, 1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select solver_parameter_def_seq.nextval as uniqueid,
+				'Exams.RoomPerturbationWeight' as name, '0.1' as default_vale, 'Room perturbation penalty (change of room) weight' as description,
+				'double' as type, 24 as ord, 1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select solver_parameter_def_seq.nextval as uniqueid,
+				'Comparator.Class' as name, 'net.sf.cpsolver.ifs.solution.GeneralSolutionComparator' as default_vale,
+				'Examination solution comparator class' as description,
+				'text' as type, 6 as ord, 0 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='Exam')
+		</plsql>
+		<mysql into="GID">select uniqueid from %SCHEMA%.solver_parameter_group where name='ExamWeights'</mysql>
+		<mysql into="ORD">select max(ord) from %SCHEMA%.solver_parameter_def where solver_param_group_id=%GID%</mysql>
+		<mysql into="ID">select 32767 * next_hi from %SCHEMA%.hibernate_unique_key</mysql>
+		<mysql>
+			insert into %SCHEMA%.solver_parameter_def
+			(uniqueid, name, default_value, description, type, ord, visible, solver_param_group_id) values
+ 			(%ID%+0, 'Exams.PeriodSizeWeight', '1.0', 'Examination period x examination size weight', 'double', %ORD%+1, 1, %GID%),
+			(%ID%+1, 'Exams.PeriodIndexWeight', '0.0000001', 'Examination period index weight', 'integer', %ORD%+2, 1, %GID%),
+			(%ID%+2, 'Exams.RoomPerturbationWeight', '0.01', 'Room perturbation penalty (change of room) weight', 'double', %ORD%+3, 1, %GID%)
+		</mysql>
+		<mysql into="GID">select uniqueid from %SCHEMA%.solver_parameter_group where name='Exam'</mysql>
+		<mysql into="ORD">select max(ord) from %SCHEMA%.solver_parameter_def where solver_param_group_id=%GID%</mysql>
+		<mysql>
+			insert into %SCHEMA%.solver_parameter_def
+			(uniqueid, name, default_value, description, type, ord, visible, solver_param_group_id) values
+ 			(%ID%+3, 'Comparator.Class', 'net.sf.cpsolver.ifs.solution.GeneralSolutionComparator', 'Examination solution comparator class', 'text', %ORD%+1, 0, %GID%)
+ 		</mysql>
+		<mysql>
+			update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1
+		</mysql>
 	</update>
 </dbupdate>
