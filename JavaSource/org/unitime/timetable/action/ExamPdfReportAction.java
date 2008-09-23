@@ -73,6 +73,7 @@ import org.unitime.timetable.reports.exam.InstructorExamReport;
 import org.unitime.timetable.reports.exam.PdfLegacyExamReport;
 import org.unitime.timetable.reports.exam.StudentExamReport;
 import org.unitime.timetable.solver.WebSolver;
+import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamInstructorInfo;
 import org.unitime.timetable.util.Constants;
@@ -91,8 +92,14 @@ public class ExamPdfReportAction extends Action {
             throw new Exception ("Access Denied.");
         }
         
-        if (WebSolver.getExamSolver(request.getSession())!=null)
-            request.setAttribute(Constants.REQUEST_WARN, "Examination PDF reports are generated from the saved solution (solver assignments are ignored).");
+        ExamSolverProxy examSolver = WebSolver.getExamSolver(request.getSession());
+        
+        if (examSolver!=null) {
+            if ("true".equals(ApplicationProperties.getProperty("tmtbl.exam.pdfReports.canUseSolution","false"))) 
+                request.setAttribute(Constants.REQUEST_WARN, "Examination PDF reports are generated from the current solution (in-memory solution taken from the solver).");
+            else
+                request.setAttribute(Constants.REQUEST_WARN, "Examination PDF reports are generated from the saved solution (solver assignments are ignored).");
+        }
         
         TimetableManager mgr = TimetableManager.getManager(Web.getUser(request.getSession()));
 
@@ -112,7 +119,15 @@ public class ExamPdfReportAction extends Action {
             try {
                 myForm.setReport("");
                 myForm.log("Loading exams...");
-                TreeSet<ExamAssignmentInfo> exams = PdfLegacyExamReport.loadExams(session.getUniqueId(), myForm.getExamType(), true, myForm.getIgnoreEmptyExams(), true);
+                TreeSet<ExamAssignmentInfo> exams = null;
+                if (examSolver!=null && examSolver.getExamType()==myForm.getExamType() && "true".equals(ApplicationProperties.getProperty("tmtbl.exam.pdfReports.canUseSolution","false"))) {
+                        exams = new TreeSet(examSolver.getAssignedExams());
+                        if (myForm.getIgnoreEmptyExams()) for (Iterator<ExamAssignmentInfo> i=exams.iterator();i.hasNext();) {
+                            if (i.next().getStudentIds().isEmpty()) i.remove();
+                        }
+                } else {
+                        exams = PdfLegacyExamReport.loadExams(session.getUniqueId(), myForm.getExamType(), true, myForm.getIgnoreEmptyExams(), true);
+                }
                 /*
                 if (myForm.getAll()) {
                     for (Iterator i=Exam.findAll(session.getUniqueId(), myForm.getExamType()).iterator();i.hasNext();) {
