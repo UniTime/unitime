@@ -19,10 +19,14 @@
 */
 package org.unitime.timetable.test;
 
+import java.text.DecimalFormat;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Properties;
+import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.commons.logging.Log;
@@ -35,20 +39,24 @@ import org.unitime.timetable.dataexchange.DataExchangeHelper;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamConflict;
+import org.unitime.timetable.model.ExamOwner;
+import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
+import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.model.dao._RootDAO;
-import org.unitime.timetable.reports.exam.PdfLegacyExamReport;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.BackToBackConflict;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.DirectConflict;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.MoreThanTwoADayConflict;
+import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.Parameters;
 
 public class UpdateExamConflicts {
     private static Log sLog = LogFactory.getLog(UpdateExamConflicts.class);
+    private static DecimalFormat sDF = new DecimalFormat("0.0");
     private static boolean sDebug = false;
     
     private static int sCreate = 0;
@@ -474,10 +482,165 @@ public class UpdateExamConflicts {
         }
     }
     
+    public TreeSet<ExamAssignmentInfo> loadExams(Long sessionId, int examType) throws Exception {
+        info("Loading exams...");
+        long t0 = System.currentTimeMillis();
+        Hashtable<Long, Exam> exams = new Hashtable();
+        for (Iterator i=new ExamDAO().getSession().createQuery(
+                "select x from Exam x where x.session.uniqueId=:sessionId and x.examType=:examType"
+                ).setLong("sessionId", sessionId).setInteger("examType", examType).setCacheable(true).list().iterator();i.hasNext();) {
+            Exam exam = (Exam)i.next();
+            exams.put(exam.getUniqueId(), exam);
+        }
+        info("  Fetching related objects (class)...");
+        new ExamDAO().getSession().createQuery(
+                "select c from Class_ c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType=:examType and o.ownerType=:classType and c.uniqueId=o.ownerId")
+                .setLong("sessionId", sessionId)
+                .setInteger("examType", examType)
+                .setInteger("classType", ExamOwner.sOwnerTypeClass).setCacheable(true).list();
+        info("  Fetching related objects (config)...");
+        new ExamDAO().getSession().createQuery(
+                "select c from InstrOfferingConfig c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType=:examType and o.ownerType=:configType and c.uniqueId=o.ownerId")
+                .setLong("sessionId", sessionId)
+                .setInteger("examType", examType)
+                .setInteger("configType", ExamOwner.sOwnerTypeConfig).setCacheable(true).list();
+        info("  Fetching related objects (course)...");
+        new ExamDAO().getSession().createQuery(
+                "select c from CourseOffering c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType=:examType and o.ownerType=:courseType and c.uniqueId=o.ownerId")
+                .setLong("sessionId", sessionId)
+                .setInteger("examType", examType)
+                .setInteger("courseType", ExamOwner.sOwnerTypeCourse).setCacheable(true).list();
+        info("  Fetching related objects (offering)...");
+        new ExamDAO().getSession().createQuery(
+                "select c from InstructionalOffering c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType=:examType and o.ownerType=:offeringType and c.uniqueId=o.ownerId")
+                .setLong("sessionId", sessionId)
+                .setInteger("examType", examType)
+                .setInteger("offeringType", ExamOwner.sOwnerTypeOffering).setCacheable(true).list();
+        Hashtable<Long,Set<Long>> owner2students = new Hashtable();
+        Hashtable<Long,Set<Exam>> student2exams = new Hashtable();
+        info("  Loading students (class)...");
+        for (Iterator i=
+            new ExamDAO().getSession().createQuery(
+            "select x.uniqueId, o.uniqueId, e.student.uniqueId from "+
+            "Exam x inner join x.owners o, "+
+            "StudentClassEnrollment e inner join e.clazz c "+
+            "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
+            "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeClass+" and "+
+            "o.ownerId=c.uniqueId").setLong("sessionId", sessionId).setInteger("examType", examType).setCacheable(true).list().iterator();i.hasNext();) {
+                Object[] o = (Object[])i.next();
+                Long examId = (Long)o[0];
+                Long ownerId = (Long)o[1];
+                Long studentId = (Long)o[2];
+                Set<Long> studentsOfOwner = owner2students.get(ownerId);
+                if (studentsOfOwner==null) {
+                    studentsOfOwner = new HashSet<Long>();
+                    owner2students.put(ownerId, studentsOfOwner);
+                }
+                studentsOfOwner.add(studentId);
+                Set<Exam> examsOfStudent = student2exams.get(studentId);
+                if (examsOfStudent==null) { 
+                    examsOfStudent = new HashSet<Exam>();
+                    student2exams.put(studentId, examsOfStudent);
+                }
+                examsOfStudent.add(exams.get(examId));
+            }
+        info("  Loading students (config)...");
+        for (Iterator i=
+            new ExamDAO().getSession().createQuery(
+                    "select x.uniqueId, o.uniqueId, e.student.uniqueId from "+
+                    "Exam x inner join x.owners o, "+
+                    "StudentClassEnrollment e inner join e.clazz c " +
+                    "inner join c.schedulingSubpart.instrOfferingConfig ioc " +
+                    "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
+                    "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeConfig+" and "+
+                    "o.ownerId=ioc.uniqueId").setLong("sessionId", sessionId).setInteger("examType", examType).setCacheable(true).list().iterator();i.hasNext();) {
+            Object[] o = (Object[])i.next();
+            Long examId = (Long)o[0];
+            Long ownerId = (Long)o[1];
+            Long studentId = (Long)o[2];
+            Set<Long> studentsOfOwner = owner2students.get(ownerId);
+            if (studentsOfOwner==null) {
+                studentsOfOwner = new HashSet<Long>();
+                owner2students.put(ownerId, studentsOfOwner);
+            }
+            studentsOfOwner.add(studentId);
+            Set<Exam> examsOfStudent = student2exams.get(studentId);
+            if (examsOfStudent==null) { 
+                examsOfStudent = new HashSet<Exam>();
+                student2exams.put(studentId, examsOfStudent);
+            }
+            examsOfStudent.add(exams.get(examId));
+        }
+        info("  Loading students (course)...");
+        for (Iterator i=
+            new ExamDAO().getSession().createQuery(
+                    "select x.uniqueId, o.uniqueId, e.student.uniqueId from "+
+                    "Exam x inner join x.owners o, "+
+                    "StudentClassEnrollment e inner join e.courseOffering co " +
+                    "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
+                    "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeCourse+" and "+
+                    "o.ownerId=co.uniqueId").setLong("sessionId", sessionId).setInteger("examType", examType).setCacheable(true).list().iterator();i.hasNext();) {
+            Object[] o = (Object[])i.next();
+            Long examId = (Long)o[0];
+            Long ownerId = (Long)o[1];
+            Long studentId = (Long)o[2];
+            Set<Long> studentsOfOwner = owner2students.get(ownerId);
+            if (studentsOfOwner==null) {
+                studentsOfOwner = new HashSet<Long>();
+                owner2students.put(ownerId, studentsOfOwner);
+            }
+            studentsOfOwner.add(studentId);
+            Set<Exam> examsOfStudent = student2exams.get(studentId);
+            if (examsOfStudent==null) { 
+                examsOfStudent = new HashSet<Exam>();
+                student2exams.put(studentId, examsOfStudent);
+            }
+            examsOfStudent.add(exams.get(examId));
+        }
+        info("  Loading students (offering)...");
+        for (Iterator i=
+            new ExamDAO().getSession().createQuery(
+                    "select x.uniqueId, o.uniqueId, e.student.uniqueId from "+
+                    "Exam x inner join x.owners o, "+
+                    "StudentClassEnrollment e inner join e.courseOffering.instructionalOffering io " +
+                    "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
+                    "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeOffering+" and "+
+                    "o.ownerId=io.uniqueId").setLong("sessionId", sessionId).setInteger("examType", examType).setCacheable(true).list().iterator();i.hasNext();) {
+            Object[] o = (Object[])i.next();
+            Long examId = (Long)o[0];
+            Long ownerId = (Long)o[1];
+            Long studentId = (Long)o[2];
+            Set<Long> studentsOfOwner = owner2students.get(ownerId);
+            if (studentsOfOwner==null) {
+                studentsOfOwner = new HashSet<Long>();
+                owner2students.put(ownerId, studentsOfOwner);
+            }
+            studentsOfOwner.add(studentId);
+            Set<Exam> examsOfStudent = student2exams.get(studentId);
+            if (examsOfStudent==null) { 
+                examsOfStudent = new HashSet<Exam>();
+                student2exams.put(studentId, examsOfStudent);
+            }
+            examsOfStudent.add(exams.get(examId));
+        }
+        Hashtable<Long, Set<Meeting>> period2meetings = new Hashtable();
+        Parameters p = new Parameters(sessionId, examType);
+        info("  Creating exam assignments...");
+        TreeSet<ExamAssignmentInfo> ret = new TreeSet();
+        for (Enumeration<Exam> e = exams.elements(); e.hasMoreElements();) {
+            Exam exam = (Exam)e.nextElement();
+            ExamAssignmentInfo info = new ExamAssignmentInfo(exam, owner2students, student2exams, period2meetings, p);
+            ret.add(info);
+        }
+        long t1 = System.currentTimeMillis();
+        info("Exams loaded in "+sDF.format((t1-t0)/1000.0)+"s.");
+        return ret;
+    }
+
     public void update(Long sessionId, Integer examType, org.hibernate.Session hibSession) throws Exception {
         iCnt = new int[][][] {{{0,0,0},{0,0,0},{0,0,0},{0,0,0}},{{0,0,0},{0,0,0},{0,0,0},{0,0,0}}};
         iTotal = new int[][] {{0,0,0,0},{0,0,0,0}};
-        TreeSet<ExamAssignmentInfo> exams = PdfLegacyExamReport.loadExams(sessionId, examType, true, false, false);
+        TreeSet<ExamAssignmentInfo> exams = loadExams(sessionId, examType);
         for (ExamAssignmentInfo exam : exams) {
             debug("Checking "+exam.getExamName()+" ...");
             updateConflicts(exam, hibSession);
