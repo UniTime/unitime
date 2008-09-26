@@ -2127,6 +2127,7 @@ public class ExamAssignmentReportAction extends Action {
     
     private PdfWebTable generateStatisticsReport(boolean html, long sessionId, ExamAssignmentReportForm form, Collection<ExamAssignmentInfo> exams) {
         String nl = (html?"<br>":"\n");
+        String sp = (html?"&nbsp;":" ");
         String indent = (html?"&nbsp;&nbsp;&nbsp;&nbsp;":"    ");
         PdfWebTable table = new PdfWebTable( 2,
                 form.getReport(), "examAssignmentReport.do?ord=%%",
@@ -2193,7 +2194,7 @@ public class ExamAssignmentReportAction extends Action {
                         indent+(i==ExamOwner.sOwnerTypeClass?"Classes":i==ExamOwner.sOwnerTypeConfig?"Configs":i==ExamOwner.sOwnerTypeCourse?"Courses":"Offerings")+" with an exam", df2.format(sct[i].size())
                         }, new Comparable[] {row++,null,null});
         
-        table.addLine(new String[] {"&nbsp;",""}, new Comparable[] {row++,null,null});
+        table.addLine(new String[] {sp,""}, new Comparable[] {row++,null,null});
 
         table.addLine(new String[] {
                 "Registered students", 
@@ -2208,7 +2209,7 @@ public class ExamAssignmentReportAction extends Action {
                 indent+"Student exam enrollments", df2.format(studentExams)
                 }, new Comparable[] {row++,null,null});
 
-        table.addLine(new String[] {"&nbsp;",""}, new Comparable[] {row++,null,null});
+        table.addLine(new String[] {sp,""}, new Comparable[] {row++,null,null});
                                     
         if (!instructors.isEmpty()) {
             table.addLine(new String[] {
@@ -2223,7 +2224,7 @@ public class ExamAssignmentReportAction extends Action {
             table.addLine(new String[] {
                     indent+"Instructor exam enrollments", df2.format(instructorExams)
                     }, new Comparable[] {row++,null,null});
-            table.addLine(new String[] {"&nbsp;",""}, new Comparable[] {row++,null,null});
+            table.addLine(new String[] {sp,""}, new Comparable[] {row++,null,null});
         }
 
         if (sdc>0)
@@ -2252,7 +2253,7 @@ public class ExamAssignmentReportAction extends Action {
                     }, new Comparable[] {row++,null,null});
         
         if (idc>0 || im2d>0 || ibtb>0) 
-            table.addLine(new String[] {"&nbsp;",""}, new Comparable[] {row++,null,null});
+            table.addLine(new String[] {sp,""}, new Comparable[] {row++,null,null});
 
         if (idc>0)
             table.addLine(new String[] {
@@ -2263,7 +2264,7 @@ public class ExamAssignmentReportAction extends Action {
                     indent+"Conflict with other exam", df2.format(idc-idcna)
                     }, new Comparable[] {row++,null,null});
             table.addLine(new String[] {
-                    indent+"Student not available", df2.format(idcna)
+                    indent+"Instructor not available", df2.format(idcna)
                     }, new Comparable[] {row++,null,null});
         }
         if (im2d>0)
@@ -2279,7 +2280,7 @@ public class ExamAssignmentReportAction extends Action {
                     indent+"Distance back-to-back instructor conflicts", df2.format(idbtb)
                     }, new Comparable[] {row++,null,null});
         
-        table.addLine(new String[] {"&nbsp;",""}, new Comparable[] {row++,null,null});
+        table.addLine(new String[] {sp,""}, new Comparable[] {row++,null,null});
 
         if (sdc>0)
             table.addLine(new String[] {
@@ -2307,7 +2308,7 @@ public class ExamAssignmentReportAction extends Action {
                     }, new Comparable[] {row++,null,null});
         
         if (idc>0 || im2d>0 || ibtb>0) 
-            table.addLine(new String[] {"&nbsp;",""}, new Comparable[] {row++,null,null});
+            table.addLine(new String[] {sp,""}, new Comparable[] {row++,null,null});
 
         if (idc>0)
             table.addLine(new String[] {
@@ -2318,7 +2319,7 @@ public class ExamAssignmentReportAction extends Action {
                     indent+"Conflict with other exam", df1.format(100.0*(idc-idcna)/studentExams)+"%"
                     }, new Comparable[] {row++,null,null});
             table.addLine(new String[] {
-                    indent+"Student not available", df1.format(100.0*idcna/studentExams)+"%"
+                    indent+"Instructor not available", df1.format(100.0*idcna/studentExams)+"%"
                     }, new Comparable[] {row++,null,null});
         }
         if (im2d>0)
