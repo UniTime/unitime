@@ -27,6 +27,7 @@
 <html:form action="/classes">
 	<logic:notEmpty name="classesForm" property="sessions">
 	<TABLE width="95%" border="0" cellspacing="0" cellpadding="3">
+	<html:hidden property="op"/>
 	<TR>
 		<TD nowspan>
 			<tt:section-title>Filter</tt:section-title>
@@ -51,7 +52,7 @@
 			 	tooltip="Course numbers can be specified using wildcard (*). E.g. 2*"
 				onblur="hideSuggestionList('courseNumber');" />
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-			<html:submit onclick="displayLoading();" accesskey="A" property="op" value="Apply" title="Apply (Alt+A)"/>
+			<html:submit onclick="op.value='Apply'; this.disabled=true; document.getElementById('s2').disabled=true; displayLoading();" styleId="s1" accesskey="A" value="Apply" title="Apply (Alt+A)"/>
 		</TD>
 	</TR>
 	</TABLE>
@@ -123,7 +124,7 @@
 				<html:text property="username" size="25"/>,&nbsp;&nbsp;&nbsp;
 				Password:
 				<html:password property="password" size="25"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-				<html:submit onclick="displayLoading();" accesskey="A" property="op" value="Apply" title="Apply (Alt+A)"/>
+				<html:submit onclick="op.value='Apply'; this.disabled=true; document.getElementById('s1').disabled=true; displayLoading();" styleId="s2" accesskey="A" value="Apply" title="Apply (Alt+A)"/>
 				<tt:hasProperty name="tmtbl.classes.login.message">
 					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 					<i><tt:property name="tmtbl.classes.login.message"/></i>
