@@ -106,7 +106,10 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
 		if (getMeetingDate() == null){
 			return(null);
 		}
-		Session session = getEvent().getSession();
+		Session session = null;
+		if (getEvent() != null){
+			session = getEvent().getSession();
+		}
 		if (session!=null) {
 		    location = (Location)RoomDAO.getInstance().getSession().createQuery(
 		            "select r from Room r where r.permanentId = :permId and r.session.uniqueId=:sessionId")
