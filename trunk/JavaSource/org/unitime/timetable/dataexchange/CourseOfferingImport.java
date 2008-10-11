@@ -1572,16 +1572,22 @@ public class CourseOfferingImport extends BaseImport {
 					clazz = origClass;
 					allExistingClasses.remove(origClass);
 					existingClasses.remove(clazz.getUniqueId());
+					SchedulingSubpart prevSubpart = clazz.getSchedulingSubpart();
 					if (!clazz.getSchedulingSubpart().getItype().getItype().equals(itypeId) || !possibleSubpartsAtThisLevel.contains(clazz.getSchedulingSubpart())){
-						clazz.getSchedulingSubpart().getClasses().remove(clazz);
 						for (Iterator<SchedulingSubpart> ssIt = possibleSubpartsAtThisLevel.iterator(); ssIt.hasNext(); ){
 							SchedulingSubpart ss = (SchedulingSubpart) ssIt.next();
 							if (ss.getItype().getItype().equals(itypeId)){
+								org.hibernate.Session hSess = this.getHibSession();
 								clazz.setSchedulingSubpart(ss);
 								ss.addToclasses(clazz);
+								hSess.update(ss);
+								hSess.flush();
+								hSess.refresh(ss);
+								hSess.refresh(prevSubpart);
 								break;
 							}
 						}
+						prevSubpart.getClasses().remove(clazz);
 						addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " 'class' itype changed");
 						changed = true;
 					}
