@@ -163,7 +163,7 @@
 										<bean:write name="instr" property="label"/>
 									</td>
 									<td>
-										<bean:define name="<%=frmName%>" property="<%="email("+instructor+")"%>" id="email"/>
+										<bean:define name="<%=frmName%>" property='<%="email("+instructor+")"%>' id="email"/>
 										<logic:notEmpty name="email"><i>
 											<a href="mailto:<%=(String)email%>" onclick="event.cancelBubble=true;">
 											<bean:write name="email"/>

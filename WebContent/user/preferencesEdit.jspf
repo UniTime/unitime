@@ -56,7 +56,7 @@
 		<logic:iterate name="<%=frmName%>" property="timePatterns" id="timePattern" indexId="ctr">
 			<TR>
 				<TD colspan="2">
-					<INPUT type="hidden" name="<%= "timePatterns[" + ctr + "]" %>" value="<%=timePattern%>" />
+					<INPUT type="hidden" name='<%= "timePatterns[" + ctr + "]" %>' value="<%=timePattern%>" />
 					<table border='0' width='100%'>
 						<tr>
 							<td align='left'>
@@ -66,7 +66,7 @@
 								<logic:equal name="<%=frmName%>" property="canChooseTimePattern" value="true">
 									<html:submit property="op" 
 										styleClass="btn" titleKey="title.removeTimePattern"
-										onclick="<%= "javascript: doDel('timePattern', '" + idx + "');"%>">
+										onclick="<%= \"javascript: doDel('timePattern', '\" + idx + \"');\"%>">
 										<bean:message key="button.delete" />
 									</html:submit> 			
 								</logic:equal>
@@ -117,12 +117,12 @@
 						boolean disabled = !frm.getAllowHardPrefs() && !Preference.BLANK_PREF_VALUE.equals(levelId) && PreferenceLevel.getPreferenceLevel(Integer.parseInt(levelId)).isHard();
 						if (disabled) {
 					%>
-							<html:hidden name="<%=frmName%>" property="<%= "roomGroups[" + ctr + "]" %>" value="<%=(String)frm.getRoomGroups().get(ctr.intValue())%>" />
-							<html:hidden name="<%=frmName%>" property="<%= "roomGroupLevels[" + ctr + "]" %>" value="<%=(String)frm.getRoomGroupLevels().get(ctr.intValue())%>" />
+							<html:hidden name="<%=frmName%>" property='<%= "roomGroups[" + ctr + "]" %>' value="<%=(String)frm.getRoomGroups().get(ctr.intValue())%>" />
+							<html:hidden name="<%=frmName%>" property='<%= "roomGroupLevels[" + ctr + "]" %>' value="<%=(String)frm.getRoomGroupLevels().get(ctr.intValue())%>" />
 					<%
 						}
 					%>
-					<html:select style="width:350;" property="<%= "roomGroups[" + ctr + "]" %>"
+					<html:select style="width:350;" property='<%= "roomGroups[" + ctr + "]" %>'
 						onfocus="setUp();" 
 						onkeypress="return selectSearch(event, this);" 
 						onkeydown="return checkKey(event, this);" 
@@ -131,13 +131,13 @@
 						<html:options collection="<%=RoomGroup.GROUP_LIST_ATTR_NAME%>" property="uniqueId" labelProperty="nameWithTitle" />
 					</html:select>
 					&nbsp;&nbsp;
-					<html:select property="<%= "roomGroupLevels[" + ctr + "]" %>" disabled="<%=disabled%>">					
+					<html:select property='<%= "roomGroupLevels[" + ctr + "]" %>' disabled="<%=disabled%>">					
 						<html:option value="-">-</html:option>
 						<logic:iterate scope="request" name="<%=PreferenceLevel.PREF_LEVEL_ATTR_NAME%>" id="prLevel">
 						<% pr = (PreferenceLevel)prLevel; 
 						   if (frm.getAllowHardPrefs() || disabled || !pr.isHard()) {%>
 							<html:option
-								style="<%="background-color:" + pr.prefcolor() + ";"%>"
+								style='<%="background-color:" + pr.prefcolor() + ";"%>'
 								value="<%=pr.getUniqueId().toString()%>" >
 								<%=pr.getPrefName()%>
 							</html:option>
@@ -146,7 +146,7 @@
 					</html:select> &nbsp;
 					<html:submit property="op" 
 						styleClass="btn" titleKey="title.removeRoomGroupPref"
-						onclick="<%= "javascript: doDel('rgPref', '" + ctr + "');"%>">
+						onclick="<%= \"javascript: doDel('rgPref', '\" + ctr + \"');\"%>">
 						<bean:message key="button.delete" />
 					</html:submit> 	
 		
@@ -176,12 +176,12 @@
 						boolean disabled = !frm.getAllowHardPrefs() && !Preference.BLANK_PREF_VALUE.equals(levelId) && PreferenceLevel.getPreferenceLevel(Integer.parseInt(levelId)).isHard();
 						if (disabled) {
 					%>
-							<html:hidden name="<%=frmName%>" property="<%= "roomPrefs[" + ctr + "]" %>" value="<%=(String)frm.getRoomPrefs().get(ctr.intValue())%>" />
-							<html:hidden name="<%=frmName%>" property="<%= "roomPrefLevels[" + ctr + "]" %>" value="<%=(String)frm.getRoomPrefLevels().get(ctr.intValue())%>" />
+							<html:hidden name="<%=frmName%>" property='<%= "roomPrefs[" + ctr + "]" %>' value="<%=(String)frm.getRoomPrefs().get(ctr.intValue())%>" />
+							<html:hidden name="<%=frmName%>" property='<%= "roomPrefLevels[" + ctr + "]" %>' value="<%=(String)frm.getRoomPrefLevels().get(ctr.intValue())%>" />
 					<%
 						}
 					%>
-					<html:select style="width:350;" property="<%= "roomPrefs[" + ctr + "]" %>"
+					<html:select style="width:350;" property='<%= "roomPrefs[" + ctr + "]" %>'
 						onfocus="setUp();" 
 						onkeypress="return selectSearch(event, this);" 
 						onkeydown="return checkKey(event, this);" 
@@ -190,13 +190,13 @@
 						<html:options collection="<%=Room.ROOM_LIST_ATTR_NAME%>" property="uniqueId" labelProperty="label" />
 					</html:select>
 					&nbsp;&nbsp;
-					<html:select property="<%= "roomPrefLevels[" + ctr + "]" %>" disabled="<%=disabled%>">					
+					<html:select property='<%= "roomPrefLevels[" + ctr + "]" %>' disabled="<%=disabled%>">					
 						<html:option value="-">-</html:option>
 						<logic:iterate scope="request" name="<%=PreferenceLevel.PREF_LEVEL_ATTR_NAME%>" id="prLevel">
 						<% pr = (PreferenceLevel)prLevel; 
 						   if (frm.getAllowHardPrefs() || disabled || !pr.isHard()) {%>
 							<html:option
-								style="<%="background-color:" + pr.prefcolor() + ";"%>"
+								style='<%="background-color:" + pr.prefcolor() + ";"%>'
 								value="<%=pr.getUniqueId().toString()%>" >
 								<%=pr.getPrefName()%>
 							</html:option>
@@ -205,7 +205,7 @@
 					</html:select> &nbsp;
 					<html:submit property="op" 
 						styleClass="btn" titleKey="title.removeRoomPref"
-						onclick="<%= "javascript: doDel('roomPref', '" + ctr + "');"%>">
+						onclick="<%= \"javascript: doDel('roomPref', '\" + ctr + \"');\"%>">
 						<bean:message key="button.delete" />
 					</html:submit> 			
 				</TD>
@@ -235,12 +235,12 @@
 						boolean disabled = !frm.getAllowHardPrefs() && !Preference.BLANK_PREF_VALUE.equals(levelId) && PreferenceLevel.getPreferenceLevel(Integer.parseInt(levelId)).isHard();
 						if (disabled) {
 					%>
-							<html:hidden name="<%=frmName%>" property="<%= "bldgPrefs[" + ctr + "]" %>" value="<%=(String)frm.getBldgPrefs().get(ctr.intValue())%>" />
-							<html:hidden name="<%=frmName%>" property="<%= "bldgPrefLevels[" + ctr + "]" %>" value="<%=(String)frm.getBldgPrefLevels().get(ctr.intValue())%>" />
+							<html:hidden name="<%=frmName%>" property='<%= "bldgPrefs[" + ctr + "]" %>' value="<%=(String)frm.getBldgPrefs().get(ctr.intValue())%>" />
+							<html:hidden name="<%=frmName%>" property='<%= "bldgPrefLevels[" + ctr + "]" %>' value="<%=(String)frm.getBldgPrefLevels().get(ctr.intValue())%>" />
 					<%
 						}
 					%>
-					<html:select style="width:350;" property="<%= "bldgPrefs[" + ctr + "]" %>"
+					<html:select style="width:350;" property='<%= "bldgPrefs[" + ctr + "]" %>'
 						onfocus="setUp();" 
 						onkeypress="return selectSearch(event, this);" 
 						onkeydown="return checkKey(event, this);" 
@@ -249,13 +249,13 @@
 						<html:options collection="<%=Building.BLDG_LIST_ATTR_NAME%>" property="uniqueId" labelProperty="abbrName" />
 					</html:select>
 					&nbsp;&nbsp;
-					<html:select property="<%= "bldgPrefLevels[" + ctr + "]" %>" disabled="<%=disabled%>">					
+					<html:select property='<%= "bldgPrefLevels[" + ctr + "]" %>' disabled="<%=disabled%>">					
 						<html:option value="-">-</html:option>
 						<logic:iterate scope="request" name="<%=PreferenceLevel.PREF_LEVEL_ATTR_NAME%>" id="prLevel">
 						<% pr = (PreferenceLevel)prLevel; 
 						   if (frm.getAllowHardPrefs() || disabled || !pr.isHard()) {%>
 							<html:option
-								style="<%="background-color:" + pr.prefcolor() + ";"%>"
+								style='<%="background-color:" + pr.prefcolor() + ";"%>'
 								value="<%=pr.getUniqueId().toString()%>" >
 								<%=pr.getPrefName()%>
 							</html:option>
@@ -264,7 +264,7 @@
 					</html:select> &nbsp;
 					<html:submit property="op" 
 						styleClass="btn" titleKey="title.removeBldgPref"
-						onclick="<%= "javascript: doDel('bldgPref', '" + ctr + "');"%>">
+						onclick="<%= \"javascript: doDel('bldgPref', '\" + ctr + \"');\"%>">
 						<bean:message key="button.delete" />
 					</html:submit> 			
 				</TD>
@@ -294,12 +294,12 @@
 						boolean disabled = !frm.getAllowHardPrefs() && !Preference.BLANK_PREF_VALUE.equals(levelId) && PreferenceLevel.getPreferenceLevel(Integer.parseInt(levelId)).isHard();
 						if (disabled) {
 					%>
-							<html:hidden name="<%=frmName%>" property="<%= "roomFeaturePrefs[" + ctr + "]" %>" value="<%=(String)frm.getRoomFeaturePrefs().get(ctr.intValue())%>" />
-							<html:hidden name="<%=frmName%>" property="<%= "roomFeaturePrefLevels[" + ctr + "]" %>" value="<%=(String)frm.getRoomFeaturePrefLevels().get(ctr.intValue())%>" />
+							<html:hidden name="<%=frmName%>" property='<%= "roomFeaturePrefs[" + ctr + "]" %>' value="<%=(String)frm.getRoomFeaturePrefs().get(ctr.intValue())%>" />
+							<html:hidden name="<%=frmName%>" property='<%= "roomFeaturePrefLevels[" + ctr + "]" %>' value="<%=(String)frm.getRoomFeaturePrefLevels().get(ctr.intValue())%>" />
 					<%
 						}
 					%>
-					<html:select style="width:350;" property="<%= "roomFeaturePrefs[" + ctr + "]" %>"
+					<html:select style="width:350;" property='<%= "roomFeaturePrefs[" + ctr + "]" %>'
 						onfocus="setUp();" 
 						onkeypress="return selectSearch(event, this);" 
 						onkeydown="return checkKey(event, this);" 
@@ -308,13 +308,13 @@
 						<html:options collection="<%=RoomFeature.FEATURE_LIST_ATTR_NAME%>" property="uniqueId" labelProperty="labelWithType" />
 					</html:select>
 					&nbsp;&nbsp;
-					<html:select property="<%= "roomFeaturePrefLevels[" + ctr + "]" %>" disabled="<%=disabled%>">					
+					<html:select property='<%= "roomFeaturePrefLevels[" + ctr + "]" %>' disabled="<%=disabled%>">					
 						<html:option value="-">-</html:option>
 						<logic:iterate scope="request" name="<%=PreferenceLevel.PREF_LEVEL_ATTR_NAME%>" id="prLevel">
 						<% pr = (PreferenceLevel)prLevel; 
 						   if (frm.getAllowHardPrefs() || disabled || !pr.isHard()) {%>
 							<html:option
-								style="<%="background-color:" + pr.prefcolor() + ";"%>"
+								style='<%="background-color:" + pr.prefcolor() + ";"%>'
 								value="<%=pr.getUniqueId().toString()%>" >
 								<%=pr.getPrefName()%>
 							</html:option>
@@ -323,7 +323,7 @@
 					</html:select> &nbsp;
 					<html:submit property="op" 
 						styleClass="btn"  titleKey="title.removeRoomFeaturePref"
-						onclick="<%= "javascript: doDel('roomFeaturePref', '" + ctr + "');"%>">
+						onclick="<%= \"javascript: doDel('roomFeaturePref', '\" + ctr + \"');\"%>">
 						<bean:message key="button.delete" />
 					</html:submit> 			
 				</TD>
@@ -353,12 +353,12 @@
 						boolean disabled = !frm.getAllowHardPrefs() && !Preference.BLANK_PREF_VALUE.equals(levelId) && PreferenceLevel.getPreferenceLevel(Integer.parseInt(levelId)).isHard(); 
 						if (disabled) {
 					%>
-							<html:hidden name="<%=frmName%>" property="<%= "distPrefs[" + ctr + "]" %>" value="<%=(String)frm.getDistPrefs().get(ctr.intValue())%>" />
-							<html:hidden name="<%=frmName%>" property="<%= "distPrefLevels[" + ctr + "]" %>" value="<%=(String)frm.getDistPrefLevels().get(ctr.intValue())%>" />
+							<html:hidden name="<%=frmName%>" property='<%= "distPrefs[" + ctr + "]" %>' value="<%=(String)frm.getDistPrefs().get(ctr.intValue())%>" />
+							<html:hidden name="<%=frmName%>" property='<%= "distPrefLevels[" + ctr + "]" %>' value="<%=(String)frm.getDistPrefLevels().get(ctr.intValue())%>" />
 					<%
 						}
 					%>
-					<html:select style="width:350;" property="<%= "distPrefs[" + ctr + "]" %>"
+					<html:select style="width:350;" property='<%= "distPrefs[" + ctr + "]" %>'
 						onfocus="setUp();" 
 						onkeypress="return selectSearch(event, this);" 
 						onkeydown="return checkKey(event, this);" 
@@ -367,13 +367,13 @@
 						<html:options collection="<%=DistributionType.DIST_TYPE_ATTR_NAME%>" property="uniqueId" labelProperty="label" />
 					</html:select>
 					&nbsp;&nbsp;
-					<html:select property="<%= "distPrefLevels[" + ctr + "]" %>" disabled="<%=disabled%>">					
+					<html:select property='<%= "distPrefLevels[" + ctr + "]" %>' disabled="<%=disabled%>">					
 						<html:option value="-">-</html:option>
 						<logic:iterate scope="request" name="<%=PreferenceLevel.PREF_LEVEL_ATTR_NAME%>" id="prLevel">
 						<% pr = (PreferenceLevel)prLevel; 
 						   if (frm.getAllowHardPrefs() || disabled || !pr.isHard()) {%>
 							<html:option
-								style="<%="background-color:" + pr.prefcolor() + ";"%>"
+								style='<%="background-color:" + pr.prefcolor() + ";"%>'
 								value="<%=pr.getUniqueId().toString()%>" >
 								<%=pr.getPrefName()%>
 							</html:option>
@@ -382,7 +382,7 @@
 					</html:select> &nbsp;
 					<html:submit property="op" 
 						styleClass="btn" titleKey="title.removeDistPref"
-						onclick="<%= "javascript: doDel('distPref', '" + ctr + "');"%>">
+						onclick="<%= \"javascript: doDel('distPref', '\" + ctr + \"');\"%>">
 						<bean:message key="button.delete" />
 					</html:submit> 			
 				</TD>

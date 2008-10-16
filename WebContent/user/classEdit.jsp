@@ -386,29 +386,29 @@
 						<TR>
 							<TD align="left" nowrap>	
 								<html:select style="width:250;" 
-									styleId="<%= "instructors" + ctr %>" 
-									property="<%= "instructors[" + ctr + "]" %>"
-									onchange="<%= "instructorChanged("+ctr+", this);"%>"
+									styleId='<%= "instructors" + ctr %>' 
+									property='<%= "instructors[" + ctr + "]" %>'
+									onchange='<%= "instructorChanged("+ctr+", this);"%>'
 									onkeypress="return selectSearch(event, this);" 
 									onkeydown="return checkKey(event, this);" >														
 									<html:option value="-">-</html:option>
 									<html:options collection="<%=DepartmentalInstructor.INSTR_LIST_ATTR_NAME + ctr%>" property="value" labelProperty="label" />
 								</html:select>
 							</TD>
-							<html:hidden property="<%="instrHasPref["+ctr+"]" %>" styleId="<%="instrHasPref"+ctr%>"/>
+							<html:hidden property='<%="instrHasPref["+ctr+"]" %>' styleId='<%="instrHasPref"+ctr%>'/>
 							<TD nowrap align="center">
-								<html:text property="<%= "instrPctShare[" + ctr + "]" %>" size="3" maxlength="3" />
+								<html:text property='<%= "instrPctShare[" + ctr + "]" %>' size="3" maxlength="3" />
 							</TD>
 							<TD nowrap align="center">
-								<html:checkbox property="<%="instrLead[" + ctr + "]"%>" 
-									styleId="<%= "instrLead" + ctr %>" 
-									onclick="<%= "instructorChanged("+ctr+", this);"%>"
+								<html:checkbox property='<%="instrLead[" + ctr + "]"%>' 
+									styleId='<%= "instrLead" + ctr %>' 
+									onclick='<%= "instructorChanged("+ctr+", this);"%>'
 								/>
 							</TD>
 							<TD nowrap>
 								<html:submit property="op" 
 									styleClass="btn"
-									onclick="<%= "javascript: doDel('instructor', '" + ctr + "');"%>">
+									onclick="<%= \"javascript: doDel('instructor', '\" + ctr + \"');\"%>">
 									<bean:message key="button.delete" />
 								</html:submit> 			
 							</TD>

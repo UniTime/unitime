@@ -29,7 +29,7 @@
 	<BODY class="bodyMain" onload="document.forms[0].username.focus();">
 
 	<% if (ApplicationProperties.getProperty("tmtbl.header.external", "").trim().length()>0) { %>
-	<jsp:include flush="true" page="<%=ApplicationProperties.getProperty("tmtbl.header.external")%>" />
+	<jsp:include flush="true" page='<%=ApplicationProperties.getProperty("tmtbl.header.external")%>' />
 	<% } %>
 	
 <%
@@ -107,6 +107,6 @@
 		&nbsp;
 
 		<% if (ApplicationProperties.getProperty("tmtbl.footer.external", "").trim().length()>0) { %>
-			<jsp:include flush="true" page="<%=ApplicationProperties.getProperty("tmtbl.footer.external")%>" />
+			<jsp:include flush="true" page='<%=ApplicationProperties.getProperty("tmtbl.footer.external")%>' />
 		<% } %>
 </HTML>

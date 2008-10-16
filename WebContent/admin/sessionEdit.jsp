@@ -227,8 +227,8 @@
 			<bean:define name="roomType" property="reference" id="ref"/>
 			<TR>
 				<TD><bean:write name="roomType" property="label"/></TD>
-				<TD><html:checkbox property="<%="roomOptionScheduleEvents("+ref+")"%>"/></TD>
-				<TD><html:text property="<%="roomOptionMessage("+ref+")"%>" maxlength="200" size="100"/></TD>
+				<TD><html:checkbox property='<%="roomOptionScheduleEvents("+ref+")"%>'/></TD>
+				<TD><html:text property='<%="roomOptionMessage("+ref+")"%>' maxlength="200" size="100"/></TD>
 			</TR>
 		</logic:iterate>
 

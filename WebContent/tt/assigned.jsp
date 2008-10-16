@@ -66,7 +66,7 @@ try {
 %>
 		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
 			<tr>
-				<td colspan="<%=request.getAttribute("AssignedClasses.table.colspan")%>">
+				<td colspan='<%=request.getAttribute("AssignedClasses.table.colspan")%>'>
 					<i>
 						NOTE: Only classes that are <%=solver==null?"included in the selected solution":"loaded into the solver"%> 
 						are displayed in the below list. This means that classes that are assigned to other timetabling managers 
@@ -78,13 +78,13 @@ try {
 				</td>
 			</tr>
 			<tr>
-				<td colspan="<%=request.getAttribute("AssignedClasses.table.colspan")%>">
+				<td colspan='<%=request.getAttribute("AssignedClasses.table.colspan")%>'>
 					&nbsp;
 				</td>
 			</tr>
 			<%=assigned%>
 			<tr>
-				<td colspan="<%=request.getAttribute("AssignedClasses.table.colspan")%>">
+				<td colspan='<%=request.getAttribute("AssignedClasses.table.colspan")%>'>
 					<tt:displayPrefLevelLegend/>
 					<br>
 					<i>
