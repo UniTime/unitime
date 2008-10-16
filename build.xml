@@ -378,6 +378,26 @@
 			<jvmarg line="${java.opts}"/>
 		</java>
 	</target>
+	
+	<target name="check-jsp" depends="init,check-tomcat-home">
+		<java classname="org.apache.jasper.JspC" fork="yes">
+			<arg line="-uriroot ${jsp.dir} -d ${temp.dir} -p org.apache.jsp -webapp ${jsp.dir} -v -compile -source 1.5 -target 1.5" />
+			<classpath>
+	            <fileset dir="${lib.dir}">
+	            	<include name="*.jar"/>
+	            </fileset>
+	        	<fileset dir="${env.TOMCAT_HOME}/lib">
+	        		<include name="*.jar"/>
+	       		</fileset>
+	        	<fileset dir="${env.TOMCAT_HOME}/bin">
+	        		<include name="*.jar"/>
+	       		</fileset>
+	        	<fileset dir="${3rd_party.dir}">
+	        		<include name="*.jar"/>
+	        	</fileset>
+	        </classpath>
+		</java>
+	</target>
 
 	<target name="build" depends="load-properties,compile-war,done" />
 	<target name="dist" depends="load-properties,compile-war,wiki,build-dist,done" />
