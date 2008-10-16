@@ -287,7 +287,7 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
     	if (user.isAdmin()){
     		return(true);
     	} 
-    	if (user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE))
+    	if (user.getCurrentRole() == null || user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE))
     		return false;
     	return(this.canUserEdit(user));
     }
