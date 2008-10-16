@@ -83,7 +83,7 @@ public class DistributionType extends BaseDistributionType implements Comparable
     	TreeSet ret = new TreeSet();
     	for (Iterator i=findAll(instructorPrefOnly,examPref).iterator();i.hasNext();) {
     		DistributionType dt = (DistributionType)i.next();
-    		Set depts = dt.getDepartments(session.getUniqueId());
+    		Set depts = dt.getDepartments(session==null?null:session.getUniqueId());
     		if (depts.isEmpty()) {
     			ret.add(dt);
     		} else {
