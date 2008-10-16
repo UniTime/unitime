@@ -62,23 +62,23 @@ try {
 		</TR>
 		<logic:iterate name="examGridForm" property="examTypes" id="et">
 			<bean:define name="et" property="value" id="examType"/>
-			<TR id="<%="daterow."+examType%>">
+			<TR id='<%="daterow."+examType%>'>
 				<TD>Date:</TD>
 				<TD>
-					<html:select property="<%="date["+examType+"]"%>">
-						<html:optionsCollection name="examGridForm" property="<%="dates["+examType+"]"%>" label="label" value="value"/>
+					<html:select property='<%="date["+examType+"]"%>'>
+						<html:optionsCollection name="examGridForm" property='<%="dates["+examType+"]"%>' label="label" value="value"/>
 					</html:select>
 				</TD>
 			</TR>
-			<TR id="<%="timerow."+examType%>">
+			<TR id='<%="timerow."+examType%>'>
 				<TD>Time:</TD>
 				<TD>
-					<html:select property="<%="startTime["+examType+"]"%>">
-						<html:optionsCollection name="examGridForm" property="<%="startTimes["+examType+"]"%>" label="label" value="value"/>
+					<html:select property='<%="startTime["+examType+"]"%>'>
+						<html:optionsCollection name="examGridForm" property='<%="startTimes["+examType+"]"%>' label="label" value="value"/>
 					</html:select>
 					-
-					<html:select property="<%="endTime["+examType+"]"%>">
-						<html:optionsCollection name="examGridForm" property="<%="endTimes["+examType+"]"%>" label="label" value="value"/>
+					<html:select property='<%="endTime["+examType+"]"%>'>
+						<html:optionsCollection name="examGridForm" property='<%="endTimes["+examType+"]"%>' label="label" value="value"/>
 					</html:select>
 				</TD>
 			</TR>

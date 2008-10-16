@@ -85,15 +85,15 @@
 					}			
 				%> 
 					<% if (disabled1) { %>
-						<html:hidden property="<%= "globalRoomGroupsAssigned[" + ctr + "]" %>"/>
+						<html:hidden property='<%= "globalRoomGroupsAssigned[" + ctr + "]" %>'/>
 					<% } %>
-					<html:checkbox property="<%= "globalRoomGroupsAssigned[" + ctr + "]" %>" 
+					<html:checkbox property='<%= "globalRoomGroupsAssigned[" + ctr + "]" %>' 
 									disabled="<%=disabled1%>" >
 					</html:checkbox>
-					<html:hidden property="<%= "globalRoomGroupIds[" + ctr + "]" %>"/>
-					<html:hidden property="<%= "globalRoomGroupNames[" + ctr + "]" %>"/>
+					<html:hidden property='<%= "globalRoomGroupIds[" + ctr + "]" %>'/>
+					<html:hidden property='<%= "globalRoomGroupNames[" + ctr + "]" %>'/>
 					&nbsp;&nbsp;
-					<bean:write name="<%=frmName%>" property="<%= "globalRoomGroupNames[" + ctr + "]" %>"/> &nbsp;	
+					<bean:write name="<%=frmName%>" property='<%= "globalRoomGroupNames[" + ctr + "]" %>'/> &nbsp;	
 				</TD>
 			</TR>
 		</logic:iterate>
@@ -116,15 +116,15 @@
 					}			
 				%> 
 					<% if (disabled2) { %>
-						<html:hidden property="<%= "managerRoomGroupsAssigned[" + ctr + "]" %>"/>
+						<html:hidden property='<%= "managerRoomGroupsAssigned[" + ctr + "]" %>'/>
 					<% } %>
-					<html:checkbox property="<%= "managerRoomGroupsAssigned[" + ctr + "]" %>" 
+					<html:checkbox property='<%= "managerRoomGroupsAssigned[" + ctr + "]" %>' 
 									disabled="<%=disabled2%>" >
 					</html:checkbox>
-					<html:hidden property="<%= "managerRoomGroupIds[" + ctr + "]" %>"/>
-					<html:hidden property="<%= "managerRoomGroupNames[" + ctr + "]" %>"/>
+					<html:hidden property='<%= "managerRoomGroupIds[" + ctr + "]" %>'/>
+					<html:hidden property='<%= "managerRoomGroupNames[" + ctr + "]" %>'/>
 					&nbsp;&nbsp;
-					<bean:write name="<%=frmName%>" property="<%= "managerRoomGroupNames[" + ctr + "]" %>"/> &nbsp;	
+					<bean:write name="<%=frmName%>" property='<%= "managerRoomGroupNames[" + ctr + "]" %>'/> &nbsp;	
 				</TD>
 			</TR>
 		</logic:iterate>

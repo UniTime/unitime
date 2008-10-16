@@ -84,14 +84,14 @@
 						disabled1 = false;
 					}								
 				%> 				
-					<% if (disabled1) { %><html:hidden property="<%= "globalRoomFeaturesAssigned[" + ctr + "]" %>"/><% } %>
-					<html:checkbox property="<%= "globalRoomFeaturesAssigned[" + ctr + "]" %>" 
+					<% if (disabled1) { %><html:hidden property='<%= "globalRoomFeaturesAssigned[" + ctr + "]" %>'/><% } %>
+					<html:checkbox property='<%= "globalRoomFeaturesAssigned[" + ctr + "]" %>' 
 									disabled="<%=disabled1%>" >
 					</html:checkbox>
-					<html:hidden property="<%= "globalRoomFeatureIds[" + ctr + "]" %>"/>
-					<html:hidden property="<%= "globalRoomFeatureNames[" + ctr + "]" %>"/>
+					<html:hidden property='<%= "globalRoomFeatureIds[" + ctr + "]" %>'/>
+					<html:hidden property='<%= "globalRoomFeatureNames[" + ctr + "]" %>'/>
 					&nbsp;&nbsp;
-					<bean:write name="<%=frmName%>" property="<%= "globalRoomFeatureNames[" + ctr + "]" %>"/> &nbsp;	
+					<bean:write name="<%=frmName%>" property='<%= "globalRoomFeatureNames[" + ctr + "]" %>'/> &nbsp;	
 				</TD>
 			</TR>
 		</logic:iterate>
@@ -114,14 +114,14 @@
 						disabled2 = false;
 					}			
 				%> 
-					<% if (disabled2) { %><html:hidden property="<%= "departmentRoomFeaturesAssigned[" + ctr + "]" %>"/><% } %>
-					<html:checkbox property="<%= "departmentRoomFeaturesAssigned[" + ctr + "]" %>" 
+					<% if (disabled2) { %><html:hidden property='<%= "departmentRoomFeaturesAssigned[" + ctr + "]" %>'/><% } %>
+					<html:checkbox property='<%= "departmentRoomFeaturesAssigned[" + ctr + "]" %>' 
 									disabled="<%=disabled2%>" >
 					</html:checkbox>
-					<html:hidden property="<%= "departmentRoomFeatureIds[" + ctr + "]" %>"/>
-					<html:hidden property="<%= "departmentRoomFeatureNames[" + ctr + "]" %>"/>
+					<html:hidden property='<%= "departmentRoomFeatureIds[" + ctr + "]" %>'/>
+					<html:hidden property='<%= "departmentRoomFeatureNames[" + ctr + "]" %>'/>
 					&nbsp;&nbsp;
-					<bean:write name="<%=frmName%>" property="<%= "departmentRoomFeatureNames[" + ctr + "]" %>"/> &nbsp;	
+					<bean:write name="<%=frmName%>" property='<%= "departmentRoomFeatureNames[" + ctr + "]" %>'/> &nbsp;	
 				</TD>
 			</TR>
 		</logic:iterate>

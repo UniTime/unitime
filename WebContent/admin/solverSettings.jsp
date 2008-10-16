@@ -163,8 +163,8 @@
 				if (!def.isVisible().booleanValue()) continue;
 				if (!correctType) {
 %>
-			<html:hidden property="<%="useDefault["+def.getUniqueId()+"]"%>" />
-			<html:hidden property="<%="parameter["+def.getUniqueId()+"]"%>" />
+			<html:hidden property='<%="useDefault["+def.getUniqueId()+"]"%>' />
+			<html:hidden property='<%="parameter["+def.getUniqueId()+"]"%>' />
 <%
 				
 					continue defs;
@@ -176,15 +176,15 @@
 				if (def.getDefault()!=null) {
 					if ("boolean".equals(def.getType())) { 
 %>
-						<html:checkbox onclick="<%="solverSettingsForm['parameter["+def.getUniqueId()+"]'].disabled=this.checked;solverSettingsForm['parameter["+def.getUniqueId()+"]'].checked="+def.getDefault()+";"%>" property="<%="useDefault["+def.getUniqueId()+"]"%>"/>
+						<html:checkbox onclick="<%=\"solverSettingsForm['parameter[\"+def.getUniqueId()+\"]'].disabled=this.checked;solverSettingsForm['parameter[\"+def.getUniqueId()+\"]'].checked=\"+def.getDefault()+\";\"%>" property='<%="useDefault["+def.getUniqueId()+"]"%>'/>
 <%
 					} else if ("timepref".equals(def.getType())) {
 %>
-						<html:checkbox onclick="<%="document.getElementById('tp_enable_"+def.getUniqueId()+"').style.display=(this.checked?'none':'block');document.getElementById('tp_disable_"+def.getUniqueId()+"').style.display=(this.checked?'block':'none');"%>" property="<%="useDefault["+def.getUniqueId()+"]"%>"/>
+						<html:checkbox onclick="<%=\"document.getElementById('tp_enable_\"+def.getUniqueId()+\"').style.display=(this.checked?'none':'block');document.getElementById('tp_disable_\"+def.getUniqueId()+\"').style.display=(this.checked?'block':'none');\"%>" property='<%="useDefault["+def.getUniqueId()+"]"%>'/>
 <%
 					} else {
 %>
-						<html:checkbox onclick="<%="solverSettingsForm['parameter["+def.getUniqueId()+"]'].disabled=this.checked;solverSettingsForm['parameter["+def.getUniqueId()+"]'].value='"+def.getDefault()+"';"%>" property="<%="useDefault["+def.getUniqueId()+"]"%>"/>
+						<html:checkbox onclick="<%=\"solverSettingsForm['parameter[\"+def.getUniqueId()+\"]'].disabled=this.checked;solverSettingsForm['parameter[\"+def.getUniqueId()+\"]'].value='\"+def.getDefault()+\"';\"%>" property='<%="useDefault["+def.getUniqueId()+"]"%>'/>
 <%
 					}
 				}
@@ -195,46 +195,46 @@
 <%
 				if ("boolean".equals(def.getType())) { 
 %>
-				<logic:equal name="solverSettingsForm" property="<%="useDefault["+def.getUniqueId()+"]"%>" value="false">
-					<html:checkbox property="<%="parameter["+def.getUniqueId()+"]"%>" disabled="false"/>
+				<logic:equal name="solverSettingsForm" property='<%="useDefault["+def.getUniqueId()+"]"%>' value="false">
+					<html:checkbox property='<%="parameter["+def.getUniqueId()+"]"%>' disabled="false"/>
 				</logic:equal>
-				<logic:equal name="solverSettingsForm" property="<%="useDefault["+def.getUniqueId()+"]"%>" value="true">
-					<html:checkbox property="<%="parameter["+def.getUniqueId()+"]"%>" disabled="true"/>
+				<logic:equal name="solverSettingsForm" property='<%="useDefault["+def.getUniqueId()+"]"%>' value="true">
+					<html:checkbox property='<%="parameter["+def.getUniqueId()+"]"%>' disabled="true"/>
 				</logic:equal>
-  				&nbsp;<html:errors property="<%="parameter["+def.getUniqueId()+"]"%>"/>
+  				&nbsp;<html:errors property='<%="parameter["+def.getUniqueId()+"]"%>'/>
 <%
  				} else if (def.getType().startsWith("enum(") && def.getType().endsWith(")")) { 
 %>
-				<logic:equal name="solverSettingsForm" property="<%="useDefault["+def.getUniqueId()+"]"%>" value="false">
-					<html:select property="<%="parameter["+def.getUniqueId()+"]"%>" disabled="false">
-						<html:options property="<%="enum("+def.getType()+")"%>"/>
+				<logic:equal name="solverSettingsForm" property='<%="useDefault["+def.getUniqueId()+"]"%>' value="false">
+					<html:select property='<%="parameter["+def.getUniqueId()+"]"%>' disabled="false">
+						<html:options property='<%="enum("+def.getType()+")"%>'/>
 					</html:select>
 				</logic:equal>
-				<logic:equal name="solverSettingsForm" property="<%="useDefault["+def.getUniqueId()+"]"%>" value="true">
-					<html:select property="<%="parameter["+def.getUniqueId()+"]"%>" disabled="true">
-						<html:options property="<%="enum("+def.getType()+")"%>"/>
+				<logic:equal name="solverSettingsForm" property='<%="useDefault["+def.getUniqueId()+"]"%>' value="true">
+					<html:select property='<%="parameter["+def.getUniqueId()+"]"%>' disabled="true">
+						<html:options property='<%="enum("+def.getType()+")"%>'/>
 					</html:select>
 				</logic:equal>
 <%
  				} else if ("double".equals(def.getType())) { 
 %>
-				<logic:equal name="solverSettingsForm" property="<%="useDefault["+def.getUniqueId()+"]"%>" value="false">
-					<html:text property="<%="parameter["+def.getUniqueId()+"]"%>" size="10" maxlength="10" disabled="false"/>
+				<logic:equal name="solverSettingsForm" property='<%="useDefault["+def.getUniqueId()+"]"%>' value="false">
+					<html:text property='<%="parameter["+def.getUniqueId()+"]"%>' size="10" maxlength="10" disabled="false"/>
 				</logic:equal>
-				<logic:equal name="solverSettingsForm" property="<%="useDefault["+def.getUniqueId()+"]"%>" value="true">
-					<html:text property="<%="parameter["+def.getUniqueId()+"]"%>" size="10" maxlength="10" disabled="true"/>
+				<logic:equal name="solverSettingsForm" property='<%="useDefault["+def.getUniqueId()+"]"%>' value="true">
+					<html:text property='<%="parameter["+def.getUniqueId()+"]"%>' size="10" maxlength="10" disabled="true"/>
 				</logic:equal>
-  				&nbsp;<html:errors property="<%="parameter["+def.getUniqueId()+"]"%>"/>
+  				&nbsp;<html:errors property='<%="parameter["+def.getUniqueId()+"]"%>'/>
 <%
  				} else if ("integer".equals(def.getType())) { 
 %>
-				<logic:equal name="solverSettingsForm" property="<%="useDefault["+def.getUniqueId()+"]"%>" value="false">
-					<html:text property="<%="parameter["+def.getUniqueId()+"]"%>" size="10" maxlength="10" disabled="false"/>
+				<logic:equal name="solverSettingsForm" property='<%="useDefault["+def.getUniqueId()+"]"%>' value="false">
+					<html:text property='<%="parameter["+def.getUniqueId()+"]"%>' size="10" maxlength="10" disabled="false"/>
 				</logic:equal>
-				<logic:equal name="solverSettingsForm" property="<%="useDefault["+def.getUniqueId()+"]"%>" value="true">
-					<html:text property="<%="parameter["+def.getUniqueId()+"]"%>" size="10" maxlength="10" disabled="true"/>
+				<logic:equal name="solverSettingsForm" property='<%="useDefault["+def.getUniqueId()+"]"%>' value="true">
+					<html:text property='<%="parameter["+def.getUniqueId()+"]"%>' size="10" maxlength="10" disabled="true"/>
 				</logic:equal>
-  				&nbsp;<html:errors property="<%="parameter["+def.getUniqueId()+"]"%>"/>
+  				&nbsp;<html:errors property='<%="parameter["+def.getUniqueId()+"]"%>'/>
 <%
  				} else if ("timepref".equals(def.getType())) { 
 %>
@@ -255,17 +255,17 @@
 					out.print(rtt.print(false,false,false,false));
 %>
 						</div>
-  				&nbsp;<html:errors property="<%="parameter["+def.getUniqueId()+"]"%>"/>
+  				&nbsp;<html:errors property='<%="parameter["+def.getUniqueId()+"]"%>'/>
 <%
  				} else { 
 %>
-				<logic:equal name="solverSettingsForm" property="<%="useDefault["+def.getUniqueId()+"]"%>" value="false">
-					<html:text property="<%="parameter["+def.getUniqueId()+"]"%>" size="30" maxlength="100" disabled="false"/>
+				<logic:equal name="solverSettingsForm" property='<%="useDefault["+def.getUniqueId()+"]"%>' value="false">
+					<html:text property='<%="parameter["+def.getUniqueId()+"]"%>' size="30" maxlength="100" disabled="false"/>
 				</logic:equal>
-				<logic:equal name="solverSettingsForm" property="<%="useDefault["+def.getUniqueId()+"]"%>" value="true">
-					<html:text property="<%="parameter["+def.getUniqueId()+"]"%>" size="30" maxlength="100" disabled="true"/>
+				<logic:equal name="solverSettingsForm" property='<%="useDefault["+def.getUniqueId()+"]"%>' value="true">
+					<html:text property='<%="parameter["+def.getUniqueId()+"]"%>' size="30" maxlength="100" disabled="true"/>
 				</logic:equal>
-  				&nbsp;<html:errors property="<%="parameter["+def.getUniqueId()+"]"%>"/>
+  				&nbsp;<html:errors property='<%="parameter["+def.getUniqueId()+"]"%>'/>
 <%
 				}
 %>

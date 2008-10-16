@@ -113,33 +113,33 @@ try {
 			<TD><bean:write name="parameter" property="value"/>:</TD>
 			<TD>
 			<logic:equal name="parameter" property="type" value="boolean">
-				<html:checkbox property="<%= "parameterValue["+parameter.getId()+"]"%>" disabled="<%=disabled || parameter.getDisabled()%>"/>
-  				&nbsp;<html:errors property="<%= "parameterValue["+parameter.getId()+"]"%>"/>
+				<html:checkbox property='<%= "parameterValue["+parameter.getId()+"]"%>' disabled="<%=disabled || parameter.getDisabled()%>"/>
+  				&nbsp;<html:errors property='<%= "parameterValue["+parameter.getId()+"]"%>'/>
 			</logic:equal>
 			<% if (parameter.getType().startsWith("enum(") && parameter.getType().endsWith(")")) { %>
-				<html:select property="<%="parameterValue["+parameter.getId()+"]"%>" disabled="<%=disabled || parameter.getDisabled()%>">
-					<html:options property="<%="enum("+parameter.getType()+")"%>"/>
+				<html:select property='<%="parameterValue["+parameter.getId()+"]"%>' disabled="<%=disabled || parameter.getDisabled()%>">
+					<html:options property='<%="enum("+parameter.getType()+")"%>'/>
 				</html:select>
-				&nbsp;<html:errors property="<%="parameterValue["+parameter.getId()+"]"%>"/>
+				&nbsp;<html:errors property='<%="parameterValue["+parameter.getId()+"]"%>'/>
 			<% } %>
 			<logic:equal name="parameter" property="type" value="double">
-				<html:text property="<%="parameterValue["+parameter.getId()+"]"%>" size="10" maxlength="10" disabled="<%=disabled || parameter.getDisabled()%>"/>
-  				&nbsp;<html:errors property="<%="parameterValue["+parameter.getId()+"]"%>"/>
+				<html:text property='<%="parameterValue["+parameter.getId()+"]"%>' size="10" maxlength="10" disabled="<%=disabled || parameter.getDisabled()%>"/>
+  				&nbsp;<html:errors property='<%="parameterValue["+parameter.getId()+"]"%>'/>
   			</logic:equal>
 			<logic:equal name="parameter" property="type" value="integer">
-				<html:text property="<%="parameterValue["+parameter.getId()+"]"%>" size="10" maxlength="10" disabled="<%=disabled || parameter.getDisabled()%>"/>
-  				&nbsp;<html:errors property="<%="parameterValue["+parameter.getId()+"]"%>"/>
+				<html:text property='<%="parameterValue["+parameter.getId()+"]"%>' size="10" maxlength="10" disabled="<%=disabled || parameter.getDisabled()%>"/>
+  				&nbsp;<html:errors property='<%="parameterValue["+parameter.getId()+"]"%>'/>
   			</logic:equal>
 			<logic:equal name="parameter" property="type" value="long">
-				<html:text property="<%="parameterValue["+parameter.getId()+"]"%>" size="10" maxlength="10" disabled="<%=disabled || parameter.getDisabled()%>"/>
-  				&nbsp;<html:errors property="<%="parameterValue["+parameter.getId()+"]"%>"/>
+				<html:text property='<%="parameterValue["+parameter.getId()+"]"%>' size="10" maxlength="10" disabled="<%=disabled || parameter.getDisabled()%>"/>
+  				&nbsp;<html:errors property='<%="parameterValue["+parameter.getId()+"]"%>'/>
   			</logic:equal>
 			<logic:equal name="parameter" property="type" value="text">
-				<html:text property="<%="parameterValue["+parameter.getId()+"]"%>" size="30" maxlength="100" disabled="<%=disabled || parameter.getDisabled()%>"/>
-  				&nbsp;<html:errors property="<%="parameterValue["+parameter.getId()+"]"%>"/>
+				<html:text property='<%="parameterValue["+parameter.getId()+"]"%>' size="30" maxlength="100" disabled="<%=disabled || parameter.getDisabled()%>"/>
+  				&nbsp;<html:errors property='<%="parameterValue["+parameter.getId()+"]"%>'/>
 			</logic:equal>	
 			<% if (disabled || parameter.getDisabled()) { %>
-				<html:hidden property="<%="parameterValue["+parameter.getId()+"]"%>"/>
+				<html:hidden property='<%="parameterValue["+parameter.getId()+"]"%>'/>
 			<% } %>
 			</TD>		
 		</TR>

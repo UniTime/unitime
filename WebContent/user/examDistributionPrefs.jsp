@@ -129,7 +129,7 @@
 					<logic:iterate scope="request" name="<%=PreferenceLevel.PREF_LEVEL_ATTR_NAME%>" id="prLevel">
 					<% PreferenceLevel pr = (PreferenceLevel)prLevel; %>			
 					<html:option
-						style="<%="background-color:" + pr.prefcolor() + ";"%>"
+						style='<%="background-color:" + pr.prefcolor() + ";"%>'
 						value="<%=pr.getUniqueId().toString()%>" ><%=
 						pr.getPrefName()
 					%></html:option>
@@ -165,30 +165,30 @@
 			
 				<!-- Class / Subpart -->
 				<html:select style="width:80;" 
-					property="<%= "subjectArea[" + ctr + "]" %>" 
-					onchange="<%= "javascript: doReload('subjectArea', '" + ctr + "');" %>"
+					property='<%= "subjectArea[" + ctr + "]" %>' 
+					onchange="<%= \"javascript: doReload('subjectArea', '\" + ctr + \"');\" %>"
 					onfocus="setUp();" 
 					onkeypress="return selectSearch(event, this);" 
-					onkeydown="<%= "var y=checkKey(event, this); if(y && isModified()) { doReload('subjectArea', '" + ctr + "'); }return y;" %>" 
-					styleId="<%="subjectArea"+ctr%>" >
+					onkeydown="<%= \"var y=checkKey(event, this); if(y && isModified()) { doReload('subjectArea', '\" + ctr + \"'); }return y;\" %>" 
+					styleId='<%="subjectArea"+ctr%>' >
 					<html:option value="-">-</html:option>
 					<html:optionsCollection property="filterSubjectAreas" label="subjectAreaAbbreviation" value="uniqueId"/>
 				</html:select>
 
 				<html:select style="width:80;" 
-					property="<%= "courseNbr[" + ctr + "]" %>" 
-					onchange="<%= "javascript: doReload('exam', '" + ctr + "');" %>"
+					property='<%= "courseNbr[" + ctr + "]" %>' 
+					onchange="<%= \"javascript: doReload('exam', '\" + ctr + \"');\" %>"
 					onfocus="setUp();" 
 					onkeypress="return selectSearch(event, this);" 
-					onkeydown="<%= "var y=checkKey(event, this); if(y && isModified()) { doReload('exam', '" + ctr + "'); }return y;" %>" 
-					styleId="<%="courseNbr"+ctr%>" >
-					<html:optionsCollection property="<%="courseNbrs["+ctr+"]"%>" label="value" value="id"/>
+					onkeydown="<%= \"var y=checkKey(event, this); if(y && isModified()) { doReload('exam', '\" + ctr + \"'); }return y;\" %>" 
+					styleId='<%="courseNbr"+ctr%>' >
+					<html:optionsCollection property='<%="courseNbrs["+ctr+"]"%>' label="value" value="id"/>
 				</html:select>
 
 				<html:select style="width:300;" 
-					property="<%= "exam[" + ctr + "]" %>" 
-					styleId="<%="exam"+ctr%>" >
-					<html:optionsCollection property="<%="exams["+ctr+"]"%>" label="value" value="id"/>
+					property='<%= "exam[" + ctr + "]" %>' 
+					styleId='<%="exam"+ctr%>' >
+					<html:optionsCollection property='<%="exams["+ctr+"]"%>' label="value" value="id"/>
 				</html:select>
 				
 				<!-- Arrows -->
@@ -210,7 +210,7 @@
 
 				<!-- Delete button -->
 				&nbsp;&nbsp;				
-				<html:submit styleClass="btn" property="op" onclick="<%= "javascript: doDel('distObject', '" + ctr + "');" %>">
+				<html:submit styleClass="btn" property="op" onclick="<%= \"javascript: doDel('distObject', '\" + ctr + \"');\" %>">
 					<bean:message key="button.delete" />
 				</html:submit> 			
 				<!--

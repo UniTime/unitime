@@ -184,31 +184,31 @@
 				<html:hidden property="selected"/>
 				<logic:iterate name="eventAddForm" property="subjectAreaList" id="m" indexId="idx">
 					<tr><td>
-					<html:select style="width:80;" property="<%="subjectArea["+idx+"]"%>" styleId="<%="subjectArea"+idx%>" 
+					<html:select style="width:80;" property='<%="subjectArea["+idx+"]"%>' styleId='<%="subjectArea"+idx%>' 
 						onfocus="setUp();" 
 						onkeypress="return selectSearch(event, this);"
-						onchange="<%= "javascript: doAjax('subjectArea', '"+idx+"');" %>" >
+						onchange="<%= \"javascript: doAjax('subjectArea', '\"+idx+\"');\" %>" >
 						<html:option value="-1">-</html:option>
 						<html:optionsCollection property="subjectAreas" label="subjectAreaAbbreviation" value="uniqueId"/>
 					</html:select>
 					</td><td>
-					<html:select style="width:80;" property="<%="courseNbr["+idx+"]"%>" styleId="<%="courseNbr"+idx%>"
+					<html:select style="width:80;" property='<%="courseNbr["+idx+"]"%>' styleId='<%="courseNbr"+idx%>'
 						onfocus="setUp();" 
 						onkeypress="return selectSearch(event, this);"
-						onchange="<%= "javascript: doAjax('courseNbr', '"+idx+"');" %>" >
-						<html:optionsCollection property="<%="courseNbrs["+idx+"]"%>" label="value" value="id"/>
+						onchange="<%= \"javascript: doAjax('courseNbr', '\"+idx+\"');\" %>" >
+						<html:optionsCollection property='<%="courseNbrs["+idx+"]"%>' label="value" value="id"/>
 					</html:select>
 					</td><td>
-					<html:select style="width:150;" property="<%="itype["+idx+"]"%>" styleId="<%="itype"+idx%>"
-						onchange="<%= "javascript: doAjax('itype', '"+idx+"');" %>" >
-						<html:optionsCollection property="<%="itypes["+idx+"]"%>" label="value" value="id" filter="false"/>
+					<html:select style="width:150;" property='<%="itype["+idx+"]"%>' styleId='<%="itype"+idx%>'
+						onchange="<%= \"javascript: doAjax('itype', '\"+idx+\"');\" %>" >
+						<html:optionsCollection property='<%="itypes["+idx+"]"%>' label="value" value="id" filter="false"/>
 					</html:select>
 					</td><td>
-					<html:select style="width:80;" property="<%="classNumber["+idx+"]"%>" styleId="<%="classNumber"+idx%>">
-						<html:optionsCollection property="<%="classNumbers["+idx+"]"%>" label="value" value="id"/>
+					<html:select style="width:80;" property='<%="classNumber["+idx+"]"%>' styleId='<%="classNumber"+idx%>'>
+						<html:optionsCollection property='<%="classNumbers["+idx+"]"%>' label="value" value="id"/>
 					</html:select>
 					</td><td>
-					<html:submit property="op" styleClass="btn" onclick="<%="selected.value='"+idx+"';"%>"
+					<html:submit property="op" styleClass="btn" onclick="<%=\"selected.value='\"+idx+\"';\"%>"
 						title="Delete Course/Class" value="Delete"/>
 					</td></tr>
    				</logic:iterate>

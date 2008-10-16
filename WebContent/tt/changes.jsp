@@ -78,7 +78,7 @@ try {
 		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
 			<%=changes%>
 			<tr>
-				<td colspan="<%=request.getAttribute("SolutionChanges.table.colspan")%>">
+				<td colspan='<%=request.getAttribute("SolutionChanges.table.colspan")%>'>
 					<tt:displayPrefLevelLegend/>
 				</td>
 			</tr>

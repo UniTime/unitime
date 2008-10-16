@@ -272,15 +272,15 @@
 								</logic:iterate>
 								</td>
 								<td>
-									<bean:write name="<%=frmName%>" property="<%= "instrPctShare[" + ctr + "]" %>" />%
+									<bean:write name="<%=frmName%>" property='<%= "instrPctShare[" + ctr + "]" %>' />%
 								</td>
 								<td>
-									<logic:equal name="<%=frmName%>" property="<%="instrLead[" + ctr + "]"%>" value="true"> 
+									<logic:equal name="<%=frmName%>" property='<%="instrLead[" + ctr + "]"%>' value="true"> 
 										<IMG border='0' alt='true' align='absmiddle' src='images/tick.gif'>
 										<%-- <input type='checkbox' checked disabled> --%>
 									</logic:equal>
 									<%-- 
-									<logic:notEqual name="<%=frmName%>" property="<%="instrLead[" + ctr + "]"%>" value="false"> 
+									<logic:notEqual name="<%=frmName%>" property='<%="instrLead[" + ctr + "]"%>' value="false"> 
 										<input type='checkbox' disabled>
 									</logic:notEqual>
 									--%>

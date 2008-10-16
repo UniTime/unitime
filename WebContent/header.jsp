@@ -35,7 +35,7 @@
 			
 			<logic:notEqual name="helpFile" value=""> 
 			<TD align="center" width="40">
-				<A href="help.do?helpFile=<%=request.getAttribute("helpFile").toString()%>" accesskey="H" title="Help (Alt+H)" target="helpWindow"><IMG border="0" align="middle" src="images/Help24.gif" title="Help (Alt+H)" alt="Help (Alt+H)"></A>
+				<A href='help.do?helpFile=<%=request.getAttribute("helpFile").toString()%>' accesskey="H" title="Help (Alt+H)" target="helpWindow"><IMG border="0" align="middle" src="images/Help24.gif" title="Help (Alt+H)" alt="Help (Alt+H)"></A>
 			</TD>
 			</logic:notEqual>
 		
