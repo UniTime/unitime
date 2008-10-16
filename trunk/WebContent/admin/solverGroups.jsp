@@ -83,12 +83,12 @@
 			<TR><TD colspan='2'>&nbsp;</TD></TR>
 			<TR><TD colspan='2'><tt:section-header title="Departments"/></TD></TR>
 			<logic:iterate name="solverGroupEditForm" property="departmentIds" id="departmentId" indexId="ctr">
-				<logic:equal name="solverGroupEditForm" property="<%="assignedDepartments["+ctr+"]"%>" value="true">
+				<logic:equal name="solverGroupEditForm" property='<%="assignedDepartments["+ctr+"]"%>' value="true">
 					<TR><TD colspan='2'>&nbsp;&nbsp;&nbsp;&nbsp;
-							<html:hidden property="<%="departmentIds["+ctr+"]"%>"/>
-							<html:hidden property="<%="departmentNames["+ctr+"]"%>"/>
-							<html:hidden property="<%="assignedDepartments["+ctr+"]"%>"/>
-							<bean:write name="solverGroupEditForm" property="<%="departmentNames["+ctr+"]"%>"/>
+							<html:hidden property='<%="departmentIds["+ctr+"]"%>'/>
+							<html:hidden property='<%="departmentNames["+ctr+"]"%>'/>
+							<html:hidden property='<%="assignedDepartments["+ctr+"]"%>'/>
+							<bean:write name="solverGroupEditForm" property='<%="departmentNames["+ctr+"]"%>'/>
 					</TD></TR>
 				</logic:equal>
 			</logic:iterate>
@@ -99,12 +99,12 @@
 				<TR><TD colspan='2'>&nbsp;</TD></TR>
 				<TR><TD colspan='2'><tt:section-header title="Assigned Departments"/></TD></TR>
 				<logic:iterate name="solverGroupEditForm" property="departmentIds" id="departmentId" indexId="ctr">
-					<logic:equal name="solverGroupEditForm" property="<%="assignedDepartments["+ctr+"]"%>" value="true">
+					<logic:equal name="solverGroupEditForm" property='<%="assignedDepartments["+ctr+"]"%>' value="true">
 						<TR><TD colspan='2'>&nbsp;&nbsp;&nbsp;&nbsp;
-							<html:hidden property="<%="departmentIds["+ctr+"]"%>"/>
-							<html:hidden property="<%="departmentNames["+ctr+"]"%>"/>
-							<html:checkbox property="<%="assignedDepartments["+ctr+"]"%>"/>
-							<bean:write name="solverGroupEditForm" property="<%="departmentNames["+ctr+"]"%>"/>
+							<html:hidden property='<%="departmentIds["+ctr+"]"%>'/>
+							<html:hidden property='<%="departmentNames["+ctr+"]"%>'/>
+							<html:checkbox property='<%="assignedDepartments["+ctr+"]"%>'/>
+							<bean:write name="solverGroupEditForm" property='<%="departmentNames["+ctr+"]"%>'/>
 						</TD></TR>
 					</logic:equal>
 				</logic:iterate>
@@ -115,12 +115,12 @@
 			<TR><TD colspan='2'>&nbsp;</TD></TR>
 			<TR><TD colspan='2'><tt:section-header title="Assigned Managers"/></TD></TR>
 			<logic:iterate name="solverGroupEditForm" property="managerIds" id="managerId" indexId="ctr">
-				<logic:equal name="solverGroupEditForm" property="<%="assignedManagers["+ctr+"]"%>" value="true">
+				<logic:equal name="solverGroupEditForm" property='<%="assignedManagers["+ctr+"]"%>' value="true">
 					<TR><TD colspan='2'>&nbsp;&nbsp;&nbsp;&nbsp;
-						<html:hidden property="<%="managerIds["+ctr+"]"%>"/>
-						<html:hidden property="<%="managerNames["+ctr+"]"%>"/>
-						<html:checkbox property="<%="assignedManagers["+ctr+"]"%>"/>
-						<bean:write name="solverGroupEditForm" property="<%="managerNames["+ctr+"]"%>" filter="false"/>
+						<html:hidden property='<%="managerIds["+ctr+"]"%>'/>
+						<html:hidden property='<%="managerNames["+ctr+"]"%>'/>
+						<html:checkbox property='<%="assignedManagers["+ctr+"]"%>'/>
+						<bean:write name="solverGroupEditForm" property='<%="managerNames["+ctr+"]"%>' filter="false"/>
 					</TD></TR>
 				</logic:equal>
 			</logic:iterate>
@@ -130,12 +130,12 @@
 			<TR><TD colspan='2'>&nbsp;</TD></TR>
 			<TR><TD colspan='2'><tt:section-header title="Not Assigned Departments"/></TD></TR>
 			<logic:iterate name="solverGroupEditForm" property="departmentIds" id="departmentId" indexId="ctr">
-				<logic:equal name="solverGroupEditForm" property="<%="assignedDepartments["+ctr+"]"%>" value="false">
+				<logic:equal name="solverGroupEditForm" property='<%="assignedDepartments["+ctr+"]"%>' value="false">
 					<TR><TD colspan='2'>&nbsp;&nbsp;&nbsp;&nbsp;
-						<html:hidden property="<%="departmentIds["+ctr+"]"%>"/>
-						<html:hidden property="<%="departmentNames["+ctr+"]"%>"/>
-						<html:checkbox property="<%="assignedDepartments["+ctr+"]"%>"/>
-						<bean:write name="solverGroupEditForm" property="<%="departmentNames["+ctr+"]"%>"/>
+						<html:hidden property='<%="departmentIds["+ctr+"]"%>'/>
+						<html:hidden property='<%="departmentNames["+ctr+"]"%>'/>
+						<html:checkbox property='<%="assignedDepartments["+ctr+"]"%>'/>
+						<bean:write name="solverGroupEditForm" property='<%="departmentNames["+ctr+"]"%>'/>
 					</TD></TR>
 				</logic:equal>
 			</logic:iterate>
@@ -144,12 +144,12 @@
 		<TR><TD colspan='2'>&nbsp;</TD></TR>
 		<TR><TD colspan='2'><tt:section-header title="Not Assigned Managers"/></TD></TR>
 		<logic:iterate name="solverGroupEditForm" property="managerIds" id="managerId" indexId="ctr">
-			<logic:equal name="solverGroupEditForm" property="<%="assignedManagers["+ctr+"]"%>" value="false">
+			<logic:equal name="solverGroupEditForm" property='<%="assignedManagers["+ctr+"]"%>' value="false">
 				<TR><TD colspan='2'>&nbsp;&nbsp;&nbsp;&nbsp;
-					<html:hidden property="<%="managerIds["+ctr+"]"%>"/>
-					<html:hidden property="<%="managerNames["+ctr+"]"%>"/>
-					<html:checkbox property="<%="assignedManagers["+ctr+"]"%>"/>
-					<bean:write name="solverGroupEditForm" property="<%="managerNames["+ctr+"]"%>" filter="false"/>
+					<html:hidden property='<%="managerIds["+ctr+"]"%>'/>
+					<html:hidden property='<%="managerNames["+ctr+"]"%>'/>
+					<html:checkbox property='<%="assignedManagers["+ctr+"]"%>'/>
+					<bean:write name="solverGroupEditForm" property='<%="managerNames["+ctr+"]"%>' filter="false"/>
 				</TD></TR>
 			</logic:equal>
 		</logic:iterate>

@@ -204,17 +204,17 @@
 					<logic:iterate name="crossListsModifyForm" property="courseOfferingIds" id="co" indexId="ctr">
 					<TR>
 						<TD class="BottomBorderGray">
-							<html:hidden property="<%= "courseOfferingIds[" + ctr + "]" %>"/>
-							<html:hidden property="<%= "courseOfferingNames[" + ctr + "]" %>"/>
-							<html:hidden property="<%= "ownedCourse[" + ctr + "]" %>"/>
+							<html:hidden property='<%= "courseOfferingIds[" + ctr + "]" %>'/>
+							<html:hidden property='<%= "courseOfferingNames[" + ctr + "]" %>'/>
+							<html:hidden property='<%= "ownedCourse[" + ctr + "]" %>'/>
 						<% if ( ((java.util.List)cos).size()==1 ) { %>
-							<html:hidden property="<%= "limits[" + ctr + "]" %>"/>
+							<html:hidden property='<%= "limits[" + ctr + "]" %>'/>
 						<% } %>
-							<bean:write name="crossListsModifyForm" property="<%= "courseOfferingNames[" + ctr + "]" %>"/> &nbsp;
+							<bean:write name="crossListsModifyForm" property='<%= "courseOfferingNames[" + ctr + "]" %>'/> &nbsp;
 						</TD>
 						<TD align="center" class="BottomBorderGray">
 							&nbsp;
-							<logic:equal name="crossListsModifyForm" property="<%= "ownedCourse[" + ctr + "]" %>" value="true" >
+							<logic:equal name="crossListsModifyForm" property='<%= "ownedCourse[" + ctr + "]" %>' value="true" >
 								<html:radio name="crossListsModifyForm" property="ctrlCrsOfferingId" value="<%= co.toString() %>" />
 							</logic:equal>
 							&nbsp;
@@ -222,15 +222,15 @@
 						<% if ( ((java.util.List)cos).size()>1 ) { %>
 						<TD align="center" class="BottomBorderGray">
 							&nbsp;
-							<html:hidden property="<%= "resvId[" + ctr + "]" %>"/>
+							<html:hidden property='<%= "resvId[" + ctr + "]" %>'/>
 							<logic:equal name="crossListsModifyForm" property="ownedInstrOffr" value="true" >
-								<html:text name="crossListsModifyForm" styleId="<%= "reserved_" + ctr %>" onchange="updateResvTotal();" property="<%= "limits[" + ctr + "]" %>" size="4" maxlength="4" />
+								<html:text name="crossListsModifyForm" styleId='<%= "reserved_" + ctr %>' onchange="updateResvTotal();" property='<%= "limits[" + ctr + "]" %>' size="4" maxlength="4" />
 							</logic:equal>
 							<logic:notEqual name="crossListsModifyForm" property="ownedInstrOffr" value="true" >
-								<bean:write name="crossListsModifyForm" property="<%= "limits[" + ctr + "]" %>" />
-								<html:hidden property="<%= "limits[" + ctr + "]" %>" />
+								<bean:write name="crossListsModifyForm" property='<%= "limits[" + ctr + "]" %>' />
+								<html:hidden property='<%= "limits[" + ctr + "]" %>' />
 							</logic:notEqual>
-							<bean:define id="resvSpace" name="crossListsModifyForm" property="<%= "limits[" + ctr + "]" %>"/>							
+							<bean:define id="resvSpace" name="crossListsModifyForm" property='<%= "limits[" + ctr + "]" %>'/>							
 							<% if (resvSpace!=null && resvSpace.toString().length()>0 && Constants.isInteger(resvSpace.toString())) { 
 								resvExists = true;
 								resvTotal += Integer.parseInt((String) resvSpace); }%>
@@ -238,15 +238,15 @@
 						</TD>
 						<TD align="right" class="BottomBorderGray">
 							&nbsp;
-							<html:hidden property="<%= "requested[" + ctr + "]" %>"/>
-							<bean:write name="crossListsModifyForm" property="<%= "requested[" + ctr + "]" %>" />
+							<html:hidden property='<%= "requested[" + ctr + "]" %>'/>
+							<bean:write name="crossListsModifyForm" property='<%= "requested[" + ctr + "]" %>' />
 							&nbsp;
 						</TD>
 						<TD align="right" class="BottomBorderGray">
 							&nbsp;
-							<html:hidden property="<%= "projected[" + ctr + "]" %>"/>
-							<bean:write name="crossListsModifyForm" property="<%= "projected[" + ctr + "]" %>" />
-							<bean:define id="projSpace" name="crossListsModifyForm" property="<%= "projected[" + ctr + "]" %>"/>							
+							<html:hidden property='<%= "projected[" + ctr + "]" %>'/>
+							<bean:write name="crossListsModifyForm" property='<%= "projected[" + ctr + "]" %>' />
+							<bean:define id="projSpace" name="crossListsModifyForm" property='<%= "projected[" + ctr + "]" %>'/>							
 							<% if ( projSpace!=null && projSpace.toString().length()>0 && Constants.isInteger(projSpace.toString())) 
 								projTotal += Integer.parseInt((String) projSpace); 
 							   else 
@@ -254,9 +254,9 @@
 						</TD>
 						<TD align="right" class="BottomBorderGray">
 							&nbsp;
-							<html:hidden property="<%= "lastTerm[" + ctr + "]" %>"/>
-							<bean:write name="crossListsModifyForm" property="<%= "lastTerm[" + ctr + "]" %>" />
-							<bean:define id="lastTermSpace" name="crossListsModifyForm" property="<%= "lastTerm[" + ctr + "]" %>"/>							
+							<html:hidden property='<%= "lastTerm[" + ctr + "]" %>'/>
+							<bean:write name="crossListsModifyForm" property='<%= "lastTerm[" + ctr + "]" %>' />
+							<bean:define id="lastTermSpace" name="crossListsModifyForm" property='<%= "lastTerm[" + ctr + "]" %>'/>							
 							<% if (lastTermSpace!=null && lastTermSpace.toString().length()>0 && Constants.isInteger(lastTermSpace.toString())) 
 								lastTermTotal += Integer.parseInt((String) lastTermSpace); 
 							   else 

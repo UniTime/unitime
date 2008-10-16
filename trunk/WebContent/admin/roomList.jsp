@@ -46,7 +46,7 @@
 					<logic:iterate name="<%=frmName%>" property="roomTypes" id="roomType">
 						<bean:define name="roomType" property="reference" id="ref"/>
 						<logic:notEmpty name="<%=(String)ref%>" scope="request">
-							<A class="l7" href="<%="#"+ref%>"><bean:write name="roomType" property="label"/></A>&nbsp;
+							<A class="l7" href='<%="#"+ref%>'><bean:write name="roomType" property="label"/></A>&nbsp;
 						</logic:notEmpty>
 					</logic:iterate>
 				</span>
@@ -181,7 +181,7 @@
 				<logic:iterate name="<%=frmName%>" property="roomTypes" id="roomType">
 					<bean:define name="roomType" property="reference" id="ref"/>
 					<logic:notEmpty name="<%=(String)ref%>" scope="request">
-						<A class="l7" href="<%="#"+ref%>"><bean:write name="roomType" property="label"/></A>&nbsp;
+						<A class="l7" href='<%="#"+ref%>'><bean:write name="roomType" property="label"/></A>&nbsp;
 					</logic:notEmpty>
 				</logic:iterate>
 				</span>

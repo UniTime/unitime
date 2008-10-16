@@ -105,13 +105,13 @@
 			<TD>&nbsp;</TD>
 			<TD>
 				<logic:iterate id="cc" name="inquiryForm" property="carbonCopy" indexId="ctr">
-					<INPUT type="hidden" name="<%= "carbonCopy[" + ctr + "]" %>" value="<%=cc%>" />
+					<INPUT type="hidden" name='<%= "carbonCopy[" + ctr + "]" %>' value="<%=cc%>" />
 					<font class="font8Gray"><%=cc%></font>
 					<html:image 
 						src="images/Error16.jpg" border="0" align="absmiddle"						
 						titleKey="title.deleteAddress"  
 						styleClass="btn" style="border:0;background-color:#FFFFFF;"
-						onclick="<%= "javascript: doDel('" + ctr + "');"%>" />&nbsp;
+						onclick="<%= \"javascript: doDel('\" + ctr + \"');\"%>" />&nbsp;
 				</logic:iterate>
 			</TD>
 		</TR>

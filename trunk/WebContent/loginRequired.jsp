@@ -37,7 +37,7 @@
 <BODY class="bodyMain">
 
 <% if (ApplicationProperties.getProperty("tmtbl.header.external", "").trim().length()>0) { %>
-<jsp:include flush="true" page="<%=ApplicationProperties.getProperty("tmtbl.header.external")%>" />
+<jsp:include flush="true" page='<%=ApplicationProperties.getProperty("tmtbl.header.external")%>' />
 <% } %>
 
 <DIV align="center" class="H1">

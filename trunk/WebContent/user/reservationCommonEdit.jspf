@@ -214,7 +214,7 @@
 					<TR>
 						<% if (frmName.equals("academicAreaReservationEditForm")) { %>
 						<TD class="BottomBorderGray">
-							<html:select name="<%=frmName%>" property="<%= "academicAreaId[" + ctr + "]" %>"
+							<html:select name="<%=frmName%>" property='<%= "academicAreaId[" + ctr + "]" %>'
 								onfocus="setUp();" 
 								onkeypress="return selectSearch(event, this);" 
 								onkeydown="return checkKey(event, this);" >					
@@ -226,7 +226,7 @@
 						
 						<% if (frmName.equals("posReservationEditForm")) { %>
 						<TD class="BottomBorderGray">
-							<html:select name="<%=frmName%>" property="<%= "posMajorId[" + ctr + "]" %>"
+							<html:select name="<%=frmName%>" property='<%= "posMajorId[" + ctr + "]" %>'
 								onfocus="setUp();" 
 								onkeypress="return selectSearch(event, this);" 
 								onkeydown="return checkKey(event, this);" >					
@@ -240,7 +240,7 @@
 						
 						<!-- TODO Reservations - functionality to be made visible later -->
 						<!-- TD class="BottomBorderGray">
-							<htm: select name="<%=frmName%>" property="<%= "academicClassificationId[" + ctr + "]" %>"
+							<htm: select name="<%=frmName%>" property='<%= "academicClassificationId[" + ctr + "]" %>'
 								onfocus="setUp();" 
 								onkeypress="return selectSearch(event, this);" 
 								onkeydown="return checkKey(event, this);" >					
@@ -252,7 +252,7 @@
 
 						<% if (frmName.equals("studentGroupReservationEditForm")) { %>
 						<TD class="BottomBorderGray">
-							<html:select name="<%=frmName%>" property="<%= "studentGroupId[" + ctr + "]" %>"
+							<html:select name="<%=frmName%>" property='<%= "studentGroupId[" + ctr + "]" %>'
 								onfocus="setUp();" 
 								onkeypress="return selectSearch(event, this);" 
 								onkeydown="return checkKey(event, this);" >					
@@ -264,7 +264,7 @@
 						
 						<% if (frmName.equals("courseReservationEditForm")) { %>
 						<TD class="BottomBorderGray">
-							<html:select name="<%=frmName%>" property="<%= "courseOfferingId[" + ctr + "]" %>"
+							<html:select name="<%=frmName%>" property='<%= "courseOfferingId[" + ctr + "]" %>'
 								onfocus="setUp();" 
 								onkeypress="return selectSearch(event, this);" 
 								onkeydown="return checkKey(event, this);" >					
@@ -276,26 +276,26 @@
 						
 						<% if (frmName.equals("individualReservationEditForm")) { %>
 						<TD class="BottomBorderGray">
-							<html:text size="10" maxlength="10" name="<%=frmName%>" property="<%= "puid[" + ctr + "]" %>"/>
-							&nbsp; <bean:write name="<%=frmName%>" property="<%= "studentName[" + ctr + "]" %>"/>
-							<html:hidden property="<%= "studentName[" + ctr + "]" %>"/>
+							<html:text size="10" maxlength="10" name="<%=frmName%>" property='<%= "puid[" + ctr + "]" %>'/>
+							&nbsp; <bean:write name="<%=frmName%>" property='<%= "studentName[" + ctr + "]" %>'/>
+							<html:hidden property='<%= "studentName[" + ctr + "]" %>'/>
 						</TD>
 						<TD class="BottomBorderGray" align="center">
-							<html:radio property="<%= "overLimit[" + ctr + "]" %>" value="true">Yes</html:radio>&nbsp;
-							<html:radio property="<%= "overLimit[" + ctr + "]" %>" value="false">No</html:radio>&nbsp;
+							<html:radio property='<%= "overLimit[" + ctr + "]" %>' value="true">Yes</html:radio>&nbsp;
+							<html:radio property='<%= "overLimit[" + ctr + "]" %>' value="false">No</html:radio>&nbsp;
 						</TD>
 						<TD class="BottomBorderGray">
-							<html:text size="10" maxlength="10" name="<%=frmName%>" property="<%= "expirationDate[" + ctr + "]" %>"/>
+							<html:text size="10" maxlength="10" name="<%=frmName%>" property='<%= "expirationDate[" + ctr + "]" %>'/>
 						</TD>
 						<% } %>
 						
 						<TD class="BottomBorderGray">
-							<html:hidden name="<%=frmName%>" property="<%= "reservationId[" + ctr + "]" %>"/>
+							<html:hidden name="<%=frmName%>" property='<%= "reservationId[" + ctr + "]" %>'/>
 						<% if (frmName.equals("courseReservationEditForm")) { %>
-							<html:hidden name="<%=frmName%>" property="<%= "reservationType[" + ctr + "]" %>"/>&nbsp;
+							<html:hidden name="<%=frmName%>" property='<%= "reservationType[" + ctr + "]" %>'/>&nbsp;
 						<% } 
 						   else { %>
-							<html:select name="<%=frmName%>" property="<%= "reservationType[" + ctr + "]" %>"
+							<html:select name="<%=frmName%>" property='<%= "reservationType[" + ctr + "]" %>'
 								onfocus="setUp();" 
 								onkeypress="return selectSearch(event, this);" 
 								onkeydown="return checkKey(event, this);" >					
@@ -309,12 +309,12 @@
 						<TD class="BottomBorderGray">
 							<!-- TODO Reservations - bypass to be removed later -->
 							<logic:equal name="<%=frmName%>" property="ownerType" value="<%= Constants.RESV_OWNER_CLASS %>">
-								<html:hidden name="<%=frmName%>" property="<%= "reserved[" + ctr + "]" %>" value="0" />&nbsp;
+								<html:hidden name="<%=frmName%>" property='<%= "reserved[" + ctr + "]" %>' value="0" />&nbsp;
 							</logic:equal>
 							<logic:notEqual name="<%=frmName%>" property="ownerType" value="<%= Constants.RESV_OWNER_CLASS %>">
-								<html:text size="4" maxlength="4" styleId="<%= "reserved_" + ctr %>" onchange="updateResvTotal();" name="<%=frmName%>" property="<%= "reserved[" + ctr + "]" %>"/>
+								<html:text size="4" maxlength="4" styleId='<%= "reserved_" + ctr %>' onchange="updateResvTotal();" name="<%=frmName%>" property='<%= "reserved[" + ctr + "]" %>'/>
 							</logic:notEqual>
-							<bean:define id="resvSpace" name="<%=frmName%>" property="<%= "reserved[" + ctr + "]" %>"/>
+							<bean:define id="resvSpace" name="<%=frmName%>" property='<%= "reserved[" + ctr + "]" %>'/>
 							<% if (resvSpace!=null && resvSpace.toString().length()>0) {
 									resvTotal += Integer.parseInt((String) resvSpace);
 									resvExists = true;									
@@ -323,13 +323,13 @@
 							<!-- end bypass -->
 							
 							<!-- TODO Reservations - functionality to be made visible later -->
-							<!-- htm : text size="4" maxlength="4" name="<%=frmName%>" property="<%= "reserved[" + ctr + "]" %>"/ -->
+							<!-- htm : text size="4" maxlength="4" name="<%=frmName%>" property='<%= "reserved[" + ctr + "]" %>'/ -->
 						</TD>
 						<% } %>
 						
 						<!-- TODO Reservations - functionality to be made visible later -->
 						<!-- TD class="BottomBorderGray" align="right">
-							<htm : select name="<%=frmName%>" property="<%= "priority[" + ctr + "]" %>"
+							<htm : select name="<%=frmName%>" property='<%= "priority[" + ctr + "]" %>'
 								onfocus="setUp();" 
 								onkeypress="return selectSearch(event, this);" 
 								onkeydown="return checkKey(event, this);" >					
@@ -340,10 +340,10 @@
 						
 						<% if (!frmName.equals("individualReservationEditForm") ) { %>
 						<TD class="BottomBorderGray" align="right">
-							<html:hidden property="<%= "requested[" + ctr + "]" %>"/>&nbsp;
+							<html:hidden property='<%= "requested[" + ctr + "]" %>'/>&nbsp;
 							<% if (!frmName.equals("courseReservationEditForm") ) { %>
-							<bean:write name="<%=frmName%>" property="<%= "requested[" + ctr + "]" %>"/>
-							<bean:define id="reqSpace" name="<%=frmName%>" property="<%= "requested[" + ctr + "]" %>"/>
+							<bean:write name="<%=frmName%>" property='<%= "requested[" + ctr + "]" %>'/>
+							<bean:define id="reqSpace" name="<%=frmName%>" property='<%= "requested[" + ctr + "]" %>'/>
 							<% if (reqSpace!=null && reqSpace.toString().length()>0) 
 								reqTotal += Integer.parseInt((String) reqSpace);  
 							   else 
@@ -352,10 +352,10 @@
 						</TD>
 						
 						<TD class="BottomBorderGray" align="right">
-							<html:hidden property="<%= "projectedEnrollment[" + ctr + "]" %>"/>
+							<html:hidden property='<%= "projectedEnrollment[" + ctr + "]" %>'/>
 							<logic:notEqual name="<%=frmName%>" property="ownerType" value="<%= Constants.RESV_OWNER_CLASS %>">
-								&nbsp;<bean:write name="<%=frmName%>" property="<%= "projectedEnrollment[" + ctr + "]" %>"/>
-								<bean:define id="projSpace" name="<%=frmName%>" property="<%= "projectedEnrollment[" + ctr + "]" %>"/>							
+								&nbsp;<bean:write name="<%=frmName%>" property='<%= "projectedEnrollment[" + ctr + "]" %>'/>
+								<bean:define id="projSpace" name="<%=frmName%>" property='<%= "projectedEnrollment[" + ctr + "]" %>'/>							
 								<% if (projSpace!=null && projSpace.toString().length()>0) 
 									projTotal += Integer.parseInt((String) projSpace); 
 								   else 
@@ -364,10 +364,10 @@
 						</TD>
 						
 						<TD class="BottomBorderGray" align="right">
-							<html:hidden property="<%= "priorEnrollment[" + ctr + "]" %>"/>
+							<html:hidden property='<%= "priorEnrollment[" + ctr + "]" %>'/>
 							<logic:notEqual name="<%=frmName%>" property="ownerType" value="<%= Constants.RESV_OWNER_CLASS %>">
-								&nbsp;<bean:write name="<%=frmName%>" property="<%= "priorEnrollment[" + ctr + "]" %>"/>
-								<bean:define id="lastTermSpace" name="<%=frmName%>" property="<%= "priorEnrollment[" + ctr + "]" %>"/>
+								&nbsp;<bean:write name="<%=frmName%>" property='<%= "priorEnrollment[" + ctr + "]" %>'/>
+								<bean:define id="lastTermSpace" name="<%=frmName%>" property='<%= "priorEnrollment[" + ctr + "]" %>'/>
 								<% if (lastTermSpace!=null && lastTermSpace.toString().length()>0) 
 									lastTermTotal += Integer.parseInt((String) lastTermSpace);  
 								   else 
@@ -378,16 +378,16 @@
 						
 						<TD class="BottomBorderGray" align="center">
 						<!-- TODO Reservations - bypass to be removed later -->
-							<html:hidden property="<%= "priority[" + ctr + "]" %>"/>
+							<html:hidden property='<%= "priority[" + ctr + "]" %>'/>
 							<% if (frmName.equals("academicAreaReservationEditForm") || frmName.equals("posReservationEditForm")) { %>
-							<html:hidden property="<%= "academicClassificationId[" + ctr + "]" %>"/>
+							<html:hidden property='<%= "academicClassificationId[" + ctr + "]" %>'/>
 							<% } %>
 						<!-- end bypass -->
 							&nbsp;
-							<logic:empty name="<%=frmName%>" property="<%= "priorEnrollment[" + ctr + "]" %>">
+							<logic:empty name="<%=frmName%>" property='<%= "priorEnrollment[" + ctr + "]" %>'>
 								<html:submit property="op" 
 									styleClass="btn" titleKey="title.removeReservation"
-									onclick="<%= "javascript: doDel('" + ctr + "');"%>">
+									onclick="<%= \"javascript: doDel('\" + ctr + \"');\"%>">
 									<bean:message key="button.removeReservation" />
 								</html:submit>
 							</logic:empty> 			

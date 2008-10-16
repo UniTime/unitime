@@ -73,7 +73,7 @@
 					</TR>
 				</TABLE>
 			</logic:greaterThan>
-			<bean:write name="solverLogForm" property="<%="log["+idx+"]"%>" filter="false"/>
+			<bean:write name="solverLogForm" property='<%="log["+idx+"]"%>' filter="false"/>
 		</logic:iterate>
 	</logic:notEqual>
 	

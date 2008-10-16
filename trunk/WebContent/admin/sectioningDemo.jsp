@@ -385,7 +385,7 @@ function choiceChangedX(subjectArea, courseNumber, classId, chId, type) {
 				<td nowrap>
 					<nested:select property="type"
 						onfocus="setUp();" onkeypress="return selectSearch(event, this);" onkeydown="return checkKey(event, this);"
-						onchange="<%="typeChanged(this.options[this.selectedIndex].value,"+idx+");"%>"
+						onchange='<%="typeChanged(this.options[this.selectedIndex].value,"+idx+");"%>'
 						>
 						<html:optionsCollection name="req" property="types" value="id" label="value"/>
 					</nested:select>
@@ -400,7 +400,7 @@ function choiceChangedX(subjectArea, courseNumber, classId, chId, type) {
 					<span id='span<%=idx%>CrsC' style='display:<%=SectioningDemoForm.sTypeCourse.equals(type)?"inline":"none"%>;'>
 						<nested:select property="subjectArea"
 							onfocus="setUp();" onkeypress="return selectSearch(event, this);" onkeydown="return checkKey(event, this);"
-							onchange="<%="updateCourseNumbers(this.options[this.selectedIndex].value,'requests["+idx+"].courseNbr');"%>"
+							onchange="<%=\"updateCourseNumbers(this.options[this.selectedIndex].value,'requests[\"+idx+\"].courseNbr');\"%>"
 							>
 							<html:option value=""></html:option>
 							<html:optionsCollection property="subjectAreas" value="id" label="value"/>
@@ -415,7 +415,7 @@ function choiceChangedX(subjectArea, courseNumber, classId, chId, type) {
 					<span id='span<%=idx%>CrsF' style='display:<%=SectioningDemoForm.sTypeFreeTime.equals(type)?"inline":"none"%>;'>
 						<nested:select property="freeTimePattern"
 							onfocus="setUp();" onkeypress="return selectSearch(event, this);" onkeydown="return checkKey(event, this);"
-							onchange="<%="updateDaysAndTimes(this.options[this.selectedIndex].value,'requests["+idx+"].freeTimeDay','requests["+idx+"].freeTimeTime');"%>"
+							onchange="<%=\"updateDaysAndTimes(this.options[this.selectedIndex].value,'requests[\"+idx+\"].freeTimeDay','requests[\"+idx+\"].freeTimeTime');\"%>"
 							>
 							<html:option value=""></html:option>
 							<html:optionsCollection property="timePatterns" value="id" label="value"/>
@@ -441,7 +441,7 @@ function choiceChangedX(subjectArea, courseNumber, classId, chId, type) {
 					</span>
 					<span id='span<%=idx%>WC' style='display:<%=SectioningDemoForm.sTypeCourse.equals(type)?"inline":"none"%>;'>
 						<nested:checkbox property="wait"
-							onclick="<%="disableAlternates(this,"+idx+");"%>"
+							onclick='<%="disableAlternates(this,"+idx+");"%>'
 						/>
 					</span>
 					<span id='span<%=idx%>WF' style='display:<%=SectioningDemoForm.sTypeFreeTime.equals(type)?"inline":"none"%>;'>
@@ -456,7 +456,7 @@ function choiceChangedX(subjectArea, courseNumber, classId, chId, type) {
 					<span id='span<%=idx%>A1C' style='display:<%=SectioningDemoForm.sTypeCourse.equals(type)?"inline":"none"%>;'>
 						<nested:select property="alt1SubjectArea"
 							onfocus="setUp();" onkeypress="return selectSearch(event, this);" onkeydown="return checkKey(event, this);"
-							onchange="<%="updateCourseNumbers(this.options[this.selectedIndex].value,'requests["+idx+"].alt1CourseNbr');"%>"
+							onchange="<%=\"updateCourseNumbers(this.options[this.selectedIndex].value,'requests[\"+idx+\"].alt1CourseNbr');\"%>"
 							>
 							<html:option value=""></html:option>
 							<html:optionsCollection property="subjectAreas" value="id" label="value"/>
@@ -480,7 +480,7 @@ function choiceChangedX(subjectArea, courseNumber, classId, chId, type) {
 					<span id='span<%=idx%>A2C' style='display:<%=SectioningDemoForm.sTypeCourse.equals(type)?"inline":"none"%>;'>
 						<nested:select property="alt2SubjectArea"
 							onfocus="setUp();" onkeypress="return selectSearch(event, this);" onkeydown="return checkKey(event, this);"
-							onchange="<%="updateCourseNumbers(this.options[this.selectedIndex].value,'requests["+idx+"].alt2CourseNbr');"%>"
+							onchange="<%=\"updateCourseNumbers(this.options[this.selectedIndex].value,'requests[\"+idx+\"].alt2CourseNbr');\"%>"
 							>
 							<html:option value=""></html:option>
 							<html:optionsCollection property="subjectAreas" value="id" label="value"/>

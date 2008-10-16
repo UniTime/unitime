@@ -56,10 +56,10 @@
 								</logic:notEqual>
 							</td>
 							<td align='center'>
-								<html:text property="<%="nrTimeSlots["+idx+"]"%>" size="4" maxlength="4"/>
+								<html:text property='<%="nrTimeSlots["+idx+"]"%>' size="4" maxlength="4"/>
 							</td>
 							<td align='center'>
-								<html:text property="<%="breakTime["+idx+"]"%>" size="3" maxlength="3"/>
+								<html:text property='<%="breakTime["+idx+"]"%>' size="3" maxlength="3"/>
 							</td>
 						</tr>
 					</logic:iterate>

@@ -312,7 +312,7 @@
 		</TR>
 		<logic:iterate name="sb" property="infos" id="info">
 			<TR>
-				<TD nowrap><%=info%>:</TD><TD><bean:write name="sb" property="<%="info("+info+")"%>" /></TD>
+				<TD nowrap><%=info%>:</TD><TD><bean:write name="sb" property='<%="info("+info+")"%>' /></TD>
 			</TR>
 		</logic:iterate>
 		<logic:notEmpty name="sb" property="log">
@@ -322,21 +322,21 @@
 		</logic:notEmpty>
 		<TR>
 			<TD align="right" colspan="2">
-				<html:submit onclick="<%="selectedSolutionBean.value='"+idx+"';"%>" property="op" value="Deselect"/>
+				<html:submit onclick="<%=\"selectedSolutionBean.value='\"+idx+\"';\"%>" property="op" value="Deselect"/>
 				<logic:equal name="listSolutionsForm" property="viewOnly" value="false">
-					<html:submit onclick="<%="displayLoading();selectedSolutionBean.value='"+idx+"';note.value=document.getElementById('note"+idx+"').value;"%>" property="op" value="Update Note"/>
+					<html:submit onclick="<%=\"displayLoading();selectedSolutionBean.value='\"+idx+\"';note.value=document.getElementById('note\"+idx+\"').value;\"%>" property="op" value="Update Note"/>
 					<logic:equal name="sb" property="canCommit" value="true">
 						<logic:equal name="sb" property="commited" value="">
-							<html:submit onclick="<%="confirmCommit();displayLoading();selectedSolutionBean.value='"+idx+"';"%>" property="op" value="Commit"/>
+							<html:submit onclick="<%=\"confirmCommit();displayLoading();selectedSolutionBean.value='\"+idx+\"';\"%>" property="op" value="Commit"/>
 						</logic:equal>
 						<logic:notEqual name="sb" property="commited" value="">
-							<html:submit onclick="<%="confirmUncommit();displayLoading();selectedSolutionBean.value='"+idx+"';"%>" property="op" value="Uncommit"/>
+							<html:submit onclick="<%=\"confirmUncommit();displayLoading();selectedSolutionBean.value='\"+idx+\"';\"%>" property="op" value="Uncommit"/>
 						</logic:notEqual>
 					</logic:equal>
-					<html:submit onclick="<%="displayLoading();selectedSolutionBean.value='"+idx+"';"%>" property="op" value="Export Solution"/>
+					<html:submit onclick="<%=\"displayLoading();selectedSolutionBean.value='\"+idx+\"';\"%>" property="op" value="Export Solution"/>
 					<logic:equal name="listSolutionsForm" property="canDo" value="true">
 						<logic:equal name="sb" property="commited" value="">
-							<html:submit onclick="<%="confirmDelete();displayLoading();selectedSolutionBean.value='"+idx+"';"%>" property="op" value="Delete"/> 
+							<html:submit onclick="<%=\"confirmDelete();displayLoading();selectedSolutionBean.value='\"+idx+\"';\"%>" property="op" value="Delete"/> 
 						</logic:equal>
 					</logic:equal>
 				</logic:equal>

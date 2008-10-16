@@ -152,7 +152,7 @@
 					<logic:iterate scope="request" name="<%=PreferenceLevel.PREF_LEVEL_ATTR_NAME%>" id="prLevel">
 					<% PreferenceLevel pr = (PreferenceLevel)prLevel; %>			
 					<html:option
-						style="<%="background-color:" + pr.prefcolor() + ";"%>"
+						style='<%="background-color:" + pr.prefcolor() + ";"%>'
 						value="<%=pr.getUniqueId().toString()%>" ><%=
 						pr.getPrefName()
 					%></html:option>
@@ -179,36 +179,36 @@
 			
 				<!-- Class / Subpart -->
 				<html:select style="width:80;" 
-					property="<%= "subjectArea[" + ctr + "]" %>" 
-					onchange="<%= "javascript: doReload('subjectArea', '" + ctr + "');" %>"
+					property='<%= "subjectArea[" + ctr + "]" %>' 
+					onchange="<%= \"javascript: doReload('subjectArea', '\" + ctr + \"');\" %>"
 					onfocus="setUp();" 
 					onkeypress="return selectSearch(event, this);" 
-					onkeydown="<%= "var y=checkKey(event, this); if(y && isModified()) { doReload('subjectArea', '" + ctr + "'); }return y;" %>" 
-					styleId="<%="subjectArea"+ctr%>" >
+					onkeydown="<%= \"var y=checkKey(event, this); if(y && isModified()) { doReload('subjectArea', '\" + ctr + \"'); }return y;\" %>" 
+					styleId='<%="subjectArea"+ctr%>' >
 					<html:option value="-">-</html:option>
 					<html:options collection="<%=DistributionPrefsForm.SUBJ_AREA_ATTR_LIST+ctr%>" property="value" labelProperty="label" />
 				</html:select>
 
 				<html:select style="width:80;" 
-					property="<%= "courseNbr[" + ctr + "]" %>" 
-					onchange="<%= "javascript: doReload('courseNbr', '" + ctr + "');" %>"
+					property='<%= "courseNbr[" + ctr + "]" %>' 
+					onchange="<%= \"javascript: doReload('courseNbr', '\" + ctr + \"');\" %>"
 					onfocus="setUp();" 
 					onkeypress="return selectSearch(event, this);" 
-					onkeydown="<%= "var y=checkKey(event, this); if(y && isModified()) { doReload('courseNbr', '" + ctr + "'); }return y;" %>" 
-					styleId="<%="courseNbr"+ctr%>" >
+					onkeydown="<%= \"var y=checkKey(event, this); if(y && isModified()) { doReload('courseNbr', '\" + ctr + \"'); }return y;\" %>" 
+					styleId='<%="courseNbr"+ctr%>' >
 					<html:option value="-">-</html:option>
 					<html:options collection="<%=DistributionPrefsForm.CRS_NUM_ATTR_LIST+ctr%>" property="value" labelProperty="label" />
 				</html:select>
 
 				<html:select style="width:150;" 
-					property="<%= "itype[" + ctr + "]" %>" 
-					onchange="<%= "javascript: doReload('itype', '" + ctr + "');" %>"
-					styleId="<%="itype"+ctr%>" >
+					property='<%= "itype[" + ctr + "]" %>' 
+					onchange="<%= \"javascript: doReload('itype', '\" + ctr + \"');\" %>"
+					styleId='<%="itype"+ctr%>' >
 					<html:option value="-">-</html:option>
 					<html:options collection="<%=DistributionPrefsForm.ITYPE_ATTR_LIST+ctr%>" property="value" labelProperty="label" filter="false"/>
 				</html:select>
 
-				<html:select style="width:80;" property="<%= "classNumber[" + ctr + "]" %>" styleId="<%="classNumber"+ctr%>">
+				<html:select style="width:80;" property='<%= "classNumber[" + ctr + "]" %>' styleId='<%="classNumber"+ctr%>'>
 					<html:option value="-">-</html:option>
 					<html:option value="-1">All</html:option>
 					<html:options collection="<%=DistributionPrefsForm.CLASS_NUM_ATTR_LIST+ctr%>" property="value" labelProperty="label" />
@@ -233,7 +233,7 @@
 
 				<!-- Delete button -->
 				&nbsp;&nbsp;				
-				<html:submit styleClass="btn" property="op" onclick="<%= "javascript: doDel('distObject', '" + ctr + "');" %>">
+				<html:submit styleClass="btn" property="op" onclick="<%= \"javascript: doDel('distObject', '\" + ctr + \"');\" %>">
 					<bean:message key="button.delete" />
 				</html:submit> 			
 				<!--

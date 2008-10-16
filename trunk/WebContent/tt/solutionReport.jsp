@@ -40,11 +40,11 @@
 <%	boolean atLeastOneRoomReport = false; %>
 	<logic:iterate name="solutionReportForm" property="roomTypes" id="roomType">
 		<bean:define name="roomType" property="reference" id="ref"/>
-		<logic:notEmpty name="<%="SolutionReport.roomReportTable."+ref%>" scope="request">
+		<logic:notEmpty name='<%="SolutionReport.roomReportTable."+ref%>' scope="request">
 			<% if (!atLeastOneRoomReport) { %>
 				<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
 			<%  atLeastOneRoomReport = true; } %>
-			<bean:write name="<%="SolutionReport.roomReportTable."+ref%>" scope="request" filter="false"/>
+			<bean:write name='<%="SolutionReport.roomReportTable."+ref%>' scope="request" filter="false"/>
 		</logic:notEmpty>
 	</logic:iterate>
 	<logic:notEmpty name="SolutionReport.roomReportTable.nonUniv" scope="request">

@@ -64,7 +64,7 @@ try {
 		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
 			<%=history%>
 			<tr>
-				<td colspan="<%=request.getAttribute("AssignmentHistory.table.colspan")%>">
+				<td colspan='<%=request.getAttribute("AssignmentHistory.table.colspan")%>'>
 					<tt:displayPrefLevelLegend/>
 				</td>
 			</tr>

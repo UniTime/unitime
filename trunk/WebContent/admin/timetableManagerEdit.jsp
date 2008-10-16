@@ -215,15 +215,15 @@
 				<logic:iterate name="mgrForm" property="depts" id="dept" indexId="ctr">
 					<TR>
 						<TD>
-							<html:hidden property="<%= "depts[" + ctr + "]" %>" />
-							<html:hidden property="<%= "deptLabels[" + ctr + "]" %>" />
-							<bean:write name="mgrForm" property="<%= "deptLabels[" + ctr + "]" %>" />
+							<html:hidden property='<%= "depts[" + ctr + "]" %>' />
+							<html:hidden property='<%= "deptLabels[" + ctr + "]" %>' />
+							<bean:write name="mgrForm" property='<%= "deptLabels[" + ctr + "]" %>' />
 						</TD>
 						<TD align="right">							
 							&nbsp; 
 							<html:submit property="op" 
 								styleClass="btn"
-								onclick="<%= "javascript: doDel('dept', '" + ctr + "');"%>">
+								onclick="<%= \"javascript: doDel('dept', '\" + ctr + \"');\"%>">
 								<bean:message key="button.delete" />
 							</html:submit> 			
 						</TD>
@@ -265,15 +265,15 @@
 				<logic:iterate name="mgrForm" property="solverGrs" id="solverGr" indexId="ctr">
 					<TR>
 						<TD>
-							<html:hidden property="<%= "solverGrs[" + ctr + "]" %>" />
-							<html:hidden property="<%= "solverGrLabels[" + ctr + "]" %>" />
-							<bean:write name="mgrForm" property="<%= "solverGrLabels[" + ctr + "]" %>" />
+							<html:hidden property='<%= "solverGrs[" + ctr + "]" %>' />
+							<html:hidden property='<%= "solverGrLabels[" + ctr + "]" %>' />
+							<bean:write name="mgrForm" property='<%= "solverGrLabels[" + ctr + "]" %>' />
 						</TD>
 						<TD align="right">							
 							&nbsp; 
 							<html:submit property="op" 
 								styleClass="btn"
-								onclick="<%= "javascript: doDel('solverGr', '" + ctr + "');"%>">
+								onclick="<%= \"javascript: doDel('solverGr', '\" + ctr + \"');\"%>">
 								<bean:message key="button.delete" />
 							</html:submit> 			
 						</TD>
@@ -323,26 +323,26 @@
 				
 							
 				<logic:iterate name="mgrForm" property="roles" id="role" indexId="ctr">
-					<bean:define id="roleRef" name="mgrForm" property="<%= "roleRefs[" + ctr + "]" %>" />
+					<bean:define id="roleRef" name="mgrForm" property='<%= "roleRefs[" + ctr + "]" %>' />
 					<TR>
 						<TD align="left" width="100">
 							<html:radio name="mgrForm" property="primaryRole" value="<%=role.toString()%>"
-								styleId="<%= "primaryRole" + ctr %>"
-								onclick="<%= "if(document.getElementById('primaryRole" + ctr + "').checked) { document.getElementById('primaryRole" + ctr + "').value=document.getElementById('role" + ctr + "').value; }; "%>" />
+								styleId='<%= "primaryRole" + ctr %>'
+								onclick="<%= \"if(document.getElementById('primaryRole\" + ctr + \"').checked) { document.getElementById('primaryRole\" + ctr + \"').value=document.getElementById('role\" + ctr + \"').value; }; \"%>" />
 						</TD>
 						<TD align="left">
 							<%--
 								<IMG src="images/<%= Roles.getRoleIcon(roleRef.toString()) %>" border="0" align="middle">&nbsp;
 							--%>
-							<html:hidden styleId="<%= "role" + ctr %>" property="<%= "roles[" + ctr + "]" %>" />
-							<html:hidden property="<%= "roleRefs[" + ctr + "]" %>" />
-							<bean:write name="mgrForm" property="<%= "roleRefs[" + ctr + "]" %>" />
+							<html:hidden styleId='<%= "role" + ctr %>' property='<%= "roles[" + ctr + "]" %>' />
+							<html:hidden property='<%= "roleRefs[" + ctr + "]" %>' />
+							<bean:write name="mgrForm" property='<%= "roleRefs[" + ctr + "]" %>' />
 						</TD>
 						<TD align="right">
 							&nbsp; 
 							<html:submit property="op" 
 								styleClass="btn"
-								onclick="<%= "javascript: doDel('role', '" + ctr + "');"%>">
+								onclick="<%= \"javascript: doDel('role', '\" + ctr + \"');\"%>">
 								<bean:message key="button.delete" />
 							</html:submit> 			
 						</TD>

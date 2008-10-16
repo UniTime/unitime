@@ -251,7 +251,7 @@
 				</TR>	
 				<logic:iterate name="meeting" property="overlaps" id="overlap">
 					<bean:define name="overlap" property="eventId" id="overlapEventId"/>
-					<TR onmouseover="this.style.cursor='hand';this.style.cursor='pointer';" onclick="<%="document.location='eventDetail.do?id="+overlapEventId+"';\""%>">
+					<TR onmouseover="this.style.cursor='hand';this.style.cursor='pointer';" onclick='<%="document.location=\"eventDetail.do?id="+overlapEventId+"\";"%>'>
 						<TD></TD>
 						<TD style="background-color:#FFD7D7;">&nbsp;&nbsp;&nbsp;Conflicts with <bean:write name="overlap" property="name"/> (<bean:write name="overlap" property="type"/>)</TD>
 						<TD style="background-color:#FFD7D7;"><bean:write name="overlap" property="time"/></TD>

@@ -40,8 +40,8 @@
 					<tt:section-title>
 						<%=details?"Detailed Statistics":"Summary Statistics"%>
 					</tt:section-title>
-					<input type='button' onclick="document.location='hibernateStats.do?details=<%=details%>&enable=<%=!enabled%>';" value="<%=enabled?"Disable":"Enable"%> Statistics">
-					<input type='button' onclick="document.location='hibernateStats.do?details=<%=!details%>';" value="<%=details?"Hide Details":"Show Details"%>">
+					<input type='button' onclick="document.location='hibernateStats.do?details=<%=details%>&enable=<%=!enabled%>';" value='<%=enabled?"Disable":"Enable"%> Statistics'>
+					<input type='button' onclick="document.location='hibernateStats.do?details=<%=!details%>';" value='<%=details?"Hide Details":"Show Details"%>'>
 				</tt:section-header>
 			</TD>
 		</TR>
@@ -58,8 +58,8 @@
 		</TR>
 		<TR>
 			<TD align='right'>
-				<input type='button' onclick="document.location='hibernateStats.do?details=<%=details%>&enable=<%=!enabled%>';" value="<%=enabled?"Disable":"Enable"%> Statistics">
-				<input type='button' onclick="document.location='hibernateStats.do?details=<%=!details%>';" value="<%=details?"Hide Details":"Show Details"%>">
+				<input type='button' onclick="document.location='hibernateStats.do?details=<%=details%>&enable=<%=!enabled%>';" value='<%=enabled?"Disable":"Enable"%> Statistics'>
+				<input type='button' onclick="document.location='hibernateStats.do?details=<%=!details%>';" value='<%=details?"Hide Details":"Show Details"%>'>
 			</TD>
 		</TR>
 </TABLE>
