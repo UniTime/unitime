@@ -121,13 +121,19 @@ public class ExamDistributionPrefsTableBuilder {
      */
     public String toHtmlTable(HttpServletRequest request, Collection distPrefs, String title) throws Exception {
         User user = Web.getUser(request.getSession());
-        String ownerId = (String) user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-        TimetableManager manager = new TimetableManagerDAO().get(new Long(ownerId));
         Session session = Session.getCurrentAcadSession(user);
-        boolean editable = manager.canEditExams(session, user);
-        boolean isAdmin = user.getCurrentRole().equals(Roles.ADMIN_ROLE);
-        boolean isExamMgr = user.getCurrentRole().equals(Roles.EXAM_MGR_ROLE);
-    	
+        String ownerId = (String) user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
+        TimetableManager manager = null;
+        boolean editable = false;
+        boolean isAdmin = false;
+        boolean isExamMgr = false;
+        if (ownerId != null) {
+            manager = new TimetableManagerDAO().get(new Long(ownerId));
+            editable = manager.canEditExams(session, user);
+            isAdmin = user.getCurrentRole().equals(Roles.ADMIN_ROLE);
+            isExamMgr = user.getCurrentRole().equals(Roles.EXAM_MGR_ROLE);      	
+        }
+           	
     	String backId = ("PreferenceGroup".equals(request.getParameter("backType"))?request.getParameter("backId"):null);
         
         WebTable.setOrder(request.getSession(),"examDistPrefsTable.ord",request.getParameter("order"),4);
