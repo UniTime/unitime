@@ -27,6 +27,65 @@
 	<version>3.1.@build.number@</version>
 	<release-date>@release.date@</release-date>
 	<category>
+		<title>BUG FIXES &amp; OTHER IMPROVEMENTS</title>
+		<item>
+			<name>Examination Timetabling</name>
+			<description>
+				<line>Examination Reports Statistics report: fixed a typo (instructor not available instead of student not available), 
+				do not print &amp;nbsp; as space in PDF.
+				</line>
+				<line>Personalized Schedule: by default read examination conflicts from cache.</line>
+				<line>Examination Schedule, Class Schedule: disable Apply buttons on submit.
+					<line>Fixed bug that did not submitted the screen in IE.</line>
+				</line>
+				<line>Distribution Types: Fix bug that occurred when user was not a TimetableManager.</line>
+				<line>Examination Periods: Fix case where number of students is divisible by 1000 (computation of student conflicts).</line>
+			</description>
+		</item>
+		<item>
+			<name>Course Timetabling</name>
+			<description>
+				<line>Course Offering Import: Fixed bug that occurred during the Course Offering Import when a class changed itypes.</line>
+				<line>Distribution Types:  Fix bug that occurred when session was null.</line>
+				<line>Preference Groups: Fixed bug in isEditableBy, now returns false if the user does not have a role.</line>
+				<line>Preference Groups: Fixed bug in isViewableBy(User) caused when the user does not have a role.</line>
+			</description>
+		</item>
+		<item>
+			<name>Event Management</name>
+			<description>
+				<line>Fixed bug that occurred when writing to the change log after deleting a meeting from an event.</line>
+			</description>
+		</item>
+		<item>
+			<name>Other</name>
+			<description>
+				<line>
+					In the recent versions of Tomcat (since 5.5.27 and 6.0.17) a &quot;bug&quot; which permitted illegal (but unambiguous) 
+					constructions in JSP files to be compiled and parsed is corrected. This means that all JSPs that contained 
+					the following code were no longer compilable:
+					<line>
+						&lt;mytags:tag value=&quot;&lt;%= &quot;hi!&quot; %&gt;&quot; /&gt;
+					</line>
+					All occurences of such a code had to be changed to
+					<line>
+						&lt;mytags:tag value=&quot;&lt;%= \&quot;hi!\&quot; %&gt;&quot; />
+					</line>
+					or
+					<line>
+						&lt;mytags:tag value='&lt;%= &quot;hi!&quot; %&gt;' /&gt;
+					</line>
+					See https://issues.apache.org/bugzilla/show_bug.cgi?id=45015 for more details.
+				</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.1.112</version>
+	<release-date>Thu, 25 Sep 2008</release-date>
+	<category>
 		<title>EXAMINATION TIMETABLING</title>
 		<item>
 			<name>Examination Print Offset</name>
