@@ -2202,7 +2202,7 @@ public class ExamAssignmentReportAction extends Action {
                 .setLong("sessionId", sessionId).uniqueResult())
                 }, new Comparable[] {row++,null,null});
         table.addLine(new String[] {
-                "Registered students with at lest one class", 
+                indent+"Students enrolled in classes", 
                 df2.format(new StudentDAO().getSession().createQuery("select count(distinct s) from Student s inner join s.classEnrollments c where s.session.uniqueId=:sessionId")
                 .setLong("sessionId", sessionId).uniqueResult())
                 }, new Comparable[] {row++,null,null});
