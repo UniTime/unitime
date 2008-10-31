@@ -2252,9 +2252,9 @@
 		<plsql>alter table %SCHEMA%.curricula_course modify group_nr varchar2(20)</plsql>
 	</update>
 	<update version="40" date="10-Sep-2008" comment="Curricula renames">
-		<sql>alter table %SCHEMA%.curricula rename to %SCHEMA%.curriculum</sql>
-		<sql>alter table %SCHEMA%.curricula_clasf rename to %SCHEMA%.curriculum_clasf</sql>
-		<sql>alter table %SCHEMA%.curricula_course rename to %SCHEMA%.curriculum_course</sql>
+		<plsql>alter table %SCHEMA%.curricula rename to curriculum</plsql>
+		<plsql>alter table %SCHEMA%.curricula_clasf rename to curriculum_clasf</plsql>
+		<plsql>alter table %SCHEMA%.curricula_course rename to curriculum_course</plsql>
 		<plsql>alter table %SCHEMA%.curriculum rename constraint nn_curricula_uniqueid to nn_curriculum_uniqueid</plsql>
 		<plsql>alter table %SCHEMA%.curriculum rename constraint nn_curricula_abbv to nn_curriculum_abbv</plsql>
 		<plsql>alter table %SCHEMA%.curriculum rename constraint nn_curricula_name to nn_curriculum_name</plsql>
@@ -2279,6 +2279,9 @@
 		<plsql>alter table %SCHEMA%.curriculum_course rename constraint fk_curricula_course_clasf to fk_curriculum_course_clasf</plsql>
 		<plsql>alter table %SCHEMA%.curriculum_course rename constraint fk_curricula_course_course to fk_curriculum_course_course</plsql>
 		<plsql>alter table %SCHEMA%.curriculum_clasf rename column curricula_id to curriculum_id</plsql>
+		<mysql>alter table %SCHEMA%.curricula rename to %SCHEMA%.curriculum</mysql>
+		<mysql>alter table %SCHEMA%.curricula_clasf rename to %SCHEMA%.curriculum_clasf</mysql>
+		<mysql>alter table %SCHEMA%.curricula_course rename to %SCHEMA%.curriculum_course</mysql>
 		<mysql>alter table %SCHEMA%.curriculum drop foreign key fk_curricula_dept</mysql>
 		<mysql>alter table %SCHEMA%.curriculum drop foreign key fk_curricula_acad_area</mysql>
 		<mysql>alter table %SCHEMA%.curriculum_clasf drop foreign key fk_curricula_clasf_curricula</mysql>
