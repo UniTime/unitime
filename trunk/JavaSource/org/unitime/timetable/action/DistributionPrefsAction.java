@@ -606,13 +606,20 @@ public class DistributionPrefsAction extends Action {
         
         if(distPrefs!=null && distPrefs.size()>0) {
             Iterator iter = distPrefs.iterator();
+            int i = 0;
             while (iter.hasNext()) {
                 Object[] rec = (Object[]) iter.next();
-                int indx = ((Integer) rec[4]).intValue() - 1;
+                int indx;
+                if (rec[4] == null){
+                	indx = i;
+                } else {
+                	indx = ((Integer) rec[4]).intValue() - 1;
+                }
                 frm.setSubjectArea(indx, rec[0].toString());
                 frm.setCourseNbr(indx, rec[1].toString());
                 frm.setItype(indx, rec[2].toString());
                 frm.setClassNumber(indx, rec[3].toString());
+                i++;
             }                
         }            
     }
