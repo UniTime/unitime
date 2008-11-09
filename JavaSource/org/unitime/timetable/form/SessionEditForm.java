@@ -143,11 +143,11 @@ public class SessionEditForm extends ActionForm {
 						        errors.add("examStart", new ActionMessage("errors.invalidDate", "Examinations Start Date"));
                             if (!CalendarUtils.isValidDate(eventStart, df))
                                 errors.add("eventStart", new ActionMessage("errors.invalidDate", "Event Start Date"));
-                            if (!CalendarUtils.isValidDate(eventEnd, df))
+                            else if (!CalendarUtils.isValidDate(eventEnd, df))
                                 errors.add("eventEnd", new ActionMessage("errors.invalidDate", "Event End Date"));
                             Date d4 = CalendarUtils.getDate(eventStart, df);
                             Date d5 = CalendarUtils.getDate(eventEnd, df);
-                            if (!d4.before(d5)) {
+                            if (errors.isEmpty() && !d4.before(d5)) {
                                 errors.add("eventEnd", new ActionMessage("errors.generic", "Event End Date must occur AFTER Event Start Date"));
                             }
 						}
