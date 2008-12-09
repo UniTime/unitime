@@ -686,5 +686,6 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
             }
             if (!iNewPage) println("");
         }
+        lastPage();
     }
 }
