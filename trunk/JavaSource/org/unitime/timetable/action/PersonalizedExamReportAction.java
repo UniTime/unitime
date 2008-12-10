@@ -611,7 +611,7 @@ public class PersonalizedExamReportAction extends Action {
     public PdfWebTable getStudentConflits(boolean html, TreeSet<ExamAssignmentInfo> exams, Student student) {
         String nl = (html?"<br>":"\n");
         PdfWebTable table = new PdfWebTable( 6,
-                student.getSession().getLabel()+" Examination Conflicts for "+student.getName(DepartmentalInstructor.sNameFormatLastFist),
+                student.getSession().getLabel()+" Examination Conflicts and/or Back-To-Back Exams for "+student.getName(DepartmentalInstructor.sNameFormatLastFist),
                 "personalSchedule.do?o3=%%",
                 new String[] {
                     "Type",
@@ -836,7 +836,7 @@ public class PersonalizedExamReportAction extends Action {
     public PdfWebTable getInstructorConflits(boolean html, TreeSet<ExamAssignmentInfo> exams, DepartmentalInstructor instructor) {
         String nl = (html?"<br>":"\n");
         PdfWebTable table = new PdfWebTable( 8,
-                instructor.getDepartment().getSession().getLabel()+" Examination Instructor Conflicts for "+instructor.getName(DepartmentalInstructor.sNameFormatLastFist),
+                instructor.getDepartment().getSession().getLabel()+" Examination Instructor Conflicts and/or Back-To-Back Exams for "+instructor.getName(DepartmentalInstructor.sNameFormatLastFist),
                 "personalSchedule.do?o4=%%",
                 new String[] {
                     "Type",
