@@ -681,7 +681,7 @@ public class PersonalizedExamReportAction extends Action {
                 }
                 table.addLine(
                         new String[] {
-                            (html?"<font color='"+PreferenceLevel.prolog2color("P")+"'>":"")+(conflict.getOtherEventId()!=null?"Class":"Direct")+(html?"</font>":""),
+                            (html?"<font color='"+PreferenceLevel.prolog2color("P")+"'>":"")+(conflict.getOtherEventId()!=null?conflict.isOtherClass()?"Class":"Event":"Direct")+(html?"</font>":""),
                             classes,
                             date,
                             time,
@@ -904,14 +904,14 @@ public class PersonalizedExamReportAction extends Action {
                     blank+=nl; classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl; distance += nl;
                     classes += conflict.getOtherEventName();
                     enrollment += conflict.getOtherEventSize();
-                    seating += "Class";
+                    seating += conflict.isOtherClass()?"Class":"Event";
                     room += conflict.getOtherEventRoom();
                     //date += conflict.getOtherEventDate();
                     time += conflict.getOtherEventTime(); 
                 }
                 table.addLine(
                         new String[] {
-                            (html?"<font color='"+PreferenceLevel.prolog2color("P")+"'>":"")+(conflict.getOtherEventId()!=null?"Class":"Direct")+(html?"</font>":""),
+                            (html?"<font color='"+PreferenceLevel.prolog2color("P")+"'>":"")+(conflict.getOtherEventId()!=null?conflict.isOtherClass()?"Class":"Event":"Direct")+(html?"</font>":""),
                             classes,
                             enrollment,
                             seating,
@@ -1109,7 +1109,7 @@ public class PersonalizedExamReportAction extends Action {
                         blank+=nl; classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl; distance += nl;
                         classes += conflict.getOtherEventName();
                         enrollment += conflict.getOtherEventSize();
-                        seating += "Class";
+                        seating += conflict.isOtherClass()?"Class":"Event";
                         room += conflict.getOtherEventRoom();
                         //date += conflict.getOtherEventDate();
                         time += conflict.getOtherEventTime(); 
