@@ -61,6 +61,7 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.PreferenceLevel;
@@ -69,6 +70,7 @@ import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
+import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.reports.exam.InstructorExamReport;
 import org.unitime.timetable.reports.exam.StudentExamReport;
@@ -251,22 +253,36 @@ public class PersonalizedExamReportAction extends Action {
             sLog.info("Requesting schedule for "+student.getName(DepartmentalInstructor.sNameFormatShort)+" (student)");
         }
         
-        HashSet<Exam> studentExams = new HashSet<Exam>();
+        HashSet<ExamOwner> studentExams = new HashSet<ExamOwner>();
         if (student!=null) {
+        	/*
             for (Iterator i=student.getClassEnrollments().iterator();i.hasNext();) {
                 StudentClassEnrollment sce = (StudentClassEnrollment)i.next();
                 studentExams.addAll(Exam.findAllRelated("Class_", sce.getClazz().getUniqueId()));
             }
+            */
+            studentExams.addAll(
+            		new ExamDAO().getSession().createQuery(
+                            "select distinct o from Student s inner join s.classEnrollments ce, ExamOwner o inner join o.course co "+
+                            "inner join co.instructionalOffering io "+
+                            "inner join io.instrOfferingConfigs ioc " +
+                            "inner join ioc.schedulingSubparts ss "+
+                            "inner join ss.classes c where "+
+                            "s.uniqueId=:studentId and c=ce.clazz and ("+
+                            "(o.ownerType="+ExamOwner.sOwnerTypeCourse+" and o.ownerId=co.uniqueId) or "+
+                            "(o.ownerType="+ExamOwner.sOwnerTypeOffering+" and o.ownerId=io.uniqueId) or "+
+                            "(o.ownerType="+ExamOwner.sOwnerTypeConfig+" and o.ownerId=ioc.uniqueId) or "+
+                            "(o.ownerType="+ExamOwner.sOwnerTypeClass+" and o.ownerId=c.uniqueId) "+
+                            ")").
+                            setLong("studentId", student.getUniqueId()).setCacheable(true).list());
             if (!student.getSession().getStatusType().canNoRoleReportExamFinal()) {
-                for (Iterator i=studentExams.iterator();i.hasNext();) {
-                    Exam x = (Exam)i.next();
-                    if (x.getExamType()==Exam.sExamTypeFinal) i.remove();
+                for (Iterator<ExamOwner> i=studentExams.iterator();i.hasNext();) {
+                    if (i.next().getExam().getExamType()==Exam.sExamTypeFinal) i.remove();
                 }
             }
             if (!student.getSession().getStatusType().canNoRoleReportExamMidterm()) {
-                for (Iterator i=studentExams.iterator();i.hasNext();) {
-                    Exam x = (Exam)i.next();
-                    if (x.getExamType()==Exam.sExamTypeMidterm) i.remove();
+                for (Iterator<ExamOwner> i=studentExams.iterator();i.hasNext();) {
+                    if (i.next().getExam().getExamType()==Exam.sExamTypeMidterm) i.remove();
                 }
             }
         }
@@ -347,13 +363,13 @@ public class PersonalizedExamReportAction extends Action {
                 } else if (!studentExams.isEmpty()) {
                     TreeSet<ExamAssignmentInfo> exams = new TreeSet<ExamAssignmentInfo>();
                     TreeSet<ExamSectionInfo> sections = new TreeSet<ExamSectionInfo>();
-                    for (Exam exam : studentExams) {
-                        if (exam.getAssignedPeriod()==null) continue;
-                        ExamAssignmentInfo x = new ExamAssignmentInfo(exam, useCache);
+                    for (ExamOwner examOwner : studentExams) {
+                        if (examOwner.getExam().getAssignedPeriod()==null) continue;
+                        ExamAssignmentInfo x = new ExamAssignmentInfo(examOwner, student, studentExams);
                         exams.add(x);
                         sections.addAll(x.getSections());
                     }
-
+                    
                     StudentExamReport sr = new StudentExamReport(
                             StudentExamReport.sModeNormal, file, student.getSession(),
                             -1, null, exams);
@@ -425,7 +441,7 @@ public class PersonalizedExamReportAction extends Action {
         if (!studentExams.isEmpty()) {
             myForm.setCanExport(true);
             TreeSet<ExamAssignmentInfo> exams = new TreeSet<ExamAssignmentInfo>();
-            for (Exam exam : studentExams) exams.add(new ExamAssignmentInfo(exam, useCache));
+            for (ExamOwner examOwner : studentExams) exams.add(new ExamAssignmentInfo(examOwner, student, studentExams));
             
             PdfWebTable table = getStudentExamSchedule(true, exams, student);
             request.setAttribute("schedule", table.printTable(WebTable.getOrder(request.getSession(),"exams.o1")));
@@ -611,7 +627,7 @@ public class PersonalizedExamReportAction extends Action {
     public PdfWebTable getStudentConflits(boolean html, TreeSet<ExamAssignmentInfo> exams, Student student) {
         String nl = (html?"<br>":"\n");
         PdfWebTable table = new PdfWebTable( 6,
-                student.getSession().getLabel()+" Examination Conflicts and/or Back-To-Back Exams for "+student.getName(DepartmentalInstructor.sNameFormatLastFist),
+                student.getSession().getLabel()+" Examination Conflicts and/or Back-To-Back Examinations for "+student.getName(DepartmentalInstructor.sNameFormatLastFist),
                 "personalSchedule.do?o3=%%",
                 new String[] {
                     "Type",
@@ -836,7 +852,7 @@ public class PersonalizedExamReportAction extends Action {
     public PdfWebTable getInstructorConflits(boolean html, TreeSet<ExamAssignmentInfo> exams, DepartmentalInstructor instructor) {
         String nl = (html?"<br>":"\n");
         PdfWebTable table = new PdfWebTable( 8,
-                instructor.getDepartment().getSession().getLabel()+" Examination Instructor Conflicts and/or Back-To-Back Exams for "+instructor.getName(DepartmentalInstructor.sNameFormatLastFist),
+                instructor.getDepartment().getSession().getLabel()+" Examination Instructor Conflicts and/or Back-To-Back Examinations for "+instructor.getName(DepartmentalInstructor.sNameFormatLastFist),
                 "personalSchedule.do?o4=%%",
                 new String[] {
                     "Type",
@@ -1435,7 +1451,7 @@ public class PersonalizedExamReportAction extends Action {
         return table;        
     }
     
-    public void printStudentSchedule(File file, Student student, HashSet<Exam> exams) throws Exception {
+    public void printStudentSchedule(File file, Student student, HashSet<ExamOwner> exams) throws Exception {
         PrintWriter out = null;
         try {
             SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
@@ -1469,7 +1485,8 @@ public class PersonalizedExamReportAction extends Action {
                     }
                 }
             }
-            for (Exam exam: exams) {
+            for (ExamOwner examOwner: exams) {
+            	Exam exam = examOwner.getExam();
                 if (exam.getAssignedPeriod()==null) continue;
                 for (ExamSectionInfo section: new ExamAssignment(exam).getSections()) {
                     if (section.getStudentIds().contains(student.getUniqueId())) {
