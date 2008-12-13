@@ -41,6 +41,7 @@ import org.unitime.timetable.model.DistributionObject;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.ExamConflict;
+import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
@@ -49,6 +50,7 @@ import org.unitime.timetable.model.SolverParameterDef;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.dao.ClassEventDAO;
 import org.unitime.timetable.model.dao.EventDAO;
+import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.model.dao.ExamPeriodDAO;
 import org.unitime.timetable.solver.exam.ExamModel;
 import org.unitime.timetable.solver.exam.ExamResourceUnavailability;
@@ -1530,6 +1532,89 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                 if (p1.compareTo(p)>0 && p.compareTo(p2)>0) return false;
             }
             return true;
+        }
+    }
+    
+    /** Generate conflict information only for given student */
+    public ExamAssignmentInfo(org.unitime.timetable.model.ExamOwner examOwner, Student student, Set<ExamOwner> examsOfTheSameStudent) {
+        super(examOwner.getExam());
+        iSections = new Vector();
+        HashSet<Long> studentIds = new HashSet(); studentIds.add(student.getUniqueId());
+        iSections.add(new ExamSectionInfo(examOwner, studentIds));
+        org.unitime.timetable.model.Exam exam = examOwner.getExam();
+
+        if (getPeriod()!=null) {
+        	Parameters p = new Parameters(exam.getSession().getUniqueId(), exam.getExamType());
+        	TreeSet sameDateExams = new TreeSet();
+            for (ExamOwner studentExamOwner : examsOfTheSameStudent) {
+            	org.unitime.timetable.model.Exam other = studentExamOwner.getExam();
+            	if (other.equals(getExam())) continue;
+                ExamPeriod otherPeriod = other.getAssignedPeriod();
+                if (otherPeriod==null) continue;
+                if (getPeriod().equals(otherPeriod)) { //direct conflict
+                    DirectConflict dc = new DirectConflict(new ExamAssignment(other));
+                    dc.getStudents().add(student.getUniqueId());
+                    iNrDirectConflicts++;
+                    iDirects.add(dc);
+                } else if (p.isBackToBack(getPeriod(),otherPeriod)) {
+                    ExamAssignment ea = new ExamAssignment(other);
+                    double distance = Location.getDistance(getRooms(), ea.getRooms());
+                    BackToBackConflict btb = new BackToBackConflict(ea, (p.getBackToBackDistance()<0?false:distance>p.getBackToBackDistance()), distance);
+                    btb.getStudents().add(student.getUniqueId());
+                    iNrBackToBackConflicts++;
+                    if (btb.isDistance()) iNrDistanceBackToBackConflicts++;
+                    iBackToBacks.add(btb);
+                }
+                if (getPeriod().getDateOffset().equals(otherPeriod.getDateOffset()))
+                    sameDateExams.add(other);
+            }
+            if (sameDateExams.size()>=2) {
+                TreeSet examIds = new TreeSet();
+                TreeSet otherExams = new TreeSet();
+                for (Iterator j=sameDateExams.iterator();j.hasNext();) {
+                    org.unitime.timetable.model.Exam other = (org.unitime.timetable.model.Exam)j.next();
+                    examIds.add(other.getUniqueId());
+                    otherExams.add(new ExamAssignment(other));
+                }
+                MoreThanTwoADayConflict m2d = new MoreThanTwoADayConflict(otherExams);
+                iNrMoreThanTwoADayConflicts++;
+                m2d.getStudents().add(student.getUniqueId());
+                iMoreThanTwoADays.add(m2d);
+            }
+            
+            if ("true".equals(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts."+(iExamType==org.unitime.timetable.model.Exam.sExamTypeFinal?"final":"midterm"), "true"))) {
+                int nrTravelSlots = Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.classEvent","6"));
+            	for (Iterator i = new ExamDAO().getSession().createQuery(
+                		"select m from ClassEvent e inner join e.meetings m, StudentClassEnrollment en "+
+                		"where en.student.uniqueId=:studentId and e.clazz=en.clazz and " +
+                		"m.meetingDate=:startDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot")
+                		.setLong("studentId", student.getUniqueId())
+                		.setDate("startDate", getPeriod().getStartDate())
+                		.setInteger("startSlot", getPeriod().getStartSlot()-nrTravelSlots)
+                		.setInteger("endSlot", getPeriod().getEndSlot()+nrTravelSlots)
+                		.setCacheable(true).iterate();i.hasNext();) {
+            		iDirects.add(new DirectConflict((Meeting)i.next(), studentIds));
+            	}
+            	for (Iterator i=ExamDAO.getInstance().getSession().createQuery(
+                        "select m from "+
+                        "CourseEvent e inner join e.meetings m inner join e.relatedCourses o, StudentClassEnrollment s where e.reqAttendance=true and "+
+                        "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId=:studentId and ("+
+                        "(o.ownerType=:classType and s.clazz.uniqueId=o.ownerId) or "+
+                        "(o.ownerType=:configType and s.clazz.schedulingSubpart.instrOfferingConfig.uniqueId=o.ownerId) or "+
+                        "(o.ownerType=:courseType and s.courseOffering.uniqueId=o.ownerId) or "+
+                        "(o.ownerType=:offeringType and s.courseOffering.instructionalOffering.uniqueId=o.ownerId))")
+                        .setLong("studentId", student.getUniqueId())
+                        .setDate("meetingDate", getPeriod().getStartDate())
+                        .setInteger("startSlot", getPeriod().getStartSlot()-nrTravelSlots)
+                        .setInteger("endSlot", getPeriod().getEndSlot()+nrTravelSlots)
+                        .setInteger("classType", ExamOwner.sOwnerTypeClass)
+                        .setInteger("configType", ExamOwner.sOwnerTypeConfig)
+                        .setInteger("courseType", ExamOwner.sOwnerTypeCourse)
+                        .setInteger("offeringType", ExamOwner.sOwnerTypeOffering)
+                        .setCacheable(true).list().iterator();i.hasNext();) {
+            		iDirects.add(new DirectConflict((Meeting)i.next(), studentIds));
+            	}
+            }
         }
     }
 }
