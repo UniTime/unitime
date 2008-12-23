@@ -26,6 +26,7 @@ import java.util.*;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.solver.interactive.Suggestion;
 
+import net.sf.cpsolver.coursett.heuristics.TimetableComparator;
 import net.sf.cpsolver.coursett.model.*;
 import net.sf.cpsolver.ifs.solver.*;
 
@@ -260,18 +261,25 @@ public class Suggestions implements Serializable {
     	return iEmptySuggestion;
     }
     
-    private Vector values(Lecture lecture) {
+    private TreeSet<PlacementValue> values(Lecture lecture) {
+    	TreeSet<PlacementValue> vals = new TreeSet();
     	if (lecture.equals(iLecture)) {
-    		Vector vals = new Vector();
     		for (Enumeration e=(lecture.allowBreakHard() || !iAllowBreakHard?lecture.values():lecture.computeValues(true)).elements();e.hasMoreElements();) {
     			Placement p = (Placement)e.nextElement();
-    			if (match(p)) vals.add(p);
+    			if (match(p)) vals.add(new PlacementValue(p));
     		}
-    		return vals;
     	} else {
-    		if (lecture.allowBreakHard() || !iAllowBreakHard) return lecture.values();
-    		return lecture.computeValues(true);
+    		if (lecture.allowBreakHard() || !iAllowBreakHard) {
+    			for (Enumeration e=lecture.values().elements();e.hasMoreElements();) {
+    				vals.add(new PlacementValue((Placement)e.nextElement()));
+    			}
+    		} else {
+    			for (Enumeration e=lecture.computeValues(true).elements();e.hasMoreElements();) {
+    				vals.add(new PlacementValue((Placement)e.nextElement()));
+    			}
+    		}
     	}
+    	return vals;
     }
     
     public boolean containsCommited(TimetableModel model, Collection values) {
@@ -286,6 +294,7 @@ public class Suggestions implements Serializable {
     }    
 
     private void backtrack(long startTime, Vector initialLectures, Vector resolvedLectures, Hashtable conflictsToResolve, Hashtable initialAssignments, int depth) {
+        iNrCombinationsConsidered++;
         int nrUnassigned = conflictsToResolve.size();
         if ((initialLectures==null || initialLectures.isEmpty()) && nrUnassigned==0) {
         	if (iSuggestions.size()==iLimit) {
@@ -301,12 +310,16 @@ public class Suggestions implements Serializable {
             iTimeoutReached = true;
             return;
         }
+        if (iSuggestions.size()==iLimit && ((Suggestion)iSuggestions.last()).getValue()<getBound(conflictsToResolve)) {
+        	return; //BOUND
+        }
         for (Enumeration e1=(initialLectures!=null && !initialLectures.isEmpty()?initialLectures.elements():conflictsToResolve.keys());e1.hasMoreElements();) {
             Lecture lecture = (Lecture)e1.nextElement();
             if (resolvedLectures.contains(lecture.getClassId())) continue;
             resolvedLectures.add(lecture.getClassId());
-            for (Enumeration e2=values(lecture).elements();e2.hasMoreElements();) {
-                Placement placement = (Placement)e2.nextElement();
+            for (Iterator e2=values(lecture).iterator();e2.hasNext();) {
+                PlacementValue placementValue = (PlacementValue)e2.next();
+                Placement placement = placementValue.getPlacement();
                 if (placement.equals(lecture.getAssignment())) continue;
                 if (!iAllowBreakHard && placement.isHard()) continue;
                 if (iSameTime && lecture.getAssignment()!=null && !placement.getTimeLocation().equals(((Placement)lecture.getAssignment()).getTimeLocation())) continue;
@@ -319,7 +332,6 @@ public class Suggestions implements Serializable {
                     Placement ini = (Placement)initialAssignments.get(lecture);
                     if (ini!=null && !placement.sameRooms(ini)) continue;
                 }
-                iNrCombinationsConsidered++;
                 Set conflicts = iModel.conflictValues(placement);
                 if (conflicts!=null && (nrUnassigned+conflicts.size()>depth)) continue;
                 if (containsCommited(iModel, conflicts)) continue;
@@ -432,5 +444,32 @@ public class Suggestions implements Serializable {
             "  hints = "+getHints()+"\n"+
             "  confTable = "+getConfTable()+"\n"+
             "}";
+    }
+    
+    public double getBound(Hashtable conflictsToResolve) {
+    	TimetableComparator cmp = (TimetableComparator)iSolver.getSolutionComparator();
+    	double value = cmp.currentValue(iSolver.currentSolution());
+    	for (Enumeration e=conflictsToResolve.keys();e.hasMoreElements();) {
+    		Lecture lect = (Lecture)e.nextElement();
+    		PlacementValue val = values(lect).first();
+    		value += val.getValue();
+    	}
+    	return value;
+    }
+    
+    public class PlacementValue implements Comparable<PlacementValue> {
+    	private Placement iPlacement;
+    	private double iValue;
+    	public PlacementValue(Placement placement) {
+    		iPlacement = placement;
+    		iValue = ((TimetableComparator)iSolver.getSolutionComparator()).value(placement, iSolver.getPerturbationsCounter());
+    	}
+    	public Placement getPlacement() { return iPlacement; }
+    	public double getValue() { return iValue; }
+    	public int compareTo(PlacementValue p) {
+    		int cmp = Double.compare(getValue(), p.getValue());
+    		if (cmp!=0) return cmp;
+    		return Double.compare(getPlacement().getId(), p.getPlacement().getId());
+    	}
     }
 }
