@@ -29,6 +29,69 @@
 	<category>
 		<title>BUG FIXES &amp; OTHER IMPROVEMENTS</title>
 		<item>
+			<name>Suggestions (Interactive Solver for Course Timetabling)</name>
+			<description>
+				<line>Following improvements have been implemented:
+					<line>order values (placements) by their impact on the objective function,</line>
+					<line>bound improved (estimate the solution value by taking the best possible value for unresolved variables).</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Personalized Schedule</name>
+			<description>
+				<line>
+					Significantly improved loading speed of student examination schedule and conflicts by tweaking the 
+					ExamAssignmentInfo model (only conflicts related to the student are generated and/or loaded).
+				</line>
+				<line>
+				   Changed message to read "Examination Conflicts and/or Back-To-Back Examinations for" to lesson student 
+				   confusion over whether they need to reschedule back-to-back exams.
+				</line>
+				<line>
+					Distinguish between conflicting class or course event.
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Exam Verification Report</name>
+			<description>
+				<line>Make sure that the last page gets printed.</line>
+			</description>
+		</item>
+		<item>
+			<name>Academic Sessions</name>
+			<description>
+				<line>Fixed the NullPointerException problem on Add Acedemic Session page.</line>
+			</description>
+		</item>
+		<item>
+			<name>Distribution Preferences</name>
+			<description>
+				<line>Fixed bug that occurred when a distribution preferences sequence number is not set.</line>
+			</description>
+		</item>
+		<item>
+			<name>Database</name>
+			<description>
+				<line>Database update to version 40 fixed (Oracle)
+					<line>
+						In Oracle,
+						"alter table &lt;schema&gt;.table rename to &lt;schema&gt;.new_table"
+						does not seem to work (the second &lt;schema&gt; should be avoided).
+					</line>
+				</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.1.122</version>
+	<release-date>Fri, 24 Oct 2008</release-date>
+	<category>
+		<title>BUG FIXES &amp; OTHER IMPROVEMENTS</title>
+		<item>
 			<name>Examination Timetabling</name>
 			<description>
 				<line>Examination Reports Statistics report: fixed a typo (instructor not available instead of student not available), 
