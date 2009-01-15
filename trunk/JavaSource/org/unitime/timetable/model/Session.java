@@ -546,10 +546,10 @@ public class Session extends BaseSession implements Comparable {
         if (examBeginTime!=null) examBeginDate.setTime(examBeginTime);
 
         Calendar eventBeginDate = Calendar.getInstance(Locale.US);
-        if (eventBeginDate!=null) eventBeginDate.setTime(eventBeginTime);
+        if (eventBeginTime!=null) eventBeginDate.setTime(eventBeginTime);
 
         Calendar eventEndDate = Calendar.getInstance(Locale.US);
-        if (eventEndDate!=null) eventEndDate.setTime(eventEndTime);
+        if (eventEndTime!=null) eventEndDate.setTime(eventEndTime);
 
         int startMonth = DateUtils.getStartMonth(eventBeginTime!=null?eventBeginTime:sessionBeginTime, acadYear, sNrExcessDays);
 		int endMonth = DateUtils.getEndMonth(eventEndTime!=null?eventEndTime:sessionEndTime, acadYear, sNrExcessDays);
