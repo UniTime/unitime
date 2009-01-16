@@ -352,18 +352,18 @@ public class RoomAvailabilityService implements RoomAvailabilityInterface {
         public long getUse() { return System.currentTimeMillis() - iLastAccess; }
         public TimeFrame getTimeFrame() { return iTime; }
         public boolean cover(TimeFrame time) {
-            Calendar c = Calendar.getInstance(Locale.US);
-            long offset = c.get(Calendar.DST_OFFSET)+c.get(Calendar.ZONE_OFFSET);
-            long startDay = (iTime.getStartTime().getTime()+offset) / 86400000;
-            long endDay = (iTime.getEndTime().getTime()+offset) / 86400000;
-            long startTime = (iTime.getStartTime().getTime()+offset) % 86400000;
-            long endTime = (iTime.getEndTime().getTime()+offset) % 86400000;
-            long givenStartDay = (time.getStartTime().getTime()+offset) / 86400000;
-            long givenEndDay = (time.getEndTime().getTime()+offset) / 86400000;
-            long givenStartTime = (time.getStartTime().getTime()+offset) % 86400000;
-            long givenEndTime = (time.getEndTime().getTime()+offset) % 86400000;
-            return (startDay<=givenStartDay && givenEndDay<=endDay && startTime<=givenStartTime && givenEndTime<=endTime);
-        }
+            SimpleDateFormat sdfDate = new SimpleDateFormat("yyyyMMdd");
+    		SimpleDateFormat sdfTime = new SimpleDateFormat("HHmm");
+    		String startDay = sdfDate.format(iTime.getStartTime());
+    		String endDay = sdfDate.format(iTime.getEndTime());
+    		String startTime = sdfTime.format(iTime.getStartTime());
+   		    String endTime = sdfTime.format(iTime.getEndTime());
+    		String givenStartDay = sdfDate.format(time.getStartTime());
+    		String givenEndDay = sdfDate.format(time.getEndTime());
+    		String givenStartTime = sdfTime.format(time.getStartTime());
+   		    String givenEndTime = sdfTime.format(time.getEndTime());
+   		    return(startDay.compareTo(givenStartDay) <=0 && givenEndDay.compareTo(endDay) <= 0 && startTime.compareTo(givenStartTime) <= 0 && givenEndTime.compareTo(endTime) <= 0);
+       }
         public String getYear() { return iYear; }
         public String getTerm() { return iTerm; }
         public String getCampus() { return iCampus; }
