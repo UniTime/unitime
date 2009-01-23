@@ -569,7 +569,7 @@ public class WebEventTableBuilder {
         if (form.getSponsoringOrganization()!=null && form.getSponsoringOrganization()>=0) {
             query += " and e.sponsoringOrganization.uniqueId=:sponsorOrgId";
         }
-
+        
         query += " order by e.eventName, e.uniqueId";
         
         Query hibQuery = new EventDAO().getSession().createQuery(query);
@@ -725,6 +725,10 @@ public class WebEventTableBuilder {
             }
         }
         
+        if (form.getLocation()!=null && form.getLocation().trim().length() > 0){
+        	query += " and ((select count(r) from Room as r where r.permanentId = m.locationPermanentId and upper(r.building.abbreviation) like :bldgSubstr and upper(r.roomNumber) like :roomSubstr) > 0 or (select count(nul) from NonUniversityLocation as nul where nul.permanentId = m.locationPermanentId and upper(nul.name) like :nameStr) > 0)) ";	       	
+        }
+
         switch (form.getMode()) {
             case EventListForm.sModeMyEvents :
                 query += " and e.mainContact.externalUniqueId = :userId";
@@ -772,6 +776,31 @@ public class WebEventTableBuilder {
         
         if (form.getSponsoringOrganization()!=null && form.getSponsoringOrganization()>=0) {
             hibQuery.setLong("sponsorOrgId", form.getSponsoringOrganization());
+        }
+        
+        if (form.getLocation()!=null && form.getLocation().trim().length() > 0){
+	     	String bldgSubstr = null;
+	     	String roomSubstr = null;
+	     	String nameStr = "%" + form.getLocation().toUpperCase() + "%";
+	     	int indexOfFirstSpace = form.getLocation().indexOf(' ');
+	     	if(indexOfFirstSpace == 0){
+	     		bldgSubstr = "%";
+	     		roomSubstr = "%" + form.getLocation().substring(0, indexOfFirstSpace).toUpperCase() + "%";
+	     	} else if (indexOfFirstSpace < 0) {
+	     		bldgSubstr = "%" + form.getLocation().toUpperCase() + "%";
+	     		roomSubstr = "%";
+        	} else {
+	     		bldgSubstr = "%" + form.getLocation().substring(0, indexOfFirstSpace).toUpperCase() + "%";
+	     		if (indexOfFirstSpace == form.getLocation().length() - 1){
+	     			roomSubstr = "%";
+	     		} else {
+	     			roomSubstr = "%" + form.getLocation().substring(indexOfFirstSpace + 1, form.getLocation().length()).toUpperCase() +"%";
+	     		}
+	     	}
+        	hibQuery.setString("bldgSubstr", bldgSubstr);
+        	hibQuery.setString("roomSubstr", roomSubstr);
+        	hibQuery.setString("nameStr", nameStr);
+        	
         }
         
         switch (form.getMode()) {
