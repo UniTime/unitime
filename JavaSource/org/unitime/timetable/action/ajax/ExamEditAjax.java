@@ -91,8 +91,8 @@ public class ExamEditAjax extends Action {
         }
         List courseNumbers = new CourseOfferingDAO().
             getSession().
-            createQuery("select co.uniqueId, co.courseNbr from CourseOffering co "+
-                    "where co.uniqueCourseNbr.subjectArea.uniqueId = :subjectAreaId "+
+            createQuery("select co.uniqueId, co.courseNbr, co.title from CourseOffering co "+
+                    "where co.subjectArea.uniqueId = :subjectAreaId "+
                     "and co.instructionalOffering.notOffered = false " +
                     "order by co.courseNbr ").
             setFetchSize(200).
@@ -103,7 +103,7 @@ public class ExamEditAjax extends Action {
         if (courseNumbers.size()>1) print(out, "-1", "-");
         for (Iterator i=courseNumbers.iterator();i.hasNext();) {
             Object[] o = (Object[])i.next();
-            print(out, o[0].toString(), o[1].toString());
+            print(out, o[0].toString(), (o[1].toString() + " - " + o[2].toString().replaceAll(">", "&gt;").replaceAll("<", "&lt;").replaceAll("'", "&quot;").replaceAll("&", "&amp;")));
         }
     }
     

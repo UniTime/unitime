@@ -27,6 +27,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.util.MessageResources;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
@@ -87,11 +88,15 @@ public class CourseOfferingEditForm extends ActionForm {
 				errors.add("courseNbr", new ActionMessage("errors.required", "Course Number"));
 			}
 			else {
-				SubjectArea sa = new SubjectAreaDAO().get(subjectAreaId);
-				CourseOffering co = CourseOffering.findBySessionSubjAreaAbbvCourseNbr(sa.getSessionId(), sa.getSubjectAreaAbbreviation(), courseNbr);
-				if (co!=null && !co.getUniqueId().equals(courseOfferingId)) {
-		            errors.add("courseNbr", new ActionMessage("errors.generic", "The course cannot be renamed. A course with the same course number already exists."));
-				}
+		    	String courseNumbersMustBeUnique = ApplicationProperties.getProperty("tmtbl.courseNumber.unique","true");
+
+		    	if (courseNumbersMustBeUnique.equalsIgnoreCase("true")){
+					SubjectArea sa = new SubjectAreaDAO().get(subjectAreaId);
+					CourseOffering co = CourseOffering.findBySessionSubjAreaAbbvCourseNbr(sa.getSessionId(), sa.getSubjectAreaAbbreviation(), courseNbr);
+					if (co!=null && !co.getUniqueId().equals(courseOfferingId)) {
+			            errors.add("courseNbr", new ActionMessage("errors.generic", "The course cannot be renamed. A course with the same course number already exists."));
+					}
+		    	}
 			}
 		}
 

@@ -124,8 +124,8 @@ public class DistributionPrefsAjax extends Action {
         if (subjectAreaId==null || subjectAreaId.length()==0 || subjectAreaId.equals(Preference.BLANK_PREF_VALUE)) return;
         List courseNumbers = new CourseOfferingDAO().
             getSession().
-            createQuery("select co.uniqueId, co.courseNbr from CourseOffering co "+
-                    "where co.uniqueCourseNbr.subjectArea.uniqueId = :subjectAreaId "+
+            createQuery("select co.uniqueId, co.courseNbr, co.title from CourseOffering co "+
+                    "where co.subjectArea.uniqueId = :subjectAreaId "+
                     "and co.instructionalOffering.notOffered = false and co.isControl = true " +
                     "order by co.courseNbr ").
             setFetchSize(200).
@@ -134,7 +134,7 @@ public class DistributionPrefsAjax extends Action {
             list();
         for (Iterator i=courseNumbers.iterator();i.hasNext();) {
             Object[] o = (Object[])i.next();
-            print(out, o[0].toString(), o[1].toString());
+            print(out, o[0].toString(), (o[1].toString() + " - " + o[2].toString().replaceAll(">", "&gt;").replaceAll("<", "&lt;").replaceAll("'", "&quot;").replaceAll("&", "&amp;")));
         }
     }
     

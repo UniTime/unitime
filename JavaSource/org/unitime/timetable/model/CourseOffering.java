@@ -95,12 +95,15 @@ public class CourseOffering extends BaseCourseOffering {
 			(getTitle()!=null?" - "+getTitle():""); 
 	}
 
+	public String getCourseNumberWithTitle(){
+		return(getCourseNbr()+(getTitle()!=null?" - "+getTitle():""));
+	}
 	public String toString() {
 		return (
 		        this.getSubjectAreaAbbv() 
 		        + " " + this.getCourseNbr() 
 		        + ( (this.getTitle()!=null) 
-		                ? " - " + this.getTitle() 
+		                ? " - " + this.getTitle().replaceAll(">", "&gt;").replaceAll("<", "&lt;").replaceAll("'", "&quot;").replaceAll("&", "&amp;") 
 		                : "") 
 		           );
 	}
@@ -157,7 +160,27 @@ public class CourseOffering extends BaseCourseOffering {
         
     }
 	
-	/**
+    public static CourseOffering findBySessionSubjAreaAbbvCourseNbrTitle(Long acadSessionId, String subjAreaAbbv, String courseNbr, String title) {
+
+        InstructionalOfferingDAO iDao = new InstructionalOfferingDAO();
+        org.hibernate.Session hibSession = iDao.getSession();
+        
+        String sql = " from CourseOffering co " +
+                     " where co.subjectArea.subjectAreaAbbreviation=:subjArea" +
+                     " and co.courseNbr = :crsNbr" +
+                     " and co.title = :title" +
+                     " and co.instructionalOffering.session.uniqueId = :acadSessionId";
+        Query query = hibSession.createQuery(sql);
+        query.setString("crsNbr", courseNbr);
+        query.setString("subjArea", subjAreaAbbv);
+        query.setLong("acadSessionId", acadSessionId.longValue());
+        query.setString("title", title);
+        
+        return (CourseOffering)query.uniqueResult();
+
+    }
+
+    /**
 	 * Add a new course offering (instructional offering) to the database
 	 * @param subjAreaId Subject Area Unique Id
 	 * @param courseNbr Course Number
@@ -451,6 +474,25 @@ public class CourseOffering extends BaseCourseOffering {
             setString("externalId", externalId).
             setCacheable(true).
             uniqueResult();
+    }
+    
+    public static CourseOffering findByUniqueId(Long uniqueId) {
+        return (CourseOffering)new CourseOfferingDAO().get(uniqueId);
+    }
+
+    public static CourseOffering findBySubjectCourseNbrInstrOffUniqueId( String subjectAreaAbbv, String courseNbr, Long instrOffrUniqueId) {
+    	return (CourseOffering)new CourseOfferingDAO().
+        getSession().
+        createQuery(
+            "select c from InstructionalOffering io inner join io.courseOfferings c where "+
+            "io.uniqueId=:instrOffrUniqueId and "+
+            "c.subjectArea.subjectAreaAbbreviation=:subjectAreaAbbv and "+
+            "c.courseNbr=:courseNbr").
+        setLong("instrOffrUniqueId", instrOffrUniqueId.longValue()).
+        setString("subjectAreaAbbv", subjectAreaAbbv).
+        setString("courseNbr", courseNbr).
+        setCacheable(true).
+        uniqueResult(); 
     }
     
     public static CourseOffering findByIdRolledForwardFrom(Long sessionId, Long uniqueIdRolledForwardFrom) {

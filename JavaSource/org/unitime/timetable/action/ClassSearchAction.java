@@ -323,7 +323,7 @@ public class ClassSearchAction extends LookupDispatchAction {
 			
 			query.append("inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings as co ");
 			query.append (" where c.schedulingSubpart in ( select ss2 from SchedulingSubpart as ss2 inner join ss2.instrOfferingConfig.instructionalOffering.courseOfferings as co2 ");
-			query.append(" where co2.uniqueCourseNbr.subjectArea.uniqueId in ( ");
+			query.append(" where co2.subjectArea.uniqueId in ( ");
 			boolean first = true;
 			for(int i = 0; i < subjectIds.length; i++){
 				if (!first){
@@ -336,7 +336,7 @@ public class ClassSearchAction extends LookupDispatchAction {
 			query.append(") ");			
 	        if (form.getCourseNbr() != null && form.getCourseNbr().length() > 0){
 	            String courseNbr = form.getCourseNbr();
-	            query.append(" and co2.uniqueCourseNbr.courseNbr ");
+	            query.append(" and co2.courseNbr ");
 			    if (courseNbr.indexOf('*')>=0) {
 		            query.append(" like '");
 		            courseNbr = courseNbr.replace('*', '%').toUpperCase();

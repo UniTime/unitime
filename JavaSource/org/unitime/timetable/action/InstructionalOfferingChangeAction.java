@@ -99,10 +99,10 @@ public class InstructionalOfferingChangeAction extends LookupDispatchAction {
 		org.hibernate.Session hibSession = (new InstructionalOfferingDAO()).getSession();
 		StringBuffer query = new StringBuffer();
 		query.append("select io from InstructionalOffering as io , CourseOffering co2 ");
-		query.append(" where co2.uniqueCourseNbr.subjectArea.uniqueId = :subjectAreaId ");
+		query.append(" where co2.subjectArea.uniqueId = :subjectAreaId ");
 		query.append(" and io.uniqueId = co2.instructionalOffering.uniqueId ");
         if (form.getCourseNbr() != null && form.getCourseNbr().length() > 0){
-            query.append(" and co2.uniqueCourseNbr.courseNbr = '");
+            query.append(" and co2.courseNbr = '");
             query.append(form.getCourseNbr());
             query.append("'  ");
         }

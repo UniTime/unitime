@@ -108,7 +108,7 @@ public class PeopleLookupAjax extends Action {
         out.println("/>");
     }
     
-    protected TreeSet<Person> findPeople(String query, String session) throws Exception {
+    public TreeSet<Person> findPeople(String query, String session) throws Exception {
         TreeSet<Person> people = new TreeSet();
         people.addAll(findPeopleFromStaff(query));
         people.addAll(findPeopleFromStudents(query, session));
