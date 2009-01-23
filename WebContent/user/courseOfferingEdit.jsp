@@ -114,7 +114,7 @@
 		<TR>
 			<TD>Course Number: </TD>
 			<TD>
-				<html:text property="courseNbr" size="4" maxlength="4" />
+				<html:text property="courseNbr" size="4" maxlength="10" />
 			</TD>
 		</TR>
 <% } %>
