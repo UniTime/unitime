@@ -19,6 +19,9 @@
 */
 package org.unitime.timetable.form;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.struts.Globals;
@@ -88,6 +91,21 @@ public class CourseOfferingEditForm extends ActionForm {
 				errors.add("courseNbr", new ActionMessage("errors.required", "Course Number"));
 			}
 			else {
+				
+		    	String courseNbrRegex = ApplicationProperties.getProperty("tmtbl.courseNumber.pattern");
+		    	String courseNbrInfo = ApplicationProperties.getProperty("tmtbl.courseNumber.patternInfo");
+		    	try { 
+			    	Pattern pattern = Pattern.compile(courseNbrRegex);
+			    	Matcher matcher = pattern.matcher(courseNbr);
+			    	if (!matcher.find()) {
+				        errors.add("courseNbr", new ActionMessage("errors.generic", courseNbrInfo));
+			    	}
+		    	}
+		    	catch (Exception e) {
+			        errors.add("courseNbr", new ActionMessage("errors.generic", "Course Number cannot be matched to regular expression: " + courseNbrRegex + ". Reason: " + e.getMessage()));
+		    	}
+
+				
 		    	String courseNumbersMustBeUnique = ApplicationProperties.getProperty("tmtbl.courseNumber.unique","true");
 
 		    	if (courseNumbersMustBeUnique.equalsIgnoreCase("true")){
