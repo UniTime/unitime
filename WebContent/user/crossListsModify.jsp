@@ -168,13 +168,14 @@
 			<TD>Course Offerings: </TD>
 			<TD>
 				<html:select
-					name="crossListsModifyForm"
-					property="addCourseOfferingId"
+					name="crossListsModifyForm"	
+					style="width:80;"								
+					property="addCourseOfferingId"			
 					onfocus="setUp();"
 					onkeypress="return selectSearch(event, this);"
 					onkeydown="return checkKey(event, this);" >
 					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
-					<html:options collection="<%=CourseOffering.CRS_OFFERING_LIST_ATTR_NAME%>" property="uniqueId" labelProperty="courseName" />
+					<html:options collection="<%=CourseOffering.CRS_OFFERING_LIST_ATTR_NAME%>" property="uniqueId" labelProperty="courseNameWithTitle" />
 				</html:select>
 				&nbsp;
 				<html:submit property="op" styleClass="btn" accesskey="A"

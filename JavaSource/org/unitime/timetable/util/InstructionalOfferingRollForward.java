@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.ArrangeCreditUnitConfig;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseCatalog;
@@ -619,7 +620,17 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		if (fromInstructionalOffering == null) {
 			return(null);
 		}
-		CourseOffering co = CourseOffering.findBySessionSubjAreaAbbvCourseNbr(toSession.getUniqueId(), fromInstructionalOffering.getControllingCourseOffering().getSubjectArea().getSubjectAreaAbbreviation(), fromInstructionalOffering.getControllingCourseOffering().getCourseNbr());
+		CourseOffering co = CourseOffering.findByIdRolledForwardFrom(toSession.getUniqueId(), fromInstructionalOffering.getControllingCourseOffering().getUniqueId());
+		if (co == null){
+			String courseNumbersMustBeUnique = ApplicationProperties.getProperty("tmtbl.courseNumber.unique","true");
+
+	    	if (courseNumbersMustBeUnique.equalsIgnoreCase("true")){
+	    		co = CourseOffering.findBySessionSubjAreaAbbvCourseNbr(toSession.getUniqueId(), fromInstructionalOffering.getControllingCourseOffering().getSubjectArea().getSubjectAreaAbbreviation(), fromInstructionalOffering.getControllingCourseOffering().getCourseNbr());
+	    	} else {
+	    		co = CourseOffering.findBySessionSubjAreaAbbvCourseNbrTitle(toSession.getUniqueId(), fromInstructionalOffering.getControllingCourseOffering().getSubjectArea().getSubjectAreaAbbreviation(), fromInstructionalOffering.getControllingCourseOffering().getCourseNbr(), fromInstructionalOffering.getControllingCourseOffering().getTitle());
+	    	}
+		}
+		
 		if (co != null){
 			InstructionalOffering toInstructionalOffering = co.getInstructionalOffering();
 			if (toInstructionalOffering != null){

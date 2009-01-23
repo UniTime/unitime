@@ -37,6 +37,7 @@ import org.apache.struts.action.ActionMapping;
 import org.dom4j.Element;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.Web;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Session;
@@ -125,7 +126,7 @@ public class SectioningDemoForm extends ActionForm {
         return new InstructionalOfferingDAO().
             getSession().
             createQuery("select co from InstructionalOffering as io , CourseOffering co "+
-                    "where co.uniqueCourseNbr.subjectArea.uniqueId = :subjectAreaId "+
+                    "where co.subjectArea.uniqueId = :subjectAreaId "+
                     "and io.uniqueId = co.instructionalOffering.uniqueId "+
                     "and co.instructionalOffering.notOffered = false "+
                     "and io.notOffered = false order by co.courseNbr ").
@@ -375,6 +376,7 @@ public class SectioningDemoForm extends ActionForm {
         Vector iClassAssignments = new Vector();
         String iSubjectArea = null;
         String iCourseNumber = null;
+        String iTitle = null;
         public CourseAssignmentBean() {}
         public Vector getClassAssignments() {
             return iClassAssignments;
@@ -390,6 +392,16 @@ public class SectioningDemoForm extends ActionForm {
         }
         public void setCourseNumber(String courseNumber) {
             iCourseNumber = courseNumber;
+        }
+        public String getTitleNormal(){
+        	return(iTitle);
+        }
+        public String getTitle() {
+        	return iTitle.replaceAll(">", "&gt;").replaceAll("<", "&lt;").replaceAll("'", "&quot;").replaceAll("&", "&amp;");
+        }
+        public void setTitle(String title) {
+        	String updatedTitle = title;
+        	iTitle = title;
         }
     }
     
@@ -631,11 +643,13 @@ public class SectioningDemoForm extends ActionForm {
                         out.println(indent+"select = getSelect('"+
                                 ch.getClazz().getCourse().getSubjectArea()+"','"+
                                 ch.getClazz().getCourse().getCourseNumber()+"','"+
+                                ch.getClazz().getCourse().getTitle()+"','"+
                                 ch.getClazz().getId()+"','"+ch.getId()+"');");
                         out.println(indent+"canSelect = "+ch.getSelectCondition()+";");
                         out.println(indent+"waitlist = getWaitlist('"+
                                 ch.getClazz().getCourse().getSubjectArea()+"','"+
                                 ch.getClazz().getCourse().getCourseNumber()+"','"+
+                                ch.getClazz().getCourse().getTitle()+"','"+
                                 ch.getClazz().getId()+"','"+ch.getId()+"');");
                         out.println(indent+"canWaitlist = (select==null || !canSelect) && ("+ch.getWaitlistCondition()+");");
                         out.println(indent+"if (select!=null && (select.checked!=canSelect || select.disabled==canSelect)) {");
@@ -644,6 +658,7 @@ public class SectioningDemoForm extends ActionForm {
                         out.println(indent+"\tcurrentSelection = getSelectedChoice('"+
                                 ch.getClazz().getCourse().getSubjectArea()+"','"+
                                 ch.getClazz().getCourse().getCourseNumber()+"','"+
+                                ch.getClazz().getCourse().getTitle()+"','"+
                                 ch.getClazz().getId()+"');");
                         out.println(indent+"\tif (canSelect && currentSelection.value=='') select.checked=true;");
                         out.println(indent+"\tif (!canSelect) select.checked=false;");
@@ -655,10 +670,12 @@ public class SectioningDemoForm extends ActionForm {
                         out.println(indent+"\tgetChoiceTR('"+
                                 ch.getClazz().getCourse().getSubjectArea()+"','"+
                                 ch.getClazz().getCourse().getCourseNumber()+"','"+
+                                ch.getClazz().getCourse().getTitle()+"','"+
                                 ch.getId()+"').style.display = ((select==null?true:select.disabled) && waitlist.disabled ? 'none' : 'table-row');");
                         out.println(indent+"\tchoiceChanged('"+
                                 ch.getClazz().getCourse().getSubjectArea()+"','"+
                                 ch.getClazz().getCourse().getCourseNumber()+"','"+
+                                ch.getClazz().getCourse().getTitle()+"','"+
                                 ch.getClazz().getId()+"','"+ch.getId()+"', type);");
                         out.println(indent+"}");
                         out.println();
@@ -742,6 +759,7 @@ public class SectioningDemoForm extends ActionForm {
             String con = "(isSelected('"+
                 getChoice().getClazz().getCourse().getSubjectArea()+"','"+
                 getChoice().getClazz().getCourse().getCourseNumber()+"','"+
+                getChoice().getClazz().getCourse().getTitle()+"','"+
                 getClassId()+"','"+getChoiceId()+"')";
             if (!getDepends().isEmpty()) {
                 con +=" && (";
@@ -757,9 +775,11 @@ public class SectioningDemoForm extends ActionForm {
             String con = "((isWaitlisted('"+
                 getChoice().getClazz().getCourse().getSubjectArea()+"','"+
                 getChoice().getClazz().getCourse().getCourseNumber()+"','"+
+                getChoice().getClazz().getCourse().getTitle()+"','"+
                 getClassId()+"','"+getChoiceId()+"') || isSelected('"+
                 getChoice().getClazz().getCourse().getSubjectArea()+"','"+
                 getChoice().getClazz().getCourse().getCourseNumber()+"','"+
+                getChoice().getClazz().getCourse().getTitle()+"','"+
                 getClassId()+"','"+getChoiceId()+"'))";
             if (!getDepends().isEmpty()) {
                 con += " && (";
@@ -842,11 +862,21 @@ public class SectioningDemoForm extends ActionForm {
                     request.setCourseNbr(co.getUniqueId().toString());
                     request.setWait(new Boolean(waitlist));
                     int idx = 0;
+        			String courseNumbersMustBeUnique = ApplicationProperties.getProperty("tmtbl.courseNumber.unique","true");
                     for (Iterator j=requestElement.elementIterator("alternative");j.hasNext();idx++) {
                         Element altElement = (Element)j.next();
                         String altSubjectArea = altElement.attributeValue("subjectArea");
                         String altCourseNumber = altElement.attributeValue("courseNumber");
-                        CourseOffering aco = CourseOffering.findBySessionSubjAreaAbbvCourseNbr(session.getUniqueId(), altSubjectArea, altCourseNumber);
+                        
+                        CourseOffering aco = null;
+                        
+            	    	if (courseNumbersMustBeUnique.equalsIgnoreCase("true")){
+            	    		aco = CourseOffering.findBySessionSubjAreaAbbvCourseNbr(session.getUniqueId(), altSubjectArea, altCourseNumber);
+            	    	} else {
+            	    		String altTitle = altElement.attributeValue("title");
+            	    		aco = CourseOffering.findBySessionSubjAreaAbbvCourseNbrTitle(session.getUniqueId(), altSubjectArea, altCourseNumber, altTitle);
+             	    	}
+                        
                         if (aco==null) continue;
                         if (idx==0) {
                             request.setAlt1SubjectArea(aco.getSubjectArea().getUniqueId().toString());
@@ -874,6 +904,7 @@ public class SectioningDemoForm extends ActionForm {
                     CourseAssignmentBean course = new CourseAssignmentBean();
                     course.setSubjectArea(element.attributeValue("subjectArea"));
                     course.setCourseNumber(element.attributeValue("courseNumber"));
+                    course.setTitle(element.attributeValue("title"));
                     for (Iterator j=element.elementIterator("class");j.hasNext();) {
                         Element classElement = (Element)j.next();
                         ClassAssignmentBean clazz = new ClassAssignmentBean(course);
@@ -918,6 +949,7 @@ public class SectioningDemoForm extends ActionForm {
                     CourseAssignmentBean course = new CourseAssignmentBean();
                     course.setSubjectArea("Free");
                     course.setCourseNumber("");
+                    course.setTitle("");
                     ClassAssignmentBean clazz = new ClassAssignmentBean(course);
                     clazz.setName("");
                     clazz.setTime(element.attributeValue("time"));
@@ -946,8 +978,8 @@ public class SectioningDemoForm extends ActionForm {
                 CourseAssignmentBean course = (CourseAssignmentBean)e.nextElement();
                 for (Enumeration f=course.getClassAssignments().elements();f.hasMoreElements();) {
                     ClassAssignmentBean clazz = (ClassAssignmentBean)f.nextElement();
-                    String[] selectedChoices = httpRequest.getParameterValues("chs_"+course.getSubjectArea()+":"+course.getCourseNumber()+":"+clazz.getId());
-                    String[] waitlistedChoices = httpRequest.getParameterValues("chwl_"+course.getSubjectArea()+":"+course.getCourseNumber()+":"+clazz.getId());
+                    String[] selectedChoices = httpRequest.getParameterValues("chs_"+course.getSubjectArea()+":"+course.getCourseNumber()+":"+course.getTitle()+":"+clazz.getId());
+                    String[] waitlistedChoices = httpRequest.getParameterValues("chwl_"+course.getSubjectArea()+":"+course.getCourseNumber()+":"+course.getTitle()+":"+clazz.getId());
                     for (Enumeration g=clazz.getChoices().elements();g.hasMoreElements();) {
                         ChoiceBean choice = (ChoiceBean)g.nextElement();
                         boolean selected = false, waitlisted = false;
@@ -997,19 +1029,22 @@ public class SectioningDemoForm extends ActionForm {
                 Element reqElement = courseRequestsElement.addElement("courseOffering");
                 reqElement.addAttribute("subjectArea", course.getSubjectAreaAbbv());
                 reqElement.addAttribute("courseNumber", course.getCourseNbr());
+                reqElement.addAttribute("title", course.getTitle());
                 reqElement.addAttribute("waitlist", (request.getWait()==null?"false":request.getWait().booleanValue()?"true":"false"));
                 CourseOffering alt1Course = request.getAlt1CourseOffering();
                 if (alt1Course!=null) {
                     Element element = reqElement.addElement("alternative");
                     element.addAttribute("subjectArea", alt1Course.getSubjectAreaAbbv());
                     element.addAttribute("courseNumber", alt1Course.getCourseNbr());
-                }
+                    element.addAttribute("title", alt1Course.getTitle());
+                                   }
                 CourseOffering alt2Course = request.getAlt2CourseOffering();
                 if (alt2Course!=null) {
                     Element element = reqElement.addElement("alternative");
                     element.addAttribute("subjectArea", alt2Course.getSubjectAreaAbbv());
                     element.addAttribute("courseNumber", alt2Course.getCourseNbr());
-                }
+                    element.addAttribute("title", alt2Course.getTitle());
+               }
                 if (request.isAlternative()) reqElement.addAttribute("alternative", "true");
             }
         }
@@ -1028,7 +1063,8 @@ public class SectioningDemoForm extends ActionForm {
                 Element courseElement = scheduleElement.addElement("courseOffering");
                 courseElement.addAttribute("subjectArea", course.getSubjectArea());
                 courseElement.addAttribute("courseNumber", course.getCourseNumber());
-                if (course.getClassAssignments().isEmpty())
+                courseElement.addAttribute("title", course.getTitleNormal());
+               if (course.getClassAssignments().isEmpty())
                     courseElement.addAttribute("waitlist","true");
                 for (Enumeration f=course.getClassAssignments().elements();f.hasMoreElements();) {
                     ClassAssignmentBean clazz = (ClassAssignmentBean)f.nextElement();
@@ -1075,10 +1111,10 @@ public class SectioningDemoForm extends ActionForm {
             out.println("\tvar select=null;");
             out.println("\tvar waitlist=null;");
             out.println("\tvar currentSelection=null;");
-            out.println("\tif (subjectArea=='"+course.getSubjectArea()+"' && courseNumber=='"+course.getCourseNumber()+"') { // "+course.getSubjectArea()+" "+course.getCourseNumber());
+            out.println("\tif (subjectArea=='"+course.getSubjectArea()+"' && courseNumber=='"+course.getCourseNumber()+"' && title=='"+course.getTitle()+"') { // "+course.getSubjectArea()+" "+course.getCourseNumber()+" - "+course.getTitle());
             for (Enumeration f=course.getClassAssignments().elements();f.hasMoreElements();) {
                 ClassAssignmentBean clazz =(ClassAssignmentBean)f.nextElement();
-                out.println("\t\tif (classId=='"+clazz.getId()+"') { // "+course.getSubjectArea()+" "+course.getCourseNumber()+" "+clazz.getName());
+                out.println("\t\tif (classId=='"+clazz.getId()+"') { // "+course.getSubjectArea()+" "+course.getCourseNumber()+" "+course.getTitle()+" "+clazz.getName());
                 for (Enumeration g=clazz.getChoices().elements();g.hasMoreElements();) {
                     ChoiceBean choice = (ChoiceBean)g.nextElement();
                     out.println("\t\t\tif (chId=='"+choice.getId()+"') { // "+choice.getTime()+" "+(choice.getInstructor()==null?"":choice.getInstructor()));
