@@ -151,13 +151,13 @@
 		document.getElementById("span"+idx+"A2F").style.display=dispFreeTime;
 	}
 	
-	function classClicked(source, subjectArea, courseNumber, classId) {
-		var spanA = document.getElementById(subjectArea+':'+courseNumber+':'+classId+'a');
-		var spanB = document.getElementById(subjectArea+':'+courseNumber+':'+classId+'b');
+	function classClicked(source, subjectArea, courseNumber, title, classId) {
+		var spanA = document.getElementById(subjectArea+':'+courseNumber+':'+title+':'+classId+'a');
+		var spanB = document.getElementById(subjectArea+':'+courseNumber+':'+title+':'+classId+'b');
 		spanA.style.display=(spanA.style.display=='none'?'inline':'none');
 		spanB.style.display=(spanB.style.display=='none'?'inline':'none');
 		source.title=(spanB.style.display=='none'?'Display choices...':'Hide choices...');
-		var img = document.getElementById(subjectArea+':'+courseNumber+':'+classId+'x');
+		var img = document.getElementById(subjectArea+':'+courseNumber+':'+title+':'+classId+'x');
 		img.src = (spanB.style.display=='none'?'images/expand_node_btn.gif':'images/collapse_node_btn.gif');
 	}
 	
@@ -165,45 +165,45 @@
 	SectioningDemoForm frm = (SectioningDemoForm) request.getAttribute("sectioningDemoForm");
 %>
 
-function getChoiceTR(subjectArea, courseNumber, chId) {
-	return document.getElementById('ch_'+subjectArea+':'+courseNumber+':'+chId);
+function getChoiceTR(subjectArea, courseNumber, title, chId) {
+	return document.getElementById('ch_'+subjectArea+':'+courseNumber+':'+title+':'+chId);
 }
 
-function getWaitlist(subjectArea,courseNumber,classId,chId) {
-	return document.getElementById('chwl_'+subjectArea+':'+courseNumber+':'+classId+':'+chId);
+function getWaitlist(subjectArea,courseNumber,title,classId,chId) {
+	return document.getElementById('chwl_'+subjectArea+':'+courseNumber+':'+title+':'+classId+':'+chId);
 }
 	
-function getSelect(subjectArea,courseNumber,classId,chId) {
-	return document.getElementById('chs_'+subjectArea+':'+courseNumber+':'+classId+':'+chId);
+function getSelect(subjectArea,courseNumber,title,classId,chId) {
+	return document.getElementById('chs_'+subjectArea+':'+courseNumber+':'+title+':'+classId+':'+chId);
 }
 
-function isWaitlisted(subjectArea,courseNumber,classId,chId) {
-	var chbox = getWaitlist(subjectArea,courseNumber,classId,chId);
+function isWaitlisted(subjectArea,courseNumber,title,classId,chId) {
+	var chbox = getWaitlist(subjectArea,courseNumber,title,classId,chId);
 	return (chbox!=null && chbox.checked);
 }
 	
-function isSelected(subjectArea,courseNumber,classId,chId) {
-	var radio = getSelect(subjectArea,courseNumber,classId,chId);
+function isSelected(subjectArea,courseNumber,title,classId,chId) {
+	var radio = getSelect(subjectArea,courseNumber,title,classId,chId);
 	return (radio!=null && radio.checked);
 }
 
-function getSelectedChoice(subjectArea,courseNumber,classId) {
-	return document.getElementById('cur_'+subjectArea+':'+courseNumber+':'+classId);
+function getSelectedChoice(subjectArea,courseNumber,title,classId) {
+	return document.getElementById('cur_'+subjectArea+':'+courseNumber+':'+title+':'+classId);
 }
 
-function updateMessage(subjectArea, courseNumber, classId) {
-	var chbox = document.getElementsByName('chwl_'+subjectArea+':'+courseNumber+':'+classId);
-	var radio = document.getElementsByName('chs_'+subjectArea+':'+courseNumber+':'+classId);
+function updateMessage(subjectArea, courseNumber, title, classId) {
+	var chbox = document.getElementsByName('chwl_'+subjectArea+':'+courseNumber+':'+title+':'+classId);
+	var radio = document.getElementsByName('chs_'+subjectArea+':'+courseNumber+':'+title+':'+classId);
 	var selected = "";
 	var checked = "";
-	var defSelected = (document.getElementById('def_'+subjectArea+':'+courseNumber+':'+classId)==null?null:document.getElementById('def_'+subjectArea+':'+courseNumber+':'+classId).value);
+	var defSelected = (document.getElementById('def_'+subjectArea+':'+courseNumber+':'+title+':'+classId)==null?null:document.getElementById('def_'+subjectArea+':'+courseNumber+':'+title+':'+classId).value);
 	
 	for (var i=0;i<chbox.length;i++) {
 		if (chbox[i].checked) {
-			var timeStr = document.getElementById('time_'+subjectArea+':'+courseNumber+':'+chbox[i].value).innerHTML;
-			var dateStr = document.getElementById('date_'+subjectArea+':'+courseNumber+':'+chbox[i].value).innerHTML;
-			var insStr = document.getElementById('ins_'+subjectArea+':'+courseNumber+':'+chbox[i].value).innerHTML;
-			var depStr = document.getElementById('dep_'+subjectArea+':'+courseNumber+':'+chbox[i].value).innerHTML;
+			var timeStr = document.getElementById('time_'+subjectArea+':'+courseNumber+':'+title+':'+chbox[i].value).innerHTML;
+			var dateStr = document.getElementById('date_'+subjectArea+':'+courseNumber+':'+title+':'+chbox[i].value).innerHTML;
+			var insStr = document.getElementById('ins_'+subjectArea+':'+courseNumber+':'+title+':'+chbox[i].value).innerHTML;
+			var depStr = document.getElementById('dep_'+subjectArea+':'+courseNumber+':'+title+':'+chbox[i].value).innerHTML;
 			checked += "<tr><td><i><font color='orange'>Queue me for "+timeStr+" "+dateStr+(insStr==""?"":" "+insStr)+(depStr==""?"":" (requires "+depStr+")")+"</font></i></td></tr>";
 		}
 	}
@@ -211,14 +211,14 @@ function updateMessage(subjectArea, courseNumber, classId) {
 	for (var i=0;i<radio.length;i++) {
 		if (radio[i].checked) noSelection = false;
 		if (radio[i].checked && (defSelected==null || defSelected!=radio[i].value)) {
-			var timeStr = document.getElementById('time_'+subjectArea+':'+courseNumber+':'+radio[i].value).innerHTML;
-			var dateStr = document.getElementById('date_'+subjectArea+':'+courseNumber+':'+radio[i].value).innerHTML;
-			var insStr = document.getElementById('ins_'+subjectArea+':'+courseNumber+':'+radio[i].value).innerHTML;
-			var depStr = document.getElementById('dep_'+subjectArea+':'+courseNumber+':'+radio[i].value).innerHTML;
+			var timeStr = document.getElementById('time_'+subjectArea+':'+courseNumber+':'+title+':'+radio[i].value).innerHTML;
+			var dateStr = document.getElementById('date_'+subjectArea+':'+courseNumber+':'+title+':'+radio[i].value).innerHTML;
+			var insStr = document.getElementById('ins_'+subjectArea+':'+courseNumber+':'+title+':'+radio[i].value).innerHTML;
+			var depStr = document.getElementById('dep_'+subjectArea+':'+courseNumber+':'+title+':'+radio[i].value).innerHTML;
 			selected += "<tr><td><i><font color='blue'>Try to give me "+timeStr+" "+dateStr+(insStr==""?"":" "+insStr)+(depStr==""?"":" (requires "+depStr+")")+"</font></i></td></tr>";
 		}
 	}
-	var spanA = document.getElementById(subjectArea+':'+courseNumber+':'+classId+'a');
+	var spanA = document.getElementById(subjectArea+':'+courseNumber+':'+title+':'+classId+'a');
 	spanA.innerHTML=
 		"<table border='0' cellspacing='0' cellpadding='3' style='border-left:40px solid transparent;'>"+
 		(noSelection?"<tr><td><i><font color='gray'>This section is not available for the selected configuration.</font></i></td></tr>":selected)+
@@ -226,24 +226,24 @@ function updateMessage(subjectArea, courseNumber, classId) {
 		"</table>";
 }
 
-function selectionChanged(subjectArea, courseNumber, classId, chId) {
-	choiceChanged(subjectArea, courseNumber, classId, chId, 1);
+function selectionChanged(subjectArea, courseNumber, title, classId, chId) {
+	choiceChanged(subjectArea, courseNumber, title, classId, chId, 1);
 }
 
-function waitlistChanged(subjectArea, courseNumber, classId, chId) {
-	choiceChanged(subjectArea, courseNumber, classId, chId, 0);
+function waitlistChanged(subjectArea, courseNumber, title, classId, chId) {
+	choiceChanged(subjectArea, courseNumber, title, classId, chId, 0);
 }
 
-function choiceChanged(subjectArea, courseNumber, classId, chId, type) {
-	updateMessage(subjectArea, courseNumber, classId, chId);
+function choiceChanged(subjectArea, courseNumber, title, classId, chId, type) {
+	updateMessage(subjectArea, courseNumber, title, classId, chId);
 	if (type==1) {
-		var currentChoice = getSelectedChoice(subjectArea,courseNumber,classId);
+		var currentChoice = getSelectedChoice(subjectArea,courseNumber,title,classId);
 		var lastChId = currentChoice.value;
-		var select = getSelect(subjectArea, courseNumber, classId, chId);
-		//alert('choiceChanged('+subjectArea+','+courseNumber+','+classId+','+chId+'), lastChId='+lastChId+', checked='+select.checked);
+		var select = getSelect(subjectArea, courseNumber, title, classId, chId);
+		//alert('choiceChanged('+subjectArea+','+courseNumber+','+title+','+classId+','+chId+'), lastChId='+lastChId+', checked='+select.checked);
 		if (lastChId!='' && chId!=lastChId && select!=null && select.checked) {
 			//alert('unselect '+lastChId);
-			choiceChangedX(subjectArea, courseNumber, classId, lastChId, 1);
+			choiceChangedX(subjectArea, courseNumber, title, classId, lastChId, 1);
 			//alert('select '+chId);
 			currentChoice.value=chId;
 		} else if (lastChId!='' && chId==lastChId && (select==null || !select.checked)) {
@@ -255,10 +255,10 @@ function choiceChanged(subjectArea, courseNumber, classId, chId, type) {
 		}
 	}
 	
-	choiceChangedX(subjectArea, courseNumber, classId, chId, type);
+	choiceChangedX(subjectArea, courseNumber, title, classId, chId, type);
 }
 
-function choiceChangedX(subjectArea, courseNumber, classId, chId, type) {
+function choiceChangedX(subjectArea, courseNumber, title, classId, chId, type) {
 <% frm.printOnChangeScript(out); %>
 }
 </script>	
@@ -405,11 +405,11 @@ function choiceChangedX(subjectArea, courseNumber, classId, chId, type) {
 							<html:option value=""></html:option>
 							<html:optionsCollection property="subjectAreas" value="id" label="value"/>
 						</nested:select>
-						<nested:select property="courseNbr"
+						<nested:select style="width:80;" property="courseNbr"
 							onfocus="setUp();" onkeypress="return selectSearch(event, this);" onkeydown="return checkKey(event, this);"
 							>
 							<html:option value=""></html:option>
-							<html:optionsCollection name="req" property="courseNumbers" value="uniqueId" label="courseNbr"/>
+							<html:optionsCollection name="req" property="courseNumbers" value="uniqueId" label="courseNumberWithTitle"/>
 						</nested:select>
 					</span>
 					<span id='span<%=idx%>CrsF' style='display:<%=SectioningDemoForm.sTypeFreeTime.equals(type)?"inline":"none"%>;'>
@@ -461,11 +461,11 @@ function choiceChangedX(subjectArea, courseNumber, classId, chId, type) {
 							<html:option value=""></html:option>
 							<html:optionsCollection property="subjectAreas" value="id" label="value"/>
 						</nested:select>
-						<nested:select property="alt1CourseNbr"
+						<nested:select style="width:80;" property="alt1CourseNbr"
 							onfocus="setUp();" onkeypress="return selectSearch(event, this);" onkeydown="return checkKey(event, this);"
 							>
 							<html:option value=""></html:option>
-							<html:optionsCollection name="req" property="alt1CourseNumbers" value="uniqueId" label="courseNbr"/>
+							<html:optionsCollection name="req" property="alt1CourseNumbers" value="uniqueId" label="courseNumberWithTitle"/>
 						</nested:select>
 					</span>
 					<span id='span<%=idx%>A1F' style='display:<%=SectioningDemoForm.sTypeFreeTime.equals(type)?"inline":"none"%>;'>
@@ -485,11 +485,11 @@ function choiceChangedX(subjectArea, courseNumber, classId, chId, type) {
 							<html:option value=""></html:option>
 							<html:optionsCollection property="subjectAreas" value="id" label="value"/>
 						</nested:select>
-						<nested:select property="alt2CourseNbr"
+						<nested:select style="width:80;" property="alt2CourseNbr"
 							onfocus="setUp();" onkeypress="return selectSearch(event, this);" onkeydown="return checkKey(event, this);"
 							>
 							<html:option value=""></html:option>
-							<html:optionsCollection name="req" property="alt2CourseNumbers" value="uniqueId" label="courseNbr"/>
+							<html:optionsCollection name="req" property="alt2CourseNumbers" value="uniqueId" label="courseNumberWithTitle"/>
 						</nested:select>
 					</span>
 					<span id='span<%=idx%>A2F' style='display:<%=SectioningDemoForm.sTypeFreeTime.equals(type)?"inline":"none"%>;'>
@@ -560,6 +560,7 @@ function choiceChangedX(subjectArea, courseNumber, classId, chId, type) {
 						</td>
 						<nested:define id="subjectArea" name="course" property="subjectArea"/>
 						<nested:define id="courseNumber" name="course" property="courseNumber"/>
+						<nested:define id="title" name="course" property="title"/>
 						<nested:equal property="subjectArea" value="Free">
 							<td>Free Time</td>
 							<td colspan='2'>
@@ -571,10 +572,11 @@ function choiceChangedX(subjectArea, courseNumber, classId, chId, type) {
 						<nested:notEqual property="subjectArea" value="Free">
 							<td colspan='6'>
 								<nested:write property="subjectArea"/>
-								<nested:write property="courseNumber"/>
+								<nested:write property="courseNumber"/>  - 
+								<nested:write property="title"/>
 								<table border='0' cellspacing='0' cellpadding='3' style='border-left:20px solid transparent;'>
 								<nested:empty property="classAssignments">
-									<tr><td>Request for course <nested:write property="subjectArea"/> <nested:write property="courseNumber"/> will be wait listed.</td></tr>
+									<tr><td>Request for course <nested:write property="subjectArea"/> <nested:write property="courseNumber"/> - <nested:write property="title"/> will be wait listed.</td></tr>
 								</nested:empty>
 								<nested:notEmpty property="classAssignments">
 								<nested:iterate property="classAssignments" id="clazz">
@@ -592,19 +594,19 @@ function choiceChangedX(subjectArea, courseNumber, classId, chId, type) {
 										<nested:define id="classId" name="clazz" property="id"/>
 										<tr><td style='border-left:<%=30*((Number)ind).intValue()%>px solid transparent;'>
 										<span 
-											onclick="classClicked(this, '<%=subjectArea%>', '<%=courseNumber%>', '<%=classId%>');"
+											onclick="classClicked(this, '<%=subjectArea%>', '<%=courseNumber%>', '<%=title%>', '<%=classId%>');"
 											onmouseover="this.style.cursor='hand';this.style.cursor='pointer';this.style.backgroundColor='rgb(223,231,242)';" 
 											onmouseout="this.style.backgroundColor='transparent';"
 											title='Show choices...'>
-												<img src='images/expand_node_btn.gif' border='0' id='<%=subjectArea%>:<%=courseNumber%>:<%=classId%>x'>
+												<img src='images/expand_node_btn.gif' border='0' id='<%=subjectArea%>:<%=courseNumber%>:<%=title%>:<%=classId%>x'>
 												<nested:write property="name"/>
 												<nested:write property="time"/>
 												<nested:write property="date"/>
 												<nested:write property="location"/>
 												<nested:write property="instructor"/>
 										</span>
-										<span id='<%=subjectArea%>:<%=courseNumber%>:<%=classId%>a' style='display:inline'></span>
-										<span id='<%=subjectArea%>:<%=courseNumber%>:<%=classId%>b' style='display:none'>
+										<span id='<%=subjectArea%>:<%=courseNumber%>:<%=title%>:<%=classId%>a' style='display:inline'></span>
+										<span id='<%=subjectArea%>:<%=courseNumber%>:<%=title%>:<%=classId%>b' style='display:none'>
 											<table border='0' cellspacing='0' cellpadding='3' style='border-left:40px solid transparent;'>
 												<tr>
 													<td><i>Sel</i></td>
@@ -616,32 +618,32 @@ function choiceChangedX(subjectArea, courseNumber, classId, chId, type) {
 												</tr>
 												<input 
 													type='hidden' 
-													id='cur_<%=subjectArea%>:<%=courseNumber%>:<%=classId%>' 
-													name='cur_<%=subjectArea%>:<%=courseNumber%>:<%=classId%>' 
+													id='cur_<%=subjectArea%>:<%=courseNumber%>:<%=title%>:<%=classId%>' 
+													name='cur_<%=subjectArea%>:<%=courseNumber%>:<%=title%>:<%=classId%>' 
 													value=''>
 												<nested:iterate property="choices" id="choice">
 													<nested:define id="chId" name="choice" property="id"/>
 													<nested:define id="disp" name="choice" property="display"/>
-													<tr style='display:<%=disp%>' id='ch_<%=subjectArea%>:<%=courseNumber%>:<%=chId%>'>
+													<tr style='display:<%=disp%>' id='ch_<%=subjectArea%>:<%=courseNumber%>:<%=title%>:<%=chId%>'>
 														<td align='center'>
 															<nested:equal name="choice" property="available" value="true">
 																<nested:define id="sel" name="choice" property="selected"/>
 																<nested:define id="dis" name="choice" property="selectDisabled"/>
 																<nested:equal name="choice" property="default" value="true">
-																	<input type='hidden' id='def_<%=subjectArea%>:<%=courseNumber%>:<%=classId%>' name='def_<%=subjectArea%>:<%=courseNumber%>:<%=classId%>' value='<%=chId%>'>
+																	<input type='hidden' id='def_<%=subjectArea%>:<%=courseNumber%>:<%=title%>:<%=classId%>' name='def_<%=subjectArea%>:<%=courseNumber%>:<%=classId%>' value='<%=chId%>'>
 																</nested:equal>
 																<nested:equal name="choice" property="selected" value="true">
 																	<script>
-																		getSelectedChoice('<%=subjectArea%>','<%=courseNumber%>','<%=classId%>').value = '<%=chId%>';
+																		getSelectedChoice('<%=subjectArea%>','<%=courseNumber%>','<%=title%>','<%=classId%>').value = '<%=chId%>';
 																	</script>
 																</nested:equal>
 																<input type='radio' 
-																	name='chs_<%=subjectArea%>:<%=courseNumber%>:<%=classId%>' 
-																	id='chs_<%=subjectArea%>:<%=courseNumber%>:<%=classId%>:<%=chId%>' 
+																	name='chs_<%=subjectArea%>:<%=courseNumber%>:<%=title%>:<%=classId%>' 
+																	id='chs_<%=subjectArea%>:<%=courseNumber%>:<%=title%>:<%=classId%>:<%=chId%>' 
 																	value='<%=chId%>' 
 																	<%=Boolean.TRUE.equals(sel)?"checked":""%> 
 																	<%=Boolean.TRUE.equals(dis)?"disabled":""%> 
-																	onchange="selectionChanged('<%=subjectArea%>','<%=courseNumber%>','<%=classId%>','<%=chId%>');" 
+																	onchange="selectionChanged('<%=subjectArea%>','<%=courseNumber%>','<%=title%>','<%=classId%>','<%=chId%>');" 
 																	/>
 															</nested:equal>
 														</td>
@@ -649,18 +651,18 @@ function choiceChangedX(subjectArea, courseNumber, classId, chId, type) {
 															<nested:define id="sel" name="choice" property="waitlisted"/>
 															<nested:define id="dis" name="choice" property="waitDisabled"/>
 															<input type='checkbox' 
-																name='chwl_<%=subjectArea%>:<%=courseNumber%>:<%=classId%>' 
-																id='chwl_<%=subjectArea%>:<%=courseNumber%>:<%=classId%>:<%=chId%>' 
+																name='chwl_<%=subjectArea%>:<%=courseNumber%>:<%=title%>:<%=classId%>' 
+																id='chwl_<%=subjectArea%>:<%=courseNumber%>:<%=title%>:<%=classId%>:<%=chId%>' 
 																value='<%=chId%>'
 																<%=Boolean.TRUE.equals(sel)?"checked":""%>
 																<%=Boolean.TRUE.equals(dis)?"disabled":""%> 
-																onchange="waitlistChanged('<%=subjectArea%>','<%=courseNumber%>','<%=classId%>','<%=chId%>');" 
+																onchange="waitlistChanged('<%=subjectArea%>','<%=courseNumber%>','<%=title%>','<%=classId%>','<%=chId%>');" 
 																/>
 														</td>
-														<td nowrap id='time_<%=subjectArea%>:<%=courseNumber%>:<%=chId%>'><nested:write name="choice" property="time"/></td>
-														<td nowrap id='date_<%=subjectArea%>:<%=courseNumber%>:<%=chId%>'><nested:write name="choice" property="date"/></td>
-														<td nowrap id='ins_<%=subjectArea%>:<%=courseNumber%>:<%=chId%>'><nested:write name="choice" property="instructor"/></td>
-														<td nowrap id='dep_<%=subjectArea%>:<%=courseNumber%>:<%=chId%>'><nested:write name="choice" property="parent"/></td>
+														<td nowrap id='time_<%=subjectArea%>:<%=courseNumber%>:<%=title%>:<%=chId%>'><nested:write name="choice" property="time"/></td>
+														<td nowrap id='date_<%=subjectArea%>:<%=courseNumber%>:<%=title%>:<%=chId%>'><nested:write name="choice" property="date"/></td>
+														<td nowrap id='ins_<%=subjectArea%>:<%=courseNumber%>:<%=title%>:<%=chId%>'><nested:write name="choice" property="instructor"/></td>
+														<td nowrap id='dep_<%=subjectArea%>:<%=courseNumber%>:<%=title%>:<%=chId%>'><nested:write name="choice" property="parent"/></td>
 													</tr>
 												</nested:iterate>
 											</table>
@@ -671,7 +673,7 @@ function choiceChangedX(subjectArea, courseNumber, classId, chId, type) {
 								<nested:iterate property="classAssignments" id="clazz">
 									<nested:define id="classId" name="clazz" property="id"/>
 									<nested:notEmpty property="choices">
-										<script>updateMessage('<%=subjectArea%>','<%=courseNumber%>','<%=classId%>');</script>
+										<script>updateMessage('<%=subjectArea%>','<%=courseNumber%>','<%=title%>','<%=classId%>');</script>
 									</nested:notEmpty>
 								</nested:iterate>
 								</nested:notEmpty>

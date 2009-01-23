@@ -586,15 +586,15 @@ public class EventAddInfoForm extends ActionForm {
         if (getSubjectArea(idx)>=0) {
             for (Iterator i= new CourseOfferingDAO().
                     getSession().
-                    createQuery("select co.uniqueId, co.courseNbr from CourseOffering co "+
-                            "where co.uniqueCourseNbr.subjectArea.uniqueId = :subjectAreaId "+
+                    createQuery("select co.uniqueId, co.courseNbr, co.title from CourseOffering co "+
+                            "where co.subjectArea.uniqueId = :subjectAreaId "+
                             "and co.instructionalOffering.notOffered = false "+
                             "order by co.courseNbr ").
                     setFetchSize(200).
                     setCacheable(true).
                     setLong("subjectAreaId", getSubjectArea(idx)).iterate();i.hasNext();) {
                 Object[] o = (Object[])i.next();
-                ret.add(new IdValue((Long)o[0],(String)o[1]));
+                ret.add(new IdValue((Long)o[0],((String)o[1] + " - " + (String)o[2])));
                 if (o[0].equals(getCourseNbr(idx))) contains = true;
             }
         }

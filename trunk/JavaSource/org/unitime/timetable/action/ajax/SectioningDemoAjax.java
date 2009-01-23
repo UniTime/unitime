@@ -84,7 +84,7 @@ public class SectioningDemoAjax extends Action {
         List courseNumbers = new InstructionalOfferingDAO().
             getSession().
             createQuery("select co from InstructionalOffering as io , CourseOffering co "+
-                    "where co.uniqueCourseNbr.subjectArea.uniqueId = :subjectAreaId "+
+                    "where co.subjectArea.uniqueId = :subjectAreaId "+
                     "and io.uniqueId = co.instructionalOffering.uniqueId "+
                     "and co.instructionalOffering.notOffered = false "+
                     "and io.notOffered = false order by co.courseNbr ").
@@ -94,7 +94,7 @@ public class SectioningDemoAjax extends Action {
             list();
         for (Iterator i=courseNumbers.iterator();i.hasNext();) {
             CourseOffering co = (CourseOffering)i.next();
-            print(out, co.getUniqueId().toString(), co.getCourseNbr());
+            print(out, co.getUniqueId().toString(), (co.getCourseNbr() + " - " + co.getTitle().replaceAll(">", "&gt;").replaceAll("<", "&lt;").replaceAll("'", "&quot;").replaceAll("&", "&amp;")));
         }
     }
     

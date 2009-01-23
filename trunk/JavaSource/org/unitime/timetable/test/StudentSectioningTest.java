@@ -35,6 +35,23 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import net.sf.cpsolver.coursett.model.RoomLocation;
+import net.sf.cpsolver.coursett.model.TimeLocation;
+import net.sf.cpsolver.ifs.model.Model;
+import net.sf.cpsolver.ifs.util.ToolBox;
+import net.sf.cpsolver.studentsct.StudentSctBBTest;
+import net.sf.cpsolver.studentsct.model.Choice;
+import net.sf.cpsolver.studentsct.model.Config;
+import net.sf.cpsolver.studentsct.model.Course;
+import net.sf.cpsolver.studentsct.model.CourseRequest;
+import net.sf.cpsolver.studentsct.model.Enrollment;
+import net.sf.cpsolver.studentsct.model.FreeTimeRequest;
+import net.sf.cpsolver.studentsct.model.Offering;
+import net.sf.cpsolver.studentsct.model.Request;
+import net.sf.cpsolver.studentsct.model.Section;
+import net.sf.cpsolver.studentsct.model.Student;
+import net.sf.cpsolver.studentsct.model.Subpart;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dom4j.Document;
@@ -45,6 +62,7 @@ import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 import org.hibernate.Transaction;
 import org.unitime.commons.hibernate.util.HibernateUtil;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.ClassWaitList;
@@ -66,24 +84,6 @@ import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.util.Constants;
-
-
-import net.sf.cpsolver.coursett.model.RoomLocation;
-import net.sf.cpsolver.coursett.model.TimeLocation;
-import net.sf.cpsolver.ifs.model.Model;
-import net.sf.cpsolver.ifs.util.ToolBox;
-import net.sf.cpsolver.studentsct.StudentSctBBTest;
-import net.sf.cpsolver.studentsct.model.Choice;
-import net.sf.cpsolver.studentsct.model.Config;
-import net.sf.cpsolver.studentsct.model.Course;
-import net.sf.cpsolver.studentsct.model.CourseRequest;
-import net.sf.cpsolver.studentsct.model.Enrollment;
-import net.sf.cpsolver.studentsct.model.FreeTimeRequest;
-import net.sf.cpsolver.studentsct.model.Offering;
-import net.sf.cpsolver.studentsct.model.Request;
-import net.sf.cpsolver.studentsct.model.Section;
-import net.sf.cpsolver.studentsct.model.Student;
-import net.sf.cpsolver.studentsct.model.Subpart;
 
 /**
  * @author Tomas Muller
@@ -669,6 +669,7 @@ public class StudentSectioningTest {
         } catch (Exception e) {}
         Student student = new Student(Long.parseLong(studentElement.attributeValue("key")));
         sLog.info("  loading student "+student.getId());
+		String courseNumbersMustBeUnique = ApplicationProperties.getProperty("tmtbl.courseNumber.unique","true");
 
         StudentSctBBTest sbt = null;
         boolean commit = false;
@@ -712,7 +713,14 @@ public class StudentSectioningTest {
                     String subjectArea = requestElement.attributeValue("subjectArea");
                     String courseNumber = requestElement.attributeValue("courseNumber");
                     boolean waitlist = "true".equals(requestElement.attributeValue("waitlist"));
-                    CourseOffering co = CourseOffering.findBySessionSubjAreaAbbvCourseNbr(session.getUniqueId(), subjectArea, courseNumber);
+                    CourseOffering co = null;
+
+        	    	if (courseNumbersMustBeUnique.equalsIgnoreCase("true")){
+        	    		co = CourseOffering.findBySessionSubjAreaAbbvCourseNbr(session.getUniqueId(), subjectArea, courseNumber);
+                    } else {
+                        String title = requestElement.attributeValue("title");
+                    	co = CourseOffering.findBySessionSubjAreaAbbvCourseNbrTitle(session.getUniqueId(), subjectArea, courseNumber, title);
+                    }
                     if (co==null) {
                         sLog.warn("    Course "+subjectArea+" "+courseNumber+" not found.");
                         continue;
@@ -723,7 +731,13 @@ public class StudentSectioningTest {
                         Element altElement = (Element)j.next();
                         String altSubjectArea = altElement.attributeValue("subjectArea");
                         String altCourseNumber = altElement.attributeValue("courseNumber");
-                        CourseOffering aco = CourseOffering.findBySessionSubjAreaAbbvCourseNbr(session.getUniqueId(), altSubjectArea, altCourseNumber);
+                        CourseOffering aco = null;
+                        if (courseNumbersMustBeUnique.equalsIgnoreCase("true")){
+                        	aco = CourseOffering.findBySessionSubjAreaAbbvCourseNbr(session.getUniqueId(), altSubjectArea, altCourseNumber);
+                        } else {
+                            String altTitle = altElement.attributeValue("title");
+                        	aco = CourseOffering.findBySessionSubjAreaAbbvCourseNbrTitle(session.getUniqueId(), altSubjectArea, altCourseNumber, altTitle);
+                        }
                         if (aco!=null)
                             courses.add(loadCourse(aco, student.getId()));
                     }
@@ -738,7 +752,13 @@ public class StudentSectioningTest {
                     Element courseOfferingElement = (Element)i.next();
                     String subjectArea = courseOfferingElement.attributeValue("subjectArea");
                     String courseNumber = courseOfferingElement.attributeValue("courseNumber");
-                    CourseOffering co = CourseOffering.findBySessionSubjAreaAbbvCourseNbr(session.getUniqueId(), subjectArea, courseNumber);
+                    CourseOffering co = null;
+                    if (courseNumbersMustBeUnique.equalsIgnoreCase("true")){
+        	    		co = CourseOffering.findBySessionSubjAreaAbbvCourseNbr(session.getUniqueId(), subjectArea, courseNumber);
+        	    	} else {
+                        String title = courseOfferingElement.attributeValue("title");
+        	    		co = CourseOffering.findBySessionSubjAreaAbbvCourseNbrTitle(session.getUniqueId(), subjectArea, courseNumber, title);
+        	    	}
                     if (co==null) {
                         sLog.warn("    Course "+subjectArea+" "+courseNumber+" not found.");
                         continue;
@@ -819,6 +839,8 @@ public class StudentSectioningTest {
                     Element element = (reqElement.attribute("subjectArea")==null?reqElement:reqElement.addElement("alternative"));
                     element.addAttribute("subjectArea", course.getSubjectArea());
                     element.addAttribute("courseNumber", course.getCourseNumber());
+                    CourseOffering co = CourseOffering.findByUniqueId(course.getId());
+                    element.addAttribute("title", (co.getTitle()!=null?co.getTitle():""));
                 }
                 reqElement.addAttribute("waitlist", (courseRequest.isWaitlist()?"true":"false"));
                 sLog.info("  added "+courseRequest);
@@ -862,6 +884,8 @@ public class StudentSectioningTest {
                     Course course = (Course)((CourseRequest)request).getCourses().firstElement();
                     courseOfferingElement.addAttribute("subjectArea", course.getSubjectArea());
                     courseOfferingElement.addAttribute("courseNumber", course.getCourseNumber());
+                    CourseOffering co = CourseOffering.findByUniqueId(course.getId());
+                    courseOfferingElement.addAttribute("title", co.getTitle());
                     courseOfferingElement.addAttribute("waitlist", "true");
                 }
                 continue;
@@ -898,6 +922,8 @@ public class StudentSectioningTest {
                         Course course = section.getSubpart().getConfig().getOffering().getCourse(student);
                         courseOfferingElement.addAttribute("subjectArea", course.getSubjectArea());
                         courseOfferingElement.addAttribute("courseNumber", course.getCourseNumber());
+                        CourseOffering co = CourseOffering.findByUniqueId(course.getId());
+                        courseOfferingElement.addAttribute("title", co.getTitle());
                     }
                     if (offering==null) {
                         offering=section.getSubpart().getConfig().getOffering();

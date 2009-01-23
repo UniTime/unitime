@@ -27,6 +27,7 @@
 <!ELEMENT alternative EMPTY >
 <!ATTLIST alternative courseNumber NMTOKEN #REQUIRED >
 <!ATTLIST alternative subjectArea NMTOKEN #REQUIRED >
+<!ATTLIST alternative title NMTOKEN #IMPLIED >
 
 <!ELEMENT cancelStudent EMPTY >
 
@@ -60,6 +61,7 @@
 <!ATTLIST courseOffering courseNumber NMTOKEN #REQUIRED >
 <!ATTLIST courseOffering credit NMTOKEN #IMPLIED >
 <!ATTLIST courseOffering subjectArea NMTOKEN #REQUIRED >
+<!ATTLIST courseOffering title NMTOKEN #IMPLIED >
 <!ATTLIST courseOffering waitlist ( false | true ) #IMPLIED >
 
 <!ELEMENT courseRequests ( courseOffering | freeTime )* >

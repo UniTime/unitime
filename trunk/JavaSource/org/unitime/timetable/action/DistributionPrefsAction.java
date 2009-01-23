@@ -384,9 +384,9 @@ public class DistributionPrefsAction extends Action {
 	            else {
 	        		
 	        		StringBuffer query = new StringBuffer();
-	        		query.append("select co.uniqueId, co.courseNbr ");
+	        		query.append("select co.uniqueId, co.courseNbr, co.title ");
        		        query.append("  from InstructionalOffering as io , CourseOffering co ");
-	        		query.append(" where co.uniqueCourseNbr.subjectArea.uniqueId = :subjectAreaId ");
+	        		query.append(" where co.subjectArea.uniqueId = :subjectAreaId ");
 	        		query.append("       and io.uniqueId = co.instructionalOffering.uniqueId ");
                     query.append("       and io.notOffered = false ");
                     query.append("       and co.isControl = true ");
@@ -406,7 +406,7 @@ public class DistributionPrefsAction extends Action {
 	        		    for(int i=0; i<result.size(); i++) {
 	        		        Object[] a = (Object[]) result.get(i);
 	        		        ComboBoxLookup cbl = new ComboBoxLookup(
-	        		                a[1].toString(), a[0].toString());
+	        		                (a[1].toString() + " - " + a[2].toString()), a[0].toString());
 	        		        crsNumList.addElement(cbl);
 	        		    }
 	        		    

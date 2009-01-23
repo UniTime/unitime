@@ -87,8 +87,8 @@ public class InstructionalOfferingSearchAction extends LookupDispatchAction {
 	      map.put("button.worksheetPDF", "worksheetPdf");
 	      map.put("button.saveNotOfferedChanges", "saveNotOfferedChanges");
 	      map.put("button.addNew", "addInstructionalOfferings");
-	      map.put("button.update", "updateInstructionalOfferings");
-	      map.put("button.delete", "deleteCourseOffering");
+//	      map.put("button.update", "updateInstructionalOfferings");
+//	      map.put("button.delete", "deleteCourseOffering");
 	      map.put("button.cancel", "searchInstructionalOfferings");
 	      return map;
 	}
@@ -470,17 +470,21 @@ public class InstructionalOfferingSearchAction extends LookupDispatchAction {
         httpSession.setAttribute(Constants.CRS_NBR_ATTR_NAME, instructionalOfferingListForm.getCourseNbr());        
 	    
 	    // Offering exists - redirect to offering detail
-	    List l = CourseOffering.search(sessionId, subjAreaId, courseNbr);
-	    if(l.size()>0) {
-	        // errors.add("courseNbr", new ActionMessage("errors.exists", courseNbr));	        
-	        InstructionalOffering io = ((CourseOffering) l.get(0)).getInstructionalOffering();
-	        request.setAttribute("op", "view");
-	        request.setAttribute("io", io.getUniqueId().toString());
-	        return mapping.findForward("showInstructionalOfferingDetail");
-	    }
+    	String courseNumbersMustBeUnique = ApplicationProperties.getProperty("tmtbl.courseNumber.unique","true");
+
+    	if (courseNumbersMustBeUnique.equalsIgnoreCase("true")){
+		    List l = CourseOffering.search(sessionId, subjAreaId, courseNbr);
+		    if(l.size()>0) {
+		        // errors.add("courseNbr", new ActionMessage("errors.exists", courseNbr));	        
+		        InstructionalOffering io = ((CourseOffering) l.get(0)).getInstructionalOffering();
+		        request.setAttribute("op", "view");
+		        request.setAttribute("io", io.getUniqueId().toString());
+		        return mapping.findForward("showInstructionalOfferingDetail");
+		    }
+    	}
 
 	    // No Errors - create Course Offering	    
-	    CourseOffering.addNew(subjAreaId, courseNbr);
+	    CourseOffering newCourseOffering = CourseOffering.addNew(subjAreaId, courseNbr);
 	    
         if(!Web.isLoggedIn( request.getSession() )) {
             throw new Exception ("Access Denied.");
@@ -490,8 +494,8 @@ public class InstructionalOfferingSearchAction extends LookupDispatchAction {
 		Debug.debug("after get collection size = " + instructionalOfferingListForm.getInstructionalOfferings().size());
 		
 	    // Offering exists - redirect to offering detail
-	    List l2 = CourseOffering.search(sessionId, subjAreaId, courseNbr);
-	    if(l2.size()>0) {
+//	    List l2 = CourseOffering.search(sessionId, subjAreaId, courseNbr);
+	    if(newCourseOffering != null) {
 	        // errors.add("courseNbr", new ActionMessage("errors.exists", courseNbr));
 	    	/*
 	        InstructionalOffering io = ((CourseOffering) l2.get(0)).getInstructionalOffering();
@@ -501,7 +505,7 @@ public class InstructionalOfferingSearchAction extends LookupDispatchAction {
 	    	*/
 	        MessageResources rsc = getResources(request);
 	        request.setAttribute("op", rsc.getMessage("button.editCourseOffering"));
-	        request.setAttribute("courseOfferingId", ((CourseOffering) l2.get(0)).getUniqueId().toString());
+	        request.setAttribute("courseOfferingId", newCourseOffering.getUniqueId().toString());
 	        return mapping.findForward("showCourseOfferingEdit");
 	    }
 		
@@ -519,222 +523,222 @@ public class InstructionalOfferingSearchAction extends LookupDispatchAction {
 	 * @return
 	 * @throws Exception
 	 */
-	public ActionForward updateInstructionalOfferings(
-			ActionMapping mapping,
-			ActionForm form,
-			HttpServletRequest request,
-			HttpServletResponse response) throws Exception {
+//	public ActionForward updateInstructionalOfferings(
+//			ActionMapping mapping,
+//			ActionForm form,
+//			HttpServletRequest request,
+//			HttpServletResponse response) throws Exception {
+//
+//        HttpSession httpSession = request.getSession();
+//        if(!Web.isLoggedIn( httpSession )) {
+//            throw new Exception ("Access Denied.");
+//        }
+//        
+//        User user = Web.getUser(httpSession);
+//        Long sessionId = (Long) user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
+//        
+//        // Read values
+//	    InstructionalOfferingListForm frm = (InstructionalOfferingListForm) form;
+//	    ActionMessages errors = new ActionMessages();
+//        
+//        String subjAreaId = frm.getSubjectAreaId();
+//        String courseNbr = frm.getCourseNbr();
+//        String ctrCrsOffrId = frm.getCtrlInstrOfferingId();	        
+//        Boolean isControl = frm.getIsControl();
+//        
+//        if(ctrCrsOffrId==null) ctrCrsOffrId = "";
+//        if(isControl==null) isControl = new Boolean(false);
+//        
+//        frm.setCollections(request, getInstructionalOfferings(request, frm));
+//	    frm.setSubjectAreaAbbv(new SubjectAreaDAO().get(new Long(subjAreaId)).getSubjectAreaAbbreviation());
+//
+//        List l = CourseOffering.search(sessionId, subjAreaId, courseNbr);
+//	    if(l.size()>0) {
+//	        
+//            CourseOfferingDAO cdao = new CourseOfferingDAO();
+//    	    InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
+//    	    org.hibernate.Session hibSession = idao.getSession();
+//    	    Transaction tx = hibSession.beginTransaction();
+//    	    
+//    	    try {
+//		        // Update
+//		        CourseOffering co = (CourseOffering) l.get(0);
+//		        InstructionalOffering io = co.getInstructionalOffering();
+//
+//		        String ctrCrsOffrId2 = io.getCtrlCourseId().toString();
+//		        Boolean isControl2 = co.isIsControl();
+//		        
+//		        if(ctrCrsOffrId2==null) ctrCrsOffrId2 = "";
+//		        if(isControl2==null) isControl2 = new Boolean(false);
+//
+//		        // Check if value is changed
+//		        if(isControl2.booleanValue()!=isControl.booleanValue() 
+//		               || !ctrCrsOffrId2.equals(ctrCrsOffrId) ) {
+//
+//		            // Control flag is changed
+//		            if(isControl2.booleanValue()!=isControl.booleanValue()) {
+//		                
+//		                
+//		                // It is now a controlling course
+//		                if(isControl.booleanValue()) {
+//		                    co.setIsControl(isControl);
+//		                    
+//		                    // Loop through IO and update other controlling course to false
+//		                    Set offerings = io.getCourseOfferings();
+//		                    Iterator iter = offerings.iterator();
+//		                    while(iter.hasNext()) {
+//		                        CourseOffering co2 = (CourseOffering) iter.next();
+//		                        if(co2.getUniqueId().intValue()!=co.getUniqueId().intValue() && co2.isIsControl().booleanValue()) {
+//		                            co2.setIsControl(new Boolean(false));
+//		                        }
+//		                    }
+//		                    idao.saveOrUpdate(io);
+//		                }
+//		                // It is now NOT a controlling course
+//		                else {
+//
+//			                // Check that controlling course is not the same
+//		                    if(ctrCrsOffrId2.equals(ctrCrsOffrId) || ctrCrsOffrId.trim().length()==0) {
+//		        		        errors.add("ctrlInstrOfferingId", new ActionMessage("errors.ctrlCourse.invalid"));
+//		                    } 
+//		                    else {
+//		                        
+//		                        // Has other course offerings attached to it
+//		                        if(io.getCourseOfferings().size()>1) {
+//			        		        errors.add("ctrlInstrOfferingId", new ActionMessage("errors.ctrlCourse.multipleChildren"));
+//		                        }
+//		                        else {
+//								    io.removeCourseOffering(co);
+//								    io.setCourseOfferings(null);
+//								    co.setIsControl(new Boolean(false));
+//								    co.setInstructionalOffering(null);
+//								    Event.deleteFromEvents(hibSession, io);
+//								    Exam.deleteFromExams(hibSession, io);
+//								    idao.delete(io);
+//								    
+//			                        CourseOffering co2 = cdao.get(new Long(ctrCrsOffrId));
+//			                        InstructionalOffering io2 = co2.getInstructionalOffering();
+//			                        io2.addTocourseOfferings(co);
+//			                        co.setInstructionalOffering(io2);
+//			                        idao.save(io2);
+//		                        }
+//		                    }
+//		                }
+//		            }
+//		            else {
+//			            // Controlling course has changed
+//			            if(!ctrCrsOffrId2.equals(ctrCrsOffrId)) {
+//			                // Check that is not a controlling course
+//			                if(!isControl2.booleanValue()) {
+//		                        // Has other course offerings attached to it
+//		                        if(io.getCourseOfferings().size()>1 && isControl.booleanValue()) {
+//			        		        errors.add("ctrlInstrOfferingId", new ActionMessage("errors.ctrlCourse.multipleChildren"));
+//		                        }
+//		                        else {
+//								    io.removeCourseOffering(co);
+//								    co.setInstructionalOffering(null);
+//								    idao.save(io);
+//
+//								    CourseOffering co2 = cdao.get(new Long(ctrCrsOffrId));
+//			                        InstructionalOffering io2 = co2.getInstructionalOffering();
+//			                        io2.addTocourseOfferings(co);
+//			                        co.setInstructionalOffering(io2);
+//			                        idao.save(io2);
+//		                        }				                    
+//			                }
+//			                // Ambiguous - cannot have a controlling course if it is controlling 
+//			                else {
+//			                    errors.add("ctrlInstrOfferingId", 
+//	                            	new ActionMessage("errors.exception", 
+//	                            	    "Ambiguous operation requested - cannot assign a controlling offering it is flagged as a controlling course"));
+//			                }
+//			            }
+//		            }
+//
+//				    tx.commit();
+//			    }
+//	        }
+//		    catch (Exception e) {
+//		        tx.rollback();	   
+//		        Debug.error(e);
+//		        errors.add("", new ActionMessage("errors.exception", "ERRORS: " + e.getMessage()));
+//			    addErrors(request, errors);
+//			    return mapping.findForward("editInstructionalOffering");
+//		    }		            
+//	    }
+//	    else {
+//	        String crsName = frm.getSubjectAreaAbbv() + " " + frm.getCourseNbr();
+//	        errors.add("courseNbr", new ActionMessage("errors.lookup.notFound", "Course Offering: " + crsName ));
+//	    }
+//
+//	    addErrors(request, errors);
+//	    if(errors.size()>0) 
+//		    return mapping.findForward("editInstructionalOffering");
+//
+//	    frm.setCollections(request, getInstructionalOfferings(request, frm));
+//	    return mapping.findForward("showInstructionalOfferingList");
+//	}
 
-        HttpSession httpSession = request.getSession();
-        if(!Web.isLoggedIn( httpSession )) {
-            throw new Exception ("Access Denied.");
-        }
-        
-        User user = Web.getUser(httpSession);
-        Long sessionId = (Long) user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
-        
-        // Read values
-	    InstructionalOfferingListForm frm = (InstructionalOfferingListForm) form;
-	    ActionMessages errors = new ActionMessages();
-        
-        String subjAreaId = frm.getSubjectAreaId();
-        String courseNbr = frm.getCourseNbr();
-        String ctrCrsOffrId = frm.getCtrlInstrOfferingId();	        
-        Boolean isControl = frm.getIsControl();
-        
-        if(ctrCrsOffrId==null) ctrCrsOffrId = "";
-        if(isControl==null) isControl = new Boolean(false);
-        
-        frm.setCollections(request, getInstructionalOfferings(request, frm));
-	    frm.setSubjectAreaAbbv(new SubjectAreaDAO().get(new Long(subjAreaId)).getSubjectAreaAbbreviation());
 
-        List l = CourseOffering.search(sessionId, subjAreaId, courseNbr);
-	    if(l.size()>0) {
-	        
-            CourseOfferingDAO cdao = new CourseOfferingDAO();
-    	    InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
-    	    org.hibernate.Session hibSession = idao.getSession();
-    	    Transaction tx = hibSession.beginTransaction();
-    	    
-    	    try {
-		        // Update
-		        CourseOffering co = (CourseOffering) l.get(0);
-		        InstructionalOffering io = co.getInstructionalOffering();
-
-		        String ctrCrsOffrId2 = io.getCtrlCourseId().toString();
-		        Boolean isControl2 = co.isIsControl();
-		        
-		        if(ctrCrsOffrId2==null) ctrCrsOffrId2 = "";
-		        if(isControl2==null) isControl2 = new Boolean(false);
-
-		        // Check if value is changed
-		        if(isControl2.booleanValue()!=isControl.booleanValue() 
-		               || !ctrCrsOffrId2.equals(ctrCrsOffrId) ) {
-
-		            // Control flag is changed
-		            if(isControl2.booleanValue()!=isControl.booleanValue()) {
-		                
-		                
-		                // It is now a controlling course
-		                if(isControl.booleanValue()) {
-		                    co.setIsControl(isControl);
-		                    
-		                    // Loop through IO and update other controlling course to false
-		                    Set offerings = io.getCourseOfferings();
-		                    Iterator iter = offerings.iterator();
-		                    while(iter.hasNext()) {
-		                        CourseOffering co2 = (CourseOffering) iter.next();
-		                        if(co2.getUniqueId().intValue()!=co.getUniqueId().intValue() && co2.isIsControl().booleanValue()) {
-		                            co2.setIsControl(new Boolean(false));
-		                        }
-		                    }
-		                    idao.saveOrUpdate(io);
-		                }
-		                // It is now NOT a controlling course
-		                else {
-
-			                // Check that controlling course is not the same
-		                    if(ctrCrsOffrId2.equals(ctrCrsOffrId) || ctrCrsOffrId.trim().length()==0) {
-		        		        errors.add("ctrlInstrOfferingId", new ActionMessage("errors.ctrlCourse.invalid"));
-		                    } 
-		                    else {
-		                        
-		                        // Has other course offerings attached to it
-		                        if(io.getCourseOfferings().size()>1) {
-			        		        errors.add("ctrlInstrOfferingId", new ActionMessage("errors.ctrlCourse.multipleChildren"));
-		                        }
-		                        else {
-								    io.removeCourseOffering(co);
-								    io.setCourseOfferings(null);
-								    co.setIsControl(new Boolean(false));
-								    co.setInstructionalOffering(null);
-								    Event.deleteFromEvents(hibSession, io);
-								    Exam.deleteFromExams(hibSession, io);
-								    idao.delete(io);
-								    
-			                        CourseOffering co2 = cdao.get(new Long(ctrCrsOffrId));
-			                        InstructionalOffering io2 = co2.getInstructionalOffering();
-			                        io2.addTocourseOfferings(co);
-			                        co.setInstructionalOffering(io2);
-			                        idao.save(io2);
-		                        }
-		                    }
-		                }
-		            }
-		            else {
-			            // Controlling course has changed
-			            if(!ctrCrsOffrId2.equals(ctrCrsOffrId)) {
-			                // Check that is not a controlling course
-			                if(!isControl2.booleanValue()) {
-		                        // Has other course offerings attached to it
-		                        if(io.getCourseOfferings().size()>1 && isControl.booleanValue()) {
-			        		        errors.add("ctrlInstrOfferingId", new ActionMessage("errors.ctrlCourse.multipleChildren"));
-		                        }
-		                        else {
-								    io.removeCourseOffering(co);
-								    co.setInstructionalOffering(null);
-								    idao.save(io);
-
-								    CourseOffering co2 = cdao.get(new Long(ctrCrsOffrId));
-			                        InstructionalOffering io2 = co2.getInstructionalOffering();
-			                        io2.addTocourseOfferings(co);
-			                        co.setInstructionalOffering(io2);
-			                        idao.save(io2);
-		                        }				                    
-			                }
-			                // Ambiguous - cannot have a controlling course if it is controlling 
-			                else {
-			                    errors.add("ctrlInstrOfferingId", 
-	                            	new ActionMessage("errors.exception", 
-	                            	    "Ambiguous operation requested - cannot assign a controlling offering it is flagged as a controlling course"));
-			                }
-			            }
-		            }
-
-				    tx.commit();
-			    }
-	        }
-		    catch (Exception e) {
-		        tx.rollback();	   
-		        Debug.error(e);
-		        errors.add("", new ActionMessage("errors.exception", "ERRORS: " + e.getMessage()));
-			    addErrors(request, errors);
-			    return mapping.findForward("editInstructionalOffering");
-		    }		            
-	    }
-	    else {
-	        String crsName = frm.getSubjectAreaAbbv() + " " + frm.getCourseNbr();
-	        errors.add("courseNbr", new ActionMessage("errors.lookup.notFound", "Course Offering: " + crsName ));
-	    }
-
-	    addErrors(request, errors);
-	    if(errors.size()>0) 
-		    return mapping.findForward("editInstructionalOffering");
-
-	    frm.setCollections(request, getInstructionalOfferings(request, frm));
-	    return mapping.findForward("showInstructionalOfferingList");
-	}
-
-
-	public ActionForward deleteCourseOffering(
-			ActionMapping mapping,
-			ActionForm form,
-			HttpServletRequest request,
-			HttpServletResponse response) throws Exception {
-
-        HttpSession httpSession = request.getSession();
-        if(!Web.isLoggedIn( httpSession )) {
-            throw new Exception ("Access Denied.");
-        }
-        
-        User user = Web.getUser(httpSession);
-        Long sessionId = (Long) user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
-
-        InstructionalOfferingListForm frm = (InstructionalOfferingListForm) form;
-        ActionMessages errors = new ActionMessages();
-        
-        String subjAreaId = frm.getSubjectAreaId();
-        String courseNbr = frm.getCourseNbr();
-        List l = CourseOffering.search(sessionId, subjAreaId, courseNbr);
-	    if(l.size()>0) {
-	        // Delete
-	        InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
-	        CourseOffering co = (CourseOffering) l.get(0);
-	        InstructionalOffering io = co.getInstructionalOffering();
-	        
-    	    org.hibernate.Session hibSession = idao.getSession();
-    	    Transaction tx = hibSession.beginTransaction();
-    	    
-    	    try {
-    	        Event.deleteFromEvents(hibSession, co);
-                Exam.deleteFromExams(hibSession, co);
-                
-    	        if(co.isIsControl().booleanValue()) {
-    	            Event.deleteFromEvents(hibSession, io);
-    	            Exam.deleteFromExams(hibSession, io);
-    	            idao.delete(io);
-    	        } else {
-    	            io.removeCourseOffering(co);
-    	            idao.save(io);
-    	        }
-    	        
-		        tx.commit();
-    	    }	            
-		    catch (Exception e) {
-		        tx.rollback();	   
-		        Debug.error(e);
-		        errors.add("subjectAreaId", new ActionMessage("errors.exception", e.getMessage()));
-		        addErrors(request, errors);
-			    return mapping.findForward("addInstructionalOffering");
-		    }		            
-	    }     
-
-	    // Redirect back to search
-	    frm.setSubjectAreaId(subjAreaId);
-	    frm.setCourseNbr("");
-	    frm.setCollections(request, getInstructionalOfferings(request, frm));
-	    return mapping.findForward("showInstructionalOfferingList");
-	}
+//	public ActionForward deleteCourseOffering(
+//			ActionMapping mapping,
+//			ActionForm form,
+//			HttpServletRequest request,
+//			HttpServletResponse response) throws Exception {
+//
+//        HttpSession httpSession = request.getSession();
+//        if(!Web.isLoggedIn( httpSession )) {
+//            throw new Exception ("Access Denied.");
+//        }
+//        
+//        User user = Web.getUser(httpSession);
+//        Long sessionId = (Long) user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
+//
+//        InstructionalOfferingListForm frm = (InstructionalOfferingListForm) form;
+//        ActionMessages errors = new ActionMessages();
+//        
+//        String subjAreaId = frm.getSubjectAreaId();
+//        String courseNbr = frm.getCourseNbr();
+//        List l = CourseOffering.search(sessionId, subjAreaId, courseNbr);
+//	    if(l.size()>0) {
+//	        // Delete
+//	        InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
+//	        CourseOffering co = (CourseOffering) l.get(0);
+//	        InstructionalOffering io = co.getInstructionalOffering();
+//	        
+//    	    org.hibernate.Session hibSession = idao.getSession();
+//    	    Transaction tx = hibSession.beginTransaction();
+//    	    
+//    	    try {
+//    	        Event.deleteFromEvents(hibSession, co);
+//                Exam.deleteFromExams(hibSession, co);
+//                
+//    	        if(co.isIsControl().booleanValue()) {
+//    	            Event.deleteFromEvents(hibSession, io);
+//    	            Exam.deleteFromExams(hibSession, io);
+//    	            idao.delete(io);
+//    	        } else {
+//    	            io.removeCourseOffering(co);
+//    	            idao.save(io);
+//    	        }
+//    	        
+//		        tx.commit();
+//    	    }	            
+//		    catch (Exception e) {
+//		        tx.rollback();	   
+//		        Debug.error(e);
+//		        errors.add("subjectAreaId", new ActionMessage("errors.exception", e.getMessage()));
+//		        addErrors(request, errors);
+//			    return mapping.findForward("addInstructionalOffering");
+//		    }		            
+//	    }     
+//
+//	    // Redirect back to search
+//	    frm.setSubjectAreaId(subjAreaId);
+//	    frm.setCourseNbr("");
+//	    frm.setCollections(request, getInstructionalOfferings(request, frm));
+//	    return mapping.findForward("showInstructionalOfferingList");
+//	}
 	public static void setupInstrOffrListSpecificFormFilters(HttpSession httpSession, InstructionalOfferingListForm form){
 		form.setDivSec(new Boolean(UserData.getPropertyBoolean(httpSession,"InstructionalOfferingList.divSec", false)));	
 		form.setDemand(new Boolean(UserData.getPropertyBoolean(httpSession,"InstructionalOfferingList.demand", true)));	
