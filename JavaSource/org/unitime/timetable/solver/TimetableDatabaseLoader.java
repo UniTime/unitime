@@ -1748,18 +1748,17 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	
     	if (posted) return true;
     	
-    	GroupConstraint gc = new GroupConstraint(null,type,PreferenceLevel.sRequired);
-    		
-		Lecture lecture = getLecture(clazz);
+    	Lecture lecture = getLecture(clazz);
 		if (lecture==null) return false;
 		
-		gc.addVariable(lecture);
+		Vector variables = new Vector();
+		variables.addElement(lecture);
 		
 		Class_ parent = clazz;
 		while ((parent=parent.getParentClass())!=null) {
 			Lecture parentLecture = getLecture(parent);
 			if (parentLecture!=null)
-				gc.addVariable(parentLecture);
+				variables.addElement(parentLecture);
 		}
 
     	for (Iterator i=clazz.getSchedulingSubpart().getInstrOfferingConfig().getSchedulingSubparts().iterator();i.hasNext();) {
@@ -1767,15 +1766,16 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		if (subpart.getParentSubpart()!=null || subpart.getClasses().size()!=1) continue;
     		Class_ singleClazz = (Class_)subpart.getClasses().iterator().next();
     		Lecture singleLecture = getLecture(singleClazz);
-			if (singleLecture!=null && !gc.variables().contains(singleLecture))
-				gc.addVariable(singleLecture);
+			if (singleLecture!=null && !variables.contains(singleLecture))
+				variables.addElement(singleLecture);
     	}
 
-    	if (gc.variables().size()==1) {
-    		gc.removeVariable(lecture);
-    		return false;
-    	}
-
+    	if (variables.size()==1) return false;
+    	
+    	GroupConstraint gc = new GroupConstraint(null,type,PreferenceLevel.sRequired);
+		for (Enumeration e=variables.elements();e.hasMoreElements();)
+			gc.addVariable((Lecture)e.nextElement());
+    	
     	addGroupConstraint(gc);
 		return true;
     }
