@@ -19,7 +19,6 @@
  
 package org.unitime.timetable.dataexchange;
 
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -33,7 +32,6 @@ import java.util.TreeSet;
 import java.util.Vector;
 
 import org.dom4j.Element;
-import org.unitime.commons.Email;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.ClassEvent;
@@ -60,18 +58,15 @@ import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomDept;
 import org.unitime.timetable.model.SchedulingSubpart;
-import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Staff;
 import org.unitime.timetable.model.SubjectArea;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.VariableFixedCreditUnitConfig;
 import org.unitime.timetable.model.VariableRangeCreditUnitConfig;
 import org.unitime.timetable.test.MakeAssignmentsForClassEvents;
 import org.unitime.timetable.util.CalendarUtils;
-import org.unitime.timetable.util.Constants;
 
 
-public class CourseOfferingImport extends BaseImport {
+public class CourseOfferingImport extends EventRelatedImports {
 
 	HashSet<Long> existingInstructionalOfferings = new HashSet<Long>();
 	HashSet<Long> existingCourseOfferings = new HashSet<Long>();
@@ -79,17 +74,9 @@ public class CourseOfferingImport extends BaseImport {
 	HashMap<String, SubjectArea> subjectAreas = new HashMap<String, SubjectArea>();
 	HashMap<String, ItypeDesc> itypes = new HashMap<String, ItypeDesc>();
 	private DistributionType meetsWithType = null;
-	Vector<String> offeringNotes = new Vector<String>();
-	Vector<String> changeList = new Vector<String>();
-	TreeSet<String> missingLocations = new TreeSet<String>();
-	TimetableManager manager = null;
-	Session session = null;
-	String dateFormat = null;
-	String timeFormat = null;
 	boolean useMeetsWithElement = false;
 	PreferenceLevel requiredPrefLevel = null;
 	MakeAssignmentsForClassEvents assignmentHelper = null;
-	boolean trimLeadingZerosFromExternalId = false;
 	
 	public void loadXml(Element rootElement) throws Exception {
 		String trimLeadingZeros =
@@ -677,123 +664,6 @@ public class CourseOfferingImport extends BaseImport {
         }
 	}
 	
-	private class TimeObject {
-		private Integer startPeriod;
-		private Integer endPeriod;
-		private Set<Integer> days;
-		
-		TimeObject(String startTime, String endTime, String daysOfWeek) throws Exception{
-		
-			startPeriod = str2Slot(startTime);
-			endPeriod = str2Slot(endTime);
-			if (startPeriod >= endPeriod){
-				throw new Exception("Invalid time '"+startTime+"' must be before ("+endTime+").");
-			}
-			if (daysOfWeek == null || daysOfWeek.length() == 0){
-				return;
-			}
-			setDaysOfWeek(daysOfWeek);	
-		}
-		
-		private void setDaysOfWeek(String daysOfWeek){
-			days = new TreeSet<Integer>();
-			String tmpDays = daysOfWeek;
-			if(tmpDays.contains("Th")){
-				days.add(Calendar.THURSDAY);
-				tmpDays = tmpDays.replace("Th", "..");
-			}
-			if(tmpDays.contains("R")){
-				days.add(Calendar.THURSDAY);
-				tmpDays = tmpDays.replace("R", "..");
-			}
-			if (tmpDays.contains("Su")){
-				days.add(Calendar.SUNDAY);
-				tmpDays = tmpDays.replace("Su", "..");
-			}
-			if (tmpDays.contains("U")){
-				days.add(Calendar.SUNDAY);
-				tmpDays = tmpDays.replace("U", "..");
-			}
-			if (tmpDays.contains("M")){
-				days.add(Calendar.MONDAY);
-				tmpDays = tmpDays.replace("M", ".");
-			}
-			if (tmpDays.contains("T")){
-				days.add(Calendar.TUESDAY);
-				tmpDays = tmpDays.replace("T", ".");
-			}
-			if (tmpDays.contains("W")){
-				days.add(Calendar.WEDNESDAY);
-				tmpDays = tmpDays.replace("W", ".");
-			}
-			if (tmpDays.contains("F")){
-				days.add(Calendar.FRIDAY);
-				tmpDays = tmpDays.replace("F", ".");
-			}
-			if (tmpDays.contains("S")){
-				days.add(Calendar.SATURDAY);
-				tmpDays = tmpDays.replace("S", ".");
-			}						
-		}
-		
-		public Integer getStartPeriod() {
-			return startPeriod;
-		}
-		public void setStartPeriod(Integer startPeriod) {
-			this.startPeriod = startPeriod;
-		}
-		public Integer getEndPeriod() {
-			return endPeriod;
-		}
-		public void setEndPeriod(Integer endPeriod) {
-			this.endPeriod = endPeriod;
-		}
-		public Set<Integer> getDays() {
-			return days;
-		}
-		public void setDays(Set<Integer> days) {
-			this.days = days;
-		}
-		
-		public Meeting asMeeting(){
-			Meeting meeting = new Meeting();
-			
-			meeting.setClassCanOverride(new Boolean(true));
-			meeting.setStartOffset(new Integer(0));
-			meeting.setStartPeriod(this.getStartPeriod());
-			meeting.setStopOffset(new Integer(0));
-			meeting.setStopPeriod(this.getEndPeriod());
-
-			return(meeting);
-		}
-		public Integer str2Slot(String timeString) throws Exception {
-			
-			int slot = -1;
-			try {
-				Date date = CalendarUtils.getDate(timeString, timeFormat);
-				SimpleDateFormat df = new SimpleDateFormat("HHmm");
-				int time = Integer.parseInt(df.format(date));
-				int hour = time/100;
-				int min = time%100;
-				if (hour>=24)
-					throw new Exception("Invalid time '"+timeString+"' -- hour ("+hour+") must be between 0 and 23.");
-				if (min>=60)
-					throw new Exception("Invalid time '"+timeString+"' -- minute ("+min+") must be between 0 and 59.");
-				
-				if ((min%Constants.SLOT_LENGTH_MIN)!=0){
-					min = min - (min%Constants.SLOT_LENGTH_MIN);
-					//throw new Exception("Invalid time '"+timeString+"' -- minute ("+min+") must be divisible by "+Constants.SLOT_LENGTH_MIN+".");
-				}
-				slot = (hour*60+min - Constants.FIRST_SLOT_TIME_MIN)/Constants.SLOT_LENGTH_MIN;
-			} catch (NumberFormatException ex) {
-				throw new Exception("Invalid time '"+timeString+"' -- not a number.");
-			}
-			if (slot<0)
-				throw new Exception("Invalid time '"+timeString+"', did not meet format: " + timeFormat);
-			return(slot);
-		}
-	}
-
 	private TimeObject elementTime(Element element) throws Exception {
 		TimeObject meetingTime = null;
 		String elementName = "time";
@@ -2255,20 +2125,6 @@ public class CourseOfferingImport extends BaseImport {
 		existingClasses.remove(c.getUniqueId());
 		this.getHibSession().delete(c);
 	}
-
-	private Session findSession(String academicInitiative, String academicYear, String academicTerm){
-  		
-		return(Session) this.
-		getHibSession().
-		createQuery("from Session as s where s.academicInitiative = :academicInititive and s.academicYear = :academicYear  and s.academicTerm = :academicTerm").
-		setString("academicInititive", academicInitiative).
-		setString("academicYear", academicYear).
-		setString("academicTerm", academicTerm).
-		setCacheable(true).
-		uniqueResult();
-	}
-	
-
 	
 	private CourseOffering findExistingCourseOffering(CourseOffering courseOffering, Long sessionId){
 		CourseOffering existingCo = null;
@@ -2378,13 +2234,7 @@ public class CourseOfferingImport extends BaseImport {
 	private NonUniversityLocation findNonUniversityLocation(String name, Class_ c){
 		NonUniversityLocation location = null;
 		if (name != null) {
-			List<?> possibleLocations = this.
-			getHibSession().
-			createQuery("select distinct l from NonUniversityLocation as l where l.name=:name and l.session.uniqueId=:sessionId").
-			setLong("sessionId", session.getUniqueId().longValue()).
-			setString("name", name).
-			setCacheable(true).
-			list();
+			List<?> possibleLocations = findNonUniversityLocationsWithName(name);
 			if (possibleLocations != null){
 				for(Iterator<?> lIt = possibleLocations.iterator(); lIt.hasNext(); ){
 					NonUniversityLocation l = (NonUniversityLocation) lIt.next();
@@ -2462,64 +2312,9 @@ public class CourseOfferingImport extends BaseImport {
 		}
 	}
 
-	
-	private void addNote(String note){
-		offeringNotes.add(note);
+	@Override
+	protected String getEmailSubject() {
+		return("Course Offering Import Results - " + session.getAcademicYearTerm());
 	}
-	
-	private void clearNotes(){
-		offeringNotes = new Vector<String>();
-	}
-	
-	private void updateChangeList(boolean changed){
-		if(changed && offeringNotes != null) {
-			changeList.addAll(offeringNotes);
-			String note = null;
-			for(Iterator<String> it = offeringNotes.iterator(); it.hasNext(); ){
-				note = (String) it.next();
-				info(note);
-			}
-		}
-		clearNotes();
-	}
-	
-	private void addMissingLocation(String location){
-		missingLocations.add(location);
-	}
-	
-	private void reportMissingLocations(){
-		if (!missingLocations.isEmpty()) {
-			changeList.add("\nMissing Locations\n");
-			info("\nMissing Locations\n");
-			for(Iterator<String> it = missingLocations.iterator(); it.hasNext();){
-				String location = (String) it.next();
-				changeList.add("\t" + location);
-				info("\t" + location);
-			}
-		}
-	}
-	
-	private void mailLoadResults(){
-       	Email email = new Email();
-       	
-       	String subject = "Course Offering Import Results";
-       	String mail = "";
-       	for (Iterator<String> it = changeList.iterator(); it.hasNext(); ){
-       		mail += (String) it.next() + "\n";
-       	}
-    	
-    	try {
-			email.sendMail(
-					(String)ApplicationProperties.getProperty("tmtbl.smtp.host", "smtp.purdue.edu"), 
-					(String)ApplicationProperties.getProperty("tmtbl.smtp.domain", "smtp.purdue.edu"), 
-					(String)ApplicationProperties.getProperty("tmtbl.inquiry.sender", "smasops@purdue.edu"), 
-					(manager != null?manager.getEmailAddress():(String)ApplicationProperties.getProperty("tmtbl.inquiry.sender", "smasops@purdue.edu")), 
-					(String)ApplicationProperties.getProperty("tmtbl.inquiry.email","smasops@purdue.edu"), 
-					"Timetabling (Data Import): "+subject, 
-					mail, 
-					new Vector<Object>());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
+
 }

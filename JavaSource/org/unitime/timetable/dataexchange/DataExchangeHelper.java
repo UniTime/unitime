@@ -50,6 +50,7 @@ public class DataExchangeHelper {
         sImportRegister.put("lastLikeCourseDemand", LastLikeCourseDemandImport.class);
         sImportRegister.put("subjectAreas",SubjectAreaImport.class);
         sImportRegister.put("request",StudentSectioningImport.class);
+        sImportRegister.put("events",EventImport.class);
     }
     
     public DataExchangeHelper() {
