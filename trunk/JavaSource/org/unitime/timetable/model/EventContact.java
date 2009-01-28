@@ -21,6 +21,7 @@ package org.unitime.timetable.model;
 
 import java.util.List;
 
+import org.hibernate.FlushMode;
 import org.unitime.timetable.model.base.BaseEventContact;
 import org.unitime.timetable.model.dao.EventContactDAO;
 
@@ -60,7 +61,9 @@ public class EventContact extends BaseEventContact {
 	public static EventContact findByExternalUniqueId(String externalUniqueId) {
 	    return (EventContact)new EventContactDAO().getSession().
 	        createQuery("select c from EventContact c where c.externalUniqueId=:externalUniqueId").
-	        setString("externalUniqueId", externalUniqueId).uniqueResult();
+	        setString("externalUniqueId", externalUniqueId).
+	        setFlushMode(FlushMode.MANUAL).
+	        uniqueResult();
 	}
 
 	public static EventContact findByEmail(String email) {
