@@ -1365,7 +1365,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
                             if (!s.getItype().equals(itype)) continue;
                             for (Iterator i3=s.getClasses().iterator();i3.hasNext();) {
                                 Class_ clazz = (Class_)i3.next();
-                                if (clazz.getClassSuffix()==null) continue;
+                                if (clazz.getClassSuffix()==null || clazz.getClassSuffix().length() != 6) continue;
                                 int clazzDivNum = Integer.parseInt(clazz.getClassSuffix().substring(0,3));
                                 int clazzSecNum = Integer.parseInt(clazz.getClassSuffix().substring(3,6));
                                 if (clazzDivNum==div) {
