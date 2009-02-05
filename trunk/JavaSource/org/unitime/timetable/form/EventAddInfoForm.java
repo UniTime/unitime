@@ -78,6 +78,7 @@ import org.unitime.timetable.util.DynamicList;
 import org.unitime.timetable.util.DynamicListObjectFactory;
 import org.unitime.timetable.util.IdValue;
 import org.unitime.timetable.webutil.EventEmail;
+import org.unitime.timetable.webutil.WebTextValidation;
 
 public class EventAddInfoForm extends ActionForm {
 
@@ -122,21 +123,75 @@ public class EventAddInfoForm extends ActionForm {
 		if (iEventName==null || iEventName.length()==0) {
 			errors.add("eventName", new ActionMessage("errors.generic", "The event name is mandatory."));
 		}
+		if (iEventName !=null && iEventName.length() > 100) {
+			errors.add("eventName", new ActionMessage("errors.generic", "The event name cannot exceed 100 characters."));
+		}
+		if (!WebTextValidation.isTextValid(iEventName, false)){
+			iEventName = "";
+			errors.add("eventName", new ActionMessage("errors.invalidCharacters", "Event Name"));
+		}
 
 		if (iMainContactEmail==null || iMainContactEmail.length()==0) {
 			errors.add("mcEmail", new ActionMessage("errors.generic", "The contact email is mandatory."));
+		}
+		if (iMainContactEmail !=null && iMainContactEmail.length() > 200) {
+			errors.add("mcEmail", new ActionMessage("errors.generic", "The contact's email cannot exceed 200 characters."));
+		}
+		if (!WebTextValidation.isTextValid(iMainContactEmail, false)){
+			iMainContactEmail = "";
+			errors.add("mcEmail", new ActionMessage("errors.invalidCharacters", "Email"));
 		}
 
 		if (iMainContactLastName==null || iMainContactLastName.length()==0) {
 			errors.add("mcLastName", new ActionMessage("errors.generic", "The contact's last name is mandatory."));
 		}
+		if (iMainContactLastName !=null && iMainContactLastName.length() > 30) {
+			errors.add("mcLastName", new ActionMessage("errors.generic", "The contact's last name cannot exceed 30 characters."));
+		}
+		if (!WebTextValidation.isTextValid(iMainContactLastName, false)){
+			iMainContactLastName = "";
+			errors.add("mcLastName", new ActionMessage("errors.invalidCharacters", "Last Name"));
+		}
+
+		if (iMainContactFirstName !=null && iMainContactFirstName.length() > 30) {
+			errors.add("mcFirstName", new ActionMessage("errors.generic", "The contact's first name cannot exceed 20 characters."));
+		}
+		if (!WebTextValidation.isTextValid(iMainContactFirstName, true)){
+			iMainContactFirstName = "";
+			errors.add("mcFirstName", new ActionMessage("errors.invalidCharacters", "First Name"));
+		}
+
+		if (iMainContactMiddleName !=null && iMainContactMiddleName.length() > 30) {
+			errors.add("mcMiddleName", new ActionMessage("errors.generic", "The contact's middle name cannot exceed 20 characters."));
+		}
+		if (!WebTextValidation.isTextValid(iMainContactMiddleName, true)){
+			iMainContactMiddleName = "";
+			errors.add("mcMiddleName", new ActionMessage("errors.invalidCharacters", "Middle Name"));
+		}
+
+		if (iMainContactPhone !=null && iMainContactPhone.length() > 25) {
+			errors.add("mcPhone", new ActionMessage("errors.generic", "The contact's phone cannot exceed 25 characters."));
+		}
+		if (!WebTextValidation.containsOnlyCharactersUsedInPhoneNumbers(iMainContactPhone, true)){
+			iMainContactPhone = "";
+			errors.add("mcPhone", new ActionMessage("errors.generic", "Invalid data in event main contact phone"));
+		}
 
 		if (iAdditionalEmails!=null && iAdditionalEmails.length()>999) {
 			errors.add("emails", new ActionMessage("errors.generic", "Additional emails are too long. Please, limit the field to no more than 1000 characters."));
 		}
+
+		if (!WebTextValidation.isTextValid(iAdditionalEmails, true)){
+			iAdditionalEmails = "";
+			errors.add("emails", new ActionMessage("errors.invalidCharacters", "Additional Emails"));
+		}
 		
 		if (iAdditionalInfo!=null && iAdditionalInfo.length()>999) {
 			errors.add("note", new ActionMessage("errors.generic", "Additional information is too long. Please, limit it to no more than 1000 characters."));
+		}
+		if (!WebTextValidation.isTextValid(iAdditionalInfo, true)){
+			iAdditionalInfo = "";
+			errors.add("note", new ActionMessage("errors.invalidCharacters", "Additional Information"));
 		}
 		
 		return errors;

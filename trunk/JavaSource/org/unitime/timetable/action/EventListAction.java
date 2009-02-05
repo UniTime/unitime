@@ -57,7 +57,14 @@ public class EventListAction extends Action {
         	throw new Exception ("Access Denied.");
 
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
-
+        if (!("Search".equals(op) || "Export PDF".equals(op)
+				|| "Add Event".equals(op) || "iCalendar".equals(op))){
+			op = null;
+		}
+        ActionMessages errors1 = myForm.validate(mapping, request);
+    	if (!errors1.isEmpty()) {
+    		saveErrors(request, errors1);
+    	} else {
         if ("Search".equals(op) || "Export PDF".equals(op)) {
         	ActionMessages errors = myForm.validate(mapping, request);
         	if (!errors.isEmpty()) saveErrors(request, errors);
@@ -86,7 +93,7 @@ public class EventListAction extends Action {
                 "eventList.do",
                 "Events", 
                 true, true);
-
+    	}
         return mapping.findForward("show");
 
 	}
