@@ -44,16 +44,16 @@ import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.CourseEvent;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Event;
-import org.unitime.timetable.model.CourseEvent;
 import org.unitime.timetable.model.ExamOwner;
-import org.unitime.timetable.model.Location;
-import org.unitime.timetable.model.RelatedCourseInfo;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Preference;
+import org.unitime.timetable.model.RelatedCourseInfo;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.RoomGroup;
@@ -77,6 +77,7 @@ import org.unitime.timetable.util.DateUtils;
 import org.unitime.timetable.util.DynamicList;
 import org.unitime.timetable.util.DynamicListObjectFactory;
 import org.unitime.timetable.util.IdValue;
+import org.unitime.timetable.webutil.WebTextValidation;
 
 /**
  * @author Zuzana Mullerova
@@ -126,6 +127,21 @@ public class EventAddForm extends ActionForm {
 		
 		ActionErrors errors = new ActionErrors();
 
+		if (iOp !=null && !("SessionChanged".equals(iOp) || "Add Object".equals(iOp)
+				|| "Delete".equals(iOp) || "Show Scheduled Events".equals(iOp)
+				|| "Show Availability".equals(iOp) || "Back".equals(iOp))){
+			errors.add("op", new ActionMessage("errors.generic", "Invalid Operation."));
+			iOp = null;
+		}
+		
+		if (iEventName !=null && iEventName.length() > 100) {
+			errors.add("eventName", new ActionMessage("errors.generic", "The event name cannot exceed 100 characters."));
+		}
+		if (!WebTextValidation.isTextValid(iEventName, true)){
+			iEventName = "";
+			errors.add("eventName", new ActionMessage("errors.generic", "Invalid data in event name"));
+		}
+
 		if (iStartTime>=iStopTime)
 			errors.add("stopDate", new ActionMessage("errors.generic", "Start Time must be earlier than Stop Time. It is not possible to enter overnight events."));
 		
@@ -142,6 +158,7 @@ public class EventAddForm extends ActionForm {
 			try {
 				min = Integer.parseInt(iMinCapacity);
 			} catch (NumberFormatException nfe) {
+				iMinCapacity = null;
 				errors.add("minCapacity", new ActionMessage("errors.generic", "Minimum room capacity should be a number or blank (no lower limit)."));
 			}
 		}
@@ -149,8 +166,9 @@ public class EventAddForm extends ActionForm {
 		int max = Integer.MAX_VALUE;
 		if (iMaxCapacity!=null && iMaxCapacity.length()>0) {
 			try {
-				min = Integer.parseInt(iMaxCapacity);
+				max = Integer.parseInt(iMaxCapacity);
 			} catch (NumberFormatException nfe) {
+				iMaxCapacity = null;
 				errors.add("maxCapacity", new ActionMessage("errors.generic", "Maximum room capacity should be a number or blank (no upper limit)."));
 			}
 		}

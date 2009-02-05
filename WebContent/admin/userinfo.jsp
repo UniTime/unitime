@@ -68,7 +68,11 @@
 	if (session.getAttribute("UserInfo.tab")!=null)
 		tab = ((Integer)session.getAttribute("UserInfo.tab")).intValue();
 	if (request.getParameter("tab")!=null)
-		tab = Integer.parseInt(request.getParameter("tab"));
+		try {
+				tab = Integer.parseInt(request.getParameter("tab"));
+			} catch (NumberFormatException nfe) {
+				tab = 0;
+			}
 	if (solver==null && examSolver==null && studentSolver==null) tab=0;
 	session.setAttribute("UserInfo.tab",new Integer(tab));
 %>

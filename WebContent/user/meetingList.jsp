@@ -170,8 +170,8 @@
   inputField : "event_date_from",  // ID of the input field
      ifFormat   : "%m/%d/%Y",    // Format of the input field
      showOthers : true,     // Show overlap of dates from other months     
-     <% if (request.getParameter("eventDateFrom")!=null && request.getParameter("eventDateFrom").length()>=10) { %>
-     date  : <%=request.getParameter("eventDateFrom")%>,
+     <% if (request.getAttribute("eventDateFrom")!=null && ((String)request.getAttribute("eventDateFrom")).length()>=10) { %>
+     date  : <%=((String)request.getAttribute("eventDateFrom"))%>,
      <% }%>
   button     : "show_event_date_from" // ID of the button
  } );
@@ -182,8 +182,8 @@
   inputField : "event_date_to",  // ID of the input field
      ifFormat   : "%m/%d/%Y",    // Format of the input field
      showOthers : true,     // Show overlap of dates from other months     
-     <% if (request.getParameter("eventDateTo")!=null && request.getParameter("eventDateTo").length()>=10) { %>
-     date  : <%=request.getParameter("eventDateTo")%>,
+     <% if (request.getAttribute("eventDateTo")!=null && ((String)request.getAttribute("eventDateTo")).length()>=10) { %>
+     date  : <%=((String)request.getAttribute("eventDateTo"))%>,
      <% }%>
   button     : "show_event_date_to" // ID of the button
  } );
