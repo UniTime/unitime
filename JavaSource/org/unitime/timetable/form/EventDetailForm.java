@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
+import org.apache.struts.action.ActionMessage;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.EventContact;
 import org.unitime.timetable.model.Location;
@@ -58,7 +59,28 @@ public class EventDetailForm extends ActionForm {
 		ActionMapping mapping,
 		HttpServletRequest request) {
 
-		return null;
+		ActionErrors errors = new ActionErrors();
+		
+		if (iOp != null && !("Edit Event".equals(iOp) || "Back".equals(iOp)
+				|| "Previous".equals(iOp) || "Next".equals(iOp)
+				|| "Add Meetings".equals(iOp) || "Approve".equals(iOp)
+				|| "Reject".equals(iOp) || "Delete".equals(iOp)
+				 || "view".equals(iOp))){
+			errors.add("op", new ActionMessage("errors.generic", "Invalid Operation."));
+			iOp = null;
+		}
+
+		if (iId != null){
+			try {
+				long id = Long.parseLong(iId);
+			} catch (NumberFormatException nfe) {
+				iId = "0";
+				iOp = null;
+				errors.add("id", new ActionMessage("errors.generic", "Event id should be a long."));
+			}
+
+		}
+		return errors;
 	}
 	
 	public void reset(ActionMapping mapping, HttpServletRequest request) {

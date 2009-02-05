@@ -57,6 +57,10 @@ public class MeetingListAction extends Action {
         	throw new Exception ("Access Denied.");
 
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
+        if (!("Search".equals(op) || "Export PDF".equals(op)
+				|| "Add Event".equals(op) || "iCalendar".equals(op))){
+			op = null;
+		}
 
         if ("Search".equals(op) || "Export PDF".equals(op)) {
         	ActionMessages errors = myForm.validate(mapping, request);

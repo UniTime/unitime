@@ -44,6 +44,7 @@ import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.UserData;
 import org.unitime.timetable.util.CalendarUtils;
 import org.unitime.timetable.util.ComboBoxLookup;
+import org.unitime.timetable.webutil.WebTextValidation;
 
 /**
  * @author Zuzana Mullerova
@@ -75,23 +76,65 @@ public class EventListForm extends ActionForm {
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 		
 		ActionErrors errors = new ActionErrors();
+		if (iOp != null && !("Search".equals(iOp) || "Export PDF".equals(iOp)
+				|| "Add Event".equals(iOp) || "iCalendar".equals(iOp))){
+			errors.add("op", new ActionMessage("errors.generic", "Invalid Operation."));
+			iOp = null;
+		}		
+
+		if (iEventNameSubstring !=null && iEventNameSubstring.length() > 50) {
+			errors.add("eventName", new ActionMessage("errors.generic", "The event name cannot exceed 50 characters."));
+		}
+		if (!WebTextValidation.isTextValid(iEventNameSubstring, true)){
+			iEventNameSubstring = "";
+			errors.add("eventName", new ActionMessage("errors.invalidCharacters", "Event Name"));
+		}
+
+		if (iEventMainContactSubstring !=null && iEventMainContactSubstring.length() > 50) {
+			errors.add("mainContact", new ActionMessage("errors.generic", "The event name cannot exceed 50 characters."));
+		}
+		if (!WebTextValidation.isTextValid(iEventMainContactSubstring, true)){
+			iEventMainContactSubstring = "";
+			errors.add("mainContact", new ActionMessage("errors.invalidCharacters", "Requested by"));
+		}
 
 		String df = "MM/dd/yyyy";
 		Date start = null;
-		if (iEventDateFrom==null || iEventDateFrom.trim().length()==0)
-			;
-		else if (!CalendarUtils.isValidDate(iEventDateFrom, df))
-			errors.add("eventDateFrom", new ActionMessage("errors.invalidDate", "Date '"+iEventDateFrom+"' (From)"));
-		else
-			start = CalendarUtils.getDate(iEventDateFrom, df);
-		
+		if (iEventDateFrom==null || iEventDateFrom.trim().length()==0){
+			iEventDateFrom = null;
+		} else {
+			if (WebTextValidation.isTextValid(iEventDateFrom, true)){
+				if (!CalendarUtils.isValidDate(iEventDateFrom, df)){
+					iEventDateFrom = "";
+					errors.add("eventDateFrom", new ActionMessage("errors.invalidDate", "From date invalid"));
+				}
+				else {
+					request.setAttribute("eventDateFrom", iEventDateFrom);
+					start = CalendarUtils.getDate(iEventDateFrom, df);
+				}
+			} else {
+				iEventDateFrom = "";
+				errors.add("eventDateFrom", new ActionMessage("errors.invalidDate", "From date invalid"));		
+			}
+		}
 		Date end = null;
 		if (iEventDateTo==null || iEventDateTo.trim().length()==0) {
-			//no end
-		} else if (!CalendarUtils.isValidDate(iEventDateTo, df))
-			errors.add("eventDateTo", new ActionMessage("errors.invalidDate", "Date '"+iEventDateTo+"' (To)"));
-		else
-			end = CalendarUtils.getDate(iEventDateTo, df);
+			iEventDateTo = null;
+		} else {
+			if (WebTextValidation.isTextValid(iEventDateTo, true)){
+				if (!CalendarUtils.isValidDate(iEventDateTo, df)) {
+					iEventDateTo = "";
+					errors.add("eventDateTo", new ActionMessage("errors.invalidDate", "To date invalid"));
+				}
+				else {
+					request.setAttribute("eventDateTo", iEventDateTo);
+					end = CalendarUtils.getDate(iEventDateTo, df);
+				}
+			} else {
+				iEventDateTo = "";
+				errors.add("eventDateTo", new ActionMessage("errors.invalidDate", "To date invalid"));
+			}
+		}
 		
 		if (end!=null && start!=null && !start.equals(end) && !start.before(end))
 			errors.add("eventDateTo", new ActionMessage("errors.generic", "Date From cannot occur after Date To"));

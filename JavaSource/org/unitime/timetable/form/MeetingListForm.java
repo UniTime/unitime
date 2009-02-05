@@ -25,6 +25,8 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionMapping;
+import org.apache.struts.action.ActionMessage;
+import org.unitime.timetable.webutil.WebTextValidation;
 
 /**
  * @author Tomas Muller
@@ -41,6 +43,18 @@ public class MeetingListForm extends EventListForm {
     
     public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
         ActionErrors errors = super.validate(mapping, request);
+		if (iLocation !=null && iLocation.length() > 50) {
+			errors.add("location", new ActionMessage("errors.generic", "The event location cannot exceed 50 characters."));
+		}
+		if (!WebTextValidation.isTextValid(iLocation, true)){
+			iLocation = "";
+			errors.add("location", new ActionMessage("errors.invalidCharacters", "Event Location"));
+		}
+		
+		if (!(iOrderBy.equals(sOrderByName) || iOrderBy.equals(sOrderByLocation) || iOrderBy.equals(sOrderByTime))){
+			iOrderBy = sOrderByName;
+		}
+
         return errors;
     }
     
