@@ -35,7 +35,7 @@ public class WebTextValidation {
 	private static final String patternStr = ".*[|<>\"+].*";
 	private static final String hexPatternStr = ".*%[0-9A-Fa-f][0-9A-Fa-f].*";
 
-	private static final String phonePatternStr = "^[0-9)(][0-9)(.,-]+$";
+	private static final String phonePatternStr = "^[ \t\n\f\r]*[0-9)( \t\n\f\r+][0-9)( \t\n\f\r.,-]+[ \t\n\f\r]*$";
 	
 	public static boolean isTextValid(String aText, boolean canBeNull){
 		if (!canBeNull && (aText == null || aText.trim().length() == 0)){
