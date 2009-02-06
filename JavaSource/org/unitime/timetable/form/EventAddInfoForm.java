@@ -172,7 +172,7 @@ public class EventAddInfoForm extends ActionForm {
 		if (iMainContactPhone !=null && iMainContactPhone.length() > 25) {
 			errors.add("mcPhone", new ActionMessage("errors.generic", "The contact's phone cannot exceed 25 characters."));
 		}
-		if (!WebTextValidation.isTextValid(iMainContactPhone, true)){
+		if (!WebTextValidation.containsOnlyCharactersUsedInPhoneNumbers(iMainContactPhone, true)){
 			iMainContactPhone = "";
 			errors.add("mcPhone", new ActionMessage("errors.generic", "Invalid data in event main contact phone"));
 		}
