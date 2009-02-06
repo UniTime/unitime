@@ -39,7 +39,6 @@ public class WebTextValidation {
 	
 	public static boolean isTextValid(String aText, boolean canBeNull){
 		if (!canBeNull && (aText == null || aText.trim().length() == 0)){
-			Debug.info("null text when text was required");
 			return(false);
 		}
 		
@@ -53,13 +52,11 @@ public class WebTextValidation {
     		Pattern pattern = Pattern.compile(patternStr, Pattern.DOTALL + Pattern.CASE_INSENSITIVE + Pattern.UNIX_LINES);
 	    	Matcher matcher = pattern.matcher(checkText);
 	    	if (matcher.matches()) {
-				Debug.info("matched pattern bad characters" + checkText);
 		        return(false);
 	    	}
     		Pattern patternHex = Pattern.compile(hexPatternStr, Pattern.DOTALL + Pattern.CASE_INSENSITIVE + Pattern.UNIX_LINES);
 	    	Matcher matcherHex = patternHex.matcher(checkText);
 	    	if (matcherHex.matches()) {
-				Debug.info("matched pattern bad hex characters" + checkText);
 		        return(false);
 	    	}
     	}
@@ -74,7 +71,6 @@ public class WebTextValidation {
 	
 	public static boolean containsOnlyCharactersUsedInPhoneNumbers(String aText, boolean canBeNull){
 		if (!canBeNull && (aText == null || aText.trim().length() == 0)){
-			Debug.log("null text when text was required");
 			return(false);
 		}
 		if (canBeNull && (aText == null || aText.trim().length() == 0)){
@@ -89,7 +85,6 @@ public class WebTextValidation {
     	} catch (Exception e) {
 	        return(false);
     	}
-		Debug.log("did not match pattern phone number");
 		return(false);
 	}
 
