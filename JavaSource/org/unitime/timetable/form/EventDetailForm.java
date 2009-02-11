@@ -65,7 +65,9 @@ public class EventDetailForm extends ActionForm {
 				|| "Previous".equals(iOp) || "Next".equals(iOp)
 				|| "Add Meetings".equals(iOp) || "Approve".equals(iOp)
 				|| "Reject".equals(iOp) || "Delete".equals(iOp)
-				 || "view".equals(iOp))){
+			    || "view".equals(iOp) || "Cancel".equals(iOp)
+				|| "Update".equals(iOp) || "Submit".equals(iOp)
+				)){
 			errors.add("op", new ActionMessage("errors.generic", "Invalid Operation."));
 			iOp = null;
 		}
