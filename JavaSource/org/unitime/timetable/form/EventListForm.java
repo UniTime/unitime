@@ -77,7 +77,9 @@ public class EventListForm extends ActionForm {
 		
 		ActionErrors errors = new ActionErrors();
 		if (iOp != null && !("Search".equals(iOp) || "Export PDF".equals(iOp)
-				|| "Add Event".equals(iOp) || "iCalendar".equals(iOp))){
+				|| "Add Event".equals(iOp) || "iCalendar".equals(iOp)
+				|| "Cancel Event".equals(iOp) || "Cancel".equals(iOp)
+		)){
 			errors.add("op", new ActionMessage("errors.generic", "Invalid Operation."));
 			iOp = null;
 		}		

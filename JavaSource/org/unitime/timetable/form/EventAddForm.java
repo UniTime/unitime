@@ -129,7 +129,11 @@ public class EventAddForm extends ActionForm {
 
 		if (iOp !=null && !("SessionChanged".equals(iOp) || "Add Object".equals(iOp)
 				|| "Delete".equals(iOp) || "Show Scheduled Events".equals(iOp)
-				|| "Show Availability".equals(iOp) || "Back".equals(iOp))){
+				|| "Show Availability".equals(iOp) || "Back".equals(iOp)
+				|| "Export PDF".equals(iOp) || "Clear".equals(iOp)
+				|| "Add Event".equals(iOp) || "Cancel Event".equals(iOp)
+				|| "Cancel".equals(iOp)
+				)){
 			errors.add("op", new ActionMessage("errors.generic", "Invalid Operation."));
 			iOp = null;
 		}
