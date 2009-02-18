@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.action;
 
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -49,6 +50,7 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamSectionInfo;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.LoginManager;
 import org.unitime.timetable.webutil.PdfWebTable;
 
 /** 
@@ -85,37 +87,47 @@ public class ExamsAction extends Action {
         if ("Apply".equals(op)) {
             myForm.save(request.getSession());
             if (myForm.getUsername()!=null && myForm.getUsername().length()>0 && myForm.getPassword()!=null && myForm.getPassword().length()>0) {
-                try {
-                    UserPasswordHandler handler = new UserPasswordHandler(myForm.getUsername(), myForm.getPassword());
-                    LoginContext lc = new LoginContext("Timetabling", handler);
-                    lc.login();
-                    
-                    Set creds = lc.getSubject().getPublicCredentials();
-                    if (creds==null || creds.size()==0) {
-                        myForm.setMessage("Authentication failed");
-                    } else {
-                        for (Iterator i=creds.iterator(); i.hasNext(); ) {
-                            Object o = i.next();
-                            if (o instanceof User) {
-                                User user = (User) o;
-                                HttpSession session = request.getSession();
-                                session.setAttribute("loggedOn", "true");
-                                session.setAttribute("hdnCallingScreen", "main.jsp");
-                                Web.setUser(session, user);
-                                
-                                String appStatus = ApplicationConfig.getConfigValue(Constants.CFG_APP_ACCESS_LEVEL, Constants.APP_ACL_ALL);
-                                session.setAttribute(Constants.CFG_APP_ACCESS_LEVEL, appStatus);
-                                
-                                session.setAttribute("authUserExtId", user.getId());
-                                session.setAttribute("loginPage", "exams");
-                                return mapping.findForward("personal");
-                                //response.sendRedirect("selectPrimaryRole.do"); break;
-                            }
-                        }
-                    }
-                } catch (LoginException le) {
-                    myForm.setMessage("Authentication failed");
-                }
+        		Date attemptDateTime = new Date();
+        		if (LoginManager.isUserLockedOut(myForm.getUsername(), attemptDateTime)){
+        			// count this attempt, allows for slowing down of responses if the user is flooding the system with failed requests
+        			LoginManager.addFailedLoginAttempt(myForm.getUsername(), attemptDateTime);
+         			myForm.setMessage("User temporarily locked out - Exceeded maximum failed login attempts.");
+        		} else {
+	               try {
+	                    UserPasswordHandler handler = new UserPasswordHandler(myForm.getUsername(), myForm.getPassword());
+	                    LoginContext lc = new LoginContext("Timetabling", handler);
+	                    lc.login();
+	                    
+	                    Set creds = lc.getSubject().getPublicCredentials();
+	                    if (creds==null || creds.size()==0) {
+	            			LoginManager.addFailedLoginAttempt(myForm.getUsername(), attemptDateTime);
+	                        myForm.setMessage("Authentication failed");
+	                    } else {
+	                        for (Iterator i=creds.iterator(); i.hasNext(); ) {
+	                            Object o = i.next();
+	                            if (o instanceof User) {
+	                                User user = (User) o;
+	                                HttpSession session = request.getSession();
+	                                session.setAttribute("loggedOn", "true");
+	                                session.setAttribute("hdnCallingScreen", "main.jsp");
+	                                Web.setUser(session, user);
+	                                
+	                                String appStatus = ApplicationConfig.getConfigValue(Constants.CFG_APP_ACCESS_LEVEL, Constants.APP_ACL_ALL);
+	                                session.setAttribute(Constants.CFG_APP_ACCESS_LEVEL, appStatus);
+	                                
+	                                session.setAttribute("authUserExtId", user.getId());
+	                                session.setAttribute("loginPage", "exams");
+	            				    LoginManager.loginSuceeded(myForm.getUsername());
+	                                return mapping.findForward("personal");
+	                                //response.sendRedirect("selectPrimaryRole.do"); break;
+	                            }
+	                        }
+	                    }
+	                } catch (LoginException le) {
+            			LoginManager.addFailedLoginAttempt(myForm.getUsername(), attemptDateTime);
+	                    myForm.setMessage("Authentication failed");
+	                }
+        		}
             }
         }
         myForm.load(request.getSession());
