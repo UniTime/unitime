@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.action;
 
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -39,6 +40,7 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.authenticate.jaas.UserPasswordHandler;
 import org.unitime.timetable.model.ApplicationConfig;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.LoginManager;
 
 
 /**
@@ -83,6 +85,16 @@ public class LoginAction extends Action {
 			response.sendRedirect(ApplicationProperties.getProperty("tmtbl.login_url")+"?e=1");
 			return null;
 		}
+		
+		Date attemptDateTime = new Date();
+		
+		if (LoginManager.isUserLockedOut(username, attemptDateTime)){
+			// count this attempt, allows for slowing down of responses if the user is flooding the system with failed requests
+			LoginManager.addFailedLoginAttempt(username, attemptDateTime);
+			//TODO figure out what the appropriate message is
+			response.sendRedirect(ApplicationProperties.getProperty("tmtbl.login_url")+"?e=4");
+			return null;
+		}
 
 		try {
 			UserPasswordHandler handler = new UserPasswordHandler(username,	password);
@@ -91,6 +103,7 @@ public class LoginAction extends Action {
 			
 			Set creds = lc.getSubject().getPublicCredentials();
 			if (creds==null || creds.size()==0) {
+				LoginManager.addFailedLoginAttempt(username, attemptDateTime);
 				response.sendRedirect(ApplicationProperties.getProperty("tmtbl.login_url")+"?e=2");
 				return null;
 			}
@@ -115,12 +128,15 @@ public class LoginAction extends Action {
                     session.setMaxInactiveInterval(Integer.parseInt(ApplicationProperties.getProperty("tmtbl.maxInactiveInterval","1800")));
 					
 				    response.sendRedirect("selectPrimaryRole.do");
+				    
+				    LoginManager.loginSuceeded(username);
 					break;
 				}
 			}
 			 
 		} 
 		catch (LoginException le) {
+			LoginManager.addFailedLoginAttempt(username, attemptDateTime);
 			Debug.error(le.getMessage());
 			response.sendRedirect(ApplicationProperties.getProperty("tmtbl.login_url")+"?e=3");
 		}

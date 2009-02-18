@@ -47,7 +47,6 @@ public class WebTextValidation {
 		}
 		
 		String checkText = aText.toUpperCase();
-		Debug.info(checkText);
     	try { 
     		Pattern pattern = Pattern.compile(patternStr, Pattern.DOTALL + Pattern.CASE_INSENSITIVE + Pattern.UNIX_LINES);
 	    	Matcher matcher = pattern.matcher(checkText);
