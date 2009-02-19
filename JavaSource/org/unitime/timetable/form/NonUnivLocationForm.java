@@ -1,6 +1,6 @@
 /*
  * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * Copyright (C) 2008-2009, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -20,6 +20,8 @@
 package org.unitime.timetable.form;
 
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -30,11 +32,13 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.webutil.WebTextValidation;
 
 
 /** 
@@ -77,6 +81,25 @@ public class NonUnivLocationForm extends ActionForm {
         if(name==null || name.equalsIgnoreCase("")) {
         	errors.add("Name", 
                     new ActionMessage("errors.required", "Name") );
+        } else {
+	    	String nonUniversityLocationRegex = ApplicationProperties.getProperty("tmtbl.nonUniversityLocation.pattern");
+	    	String nonUniversityLocationInfo = ApplicationProperties.getProperty("tmtbl.nonUniversityLocation.patternInfo");
+	    	if (nonUniversityLocationRegex != null && nonUniversityLocationRegex.trim().length() > 0){
+		    	try { 
+			    	Pattern pattern = Pattern.compile(nonUniversityLocationRegex);
+			    	Matcher matcher = pattern.matcher(name);
+			    	if (!matcher.find()) {
+				        errors.add("nonUniversityLocation", new ActionMessage("errors.generic", nonUniversityLocationInfo));
+			    	}
+		    	}
+		    	catch (Exception e) {
+			        errors.add("nonUniversityLocation", new ActionMessage("errors.generic", "Non University Location cannot be matched to regular expression: " + nonUniversityLocationRegex + ". Reason: " + e.getMessage()));
+		    	}
+	    	} else {
+	    		if (WebTextValidation.isTextValid(name, true)){
+	    			errors.add("nonUniversityLocation", new ActionMessage("errors.invalidCharacters", "Name"));
+	    		}
+	    	}
         }
         
         if(capacity==null || capacity.equalsIgnoreCase("")) {

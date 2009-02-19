@@ -1,6 +1,6 @@
 <%-- 
  * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC
+ * Copyright (C) 2008-2009, UniTime LLC
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,6 +41,7 @@
 <tiles:importAttribute />
 <html:form action="/editRoom" focus="name">
 	<html:hidden property="id"/>
+	<html:hidden property="room"/>
 
 	<TABLE width="93%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
