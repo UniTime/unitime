@@ -1,6 +1,6 @@
 <%-- 
  * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC
+ * Copyright (C) 2008-2009, UniTime LLC
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -78,7 +78,7 @@
 			<TR>
 				<TD>Name:</TD>
 				<TD width='100%'>
-					<html:text property="name" maxlength="20" size="10" />
+					<html:text property="name" maxlength="20" size="20" />
 				<TD>
 			</TR>
 			
