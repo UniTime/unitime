@@ -851,15 +851,19 @@ public class EventAddForm extends ActionForm {
                     "inner join r.roomDepts rd inner join rd.department.timetableManagers m inner join m.managerRoles mr, "+
                     "Building b"+a+" where b.uniqueId = :buildingId and " +
                     "rd.control=true and mr.role.reference=:eventMgr and "+
+                    " 1 = (select rto.status from RoomTypeOption rto where rto.session.uniqueId = " + getSessionId().toString() + " and rto.roomType.id = r.roomType.id) and " +
                     "(r.building=b or ((((r.coordinateX - b.coordinateX)*(r.coordinateX - b.coordinateX)) +" +
                     "((r.coordinateY - b.coordinateY)*(r.coordinateY - b.coordinateY)))" +
                     "< "+(d*d)+"))";
         } else {
             query = "select r from Room r " +
                     "inner join r.roomDepts rd inner join rd.department.timetableManagers m inner join m.managerRoles mr"+a+
-                    " where rd.control=true and mr.role.reference=:eventMgr";
+                    " where rd.control=true and mr.role.reference=:eventMgr" +
+                    " and 1 = (select rto.status from RoomTypeOption rto where rto.session.uniqueId = " + getSessionId().toString() + " and rto.roomType.uniqueId = r.roomType.id) ";
             if (iBuildingId!=null && iBuildingId>=0) { query += " and r.building.uniqueId=:buildingId"; }   
         }
+        
+       
 			
 		if (iMinCapacity!=null && iMinCapacity.length()>0) { query+= " and r.capacity>= :minCapacity";	}
 		if (iMaxCapacity!=null && iMaxCapacity.length()>0) { query+= " and r.capacity<= :maxCapacity";	}
