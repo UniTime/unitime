@@ -81,10 +81,10 @@
 		<logic:notEmpty name="eventDetailForm" property="minCapacity">
 		<TR>
 			<logic:equal name="eventDetailForm" property="eventType" value="Special Event">
-				<TD nowrap>Expected Size:&nbsp;</TD>
+				<TD nowrap>Expected Attendance:&nbsp;</TD>
 			</logic:equal>
 			<logic:notEqual name="eventDetailForm" property="eventType" value="Special Event">
-				<TD nowrap>Event Capacity:&nbsp;</TD>
+				<TD nowrap>Event Attendance:&nbsp;</TD>
 			</logic:notEqual>
 			<TD width='100%'>
 				<bean:define name="eventDetailForm" property="minCapacity" id="min"/>
