@@ -54,7 +54,7 @@ public class WebEventTableBuilder {
     
     protected static String LABEL = "Name";
     protected static String EMPTY = "&nbsp;";
-    public static final String EVENT_CAPACITY = "Capacity";
+    public static final String EVENT_CAPACITY = "Attendance";
     public static final String EVENT_TYPE = "Type";
     public static final String MAIN_CONTACT = "Main Contact";
     public static final String SPONSORING_ORG = "Sponsoring Org";

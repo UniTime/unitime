@@ -88,10 +88,10 @@
 		</TR>
 		<TR>
 			<logic:equal name="eventAddInfoForm" property="eventType" value="Special Event">
-				<TD nowrap>Expected Size:&nbsp;</TD>
+				<TD nowrap>Expected Attendance:&nbsp;</TD>
 			</logic:equal>
 			<logic:notEqual name="eventAddInfoForm" property="eventType" value="Special Event">
-				<TD nowrap>Event Capacity:&nbsp;</TD>
+				<TD nowrap>Event Attendance:&nbsp;</TD>
 			</logic:notEqual>
 			<TD>
 				<bean:write name="eventAddInfoForm" property="capacity"/>

@@ -105,7 +105,7 @@
 		</TR>
 		<logic:equal name="eventAddForm" property="eventType" value="Special Event">
 			<TR>
-				<TD nowrap>Expected Size: </TD>
+				<TD nowrap>Expected Attendance: </TD>
 				<TD>
 					<logic:notEqual name="eventAddForm" property="isAddMeetings" value="true">
 						<html:text property="capacity" maxlength="10" size="5"/>
