@@ -20,8 +20,10 @@
 
 package org.unitime.timetable.action;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.TreeSet;
+import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -44,6 +46,8 @@ import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.RelatedCourseInfo;
+import org.unitime.timetable.model.RoomType;
+import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.CourseEventDAO;
 
 /**
@@ -167,9 +171,32 @@ public class EventRoomAvailabilityAction extends Action {
 			    myForm.save(webSession);
 			}
 			
-		}
-		
-		
+		} 
+
+        if (myForm.getEventId()==null || myForm.getEventId()==0) {
+        	TimetableManager mgr = (user==null?null:TimetableManager.getManager(user));
+    		if (mgr != null){
+        		if (myForm.getRoomTypes() == null || myForm.getRoomTypes().length == 0){	
+	        		Collection<RoomType> allRoomTypes = myForm.getAllRoomTypes();
+	        		Vector<RoomType> defaultRoomTypes = mgr.findDefaultEventManagerRoomTimesFor(user.getRole(), myForm.getSessionId());
+	        		Vector<Long> orderedTypeList = new Vector();
+        			for(RoomType displayedRoomType : allRoomTypes){
+		        		for(RoomType rt : defaultRoomTypes){
+	        				if (displayedRoomType.getUniqueId().equals(rt.getUniqueId())){
+	        					orderedTypeList.add(rt.getUniqueId());
+	        					break;
+	        				}
+	        			}	        			
+	        		}
+	        		myForm.setRoomTypes(new Long[orderedTypeList.size()]);
+	        		int i = 0;
+	        		for (Long l : orderedTypeList){
+	        			myForm.getRoomTypes()[i] = l;
+	        			i++;
+	        		}
+        		}
+        	}
+        }		
 		
 		return  mapping.findForward("show");
 	}
