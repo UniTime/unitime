@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import org.hibernate.Query;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.unitime.commons.User;
@@ -370,5 +371,25 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
         }
         if (getManagerRoles().size()==1) return ((ManagerRole)getManagerRoles().iterator().next()).getRole();
         return null;
+    }
+
+    public Vector<RoomType> findDefaultEventManagerRoomTimesFor(String currentRole, Long acadSessionId){
+    	Vector<RoomType> roomTypes = new Vector<RoomType>();
+    	if (Roles.EVENT_MGR_ROLE.equals(currentRole)){
+    		StringBuilder sb = new StringBuilder();
+    		sb.append("select distinct rt from TimetableManager tm inner join tm.departments d")
+    		  .append(" inner join d.roomDepts rd inner join rd.room.roomType rt")
+    		  .append(" where tm.uniqueId = :managerId ")
+    		  .append(" and rd.control = true ")
+    		  .append(" and 1 = (select rto.status from RoomTypeOption rto where rto.session.uniqueId = :sessionId and rto.roomType.uniqueId = rt.uniqueId )");
+    		Query query = TimetableManagerDAO.getInstance().getSession()
+    		    .createQuery(sb.toString())
+    		    .setLong("managerId", getUniqueId().longValue())
+    		    .setLong("sessionId", acadSessionId.longValue());
+    		for(Iterator it = query.iterate(); it.hasNext();){
+    			roomTypes.add((RoomType) it.next());
+    		}
+    	}
+    	return(roomTypes);
     }
 }
