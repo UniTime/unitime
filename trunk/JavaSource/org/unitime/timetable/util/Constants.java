@@ -471,6 +471,22 @@ public class Constants extends net.sf.cpsolver.coursett.Constants {
         webSession.removeAttribute("ManageSolver.sectionPuid");
 		webSession.removeAttribute("Solver.selectedSolutionId");
 		webSession.removeAttribute("LastSolutionClassAssignmentProxy");
+		webSession.removeAttribute("EventGrid.RoomTypes");
+		webSession.removeAttribute("EventGrid.EventType");
+		webSession.removeAttribute("EventGrid.SessionId");        
+		webSession.removeAttribute("EventGrid.StartTime");
+		webSession.removeAttribute("EventGrid.StopTime");
+		webSession.removeAttribute("EventGrid.MeetingDates");
+		webSession.removeAttribute("EventGrid.MinCapacity");
+		webSession.removeAttribute("EventGrid.MaxCapacity");
+		webSession.removeAttribute("EventGrid.BuildingId");
+		webSession.removeAttribute("EventGrid.RoomNumber");
+		webSession.removeAttribute("EventGrid.LookAtNearLocations");
+		webSession.removeAttribute("EventGrid.IsAddMeetings");
+		webSession.removeAttribute("EventGrid.RoomTypes");
+		webSession.removeAttribute("EventGrid.RoomGroups");
+		webSession.removeAttribute("EventGrid.RoomFeatures");
+		webSession.removeAttribute("EventGrid.Mode");
     }
 
     /**

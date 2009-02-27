@@ -20,9 +20,11 @@
 package org.unitime.timetable.action;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.Date;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
+import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -35,6 +37,7 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.unitime.commons.Debug;
+import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.EventGridForm;
@@ -42,6 +45,8 @@ import org.unitime.timetable.form.EventRoomAvailabilityForm.DateLocation;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.RoomType;
+import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.BuildingDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.util.Constants;
@@ -67,6 +72,33 @@ public class EventGridAction extends Action{
         if (request.getParameter("op2")!=null && request.getParameter("op2").length()>0)
             op = request.getParameter("op2");
         
+        if (op == null  || op.trim().length() == 0){
+        	myForm.reset(mapping, request);
+    		User user = Web.getUser(request.getSession());
+        	TimetableManager mgr = (user==null?null:TimetableManager.getManager(user));
+    		if (mgr != null){
+        		if (myForm.getRoomTypes() == null || myForm.getRoomTypes().length == 0){	
+            		Collection<RoomType> allRoomTypes = myForm.getAllRoomTypes();
+            		Vector<RoomType> defaultRoomTypes = mgr.findDefaultEventManagerRoomTimesFor(user.getRole(), myForm.getSessionId());
+            		Vector<Long> orderedTypeList = new Vector(allRoomTypes.size());
+        			for(RoomType displayedRoomType : allRoomTypes){
+    	        		for(RoomType rt : defaultRoomTypes){
+            				if (displayedRoomType.getUniqueId().equals(rt.getUniqueId())){
+            					orderedTypeList.add(rt.getUniqueId());
+            					break;
+            				}
+            			}	        			
+            		}
+            		myForm.setRoomTypes(new Long[orderedTypeList.size()]);
+            		int i = 0;
+            		for (Long l : orderedTypeList){
+            			myForm.getRoomTypes()[i] = l;
+            			i++;
+            		}
+        		}
+        	}
+        }
+ 
         if ("Show Availability".equals(op) || "Export PDF".equals(op)) {
             myForm.loadDates(request);
             myForm.save(request.getSession());
@@ -76,6 +108,29 @@ public class EventGridAction extends Action{
             Long sessionId = myForm.getSessionId();
             myForm.reset(mapping, request);
             myForm.setSessionId(sessionId);
+    		User user = Web.getUser(request.getSession());
+        	TimetableManager mgr = (user==null?null:TimetableManager.getManager(user));
+    		if (mgr != null){
+        		if (myForm.getRoomTypes() == null || myForm.getRoomTypes().length == 0){	
+	        		Collection<RoomType> allRoomTypes = myForm.getAllRoomTypes();
+	        		Vector<RoomType> defaultRoomTypes = mgr.findDefaultEventManagerRoomTimesFor(user.getRole(), myForm.getSessionId());
+	        		Vector<Long> orderedTypeList = new Vector(allRoomTypes.size());
+        			for(RoomType displayedRoomType : allRoomTypes){
+		        		for(RoomType rt : defaultRoomTypes){
+	        				if (displayedRoomType.getUniqueId().equals(rt.getUniqueId())){
+	        					orderedTypeList.add(rt.getUniqueId());
+	        					break;
+	        				}
+	        			}	        			
+	        		}
+	        		myForm.setRoomTypes(new Long[orderedTypeList.size()]);
+	        		int i = 0;
+	        		for (Long l : orderedTypeList){
+	        			myForm.getRoomTypes()[i] = l;
+	        			i++;
+	        		}
+        		}
+        	}
             myForm.save(request.getSession());
         }
         
@@ -91,6 +146,30 @@ public class EventGridAction extends Action{
                 }
                 myForm.setBuildingId(nb==null?null:nb.getUniqueId());
             }
+    		User user = Web.getUser(request.getSession());
+        	TimetableManager mgr = (user==null?null:TimetableManager.getManager(user));
+    		if (mgr != null){
+        		if (myForm.getRoomTypes() == null || myForm.getRoomTypes().length == 0){	
+	        		Collection<RoomType> allRoomTypes = myForm.getAllRoomTypes();
+	        		Vector<RoomType> defaultRoomTypes = mgr.findDefaultEventManagerRoomTimesFor(user.getRole(), myForm.getSessionId());
+	        		Vector<Long> orderedTypeList = new Vector(allRoomTypes.size());
+        			for(RoomType displayedRoomType : allRoomTypes){
+		        		for(RoomType rt : defaultRoomTypes){
+	        				if (displayedRoomType.getUniqueId().equals(rt.getUniqueId())){
+	        					orderedTypeList.add(rt.getUniqueId());
+	        					break;
+	        				}
+	        			}	        			
+	        		}
+	        		myForm.setRoomTypes(new Long[orderedTypeList.size()]);
+	        		int i = 0;
+	        		for (Long l : orderedTypeList){
+	        			myForm.getRoomTypes()[i] = l;
+	        			i++;
+	        		}
+        		}
+        	}
+
             myForm.save(request.getSession());
         }
         
@@ -149,7 +228,8 @@ public class EventGridAction extends Action{
                 Debug.error(e);
             }
         }
-        
+ 
+
         return mapping.findForward("show");
     }
 }
