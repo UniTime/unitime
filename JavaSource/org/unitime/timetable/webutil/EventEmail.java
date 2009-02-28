@@ -141,7 +141,7 @@ public class EventEmail {
                     break;
                 case sActionReject :
                     message += "Following meetings were rejected";
-                    if (iNote!=null && iNote.length()>0) message += " (see the note bellow for more details)";
+                    if (iNote!=null && iNote.length()>0) message += " (see the note below for more details)";
                     break;
                 case sActionAddMeeting :
                     message += "Following meetings were added by you or on your behalf confirmation will follow";
