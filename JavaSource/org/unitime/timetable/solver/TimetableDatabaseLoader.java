@@ -2419,7 +2419,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		Double factor = null;
     		
     		if (totalCourseLimit<offering.getLimit().intValue())
-    			iProgress.warn("Total number of course reservations is bellow the offering limit for instructional offering "+getOfferingLabel(offering)+" ("+totalCourseLimit+"<"+offering.getLimit().intValue()+").");
+    			iProgress.warn("Total number of course reservations is below the offering limit for instructional offering "+getOfferingLabel(offering)+" ("+totalCourseLimit+"<"+offering.getLimit().intValue()+").");
 
     		if (totalCourseLimit>offering.getLimit().intValue())
     			iProgress.warn("Total number of course reservations exceeds the offering limit for instructional offering "+getOfferingLabel(offering)+" ("+totalCourseLimit+">"+offering.getLimit().intValue()+").");
