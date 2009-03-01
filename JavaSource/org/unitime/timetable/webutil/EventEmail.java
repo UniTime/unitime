@@ -134,7 +134,7 @@ public class EventEmail {
                 message += "<br><font size='+1'>";
                 switch (iAction) {
                 case sActionCreate : 
-                    message += "Following meetings were requested by you or on your behalf confirmation will follow";
+                    message += "Following meetings were requested by you or on your behalf, confirmation will follow";
                     break;
                 case sActionApprove :
                     message += "Following meetings were approved";
@@ -144,7 +144,7 @@ public class EventEmail {
                     if (iNote!=null && iNote.length()>0) message += " (see the note below for more details)";
                     break;
                 case sActionAddMeeting :
-                    message += "Following meetings were added by you or on your behalf confirmation will follow";
+                    message += "Following meetings were added by you or on your behalf, confirmation will follow";
                     break;
                 case sActionDelete :
                     message += "Following meetings were deleted by you or on your behalf";
