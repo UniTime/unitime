@@ -94,6 +94,7 @@ public class PeopleLookupAjax extends Action {
     
     public static String translate(String uid, Source source) {
         if (sTranslation==null || uid==null || source.equals(Source.User)) return uid;
+        if (uid.trim().length() == 0) return(null);
         return sTranslation.translate(uid, source, Source.User);
     }
     
@@ -303,7 +304,9 @@ public class PeopleLookupAjax extends Action {
             if (cmp!=0) return cmp;
             cmp = getSource().compareToIgnoreCase(p.getSource());
             if (cmp!=0) return cmp;
-            return getId().compareTo(p.getId());
+            if (getId() != null) return getId().compareTo(p.getId());
+            if (getId() == null && p.getId() == null) return(0);
+            return(1);
         }
         public String toXML() {
             return "<result id=\""+getId()+"\" "+
