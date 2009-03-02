@@ -123,7 +123,7 @@
 		
 
 <!-- Courses/Classes if this is a course event -->
-		<logic:equal name="eventAddForm" property="eventType" value="Course Event">
+		<logic:equal name="eventAddForm" property="eventType" value="Course Related Event">
 
 <!-- Not editable if just adding meetings -->
 		<logic:equal name="eventAddForm" property="isAddMeetings" value = "true">

@@ -111,7 +111,7 @@ public class EventRoomAvailabilityAction extends Action {
                     return  mapping.findForward("show");
                 }
 				if (myForm.getIsAddMeetings()) {
-				    if ("Course Event".equals(myForm.getEventType())) {
+				    if ("Course Related Event".equals(myForm.getEventType())) {
 			            CourseEvent courseEvent = new CourseEventDAO().get((myForm.getEventId()));;
 			            if (!courseEvent.getRelatedCourses().isEmpty()) {
 			                WebTable table = new WebTable(5, null, new String[] {"Object", "Type", "Title","Limit","Assignment"}, new String[] {"left", "left", "left","right","left"}, new boolean[] {true, true, true, true,true});
