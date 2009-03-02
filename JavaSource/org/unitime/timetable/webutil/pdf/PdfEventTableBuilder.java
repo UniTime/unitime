@@ -101,11 +101,22 @@ public class PdfEventTableBuilder extends WebEventTableBuilder {
         }
     }
     
-    protected void pdfBuildTableHeader(boolean events, boolean mainContact) {
+    protected void pdfBuildTableHeader(boolean events, boolean mainContact, int numEventsOrMeetings) {
         if (events) {
+        	PdfPCell c;
+        	if (numEventsOrMeetings >= 1501) {
+            	c = createCell();
+                addText(c, "**Warning: More than 1500 events match your search criteria. Only the first 1500 events are displayed. Please, redefine the search criteria in your filter.", true, Element.ALIGN_LEFT);
+                iPdfTable.addCell(c);
+                for(int i = 0; i < (mainContact?4:3); i++){
+	            	c = createCell();
+	                addText(c, "", true, Element.ALIGN_LEFT);
+	                iPdfTable.addCell(c);
+                }
+            }
             iBgColor = new Color(224,224,224);
             //first line
-            PdfPCell c = createCell();
+            c = createCell();
             addText(c, LABEL, true, Element.ALIGN_LEFT);
             iPdfTable.addCell(c);
             c = createCell();
@@ -141,12 +152,28 @@ public class PdfEventTableBuilder extends WebEventTableBuilder {
                 addText(c, APPROVED_DATE, true, Element.ALIGN_LEFT);
                 iPdfTable.addCell(c);
             }
-            iPdfTable.setHeaderRows(2);
+            if (numEventsOrMeetings < 1501){
+            	iPdfTable.setHeaderRows(2);
+            } else {
+                iPdfTable.setHeaderRows(3);
+            }
         } else {
+            PdfPCell c;
+            if (numEventsOrMeetings >= 1501){
+            	c = createCell();
+                addText(c, "**Warning: More than 1500 meetings match your search criteria. Only the first 1500 meetings are displayed. Please, redefine the search criteria in your filter.", true, Element.ALIGN_LEFT);
+                iPdfTable.addCell(c);
+                for(int i = 0; i < (mainContact?8:7); i++){
+	            	c = createCell();
+	                addText(c, "", true, Element.ALIGN_LEFT);
+	                iPdfTable.addCell(c);
+                }
+           	
+            }
             iBgColor = new Color(224,224,224);
             //first line
             iUnderline = true;
-            PdfPCell c = createCell();
+            c = createCell();
             addText(c, LABEL, true, Element.ALIGN_LEFT);
             iPdfTable.addCell(c);
             c = createCell();
@@ -175,7 +202,13 @@ public class PdfEventTableBuilder extends WebEventTableBuilder {
                 addText(c, APPROVED_DATE, true, Element.ALIGN_LEFT);
                 iPdfTable.addCell(c);
             }
-            iPdfTable.setHeaderRows(1);
+            if (numEventsOrMeetings < 1501){
+            	iPdfTable.setHeaderRows(1);
+            } else {
+             	iPdfTable.setHeaderRows(2);
+            }
+
+            
         }
         iBgColor = Color.WHITE; iUnderline = false;
    }
@@ -451,7 +484,7 @@ public class PdfEventTableBuilder extends WebEventTableBuilder {
             iPdfTable.getDefaultCell().setBorderWidth(0);
             iPdfTable.setSplitRows(false);
             
-            pdfBuildTableHeader(true, mainContact);
+            pdfBuildTableHeader(true, mainContact, events.size());
 
             for (Iterator it = events.iterator();it.hasNext();){
                 Event event = (Event) it.next();
@@ -513,7 +546,7 @@ public class PdfEventTableBuilder extends WebEventTableBuilder {
             iPdfTable.getDefaultCell().setBorderWidth(0);
             iPdfTable.setSplitRows(false);
             
-            pdfBuildTableHeader(false, mainContact);
+            pdfBuildTableHeader(false, mainContact, meetings.size());
 
             Event lastEvent = null;
             Date now = new Date();
