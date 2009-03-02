@@ -325,7 +325,7 @@ public class EventAddInfoForm extends ActionForm {
                 if (iMainContactExternalId!=null && iMainContactExternalId.length()>0)
                     mainContact.setExternalUniqueId(iMainContactExternalId);
 				hibSession.saveOrUpdate(mainContact);
-				if ("Course Event".equals(iEventType)) {
+				if ("Course Related Event".equals(iEventType)) {
 					event = new CourseEvent();
 					((CourseEvent) event).setReqAttendance(iAttendanceRequired);
 					setRelatedCourseInfos((CourseEvent)event);

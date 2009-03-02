@@ -181,7 +181,7 @@ public class EventAddForm extends ActionForm {
 			errors.add("minMaxCapacity", new ActionMessage("errors.generic", "Maximum room capacity should not be smaller than minimum room capacity."));
 		}
 		
-		if ("Course Event".equals(iEventType) && !(iIsAddMeetings)) {
+		if ("Course Related Event".equals(iEventType) && !(iIsAddMeetings)) {
 			boolean hasRci = false;
 	        for (int idx=0;idx<getSubjectArea().size();idx++) {
 	            RelatedCourseInfo rci = getRelatedCourseInfo(idx);

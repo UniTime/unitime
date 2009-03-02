@@ -341,7 +341,7 @@
 		</TD></TR>
 
 <!-- Courses/Classes if this is a course event -->
-		<logic:equal name="eventAddInfoForm" property="eventType" value="Course Event">
+		<logic:equal name="eventAddInfoForm" property="eventType" value="Course Related Event">
 		<logic:notEqual name="eventAddInfoForm" property="isAddMeetings" value="true">
 		<TR>
 			<TD colspan='2'>

@@ -76,7 +76,7 @@ public class EventEditForm extends EventAddInfoForm {
 			setSponsoringOrgName((getEvent().getSponsoringOrganization()==null?"":getEvent().getSponsoringOrganization().getName()));
 			setSponsoringOrgId((getEvent().getSponsoringOrganization()==null?-1:getEvent().getSponsoringOrganization().getUniqueId()));
 		}
-		if ("Course Event".equals(getEventType())) setAttendanceRequired(((CourseEvent) getEvent()).isReqAttendance());
+		if ("Course Related Event".equals(getEventType())) setAttendanceRequired(((CourseEvent) getEvent()).isReqAttendance());
 		loadExistingMeetings();		
 
 		TimetableManager tm = TimetableManager.getManager(user);
