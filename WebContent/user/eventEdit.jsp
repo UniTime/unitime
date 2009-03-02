@@ -176,7 +176,7 @@
 		</TR>
 
 <!-- Courses/Classes if this is a course event -->
-		<logic:equal name="eventEditForm" property="eventType" value="Course Event">
+		<logic:equal name="eventEditForm" property="eventType" value="Course Related Event">
 		<TR>
 			<TD colspan='2'>
 				&nbsp;

@@ -78,7 +78,7 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
 	    "Class Event",
 	    "Final Examination Event",
 	    "Midterm Examination Event",
-	    "Course Event",
+	    "Course Related Event",
 	    "Special Event"
 	};
     public static final String[] sEventTypesAbbv = new String[] {

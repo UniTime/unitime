@@ -127,7 +127,7 @@ public class EventEditAction extends Action {
 		
 		
 //Related Courses Table
-        if ("Course Event".equals(myForm.getEventType())) {
+        if ("Course Related Event".equals(myForm.getEventType())) {
             CourseEvent courseEvent = new CourseEventDAO().get((myForm.getId()));;
             if (!courseEvent.getRelatedCourses().isEmpty()) {
 	        	WebTable table = new WebTable(5, null, new String[] {"Object", "Type", "Title","Limit","Assignment"}, new String[] {"left", "left", "left","right","left"}, new boolean[] {true, true, true, true,true});

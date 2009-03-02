@@ -186,7 +186,7 @@
 						<html:submit property="op" styleClass="btn" accesskey="A"
 							title="Add Meetings (Alt+A)" value="Add Meetings"/>
 					</logic:equal>
-					<logic:equal name="eventDetailForm" property="eventType" value="Course Event">
+					<logic:equal name="eventDetailForm" property="eventType" value="Course Related Event">
 						<html:submit property="op" styleClass="btn" accesskey="A"
 							title="Add Meetings (Alt+A)" value="Add Meetings"/>
 					</logic:equal>
@@ -347,7 +347,7 @@
 	</logic:equal>
 	</logic:equal>
 <!-- Courses/Classes if this is a course event -->
-	<logic:equal name="eventDetailForm" property="eventType" value="Course Event">
+	<logic:equal name="eventDetailForm" property="eventType" value="Course Related Event">
 		<TR>
 			<TD colspan='2'>
 				&nbsp;

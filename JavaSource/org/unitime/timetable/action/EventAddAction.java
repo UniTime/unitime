@@ -116,7 +116,7 @@ public class EventAddAction extends Action {
 			
 		//Table of courses for a course event when adding meetings to that event
 		if (myForm.getEventId()!=null && myForm.getEventId()!=0) {
-	        if ("Course Event".equals(myForm.getEventType())) {
+	        if ("Course Related Event".equals(myForm.getEventType())) {
 	        	CourseEvent courseEvent = new CourseEventDAO().get(myForm.getEventId());;
 	        	if (!courseEvent.getRelatedCourses().isEmpty()) {
 		        	WebTable table = new WebTable(3, null, new String[] {"Object", "Type", "Title"}, new String[] {"left", "left", "left"}, new boolean[] {true, true, true});
