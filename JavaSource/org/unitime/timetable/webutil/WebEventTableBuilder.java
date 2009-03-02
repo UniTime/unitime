@@ -573,8 +573,8 @@ public class WebEventTableBuilder {
         query += " order by e.eventName, e.uniqueId";
         
         Query hibQuery = new EventDAO().getSession().createQuery(query);
-        hibQuery.setFetchSize(101);
-        hibQuery.setMaxResults(101);
+        hibQuery.setFetchSize(1501);
+        hibQuery.setMaxResults(1501);
         
         if (form.getEventNameSubstring()!=null && form.getEventNameSubstring().trim().length()>0) {
             hibQuery.setString("eventNameSubstring", "%"+form.getEventNameSubstring().toUpperCase().trim()+"%");
@@ -751,8 +751,8 @@ public class WebEventTableBuilder {
         }
 
         Query hibQuery = new EventDAO().getSession().createQuery(query);
-        hibQuery.setFetchSize(101);
-        hibQuery.setMaxResults(101);
+        hibQuery.setFetchSize(1501);
+        hibQuery.setMaxResults(1501);
 
         if (form.getEventNameSubstring()!=null && form.getEventNameSubstring().trim().length()>0) {
             hibQuery.setString("eventNameSubstring", "%"+form.getEventNameSubstring().toUpperCase().trim()+"%");
