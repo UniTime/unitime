@@ -194,8 +194,8 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
             iMeetingId = m.getUniqueId();
             iEventName = m.getEvent().getEventName();
             iEventType = m.getEvent().getEventTypeLabel();
-            iStart = m.getStartTime();
-            iEnd = m.getStopTime();
+            iStart = m.getTrueStartTime();
+            iEnd = m.getTrueStopTime();
         }
         public Long getId() { return iMeetingId; }
         public String getEventName() { return iEventName; }

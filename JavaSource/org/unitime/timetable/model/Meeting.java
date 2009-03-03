@@ -235,7 +235,16 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
         return c.getTime();
 	}
 
-    public Date getStopTime() {
+	public Date getTrueStartTime() {
+		Calendar c = Calendar.getInstance(Locale.US);
+        c.setTime(getMeetingDate());
+        int min = (getStartPeriod().intValue()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN);
+        c.set(Calendar.HOUR, min/60);
+        c.set(Calendar.MINUTE, min%60);
+        return c.getTime();
+	}
+
+	public Date getStopTime() {
         Calendar c = Calendar.getInstance(Locale.US);
         c.setTime(getMeetingDate());
         int min = (getStopPeriod().intValue()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN)+(getStopOffset()==null?0:getStopOffset());
@@ -244,7 +253,16 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
         return c.getTime();
     }
     
-    public int getDayOfWeek() {
+	public Date getTrueStopTime() {
+        Calendar c = Calendar.getInstance(Locale.US);
+        c.setTime(getMeetingDate());
+        int min = (getStopPeriod().intValue()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN);
+        c.set(Calendar.HOUR, min/60);
+        c.set(Calendar.MINUTE, min%60);
+        return c.getTime();
+    }
+
+	public int getDayOfWeek() {
         Calendar c = Calendar.getInstance(Locale.US);
         c.setTime(getMeetingDate());
         return c.get(Calendar.DAY_OF_WEEK);
