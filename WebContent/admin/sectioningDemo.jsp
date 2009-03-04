@@ -405,8 +405,10 @@ function choiceChangedX(subjectArea, courseNumber, title, classId, chId, type) {
 							<html:option value=""></html:option>
 							<html:optionsCollection property="subjectAreas" value="id" label="value"/>
 						</nested:select>
-						<nested:select style="width:80;" property="courseNbr"
-							onfocus="setUp();" onkeypress="return selectSearch(event, this);" onkeydown="return checkKey(event, this);"
+						<nested:select style="width:80;" property="courseNbr" 
+						    onfocus='<%= "setUp(); changeWidth(\'requests[" + idx + "].courseNbr\', 275);" %>'
+							onblur='<%= "changeWidth(\'requests[" + idx + "].courseNbr\', 80);"%>' 
+							onkeypress="return selectSearch(event, this);" onkeydown="return checkKey(event, this);"
 							>
 							<html:option value=""></html:option>
 							<html:optionsCollection name="req" property="courseNumbers" value="uniqueId" label="courseNumberWithTitle"/>
@@ -462,7 +464,9 @@ function choiceChangedX(subjectArea, courseNumber, title, classId, chId, type) {
 							<html:optionsCollection property="subjectAreas" value="id" label="value"/>
 						</nested:select>
 						<nested:select style="width:80;" property="alt1CourseNbr"
-							onfocus="setUp();" onkeypress="return selectSearch(event, this);" onkeydown="return checkKey(event, this);"
+							onfocus='<%= "setUp(); changeWidth(\'requests[" + idx + "].alt1CourseNbr\', 275);" %>'
+							onblur='<%= "changeWidth(\'requests[" + idx + "].alt1CourseNbr\', 80);"%>' 
+							onkeypress="return selectSearch(event, this);" onkeydown="return checkKey(event, this);"
 							>
 							<html:option value=""></html:option>
 							<html:optionsCollection name="req" property="alt1CourseNumbers" value="uniqueId" label="courseNumberWithTitle"/>
@@ -486,7 +490,9 @@ function choiceChangedX(subjectArea, courseNumber, title, classId, chId, type) {
 							<html:optionsCollection property="subjectAreas" value="id" label="value"/>
 						</nested:select>
 						<nested:select style="width:80;" property="alt2CourseNbr"
-							onfocus="setUp();" onkeypress="return selectSearch(event, this);" onkeydown="return checkKey(event, this);"
+							onfocus='<%= "setUp(); changeWidth(\'requests[" + idx + "].alt2CourseNbr\', 275);" %>'
+							onblur='<%= "changeWidth(\'requests[" + idx + "].alt2CourseNbr\', 80);"%>' 
+							onkeypress="return selectSearch(event, this);" onkeydown="return checkKey(event, this);"
 							>
 							<html:option value=""></html:option>
 							<html:optionsCollection name="req" property="alt2CourseNumbers" value="uniqueId" label="courseNumberWithTitle"/>

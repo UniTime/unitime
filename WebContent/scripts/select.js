@@ -166,3 +166,9 @@ function isModified() {
 function displayStatus() {
 	window.status = 'Searching for: "' + matchString.toLowerCase() + '" ( use BACKSPACE key to modify, DELETE key to clear the search string)';
 }
+
+function changeWidth(elementId, width){
+	if (/MSIE (\d+\.\d+);/.test(navigator.userAgent)){
+		document.getElementById(elementId).style.width = width;
+	}
+}

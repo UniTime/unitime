@@ -168,10 +168,9 @@
 			<TD>Course Offerings: </TD>
 			<TD>
 				<html:select
-					name="crossListsModifyForm"	
-					style="width:80;"								
+					name="crossListsModifyForm"									
 					property="addCourseOfferingId"			
-					onfocus="setUp();"
+					onfocus="setUp(); "
 					onkeypress="return selectSearch(event, this);"
 					onkeydown="return checkKey(event, this);" >
 					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
