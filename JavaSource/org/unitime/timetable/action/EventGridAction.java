@@ -222,8 +222,17 @@ public class EventGridAction extends Action{
         if ("Export PDF".equals(op)) {
             File f = ApplicationProperties.getTempFile("events", ".pdf");
             try {
-                new PdfEventGridTable(myForm).export(f);
-                if (f.exists()) request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+f.getName()); 
+            	if (myForm.getPossibleLocations() != null && myForm.getMeetingDates() != null) {
+	        	  	if (4480 > (myForm.getPossibleLocations().size() * 16 * myForm.getMeetingDates().size())){
+	                    new PdfEventGridTable(myForm).export(f);
+	                    if (f.exists()) request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+f.getName()); 
+	        	  	} else {
+	        	  		errors.add("eventName", new ActionMessage("errors.generic", "Please refine your PDF Room Availability query to return fewer rooms or dates."));
+	        	  		saveErrors(request, errors);
+	                    return mapping.findForward("show");
+	        	  	}
+	            }
+                
             } catch (Exception e) {
                 Debug.error(e);
             }
