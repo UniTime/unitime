@@ -208,8 +208,23 @@
 		</TABLE>
 	</logic:messagesPresent>
 	<br>
-	<% new EventGridTable((EventGridForm)request.getAttribute("eventGridForm")).printTable(out); %>
-</TABLE>
+	<% 
+	EventGridForm myForm = (EventGridForm)request.getAttribute("eventGridForm");
+	if (myForm.getPossibleLocations() != null && myForm.getMeetingDates() != null) {
+	  	if (2240 > (myForm.getPossibleLocations().size() * 16 * myForm.getMeetingDates().size())){
+			new EventGridTable(myForm).printTable(out);
+		} else {
+		%>
+		<TABLE width="93%" border="0" cellspacing="0" cellpadding="3">
+			<TR><TD class="errorCell">
+				<b>Please refine your Room Availablity query to return fewer rooms or dates.</b>
+			</TD></TR>
+		</TABLE>
+		<%
+		}
+	}
+	 %>
+    </TABLE>
 	<logic:notEmpty scope="request" name="hash">
 		<SCRIPT type="text/javascript" language="javascript">
 			location.hash = '<%=request.getAttribute("hash")%>';
