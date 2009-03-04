@@ -177,8 +177,9 @@
 
 				<html:select style="width:80;" 
 					property='<%= "courseNbr[" + ctr + "]" %>' 
-					onchange="<%= \"javascript: doReload('exam', '\" + ctr + \"');\" %>"
-					onfocus="setUp();" 
+					onchange="<%= \"javascript: doReload('courseNbr[', '\" + ctr + \"]');\" %>"
+					onfocus='<%= "setUp(); changeWidth(\'courseNbr[" + ctr + "]\', 275)" %>'
+					onblur='<%= " changeWidth(\'exam" + ctr + "\', 80);" %>'
 					onkeypress="return selectSearch(event, this);" 
 					onkeydown="<%= \"var y=checkKey(event, this); if(y && isModified()) { doReload('exam', '\" + ctr + \"'); }return y;\" %>" 
 					styleId='<%="courseNbr"+ctr%>' >

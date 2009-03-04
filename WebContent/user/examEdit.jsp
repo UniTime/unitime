@@ -204,7 +204,8 @@
 					</html:select>
 					</td><td>
 					<html:select style="width:80;" property='<%="courseNbr["+idx+"]"%>' styleId='<%="courseNbr"+idx%>'
-						onfocus="setUp();" 
+						onfocus="<%= \"setUp(); changeWidth('courseNbr[\" + idx + \"]', 275)\" %>"
+						onblur="<%= \" changeWidth('courseNbr[\" + idx + \"]', 80);\" %>"
 						onkeypress="return selectSearch(event, this);"
 						onchange="<%= \"javascript: doAjax('courseNbr', '\"+idx+\"');\" %>" >
 						<html:optionsCollection property='<%="courseNbrs["+idx+"]"%>' label="value" value="id"/>
