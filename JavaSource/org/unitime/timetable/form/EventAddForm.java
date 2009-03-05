@@ -238,8 +238,8 @@ public class EventAddForm extends ActionForm {
         }
         User user = Web.getUser(request.getSession());
         iAdmin = (user!=null && user.isAdmin());
-        iHasRole = (user.getRole()!=null);
-        if (Roles.EVENT_MGR_ROLE.equals(user.getRole())) {
+        iHasRole = (user!=null && user.getRole()!=null);
+        if (iHasRole && Roles.EVENT_MGR_ROLE.equals(user.getRole())) {
             TimetableManager mgr = (user==null?null:TimetableManager.getManager(user));
             if (mgr!=null) iManagingDepts = mgr.getDepartments();
         }
