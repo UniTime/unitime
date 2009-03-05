@@ -34,6 +34,7 @@ public class PdfEventGridTable extends EventGridTable {
     
     private static Color sBorderColor = new Color(100,100,100);
     private static Color sNotAvailableColor = new Color(224,224,224);
+    private static int sDefaultNumberOfColumns = 10;
     
     public PdfEventGridTable(EventGridForm form) {
         super(form);
@@ -87,12 +88,20 @@ public class PdfEventGridTable extends EventGridTable {
             for (TableModel m : iModel) {
                 int nrCols = 0;
                 boolean split = false;
+                boolean first = true;
+                int firstColSpan = sDefaultNumberOfColumns;
                 for (Date date : iDates) {
                     int colSpan = m.getColSpan(date);
+                    if (first) {
+                    	first = false;
+                    	if (colSpan > sDefaultNumberOfColumns){
+                    		firstColSpan = colSpan;
+                    	}
+                    }
                     nrCols += colSpan;
                     if (colSpan>1) split = true;
                 }
-                MyTable table = new MyTable(m.getLocation().getLabel()+"\n("+m.getLocation().getCapacity()+")");
+                MyTable table = new MyTable(m.getLocation().getLabel()+"\n("+m.getLocation().getCapacity()+")", firstColSpan);
                 for (Date date : iDates)
                     table.addColumn(m.getColSpan(date),df1.format(date)+"\n"+df2.format(date), split);
                 table.newLine();
@@ -155,12 +164,20 @@ public class PdfEventGridTable extends EventGridTable {
             Date date = iDates.firstElement();
             boolean split = false;
             int nrCols = 0;
+            boolean first = true;
+            int firstColSpan = sDefaultNumberOfColumns;
             for (TableModel m : iModel) {
                 int colSpan = m.getColSpan(date);
+                if (first){
+                	first = false;
+                	if (colSpan > sDefaultNumberOfColumns){
+                		firstColSpan = colSpan;
+                	}
+                }
                 nrCols += colSpan;
                 if (colSpan>1) split = true;
             }
-            MyTable table = new MyTable(df1.format(date)+"\n"+df2.format(date));
+            MyTable table = new MyTable(df1.format(date)+"\n"+df2.format(date), firstColSpan);
             for (TableModel m : iModel)
                 table.addColumn(m.getColSpan(date), m.getLocation().getLabel()+"\n("+m.getLocation().getCapacity()+" seats)", split);
             table.newLine();
@@ -226,10 +243,12 @@ public class PdfEventGridTable extends EventGridTable {
         private int iNrCols = 0;
         private String iName;
         private int iIndex = 0;
+        private int iMaxNrCols = 0;
         
         public MyTable(String name) {
             iName = name;
-            iTable = new PdfPTable(11);
+            iTable = new PdfPTable(sDefaultNumberOfColumns + 1);
+            iMaxNrCols = sDefaultNumberOfColumns;
             iTable.setWidthPercentage(100);
             iTable.getDefaultCell().setPadding(3);
             iTable.getDefaultCell().setBorderWidth(1);
@@ -242,16 +261,36 @@ public class PdfEventGridTable extends EventGridTable {
             iTable.addCell(c);
         }
         
-        public void addColumn(int colSpan, String name, boolean left) {
-            if (iNext==null && iNrCols+colSpan<=10) {
+        public MyTable(String name, int size) {
+            iName = name;
+            iTable = new PdfPTable(size + 1);
+            iTable.setWidthPercentage(100);
+            iTable.getDefaultCell().setPadding(3);
+            iTable.getDefaultCell().setBorderWidth(1);
+            iTable.setSplitRows(true);
+            iTable.setSpacingBefore(10);
+            iTable.setKeepTogether(true);
+            iTable.setHeaderRows(1);
+            iMaxNrCols = size;
+            PdfPCell c = createCell(1,1,1,1);
+            addText(c, iName, true);
+            iTable.addCell(c);
+        }
+        
+       public void addColumn(int colSpan, String name, boolean left) {
+            if (iNext==null && iNrCols+colSpan<=iMaxNrCols) {
                 iNrCols += colSpan;
                 PdfPCell c = createCell(1,1,(left?1:0),1);
                 c.setColspan(colSpan);
                 addText(c, name, true);
                 iTable.addCell(c);
             } else {
-                if (iNext==null) iNext = new MyTable(iName);
-                iNext.addColumn(colSpan, name, left);
+                if (iNext==null){
+                	if (colSpan > iMaxNrCols)
+                		iNext = new MyTable(iName, colSpan);
+                	else iNext = new MyTable(iName);
+                }
+                	iNext.addColumn(colSpan, name, left);
             }
         }
         
@@ -315,7 +354,7 @@ public class PdfEventGridTable extends EventGridTable {
         }
         
         private void newLine() {
-            for (int i=iNrCols;i<10;i++) iTable.addCell(createCell(0,0,0,0));
+            for (int i=iNrCols;i<iMaxNrCols;i++) iTable.addCell(createCell(0,0,0,0));
             if (iNext!=null) iNext.newLine();
         }
         
