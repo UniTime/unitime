@@ -2051,7 +2051,7 @@ public class CourseOfferingImport extends EventRelatedImports {
 			}
 		}
 
-		ChangeLog.addChange(getHibSession(), manager, session, io, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.DELETE, io.getControllingCourseOffering().getSubjectArea(), io.getControllingCourseOffering().getDepartment());
+		ChangeLog.addChange(getHibSession(), manager, session, io, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.DELETE, (io.getControllingCourseOffering() == null?null:io.getControllingCourseOffering().getSubjectArea()), (io.getControllingCourseOffering() == null?null:io.getControllingCourseOffering().getDepartment()));
 		this.getHibSession().delete(io);
 	}
 	
