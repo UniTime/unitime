@@ -222,8 +222,8 @@ public class EventGridAction extends Action{
         if ("Export PDF".equals(op)) {
             File f = ApplicationProperties.getTempFile("events", ".pdf");
             try {
-            	if (myForm.getPossibleLocations() != null && myForm.getMeetingDates() != null) {
-	        	  	if (4480 > (myForm.getPossibleLocations().size() * 16 * myForm.getMeetingDates().size())){
+            	if (myForm.getPossibleLocations() != null && myForm.getMeetingDates() != null  && (myForm.getStartTime() < myForm.getStopTime())) {
+	        	  	if (60000 > (myForm.getPossibleLocations().size() * ((myForm.getStopTime() - myForm.getStartTime())/12) * myForm.getMeetingDates().size())){
 	                    new PdfEventGridTable(myForm).export(f);
 	                    if (f.exists()) request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+f.getName()); 
 	        	  	} else {
