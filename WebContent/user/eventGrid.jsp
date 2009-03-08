@@ -210,14 +210,14 @@
 	<br>
 	<% 
 	EventGridForm myForm = (EventGridForm)request.getAttribute("eventGridForm");
-	if (myForm.getPossibleLocations() != null && myForm.getMeetingDates() != null) {
-	  	if (2240 > (myForm.getPossibleLocations().size() * 16 * myForm.getMeetingDates().size())){
+	if (myForm.getPossibleLocations() != null && myForm.getMeetingDates() != null && (myForm.getStartTime() < myForm.getStopTime())) {
+	  	if (15000 > (myForm.getPossibleLocations().size() * ((myForm.getStopTime() - myForm.getStartTime())/12) * myForm.getMeetingDates().size())){
 			new EventGridTable(myForm).printTable(out);
 		} else {
 		%>
 		<TABLE width="93%" border="0" cellspacing="0" cellpadding="3">
 			<TR><TD class="errorCell">
-				<b>Please refine your Room Availablity query to return fewer rooms or dates.</b>
+				<b>Please refine your Room Availablity query to return fewer rooms or dates or try generating a PDF.</b>
 			</TD></TR>
 		</TABLE>
 		<%
