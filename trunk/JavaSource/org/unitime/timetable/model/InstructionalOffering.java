@@ -92,7 +92,7 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 /*[CONSTRUCTOR MARKER END]*/
 
 	public String getCourseName(){
-		return(this.getControllingCourseOffering().getCourseName());
+		return(this.getControllingCourseOffering() == null?"missing course name":this.getControllingCourseOffering().getCourseName());
 	}
 
 	public String getCourseNameWithTitle(){
