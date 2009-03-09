@@ -219,6 +219,9 @@
 	<tt:notHasProperty name="tmtbl.help.root">
 	menu_item('6','Help','Help Manual','','expand');
 	</tt:notHasProperty>
+		<tt:hasProperty name="tmtbl.help.manual.events">
+			leaf_item('Event Manual','Manual for Event Management','%tmtbl.help.manual.events%', '_help');
+		</tt:hasProperty>
 		<tt:hasProperty name="tmtbl.help.manual.input_data">
 			leaf_item('Data Entry Manual','Manual for Data Entry','%tmtbl.help.manual.input_data%', '_help');
 		</tt:hasProperty>
