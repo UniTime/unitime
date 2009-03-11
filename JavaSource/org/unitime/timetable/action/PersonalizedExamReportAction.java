@@ -446,7 +446,7 @@ public class PersonalizedExamReportAction extends Action {
             PdfWebTable table = getStudentExamSchedule(true, exams, student);
             request.setAttribute("schedule", table.printTable(WebTable.getOrder(request.getSession(),"exams.o1")));
             
-            table = getStudentConflits(true, exams, student);
+            table = getStudentConflits(true, exams, student, user);
             if (!table.getLines().isEmpty())
                 request.setAttribute("conf", table.printTable(WebTable.getOrder(request.getSession(),"exams.o3")));
         }
@@ -459,7 +459,7 @@ public class PersonalizedExamReportAction extends Action {
             PdfWebTable table = getInstructorExamSchedule(true, exams, instructor);
             request.setAttribute("ischedule", table.printTable(WebTable.getOrder(request.getSession(),"exams.o2")));
             
-            table = getInstructorConflits(true, exams, instructor);
+            table = getInstructorConflits(true, exams, instructor, user);
             if (!table.getLines().isEmpty())
                 request.setAttribute("iconf", table.printTable(WebTable.getOrder(request.getSession(),"exams.o4")));
 
@@ -624,7 +624,7 @@ public class PersonalizedExamReportAction extends Action {
         return table;
     }
     
-    public PdfWebTable getStudentConflits(boolean html, TreeSet<ExamAssignmentInfo> exams, Student student) {
+    public PdfWebTable getStudentConflits(boolean html, TreeSet<ExamAssignmentInfo> exams, Student student, User user) {
         String nl = (html?"<br>":"\n");
         PdfWebTable table = new PdfWebTable( 6,
                 student.getSession().getLabel()+" Examination Conflicts and/or Back-To-Back Examinations for "+student.getName(DepartmentalInstructor.sNameFormatLastFist),
@@ -779,7 +779,7 @@ public class PersonalizedExamReportAction extends Action {
                     }
                 }
                 table.addLine(
-                        "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"",
+                        (user.getRole() == null?"":"onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\""),
                         new String[] {
                             (html?"<font color='"+PreferenceLevel.prolog2color("2")+"'>":"")+(html?"&gt;":"")+"2 A Day"+(html?"</font>":""),
                             classes,
@@ -849,7 +849,7 @@ public class PersonalizedExamReportAction extends Action {
         return table;
     }
     
-    public PdfWebTable getInstructorConflits(boolean html, TreeSet<ExamAssignmentInfo> exams, DepartmentalInstructor instructor) {
+    public PdfWebTable getInstructorConflits(boolean html, TreeSet<ExamAssignmentInfo> exams, DepartmentalInstructor instructor, User user) {
         String nl = (html?"<br>":"\n");
         PdfWebTable table = new PdfWebTable( 8,
                 instructor.getDepartment().getSession().getLabel()+" Examination Instructor Conflicts and/or Back-To-Back Examinations for "+instructor.getName(DepartmentalInstructor.sNameFormatLastFist),
@@ -1021,7 +1021,7 @@ public class PersonalizedExamReportAction extends Action {
                     }
                 }
                 table.addLine(
-                        "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"",
+                		(user.getRole() == null?"":"onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\""),
                         new String[] {
                             (html?"<font color='"+PreferenceLevel.prolog2color("2")+"'>":"")+(html?"&gt;":"")+"2 A Day"+(html?"</font>":""),
                             classes,
