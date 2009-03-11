@@ -231,7 +231,7 @@ public class EventEmail {
             message += "This email was automatically generated at ";
             message += request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+request.getContextPath();
             message += ",<br>by UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?");
-            message += " (Univesity Timetabling Application, http://www.unitime.org).";
+            message += " (University Timetabling Application, http://www.unitime.org).";
             message += "</td></tr></table>";
             
             Properties p = ApplicationProperties.getProperties();
