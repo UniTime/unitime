@@ -362,7 +362,7 @@
 				column="CLASS_SUFFIX"
 				type="java.lang.String"
 				not-null="false"
-				length="6"
+				length="10"
 			/>
         	<property
 			    name="displayInScheduleBook"

@@ -2371,4 +2371,13 @@
 			update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1
 		</mysql>
 	</update>
+	<update version="43" date="12-Mar-2009" comment="increase class suffix size">
+		<plsql>
+			alter table %SCHEMA%.class_ modify class_suffix varchar2(10)
+		</plsql>
+		<mysql>
+			alter table %SCHEMA%.class_ modify class_suffix varchar(10)
+		</mysql>
+	</update>
+	
 </dbupdate>
