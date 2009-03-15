@@ -32,6 +32,8 @@ import java.util.TreeSet;
 import java.util.Vector;
 
 import org.dom4j.Element;
+import org.hibernate.impl.SessionImpl;
+import org.unitime.commons.Debug;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.ClassEvent;
@@ -62,8 +64,10 @@ import org.unitime.timetable.model.Staff;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.VariableFixedCreditUnitConfig;
 import org.unitime.timetable.model.VariableRangeCreditUnitConfig;
+import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.test.MakeAssignmentsForClassEvents;
 import org.unitime.timetable.util.CalendarUtils;
+import org.unitime.timetable.util.InstrOfferingPermIdGenerator;
 
 
 public class CourseOfferingImport extends EventRelatedImports {
@@ -580,7 +584,7 @@ public class CourseOfferingImport extends EventRelatedImports {
 				}
 				if (title != null && title.trim().length() > 0){
 					newCourseOffering.setTitle(title.trim());
-				}				
+				}			
 				courses.add(newCourseOffering);
 			}
 		} else {
@@ -1120,6 +1124,9 @@ public class CourseOfferingImport extends EventRelatedImports {
 	
 	private boolean elementCourse(Element element, InstructionalOffering io, String action) throws Exception{
 		boolean changed = false;
+		if (io.getControllingCourseOffering() != null){
+			Debug.info("Checking Offering:  " + io.getCourseName());
+		}
 		ArrayList<CourseOffering> courses = getCourses(element);
 		if (action.equalsIgnoreCase("insert")){
 			CourseOffering co = null;
@@ -1133,6 +1140,7 @@ public class CourseOfferingImport extends EventRelatedImports {
 					co.setDemand(new Integer(0));
 				}
 				io.addTocourseOfferings(co);
+				co.setPermId(InstrOfferingPermIdGenerator.getGenerator().generate((SessionImpl)new CourseOfferingDAO().getSession(), this).toString());
 				co.setSubjectAreaAbbv(co.getSubjectArea().getSubjectAreaAbbreviation());
 				addNote("\tadded course: " + co.getSubjectArea().getSubjectAreaAbbreviation() + " " + co.getCourseNbr());
 				getHibSession().saveOrUpdate(io);
@@ -1193,6 +1201,11 @@ public class CourseOfferingImport extends EventRelatedImports {
 							addNote("\tchanged title: " + nco.getSubjectArea().getSubjectAreaAbbreviation() + " " + nco.getCourseNbr());
 							changed = true;
 						}	
+						if (oco.getPermId() == null){
+							oco.setPermId(InstrOfferingPermIdGenerator.getGenerator().generate((SessionImpl)new CourseOfferingDAO().getSession(), this).toString());
+							addNote("\tadded missing permId: " + nco.getSubjectArea().getSubjectAreaAbbreviation() + " " + nco.getCourseNbr());
+							changed = true;
+						}
 						if(changed){
 				        	ChangeLog.addChange(getHibSession(), manager, session, oco, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.UPDATE, oco.getSubjectArea(), oco.getDepartment());
 						}
