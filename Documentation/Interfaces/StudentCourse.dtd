@@ -17,15 +17,17 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  -->
 
+<!ELEMENT studentCourse EMPTY >
+<!ATTLIST studentCourse courseNumber NMTOKEN #IMPLIED >
+<!ATTLIST studentCourse externalId NMTOKEN #IMPLIED >
+<!ATTLIST studentCourse priority NMTOKEN #REQUIRED >
+<!ATTLIST studentCourse subject NMTOKEN #IMPLIED >
+
 <!ELEMENT lastLikeCourseDemand ( student+ ) >
-<!ATTLIST lastLikeCourseDemand campus CDATA #REQUIRED >
-<!ATTLIST lastLikeCourseDemand term CDATA #REQUIRED >
-<!ATTLIST lastLikeCourseDemand year CDATA #REQUIRED >
+<!ATTLIST lastLikeCourseDemand campus NMTOKEN #REQUIRED >
+<!ATTLIST lastLikeCourseDemand created CDATA #IMPLIED >
+<!ATTLIST lastLikeCourseDemand term NMTOKEN #REQUIRED >
+<!ATTLIST lastLikeCourseDemand year NMTOKEN #REQUIRED >
 
 <!ELEMENT student ( studentCourse+ ) >
-<!ATTLIST student externalId CDATA #REQUIRED >
-
-<!ELEMENT studentCourse EMPTY >
-<!ATTLIST studentCourse courseNumber CDATA #REQUIRED >
-<!ATTLIST studentCourse priority CDATA #REQUIRED >
-<!ATTLIST studentCourse subject CDATA #REQUIRED >
+<!ATTLIST student externalId NMTOKEN #REQUIRED >

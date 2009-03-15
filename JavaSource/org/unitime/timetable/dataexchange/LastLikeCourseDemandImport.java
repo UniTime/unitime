@@ -25,11 +25,14 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.dom4j.Element;
+import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.LastLikeCourseDemand;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.SubjectArea;
+import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 
 /**
@@ -42,27 +45,44 @@ public class LastLikeCourseDemandImport extends BaseImport {
 
 	private HashMap<String, SubjectArea> subjectAreas = new HashMap<String, SubjectArea>();
 	private HashMap<String, String> courseOfferings = new HashMap<String, String>();
+	private HashMap<String, String> externalIdCoursePermId = new HashMap<String, String>();
+	private HashMap<String, String> externalIdCourseNumber = new HashMap<String, String>();
+	private HashMap<String, SubjectArea> externalIdSubjectArea = new HashMap<String, SubjectArea>();
+	protected TimetableManager manager = null;
+	protected boolean trimLeadingZerosFromExternalId = false;
 	
 	public LastLikeCourseDemandImport() {
 		super();
 	}
 
 	public void loadXml(Element root) throws Exception {
+		String trimLeadingZeros =
+	        ApplicationProperties.getProperty("tmtbl.data.exchange.trim.externalId","false");
+		if (trimLeadingZeros.equals("true")){
+			trimLeadingZerosFromExternalId = true;
+		}
 		try {
+			String rootElementName = "lastLikeCourseDemand";
+	        if (!root.getName().equalsIgnoreCase(rootElementName)) {
+	        	throw new Exception("Given XML file is not a Course Offerings load file.");
+	        }
+
 	        String campus = root.attributeValue("campus");
 	        String year   = root.attributeValue("year");
 	        String term   = root.attributeValue("term");
-
+	        String created = getOptionalStringAttribute(root, "created");
 	        Session session = Session.getSessionUsingInitiativeYearTerm(campus, year, term);
 	        if(session == null) {
 	           	throw new Exception("No session found for the given campus, year, and term.");
 	        }
-
 	        loadSubjectAreas(session.getSessionId());
 	        loadCourseOfferings(session.getSessionId());
 
 			beginTransaction();
-            
+	        if (created != null) {
+				ChangeLog.addChange(getHibSession(), getManager(), session, session, created, ChangeLog.Source.DATA_IMPORT_LASTLIKE_DEMAND, ChangeLog.Operation.UPDATE, null, null);
+	        }
+           
             getHibSession().createQuery("delete LastLikeCourseDemand ll where ll.subjectArea.uniqueId in " +
                     "(select s.uniqueId from SubjectArea s where s.session.uniqueId=:sessionId)").
                     setLong("sessionId", session.getUniqueId()).executeUpdate();
@@ -72,7 +92,27 @@ public class LastLikeCourseDemandImport extends BaseImport {
 	        for ( Iterator it = root.elementIterator(); it.hasNext(); ) {
 	            Element element = (Element) it.next();
 	            String externalId = element.attributeValue("externalId");
+	            if (trimLeadingZerosFromExternalId){
+	            	try {
+	            		Integer num = new Integer(externalId);
+	            		externalId = num.toString();
+					} catch (Exception e) {
+						// do nothing
+					}
+	            }
 	            Student student = fetchStudent(externalId, session.getSessionId());
+	            if (student == null){
+	            	student = new Student();
+	            	student.setFirstName("Unknown");
+	            	student.setLastName("Student");
+	            	student.setExternalUniqueId(externalId);
+	            	student.setFreeTimeCategory(new Integer(0));
+	            	student.setSchedulePreference(new Integer(0));
+	            	student.setSession(session);
+	            	getHibSession().save(student);
+	            	getHibSession().flush();
+	            	getHibSession().refresh(student);
+	            }
 	            if(student == null) continue;
 	            loadCourses(element, student, session);
 	            flushIfNeeded(true);
@@ -113,15 +153,32 @@ public class LastLikeCourseDemandImport extends BaseImport {
 	private void loadCourses(Element studentEl, Student student, Session session) throws Exception {
 		for (Iterator it = studentEl.elementIterator(); it.hasNext();) {
 			Element el = (Element) it.next();
-			String subject = el.attributeValue("subject");
-			if(subject == null) {
-				throw new Exception("Subject is required.");
+			String subject = getOptionalStringAttribute(el, "subject");
+			String courseNumber = getOptionalStringAttribute(el, "courseNumber");
+			String externalIdStr = getOptionalStringAttribute(el, "externalId");
+			if (externalIdStr == null){
+				if (subject == null || courseNumber == null){
+					throw new Exception("Either a Subject and Course Number is required or an External Id is required.");
+				}
 			}
-			String courseNumber = el.attributeValue("courseNumber");
-			if(courseNumber == null) {
-				throw new Exception("Course Number is required.");
+			SubjectArea area = null;
+			String permId = null;
+			if (externalIdStr != null){
+				area = externalIdSubjectArea.get(externalIdStr);
+				courseNumber = externalIdCourseNumber.get(externalIdStr);
+				permId = externalIdCoursePermId.get(externalIdStr);
+				if(area == null) {
+					System.out.println("Course not found " + externalIdStr + " not found");
+					continue;
+				}
+			} else {
+				area = subjectAreas.get(subject);
+				permId = courseOfferings.get(courseNumber + area.getUniqueId().toString());
+				if(area == null) {
+					System.out.println("Subject area " + subject + " not found");
+					continue;
+				}
 			}
-			SubjectArea area = subjectAreas.get(subject);
 			if(area == null) {
 				System.out.println("Subject area " + subject + " not found");
 				continue;
@@ -129,7 +186,7 @@ public class LastLikeCourseDemandImport extends BaseImport {
 
 	        LastLikeCourseDemand demand = new LastLikeCourseDemand();
 
-			demand.setCoursePermId(courseOfferings.get(courseNumber + area.getUniqueId().toString()));
+			demand.setCoursePermId(permId);
 
 			demand.setCourseNbr(courseNumber);
 	        demand.setStudent(student);
@@ -156,9 +213,12 @@ public class LastLikeCourseDemandImport extends BaseImport {
 	private void loadCourseOfferings(Long sessionId) {
 		for (Iterator it = CourseOffering.findAll(sessionId).iterator(); it.hasNext();) {
 			CourseOffering offer = (CourseOffering) it.next();
-			if (offer.getPermId()!=null)
+			if (offer.getPermId()!=null){
 			    courseOfferings.put(offer.getCourseNbr() + offer.getSubjectArea().getUniqueId().toString(), offer.getPermId());
-
+			}
+		    externalIdSubjectArea.put(offer.getExternalUniqueId(), offer.getSubjectArea());
+		    externalIdCourseNumber.put(offer.getExternalUniqueId(), offer.getCourseNbr());
+		    externalIdCoursePermId.put(offer.getExternalUniqueId(), offer.getPermId());
 		}
 	}
 }

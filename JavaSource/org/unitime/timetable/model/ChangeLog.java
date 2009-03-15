@@ -137,7 +137,8 @@ public class ChangeLog extends BaseChangeLog implements Comparable {
         EXAM_INFO,
         EXAM_SOLVER,
         EVENT_EDIT,
-        DATA_IMPORT_EVENTS
+        DATA_IMPORT_EVENTS,
+        DATA_IMPORT_LASTLIKE_DEMAND
     }
     
     public static SimpleDateFormat sDF = new SimpleDateFormat("MM/dd/yy hh:mmaa");
