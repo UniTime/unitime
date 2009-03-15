@@ -24,7 +24,7 @@
 	       studentCourse ==> [1 ==> N entries]
 	                         Required:  subject, courseNumber, priority
 	-->
-<lastLikeCourseDemand campus="puWestLafayetteTrdtn" term="Fal" year="2007">
+<lastLikeCourseDemand campus="puWestLafayetteTrdtn" term="Fal" year="2007" created="2009/03/13">
  	<student externalId="9999111110">
   		<studentCourse subject="C E" courseNumber="699A" priority="1"/>
  	</student>
@@ -35,4 +35,10 @@
    		<studentCourse subject="VPB" courseNumber="225" priority="4"/>
    		<studentCourse subject="V M" courseNumber="227" priority="5"/>
  	</student>
+ 		<student externalId="1234567890">
+		<studentCourse externalId="PHYS69900" priority="1"/>
+	</student>
+	<student externalId="1234567891">
+		<studentCourse subject="BIOL" courseNumber="69900" externalId="BIOL69900" priority="1"/>
+	</student>
 </lastLikeCourseDemand>
