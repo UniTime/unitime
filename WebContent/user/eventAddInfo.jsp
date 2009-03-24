@@ -286,7 +286,7 @@
 		</TR>
 		<TR>
 			<TD colspan='2'>
-				<font color='red'>*</font> <i> Fields marked with a red asterix are mandatory.</i> 
+				<font color='red'>*</font> <i> Fields marked with a red asterisk are mandatory.</i> 
 			</TD>
 		</TR>
 		</logic:notEqual>
