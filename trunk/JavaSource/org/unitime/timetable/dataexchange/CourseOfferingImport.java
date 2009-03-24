@@ -81,59 +81,26 @@ public class CourseOfferingImport extends EventRelatedImports {
 	boolean useMeetsWithElement = false;
 	PreferenceLevel requiredPrefLevel = null;
 	MakeAssignmentsForClassEvents assignmentHelper = null;
-	
+	protected String rootElementName;
+	public CourseOfferingImport() {
+		super();
+		rootElementName = "offerings";
+	}
+
 	public void loadXml(Element rootElement) throws Exception {
-		String trimLeadingZeros =
-	        ApplicationProperties.getProperty("tmtbl.data.exchange.trim.externalId","false");
-		if (trimLeadingZeros.equals("true")){
-			trimLeadingZerosFromExternalId = true;
-		}
+		initializeTrimLeadingZeros(); 
 
 		int changeCount = 0;
 		try {
-			String rootElementName = "offerings";
 	        if (!rootElement.getName().equalsIgnoreCase(rootElementName)) {
 	        	throw new Exception("Given XML file is not a Course Offerings load file.");
 	        }
-	        String campus = getRequiredStringAttribute(rootElement, "campus", rootElementName);
-	        String year   = getRequiredStringAttribute(rootElement, "year", rootElementName);
-	        String term   = getRequiredStringAttribute(rootElement, "term", rootElementName);
-	        dateFormat = getOptionalStringAttribute(rootElement, "dateFormat");
-	        timeFormat = getOptionalStringAttribute(rootElement, "timeFormat");
-	        String created = getOptionalStringAttribute(rootElement, "created");
-	        if(timeFormat == null){
-	        	timeFormat = "HHmm";
-	        }
-
-	        Boolean useMeetsWith = getOptionalBooleanAttribute(rootElement, "useMeetsWith");
-	        if (useMeetsWith != null && useMeetsWith.booleanValue()){
-	        	useMeetsWithElement = true;
-	        }
 	        beginTransaction();
-	
-	        if (manager == null){
-	        	manager = findDefaultManager();
-	        }
-	        session = findSession(campus, year, term);
-	        if(session == null) {
-	           	throw new Exception("No session found for the given campus, year, and term.");
-	        }
-	
-	        loadItypes();
-	        loadSubjectAreas(session.getUniqueId());
-	        loadExistingInstructionalOfferings(session.getUniqueId());
-	        loadExistingCourseOfferings(session.getUniqueId());
-	        loadExistingClasses(session.getUniqueId());
-	        loadRequiredPrefLevel();
-	        loadMeetsWithDistributionType();
-	        assignmentHelper = new MakeAssignmentsForClassEvents(session, getHibSession());
-	        if (created != null) {
-		        addNote("Loading offerings XML file created on: " + created);
-				ChangeLog.addChange(getHibSession(), manager, session, session, created, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.UPDATE, null, null);
-				updateChangeList(true);
-	        }
+
+	        initializeLoad(rootElement, rootElementName);
 			String offeringElementName = "offering";
-	        for ( Iterator<?> it = rootElement.elementIterator(); it.hasNext(); ) {
+	    
+			for ( Iterator<?> it = rootElement.elementIterator(); it.hasNext(); ) {
 	            Element element = (Element) it.next();
 	            if(!element.getName().equalsIgnoreCase(offeringElementName)){
 	            	throw new Exception("Expecting to find an '" + offeringElementName + "' at this level, instead found '" + element.getName() + "'.");
@@ -324,6 +291,79 @@ public class CourseOfferingImport extends EventRelatedImports {
 		mailLoadResults();
 	}
 	
+	protected void initializeLoad(Element rootElement, String rootElementName) throws Exception{
+        initializeDateTimeFormats(rootElement);
+        initializeSessionData(rootElement, rootElementName);
+        initializeMeetsWith(rootElement);
+        initializeManager();
+        initializeAssignmentHelper();
+        loadSetupData();
+        logXmlFileCreateInformation(rootElement);		
+	}
+	
+	protected void logXmlFileCreateInformation(Element rootElement) {
+        String created = getOptionalStringAttribute(rootElement, "created");
+        if (created != null) {
+	        addNote("Loading offerings XML file created on: " + created);
+			ChangeLog.addChange(getHibSession(), manager, session, session, created, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.UPDATE, null, null);
+			updateChangeList(true);
+        }		
+	}
+
+	protected void initializeAssignmentHelper() {
+        assignmentHelper = new MakeAssignmentsForClassEvents(session, getHibSession());	
+	}
+
+	protected void initializeManager() {
+        if (manager == null){
+        	manager = findDefaultManager();
+        }		
+	}
+
+	protected void initializeMeetsWith(Element rootElement) {
+        Boolean useMeetsWith = getOptionalBooleanAttribute(rootElement, "useMeetsWith");
+        if (useMeetsWith != null && useMeetsWith.booleanValue()){
+        	useMeetsWithElement = true;
+        }		
+	}
+
+	protected void initializeSessionData(Element rootElement, String rootElementName) throws Exception {
+        String campus = getRequiredStringAttribute(rootElement, "campus", rootElementName);
+        String year   = getRequiredStringAttribute(rootElement, "year", rootElementName);
+        String term   = getRequiredStringAttribute(rootElement, "term", rootElementName);
+        session = findSession(campus, year, term);
+        if(session == null) {
+           	throw new Exception("No session found for the given campus, year, and term.");
+        }
+	}
+
+	protected void initializeDateTimeFormats(Element rootElement) {
+        dateFormat = getOptionalStringAttribute(rootElement, "dateFormat");
+        timeFormat = getOptionalStringAttribute(rootElement, "timeFormat");
+        if(timeFormat == null){
+        	timeFormat = "HHmm";
+        }		
+	}
+
+	protected void initializeTrimLeadingZeros() {
+		String trimLeadingZeros =
+	        ApplicationProperties.getProperty("tmtbl.data.exchange.trim.externalId","false");
+		if (trimLeadingZeros.equals("true")){
+			trimLeadingZerosFromExternalId = true;
+		}
+		
+	}
+
+	protected void loadSetupData() throws Exception{
+        loadItypes();
+        loadSubjectAreas(session.getUniqueId());
+        loadExistingInstructionalOfferings(session.getUniqueId());
+        loadExistingCourseOfferings(session.getUniqueId());
+        loadExistingClasses(session.getUniqueId());
+        loadRequiredPrefLevel();
+        loadMeetsWithDistributionType();
+
+	}
 	private boolean isSameCourseOffering(CourseOffering originalCourseOffering, CourseOffering newCourseOffering){
 		boolean isSame = false;
 		if(originalCourseOffering.getExternalUniqueId() != null 
@@ -556,7 +596,7 @@ public class CourseOfferingImport extends EventRelatedImports {
 			return(null);
 	}
 	
-	private ArrayList<CourseOffering> getCourses(Element element) throws Exception {
+	protected ArrayList<CourseOffering> getCourses(Element element) throws Exception {
 		ArrayList<CourseOffering> courses = new ArrayList<CourseOffering>();
 		String elementName = "course";
 		if(element.element(elementName) != null) {
