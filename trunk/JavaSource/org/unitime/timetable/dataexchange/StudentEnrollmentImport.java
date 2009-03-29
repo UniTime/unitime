@@ -123,6 +123,14 @@ public class StudentEnrollmentImport extends BaseImport {
                 rollbackTransaction();
             }
         }
+        if (session != null && "true".equals(ApplicationProperties.getProperty("tmtbl.data.import.studentEnrl.class.updateEnrollments","false"))){
+            try {
+                Class_.updateClassEnrollmentForSession(session, getHibSession());
+                CourseOffering.updateCourseOfferingEnrollmentForSession(session, getHibSession());
+            } catch (Exception e) {
+                fatal("Exception: " + e.getMessage(), e);
+            }      	
+        }
 	}
 	
 	private void elementClass(Element studentElement, Student student) throws Exception{

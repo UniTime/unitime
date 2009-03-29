@@ -13,7 +13,10 @@ import java.util.Queue;
 import java.util.TreeSet;
 
 import org.unitime.timetable.form.EventGridForm;
+import org.unitime.timetable.model.ClassEvent;
+import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Meeting;
+import org.unitime.timetable.model.dao.ClassEventDAO;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.PdfEventHandler;
 
@@ -140,6 +143,21 @@ public class PdfEventGridTable extends EventGridTable {
                                     table.addCell(!last,aboveBlank.contains(mcol),idx==0 && split,meeting.getEvent().getEventName(),meeting.getApprovedDate()!=null);
                                 } else if (line==2) {
                                     table.addCell(!last,aboveBlank.contains(mcol),idx==0 && split,meeting.getEvent().getEventTypeAbbv(), false);
+                                } else if (line==3) { 
+                                	if (meeting.getEvent().getEventType() == Event.sEventTypeClass){
+                                		StringBuilder sb = new StringBuilder();
+                                		ClassEvent ce = new ClassEventDAO().get(Long.valueOf(meeting.getEvent().getUniqueId()));
+                                	    sb.append(ce.getClazz().getEnrollment() == null?"0":ce.getClazz().getEnrollment().toString())
+                                	      .append(" enrl, ")
+                                	      .append(ce.getClazz().getClassLimit())
+                                	      .append(" limit");
+                                        table.addCell(!last,aboveBlank.contains(mcol),idx==0 && split,sb.toString(), false);
+                                	} else if (meeting.getEvent().getMinCapacity() != null){
+                                		StringBuilder sb = new StringBuilder();
+                                	    sb.append(meeting.getEvent().eventCapacityDisplayString())
+                                	      .append(" expect attend");
+                                        table.addCell(!last,aboveBlank.contains(mcol),idx==0 && split,sb.toString(), false);                                		
+                                	}
                                 } else {
                                     table.addCell(!last,aboveBlank.contains(mcol),idx==0 && split,null,false);
                                 }

@@ -31,6 +31,7 @@ import java.util.Vector;
 import org.hibernate.LazyInitializationException;
 import org.hibernate.Query;
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.timetable.model.base.BaseCourseOffering;
@@ -72,6 +73,7 @@ public class CourseOffering extends BaseCourseOffering {
 		org.unitime.timetable.model.InstructionalOffering instructionalOffering,
 		java.lang.Boolean isControl,
 		java.lang.Integer nbrExpectedStudents,
+		java.lang.Integer demand,
 		java.lang.String courseNbr) {
 
 		super (
@@ -80,6 +82,7 @@ public class CourseOffering extends BaseCourseOffering {
 			instructionalOffering,
 			isControl,
 			nbrExpectedStudents,
+			demand,
 			courseNbr);
 	}
 
@@ -505,4 +508,24 @@ public class CourseOffering extends BaseCourseOffering {
             uniqueResult();
     }
 
+    public static void updateCourseOfferingEnrollmentForSession(org.unitime.timetable.model.Session acadSession, org.hibernate.Session hibSession) throws Exception{
+        Transaction trans = null;
+        try {
+     	trans = hibSession.beginTransaction();
+         hibSession.createQuery("update CourseOffering  c " +
+         		"set c.enrollment=(select count(distinct d.student) " +
+                 " from StudentClassEnrollment d " +
+                 " where d.courseOffering.uniqueId =c.uniqueId) " + 
+                 " where c.uniqueId in (select crs.uniqueId " + 
+                 " from CourseOffering crs inner join crs.instructionalOffering as io " +
+                 " where io.session.uniqueId :sessionId").
+                 setLong("sessionId", acadSession.getUniqueId()).executeUpdate();
+         trans.commit();
+        } catch (Exception e) {
+     	   if (trans != null){
+     		   trans.rollback();
+     		   throw(e);
+     	   }
+        }
+     }
 }

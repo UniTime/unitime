@@ -28,6 +28,7 @@ public class EventDetailForm extends ActionForm {
 	private String iOp;
 	private String iEventName;
 	private String iEventType;
+	private String iEnrollment;
 	private String iMinCapacity;
 	private String iMaxCapacity;
 	private String iSponsoringOrgName;
@@ -89,6 +90,7 @@ public class EventDetailForm extends ActionForm {
 
 		iEvent = null;
 		iEventName = null;
+		iEnrollment = null;
 		iMinCapacity = null;
 		iMaxCapacity = null;
 		iSponsoringOrgName = null;
@@ -317,4 +319,12 @@ public class EventDetailForm extends ActionForm {
     	public void setPhone(String phone) {iPhone = phone;}
    	
     }
+
+	public String getEnrollment() {
+		return iEnrollment;
+	}
+
+	public void setEnrollment(String enrollment) {
+		iEnrollment = enrollment;
+	}
 }

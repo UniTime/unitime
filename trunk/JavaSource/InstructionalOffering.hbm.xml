@@ -66,6 +66,16 @@
 		/>
 		 		
 		<property
+			name="enrollment"
+			type="java.lang.Integer"
+			formula="(
+					select /*+ RULE */ sum( co.enrollment +
+						(CASE WHEN cox.enrollment is null THEN 0 ELSE cox.enrollment END))
+					from %SCHEMA%.course_offering co left outer join %SCHEMA%.course_offering cox on co.demand_offering_id=cox.uniqueid 
+					where co.instr_offr_id = uniqueid)"
+		/>
+		 		
+		<property
 			name="projectedDemand"
 			type="java.lang.Integer"
 			formula=" ( select /*+ RULE */ sum(co.proj_demand) from %SCHEMA%.course_offering co where co.instr_offr_id = uniqueid ) "

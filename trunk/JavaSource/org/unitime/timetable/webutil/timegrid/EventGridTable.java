@@ -18,8 +18,11 @@ import javax.servlet.jsp.JspWriter;
 import org.hibernate.Query;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.EventGridForm;
+import org.unitime.timetable.model.ClassEvent;
+import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
+import org.unitime.timetable.model.dao.ClassEventDAO;
 import org.unitime.timetable.model.dao.MeetingDAO;
 import org.unitime.timetable.util.Constants;
 
@@ -105,6 +108,13 @@ public class EventGridTable {
                             out.println(meeting.getEvent().getEventName());
                             if (meeting.getApprovedDate()!=null) out.println("</b>");
                             if (mc.getLength()>=3) out.println("<br><i>"+meeting.getEvent().getEventTypeAbbv()+"</i>");
+                            if (mc.getLength()>= 4 && meeting.getEvent().getEventType() == Event.sEventTypeClass){
+                        		ClassEvent ce = new ClassEventDAO().get(Long.valueOf(meeting.getEvent().getUniqueId()));
+                            	out.println("<br><i>" + (ce.getClazz().getEnrollment() == null?"0":ce.getClazz().getEnrollment().toString()) +" enrl, " + ce.getClazz().getClassLimit()+ " limit</i>");
+                            }
+                            if (mc.getLength()>= 4 && meeting.getEvent().getEventType() != Event.sEventTypeClass && meeting.getEvent().getMinCapacity() != null){
+                            	out.println("<br><i>" + meeting.getEvent().eventCapacityDisplayString()+ " expect attend</i>");
+                            }
                             out.println("</a></td>");
                             idx++;
                         }
@@ -202,6 +212,13 @@ public class EventGridTable {
                         out.println(meeting.getEvent().getEventName());
                         if (meeting.getApprovedDate()!=null) out.println("</b>");
                         if (mc.getLength()>=3) out.println("<br><i>"+meeting.getEvent().getEventTypeAbbv()+"</i>");
+                        if (mc.getLength()>= 4 && meeting.getEvent().getEventType() == Event.sEventTypeClass){
+                    		ClassEvent ce = new ClassEventDAO().get(Long.valueOf(meeting.getEvent().getUniqueId()));
+                        	out.println("<br><i>" + (ce.getClazz().getEnrollment() == null?"0":ce.getClazz().getEnrollment().toString()) +" enrl, " + ce.getClazz().getClassLimit()+ " limit</i>");
+                        }
+                        if (mc.getLength()>= 4 && meeting.getEvent().getEventType() != Event.sEventTypeClass && meeting.getEvent().getMinCapacity() != null){
+                        	out.println("<br><i>" + meeting.getEvent().eventCapacityDisplayString()+ " expect attend</i>");
+                        }
                         out.println("</a></td>");
                         idx++;
                     }

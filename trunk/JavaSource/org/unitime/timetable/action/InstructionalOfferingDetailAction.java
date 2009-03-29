@@ -317,6 +317,7 @@ public class InstructionalOfferingDetailAction extends Action {
         frm.setInstrOfferingNameNoTitle(io.getCourseName());
         frm.setCtrlCrsOfferingId(io.getControllingCourseOffering().getUniqueId());
         frm.setDemand(io.getDemand());
+        frm.setEnrollment(io.getEnrollment());
         frm.setProjectedDemand(io.getProjectedDemand());
         frm.setLimit(io.getLimit());
         frm.setUnlimited(Boolean.FALSE);

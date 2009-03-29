@@ -89,6 +89,7 @@ public class ClassEditForm extends PreferencesForm {
     private Float roomRatio;
     private Integer minRoomLimit;
     private Boolean unlimitedEnroll;
+    private Integer enrollment;
     //TODO Reservations Bypass - to be removed later
     private Boolean isCrosslisted;
     //End Bypass
@@ -257,6 +258,7 @@ public class ClassEditForm extends PreferencesForm {
         instructors = DynamicList.getInstance(new ArrayList(), factoryInstructors);
         instrPctShare= DynamicList.getInstance(new ArrayList(), factoryInstructors);
         assignments = null;
+        enrollment = null;
         
         super.reset(mapping, request);
     }
@@ -686,5 +688,13 @@ public class ClassEditForm extends PreferencesForm {
     
     public String getCourseName() { return courseName; }
     public void setCourseName(String courseName) { this.courseName=courseName; }
+
+	public Integer getEnrollment() {
+		return enrollment;
+	}
+
+	public void setEnrollment(Integer enrollment) {
+		this.enrollment = enrollment;
+	}
     
 }

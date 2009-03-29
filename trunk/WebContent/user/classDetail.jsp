@@ -159,6 +159,12 @@
 				<TD>
 			</TR>
 		</logic:notEmpty>
+		<TR>
+			<TD>Enrollment:</TD>
+			<TD>
+				<bean:write name="<%=frmName%>" property="enrollment" />
+			<TD>
+		</TR>
 		
 		<logic:notEqual name="<%=frmName%>" property="nbrRooms" value="0">
 			<% if (frm.getExpectedCapacity().intValue()==frm.getMaxExpectedCapacity().intValue()) { %>

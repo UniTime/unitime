@@ -2379,5 +2379,37 @@
 			alter table %SCHEMA%.class_ modify class_suffix varchar(10)
 		</mysql>
 	</update>
+	<update version="44" date="24-Mar-2009" comment="add enrollment columns">
+	 	<plsql>
+			alter table %SCHEMA%.class_ add enrollment number(4)
+		</plsql>
+		<mysql>
+			alter table %SCHEMA%.class_ add enrollment int(4)
+		</mysql>
+		<sql>
+			update %SCHEMA%.class_ c
+			set c.enrollment = (select count(distinct sce.student_id) 
+        	from %SCHEMA%.student_class_enrl sce
+        	where sce.class_id = c.uniqueid)
+		</sql>
+	  	<plsql>
+			alter table %SCHEMA%.event_note modify meetings varchar2(2000)
+		</plsql>
+		<mysql>
+			alter table %SCHEMA%.event_note modify meetings varchar(2000)
+		</mysql>
+		<plsql>
+			alter table %SCHEMA%.course_offering add enrollment number(10)
+		</plsql>
+		<mysql>
+			alter table %SCHEMA%.course_offering add enrollment int(10)
+		</mysql>
+		<sql>
+			update %SCHEMA%.course_offering co
+			set co.enrollment = (select count(distinct sce.student_id) 
+        	from %SCHEMA%.student_class_enrl sce
+        	where sce.course_offering_id = co.uniqueid)
+		</sql>
+	</update>
 	
 </dbupdate>

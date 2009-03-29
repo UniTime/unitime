@@ -344,6 +344,13 @@ public class EventDetailAction extends Action {
 				if (event!=null) {
 					myForm.setEventName(event.getEventName()==null?"":event.getEventName());
 					myForm.setEventType(event.getEventTypeLabel());
+					if ("Class Event".equals(myForm.getEventType())){
+						ClassEvent ce = (ClassEvent) event;
+						if (ce.getClazz().getEnrollment() != null)
+							myForm.setEnrollment(ce.getClazz().getEnrollment().toString());
+						else
+							myForm.setEnrollment("0");
+					}
 					myForm.setMinCapacity(event.getMinCapacity()==null?"":event.getMinCapacity().toString());
 					myForm.setMaxCapacity(event.getMaxCapacity()==null?"":event.getMaxCapacity().toString());
 					myForm.setAdditionalEmails(event.getEmail());

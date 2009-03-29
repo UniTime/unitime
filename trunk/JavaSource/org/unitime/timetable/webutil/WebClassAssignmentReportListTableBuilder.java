@@ -119,7 +119,7 @@ public class WebClassAssignmentReportListTableBuilder extends WebClassListTableB
 					e.printStackTrace();
 				}
             	ct = 0;
-		        table = this.initTable(outputStream);
+		        table = this.initTable(outputStream, (Session.getCurrentAcadSession(user) == null?null:Session.getCurrentAcadSession(user).getUniqueId()));
 		    }
 		        
             
