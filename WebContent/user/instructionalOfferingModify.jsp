@@ -115,6 +115,7 @@
 	<html:hidden property="origSubparts"/>
 	<html:hidden property="displayMaxLimit"/>
 	<html:hidden property="displayOptionForMaxLimit"/>
+	<html:hidden property="displayEnrollment"/>
 	<INPUT type="hidden" name="hdnOp" value = "">
 	<INPUT type="hidden" name="id" value = "">
 	<INPUT type="hidden" name="click" value = "">
@@ -226,11 +227,15 @@
 		<TR>
 			<TD colspan="2" align="left">
 				<TABLE align="left" border="0" cellspacing="0" cellpadding="1">
-					<TR><logic:equal name="<%=frmName%>" property="displayOptionForMaxLimit" value="true" >
+					<TR>
+						<logic:equal name="<%=frmName%>" property="displayOptionForMaxLimit" value="true" >
 						<TD align="center" valign="bottom" rowSpan="2" colspan="2"><i><html:checkbox name="<%=frmName%>" property="displayMaxLimit" onclick="doClick('multipleLimits', 0);"/> <small>Allow variable limits</small></i></TD>
 						</logic:equal>
 						<logic:equal name="<%=frmName%>" property="displayOptionForMaxLimit" value="false" >
 						<TD align="center" valign="bottom" rowSpan="2" colspan="2"> &nbsp;</TD>
+						</logic:equal>
+						<logic:equal name="<%=frmName%>" property="displayEnrollment" value="true" >
+						<TD align="center" valign="bottom" rowSpan="2"><I>Enroll</I></TD>
 						</logic:equal>
 						<logic:equal name="<%=frmName%>" property="displayMaxLimit" value="true" >
 						<TD align="center" valign="bottom" colSpan="2"><I>Limit</I></TD>
@@ -238,7 +243,7 @@
 						<logic:equal name="<%=frmName%>" property="displayMaxLimit" value="false" >
 						<TD align="center" valign="bottom" colSpan="2" rowspan="2"><I>Limit</I></TD>
 						</logic:equal>
-						<TD align="center" valign="bottom" rowSpan="2"><I>Room Ratio</I></TD>
+						<TD align="center" valign="bottom" rowSpan="2"><I>Rm Ratio</I></TD>
 						<TD align="center" valign="bottom" rowSpan="2"><I>Number of<br>Rooms</I></TD>
 						<TD align="center" valign="bottom" rowSpan="2"><I>Managing Department</I></TD>
 						<TD align="center" valign="bottom" rowSpan="2"><I>Date Pattern</I></TD>
@@ -258,7 +263,8 @@
 					<logic:iterate name="<%=frmName%>" property="classIds" id="c" indexId="ctr">
 					<TR onmouseover="this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='default';" onmouseout="this.style.backgroundColor='transparent';">
 						<TD nowrap><logic:equal name="<%=frmName%>" property='<%= "classHasErrors[" + ctr + "]" %>' value="true" ><IMG src="images/Error16.jpg"></logic:equal><logic:equal name="<%=frmName%>" property='<%= "classHasErrors[" + ctr + "]" %>' value="false" >&nbsp;</logic:equal></TD>
-						<TD nowrap><html:hidden property='<%= "classIds[" + ctr + "]" %>'/><html:hidden property='<%= "subpartIds[" + ctr + "]" %>'/><html:hidden property='<%= "itypes[" + ctr + "]" %>'/><html:hidden property='<%= "mustHaveChildClasses[" + ctr + "]" %>'/><html:hidden property='<%= "parentClassIds[" + ctr + "]" %>'/><html:hidden property='<%= "readOnlyClasses[" + ctr + "]" %>'/><html:hidden property='<%= "classCanMoveUp[" + ctr + "]" %>'/><html:hidden property='<%= "classCanMoveDown[" + ctr + "]" %>'/><html:hidden property='<%= "subtotalIndexes[" + ctr + "]" %>'/><html:hidden property='<%= "classHasErrors[" + ctr + "]" %>'/><html:hidden property='<%= "classLabels[" + ctr + "]" %>'/><html:hidden property='<%= "classLabelIndents[" + ctr + "]" %>'/><%=frm.getClassLabelIndents().get(ctr.intValue()).toString()%><bean:write name="<%=frmName%>" property='<%= "classLabels[" + ctr + "]" %>'/> &nbsp;</TD>
+						<TD nowrap><html:hidden property='<%= "classIds[" + ctr + "]" %>'/><html:hidden property='<%= "subpartIds[" + ctr + "]" %>'/><html:hidden property='<%= "itypes[" + ctr + "]" %>'/><html:hidden property='<%= "mustHaveChildClasses[" + ctr + "]" %>'/><html:hidden property='<%= "parentClassIds[" + ctr + "]" %>'/><html:hidden property='<%= "readOnlyClasses[" + ctr + "]" %>'/><html:hidden property='<%= "enrollments[" + ctr + "]" %>'/><html:hidden property='<%= "classCanMoveUp[" + ctr + "]" %>'/><html:hidden property='<%= "classCanMoveDown[" + ctr + "]" %>'/><html:hidden property='<%= "subtotalIndexes[" + ctr + "]" %>'/><html:hidden property='<%= "classHasErrors[" + ctr + "]" %>'/><html:hidden property='<%= "classLabels[" + ctr + "]" %>'/><html:hidden property='<%= "classLabelIndents[" + ctr + "]" %>'/><%=frm.getClassLabelIndents().get(ctr.intValue()).toString()%><bean:write name="<%=frmName%>" property='<%= "classLabels[" + ctr + "]" %>'/> &nbsp;</TD>
+						<logic:equal name="<%=frmName%>" property="displayEnrollment" value="true" ><TD align="right" nowrap><bean:write name="<%=frmName%>" property='<%= "enrollments[" + ctr + "]" %>'/></TD></logic:equal>
 						<TD align="left" nowrap><logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" ><html:hidden property='<%= "origMinLimit[" + ctr + "]" %>' value="<%= (String)frm.getMinClassLimits().get(ctr) %>"/><html:text name="<%=frmName%>" property='<%= "minClassLimits[" + ctr + "]" %>' tabindex="<%=java.lang.Integer.toString(2000 + ctr.intValue())%>" maxlength="5" size="5" onchange="<%= \"updateSubpartTotal(\" + ctr + \");document.getElementsByName('maxClassLimits[\" + ctr + \"]')[0].value=this.value\"%>"/></logic:equal><logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="true" ><html:hidden property='<%= "minClassLimits[" + ctr + "]" %>'/><bean:write name="<%=frmName%>" property='<%= "minClassLimits[" + ctr + "]" %>'/></logic:equal></TD>
 						<logic:equal name="<%=frmName%>" property="displayMaxLimit" value="true" >
 						<TD align="left" nowrap><logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" ><html:text name="<%=frmName%>" property='<%= "maxClassLimits[" + ctr + "]" %>' tabindex="<%=java.lang.Integer.toString(4000 + ctr.intValue())%>" maxlength="5" size="5"/></logic:equal><logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="true" ><html:hidden property='<%= "maxClassLimits[" + ctr + "]" %>'/><bean:write name="<%=frmName%>" property='<%= "maxClassLimits[" + ctr + "]" %>'/></logic:equal></TD>

@@ -1,6 +1,6 @@
 /*
  * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * Copyright (C) 2008-2009, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -39,6 +39,7 @@ public abstract class BaseCourseOffering  implements Serializable {
 	public static String PROP_PROJECTED_DEMAND = "projectedDemand";
 	public static String PROP_NBR_EXPECTED_STUDENTS = "nbrExpectedStudents";
 	public static String PROP_DEMAND = "demand";
+	public static String PROP_ENROLLMENT = "enrollment";
 	public static String PROP_SUBJECT_AREA_ABBV = "subjectAreaAbbv";
 	public static String PROP_COURSE_NBR = "courseNbr";
 	public static String PROP_TITLE = "title";
@@ -69,6 +70,7 @@ public abstract class BaseCourseOffering  implements Serializable {
 		org.unitime.timetable.model.InstructionalOffering instructionalOffering,
 		java.lang.Boolean isControl,
 		java.lang.Integer nbrExpectedStudents,
+		java.lang.Integer demand,
 		java.lang.String courseNbr) {
 
 		this.setUniqueId(uniqueId);
@@ -76,6 +78,7 @@ public abstract class BaseCourseOffering  implements Serializable {
 		this.setInstructionalOffering(instructionalOffering);
 		this.setIsControl(isControl);
 		this.setNbrExpectedStudents(nbrExpectedStudents);
+		this.setDemand(demand);
 		this.setCourseNbr(courseNbr);
 		initialize();
 	}
@@ -95,6 +98,7 @@ public abstract class BaseCourseOffering  implements Serializable {
 	private java.lang.Integer projectedDemand;
 	private java.lang.Integer nbrExpectedStudents;
 	private java.lang.Integer demand;
+	private java.lang.Integer enrollment;
 	private java.lang.String subjectAreaAbbv;
 	private java.lang.String courseNbr;
 	private java.lang.String title;
@@ -205,18 +209,35 @@ public abstract class BaseCourseOffering  implements Serializable {
 
 
 	/**
-	 * Return the value associated with the column: demand
+	 * Return the value associated with the column: LASTLIKE_DEMAND
 	 */
 	public java.lang.Integer getDemand () {
 		return demand;
 	}
 
 	/**
-	 * Set the value related to the column: demand
-	 * @param demand the demand value
+	 * Set the value related to the column: LASTLIKE_DEMAND
+	 * @param demand the LASTLIKE_DEMAND value
 	 */
 	public void setDemand (java.lang.Integer demand) {
 		this.demand = demand;
+	}
+
+
+
+	/**
+	 * Return the value associated with the column: enrollment
+	 */
+	public java.lang.Integer getEnrollment () {
+		return enrollment;
+	}
+
+	/**
+	 * Set the value related to the column: enrollment
+	 * @param enrollment the enrollment value
+	 */
+	public void setEnrollment (java.lang.Integer enrollment) {
+		this.enrollment = enrollment;
 	}
 
 

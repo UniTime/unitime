@@ -1,7 +1,4 @@
 <?xml version='1.0' encoding='utf-8'?>
-<!DOCTYPE hibernate-configuration
-    PUBLIC "-//Hibernate/Hibernate Configuration DTD//EN"
-    "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd" >
 
 <!-- 
  * UniTime 3.1 (University Timetabling Application)
@@ -26,6 +23,7 @@
 <session-factory>
 
 	<!-- MySQL Configuration -->
+	<!-- 
 	<property name="connection.driver_class">com.mysql.jdbc.Driver</property>
 	<property name="connection.url">jdbc:mysql://localhost:3306/timetable</property>
 	<property name="connection.username">timetable</property>
@@ -33,17 +31,18 @@
 	<property name="connection.autocommit">true</property>
 	<property name="dialect">org.hibernate.dialect.MySQLInnoDBDialect</property>
 	<property name="tmtbl.uniqueid.generator">org.hibernate.id.TableHiLoGenerator</property>
+	-->
 	<!-- End of MySQL Configuration -->
 	
 	<!-- Oracle Configuration -->
-	<!-- 
 	<property name="connection.driver_class">oracle.jdbc.driver.OracleDriver</property>
-	<property name="connection.url">jdbc:oracle:thin:@localhost:1521:xe</property>
-	<property name="connection.username">timetable</property>
-	<property name="connection.password">unitime</property>
+ 	<!-- 
+ 	<property name="connection.url">jdbc:oracle:thin:@localhost:1521:xe</property> 
+	-->
+	 <property name="connection.username">purdue_exam</property>
+	<property name="connection.password">data4smas</property>
 	<property name="dialect">org.hibernate.dialect.OracleDialect</property>
 	<property name="tmtbl.uniqueid.generator">org.hibernate.id.SequenceGenerator</property>
-	-->
 	<!-- End of Oracle Configuration -->
 	
 	<!-- Connect database using Apache DBCP -->
@@ -60,7 +59,7 @@
 	<!-- If true, class LobCleanUpInterceptor will print some audit information -->
 	<property name="tmtbl.hibernate.audit">false</property>
 
-	<property name="default_schema">timetable</property>
+	<property name="default_schema">purdue_exam</property>
 
 	<property name="show_sql">false</property>
 

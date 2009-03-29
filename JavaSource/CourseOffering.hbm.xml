@@ -79,6 +79,14 @@
 	    />
 
 		<property
+		    name="enrollment"
+		    column="enrollment"
+		    type="java.lang.Integer"
+			length="10"
+			not-null="false"
+	    />
+
+		<property
 		    name="subjectAreaAbbv"
 		    type="java.lang.String"
 		    formula=" ( select sa.SUBJECT_AREA_ABBREVIATION from %SCHEMA%.subject_area sa where sa.uniqueid = subject_area_id ) "

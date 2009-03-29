@@ -42,7 +42,11 @@ import org.unitime.timetable.util.DynamicListObjectFactory;
  */
 public class InstructionalOfferingDetailForm extends ActionForm {
 
-    // --------------------------------------------------------- Instance Variables
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -5161466018324037153L;
+	// --------------------------------------------------------- Instance Variables
 
     private String op;   
     private Long subjectAreaId;
@@ -50,6 +54,7 @@ public class InstructionalOfferingDetailForm extends ActionForm {
     private Long instrOfferingId;
     private Long ctrlCrsOfferingId;
     private Integer projectedDemand;
+    private Integer enrollment;
     private Integer demand;
     private Integer limit;
     private Boolean unlimited;
@@ -109,6 +114,7 @@ public class InstructionalOfferingDetailForm extends ActionForm {
         crsOfferingId = null;
         instrOfferingId = null;
         ctrlCrsOfferingId = null;
+        enrollment = null;
         demand = null;
         projectedDemand = null;
         limit = null;
@@ -319,5 +325,13 @@ public class InstructionalOfferingDetailForm extends ActionForm {
 
 	public void setCreditText(String creditText) {
 		this.creditText = creditText;
+	}
+
+	public Integer getEnrollment() {
+		return enrollment;
+	}
+
+	public void setEnrollment(Integer enrollment) {
+		this.enrollment = enrollment;
 	}
 }

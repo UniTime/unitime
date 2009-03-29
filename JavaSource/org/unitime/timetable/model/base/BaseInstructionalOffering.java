@@ -1,6 +1,6 @@
 /*
  * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * Copyright (C) 2008-2009, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -37,6 +37,7 @@ public abstract class BaseInstructionalOffering  implements Serializable {
 	public static String PROP_INSTR_OFFERING_PERM_ID = "instrOfferingPermId";
 	public static String PROP_NOT_OFFERED = "notOffered";
 	public static String PROP_DEMAND = "demand";
+	public static String PROP_ENROLLMENT = "enrollment";
 	public static String PROP_PROJECTED_DEMAND = "projectedDemand";
 	public static String PROP_CTRL_COURSE_ID = "ctrlCourseId";
 	public static String PROP_LIMIT = "limit";
@@ -89,6 +90,7 @@ public abstract class BaseInstructionalOffering  implements Serializable {
 	private java.lang.Integer instrOfferingPermId;
 	private java.lang.Boolean notOffered;
 	private java.lang.Integer demand;
+	private java.lang.Integer enrollment;
 	private java.lang.Integer projectedDemand;
 	private java.lang.Integer ctrlCourseId;
 	private java.lang.Integer limit;
@@ -181,6 +183,23 @@ public abstract class BaseInstructionalOffering  implements Serializable {
 	 */
 	public void setDemand (java.lang.Integer demand) {
 		this.demand = demand;
+	}
+
+
+
+	/**
+	 * Return the value associated with the column: enrollment
+	 */
+	public java.lang.Integer getEnrollment () {
+		return enrollment;
+	}
+
+	/**
+	 * Set the value related to the column: enrollment
+	 * @param enrollment the enrollment value
+	 */
+	public void setEnrollment (java.lang.Integer enrollment) {
+		this.enrollment = enrollment;
 	}
 
 

@@ -78,6 +78,17 @@
 			<TD nowrap> Event Type:&nbsp;</TD>
 			<TD> <bean:write name="eventDetailForm" property="eventType"/>
 		</TR>
+		<logic:notEmpty name="eventDetailForm" property="enrollment">
+		<TR>
+			<logic:equal name="eventDetailForm" property="eventType" value="Class Event">
+				<TD nowrap>Enrollment:&nbsp;</TD>
+				<TD width='100%'>
+					<bean:define name="eventDetailForm" property="enrollment" id="enrl"/>
+					<bean:write name="eventDetailForm" property="enrollment"/>
+ 				</TD>
+			</logic:equal>
+		</TR>
+		</logic:notEmpty>
 		<logic:notEmpty name="eventDetailForm" property="minCapacity">
 		<TR>
 			<logic:equal name="eventDetailForm" property="eventType" value="Special Event">

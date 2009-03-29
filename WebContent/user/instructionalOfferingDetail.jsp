@@ -276,6 +276,13 @@
 		</TR>
 		
 		<TR>
+			<TD>Enrollment: </TD>
+			<TD>
+				<bean:write name="instructionalOfferingDetailForm" property="enrollment" /> 
+			</TD>
+		</TR>
+
+		<TR>
 			<TD>Last Enrollment: </TD>
 			<TD>
 				<logic:equal name="instructionalOfferingDetailForm" property="demand" value="0">

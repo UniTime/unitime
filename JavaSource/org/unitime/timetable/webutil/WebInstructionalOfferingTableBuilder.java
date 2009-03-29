@@ -62,6 +62,7 @@ import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Settings;
+import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.comparators.ClassComparator;
@@ -96,7 +97,7 @@ public class WebInstructionalOfferingTableBuilder {
     //available columns for table
     protected static String LABEL = "&nbsp;";
     public static final String DIV_SEC = "Tentative Div-Sec";
-    public static final String DEMAND = "Last Enrollment";
+    public static final String DEMAND = "Enrollment";
     public static final String PROJECTED_DEMAND = "Projected Demand";
     public static final String LIMIT = "Limit";
     public static final String ROOM_RATIO = "Room Ratio";
@@ -405,7 +406,7 @@ public class WebInstructionalOfferingTableBuilder {
     } 
     //NOTE: if changing column order column order must be changed in
     //		buildTableHeader, addInstrOffrRowsToTable, buildClassOrSubpartRow, and buildConfigRow
-    protected void buildTableHeader(TableStream table){  
+    protected void buildTableHeader(TableStream table, Long sessionId){  
     	TableRow row = new TableRow();
     	TableRow row2 = new TableRow();
     	TableHeaderCell cell = null;
@@ -420,7 +421,11 @@ public class WebInstructionalOfferingTableBuilder {
     		row.addContent(cell);
     	}   	
     	if (isShowDemand()){
-    		cell = this.headerCell(DEMAND, 2, 1);
+    		if (StudentClassEnrollment.sessionHasEnrollments(sessionId)){
+        		cell = this.headerCell(DEMAND, 2, 1);
+    		} else {
+        		cell = this.headerCell(("Last " + DEMAND), 2, 1);    			
+    		}
     		cell.addContent("<hr>");
     		row.addContent(cell);
     	}
@@ -695,6 +700,19 @@ public class WebInstructionalOfferingTableBuilder {
     }
 
     private TableCell buildPrefGroupDemand(PreferenceGroup prefGroup, boolean isEditable){
+    	if (prefGroup instanceof Class_) {
+			Class_ c = (Class_) prefGroup;
+			if (StudentClassEnrollment.sessionHasEnrollments(c.getSessionId())){
+				TableCell tc = null;
+				if (c.getEnrollment() != null){
+					tc = this.initNormalCell(c.getEnrollment().toString(), isEditable);
+				} else {
+					tc = this.initNormalCell("0", isEditable);				
+				}
+				tc.setAlign("right");
+				return(tc);
+			}
+		}
     	return(this.initNormalCell("&nbsp;", isEditable));
     }
     
@@ -1487,9 +1505,14 @@ public class WebInstructionalOfferingTableBuilder {
     		row.addContent(initNormalCell("", isEditable));
 		}
     	if (isShowDemand()){
-    		String demand = (io.getDemand() != null?io.getDemand().toString(): "0");
-    		if (co.isIsControl().booleanValue() && !io.isNotOffered().booleanValue() && (io.getDemand()==null || io.getDemand().intValue()==0)) {
-    			demand = "<span style='font-weight:bold;color:red;'>0</span>";
+    		String demand = "0";
+    		if (StudentClassEnrollment.sessionHasEnrollments(io.getSessionId())){
+    			demand = (io.getEnrollment() != null?io.getEnrollment().toString(): "0");		
+    		} else {
+	    		demand = (io.getDemand() != null?io.getDemand().toString(): "0");
+	    		if (co.isIsControl().booleanValue() && !io.isNotOffered().booleanValue() && (io.getDemand()==null || io.getDemand().intValue()==0)) {
+	    			demand = "<span style='font-weight:bold;color:red;'>0</span>";
+	    		}
     		}
 	        cell = initNormalCell(demand, co.isIsControl().booleanValue());
 	        cell.setAlign("right");
@@ -1607,14 +1630,14 @@ public class WebInstructionalOfferingTableBuilder {
         }
     }
     
-    protected TableStream initTable(JspWriter outputStream){
+    protected TableStream initTable(JspWriter outputStream, Long sessionId){
     	TableStream table = new TableStream(outputStream);
         table.setWidth("90%");
         table.setBorder(0);
         table.setCellSpacing(0);
         table.setCellPadding(3);
         table.tableDefComplete();
-        this.buildTableHeader(table);
+        this.buildTableHeader(table, sessionId);
         return(table);
     }
     
@@ -1768,7 +1791,7 @@ public class WebInstructionalOfferingTableBuilder {
                   
             if (hasOfferedCourses){
                 it = offeredOfferings.iterator();
-                TableStream offeredTable = this.initTable(outputStream);
+                TableStream offeredTable = this.initTable(outputStream, (Session.getCurrentAcadSession(user) == null?null:Session.getCurrentAcadSession(user).getUniqueId()));
                 
                 while (it.hasNext()){
                     io = (InstructionalOffering) it.next();
@@ -1800,7 +1823,7 @@ public class WebInstructionalOfferingTableBuilder {
             
             if (hasNotOfferedCourses){
                 it = notOfferedOfferings.iterator();
-                TableStream notOfferedTable = this.initTable(outputStream);
+                TableStream notOfferedTable = this.initTable(outputStream, (Session.getCurrentAcadSession(user) == null?null:Session.getCurrentAcadSession(user).getUniqueId()));
                 while (it.hasNext()){
                     io = (InstructionalOffering) it.next();
                     offeringIds.add(io.getUniqueId());

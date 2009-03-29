@@ -37,6 +37,7 @@ import org.apache.struts.util.MessageResources;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.SchedulingSubpart;
+import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 import org.unitime.timetable.util.DynamicList;
 import org.unitime.timetable.util.DynamicListObjectFactory;
@@ -59,6 +60,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 	private String origSubparts;
 	private Boolean displayMaxLimit;
 	private Boolean displayOptionForMaxLimit;
+	private Boolean displayEnrollment;
 	private String displayAllClassesInSchedBook;
 	private String displayAllClassesInstructors;
 	
@@ -70,6 +72,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 	private List readOnlyClasses;
 	private List classLabels;
 	private List classLabelIndents;
+	private List enrollments;
 	private List minClassLimits;
 	private List maxClassLimits;
 	private List roomRatios;
@@ -101,6 +104,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 	private static String READ_ONLY_CLASSES_TOKEN = "readOnlyClasses";
 	private static String CLASS_LABELS_TOKEN = "classLabels";
 	private static String CLASS_LABEL_INDENTS_TOKEN = "classLabelIndents";
+	private static String ENROLLMENTS_TOKEN = "enrollments";
 	private static String MIN_CLASS_LIMITS_TOKEN = "minClassLimits";
 	private static String MAX_CLASS_LIMITS_TOKEN = "maxClassLimits";
 	private static String ROOM_RATIOS_TOKEN = "roomRatios";
@@ -434,6 +438,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     	origSubparts = "";
     	displayMaxLimit = new Boolean(false);
     	displayOptionForMaxLimit = new Boolean(false);
+    	displayEnrollment = new Boolean(false);
     	displayAllClassesInSchedBook = "";
     	displayAllClassesInstructors = "";
     	resetLists();
@@ -449,6 +454,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
        	classHasErrors = DynamicList.getInstance(new ArrayList(), factoryClasses);
        	classLabels = DynamicList.getInstance(new ArrayList(), factoryClasses);
        	classLabelIndents = DynamicList.getInstance(new ArrayList(), factoryClasses);
+       	enrollments = DynamicList.getInstance(new ArrayList(), factoryClasses);
        	minClassLimits = DynamicList.getInstance(new ArrayList(), factoryClasses);
     	maxClassLimits = DynamicList.getInstance(new ArrayList(), factoryClasses);
     	roomRatios = DynamicList.getInstance(new ArrayList(), factoryClasses);
@@ -811,8 +817,10 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		Iterator it14 = this.displayInScheduleBooks.listIterator();
 		Iterator it15 = this.itypes.listIterator();
 		Iterator it16 = this.mustHaveChildClasses.listIterator();
+		Iterator it17 = this.enrollments.listIterator();
 		boolean canRemoveFromDisplayInstructors;
 		boolean canRemoveFromDisplayInScheduleBooks;
+		boolean canRemoveFromEnrollment;
 		
 		for (; it1.hasNext(); ){
 			String cls1 = it1.next().toString();
@@ -841,6 +849,12 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 			}
 			it15.next();
 			it16.next();
+			if (it17.hasNext()){
+				it17.next();
+				canRemoveFromEnrollment = true;
+			} else {
+				canRemoveFromEnrollment = false;
+			}
 			if (cls1.equals(classId)){				
 				it1.remove();
 				it2.remove();
@@ -860,6 +874,9 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 					it14.remove();
 				it15.remove();
 				it16.remove();
+				if (canRemoveFromEnrollment){
+					it17.remove();
+				}
 			} else if (pCls1.equals(classId)){
 				classesToDel.add(cls1);
 			}
@@ -883,7 +900,8 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 			this.mustHaveChildClasses.add(new Boolean(false));			
 		}
 		this.readOnlyClasses.add(isReadOnly.toString());
-		this.classHasErrors.add(new Boolean(false).toString());		
+		this.classHasErrors.add(new Boolean(false).toString());	
+		this.enrollments.add(StudentClassEnrollment.sessionHasEnrollments(cls.getSessionId())?(cls.getEnrollment()==null?"0":cls.getEnrollment().toString()):"");
 		this.minClassLimits.add(cls.getExpectedCapacity().toString());
 		this.numberOfRooms.add(cls.getNbrRooms().toString());
 		this.displayInstructors.add(cls.isDisplayInstructor().toString());
@@ -956,6 +974,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		hm.put(CLASS_LABEL_INDENTS_TOKEN, this.getClassLabelIndents());
 		hm.put(PARENT_CLASS_IDS_TOKEN, this.getParentClassIds());
 		hm.put(READ_ONLY_CLASSES_TOKEN, this.getReadOnlyClasses());
+		hm.put(ENROLLMENTS_TOKEN, this.getEnrollments());
 		hm.put(MIN_CLASS_LIMITS_TOKEN, this.getMinClassLimits());
 		hm.put(MAX_CLASS_LIMITS_TOKEN, this.getMaxClassLimits());
 		hm.put(ROOM_RATIOS_TOKEN, this.getRoomRatios());
@@ -992,6 +1011,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		this.getClassLabelIndents().add((String) getObjectFromListMapAtIndex(originalClassesMap, CLASS_LABEL_INDENTS_TOKEN, classIndex));
 		this.getParentClassIds().add((String) getObjectFromListMapAtIndex(originalClassesMap, PARENT_CLASS_IDS_TOKEN, classIndex));
 		this.getReadOnlyClasses().add((String) getObjectFromListMapAtIndex(originalClassesMap, READ_ONLY_CLASSES_TOKEN, classIndex));
+		this.getEnrollments().add((String) getObjectFromListMapAtIndex(originalClassesMap, ENROLLMENTS_TOKEN, classIndex));
 		this.getMinClassLimits().add((String) getObjectFromListMapAtIndex(originalClassesMap, MIN_CLASS_LIMITS_TOKEN, classIndex));
 		this.getMaxClassLimits().add((String) getObjectFromListMapAtIndex(originalClassesMap, MAX_CLASS_LIMITS_TOKEN, classIndex));
 		this.getRoomRatios().add((String) getObjectFromListMapAtIndex(originalClassesMap, ROOM_RATIOS_TOKEN, classIndex));
@@ -1142,6 +1162,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		this.mustHaveChildClasses.add(this.getMustHaveChildClasses().get(index).toString());
 		this.parentClassIds.add((parentClassId != null)?parentClassId.toString():"");
 		this.readOnlyClasses.add(new Boolean(false).toString());
+		this.enrollments.add("");
 		this.minClassLimits.add(this.getMinClassLimits().get(index));
 		this.departments.add(this.getDepartments().get(index));
 		this.datePatterns.add(this.getDatePatterns().get(index));
@@ -1392,6 +1413,22 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 
 	public void setReadOnlySubparts(List readOnlySubparts) {
 		this.readOnlySubparts = readOnlySubparts;
+	}
+
+	public List getEnrollments() {
+		return enrollments;
+	}
+
+	public void setEnrollments(List enrollments) {
+		this.enrollments = enrollments;
+	}
+
+	public Boolean getDisplayEnrollment() {
+		return displayEnrollment;
+	}
+
+	public void setDisplayEnrollment(Boolean displayEnrollment) {
+		this.displayEnrollment = displayEnrollment;
 	}
 
 }

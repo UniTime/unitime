@@ -38,6 +38,7 @@ import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Settings;
+import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.UserData;
 import org.unitime.timetable.model.comparators.ClassComparator;
@@ -234,9 +235,25 @@ public class WebInstrOfferingConfigTableBuilder extends
         			outputStream.write(this.buttonsTable(ioc, isEditable, isFullyEditable, isLimitedEditable, isExtManaged));
         		} catch (IOException e) {}
 	        }
-	        
-	        setVisibleColumns(COLUMNS);
-        	TableStream configTable = this.initTable(outputStream);
+	        if (StudentClassEnrollment.sessionHasEnrollments(Session.getCurrentAcadSession(user) == null?null:Session.getCurrentAcadSession(user).getUniqueId())){
+	            String[] cols = {LABEL,
+	            		DIV_SEC,
+	            		MIN_PER_WK,
+	            		DEMAND,
+	            		LIMIT,
+	            		ROOM_RATIO,
+	            		MANAGER,
+	            		DATE_PATTERN,
+	            		TIME_PATTERN,
+	            		PREFERENCES,
+	            		INSTRUCTOR,
+	            		TIMETABLE,
+	            		SCHEDULING_SUBPART_CREDIT};
+	            setVisibleColumns(cols);
+	        } else {
+		        setVisibleColumns(COLUMNS);	        	
+	        }
+        	TableStream configTable = this.initTable(outputStream, (Session.getCurrentAcadSession(user) == null?null:Session.getCurrentAcadSession(user).getUniqueId()));
         	this.buildConfigRow(subpartIds, classAssignment, examAssignment,  configTable, ioc, user, !getDisplayConfigOpButtons(), true);
         	configTable.tableComplete();
 	    }

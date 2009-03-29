@@ -305,6 +305,7 @@ public class ClassDetailAction extends PreferencesAction {
 
 	        // Load from class
 		    frm.setExpectedCapacity(c.getExpectedCapacity());
+		    frm.setEnrollment(c.getEnrollment());
 	        frm.setDatePattern(c.getDatePattern()==null?new Long(-1):c.getDatePattern().getUniqueId());
 		    frm.setNbrRooms(c.getNbrRooms());
 		    if (c.getNotes()==null)

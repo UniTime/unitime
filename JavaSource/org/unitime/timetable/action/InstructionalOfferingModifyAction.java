@@ -56,6 +56,7 @@ import org.unitime.timetable.model.RoomGroupPref;
 import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Settings;
+import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.TimetableManager;
@@ -293,8 +294,13 @@ public class InstructionalOfferingModifyAction extends Action {
             Collections.sort(classesList, new ClassComparator(ClassComparator.COMPARE_BY_ITYPE) );
 	    	Boolean readOnlyClass = new Boolean(false);
 	    	Class_ cls = null;
+	    	boolean first = true;
 	    	for(Iterator it = classesList.iterator(); it.hasNext();){
 	    		cls = (Class_) it.next();
+	    		if (first){
+	    			frm.setDisplayEnrollment(new Boolean(org.unitime.timetable.model.Session.getCurrentAcadSession(user)==null?false:StudentClassEnrollment.sessionHasEnrollments(org.unitime.timetable.model.Session.getCurrentAcadSession(user).getUniqueId())));
+	    			first = false;
+	    		}
 	    		if (!isReadOnly.booleanValue()){
 	    			readOnlyClass = new Boolean(isReadOnly.booleanValue());
 	    		} else {

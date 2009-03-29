@@ -59,6 +59,7 @@ import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.ItypeDesc;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Solution;
+import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.UserData;
 import org.unitime.timetable.model.comparators.ClassComparator;
@@ -137,6 +138,8 @@ public class ClassSearchAction extends LookupDispatchAction {
 				setupClassListSpecificFormFilters(httpSession, classListForm);
 		    } else {
 		    	UserData.setPropertyBoolean(httpSession,"ClassList.divSec",classListForm.getDivSec().booleanValue());
+		    	UserData.setPropertyBoolean(httpSession,"ClassList.demand",classListForm.getDemand().booleanValue());
+		    	UserData.setPropertyBoolean(httpSession,"ClassList.demandIsVisible",classListForm.getDemandIsVisible().booleanValue());
 		    	UserData.setPropertyBoolean(httpSession,"ClassList.limit",classListForm.getLimit().booleanValue());
 		    	UserData.setPropertyBoolean(httpSession,"ClassList.roomLimit",classListForm.getRoomLimit().booleanValue());
 		    	UserData.setPropertyBoolean(httpSession,"ClassList.manager",classListForm.getManager().booleanValue());
@@ -266,6 +269,13 @@ public class ClassSearchAction extends LookupDispatchAction {
 		    User user = Web.getUser(httpSession);
 		    TimetableManager manager = TimetableManager.getManager(user);
 		    Session session = Session.getCurrentAcadSession(user);
+		    if (StudentClassEnrollment.sessionHasEnrollments(session == null?null:session.getUniqueId())){
+		    	form.setDemandIsVisible(true);
+				form.setDemand(new Boolean(UserData.getPropertyBoolean(httpSession,"ClassList.demand", true)));
+		    } else {
+			    form.setDemandIsVisible(false);
+				form.setDemand(false);		    	
+		    }
 		    if (manager.canSeeExams(session, user)) {
 		        form.setCanSeeExams(Boolean.TRUE);
 		        form.setExams(new Boolean(UserData.getPropertyBoolean(httpSession,"ClassList.exams", false)));
