@@ -33,6 +33,7 @@ import java.util.Vector;
 
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
+import org.unitime.commons.web.htmlgen.TableCell;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.InstructionalOfferingListForm;
 import org.unitime.timetable.model.Assignment;
@@ -56,6 +57,7 @@ import org.unitime.timetable.model.RoomGroupPref;
 import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.TimetableManager;
@@ -232,7 +234,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
 	}
 	
     
-    protected void pdfBuildTableHeader() {
+    protected void pdfBuildTableHeader(Long sessionId) {
     	iBgColor = sBgColorHeader;
     	//first line
     	if (isShowLabel()) {
@@ -252,7 +254,11 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	}   	
     	if (isShowDemand()){
     		PdfPCell c = createCell();
-    		addText(c, DEMAND, true, Element.ALIGN_RIGHT);
+    		if (StudentClassEnrollment.sessionHasEnrollments(sessionId)){
+    			addText(c, DEMAND, true, Element.ALIGN_RIGHT);
+    		} else {
+        		addText(c, "Last " + DEMAND, true, Element.ALIGN_RIGHT);    			
+    		}
     		iPdfTable.addCell(c);
     	}
     	if (isShowProjectedDemand()){
@@ -615,6 +621,19 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     }
 
     private PdfPCell pdfBuildPrefGroupDemand(PreferenceGroup prefGroup, boolean isEditable){
+    	if (prefGroup instanceof Class_) {
+			Class_ c = (Class_) prefGroup;
+			if (StudentClassEnrollment.sessionHasEnrollments(c.getSessionId())){
+				PdfPCell tc = createCell();
+				if (c.getEnrollment() != null){
+					addText(tc, c.getEnrollment().toString());
+				} else {
+					addText(tc, "0");
+				}
+				tc.setHorizontalAlignment(Element.ALIGN_RIGHT);
+				return(tc);
+			}
+		}
     	return createCell();
     }
     
@@ -1313,7 +1332,11 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
 		}
     	if (isShowDemand()){
     	    PdfPCell cell = createCell();
-    	    addText(cell, (io.getDemand() != null?io.getDemand().toString(): "0"), false, false, Element.ALIGN_RIGHT, color, true);
+    	    if (StudentClassEnrollment.sessionHasEnrollments(io.getSessionId())){
+        	    addText(cell, (io.getEnrollment() != null?io.getEnrollment().toString(): "0"), false, false, Element.ALIGN_RIGHT, color, true);
+    	    } else {
+        	    addText(cell, (io.getDemand() != null?io.getDemand().toString(): "0"), false, false, Element.ALIGN_RIGHT, color, true);    	    	
+    	    }
     	    iPdfTable.addCell(cell);
 		}
     	if (isShowProjectedDemand()){
@@ -1580,7 +1603,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         	if(displayHeader) {
    		    	iDocument.add(new Paragraph("Offered Courses", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 20)));
     		}
-    		pdfBuildTableHeader();
+    		pdfBuildTableHeader(Session.getCurrentAcadSession(user) == null?null:Session.getCurrentAcadSession(user).getUniqueId());
                   
             if (hasOfferedCourses){
                 it = offeredOfferings.iterator();
@@ -1608,7 +1631,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
    	        	iDocument.newPage();
    				iDocument.add(new Paragraph("Not Offered Courses", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 20)));
             }
-            pdfBuildTableHeader();
+            pdfBuildTableHeader(Session.getCurrentAcadSession(user) == null?null:Session.getCurrentAcadSession(user).getUniqueId());
             
             if (hasNotOfferedCourses){
                 it = notOfferedOfferings.iterator();

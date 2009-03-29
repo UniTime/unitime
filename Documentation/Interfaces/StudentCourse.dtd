@@ -18,10 +18,10 @@
  -->
 
 <!ELEMENT studentCourse EMPTY >
-<!ATTLIST studentCourse courseNumber NMTOKEN #IMPLIED >
+<!ATTLIST studentCourse courseNumber CDATA #IMPLIED >
 <!ATTLIST studentCourse externalId NMTOKEN #IMPLIED >
 <!ATTLIST studentCourse priority NMTOKEN #REQUIRED >
-<!ATTLIST studentCourse subject NMTOKEN #IMPLIED >
+<!ATTLIST studentCourse subject CDATA #IMPLIED >
 
 <!ELEMENT lastLikeCourseDemand ( student+ ) >
 <!ATTLIST lastLikeCourseDemand campus NMTOKEN #REQUIRED >

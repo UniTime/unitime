@@ -34,7 +34,11 @@ import java.util.Vector;
 
 import javax.servlet.http.HttpSession;
 
+import net.sf.cpsolver.coursett.preference.MinMaxPreferenceCombination;
+import net.sf.cpsolver.coursett.preference.PreferenceCombination;
+
 import org.hibernate.LazyInitializationException;
+import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.timetable.model.base.BaseClass_;
@@ -50,9 +54,6 @@ import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.solver.CommitedClassAssignmentProxy;
 import org.unitime.timetable.webutil.Navigation;
-
-import net.sf.cpsolver.coursett.preference.MinMaxPreferenceCombination;
-import net.sf.cpsolver.coursett.preference.PreferenceCombination;
 
 
 public class Class_ extends BaseClass_ {
@@ -1339,5 +1340,26 @@ public class Class_ extends BaseClass_ {
     }
     public void setEvent(ClassEvent event) {
         iEvent = event;
+    }
+    
+    public static void updateClassEnrollmentForSession(Session acadSession, org.hibernate.Session hibSession) throws Exception{
+       Transaction trans = null;
+       try {
+    	trans = hibSession.beginTransaction();
+        hibSession.createQuery("update Class_  c " +
+        		"set c.enrollment=(select count(distinct d.student) " +
+                " from StudentClassEnrollment d " +
+                " where d.clazz.uniqueId =c.uniqueId) " + 
+                " where c.uniqueId in (select cls.uniqueId " + 
+                " from Class_ cls inner join cls.schedulingSubpart.instrOfferingConfig.instructionalOffering as io " +
+                " where io.session.uniqueId :sessionId").
+                setLong("sessionId", acadSession.getUniqueId()).executeUpdate();
+        trans.commit();
+       } catch (Exception e) {
+    	   if (trans != null){
+    		   trans.rollback();
+    		   throw(e);
+    	   }
+       }
     }
 }

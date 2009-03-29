@@ -19,9 +19,11 @@ import org.unitime.commons.web.htmlgen.TableStream;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.EventListForm;
 import org.unitime.timetable.form.MeetingListForm;
+import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.Event.MultiMeeting;
+import org.unitime.timetable.model.dao.ClassEventDAO;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.PdfEventHandler;
 import org.unitime.timetable.webutil.WebEventTableBuilder;
@@ -93,11 +95,11 @@ public class PdfEventTableBuilder extends WebEventTableBuilder {
     
     public float[] getWidths(boolean events, boolean mainContact) {
         if (events) {
-            if (mainContact) return new float[] {200, 170, 100, 100, 120};
-            else return new float[] {200, 170, 100, 100};
+            if (mainContact) return new float[] {200, 90, 80, 100, 100, 120};
+            else return new float[] {200, 90, 80, 100, 100};
         } else {
-            if (mainContact) return new float[] {150, 85, 50, 100, 110, 90, 80, 120, 75};
-            return new float[] {200, 85, 75, 150, 100, 100, 100};
+            if (mainContact) return new float[] {150, 85, 50, 50, 100, 110, 90, 80, 120, 75};
+            return new float[] {200, 85, 75, 50, 150, 100, 100, 100};
         }
     }
     
@@ -107,12 +109,8 @@ public class PdfEventTableBuilder extends WebEventTableBuilder {
         	if (numEventsOrMeetings >= 1501) {
             	c = createCell();
                 addText(c, "**Warning: More than 1500 events match your search criteria. Only the first 1500 events are displayed. Please, redefine the search criteria in your filter.", true, Element.ALIGN_LEFT);
+                c.setColspan(mainContact?6:5);
                 iPdfTable.addCell(c);
-                for(int i = 0; i < (mainContact?4:3); i++){
-	            	c = createCell();
-	                addText(c, "", true, Element.ALIGN_LEFT);
-	                iPdfTable.addCell(c);
-                }
             }
             iBgColor = new Color(224,224,224);
             //first line
@@ -120,7 +118,10 @@ public class PdfEventTableBuilder extends WebEventTableBuilder {
             addText(c, LABEL, true, Element.ALIGN_LEFT);
             iPdfTable.addCell(c);
             c = createCell();
-            addText(c, EVENT_CAPACITY, true, Element.ALIGN_LEFT);
+            addText(c, ENROLLMENT, true, Element.ALIGN_RIGHT);
+            iPdfTable.addCell(c);
+            c = createCell();
+            addText(c, EVENT_CAPACITY, true, Element.ALIGN_RIGHT);
             iPdfTable.addCell(c);
             c = createCell();
             addText(c, SPONSORING_ORG, true, Element.ALIGN_LEFT);
@@ -139,6 +140,7 @@ public class PdfEventTableBuilder extends WebEventTableBuilder {
             c = createCell();
             iPdfTable.addCell(c);
             c = createCell();
+            c.setColspan(2);
             addText(c, MEETING_DATE, true, Element.ALIGN_LEFT);
             iPdfTable.addCell(c);
             c = createCell();
@@ -162,13 +164,8 @@ public class PdfEventTableBuilder extends WebEventTableBuilder {
             if (numEventsOrMeetings >= 1501){
             	c = createCell();
                 addText(c, "**Warning: More than 1500 meetings match your search criteria. Only the first 1500 meetings are displayed. Please, redefine the search criteria in your filter.", true, Element.ALIGN_LEFT);
+                c.setColspan(mainContact?10:9);
                 iPdfTable.addCell(c);
-                for(int i = 0; i < (mainContact?8:7); i++){
-	            	c = createCell();
-	                addText(c, "", true, Element.ALIGN_LEFT);
-	                iPdfTable.addCell(c);
-                }
-           	
             }
             iBgColor = new Color(224,224,224);
             //first line
@@ -180,7 +177,10 @@ public class PdfEventTableBuilder extends WebEventTableBuilder {
             addText(c, EVENT_TYPE, true, Element.ALIGN_LEFT);
             iPdfTable.addCell(c);
             c = createCell();
-            addText(c, (mainContact?"Cap.":EVENT_CAPACITY), true, Element.ALIGN_LEFT);
+            addText(c, (mainContact?"Enrl.":ENROLLMENT), true, Element.ALIGN_RIGHT);
+            iPdfTable.addCell(c);
+            c = createCell();
+            addText(c, (mainContact?"Cap.":EVENT_CAPACITY), true, Element.ALIGN_RIGHT);
             iPdfTable.addCell(c);
             c = createCell();
             addText(c, SPONSORING_ORG, true, Element.ALIGN_LEFT);
@@ -228,13 +228,26 @@ public class PdfEventTableBuilder extends WebEventTableBuilder {
     	} else {
     		if (maxCap!=-1) {
     			if (maxCap!=minCap) {
-    			    addText(cell, minCap+"-"+maxCap);    				
+    			    addText(cell, minCap+"-"+maxCap, Element.ALIGN_RIGHT);    				
     			} else {
-    			    addText(cell, String.valueOf(minCap));
+    			    addText(cell, String.valueOf(minCap), Element.ALIGN_RIGHT);
     			}
     		}
     	}
     	return cell;
+    }
+ 
+    private PdfPCell pdfBuildEventEnrollment(Event e) {
+    	PdfPCell cell = createCell();
+    	if (Event.sEventTypeClass == e.getEventType()) {
+    		ClassEvent ce = new ClassEventDAO().get(Long.valueOf(e.getUniqueId()));
+			if (ce.getClazz().getEnrollment() != null){
+				addText(cell, ce.getClazz().getEnrollment().toString(), Element.ALIGN_RIGHT);
+			} else {
+				addText(cell, "0", Element.ALIGN_RIGHT);
+			}
+    	} 
+    	return (cell);
     }
     
     private PdfPCell pdfBuildSponsoringOrg(Event e) {
@@ -338,6 +351,7 @@ public class PdfEventTableBuilder extends WebEventTableBuilder {
         }
         iBgColor = new Color(223, 231, 242);
         iPdfTable.addCell(pdfBuildEventName(e));
+        iPdfTable.addCell(pdfBuildEventEnrollment(e));
         iPdfTable.addCell(pdfBuildEventCapacity(e));
         iPdfTable.addCell(pdfBuildSponsoringOrg(e));
         iPdfTable.addCell(pdfBuildEventTypeAbbv(e));
@@ -358,7 +372,9 @@ public class PdfEventTableBuilder extends WebEventTableBuilder {
             }
         }
         iPdfTable.addCell(pdfBuildEmptyMeetingInfo());
-        iPdfTable.addCell(mm.getMeetings().size()==1?pdfBuildDate(m):pdfBuildDate(mm));
+        PdfPCell cell = mm.getMeetings().size()==1?pdfBuildDate(m):pdfBuildDate(mm);
+        cell.setColspan(2);
+        iPdfTable.addCell(cell);
         iPdfTable.addCell(pdfBuildTime(m));
         iPdfTable.addCell(pdfBuildLocation(m));
         if (mainContact)
@@ -385,7 +401,9 @@ public class PdfEventTableBuilder extends WebEventTableBuilder {
         PdfPCell cell = createCell();
         addText(cell,"   Conf/w "+m.getEvent().getEventName()+" ("+m.getEvent().getEventTypeAbbv()+")");
         iPdfTable.addCell(cell);
-        iPdfTable.addCell(mm.getMeetings().size()==1?pdfBuildDate(m):pdfBuildDate(mm));
+        cell = (mm.getMeetings().size()==1?pdfBuildDate(m):pdfBuildDate(mm));
+        cell.setColspan(2);
+        iPdfTable.addCell(cell);
         iPdfTable.addCell(pdfBuildTime(m));
         iPdfTable.addCell(pdfBuildLocation(m));
         String bgColor = null;
@@ -413,9 +431,11 @@ public class PdfEventTableBuilder extends WebEventTableBuilder {
             iPdfTable.addCell(cell);
             iPdfTable.addCell(cell);
             iPdfTable.addCell(cell);
+            iPdfTable.addCell(cell);
         } else {
             iPdfTable.addCell(pdfBuildEventName(m.getEvent()));
             iPdfTable.addCell(pdfBuildEventTypeAbbv(m.getEvent()));
+            iPdfTable.addCell(pdfBuildEventEnrollment(m.getEvent()));
             iPdfTable.addCell(pdfBuildEventCapacity(m.getEvent()));
             iPdfTable.addCell(pdfBuildSponsoringOrg(m.getEvent()));
         }
@@ -450,6 +470,7 @@ public class PdfEventTableBuilder extends WebEventTableBuilder {
         addText(cell, "   Conf/w "+(m.getEvent().getEventName()==null?"":m.getEvent().getEventName())+" ("+m.getEvent().getEventTypeAbbv()+")");
         cell.setColspan(2);
         iPdfTable.addCell(cell);
+        iPdfTable.addCell(pdfBuildEventEnrollment(m.getEvent()));
         iPdfTable.addCell(pdfBuildEventCapacity(m.getEvent()));
         iPdfTable.addCell(pdfBuildSponsoringOrg(m.getEvent()));
         iPdfTable.addCell(pdfBuildDate(m));

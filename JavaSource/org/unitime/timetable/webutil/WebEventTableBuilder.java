@@ -26,9 +26,11 @@ import org.unitime.commons.web.htmlgen.TableRow;
 import org.unitime.commons.web.htmlgen.TableStream;
 import org.unitime.timetable.form.EventListForm;
 import org.unitime.timetable.form.MeetingListForm;
+import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.Event.MultiMeeting;
+import org.unitime.timetable.model.dao.ClassEventDAO;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.util.Constants;
 
@@ -54,7 +56,8 @@ public class WebEventTableBuilder {
     
     protected static String LABEL = "Name";
     protected static String EMPTY = "&nbsp;";
-    public static final String EVENT_CAPACITY = "Attendance";
+    public static final String EVENT_CAPACITY = "Attend/Limit";
+    public static final String ENROLLMENT = "Enrollment";
     public static final String EVENT_TYPE = "Type";
     public static final String MAIN_CONTACT = "Main Contact";
     public static final String SPONSORING_ORG = "Sponsoring Org";
@@ -156,9 +159,13 @@ public class WebEventTableBuilder {
         cell = this.headerCell(EMPTY, 1, 1);            
         cell.setStyle("border-bottom: gray 1px solid");
         row2.addContent(cell);
-        cell = this.headerCell(EVENT_CAPACITY, 1, 1);
+        cell = this.headerCell(ENROLLMENT, 1, 1);
+        cell.setAlign("right");
         row.addContent(cell);
-        cell = this.headerCell(MEETING_DATE, 1, 1);
+        cell = this.headerCell(EVENT_CAPACITY + "&nbsp;", 1, 1);
+        cell.setAlign("right");
+        row.addContent(cell);
+        cell = this.headerCell(MEETING_DATE, 1, 2);
         cell.setStyle("border-bottom: gray 1px solid");
         row2.addContent(cell);
         cell = this.headerCell(SPONSORING_ORG, 1, 1);
@@ -192,8 +199,13 @@ public class WebEventTableBuilder {
         cell = this.headerCell(EVENT_TYPE, 1, 1);
         cell.setStyle("border-bottom: gray 1px solid");
         row.addContent(cell);
+        cell = this.headerCell(ENROLLMENT, 1, 1);
+        cell.setAlign("right");
+        cell.setStyle("border-bottom: gray 1px solid");
+        row.addContent(cell);
         cell = this.headerCell(EVENT_CAPACITY, 1, 1);
         cell.setStyle("border-bottom: gray 1px solid");
+        cell.setAlign("right");
         row.addContent(cell);
         cell = this.headerCell(SPONSORING_ORG, 1, 1);
         cell.setStyle("border-bottom: gray 1px solid");
@@ -238,14 +250,32 @@ public class WebEventTableBuilder {
     	} else {
     		if (maxCap!=-1) {
     			if (maxCap!=minCap) {
-        			cell.addContent(minCap+"-"+maxCap);    				
-    			} else {cell.addContent(minCap);}
+        			cell.addContent(minCap+"-"+maxCap+"&nbsp;");    				
+    			} else {cell.addContent(minCap+"&nbsp;");}
     		}
+			cell.setAlign("right");
     	}
+//    	this.endCell(cell, true);
+    	return (cell);
+    }
+
+    private TableCell buildEventEnrollment(Event e) {
+    	TableCell cell = this.initCell(true, null, 1, true);
+    	if (Event.sEventTypeClass == e.getEventType()) {
+    		ClassEvent ce = new ClassEventDAO().get(Long.valueOf(e.getUniqueId()));
+			if (ce.getClazz().getEnrollment() != null){
+				cell.addContent(ce.getClazz().getEnrollment().toString());
+			} else {
+				cell.addContent("0");
+			}
+			cell.setAlign("right");
+		} else {
+			cell.addContent("&nbsp;");
+		}
     	this.endCell(cell, true);
     	return (cell);
     }
-    
+
     private TableCell buildSponsoringOrg(Event e) {
     	TableCell cell = this.initCell(true, null, 1, true);
     	cell.addContent(e.getSponsoringOrganization()==null?"&nbsp;":e.getSponsoringOrganization().getName());
@@ -352,6 +382,7 @@ public class WebEventTableBuilder {
         
         TableCell cell = null;
         row.addContent(buildEventName(e));
+        row.addContent(buildEventEnrollment(e));
         row.addContent(buildEventCapacity(e));
         row.addContent(buildSponsoringOrg(e));
         row.addContent(buildEventType(e));
@@ -371,7 +402,9 @@ public class WebEventTableBuilder {
         row.setOnMouseOver(this.getRowMouseOver(false, true));
         row.setOnClick(subjectOnClickAction(m.getEvent().getUniqueId()));
         row.addContent(buildEmptyMeetingInfo());
-        row.addContent(mm.getMeetings().size()==1?buildDate(m):buildDate(mm));
+        TableCell cell = (mm.getMeetings().size()==1?buildDate(m):buildDate(mm));
+        cell.setColSpan(2);
+        row.addContent(cell);
         row.addContent(buildTime(m));
         row.addContent(buildLocation(m));
         String bgColor = null;
@@ -409,7 +442,9 @@ public class WebEventTableBuilder {
         TableCell cell = this.initCell(true, null, 1, true);
         cell.addContent("&nbsp;&nbsp;&nbsp;Conf/w "+m.getEvent().getEventName()+" ("+m.getEvent().getEventTypeAbbv()+")");
         row.addContent(cell);
-        row.addContent(mm.getMeetings().size()==1?buildDate(m):buildDate(mm));
+        TableCell dateCell = (mm.getMeetings().size()==1?buildDate(m):buildDate(mm));
+        dateCell.setColSpan(2);
+        row.addContent(dateCell);
         row.addContent(buildTime(m));
         row.addContent(buildLocation(m));
         String bgColor = null;
@@ -434,9 +469,11 @@ public class WebEventTableBuilder {
             row.addContent(cell);
             row.addContent(cell);
             row.addContent(cell);
+            row.addContent(cell);
         } else {
             row.addContent(buildEventName(m.getEvent()));
             row.addContent(buildEventTypeAbbv(m.getEvent()));
+            row.addContent(buildEventEnrollment(m.getEvent()));
             row.addContent(buildEventCapacity(m.getEvent()));
             row.addContent(buildSponsoringOrg(m.getEvent()));
         }
@@ -488,6 +525,7 @@ public class WebEventTableBuilder {
         this.endCell(cell, true);
         row.addContent(cell);
         //row.addContent(buildEventTypeAbbv(m.getEvent()));
+        row.addContent(buildEventEnrollment(m.getEvent()));
         row.addContent(buildEventCapacity(m.getEvent()));
         row.addContent(buildSponsoringOrg(m.getEvent()));
         row.addContent(buildDate(m));

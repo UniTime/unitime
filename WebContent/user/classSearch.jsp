@@ -21,6 +21,7 @@
 <%@ page import="org.unitime.timetable.form.ClassListForm" %>
 <%@ page import="org.unitime.timetable.model.Department" %>
 <%@ page import="org.unitime.timetable.model.ItypeDesc" %>
+<%@page import="org.unitime.timetable.model.StudentClassEnrollment"%>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean"%>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html"%>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic"%>
@@ -48,6 +49,16 @@
 							<%=WebInstructionalOfferingTableBuilder.DIV_SEC%>
 						</TD>
 					</TR>
+					<logic:equal name="<%=frmName%>" property="demandIsVisible" value="true">
+						<TR>
+							<TD></TD>
+							<TD>
+								<html:checkbox property="demand" />
+								<%=WebInstructionalOfferingTableBuilder.DEMAND%>
+							</TD>
+						</TR>
+					</logic:equal>
+					<html:hidden property="demandIsVisible"/>
 					<TR>
 						<TD></TD>
 						<TD>

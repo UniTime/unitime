@@ -51,6 +51,8 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 	private String buttonAction;
 	private String subjectAreaAbbv;
 	private String ctrlInstrOfferingId;
+	private Boolean demandIsVisible;
+	private Boolean demand;
 	private Boolean limit;
 	private Boolean roomLimit;
 	private Boolean timePattern;
@@ -85,6 +87,7 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 	
 	public static String sSortByName = "Name";
 	public static String sSortByDivSec = "Div-Sec";
+	public static String sSortByEnrollment = "Enrollment";
 	public static String sSortByLimit = "Limit";
 	public static String sSortByRoomSize = "Room Size";
 	public static String sSortByDatePattern = "Date Pattern";
@@ -96,6 +99,7 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 	public static String[] sSortByOptions = {
 		sSortByName,
 		sSortByDivSec,
+		sSortByEnrollment,
 		sSortByLimit,
 		sSortByRoomSize,
 		sSortByDatePattern,
@@ -184,6 +188,8 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 		subjectAreas = new ArrayList();
 		subjectAreaIds = new String[0];
 		
+		demandIsVisible = new Boolean(false);
+		demand = new Boolean(false);
 		limit = new Boolean(false);
 		roomLimit = new Boolean(false);
 		datePattern = new Boolean(false);
@@ -516,7 +522,7 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 		this.sessionInLLREditStatus = sessionInLLREditStatus;
 	}
 	public Boolean getDemand() {
-		return (new Boolean(false));
+		return (demand);
 	}
 	public Boolean getProjectedDemand() {
 		return (new Boolean(false));
@@ -575,4 +581,14 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
     public Boolean getTitle() {
 		return (new Boolean(false));
     }
+	public void setDemand(Boolean demand) {
+		this.demand = demand;
+	}
+	public Boolean getDemandIsVisible() {
+		return demandIsVisible;
+	}
+	public void setDemandIsVisible(Boolean demandIsVisible) {
+		this.demandIsVisible = demandIsVisible;
+	}
+
 }

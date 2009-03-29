@@ -40,6 +40,7 @@ import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Settings;
+import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.UserData;
@@ -144,7 +145,7 @@ public class WebClassListTableBuilder extends
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
-		        table = this.initTable(outputStream);
+		        table = this.initTable(outputStream, (Session.getCurrentAcadSession(user) == null?null:Session.getCurrentAcadSession(user).getUniqueId()));
 		    }		        
             this.buildClassRow(classAssignment,examAssignment, ++ct, table, c, "", user, prevLabel);
             prevLabel = c.getClassLabel();
@@ -186,16 +187,32 @@ public class WebClassListTableBuilder extends
     }
 	
     public void htmlTableForClasses(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, TreeSet classes, Long subjectAreaId, User user, JspWriter outputStream){
-         String[] columns = {LABEL,
-			LIMIT,
-			ROOM_RATIO,
-			DATE_PATTERN,
-			TIME_PATTERN,
-			PREFERENCES,
-			INSTRUCTOR,
-			TIMETABLE,
-			SCHEDULE_PRINT_NOTE};
-         
+    	Session session = Session.getCurrentAcadSession(user);
+    	String[] columns;
+         if (StudentClassEnrollment.sessionHasEnrollments(session == null?null:session.getUniqueId())) {
+        	String[] tcolumns = {LABEL,
+        		DEMAND,
+				LIMIT,
+				ROOM_RATIO,
+				DATE_PATTERN,
+				TIME_PATTERN,
+				PREFERENCES,
+				INSTRUCTOR,
+				TIMETABLE,
+				SCHEDULE_PRINT_NOTE};
+        	columns = tcolumns;
+         } else  {
+         	String[] tcolumns = {LABEL,
+        			LIMIT,
+        			ROOM_RATIO,
+        			DATE_PATTERN,
+        			TIME_PATTERN,
+        			PREFERENCES,
+        			INSTRUCTOR,
+        			TIMETABLE,
+        			SCHEDULE_PRINT_NOTE};
+            columns = tcolumns;
+         };
          setVisibleColumns(columns);
 
         if (isShowTimetable()) {
@@ -220,7 +237,7 @@ public class WebClassListTableBuilder extends
         }
         setUserSettings(user);
         
-		TableStream table = this.initTable(outputStream);
+		TableStream table = this.initTable(outputStream, (Session.getCurrentAcadSession(user) == null?null:Session.getCurrentAcadSession(user).getUniqueId()));
         Iterator it = classes.iterator();
         Class_ cls = null;
         String prevLabel = null;

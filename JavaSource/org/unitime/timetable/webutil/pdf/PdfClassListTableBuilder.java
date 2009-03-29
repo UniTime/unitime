@@ -147,7 +147,7 @@ public class PdfClassListTableBuilder extends PdfInstructionalOfferingTableBuild
 
 					iDocument.add(new Paragraph(labelForTable(subjectArea), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
 					iDocument.add(new Paragraph(" "));
-					pdfBuildTableHeader();
+					pdfBuildTableHeader(Session.getCurrentAcadSession(user) == null?null:Session.getCurrentAcadSession(user).getUniqueId());
 				}
 				pdfBuildClassRow(classAssignment, examAssignment, ++ct, c, "", user, prevLabel);
 				prevLabel = c.getClassLabel();

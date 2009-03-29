@@ -1,6 +1,6 @@
 /*
  * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * Copyright (C) 2008-2009, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -46,6 +46,7 @@ public abstract class BaseClass_ extends org.unitime.timetable.model.PreferenceG
 	public static String PROP_ROOM_RATIO = "roomRatio";
 	public static String PROP_UNIQUE_ID_ROLLED_FORWARD_FROM = "uniqueIdRolledForwardFrom";
 	public static String PROP_EXTERNAL_UNIQUE_ID = "externalUniqueId";
+	public static String PROP_ENROLLMENT = "enrollment";
 
 
 	// constructors
@@ -78,6 +79,7 @@ public abstract class BaseClass_ extends org.unitime.timetable.model.PreferenceG
 	private java.lang.Float roomRatio;
 	private java.lang.Long uniqueIdRolledForwardFrom;
 	private java.lang.String externalUniqueId;
+	private java.lang.Integer enrollment;
 
 	// one to one
 	private org.unitime.timetable.model.SectioningInfo sectioningInfo;
@@ -306,6 +308,23 @@ public abstract class BaseClass_ extends org.unitime.timetable.model.PreferenceG
 	 */
 	public void setExternalUniqueId (java.lang.String externalUniqueId) {
 		this.externalUniqueId = externalUniqueId;
+	}
+
+
+
+	/**
+	 * Return the value associated with the column: enrollment
+	 */
+	public java.lang.Integer getEnrollment () {
+		return enrollment;
+	}
+
+	/**
+	 * Set the value related to the column: enrollment
+	 * @param enrollment the enrollment value
+	 */
+	public void setEnrollment (java.lang.Integer enrollment) {
+		this.enrollment = enrollment;
 	}
 
 
@@ -599,6 +618,9 @@ public abstract class BaseClass_ extends org.unitime.timetable.model.PreferenceG
 	public void setPosReservations (java.util.Set posReservations) {
 		this.posReservations = posReservations;
 	}
+
+
+
 
 
 	public boolean equals (Object obj) {

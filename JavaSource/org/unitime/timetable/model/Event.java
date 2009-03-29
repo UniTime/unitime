@@ -133,6 +133,16 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
 		return (this.getEventName());
 	}
 	
+	public String eventCapacityDisplayString(){
+		String s = "";
+		if (getMinCapacity() != null){
+			s += getMinCapacity().toString();
+			if (!getMaxCapacity().equals(getMinCapacity())){
+				s = s + "-" + getMaxCapacity().toString();
+			}
+		}
+		return(s);
+	}
 	public int compareTo (Event e) {
 		if (getEventName()!=e.getEventName()) {
 			return getEventName().compareTo(e.getEventName());
