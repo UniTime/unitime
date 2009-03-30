@@ -231,7 +231,7 @@ public class EditRoomForm extends ActionForm {
 			        errors.add("nonUniversityLocation", new ActionMessage("errors.generic", "Non University Location cannot be matched to regular expression: " + nonUniversityLocationRegex + ". Reason: " + e.getMessage()));
 		    	}
 	    	} else {
-	    		if (WebTextValidation.isTextValid(name, true)){
+	    		if (!WebTextValidation.isTextValid(name, true)){
 	    			errors.add("nonUniversityLocation", new ActionMessage("errors.invalidCharacters", "Name"));
 	    		}
 	    	}
