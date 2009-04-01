@@ -157,6 +157,8 @@ public class PdfEventGridTable extends EventGridTable {
                                 	    sb.append(meeting.getEvent().eventCapacityDisplayString())
                                 	      .append(" expect attend");
                                         table.addCell(!last,aboveBlank.contains(mcol),idx==0 && split,sb.toString(), false);                                		
+                                	} else {
+                                		table.addCell(!last,aboveBlank.contains(mcol),idx==0 && split,null,false);
                                 	}
                                 } else {
                                     table.addCell(!last,aboveBlank.contains(mcol),idx==0 && split,null,false);
