@@ -96,8 +96,13 @@ public class StaffImport extends BaseImport {
 				Staff staff = null;
 				if(externalId != null && externalId.length() > 0) {
 		            if (trimLeadingZerosFromExternalId){
-		            	externalId = (new Integer(externalId)).toString();
-		            }
+		            	try {
+		            		Integer num = new Integer(externalId);
+		            		externalId = num.toString();
+						} catch (Exception e) {
+							// do nothing
+						}
+			        }
 	 				staff = findByExternalId(externalId);
 				}
 				if(staff == null) {
