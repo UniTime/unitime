@@ -113,7 +113,7 @@ public class StudentEnrollmentImport extends BaseImport {
                 rollbackTransaction();
             }
         }
-        if (session!=null && "true".equals(ApplicationProperties.getProperty("tmtbl.data.import.studentEnrl.midtermExam.updateConflicts","false"))) {
+         if (session!=null && "true".equals(ApplicationProperties.getProperty("tmtbl.data.import.studentEnrl.midtermExam.updateConflicts","false"))) {
             try {
                 beginTransaction();
                 new UpdateExamConflicts(this).update(session.getUniqueId(), Exam.sExamTypeMidterm, getHibSession());
@@ -123,9 +123,12 @@ public class StudentEnrollmentImport extends BaseImport {
                 rollbackTransaction();
             }
         }
+        info("Appliation property: tmtbl.data.import.studentEnrl.class.updateEnrollments = " + ApplicationProperties.getProperty("tmtbl.data.import.studentEnrl.class.updateEnrollments","false"));
         if (session != null && "true".equals(ApplicationProperties.getProperty("tmtbl.data.import.studentEnrl.class.updateEnrollments","false"))){
             try {
+                info("  Updating class enrollments...");
                 Class_.updateClassEnrollmentForSession(session, getHibSession());
+                info("  Updating course offering enrollments...");
                 CourseOffering.updateCourseOfferingEnrollmentForSession(session, getHibSession());
             } catch (Exception e) {
                 fatal("Exception: " + e.getMessage(), e);
