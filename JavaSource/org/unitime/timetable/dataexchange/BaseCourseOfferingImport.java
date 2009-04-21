@@ -868,6 +868,12 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					endDate.add(Calendar.YEAR, 1);
 				}
 				
+				if (endDate.equals(sessionEndDate) || (endDate.before(sessionEndDate) && endDate.after(sessionClassesEndDate))){
+					if(startDate.before(sessionClassesEndDate)){
+						endDate = sessionClassesEndDate;
+					}
+				}
+				
 				TimeObject timeObject = new TimeObject(startTime, endTime, days);
 
 				Vector<Room> rooms = new Vector<Room>();
