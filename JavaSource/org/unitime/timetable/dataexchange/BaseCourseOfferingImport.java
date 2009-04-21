@@ -2422,7 +2422,6 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 	private ItypeDesc findItypeForString(String itypeRef){
 		ItypeDesc itype = itypes.get(itypeRef);
 		if (itype == null){
-			Debug.info("looked up itype by sisref " + itypeRef);
 			itype = itypesBySisRef.get(itypeRef);
 		}
 		return(itype);
