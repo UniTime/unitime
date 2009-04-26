@@ -523,6 +523,7 @@ public class StudentSectioningTest {
             for (Iterator i=s.getClassEnrollments().iterator();i.hasNext();) {
                 StudentClassEnrollment sce = (StudentClassEnrollment)i.next();
                 sce.getClazz().getStudentEnrollments().remove(sce);
+                sce.getClazz().setEnrollment(sce.getClazz().getEnrollment()-1);
                 hibSession.delete(sce); i.remove();
             }
             for (Iterator i=s.getWaitlists().iterator();i.hasNext();) {
@@ -630,6 +631,7 @@ public class StudentSectioningTest {
                             sce.setCourseRequest(crq);
                             sce.setCourseOffering(crq.getCourseOffering());
                             sce.setTimestamp(new Date());
+                            clazz.setEnrollment(clazz.getEnrollment()==null?1:clazz.getEnrollment()+1);
                             hibSession.save(sce);
                         }
                     }
