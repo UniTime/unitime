@@ -200,6 +200,31 @@ public class BatchStudentSectioningSaver extends StudentSectioningSaver {
                     }
                 }
             }
+
+            // Update class enrollments
+            for (Enumeration e=getModel().getOfferings().elements();e.hasMoreElements();) {
+                Offering offering = (Offering)e.nextElement();
+                for (Enumeration f=offering.getConfigs().elements();f.hasMoreElements();) {
+                    Config config = (Config)f.nextElement();
+                    for (Enumeration g=config.getSubparts().elements();g.hasMoreElements();) {
+                        Subpart subpart = (Subpart)g.nextElement();
+                        for (Enumeration h=subpart.getSections().elements();h.hasMoreElements();) {
+                            Section section = (Section)h.nextElement();
+                            Class_ clazz = iClasses.get(section.getId());
+                            if (clazz==null) continue;
+                            int enrl = 0;
+                            for (Iterator i=section.getEnrollments().iterator();i.hasNext();) {
+                            	Enrollment en = (Enrollment)i.next();
+                            	if (!en.getStudent().isDummy()) enrl++;
+                            }
+                            clazz.setEnrollment(enrl);
+                            sLog.debug("  -- "+clazz.getClassLabel()+" has an enrollment of "+enrl);
+                            hibSession.saveOrUpdate(clazz);
+                            flushIfNeeded(hibSession);
+                        }
+                    }
+                }
+            }
             
             tx.commit();
         } catch (Exception e) {
