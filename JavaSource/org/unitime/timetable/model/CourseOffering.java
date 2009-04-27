@@ -519,7 +519,7 @@ public class CourseOffering extends BaseCourseOffering {
                  " where c.uniqueId in (select crs.uniqueId " + 
                  " from CourseOffering crs inner join crs.instructionalOffering as io " +
                  " where io.session.uniqueId = :sessionId)").
-                 setLong("sessionId", acadSession.getUniqueId()).executeUpdate();
+                 setLong("sessionId", acadSession.getUniqueId().longValue()).executeUpdate();
          trans.commit();
         } catch (Exception e) {
      	   if (trans != null){
