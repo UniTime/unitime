@@ -1353,7 +1353,7 @@ public class Class_ extends BaseClass_ {
                 " where c.uniqueId in (select cls.uniqueId " + 
                 " from Class_ cls inner join cls.schedulingSubpart.instrOfferingConfig.instructionalOffering as io " +
                 " where io.session.uniqueId = :sessionId)").
-                setLong("sessionId", acadSession.getUniqueId()).executeUpdate();
+                setLong("sessionId", acadSession.getUniqueId().longValue()).executeUpdate();
         trans.commit();
        } catch (Exception e) {
     	   if (trans != null){
