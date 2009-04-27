@@ -103,7 +103,7 @@ public class ExamEditAjax extends Action {
         if (courseNumbers.size()>1) print(out, "-1", "-");
         for (Iterator i=courseNumbers.iterator();i.hasNext();) {
             Object[] o = (Object[])i.next();
-            print(out, o[0].toString(), (o[1].toString() + " - " + o[2].toString().replaceAll(">", "&gt;").replaceAll("<", "&lt;").replaceAll("'", "&quot;").replaceAll("&", "&amp;")));
+            print(out, o[0].toString(), (o[1].toString() + " - " + (o[2] == null?"":o[2].toString().replaceAll(">", "&gt;").replaceAll("<", "&lt;").replaceAll("'", "&quot;").replaceAll("&", "&amp;"))));
         }
     }
     
