@@ -94,7 +94,7 @@ public class SectioningDemoAjax extends Action {
             list();
         for (Iterator i=courseNumbers.iterator();i.hasNext();) {
             CourseOffering co = (CourseOffering)i.next();
-            print(out, co.getUniqueId().toString(), (co.getCourseNbr() + " - " + co.getTitle().replaceAll(">", "&gt;").replaceAll("<", "&lt;").replaceAll("'", "&quot;").replaceAll("&", "&amp;")));
+            print(out, co.getUniqueId().toString(), (co.getCourseNbr() + " - " + (co.getTitle() == null?"":co.getTitle().replaceAll(">", "&gt;").replaceAll("<", "&lt;").replaceAll("'", "&quot;").replaceAll("&", "&amp;"))));
         }
     }
     
