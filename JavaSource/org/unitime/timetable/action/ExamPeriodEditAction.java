@@ -223,7 +223,7 @@ public class ExamPeriodEditAction extends Action {
         
         TreeSet periods = ExamPeriod.findAll(request, null);
 		if(periods.isEmpty()) {
-		    webTable.addLine(null, new String[] {"No exan period defined for this session."}, null, null );			    
+		    webTable.addLine(null, new String[] {"No examination periods defined for this session."}, null, null );			    
 		}
 		
     	User user = Web.getUser(request.getSession());
