@@ -229,13 +229,13 @@ public class InstructorDetailAction extends PreferencesAction {
 			    	(hasTimetable? 
 			    			new WebTable( 7,
 			    					null,
-			    					new String[] {"Class", "Lead", "Share", "Limit", "Manager", "Time", "Room"},
+			    					new String[] {"Class", "Check Conflicts", "Share", "Limit", "Manager", "Time", "Room"},
 			    					new String[] {"left", "left","left", "left", "left", "left", "left"},
 			    					null )
 			    	:
 		    			new WebTable( 5,
 		    					null,
-		    					new String[] {"Class", "Lead", "Share", "Limit", "Manager"},
+		    					new String[] {"Class", "Check Conflicts", "Share", "Limit", "Manager"},
 		    					new String[] {"left", "left","left", "left", "left"},
 		    					null )
 			    	);

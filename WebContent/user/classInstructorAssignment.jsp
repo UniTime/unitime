@@ -124,7 +124,7 @@
 						<TD align="center" valign="bottom" rowspan="2"> &nbsp;</TD>
 						<TD align="center" valign="bottom" rowspan="2"><I>Name</I></TD>
 						<TD align="center" valign="bottom" rowspan="2"><I>% Share</I></TD>
-						<TD align="center" valign="bottom" rowspan="2"><I>&nbsp;Lead&nbsp;&nbsp;</I></TD>
+						<TD align="center" valign="bottom" rowspan="2"><I>&nbsp;Check Conflicts&nbsp;&nbsp;</I></TD>
 						<TD align="center" valign="bottom"><I>Display</I></TD>
 						<TD align="center" valign="bottom" rowspan="2"><I>Time</I></TD>
 						<TD align="center" valign="bottom" rowspan="2"><I>Room</I></TD>

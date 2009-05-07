@@ -250,7 +250,7 @@ public class InstructorExamReport extends PdfLegacyExamReport {
             if (!allClasses.isEmpty()) {
                 println("");
                 setHeader(new String[]{
-                        "Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect  Dates                     Time            Room       Lead Share",
+                        "Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect  Dates                     Time            Room       Chk  Share",
                         "---- ------ "+(iItype?"------ ":"")+"---- ------------------------- --------------- ----------- ---- -----"});
                 println(mpad("~ ~ ~ ~ ~ CLASS SECHEDULE ~ ~ ~ ~ ~",iNrChars));
                 for (int i=0;i<getHeader().length;i++) println(getHeader()[i]);

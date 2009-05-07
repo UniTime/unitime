@@ -96,7 +96,7 @@ public class WebInstructionalOfferingTableBuilder {
     
     //available columns for table
     protected static String LABEL = "&nbsp;";
-    public static final String DIV_SEC = "Tentative Div-Sec";
+    public static final String DIV_SEC = "Suffix";
     public static final String DEMAND = "Enrollment";
     public static final String PROJECTED_DEMAND = "Projected Demand";
     public static final String LIMIT = "Limit";
@@ -520,7 +520,9 @@ public class WebInstructionalOfferingTableBuilder {
     		row.addContent(cell);    		
     	}
     	if (isShowExam()) {
-            row.addContent(headerCell("-----------" + EXAM + "--------", 1, (isShowExamName()?1:0)+(isShowExamTimetable()?2:0)));
+    		cell = headerCell("-----------" + EXAM + "--------", 1, (isShowExamName()?1:0)+(isShowExamTimetable()?2:0));
+    		cell.setNoWrap(true);
+            row.addContent(cell);
             if (isShowExamName()) {
                 cell = headerCell(EXAM_NAME, 1, 1);
                 cell.addContent("<hr>");

@@ -179,7 +179,7 @@ public class TimetableManagerForm extends ActionForm {
             
             if (externalId==null || externalId.trim().length()==0)
                 errors.add("externalId", 
-                        new ActionMessage("errors.required", "PuID / Career Account"));
+                        new ActionMessage("errors.required", "PuID / Account Name"));
                 
             if (User.canIdentify()) {
                 User user = User.identify(externalId);

@@ -90,7 +90,7 @@
 		</TR>
 		
 		<TR>
-			<TD>Career Account:</TD>
+			<TD>Account Name:</TD>
 			<TD>
 				<html:text property="careerAcct" maxlength="20" size="20"/> 
 			<TD>
