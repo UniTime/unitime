@@ -123,7 +123,7 @@
 			<TD>ID:</TD><TD> <bean:write name="<%=frmName%>" property="puId" /></TD>
 		</TR>
 		<TR>
-			<TD>Career Account:</TD><TD> <bean:write name="<%=frmName%>" property="careerAcct" /></TD>
+			<TD>Account Name:</TD><TD> <bean:write name="<%=frmName%>" property="careerAcct" /></TD>
 		</TR>
 		<logic:notEmpty name="<%=frmName%>" property="email">
 			<TR>

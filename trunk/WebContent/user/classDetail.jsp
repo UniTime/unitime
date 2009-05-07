@@ -153,7 +153,7 @@
 
 		<logic:notEmpty name="<%=frmName%>" property="classSuffix">
 			<TR>
-				<TD>Class Division-Section:</TD>
+				<TD>Class Suffix:</TD>
 				<TD>
 					<bean:write name="<%=frmName%>" property="classSuffix" />
 				<TD>
@@ -264,7 +264,7 @@
 				<TD valign="top">Instructors:</TD>
 				<TD>
 					<table cellspacing="0" cellpadding="3">
-						<tr><td width='250'><i>Name</i></td><td width='80'><i>Share</i></td><td width='80'><i>Lead</i></td></tr>
+						<tr><td width='250'><i>Name</i></td><td width='80'><i>Share</i></td><td width='80'><i>Check Conflicts</i></td></tr>
 						<logic:iterate name="<%=frmName%>" property="instructors" id="instructor" indexId="ctr">
 							<tr onmouseover="this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='hand';this.style.cursor='pointer';" 
 								onmouseout="this.style.backgroundColor='transparent';"

@@ -222,7 +222,7 @@ public class InstructorEditForm extends PreferencesForm  {
     		        && (lname==null || lname.trim().length()==0) 
     		        && (careerAcct==null || careerAcct.trim().length()==0) ) {
 				errors.add("fname", 
-	                    new ActionMessage("errors.generic", "Supply one or more of the following information: Career Account / First Name / Last Name") );
+	                    new ActionMessage("errors.generic", "Supply one or more of the following information: Account Name / First Name / Last Name") );
     		}
     		
     		return errors;
