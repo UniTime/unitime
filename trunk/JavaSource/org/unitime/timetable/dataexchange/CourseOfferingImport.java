@@ -51,4 +51,15 @@ public class CourseOfferingImport extends BaseCourseOfferingImport {
 		return false;
 	}
 
+	@Override
+	protected void postLoadAction() {
+		// Core UniTime does not implement the post load action
+		
+	}
+
+	@Override
+	protected void preLoadAction() {
+		// Core UniTime does not implement the pre load action
+	}
+
 }

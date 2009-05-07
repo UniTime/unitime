@@ -62,11 +62,16 @@ import org.unitime.timetable.model.RoomDept;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Staff;
 import org.unitime.timetable.model.SubjectArea;
+import org.unitime.timetable.model.TimePattern;
+import org.unitime.timetable.model.TimePatternDays;
+import org.unitime.timetable.model.TimePatternTime;
+import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.VariableFixedCreditUnitConfig;
 import org.unitime.timetable.model.VariableRangeCreditUnitConfig;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.test.MakeAssignmentsForClassEvents;
 import org.unitime.timetable.util.CalendarUtils;
+import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.InstrOfferingPermIdGenerator;
 
 
@@ -76,10 +81,13 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 	HashSet<Long> existingCourseOfferings = new HashSet<Long>();
 	HashSet<Long> existingClasses = new HashSet<Long>();
 	HashMap<String, SubjectArea> subjectAreas = new HashMap<String, SubjectArea>();
+	HashMap<String, TimePattern> timePatterns = new HashMap<String, TimePattern>();
 	HashMap<String, ItypeDesc> itypes = new HashMap<String, ItypeDesc>();
 	HashMap<String, ItypeDesc> itypesBySisRef = new HashMap<String, ItypeDesc>();
 	protected DistributionType meetsWithType = null;
+	protected DistributionType canShareRoomType = null;
 	boolean useMeetsWithElement = false;
+	boolean useCanShareRoomElement = false;
 	PreferenceLevel requiredPrefLevel = null;
 	MakeAssignmentsForClassEvents assignmentHelper = null;
 	protected String rootElementName;
@@ -105,25 +113,34 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 	        beginTransaction();
 
 	        initializeLoad(rootElement, rootElementName);
-			
+			preLoadAction();
 	        loadOfferings(rootElement);
 	        
 	        deleteUnmatchedInstructionalOfferings();
 	        deleteUnmatchedCourseOfferings();
-	        deleteUnmatchedClasses();	        
+	        deleteUnmatchedClasses();
 	        commitTransaction();
 	        
 		} catch (Exception e) {
 			fatal("Exception: " + e.getMessage(), e);
 			rollbackTransaction();
 			throw e;
-		}	
+		} finally {
+			postLoadAction();
+		}
 		addNote("Records Changed: " + changeCount);
 		updateChangeList(true);
 		reportMissingLocations();
 		mailLoadResults();
 	}
 	
+
+	// If a setup action needs to take place before the data is loaded override this method
+	protected abstract void preLoadAction();
+
+	// If a post load action needs to take place before the data is loaded override this method
+	protected abstract void postLoadAction();
+
 	protected void loadOfferings(Element rootElement) throws Exception{    
 			for ( Iterator<?> it = rootElement.elementIterator(); it.hasNext(); ) {
 	    		Element element = (Element) it.next();
@@ -333,6 +350,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
         initializeDateTimeFormats(rootElement);
         initializeSessionData(rootElement, rootElementName);
         initializeMeetsWith(rootElement);
+        initializeCanShareRoom(rootElement);
         initializeManager();
         initializeAssignmentHelper();
         loadSetupData();
@@ -362,6 +380,12 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
         Boolean useMeetsWith = getOptionalBooleanAttribute(rootElement, "useMeetsWith");
         if (useMeetsWith != null && useMeetsWith.booleanValue()){
         	useMeetsWithElement = true;
+        }		
+	}
+	protected void initializeCanShareRoom(Element rootElement) {
+        Boolean useCanShareRoom = getOptionalBooleanAttribute(rootElement, "useCanShareRoom");
+        if (useCanShareRoom != null && useCanShareRoom.booleanValue()){
+        	useCanShareRoomElement = true;
         }		
 	}
 
@@ -395,13 +419,37 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 	protected void loadSetupData() throws Exception{
         loadItypes();
         loadSubjectAreas(session.getUniqueId());
+        loadTimePatterns(session.getUniqueId());
         loadExistingInstructionalOfferings(session.getUniqueId());
         loadExistingCourseOfferings(session.getUniqueId());
         loadExistingClasses(session.getUniqueId());
         loadRequiredPrefLevel();
         loadMeetsWithDistributionType();
+        loadCanShareRoomDistributionType();
 
 	}
+	private void loadTimePatterns(Long sessionId) {
+		List<?> patterns = new ArrayList<Object>();
+		patterns = this.
+			getHibSession().
+			createQuery("select distinct tp from TimePattern as tp where tp.session.uniqueId=:sessionId and ( tp.type = :standard or tp.type = :evening )").
+			setLong("sessionId", sessionId.longValue()).
+			setInteger("standard", TimePattern.sTypeStandard).
+			setInteger("evening", TimePattern.sTypeEvening).
+			setCacheable(true).
+			list();
+		for (Iterator<?> tpIt = patterns.iterator(); tpIt.hasNext();) {
+			TimePattern tp = (TimePattern) tpIt.next();
+			for (Iterator<?> dIt = tp.getDays().iterator(); dIt.hasNext();){
+				TimePatternDays tpd = (TimePatternDays) dIt.next();
+				for (Iterator<?> timesIt = tp.getTimes().iterator(); timesIt.hasNext();){
+					TimePatternTime tpt = (TimePatternTime) timesIt.next();
+					timePatterns.put((tpd.getDayCode().toString()+"x"+tp.getMinPerMtg().toString()+"x"+tpt.getStartSlot()), tp);
+				}
+			}
+		}
+	}
+
 	private boolean isSameCourseOffering(CourseOffering originalCourseOffering, CourseOffering newCourseOffering){
 		boolean isSame = false;
 		if(originalCourseOffering.getExternalUniqueId() != null 
@@ -1129,18 +1177,14 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		return(changed);
 	}
 	
-	private boolean elementMeetsWith(Element element, Class_ c) throws Exception{
-		if (!useMeetsWithElement){
-			return(false);
-		}
+	private boolean handleDistributionPrefElement(Element element, Class_ c, String elementName, DistributionType distributionType) throws Exception{
 		boolean changed = false;
-		String elementName = "meetsWith";
-    	Vector<DistributionPref> existingMeetsWith = new Vector<DistributionPref>();
+    	Vector<DistributionPref> existingDistPrefs = new Vector<DistributionPref>();
 		if(c.getDistributionPreferences() != null){
 			for(Iterator<?> dpIt = c.getDistributionPreferences().iterator(); dpIt.hasNext(); ){
 				DistributionPref dp = (DistributionPref) dpIt.next();
-				if (dp.getDistributionType().getUniqueId().equals(meetsWithType.getUniqueId())){
-					existingMeetsWith.add(dp);						
+				if (dp.getDistributionType().getUniqueId().equals(distributionType.getUniqueId())){
+					existingDistPrefs.add(dp);						
 				}
 			}
 		}
@@ -1148,15 +1192,15 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		if(element.element(elementName) != null){
         	classIds.add(c.getExternalUniqueId());
         	for (Iterator<?> it = element.elementIterator(elementName); it.hasNext();){
-        		Element meetsWithElement = (Element) it.next();
-        		classIds.add(getRequiredStringAttribute(meetsWithElement, "id", elementName));
+        		Element distPrefElement = (Element) it.next();
+        		classIds.add(getRequiredStringAttribute(distPrefElement, "id", elementName));
         	}
        	
         }
-      	if(existingMeetsWith.size() != 1){
-      		if (existingMeetsWith.size() > 1) {
-	      		addNote("\tMultiple meets with preferences exist -- deleted them");
-				for (Iterator<?> dpIt = existingMeetsWith.iterator(); dpIt.hasNext();){
+      	if(existingDistPrefs.size() != 1){
+      		if (existingDistPrefs.size() > 1) {
+	      		addNote("\tMultiple " + distributionType.getLabel() + " distribution preferences exist -- deleted them");
+				for (Iterator<?> dpIt = existingDistPrefs.iterator(); dpIt.hasNext();){
 					DistributionPref dp = (DistributionPref) dpIt.next();				
 					addNote("\t\tdeleted '" + dp.preferenceText() + "'");
 					deleteDistributionPref(dp);									
@@ -1164,20 +1208,20 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 	      		changed = true;
       		}
       		if (classIds.size() > 1){
-      			addDistributionPref(classIds, c);
+      			addDistributionPref(classIds, c, distributionType);
       			changed = true;
       		}
 		} else {
-			DistributionPref dp = (DistributionPref)existingMeetsWith.firstElement();
+			DistributionPref dp = (DistributionPref)existingDistPrefs.firstElement();
 			if (classIds.size() > 1){
-				if (!isMatchingMeetsWith(dp, classIds)){
+				if (!isMatchingDistPref(dp, classIds)){
 					changed = true;
 					deleteDistributionPref(dp);
-					addDistributionPref(classIds, c);
+					addDistributionPref(classIds, c, distributionType);
 				}
 				
 			} else {
-				addNote("Class  " + c.getClassLabel() +" is no longer a meets with, removed" + dp.toString());
+				addNote("Class  " + c.getClassLabel() +" is no longer a " + distributionType.getLabel() + ", removed" + dp.toString());
 				deleteDistributionPref(dp);
 				changed = true;
 			}
@@ -1185,7 +1229,22 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		return(changed);
 	}
 	
-	private boolean isMatchingMeetsWith(DistributionPref dp, Vector<String> classExternalIds){
+	private boolean elementCanShareRoom(Element element, Class_ c) throws Exception{
+		if (!useCanShareRoomElement){
+			return(false);
+		}
+		return(handleDistributionPrefElement(element, c, "canShareRoom", canShareRoomType));
+	}
+
+
+	private boolean elementMeetsWith(Element element, Class_ c) throws Exception{
+		if (!useMeetsWithElement){
+			return(false);
+		}
+		return(handleDistributionPrefElement(element, c, "meetsWith", meetsWithType));
+	}
+	
+	private boolean isMatchingDistPref(DistributionPref dp, Vector<String> classExternalIds){
 		boolean isSame = false;
 		DistributionObject distObj = null;
 		String cei = null;
@@ -1513,6 +1572,11 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 				Element classElement = (Element) cIt.next();
 				boolean isAdd = false;
 				String id = getOptionalStringAttribute(classElement, "id");
+				String managingDeptStr = getOptionalStringAttribute(classElement, "managingDept");
+				Department managingDept = null;
+				if (managingDeptStr != null && managingDeptStr.trim().length() > 0){
+					managingDept = Department.findByDeptCode(managingDeptStr.trim(), session.getUniqueId());
+				}
 				String limitStr = getRequiredStringAttribute(classElement, "limit", elementName);
 				Integer limit = new Integer(0);
 				if (!limitStr.equalsIgnoreCase("inf")){
@@ -1521,7 +1585,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 				String suffix = getRequiredStringAttribute(classElement, "suffix", elementName);
 				String type = getRequiredStringAttribute(classElement, "type", elementName);
 				String scheduleNote = getOptionalStringAttribute(classElement, "scheduleNote");
-				Boolean displayInScheduleBook  = getOptionalBooleanAttribute(classElement, "displayInScheduleBook ");
+				Boolean displayInScheduleBook  = getOptionalBooleanAttribute(classElement, "displayInScheduleBook");
 				if (displayInScheduleBook == null){
 					displayInScheduleBook = new Boolean(true);
 				}
@@ -1591,6 +1655,12 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 						addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " 'class' limit changed");
 						changed = true;						
 					}
+					if ((clazz.getManagingDept() != null && managingDept != null && !clazz.getManagingDept().getUniqueId().equals(managingDept.getUniqueId()))
+							|| (clazz.getManagingDept() == null && managingDept != null)){
+						clazz.setManagingDept(managingDept);
+						addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " 'class' managing department changed");
+						changed = true;						
+					}
 					if ((clazz.isDisplayInScheduleBook() != null && !clazz.isDisplayInScheduleBook().equals(displayInScheduleBook))
 							 || (clazz.isDisplayInScheduleBook() == null && displayInScheduleBook != null)){
 						clazz.setDisplayInScheduleBook(displayInScheduleBook);
@@ -1615,6 +1685,9 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					clazz.setDisplayInScheduleBook(displayInScheduleBook);
 					clazz.setSchedulePrintNote(scheduleNote);
 					clazz.setDisplayInstructor(new Boolean(true));
+					if (managingDept != null){
+						clazz.setManagingDept(managingDept);
+					}
 					if(parentClass != null){
 						clazz.setParentClass(parentClass);
 						parentClass.addTochildClasses(clazz);
@@ -1674,6 +1747,11 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					changed = true;
 				}
 				
+				if (elementCanShareRoom(classElement, clazz)){
+					addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " 'class' can share room preferences changed");
+					changed = true;
+				}
+				
 				if (classElement.element("meeting") != null){
 					if(elementMeetings(classElement, clazz)){
 						changed = true;
@@ -1689,7 +1767,6 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					TimeObject meetingTime = elementTime(classElement);
 					Vector<Room> rooms = elementRoom(classElement, clazz);
 					Vector<NonUniversityLocation> locations = elementLocation(classElement, clazz);
-					
 					int numRooms = 0;
 					if (rooms != null && !rooms.isEmpty()){
 						numRooms += rooms.size();
@@ -1705,7 +1782,36 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					if (addUpdateClassEvent(clazz, meetingTime, rooms, locations)){
 						addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " 'class' events for class changed");
 						changed = true;
-					}					
+					}	
+					TimePattern tp = findTimePatternForMeetingInfo(clazz, meetingTime);
+					if (tp != null && clazz.getTimePatterns() != null && !clazz.getTimePatterns().contains(tp)){
+						for (Iterator it = clazz.getTimePreferences().iterator(); it.hasNext();){
+							TimePref pref = (TimePref) it.next();
+							clazz.getPreferences().remove(pref);
+						}
+						TimePref tpref = new TimePref();
+						tpref.setTimePattern(tp);
+						tpref.setOwner(clazz);
+						tpref.setPrefLevel(requiredPrefLevel);
+						clazz.addTopreferences(tpref);
+						addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " 'class' time pattern for class changed");
+						changed = true;
+					} else if (tp != null && (clazz.getTimePatterns() == null || clazz.getTimePatterns().isEmpty())){
+						TimePref tpref = new TimePref();
+						tpref.setTimePattern(tp);
+						tpref.setOwner(clazz);
+						tpref.setPrefLevel(requiredPrefLevel);
+						clazz.addTopreferences(tpref);
+						addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " 'class' time pattern for class added");
+						changed = true;						
+					} else if (tp == null && clazz.getTimePatterns() != null && !clazz.getTimePatterns().isEmpty()){
+						for (Iterator it = clazz.getTimePreferences().iterator(); it.hasNext();){
+							TimePref pref = (TimePref) it.next();
+							clazz.getPreferences().remove(pref);
+						}
+						addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " 'class' time pattern for class removed");
+						changed = true;						
+					}
 				}
 				if (elementClass(classElement, ioc, clazz, allExistingClasses)){
 					addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " 'class' child classes changed");
@@ -1745,6 +1851,29 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 			}
 		}
 		return changed;
+	}
+	
+	private TimePattern findTimePatternForMeetingInfo(Class_ clazz, TimeObject timeObject){
+		int days = 0;
+		for(Integer dayOfWeek : timeObject.getDays()){
+			if (dayOfWeek == Calendar.MONDAY){
+				days += Constants.DAY_CODES[Constants.DAY_MON];
+			} else if (dayOfWeek == Calendar.TUESDAY){
+				days += Constants.DAY_CODES[Constants.DAY_TUE];
+			} else if (dayOfWeek == Calendar.WEDNESDAY){
+				days += Constants.DAY_CODES[Constants.DAY_WED];
+			} else if (dayOfWeek == Calendar.THURSDAY){
+				days += Constants.DAY_CODES[Constants.DAY_THU];
+			} else if (dayOfWeek == Calendar.FRIDAY){
+				days += Constants.DAY_CODES[Constants.DAY_FRI];
+			} else if (dayOfWeek == Calendar.SATURDAY){
+				days += Constants.DAY_CODES[Constants.DAY_SAT];
+			} else if (dayOfWeek == Calendar.SUNDAY){
+				days += Constants.DAY_CODES[Constants.DAY_SUN];
+			}
+		}
+		String timePatternLookupString = days+"x"+(clazz.getSchedulingSubpart().getMinutesPerWk()/timeObject.getDays().size()+"x"+timeObject.getStartPeriod().toString());
+		return(timePatterns.get(timePatternLookupString));
 	}
 	protected abstract boolean handleCustomClassChildElements(Element classElement, InstrOfferingConfig ioc, Class_ clazz)  throws Exception ;
 
@@ -1808,7 +1937,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		return(getMeetings(dp.getStartDate(), dp.getEndDate(), dp.getPattern(), meetingTime, rooms, locations));
 	}
 	
-	private void addDistributionPref(Vector<String> classIds, Class_ clazz) throws Exception{
+	private void addDistributionPref(Vector<String> classIds, Class_ clazz, DistributionType distributionType) throws Exception{
 		if (classIds.size() <= 1){
 			throw (new Exception("There must be at least two classes to have a meets with distribution preference: " + clazz.getClassLabel()));
 		}
@@ -1836,7 +1965,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 			addNote("\t not all classes for this meets with pref exist yet, will add it later:" + clazz.getClassLabel());
 		} else {
 			DistributionPref dp = new DistributionPref();
-			dp.setDistributionType(meetsWithType);
+			dp.setDistributionType(distributionType);
 			dp.setGrouping(DistributionPref.sGroupingNone);
 			dp.setPrefLevel(requiredPrefLevel);
 			dp.setOwner(clazz.getSchedulingSubpart().getControllingDept());
@@ -2450,6 +2579,9 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 	
 	private void loadMeetsWithDistributionType() {
 		meetsWithType = (DistributionType) this.getHibSession().createQuery("from DistributionType dt where dt.reference = 'MEET_WITH'").uniqueResult();
+	}
+	private void loadCanShareRoomDistributionType() {
+		canShareRoomType = (DistributionType) this.getHibSession().createQuery("from DistributionType dt where dt.reference = 'CAN_SHARE_ROOM'").uniqueResult();
 	}
 	private void loadRequiredPrefLevel() {
 		requiredPrefLevel = (PreferenceLevel) this.getHibSession().createQuery("from PreferenceLevel pl where pl.prefName = 'Required'").uniqueResult();
