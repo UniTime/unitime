@@ -183,7 +183,7 @@
 		<html:hidden property="classSuffix"/>
 		<logic:notEmpty name="<%=frmName%>" property="classSuffix">
 			<TR>
-				<TD>Class Division-Section:</TD>
+				<TD>Class Suffix:</TD>
 				<TD>
 					<bean:write name="<%=frmName%>" property="classSuffix" />
 				<TD>
@@ -385,7 +385,7 @@
 					<TR>
 						<TD><I>Name</I></TD>
 						<TD>&nbsp;<I>% Share</I>&nbsp;</TD>
-						<TD>&nbsp;<I>Lead</I>&nbsp;</TD>
+						<TD>&nbsp;<I>Check Conflicts</I>&nbsp;</TD>
 						<TD>&nbsp;</TD>
 					</TR>
 					

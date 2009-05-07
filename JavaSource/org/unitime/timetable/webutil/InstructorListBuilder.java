@@ -233,7 +233,7 @@ public class InstructorListBuilder {
 					Class_ c = ci.getClassInstructing(); 
 					String className = c.getClassLabel();
 		    		String title = className;
-		    		title += " ("+ci.getPercentShare()+"%"+(ci.isLead().booleanValue()?", lead":"")+")";
+		    		title += " ("+ci.getPercentShare()+"%"+(ci.isLead().booleanValue()?", check conflicts":"")+")";
 		    		if (!c.isDisplayInstructor().booleanValue()){
 		    			title += " - Do Not Display Instructor.";
 		    		}
