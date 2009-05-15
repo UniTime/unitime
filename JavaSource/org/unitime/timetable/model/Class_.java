@@ -373,10 +373,10 @@ public class Class_ extends BaseClass_ {
     	Set classPrefs = super.effectivePreferences(type);
 
     	Set instrPrefs = null;
-    	if (!mngDept.isExternalManager().booleanValue()) { // departmental class -> take instructor preferences
+    	if (mngDept == null || !mngDept.isExternalManager().booleanValue()) { // departmental class -> take instructor preferences
     		instrPrefs = classInstructorPrefsOfType(type);
         	if (instrPrefs==null || instrPrefs.isEmpty()){
-        		if (!RoomPref.class.equals(type)){ //Department Room Prefs are not used in this way
+        		if (!RoomPref.class.equals(type)  && getManagingDept() != null){ //Department Room Prefs are not used in this way
         			instrPrefs = getManagingDept().getPreferences(type); //take department preference if there is no instructor pref
         		}
         	}
@@ -525,6 +525,9 @@ public class Class_ extends BaseClass_ {
 
     public Vector getLeadInstructors() {
     	Vector ret = new Vector();
+    	if (getClassInstructors() == null){
+    		return(ret);
+    	}
     	for (Iterator i=getClassInstructors().iterator();i.hasNext();) {
     		ClassInstructor classInstructor = (ClassInstructor)i.next();
     		if (classInstructor.isLead().booleanValue()) ret.addElement(classInstructor.getInstructor());
