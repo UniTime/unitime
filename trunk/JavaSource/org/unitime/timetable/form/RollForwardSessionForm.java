@@ -115,7 +115,7 @@ public class RollForwardSessionForm extends ActionForm {
 			errors.add("sessionHasData", new ActionMessage("errors.rollForward.sessionHasData", rollForwardType, sessionToRollForwardTo.getLabel()));			
 		}		
 	}
-	private void validateRollForward(ActionErrors errors, Session sessionToRollForwardTo, Long sessionIdToRollForwardFrom, String rollForwardType, Collection checkCollection){
+	protected void validateRollForward(ActionErrors errors, Session sessionToRollForwardTo, Long sessionIdToRollForwardFrom, String rollForwardType, Collection checkCollection){
 		validateRollForwardSessionHasNoDataOfType(errors, sessionToRollForwardTo, rollForwardType,  checkCollection);
 		Session sessionToRollForwardFrom = Session.getSessionById(sessionIdToRollForwardFrom);
 		if (sessionToRollForwardFrom == null){
