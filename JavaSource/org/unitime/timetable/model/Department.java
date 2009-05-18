@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.hibernate.FlushMode;
 import org.hibernate.criterion.Restrictions;
 import org.unitime.commons.User;
 import org.unitime.timetable.model.base.BaseDepartment;
@@ -103,6 +104,7 @@ public class Department extends BaseDepartment implements Comparable {
 			setLong("sessionId", sessionId.longValue()).
 			setString("deptCode", deptCode).
 			setCacheable(true).
+			setFlushMode(FlushMode.MANUAL).
 			uniqueResult();
 	}
 
