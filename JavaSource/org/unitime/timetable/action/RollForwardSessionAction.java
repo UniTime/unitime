@@ -140,7 +140,7 @@ public class RollForwardSessionAction extends Action {
   		return mapping.findForward("displayRollForwardSessionForm");
 	}
 	
-	private void setToFromSessionsInForm(RollForwardSessionForm rollForwardSessionForm){
+	protected void setToFromSessionsInForm(RollForwardSessionForm rollForwardSessionForm){
 		List sessionList = new ArrayList();
 		sessionList.addAll(Session.getAllSessions());
 		rollForwardSessionForm.setFromSessions(new ArrayList());
@@ -160,7 +160,7 @@ public class RollForwardSessionAction extends Action {
 		}
 	}
 	
-	private Set getSubjectAreas(Long selectedSessionId) {
+	protected Set getSubjectAreas(Long selectedSessionId) {
 		Set subjects = new TreeSet();
 		Session session = null;
 		if (selectedSessionId == null){
