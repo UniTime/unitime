@@ -32,6 +32,7 @@ import java.util.TreeSet;
 import java.util.Vector;
 
 import org.dom4j.Element;
+import org.hibernate.FlushMode;
 import org.hibernate.impl.SessionImpl;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.ApplicationProperties;
@@ -149,6 +150,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 	            flush(true);
 	    		} catch (Exception e) {
 	    			addNote("Not Loading 'offering' Error:  " + e.getMessage());
+	    			e.printStackTrace();
 	    			addNote("\t " + element.asXML());
 	    			updateChangeList(true);
 	    		}	
@@ -2312,6 +2314,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 
 		ChangeLog.addChange(getHibSession(), manager, session, io, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.DELETE, (io.getControllingCourseOffering() == null?null:io.getControllingCourseOffering().getSubjectArea()), (io.getControllingCourseOffering() == null?null:io.getControllingCourseOffering().getDepartment()));
 		this.getHibSession().delete(io);
+		flush(true);
 	}
 	
 	private void deleteInstrOffrConfig(InstrOfferingConfig ioc) {
@@ -2337,6 +2340,12 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 	
 	private void deleteSchedulingSubpart(SchedulingSubpart ss) {
 		
+		if (ss.getChildSubparts() != null){
+			for(Iterator cssIt = ss.getChildSubparts().iterator(); cssIt.hasNext(); ){
+				SchedulingSubpart css = (SchedulingSubpart) cssIt.next();
+				deleteSchedulingSubpart(css);
+			}
+		}
 		// remove all class uniqueIds from the existing classes list and get rid of any dependent objects so the
 		//    class can be deleted
 		if (ss.getClasses() != null){
@@ -2344,17 +2353,12 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 				Class_ c = (Class_) cIt.next();
 				existingClasses.remove(c.getUniqueId());
 				c.deleteAllDependentObjects(this.getHibSession(), false);
+				
 			}
 		}
 		
 		InstrOfferingConfig ioc = ss.getInstrOfferingConfig();
 		
-		if (ss.getChildSubparts() != null){
-			for(Iterator cssIt = ss.getChildSubparts().iterator(); cssIt.hasNext(); ){
-				SchedulingSubpart css = (SchedulingSubpart) cssIt.next();
-				deleteSchedulingSubpart(css);
-			}
-		}
 		SchedulingSubpart parentSubpart = ss.getParentSubpart();
 		if(parentSubpart != null){
 			parentSubpart.getChildSubparts().remove(ss);
@@ -2363,7 +2367,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		ioc.getSchedulingSubparts().remove(ss);	
 		this.getHibSession().update(ioc);
 		ChangeLog.addChange(getHibSession(), manager, session, ss, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.DELETE, ioc.getControllingCourseOffering().getSubjectArea(), ioc.getControllingCourseOffering().getDepartment());
-		this.getHibSession().delete(ss);
+//		this.getHibSession().delete(ss);
 	}
 
 	private void deleteClassInstructor(ClassInstructor ci){
@@ -2380,6 +2384,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		c.deleteAllDependentObjects(this.getHibSession(), false);
 		c.getSchedulingSubpart().getClasses().remove(c);
 		SchedulingSubpart ss = c.getSchedulingSubpart();
+		ss.getClasses().remove(c);
 		ChangeLog.addChange(getHibSession(), manager, session, c, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.DELETE, ss.getControllingCourseOffering().getSubjectArea(), ss.getControllingCourseOffering().getDepartment());
 		existingClasses.remove(c.getUniqueId());
 		this.getHibSession().delete(c);
@@ -2439,6 +2444,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		setLong("sessionId", sessionId.longValue()).
 		setString("externalId", externalId).
 		setCacheable(true).
+		setFlushMode(FlushMode.MANUAL).
 		uniqueResult();
 	}
 	
