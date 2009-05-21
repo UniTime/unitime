@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.model;
 
+import org.hibernate.FlushMode;
 import org.unitime.timetable.model.base.BaseExactTimeMins;
 import org.unitime.timetable.model.dao.ExactTimeMinsDAO;
 import org.unitime.timetable.util.Constants;
@@ -67,6 +68,7 @@ public class ExactTimeMins extends BaseExactTimeMins implements Comparable {
 			createQuery("select m from ExactTimeMins m where m.minsPerMtgMin<=:minPerMtg and :minPerMtg<=m.minsPerMtgMax").
 			setInteger("minPerMtg", minPerMtg).
 			setCacheable(true).
+			setFlushMode(FlushMode.MANUAL).
 			uniqueResult();
 	}
 	
