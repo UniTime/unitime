@@ -90,6 +90,12 @@
 			leaf_item('Reports','Display Solution Reports','solutionReport.do');
 		enditem(); //12
 <% }} %>
+		<tt:hasProperty name="tmtbl.menu.course_timetabling.extra">
+			menu_item('13',<tt:property name="tmtbl.menu.course_timetabling.extra.label"/>,<tt:property name="tmtbl.menu.course_timetabling.extra.hover"/>,'','collapse');
+				<tt:property name="tmtbl.menu.course_timetabling.extra"/>
+			enditem(); //13
+		</tt:hasProperty>
+
 	enditem(); //1
 <% } %>
 <% if (manager.canSectionStudents(acadSession,user)) { %>
