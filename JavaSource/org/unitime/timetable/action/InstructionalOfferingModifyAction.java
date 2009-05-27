@@ -1,6 +1,6 @@
 /*
  * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * Copyright (C) 2008-2009, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -41,7 +41,9 @@ import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.InstructionalOfferingModifyForm;
+import org.unitime.timetable.interfaces.ExternalInstrOffrConfigChangeAction;
 import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
@@ -375,6 +377,12 @@ public class InstructionalOfferingModifyAction extends Action {
 	        hibSession.flush();
 	        hibSession.refresh(ioc);
 	        hibSession.refresh(ioc.getInstructionalOffering());
+        	String className = ApplicationProperties.getProperty("tmtbl.external.instr_offr_config.change_action.class");
+        	if (className != null && className.trim().length() > 0){
+	        	ExternalInstrOffrConfigChangeAction configChangeAction = (ExternalInstrOffrConfigChangeAction) (Class.forName(className).newInstance());
+	       		configChangeAction.performExternalInstrOffrConfigChangeAction(ioc.getInstructionalOffering(), hibSession);
+        	}
+
         }
         catch (Exception e) {
             Debug.error(e);
