@@ -33,7 +33,9 @@ import org.apache.struts.util.MessageResources;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.SchedulingSubpartEditForm;
+import org.unitime.timetable.interfaces.ExternalSchedulingSubpartEditAction;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.CourseCreditUnitConfig;
 import org.unitime.timetable.model.CourseOffering;
@@ -46,6 +48,7 @@ import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.VariableFixedCreditUnitConfig;
 import org.unitime.timetable.model.VariableRangeCreditUnitConfig;
 import org.unitime.timetable.model.dao.DatePatternDAO;
+import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
 import org.unitime.timetable.model.dao.ItypeDescDAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 import org.unitime.timetable.util.Constants;
@@ -425,6 +428,13 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
         	sdao.getSession().saveOrUpdate(ss.getCredit());
         }
         sdao.update(ss);
+ 
+        String className = ApplicationProperties.getProperty("tmtbl.external.sched_subpart.edit_action.class");
+    	if (className != null && className.trim().length() > 0){
+        	ExternalSchedulingSubpartEditAction editAction = (ExternalSchedulingSubpartEditAction) (Class.forName(className).newInstance());
+       		editAction.performExternalSchedulingSubpartEditAction(ss, sdao.getSession());
+    	}
+
 
         ChangeLog.addChange(
                 null,

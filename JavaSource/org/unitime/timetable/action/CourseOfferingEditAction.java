@@ -36,7 +36,10 @@ import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.CourseOfferingEditForm;
+import org.unitime.timetable.interfaces.ExternalCourseOfferingEditAction;
+import org.unitime.timetable.interfaces.ExternalInstructionalOfferingDeleteAction;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.CourseCreditUnitConfig;
 import org.unitime.timetable.model.CourseOffering;
@@ -315,6 +318,13 @@ public class CourseOfferingEditAction extends Action {
 
             if (io!=null)
                 hibSession.refresh(io);
+            
+        	String className = ApplicationProperties.getProperty("tmtbl.external.course_offering.edit_action.class");
+        	if (className != null && className.trim().length() > 0){
+	        	ExternalCourseOfferingEditAction editAction = (ExternalCourseOfferingEditAction) (Class.forName(className).newInstance());
+	       		editAction.performExternalCourseOfferingEditAction(io, hibSession);
+        	}
+
         }
         catch (Exception e) {
             try {

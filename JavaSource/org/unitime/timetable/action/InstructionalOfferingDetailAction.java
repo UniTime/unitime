@@ -42,6 +42,10 @@ import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.InstructionalOfferingDetailForm;
+import org.unitime.timetable.interfaces.ExternalInstrOffrConfigChangeAction;
+import org.unitime.timetable.interfaces.ExternalInstructionalOfferingDeleteAction;
+import org.unitime.timetable.interfaces.ExternalInstructionalOfferingNotOfferedAction;
+import org.unitime.timetable.interfaces.ExternalInstructionalOfferingOfferedAction;
 import org.unitime.timetable.interfaces.ExternalLinkLookup;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.CourseOffering;
@@ -257,6 +261,12 @@ public class InstructionalOfferingDetailAction extends Action {
 	        io.deleteAllReservations(hibSession);
             Event.deleteFromEvents(hibSession, io);
 	        Exam.deleteFromExams(hibSession, io);
+        	String className = ApplicationProperties.getProperty("tmtbl.external.instr_offr.delete_action.class");
+        	if (className != null && className.trim().length() > 0){
+	        	ExternalInstructionalOfferingDeleteAction deleteAction = (ExternalInstructionalOfferingDeleteAction) (Class.forName(className).newInstance());
+	       		deleteAction.performExternalInstructionalOfferingDeleteAction(io, hibSession);
+        	}
+
 	        hibSession.delete(io);
 	        
 	        tx.commit();
@@ -431,6 +441,13 @@ public class InstructionalOfferingDetailAction extends Action {
             hibSession.flush();
             hibSession.clear();
             
+        	String className = ApplicationProperties.getProperty("tmtbl.external.instr_offr.not_offered_action.class");
+        	if (className != null && className.trim().length() > 0){
+	        	ExternalInstructionalOfferingNotOfferedAction notOfferedAction = (ExternalInstructionalOfferingNotOfferedAction) (Class.forName(className).newInstance());
+	       		notOfferedAction.performExternalInstructionalOfferingNotOfferedAction(io, hibSession);
+        	}
+
+            
             // Update Form 
             frm.setNotOffered(io.isNotOffered());
         }
@@ -472,7 +489,13 @@ public class InstructionalOfferingDetailAction extends Action {
             
             hibSession.flush();
             hibSession.clear();
-            
+
+        	String className = ApplicationProperties.getProperty("tmtbl.external.instr_offr.offered_action.class");
+        	if (className != null && className.trim().length() > 0){
+	        	ExternalInstructionalOfferingOfferedAction offeredAction = (ExternalInstructionalOfferingOfferedAction) (Class.forName(className).newInstance());
+	       		offeredAction.performExternalInstructionalOfferingOfferedAction(io, hibSession);
+        	}
+
             // Update Form 
             frm.setNotOffered(io.isNotOffered());
         }
