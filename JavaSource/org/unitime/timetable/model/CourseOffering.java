@@ -34,6 +34,8 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
+import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.interfaces.ExternalInstructionalOfferingAddAction;
 import org.unitime.timetable.model.base.BaseCourseOffering;
 import org.unitime.timetable.model.comparators.AcadAreaReservationComparator;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
@@ -245,6 +247,12 @@ public class CourseOffering extends BaseCourseOffering {
 		    cdao.saveOrUpdate(co);		    
 		    cdao.getSession().refresh(co);
 		    cdao.getSession().refresh(subjArea);
+        	String className = ApplicationProperties.getProperty("tmtbl.external.instr_offr.add_action.class");
+        	if (className != null && className.trim().length() > 0){
+	        	ExternalInstructionalOfferingAddAction addAction = (ExternalInstructionalOfferingAddAction) (Class.forName(className).newInstance());
+	       		addAction.performExternalInstructionalOfferingAddAction(io, hibSession);
+        	}
+
 	    }
 	    catch (Exception e) {
 	        //Database.closeConnObjs(stmt, rs);

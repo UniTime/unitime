@@ -38,7 +38,10 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.CourseReservationEditForm;
+import org.unitime.timetable.interfaces.ExternalClassEditAction;
+import org.unitime.timetable.interfaces.ExternalCourseOfferingReservationEditAction;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseOfferingReservation;
@@ -299,6 +302,14 @@ public class CourseReservationEditAction extends ReservationAction {
             tx.commit();
             hibSession.clear();
             hibSession.refresh(ownerObj);
+            
+            
+            String className = ApplicationProperties.getProperty("tmtbl.external.reservation.edit_action.class");
+        	if (className != null && className.trim().length() > 0){
+            	ExternalCourseOfferingReservationEditAction editAction = (ExternalCourseOfferingReservationEditAction) (Class.forName(className).newInstance());
+           		editAction.performExternalCourseOfferingReservationEditAction(ownerObj, hibSession);
+        	}
+
         }
         catch (Exception e) {
             if (tx!=null) tx.rollback();

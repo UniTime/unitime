@@ -36,8 +36,11 @@ import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.MessageResources;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ClassInstructorAssignmentForm;
 import org.unitime.timetable.form.ClassListForm;
+import org.unitime.timetable.interfaces.ExternalCourseOfferingEditAction;
+import org.unitime.timetable.interfaces.ExternalInstrOfferingConfigAssignInstructorsAction;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DepartmentalInstructor;
@@ -153,6 +156,11 @@ public class ClassInstructorAssignmentAction extends Action {
                             cfg.getInstructionalOffering().getControllingCourseOffering().getSubjectArea(),
                             null);
 
+                	String className = ApplicationProperties.getProperty("tmtbl.external.instr_offr_config.assign_instructors_action.class");
+                	if (className != null && className.trim().length() > 0){
+        	        	ExternalInstrOfferingConfigAssignInstructorsAction assignAction = (ExternalInstrOfferingConfigAssignInstructorsAction) (Class.forName(className).newInstance());
+        	       		assignAction.performExternalInstrOfferingConfigAssignInstructorsAction(ioc, InstrOfferingConfigDAO.getInstance().getSession());
+                	}
 
                     request.setAttribute("io", frm.getInstrOfferingId());
 
