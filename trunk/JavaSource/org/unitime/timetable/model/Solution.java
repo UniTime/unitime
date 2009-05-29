@@ -33,6 +33,11 @@ import java.util.List;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import net.sf.cpsolver.coursett.model.Placement;
+import net.sf.cpsolver.ifs.util.CSVFile;
+import net.sf.cpsolver.ifs.util.DataProperties;
+import net.sf.cpsolver.ifs.util.CSVFile.CSVField;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Query;
@@ -43,6 +48,7 @@ import org.unitime.commons.Email;
 import org.unitime.commons.User;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ListSolutionsForm.InfoComparator;
+import org.unitime.timetable.interfaces.ExternalSolutionCommitAction;
 import org.unitime.timetable.model.base.BaseSolution;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.DivSecAssignmentComparator;
@@ -54,11 +60,6 @@ import org.unitime.timetable.solver.ui.PropertiesInfo;
 import org.unitime.timetable.solver.ui.TimetableInfo;
 import org.unitime.timetable.solver.ui.TimetableInfoFileProxy;
 import org.unitime.timetable.util.Constants;
-
-import net.sf.cpsolver.coursett.model.Placement;
-import net.sf.cpsolver.ifs.util.CSVFile;
-import net.sf.cpsolver.ifs.util.DataProperties;
-import net.sf.cpsolver.ifs.util.CSVFile.CSVField;
 
 
 public class Solution extends BaseSolution implements ClassAssignmentProxy {
@@ -287,9 +288,15 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 	              "ClassEvent",
 	              "select e.uniqueId from Solution s inner join s.assignments a, ClassEvent e where e.clazz=a.clazz and s.uniqueId=:solutionId");
 
-		removeDivSecNumbers(hibSession);
+//		removeDivSecNumbers(hibSession);
 		
 		if (sendNotificationPuid!=null) sendNotification(this, null, sendNotificationPuid, true, null);
+    	String className = ApplicationProperties.getProperty("tmtbl.external.solution.commit_action.class");
+    	if (className != null && className.trim().length() > 0){
+    		ExternalSolutionCommitAction commitAction = (ExternalSolutionCommitAction) (Class.forName(className).newInstance());
+    		commitAction.performExternalSolutionCommitAction(this, hibSession);
+    	}
+
 	}
 	
 	public boolean commitSolution(Vector messages, org.hibernate.Session hibSession) throws Exception {
@@ -469,7 +476,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		setCommitDate(new Date());
 		setCommited(Boolean.TRUE);
 		
-		createDivSecNumbers(hibSession, messages);
+//		createDivSecNumbers(hibSession, messages);
 		
 		EventContact contact = null;
 		if (sendNotificationPuid!=null) {
@@ -508,7 +515,12 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		}
 		
 		if (sendNotificationPuid!=null) sendNotification(uncommittedSolution, this, sendNotificationPuid, true, messages);
-		
+    	String className = ApplicationProperties.getProperty("tmtbl.external.solution.commit_action.class");
+    	if (className != null && className.trim().length() > 0){
+    		ExternalSolutionCommitAction commitAction = (ExternalSolutionCommitAction) (Class.forName(className).newInstance());
+    		commitAction.performExternalSolutionCommitAction(this, hibSession);
+    	}
+
 		return true;
 	}
 	

@@ -46,7 +46,11 @@ import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.CrossListsModifyForm;
+import org.unitime.timetable.interfaces.ExternalCourseCrosslistAction;
+import org.unitime.timetable.interfaces.ExternalCourseOfferingRemoveAction;
+import org.unitime.timetable.interfaces.ExternalInstructionalOfferingInCrosslistAddAction;
 import org.unitime.timetable.model.AcadAreaReservation;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
@@ -417,6 +421,11 @@ public class CrossListsModifyAction extends Action {
 
 	    	        hibSession.refresh(io);
 	                hibSession.refresh(io1);
+	            	String className = ApplicationProperties.getProperty("tmtbl.external.instr_offr_in_crosslist.add_action.class");
+	            	if (className != null && className.trim().length() > 0){
+	            		ExternalInstructionalOfferingInCrosslistAddAction addAction = (ExternalInstructionalOfferingInCrosslistAddAction) (Class.forName(className).newInstance());
+	    	       		addAction.performExternalInstructionalOfferingInCrosslistAddAction(io1, hibSession);
+	            	}
 	                
 	                // Add reservations to newly created offering
 		            if (resvs!=null) {
@@ -577,6 +586,12 @@ public class CrossListsModifyAction extends Action {
                         io1.removeCourseOffering(co2);
                         Event.deleteFromEvents(hibSession, co2);
                         Exam.deleteFromExams(hibSession, co2);
+                    	String className = ApplicationProperties.getProperty("tmtbl.external.course_offering.remove_action.class");
+                    	if (className != null && className.trim().length() > 0){
+                    		ExternalCourseOfferingRemoveAction removeAction = (ExternalCourseOfferingRemoveAction) (Class.forName(className).newInstance());
+            	       		removeAction.performExternalCourseOfferingRemoveAction(co2, hibSession);
+                    	}
+
 	                    hibSession.delete(co2);
 	                    hibSession.flush();
 
@@ -588,6 +603,7 @@ public class CrossListsModifyAction extends Action {
 	                //hibSession.saveOrUpdate(io1);
 	                Event.deleteFromEvents(hibSession, io1);
 	                Exam.deleteFromExams(hibSession, io1);
+
 	                hibSession.delete(io1);
 	                hibSession.flush();
 	                
@@ -683,7 +699,13 @@ public class CrossListsModifyAction extends Action {
 	        Set keys = saList.keySet();
 	        for (Iterator i1=keys.iterator(); i1.hasNext();) {
 	        	hibSession.refresh(saList.get(i1.next()));
-	        }	        
+	        }	
+        	String className = ApplicationProperties.getProperty("tmtbl.external.instr_offr.crosslist_action.class");
+        	if (className != null && className.trim().length() > 0){
+	        	ExternalCourseCrosslistAction addAction = (ExternalCourseCrosslistAction) (Class.forName(className).newInstance());
+	       		addAction.performExternalCourseCrosslistAction(io, hibSession);
+        	}
+
         }
         catch (Exception e) {
             Debug.error(e);
