@@ -62,4 +62,12 @@ public class CourseOfferingImport extends BaseCourseOfferingImport {
 		// Core UniTime does not implement the pre load action
 	}
 
+	@Override
+	protected boolean handleCustomInstrOffrConfigChildElements(
+			InstrOfferingConfig instrOfferingConfig,
+			Element instrOfferingConfigElement) throws Exception {
+		// Core UniTime does not have any child elements for the instructional offering config element
+		return false;
+	}
+
 }
