@@ -1490,6 +1490,10 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					this.getHibSession().saveOrUpdate(ioc);
 				}
 
+				if (handleCustomInstrOffrConfigChildElements(ioc, configElement)){
+					addNote("\tconfig changed by custom element");
+					changed = true;
+				}
 				if (elementSubpart(configElement, ioc, null, null)){
 					addNote("\tconfig subparts changed");
 					changed = true;
@@ -1815,6 +1819,9 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 						changed = true;						
 					}
 				}
+				if (handleCustomClassChildElements(classElement, ioc, clazz)){
+					changed = true;
+				}
 				if (elementClass(classElement, ioc, clazz, allExistingClasses)){
 					addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " 'class' child classes changed");
 					changed = true;
@@ -1823,9 +1830,6 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					getHibSession().saveOrUpdate(clazz);
 					getHibSession().flush();
 					getHibSession().refresh(clazz);
-				}
-				if (handleCustomClassChildElements(classElement, ioc, clazz)){
-					changed = true;
 				}
 				if (changed){
 					ChangeLog.addChange(getHibSession(), manager, session, clazz, ChangeLog.Source.DATA_IMPORT_OFFERINGS, (isAdd?ChangeLog.Operation.CREATE:ChangeLog.Operation.UPDATE), ioc.getControllingCourseOffering().getSubjectArea(), ioc.getDepartment());
@@ -1878,6 +1882,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		return(timePatterns.get(timePatternLookupString));
 	}
 	protected abstract boolean handleCustomClassChildElements(Element classElement, InstrOfferingConfig ioc, Class_ clazz)  throws Exception ;
+	protected abstract boolean handleCustomInstrOffrConfigChildElements(InstrOfferingConfig instrOfferingConfig, Element instrOfferingConfigElement)  throws Exception ;
 
 	private Vector<Meeting> getMeetings(Date startDate, Date stopDate, String pattern, TimeObject meetingTime, Vector<Room> rooms, Vector<NonUniversityLocation> locations){
 		if (meetingTime != null){
