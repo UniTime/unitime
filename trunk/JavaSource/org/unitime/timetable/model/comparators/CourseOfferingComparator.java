@@ -77,7 +77,11 @@ public class CourseOfferingComparator implements Comparator {
         
         // Compare by course name (also used if neither is controlling)
         if (co1.getSubjectAreaAbbv().equals(co2.getSubjectAreaAbbv())){
-            return(co1.getCourseNbr().compareTo(co2.getCourseNbr()));
+        	if (co1.getCourseNbr().equals(co2.getCourseNbr())){
+        		return(co1.getTitle().compareTo(co2.getTitle()));
+        	} else {
+        		return(co1.getCourseNbr().compareTo(co2.getCourseNbr()));
+        	}
         } else {
             return(co1.getSubjectAreaAbbv().compareTo(co2.getSubjectAreaAbbv()));
         }                  
