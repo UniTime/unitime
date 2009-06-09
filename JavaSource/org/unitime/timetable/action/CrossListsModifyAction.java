@@ -403,6 +403,12 @@ public class CrossListsModifyAction extends Action {
 
                     Event.deleteFromEvents(hibSession, co1);
 		            Exam.deleteFromExams(hibSession, co1);
+		            
+                	String className = ApplicationProperties.getProperty("tmtbl.external.course_offering.remove_action.class");
+                	if (className != null && className.trim().length() > 0){
+                		ExternalCourseOfferingRemoveAction removeAction = (ExternalCourseOfferingRemoveAction) (Class.forName(className).newInstance());
+        	       		removeAction.performExternalCourseOfferingRemoveAction(co1, hibSession);
+                	}
 			        hibSession.delete(co1);
 			        
 			        //io.setCourseOfferings(offerings);
@@ -421,7 +427,7 @@ public class CrossListsModifyAction extends Action {
 
 	    	        hibSession.refresh(io);
 	                hibSession.refresh(io1);
-	            	String className = ApplicationProperties.getProperty("tmtbl.external.instr_offr_in_crosslist.add_action.class");
+	            	className = ApplicationProperties.getProperty("tmtbl.external.instr_offr_in_crosslist.add_action.class");
 	            	if (className != null && className.trim().length() > 0){
 	            		ExternalInstructionalOfferingInCrosslistAddAction addAction = (ExternalInstructionalOfferingInCrosslistAddAction) (Class.forName(className).newInstance());
 	    	       		addAction.performExternalInstructionalOfferingInCrosslistAddAction(io1, hibSession);
