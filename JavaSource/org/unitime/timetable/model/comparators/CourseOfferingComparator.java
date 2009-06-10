@@ -82,6 +82,8 @@ public class CourseOfferingComparator implements Comparator {
         			return(0);
         		} else if (co1.getTitle() == null){
         			return(-1);
+        		} else if (co2.getTitle() == null){
+        			return(1);
         		}
         		return(co1.getTitle().compareTo(co2.getTitle()));
         	} else {
