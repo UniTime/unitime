@@ -311,7 +311,7 @@
 					<% if (request.getAttribute("limitsDoNotMatch")!=null) { %>
 						&nbsp;
 						<img src='images/Error16.jpg' alt='Limits do not match' title='Limits do not match' border='0' align='top'> &nbsp;
-						<font color="#FF0000">Limit does not match sum of course limits - <%= request.getAttribute("limitsDoNotMatch").toString() %></font>
+						<font color="#FF0000">Spaces reserved for course offerings should total to at least the offering limit - <%= request.getAttribute("limitsDoNotMatch").toString() %></font>
 					<% } %>
 				</logic:equal>
 				<logic:equal name="instructionalOfferingDetailForm" property="unlimited" value="true">

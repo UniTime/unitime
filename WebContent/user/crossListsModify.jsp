@@ -38,7 +38,7 @@
 	var mismatchHtml = 
 		" &nbsp;&nbsp; " +
 		"<img src='images/Error16.jpg' alt='Limits do not match' title='Limits do not match' border='0' align='top'> &nbsp;" +
-		"<font color='#FF0000'>Reserved spaces does not match limit</font>";
+		"<font color='#FF0000'>Reserved spaces should total to at least the limit</font>";
 	
 	String.prototype.trim = function() {
 		return this.replace(/^\s+|\s+$/g,"");
@@ -78,7 +78,7 @@
 		}
 		document.getElementById('resvTotal').innerHTML = str;
 		
-		if (total!=ioLimit && origTotal>=0) 
+		if (total<ioLimit && origTotal>=0) 
 			document.getElementById("resvTotalDiff").innerHTML = mismatchHtml;
 		else 
 			document.getElementById("resvTotalDiff").innerHTML = "";
