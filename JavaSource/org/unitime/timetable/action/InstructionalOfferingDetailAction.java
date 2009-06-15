@@ -358,7 +358,7 @@ public class InstructionalOfferingDetailAction extends Action {
                 lim += cor.getReserved().intValue();
             }
             
-            if (io.getLimit()!=null && lim!=io.getLimit().intValue()) {
+            if (io.getLimit()!=null && lim < io.getLimit().intValue()) {
                 request.setAttribute("limitsDoNotMatch", ""+lim);
             }
         }
