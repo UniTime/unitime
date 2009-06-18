@@ -24,6 +24,7 @@
 <%@ page import="org.unitime.timetable.model.TimetableManager" %>
 <%@page import="org.unitime.timetable.util.RoomAvailability"%>
 <%@page import="org.unitime.timetable.action.PersonalizedExamReportAction"%>
+<%@page import="org.unitime.timetable.ApplicationProperties"%>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <%@ include file="/checkLogin.jspf" %>
 <html>
@@ -43,6 +44,8 @@
 %>
 <% if (user!=null && manager!=null && acadSession!=null) { %>
 <% if (manager.canSeeCourses(acadSession,user)) { %>
+<% String courseTimetablingVisible = ApplicationProperties.getProperty("tmtbl.menu.display_course_timetabling", "true");
+  if (courseTimetablingVisible.equalsIgnoreCase("true") || (user != null && user.isAdmin())) { %>
 	menu_item('1','Course Timetabling','Course Timetabling','','collapse');
 		menu_item('10','Input Data','Course Timetabling Input Data','','collapse');
 			leaf_item('Instructional Offerings','Instructional Offerings','instructionalOfferingShowSearch.do');
@@ -98,6 +101,9 @@
 
 	enditem(); //1
 <% } %>
+<% } %>
+<% String studentSectioningVisible = ApplicationProperties.getProperty("tmtbl.menu.display_student_sectioning", "true");
+  if (studentSectioningVisible.equalsIgnoreCase("true") || (user != null && user.isAdmin())) { %>
 <% if (manager.canSectionStudents(acadSession,user)) { %>
 	menu_item('7', 'Student Sectioning','Student Sectioning', '', 'expand');
 		menu_item('71', 'Batch Solver','Student Sectioning Solver','studentSolver.do', 'collapse');
@@ -106,6 +112,9 @@
 		leaf_item('Online Demo','Student Sectioning Online Demo','sectioningDemo.do');
 	enditem();//7
 <% } %>
+<% } %>
+<% String examTimetablingVisible = ApplicationProperties.getProperty("tmtbl.menu.display_exam_timetabling", "true");
+  if (examTimetablingVisible.equalsIgnoreCase("true") || (user != null && user.isAdmin())) { %>
 	<%  if (manager.canSeeExams(acadSession, user)) { %>
 	menu_item('2','Examination Timetabling','Examination Timetabling','','expand');
 		menu_item('20','Input Data','Course Timetabling Input Data','','collapse');
@@ -136,10 +145,16 @@
 	<% } %>
 	enditem(); //2
 	<% } %>
+<% } %>
 
+<% String personalScheduleVisible = ApplicationProperties.getProperty("tmtbl.menu.display_personal_schedule", "true");
+  if (personalScheduleVisible.equalsIgnoreCase("true") || (user != null && user.isAdmin())) { %>
 <% if (PersonalizedExamReportAction.hasPersonalReport(user) || Roles.ADMIN_ROLE.equals(user.getRole())) { %>	
 	leaf_item('Personal Schedule','Personal Schedule','personalSchedule.do');
 <% } %>
+<% } %>
+<% String eventManagementVisible = ApplicationProperties.getProperty("tmtbl.menu.display_event_management", "true");
+  if (eventManagementVisible.equalsIgnoreCase("true") || (user != null && user.isAdmin())) { %>
 <%  if (TimetableManager.canSeeEvents(user)) { %>
 	menu_item('3','Event Management','Events','','expand');
 		leaf_item('Events','Events','eventList.do');
@@ -148,7 +163,7 @@
 		leaf_item('Room Availability', 'Event Room Availability', 'eventGrid.do');
 		enditem(); //3
 <% } %>
-		
+<% } %>		
 	menu_item('4','User Preferences','User Preferences','','expand');
 		leaf_item('Change Role','Change Role','selectPrimaryRole.do?list=Y');
 <% if ( ( user!=null && user.getRole().equals(Roles.ADMIN_ROLE) )
