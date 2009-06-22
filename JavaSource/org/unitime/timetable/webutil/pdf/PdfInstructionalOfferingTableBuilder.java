@@ -1,6 +1,6 @@
 /*
  * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * Copyright (C) 2008-2009, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -736,21 +736,25 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         return cell;
     }
 
-    private PdfPCell pdfBuildSchedulePrintNote(PreferenceGroup prefGroup, boolean isEditable) {
+    private PdfPCell pdfBuildSchedulePrintNote(PreferenceGroup prefGroup, boolean isEditable, User user) {
     	Color color = (isEditable?sEnableColor:sDisableColor);
     	PdfPCell cell = createCell();
 
     	if (prefGroup instanceof Class_) {
     		Class_ c = (Class_) prefGroup;
     		if (c.getSchedulePrintNote()!=null) {
-    			addText(cell, c.getSchedulePrintNote(), false, false, Element.ALIGN_LEFT, color, true);
+    			if (c.getSchedulePrintNote().length() <= 20 || Constants.showPrintNoteAsFullText(user)){
+    				addText(cell, c.getSchedulePrintNote(), false, false, Element.ALIGN_LEFT, color, true);
+    			} else {
+    				addText(cell, c.getSchedulePrintNote().substring(0,20) + "...", false, false, Element.ALIGN_LEFT, color, true);   				
+    			}
     		}
     	}
     	
         return cell;
     }
 
-    private PdfPCell pdfBuildSchedulePrintNote(InstructionalOffering io, boolean isEditable){
+    private PdfPCell pdfBuildSchedulePrintNote(InstructionalOffering io, boolean isEditable, User user){
     	Color color = (isEditable?sEnableColor:sDisableColor);
     	PdfPCell cell = createCell();
 
@@ -761,7 +765,11 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
 			if (coI.getScheduleBookNote()!=null && coI.getScheduleBookNote().trim().length()>0) {
 				if (note.length()>0)
 					note.append("\n");
-				note.append(coI.getScheduleBookNote());
+				if (coI.getScheduleBookNote().length() <= 20 || Constants.showCrsOffrAsFullText(user)){
+					note.append(coI.getScheduleBookNote());
+				} else {
+					note.append(coI.getScheduleBookNote().substring(0, 20) + "...");
+				}
 			}
 		}
 		
@@ -769,14 +777,18 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         return(cell);
     }    
     
-    private PdfPCell pdfBuildNote(PreferenceGroup prefGroup, boolean isEditable){
+    private PdfPCell pdfBuildNote(PreferenceGroup prefGroup, boolean isEditable, User user){
     	Color color = (isEditable?sEnableColor:sDisableColor);
     	PdfPCell cell = createCell();
 
     	if (prefGroup instanceof Class_) {
     		Class_ c = (Class_) prefGroup;
     		if (c.getNotes()!=null) {
-    			addText(cell, c.getNotes(), false, false, Element.ALIGN_LEFT, color, true);
+    			if (c.getNotes().length() <= 30  || Constants.showMgrNoteFullText(user)){
+    				addText(cell, c.getNotes(), false, false, Element.ALIGN_LEFT, color, true);
+    			} else {
+    				addText(cell, c.getNotes().substring(0, 30) + "...", false, false, Element.ALIGN_LEFT, color, true);
+    			}
     		}
     	}
     	
@@ -1002,7 +1014,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     
     //NOTE: if changing column order column order must be changed in
     //		buildTableHeader, addInstrOffrRowsToTable, buildClassOrSubpartRow, and buildConfigRow
-    protected void pdfBuildClassOrSubpartRow(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, PreferenceGroup prefGroup, String indentSpaces, boolean isEditable, String prevLabel){
+    protected void pdfBuildClassOrSubpartRow(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, PreferenceGroup prefGroup, String indentSpaces, boolean isEditable, String prevLabel, User user){
     	boolean classLimitDisplayed = false;
     	if (isShowLabel()){
 	        iPdfTable.addCell(pdfBuildPrefGroupLabel(prefGroup, indentSpaces, isEditable, prevLabel));
@@ -1081,10 +1093,10 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     		iPdfTable.addCell(pdfBuildCredit(prefGroup, isEditable));     		
     	} 
     	if (isShowSchedulePrintNote()){
-    		iPdfTable.addCell(pdfBuildSchedulePrintNote(prefGroup, isEditable));     		
+    		iPdfTable.addCell(pdfBuildSchedulePrintNote(prefGroup, isEditable, user));     		
     	} 
     	if (isShowNote()){
-    		iPdfTable.addCell(pdfBuildNote(prefGroup, isEditable));     		
+    		iPdfTable.addCell(pdfBuildNote(prefGroup, isEditable, user));     		
     	}
         if (isShowExam()) {
             TreeSet exams = new TreeSet();
@@ -1105,7 +1117,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     private void pdfBuildSchedulingSubpartRow(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, SchedulingSubpart ss, String indentSpaces, User user){
         boolean isEditable = ss.isViewableBy(user);
         iBgColor = sBgColorSubpart;
-        pdfBuildClassOrSubpartRow(classAssignment, examAssignment, ss, indentSpaces, isEditable, null);
+        pdfBuildClassOrSubpartRow(classAssignment, examAssignment, ss, indentSpaces, isEditable, null, user);
     }
     
     private void pdfBuildSchedulingSubpartRows(Vector subpartIds, ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, SchedulingSubpart ss, String indentSpaces, User user){
@@ -1130,7 +1142,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     protected void pdfBuildClassRow(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, int ct, Class_ aClass, String indentSpaces, User user, String prevLabel){
         boolean isEditable = aClass.isViewableBy(user);
         iBgColor = sBgColorClass;
-        pdfBuildClassOrSubpartRow(classAssignment, examAssignment, aClass, indentSpaces, isEditable, prevLabel);
+        pdfBuildClassOrSubpartRow(classAssignment, examAssignment, aClass, indentSpaces, isEditable, prevLabel, user);
     }
     
     private void pdfBuildClassRows(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, int ct, Class_ aClass, String indentSpaces, User user, String prevLabel){
@@ -1418,7 +1430,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     			iPdfTable.addCell(createCell());     		
     	}
     	if (isShowSchedulePrintNote()){
-    		iPdfTable.addCell(pdfBuildSchedulePrintNote(io, isEditable));     		
+    		iPdfTable.addCell(pdfBuildSchedulePrintNote(io, isEditable, user));     		
     	}
     	if (isShowNote()){
     		iPdfTable.addCell(createCell());     		

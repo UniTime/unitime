@@ -2,7 +2,7 @@
 
 <!-- 
  * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC
+ * Copyright (C) 2008-2009, UniTime LLC
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -2410,6 +2410,27 @@
         	from %SCHEMA%.student_class_enrl sce
         	where sce.course_offering_id = co.uniqueid)
 		</sql>
+	</update>
+	<update version="45" date="18-Jun-2009" comment="Increase size of sched_print_note">
+		<plsql>insert into %SCHEMA%.settings (uniqueid, name, default_value, allowed_values, description)
+		            values(%SCHEMA%.settings_seq.nextval, 'printNoteDisplay', 'icon', 'icon,shortened text,full text', 'Display an icon or shortened text when a class has a schedule print note.')
+		</plsql>
+		<plsql>insert into %SCHEMA%.settings (uniqueid, name, default_value, allowed_values, description)
+		            values(%SCHEMA%.settings_seq.nextval, 'crsOffrNoteDisplay', 'icon', 'icon,shortened text,full text', 'Display an icon or shortened text when a course offering has a schedule note.')
+		</plsql>
+		<plsql>insert into %SCHEMA%.settings (uniqueid, name, default_value, allowed_values, description)
+		            values(%SCHEMA%.settings_seq.nextval, 'mgrNoteDisplay', 'icon', 'icon,shortened text,full text', 'Display an icon or shortened text when a class has a note to the schedule manager.')
+		</plsql>
+		<mysql into="ID">select 32767 * next_hi from %SCHEMA%.hibernate_unique_key</mysql>
+		<mysql>
+		insert into %SCHEMA%.settings 
+		    (uniqueid, name, default_value, allowed_values, description) values
+ 					(%ID% + 0, 'printNoteDisplay', 'icon', 'icon,shortened text,full text', 'Display an icon or shortened text when a class has a schedule print note.'),
+		            (%ID% + 1, 'crsOffrNoteDisplay', 'icon', 'icon,shortened text,full text', 'Display an icon or shortened text when a course offering has a schedule note.'),
+		            (%ID% + 2, 'mgrNoteDisplay', 'icon', 'icon,shortened text,full text', 'Display an icon or shortened text when a class has a note to the schedule manager.')
+		</mysql>
+		<plsql>alter table %SCHEMA%.class_ modify sched_print_note varchar2(2000)</plsql>
+		<mysql>alter table %SCHEMA%.class_ modify sched_print_note varchar(2000)</mysql>
 	</update>
 	
 </dbupdate>

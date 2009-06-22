@@ -1,6 +1,6 @@
 /*
  * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * Copyright (C) 2008-2009, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -25,10 +25,12 @@ import java.util.List;
 
 import javax.servlet.http.HttpSession;
 
+import org.unitime.commons.User;
 import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.RoomFeaturePref;
 import org.unitime.timetable.model.RoomPref;
+import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.TimePref;
 
 
@@ -149,7 +151,13 @@ public class Constants extends net.sf.cpsolver.coursett.Constants {
     public static final String SETTINGS_KEEP_SORT = "keepSort";
     public static final String SETTINGS_ROOMS_FEATURES_ONE_COLUMN = "roomFeaturesInOneColumn";
     public static final String SETTINGS_DISP_LAST_CHANGES = "dispLastChanges";
-    
+    public static final String SETTINGS_SCHEDULE_PRINT_NOTE_LIST_DISPLAY="printNoteDisplay";
+    public static final String SETTINGS_CRS_OFFR_NOTE_LIST_DISPLAY="crsOffrNoteDisplay";
+    public static final String SETTINGS_NOTE_TO_MGR_LIST_DISPLAY="mgrNoteDisplay";
+    public static final String SETTINGS_TEXT_ICON="icon";
+    public static final String SETTINGS_TEXT_ABBV="shortened text";
+    public static final String SETTINGS_TEXT_FULL="full text";
+   
     /** Indicates classes are managed by multiple departments */
     public static final long MANAGED_BY_MULTIPLE_DEPTS = 0;
     
@@ -524,4 +532,24 @@ public class Constants extends net.sf.cpsolver.coursett.Constants {
 	    int min = minutesSinceMidnight%60;
 	    return (hour==0?12:hour>12?hour-12:hour)+":"+(min<10?"0":"")+min+(hour<24 && hour>=12?"p":"a");
 	}
+	
+    public static boolean showPrintNoteAsFullText(User user) {
+    	return Constants.SETTINGS_TEXT_FULL.equalsIgnoreCase(Settings.getSettingValue(user, Constants.SETTINGS_SCHEDULE_PRINT_NOTE_LIST_DISPLAY));
+    }
+    public static boolean showPrintNoteAsShortenedText(User user) {
+    	return Constants.SETTINGS_TEXT_ABBV.equalsIgnoreCase(Settings.getSettingValue(user, Constants.SETTINGS_SCHEDULE_PRINT_NOTE_LIST_DISPLAY));
+    }
+    public static boolean showCrsOffrAsFullText(User user) {
+    	return Constants.SETTINGS_TEXT_FULL.equalsIgnoreCase(Settings.getSettingValue(user, Constants.SETTINGS_CRS_OFFR_NOTE_LIST_DISPLAY));
+    }
+    public static boolean showCrsOffrAsShortenedText(User user) {
+    	return Constants.SETTINGS_TEXT_ABBV.equalsIgnoreCase(Settings.getSettingValue(user, Constants.SETTINGS_CRS_OFFR_NOTE_LIST_DISPLAY));
+    }
+    public static boolean showMgrNoteFullText(User user) {
+    	return Constants.SETTINGS_TEXT_FULL.equalsIgnoreCase(Settings.getSettingValue(user, Constants.SETTINGS_NOTE_TO_MGR_LIST_DISPLAY));
+    }
+    public static boolean showMgrNoteShortenedText(User user) {
+    	return Constants.SETTINGS_TEXT_ABBV.equalsIgnoreCase(Settings.getSettingValue(user, Constants.SETTINGS_NOTE_TO_MGR_LIST_DISPLAY));
+    }
+
 }

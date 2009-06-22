@@ -1,6 +1,6 @@
 <%--
  * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC
+ * Copyright (C) 2008-2009, UniTime LLC
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -244,7 +244,7 @@
 		</TR>
 
 		<TR>
-			<TD>Student Schedule Note:</TD>
+			<TD valign="top">Student Schedule Note:</TD>
 			<TD>
 				<bean:write name="<%=frmName%>" property="schedulePrintNote" />
 			<TD>
@@ -252,7 +252,7 @@
 
 		<logic:notEmpty name="<%=frmName%>" property="notes">
 			<TR>
-				<TD>Requests / Notes:</TD>
+				<TD valign="top">Requests / Notes:</TD>
 				<TD>
 					<bean:write name="<%=frmName%>" property="notes" filter="false"/>
 				<TD>
