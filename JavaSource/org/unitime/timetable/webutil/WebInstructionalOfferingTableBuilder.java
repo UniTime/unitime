@@ -1,6 +1,6 @@
 /*
  * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * Copyright (C) 2008-2009, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -33,6 +33,8 @@ import java.util.Vector;
 
 import javax.servlet.http.HttpSession;
 import javax.servlet.jsp.JspWriter;
+
+import net.sf.cpsolver.coursett.model.TimeLocation.IntEnumeration;
 
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
@@ -75,8 +77,6 @@ import org.unitime.timetable.solver.exam.ExamAssignmentProxy;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
 import org.unitime.timetable.util.Constants;
-
-import net.sf.cpsolver.coursett.model.TimeLocation.IntEnumeration;
 
 
 /**
@@ -839,14 +839,27 @@ public class WebInstructionalOfferingTableBuilder {
         return(cell);
     }
 
-    private TableCell buildSchedulePrintNote(PreferenceGroup prefGroup, boolean isEditable){
-    	TableCell cell = this.initNormalCell("" ,isEditable);
+    private TableCell buildSchedulePrintNote(PreferenceGroup prefGroup, boolean isEditable, User user){
+    	TableCell cell = null;
     	if (prefGroup instanceof Class_) {
     		Class_ c = (Class_) prefGroup;
-    		if (c.getSchedulePrintNote()!=null) {
-    			cell = initNormalCell(c.getSchedulePrintNote(), isEditable);
-    			cell.setAlign("left");
-    		}
+    		if (c.getSchedulePrintNote()!=null && c.getSchedulePrintNote().trim().length() != 0) {
+    			String note = (c.getSchedulePrintNote().length() <= 20?c.getSchedulePrintNote():c.getSchedulePrintNote().substring(0, 20) + "...");
+    			if(!Constants.showPrintNoteAsShortenedText(user) && !Constants.showPrintNoteAsFullText(user) ){
+    	    		cell = initNormalCell("<IMG border='0' alt='Has Schedule Print Note' title='" + note + "' align='absmiddle' src='images/Notes.png'>", isEditable);
+    	    		cell.setAlign("center");
+    			} else if (Constants.showPrintNoteAsShortenedText(user)) {
+	    			cell = initNormalCell(note, isEditable);
+	    			cell.setAlign("left");
+    			} else if (Constants.showPrintNoteAsFullText(user)){
+	    			cell = initNormalCell(c.getSchedulePrintNote(), isEditable);
+	    			cell.setAlign("left");
+    			} 
+    		} else {
+        		cell = this.initNormalCell("&nbsp;" ,isEditable);
+        	}
+    	}  else {
+       		cell = this.initNormalCell("&nbsp;" ,isEditable);   		
     	}
         return(cell);
     }
@@ -921,32 +934,68 @@ public class WebInstructionalOfferingTableBuilder {
         return new TreeSet(Exam.findAll(ExamOwner.sOwnerTypeClass,clazz.getUniqueId()));
     }
 
-    private TableCell buildSchedulePrintNote(InstructionalOffering io, boolean isEditable){
-    	TableCell cell = this.initNormalCell("" ,isEditable);
+    private TableCell buildSchedulePrintNote(InstructionalOffering io, boolean isEditable, User user){
+    	TableCell cell = null;
 	    StringBuffer note = new StringBuffer("");
 		Set s = io.getCourseOfferings();
+		boolean hasNote = false;
 		for (Iterator i=s.iterator(); i.hasNext(); ) {
+			String crsNote = null;
 			CourseOffering coI = (CourseOffering) i.next();
 			if (coI.getScheduleBookNote()!=null && coI.getScheduleBookNote().trim().length()>0) {
+				hasNote = true;
 				if (note.length()>0)
 					note.append("<br>");
-				note.append(coI.getScheduleBookNote());
+				if (Constants.showCrsOffrAsFullText(user)){
+					note.append(coI.getScheduleBookNote());
+				} else {
+					if (coI.getScheduleBookNote().length() <= 20){
+						note.append(coI.getScheduleBookNote());
+					} else {
+						note.append(coI.getScheduleBookNote().substring(0, 20) + "...");
+					}		
+				}
 			}
 		}
-		
-		cell = initNormalCell(note.toString(), isEditable);
-		cell.setAlign("left");
+		if (hasNote){
+			if (!Constants.showCrsOffrAsShortenedText(user) && !Constants.showCrsOffrAsFullText(user)){
+	    		cell = initNormalCell("<IMG border='0' alt='Has Course Offering Note' title='" + note + "' align='absmiddle' src='images/Notes.png'>", isEditable);
+	    		cell.setAlign("center");	
+			} else {
+				if (note.length() == 0){
+					note.append("&nbsp;");
+				}
+				cell = initNormalCell(note.toString(), isEditable);
+				cell.setAlign("left");
+			}
+	
+		} else {
+			cell = this.initNormalCell("&nbsp;" ,isEditable);
+		}
         return(cell);
     }
     
-    private TableCell buildNote(PreferenceGroup prefGroup, boolean isEditable){
-    	TableCell cell = this.initNormalCell("" ,isEditable);
+    private TableCell buildNote(PreferenceGroup prefGroup, boolean isEditable, User user){
+    	TableCell cell = null;
     	if (prefGroup instanceof Class_) {
     		Class_ c = (Class_) prefGroup;
     		if (c.getNotes()!=null) {
-    			cell = initNormalCell(c.getNotes().replaceAll("\n","<br>"), isEditable);
-    			cell.setAlign("left");
-    		}
+    			String note = (c.getNotes().length() <= 20?c.getNotes():c.getNotes().substring(0, 20) + "...");
+    			if (Constants.showMgrNoteShortenedText(user)){
+        			cell = initNormalCell(note.replaceAll("\n","<br>"), isEditable);
+        			cell.setAlign("left");
+    			} else if (Constants.showMgrNoteFullText(user)) {
+    				cell = initNormalCell(c.getNotes().replaceAll("\n","<br>"), isEditable);
+        			cell.setAlign("left");
+    			} else {
+    	    		cell = initNormalCell("<IMG border='0' alt='Has Note to Mgr' title='" + note + "' align='absmiddle' src='images/Notes.png'>", isEditable);
+    	    		cell.setAlign("center");
+    			}
+    		} else { 
+        		cell = this.initNormalCell("&nbsp;" ,isEditable);
+        	}
+    	} else { 
+    		cell = this.initNormalCell("&nbsp;" ,isEditable);
     	}
         return(cell);
     }
@@ -1127,7 +1176,7 @@ public class WebInstructionalOfferingTableBuilder {
     
     //NOTE: if changing column order column order must be changed in
     //		buildTableHeader, addInstrOffrRowsToTable, buildClassOrSubpartRow, and buildConfigRow
-    protected void buildClassOrSubpartRow(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, TableRow row, PreferenceGroup prefGroup, String indentSpaces, boolean isEditable, String prevLabel){
+    protected void buildClassOrSubpartRow(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, TableRow row, PreferenceGroup prefGroup, String indentSpaces, boolean isEditable, String prevLabel, User user){
     	boolean classLimitDisplayed = false;
     	if (isShowLabel()){
 	        row.addContent(this.buildPrefGroupLabel(prefGroup, indentSpaces, isEditable, prevLabel));
@@ -1209,10 +1258,10 @@ public class WebInstructionalOfferingTableBuilder {
     		row.addContent(this.initNormalCell("&nbsp;", isEditable));
     	}
     	if (isShowSchedulePrintNote()){
-            row.addContent(this.buildSchedulePrintNote(prefGroup, isEditable));     		
+            row.addContent(this.buildSchedulePrintNote(prefGroup, isEditable, user));     		
     	} 
     	if (isShowNote()){
-            row.addContent(this.buildNote(prefGroup, isEditable));     		
+            row.addContent(this.buildNote(prefGroup, isEditable, user));     		
     	}
     	if (isShowExam()) {
     	    if (prefGroup instanceof Class_) {
@@ -1252,7 +1301,7 @@ public class WebInstructionalOfferingTableBuilder {
         if(isOffered)
             row.setOnMouseOut(this.getRowMouseOut(isHeaderRow));
         
-        this.buildClassOrSubpartRow(classAssignment, examAssignment, row, ss, indentSpaces, isEditable, null);
+        this.buildClassOrSubpartRow(classAssignment, examAssignment, row, ss, indentSpaces, isEditable, null, user);
       table.addContent(row);
     	
     }
@@ -1287,7 +1336,7 @@ public class WebInstructionalOfferingTableBuilder {
             	row.setOnClick("document.location='classDetail.do?cid=" + aClass.getUniqueId().toString() + "&sec=" + aClass.getSectionNumberString() + "'");
         }
         
-        this.buildClassOrSubpartRow(classAssignment, examAssignment, row, aClass, indentSpaces, isEditable, prevLabel);
+        this.buildClassOrSubpartRow(classAssignment, examAssignment, row, aClass, indentSpaces, isEditable, prevLabel, user);
         table.addContent(row);
     }
     
@@ -1599,7 +1648,7 @@ public class WebInstructionalOfferingTableBuilder {
             row.addContent(cell);
     	}
     	if (isShowSchedulePrintNote()){
-            row.addContent(buildSchedulePrintNote(io, isEditable));     		
+            row.addContent(buildSchedulePrintNote(io, isEditable, user));     		
     	}
     	if (isShowNote()){
             row.addContent(initNormalCell("", isEditable));     		
