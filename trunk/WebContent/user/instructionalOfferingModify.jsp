@@ -132,7 +132,7 @@
 					<tt:section-title>
 					<bean:write name="<%=frmName%>" property="instrOfferingName" />
 					</tt:section-title>						
-				<html:submit property="op" 
+				<html:submit property="op" disabled="true"
 					styleClass="btn" accesskey="U" titleKey="title.updateInstructionalOfferingConfig" >
 					<bean:message key="button.updateInstructionalOfferingConfig" />
 				</html:submit>
