@@ -29,6 +29,7 @@ import java.util.Vector;
 
 import javax.servlet.ServletRequest;
 
+import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.PreferenceLevel;
@@ -483,11 +484,11 @@ public class RequiredTimeTable {
         
         try {
         	if (!file.createNewFile()) {
-        		System.out.println("Unable to write file "+file);
+        		Debug.info("Unable to write a file "+file);
         		file = File.createTempFile("temp",".PNG",ApplicationProperties.getTempFolder());
         	}
         } catch (IOException e) {
-    		System.out.println("Unable to write file "+file);
+    		Debug.info("Unable to write a file "+file);
     		file = File.createTempFile("temp",".PNG",ApplicationProperties.getTempFolder());
         }
 
