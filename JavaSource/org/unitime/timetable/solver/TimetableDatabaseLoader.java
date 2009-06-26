@@ -158,6 +158,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     private String iInstructorFormat = null;
     
     private boolean iRoomAvailabilityTimeStampIsSet = false;
+    private boolean iWeighStudents = false;
     
     public TimetableDatabaseLoader(TimetableModel model) {
         super(model);
@@ -201,6 +202,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         iAutoSameStudentsConstraint = getModel().getProperties().getProperty("General.AutoSameStudentsConstraint",iAutoSameStudentsConstraint);
         
         iInstructorFormat = getModel().getProperties().getProperty("General.InstructorFormat", DepartmentalInstructor.sNameFormatLastFist);
+        
+        iWeighStudents = getModel().getProperties().getPropertyBoolean("General.WeightStudents", iWeighStudents);
     }
     
     private String getClassLabel(Class_ clazz) {
@@ -2500,7 +2503,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         			iProgress.warn("No reserved space for students of offering "+getOfferingLabel(course)+".");
         		}
         		
-        		double weight = (courseLimit==0?1.0:(double)courseLimit / studentIds.size());
+        		double weight = (!iWeighStudents || courseLimit==0?1.0:(double)courseLimit / studentIds.size());
         		
         		Set cannotAttendLectures = null;
         		
