@@ -85,7 +85,7 @@ public class ChameleonAction extends Action {
         MessageResources rsc = getResources(request);
         User user = Web.getUser(request.getSession());        
         ChameleonForm frm = (ChameleonForm) form;
-	    ActionMessages errors = null;
+		ActionMessages errors = new ActionMessages();
 
         String op = (request.getParameter("op")==null) 
 					? (frm.getOp()==null || frm.getOp().length()==0)
