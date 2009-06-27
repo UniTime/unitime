@@ -39,7 +39,6 @@ import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ClassInstructorAssignmentForm;
 import org.unitime.timetable.form.ClassListForm;
-import org.unitime.timetable.interfaces.ExternalCourseOfferingEditAction;
 import org.unitime.timetable.interfaces.ExternalInstrOfferingConfigAssignInstructorsAction;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;

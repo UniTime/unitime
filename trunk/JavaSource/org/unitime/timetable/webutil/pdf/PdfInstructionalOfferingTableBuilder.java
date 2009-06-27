@@ -33,7 +33,6 @@ import java.util.Vector;
 
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
-import org.unitime.commons.web.htmlgen.TableCell;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.InstructionalOfferingListForm;
 import org.unitime.timetable.model.Assignment;
