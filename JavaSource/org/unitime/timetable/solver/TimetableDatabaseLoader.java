@@ -158,7 +158,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     private String iInstructorFormat = null;
     
     private boolean iRoomAvailabilityTimeStampIsSet = false;
-    private boolean iWeighStudents = false;
+    private boolean iWeighStudents = true;
     
     public TimetableDatabaseLoader(TimetableModel model) {
         super(model);
