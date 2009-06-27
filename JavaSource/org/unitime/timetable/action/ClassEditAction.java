@@ -43,7 +43,6 @@ import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ClassEditForm;
 import org.unitime.timetable.interfaces.ExternalClassEditAction;
-import org.unitime.timetable.interfaces.ExternalSchedulingSubpartEditAction;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;

@@ -40,7 +40,6 @@ import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.CourseReservationEditForm;
-import org.unitime.timetable.interfaces.ExternalClassEditAction;
 import org.unitime.timetable.interfaces.ExternalCourseOfferingReservationEditAction;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;

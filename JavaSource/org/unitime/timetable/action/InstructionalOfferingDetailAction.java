@@ -42,7 +42,6 @@ import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.InstructionalOfferingDetailForm;
-import org.unitime.timetable.interfaces.ExternalInstrOffrConfigChangeAction;
 import org.unitime.timetable.interfaces.ExternalInstructionalOfferingDeleteAction;
 import org.unitime.timetable.interfaces.ExternalInstructionalOfferingNotOfferedAction;
 import org.unitime.timetable.interfaces.ExternalInstructionalOfferingOfferedAction;
