@@ -32,6 +32,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.FlushMode;
 import org.hibernate.Transaction;
+import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.interfaces.ExternalSolutionCommitAction;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.AssignmentInfo;
 import org.unitime.timetable.model.Class_;
@@ -142,6 +144,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     		
             HashSet refreshIds = new HashSet();
     		if (iCommitSolution && solutionIds!=null) {
+    			HashSet<Solution> touchedSolutions = new HashSet<Solution>();
     			if (hibSession!=null && hibSession.isOpen()) hibSession.close();
     			hibSession = dao.getSession();
     			
@@ -153,13 +156,16 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     				if (committedSolution!=null) {
     					committedSolution.uncommitSolution(hibSession, getModel().getProperties().getProperty("General.OwnerPuid"));
                         refreshIds.add(committedSolution.getUniqueId());
+                        touchedSolutions.add(committedSolution);
                     }
+    				touchedSolutions.add(solution);
     				iProgress.incProgress();
     			}
     			for (int i=0;i<solutionIds.length;i++) {
     				Solution solution = (new SolutionDAO()).get(solutionIds[i]);
     				Vector messages = new Vector();
     				solution.commitSolution(messages,hibSession, getModel().getProperties().getProperty("General.OwnerPuid"));
+    				touchedSolutions.add(solution);
     				for (Enumeration e=messages.elements();e.hasMoreElements();) {
     					iProgress.error("Unable to commit: "+e.nextElement());
     				}
@@ -167,6 +173,11 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     				iProgress.incProgress();
     			}
 				tx.commit();
+		    	String className = ApplicationProperties.getProperty("tmtbl.external.solution.commit_action.class");
+		    	if (className != null && className.trim().length() > 0){
+		    		ExternalSolutionCommitAction commitAction = (ExternalSolutionCommitAction) (Class.forName(className).newInstance());
+		    		commitAction.performExternalSolutionCommitAction(touchedSolutions, hibSession);
+		    	}
     		}
     		
             if (getSolver() instanceof RemoteSolver) {
@@ -259,7 +270,19 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     						iProgress.warn("Solution "+iSolutionId[i]+" ignored -- it does not match with the owner(s) of the problem");
     						continue;
     					}
-    					if (solution.isCommited().booleanValue()) solution.uncommitSolution(hibSession, getModel().getProperties().getProperty("General.OwnerPuid"));
+    					if (solution.isCommited().booleanValue()){
+    						solution.uncommitSolution(hibSession, getModel().getProperties().getProperty("General.OwnerPuid"));
+    						if (!iCommitSolution){
+    					    	String className = ApplicationProperties.getProperty("tmtbl.external.solution.commit_action.class");
+    					    	if (className != null && className.trim().length() > 0){
+    					    		HashSet<Solution> touchedSolutions = new HashSet<Solution>();
+    					    		touchedSolutions.add(solution);
+    					    		ExternalSolutionCommitAction commitAction = (ExternalSolutionCommitAction) (Class.forName(className).newInstance());
+    					    		commitAction.performExternalSolutionCommitAction(touchedSolutions, hibSession);
+    					    	}
+
+    						}
+    					}
     					solution.empty(hibSession, getFileProxy());
     					iSolutions.put(solution.getOwner().getUniqueId(),solution);
     				}

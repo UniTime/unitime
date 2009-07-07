@@ -24,6 +24,7 @@ import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -48,6 +49,7 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ListSolutionsForm;
 import org.unitime.timetable.form.SolverForm;
 import org.unitime.timetable.form.ListSolutionsForm.SolutionBean;
+import org.unitime.timetable.interfaces.ExternalSolutionCommitAction;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Solution;
@@ -152,11 +154,34 @@ public class ListSolutionsAction extends Action {
                 		Solution solution = dao.get(solutionBean.getUniqueId(), hibSession);
                 		
                 		if ("Commit".equals(op)) {
+                			List solutions = hibSession.createCriteria(Solution.class).add(Restrictions.eq("owner",solution.getOwner())).list();
+                   			HashSet<Solution> touchedSolutionSet = new HashSet<Solution>();
+                			for (Iterator i=solutions.iterator();i.hasNext();) {
+                				Solution s = (Solution)i.next();
+                				if (s.equals(solution)) continue;
+                				if (s.isCommited().booleanValue()) {
+                 					touchedSolutionSet.add(s);
+                				}
+                			}
+                			touchedSolutionSet.add(solution);
                 			boolean committed = solution.commitSolution(myForm.getMessages(),hibSession,user.getId());
                 			hibSession.update(solution);
+                	    	String className = ApplicationProperties.getProperty("tmtbl.external.solution.commit_action.class");
+                	    	if (className != null && className.trim().length() > 0){
+                	    		ExternalSolutionCommitAction commitAction = (ExternalSolutionCommitAction) (Class.forName(className).newInstance());              	    		
+                	    		commitAction.performExternalSolutionCommitAction(touchedSolutionSet, hibSession);
+                	    	}
                 			solutionBean.setCommited(committed?sDF.format(solution.getCommitDate()):null);
+                			
                 		} else {
                 			solution.uncommitSolution(hibSession, user.getId());
+                	    	String className = ApplicationProperties.getProperty("tmtbl.external.solution.commit_action.class");
+                	    	if (className != null && className.trim().length() > 0){
+                	    		ExternalSolutionCommitAction commitAction = (ExternalSolutionCommitAction) (Class.forName(className).newInstance());
+                	    		HashSet<Solution> solutions = new HashSet<Solution>();
+                	    		solutions.add(solution);
+                	    		commitAction.performExternalSolutionCommitAction(solutions, hibSession);
+                	    	}
                 			solutionBean.setCommited(null);
                 		}
                 		
@@ -193,7 +218,16 @@ public class ListSolutionsAction extends Action {
                 			tx = hibSession.beginTransaction();
                 		Solution solution = dao.get(solutionBean.getUniqueId());
                 		if (solution!=null) {
-                			if (solution.isCommited().booleanValue()) solution.uncommitSolution(hibSession, user.getId());
+                			if (solution.isCommited().booleanValue()) {
+                				solution.uncommitSolution(hibSession, user.getId());
+                    	    	String className = ApplicationProperties.getProperty("tmtbl.external.solution.commit_action.class");
+                    	    	if (className != null && className.trim().length() > 0){
+                    	    		ExternalSolutionCommitAction commitAction = (ExternalSolutionCommitAction) (Class.forName(className).newInstance());
+                    	    		HashSet<Solution> solutions = new HashSet<Solution>();
+                    	    		solutions.add(solution);
+                    	    		commitAction.performExternalSolutionCommitAction(solutions, hibSession);
+                    	    	}
+                			}
                 			solution.delete(hibSession);
                 		}
                     	if (tx!=null) tx.commit();
