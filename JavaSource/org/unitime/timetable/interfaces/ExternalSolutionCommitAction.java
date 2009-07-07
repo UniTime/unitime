@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.interfaces;
 
+import java.util.Set;
+
 import org.hibernate.Session;
 import org.unitime.timetable.model.Solution;
 
@@ -27,5 +29,5 @@ import org.unitime.timetable.model.Solution;
  *
  */
 public interface ExternalSolutionCommitAction {
-	public void performExternalSolutionCommitAction(Solution solution, Session hibSession);
+	public void performExternalSolutionCommitAction(Set<Solution> solutions, Session hibSession);
 }
