@@ -291,11 +291,6 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 //		removeDivSecNumbers(hibSession);
 		
 		if (sendNotificationPuid!=null) sendNotification(this, null, sendNotificationPuid, true, null);
-    	String className = ApplicationProperties.getProperty("tmtbl.external.solution.commit_action.class");
-    	if (className != null && className.trim().length() > 0){
-    		ExternalSolutionCommitAction commitAction = (ExternalSolutionCommitAction) (Class.forName(className).newInstance());
-    		commitAction.performExternalSolutionCommitAction(this, hibSession);
-    	}
 
 	}
 	
@@ -515,11 +510,6 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		}
 		
 		if (sendNotificationPuid!=null) sendNotification(uncommittedSolution, this, sendNotificationPuid, true, messages);
-    	String className = ApplicationProperties.getProperty("tmtbl.external.solution.commit_action.class");
-    	if (className != null && className.trim().length() > 0){
-    		ExternalSolutionCommitAction commitAction = (ExternalSolutionCommitAction) (Class.forName(className).newInstance());
-    		commitAction.performExternalSolutionCommitAction(this, hibSession);
-    	}
 
 		return true;
 	}
