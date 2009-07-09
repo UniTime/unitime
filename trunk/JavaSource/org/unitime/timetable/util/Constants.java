@@ -26,8 +26,10 @@ import java.util.List;
 import javax.servlet.http.HttpSession;
 
 import org.unitime.commons.User;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.DistributionPref;
+import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.RoomFeaturePref;
 import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.Settings;
@@ -208,6 +210,10 @@ public class Constants extends net.sf.cpsolver.coursett.Constants {
     public static final String REQUEST_OPEN_URL = "RqOpenUrl";
     public static final String REQUEST_WARN = "RqWarn";
     public static final String REQUEST_MSSG = "RqMsg";
+    
+    
+    public static final String MIDTERM_DEFAULT_START_OFFSET_PROP = "tmtbl.exam.defaultStartOffset.midterm";
+    public static final String FINAL_DEFAULT_START_OFFSET_PROP = "tmtbl.exam.defaultStartOffset.final";
     
     // --------------------------------------------------------- Methods
 
@@ -550,6 +556,28 @@ public class Constants extends net.sf.cpsolver.coursett.Constants {
     }
     public static boolean showMgrNoteShortenedText(User user) {
     	return Constants.SETTINGS_TEXT_ABBV.equalsIgnoreCase(Settings.getSettingValue(user, Constants.SETTINGS_NOTE_TO_MGR_LIST_DISPLAY));
+    }
+
+    public static int getExamStartOffset(Exam exam){
+      	return(getExamOffset(exam, (exam.getExamType().intValue() == Exam.sExamTypeMidterm)?MIDTERM_DEFAULT_START_OFFSET_PROP:FINAL_DEFAULT_START_OFFSET_PROP));
+    }
+        
+    private static int getExamOffset(Exam exam, String offsetParameterName){
+    	int offset = 0;
+    	String offsetStr = ApplicationProperties.getProperty(offsetParameterName);
+    	if (offsetStr == null || offsetStr.trim().length() == 0){
+    		offset = 0;
+    	} else {
+    		try {
+				offset = Integer.parseInt(offsetStr);
+			} catch (NumberFormatException e) {
+				offset = 0;
+			}
+			if (offset < 0){
+				offset = 0;
+			}
+    	}
+    	return(offset);
     }
 
 }

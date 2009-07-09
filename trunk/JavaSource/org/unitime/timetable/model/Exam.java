@@ -904,6 +904,17 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         return instructors;
     }
     
+    public int examOffset() {
+    	int offset = 0;
+    	int defaultOffset = Constants.getExamStartOffset(this);
+    	int prntOff = getPrintOffset()==null?0:getPrintOffset().intValue();
+    	offset = defaultOffset + prntOff; 	
+    	if (offset >= (Constants.SLOT_LENGTH_MIN*getAssignedPeriod().getLength())){
+    		offset = 0;
+    	}
+    	return(offset);
+    }
+    
     public ExamEvent generateEvent(ExamEvent event, boolean createNoRoomMeetings) {
         ExamPeriod period = getAssignedPeriod();
         if (period==null) return null;
@@ -923,9 +934,9 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 Meeting m = new Meeting();
                 m.setMeetingDate(period.getStartDate());
                 m.setStartPeriod(period.getStartSlot());
-                m.setStartOffset(getPrintOffset()==null?0:getPrintOffset().intValue());
+                m.setStartOffset(examOffset());
                 m.setStopPeriod(period.getStartSlot()+period.getLength());
-                m.setStopOffset(getLength()-Constants.SLOT_LENGTH_MIN*period.getLength()+(getPrintOffset()==null?0:getPrintOffset().intValue()));
+                m.setStopOffset(getLength()-Constants.SLOT_LENGTH_MIN*period.getLength()+examOffset());
                 m.setClassCanOverride(false);
                 m.setLocationPermanentId(location.getPermanentId());
                 m.setApprovedDate(new Date());
@@ -938,9 +949,9 @@ public class Exam extends BaseExam implements Comparable<Exam> {
             Meeting m = new Meeting();
             m.setMeetingDate(period.getStartDate());
             m.setStartPeriod(period.getStartSlot());
-            m.setStartOffset(getPrintOffset()==null?0:getPrintOffset().intValue());
+            m.setStartOffset(examOffset());
             m.setStopPeriod(period.getStartSlot()+period.getLength());
-            m.setStopOffset(getLength()-Constants.SLOT_LENGTH_MIN*period.getLength()+(getPrintOffset()==null?0:getPrintOffset().intValue()));
+            m.setStopOffset(getLength()-Constants.SLOT_LENGTH_MIN*period.getLength()+examOffset());
             m.setClassCanOverride(false);
             m.setLocationPermanentId(null);
             m.setApprovedDate(new Date());
@@ -1190,7 +1201,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         Calendar c = Calendar.getInstance(Locale.US);
         c.setTime(getSession().getExamBeginDate());
         c.add(Calendar.DAY_OF_YEAR, period.getDateOffset());
-        int min = period.getStartSlot()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN + (getPrintOffset()==null?0:getPrintOffset().intValue())+ getLength();
+        int min = period.getStartSlot()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN + examOffset() + getLength();
         c.set(Calendar.HOUR, min/60); c.set(Calendar.MINUTE, min%60);
         return c.getTime();
     }
@@ -1199,7 +1210,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         Calendar c = Calendar.getInstance(Locale.US);
         c.setTime(getSession().getExamBeginDate());
         c.add(Calendar.DAY_OF_YEAR, period.getDateOffset());
-        int min = period.getStartSlot()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN + (getPrintOffset()==null?0:getPrintOffset().intValue());
+        int min = period.getStartSlot()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN + examOffset();
         c.set(Calendar.HOUR, min/60); c.set(Calendar.MINUTE, min%60);
         return c.getTime();
     }
