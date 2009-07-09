@@ -495,8 +495,8 @@ public class ExamEditAction extends PreferencesAction {
             if (exam.getAssignedPeriod()!=null && (!exam.getLength().equals(oldLength) || oldPrintOffset!=(exam.getPrintOffset()==null?0:exam.getPrintOffset()))) {
                 for (Iterator i=event.getMeetings().iterator();i.hasNext();) {
                     Meeting m = (Meeting)i.next();
-                    m.setStartOffset(exam.getPrintOffset()==null?0:exam.getPrintOffset().intValue());
-                    m.setStopOffset(exam.getLength()-Constants.SLOT_LENGTH_MIN*exam.getAssignedPeriod().getLength()+(exam.getPrintOffset()==null?0:exam.getPrintOffset().intValue()));
+                    m.setStartOffset(exam.examOffset());
+                    m.setStopOffset(exam.getLength()-Constants.SLOT_LENGTH_MIN*exam.getAssignedPeriod().getLength()+exam.examOffset());
                 }
             }
         }
