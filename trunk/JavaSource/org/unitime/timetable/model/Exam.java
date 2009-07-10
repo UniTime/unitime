@@ -909,9 +909,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
     	int defaultOffset = Constants.getExamStartOffset(this);
     	int prntOff = getPrintOffset()==null?0:getPrintOffset().intValue();
     	offset = defaultOffset + prntOff; 	
-    	if (offset >= (Constants.SLOT_LENGTH_MIN*getAssignedPeriod().getLength())){
-    		offset = 0;
-    	}
+    	
     	return(offset);
     }
     
