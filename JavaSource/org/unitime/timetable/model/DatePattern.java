@@ -40,6 +40,7 @@ import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.base.BaseDatePattern;
 import org.unitime.timetable.model.dao.DatePatternDAO;
+import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.util.Constants;
 
 
@@ -473,6 +474,8 @@ public class DatePattern extends BaseDatePattern implements Comparable {
         		createQuery("select distinct dp from SchedulingSubpart as s inner join s.datePattern as dp where dp.session.uniqueId=:sessionId").
         		setLong("sessionId", sessionId.longValue()).
         		setCacheable(true).list());
+    	Session session = new SessionDAO().get(sessionId);
+    	if (session.getDefaultDatePattern()!=null) ret.add(session.getDefaultDatePattern());
     	return ret;
     }
 
@@ -619,5 +622,28 @@ public class DatePattern extends BaseDatePattern implements Comparable {
 		}
 		return diff;
 	}
+	
+	public static Date[] getBounds(Long sessionId) {
+        Date startDate = null, endDate = null;
+        for (Iterator i=DatePattern.findAllUsed(sessionId).iterator();i.hasNext();) {
+            DatePattern dp = (DatePattern)i.next();
+            if (startDate == null || startDate.compareTo(dp.getStartDate())>0)
+                startDate = dp.getStartDate();
+            if (endDate == null || endDate.compareTo(dp.getEndDate())<0)
+                endDate = dp.getEndDate();
+        }
+        Calendar startDateCal = Calendar.getInstance(Locale.US);
+        startDateCal.setTime(startDate);
+        startDateCal.set(Calendar.HOUR_OF_DAY, 0);
+        startDateCal.set(Calendar.MINUTE, 0);
+        startDateCal.set(Calendar.SECOND, 0);
+        Calendar endDateCal = Calendar.getInstance(Locale.US);
+        endDateCal.setTime(endDate);
+        endDateCal.set(Calendar.HOUR_OF_DAY, 23);
+        endDateCal.set(Calendar.MINUTE, 59);
+        endDateCal.set(Calendar.SECOND, 59);
+        return new Date[] { startDateCal.getTime(), endDateCal.getTime()};
+	}
+
 	
 }

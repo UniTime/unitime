@@ -20,6 +20,7 @@
 package org.unitime.timetable.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -510,4 +511,13 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
             
         }
     }
+    
+    public Collection<Assignment> getCommitedAssignments() {
+    	return new DepartmentalInstructorDAO().getSession().createQuery(
+                "select a from Assignment a inner join a.instructors i where " +
+                "a.solution.commited=true and i.uniqueId=:instructorId")
+                .setLong("instructorId", getUniqueId())
+                .setCacheable(true).list();
+    }
+
 }

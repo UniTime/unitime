@@ -53,9 +53,11 @@ import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Reservation;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.TimePattern;
+import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.comparators.InstructorComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.solver.TimetableDatabaseLoader;
+import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
@@ -176,6 +178,17 @@ public class ClassDetailAction extends PreferencesAction {
 	        doLoad(request, frm, c, op);
 
 	        User user = Web.getUser(httpSession);
+	        
+	        frm.setDisplayInfo(
+	        		c.getManagingDept()!=null &&
+	        		c.getManagingDept().getSolverGroup()!=null &&
+	        		c.getManagingDept().getSolverGroup().getCommittedSolution()!=null &&  // HAS A COMMITED SOLUTION
+	        		c.isEditableBy(user) && // CLASS IS EDITABLE
+	        		WebSolver.getSolver(httpSession)==null && // NOT LOADED INTO THE SOLVER
+	        		c.effectiveDatePattern()!=null && //HAS DATE PATTERN
+	        		!c.effectivePreferences(TimePref.class).isEmpty() && //HAS TIME PATTERN
+	        		user.isAdmin() //TODO: remove this once the info box allows to touch only classes editable by the user
+	        		);
 
 	        // Initialize Preferences for initial load
 	        frm.setAvailableTimePatterns(TimePattern.findApplicable(request,c.getSchedulingSubpart().getMinutesPerWk().intValue(),true,c.getManagingDept()));

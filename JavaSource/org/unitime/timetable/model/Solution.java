@@ -48,7 +48,6 @@ import org.unitime.commons.Email;
 import org.unitime.commons.User;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ListSolutionsForm.InfoComparator;
-import org.unitime.timetable.interfaces.ExternalSolutionCommitAction;
 import org.unitime.timetable.model.base.BaseSolution;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.DivSecAssignmentComparator;

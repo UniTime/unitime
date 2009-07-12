@@ -19,11 +19,17 @@
 */
 package org.unitime.timetable.model;
 
+import java.util.Date;
 import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.Vector;
 
+import org.hibernate.Query;
 import org.unitime.timetable.model.base.BaseStudent;
+import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.util.Constants;
 
@@ -169,4 +175,37 @@ public class Student extends BaseStudent implements Comparable<Student> {
         if (cmp!=0) return cmp;
         return getUniqueId().compareTo(student.getUniqueId());
     }
+    
+    public static Hashtable<Long,Set<Long>> findConflictingStudents(Long classId, int startSlot, int length, Vector<Date> dates) {
+    	Hashtable<Long,Set<Long>> table = new Hashtable();
+    	String datesStr = "";
+    	for (int i=0; i<dates.size(); i++) {
+    		if (i>0) datesStr += ", ";
+    		datesStr += ":date"+i;
+    	}
+    	Query q = LocationDAO.getInstance().getSession()
+    	    .createQuery("select distinct e.clazz.uniqueId, e.student.uniqueId "+
+    	        	"from StudentClassEnrollment e, ClassEvent c inner join c.meetings m, StudentClassEnrollment x "+
+    	        	"where x.clazz.uniqueId=:classId and x.student=e.student and " + // only look among students of the given class 
+    	        	"e.clazz=c.clazz and " + // link ClassEvent c with StudentClassEnrollment e
+            		"m.stopPeriod>:startSlot and :endSlot>m.startPeriod and " + // meeting time within given time period
+            		"m.meetingDate in ("+datesStr+")")
+            .setLong("classId",classId)
+            .setInteger("startSlot", startSlot)
+            .setInteger("endSlot", startSlot + length);
+    	for (int i=0; i<dates.size(); i++) {
+    		q.setDate("date"+i, dates.elementAt(i));
+    	}
+        for (Iterator i = q.setCacheable(true).iterate();i.hasNext();) {
+            Object[] o = (Object[])i.next();
+            Set<Long> set = table.get((Long)o[0]);
+            if (set==null) {
+            	set = new HashSet<Long>();
+            	table.put((Long)o[0], set);
+            }
+            set.add((Long)o[1]);
+        }
+        return table;
+    }
+
 }
