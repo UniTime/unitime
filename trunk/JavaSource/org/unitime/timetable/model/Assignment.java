@@ -122,6 +122,8 @@ public class Assignment extends BaseAssignment {
 		return tInfo;
 	}
 	
+	public void cleastAssignmentInfoCache() { iAssignmentInfoCache.clear(); }
+	
 	public transient Hashtable iConstraintInfoCache = new Hashtable();
 
 	public TimetableInfo getConstraintInfo(String name) throws Exception {

@@ -19,14 +19,17 @@
 */
 package org.unitime.timetable.model;
 
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -51,8 +54,14 @@ import org.unitime.timetable.model.comparators.PosReservationComparator;
 import org.unitime.timetable.model.comparators.StudentGroupReservationComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
+import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.solver.CommitedClassAssignmentProxy;
+import org.unitime.timetable.solver.course.ui.ClassAssignmentInfo;
+import org.unitime.timetable.solver.course.ui.ClassInstructorInfo;
+import org.unitime.timetable.solver.course.ui.ClassRoomInfo;
+import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
+import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.Navigation;
 
 
@@ -1364,5 +1373,210 @@ public class Class_ extends BaseClass_ {
     		   throw(e);
     	   }
        }
+    }
+    
+    public String unassignCommited(String managerExternalId, org.hibernate.Session hibSession) {
+        Transaction tx = null;
+        try {
+            if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
+                tx = hibSession.beginTransaction();
+
+            Assignment oldAssignment = getCommittedAssignment();
+            
+            if (oldAssignment==null)
+            	throw new RuntimeException("Class "+getClassLabel()+" does not have an assignment.");
+            
+            ClassEvent event = getEvent();
+            if (event!=null) hibSession.delete(event);
+
+            String old = oldAssignment.getPlacement().getName();
+            
+            oldAssignment.getSolution().getAssignments().remove(oldAssignment);
+            
+        	hibSession.delete(oldAssignment);
+        	
+        	setCommittedAssignment(null);
+        	hibSession.update(this);
+        	
+            ChangeLog.addChange(hibSession,
+                    TimetableManager.findByExternalId(managerExternalId),
+                    getSession(),
+                    this,
+                    getClassLabel()+" ("+
+                    old+
+                    " &rarr; N/A)",
+                    ChangeLog.Source.CLASS_INFO,
+                    ChangeLog.Operation.UNASSIGN,
+                    getSchedulingSubpart().getControllingCourseOffering().getSubjectArea(),
+                    getManagingDept());
+
+            if (tx!=null) tx.commit();
+            
+            new _RootDAO().getSession().refresh(this);
+            return null;
+        } catch (Exception e) {
+            if (tx!=null) tx.rollback();
+            e.printStackTrace();
+            return "Unassignment of "+getClassLabel()+" failed, reason: "+e.getMessage();
+        }   
+    }
+
+    public String assignCommited(ClassAssignmentInfo assignment, String managerExternalId, org.hibernate.Session hibSession) {
+        Transaction tx = null;
+        try {
+            if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
+                tx = hibSession.beginTransaction();
+
+            String old = "N/A";
+            
+            Assignment oldAssignment = getCommittedAssignment();
+            if (oldAssignment!=null) {
+                old = oldAssignment.getPlacement().getName();
+                
+                oldAssignment.getSolution().getAssignments().remove(oldAssignment);
+                
+            	hibSession.delete(oldAssignment);
+            }
+            
+            SolverGroup group = getManagingDept().getSolverGroup();
+            if (group==null) throw new RuntimeException("Department "+getManagingDept().getLabel()+" has no solver group.");
+            Solution solution = group.getCommittedSolution();
+            if (solution==null) throw new RuntimeException("Solver group "+group.getName()+" has no commited solution.");
+            
+            Assignment a = new Assignment();
+            a.setSolution(solution);
+            a.setSlotsPerMtg(assignment.getTime().getNrSlotsPerMeeting());
+            a.setBreakTime(assignment.getTime().getBreakTime());
+            a.setClazz(this);
+            a.setClassName(getClassLabel());
+            a.setClassId(getUniqueId());
+            a.setDays(assignment.getTime().getDayCode());
+            a.setRooms(new HashSet());
+            a.setInstructors(new HashSet());
+            a.setStartSlot(assignment.getTime().getStartSlot());
+            a.setTimePattern(assignment.getTime().getTimePattern(hibSession));
+            a.setAssignmentInfo(new HashSet());
+            
+            for (ClassRoomInfo room: assignment.getRooms())
+            	a.getRooms().add(room.getLocation(hibSession));
+            for (ClassInstructorInfo inst: assignment.getInstructors())
+            	if (inst.isLead()) a.getInstructors().add(inst.getInstructor(hibSession).getInstructor());
+            
+            hibSession.save(a);
+
+            //TODO: More information should be gathered about the assignment.
+            AssignmentPreferenceInfo pref = new AssignmentPreferenceInfo();
+            pref.setTimePreference(assignment.getTime().getPreference());
+            for (ClassRoomInfo room:assignment.getRooms())
+            	pref.setRoomPreference(room.getLocationId(), room.getPreference());
+            AssignmentInfo ai = new AssignmentInfo();
+			ai.setAssignment(a);
+			ai.setDefinition(SolverInfoDef.findByName(hibSession,"AssignmentInfo"));
+			ai.setOpt(null);
+			ai.setInfo(pref);
+			hibSession.save(ai);
+            
+			a.getAssignmentInfo().add(ai);
+			a.cleastAssignmentInfoCache();
+            
+            ClassEvent event = getEvent();
+            if (event==null) {
+                event = new ClassEvent();
+                event.setClazz(this);
+                setEvent(event);
+            }
+            if (event.getMeetings()!=null) 
+                event.getMeetings().clear();
+            else 
+                event.setMeetings(new HashSet());
+            
+            Date date = new Date();
+            Calendar cal = Calendar.getInstance(Locale.US);
+            cal.setTime(assignment.getTime().getDatePattern().getStartDate()); cal.setLenient(true);
+            for (int idx=0;idx<assignment.getTime().getDatePattern().getPattern().length();idx++) {
+            	if (assignment.getTime().getDatePattern().getPattern().charAt(idx)=='1') {
+            		boolean offered = false;
+                    switch (cal.get(Calendar.DAY_OF_WEEK)) {
+                    	case Calendar.MONDAY : offered = ((assignment.getTime().getDayCode() & Constants.DAY_CODES[Constants.DAY_MON]) != 0); break;
+                    	case Calendar.TUESDAY : offered = ((assignment.getTime().getDayCode() & Constants.DAY_CODES[Constants.DAY_TUE]) != 0); break;
+                    	case Calendar.WEDNESDAY : offered = ((assignment.getTime().getDayCode() & Constants.DAY_CODES[Constants.DAY_WED]) != 0); break;
+                    	case Calendar.THURSDAY : offered = ((assignment.getTime().getDayCode() & Constants.DAY_CODES[Constants.DAY_THU]) != 0); break;
+                    	case Calendar.FRIDAY : offered = ((assignment.getTime().getDayCode() & Constants.DAY_CODES[Constants.DAY_FRI]) != 0); break;
+                    	case Calendar.SATURDAY : offered = ((assignment.getTime().getDayCode() & Constants.DAY_CODES[Constants.DAY_SAT]) != 0); break;
+                    	case Calendar.SUNDAY : offered = ((assignment.getTime().getDayCode() & Constants.DAY_CODES[Constants.DAY_SUN]) != 0); break;
+                    }
+                    if (offered) {
+                        boolean created = false;
+                        for (ClassRoomInfo room: assignment.getRooms()) {
+                            Location location = room.getLocation(hibSession);
+                            if (location.getPermanentId()!=null) {
+                                Meeting m = new Meeting();
+                                m.setMeetingDate(cal.getTime());
+                                m.setStartPeriod(assignment.getTime().getStartSlot());
+                                m.setStartOffset(0);
+                                m.setStopPeriod(assignment.getTime().getStartSlot()+assignment.getTime().getLength());
+                                m.setStopOffset(-assignment.getTime().getBreakTime());
+                                m.setClassCanOverride(false);
+                                m.setLocationPermanentId(location.getPermanentId());
+                                m.setApprovedDate(date);
+                                m.setEvent(event);
+                                event.getMeetings().add(m);
+                                created = true;
+                            }
+                        }
+                        if (!created) {
+                            Meeting m = new Meeting();
+                            m.setMeetingDate(cal.getTime());
+                            m.setStartPeriod(assignment.getTime().getStartSlot());
+                            m.setStartOffset(0);
+                            m.setStopPeriod(assignment.getTime().getStartSlot()+assignment.getTime().getLength());
+                            m.setStopOffset(-assignment.getTime().getBreakTime());
+                            m.setClassCanOverride(false);
+                            m.setLocationPermanentId(null);
+                            m.setApprovedDate(date);
+                            m.setEvent(event);
+                            event.getMeetings().add(m);
+                        }
+
+                    }
+                }
+            	cal.add(Calendar.DAY_OF_YEAR, 1);
+            }
+            
+            hibSession.saveOrUpdate(event);
+
+            setCommittedAssignment(a);
+            hibSession.update(this);
+
+            ChangeLog.addChange(hibSession,
+                    TimetableManager.findByExternalId(managerExternalId),
+                    getSession(),
+                    this,
+                    getClassLabel()+" ("+
+                    old+
+                    " &rarr; "+assignment.getTime().getName()+" "+assignment.getRoomNames(", ")+")",
+                    ChangeLog.Source.CLASS_INFO,
+                    ChangeLog.Operation.ASSIGN,
+                    getSchedulingSubpart().getControllingCourseOffering().getSubjectArea(),
+                    getManagingDept());
+            
+            if (tx!=null) tx.commit();
+            
+            new _RootDAO().getSession().refresh(this);
+            return null;
+        } catch (Exception e) {
+            if (tx!=null) tx.rollback();
+            e.printStackTrace();
+            return "Assignment of "+getClassLabel()+" failed, reason: "+e.getMessage();
+        }   
+    }
+    
+    public Collection<Long> getEnrolledStudentIds() {
+        return Class_DAO.getInstance().getSession().createQuery(
+                "select e.student.uniqueId from StudentClassEnrollment e where "+
+                "e.clazz.uniqueId=:classId")
+                .setLong("classId",getUniqueId())
+                .setCacheable(true).list();
+
     }
 }

@@ -43,6 +43,7 @@
 	<html:hidden property="classId"/>
 	<html:hidden property="nextId"/>
 	<html:hidden property="previousId"/>
+	<bean:define name='<%=frmName%>' property="classId" id="classId"/>
 
 	<TABLE width="93%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
@@ -87,7 +88,14 @@
 						</logic:equal>
 						<!-- End Bypass -->
 					</logic:equal>
-				
+					
+					<logic:equal name="<%=frmName%>" property="displayInfo" value="true">
+						&nbsp;
+						<input type="button" value="Assign" title="Open Class Assignment Window (Alt+X)" class="btn" accesskey="X"
+								onClick="javascript:window.open('classInfo.do?classId=<%=String.valueOf(classId)%>','classes','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();"
+						/>
+					</logic:equal>
+									
 					<logic:notEmpty name="<%=frmName%>" property="previousId">
 						&nbsp;
 						<html:submit property="op" 
@@ -396,6 +404,13 @@
 					<!-- TODO Reservations Bypass to be removed later -->				
 					</logic:equal>
 					<!-- End Bypass -->
+				</logic:equal>
+
+				<logic:equal name="<%=frmName%>" property="displayInfo" value="true">
+					&nbsp;
+					<input type="button" value="Assign" title="Open Class Assignment Window (Alt+X)" class="btn" accesskey="X"
+							onClick="javascript:window.open('classInfo.do?classId=<%=String.valueOf(classId)%>','classes','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();"
+					/>
 				</logic:equal>
 			
 				<logic:notEmpty name="<%=frmName%>" property="previousId">
