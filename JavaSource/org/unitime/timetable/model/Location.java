@@ -20,14 +20,17 @@
 package org.unitime.timetable.model;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.Vector;
 
 import org.hibernate.HibernateException;
+import org.hibernate.Query;
 import org.unitime.commons.User;
 import org.unitime.timetable.model.base.BaseLocation;
 import org.unitime.timetable.model.dao.ExamLocationPrefDAO;
@@ -640,6 +643,14 @@ public abstract class Location extends BaseLocation implements Comparable {
                 .setLong("periodId", periodId).setCacheable(true).uniqueResult();
     }
     
+    public Collection<Assignment> getCommitedAssignments() {
+    	return new LocationDAO().getSession().createQuery(
+                "select a from Assignment a inner join a.rooms r where " +
+                "a.solution.commited=true and r.uniqueId=:locationId")
+                .setLong("locationId", getUniqueId())
+                .setCacheable(true).list();
+    }
+    
     public static TreeSet findAllAvailableExamLocations(ExamPeriod period) {
         TreeSet locations = findAllExamLocations(period.getSession().getUniqueId(),period.getExamType());
         locations.removeAll(findNotAvailableExamLocations(period.getUniqueId()));
@@ -707,8 +718,40 @@ public abstract class Location extends BaseLocation implements Comparable {
                 "select l from Location l where l.session.uniqueId=:sessionId"
                 ).setLong("sessionId", sessionId).setCacheable(true).list();
     }
+
+    public static List findAllRooms(Long sessionId) {
+        return new LocationDAO().getSession().createQuery(
+                "select l from Room l where l.session.uniqueId=:sessionId"
+                ).setLong("sessionId", sessionId).setCacheable(true).list();
+    }
     
     public abstract RoomType getRoomType();
     public abstract void setRoomType(RoomType roomType);
+    
+    public static Hashtable<Long,Long> findClassLocationTable(Long sessionId, int startSlot, int length, Vector<Date> dates) {
+    	Hashtable<Long,Long> table = new Hashtable();
+    	String datesStr = "";
+    	for (int i=0; i<dates.size(); i++) {
+    		if (i>0) datesStr += ", ";
+    		datesStr += ":date"+i;
+    	}
+    	Query q = LocationDAO.getInstance().getSession()
+    	    .createQuery("select distinct r.uniqueId, e.clazz.uniqueId from " +
+    	    		"ClassEvent e inner join e.meetings m, Location r where " +
+            		"r.session.uniqueId=:sessionId and r.permanentId=m.locationPermanentId and " + // link Location r with Meeting m
+            		"m.stopPeriod>:startSlot and :endSlot>m.startPeriod and " + // meeting time within given time period
+            		"m.meetingDate in ("+datesStr+")")
+            .setLong("sessionId",sessionId)
+            .setInteger("startSlot", startSlot)
+            .setInteger("endSlot", startSlot + length);
+    	for (int i=0; i<dates.size(); i++) {
+    		q.setDate("date"+i, dates.elementAt(i));
+    	}
+        for (Iterator i = q.setCacheable(true).iterate();i.hasNext();) {
+            Object[] o = (Object[])i.next();
+            table.put((Long)o[0],(Long)o[1]);
+        }
+        return table;
+    }
 
 }
