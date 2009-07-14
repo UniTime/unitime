@@ -728,8 +728,8 @@ public abstract class Location extends BaseLocation implements Comparable {
     public abstract RoomType getRoomType();
     public abstract void setRoomType(RoomType roomType);
     
-    public static Hashtable<Long,Long> findClassLocationTable(Long sessionId, int startSlot, int length, Vector<Date> dates) {
-    	Hashtable<Long,Long> table = new Hashtable();
+    public static Hashtable<Long,Set<Long>> findClassLocationTable(Long sessionId, int startSlot, int length, Vector<Date> dates) {
+    	Hashtable<Long,Set<Long>> table = new Hashtable();
     	String datesStr = "";
     	for (int i=0; i<dates.size(); i++) {
     		if (i>0) datesStr += ", ";
@@ -749,9 +749,35 @@ public abstract class Location extends BaseLocation implements Comparable {
     	}
         for (Iterator i = q.setCacheable(true).iterate();i.hasNext();) {
             Object[] o = (Object[])i.next();
-            table.put((Long)o[0],(Long)o[1]);
+            Set<Long> ids = table.get((Long)o[0]);
+            if (ids==null) {
+            	ids = new HashSet<Long>();
+            	table.put((Long)o[0], ids);
+            }
+            ids.add((Long)o[1]);
         }
         return table;
+    }
+    
+    public Set<Long> findClassLocationTable(int startSlot, int length, Vector<Date> dates) {
+    	String datesStr = "";
+    	for (int i=0; i<dates.size(); i++) {
+    		if (i>0) datesStr += ", ";
+    		datesStr += ":date"+i;
+    	}
+    	Query q = LocationDAO.getInstance().getSession()
+    	    .createQuery("select distinct e.clazz.uniqueId from " +
+    	    		"ClassEvent e inner join e.meetings m where " +
+            		"m.locationPermanentId=:permanentId and " +
+            		"m.stopPeriod>:startSlot and :endSlot>m.startPeriod and " + // meeting time within given time period
+            		"m.meetingDate in ("+datesStr+")") // and date
+            .setLong("permanentId",getPermanentId())
+            .setInteger("startSlot", startSlot)
+            .setInteger("endSlot", startSlot + length);
+    	for (int i=0; i<dates.size(); i++) {
+    		q.setDate("date"+i, dates.elementAt(i));
+    	}
+    	return new HashSet<Long>(q.setCacheable(true).list());
     }
 
 }
