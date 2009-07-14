@@ -81,7 +81,7 @@ public class ClassInfoModel implements Serializable {
     private ClassInfo iClass = null;
     private ClassInfoForm iForm = null;
     private ClassProposedChange iChange = null;
-    private Collection<ClassAssignmentInfo> iTimes = null;
+    private Collection<ClassAssignment> iTimes = null;
     private Vector<ClassRoomInfo> iRooms = null;
     private int iTimesTableOrd = 0;
     private String iManagerExternalId = null;
@@ -215,7 +215,6 @@ public class ClassInfoModel implements Serializable {
             }
         }
         // TODO: Update student sectioning information
-        // TODO: Notify external interface about changes in committed solution(s)
         return message;
     }
     
@@ -274,9 +273,11 @@ public class ClassInfoModel implements Serializable {
     public void setTime(String timeId) throws Exception {
         iRooms = null;
         if (iChange==null) iChange = new ClassProposedChange();
-        for (ClassAssignmentInfo time : getTimes()) {
+        for (ClassAssignment time : getTimes()) {
             if (timeId.equals(time.getTimeId())) {
-                iChange.addChange(time, getClassOldAssignment());
+                iChange.addChange(
+                		new ClassAssignmentInfo(getClazz().getClazz(), time.getTime(), null, iChange.getAssignmentTable()), 
+                		getClassOldAssignment());
             }
         }
         if (iChange.isEmpty()) iChange = null; 
@@ -294,9 +295,9 @@ public class ClassInfoModel implements Serializable {
     
     public void setRooms(String rooms) throws Exception {
         if (iChange==null) iChange = new ClassProposedChange();
-        ClassAssignmentInfo assignment = iChange.getCurrent(iClass);
+        ClassAssignment assignment = iChange.getCurrent(iClass);
         if (assignment==null && isClassAssigned()) {
-            for (ClassAssignmentInfo time : getTimes()) {
+            for (ClassAssignment time : getTimes()) {
                 if (getClassOldAssignment().getTimeId().equals(time.getTimeId())) {
                     assignment = time;
                     break;
@@ -315,8 +316,9 @@ public class ClassInfoModel implements Serializable {
             }
             if (room!=null) assignedRooms.add(room);
         }
-        assignment = new ClassAssignmentInfo(getClazz().getClazz(), assignment.getTime(), assignedRooms, iChange.getAssignmentTable());
-        iChange.addChange(assignment, getClassOldAssignment());
+        iChange.addChange(
+        		new ClassAssignmentInfo(getClazz().getClazz(), assignment.getTime(), assignedRooms, iChange.getAssignmentTable()),
+        		getClassOldAssignment());
         if (iChange.isEmpty()) iChange = null; 
         update();
     }
@@ -338,7 +340,6 @@ public class ClassInfoModel implements Serializable {
             ret += "<script language='javascript'>";
             ret += "function timeOver(source, id) { ";
             ret += "    document.getElementById('t'+id).style.backgroundColor='rgb(223,231,242)';";
-            ret += "    document.getElementById('c'+id).style.backgroundColor='rgb(223,231,242)';";
             ret += "    source.style.cursor='hand';source.style.cursor='pointer';";
             ret += "}";
             ret += "function timeOut(id) { ";
@@ -347,7 +348,6 @@ public class ClassInfoModel implements Serializable {
             if (isClassAssigned() || classAssignment!=null)
             	ret += "    if (id=='"+(classAssignment==null?getClassAssignment():classAssignment).getTimeId()+"') bg='rgb(168,187,225)';";
             ret += "    document.getElementById('t'+id).style.backgroundColor=bg;";
-            ret += "    document.getElementById('c'+id).style.backgroundColor=bg;";
             ret += "}";
             ret += "function timeClick(source, id) { ";
             ret += "    displayLoading();";
@@ -357,7 +357,7 @@ public class ClassInfoModel implements Serializable {
             ret += "<table border='0' cellspacing='0' cellpadding='3'>";
             int idx = 0;
             int step = 5;
-            for (ClassAssignmentInfo time : getTimes()) {
+            for (ClassAssignment time : getTimes()) {
                 boolean initial = (getClassOldAssignment()!=null && getClassOldAssignment().getTimeId()!=null && getClassOldAssignment().getTimeId().equals(time.getTimeId()));
                 if ((idx%step)==0) {
                     if (idx>0) ret +="</tr>";
@@ -372,19 +372,15 @@ public class ClassInfoModel implements Serializable {
                     "onMouseOver=\"timeOver(this,'"+time.getTimeId()+"');\" "+
                     "onMouseOut=\"timeOut('"+time.getTimeId()+"');\" "+
                     "onClick=\"timeClick(this,'"+time.getTimeId()+"');\"";
+                if ((idx%step)<step-1)
+                    style += "border-right: #646464 1px dashed;";
                 ret += "<td nowrap id='t"+time.getTimeId()+"' " +
                         (style.length()>0?"style='"+style+"' ":"")+mouse+">"+
                         time.getTime().getLongNameHtml()+"</td>";
-                if ((idx%step)<step-1)
-                    style += "border-right: #646464 1px dashed;";
-                ret += "<td id='c"+time.getTimeId()+"' "+
-                        (style.length()>0?"style='"+style+"' ":"")+mouse+">"+
-                        time.getNrStudentCounflicts()+
-                        "</td>";
                 idx ++;
             }
             while ((idx%step)!=0) {
-                ret += "<td colspan='2'>&nbsp;</td>";
+                ret += "<td>&nbsp;</td>";
                 idx++;
             }
             ret += "</tr>";
@@ -461,9 +457,9 @@ public class ClassInfoModel implements Serializable {
     }
 
     
-    public Collection<ClassAssignmentInfo> getTimes() {
+    public Collection<ClassAssignment> getTimes() {
         if (iTimes==null) {
-            iTimes = new Vector<ClassAssignmentInfo>();
+            iTimes = new Vector<ClassAssignment>();
             Class_ clazz = getClazz().getClazz();
             Set timePrefs = clazz.effectivePreferences(TimePref.class);
             if (timePrefs.isEmpty()) {
@@ -492,7 +488,7 @@ public class ClassInfoModel implements Serializable {
             		int length = ExactTimeMins.getNrSlotsPerMtg(pattern.getExactDays(),clazz.getSchedulingSubpart().getMinutesPerWk().intValue());
             		int breakTime = ExactTimeMins.getBreakTime(pattern.getExactDays(),clazz.getSchedulingSubpart().getMinutesPerWk().intValue()); 
             		ClassTimeInfo time = new ClassTimeInfo(pattern.getExactDays(),pattern.getExactStartSlot(),length,PreferenceLevel.sIntLevelNeutral,timePref.getTimePattern(),datePattern,breakTime);
-            		iTimes.add(new ClassAssignmentInfo(clazz, time, null, (iChange==null?null:iChange.getAssignmentTable())));
+            		iTimes.add(new ClassAssignment(clazz, time, null));
                     continue;
             	}
 
@@ -566,34 +562,6 @@ public class ClassInfoModel implements Serializable {
         Set roomPrefs = clazz.effectivePreferences(RoomPref.class);
         Set bldgPrefs = clazz.effectivePreferences(BuildingPref.class);
         Set featurePrefs = clazz.effectivePreferences(RoomFeaturePref.class);
-        
-        //TODO: This might be done much faster.
-        Hashtable<Long, Long> locationTable = Location.findClassLocationTable(getClazz().getClazz().getSessionId(), period.getStartSlot(), period.getLength(), period.getDates());
-        
-        // Fix the location table with the current assignment
-        if (getClassAssignment()!=null) {
-            if (getClassAssignment().getTime().overlaps(period) && getClassAssignment().getRooms()!=null)
-                for (ClassRoomInfo room : getClassAssignment().getRooms())
-                    locationTable.remove(room.getLocationId());
-        }
-        if (iChange!=null) {
-            for (ClassAssignment conflict : iChange.getConflicts()) {
-                if (conflict.getTime().overlaps(period) && conflict.getRooms()!=null)
-                    for (ClassRoomInfo room : conflict.getRooms())
-                        locationTable.remove(room.getLocationId());
-            }
-            for (ClassAssignment current : iChange.getAssignments()) {
-            	ClassAssignment initial = iChange.getInitial(current);
-                if (initial!=null && initial.getTime().overlaps(period) && initial.getRooms()!=null)
-                    for (ClassRoomInfo room : initial.getRooms())
-                        locationTable.remove(room.getLocationId());
-            }
-            for (ClassAssignment current : iChange.getAssignments()) {
-                if (!getClazz().getClassId().equals(current.getClassId()) && current.getTime().overlaps(period) && current.getRooms()!=null)
-                    for (ClassRoomInfo room : current.getRooms())
-                        locationTable.put(room.getLocationId(), current.getClassId());
-            }
-        }
         
         if (nrRooms>0) {
         	int minClassLimit = clazz.getExpectedCapacity().intValue();
@@ -792,15 +760,41 @@ public class ClassInfoModel implements Serializable {
                 
                 if (!add) continue;
                 
-                Long classId = locationTable.get(room.getUniqueId());
-                if (!allowConflicts && classId!=null) {
+                //TODO: This might be done much faster.
+                Set<Long> classIds = room.findClassLocationTable(period.getStartSlot(), period.getLength(), period.getDates());
+                
+                // Fix the location table with the current assignment
+                if (getClassAssignment()!=null && getClassAssignment().hasRoom(room.getUniqueId()) && getClassAssignment().getTime().overlaps(period))
+                	classIds.remove(getClassAssignment().getClassId());
+                if (iChange!=null) {
+                    for (ClassAssignment conflict : iChange.getConflicts()) {
+                    	if (conflict.hasRoom(room.getUniqueId()) && conflict.getTime().overlaps(period))
+                    		classIds.remove(conflict.getClassId());
+                    }
+                    for (ClassAssignment current : iChange.getAssignments()) {
+                    	ClassAssignment initial = iChange.getInitial(current);
+                        if (initial!=null && initial.hasRoom(room.getUniqueId()) && initial.getTime().overlaps(period))
+                        	classIds.remove(initial.getClassId());
+                    }
+                    for (ClassAssignment current : iChange.getAssignments()) {
+                        if (!getClazz().getClassId().equals(current.getClassId()) && current.hasRoom(room.getUniqueId()) && current.getTime().overlaps(period))
+                        	classIds.add(current.getClassId());
+                    }
+                }
+
+                if (!allowConflicts && classIds!=null && !classIds.isEmpty()) {
+                	Long classId = (Long)classIds.iterator().next();
         			if (room.getLabel().equals(filter)) iForm.setMessage("Room "+room.getLabel()+" is not available for "+period.getLongName()+" due to the class "+Class_DAO.getInstance().get(classId).getClassLabel()+".");
                 	continue;
                 }
-                if (classId!=null) prefInt += 10000;
-                if (classId!=null && iChange!=null && iChange.getCurrent(classId)!=null) {
-                	if (room.getLabel().equals(filter)) iForm.setMessage("Room "+room.getLabel()+" is not available for "+period.getLongName()+" due to the class "+Class_DAO.getInstance().get(classId).getClassLabel()+".");
-                	continue;
+                if (classIds!=null && !classIds.isEmpty()) prefInt += 10000;
+                if (classIds!=null && iChange!=null) {
+                	for (Long classId: classIds) {
+                		if (iChange.getCurrent(classId)!=null) {
+                        	if (room.getLabel().equals(filter)) iForm.setMessage("Room "+room.getLabel()+" is not available for "+period.getLongName()+" due to the class "+Class_DAO.getInstance().get(classId).getClassLabel()+".");
+                        	continue rooms;
+                		}
+                	}
                 }
 
                 if (RoomAvailability.getInstance()!=null) {

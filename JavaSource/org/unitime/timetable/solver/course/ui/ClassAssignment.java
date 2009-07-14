@@ -82,6 +82,13 @@ public class ClassAssignment extends ClassInfo implements Serializable {
 		return iRooms;
 	}
 	
+	public boolean hasRoom(Long roomId) {
+		if (iRooms==null) return false;
+		for (ClassRoomInfo room: iRooms)
+			if (room.getLocationId().equals(roomId)) return true;
+		return false;
+	}
+	
 	public Collection<Long> getRoomIds() {
 		Vector<Long> roomIds = new Vector<Long>(getNrRooms());
 		for (ClassRoomInfo room: getRooms()) roomIds.add(room.getLocationId());
