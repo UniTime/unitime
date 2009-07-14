@@ -62,6 +62,8 @@ public class ClassTimeInfo implements Serializable, Comparable<ClassTimeInfo> {
     private BitSet iWeekCode;
     private Long iDatePatternId = null;
     private transient DatePattern iDatePattern = null;
+    
+    private transient Vector<Date> iDates = null;
 
     public ClassTimeInfo(int dayCode, int startTime, int length, int pref, TimePattern timePattern, DatePattern datePattern, int breakTime) {
         iPreference = pref;
@@ -229,58 +231,40 @@ public class ClassTimeInfo implements Serializable, Comparable<ClassTimeInfo> {
     }
     
     public Vector<Date> getDates() {
-    	Vector<Date> dates = new Vector();
-        Calendar cal = Calendar.getInstance(Locale.US);
-        cal.setTime(getDatePattern().getStartDate()); cal.setLenient(true);
-        for (int idx=0;idx<getDatePattern().getPattern().length();idx++) {
-        	if (getDatePattern().getPattern().charAt(idx)=='1') {
-        		boolean offered = false;
-                switch (cal.get(Calendar.DAY_OF_WEEK)) {
-                	case Calendar.MONDAY : offered = ((getDayCode() & Constants.DAY_CODES[Constants.DAY_MON]) != 0); break;
-                	case Calendar.TUESDAY : offered = ((getDayCode() & Constants.DAY_CODES[Constants.DAY_TUE]) != 0); break;
-                	case Calendar.WEDNESDAY : offered = ((getDayCode() & Constants.DAY_CODES[Constants.DAY_WED]) != 0); break;
-                	case Calendar.THURSDAY : offered = ((getDayCode() & Constants.DAY_CODES[Constants.DAY_THU]) != 0); break;
-                	case Calendar.FRIDAY : offered = ((getDayCode() & Constants.DAY_CODES[Constants.DAY_FRI]) != 0); break;
-                	case Calendar.SATURDAY : offered = ((getDayCode() & Constants.DAY_CODES[Constants.DAY_SAT]) != 0); break;
-                	case Calendar.SUNDAY : offered = ((getDayCode() & Constants.DAY_CODES[Constants.DAY_SUN]) != 0); break;
+    	if (iDates==null) {
+        	iDates = new Vector();
+            Calendar cal = Calendar.getInstance(Locale.US);
+            cal.setTime(getDatePattern().getStartDate()); cal.setLenient(true);
+            for (int idx=0;idx<getDatePattern().getPattern().length();idx++) {
+            	if (getDatePattern().getPattern().charAt(idx)=='1') {
+            		boolean offered = false;
+                    switch (cal.get(Calendar.DAY_OF_WEEK)) {
+                    	case Calendar.MONDAY : offered = ((getDayCode() & Constants.DAY_CODES[Constants.DAY_MON]) != 0); break;
+                    	case Calendar.TUESDAY : offered = ((getDayCode() & Constants.DAY_CODES[Constants.DAY_TUE]) != 0); break;
+                    	case Calendar.WEDNESDAY : offered = ((getDayCode() & Constants.DAY_CODES[Constants.DAY_WED]) != 0); break;
+                    	case Calendar.THURSDAY : offered = ((getDayCode() & Constants.DAY_CODES[Constants.DAY_THU]) != 0); break;
+                    	case Calendar.FRIDAY : offered = ((getDayCode() & Constants.DAY_CODES[Constants.DAY_FRI]) != 0); break;
+                    	case Calendar.SATURDAY : offered = ((getDayCode() & Constants.DAY_CODES[Constants.DAY_SAT]) != 0); break;
+                    	case Calendar.SUNDAY : offered = ((getDayCode() & Constants.DAY_CODES[Constants.DAY_SUN]) != 0); break;
+                    }
+                    if (offered) {
+                    	iDates.add(cal.getTime());
+                    }
                 }
-                if (offered) {
-                	dates.add(cal.getTime());
-                }
+            	cal.add(Calendar.DAY_OF_YEAR, 1);
             }
-        	cal.add(Calendar.DAY_OF_YEAR, 1);
-        }
-        return dates; 
+    	}
+    	return iDates; 
     }
     
     public TimeBlock overlaps(Collection<TimeBlock> times) {
     	if (times==null || times.isEmpty()) return null;
         int breakTimeStart = Integer.parseInt(ApplicationProperties.getProperty("tmtbl.room.availability.class.breakTime.start", "0"));
         int breakTimeStop = Integer.parseInt(ApplicationProperties.getProperty("tmtbl.room.availability.class.breakTime.stop", "0"));
-        Calendar cal = Calendar.getInstance(Locale.US);
-        cal.setTime(getDatePattern().getStartDate()); cal.setLenient(true);
-        for (int idx=0;idx<getDatePattern().getPattern().length();idx++) {
-        	if (getDatePattern().getPattern().charAt(idx)=='1') {
-        		boolean offered = false;
-                switch (cal.get(Calendar.DAY_OF_WEEK)) {
-                	case Calendar.MONDAY : offered = ((getDayCode() & Constants.DAY_CODES[Constants.DAY_MON]) != 0); break;
-                	case Calendar.TUESDAY : offered = ((getDayCode() & Constants.DAY_CODES[Constants.DAY_TUE]) != 0); break;
-                	case Calendar.WEDNESDAY : offered = ((getDayCode() & Constants.DAY_CODES[Constants.DAY_WED]) != 0); break;
-                	case Calendar.THURSDAY : offered = ((getDayCode() & Constants.DAY_CODES[Constants.DAY_THU]) != 0); break;
-                	case Calendar.FRIDAY : offered = ((getDayCode() & Constants.DAY_CODES[Constants.DAY_FRI]) != 0); break;
-                	case Calendar.SATURDAY : offered = ((getDayCode() & Constants.DAY_CODES[Constants.DAY_SAT]) != 0); break;
-                	case Calendar.SUNDAY : offered = ((getDayCode() & Constants.DAY_CODES[Constants.DAY_SUN]) != 0); break;
-                }
-                if (offered) {
-                	DummyTimeBlock dummy = new DummyTimeBlock(cal.getTime(), breakTimeStart, breakTimeStop);
-                	for (TimeBlock time: times)
-                		if (dummy.overlaps(time)) {
-                			System.out.println(dummy+" overlaps with "+time);
-                			return time;
-                		}
-                }
-            }
-        	cal.add(Calendar.DAY_OF_YEAR, 1);
+        for (Date date: getDates()) {
+        	DummyTimeBlock dummy = new DummyTimeBlock(date, breakTimeStart, breakTimeStop);
+        	for (TimeBlock time: times)
+        		if (dummy.overlaps(time)) return time;
         }
         return null;
     }
