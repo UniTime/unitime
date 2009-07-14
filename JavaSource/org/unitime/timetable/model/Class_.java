@@ -44,6 +44,8 @@ import org.hibernate.LazyInitializationException;
 import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
+import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.interfaces.ExternalClassEditAction;
 import org.unitime.timetable.model.base.BaseClass_;
 import org.unitime.timetable.model.comparators.AcadAreaReservationComparator;
 import org.unitime.timetable.model.comparators.CourseReservationComparator;
@@ -1413,6 +1415,12 @@ public class Class_ extends BaseClass_ {
             if (tx!=null) tx.commit();
             
             new _RootDAO().getSession().refresh(this);
+            String className = ApplicationProperties.getProperty("tmtbl.external.class.edit_action.class");
+        	if (className != null && className.trim().length() > 0){
+            	ExternalClassEditAction editAction = (ExternalClassEditAction) (Class.forName(className).newInstance());
+           		editAction.performExternalClassEditAction(this, hibSession);
+        	}
+
             return null;
         } catch (Exception e) {
             if (tx!=null) tx.rollback();
@@ -1563,6 +1571,12 @@ public class Class_ extends BaseClass_ {
             if (tx!=null) tx.commit();
             
             new _RootDAO().getSession().refresh(this);
+            String className = ApplicationProperties.getProperty("tmtbl.external.class.edit_action.class");
+        	if (className != null && className.trim().length() > 0){
+            	ExternalClassEditAction editAction = (ExternalClassEditAction) (Class.forName(className).newInstance());
+           		editAction.performExternalClassEditAction(this, hibSession);
+        	}
+            
             return null;
         } catch (Exception e) {
             if (tx!=null) tx.rollback();
