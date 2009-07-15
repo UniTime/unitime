@@ -2018,6 +2018,25 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 			addNote("\tdid not find matching event, added new event: " + c.getSchedulingSubpart().getInstrOfferingConfig().getCourseName() + " " + c.getSchedulingSubpart().getItype().getAbbv().trim() + " " + c.getClassSuffix());
 			ChangeLog.addChange(getHibSession(), manager, session, newEvent, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.CREATE, c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea(), c.getSchedulingSubpart().getControllingCourseOffering().getDepartment());
 		} else if (origEvent!=null) {
+			if (!origEvent.getEventName().equals(c.getSchedulingSubpart().getInstrOfferingConfig().getCourseName() + " " + c.getSchedulingSubpart().getItype().getAbbv().trim() + " " + c.getClassSuffix())){
+				origEvent.setEventName(c.getSchedulingSubpart().getInstrOfferingConfig().getCourseName() + " " + c.getSchedulingSubpart().getItype().getAbbv().trim() + " " + c.getClassSuffix());
+				changed = true;
+				addNote("\tevent name changed");
+			}
+			if (origEvent.getMinCapacity() != null && c.getExpectedCapacity() != null && !origEvent.getMinCapacity().equals(c.getExpectedCapacity())
+					|| (origEvent.getMinCapacity() != null && c.getExpectedCapacity() == null)
+					|| (origEvent.getMinCapacity() == null && c.getExpectedCapacity() != null)){
+				origEvent.setMinCapacity(c.getExpectedCapacity());
+				changed = true;
+				addNote("\tevent minimum capacity changed.");
+			}
+			if (origEvent.getMaxCapacity() != null && c.getMaxExpectedCapacity() != null && !origEvent.getMaxCapacity().equals(c.getMaxExpectedCapacity())
+					|| (origEvent.getMaxCapacity() != null && c.getMaxExpectedCapacity() == null)
+					|| (origEvent.getMaxCapacity() == null && c.getMaxExpectedCapacity() != null)){
+				origEvent.setMaxCapacity(c.getMaxExpectedCapacity());
+				changed = true;
+				addNote("\tevent maximum capacity changed.");
+			}
             Set origMeetings = new TreeSet<Object>();
             origMeetings.addAll(origEvent.getMeetings());
             if (meetings != null){
