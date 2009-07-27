@@ -19,8 +19,10 @@
 */
 package org.unitime.timetable.form;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Hashtable;
+import java.util.Locale;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
@@ -33,6 +35,7 @@ import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.util.CalendarUtils;
+import org.unitime.timetable.util.DateUtils;
 import org.unitime.timetable.util.ReferenceList;
 
 
@@ -149,6 +152,26 @@ public class SessionEditForm extends ActionForm {
                             Date d5 = CalendarUtils.getDate(eventEnd, df);
                             if (errors.isEmpty() && !d4.before(d5)) {
                                 errors.add("eventEnd", new ActionMessage("errors.generic", "Event End Date must occur AFTER Event Start Date"));
+                            }
+                            Calendar start = Calendar.getInstance(Locale.US);
+                            if (d4.before(d1)){
+                            	start.setTime(d4);
+                            } else {
+                            	start.setTime(d1);
+                            }
+                            Calendar end = Calendar.getInstance(Locale.US);
+                            if (d5.after(d2)){
+                            	end.setTime(d5);
+                            } else {
+                            	end.setTime(d2);
+                            }
+                            int startYear = start.get(Calendar.YEAR);
+                            int endYear = end.get(Calendar.YEAR);
+                            int startDay = DateUtils.getDayOfYear(1, start.get(Calendar.MONTH), startYear);
+                            int endDay = DateUtils.getDayOfYear(28, end.get(Calendar.MONTH) + (12 * (endYear - startYear)), startYear);
+                            int daysInSession = endDay - startDay;
+                            if (daysInSession > 366){
+                            	errors.add("sessionDays", new ActionMessage("errors.generic", "Dates associated with a session cannot cover more than 12 calendar months."));
                             }
 						}
 					}

@@ -76,7 +76,7 @@ public class DateUtils {
         cal.add(Calendar.DAY_OF_MONTH, +excessDays);
         int m = cal.get(Calendar.MONTH);
         if (cal.get(Calendar.YEAR) != year)
-            m += 12;
+            m += (12 * (cal.get(Calendar.YEAR) - year));
         return m;
     }
 
@@ -86,25 +86,47 @@ public class DateUtils {
         cal.add(Calendar.DAY_OF_MONTH, -excessDays);
         int m = cal.get(Calendar.MONTH);
         if (cal.get(Calendar.YEAR) != year)
-            m -= 12;
+            m -= (12 * (year - cal.get(Calendar.YEAR)));
         return m;
     }
 
     public static int getNrDaysOfMonth(int month, int year) {
-        Calendar cal = Calendar.getInstance(Locale.US);
-        cal.set(year + (month < 0 ? -1 : month >= 12 ? 1 : 0),
-                (month < 0 ? month + 12 : month % 12), 1);
+        Calendar cal = calendarForFirstDayOf(month, year);
         return cal.getActualMaximum(Calendar.DAY_OF_MONTH);
     }
 
+    private static Calendar calendarForFirstDayOf(int month, int year){
+    	return(calendarFor(1, month, year));
+    }
+    
+    public static int calculateActualYear(int month, int year){
+    	return(year + (month < 0 ? (month/12)-1 : month >= 12 ? (month/12) : 0));
+    }
+    private static Calendar calendarFor(int day, int month, int year){
+    	Calendar cal = Calendar.getInstance(Locale.US);
+    	cal.set(calculateActualYear(month, year),
+                (month < 0 ? (12 + (month%12)) : month % 12), day);
+        return(cal);
+    }
     public static int getDayOfYear(int day, int month, int year) {
-        Calendar cal = Calendar.getInstance(Locale.US);
-        cal.set(year + (month < 0 ? -1 : month >= 12 ? 1 : 0),
-                (month < 0 ? month + 12 : month % 12), day);
+        Calendar cal = calendarFor(day, month, year);
         int idx = cal.get(Calendar.DAY_OF_YEAR);
         if (month < 0 || month >= 12) {
-            cal.set(year + (month < 0 ? -1 : 0), 11, 31);
-            idx += (month < 0 ? -1 : 1) * cal.get(Calendar.DAY_OF_YEAR);
+        	int actualYear = calculateActualYear(month, year);
+            //TODO: checked OK, tested OK
+        	if (month < 0){
+        		while (actualYear < year){
+        			cal.set(actualYear, 11, 31);
+                    idx += (-1  * cal.get(Calendar.DAY_OF_YEAR));
+                    actualYear++;
+        		}
+        	} else {
+        		while(actualYear > year){
+        			actualYear--;
+        			cal.set(actualYear, 11, 31);
+                    idx += cal.get(Calendar.DAY_OF_YEAR);
+        		}
+        	}         
         }
         return idx - 1;
     }

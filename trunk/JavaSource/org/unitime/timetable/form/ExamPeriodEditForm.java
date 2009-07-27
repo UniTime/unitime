@@ -45,6 +45,7 @@ import org.unitime.timetable.model.dao.ExamPeriodDAO;
 import org.unitime.timetable.model.dao.PreferenceLevelDAO;
 import org.unitime.timetable.util.CalendarUtils;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.DateUtils;
 
 
 /** 
@@ -511,13 +512,15 @@ public class ExamPeriodEditForm extends ActionForm {
 	public int getExamOffset() {
 		Calendar cal = Calendar.getInstance(Locale.US);
 		cal.setTime(iSession.getExamBeginDate());
-		return cal.get(Calendar.DAY_OF_YEAR);
+		return(DateUtils.getDayOfYear(cal.get(Calendar.DAY_OF_MONTH), DateUtils.getStartMonth(iSession.getExamBeginDate(), iSession.getSessionStartYear(), 0), iSession.getSessionStartYear()) + 1);
 	}
 	
 	public boolean hasExam(int day, int month) {
+		//TODO: checked OK
 		return iDays.contains(1+iSession.getDayOfYear(day, month)-getExamOffset());
 	}
 
+	
 	public String getPatternHtml() {
 		try {
 		int startMonth = iSession.getStartMonth();
@@ -527,7 +530,8 @@ public class ExamPeriodEditForm extends ActionForm {
 		for (int m=startMonth;m<=endMonth;m++) {
 			if (m!=startMonth) { border.append(","); pattern.append(","); }
 			border.append("["); pattern.append("[");
-			int daysOfMonth = iSession.getNrDaysOfMonth(m);
+			//TODO: checked OK
+			int daysOfMonth = DateUtils.getNrDaysOfMonth(m, iSession.getSessionStartYear());
 			for (int d=1;d<=daysOfMonth;d++) {
 				if (d>1) { border.append(","); pattern.append(","); }
 				border.append(getBorder(d,m));
@@ -542,7 +546,7 @@ public class ExamPeriodEditForm extends ActionForm {
         sb.append("<script language='JavaScript' type='text/javascript' src='scripts/datepatt.js'></script>");
 		sb.append("<script language='JavaScript'>");
 		sb.append(
-			"calGenerate("+iSession.getYear()+","+
+			"calGenerate("+iSession.getSessionStartYear()+","+
 				iSession.getStartMonth()+","+
 				iSession.getEndMonth()+","+
 				pattern+","+
@@ -565,10 +569,13 @@ public class ExamPeriodEditForm extends ActionForm {
 		int firstOne = 0, lastOne = 0;
 		iDays = new TreeSet<Integer>();
 		for (int m=startMonth;m<=endMonth;m++) {
-			int daysOfMonth = iSession.getNrDaysOfMonth(m);
+			//TODO: checked OK, tested OK
+		    int yr = DateUtils.calculateActualYear(m, iSession.getSessionStartYear());
+			int daysOfMonth = DateUtils.getNrDaysOfMonth(m, iSession.getSessionStartYear());
 			for (int d=1;d<=daysOfMonth;d++) {
-				String exam = request.getParameter("cal_val_"+((12+m)%12)+"_"+d);
+				String exam = request.getParameter("cal_val_"+yr+"_"+((12+m)%12)+"_"+d);
 				if ("1".equals(exam)) {
+					//TODO: checked OK, tested OK
 					iDays.add(1+iSession.getDayOfYear(d, m)-getExamOffset());
 				}
 			}

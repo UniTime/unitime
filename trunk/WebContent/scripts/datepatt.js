@@ -25,7 +25,7 @@ function calGenVariables(name, year, startMonth, endMonth, cal, prefTable, prefC
 	for (var m=startMonth;m<=endMonth;m++) {
 		var d=new Date(year,m,1);
 		do {
-			document.writeln("<INPUT id='"+name+"_val_"+d.getMonth()+"_"+d.getDate()+"' name='"+name+"_val_"+d.getMonth()+"_"+d.getDate()+"' type='hidden' value='"+(cal==null?0:cal[m-startMonth][d.getDate()-1])+"'>");
+			document.writeln("<INPUT id='"+name+"_val_"+d.getFullYear()+"_"+d.getMonth()+"_"+d.getDate()+"' name='"+name+"_val_"+d.getFullYear()+"_"+d.getMonth()+"_"+d.getDate()+"' type='hidden' value='"+(cal==null?0:cal[m-startMonth][d.getDate()-1])+"'>");
 			d.setDate(d.getDate()+1);
 		} while (d.getMonth()==((12+m)%12));
 	}
@@ -33,7 +33,7 @@ function calGenVariables(name, year, startMonth, endMonth, cal, prefTable, prefC
 	document.writeln("function calPref2Color(pref) {");
 	for (var i=0;i<prefTable.length;i++)
 		document.writeln("if (pref=='"+prefTable[i]+"') return '"+prefColors[i]+"';");
-		document.writeln("return 'rgb(240,240,240)';");
+	document.writeln("return 'rgb(240,240,240)';");
 	document.writeln("}");
 	document.writeln("<"+"/script>");
 	var nrPrefs = 0, a1 = -1, a2 = -1;
@@ -63,7 +63,7 @@ function calPrefSelected(name, pref) {
 	document.getElementById(name+'_pref'+pref).style.border='rgb(0,0,240) 2px solid';
 }
 function calGetPreference(name, date) {
-	return document.getElementById(name+"_val_"+date.getMonth()+"_"+date.getDate()).value;
+	return document.getElementById(name+"_val_"+date.getFullYear()+"_"+date.getMonth()+"_"+date.getDate()).value;
 }
 function calSetPreference(name, dates) {
 	var pref = calGetCurrentPreference(name);
@@ -73,8 +73,8 @@ function calSetPreference(name, dates) {
 		var samePref = '@';
 		for (var i=0;i<dates.length;i++) {
 			if (samePref=='@') {
-				samePref=document.getElementById(name+"_val_"+dates[i].getMonth()+"_"+dates[i].getDate()).value;
-			} else if (samePref!=document.getElementById(name+"_val_"+dates[i].getMonth()+"_"+dates[i].getDate()).value) {
+				samePref=document.getElementById(name+"_val_"+dates[i].getFullYear()+"_"+dates[i].getMonth()+"_"+dates[i].getDate()).value;
+			} else if (samePref!=document.getElementById(name+"_val_"+dates[i].getFullYear()+"_"+dates[i].getMonth()+"_"+dates[i].getDate()).value) {
 				allTheSame = false;
 				break;
 			}
@@ -83,8 +83,8 @@ function calSetPreference(name, dates) {
 	}
 	var prefColor = calPref2Color(pref);
 	for (var i=0;i<dates.length;i++) {
-		document.getElementById(name+"_val_"+dates[i].getMonth()+"_"+dates[i].getDate()).value=pref;
-		document.getElementById(name+"_"+dates[i].getMonth()+"_"+dates[i].getDate()).style.backgroundColor=prefColor;
+		document.getElementById(name+"_val_"+dates[i].getFullYear()+"_"+dates[i].getMonth()+"_"+dates[i].getDate()).value=pref;
+		document.getElementById(name+"_"+dates[i].getFullYear()+"_"+dates[i].getMonth()+"_"+dates[i].getDate()).style.backgroundColor=prefColor;
 	}
 }
 
@@ -228,7 +228,7 @@ function calGenField(name, monthIdx, date, highlight, editable) {
 	var border = (highlight==null || highlight[monthIdx][date.getDate()-1]==null?'rgb(100,100,100) 1px solid':highlight[monthIdx][date.getDate()-1]);
 	var borderSelect = (highlight==null || highlight[monthIdx][date.getDate()-1]==null?'rgb(0,0,242) 1px solid':'rgb(0,0,242) 2px solid');
 	if (editable && calGetPreference(name, date)!='@')
-		document.writeln("<td align='center' width='20' height='20' id='"+name+"_"+date.getMonth()+"_"+date.getDate()+"' "+
+		document.writeln("<td align='center' width='20' height='20' id='"+name+"_"+date.getFullYear()+"_"+date.getMonth()+"_"+date.getDate()+"' "+
  		  	"style=\"border:"+border+";background-color:"+calPref2Color(calGetPreference(name, date))+";\" "+
  			"onmouseover=\"this.style.border='"+borderSelect+"';this.style.cursor='pointer';\" "+
  			"onmouseout=\"this.style.border='"+border+"';\" "+
@@ -268,8 +268,8 @@ function calGenFieldBlankTBR() {
 function calGetMonth(name, year, month, monthIdx, highlight, editable, nameSuffix) {
 	document.writeln("<table style='font-size:10px;' cellSpacing='0' cellPadding='1' border='0'>");
 	var xmonth=month; var xyear = year;
-	if (xmonth<0) { xmonth+=12; xyear--; }
-	if (xmonth>=12) { xmonth-=12; xyear++; }
+	if (xmonth<0) {  do { xmonth+=12; xyear--; } while (xmonth < 0) }
+	if (xmonth>=12) { do { xmonth-=12; xyear++; } while (xmonth >= 12) }
 	document.writeln("<tr><th colspan='8' align='center'>"+CAL_MONTHS[xmonth]+" "+xyear+" "+nameSuffix+"</th></tr>");
 	calGenHeader(name,xyear,xmonth,editable);
 	document.writeln("<tr>");

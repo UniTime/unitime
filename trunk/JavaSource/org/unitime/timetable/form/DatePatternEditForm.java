@@ -77,8 +77,11 @@ public class DatePatternEditForm extends ActionForm {
 			errors.add("type", new ActionMessage("errors.generic", "Only extended pattern can contain relations with departments."));
 		
 		try {
-			if (getDatePattern(request).size()==0)
+			DatePattern dp = getDatePattern(request);
+			if (dp.size()==0)
 				errors.add("pattern", new ActionMessage("errors.required", ""));
+			if (dp.getPattern().length() > 366)
+				errors.add("pattern", new ActionMessage("errors.generic", "Date Patterns cannot contain more than 1 year."));
 		} catch (Exception e) {}
 
         return errors;

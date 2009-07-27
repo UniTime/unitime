@@ -390,7 +390,6 @@ public class RoomGroupEditAction extends LookupDispatchAction {
 		String[] selectedNotAssigned = roomGroupEditForm.getNotAssignedSelected();
 		Collection assignedRooms = getAssignedRooms(user, rg);
 		Collection notAssignedRooms = getAvailableRooms(user, rg);
-			
 		String s1 = null;
 		String s2 = null;
 		if (selectedAssigned.length != 0)
@@ -421,7 +420,7 @@ public class RoomGroupEditAction extends LookupDispatchAction {
 				//remove roomGroup from room
 				for (Iterator iter = rooms.iterator(); iter.hasNext();) {
 					Location r = (Location) iter.next();
-					if (s1.indexOf(r.getUniqueId().toString()) == -1) {
+					if (r.getSession().getUniqueId().equals(sessionId) && s1.indexOf(r.getUniqueId().toString()) == -1) {
 						Collection roomGroups = r.getRoomGroups();
 						roomGroups.remove(rg);
 						hibSession.saveOrUpdate(r);

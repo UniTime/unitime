@@ -325,7 +325,7 @@ public class EventAddForm extends ActionForm {
         Calendar today = Calendar.getInstance();
         today.setTime(s.getEventBeginDate());
         while (!today.getTime().after(s.getEventEndDate())) {
-            if ("1".equals(request.getParameter("cal_val_"+today.get(Calendar.MONTH)+"_"+today.get(Calendar.DAY_OF_MONTH))))
+            if ("1".equals(request.getParameter("cal_val_"+today.get(Calendar.YEAR)+"_"+today.get(Calendar.MONTH)+"_"+today.get(Calendar.DAY_OF_MONTH))))
                 iMeetingDates.add(today.getTime());
             today.add(Calendar.DAY_OF_YEAR,1);
         }
@@ -339,17 +339,19 @@ public class EventAddForm extends ActionForm {
 	}
 	
 	// display calendar for event dates
+	
 	public String getDatesTable(boolean disblePast) {
         if (iSessionId==null) return null;
 		Session s = Session.getSessionById(iSessionId);
-        int year = s.getYear();
+		//TODO: checked OK, tested OK
+        int year = s.getSessionStartYear();
         Calendar today = Calendar.getInstance();
         today.setTime(s.getEventEndDate());
         int endMonth = today.get(Calendar.MONTH);
-        if (today.get(Calendar.YEAR)>year) endMonth+=12;
+        if (today.get(Calendar.YEAR)>year) endMonth+=(12*(today.get(Calendar.YEAR)-year));
         today.setTime(s.getEventBeginDate());
         int startMonth = today.get(Calendar.MONTH);
-        if (today.get(Calendar.YEAR)<year) startMonth-=12;
+        if (today.get(Calendar.YEAR)<year) startMonth-=(12*(year-today.get(Calendar.YEAR)));
         today.set(Calendar.DAY_OF_MONTH,1);
         String pattern = "[", border = "[";
         Calendar now = Calendar.getInstance();
