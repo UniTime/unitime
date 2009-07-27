@@ -36,10 +36,6 @@
 
 <BODY class="bodyMain">
 
-<% if (ApplicationProperties.getProperty("tmtbl.header.external", "").trim().length()>0) { %>
-<jsp:include flush="true" page='<%=ApplicationProperties.getProperty("tmtbl.header.external")%>' />
-<% } %>
-
 <DIV align="center" class="H1">
 	<BR> 
 	<IMG src="images/timetabling-nocopy.jpg" alt="Timetabling" title="Timetabling Log In">
