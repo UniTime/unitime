@@ -3,6 +3,7 @@ package org.unitime.timetable.model;
 import java.awt.Color;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -122,7 +123,10 @@ public class PeriodPreferenceModel implements RequiredTimeTableModel {
     
     public String getDayHeader(int day) {
         Integer dateOffset = (Integer)iDates.toArray()[day];
-        Date date = new Date(iFirstDate.getTime() + dateOffset * 24 * 3600 * 1000);
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(iFirstDate);
+        cal.add(Calendar.DAY_OF_YEAR, dateOffset);
+        Date date = new Date(cal.getTime().getTime());
         return sDF[0].format(date)+"<br>"+sDF[1].format(date);
     }
     

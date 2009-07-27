@@ -62,6 +62,7 @@ import org.unitime.timetable.model.VariableFixedCreditUnitConfig;
 import org.unitime.timetable.model.VariableRangeCreditUnitConfig;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.DateUtils;
 
 public class CourseOfferingExport extends BaseExport {
     protected static DecimalFormat sTwoNumbersDF = new DecimalFormat("00");
@@ -371,14 +372,19 @@ public class CourseOfferingExport extends BaseExport {
             int startMonth = startDate.get(Calendar.MONTH);
             int endMonth = endDate.get(Calendar.MONTH);
             int startYear = startDate.get(Calendar.YEAR);
+            int endYear = endDate.get(Calendar.YEAR);
+            if (endYear > startYear){
+            	endMonth += (12 * (endYear - startYear));
+            }
             
             String first = null, previous = null;
             char[] ptrn = dp.getPattern().toCharArray();
             int charPosition = 0;
             int dayOfWeek = startDate.get(Calendar.DAY_OF_WEEK);
 
+            //TODO: checked OK
             for (int m=startMonth;m<=endMonth;m++) {
-                int daysOfMonth = session.getNrDaysOfMonth(m);
+                int daysOfMonth = DateUtils.getNrDaysOfMonth(m, startYear);
                 int d = (m==startMonth?startDate.get(Calendar.DAY_OF_MONTH):1);
                 for (;d<=daysOfMonth && charPosition<ptrn.length; d++) {
                     if (ptrn[charPosition]=='1' || (first!=null && dayOfWeek==Calendar.SUNDAY)) {

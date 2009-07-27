@@ -130,6 +130,7 @@ public class MidtermPeriodPreferenceModel {
 		return cal.get(Calendar.DAY_OF_YEAR);
 	}
     
+	//TODO: checked OK, tested OK
     public Integer getDateOffset(int day, int month) {
     	return (1+DateUtils.getDayOfYear(day, month, getYear())-getExamOffset());
     }
@@ -141,23 +142,25 @@ public class MidtermPeriodPreferenceModel {
     	return cal.getTime();
     }
     
+    //TODO: checked OK,tested OK
     public int getStartMonth() {
     	Calendar begin = Calendar.getInstance(Locale.US);
     	begin.setTime(iExamBeginDate);
     	Calendar first = Calendar.getInstance(Locale.US);
     	first.setTime(iFirstDate);
     	int month = first.get(Calendar.MONTH);
-    	if (first.get(Calendar.YEAR)!=begin.get(Calendar.YEAR)) month-=12;
+    	if (first.get(Calendar.YEAR)!=begin.get(Calendar.YEAR)) month-=(12*(begin.get(Calendar.YEAR)-first.get(Calendar.YEAR)));
     	return month;
     }
     
+    //TODO: checked OK,tested OK
     public int getEndMonth() {
     	Calendar begin = Calendar.getInstance(Locale.US);
     	begin.setTime(iExamBeginDate);
     	Calendar last = Calendar.getInstance(Locale.US);
     	last.setTime(iLastDate);
     	int month = last.get(Calendar.MONTH);
-    	if (last.get(Calendar.YEAR)!=begin.get(Calendar.YEAR)) month+=12;
+    	if (last.get(Calendar.YEAR)!=begin.get(Calendar.YEAR)) month+=(12*(last.get(Calendar.YEAR)-begin.get(Calendar.YEAR)));
     	return month;
     }
     
@@ -170,7 +173,14 @@ public class MidtermPeriodPreferenceModel {
 	public String getBorder(int day, int month, int start) {
 		if (iPeriod!=null && iPeriod.getDateOffset().equals(getDateOffset(day, month)) && iPeriod.getStartSlot().equals(start))
 			return "'purple 2px solid'";
-		return iSession.getBorder(day, month);
+		int m = month;
+		int sessStartYr = iSession.getSessionStartYear(); 
+		if (sessStartYr < getYear()){
+			m += (12  * (getYear() - sessStartYr));
+		} else if (sessStartYr > getYear()){
+			m -= (12 * (sessStartYr - getYear()));
+		}
+		return iSession.getBorder(day, m);
 	}
 	
 	public String getColor(Integer pref) {
@@ -202,6 +212,7 @@ public class MidtermPeriodPreferenceModel {
         for (int m=getStartMonth();m<=getEndMonth();m++) {
             if (m!=getStartMonth()) border.append(","); 
             border.append("["); 
+            //TODO: checked OK, tested OK
             int daysOfMonth = DateUtils.getNrDaysOfMonth(m, getYear());;
             for (int d=1;d<=daysOfMonth;d++) {
                 if (d>1) border.append(","); 
@@ -301,12 +312,14 @@ public class MidtermPeriodPreferenceModel {
 	}
     
 	public void load(HttpServletRequest request) {
+		int year = getYear();
 		for (int m=getStartMonth();m<=getEndMonth();m++) {
-			int daysOfMonth = DateUtils.getNrDaysOfMonth(m, getYear());;
+			int daysOfMonth = DateUtils.getNrDaysOfMonth(m, year);;
+			int yr = DateUtils.calculateActualYear(m, year);
 			for (int d=1;d<=daysOfMonth;d++) {
 			    if (!iDates.contains(getDateOffset(d,m))) continue; 
 			    for (int start:iStarts) {
-			        String pref = request.getParameter("mp"+start+"_val_"+((12+m)%12)+"_"+d);
+			        String pref = request.getParameter("mp"+start+"_val_"+yr+"_"+((12+m)%12)+"_"+d);
 			        if (pref!=null && !"@".equals(pref))
 			            iPreferences.get(getDateOffset(d,m)).put(start, pref);
 			    }

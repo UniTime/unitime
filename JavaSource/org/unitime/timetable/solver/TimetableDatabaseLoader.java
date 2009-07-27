@@ -2084,7 +2084,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 		getModel().getProperties().setProperty("Data.Initiative",iSession.getAcademicInitiative());
 		iStartDay = DateUtils.getDayOfYear(iSession.getSessionBeginDateTime());
 		iEndDay = DateUtils.getDayOfYear(iSession.getSessionEndDateTime());
-		getModel().setYear(iSession.getYear());
+		//TODO: checked OK, tested OK
+		getModel().setYear(iSession.getSessionStartYear());
 		
 		iAllClasses = new TreeSet(new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
 		for (int i=0;i<iSolverGroup.length;i++) {
@@ -2990,13 +2991,15 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         endDateCal.set(Calendar.SECOND, 59);
         roomAvailabilityActivate(startDateCal.getTime(),endDateCal.getTime());
         iProgress.setPhase("Loading room availability...", iRooms.size());
+        //TODO: checked OK
         int firstDOY = iSession.getDayOfYear(1,iSession.getStartMonth());
         int lastDOY = iSession.getDayOfYear(0,iSession.getEndMonth()+1);
         int size = lastDOY - firstDOY;
         Calendar c = Calendar.getInstance(Locale.US);
         SimpleDateFormat df = new SimpleDateFormat("MM/dd");
         long id = 0;
-        int sessionYear = iSession.getYear();
+        //TODO: change made needs to be checked
+        int sessionYear = iSession.getSessionStartYear();
         for (Enumeration e=iRooms.elements();e.hasMoreElements();) {
             RoomConstraint room = (RoomConstraint)e.nextElement();
             iProgress.incProgress();
@@ -3008,9 +3011,10 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                 c.setTime(time.getStartTime());
                 int m = c.get(Calendar.MONTH);
                 int d = c.get(Calendar.DAY_OF_MONTH);
-                if (c.get(Calendar.YEAR)<sessionYear) m-=12;
-                if (c.get(Calendar.YEAR)>sessionYear) m+=12;
+                if (c.get(Calendar.YEAR)<sessionYear) m-=(12 * (sessionYear - c.get(Calendar.YEAR)));
+                if (c.get(Calendar.YEAR)>sessionYear) m+=(12 * (c.get(Calendar.YEAR) - sessionYear));
                 BitSet weekCode = new BitSet(size);
+                //TODO: checked OK
                 int offset = iSession.getDayOfYear(d,m) - firstDOY;
                 weekCode.set(offset);
                 switch (c.get(Calendar.DAY_OF_WEEK)) {
