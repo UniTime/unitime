@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
@@ -46,6 +47,7 @@ import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.InstructionalOfferingConfigEditForm;
 import org.unitime.timetable.interfaces.ExternalInstrOffrConfigChangeAction;
+import org.unitime.timetable.interfaces.ExternalLinkLookup;
 import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
@@ -408,6 +410,18 @@ public class InstructionalOfferingConfigEditAction extends Action {
 
 	    Set configs = io.getInstrOfferingConfigs();
 	    frm.setConfigCount(new Integer (configs.size()));
+
+	    // Catalog Link
+        String linkLookupClass = ApplicationProperties.getProperty("tmtbl.catalogLink.lookup.class");
+        if (linkLookupClass!=null && linkLookupClass.trim().length()>0) {
+        	ExternalLinkLookup lookup = (ExternalLinkLookup) (Class.forName(linkLookupClass).newInstance());
+       		Map results = lookup.getLink(io);
+            if (results==null)
+                throw new Exception (lookup.getErrorMessage());
+            
+            frm.setCatalogLinkLabel((String)results.get(ExternalLinkLookup.LINK_LABEL));
+            frm.setCatalogLinkLocation((String)results.get(ExternalLinkLookup.LINK_LOCATION));
+        }
 
         if (loadDefaultConfig) {
     	    if (configs==null || configs.size()==0) {

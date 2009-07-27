@@ -21,6 +21,7 @@ package org.unitime.timetable.action;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -39,6 +40,7 @@ import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.CourseOfferingEditForm;
 import org.unitime.timetable.interfaces.ExternalCourseOfferingEditAction;
+import org.unitime.timetable.interfaces.ExternalLinkLookup;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.CourseCreditUnitConfig;
 import org.unitime.timetable.model.CourseOffering;
@@ -407,6 +409,18 @@ public class CourseOfferingEditAction extends Action {
             LookupTables.setupCourseCreditFormats(request); // Course Credit Formats
             LookupTables.setupCourseCreditTypes(request); //Course Credit Types
             LookupTables.setupCourseCreditUnitTypes(request); //Course Credit Unit Types
+
+            // Catalog Link
+            String linkLookupClass = ApplicationProperties.getProperty("tmtbl.catalogLink.lookup.class");
+            if (linkLookupClass!=null && linkLookupClass.trim().length()>0) {
+            	ExternalLinkLookup lookup = (ExternalLinkLookup) (Class.forName(linkLookupClass).newInstance());
+           		Map results = lookup.getLink(io);
+                if (results==null)
+                    throw new Exception (lookup.getErrorMessage());
+                
+                frm.setCatalogLinkLabel((String)results.get(ExternalLinkLookup.LINK_LABEL));
+                frm.setCatalogLinkLocation((String)results.get(ExternalLinkLookup.LINK_LOCATION));
+            }
 
         }
         else
