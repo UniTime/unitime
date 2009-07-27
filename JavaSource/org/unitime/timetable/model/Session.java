@@ -231,8 +231,9 @@ public class Session extends BaseSession implements Comparable {
 	/**
 	 * @return Returns the label.
 	 */
+	//TODO: checked OK, tested OK
 	public String getLabel() {
-		return getAcademicTerm() + " " + getYear() + 
+		return getAcademicTerm() + " " + getSessionStartYear() + 
 		    " ("+(getAcademicInitiative().length()>9?getAcademicInitiative().substring(0,9):getAcademicInitiative())+")";
 	}
 
@@ -241,9 +242,9 @@ public class Session extends BaseSession implements Comparable {
 	}
 
 	/**
-	 * @return Returns the year.
+	 * @return Returns the year the session begins.
 	 */
-	public int getYear() {
+	public int getSessionStartYear() {
 		if (getSessionBeginDateTime()!=null) {
 			Calendar c = Calendar.getInstance(Locale.US);
 			c.setTime(getSessionBeginDateTime());
@@ -391,13 +392,15 @@ public class Session extends BaseSession implements Comparable {
 	}
 
 	public Session getLastLikeSession() {
-		String lastYr = new Integer(this.getYear() - 1).toString();
+		//TODO: checked OK, tested OK
+		String lastYr = new Integer(this.getSessionStartYear() - 1).toString();
 		return getSessionUsingInitiativeYearTerm(this.getAcademicInitiative(),
 				lastYr, getAcademicTerm());
 	}
 
 	public Session getNextLikeSession() {
-		String nextYr = new Integer(this.getYear() + 1).toString();
+		//TODO: checked OK, tested OK
+		String nextYr = new Integer(this.getSessionStartYear() + 1).toString();
 		return getSessionUsingInitiativeYearTerm(this.getAcademicInitiative(),
 				nextYr, getAcademicTerm());
 	}
@@ -461,30 +464,37 @@ public class Session extends BaseSession implements Comparable {
 	public String htmlLabel() {
 		return (this.getLabel());
 	}
-
-	public int getStartMonth() {		
-		return DateUtils.getStartMonth(
-		        (getEventBeginDate()!=null?getEventBeginDate():getSessionBeginDateTime()),
-		        getYear(), sNrExcessDays);
+	
+	public Date earliestSessionRelatedDate(){
+		return(getEventBeginDate()!=null&&getEventBeginDate().before(getSessionBeginDateTime())?getEventBeginDate():getSessionBeginDateTime());
+	}
+	
+	public Date latestSessionRelatedDate(){
+		return(getEventEndDate()!=null&&getEventEndDate().after(getSessionEndDateTime())?getEventEndDate():getSessionEndDateTime());
 	}
 
+	//TODO: checked OK, tested OK
+	public int getStartMonth() {		
+		return DateUtils.getStartMonth(
+		        earliestSessionRelatedDate(),
+		        getSessionStartYear(), sNrExcessDays);
+	}
+
+	//TODO: checked OK, tested OK
 	public int getEndMonth() {
 		return DateUtils.getEndMonth(
-		        (getEventEndDate()!=null?getEventEndDate():getSessionEndDateTime()), getYear(), sNrExcessDays);
+		        latestSessionRelatedDate(), getSessionStartYear(), sNrExcessDays);
 	}
 
 	public int getDayOfYear(int day, int month) {
-		return DateUtils.getDayOfYear(day, month, getYear());
-	}
-	
-	public int getNrDaysOfMonth(int month) {
-		return DateUtils.getNrDaysOfMonth(month, getYear());
+		return DateUtils.getDayOfYear(day, month, getSessionStartYear());
 	}
 	
 	public int getHoliday(int day, int month) {
-		return getHoliday(day, month, getYear(), getStartMonth(), getHolidays());
+		return getHoliday(day, month, getSessionStartYear(), getStartMonth(), getHolidays());
 	}
 	
+	//TODO: checked OK, tested OK for Session Edit Page
 	public static int getHoliday(int day, int month, int year, int startMonth, String holidays) {
 		try {
 			if (holidays == null)
@@ -503,8 +513,9 @@ public class Session extends BaseSession implements Comparable {
 		return getHolidaysHtml(true);
 	}
 
+	//TODO: checked OK, tested OK
 	public String getHolidaysHtml(boolean editable) {
-		return getHolidaysHtml(getSessionBeginDateTime(), getSessionEndDateTime(), getClassesEndDateTime(), getExamBeginDate(), getEventBeginDate(), getEventEndDate(), getYear(), getHolidays(), editable);
+		return getHolidaysHtml(getSessionBeginDateTime(), getSessionEndDateTime(), getClassesEndDateTime(), getExamBeginDate(), getEventBeginDate(), getEventEndDate(), getSessionStartYear(), getHolidays(), editable);
 	}
 
 	public static String getHolidaysHtml(
@@ -551,10 +562,11 @@ public class Session extends BaseSession implements Comparable {
         Calendar eventEndDate = Calendar.getInstance(Locale.US);
         if (eventEndTime!=null) eventEndDate.setTime(eventEndTime);
 
-        int startMonth = DateUtils.getStartMonth(eventBeginTime!=null?eventBeginTime:sessionBeginTime, acadYear, sNrExcessDays);
-		int endMonth = DateUtils.getEndMonth(eventEndTime!=null?eventEndTime:sessionEndTime, acadYear, sNrExcessDays);
+        int startMonth = DateUtils.getStartMonth(eventBeginTime!=null&&eventBeginTime.before(sessionBeginTime)?eventBeginTime:sessionBeginTime, acadYear, sNrExcessDays);
+		int endMonth = DateUtils.getEndMonth(eventEndTime!=null&&eventEndTime.after(sessionEndTime)?eventEndTime:sessionEndTime, acadYear, sNrExcessDays);
 		
 		for (int m = startMonth; m <= endMonth; m++) {
+			int yr = DateUtils.calculateActualYear(m, acadYear);
 			if (m != startMonth) {
 				holidayArray.append(",");
 				borderArray.append(",");
@@ -569,22 +581,28 @@ public class Session extends BaseSession implements Comparable {
 				}
 				holidayArray.append("'" + getHoliday(d, m, acadYear, startMonth, holidays) + "'");
 				if (d == sessionBeginDate.get(Calendar.DAY_OF_MONTH)
-						&& (m%12) == sessionBeginDate.get(Calendar.MONTH))
+						&& (m%12) == sessionBeginDate.get(Calendar.MONTH)
+						&& yr == sessionBeginDate.get(Calendar.YEAR))
 					borderArray.append("'#660000 2px solid'");
 				else if (d == sessionEndDate.get(Calendar.DAY_OF_MONTH)
-						&& (m%12) == sessionEndDate.get(Calendar.MONTH))
+						&& (m%12) == sessionEndDate.get(Calendar.MONTH)
+						&& yr == sessionEndDate.get(Calendar.YEAR))
 					borderArray.append("'#333399 2px solid'");
 				else if (d == classesEndDate.get(Calendar.DAY_OF_MONTH)
-						&& (m%12) == classesEndDate.get(Calendar.MONTH))
+						&& (m%12) == classesEndDate.get(Calendar.MONTH)
+						&& yr == classesEndDate.get(Calendar.YEAR))
 					borderArray.append("'#339933 2px solid'");
                 else if (d == examBeginDate.get(Calendar.DAY_OF_MONTH)
-                        && (m%12) == examBeginDate.get(Calendar.MONTH))
+                        && (m%12) == examBeginDate.get(Calendar.MONTH)
+                        && yr == examBeginDate.get(Calendar.YEAR))
                     borderArray.append("'#999933 2px solid'");
                 else if (d == eventBeginDate.get(Calendar.DAY_OF_MONTH)
-                        && (m%12) == eventBeginDate.get(Calendar.MONTH))
+                        && (m%12) == eventBeginDate.get(Calendar.MONTH)
+                        && yr == eventBeginDate.get(Calendar.YEAR))
                     borderArray.append("'yellow 2px solid'");
                 else if (d == eventEndDate.get(Calendar.DAY_OF_MONTH)
-                        && (m%12) == eventEndDate.get(Calendar.MONTH))
+                        && (m%12) == eventEndDate.get(Calendar.MONTH)
+                        && yr == eventEndDate.get(Calendar.YEAR))
                     borderArray.append("'red 2px solid'");
 				else
 					borderArray.append("null");
@@ -610,14 +628,21 @@ public class Session extends BaseSession implements Comparable {
 		super.setHolidays(holidays);
 	}
 
+	//TODO: checked OK, tested OK
 	public void setHolidays(HttpServletRequest request) {
 		int startMonth = getStartMonth();
 		int endMonth = getEndMonth();
+		Calendar startCal = Calendar.getInstance();
+		startCal.setTime(earliestSessionRelatedDate());			
+		int startYear = getSessionStartYear();
+		
 		StringBuffer sb = new StringBuffer();
 		for (int m = startMonth; m <= endMonth; m++) {
-			int daysOfMonth = getNrDaysOfMonth(m);
+			int year = DateUtils.calculateActualYear(m, startYear);
+			int daysOfMonth = DateUtils.getNrDaysOfMonth(m, year);
 			for (int d = 1; d <= daysOfMonth; d++) {
-				String holiday = request.getParameter("cal_val_"
+				//TODO: checked OK, tested OK
+				String holiday = request.getParameter("cal_val_" + year + "_"
 						+ ((12 + m) % 12) + "_" + d);
 				sb.append(holiday == null ? String.valueOf(sHolidayTypeNone)
 						: holiday);
@@ -652,6 +677,7 @@ public class Session extends BaseSession implements Comparable {
 		sessionBeginDate.setTime(getSessionBeginDateTime());
 		Calendar sessionEndDate = Calendar.getInstance(Locale.US);
 		sessionEndDate.setTime(getSessionEndDateTime());
+		//TODO: checked OK, tested OK
 		int beginDay = getDayOfYear(
 				sessionBeginDate.get(Calendar.DAY_OF_MONTH), sessionBeginDate
 						.get(Calendar.MONTH))

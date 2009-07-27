@@ -42,6 +42,7 @@ import org.unitime.timetable.model.base.BaseDatePattern;
 import org.unitime.timetable.model.dao.DatePatternDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.DateUtils;
 
 
 public class DatePattern extends BaseDatePattern implements Comparable {
@@ -118,8 +119,9 @@ public class DatePattern extends BaseDatePattern implements Comparable {
 	public BitSet getPatternBitSet() {
 		if (iCachedPatternBitSet!=null) return iCachedPatternBitSet;
 		if (getPattern()==null || getOffset()==null) return null;
-		int startMonth = getSession().getStartMonth();
-		int endMonth = getSession().getEndMonth();
+		int startMonth = getSession().getStartMonth() - 3;
+		int endMonth = getSession().getEndMonth() + 3;
+		//TODO: checked OK, tested OK
 		int size = getSession().getDayOfYear(0,endMonth+1)-getSession().getDayOfYear(1,startMonth);
 		iCachedPatternBitSet = new BitSet(size);
 		int offset = getPatternOffset() - getSession().getDayOfYear(1,startMonth);
@@ -132,24 +134,28 @@ public class DatePattern extends BaseDatePattern implements Comparable {
 	
 	public boolean isOffered(int day, int month) {
 		if (getPattern()==null || getOffset()==null) return false;
+		// TODO: checked OK, tested OK
 		int idx = getSession().getDayOfYear(day, month)-getPatternOffset();
 		if (idx<0 || idx>=getPattern().length()) return false;
 		return (getPattern().charAt(idx)=='1');
 	}
 	
 	public boolean isUsed(int day, int month, Set usage) {
+		//TODO: checked OK, tested OK
 		if (usage==null || getPattern()==null || getOffset()==null) return false;
 		return usage.contains(new Integer(getSession().getDayOfYear(day, month)));
 	}
 
 	public String getPatternArray() {
 		StringBuffer sb = new StringBuffer("[");
-		int startMonth = getSession().getStartMonth();
-		int endMonth = getSession().getEndMonth();
+		int startMonth = getSession().getStartMonth() - 3;
+		int endMonth = getSession().getEndMonth() + 3;
+		int year = getSession().getSessionStartYear();
 		for (int m=startMonth;m<=endMonth;m++) {
 			if (m!=startMonth) sb.append(",");
 			sb.append("[");
-			int daysOfMonth = getSession().getNrDaysOfMonth(m);
+			//TODO: checked OK, tested OK
+			int daysOfMonth = DateUtils.getNrDaysOfMonth(m, year);
 			for (int d=1;d<=daysOfMonth;d++) {
 				if (d>1) sb.append(",");
 				sb.append(isOffered(d,m)?"'1'":"'0'");
@@ -186,6 +192,7 @@ public class DatePattern extends BaseDatePattern implements Comparable {
 		return sb.toString();
 	}
 	
+	//TODO: checked OK, tested OK
 	public HashMap getPatternDateStringHashMaps() {
 		Calendar startDate = Calendar.getInstance(Locale.US);
 		startDate.setTime(getStartDate());
@@ -195,6 +202,10 @@ public class DatePattern extends BaseDatePattern implements Comparable {
 		int startMonth = startDate.get(Calendar.MONTH);
 		int endMonth = endDate.get(Calendar.MONTH);
 		int startYear = startDate.get(Calendar.YEAR);
+		int endYear = endDate.get(Calendar.YEAR);
+		if (endYear > startYear){
+			endMonth += (12 * (endYear - startYear));
+		}
 		
 		HashMap mapStartToEndDate = new HashMap();
 		Date first = null, previous = null;
@@ -204,7 +215,7 @@ public class DatePattern extends BaseDatePattern implements Comparable {
 		Calendar cal = Calendar.getInstance(Locale.US);
 
 		for (int m=startMonth;m<=endMonth;m++) {
-			int daysOfMonth = getSession().getNrDaysOfMonth(m);
+			int daysOfMonth = DateUtils.getNrDaysOfMonth(m, startYear);
 			int d;
 			if (m == startMonth){
 				d = startDate.get(Calendar.DAY_OF_MONTH);
@@ -334,16 +345,18 @@ public class DatePattern extends BaseDatePattern implements Comparable {
 	}
 	
 	public String getBorderArray(Long uniqueId) {
-		int startMonth = getSession().getStartMonth();
-		int endMonth = getSession().getEndMonth();
+		int startMonth = getSession().getStartMonth() - 3;
+		int endMonth = getSession().getEndMonth() + 3;
 		int dayOfYear = 0;
+		int year = getSession().getSessionStartYear();
 		Set classes = null;
 		Set usage = (uniqueId!=null?getUsage(uniqueId):null);
 		StringBuffer sb = new StringBuffer("[");
 		for (int m=startMonth;m<=endMonth;m++) {
 			if (m!=startMonth) sb.append(",");
 			sb.append("[");
-			int daysOfMonth = getSession().getNrDaysOfMonth(m);
+			//TODO: checked OK, tested OK
+			int daysOfMonth = DateUtils.getNrDaysOfMonth(m, year);
 			for (int d=1;d<=daysOfMonth;d++) {
 				dayOfYear++;
 				if (d>1) sb.append(",");
@@ -375,10 +388,11 @@ public class DatePattern extends BaseDatePattern implements Comparable {
         if (includeScript)
             sb.append("<script language='JavaScript' type='text/javascript' src='scripts/datepatt.js'></script>");
 		sb.append("<script language='JavaScript'>");
+		//TODO: checked OK, tested OK
 		sb.append(
-			"calGenerate("+getSession().getYear()+","+
-				getSession().getStartMonth()+","+
-				getSession().getEndMonth()+","+
+			"calGenerate("+getSession().getSessionStartYear()+","+
+				(getSession().getStartMonth() - 3) +","+
+				(getSession().getEndMonth() + 3)+","+
 				getPatternArray()+","+
 				"['1','0'],"+
 				"['Classes offered','Classes not offered'],"+
@@ -390,15 +404,20 @@ public class DatePattern extends BaseDatePattern implements Comparable {
 	}
 	
 	public void setPatternAndOffset(HttpServletRequest request) {
-		int startMonth = getSession().getStartMonth();
-		int endMonth = getSession().getEndMonth();
+		int startMonth = getSession().getStartMonth() - 3;
+		int endMonth = getSession().getEndMonth() + 3;
 		int firstOne = 0, lastOne = 0;
+		int year = getSession().getSessionStartYear();
 		StringBuffer sb = null;
+		//TODO: checked OK, tested OK
 		int idx = getSession().getDayOfYear(1,startMonth);
 		for (int m=startMonth;m<=endMonth;m++) {
-			int daysOfMonth = getSession().getNrDaysOfMonth(m);
+			//TODO: checked OK, tested OK
+			int daysOfMonth = DateUtils.getNrDaysOfMonth(m, year);
+			int yr = DateUtils.calculateActualYear(m, year);
 			for (int d=1;d<=daysOfMonth;d++) {
-				String offered = request.getParameter("cal_val_"+((12+m)%12)+"_"+d);
+				//TODO: checked OK, tested OK
+				String offered = request.getParameter("cal_val_"+yr+"_"+((12+m)%12)+"_"+d);
 				if (offered!=null) {
 					if (sb!=null || !offered.equals("0")) {
 						if (sb==null) {

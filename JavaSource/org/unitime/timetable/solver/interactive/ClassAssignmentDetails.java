@@ -256,7 +256,8 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 	}
 	
 	public ClassAssignmentDetails(Solution solution, Assignment assignment, boolean includeConstraints, Session hibSession, String instructorNameFormat) throws Exception {
-		iYear = solution.getSession().getYear();
+		//TODO: checked OK, tested OK
+		iYear = solution.getSession().getSessionStartYear();
 		int sessionStartDay = DateUtils.getDayOfYear(solution.getSession().getSessionBeginDateTime());
 		int sessionEndDay = DateUtils.getDayOfYear(solution.getSession().getSessionEndDateTime());
 		if (assignment!=null) {
