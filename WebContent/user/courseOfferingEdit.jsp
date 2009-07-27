@@ -227,6 +227,15 @@
 			</TR>
 		</logic:equal>
 
+		<logic:notEmpty name="courseOfferingEditForm" property="catalogLinkLabel">
+		<TR>
+			<TD>Course Catalog: </TD>
+			<TD>
+				<A href="<bean:write name="courseOfferingEditForm" property="catalogLinkLocation" />" target="_blank"><bean:write name="courseOfferingEditForm" property="catalogLinkLabel" /></A>
+			</TD>
+		</TR>
+		</logic:notEmpty>
+
 
 <!-- Buttons -->
 		<TR>

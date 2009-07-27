@@ -67,6 +67,8 @@ public class CourseOfferingEditForm extends ActionForm {
     private String creditText;
     private Boolean isControl;
     private Boolean ioNotOffered;
+    private String catalogLinkLabel;
+    private String catalogLinkLocation;
 
     // --------------------------------------------------------- Methods
 
@@ -145,6 +147,8 @@ public class CourseOfferingEditForm extends ActionForm {
         creditText = "";
         courseNbr = "";
         ioNotOffered = null;
+        catalogLinkLabel = null;
+        catalogLinkLocation = null;
     }
 
     public Long getCourseOfferingId() {
@@ -295,6 +299,22 @@ public class CourseOfferingEditForm extends ActionForm {
 
 	public void setIoNotOffered(Boolean ioNotOffered) {
 		this.ioNotOffered = ioNotOffered;
+	}
+
+	public String getCatalogLinkLabel() {
+		return catalogLinkLabel;
+	}
+
+	public void setCatalogLinkLabel(String catalogLinkLabel) {
+		this.catalogLinkLabel = catalogLinkLabel;
+	}
+
+	public String getCatalogLinkLocation() {
+		return catalogLinkLocation;
+	}
+
+	public void setCatalogLinkLocation(String catalogLinkLocation) {
+		this.catalogLinkLocation = catalogLinkLocation;
 	}
 
 }
