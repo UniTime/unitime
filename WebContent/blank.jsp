@@ -25,6 +25,9 @@
 <HTML>
 <HEAD>
 	<LINK rel="stylesheet" type="text/css" href="styles/timetabling.css">
+    <tt:hasProperty name="tmtbl.custom.css">
+		<LINK rel="stylesheet" type="text/css" href="%tmtbl.custom.css%" />
+    </tt:hasProperty>
     <SCRIPT language="JavaScript" type="text/javascript" src="scripts/loading.js"></SCRIPT>
 </HEAD>
 <BODY class="bodyStyle">
