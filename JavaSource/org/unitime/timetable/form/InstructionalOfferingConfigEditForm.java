@@ -65,6 +65,8 @@ public class InstructionalOfferingConfigEditForm extends ActionForm {
     private String name;
     private Boolean unlimited;    
     private Integer configCount;
+    private String catalogLinkLabel;
+    private String catalogLinkLocation;
     
     // Error Codes
     private final short NO_ERR = 0;
@@ -308,6 +310,8 @@ public class InstructionalOfferingConfigEditForm extends ActionForm {
         configCount = new Integer(0);
         configId = new Long(0);
         name=null;
+        catalogLinkLabel = null;
+        catalogLinkLocation = null;
     }
 
     /**
@@ -462,4 +466,20 @@ public class InstructionalOfferingConfigEditForm extends ActionForm {
     public void setInstrOfferingName(String instrOfferingName) {
         this.instrOfferingName = instrOfferingName;
     }
+
+	public String getCatalogLinkLabel() {
+		return catalogLinkLabel;
+	}
+
+	public void setCatalogLinkLabel(String catalogLinkLabel) {
+		this.catalogLinkLabel = catalogLinkLabel;
+	}
+
+	public String getCatalogLinkLocation() {
+		return catalogLinkLocation;
+	}
+
+	public void setCatalogLinkLocation(String catalogLinkLocation) {
+		this.catalogLinkLocation = catalogLinkLocation;
+	}
 }

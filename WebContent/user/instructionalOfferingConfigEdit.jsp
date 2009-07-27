@@ -196,6 +196,15 @@
 				</html:submit>
 		</TR>
 
+		<logic:notEmpty name="instructionalOfferingConfigEditForm" property="catalogLinkLabel">
+		<TR>
+			<TD>Course Catalog: </TD>
+			<TD>
+				<A href="<bean:write name="instructionalOfferingConfigEditForm" property="catalogLinkLocation" />" target="_blank"><bean:write name="instructionalOfferingConfigEditForm" property="catalogLinkLabel" /></A>
+			</TD>
+		</TR>
+		</logic:notEmpty>
+
 		<TR>
 			<TD colspan="2">
 			&nbsp;
