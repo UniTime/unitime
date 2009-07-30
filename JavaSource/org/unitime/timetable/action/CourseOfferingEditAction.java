@@ -322,6 +322,9 @@ public class CourseOfferingEditAction extends Action {
             
         	String className = ApplicationProperties.getProperty("tmtbl.external.course_offering.edit_action.class");
         	if (className != null && className.trim().length() > 0){
+        		if (io == null){
+        			io = co.getInstructionalOffering();
+        		}
 	        	ExternalCourseOfferingEditAction editAction = (ExternalCourseOfferingEditAction) (Class.forName(className).newInstance());
 	       		editAction.performExternalCourseOfferingEditAction(io, hibSession);
         	}
