@@ -788,6 +788,8 @@ public class InstructionalOfferingConfigEditAction extends Action {
 	        io.removeConfiguration(ioc);
 
 	        io.computeLabels(hibSession);
+	        if (!ioc.isUnlimitedEnrollment().booleanValue())
+	        	io.setLimit(new Integer(io.getLimit().intValue() - ioc.getLimit().intValue()));
 
             ChangeLog.addChange(
                     hibSession,
