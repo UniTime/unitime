@@ -237,7 +237,7 @@ public class InstructorAction extends Action {
 			
 			inst.setLastName(frm.getLname().trim().toUpperCase());
 			
-			if (frm.getPuId() != null && frm.getPuId().trim().length()>0) {
+			if (frm.getPuId() != null && frm.getPuId().trim().length()>0 && !frm.getPuId().equalsIgnoreCase("null")) {
 				inst.setExternalUniqueId(frm.getPuId().trim());
 			}
 
