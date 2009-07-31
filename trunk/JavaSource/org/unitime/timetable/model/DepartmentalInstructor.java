@@ -76,6 +76,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 	public static final String sNameFormatInitialLast = "initial-last";
 	public static final String sNameFormatLastInitial = "last-initial";
 	public static final String sNameFormatFirstMiddleLast = "first-middle-last";
+	public static final String sNameFormatLastFirstMiddle = "last-first-middle";
 	public static final String sNameFormatShort = "short";
 	
 
@@ -217,6 +218,8 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 			return nameLastInit();
 		if (sNameFormatFirstMiddleLast.equals(instructorNameFormat))
 			return nameFirstMiddleLast();
+		if (sNameFormatLastFirstMiddle.equals(instructorNameFormat))
+			return nameLastFirstMiddle();
 		if (sNameFormatShort.equals(instructorNameFormat))
 			return nameShort();
 		return nameFirstMiddleLast();
@@ -237,6 +240,27 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 				(this.getLastName() == null 
 									? "" 
 				                    : this.getLastName().trim())
+				));
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	private String nameLastFirstMiddle() {
+		return (
+				Constants.toInitialCase((this.getLastName() == null 
+									? ""
+				                    : this.getLastName().trim()) + 
+				(this.getFirstName() == null && this.getMiddleName() == null
+						            ?" "
+						            :", ") +
+                (this.getFirstName() == null
+                					? "" 
+                					: this.getFirstName().trim()) + " " + 
+				(this.getMiddleName() == null 
+									? "" 
+				                    : this.getMiddleName().trim())
 				));
 	}
 
