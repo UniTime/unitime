@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.test;
 
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -57,13 +56,12 @@ public class MakeEventsForAllCommitedAssignments {
                 try {
                     tx = hibSession.beginTransaction();
 
-                    Hashtable<Long,ClassEvent> classEvents = new Hashtable();
                     for (Iterator j=hibSession.createQuery(
                             "select e from Solution s inner join s.assignments a, ClassEvent e where e.clazz=a.clazz and s.uniqueId=:solutionId")
                             .setLong("solutionId",s.getUniqueId())
                             .iterate(); j.hasNext();) {
                         ClassEvent e = (ClassEvent)j.next();
-                        classEvents.put(e.getClazz().getUniqueId(),e);
+                        hibSession.delete(e);
                     }
                     for (Iterator j=hibSession.createQuery(
                             "select a from Assignment a "+
@@ -72,7 +70,7 @@ public class MakeEventsForAllCommitedAssignments {
                             .iterate();
                         j.hasNext();) {
                         Assignment a = (Assignment)j.next();
-                        ClassEvent event = a.generateCommittedEvent(classEvents.get(a.getUniqueId()),true);
+                        ClassEvent event = a.generateCommittedEvent(null,true);
                         if (event!=null) {
                             System.out.println("  "+a.getClassName()+" "+a.getPlacement().getLongName());
                             hibSession.saveOrUpdate(event);
