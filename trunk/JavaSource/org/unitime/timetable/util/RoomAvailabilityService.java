@@ -50,20 +50,20 @@ public class RoomAvailabilityService implements RoomAvailabilityInterface {
     public RoomAvailabilityService() {
     }
     
-    public Collection<TimeBlock> getRoomAvailability(Location location, Date startTime, Date endTime, String[] excludeTypes) {
+    public Collection<TimeBlock> getRoomAvailability(Location location, Date startTime, Date endTime, String excludeType) {
         if (location instanceof org.unitime.timetable.model.Room) {
             org.unitime.timetable.model.Room room = (org.unitime.timetable.model.Room)location;
             return getRoomAvailability(
                     room.getExternalUniqueId(),
                     room.getBuildingAbbv(),
                     room.getRoomNumber(),
-                    startTime, endTime, excludeTypes);
+                    startTime, endTime, excludeType);
         }
         return null;
         
     }
     
-    public Collection<TimeBlock> getRoomAvailability(String roomExternalId, String buildingAbbv, String roomNbr, Date startTime, Date endTime, String[] excludeTypes) {
+    public Collection<TimeBlock> getRoomAvailability(String roomExternalId, String buildingAbbv, String roomNbr, Date startTime, Date endTime, String excludeType) {
         TimeFrame time = new TimeFrame(startTime, endTime);
         sLog.debug("Get: "+time+" ("+buildingAbbv+" "+roomNbr+")");
         CacheElement cache = get(time);
@@ -91,16 +91,16 @@ public class RoomAvailabilityService implements RoomAvailabilityInterface {
                     sLog.warn("Cache "+cache+" is not active.");
                     return null;
                 }
-                sLog.debug("Return: "+cache.get(new Room(roomExternalId, buildingAbbv, roomNbr), excludeTypes));
-                return cache.get(new Room(roomExternalId, buildingAbbv, roomNbr), excludeTypes);
+                sLog.debug("Return: "+cache.get(new Room(roomExternalId, buildingAbbv, roomNbr), excludeType));
+                return cache.get(new Room(roomExternalId, buildingAbbv, roomNbr), excludeType);
             } else {
-                sLog.debug("Return: "+cache.get(new Room(roomExternalId, buildingAbbv, roomNbr), excludeTypes)+" from "+cache+".");
-                return cache.get(new Room(roomExternalId, buildingAbbv, roomNbr), excludeTypes);
+                sLog.debug("Return: "+cache.get(new Room(roomExternalId, buildingAbbv, roomNbr), excludeType)+" from "+cache+".");
+                return cache.get(new Room(roomExternalId, buildingAbbv, roomNbr), excludeType);
             }
         }
     }
     
-    public String getTimeStamp(Date startTime, Date endTime) {
+    public String getTimeStamp(Date startTime, Date endTime, String excludeType) {
         TimeFrame time = new TimeFrame(startTime, endTime);
         CacheElement cache = get(time);
         return (cache==null?null:cache.getTimestamp());
@@ -113,7 +113,7 @@ public class RoomAvailabilityService implements RoomAvailabilityInterface {
         return null;
     }
     
-    public void activate(Session session, Date startTime, Date endTime, boolean waitForSync) {
+    public void activate(Session session, Date startTime, Date endTime, String excludeType, boolean waitForSync) {
         TimeFrame time = new TimeFrame(startTime, endTime);
         sLog.debug("Activate: "+time);
         CacheElement cache = get(time);
@@ -327,15 +327,14 @@ public class RoomAvailabilityService implements RoomAvailabilityInterface {
         public void update(Hashtable<Room, HashSet<TimeBlock>> availability, String timestamp) {
             iAvailability = availability; iLastUpdate = System.currentTimeMillis(); iDirty = false; iActive = true; iTimestamp = timestamp;
         }
-        public HashSet<TimeBlock> get(Room room, String[] excludeTypes) {
+        public HashSet<TimeBlock> get(Room room, String excludeType) {
             iLastAccess = System.currentTimeMillis();
             HashSet<TimeBlock> roomAvailability = iAvailability.get(room);
-            if (roomAvailability==null || excludeTypes==null || excludeTypes.length==0) return roomAvailability;
+            if (roomAvailability==null || excludeType==null) return roomAvailability;
             HashSet<TimeBlock> ret = new HashSet(roomAvailability.size());
-            blocks: for (TimeBlock block : roomAvailability) {
-                for (int i=0;i<excludeTypes.length;i++)
-                    if (excludeTypes[i].equals(block.getEventType())) continue blocks;
-                ret.add(block);
+            for (TimeBlock block : roomAvailability) {
+            	if (excludeType.equals(block.getEventType())) continue;
+            	ret.add(block);
             }
             return ret;
         }

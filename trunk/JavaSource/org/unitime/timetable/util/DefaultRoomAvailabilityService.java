@@ -23,24 +23,24 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
     private static Log sLog = LogFactory.getLog(DefaultRoomAvailabilityService.class);
     private Vector<CacheElement> iCache = new Vector<CacheElement>();
     
-    public String getTimeStamp(Date startTime, Date endTime) {
+    public String getTimeStamp(Date startTime, Date endTime, String excludeType) {
         TimeFrame time = new TimeFrame(startTime, endTime);
-        CacheElement cache = get(time);
+        CacheElement cache = get(time, excludeType);
         return (cache==null?null:cache.getTimestamp());
     }
     
-    public CacheElement get(TimeFrame time) {
+    public CacheElement get(TimeFrame time, String excludeType) {
         synchronized (iCache) {
-            for (CacheElement cache : iCache) if (cache.cover(time)) return cache;
+            for (CacheElement cache : iCache) if (cache.cover(time) && cache.exclude(excludeType)) return cache;
         }
         return null;
     }
-    public Collection<TimeBlock> getRoomAvailability(Location location, Date startTime, Date endTime, String[] excludeTypes) {
+    public Collection<TimeBlock> getRoomAvailability(Location location, Date startTime, Date endTime, String excludeType) {
         if (location.getPermanentId()==null) return null;
         TimeFrame time = new TimeFrame(startTime, endTime);
         synchronized(iCache) {
-            CacheElement cache = get(time);
-            if (cache!=null) return cache.get(location.getPermanentId(), excludeTypes);
+            CacheElement cache = get(time, excludeType);
+            if (cache!=null) return cache.get(location.getPermanentId(), excludeType);
             Calendar start = Calendar.getInstance(Locale.US); start.setTime(startTime);
             int startMin = 60*start.get(Calendar.HOUR_OF_DAY) + start.get(Calendar.MINUTE);
             start.add(Calendar.MINUTE, -startMin);
@@ -51,23 +51,20 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
             int endSlot = (endMin - Constants.FIRST_SLOT_TIME_MIN)/Constants.SLOT_LENGTH_MIN;
             TreeSet<TimeBlock> ret = new TreeSet<TimeBlock>();
             String exclude = null;
-            if (excludeTypes!=null && excludeTypes.length>0) {
-                for (int i=0;i<excludeTypes.length;i++) {
-                    if (exclude==null) exclude=""; else exclude+=",";
-                    if (sFinalExamType.equals(excludeTypes[i]))
-                        exclude += "FinalExamEvent";
-                    else if (sMidtermExamType.equals(excludeTypes[i]))
-                        exclude += "MidtermExamEvent";
-                    else if (sClassType.equals(excludeTypes[i]))
-                        exclude += "ClassEvent";
-                }
+            if (excludeType!=null) {
+                if (sFinalExamType.equals(excludeType))
+                    exclude = "FinalExamEvent";
+                else if (sMidtermExamType.equals(excludeType))
+                    exclude = "MidtermExamEvent";
+                else if (sClassType.equals(excludeType))
+                    exclude = "ClassEvent";
             }
             Query q = new _RootDAO().getSession().createQuery(
                     "select m from Meeting m where m.locationPermanentId=:locPermId and "+
                     "m.approvedDate is not null and "+
                     "m.meetingDate>=:startDate and m.meetingDate<=:endDate and "+
                     "m.startPeriod<:endSlot and m.stopPeriod>:startSlot"+
-                    (exclude!=null?excludeTypes.length==1?" and m.event.class!="+exclude:" and m.event.class not in ("+exclude+")":""))
+                    (exclude!=null?" and m.event.class!="+exclude:""))
                     .setLong("locPermId", location.getPermanentId())
                     .setDate("startDate", start.getTime())
                     .setDate("endDate", end.getTime())
@@ -81,12 +78,12 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
             return ret;
         }
     }
-    public void activate(Session session, Date startTime, Date endTime, boolean waitForSync) {
+    public void activate(Session session, Date startTime, Date endTime, String excludeType, boolean waitForSync) {
         TimeFrame time = new TimeFrame(startTime, endTime);
         synchronized(iCache) {
-            CacheElement cache = get(time);
+            CacheElement cache = get(time, excludeType);
             if (cache==null) {
-                cache = new CacheElement(time);
+                cache = new CacheElement(time, excludeType);
                 iCache.add(cache);
             }
             cache.update();
@@ -137,16 +134,28 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
         private TimeFrame iTime;
         private Hashtable<Long, TreeSet<TimeBlock>> iAvailability = new Hashtable();
         private String iTimestamp = null;
-        public CacheElement(TimeFrame time) {
+        private String iExcludeType = null;
+        public CacheElement(TimeFrame time, String excludeType) {
             iTime = time;
+            iExcludeType = excludeType;
         };
         public void update() {
             iAvailability.clear();
+            String exclude = null;
+            if (iExcludeType!=null) {
+                if (sFinalExamType.equals(iExcludeType))
+                    exclude = "FinalExamEvent";
+                else if (sMidtermExamType.equals(iExcludeType))
+                    exclude = "MidtermExamEvent";
+                else if (sClassType.equals(iExcludeType))
+                    exclude = "ClassEvent";	
+            }
             Query q = new _RootDAO().getSession().createQuery(
                     "select m from Meeting m where m.locationPermanentId!=null and "+
                     "m.approvedDate is not null and "+
                     "m.meetingDate>=:startDate and m.meetingDate<=:endDate and "+
-                    "m.startPeriod<:endSlot and m.stopPeriod>:startSlot")
+                    "m.startPeriod<:endSlot and m.stopPeriod>:startSlot" + 
+                    (exclude==null?"":" and m.event.class!="+exclude))
                     .setDate("startDate", iTime.getStartDate())
                     .setDate("endDate", iTime.getEndDate())
                     .setInteger("startSlot", iTime.getStartSlot())
@@ -162,18 +171,21 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
             }
             iTimestamp = new Date().toString();
         }
-        public TreeSet<TimeBlock> get(Long roomPermId, String[] excludeTypes) {
+        public TreeSet<TimeBlock> get(Long roomPermId, String excludeType) {
             TreeSet<TimeBlock> roomAvailability = iAvailability.get(roomPermId);
-            if (roomAvailability==null || excludeTypes==null || excludeTypes.length==0) return roomAvailability;
+            if (roomAvailability==null || excludeType==null || excludeType.equals(iExcludeType)) return roomAvailability;
             TreeSet<TimeBlock> ret = new TreeSet();
-            blocks: for (TimeBlock block : roomAvailability) {
-                for (int i=0;i<excludeTypes.length;i++)
-                    if (excludeTypes[i].equals(block.getEventType())) continue blocks;
+            for (TimeBlock block : roomAvailability) {
+            	if (excludeType.equals(block.getEventType())) continue;
                 ret.add(block);
             }
             return ret;
         }
         public TimeFrame getTimeFrame() { return iTime; }
+        public String getExcludeType() { return iExcludeType; }
+        public boolean exclude(String type) {
+        	return (iExcludeType==null || iExcludeType.equals(type));
+        }
         public boolean cover(TimeFrame time) {
             return (iTime.getStartDate().compareTo(time.getStartDate())<=0 && 
                     time.getEndDate().compareTo(iTime.getEndDate())<=0 && 

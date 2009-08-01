@@ -17,9 +17,9 @@ public interface RoomAvailabilityInterface {
     public static final String sClassType = 
         ApplicationProperties.getProperty("tmtbl.room.availability.eventType.class",Event.sEventTypes[Event.sEventTypeClass]);
 
-    public String getTimeStamp(Date startTime, Date endTime);
-    public Collection<TimeBlock> getRoomAvailability(Location location, Date startTime, Date endTime, String[] excludeTypes);
-    public void activate(Session session, Date startTime, Date endTime, boolean waitForSync);
+    public String getTimeStamp(Date startTime, Date endTime, String excludeType);
+    public Collection<TimeBlock> getRoomAvailability(Location location, Date startTime, Date endTime, String excludeType);
+    public void activate(Session session, Date startTime, Date endTime, String excludeType, boolean waitForSync);
     
     public void startService();
     public void stopService();

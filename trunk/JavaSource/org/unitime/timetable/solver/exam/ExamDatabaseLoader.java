@@ -910,7 +910,8 @@ public class ExamDatabaseLoader extends ExamLoader {
     public void loadRoomAvailability(RoomAvailabilityInterface ra) {
         Set periods = org.unitime.timetable.model.ExamPeriod.findAll(iSessionId, iExamType);
         Date[] bounds = org.unitime.timetable.model.ExamPeriod.getBounds(new SessionDAO().get(iSessionId), iExamType);
-        roomAvailabilityActivate(bounds[0],bounds[1]);
+        String exclude = (iExamType==org.unitime.timetable.model.Exam.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sMidtermExamType);
+        roomAvailabilityActivate(bounds[0],bounds[1],exclude);
         iProgress.setPhase("Loading room availability...", iAllRooms.size());
         for (Iterator i=iAllRooms.iterator();i.hasNext();) {
             iProgress.incProgress();
@@ -944,15 +945,15 @@ public class ExamDatabaseLoader extends ExamLoader {
     public Collection<TimeBlock> getRoomAvailability(Location location, Date startTime, Date endTime) {
         Collection<TimeBlock> ret = null;
         String ts = null;
+        String exclude = (iExamType==org.unitime.timetable.model.Exam.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sMidtermExamType);
         try {
             if (isRemote()) {
-                ret = (Collection<TimeBlock>)RemoteSolverServer.query(new Object[]{"getExamRoomAvailability",location.getUniqueId(),startTime,endTime,iExamType});
-                if (!iRoomAvailabilityTimeStampIsSet) ts = (String)RemoteSolverServer.query(new Object[]{"getRoomAvailabilityTimeStamp",startTime, endTime});
+                ret = (Collection<TimeBlock>)RemoteSolverServer.query(new Object[]{"getRoomAvailability",location.getUniqueId(),startTime,endTime,exclude});
+                if (!iRoomAvailabilityTimeStampIsSet) ts = (String)RemoteSolverServer.query(new Object[]{"getRoomAvailabilityTimeStamp",startTime, endTime,exclude});
             } else {
                 ret = RoomAvailability.getInstance().getRoomAvailability(
-                        location, startTime, endTime,
-                        new String[] {(iExamType==org.unitime.timetable.model.Exam.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sMidtermExamType)});
-                if (!iRoomAvailabilityTimeStampIsSet) ts = RoomAvailability.getInstance().getTimeStamp(startTime, endTime);
+                        location, startTime, endTime, exclude);
+                if (!iRoomAvailabilityTimeStampIsSet) ts = RoomAvailability.getInstance().getTimeStamp(startTime, endTime, exclude);
             }
         } catch (Exception e) {
             sLog.error(e.getMessage(),e);
@@ -970,12 +971,12 @@ public class ExamDatabaseLoader extends ExamLoader {
         return ret;
     }
     
-    public void roomAvailabilityActivate(Date startTime, Date endTime) {
+    public void roomAvailabilityActivate(Date startTime, Date endTime, String exclude) {
         try {
             if (isRemote()) {
-                RemoteSolverServer.query(new Object[]{"activateRoomAvailability",iSessionId,startTime,endTime});
+                RemoteSolverServer.query(new Object[]{"activateRoomAvailability",iSessionId,startTime,endTime,exclude});
             } else {
-                RoomAvailability.getInstance().activate(new SessionDAO().get(iSessionId), startTime, endTime, 
+                RoomAvailability.getInstance().activate(new SessionDAO().get(iSessionId), startTime, endTime, exclude, 
                         "true".equals(ApplicationProperties.getProperty("tmtbl.room.availability.solver.waitForSync","true")));
             }
         } catch (Exception e) {

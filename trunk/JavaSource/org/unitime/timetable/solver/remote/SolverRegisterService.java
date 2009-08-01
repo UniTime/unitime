@@ -42,8 +42,6 @@ import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
-import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
-import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.base._BaseRootDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
@@ -386,29 +384,20 @@ public class SolverRegisterService extends Thread {
                         RoomAvailability.getInstance().activate(
                                 new SessionDAO().get((Long)cmd[1]),
                                 (Date)cmd[2],
-                                (Date)cmd[3], 
+                                (Date)cmd[3],
+                                (String)cmd[4],
                                 "true".equals(ApplicationProperties.getProperty("tmtbl.room.availability.solver.waitForSync","true")));
                         return "ack";
                     }
                     return null;
                 }
-                if ("getExamRoomAvailability".equals(cmd[0])) {
+                if ("getRoomAvailability".equals(cmd[0])) {
                     if (RoomAvailability.getInstance()!=null) {
                         return RoomAvailability.getInstance().getRoomAvailability(
                                 new LocationDAO().get((Long)cmd[1]),
                                 (Date)cmd[2],
                                 (Date)cmd[3],
-                                new String[]{((Integer)cmd[4]==Exam.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sMidtermExamType)});
-                    }
-                    return null;
-                }
-                if ("getClassRoomAvailability".equals(cmd[0])) {
-                    if (RoomAvailability.getInstance()!=null) {
-                        return RoomAvailability.getInstance().getRoomAvailability(
-                                new LocationDAO().get((Long)cmd[1]),
-                                (Date)cmd[2],
-                                (Date)cmd[3],
-                                new String[] {RoomAvailabilityInterface.sClassType});
+                                (String)cmd[4]);
                     }
                     return null;
                 }
@@ -416,7 +405,8 @@ public class SolverRegisterService extends Thread {
                     if (RoomAvailability.getInstance()!=null) {
                         return RoomAvailability.getInstance().getTimeStamp(
                                 (Date)cmd[1],
-                                (Date)cmd[2]);
+                                (Date)cmd[2],
+                                (String)cmd[4]);
                     }
                     return null;
                 }
