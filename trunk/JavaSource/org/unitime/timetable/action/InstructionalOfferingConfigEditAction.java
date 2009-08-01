@@ -803,7 +803,9 @@ public class InstructionalOfferingConfigEditAction extends Action {
             
             Event.deleteFromEvents(hibSession, ioc);
             Exam.deleteFromExams(hibSession, ioc);
-            hibSession.delete(ioc);
+            // The following line was calling delete ioc for the second time (which is a problem for MySQL as
+            // it returns zero number of deleted lines even when called in the same transaction).
+            //hibSession.delete(ioc);
 	        hibSession.saveOrUpdate(io);
 
 	        hibSession.flush();
