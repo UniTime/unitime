@@ -588,7 +588,7 @@ public class ExamInfoModel implements Serializable {
                 Collection<TimeBlock> times = RoomAvailability.getInstance().getRoomAvailability(
                         room,
                         period.getStartTime(), period.getEndTime(), 
-                        new String[] {(getExam().getExamType()==Exam.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sMidtermExamType)});
+                        (getExam().getExamType()==Exam.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sMidtermExamType));
                 if (times!=null) for (TimeBlock time : times) {
                     if (period.overlap(time)) {
                         System.out.println("Room "+room.getLabel()+" is not avaiable due to "+time);

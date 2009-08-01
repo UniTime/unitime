@@ -32,6 +32,7 @@ import org.apache.struts.action.ActionMapping;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ExamGridForm;
+import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.util.Constants;
@@ -71,7 +72,8 @@ public class ExamGridAction extends Action {
         if (RoomAvailability.getInstance()!=null) {
             Session session = Session.getCurrentAcadSession(Web.getUser(request.getSession()));
             Date[] bounds = ExamPeriod.getBounds(session, myForm.getExamType());
-            RoomAvailability.getInstance().activate(session,bounds[0],bounds[1],false);
+            String exclude = (myForm.getExamType()==org.unitime.timetable.model.Exam.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sMidtermExamType);
+            RoomAvailability.getInstance().activate(session,bounds[0],bounds[1],exclude,false);
             RoomAvailability.setAvailabilityWarning(request, session, myForm.getExamType(), true, false);
         }
         

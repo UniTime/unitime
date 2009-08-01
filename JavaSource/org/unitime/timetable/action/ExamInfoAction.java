@@ -30,6 +30,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.ExamInfoForm;
+import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimetableManager;
@@ -97,10 +98,11 @@ public class ExamInfoAction extends Action {
         
         if (model.getExam()==null) throw new Exception("No exam given.");
         
-        if (RoomAvailability.getInstance()!=null) {
+        if (RoomAvailability.getInstance()!=null && op==null) {
             Session session = Session.getCurrentAcadSession(Web.getUser(request.getSession()));
             Date[] bounds = ExamPeriod.getBounds(session, model.getExam().getExamType());
-            RoomAvailability.getInstance().activate(session,bounds[0],bounds[1],false);
+            String exclude = (model.getExam().getExamType()==org.unitime.timetable.model.Exam.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sMidtermExamType);
+            RoomAvailability.getInstance().activate(session,bounds[0],bounds[1],exclude,false);
             RoomAvailability.setAvailabilityWarning(request, session, model.getExam().getExamType(), true, true);
         }
         

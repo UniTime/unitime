@@ -45,7 +45,8 @@ public class RoomAvailability {
         }
         if (checkAvailability) {
             Date[] bounds = ExamPeriod.getBounds(acadSession, examType);
-            String ts = getInstance().getTimeStamp(bounds[0], bounds[1]);
+            String exclude = (examType==org.unitime.timetable.model.Exam.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sMidtermExamType);
+            String ts = getInstance().getTimeStamp(bounds[0], bounds[1], exclude);
             if (ts==null)
                 request.setAttribute(Constants.REQUEST_WARN,"Room availability is not available for "+Exam.sExamTypes[examType].toLowerCase()+" examinations.");
             else
@@ -71,7 +72,7 @@ public class RoomAvailability {
         }
         if (checkAvailability) {
             Date[] bounds = DatePattern.getBounds(acadSession.getUniqueId());
-            String ts = getInstance().getTimeStamp(bounds[0], bounds[1]);
+            String ts = getInstance().getTimeStamp(bounds[0], bounds[1], RoomAvailabilityInterface.sClassType);
             if (ts==null)
                 request.setAttribute(Constants.REQUEST_WARN,"Room availability is not available for classes.");
             else
