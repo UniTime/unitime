@@ -406,7 +406,7 @@ public class SolverRegisterService extends Thread {
                         return RoomAvailability.getInstance().getTimeStamp(
                                 (Date)cmd[1],
                                 (Date)cmd[2],
-                                (String)cmd[4]);
+                                (String)cmd[3]);
                     }
                     return null;
                 }
