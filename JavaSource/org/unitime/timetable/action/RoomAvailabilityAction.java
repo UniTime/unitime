@@ -88,9 +88,12 @@ public class RoomAvailabilityAction extends Action {
         if (myForm.getExamType()>=0) {
             
             Date[] bounds = ExamPeriod.getBounds(session, myForm.getExamType());
+            String exclude = (myForm.getIncludeExams()?
+                    null :
+                    (myForm.getExamType()==Exam.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sMidtermExamType));
             
             if (bounds!=null && RoomAvailability.getInstance()!=null) {
-                RoomAvailability.getInstance().activate(session, bounds[0], bounds[1], "Refresh".equals(op));
+                RoomAvailability.getInstance().activate(session, bounds[0], bounds[1], exclude, "Refresh".equals(op));
             }
             
             WebTable.setOrder(request.getSession(),(myForm.getCompare()?"roomAvailability.cord":"roomAvailability.ord"),request.getParameter("ord"),1);
@@ -163,12 +166,12 @@ public class RoomAvailabilityAction extends Action {
             for (Iterator i=Location.findAllExamLocations(sessionId, form.getExamType()).iterator();i.hasNext();) {
                 Location location = (Location)i.next();
                 if (!match(form, location.getLabel())) continue;
-                String[] exclude = (form.getIncludeExams()?
-                        new String[] {} :
-                        new String[]{(form.getExamType()==Exam.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sMidtermExamType)});
+                String exclude = (form.getIncludeExams()?
+                        null :
+                        (form.getExamType()==Exam.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sMidtermExamType));
                 Collection<TimeBlock> events = ra.getRoomAvailability(location, bounds[0], bounds[1], exclude);
                 if (events==null) continue;
-                if (ts==null) ts = ra.getTimeStamp(bounds[0], bounds[1]);
+                if (ts==null) ts = ra.getTimeStamp(bounds[0], bounds[1], exclude);
                 for (TimeBlock event : events) {
                     boolean overlaps = false;
                     for (Iterator j=periods.iterator();j.hasNext();) {
@@ -244,8 +247,8 @@ public class RoomAvailabilityAction extends Action {
             for (Iterator i=Location.findAllExamLocations(sessionId, form.getExamType()).iterator();i.hasNext();) {
                 Location location = (Location)i.next();
                 if (!match(form, location.getLabel())) continue;
-                Collection<TimeBlock> events = ra.getRoomAvailability(location, bounds[0], bounds[1], new String[] {});
-                if (ts==null) ts = ra.getTimeStamp(bounds[0], bounds[1]);
+                Collection<TimeBlock> events = ra.getRoomAvailability(location, bounds[0], bounds[1], null);
+                if (ts==null) ts = ra.getTimeStamp(bounds[0], bounds[1], null);
                 TreeSet<ExamAssignment> exams = null;
                 if (examAssignment!=null)
                     exams = examAssignment.getExamsOfRoom(location.getUniqueId());

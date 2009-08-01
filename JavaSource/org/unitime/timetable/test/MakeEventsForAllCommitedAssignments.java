@@ -44,10 +44,14 @@ public class MakeEventsForAllCommitedAssignments {
             Session hibSession = new _RootDAO().getSession();
             List commitedSolutions = hibSession.createQuery("select s from Solution s where s.commited = true").list();
             
+            int idx = 0;
+            
             for (Iterator i=commitedSolutions.iterator();i.hasNext();) {
                 Solution s = (Solution)i.next();
+            
+                idx++;
                 
-                System.out.println("Procession solution "+s.getOwner().getName()+" of "+s.getSession().getLabel()+" (committed:"+s.getCommitDate()+")");
+                System.out.println("Procession solution "+idx+"/"+commitedSolutions.size()+" ("+s.getOwner().getName()+" of "+s.getSession().getLabel()+", committed "+s.getCommitDate()+")");
                 
                 Transaction tx = null;
                 try {

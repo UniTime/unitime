@@ -2983,9 +2983,9 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     public void roomAvailabilityActivate(Date startTime, Date endTime) {
         try {
             if (isRemote()) {
-                RemoteSolverServer.query(new Object[]{"activateRoomAvailability",iSessionId,startTime,endTime});
+                RemoteSolverServer.query(new Object[]{"activateRoomAvailability",iSessionId,startTime,endTime,RoomAvailabilityInterface.sClassType});
             } else {
-                RoomAvailability.getInstance().activate(new SessionDAO().get(iSessionId), startTime, endTime, 
+                RoomAvailability.getInstance().activate(new SessionDAO().get(iSessionId), startTime, endTime, RoomAvailabilityInterface.sClassType,
                         "true".equals(ApplicationProperties.getProperty("tmtbl.room.availability.solver.waitForSync","true")));
             }
         } catch (Exception e) {
@@ -3079,13 +3079,13 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         String ts = null;
         try {
             if (isRemote()) {
-                ret = (Collection<TimeBlock>)RemoteSolverServer.query(new Object[]{"getClassRoomAvailability",room.getResourceId(),startTime,endTime});
-                if (!iRoomAvailabilityTimeStampIsSet) ts = (String)RemoteSolverServer.query(new Object[]{"getRoomAvailabilityTimeStamp",startTime, endTime});
+                ret = (Collection<TimeBlock>)RemoteSolverServer.query(new Object[]{"getRoomAvailability",room.getResourceId(),startTime,endTime, RoomAvailabilityInterface.sClassType});
+                if (!iRoomAvailabilityTimeStampIsSet) ts = (String)RemoteSolverServer.query(new Object[]{"getRoomAvailabilityTimeStamp",startTime, endTime, RoomAvailabilityInterface.sClassType});
             } else {
                 ret = RoomAvailability.getInstance().getRoomAvailability(
                         LocationDAO.getInstance().get(room.getResourceId()), startTime, endTime,
-                        new String[] {RoomAvailabilityInterface.sClassType});
-                if (!iRoomAvailabilityTimeStampIsSet) ts = RoomAvailability.getInstance().getTimeStamp(startTime, endTime);
+                        RoomAvailabilityInterface.sClassType);
+                if (!iRoomAvailabilityTimeStampIsSet) ts = RoomAvailability.getInstance().getTimeStamp(startTime, endTime, RoomAvailabilityInterface.sClassType);
             }
         } catch (Exception e) {
             sLog.error(e.getMessage(),e);
