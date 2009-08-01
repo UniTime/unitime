@@ -160,6 +160,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     private boolean iRoomAvailabilityTimeStampIsSet = false;
     private boolean iWeighStudents = true;
     
+    private boolean iIgnoreCommittedStudentConflicts = false;
+    
     public TimetableDatabaseLoader(TimetableModel model) {
         super(model);
         Progress.sTraceEnabled=false;
@@ -204,6 +206,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         iInstructorFormat = getModel().getProperties().getProperty("General.InstructorFormat", DepartmentalInstructor.sNameFormatLastFist);
         
         iWeighStudents = getModel().getProperties().getPropertyBoolean("General.WeightStudents", iWeighStudents);
+        
+        iIgnoreCommittedStudentConflicts = getModel().getProperties().getPropertyBoolean("General.IgnoreCommittedStudentConflicts", iIgnoreCommittedStudentConflicts);
     }
     
     private String getClassLabel(Class_ clazz) {
@@ -1833,7 +1837,9 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     }
     
     private void loadCommittedStudentConflicts(org.hibernate.Session hibSession) {
-        Query q = null;
+        //Load all committed assignment - student relations that may be relevant
+        /*
+    	Query q = null;
         if (iSolverGroup.length>1 || iSolverGroup[0].isExternalManager()) {
         	q = hibSession.createQuery(
         			"select distinct a, e.studentId from "+
@@ -1852,8 +1858,15 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         	q.setLong("ownerId",iSolverGroup[0].getUniqueId().longValue());
         }
 		q.setLong("sessionId", iSessionId.longValue());
-		List assignmentEnrollments = q.list();
+		*/
+		List assignmentEnrollments = hibSession.createQuery(
+    			"select distinct a, e.studentId from "+
+    			"Solution s inner join s.assignments a inner join s.studentEnrollments e "+
+    			"where "+
+    			"s.commited=true and s.owner.session.uniqueId=:sessionId and s.owner not in ("+iSolverGroupIds+") and "+
+    			"a.clazz=e.clazz").setLong("sessionId", iSessionId.longValue()).list();
 
+		// Filter out relevant relations (relations that are for loaded students)
 		Hashtable assignments = new Hashtable();
 		for (Iterator i1=assignmentEnrollments.iterator(); i1.hasNext();) {
 			Object[] result = (Object[])i1.next();
@@ -1869,6 +1882,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     			students.add(student);
     		}
 		}
+		
+		// Ensure no assignment-class relation is got from the cache
 		for (Iterator i1=assignmentEnrollments.iterator(); i1.hasNext();) {
 			Object[] result = (Object[])i1.next();
     		Assignment assignment = (Assignment)result[0];
@@ -1889,6 +1904,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 			Hibernate.initialize(assignment.getClazz().getSchedulingSubpart().getClasses());
 		}
 		
+		// Make up the appropriate committed placements and propagate those through the course structure
         iProgress.setPhase("Loading student conflicts with commited solutions ...", assignments.size());
 		for (Iterator i1=assignments.entrySet().iterator(); i1.hasNext();) {
 			Map.Entry entry = (Map.Entry)i1.next();
@@ -2232,10 +2248,17 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 			distPrefs.addAll(iSolverGroup[i].getDistributionPreferences());
 		}
 		iProgress.setPhase("Loading distribution preferences ...",distPrefs.size());
+		Hibernate.initialize(distPrefs);
+		// Commented out for speeding up issues (calling just 
+		// Hibernate.initialize(distPrefs) instead)
+		// May need to call Hibernate.initialize on committed classed
+		// in getLecture(Class_) if this will cause issues.
+		/*
 		for (Iterator i=distPrefs.iterator();i.hasNext();) {
 			DistributionPref distributionPref = (DistributionPref)i.next();
 			Hibernate.initialize(distributionPref.getDistributionObjects());
 		}
+		*/
 		for (Iterator i=distPrefs.iterator();i.hasNext();) {
 			DistributionPref distributionPref = (DistributionPref)i.next();
 			if (!PreferenceLevel.sNeutral.equals(distributionPref.getPrefLevel().getPrefProlog()))
@@ -2635,7 +2658,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	if (!hibSession.isOpen())
     		iProgress.fatal("Hibernate session not open.");
 
-    	loadCommittedStudentConflicts(hibSession);
+    	if (!iIgnoreCommittedStudentConflicts)
+    		loadCommittedStudentConflicts(hibSession);
     	
     	if (!hibSession.isOpen())
     		iProgress.fatal("Hibernate session not open.");

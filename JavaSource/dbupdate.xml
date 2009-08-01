@@ -2429,8 +2429,43 @@
 		            (%ID% + 1, 'crsOffrNoteDisplay', 'icon', 'icon,shortened text,full text', 'Display an icon or shortened text when a course offering has a schedule note.'),
 		            (%ID% + 2, 'mgrNoteDisplay', 'icon', 'icon,shortened text,full text', 'Display an icon or shortened text when a class has a note to the schedule manager.')
 		</mysql>
+		<mysql>
+			update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1
+		</mysql>
 		<plsql>alter table %SCHEMA%.class_ modify sched_print_note varchar2(2000)</plsql>
 		<mysql>alter table %SCHEMA%.class_ modify sched_print_note varchar(2000)</mysql>
+	</update>
+	<update version="46" date="1-Aug-2009" comment="Committed student enrollments solver load speed up">
+		<mysql onFail="next">
+			create index idx_student_enrl_assignment on %SCHEMA%.student_enrl(solution_id,class_id)
+		</mysql>
+		<plsql onFail="next">
+			create index %SCHEMA%.idx_student_enrl_assignment on %SCHEMA%.student_enrl(solution_id,class_id)
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select solver_parameter_def_seq.nextval as uniqueid,
+				'General.IgnoreCommittedStudentConflicts' as name, 'false' as default_vale, 'Do not load committed student conflicts' as description,
+				'boolean' as type, 13 as ord, 1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='General')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select solver_parameter_def_seq.nextval as uniqueid,
+				'General.WeightStudents' as name, 'true' as default_vale, 'Weight last-like students' as description,
+				'boolean' as type, 14 as ord, 0 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='General')
+		</plsql>
+		<mysql into="GID">select uniqueid from %SCHEMA%.solver_parameter_group where name='General'</mysql>
+		<mysql into="ORD">select max(ord) from %SCHEMA%.solver_parameter_def where solver_param_group_id=%GID%</mysql>
+		<mysql into="ID">select 32767 * next_hi from %SCHEMA%.hibernate_unique_key</mysql>
+		<mysql>
+			insert into %SCHEMA%.solver_parameter_def
+			(uniqueid, name, default_value, description, type, ord, visible, solver_param_group_id) values
+ 			(%ID%+0, 'General.IgnoreCommittedStudentConflicts', 'false', 'Do not load committed student conflicts', 'boolean', %ORD%+1, 1, %GID%),
+			(%ID%+1, 'General.WeightStudents', 'true', 'Weight last-like students', 'boolean', %ORD%+2, 0, %GID%)
+		</mysql>
+		<mysql>
+			update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1
+		</mysql>
 	</update>
 	
 </dbupdate>
