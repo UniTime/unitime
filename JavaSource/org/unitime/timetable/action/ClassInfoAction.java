@@ -30,11 +30,13 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.ClassInfoForm;
+import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.solver.course.ui.ClassInfoModel;
+import org.unitime.timetable.util.DefaultRoomAvailabilityService;
 import org.unitime.timetable.util.RoomAvailability;
 
 /**
@@ -90,10 +92,10 @@ public class ClassInfoAction extends Action {
         
         if (model.getClass()==null) throw new Exception("No class given.");
         
-        if (RoomAvailability.getInstance()!=null) {
+        if (RoomAvailability.getInstance()!=null && op==null && !(RoomAvailability.getInstance() instanceof DefaultRoomAvailabilityService)) {
             Session session = Session.getCurrentAcadSession(Web.getUser(request.getSession()));
             Date[] bounds = DatePattern.getBounds(session.getUniqueId());
-            RoomAvailability.getInstance().activate(session,bounds[0],bounds[1],false);
+            RoomAvailability.getInstance().activate(session,bounds[0],bounds[1],RoomAvailabilityInterface.sClassType, false);
             RoomAvailability.setAvailabilityWarning(request, session, true, true);
         }
         

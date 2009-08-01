@@ -36,6 +36,7 @@ public class ClassRoomInfo implements Serializable, Comparable<ClassRoomInfo>{
     private int iX = -1, iY = -1;
     private boolean iIgnoreTooFar;
     private transient Location iLocation = null;
+    private String iNote = null;
     
     public ClassRoomInfo(Location location, int preference) {
         iLocation = location;
@@ -48,12 +49,19 @@ public class ClassRoomInfo implements Serializable, Comparable<ClassRoomInfo>{
         iIgnoreTooFar = location.isIgnoreTooFar().booleanValue();
     }
     
+    public ClassRoomInfo(Location location, int preference, String note) {
+    	this(location, preference);
+    	iNote = note;
+    }
+    
     public Long getLocationId() { return iId; }
     public String getName() { return iName; }
     public int getPreference() { return iPreference; }
     public void setPreference(int preference) { iPreference = preference; }
     public int getCapacity() { return iCapacity; }
     public boolean isIgnoreTooFar() { return iIgnoreTooFar; }
+    public boolean hasNote() { return iNote != null; }
+    public String getNote() { return iNote; }
     public Location getLocation() {
         if (iLocation==null) iLocation = new LocationDAO().get(getLocationId());
         return iLocation;
@@ -72,7 +80,7 @@ public class ClassRoomInfo implements Serializable, Comparable<ClassRoomInfo>{
     	}
         return "<span style='color:"+PreferenceLevel.prolog2color(PreferenceLevel.int2prolog(pref))+";' " +
         		"title='"+PreferenceLevel.prolog2string(PreferenceLevel.int2prolog(pref))+" "+getName()+
-        		" ("+getCapacity()+" seats)'>"+
+        		" ("+(hasNote()?getNote()+", ":"")+getCapacity()+" seats)'>"+
         		(s?"<s>":"")+
         		getName()+
         		(s?"</s>":"")+
