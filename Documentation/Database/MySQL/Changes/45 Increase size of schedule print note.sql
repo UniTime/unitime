@@ -29,6 +29,7 @@ insert into settings
             (@id + 1, 'crsOffrNoteDisplay', 'icon', 'icon,shortened text,full text', 'Display an icon or shortened text when a course offering has a schedule note.'),
             (@id + 2, 'mgrNoteDisplay', 'icon', 'icon,shortened text,full text', 'Display an icon or shortened text when a class has a note to the schedule manager.');
 
+update hibernate_unique_key set next_hi=next_hi+1;
 
 /**
  * Increase size of sched_print_note column in class_ table
