@@ -273,7 +273,7 @@ public class EventDetailAction extends Action {
 	                if (eventDeleted) return mapping.findForward("showEventList");
 				}				
 				
-				if(iOp.equals("Delete")) {
+				if(iOp.equals("Delete") && myForm.getSelectedMeetings()!=null && myForm.getSelectedMeetings().length>0) {
 						Long[] selectedMeetings = myForm.getSelectedMeetings();
 		                org.hibernate.Session hibSession = new EventDAO().getSession();
 		                Transaction tx = null;
