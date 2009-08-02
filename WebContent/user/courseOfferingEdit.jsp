@@ -221,7 +221,7 @@
 						onkeypress="return selectSearch(event, this);"
 						onkeydown="return checkKey(event, this);" >
 						<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"> </html:option>
-						<html:options collection="<%=CourseOffering.CRS_OFFERING_LIST_ATTR_NAME%>" property="uniqueId" labelProperty="courseName" />
+						<html:options collection="<%=CourseOffering.CRS_OFFERING_LIST_ATTR_NAME%>" property="uniqueId" labelProperty="courseNameWithTitle" />
 					</html:select>
 				</TD>
 			</TR>
