@@ -227,7 +227,7 @@ public class RoomFeatureEditForm extends ActionForm {
 		
         
         
-        if (deptSize != 1) {
+        if (!global && deptSize != 1) {
 	        if(deptCode==null || deptCode.equalsIgnoreCase("")) {
 	        	errors.add("Department", 
 	                    new ActionMessage("errors.required", "Department") );
