@@ -21,6 +21,7 @@ package org.unitime.timetable.action;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -38,10 +39,13 @@ import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.InstructorListUpdateForm;
+import org.unitime.timetable.interfaces.ExternalClassEditAction;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.ClassInstructor;
+import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Designator;
@@ -208,7 +212,7 @@ public class InstructorListUpdateAction extends Action {
 		StaffDAO sdao = new StaffDAO();
 		org.hibernate.Session hibSession = idao.getSession();
 		Transaction tx = null;
-		
+		HashSet<Class_> updatedClasses = new HashSet<Class_>(); 
 		try {	
 			tx = hibSession.beginTransaction();
 
@@ -232,6 +236,7 @@ public class InstructorListUpdateAction extends Action {
 
                         for (Iterator i=inst.getClasses().iterator();i.hasNext();) {
 				        	ClassInstructor ci = (ClassInstructor)i.next();
+				        	updatedClasses.add(ci.getClassInstructing());
 				        	ci.getClassInstructing().getClassInstructors().remove(ci);
 				        	hibSession.saveOrUpdate(ci);
 				        	hibSession.delete(ci);
@@ -303,6 +308,13 @@ public class InstructorListUpdateAction extends Action {
 			}
 			
 			tx.commit();
+            String className = ApplicationProperties.getProperty("tmtbl.external.class.edit_action.class");
+        	if (className != null && className.trim().length() > 0){
+            	ExternalClassEditAction editAction = (ExternalClassEditAction) (Class.forName(className).newInstance());
+            	for(Class_ c : updatedClasses){
+            		editAction.performExternalClassEditAction(c, hibSession);
+            	}
+        	}
 		} catch (Exception e) {
             Debug.error(e);
             try {
