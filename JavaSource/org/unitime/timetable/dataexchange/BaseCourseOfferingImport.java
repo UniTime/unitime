@@ -2114,7 +2114,12 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 				if (minPerWeek == null){
 					minPerWeek = new Integer(0);
 				}
-				String type = getRequiredStringAttribute(subpart, "type", elementName);
+				String typeStr = getRequiredStringAttribute(subpart, "type", elementName);
+				ItypeDesc itype = findItypeForString(typeStr);
+				String type = "";
+				if (itype != null){
+					type = itype.getAbbv().trim();
+				}
 				String suffix = getOptionalStringAttribute(subpart, "suffix");
 				if(suffix != null){
 					suffix = suffix.trim();
@@ -2136,7 +2141,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					} 
 				} else {
 					ss = new SchedulingSubpart();
-					ss.setItype(findItypeForString(type));
+					ss.setItype(itype);
 					ss.setSchedulingSubpartSuffixCache(suffix);
 					ss.setInstrOfferingConfig(ioc);
 					ss.setSession(ioc.getSession());
