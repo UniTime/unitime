@@ -87,6 +87,8 @@ public class ClassInfoAction extends Action {
         
         if (request.getParameter("classId")!=null) {
             model.setClazz(new Class_DAO().get(Long.valueOf(request.getParameter("classId"))));
+            if (model.getClassAssignment()!=null && (model.getChange()==null || model.getChange().getCurrent(model.getClazz().getClassId())==null))
+            	model.setTime(model.getClassAssignment().getTimeId());
             myForm.save(request.getSession());
         }
         
