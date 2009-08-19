@@ -297,12 +297,17 @@ public class TimetableManagerEditAction extends Action {
        		Map results = lookup.doLookup(attributes);
             if (results==null)
                 throw new Exception (lookup.getErrorMessage());
-            
 			frm.setExternalId((String)results.get(ExternalUidLookup.EXTERNAL_ID));
 			frm.setLookupResult((String)results.get(ExternalUidLookup.USERNAME));
-			frm.setFirstName((String)results.get(ExternalUidLookup.FIRST_NAME));
-			frm.setMiddleName((String)results.get(ExternalUidLookup.MIDDLE_NAME));
-			frm.setLastName((String)results.get(ExternalUidLookup.LAST_NAME));
+			if (frm.getFirstName() == null || frm.getFirstName().trim().length() == 0){
+				frm.setFirstName((String)results.get(ExternalUidLookup.FIRST_NAME));
+			}
+			if (frm.getMiddleName() == null || frm.getMiddleName().trim().length() == 0){
+				frm.setMiddleName((String)results.get(ExternalUidLookup.MIDDLE_NAME));
+			}
+			if (frm.getLastName() == null || frm.getLastName().trim().length() == 0){
+				frm.setLastName((String)results.get(ExternalUidLookup.LAST_NAME));
+			}
 			frm.setEmail((String)results.get(ExternalUidLookup.EMAIL));
         }
     }
@@ -392,6 +397,9 @@ public class TimetableManagerEditAction extends Action {
         String uidLookupEnabled = ApplicationProperties.getProperty("tmtbl.manager.external_id.lookup.enabled");
         if (uidLookupEnabled!=null && uidLookupEnabled.equalsIgnoreCase("true")) {
         	frm.setLookupEnabled(Boolean.TRUE);
+            frm.setFirstName(mgr.getFirstName());
+            frm.setMiddleName(mgr.getMiddleName());
+            frm.setLastName(mgr.getLastName());
         } else {
         	frm.setLookupEnabled(Boolean.FALSE);
             frm.setFirstName(mgr.getFirstName());
