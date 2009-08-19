@@ -104,7 +104,7 @@ public class PdfEventGridTable extends EventGridTable {
                     nrCols += colSpan;
                     if (colSpan>1) split = true;
                 }
-                MyTable table = new MyTable(m.getLocation().getLabel()+"\n("+m.getLocation().getCapacity()+")", firstColSpan);
+                MyTable table = new MyTable(m.getLocation().getLabel()+"\n("+m.getLocation().getCapacity()+")\n"+m.getLocation().getRoomTypeLabel(), firstColSpan);
                 for (Date date : iDates)
                     table.addColumn(m.getColSpan(date),df1.format(date)+"\n"+df2.format(date), split);
                 table.newLine();
@@ -199,7 +199,7 @@ public class PdfEventGridTable extends EventGridTable {
             }
             MyTable table = new MyTable(df1.format(date)+"\n"+df2.format(date), firstColSpan);
             for (TableModel m : iModel)
-                table.addColumn(m.getColSpan(date), m.getLocation().getLabel()+"\n("+m.getLocation().getCapacity()+" seats)", split);
+                table.addColumn(m.getColSpan(date), m.getLocation().getLabel()+"\n("+m.getLocation().getCapacity()+" seats)\n" + m.getLocation().getRoomTypeLabel(), split);
             table.newLine();
             HashSet<Meeting> rendered = new HashSet();
             int lastCol = (iEndSlot-iStartSlot)/iStep;

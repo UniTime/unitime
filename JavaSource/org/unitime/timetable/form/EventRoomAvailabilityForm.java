@@ -191,7 +191,7 @@ public class EventRoomAvailabilityForm extends EventAddForm {
 		for (Location location : locations) {
 			ret += "<td onClick=\"tAll('"+location.getPermanentId()+"',false);\" " +
 					"onMouseOver=\"this.style.cursor='hand';this.style.cursor='pointer';\">" +
-					"<b>"+location.getLabel()+"</b><br>("+location.getCapacity().toString()+")</td>";
+					"<b>"+location.getLabel()+"</b><br>("+location.getCapacity().toString()+")<br><font size=\"-1\">"+location.getRoomTypeLabel()+"</font></td>";
 			jsLocations += (jsLocations.length()>0?",":"")+"'"+location.getPermanentId()+"'";
 		}
 		ret+="</tr>";
