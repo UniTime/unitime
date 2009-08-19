@@ -108,6 +108,7 @@
 			<TD>Global:</TD>
 			<TD>
 				<html:checkbox property="global" disabled="true"/>
+				<html:hidden property="global"/>
 			</TD>
 		</TR>
 		
