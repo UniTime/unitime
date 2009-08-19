@@ -57,7 +57,7 @@ public class EventGridTable {
                 for (Date date : iDates) 
                     if (m.getColSpan(date)>1) split = true;
                 out.println("<tr valign='top' align='center'>");
-                out.println("<td class='TimetableHeadCell"+(split?"EOD":"")+"'><b>"+m.getLocation().getLabel()+"</b><br><i>("+m.getLocation().getCapacity()+" seats)</i></td>");
+                out.println("<td class='TimetableHeadCell"+(split?"EOD":"")+"'><b>"+m.getLocation().getLabel()+"</b><br><i>("+m.getLocation().getCapacity()+" seats)</i><br><font size=\"-1\">"+m.getLocation().getRoomTypeLabel()+"</font></td>");
                 DateFormat df1 = new SimpleDateFormat("EEEE");
                 DateFormat df2 = new SimpleDateFormat("MMM dd, yyyy");
                 DateFormat df3 = new SimpleDateFormat("MM/dd");
@@ -166,7 +166,7 @@ public class EventGridTable {
             int row = 0;
             for (TableModel m : iModel) {
                 boolean last = iModel.last().equals(m);
-                out.println("<td colspan='"+m.getColSpan(date)+"' class='TimetableHeadCell"+(last?"EOL":split?"EOD":"")+"' id='b0."+row+"'><b>"+m.getLocation().getLabel()+"</b><br><i>("+m.getLocation().getCapacity()+" seats)</i></td>");
+                out.println("<td colspan='"+m.getColSpan(date)+"' class='TimetableHeadCell"+(last?"EOL":split?"EOD":"")+"' id='b0."+row+"'><b>"+m.getLocation().getLabel()+"</b><br><i>("+m.getLocation().getCapacity()+" seats)</i><br><font size=\"-1\">"+m.getLocation().getRoomTypeLabel()+"</font></td>");
                 row++;
             }
             out.println("</tr>");
