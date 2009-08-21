@@ -406,7 +406,7 @@ public class DistributionPrefsAction extends Action {
 	        		    for(int i=0; i<result.size(); i++) {
 	        		        Object[] a = (Object[]) result.get(i);
 	        		        ComboBoxLookup cbl = new ComboBoxLookup(
-	        		                (a[1].toString() + " - " + a[2].toString()), a[0].toString());
+	        		                (a[1].toString() + " - " + (a[2] == null?"":a[2].toString())), a[0].toString());
 	        		        crsNumList.addElement(cbl);
 	        		    }
 	        		    
