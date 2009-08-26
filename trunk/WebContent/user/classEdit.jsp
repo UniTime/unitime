@@ -183,7 +183,7 @@
 		<html:hidden property="classSuffix"/>
 		<logic:notEmpty name="<%=frmName%>" property="classSuffix">
 			<TR>
-				<TD>Class Suffix:</TD>
+				<TD>External Id:</TD>
 				<TD>
 					<bean:write name="<%=frmName%>" property="classSuffix" />
 				<TD>
