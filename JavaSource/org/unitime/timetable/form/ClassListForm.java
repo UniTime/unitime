@@ -86,7 +86,7 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 	private boolean sortByKeepSubparts;
 	
 	public static String sSortByName = "Name";
-	public static String sSortByDivSec = "Div-Sec";
+	public static String sSortByDivSec = "External Id";
 	public static String sSortByEnrollment = "Enrollment";
 	public static String sSortByLimit = "Limit";
 	public static String sSortByRoomSize = "Room Size";

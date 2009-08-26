@@ -55,7 +55,7 @@ public class CsvClassAssignmentExport {
 				new CSVField("ITYPE"),
 				new CSVField("SECTION"),
 				new CSVField("SUFFIX"),
-				new CSVField("DIV-SEC"),
+				new CSVField("EXTERNAL_ID"),
 				new CSVField("DATE_PATTERN"),
 				new CSVField("DAY"),
 				new CSVField("START_TIME"),

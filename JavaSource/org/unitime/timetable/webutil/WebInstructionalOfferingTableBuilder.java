@@ -96,7 +96,7 @@ public class WebInstructionalOfferingTableBuilder {
     
     //available columns for table
     protected static String LABEL = "&nbsp;";
-    public static final String DIV_SEC = "Suffix";
+    public static final String DIV_SEC = "External Id";
     public static final String DEMAND = "Enrollment";
     public static final String PROJECTED_DEMAND = "Projected Demand";
     public static final String LIMIT = "Limit";
