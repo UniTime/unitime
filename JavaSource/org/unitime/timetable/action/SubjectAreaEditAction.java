@@ -199,10 +199,10 @@ public class SubjectAreaEditAction extends Action {
 			SubjectAreaDAO sdao = new SubjectAreaDAO();
 			hibSession = sdao.getSession();
 			tx = hibSession.beginTransaction();
-			
-        	String className = ApplicationProperties.getProperty("tmtbl.external.course_offering.remove_action.class");
+
 			SubjectArea sa = sdao.get(frm.getUniqueId());
 
+        	String className = ApplicationProperties.getProperty("tmtbl.external.course_offering.remove_action.class");
 			if (className != null && className.trim().length() > 0){
         		ExternalCourseOfferingRemoveAction removeAction = (ExternalCourseOfferingRemoveAction) (Class.forName(className).newInstance());
     			for (Iterator i = sa.getCourseOfferings().iterator(); i.hasNext(); ) {
