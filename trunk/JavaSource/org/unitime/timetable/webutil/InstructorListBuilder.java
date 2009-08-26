@@ -68,7 +68,7 @@ public class InstructorListBuilder {
 		// Create new table
 		WebTable webTable = new WebTable(cols, "",
 				"instructorList.do?order=%%&deptId=" + deptId,
-				new String[] { "ID", "Name", "Position", "Designator", "Note", "Preferences<BR>Time",
+				new String[] { "External Id", "Name", "Position", "Designator", "Note", "Preferences<BR>Time",
 						"<BR>Room", "<BR>Distribution", "Class<BR>Assignments", "Exam<BR>Assignments", "Ignore Too Far"}, 
 				new String[] { "left", "left", "left", "right", "left", "left", "left", "left", "left", "left", "left"},
 				new boolean[] { true, true, true, true, true, true, true, true, true, true, true});
@@ -302,7 +302,7 @@ public class InstructorListBuilder {
 		// Create new table
 		PdfWebTable webTable = new PdfWebTable(cols, "Instructor List",
 				null,
-				new String[] { "ID", "Name", "Position", "Designator", "Note", "Preferences\nTime",
+				new String[] { "External Id", "Name", "Position", "Designator", "Note", "Preferences\nTime",
 						"\nRoom", "\nDistribution", "Class\nAssignments", "Exam\nAssignments" }, 
 				new String[] { "left", "left", "left", "left", "left", "left", "left", "left", "left", "left" },
 				new boolean[] { true, true, true, true, true, true, true, true, true, true });

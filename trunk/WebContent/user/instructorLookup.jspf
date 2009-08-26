@@ -58,7 +58,7 @@
 						<table align='left' border='0'>
 							<tr>
 								<td></td>
-								<td><i>ID</i></td>
+								<td><i>External Id</i></td>
 								<td><i>Name</i></td>
 								<td><i>Login</i></td>
 							</tr>
@@ -102,7 +102,7 @@
 						<table align='left' border='0'>
 							<tr>
 								<td></td>
-								<td><i>ID</i></td>
+								<td><i>External Id</i></td>
 								<td><i>Name</i></td>
 								<td><i>Department</i></td>
 								<td><i>Position</i></td>
