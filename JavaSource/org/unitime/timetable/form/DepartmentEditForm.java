@@ -57,25 +57,51 @@ public class DepartmentEditForm extends ActionForm {
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 		ActionErrors errors = new ActionErrors();
 		
-        if(iName==null || iName.equalsIgnoreCase("")) {
+        if(iName==null || iName.trim().equalsIgnoreCase("")) {
         	errors.add("name", new ActionMessage("errors.required", "Name") );
         }
-
+        if(iName!=null && iName.trim().length() > 100) {
+        	errors.add("name", new ActionMessage("errors.maxlength", "Name", "100") );
+        }
         
-        if (iAbbv==null || iAbbv.equalsIgnoreCase("")) {
+        if (iAbbv==null || iAbbv.trim().equalsIgnoreCase("")) {
         	errors.add("abbv", new ActionMessage("errors.required", "Abbreviation") );
         }
+        
+        if (iAbbv!=null && iAbbv.trim().length() > 20) {
+        	errors.add("abbv", new ActionMessage("errors.maxlength", "Abbreviation", "20") );
+        }
 
-        if (iDeptCode==null || iDeptCode.equalsIgnoreCase("")) {
+        if (iDeptCode==null || iDeptCode.trim().equalsIgnoreCase("")) {
         	errors.add("deptCode", new ActionMessage("errors.required", "Number") );
         }
         
+        if (iDeptCode!=null && iDeptCode.trim().length() > 50) {
+        	errors.add("deptCode", new ActionMessage("errors.maxlength", "Number", "50") );
+        }
+
         if (iIsExternal && (iExtName==null || iExtName.trim().length()==0)) {
         	errors.add("extName", new ActionMessage("errors.required", "External Manager Name") );
+        }
+        
+        if (!iIsExternal && iExtName!=null && iExtName.trim().length() > 0){ 	
+        	errors.add("extName", new ActionMessage("errors.generic", "External Manager Name should only be used when the department is marked as 'External Manager'") );
+        }
+        
+        if (iIsExternal && (iExtName!=null && iExtName.trim().length() > 30)) {
+        	errors.add("extName", new ActionMessage("errors.maxlength", "External Manager Name", "30") );
         }
 
         if (iIsExternal && (iExtAbbv==null || iExtAbbv.trim().length()==0)) {
         	errors.add("extAbbv", new ActionMessage("errors.required", "External Manager Abbreviation") );
+        }
+        
+        if (!iIsExternal && iExtAbbv!=null && iExtAbbv.trim().length() > 0){
+        	errors.add("extName", new ActionMessage("errors.generic", "External Manager Abbreviation should only be used when the department is marked as 'External Manager'") );      	
+        }
+        
+        if (iIsExternal && (iExtAbbv!=null && iExtAbbv.trim().length() > 10)) {
+        	errors.add("extAbbv", new ActionMessage("errors.maxlength", "External Manager Abbreviation", "10") );
         }
 
         try {
