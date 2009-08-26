@@ -170,7 +170,7 @@
 						<logic:notEmpty name="<%=frmName%>" property="assignedInstr">
 						<TR align="center">
 							<TD> &nbsp;</TD>
-							<TD align="left"><I>ID</I></TD>
+							<TD align="left"><I>External Id</I></TD>
 							<TD align="left"><I>Name</I></TD>
 						</TR>
 							
@@ -276,7 +276,7 @@
 						<logic:notEmpty name="<%=frmName%>" property="availableInstr">
 						<TR align="center">
 							<TD> &nbsp;</TD>
-							<TD align="left"><I>ID</I></TD>
+							<TD align="left"><I>External Id</I></TD>
 							<TD align="left"><I>Name</I></TD>
 						</TR>
 							

@@ -120,7 +120,7 @@
 		</logic:messagesPresent>
 		
 		<TR>
-			<TD>ID:</TD><TD> <bean:write name="<%=frmName%>" property="puId" /></TD>
+			<TD>External Id:</TD><TD> <bean:write name="<%=frmName%>" property="puId" /></TD>
 		</TR>
 		<TR>
 			<TD>Account Name:</TD><TD> <bean:write name="<%=frmName%>" property="careerAcct" /></TD>
