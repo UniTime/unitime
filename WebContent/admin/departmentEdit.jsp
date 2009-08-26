@@ -109,7 +109,7 @@
 		<TR>
 			<TD width='10%'>Number:</TD>
 			<TD>
-				<html:text property="deptCode" size="4" maxlength="4"/>
+				<html:text property="deptCode" size="50" maxlength="50"/>
 			</TD>
 		</TR>
 		
@@ -123,7 +123,7 @@
 		<TR>
 			<TD>Name:</TD>
 			<TD>
-				<html:text property="name" size="50" maxlength="50"/>
+				<html:text property="name" size="100" maxlength="100"/>
 			</TD>
 		</TR>
 
@@ -140,7 +140,7 @@
 		<TR>
 			<TD>External ID:</TD>
 			<TD>
-				<html:text property="externalId" size="50" maxlength="50"/>
+				<html:text property="externalId" size="40" maxlength="40"/>
 			</TD>
 		</TR>
 		<TR>
@@ -166,7 +166,7 @@
 		<TR>
 			<TD nowrap>External Manager Name:</TD>
 			<TD>
-				<html:text property="extName" size="50" maxlength="50"/>
+				<html:text property="extName" size="30" maxlength="30"/>
 			</TD>
 		</TR>
 
