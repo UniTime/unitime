@@ -32,7 +32,25 @@
 
 		<%= JavascriptFunctions.getJsConfirm(Web.getUser(session)) %>
 		
+		function confirmNumClasses(numClasses) {
+			/*integer maxNumClasses = 0;
+			for (integer i = 1; i < document.forms[0].elements['nc'].length; i++){
+			  if (maxNumClasses < document.forms[0].elements['nc' + i].value){
+			    maxNumClasses = document.forms[0].elements['nc' + i].value;
+			  }
+			}
+			  figure out max number of classes */
+		    if(numClasses > 600) {
+				if (!confirmDelete('This will create ' + numClasses + ' classes.  Continue?')){
+			        return(false);
+				}
+			}
+		    return(true);
+		}
 		function confirmDelete1() {
+		   /* if (!confirmNumClasses()){
+		        return(false);
+		    } */
 			return confirmDelete('This operation may result in deletion of existing subparts/classes . Continue?');
 		}
 
@@ -103,7 +121,7 @@
 						<logic:equal name="subpartsExist" scope="request" value="true">
 							<html:submit property="op" 
 								styleClass="btn" accesskey="S" titleKey="title.saveConfig" 
-								onclick="document.forms[0].elements['click'].value='y'; return true;">			
+								onclick="if (confirmNumClasses()) {document.forms[0].elements['click'].value='y'; return true; } else {return false; }">			
 								<bean:message key="button.saveConfig" />
 							</html:submit>						
 						</logic:equal>
@@ -228,7 +246,7 @@
 					<logic:equal name="subpartsExist" scope="request" value="true">
 						<html:submit property="op" 
 							styleClass="btn" accesskey="S" titleKey="title.saveConfig" 
-							onclick="document.forms[0].elements['click'].value='y'; return true;">			
+							onclick="if (confirmNumClasses()) {document.forms[0].elements['click'].value='y'; return true; } else {return false; }">			
 							<bean:message key="button.saveConfig" />
 						</html:submit>						
 					</logic:equal>
