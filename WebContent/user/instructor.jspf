@@ -82,7 +82,7 @@
 		</logic:messagesPresent>
 		
 		<TR>
-			<TD>ID:</TD>
+			<TD>External Id:</TD>
 			<TD>
 				<bean:write name="<%=frmName%>"  property="puId" />	
 				<html:hidden name="<%=frmName%>"  property="puId" styleId="uid"/>
