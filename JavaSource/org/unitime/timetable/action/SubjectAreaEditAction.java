@@ -37,7 +37,10 @@ import org.hibernate.Transaction;
 import org.unitime.commons.User;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.commons.web.Web;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.SubjectAreaEditForm;
+import org.unitime.timetable.interfaces.ExternalClassEditAction;
+import org.unitime.timetable.interfaces.ExternalCourseOfferingRemoveAction;
 import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.ClassInstructor;
@@ -197,7 +200,17 @@ public class SubjectAreaEditAction extends Action {
 			hibSession = sdao.getSession();
 			tx = hibSession.beginTransaction();
 			
+        	String className = ApplicationProperties.getProperty("tmtbl.external.course_offering.remove_action.class");
 			SubjectArea sa = sdao.get(frm.getUniqueId());
+
+			if (className != null && className.trim().length() > 0){
+        		ExternalCourseOfferingRemoveAction removeAction = (ExternalCourseOfferingRemoveAction) (Class.forName(className).newInstance());
+    			for (Iterator i = sa.getCourseOfferings().iterator(); i.hasNext(); ) {
+    	        	CourseOffering co = (CourseOffering) i.next();
+    	        	removeAction.performExternalCourseOfferingRemoveAction(co, hibSession);
+    	        }   		
+        	}
+
 			Set s = sa.getInstructionalOfferings();
 			for (Iterator i = s.iterator(); i.hasNext();) {
 				InstructionalOffering io = (InstructionalOffering) i.next();
@@ -262,6 +275,7 @@ public class SubjectAreaEditAction extends Action {
 				sa = new SubjectArea();
 			
 			Department dept = ddao.get(frm.getDepartment());
+            HashSet<Class_> updatedClasses = new HashSet<Class_>();
 			
 			sa.setSession(
 					org.unitime.timetable.model.Session.getCurrentAcadSession(
@@ -344,6 +358,7 @@ public class SubjectAreaEditAction extends Action {
                                     }
 	                            }
 	                            hibSession.saveOrUpdate(c);
+                                updatedClasses.add(c);
 	                        }
 	                    }
 	                }
@@ -401,6 +416,13 @@ public class SubjectAreaEditAction extends Action {
 			if (oldDept!=null) {
 			    hibSession.refresh(oldDept); hibSession.refresh(sa.getDepartment());
 			}
+            String className = ApplicationProperties.getProperty("tmtbl.external.class.edit_action.class");
+        	if (className != null && className.trim().length() > 0){
+            	ExternalClassEditAction editAction = (ExternalClassEditAction) (Class.forName(className).newInstance());
+            	for(Class_ c : updatedClasses){
+            		editAction.performExternalClassEditAction(c, hibSession);
+            	}
+        	}		
 		}
 		catch (Exception e) {
 			if (tx!=null)
