@@ -127,11 +127,16 @@ public class TimetableManagerBuilder {
 		        ManagerRole mgrRole = (ManagerRole) i.next();
                 String roleRef = mgrRole.getRole().getReference(); 
 		        String title = roleRef;
+		        boolean receivesEmail = (mgrRole.isReceiveEmails() == null?false:mgrRole.isReceiveEmails().booleanValue());
                 if (images && html) {
                     String border = "0";
                     if(mgrRoles.size()>1 && mgrRole.isPrimary().booleanValue()) {
                         border="1";
-                        title = mgrRole.getRole().getReference() + " - Primary Role";
+                        title += " - Primary Role";
+                    }
+                    if (!receivesEmail){
+                    	title += ", * No Email for this Role";
+                    	border="1";
                     }
                     roleStr += "<IMG height='25' width='25' border='" + border + "'" +
                         "src='" + request.getContextPath() + "/images/" + Roles.getRoleIcon(roleRef) + "' " +
@@ -141,9 +146,9 @@ public class TimetableManagerBuilder {
                 } else {
                     if (roleStr.length()>0) roleStr+=","+(html?"<br>":"\n");
                     if (mgrRoles.size()>1 && mgrRole.isPrimary().booleanValue()) {
-                        roleStr += (html?"<span title='"+roleRef+" - Primary Role' style='font-weight:bold;'>"+roleRef+"</span>":"@@BOLD "+roleRef+"@@END_BOLD ");
+                        roleStr += (html?"<span title='"+roleRef+" - Primary Role" + (receivesEmail?"":", * No Email for this Role")+"' style='font-weight:bold;'>"+roleRef + (receivesEmail?"":"*") +"</span>":"@@BOLD "+roleRef + (receivesEmail?"":"*")+"@@END_BOLD ");
                     } else {
-                        roleStr += roleRef;
+                        roleStr += (html?(!receivesEmail?"<span title='"+roleRef + (receivesEmail?"":", * No Email for this Role")+"' style='font-weight:normal;'>"+roleRef + (receivesEmail?"":"*") +"</span>": roleRef):roleRef + (receivesEmail?"":"*"));
                     }
                 }
 		        roleOrd += title;

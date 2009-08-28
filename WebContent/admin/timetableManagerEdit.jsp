@@ -317,6 +317,9 @@
 							&nbsp;
 						</TD>
 						<TD>
+							Receive Emails
+						</TD>
+						<TD>
 							&nbsp;
 						</TD>
 					</TR>
@@ -337,6 +340,9 @@
 							<html:hidden styleId='<%= "role" + ctr %>' property='<%= "roles[" + ctr + "]" %>' />
 							<html:hidden property='<%= "roleRefs[" + ctr + "]" %>' />
 							<bean:write name="mgrForm" property='<%= "roleRefs[" + ctr + "]" %>' />
+						</TD>
+						<TD align="center">
+						    <html:checkbox property='<%= "roleReceiveEmailFlags[" + ctr + "]" %>'></html:checkbox>
 						</TD>
 						<TD align="right">
 							&nbsp; 
