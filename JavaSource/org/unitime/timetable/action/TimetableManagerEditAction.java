@@ -165,7 +165,8 @@ public class TimetableManagerEditAction extends Action {
             frm.addToRoles(role); 
             if (frm.getRoles().size()==1)
                 frm.setPrimaryRole(role.getRoleId().toString());
-        }
+            frm.getRoleReceiveEmailFlags().add(new Boolean(true));
+      }
         
         // Add Department
         if (op.equalsIgnoreCase(rsc.getMessage("button.addDepartment"))) {
@@ -378,6 +379,7 @@ public class TimetableManagerEditAction extends Action {
             frm.addToRoles(role);
             if (mgrRole.isPrimary().booleanValue())
                 frm.setPrimaryRole(role.getRoleId().toString());
+            frm.getRoleReceiveEmailFlags().add(mgrRole.isReceiveEmails() == null? new Boolean(false): mgrRole.isReceiveEmails());
         }
 
         User user = Web.getUser(request.getSession());    
@@ -437,6 +439,8 @@ public class TimetableManagerEditAction extends Action {
         
         // Add Roles
         List roles = frm.getRoles();
+        List roleReceiveEmails = frm.getRoleReceiveEmailFlags();
+        Iterator receiveEmailIt = roleReceiveEmails.iterator();
        	for (Iterator i=roles.iterator(); i.hasNext(); ) {
        	    Roles role = rDao.get(new Long(i.next().toString()));
        	    ManagerRole mgrRole = new ManagerRole();
@@ -446,6 +450,12 @@ public class TimetableManagerEditAction extends Action {
        	        mgrRole.setPrimary(new Boolean(true));
        	    else
        	        mgrRole.setPrimary(new Boolean(false));
+       	    if (receiveEmailIt.hasNext()){
+       	    	Boolean receiveEmails = (Boolean) receiveEmailIt.next();
+       	    	mgrRole.setReceiveEmails(receiveEmails);
+       	    } else {
+       	    	mgrRole.setReceiveEmails(new Boolean(false));
+       	    }
        	    
        	    mgr.addTomanagerRoles(mgrRole);
        	}        
@@ -521,13 +531,21 @@ public class TimetableManagerEditAction extends Action {
 
         // Update Roles
         List roles = frm.getRoles();
+        List roleReceiveEmails = frm.getRoleReceiveEmailFlags();
         Set mgrRoles = mgr.getManagerRoles();
         if (mgrRoles==null)
             mgrRoles = new HashSet();
         
         // Check if roles added or updated
+        Iterator receiveEmailIt = roleReceiveEmails.iterator();
        	for (Iterator i=roles.iterator(); i.hasNext(); ) {
        	    Roles role = rDao.get(new Long(i.next().toString()));
+       	    Boolean receiveEmail = new Boolean(false);
+       	    if (receiveEmailIt.hasNext()){
+       	    	String str = (String)receiveEmailIt.next();
+       	    	str = (str == null?"false":(str.equalsIgnoreCase("on")?"true":str));
+       	    	receiveEmail = new Boolean(str);
+       	    }
        	    boolean found = false;
        	    
        	    // Check if role already exists
@@ -543,8 +561,11 @@ public class TimetableManagerEditAction extends Action {
                	        eMgrRole.setPrimary(new Boolean(false));
                	    
                	    found = true;
-               	    break;
+               	    eMgrRole.setReceiveEmails(receiveEmail);
+              	    break;
+               	    
            	    }
+           	    
            	}       	  
            	
            	// Role does not exist - add  
@@ -556,7 +577,7 @@ public class TimetableManagerEditAction extends Action {
 	       	        mgrRole.setPrimary(new Boolean(true));
 	       	    else
 	       	        mgrRole.setPrimary(new Boolean(false));
-	       	    
+	       	    mgrRole.setReceiveEmails(receiveEmail);
 	       	    mgr.addTomanagerRoles(mgrRole);
            	}           	
        	}        

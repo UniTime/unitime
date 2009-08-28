@@ -69,6 +69,7 @@ public class TimetableManagerForm extends ActionForm {
     private List deptLabels;
     private List roles;
     private List roleRefs;
+    private List roleReceiveEmailFlags;
     private List solverGrs;
     private List solverGrLabels;
     private Boolean isExternalManager;
@@ -99,6 +100,13 @@ public class TimetableManagerForm extends ActionForm {
 
     /** Factory to create dynamic list element for role refs */
     protected DynamicListObjectFactory factoryRoleRefs = new DynamicListObjectFactory() {
+        public Object create() {
+            return new String(Preference.BLANK_PREF_VALUE);
+        }
+    };
+
+    /** Factory to create dynamic list element for role receive email flags */
+    protected DynamicListObjectFactory factoryRoleReceiveEmailFlags = new DynamicListObjectFactory() {
         public Object create() {
             return new String(Preference.BLANK_PREF_VALUE);
         }
@@ -139,6 +147,7 @@ public class TimetableManagerForm extends ActionForm {
         deptLabels = DynamicList.getInstance(new ArrayList(), factoryDeptLabels);
         roles= DynamicList.getInstance(new ArrayList(), factoryRoles);
         roleRefs= DynamicList.getInstance(new ArrayList(), factoryRoleRefs);
+        roleReceiveEmailFlags = DynamicList.getInstance(new ArrayList(), factoryRoleReceiveEmailFlags);
         solverGrs = DynamicList.getInstance(new ArrayList(), factorySolverGrs);
         solverGrLabels = DynamicList.getInstance(new ArrayList(), factorySolverGrLabels);
         
@@ -221,11 +230,14 @@ public class TimetableManagerForm extends ActionForm {
     public void addToRoles (Roles role) {
         roles.add(role.getRoleId());
         roleRefs.add(role.getAbbv());
-    }
+     }
     
     public void removeFromRoles (int index) {
         roles.remove(index);
         roleRefs.remove(index);
+        if (index < roleReceiveEmailFlags.size()){
+        	roleReceiveEmailFlags.remove(index);
+        }
     }
     
     public void addToDepts (Department dept) {
@@ -430,6 +442,18 @@ public class TimetableManagerForm extends ActionForm {
 
 	public void setLookupEnabled(Boolean lookupEnabled) {
 		this.lookupEnabled = lookupEnabled;
+	}
+
+	public List getRoleReceiveEmailFlags() {
+		return roleReceiveEmailFlags;
+	}
+	
+    public void setRoleReceiveEmailFlags(int key, Object value) {
+        this.roleReceiveEmailFlags.set(key, value);
+    }
+
+	public void setRoleReceiveEmailFlags(List roleReceiveEmailFlags) {
+		this.roleReceiveEmailFlags = roleReceiveEmailFlags;
 	}
     
 }
