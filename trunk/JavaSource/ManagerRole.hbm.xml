@@ -59,6 +59,13 @@
 			not-null="true"
 			foreign-key="FK_TMTBL_MGR_MANAGER"
 		/>
+		<property
+			name="receiveEmails"
+			column="receive_emails"
+			type="java.lang.Boolean"
+			not-null="false"
+		/>
+			
 					
 	</class>	
 </hibernate-mapping>

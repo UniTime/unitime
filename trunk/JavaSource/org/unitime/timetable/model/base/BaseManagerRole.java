@@ -1,6 +1,6 @@
 /*
  * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * Copyright (C) 2008-2009, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -35,6 +35,7 @@ public abstract class BaseManagerRole  implements Serializable {
 
 	public static String REF = "ManagerRole";
 	public static String PROP_PRIMARY = "primary";
+	public static String PROP_RECEIVE_EMAILS = "receiveEmails";
 
 
 	// constructors
@@ -75,6 +76,7 @@ public abstract class BaseManagerRole  implements Serializable {
 
 	// fields
 	private java.lang.Boolean primary;
+	private java.lang.Boolean receiveEmails;
 
 	// many to one
 	private org.unitime.timetable.model.Roles role;
@@ -85,7 +87,7 @@ public abstract class BaseManagerRole  implements Serializable {
 	/**
 	 * Return the unique identifier of this class
      * @hibernate.id
-     *  generator-class="sequence"
+     *  generator-class="org.unitime.commons.hibernate.id.UniqueIdGenerator"
      *  column="UNIQUEID"
      */
 	public java.lang.Long getUniqueId () {
@@ -105,18 +107,35 @@ public abstract class BaseManagerRole  implements Serializable {
 
 
 	/**
-	 * Return the value associated with the column: PRIMARY
+	 * Return the value associated with the column: IS_PRIMARY
 	 */
 	public java.lang.Boolean isPrimary () {
 		return primary;
 	}
 
 	/**
-	 * Set the value related to the column: PRIMARY
-	 * @param primary the PRIMARY value
+	 * Set the value related to the column: IS_PRIMARY
+	 * @param primary the IS_PRIMARY value
 	 */
 	public void setPrimary (java.lang.Boolean primary) {
 		this.primary = primary;
+	}
+
+
+
+	/**
+	 * Return the value associated with the column: receive_emails
+	 */
+	public java.lang.Boolean isReceiveEmails () {
+		return receiveEmails;
+	}
+
+	/**
+	 * Set the value related to the column: receive_emails
+	 * @param receiveEmails the receive_emails value
+	 */
+	public void setReceiveEmails (java.lang.Boolean receiveEmails) {
+		this.receiveEmails = receiveEmails;
 	}
 
 
