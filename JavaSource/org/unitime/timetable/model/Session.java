@@ -158,12 +158,14 @@ public class Session extends BaseSession implements Comparable {
 	}
 	
 	public static Session defaultSession() throws HibernateException {
-	    return defaultSession(getAllSessions());
+	    return defaultSession(getAllSessions(), null);
 	}
 	
 	public static Set availableSessions(ManagerRole role) {
+		if (role == null || role.getRole() == null)
+			return getAllSessions();
 	    if (Roles.ADMIN_ROLE.equals(role.getRole().getReference()))
-	        return getAllSessions();
+	    	return getAllSessions();
 	    Set sessions = role.getTimetableManager().sessionsCanManage();
 	    if (Roles.VIEW_ALL_ROLE.equals(role.getRole().getReference()) && sessions.isEmpty())
 	        return getAllSessions();
@@ -173,16 +175,19 @@ public class Session extends BaseSession implements Comparable {
 	}
 
     public static Session defaultSession(ManagerRole role) throws HibernateException {
-        return defaultSession(availableSessions(role));
+        return defaultSession(availableSessions(role), role.getRole());
     }
 
-    public static Session defaultSession(Set sessions) throws HibernateException {
+    public static Session defaultSession(Set sessions, Roles role) throws HibernateException {
         if (sessions==null || sessions.isEmpty()) return null; // no session -> no default
         TreeSet orderedSession = (sessions instanceof TreeSet?(TreeSet)sessions:new TreeSet(sessions));
         
         //try to pick among active sessions first (check that all active sessions are of the same initiative)
         String initiative = null;
         Session lastActive = null;
+        Session currentActive = null;
+        Session firstFutureSession = null;
+        long now = (new Date()).getTime();
         for (Iterator it = sessions.iterator();it.hasNext();) {
             Session session = (Session)it.next();
             if (session.getStatusType()==null || !session.getStatusType().isActive()) continue;
@@ -190,8 +195,44 @@ public class Session extends BaseSession implements Comparable {
                 initiative = session.getAcademicInitiative();
             else if (!initiative.equals(session.getAcademicInitiative()))
                 return null; // multiple initiatives -> no default
+            if (currentActive == null && session.getSessionBeginDateTime().getTime() < now && session.getSessionEndDateTime().getTime() > now){
+            		currentActive = session;
+            }
+            if (currentActive != null && firstFutureSession == null && currentActive.getUniqueId().longValue() != session.getUniqueId().longValue()){
+            	firstFutureSession = session;
+            }
+            if (currentActive == null && firstFutureSession == null && now < session.getSessionBeginDateTime().getTime()){
+            	firstFutureSession = session;
+            }
             lastActive = session;
         }
+        if (role == null || Roles.EVENT_MGR_ROLE.equals(role.getReference())  || Roles.VIEW_ALL_ROLE.equals(role.getReference()) || Roles.ADMIN_ROLE.equals(role.getReference())){
+        	if (currentActive != null){
+        		return(currentActive);
+        	}
+        	if (firstFutureSession != null){
+        		return(firstFutureSession);
+        	}
+        }
+        if (role != null){
+           	if (Roles.DEPT_SCHED_MGR_ROLE.equals(role.getReference())){
+        		if (firstFutureSession != null){
+        			return(firstFutureSession);
+        		}
+        		if (currentActive != null){
+        			return(currentActive);
+        		}
+         	} 
+           	if (Roles.EXAM_MGR_ROLE.equals(role.getReference())){
+           		if (currentActive != null && !currentActive.getStatusType().canNoRoleReportExamFinal()){
+           			return(currentActive);
+           		}
+           		if (firstFutureSession != null){
+           			return(firstFutureSession);
+           		}
+           	}
+        }
+                
         if (lastActive!=null) return lastActive; //return the last (most recent) active session
         
         //pick among all sessions (check that all sessions are of the same initiative)
@@ -231,7 +272,6 @@ public class Session extends BaseSession implements Comparable {
 	/**
 	 * @return Returns the label.
 	 */
-	//TODO: checked OK, tested OK
 	public String getLabel() {
 		return getAcademicTerm() + " " + getSessionStartYear() + 
 		    " ("+(getAcademicInitiative().length()>9?getAcademicInitiative().substring(0,9):getAcademicInitiative())+")";
@@ -392,14 +432,12 @@ public class Session extends BaseSession implements Comparable {
 	}
 
 	public Session getLastLikeSession() {
-		//TODO: checked OK, tested OK
 		String lastYr = new Integer(this.getSessionStartYear() - 1).toString();
 		return getSessionUsingInitiativeYearTerm(this.getAcademicInitiative(),
 				lastYr, getAcademicTerm());
 	}
 
 	public Session getNextLikeSession() {
-		//TODO: checked OK, tested OK
 		String nextYr = new Integer(this.getSessionStartYear() + 1).toString();
 		return getSessionUsingInitiativeYearTerm(this.getAcademicInitiative(),
 				nextYr, getAcademicTerm());
@@ -473,14 +511,12 @@ public class Session extends BaseSession implements Comparable {
 		return(getEventEndDate()!=null&&getEventEndDate().after(getSessionEndDateTime())?getEventEndDate():getSessionEndDateTime());
 	}
 
-	//TODO: checked OK, tested OK
 	public int getStartMonth() {		
 		return DateUtils.getStartMonth(
 		        earliestSessionRelatedDate(),
 		        getSessionStartYear(), sNrExcessDays);
 	}
 
-	//TODO: checked OK, tested OK
 	public int getEndMonth() {
 		return DateUtils.getEndMonth(
 		        latestSessionRelatedDate(), getSessionStartYear(), sNrExcessDays);
@@ -494,7 +530,6 @@ public class Session extends BaseSession implements Comparable {
 		return getHoliday(day, month, getSessionStartYear(), getStartMonth(), getHolidays());
 	}
 	
-	//TODO: checked OK, tested OK for Session Edit Page
 	public static int getHoliday(int day, int month, int year, int startMonth, String holidays) {
 		try {
 			if (holidays == null)
@@ -513,7 +548,6 @@ public class Session extends BaseSession implements Comparable {
 		return getHolidaysHtml(true);
 	}
 
-	//TODO: checked OK, tested OK
 	public String getHolidaysHtml(boolean editable) {
 		return getHolidaysHtml(getSessionBeginDateTime(), getSessionEndDateTime(), getClassesEndDateTime(), getExamBeginDate(), getEventBeginDate(), getEventEndDate(), getSessionStartYear(), getHolidays(), editable);
 	}
@@ -628,7 +662,6 @@ public class Session extends BaseSession implements Comparable {
 		super.setHolidays(holidays);
 	}
 
-	//TODO: checked OK, tested OK
 	public void setHolidays(HttpServletRequest request) {
 		int startMonth = getStartMonth();
 		int endMonth = getEndMonth();
@@ -641,7 +674,6 @@ public class Session extends BaseSession implements Comparable {
 			int year = DateUtils.calculateActualYear(m, startYear);
 			int daysOfMonth = DateUtils.getNrDaysOfMonth(m, year);
 			for (int d = 1; d <= daysOfMonth; d++) {
-				//TODO: checked OK, tested OK
 				String holiday = request.getParameter("cal_val_" + year + "_"
 						+ ((12 + m) % 12) + "_" + d);
 				sb.append(holiday == null ? String.valueOf(sHolidayTypeNone)
@@ -677,7 +709,6 @@ public class Session extends BaseSession implements Comparable {
 		sessionBeginDate.setTime(getSessionBeginDateTime());
 		Calendar sessionEndDate = Calendar.getInstance(Locale.US);
 		sessionEndDate.setTime(getSessionEndDateTime());
-		//TODO: checked OK, tested OK
 		int beginDay = getDayOfYear(
 				sessionBeginDate.get(Calendar.DAY_OF_MONTH), sessionBeginDate
 						.get(Calendar.MONTH))
