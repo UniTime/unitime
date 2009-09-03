@@ -216,7 +216,7 @@ public class EventAddForm extends ActionForm {
 		if (iSessionId==null) {
 		    TreeSet<Session> sessions = Session.getAllSessions();
 		    if (!sessions.isEmpty()) {
-		        Session s = Session.defaultSession(sessions);
+		        Session s = Session.defaultSession(sessions, null);
 		        iSessionId = (s==null?sessions.last().getUniqueId():s.getUniqueId());
 		    }
 		}
@@ -343,7 +343,6 @@ public class EventAddForm extends ActionForm {
 	public String getDatesTable(boolean disblePast) {
         if (iSessionId==null) return null;
 		Session s = Session.getSessionById(iSessionId);
-		//TODO: checked OK, tested OK
         int year = s.getSessionStartYear();
         Calendar today = Calendar.getInstance();
         today.setTime(s.getEventEndDate());
