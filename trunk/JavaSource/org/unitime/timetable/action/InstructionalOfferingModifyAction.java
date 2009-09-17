@@ -70,6 +70,8 @@ import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
+import org.unitime.timetable.solver.ClassAssignmentProxy;
+import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 
@@ -274,13 +276,13 @@ public class InstructionalOfferingModifyAction extends Action {
 
         ArrayList subpartList = new ArrayList(ioc.getSchedulingSubparts());
         Collections.sort(subpartList, new SchedulingSubpartComparator());
-
+        ClassAssignmentProxy proxy = WebSolver.getClassAssignmentProxy(request.getSession());
         for(Iterator it = subpartList.iterator(); it.hasNext();){
         	SchedulingSubpart ss = (SchedulingSubpart) it.next();
     		if (ss.getClasses() == null || ss.getClasses().size() == 0)
     			throw new Exception("Initial setup of Instructional Offering Config has not been completed.");
     		if (ss.getParentSubpart() == null){
-        		loadClasses(frm, user, ss.getClasses(), new Boolean(true), new String());
+        		loadClasses(frm, user, ss.getClasses(), new Boolean(true), new String(), proxy);
         	}
         }
         frm.initializeOrigSubparts();
@@ -290,7 +292,7 @@ public class InstructionalOfferingModifyAction extends Action {
         frm.initializeDisplayAllClassInstructors();
     }
 
-    private void loadClasses(InstructionalOfferingModifyForm frm, User user, Set classes, Boolean isReadOnly, String indent){
+    private void loadClasses(InstructionalOfferingModifyForm frm, User user, Set classes, Boolean isReadOnly, String indent, ClassAssignmentProxy proxy){
     	if (classes != null && classes.size() > 0){
     		ArrayList classesList = new ArrayList(classes);
             Collections.sort(classesList, new ClassComparator(ClassComparator.COMPARE_BY_ITYPE) );
@@ -308,8 +310,8 @@ public class InstructionalOfferingModifyAction extends Action {
 	    		} else {
 	    			readOnlyClass = new Boolean(!cls.isEditableBy(user));
 	    		}
-	    		frm.addToClasses(cls, readOnlyClass, indent);
-	    		loadClasses(frm, user, cls.getChildClasses(), new Boolean(true), indent + "&nbsp;&nbsp;&nbsp;&nbsp;");
+				frm.addToClasses(cls, readOnlyClass, indent, proxy, user);
+	    		loadClasses(frm, user, cls.getChildClasses(), new Boolean(true), indent + "&nbsp;&nbsp;&nbsp;&nbsp;", proxy);
 	    	}
     	}
     }

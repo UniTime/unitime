@@ -167,8 +167,8 @@ public class ClassInstructorAssignmentForm extends ActionForm {
 			if(i == 0) {
 				this.classLabels.add(cls.htmlLabel());
 				this.showDisplay.add(new Boolean(true));
-				this.times.add(buildAssignedTime(cls, true));
-				this.rooms.add(buildAssignedRoom(cls, true));
+				this.times.add(cls.buildAssignedTimeHtml(getProxy()));
+				this.rooms.add(cls.buildAssignedRoomHtml(getProxy()));
 			}
 			else {
 				this.classLabels.add("");
@@ -196,53 +196,6 @@ public class ClassInstructorAssignmentForm extends ActionForm {
 			this.allowDeletes.add(new Boolean(instructors.size() > 1));
 		} while (++i < instructors.size());
 	}
-
-    private String buildAssignedTime(Class_ aClass, boolean isEditable){
-    		Assignment a = null;
-    		AssignmentPreferenceInfo info = null;
-			StringBuffer sb = new StringBuffer();
-    		try {
-    			a = getProxy().getAssignment(aClass);
-    			info = getProxy().getAssignmentInfo(aClass);
-    		} catch (Exception e) {
-    			Debug.error(e);
-    		}
-    		if (a!=null) {
-   				IntEnumeration e = a.getTimeLocation().getDays();
-   				while (e.hasMoreElements()){
-   					sb.append(Constants.DAY_NAMES_SHORT[(int)e.nextInt()]);
-   				}
-   				sb.append(" ");
-   				sb.append(a.getTimeLocation().getStartTimeHeader());
-   				sb.append("-");
-   				sb.append(a.getTimeLocation().getEndTimeHeader());
-    		} else {
-    			sb.append("");
-    		}
-        return(sb.toString());
-    }
-
-    private String buildAssignedRoom(Class_ aClass, boolean isEditable){
-		Assignment a = null;
-		AssignmentPreferenceInfo info = null;
-		StringBuffer sb = new StringBuffer();
-		try {
-			a= getProxy().getAssignment(aClass);
-			info = getProxy().getAssignmentInfo(aClass);
-		} catch (Exception e) {
-			Debug.error(e);
-		}
-		if (a!=null) {
-    		Iterator it2 = a.getRooms().iterator();
-    		while (it2.hasNext()){
-    			Location room = (Location)it2.next();
-    			sb.append(room.getLabel());
-    		}	
-		} else {
-			sb.append("");
-		}
-        return(sb.toString());
-    }
 
 	public void deleteInstructor() {
 		int index = Integer.parseInt(deletedInstrRowNum);

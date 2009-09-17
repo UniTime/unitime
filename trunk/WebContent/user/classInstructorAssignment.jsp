@@ -124,10 +124,12 @@
 						<TD align="center" valign="bottom" rowspan="2"> &nbsp;</TD>
 						<TD align="center" valign="bottom" rowspan="2"><I>Name</I></TD>
 						<TD align="center" valign="bottom" rowspan="2"><I>% Share</I></TD>
-						<TD align="center" valign="bottom" rowspan="2"><I>&nbsp;Check Conflicts&nbsp;&nbsp;</I></TD>
-						<TD align="center" valign="bottom"><I>Display</I></TD>
+						<TD align="center" valign="bottom" rowspan="2"><I>&nbsp;Check<br>Conflicts&nbsp;&nbsp;</I></TD>
+						<TD align="center" valign="bottom"><I>Display&nbsp;</I></TD>
 						<TD align="center" valign="bottom" rowspan="2"><I>Time</I></TD>
+						<TD rowspan="2">&nbsp;</TD>
 						<TD align="center" valign="bottom" rowspan="2"><I>Room</I></TD>
+						<TD rowspan="2">&nbsp;</TD>
 						<TD rowspan="2">&nbsp;</TD>
 						<TD rowspan="2">&nbsp;</TD>
 					</TR>
@@ -139,11 +141,11 @@
 
 					<logic:iterate name="<%=frmName%>" property="classIds" id="c" indexId="ctr">
 					<TR onmouseover="this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='default';" onmouseout="this.style.backgroundColor='transparent';">
-						<TD nowrap><html:hidden property='<%= "classIds[" + ctr + "]" %>'/><html:hidden property='<%= "classLabels[" + ctr + "]" %>'/><html:hidden property='<%= "classLabelIndents[" + ctr + "]" %>'/><html:hidden property='<%= "rooms[" + ctr + "]" %>'/><html:hidden property='<%= "times[" + ctr + "]" %>'/><html:hidden property='<%= "allowDeletes[" + ctr + "]" %>'/><html:hidden property='<%= "readOnlyClasses[" + ctr + "]" %>'/><html:hidden property='<%= "classHasErrors[" + ctr + "]" %>'/><html:hidden name="<%=frmName%>" property='<%= "showDisplay[" + ctr + "]" %>' /> &nbsp;</TD>
-						<TD nowrap><logic:equal name="<%=frmName%>" property='<%= "classHasErrors[" + ctr + "]" %>' value="true" ><IMG src="images/Error16.jpg"></logic:equal><logic:equal name="<%=frmName%>" property='<%= "classHasErrors[" + ctr + "]" %>' value="false" >&nbsp;</logic:equal></TD>
-						<TD nowrap><%=frm.getClassLabelIndents().get(ctr.intValue()).toString()%><bean:write name="<%=frmName%>" property='<%= "classLabels[" + ctr + "]" %>'/> &nbsp;</TD>
+						<TD nowrap valign="top"><html:hidden property='<%= "classIds[" + ctr + "]" %>'/><html:hidden property='<%= "classLabels[" + ctr + "]" %>'/><html:hidden property='<%= "classLabelIndents[" + ctr + "]" %>'/><html:hidden property='<%= "rooms[" + ctr + "]" %>'/><html:hidden property='<%= "times[" + ctr + "]" %>'/><html:hidden property='<%= "allowDeletes[" + ctr + "]" %>'/><html:hidden property='<%= "readOnlyClasses[" + ctr + "]" %>'/><html:hidden property='<%= "classHasErrors[" + ctr + "]" %>'/><html:hidden name="<%=frmName%>" property='<%= "showDisplay[" + ctr + "]" %>' /> &nbsp;</TD>
+						<TD nowrap valign="top"><logic:equal name="<%=frmName%>" property='<%= "classHasErrors[" + ctr + "]" %>' value="true" ><IMG src="images/Error16.jpg"></logic:equal><logic:equal name="<%=frmName%>" property='<%= "classHasErrors[" + ctr + "]" %>' value="false" >&nbsp;</logic:equal></TD>
+						<TD nowrap valign="top"><%=frm.getClassLabelIndents().get(ctr.intValue()).toString()%><bean:write name="<%=frmName%>" property='<%= "classLabels[" + ctr + "]" %>'/> &nbsp;</TD>
 
-						<TD align="left" nowrap>
+						<TD align="left" valign="top" nowrap>
 						<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" >
 							<html:select style="width:200;" property='<%= "instructorUids[" + ctr + "]" %>' tabindex="<%=java.lang.Integer.toString(10000 + ctr.intValue())%>">
 							<html:option value="<%= Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
@@ -159,9 +161,9 @@
 							<html:hidden property='<%= "instructorUids[" + ctr + "]" %>'/>
 						</logic:equal></TD>
 						
-						<TD align="left" nowrap><logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" ><html:text name="<%=frmName%>" property='<%= "percentShares[" + ctr + "]" %>' tabindex="<%=java.lang.Integer.toString(4000 + ctr.intValue())%>" maxlength="5" size="5" onchange="<%= \"document.getElementsByName('classLabels[\" + ctr + \"]')[0].value=this.value\"%>"/></logic:equal><logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="true" ><html:hidden property='<%= "percentShares[" + ctr + "]" %>'/><logic:notEmpty name="<%=frmName%>" property='<%= "instructorUids[" + ctr + "]" %>'><bean:write name="<%=frmName%>" property='<%= "percentShares[" + ctr + "]" %>'/></logic:notEmpty></logic:equal></TD>
-						<TD align="center" nowrap><logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" ><html:checkbox name="<%=frmName%>" property='<%= "leadFlags[" + ctr + "]" %>' tabindex="<%=java.lang.Integer.toString(6000 + ctr.intValue())%>" onchange="<%= \"document.getElementsByName('classLabels[\" + ctr + \"]')[0].value=this.value\"%>"/></logic:equal><logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="true" ><html:hidden property='<%= "leadFlags[" + ctr + "]" %>'/><logic:notEmpty name="<%=frmName%>" property='<%= "instructorUids[" + ctr + "]" %>'><bean:write name="<%=frmName%>" property='<%= "leadFlags[" + ctr + "]" %>'/></logic:notEmpty></logic:equal></TD>
-						<TD align="center" nowrap>
+						<TD align="left" valign="top" nowrap><logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" ><html:text name="<%=frmName%>" property='<%= "percentShares[" + ctr + "]" %>' tabindex="<%=java.lang.Integer.toString(4000 + ctr.intValue())%>" maxlength="5" size="5" onchange="<%= \"document.getElementsByName('classLabels[\" + ctr + \"]')[0].value=this.value\"%>"/></logic:equal><logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="true" ><html:hidden property='<%= "percentShares[" + ctr + "]" %>'/><logic:notEmpty name="<%=frmName%>" property='<%= "instructorUids[" + ctr + "]" %>'><bean:write name="<%=frmName%>" property='<%= "percentShares[" + ctr + "]" %>'/></logic:notEmpty></logic:equal></TD>
+						<TD align="center" valign="top" nowrap><logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" ><html:checkbox name="<%=frmName%>" property='<%= "leadFlags[" + ctr + "]" %>' tabindex="<%=java.lang.Integer.toString(6000 + ctr.intValue())%>" onchange="<%= \"document.getElementsByName('classLabels[\" + ctr + \"]')[0].value=this.value\"%>"/></logic:equal><logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="true" ><html:hidden property='<%= "leadFlags[" + ctr + "]" %>'/><logic:notEmpty name="<%=frmName%>" property='<%= "instructorUids[" + ctr + "]" %>'><bean:write name="<%=frmName%>" property='<%= "leadFlags[" + ctr + "]" %>'/></logic:notEmpty></logic:equal></TD>
+						<TD align="center" valign="top" nowrap>
 							<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" >
 								<logic:equal name="<%=frmName%>" property='<%= "showDisplay[" + ctr + "]" %>' value="true" >
 									<html:checkbox name="<%=frmName%>" property='<%= "displayFlags[" + ctr + "]" %>' tabindex="<%=java.lang.Integer.toString(8000 + ctr.intValue())%>" onchange="<%= \"document.getElementsByName('classLabels[\" + ctr + \"]')[0].value=this.value\"%>"/>
@@ -171,16 +173,18 @@
 								<html:hidden property='<%= "displayFlags[" + ctr + "]" %>'/>
 									<bean:write name="<%=frmName%>" property='<%= "displayFlags[" + ctr + "]" %>'/>
 							</logic:equal></TD>
-						<TD align="left" nowrap><bean:write name="<%=frmName%>" property='<%= "times[" + ctr + "]" %>'/></TD>
-						<TD align="left" nowrap><bean:write name="<%=frmName%>" property='<%= "rooms[" + ctr + "]" %>'/></TD>
-						<TD align="center" nowrap>
+						<TD align="left" valign="top" nowrap>&nbsp;<bean:write name="<%=frmName%>" property='<%= "times[" + ctr + "]" %>'/></TD>
+						<TD>&nbsp;</TD>
+						<TD align="left" valign="top" nowrap><%= frm.getRooms().get(ctr)%></TD>
+						<TD>&nbsp;</TD>
+						<TD align="center" valign="top" nowrap>
 							<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" >
 								<logic:equal name="<%=frmName%>" property='<%= "allowDeletes[" + ctr + "]" %>' value="true" >
 								<A href="#null" onClick="document.forms[0].elements['hdnOp'].value='Delete';document.forms[0].elements['deletedInstrRowNum'].value='<%= ctr.toString() %>';document.forms[0].submit();">
 								<IMG border="0" src="images/Delete16.gif" title="Remove Instructor from Instructional Offering"></A>
 								</logic:equal>
 							</logic:equal></TD>
-						<TD align="center" nowrap> &nbsp;<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" ><A href="#null" onClick="document.forms[0].elements['hdnOp'].value='Add Instructor';document.forms[0].elements['addInstructorId'].value='<%= ctr.toString() %>';document.forms[0].submit();"><IMG border="0" src="images/Add16.gif" title="Add Instructor to Class Offering"></A></logic:equal></TD>
+						<TD align="center" valign="top" nowrap> &nbsp;<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" ><A href="#null" onClick="document.forms[0].elements['hdnOp'].value='Add Instructor';document.forms[0].elements['addInstructorId'].value='<%= ctr.toString() %>';document.forms[0].submit();"><IMG border="0" src="images/Add16.gif" title="Add Instructor to Class Offering"></A></logic:equal></TD>
 					</TR>
 					</logic:iterate>
 				</TABLE>
