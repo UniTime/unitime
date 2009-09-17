@@ -34,11 +34,13 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.util.MessageResources;
+import org.unitime.commons.User;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
+import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.util.DynamicList;
 import org.unitime.timetable.util.DynamicListObjectFactory;
 
@@ -89,6 +91,9 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 	private List displayAllClassesInSchedBookForSubpart;
 	private List displayAllClassesInstructorsForSubpart;
 	private List readOnlySubparts;
+	private List times;
+	private List rooms;
+	private List instructors;	
 	
 	private List classHasErrors;
 	private Long addTemplateClassId;
@@ -116,6 +121,9 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 	private static String DIRECTION_UP = "up";
 	private static String DIRECTION_DOWN = "down";
 	private static String SUBTOTAL_INDEXES_TOKEN = "subtotalIndexes";
+	private static String TIMES_TOKEN = "times";
+	private static String ROOMS_TOKEN = "rooms";
+	private static String INSTRUCTORS_TOKEN = "instructors";
 	
 
     // --------------------------------------------------------- Classes
@@ -471,7 +479,10 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     	classCanMoveUp = DynamicList.getInstance(new ArrayList(), factoryClasses);
     	classCanMoveDown = DynamicList.getInstance(new ArrayList(), factoryClasses);
     	readOnlySubparts = DynamicList.getInstance(new ArrayList(), factoryClasses);
-    }
+    	times = DynamicList.getInstance(new ArrayList(), factoryClasses);
+    	rooms = DynamicList.getInstance(new ArrayList(), factoryClasses);
+    	instructors = DynamicList.getInstance(new ArrayList(), factoryClasses);
+}
     
 //    private int numberOfClassesOfSubpartWithParentClassId(String parentClassId, String classSubpartId){
 //    	if (parentClassId == null || parentClassId.length() == 0 ||
@@ -818,6 +829,9 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		Iterator it15 = this.itypes.listIterator();
 		Iterator it16 = this.mustHaveChildClasses.listIterator();
 		Iterator it17 = this.enrollments.listIterator();
+		Iterator it18 = this.times.listIterator();
+		Iterator it19 = this.rooms.listIterator();
+		Iterator it20 = this.instructors.listIterator();
 		boolean canRemoveFromDisplayInstructors;
 		boolean canRemoveFromDisplayInScheduleBooks;
 		boolean canRemoveFromEnrollment;
@@ -855,6 +869,9 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 			} else {
 				canRemoveFromEnrollment = false;
 			}
+			it18.next();
+			it19.next();
+			it20.next();
 			if (cls1.equals(classId)){				
 				it1.remove();
 				it2.remove();
@@ -877,6 +894,9 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 				if (canRemoveFromEnrollment){
 					it17.remove();
 				}
+				it18.remove();
+				it19.remove();
+				it20.remove();
 			} else if (pCls1.equals(classId)){
 				classesToDel.add(cls1);
 			}
@@ -888,7 +908,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		}
 	}
 	    
-	public void addToClasses(Class_ cls, Boolean isReadOnly, String indent){
+	public void addToClasses(Class_ cls, Boolean isReadOnly, String indent, ClassAssignmentProxy proxy, User user){
 		this.classLabels.add(cls.htmlLabel());
 		this.classLabelIndents.add(indent);
 		this.classIds.add(cls.getUniqueId().toString());
@@ -940,6 +960,10 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		if (getDisplayMaxLimit().booleanValue()){
 			setDisplayOptionForMaxLimit(new Boolean(true));
 		}
+		this.times.add(cls.buildAssignedTimeHtml(proxy));
+		this.rooms.add(cls.buildAssignedRoomHtml(proxy));
+		this.instructors.add(cls.buildInstructorHtml(user));
+		//TODO: add time, room, and instructors
 	}
 	
 	private int indexOfLastChildClass(String classId){
@@ -984,6 +1008,9 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		hm.put(DISPLAY_INSTRUCTORS_TOKEN, this.getDisplayInstructors());
 		hm.put(DISPLAY_IN_SCHEDULE_BOOKS_TOKEN, this.getDisplayInScheduleBooks());
 		hm.put(SUBTOTAL_INDEXES_TOKEN, this.getSubtotalIndexes());
+		hm.put(TIMES_TOKEN, this.getTimes());
+		hm.put(ROOMS_TOKEN, this.getRooms());
+		hm.put(INSTRUCTORS_TOKEN, this.getInstructors());
 		return(hm);
 	}
 	
@@ -1022,6 +1049,9 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		this.getDisplayInstructors().add((String) getObjectFromListMapAtIndex(originalClassesMap, DISPLAY_INSTRUCTORS_TOKEN, classIndex));
 		this.getDisplayInScheduleBooks().add((String) getObjectFromListMapAtIndex(originalClassesMap, DISPLAY_IN_SCHEDULE_BOOKS_TOKEN, classIndex));
 		this.getSubtotalIndexes().add((String) getObjectFromListMapAtIndex(originalClassesMap, SUBTOTAL_INDEXES_TOKEN, classIndex));
+		this.getTimes().add((String) getObjectFromListMapAtIndex(originalClassesMap, TIMES_TOKEN, classIndex));
+		this.getRooms().add((String) getObjectFromListMapAtIndex(originalClassesMap, ROOMS_TOKEN, classIndex));
+		this.getInstructors().add((String) getObjectFromListMapAtIndex(originalClassesMap, INSTRUCTORS_TOKEN, classIndex));
 	}
 	
 	public void addNewClassesBasedOnTemplate(String clsId){
@@ -1172,6 +1202,9 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		this.displayInstructors.add(this.getDisplayInstructors().get(index));
 		this.displayInScheduleBooks.add(this.getDisplayInScheduleBooks().get(index));
 		this.subtotalIndexes.add(this.getSubtotalIndexes().get(index));
+		this.times.add("");
+		this.rooms.add("");
+		this.instructors.add("");
 		ArrayList childClasses = new ArrayList();
 		for(int i = (index + 1); i < this.getClassIds().size(); i++){
 			if (this.getParentClassIds().get(i).toString().equals(clsId))
@@ -1429,6 +1462,30 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 
 	public void setDisplayEnrollment(Boolean displayEnrollment) {
 		this.displayEnrollment = displayEnrollment;
+	}
+
+	public List getTimes() {
+		return times;
+	}
+
+	public void setTimes(List times) {
+		this.times = times;
+	}
+
+	public List getRooms() {
+		return rooms;
+	}
+
+	public void setRooms(List rooms) {
+		this.rooms = rooms;
+	}
+
+	public List getInstructors() {
+		return instructors;
+	}
+
+	public void setInstructors(List instructors) {
+		this.instructors = instructors;
 	}
 
 }
