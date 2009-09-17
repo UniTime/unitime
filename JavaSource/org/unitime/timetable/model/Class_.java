@@ -37,6 +37,7 @@ import java.util.Vector;
 
 import javax.servlet.http.HttpSession;
 
+import net.sf.cpsolver.coursett.model.TimeLocation.IntEnumeration;
 import net.sf.cpsolver.coursett.preference.MinMaxPreferenceCombination;
 import net.sf.cpsolver.coursett.preference.PreferenceCombination;
 
@@ -1593,4 +1594,93 @@ public class Class_ extends BaseClass_ {
                 .setCacheable(true).list();
 
     }
+    
+    public String buildAssignedTimeHtml(ClassAssignmentProxy proxy){
+		Assignment a = null;
+		StringBuffer sb = new StringBuffer();
+		try {
+			a = proxy.getAssignment(this);
+		} catch (Exception e) {
+			Debug.error(e);
+		}
+		if (a!=null) {
+				IntEnumeration e = a.getTimeLocation().getDays();
+				while (e.hasMoreElements()){
+					sb.append(Constants.DAY_NAMES_SHORT[(int)e.nextInt()]);
+				}
+				sb.append(" ");
+				sb.append(a.getTimeLocation().getStartTimeHeader());
+				sb.append("-");
+				sb.append(a.getTimeLocation().getEndTimeHeader());
+		} else {
+			if (getEffectiveTimePreferences().isEmpty()){
+	            if (getSchedulingSubpart().getMinutesPerWk().intValue()<=0) {
+	                sb.append("Arr Hrs");
+	            } else {
+	                int nrHours = Math.round(getSchedulingSubpart().getMinutesPerWk().intValue()/50.0f);
+	                sb.append("Arr "+nrHours+" Hrs");
+	            }	
+			}
+		}
+		if (sb.length() == 0){
+			sb.append(" ");
+		}
+	    return(sb.toString());
+	}
+
+	public String buildAssignedRoomHtml(ClassAssignmentProxy proxy){
+		Assignment a = null;
+		StringBuffer sb = new StringBuffer();
+		try {
+			a= proxy.getAssignment(this);
+		} catch (Exception e) {
+			Debug.error(e);
+		}
+		if (a!=null) {
+			Iterator it2 = a.getRooms().iterator();
+			while (it2.hasNext()){
+				Location room = (Location)it2.next();
+				sb.append(room.getLabel());
+			}	
+		} else {
+			if (getEffectiveTimePreferences().isEmpty()){
+	            boolean first = true;
+	            for(Iterator it = getEffectiveRoomPreferences().iterator(); it.hasNext();){
+	            	RoomPref rp = (RoomPref) it.next();
+	            	if (rp.getPrefLevel().getPrefId().toString().equals(PreferenceLevel.PREF_LEVEL_REQUIRED)){
+	            		if (first) {
+	            			first = false;
+	            		} else {
+	            			sb.append("<br>");
+	            		}
+	            		sb.append(rp.getRoom().getLabel());
+	            	}
+	            }
+			}
+		}
+		if (sb.length() == 0){
+			sb.append(" ");
+		}
+	    return(sb.toString());
+	}
+
+	public String buildInstructorHtml(User user){
+		StringBuffer sb = new StringBuffer();
+		if (getClassInstructors() != null && !getClassInstructors().isEmpty()){
+			boolean first = true;
+			for(ClassInstructor ci : (Set<ClassInstructor>) getClassInstructors()){
+				if (first){
+					first = false;
+				} else {
+					sb.append("<br>");
+				}
+				sb.append(ci.getInstructor().getName(user));
+			}
+		} else {
+			sb.append(" ");
+		}
+	    return(sb.toString());
+	}
+
+    
 }
