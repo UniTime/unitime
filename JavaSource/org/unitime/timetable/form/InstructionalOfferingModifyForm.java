@@ -65,6 +65,9 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 	private Boolean displayEnrollment;
 	private String displayAllClassesInSchedBook;
 	private String displayAllClassesInstructors;
+	private Boolean displayExternalId;
+	private Boolean displayDisplayInstructors;
+	private Boolean displayDisplayInSchedule;
 	
 	private List classIds;
 	private List subpartIds;
@@ -94,6 +97,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 	private List times;
 	private List rooms;
 	private List instructors;	
+	private List externalIds;
 	
 	private List classHasErrors;
 	private Long addTemplateClassId;
@@ -124,6 +128,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 	private static String TIMES_TOKEN = "times";
 	private static String ROOMS_TOKEN = "rooms";
 	private static String INSTRUCTORS_TOKEN = "instructors";
+	private static String EXTERNAL_IDS_TOKEN = "externalIds";
 	
 
     // --------------------------------------------------------- Classes
@@ -447,6 +452,9 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     	displayMaxLimit = new Boolean(false);
     	displayOptionForMaxLimit = new Boolean(false);
     	displayEnrollment = new Boolean(false);
+    	displayDisplayInstructors = new Boolean(false);
+    	displayDisplayInSchedule = new Boolean(false);
+    	displayExternalId = new Boolean(false);
     	displayAllClassesInSchedBook = "";
     	displayAllClassesInstructors = "";
     	resetLists();
@@ -482,6 +490,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     	times = DynamicList.getInstance(new ArrayList(), factoryClasses);
     	rooms = DynamicList.getInstance(new ArrayList(), factoryClasses);
     	instructors = DynamicList.getInstance(new ArrayList(), factoryClasses);
+    	externalIds = DynamicList.getInstance(new ArrayList(), factoryClasses);
 }
     
 //    private int numberOfClassesOfSubpartWithParentClassId(String parentClassId, String classSubpartId){
@@ -832,6 +841,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		Iterator it18 = this.times.listIterator();
 		Iterator it19 = this.rooms.listIterator();
 		Iterator it20 = this.instructors.listIterator();
+		Iterator it21 = this.externalIds.listIterator();
 		boolean canRemoveFromDisplayInstructors;
 		boolean canRemoveFromDisplayInScheduleBooks;
 		boolean canRemoveFromEnrollment;
@@ -872,6 +882,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 			it18.next();
 			it19.next();
 			it20.next();
+			it21.next();
 			if (cls1.equals(classId)){				
 				it1.remove();
 				it2.remove();
@@ -897,6 +908,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 				it18.remove();
 				it19.remove();
 				it20.remove();
+				it21.remove();
 			} else if (pCls1.equals(classId)){
 				classesToDel.add(cls1);
 			}
@@ -963,7 +975,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		this.times.add(cls.buildAssignedTimeHtml(proxy));
 		this.rooms.add(cls.buildAssignedRoomHtml(proxy));
 		this.instructors.add(cls.buildInstructorHtml(user));
-		//TODO: add time, room, and instructors
+		this.externalIds.add(cls.getClassSuffix() == null?"":cls.getClassSuffix());
 	}
 	
 	private int indexOfLastChildClass(String classId){
@@ -1011,6 +1023,8 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		hm.put(TIMES_TOKEN, this.getTimes());
 		hm.put(ROOMS_TOKEN, this.getRooms());
 		hm.put(INSTRUCTORS_TOKEN, this.getInstructors());
+		hm.put(EXTERNAL_IDS_TOKEN, this.getExternalIds());
+		
 		return(hm);
 	}
 	
@@ -1052,6 +1066,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		this.getTimes().add((String) getObjectFromListMapAtIndex(originalClassesMap, TIMES_TOKEN, classIndex));
 		this.getRooms().add((String) getObjectFromListMapAtIndex(originalClassesMap, ROOMS_TOKEN, classIndex));
 		this.getInstructors().add((String) getObjectFromListMapAtIndex(originalClassesMap, INSTRUCTORS_TOKEN, classIndex));
+		this.getExternalIds().add((String) getObjectFromListMapAtIndex(originalClassesMap, EXTERNAL_IDS_TOKEN, classIndex));
 	}
 	
 	public void addNewClassesBasedOnTemplate(String clsId){
@@ -1205,6 +1220,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		this.times.add("");
 		this.rooms.add("");
 		this.instructors.add("");
+		this.externalIds.add("");
 		ArrayList childClasses = new ArrayList();
 		for(int i = (index + 1); i < this.getClassIds().size(); i++){
 			if (this.getParentClassIds().get(i).toString().equals(clsId))
@@ -1486,6 +1502,38 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 
 	public void setInstructors(List instructors) {
 		this.instructors = instructors;
+	}
+
+	public Boolean getDisplayExternalId() {
+		return displayExternalId;
+	}
+
+	public void setDisplayExternalId(Boolean displayExternalId) {
+		this.displayExternalId = displayExternalId;
+	}
+
+	public Boolean getDisplayDisplayInstructors() {
+		return displayDisplayInstructors;
+	}
+
+	public void setDisplayDisplayInstructors(Boolean displayDisplayInstructors) {
+		this.displayDisplayInstructors = displayDisplayInstructors;
+	}
+
+	public Boolean getDisplayDisplayInSchedule() {
+		return displayDisplayInSchedule;
+	}
+
+	public void setDisplayDisplayInSchedule(Boolean displayDisplayInSchedule) {
+		this.displayDisplayInSchedule = displayDisplayInSchedule;
+	}
+
+	public List getExternalIds() {
+		return externalIds;
+	}
+
+	public void setExternalIds(List externalIds) {
+		this.externalIds = externalIds;
 	}
 
 }

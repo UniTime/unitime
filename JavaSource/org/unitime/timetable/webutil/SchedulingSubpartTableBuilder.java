@@ -454,10 +454,7 @@ public class SchedulingSubpartTableBuilder {
     private static String getIcons(SimpleItypeConfig sic, int level, int rowNum, int maxRows, int spRowNum, int maxSp) {
         
         String html = "";
-        
-        // Delete
-        html += "<A onClick=\"doClick('delete', " + sic.getId() + ");\" href=\"#null\"><IMG border=\"0\" alt=\"Delete\" title=\"Delete Instructional Type\" align=\"top\" src=\"images/Delete16.gif\"></A>&nbsp; ";
-       
+               
         // Right Arrow
         if ( (level==1 && rowNum>0)
              || (level>1 && spRowNum>0) ) 
@@ -484,7 +481,10 @@ public class SchedulingSubpartTableBuilder {
         	html += "<A onClick=\"doClick('shiftDown', " + sic.getId() + ");\" href=\"#null\"><IMG border=\"0\" alt=\"Move Down\" align=\"absmiddle\" src=\"images/arrow_d.gif\"></A>";
         else
             html += "<IMG align=\"absmiddle\" src=\"images/blank.gif\">";
-        
+
+        // Delete
+        html += "<A onClick=\"doClick('delete', " + sic.getId() + ");\" href=\"#null\"><IMG border=\"0\" alt=\"Delete\" title=\"Delete Instructional Type\" align=\"top\" src=\"images/Delete16.gif\"></A>&nbsp; ";
+
         html += "&nbsp; &nbsp;";
         
         return html;
