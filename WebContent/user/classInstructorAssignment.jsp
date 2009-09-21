@@ -122,15 +122,22 @@
 						<TD align="center" valign="bottom" rowspan="2"> &nbsp;</TD>
 						<TD align="center" valign="bottom" rowspan="2"> &nbsp;</TD>
 						<TD align="center" valign="bottom" rowspan="2"> &nbsp;</TD>
+						<logic:equal name="<%=frmName%>" property="displayExternalId" value="true" >
+						<TD rowspan="2">&nbsp;</TD>
+						<TD align="center" valign="bottom" rowspan="2"><i>External&nbsp;Id</i></TD>
+						</logic:equal>
+						<TD rowspan="2">&nbsp;</TD>
+						<TD rowspan="2">&nbsp;</TD>
+						<TD rowspan="2">&nbsp;</TD>
+						<TD rowspan="2">&nbsp;</TD>
 						<TD align="center" valign="bottom" rowspan="2"><I>Name</I></TD>
 						<TD align="center" valign="bottom" rowspan="2"><I>% Share</I></TD>
 						<TD align="center" valign="bottom" rowspan="2"><I>&nbsp;Check<br>Conflicts&nbsp;&nbsp;</I></TD>
 						<TD align="center" valign="bottom"><I>Display&nbsp;</I></TD>
+						<TD rowspan="2">&nbsp;</TD>
 						<TD align="center" valign="bottom" rowspan="2"><I>Time</I></TD>
 						<TD rowspan="2">&nbsp;</TD>
 						<TD align="center" valign="bottom" rowspan="2"><I>Room</I></TD>
-						<TD rowspan="2">&nbsp;</TD>
-						<TD rowspan="2">&nbsp;</TD>
 						<TD rowspan="2">&nbsp;</TD>
 					</TR>
 					<TR>
@@ -145,6 +152,20 @@
 						<TD nowrap valign="top"><logic:equal name="<%=frmName%>" property='<%= "classHasErrors[" + ctr + "]" %>' value="true" ><IMG src="images/Error16.jpg"></logic:equal><logic:equal name="<%=frmName%>" property='<%= "classHasErrors[" + ctr + "]" %>' value="false" >&nbsp;</logic:equal></TD>
 						<TD nowrap valign="top"><%=frm.getClassLabelIndents().get(ctr.intValue()).toString()%><bean:write name="<%=frmName%>" property='<%= "classLabels[" + ctr + "]" %>'/> &nbsp;</TD>
 
+						<logic:equal name="<%=frmName%>" property="displayExternalId" value="true" >
+						<TD>&nbsp;</TD>
+						<TD align="left" valign="top" nowrap><%= frm.getExternalIds().get(ctr)%></TD>
+						</logic:equal>
+						<TD>&nbsp;</TD>
+						<TD align="center" valign="top" nowrap>
+							<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" >
+								<logic:equal name="<%=frmName%>" property='<%= "allowDeletes[" + ctr + "]" %>' value="true" >
+								<A href="#null" onClick="document.forms[0].elements['hdnOp'].value='Delete';document.forms[0].elements['deletedInstrRowNum'].value='<%= ctr.toString() %>';document.forms[0].submit();">
+								<IMG border="0" src="images/Delete16.gif" title="Remove Instructor from Instructional Offering"></A>
+								</logic:equal>
+							</logic:equal></TD>
+						<TD align="center" valign="top" nowrap> &nbsp;<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" ><A href="#null" onClick="document.forms[0].elements['hdnOp'].value='Add Instructor';document.forms[0].elements['addInstructorId'].value='<%= ctr.toString() %>';document.forms[0].submit();"><IMG border="0" src="images/Add16.gif" title="Add Instructor to Class Offering"></A></logic:equal></TD>
+						<TD>&nbsp;<html:hidden property='<%= "externalIds[" + ctr + "]" %>'/></TD>
 						<TD align="left" valign="top" nowrap>
 						<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" >
 							<html:select style="width:200;" property='<%= "instructorUids[" + ctr + "]" %>' tabindex="<%=java.lang.Integer.toString(10000 + ctr.intValue())%>">
@@ -173,18 +194,11 @@
 								<html:hidden property='<%= "displayFlags[" + ctr + "]" %>'/>
 									<bean:write name="<%=frmName%>" property='<%= "displayFlags[" + ctr + "]" %>'/>
 							</logic:equal></TD>
+						<TD>&nbsp;</TD>
 						<TD align="left" valign="top" nowrap>&nbsp;<bean:write name="<%=frmName%>" property='<%= "times[" + ctr + "]" %>'/></TD>
 						<TD>&nbsp;</TD>
 						<TD align="left" valign="top" nowrap><%= frm.getRooms().get(ctr)%></TD>
 						<TD>&nbsp;</TD>
-						<TD align="center" valign="top" nowrap>
-							<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" >
-								<logic:equal name="<%=frmName%>" property='<%= "allowDeletes[" + ctr + "]" %>' value="true" >
-								<A href="#null" onClick="document.forms[0].elements['hdnOp'].value='Delete';document.forms[0].elements['deletedInstrRowNum'].value='<%= ctr.toString() %>';document.forms[0].submit();">
-								<IMG border="0" src="images/Delete16.gif" title="Remove Instructor from Instructional Offering"></A>
-								</logic:equal>
-							</logic:equal></TD>
-						<TD align="center" valign="top" nowrap> &nbsp;<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" ><A href="#null" onClick="document.forms[0].elements['hdnOp'].value='Add Instructor';document.forms[0].elements['addInstructorId'].value='<%= ctr.toString() %>';document.forms[0].submit();"><IMG border="0" src="images/Add16.gif" title="Add Instructor to Class Offering"></A></logic:equal></TD>
 					</TR>
 					</logic:iterate>
 				</TABLE>
