@@ -264,6 +264,13 @@ public class InstructionalOfferingModifyAction extends Action {
         frm.setInstrOffrConfigId(ioc.getUniqueId());
         frm.setInstrOffrConfigLimit(ioc.getLimit());
         frm.setInstrOfferingId(io.getUniqueId());
+        String displayInstructorFlags = ApplicationProperties.getProperty("tmtbl.class_setup.show_display_instructor_flags", "false");
+        frm.setDisplayDisplayInstructors(new Boolean(displayInstructorFlags));
+        String displayInScheduleFlags = ApplicationProperties.getProperty("tmtbl.class_setup.show_display_in_schedule_flags", "false");
+        frm.setDisplayDisplayInSchedule(new Boolean(displayInScheduleFlags));
+        String displayExternalIds = ApplicationProperties.getProperty("tmtbl.class_setup.show_display_external_ids", "false");
+        frm.setDisplayExternalId(new Boolean(displayExternalIds));
+       
 
         String name = io.getCourseNameWithTitle();
         if (io.hasMultipleConfigurations()) {
