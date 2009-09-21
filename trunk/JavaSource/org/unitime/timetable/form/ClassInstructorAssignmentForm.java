@@ -68,6 +68,7 @@ public class ClassInstructorAssignmentForm extends ActionForm {
     private String previousId;
 	private ClassAssignmentProxy proxy;
 	private String addInstructorId;
+	private Boolean displayExternalId;
 
 	private List classIds;
 	private List classLabels;
@@ -82,6 +83,7 @@ public class ClassInstructorAssignmentForm extends ActionForm {
 	private List readOnlyClasses;
 	private List classHasErrors;
 	private List showDisplay;
+	private List externalIds;
   
 	/**
 	 * 
@@ -109,6 +111,7 @@ public class ClassInstructorAssignmentForm extends ActionForm {
     	instrOffrConfigLimit = new Integer(0);
     	instrOffrConfigId = new Long(0);
     	deletedInstrRowNum = null;
+    	displayExternalId = new Boolean(false);
     	proxy = null;	
     	resetLists();
 	}
@@ -127,6 +130,7 @@ public class ClassInstructorAssignmentForm extends ActionForm {
     	readOnlyClasses = DynamicList.getInstance(new ArrayList(), factoryClasses);
     	classHasErrors = DynamicList.getInstance(new ArrayList(), factoryClasses);
     	showDisplay = DynamicList.getInstance(new ArrayList(), factoryClasses);
+    	externalIds = DynamicList.getInstance(new ArrayList(), factoryClasses);
 	}
 
 	public ActionErrors validate(ActionMapping arg0, HttpServletRequest arg1) {
@@ -169,12 +173,14 @@ public class ClassInstructorAssignmentForm extends ActionForm {
 				this.showDisplay.add(new Boolean(true));
 				this.times.add(cls.buildAssignedTimeHtml(getProxy()));
 				this.rooms.add(cls.buildAssignedRoomHtml(getProxy()));
+				this.externalIds.add(cls.getClassSuffix() == null?"":cls.getClassSuffix());
 			}
 			else {
 				this.classLabels.add("");
 				this.showDisplay.add(new Boolean(false));
 				this.times.add("");
 				this.rooms.add("");
+				this.externalIds.add("");
 			}
 			this.classLabelIndents.add(indent);
 			this.classIds.add(cls.getUniqueId().toString());
@@ -223,6 +229,7 @@ public class ClassInstructorAssignmentForm extends ActionForm {
 			displayFlags.remove(index==firstIndex?index+1:index);
 		showDisplay.remove(index==firstIndex?index+1:index);
 		readOnlyClasses.remove(index);
+		externalIds.remove(index==firstIndex?index+1:index);
 	}
 
 	public void addInstructor() {
@@ -240,6 +247,7 @@ public class ClassInstructorAssignmentForm extends ActionForm {
 		this.percentShares.add(pos + 1, "0");
 		this.allowDeletes.set(pos, Boolean.TRUE);
 		this.allowDeletes.add(pos + 1, Boolean.TRUE);
+		this.externalIds.add(pos + 1, "");
 	}
 
 	public void updateClasses() throws Exception {
@@ -520,5 +528,21 @@ public class ClassInstructorAssignmentForm extends ActionForm {
 
 	public void setAddInstructorId(String addInstructorId) {
 		this.addInstructorId = addInstructorId;
+	}
+
+	public List getExternalIds() {
+		return externalIds;
+	}
+
+	public void setExternalIds(List externalIds) {
+		this.externalIds = externalIds;
+	}
+
+	public Boolean getDisplayExternalId() {
+		return displayExternalId;
+	}
+
+	public void setDisplayExternalId(Boolean displayExternalId) {
+		this.displayExternalId = displayExternalId;
 	}
 }

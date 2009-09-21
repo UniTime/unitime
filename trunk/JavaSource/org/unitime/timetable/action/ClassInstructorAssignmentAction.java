@@ -221,6 +221,9 @@ public class ClassInstructorAssignmentAction extends Action {
         frm.setInstrOffrConfigLimit(ioc.getLimit());
         frm.setInstrOfferingId(io.getUniqueId());
 
+        String displayExternalIds = ApplicationProperties.getProperty("tmtbl.class_setup.show_display_external_ids", "false");
+        frm.setDisplayExternalId(new Boolean(displayExternalIds));
+
         String name = io.getCourseNameWithTitle();
         if (io.hasMultipleConfigurations()) {
         	name += " [" + ioc.getName() +"]";
