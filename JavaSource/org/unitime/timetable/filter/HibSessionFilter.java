@@ -97,6 +97,10 @@ public class HibSessionFilter implements Filter {
                 }
             } catch (Throwable rbEx) {
                 Debug.error(rbEx);
+            } finally {
+    			if(hibSession!=null && hibSession.isOpen()) {
+    			    hibSession.close();
+    			}
             }
             
             if (ex instanceof ServletException) throw (ServletException)ex;
