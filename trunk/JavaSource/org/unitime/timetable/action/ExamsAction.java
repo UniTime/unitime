@@ -67,7 +67,9 @@ public class ExamsAction extends Action {
             if (request.getParameter("subject")!=null) {
                 myForm.setSubjectArea(request.getParameter("subject"));
             } else {
-                myForm.setSubjectArea("--ALL--");
+            	if (myForm.canDisplayAllSubjectsAtOnce()){
+            		myForm.setSubjectArea("--ALL--");
+            	}
             }
             if (request.getParameter("year")!=null && request.getParameter("term")!=null && request.getParameter("campus")!=null) {
                 Session session = Session.getSessionUsingInitiativeYearTerm(
@@ -166,7 +168,7 @@ public class ExamsAction extends Action {
 
         return mapping.findForward("show");
 	}
-	
+		
 	private PdfWebTable getTable(boolean html, ExamsForm form, Vector<ExamAssignment> exams) {
 	    String nl = (html?"<br>":"\n");
         PdfWebTable table = new PdfWebTable( 7,

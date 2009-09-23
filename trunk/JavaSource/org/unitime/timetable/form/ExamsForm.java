@@ -34,6 +34,7 @@ import org.apache.struts.action.ActionMapping;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.util.ComboBoxLookup;
 
@@ -52,6 +53,7 @@ public class ExamsForm extends ActionForm {
 	private int iNrRows;
 	private int iExamType;
 	private String iMessage;
+	private Boolean canRetrieveAllExamForAllSubjects;
 	
 	private String iUser, iPassword;
 
@@ -70,6 +72,7 @@ public class ExamsForm extends ActionForm {
 		iUser = null;
 		iPassword = null;
 		iMessage = null;
+		canRetrieveAllExamForAllSubjects = new Boolean(false);
 	}
 	
 	public String getOp() { return iOp; }
@@ -83,6 +86,18 @@ public class ExamsForm extends ActionForm {
 	public void setSession(Long session) { iSession = session; }
 	public Collection getSessions() { return iSessions; }
 	
+	public Boolean canDisplayAllSubjectsAtOnce(){
+		Boolean displayAll = new Boolean(false); 
+		if (iSession != null){
+			String queryStr = "select count(e) from Exam e where e.session.uniqueId = :sessionId";
+			int count = ((Number)SessionDAO.getInstance().getQuery(queryStr).setLong("sessionId", iSession).setCacheable(true).uniqueResult()).intValue();
+			if (count <= 300){
+				displayAll = new Boolean(true);
+			}
+		}
+		return(displayAll);
+	}
+
 	public void load(HttpSession session) {
 	    setSubjectArea(session.getAttribute("Exams.subjectArea")==null?null:(String)session.getAttribute("Exams.subjectArea"));
 	    iSessions = new Vector();
@@ -99,6 +114,7 @@ public class ExamsForm extends ActionForm {
 	    if (getSession()==null && !iSessions.isEmpty()) setSession(Long.valueOf(((ComboBoxLookup)iSessions.lastElement()).getValue()));
 	    iSubjectAreas = new TreeSet(new SubjectAreaDAO().getSession().createQuery("select distinct sa.subjectAreaAbbreviation from SubjectArea sa").setCacheable(true).list());
 	    setExamType(session.getAttribute("Exams.examType")==null?iExamType:(Integer)session.getAttribute("Exams.examType"));
+	    setCanRetrieveAllExamForAllSubjects(canDisplayAllSubjectsAtOnce());
 	}
 	    
     public void save(HttpSession session) {
@@ -152,4 +168,13 @@ public class ExamsForm extends ActionForm {
         }
         return "";
     }
+
+	public Boolean getCanRetrieveAllExamForAllSubjects() {
+		return canRetrieveAllExamForAllSubjects;
+	}
+
+	public void setCanRetrieveAllExamForAllSubjects(
+			Boolean canRetrieveAllExamForAllSubjects) {
+		this.canRetrieveAllExamForAllSubjects = canRetrieveAllExamForAllSubjects;
+	}
 }
