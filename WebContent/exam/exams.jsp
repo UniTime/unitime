@@ -45,7 +45,9 @@
 			Subject:
 			<html:select property="subjectArea">
 				<html:option value="">Select...</html:option>
-				<html:option value="--ALL--">All</html:option>
+				<logic:equal name="examsForm" property="canRetrieveAllExamForAllSubjects" value="true" >
+					<html:option value="--ALL--">All</html:option>
+				</logic:equal>
 				<html:options property="subjectAreas"/>
 			</html:select>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 			<html:submit onclick="op.value='Apply'; this.disabled=true; document.getElementById('s2').disabled=true; displayLoading();form.submit()" styleId="s1" accesskey="A" value="Apply" title="Apply (Alt+A)"/>
