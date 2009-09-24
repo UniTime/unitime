@@ -348,7 +348,11 @@ public class Assignment extends BaseAssignment {
         event.setEventName(getClassName());
         event.setMinCapacity(clazz.getClassLimit());
         event.setMaxCapacity(clazz.getClassLimit());
-        event.setMeetings(new HashSet());
+        if (event.getMeetings() != null){
+        	event.getMeetings().clear();
+        } else {
+        	event.setMeetings(new HashSet());
+        }
         DatePattern dp = getDatePattern();
         Calendar cal = Calendar.getInstance(Locale.US);
         cal.setTime(dp.getStartDate()); cal.setLenient(true);
