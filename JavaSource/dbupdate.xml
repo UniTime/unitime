@@ -2468,7 +2468,7 @@
 		</mysql>
 	</update>
 	<update version="47" date="26-Aug-2009" comment="Recieve Emails for Manager Role">
-		<mysql>alter table %SCHEMA%.tmtbl_mgr_to_roles add receive_emails int(1) default(1)</mysql>
+		<mysql>alter table %SCHEMA%.tmtbl_mgr_to_roles add receive_emails int(1) default 1</mysql>
 		<plsql>alter table %SCHEMA%.tmtbl_mgr_to_roles add receive_emails number(1) default 1</plsql>
 	</update>
 	
