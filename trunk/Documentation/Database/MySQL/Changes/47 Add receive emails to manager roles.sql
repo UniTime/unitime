@@ -21,7 +21,7 @@
  *   Add receive_emails to tmtbl_mgr_to_roles 
  **/
  
-alter table tmtbl_mgr_to_roles add receive_emails int(1) default(1);
+alter table tmtbl_mgr_to_roles add receive_emails int(1) default 1;
  
 /**
  * Update database version
