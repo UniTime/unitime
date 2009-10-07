@@ -44,13 +44,18 @@
 	<!--
 	
 	function updateSubpartTotal(subpartIndex) {
+	    displayInstructors = document.getElementsByName('displayDisplayInstructors')[0].value;
+	    displayInSchedule = document.getElementsByName('displayDisplayInSchedule')[0].value;
+
 		subtotalName='subtotalIndexes['+subpartIndex+']';
 		origLimitName='origMinLimit['+subpartIndex+']';
 		minLimitName='minClassLimits['+subpartIndex+']'
 		totalIndex=document.getElementsByName(subtotalName)[0].value;
 		subtotalValueName='subtotalValues['+totalIndex+']';
 		subtotalValueName1='subtotal1Values'+totalIndex;
-		subtotalValueName2='subtotal2Values' + totalIndex;
+		if (displayInstructors != 'false' || displayInSchedule != 'false') {
+			subtotalValueName2='subtotal2Values' + totalIndex;
+		}
 		origTotal=document.getElementsByName(subtotalValueName)[0].value;
 		origSubpartLimit=document.getElementsByName(origLimitName)[0].value;
 		newSubpartLimit=document.getElementsByName(minLimitName)[0].value;
@@ -59,7 +64,9 @@
 		newTotal=origTotal-origSubpartLimit+(newSubpartLimit-0);
 		document.getElementsByName(subtotalValueName)[0].value=newTotal;
 		document.getElementById(subtotalValueName1).innerHTML=newTotal;
-		document.getElementById(subtotalValueName2).innerHTML=newTotal; 
+		if (displayInstructors != 'false' || displayInSchedule != 'false') {
+			document.getElementById(subtotalValueName2).innerHTML=newTotal; 
+		}
 		document.getElementsByName(origLimitName)[0].value=newSubpartLimit;
 	}
 	
