@@ -154,14 +154,22 @@ public class SessionEditForm extends ActionForm {
                                 errors.add("eventEnd", new ActionMessage("errors.generic", "Event End Date must occur AFTER Event Start Date"));
                             }
                             Calendar start = Calendar.getInstance(Locale.US);
-                            if (d4.before(d1)){
-                            	start.setTime(d4);
+                            if (d4 != null){
+	                            if (d4.before(d1)){
+	                            	start.setTime(d4);
+	                            } else {
+	                            	start.setTime(d1);
+	                            }
                             } else {
                             	start.setTime(d1);
                             }
                             Calendar end = Calendar.getInstance(Locale.US);
-                            if (d5.after(d2)){
-                            	end.setTime(d5);
+                            if(d5 != null){
+	                            if (d5.after(d2)){
+	                            	end.setTime(d5);
+	                            } else {
+	                            	end.setTime(d2);
+	                            }
                             } else {
                             	end.setTime(d2);
                             }
