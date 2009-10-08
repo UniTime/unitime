@@ -451,7 +451,8 @@ public class TimetableManagerEditAction extends Action {
        	    else
        	        mgrRole.setPrimary(new Boolean(false));
        	    if (receiveEmailIt.hasNext()){
-       	    	Boolean receiveEmails = (Boolean) receiveEmailIt.next();
+       	    	String receiveEmailsStr = (String) receiveEmailIt.next();
+       	    	Boolean receiveEmails = new Boolean("on".equalsIgnoreCase(receiveEmailsStr)); 
        	    	mgrRole.setReceiveEmails(receiveEmails);
        	    } else {
        	    	mgrRole.setReceiveEmails(new Boolean(false));
