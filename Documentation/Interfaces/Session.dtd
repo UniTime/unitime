@@ -27,7 +27,7 @@
 <!ATTLIST sessionDates beginDate CDATA #REQUIRED >
 <!ATTLIST sessionDates classesEnd CDATA #REQUIRED >
 <!ATTLIST sessionDates endDate CDATA #REQUIRED >
-<!ATTLIST eventContact examBegin CDATA #IMPLIED >
-<!ATTLIST eventContact eventBegin CDATA #IMPLIED >
-<!ATTLIST eventContact eventEnd CDATA #IMPLIED >
+<!ATTLIST sessionDates examBegin CDATA #IMPLIED >
+<!ATTLIST sessionDates eventBegin CDATA #IMPLIED >
+<!ATTLIST sessionDates eventEnd CDATA #IMPLIED >
 
