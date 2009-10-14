@@ -21,6 +21,13 @@
  -->
 
 	<!-- sessionDates ==> Required:  beginDate, endDate, classesEnd -->
-<session campus="puWestLafayetteTrdtn" term="Fal" year="2007">
-	<sessionDates beginDate="08/20/2007 00:00:00" endDate="12/15/2007 23:59:00" classesEnd="12/08/2007 23:59:00"/>
+<session campus="puWestLafayetteTrdtn" term="Fal" year="2007" dateFormat="M/d/y">
+	<sessionDates
+	    beginDate="08/20/2007"
+	    endDate="12/15/2007"
+	    classesEnd="12/08/2007"
+	    examBegin="12/09/2007"
+	    eventBegin="08/20/2007"
+	    eventEnd="12/15/2007"
+	    />
 </session>
