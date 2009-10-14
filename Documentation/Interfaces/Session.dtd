@@ -21,7 +21,7 @@
 <!ATTLIST session campus CDATA #REQUIRED >
 <!ATTLIST session term CDATA #REQUIRED >
 <!ATTLIST session year CDATA #REQUIRED >
-<!ATTLIST events dateFormat CDATA #IMPLIED >
+<!ATTLIST session dateFormat CDATA #IMPLIED >
 
 <!ELEMENT sessionDates EMPTY >
 <!ATTLIST sessionDates beginDate CDATA #REQUIRED >
