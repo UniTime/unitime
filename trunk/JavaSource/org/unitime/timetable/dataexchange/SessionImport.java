@@ -64,23 +64,14 @@ public class SessionImport extends BaseImport {
                     error("Classes end date not provided.");
                     continue;
                 }
-                String examBegin = element.attributeValue("examBegin");
-                if (examBegin == null) {
-                	examBegin = classesEnd;
-                }
-                String eventBegin = element.attributeValue("eventBegin");
-                if (eventBegin == null) {
-                	examBegin = beginDate;
-                }
-                String eventEnd = element.attributeValue("eventEnd");
-                if (eventEnd == null) {
-                	eventEnd = endDate;
-                }
+                String examBegin = element.attributeValue("examBegin", classesEnd);
+                String eventBegin = element.attributeValue("eventBegin", beginDate);
+                String eventEnd = element.attributeValue("eventEnd", endDate);
                 Session session = new Session();
                 session.setAcademicInitiative(campus);
                 session.setAcademicYear(year);
                 session.setAcademicTerm(term);
-                DateFormat df = new SimpleDateFormat("M/d/y k:m:s");
+                DateFormat df = new SimpleDateFormat(element.attributeValue("dateFormat","M/d/y k:m:s"));
                 session.setSessionBeginDateTime(df.parse(beginDate));
                 session.setSessionEndDateTime(df.parse(endDate));
                 session.setClassesEndDateTime(df.parse(classesEnd));
