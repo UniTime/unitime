@@ -64,6 +64,18 @@ public class SessionImport extends BaseImport {
                     error("Classes end date not provided.");
                     continue;
                 }
+                String examBegin = element.attributeValue("examBegin");
+                if (examBegin == null) {
+                	examBegin = classesEnd;
+                }
+                String eventBegin = element.attributeValue("eventBegin");
+                if (eventBegin == null) {
+                	examBegin = beginDate;
+                }
+                String eventEnd = element.attributeValue("eventEnd");
+                if (eventEnd == null) {
+                	eventEnd = endDate;
+                }
                 Session session = new Session();
                 session.setAcademicInitiative(campus);
                 session.setAcademicYear(year);
@@ -72,6 +84,9 @@ public class SessionImport extends BaseImport {
                 session.setSessionBeginDateTime(df.parse(beginDate));
                 session.setSessionEndDateTime(df.parse(endDate));
                 session.setClassesEndDateTime(df.parse(classesEnd));
+                session.setExamBeginDate(df.parse(examBegin));
+                session.setEventBeginDate(df.parse(eventBegin));
+                session.setEventEndDate(df.parse(eventEnd));
                 session.setStatusType(statusType);
                 getHibSession().saveOrUpdate(session);
                 
