@@ -1,6 +1,6 @@
 /*
  * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * Copyright (C) 2008-2009, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -1373,8 +1373,8 @@ public class Class_ extends BaseClass_ {
        } catch (Exception e) {
     	   if (trans != null){
     		   trans.rollback();
-    		   throw(e);
     	   }
+		   throw(e);    	   
        }
     }
     
