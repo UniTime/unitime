@@ -145,24 +145,24 @@ public class EventAddInfoForm extends ActionForm {
 		if (iMainContactLastName==null || iMainContactLastName.length()==0) {
 			errors.add("mcLastName", new ActionMessage("errors.generic", "The contact's last name is mandatory."));
 		}
-		if (iMainContactLastName !=null && iMainContactLastName.length() > 30) {
-			errors.add("mcLastName", new ActionMessage("errors.generic", "The contact's last name cannot exceed 30 characters."));
+		if (iMainContactLastName !=null && iMainContactLastName.length() > 100) {
+			errors.add("mcLastName", new ActionMessage("errors.generic", "The contact's last name cannot exceed 100 characters."));
 		}
 		if (!WebTextValidation.isTextValid(iMainContactLastName, false)){
 			iMainContactLastName = "";
 			errors.add("mcLastName", new ActionMessage("errors.invalidCharacters", "Last Name"));
 		}
 
-		if (iMainContactFirstName !=null && iMainContactFirstName.length() > 30) {
-			errors.add("mcFirstName", new ActionMessage("errors.generic", "The contact's first name cannot exceed 20 characters."));
+		if (iMainContactFirstName !=null && iMainContactFirstName.length() > 100) {
+			errors.add("mcFirstName", new ActionMessage("errors.generic", "The contact's first name cannot exceed 100 characters."));
 		}
 		if (!WebTextValidation.isTextValid(iMainContactFirstName, true)){
 			iMainContactFirstName = "";
 			errors.add("mcFirstName", new ActionMessage("errors.invalidCharacters", "First Name"));
 		}
 
-		if (iMainContactMiddleName !=null && iMainContactMiddleName.length() > 30) {
-			errors.add("mcMiddleName", new ActionMessage("errors.generic", "The contact's middle name cannot exceed 20 characters."));
+		if (iMainContactMiddleName !=null && iMainContactMiddleName.length() > 100) {
+			errors.add("mcMiddleName", new ActionMessage("errors.generic", "The contact's middle name cannot exceed 100 characters."));
 		}
 		if (!WebTextValidation.isTextValid(iMainContactMiddleName, true)){
 			iMainContactMiddleName = "";
