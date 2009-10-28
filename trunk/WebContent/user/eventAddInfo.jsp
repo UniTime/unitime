@@ -238,7 +238,7 @@
 					<TR>
 						<TD nowrap> First Name: </TD>
 						<TD>
-							<html:text property="mainContactFirstName" maxlength="20" size="30" styleId="fname" />
+							<html:text property="mainContactFirstName" maxlength="100" size="30" styleId="fname" />
 							<logic:equal name="eventAddInfoForm" property="mainContactLookup" value="true">
 								<input type='button' value='Lookup' onclick="window.open('user/peopleLookup.jsp?query='+mainContactFirstName.value+' '+mainContactLastName.value,'peopleLookup','width=800,height=600,resizable=no,scrollbars=yes,toolbar=no,location=no,directories=no,status=no,menubar=no,copyhistory=no').focus();" style="btn"> 
 							</logic:equal>
@@ -247,13 +247,13 @@
 					<TR>
 						<TD nowrap> Middle Name: </TD>
 						<TD>
-							<html:text property="mainContactMiddleName" maxlength="20" size="30" styleId="mname" />
+							<html:text property="mainContactMiddleName" maxlength="100" size="30" styleId="mname" />
 						</TD>
 					</TR>
 					<TR>
 						<TD nowrap> Last Name<font color='red'>*</font>: </TD>
 						<TD>
-							<html:text property="mainContactLastName" maxlength="30" size="30" styleId="lname"/> 
+							<html:text property="mainContactLastName" maxlength="100" size="30" styleId="lname"/> 
 						</TD>
 					</TR>
 					<TR>

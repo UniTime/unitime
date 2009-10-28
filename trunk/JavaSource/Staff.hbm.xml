@@ -53,7 +53,7 @@
 			column="FNAME"
 			type="java.lang.String"
 			not-null="false"
-			length="50"
+			length="100"
 		/>
 
 		<property
@@ -61,7 +61,7 @@
 			column="MNAME"
 			type="java.lang.String"
 			not-null="false"
-			length="50"
+			length="100"
 		/>
 
 		<property
