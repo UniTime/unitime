@@ -26,7 +26,11 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 
 public class PersonalizedExamReportForm extends ActionForm {
-    private String iOp = null;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 9166328961282253491L;
+	private String iOp = null;
     private boolean iCanExport = false;
     private boolean iAdmin = false;
     private boolean iLogout = false;

@@ -17,6 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  --%>
 <%@ page language="java" autoFlush="true"%>
+<%@page import="org.unitime.timetable.model.Exam"%>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
@@ -25,7 +26,31 @@
 <tiles:importAttribute />
 
 <html:form action="/examPeriodEdit">
+<script language="JavaScript" type="text/javascript">
+	function updateDefaultOffsets(examType) {
+		if ("<%= Exam.sExamTypes[Exam.sExamTypeFinal] %>" == examType){
+		   if (document.getElementsByName("startOffset")[0].value != null && document.getElementsByName("startOffset")[0].value == document.getElementsByName("defaultMidtermStartOffset")[0].value){
+		      document.getElementsByName("startOffset")[0].value = document.getElementsByName("defaultFinalStartOffset")[0].value;
+		      
+		   }
+		   if (document.getElementsByName("stopOffset")[0].value != null && document.getElementsByName("stopOffset")[0].value == document.getElementsByName("defaultMidtermStopOffset")[0].value){
+		      document.getElementsByName("stopOffset")[0].value = document.getElementsByName("defaultFinalStopOffset")[0].value;
+		   }
+		} else {
+		   if (document.getElementsByName("startOffset")[0].value != null && document.getElementsByName("startOffset")[0].value == document.getElementsByName("defaultFinalStartOffset")[0].value){
+		      document.getElementsByName("startOffset")[0].value = document.getElementsByName("defaultMidtermStartOffset")[0].value;
+		   }
+		   if (document.getElementsByName("stopOffset")[0].value != null && document.getElementsByName("stopOffset")[0].value == document.getElementsByName("defaultFinalStopOffset")[0].value){
+		      document.getElementsByName("stopOffset")[0].value = document.getElementsByName("defaultMidtermStopOffset")[0].value;
+		   }
+		}
+	}
+</script>
 
+<html:hidden property="defaultMidtermStartOffset"/>
+<html:hidden property="defaultMidtermStopOffset"/>
+<html:hidden property="defaultFinalStartOffset"/>
+<html:hidden property="defaultFinalStopOffset"/>
 <logic:notEqual name="examPeriodEditForm" property="op" value="List">
 	<html:hidden property="uniqueId"/><html:errors property="uniqueId"/>
 	<html:hidden property="autoSetup"/>
@@ -73,6 +98,22 @@
 		</TR>
 
 		<TR>
+			<TD>1st Period Event Start Offset:</TD>
+			<TD>
+			<html:text property="startOffset" size="4" maxlength="4"/> (in minutes)
+			&nbsp;<html:errors property="startOffset"/>
+			</TD>
+		</TR>
+
+		<TR>
+			<TD>1st Period Event Stop Offset:</TD>
+			<TD>
+			<html:text property="stopOffset" size="4" maxlength="4"/> (in minutes)
+			&nbsp;<html:errors property="stopOffset"/>
+			</TD>
+		</TR>
+
+		<TR>
 			<TD>2nd Period Start Time:</TD>
 			<TD>
 			<html:text property="start2" size="4" maxlength="4"/> (in military format)
@@ -85,6 +126,22 @@
 			<TD>
 			<html:text property="length2" size="4" maxlength="4"/> (in minutes)
 			&nbsp;<html:errors property="length2"/>
+			</TD>
+		</TR>
+
+		<TR>
+			<TD>2nd Period Event Start Offset:</TD>
+			<TD>
+			<html:text property="startOffset2" size="4" maxlength="4"/> (in minutes)
+			&nbsp;<html:errors property="startOffset2"/>
+			</TD>
+		</TR>
+
+		<TR>
+			<TD>2nd Period Event Stop Offset:</TD>
+			<TD>
+			<html:text property="stopOffset2" size="4" maxlength="4"/> (in minutes)
+			&nbsp;<html:errors property="stopOffset2"/>
 			</TD>
 		</TR>
 
@@ -105,6 +162,22 @@
 		</TR>
 
 		<TR>
+			<TD>3rd Period Event Start Offset:</TD>
+			<TD>
+			<html:text property="startOffset3" size="4" maxlength="4"/> (in minutes)
+			&nbsp;<html:errors property="startOffset3"/>
+			</TD>
+		</TR>
+
+		<TR>
+			<TD>3rd Period Event Stop Offset:</TD>
+			<TD>
+			<html:text property="stopOffset3" size="4" maxlength="4"/> (in minutes)
+			&nbsp;<html:errors property="stopOffset3"/>
+			</TD>
+		</TR>
+
+		<TR>
 			<TD>4th Period Start Time:</TD>
 			<TD>
 			<html:text property="start4" size="4" maxlength="4"/> (in military format)
@@ -121,6 +194,21 @@
 		</TR>
 
 		<TR>
+			<TD>4th Period Event Start Offset:</TD>
+			<TD>
+			<html:text property="startOffset4" size="4" maxlength="4"/> (in minutes)
+			&nbsp;<html:errors property="startOffset4"/>
+			</TD>
+		</TR>
+
+		<TR>
+			<TD>4th Period Event Stop Offset:</TD>
+			<TD>
+			<html:text property="stopOffset4" size="4" maxlength="4"/> (in minutes)
+			&nbsp;<html:errors property="stopOffset4"/>
+			</TD>
+		</TR>
+		<TR>
 			<TD>5th Period Start Time:</TD>
 			<TD>
 			<html:text property="start5" size="4" maxlength="4"/> (in military format)
@@ -133,6 +221,22 @@
 			<TD>
 			<html:text property="length5" size="4" maxlength="4"/> (in minutes)
 			&nbsp;<html:errors property="length5"/>
+			</TD>
+		</TR>
+
+		<TR>
+			<TD>5th Period Event Start Offset:</TD>
+			<TD>
+			<html:text property="startOffset5" size="4" maxlength="4"/> (in minutes)
+			&nbsp;<html:errors property="startOffset5"/>
+			</TD>
+		</TR>
+
+		<TR>
+			<TD>5th Period Event Stop Offset:</TD>
+			<TD>
+			<html:text property="stopOffset5" size="4" maxlength="4"/> (in minutes)
+			&nbsp;<html:errors property="stopOffset5"/>
 			</TD>
 		</TR>
 
@@ -190,7 +294,7 @@
 		<TR>
 			<TD>Type:</TD>
 			<TD>
-				<html:select property="examType">
+				<html:select property="examType" onchange="updateDefaultOffsets(this.value);">
 					<html:options property="examTypes"/>
 				</html:select>
 			</TD>
@@ -219,6 +323,22 @@
 			<TD>
 			<html:text property="length" size="4" maxlength="4"/> (in minutes)
 			&nbsp;<html:errors property="length"/>
+			</TD>
+		</TR>
+
+		<TR>
+			<TD>Event Start Offset:</TD>
+			<TD>
+			<html:text property="startOffset" size="4" maxlength="4"/> (in minutes)
+			&nbsp;<html:errors property="startOffset"/>
+			</TD>
+		</TR>
+
+		<TR>
+			<TD>Event Stop Offset:</TD>
+			<TD>
+			<html:text property="stopOffset" size="4" maxlength="4"/> (in minutes)
+			&nbsp;<html:errors property="stopOffset"/>
 			</TD>
 		</TR>
 

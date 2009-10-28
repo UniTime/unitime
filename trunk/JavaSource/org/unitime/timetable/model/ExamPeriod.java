@@ -60,22 +60,24 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
 	 * Constructor for required fields
 	 */
 	public ExamPeriod (
-	        java.lang.Long uniqueId,
-	        org.unitime.timetable.model.Session session,
-	        java.lang.Integer dateOffset,
-	        java.lang.Integer startSlot,
-	        java.lang.Integer length,
-	        org.unitime.timetable.model.PreferenceLevel prefLevel,
-	        java.lang.Integer examType) {
+		java.lang.Long uniqueId,
+		org.unitime.timetable.model.PreferenceLevel prefLevel,
+		java.lang.Integer dateOffset,
+		java.lang.Integer startSlot,
+		java.lang.Integer length,
+		java.lang.Integer examType,
+		java.lang.Integer eventStartOffset,
+		java.lang.Integer eventStopOffset) {
 
 		super (
 			uniqueId,
-			session,
+			prefLevel,
 			dateOffset,
 			startSlot,
 			length,
-			prefLevel,
-			examType);
+			examType,
+			eventStartOffset,
+			eventStopOffset);
 	}
 
 /*[CONSTRUCTOR MARKER END]*/
@@ -420,8 +422,10 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
     }
     
     public boolean overlap(TimeBlock time) {
-        int breakTimeStart = Integer.parseInt(ApplicationProperties.getProperty("tmtbl.room.availability."+Exam.sExamTypes[getExamType()].toLowerCase()+".breakTime.start", "0"));
-        int breakTimeStop = Integer.parseInt(ApplicationProperties.getProperty("tmtbl.room.availability."+Exam.sExamTypes[getExamType()].toLowerCase()+".breakTime.stop", "0"));
+//        int breakTimeStart = Integer.parseInt(ApplicationProperties.getProperty("tmtbl.room.availability."+Exam.sExamTypes[getExamType()].toLowerCase()+".breakTime.start", "0"));
+//        int breakTimeStop = Integer.parseInt(ApplicationProperties.getProperty("tmtbl.room.availability."+Exam.sExamTypes[getExamType()].toLowerCase()+".breakTime.stop", "0"));
+        int breakTimeStart = getEventStartOffset().intValue() * Constants.SLOT_LENGTH_MIN;
+        int breakTimeStop = getEventStopOffset().intValue() * Constants.SLOT_LENGTH_MIN;
         Date start = time.getStartTime();
         if (breakTimeStart!=0) {
             Calendar c = Calendar.getInstance(Locale.US); 
@@ -444,7 +448,7 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
     }
     
     public static Date[] getBounds(Long sessionId, Date examBeginDate, int examType) {
-        Object[] bounds = (Object[])new ExamPeriodDAO().getQuery("select min(ep.dateOffset), min(ep.startSlot), max(ep.dateOffset), max(ep.startSlot+ep.length) " +
+        Object[] bounds = (Object[])new ExamPeriodDAO().getQuery("select min(ep.dateOffset), min(ep.startSlot - ep.eventStartOffset), max(ep.dateOffset), max(ep.startSlot+ep.length+ep.eventStopOffset) " +
         		"from ExamPeriod ep where ep.session.uniqueId = :sessionId and ep.examType = :examType")
         		.setLong("sessionId", sessionId)
                 .setInteger("examType", examType)
@@ -472,4 +476,26 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
         return new Date[] {min, max};
     }
 
+    public int getExamEventStartSlot(){
+     	return(getStartSlot().intValue() - getEventStartOffset().intValue());
+    }
+    
+    public int getExamEventStopSlot(){
+    	return(getEndSlot() + getEventStopOffset().intValue());
+    }
+    
+    public int getExamEventStartOffsetForExam(Exam exam){
+    	int startOffset = getEventStartOffset() * Constants.SLOT_LENGTH_MIN;
+    	if (exam.getPrintOffset() != null && exam.getPrintOffset().intValue() > 0){
+    		startOffset += exam.getPrintOffset().intValue();
+    	}
+    	return(startOffset);
+    }
+    
+    public int getExamEventStopOffsetForExam(Exam exam){
+    	return(exam.getLength()
+    			- (Constants.SLOT_LENGTH_MIN*getLength())
+    			- (getEventStopOffset()*Constants.SLOT_LENGTH_MIN)
+    			+ exam.examOffset());
+    }
 }

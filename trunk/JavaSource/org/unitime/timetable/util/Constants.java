@@ -213,7 +213,9 @@ public class Constants extends net.sf.cpsolver.coursett.Constants {
     
     
     public static final String MIDTERM_DEFAULT_START_OFFSET_PROP = "tmtbl.exam.defaultStartOffset.midterm";
+    public static final String MIDTERM_DEFAULT_STOP_OFFSET_PROP = "tmtbl.exam.defaultStopOffset.midterm";
     public static final String FINAL_DEFAULT_START_OFFSET_PROP = "tmtbl.exam.defaultStartOffset.final";
+    public static final String FINAL_DEFAULT_STOP_OFFSET_PROP = "tmtbl.exam.defaultStopOffset.final";
     
     // --------------------------------------------------------- Methods
 
@@ -558,11 +560,15 @@ public class Constants extends net.sf.cpsolver.coursett.Constants {
     	return Constants.SETTINGS_TEXT_ABBV.equalsIgnoreCase(Settings.getSettingValue(user, Constants.SETTINGS_NOTE_TO_MGR_LIST_DISPLAY));
     }
 
-    public static int getExamStartOffset(Exam exam){
-      	return(getExamOffset(exam, (exam.getExamType().intValue() == Exam.sExamTypeMidterm)?MIDTERM_DEFAULT_START_OFFSET_PROP:FINAL_DEFAULT_START_OFFSET_PROP));
+    public static int getDefaultExamStartOffset(int examType){
+      	return(getExamOffset((examType == Exam.sExamTypeMidterm)?MIDTERM_DEFAULT_START_OFFSET_PROP:FINAL_DEFAULT_START_OFFSET_PROP));
+    }
+    
+    public static int getDefaultExamStopOffset(int examType){
+      	return(getExamOffset((examType == Exam.sExamTypeMidterm)?MIDTERM_DEFAULT_STOP_OFFSET_PROP:FINAL_DEFAULT_STOP_OFFSET_PROP));
     }
         
-    private static int getExamOffset(Exam exam, String offsetParameterName){
+    private static int getExamOffset(String offsetParameterName){
     	int offset = 0;
     	String offsetStr = ApplicationProperties.getProperty(offsetParameterName);
     	if (offsetStr == null || offsetStr.trim().length() == 0){

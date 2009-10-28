@@ -217,8 +217,8 @@ public class ExamPeriodEditAction extends Action {
 		// Create web table instance 
         WebTable webTable = new WebTable( 4,
 			    null, "examPeriodEdit.do?ord=%%",
-			    new String[] {"Type","Date", "Start Time", "End Time", "Length", "Preference"},
-			    new String[] {"left","left", "left", "left", "left", "left"},
+			    new String[] {"Type","Date", "Start Time", "End Time", "Length", "Event Start Offset", "Event Stop Offset", "Preference"},
+			    new String[] {"left","left", "left", "left", "right", "right", "right", "left"},
 			    null );
         
         TreeSet periods = ExamPeriod.findAll(request, null);
@@ -242,10 +242,12 @@ public class ExamPeriodEditAction extends Action {
         	        stf.format(ep.getStartTime()),
         	        stf.format(ep.getEndTime()),
         	        String.valueOf(Constants.SLOT_LENGTH_MIN*ep.getLength()),
+        	        String.valueOf(Constants.SLOT_LENGTH_MIN*ep.getEventStartOffset()),
+        	        String.valueOf(Constants.SLOT_LENGTH_MIN*ep.getEventStopOffset()),
         	        (PreferenceLevel.sNeutral.equals(ep.getPrefLevel().getPrefProlog())?"":
         	        "<font color='"+PreferenceLevel.prolog2color(ep.getPrefLevel().getPrefProlog())+"'>"+ep.getPrefLevel().getPrefName()+"</font>")},
         	        new Comparable[] {
-        			ep.getExamType(),ep.getStartDate(), ep.getStartSlot(), ep.getStartSlot()+ep.getLength(), ep.getLength(), ep.getPrefLevel().getPrefId()});
+        			ep.getExamType(),ep.getStartDate(), ep.getStartSlot(), ep.getStartSlot()+ep.getLength(), ep.getLength(), ep.getEventStartOffset(), ep.getEventStopOffset(), ep.getPrefLevel().getPrefId()});
         }
         
 	    request.setAttribute("ExamPeriods.table", webTable.printTable(WebTable.getOrder(request.getSession(),"examPeriods.ord")));
