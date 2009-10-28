@@ -52,24 +52,42 @@ import org.unitime.timetable.util.DateUtils;
  * @author Tomas Muller
  */
 public class ExamPeriodEditForm extends ActionForm {
-    private Long iUniqueId;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -8152697759737310033L;
+	private Long iUniqueId;
     private String iOp;
     private String iDate;
     private Integer iStart;
     private Integer iLength;
+    private Integer iStartOffset;
+    private Integer iStopOffset;
     private Integer iStart2;
     private Integer iLength2;
+    private Integer iStartOffset2;
+    private Integer iStopOffset2;
     private Integer iStart3;
     private Integer iLength3;
+    private Integer iStartOffset3;
+    private Integer iStopOffset3;
     private Integer iStart4;
     private Integer iLength4;
+    private Integer iStartOffset4;
+    private Integer iStopOffset4;
     private Integer iStart5;
     private Integer iLength5;
+    private Integer iStartOffset5;
+    private Integer iStopOffset5;
     private String iType;
     private Long iPrefLevel;
     private boolean iAutoSetup;
     private Session iSession;
-
+    private Integer iDefaultMidtermStartOffset;
+    private Integer iDefaultMidtermStopOffset;
+    private Integer iDefaultFinalStartOffset;
+    private Integer iDefaultFinalStopOffset;
+    
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 	    ActionErrors errors = new ActionErrors();
 	    
@@ -92,7 +110,23 @@ public class ExamPeriodEditForm extends ActionForm {
                 errors.add("length", new ActionMessage("errors.required", ""));
             else if ((iLength%Constants.SLOT_LENGTH_MIN)!=0)
                 errors.add("length", new ActionMessage("errors.generic","Invalid length -- period length must be divisible by "+Constants.SLOT_LENGTH_MIN+"."));
-        }
+            if (iStartOffset != null) {
+            	if(iStartOffset.intValue() < 0){
+                  	errors.add("start offset", new ActionMessage("errors.generic", "Invalid event start offset -- value must be a positive integer."));    
+            	}
+            	if ((iStartOffset.intValue()%Constants.SLOT_LENGTH_MIN)!=0){
+                    errors.add("start offset", new ActionMessage("errors.generic","Invalid event start offset -- value ("+iStartOffset.intValue()+") must be divisible by "+Constants.SLOT_LENGTH_MIN+"."));            		
+            	}
+            }
+            if (iStopOffset != null) {
+            	if(iStopOffset.intValue() < 0){
+                  	errors.add("stop offset", new ActionMessage("errors.generic", "Invalid event stop offset -- value must be a positive integer."));    
+            	}
+            	if ((iStopOffset.intValue()%Constants.SLOT_LENGTH_MIN)!=0){
+                    errors.add("stop offset", new ActionMessage("errors.generic","Invalid event stop offset -- value ("+iStopOffset.intValue()+") must be divisible by "+Constants.SLOT_LENGTH_MIN+"."));            		
+            	}
+            }
+       }
 	    
 	    if (iAutoSetup) {
 	        if (iStart2!=null && iStart2>0) {
@@ -108,6 +142,22 @@ public class ExamPeriodEditForm extends ActionForm {
 	                errors.add("length2", new ActionMessage("errors.required", ""));
 	            else if ((iLength2%Constants.SLOT_LENGTH_MIN)!=0)
 	                errors.add("length2", new ActionMessage("errors.generic","Invalid length -- period length must be divisible by "+Constants.SLOT_LENGTH_MIN+"."));
+	            if (iStartOffset2 != null) {
+	            	if(iStartOffset2.intValue() < 0){
+	                  	errors.add("start offset2", new ActionMessage("errors.generic", "Invalid event start offset -- value must be a positive integer."));    
+	            	}
+	            	if ((iStartOffset2.intValue()%Constants.SLOT_LENGTH_MIN)!=0){
+	                    errors.add("start offset2", new ActionMessage("errors.generic","Invalid event start offset -- value ("+iStartOffset2.intValue()+") must be divisible by "+Constants.SLOT_LENGTH_MIN+"."));            		
+	            	}
+	            }
+	            if (iStopOffset2 != null) {
+	            	if(iStopOffset2.intValue() < 0){
+	                  	errors.add("stop offset2", new ActionMessage("errors.generic", "Invalid event stop offset -- value must be a positive integer."));    
+	            	}
+	            	if ((iStopOffset2.intValue()%Constants.SLOT_LENGTH_MIN)!=0){
+	                    errors.add("stop offset2", new ActionMessage("errors.generic","Invalid event stop offset -- value ("+iStopOffset2.intValue()+") must be divisible by "+Constants.SLOT_LENGTH_MIN+"."));            		
+	            	}
+	            }
 	        }
 	        
             if (iStart3!=null && iStart3>0) {
@@ -123,7 +173,23 @@ public class ExamPeriodEditForm extends ActionForm {
                     errors.add("length3", new ActionMessage("errors.required", ""));
                 else if ((iLength3%Constants.SLOT_LENGTH_MIN)!=0)
                     errors.add("length3", new ActionMessage("errors.generic","Invalid length -- period length must be divisible by "+Constants.SLOT_LENGTH_MIN+"."));
-            }
+                if (iStartOffset3 != null) {
+                	if(iStartOffset3.intValue() < 0){
+                      	errors.add("start offset3", new ActionMessage("errors.generic", "Invalid event start offset -- value must be a positive integer."));    
+                	}
+                	if ((iStartOffset3.intValue()%Constants.SLOT_LENGTH_MIN)!=0){
+                        errors.add("start offset3", new ActionMessage("errors.generic","Invalid event start offset -- value ("+iStartOffset3.intValue()+") must be divisible by "+Constants.SLOT_LENGTH_MIN+"."));            		
+                	}
+                }
+                if (iStopOffset3 != null) {
+                	if(iStopOffset3.intValue() < 0){
+                      	errors.add("stop offset3", new ActionMessage("errors.generic", "Invalid event stop offset -- value must be a positive integer."));    
+                	}
+                	if ((iStopOffset3.intValue()%Constants.SLOT_LENGTH_MIN)!=0){
+                        errors.add("stop offset3", new ActionMessage("errors.generic","Invalid event stop offset -- value ("+iStopOffset3.intValue()+") must be divisible by "+Constants.SLOT_LENGTH_MIN+"."));            		
+                	}
+                }
+           }
 
             if (iStart4!=null && iStart4>0) {
                 int hour = iStart4/100;
@@ -138,6 +204,22 @@ public class ExamPeriodEditForm extends ActionForm {
                     errors.add("length4", new ActionMessage("errors.required", ""));
                 else if ((iLength4%Constants.SLOT_LENGTH_MIN)!=0)
                     errors.add("length4", new ActionMessage("errors.generic","Invalid length -- period length must be divisible by "+Constants.SLOT_LENGTH_MIN+"."));
+                if (iStartOffset4 != null) {
+                	if(iStartOffset4.intValue() < 0){
+                      	errors.add("start offset4", new ActionMessage("errors.generic", "Invalid event start offset -- value must be a positive integer."));    
+                	}
+                	if ((iStartOffset4.intValue()%Constants.SLOT_LENGTH_MIN)!=0){
+                        errors.add("start offset4", new ActionMessage("errors.generic","Invalid event start offset -- value ("+iStartOffset4.intValue()+") must be divisible by "+Constants.SLOT_LENGTH_MIN+"."));            		
+                	}
+                }
+                if (iStopOffset4 != null) {
+                	if(iStopOffset4.intValue() < 0){
+                      	errors.add("stop offset4", new ActionMessage("errors.generic", "Invalid event stop offset -- value must be a positive integer."));    
+                	}
+                	if ((iStopOffset4.intValue()%Constants.SLOT_LENGTH_MIN)!=0){
+                        errors.add("stop offset4", new ActionMessage("errors.generic","Invalid event stop offset -- value ("+iStopOffset4.intValue()+") must be divisible by "+Constants.SLOT_LENGTH_MIN+"."));            		
+                	}
+                }
             }
 
             if (iStart5!=null && iStart5>0) {
@@ -153,6 +235,22 @@ public class ExamPeriodEditForm extends ActionForm {
                     errors.add("length5", new ActionMessage("errors.required", ""));
                 else if ((iLength5%Constants.SLOT_LENGTH_MIN)!=0)
                     errors.add("length5", new ActionMessage("errors.generic","Invalid length -- period length must be divisible by "+Constants.SLOT_LENGTH_MIN+"."));
+                if (iStartOffset5 != null) {
+                	if(iStartOffset5.intValue() < 0){
+                      	errors.add("start offset5", new ActionMessage("errors.generic", "Invalid event start offset -- value must be a positive integer."));    
+                	}
+                	if ((iStartOffset5.intValue()%Constants.SLOT_LENGTH_MIN)!=0){
+                        errors.add("start offset5", new ActionMessage("errors.generic","Invalid event start offset -- value ("+iStartOffset5.intValue()+") must be divisible by "+Constants.SLOT_LENGTH_MIN+"."));            		
+                	}
+                }
+                if (iStopOffset5 != null) {
+                	if(iStopOffset5.intValue() < 0){
+                      	errors.add("stop offset5", new ActionMessage("errors.generic", "Invalid event stop offset -- value must be a positive integer."));    
+                	}
+                	if ((iStopOffset5.intValue()%Constants.SLOT_LENGTH_MIN)!=0){
+                        errors.add("stop offset5", new ActionMessage("errors.generic","Invalid event stop offset -- value ("+iStopOffset5.intValue()+") must be divisible by "+Constants.SLOT_LENGTH_MIN+"."));            		
+                	}
+                }
             }
 	    }
 	    
@@ -177,11 +275,16 @@ public class ExamPeriodEditForm extends ActionForm {
 	}
 	
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
-		iOp = null; iUniqueId = new Long(-1); iDate = null; iStart = null; iLength = null; 
-		iStart2 = null; iLength2 = null;
-		iStart3 = null; iLength3 = null;
-		iStart4 = null; iLength4 = null;
-		iStart5 = null; iLength5 = null;
+		iOp = null; iUniqueId = new Long(-1); iDate = null; 
+		iStart = null; iLength = null; iStartOffset = null; iStopOffset = null;
+		iStart2 = null; iLength2 = null; iStartOffset2 = null; iStopOffset2 = null;
+		iStart3 = null; iLength3 = null; iStartOffset3 = null; iStopOffset3 = null;
+		iStart4 = null; iLength4 = null; iStartOffset4 = null; iStopOffset4 = null;
+		iStart5 = null; iLength5 = null; iStartOffset5 = null; iStopOffset5 = null;
+		iDefaultMidtermStartOffset = Constants.getDefaultExamStartOffset(Exam.sExamTypeMidterm);
+		iDefaultMidtermStopOffset = Constants.getDefaultExamStopOffset(Exam.sExamTypeMidterm);
+		iDefaultFinalStartOffset = Constants.getDefaultExamStartOffset(Exam.sExamTypeFinal);
+		iDefaultFinalStopOffset = Constants.getDefaultExamStopOffset(Exam.sExamTypeFinal);
 		iPrefLevel = PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral).getUniqueId();
 		iType = Exam.sExamTypes[Exam.sExamTypeFinal];
 		iAutoSetup = false;
@@ -216,15 +319,26 @@ public class ExamPeriodEditForm extends ActionForm {
 			    }
 			    iLength = ((ExamPeriod)periods.last()).getLength()*Constants.SLOT_LENGTH_MIN;
 			    iDate = new SimpleDateFormat("MM/dd/yyyy").format(((ExamPeriod)periods.last()).getStartDate());
+			    
 			}
+
 			iPrefLevel = PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral).getUniqueId();
 			iType = Exam.sExamTypes[maxType];
+			if (iType != null && iType.equals(Exam.sExamTypes[Exam.sExamTypeFinal])){
+		    	iStartOffset = iDefaultFinalStartOffset;
+		    	iStopOffset = iDefaultFinalStopOffset;
+		    } else {
+		    	iStartOffset = iDefaultMidtermStartOffset;
+		    	iStopOffset = iDefaultMidtermStopOffset;
+		    }	
 			iOp = "Save";
 		} else {
 		    iUniqueId = ep.getUniqueId();
 			iDate = new SimpleDateFormat("MM/dd/yyyy").format(ep.getStartDate());
 			iStart = ep.getStartHour()*100 + ep.getStartMinute();
 			iLength = ep.getLength() * Constants.SLOT_LENGTH_MIN;
+			iStartOffset = ep.getEventStartOffset() * Constants.SLOT_LENGTH_MIN;
+			iStopOffset = ep.getEventStopOffset() * Constants.SLOT_LENGTH_MIN;
 			iPrefLevel = ep.getPrefLevel().getUniqueId();
 			iType = Exam.sExamTypes[ep.getExamType()];
 			iOp = "Update";
@@ -240,6 +354,8 @@ public class ExamPeriodEditForm extends ActionForm {
 	    ep.setLength(iLength / Constants.SLOT_LENGTH_MIN);
 	    ep.setPrefLevel(new PreferenceLevelDAO().get(iPrefLevel));
 	    ep.setExamType(getExamTypeIdx());
+	    ep.setEventStartOffset(iStartOffset == null?new Integer(0):new Integer(iStartOffset.intValue()/Constants.SLOT_LENGTH_MIN));
+	    ep.setEventStopOffset(iStopOffset == null?new Integer(0):new Integer(iStopOffset.intValue()/Constants.SLOT_LENGTH_MIN));
 		hibSession.saveOrUpdate(ep);
 	}
 	
@@ -256,6 +372,8 @@ public class ExamPeriodEditForm extends ActionForm {
         ep.setLength(iLength / Constants.SLOT_LENGTH_MIN);
         ep.setPrefLevel(new PreferenceLevelDAO().get(iPrefLevel));
         ep.setExamType(getExamTypeIdx());
+        ep.setEventStartOffset(iStartOffset == null?new Integer(0):new Integer(iStartOffset.intValue() / Constants.SLOT_LENGTH_MIN));
+        ep.setEventStopOffset(iStopOffset == null?new Integer(0):new Integer(iStopOffset.intValue() / Constants.SLOT_LENGTH_MIN));
         hibSession.saveOrUpdate(ep);
 		setUniqueId(ep.getUniqueId());
 		return ep;
@@ -287,31 +405,44 @@ public class ExamPeriodEditForm extends ActionForm {
 			}
 			Hashtable<Integer,Integer> length = new Hashtable();
 			Hashtable<Integer,Integer> translate = new Hashtable();
+			Hashtable<Integer,Integer> eventStartOffsets = new Hashtable();
+			Hashtable<Integer,Integer> eventStopOffsets = new Hashtable();
+			
 			TreeSet<Integer> newStarts = new TreeSet();
 			Iterator<Integer> it = slots.iterator();
             if (iStart!=null && iStart>0) {
                 int slot = ((iStart/100)*60 + (iStart%100) - Constants.FIRST_SLOT_TIME_MIN) / Constants.SLOT_LENGTH_MIN; 
                 length.put(slot, iLength);
+                eventStartOffsets.put(slot, iStartOffset);
+                eventStopOffsets.put(slot, iStopOffset);
                 if (it.hasNext()) translate.put(it.next(), slot); else newStarts.add(slot);
             } else if (it.hasNext()) it.next();
             if (iStart2!=null && iStart2>0) {
                 int slot = ((iStart2/100)*60 + (iStart2%100) - Constants.FIRST_SLOT_TIME_MIN) / Constants.SLOT_LENGTH_MIN;
                 length.put(slot, iLength2);
+                eventStartOffsets.put(slot, iStartOffset2);
+                eventStopOffsets.put(slot, iStopOffset2);
                 if (it.hasNext()) translate.put(it.next(), slot); else newStarts.add(slot);
             } else if (it.hasNext()) it.next();
             if (iStart3!=null && iStart3>0) {
                 int slot = ((iStart3/100)*60 + (iStart3%100) - Constants.FIRST_SLOT_TIME_MIN) / Constants.SLOT_LENGTH_MIN;
                 length.put(slot, iLength3);
-                if (it.hasNext()) translate.put(it.next(), slot); else newStarts.add(slot);
+                eventStartOffsets.put(slot, iStartOffset3);
+                eventStopOffsets.put(slot, iStopOffset3);
+               if (it.hasNext()) translate.put(it.next(), slot); else newStarts.add(slot);
             } else if (it.hasNext()) it.next();
             if (iStart4!=null && iStart4>0) {
                 int slot = ((iStart4/100)*60 + (iStart4%100) - Constants.FIRST_SLOT_TIME_MIN) / Constants.SLOT_LENGTH_MIN;
                 length.put(slot, iLength4);
+                eventStartOffsets.put(slot, iStartOffset4);
+                eventStopOffsets.put(slot, iStopOffset4);
                 if (it.hasNext()) translate.put(it.next(), slot); else newStarts.add(slot);
             } else if (it.hasNext()) it.next();
             if (iStart5!=null && iStart5>0) {
                 int slot = ((iStart5/100)*60 + (iStart5%100) - Constants.FIRST_SLOT_TIME_MIN) / Constants.SLOT_LENGTH_MIN;
                 length.put(slot, iLength5);
+                eventStartOffsets.put(slot, iStartOffset5);
+                eventStopOffsets.put(slot, iStopOffset5);
                 if (it.hasNext()) translate.put(it.next(), slot); else newStarts.add(slot);
             } else if (it.hasNext()) it.next();
 			for (Iterator i=periods.iterator();i.hasNext();) {
@@ -330,6 +461,8 @@ public class ExamPeriodEditForm extends ActionForm {
 				} else {
 				    period.setStartSlot(start);
 				    period.setLength(length.get(start) / Constants.SLOT_LENGTH_MIN);
+				    period.setEventStartOffset(eventStartOffsets.get(start) == null?new Integer(null):new Integer(eventStartOffsets.get(start)/Constants.SLOT_LENGTH_MIN));
+				    period.setEventStopOffset(eventStopOffsets.get(start) == null?new Integer(null):new Integer(eventStopOffsets.get(start)/Constants.SLOT_LENGTH_MIN));
 				    hibSession.update(period);
 				}
 			}
@@ -342,6 +475,8 @@ public class ExamPeriodEditForm extends ActionForm {
 				    ep.setDateOffset(day);
 				    ep.setStartSlot(start);
 				    ep.setLength(length.get(start) / Constants.SLOT_LENGTH_MIN);
+				    ep.setEventStartOffset(eventStartOffsets.get(start) == null?new Integer(null):new Integer(eventStartOffsets.get(start)/Constants.SLOT_LENGTH_MIN));
+				    ep.setEventStopOffset(eventStopOffsets.get(start) == null?new Integer(null):new Integer(eventStopOffsets.get(start)/Constants.SLOT_LENGTH_MIN));
 				    ep.setExamType(Exam.sExamTypeMidterm);
 				    ep.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral));
 				    hibSession.save(ep);
@@ -401,6 +536,86 @@ public class ExamPeriodEditForm extends ActionForm {
     public void setLength5(Integer length5) { iLength5 = length5; }
     public Long getPrefLevel() { return iPrefLevel; }
     public void setPrefLevel(Long prefLevel) { iPrefLevel = prefLevel; }
+	public Integer getStartOffset() {
+		return iStartOffset;
+	}
+
+	public void setStartOffset(Integer startOffset) {
+		iStartOffset = startOffset;
+	}
+
+	public Integer getStopOffset() {
+		return iStopOffset;
+	}
+
+	public void setStopOffset(Integer stopOffset) {
+		iStopOffset = stopOffset;
+	}
+
+	public Integer getStartOffset2() {
+		return iStartOffset2;
+	}
+
+	public void setStartOffset2(Integer startOffset2) {
+		iStartOffset2 = startOffset2;
+	}
+
+	public Integer getStopOffset2() {
+		return iStopOffset2;
+	}
+
+	public void setStopOffset2(Integer stopOffset2) {
+		iStopOffset2 = stopOffset2;
+	}
+
+	public Integer getStartOffset3() {
+		return iStartOffset3;
+	}
+
+	public void setStartOffset3(Integer startOffset3) {
+		iStartOffset3 = startOffset3;
+	}
+
+	public Integer getStopOffset3() {
+		return iStopOffset3;
+	}
+
+	public void setStopOffset3(Integer stopOffset3) {
+		iStopOffset3 = stopOffset3;
+	}
+
+	public Integer getStartOffset4() {
+		return iStartOffset4;
+	}
+
+	public void setStartOffset4(Integer startOffset4) {
+		iStartOffset4 = startOffset4;
+	}
+
+	public Integer getStopOffset4() {
+		return iStopOffset4;
+	}
+
+	public void setStopOffset4(Integer stopOffset4) {
+		iStopOffset4 = stopOffset4;
+	}
+
+	public Integer getStartOffset5() {
+		return iStartOffset5;
+	}
+
+	public void setStartOffset5(Integer startOffset5) {
+		iStartOffset5 = startOffset5;
+	}
+
+	public Integer getStopOffset5() {
+		return iStopOffset5;
+	}
+
+	public void setStopOffset5(Integer stopOffset5) {
+		iStopOffset5 = stopOffset5;
+	}
+    
     public Vector getPrefLevels() {
         Vector ret = new Vector();
         for (Enumeration e=PreferenceLevel.getPreferenceLevelList(false).elements();e.hasMoreElements();) {
@@ -444,7 +659,10 @@ public class ExamPeriodEditForm extends ActionForm {
 		iDays = new TreeSet<Integer>(); 
 		TreeSet<Integer> times = new TreeSet<Integer>(); 
 		Hashtable<Integer, Integer> lengths = new Hashtable<Integer, Integer>(); 
+		Hashtable<Integer, Integer> eventStartOffsets = new Hashtable<Integer, Integer>(); 
+		Hashtable<Integer, Integer> eventStopOffsets = new Hashtable<Integer, Integer>(); 
 		TreeSet periods = ExamPeriod.findAll(iSession.getUniqueId(),Exam.sExamTypeMidterm);
+		iType = Exam.sSeatingTypes[Exam.sExamTypeMidterm];
 		for (Iterator i=periods.iterator();i.hasNext();) {
 			ExamPeriod period = (ExamPeriod)i.next();
 			iDays.add(period.getDateOffset());
@@ -455,14 +673,26 @@ public class ExamPeriodEditForm extends ActionForm {
 			else if (!length.equals(period.getLength())) {
 				return false;
 			}
+			Integer eventStartOffset = eventStartOffsets.get(period.getStartSlot());
+			if (eventStartOffset == null){
+				eventStartOffsets.put(period.getStartSlot(), period.getEventStartOffset());
+			} else if (!eventStartOffset.equals(period.getEventStartOffset())){
+				return(false);
+			}
+			Integer eventStopOffset = eventStopOffsets.get(period.getStartSlot());
+			if (eventStopOffset == null){
+				eventStopOffsets.put(period.getStartSlot(), period.getEventStopOffset());
+			} else if (!eventStopOffset.equals(period.getEventStopOffset())){
+				return(false);
+			}
 		}
 		if (periods.size()!=iDays.size()*times.size() || times.size()>5) return false;
 		if (times.isEmpty()) {
-		    iStart = 1830; iLength = 60;
-		    iStart2 = 2000; iLength2 = 120;
-		    iStart3 = null; iLength3 = null;
-		    iStart4 = null; iLength4 = null;
-		    iStart5 = null; iLength5 = null;
+		    iStart = 1830; iLength = 60; iStartOffset = iDefaultMidtermStartOffset; iStopOffset = iDefaultMidtermStopOffset;
+		    iStart2 = 2000; iLength2 = 120; iStartOffset2 = iDefaultMidtermStartOffset; iStopOffset2 = iDefaultMidtermStopOffset;
+		    iStart3 = null; iLength3 = null; iStartOffset3 = iDefaultMidtermStartOffset; iStopOffset3 = iDefaultMidtermStopOffset;
+		    iStart4 = null; iLength4 = null; iStartOffset4 = iDefaultMidtermStartOffset; iStopOffset4 = iDefaultMidtermStopOffset;
+		    iStart5 = null; iLength5 = null; iStartOffset5 = iDefaultMidtermStartOffset; iStopOffset5 = iDefaultMidtermStopOffset;
 		}
 		Iterator<Integer> it = times.iterator();
         if (it.hasNext()) {
@@ -470,42 +700,76 @@ public class ExamPeriodEditForm extends ActionForm {
             int min = Constants.SLOT_LENGTH_MIN*times.first()+Constants.FIRST_SLOT_TIME_MIN;
             iStart = 100 * (min / 60) + (min % 60);
             iLength = Constants.SLOT_LENGTH_MIN * lengths.get(slot);
-        } else {
-            iStart = null; iLength = null;
+            iStartOffset = Constants.SLOT_LENGTH_MIN * eventStartOffsets.get(slot);
+            iStopOffset = Constants.SLOT_LENGTH_MIN * eventStopOffsets.get(slot);
+       } else {
+            iStart = null; iLength = null; 
+            if (iType.equals(Exam.sSeatingTypes[Exam.sExamTypeMidterm])){
+            	iStartOffset = iDefaultMidtermStartOffset; iStopOffset = iDefaultMidtermStopOffset;
+            } else {
+            	iStartOffset = iDefaultFinalStartOffset; iStopOffset = iDefaultFinalStopOffset;
+            }
         }
         if (it.hasNext()) {
             int slot = it.next();
             int min = Constants.SLOT_LENGTH_MIN*slot+Constants.FIRST_SLOT_TIME_MIN;
             iStart2 = 100 * (min / 60) + (min % 60);
             iLength2 = Constants.SLOT_LENGTH_MIN * lengths.get(slot);
+            iStartOffset2 = Constants.SLOT_LENGTH_MIN * eventStartOffsets.get(slot);
+            iStopOffset2 = Constants.SLOT_LENGTH_MIN * eventStopOffsets.get(slot);
         } else {
             iStart2 = null; iLength2 = null;
+            if (iType.equals(Exam.sSeatingTypes[Exam.sExamTypeMidterm])){
+            	iStartOffset2 = iDefaultMidtermStartOffset; iStopOffset2 = iDefaultMidtermStopOffset;
+            } else {
+            	iStartOffset2 = iDefaultFinalStartOffset; iStopOffset2 = iDefaultFinalStopOffset;
+            }
         }
         if (it.hasNext()) {
             int slot = it.next();
             int min = Constants.SLOT_LENGTH_MIN*slot+Constants.FIRST_SLOT_TIME_MIN;
             iStart3 = 100 * (min / 60) + (min % 60);
             iLength3 = Constants.SLOT_LENGTH_MIN * lengths.get(slot);
+            iStartOffset3 = Constants.SLOT_LENGTH_MIN * eventStartOffsets.get(slot);
+            iStopOffset3 = Constants.SLOT_LENGTH_MIN * eventStopOffsets.get(slot);
         } else {
-            iStart3 = null; iLength3 = null;
+            iStart3 = null; iLength3 = null; 
+            if (iType.equals(Exam.sSeatingTypes[Exam.sExamTypeMidterm])){
+            	iStartOffset3 = iDefaultMidtermStartOffset; iStopOffset3 = iDefaultMidtermStopOffset;
+            } else {
+            	iStartOffset3 = iDefaultFinalStartOffset; iStopOffset3 = iDefaultFinalStopOffset;
+            }
         }
         if (it.hasNext()) {
             int slot = it.next();
             int min = Constants.SLOT_LENGTH_MIN*slot+Constants.FIRST_SLOT_TIME_MIN;
             iStart4 = 100 * (min / 60) + (min % 60);
             iLength4 = Constants.SLOT_LENGTH_MIN * lengths.get(slot);
+            iStartOffset4 = Constants.SLOT_LENGTH_MIN * eventStartOffsets.get(slot);
+            iStopOffset4 = Constants.SLOT_LENGTH_MIN * eventStopOffsets.get(slot);
         } else {
             iStart4 = null; iLength4 = null;
+            if (iType.equals(Exam.sSeatingTypes[Exam.sExamTypeMidterm])){
+            	iStartOffset4 = iDefaultMidtermStartOffset; iStopOffset4 = iDefaultMidtermStopOffset;
+            } else {
+            	iStartOffset4 = iDefaultFinalStartOffset; iStopOffset4 = iDefaultFinalStopOffset;
+            }
         }
         if (it.hasNext()) {
             int slot = it.next();
             int min = Constants.SLOT_LENGTH_MIN*slot+Constants.FIRST_SLOT_TIME_MIN;
             iStart5 = 100 * (min / 60) + (min % 60);
             iLength5 = Constants.SLOT_LENGTH_MIN * lengths.get(slot);
+            iStartOffset5 = Constants.SLOT_LENGTH_MIN * eventStartOffsets.get(slot);
+            iStopOffset5 = Constants.SLOT_LENGTH_MIN * eventStopOffsets.get(slot);
         } else {
             iStart5 = null; iLength5 = null;
+            if (iType.equals(Exam.sSeatingTypes[Exam.sExamTypeMidterm])){
+            	iStartOffset5 = iDefaultMidtermStartOffset; iStopOffset5 = iDefaultMidtermStopOffset;
+            } else {
+            	iStartOffset5 = iDefaultFinalStartOffset; iStopOffset5 = iDefaultFinalStopOffset;
+            }
         }
-
 		return true;
 	}
 	
@@ -516,7 +780,6 @@ public class ExamPeriodEditForm extends ActionForm {
 	}
 	
 	public boolean hasExam(int day, int month) {
-		//TODO: checked OK
 		return iDays.contains(1+iSession.getDayOfYear(day, month)-getExamOffset());
 	}
 
@@ -530,7 +793,6 @@ public class ExamPeriodEditForm extends ActionForm {
 		for (int m=startMonth;m<=endMonth;m++) {
 			if (m!=startMonth) { border.append(","); pattern.append(","); }
 			border.append("["); pattern.append("[");
-			//TODO: checked OK
 			int daysOfMonth = DateUtils.getNrDaysOfMonth(m, iSession.getSessionStartYear());
 			for (int d=1;d<=daysOfMonth;d++) {
 				if (d>1) { border.append(","); pattern.append(","); }
@@ -569,16 +831,46 @@ public class ExamPeriodEditForm extends ActionForm {
 		int firstOne = 0, lastOne = 0;
 		iDays = new TreeSet<Integer>();
 		for (int m=startMonth;m<=endMonth;m++) {
-			//TODO: checked OK, tested OK
 		    int yr = DateUtils.calculateActualYear(m, iSession.getSessionStartYear());
 			int daysOfMonth = DateUtils.getNrDaysOfMonth(m, iSession.getSessionStartYear());
 			for (int d=1;d<=daysOfMonth;d++) {
 				String exam = request.getParameter("cal_val_"+yr+"_"+((12+m)%12)+"_"+d);
 				if ("1".equals(exam)) {
-					//TODO: checked OK, tested OK
 					iDays.add(1+iSession.getDayOfYear(d, m)-getExamOffset());
 				}
 			}
 		}
+	}
+
+	public Integer getDefaultMidtermStartOffset() {
+		return iDefaultMidtermStartOffset;
+	}
+
+	public void setDefaultMidtermStartOffset(Integer defaultMidtermStartOffset) {
+		iDefaultMidtermStartOffset = defaultMidtermStartOffset;
+	}
+
+	public Integer getDefaultMidtermStopOffset() {
+		return iDefaultMidtermStopOffset;
+	}
+
+	public void setDefaultMidtermStopOffset(Integer defaultMidtermStopOffset) {
+		iDefaultMidtermStopOffset = defaultMidtermStopOffset;
+	}
+
+	public Integer getDefaultFinalStartOffset() {
+		return iDefaultFinalStartOffset;
+	}
+
+	public void setDefaultFinalStartOffset(Integer defaultFinalStartOffset) {
+		iDefaultFinalStartOffset = defaultFinalStartOffset;
+	}
+
+	public Integer getDefaultFinalStopOffset() {
+		return iDefaultFinalStopOffset;
+	}
+
+	public void setDefaultFinalStopOffset(Integer defaultFinalStopOffset) {
+		iDefaultFinalStopOffset = defaultFinalStopOffset;
 	}
 }

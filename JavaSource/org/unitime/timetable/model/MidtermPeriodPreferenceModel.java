@@ -130,7 +130,6 @@ public class MidtermPeriodPreferenceModel {
 		return cal.get(Calendar.DAY_OF_YEAR);
 	}
     
-	//TODO: checked OK, tested OK
     public Integer getDateOffset(int day, int month) {
     	return (1+DateUtils.getDayOfYear(day, month, getYear())-getExamOffset());
     }
@@ -142,8 +141,7 @@ public class MidtermPeriodPreferenceModel {
     	return cal.getTime();
     }
     
-    //TODO: checked OK,tested OK
-    public int getStartMonth() {
+     public int getStartMonth() {
     	Calendar begin = Calendar.getInstance(Locale.US);
     	begin.setTime(iExamBeginDate);
     	Calendar first = Calendar.getInstance(Locale.US);
@@ -153,8 +151,7 @@ public class MidtermPeriodPreferenceModel {
     	return month;
     }
     
-    //TODO: checked OK,tested OK
-    public int getEndMonth() {
+     public int getEndMonth() {
     	Calendar begin = Calendar.getInstance(Locale.US);
     	begin.setTime(iExamBeginDate);
     	Calendar last = Calendar.getInstance(Locale.US);
@@ -212,7 +209,6 @@ public class MidtermPeriodPreferenceModel {
         for (int m=getStartMonth();m<=getEndMonth();m++) {
             if (m!=getStartMonth()) border.append(","); 
             border.append("["); 
-            //TODO: checked OK, tested OK
             int daysOfMonth = DateUtils.getNrDaysOfMonth(m, getYear());;
             for (int d=1;d<=daysOfMonth;d++) {
                 if (d>1) border.append(","); 

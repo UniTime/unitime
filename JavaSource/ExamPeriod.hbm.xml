@@ -85,5 +85,23 @@
 			column="PREF_LEVEL_ID"
 			not-null="true"
 			/>
+			
+		<property
+			name="eventStartOffset"
+			column="event_start_offset"
+			type="java.lang.Integer"
+			length="10"
+			not-null="true"
+		/>
+
+		<property
+			name="eventStopOffset"
+			column="event_stop_offset"
+			type="java.lang.Integer"
+			length="10"
+			not-null="true"
+		/>
+
+	
 	</class>	
 </hibernate-mapping>
