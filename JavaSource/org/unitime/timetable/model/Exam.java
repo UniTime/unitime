@@ -906,10 +906,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
     
     public int examOffset() {
     	int offset = 0;
-    	int defaultOffset = Constants.getExamStartOffset(this);
-    	int prntOff = getPrintOffset()==null?0:getPrintOffset().intValue();
-    	offset = defaultOffset + prntOff; 	
-    	
+    	int prntOff = getPrintOffset()==null?0:getPrintOffset().intValue();	  	
     	return(offset);
     }
     
@@ -931,10 +928,10 @@ public class Exam extends BaseExam implements Comparable<Exam> {
             if (location.getPermanentId()!=null) {
                 Meeting m = new Meeting();
                 m.setMeetingDate(period.getStartDate());
-                m.setStartPeriod(period.getStartSlot());
-                m.setStartOffset(examOffset());
-                m.setStopPeriod(period.getStartSlot()+period.getLength());
-                m.setStopOffset(getLength()-Constants.SLOT_LENGTH_MIN*period.getLength()+examOffset());
+                m.setStartPeriod(period.getExamEventStartSlot());
+                m.setStartOffset(period.getExamEventStartOffsetForExam(this));
+                m.setStopPeriod(period.getExamEventStopSlot());
+                m.setStopOffset(period.getExamEventStopOffsetForExam(this));
                 m.setClassCanOverride(false);
                 m.setLocationPermanentId(location.getPermanentId());
                 m.setApprovedDate(new Date());
@@ -946,10 +943,10 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         if (!created && createNoRoomMeetings) {
             Meeting m = new Meeting();
             m.setMeetingDate(period.getStartDate());
-            m.setStartPeriod(period.getStartSlot());
-            m.setStartOffset(examOffset());
-            m.setStopPeriod(period.getStartSlot()+period.getLength());
-            m.setStopOffset(getLength()-Constants.SLOT_LENGTH_MIN*period.getLength()+examOffset());
+            m.setStartPeriod(period.getExamEventStartSlot());
+            m.setStartOffset(period.getExamEventStartOffsetForExam(this));
+            m.setStopPeriod(period.getExamEventStopSlot());
+            m.setStopOffset(period.getExamEventStopOffsetForExam(this));
             m.setClassCanOverride(false);
             m.setLocationPermanentId(null);
             m.setApprovedDate(new Date());
