@@ -47,7 +47,7 @@
 			column="FIRST_NAME"
 			type="java.lang.String"
 			not-null="true"
-			length="50"
+			length="100"
 		/>
 
 		<property
@@ -55,7 +55,7 @@
 			column="MIDDLE_NAME"
 			type="java.lang.String"
 			not-null="false"
-			length="50"
+			length="100"
 		/>
 		
 		<property

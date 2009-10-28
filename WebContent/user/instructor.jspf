@@ -99,7 +99,7 @@
 		<TR>
 			<TD>First Name:</TD>
 			<TD>
-				<html:text property="fname" maxlength="20" size="20" styleId="fname" />
+				<html:text property="fname" maxlength="100" size="30" styleId="fname" />
 				<input type='button' value='Lookup' onclick="window.open('user/peopleLookup.jsp?query='+fname.value+' '+lname.value,'peopleLookup','width=800,height=600,resizable=no,scrollbars=yes,toolbar=no,location=no,directories=no,status=no,menubar=no,copyhistory=no').focus();" style="btn">
 			<TD>
 		</TR>	
@@ -107,14 +107,14 @@
 		<TR>
 			<TD>Middle Name:</TD>
 			<TD>
-				<html:text property="mname" maxlength="20" size="20" styleId="mname" />
+				<html:text property="mname" maxlength="100" size="30" styleId="mname" />
 			<TD>
 		</TR>	
 		
 		<TR>
 			<TD>Last Name: <font class="reqField">*</font></TD>
 			<TD>
-				<html:text property="lname" maxlength="26" size="26" styleId="lname" />
+				<html:text property="lname" maxlength="100" size="30" styleId="lname" />
 			<TD>
 		</TR>
 		

@@ -126,20 +126,20 @@
 			<TR>
 				<TD>First Name:</TD>
 				<TD>
-					<html:text name="mgrForm" property="firstName" size="20" maxlength="20" styleId="fname"></html:text>
+					<html:text name="mgrForm" property="firstName" size="50" maxlength="100" styleId="fname"></html:text>
 					<input type='button' value='Lookup' onclick="window.open('user/peopleLookup.jsp?query='+firstName.value+' '+lastName.value,'peopleLookup','width=800,height=600,resizable=no,scrollbars=yes,toolbar=no,location=no,directories=no,status=no,menubar=no,copyhistory=no').focus();" style="btn">
 				</TD>
 			</TR>
 			<TR>
 				<TD>Middle Name:</TD>
 				<TD>
-					<html:text name="mgrForm" property="middleName" size="20" maxlength="20" styleId="mname"></html:text>
+					<html:text name="mgrForm" property="middleName" size="50" maxlength="100" styleId="mname"></html:text>
 				</TD>
 			</TR>
 			<TR>
 				<TD>Last Name:</TD>
 				<TD>
-					<html:text name="mgrForm" property="lastName" size="30" maxlength="30" styleId="lname"></html:text>
+					<html:text name="mgrForm" property="lastName" size="50" maxlength="100" styleId="lname"></html:text>
 				</TD>
 			</TR>
 		<%-- </logic:equal> --%>

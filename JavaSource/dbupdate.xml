@@ -2471,6 +2471,40 @@
 		<mysql>alter table %SCHEMA%.tmtbl_mgr_to_roles add receive_emails int(1) default 1</mysql>
 		<plsql>alter table %SCHEMA%.tmtbl_mgr_to_roles add receive_emails number(1) default 1</plsql>
 	</update>
+	<update version="48" date="05-Oct-2009" comment="Add Exam Event Start and Stop Offsets">
+		<mysql>alter table %SCHEMA%.exam_period add event_start_offset int(10) default 0</mysql>
+		<mysql>alter table %SCHEMA%.exam_period add event_stop_offset int(10) default 0</mysql>
+		<plsql>alter table %SCHEMA%.exam_period add event_start_offset number(10,0) default 0 not null</plsql>
+		<plsql>alter table %SCHEMA%.exam_period add event_stop_offset number(10,0) default 0 not null</plsql>
+	</update>
+	<update version="49" date="21-Oct-2009" comment="Name Length Changes">
+		<plsql>alter table %SCHEMA%.departmental_instructor modify fname varchar2(100)</plsql>
+		<mysql>alter table %SCHEMA%.departmental_instructor modify fname varchar(100)</mysql>
+		<plsql>alter table %SCHEMA%.departmental_instructor modify mname varchar2(100)</plsql>
+		<mysql>alter table %SCHEMA%.departmental_instructor modify mname varchar(100)</mysql>
+		<plsql>alter table %SCHEMA%.departmental_instructor modify lname varchar2(100)</plsql>
+		<mysql>alter table %SCHEMA%.departmental_instructor modify lname varchar(100)</mysql>
+		<plsql>alter table %SCHEMA%.event_contact modify firstname varchar2(100)</plsql>
+		<mysql>alter table %SCHEMA%.event_contact modify firstname varchar(100)</mysql>
+		<plsql>alter table %SCHEMA%.event_contact modify middlename varchar2(100)</plsql>
+		<mysql>alter table %SCHEMA%.event_contact modify middlename varchar(100)</mysql>
+		<plsql>alter table %SCHEMA%.event_contact modify lastname varchar2(100)</plsql>
+		<mysql>alter table %SCHEMA%.event_contact modify lastname varchar(100)</mysql>
+		<plsql>alter table %SCHEMA%.staff modify fname varchar2(100)</plsql>
+		<mysql>alter table %SCHEMA%.staff modify fname varchar(100)</mysql>
+		<plsql>alter table %SCHEMA%.staff modify mname varchar2(100)</plsql>
+		<mysql>alter table %SCHEMA%.staff modify mname varchar(100)</mysql>		
+		<plsql>alter table %SCHEMA%.student modify first_name varchar2(100)</plsql>
+		<mysql>alter table %SCHEMA%.student modify first_name varchar(100)</mysql>
+		<plsql>alter table %SCHEMA%.student modify middle_name varchar2(100)</plsql>
+		<mysql>alter table %SCHEMA%.student modify middle_name varchar(100)</mysql>
+		<plsql>alter table %SCHEMA%.timetable_manager modify first_name varchar2(100)</plsql>
+		<mysql>alter table %SCHEMA%.timetable_manager modify first_name varchar(100)</mysql>
+		<plsql>alter table %SCHEMA%.timetable_manager modify middle_name varchar2(100)</plsql>
+		<mysql>alter table %SCHEMA%.timetable_manager modify middle_name varchar(100)</mysql>
+		<plsql>alter table %SCHEMA%.timetable_manager modify last_name varchar2(100)</plsql>
+		<mysql>alter table %SCHEMA%.timetable_manager modify last_name varchar(100)</mysql>		
+	</update>
 	
 	
 </dbupdate>

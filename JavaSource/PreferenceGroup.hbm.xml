@@ -892,7 +892,7 @@
 				column="FNAME"
 				type="java.lang.String"
 				not-null="false"
-				length="20"
+				length="100"
 			/>
 	
 			<property
@@ -900,7 +900,7 @@
 				column="MNAME"
 				type="java.lang.String"
 				not-null="false"
-				length="20"
+				length="100"
 			/>
 	
 			<property
@@ -908,7 +908,7 @@
 				column="LNAME"
 				type="java.lang.String"
 				not-null="true"
-				length="26"
+				length="100"
 			/>
 		
 			<property

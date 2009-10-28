@@ -65,7 +65,7 @@
 			column="FIRST_NAME"
 			type="string"
 			not-null="true"
-			length="20"
+			length="100"
 		/>
 		
 		<property
@@ -73,7 +73,7 @@
 			column="MIDDLE_NAME"
 			type="string"
 			not-null="false"
-			length="20"
+			length="100"
 		/>
 		
 		<property
@@ -81,7 +81,7 @@
 			column="LAST_NAME"
 			type="string"
 			not-null="true"
-			length="30"
+			length="100"
 		/>
 		
 		<property
