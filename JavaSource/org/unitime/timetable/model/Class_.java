@@ -1489,69 +1489,7 @@ public class Class_ extends BaseClass_ {
 			a.cleastAssignmentInfoCache();
             
             ClassEvent event = getEvent();
-            if (event==null) {
-                event = new ClassEvent();
-                event.setClazz(this);
-                setEvent(event);
-            }
-            if (event.getMeetings()!=null) 
-                event.getMeetings().clear();
-            else 
-                event.setMeetings(new HashSet());
-            
-            Date date = new Date();
-            Calendar cal = Calendar.getInstance(Locale.US);
-            cal.setTime(assignment.getTime().getDatePattern().getStartDate()); cal.setLenient(true);
-            for (int idx=0;idx<assignment.getTime().getDatePattern().getPattern().length();idx++) {
-            	if (assignment.getTime().getDatePattern().getPattern().charAt(idx)=='1') {
-            		boolean offered = false;
-                    switch (cal.get(Calendar.DAY_OF_WEEK)) {
-                    	case Calendar.MONDAY : offered = ((assignment.getTime().getDayCode() & Constants.DAY_CODES[Constants.DAY_MON]) != 0); break;
-                    	case Calendar.TUESDAY : offered = ((assignment.getTime().getDayCode() & Constants.DAY_CODES[Constants.DAY_TUE]) != 0); break;
-                    	case Calendar.WEDNESDAY : offered = ((assignment.getTime().getDayCode() & Constants.DAY_CODES[Constants.DAY_WED]) != 0); break;
-                    	case Calendar.THURSDAY : offered = ((assignment.getTime().getDayCode() & Constants.DAY_CODES[Constants.DAY_THU]) != 0); break;
-                    	case Calendar.FRIDAY : offered = ((assignment.getTime().getDayCode() & Constants.DAY_CODES[Constants.DAY_FRI]) != 0); break;
-                    	case Calendar.SATURDAY : offered = ((assignment.getTime().getDayCode() & Constants.DAY_CODES[Constants.DAY_SAT]) != 0); break;
-                    	case Calendar.SUNDAY : offered = ((assignment.getTime().getDayCode() & Constants.DAY_CODES[Constants.DAY_SUN]) != 0); break;
-                    }
-                    if (offered) {
-                        boolean created = false;
-                        for (ClassRoomInfo room: assignment.getRooms()) {
-                            Location location = room.getLocation(hibSession);
-                            if (location.getPermanentId()!=null) {
-                                Meeting m = new Meeting();
-                                m.setMeetingDate(cal.getTime());
-                                m.setStartPeriod(assignment.getTime().getStartSlot());
-                                m.setStartOffset(0);
-                                m.setStopPeriod(assignment.getTime().getStartSlot()+assignment.getTime().getLength());
-                                m.setStopOffset(-assignment.getTime().getBreakTime());
-                                m.setClassCanOverride(false);
-                                m.setLocationPermanentId(location.getPermanentId());
-                                m.setApprovedDate(date);
-                                m.setEvent(event);
-                                event.getMeetings().add(m);
-                                created = true;
-                            }
-                        }
-                        if (!created) {
-                            Meeting m = new Meeting();
-                            m.setMeetingDate(cal.getTime());
-                            m.setStartPeriod(assignment.getTime().getStartSlot());
-                            m.setStartOffset(0);
-                            m.setStopPeriod(assignment.getTime().getStartSlot()+assignment.getTime().getLength());
-                            m.setStopOffset(-assignment.getTime().getBreakTime());
-                            m.setClassCanOverride(false);
-                            m.setLocationPermanentId(null);
-                            m.setApprovedDate(date);
-                            m.setEvent(event);
-                            event.getMeetings().add(m);
-                        }
-
-                    }
-                }
-            	cal.add(Calendar.DAY_OF_YEAR, 1);
-            }
-            
+            event = a.generateCommittedEvent(event, true);
             hibSession.saveOrUpdate(event);
 
             setCommittedAssignment(a);
