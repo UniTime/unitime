@@ -52,7 +52,7 @@ import org.unitime.timetable.util.Constants;
  *
  */
 public class StudentSectioningImport extends BaseImport {
-    public static boolean sStudentId10 = true;
+    public static boolean sStudentId10 = false;
     public static boolean sUseCache = true;
     private static DecimalFormat sDF10 = new DecimalFormat("0000000000");
     
@@ -312,81 +312,81 @@ public class StudentSectioningImport extends BaseImport {
                 getHibSession().delete(demand);
                 i.remove();
             }
-            int priority = 0;
-            for (Iterator i=reqCoursesElement.elementIterator();i.hasNext();priority++) {
-                Element requestElement = (Element)i.next();
-                String waitList = requestElement.attributeValue("waitlist");
-                String alternative = requestElement.attributeValue("alternative");
-                if (requestElement.getName().equals("courseOffering")) {
-                    CourseDemand demand = new CourseDemand();
-                    demand.setAlternative(new Boolean("true".equals(alternative)));
-                    demand.setPriority(new Integer(priority));
-                    demand.setStudent(student);
-                    demand.setWaitlist(new Boolean("true".equals(waitList)));
-                    demand.setTimestamp(new Date());
-                    debug("  "+(priority+1)+". demand (wait="+demand.isWaitlist()+", alt="+demand.isAlternative()+")");
-                    getHibSession().save(demand);
-                    String subjectArea = requestElement.attributeValue("subjectArea");
-                    String courseNbr = requestElement.attributeValue("courseNumber");
-                    Integer credit = Integer.valueOf(requestElement.attributeValue("credit","0"));
-                    CourseOffering courseOffering = getCourseOffering(student.getSession().getUniqueId(), subjectArea, courseNbr);
-                    if (courseOffering==null) {
-                        warn("Course "+subjectArea+" "+courseNbr+" not found."); continue;
+        }
+        int priority = 0;
+        for (Iterator i=reqCoursesElement.elementIterator();i.hasNext();priority++) {
+            Element requestElement = (Element)i.next();
+            String waitList = requestElement.attributeValue("waitlist");
+            String alternative = requestElement.attributeValue("alternative");
+            if (requestElement.getName().equals("courseOffering")) {
+                CourseDemand demand = new CourseDemand();
+                demand.setAlternative(new Boolean("true".equals(alternative)));
+                demand.setPriority(new Integer(priority));
+                demand.setStudent(student);
+                demand.setWaitlist(new Boolean("true".equals(waitList)));
+                demand.setTimestamp(new Date());
+                debug("  "+(priority+1)+". demand (wait="+demand.isWaitlist()+", alt="+demand.isAlternative()+")");
+                getHibSession().save(demand);
+                String subjectArea = requestElement.attributeValue("subjectArea");
+                String courseNbr = requestElement.attributeValue("courseNumber");
+                Integer credit = Integer.valueOf(requestElement.attributeValue("credit","0"));
+                CourseOffering courseOffering = getCourseOffering(student.getSession().getUniqueId(), subjectArea, courseNbr);
+                if (courseOffering==null) {
+                    warn("Course "+subjectArea+" "+courseNbr+" not found."); continue;
+                }
+                int ord = 0;
+                CourseRequest request = new CourseRequest();
+                request.setCourseOffering(courseOffering);
+                request.setAllowOverlap(Boolean.FALSE);
+                request.setCredit(credit);
+                request.setOrder(new Integer(ord));
+                request.setCourseDemand(demand);
+                getHibSession().save(request);
+                debug("    "+courseOffering.getCourseName());
+                for (Iterator j=requestElement.elementIterator("alternative");j.hasNext();) {
+                    Element altElement = (Element)j.next();
+                    String altSubjectArea = altElement.attributeValue("subjectArea");
+                    String altCourseNbr = altElement.attributeValue("courseNumber");
+                    CourseOffering altCourseOffering = getCourseOffering(student.getSession().getUniqueId(), altSubjectArea, altCourseNbr);
+                    if (altCourseOffering==null) {
+                        warn("Course "+altSubjectArea+" "+altCourseNbr+" not found."); continue;
                     }
-                    int ord = 0;
-                    CourseRequest request = new CourseRequest();
-                    request.setCourseOffering(courseOffering);
-                    request.setAllowOverlap(Boolean.FALSE);
-                    request.setCredit(credit);
-                    request.setOrder(new Integer(ord));
-                    request.setCourseDemand(demand);
-                    getHibSession().save(request);
-                    debug("    "+courseOffering.getCourseName());
-                    for (Iterator j=requestElement.elementIterator("alternative");j.hasNext();) {
-                        Element altElement = (Element)j.next();
-                        String altSubjectArea = altElement.attributeValue("subjectArea");
-                        String altCourseNbr = altElement.attributeValue("courseNumber");
-                        CourseOffering altCourseOffering = getCourseOffering(student.getSession().getUniqueId(), altSubjectArea, altCourseNbr);
-                        if (altCourseOffering==null) {
-                            warn("Course "+altSubjectArea+" "+altCourseNbr+" not found."); continue;
-                        }
-                        Integer altCredit = Integer.valueOf(altElement.attributeValue("credit","0"));
-                        ord++;
-                        CourseRequest altRequest = new CourseRequest();
-                        altRequest.setCourseOffering(altCourseOffering);
-                        altRequest.setAllowOverlap(Boolean.FALSE);
-                        altRequest.setCredit(altCredit);
-                        altRequest.setOrder(new Integer(ord));
-                        altRequest.setCourseDemand(demand);
-                        getHibSession().save(altRequest);
-                        debug("    "+altCourseOffering.getCourseName());
-                    }
-                } else if (requestElement.getName().equals("freeTime")) {
-                    String days = requestElement.attributeValue("days");
-                    String startTime = requestElement.attributeValue("startTime");
-                    String length = requestElement.attributeValue("length");
-                    String endTime = requestElement.attributeValue("endTime");
-                    TimeLocation time = makeTime(student.getSession().getDefaultDatePattern(), days, startTime, endTime, length);
-                    FreeTime ft = new FreeTime();
-                    ft.setCategory(new Integer(time.getBreakTime()));
-                    ft.setDayCode(new Integer(time.getDayCode()));
-                    ft.setLength(new Integer(time.getLength()));
-                    ft.setName(time.getLongName());
-                    ft.setSession(student.getSession());
-                    ft.setStartSlot(new Integer(time.getStartSlot()));
-                    getHibSession().save(ft);
-                    CourseDemand demand = new CourseDemand();
-                    demand.setAlternative(new Boolean("true".equals(alternative)));
-                    demand.setPriority(new Integer(priority));
-                    demand.setStudent(student);
-                    demand.setWaitlist(new Boolean("true".equals(waitList)));
-                    demand.setTimestamp(new Date());
-                    demand.setFreeTime(ft);
-                    getHibSession().save(demand);
-                    debug("  "+(priority+1)+". demand (wait="+demand.isWaitlist()+", alt="+demand.isAlternative()+")");
-                    debug("    free "+time.getLongName());
-                } else warn("Request element "+requestElement.getName()+" not recognized.");
-            }
+                    Integer altCredit = Integer.valueOf(altElement.attributeValue("credit","0"));
+                    ord++;
+                    CourseRequest altRequest = new CourseRequest();
+                    altRequest.setCourseOffering(altCourseOffering);
+                    altRequest.setAllowOverlap(Boolean.FALSE);
+                    altRequest.setCredit(altCredit);
+                    altRequest.setOrder(new Integer(ord));
+                    altRequest.setCourseDemand(demand);
+                    getHibSession().save(altRequest);
+                    debug("    "+altCourseOffering.getCourseName());
+                }
+            } else if (requestElement.getName().equals("freeTime")) {
+                String days = requestElement.attributeValue("days");
+                String startTime = requestElement.attributeValue("startTime");
+                String length = requestElement.attributeValue("length");
+                String endTime = requestElement.attributeValue("endTime");
+                TimeLocation time = makeTime(student.getSession().getDefaultDatePattern(), days, startTime, endTime, length);
+                FreeTime ft = new FreeTime();
+                ft.setCategory(new Integer(time.getBreakTime()));
+                ft.setDayCode(new Integer(time.getDayCode()));
+                ft.setLength(new Integer(time.getLength()));
+                ft.setName(time.getLongName());
+                ft.setSession(student.getSession());
+                ft.setStartSlot(new Integer(time.getStartSlot()));
+                getHibSession().save(ft);
+                CourseDemand demand = new CourseDemand();
+                demand.setAlternative(new Boolean("true".equals(alternative)));
+                demand.setPriority(new Integer(priority));
+                demand.setStudent(student);
+                demand.setWaitlist(new Boolean("true".equals(waitList)));
+                demand.setTimestamp(new Date());
+                demand.setFreeTime(ft);
+                getHibSession().save(demand);
+                debug("  "+(priority+1)+". demand (wait="+demand.isWaitlist()+", alt="+demand.isAlternative()+")");
+                debug("    free "+time.getLongName());
+            } else warn("Request element "+requestElement.getName()+" not recognized.");
         }
         getHibSession().saveOrUpdate(student);
     }
