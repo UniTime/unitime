@@ -55,6 +55,7 @@ String serverPath = request.getScheme()+"://"+request.getServerName()+":"+reques
 	<META http-equiv="pragma" content="no-cache">
 	<META http-equiv="cache-control" content="no-cache">
 	<META http-equiv="expires" content="0">
+	<META http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<STYLE type="text/css">@import url(<%=basePath%>scripts/jscalendar/calendar-blue.css);</STYLE>
     <LINK rel="stylesheet" type="text/css" href="<%=basePath%>styles/timetabling.css">
     <tt:hasProperty name="tmtbl.custom.css">
