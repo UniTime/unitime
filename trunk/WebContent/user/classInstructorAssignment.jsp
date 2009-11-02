@@ -1,6 +1,6 @@
 <%--
  * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC
+ * Copyright (C) 2008-2009, UniTime LLC
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 <%@ page import="org.unitime.timetable.model.DepartmentalInstructor" %>
 <%@ page import="org.unitime.timetable.form.ClassInstructorAssignmentForm" %>
 <%@ page import="org.unitime.commons.web.Web" %>
+<%@ page import="org.unitime.timetable.webutil.JavascriptFunctions" %>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
@@ -43,6 +44,24 @@
 <INPUT type="hidden" name="addInstructorId" value = "">
 <INPUT type="hidden" name="hdnOp" value = "">
 
+<SCRIPT language="javascript">
+	<!--
+		<%= JavascriptFunctions.getJsConfirm(Web.getUser(session)) %>
+		
+		function confirmUnassignAll() {
+			if (jsConfirm!=null && !jsConfirm)
+				return true;
+
+			if (!confirm('Do you really want to unassign all instructors?')) {
+				return false;
+			}
+
+			return true;
+		}
+
+	// -->
+</SCRIPT>
+
 	<TABLE width="93%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD colspan="2" valign="middle">
@@ -56,6 +75,7 @@
 					</tt:section-title>						
 
 				<html:submit property="op"
+					onclick="return confirmUnassignAll();"
 					styleClass="btn" titleKey="title.unassignAll">
 					<bean:message key="button.unassignAll" />
 				</html:submit>
