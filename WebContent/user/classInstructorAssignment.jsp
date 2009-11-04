@@ -235,6 +235,7 @@
 		<TR>
 			<TD colspan="2" align="right">
 				<html:submit property="op"
+					onclick="return confirmUnassignAll();"
 					styleClass="btn" titleKey="title.unassignAll">
 					<bean:message key="button.unassignAll" />
 				</html:submit>
