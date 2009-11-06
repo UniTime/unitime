@@ -42,6 +42,7 @@ public class ClassRoomInfo implements Serializable, Comparable<ClassRoomInfo>{
     private transient Location iLocation = null;
     private String iNote = null;
     private boolean iIgnoreRoomChecks;
+    private String iRoomType = null;
     
     public ClassRoomInfo(Location location, int preference) {
         iLocation = location;
@@ -53,6 +54,7 @@ public class ClassRoomInfo implements Serializable, Comparable<ClassRoomInfo>{
         iY = (location.getCoordinateY()==null?-1:location.getCoordinateY().intValue());
         iIgnoreTooFar = location.isIgnoreTooFar().booleanValue();
         iIgnoreRoomChecks = location.isIgnoreRoomCheck();
+        iRoomType = location.getRoomTypeLabel();
     }
     
     public ClassRoomInfo(Location location, int preference, String note) {
@@ -86,7 +88,7 @@ public class ClassRoomInfo implements Serializable, Comparable<ClassRoomInfo>{
     	}
         return "<span style='color:"+PreferenceLevel.prolog2color(PreferenceLevel.int2prolog(pref))+";' " +
         		"title='"+PreferenceLevel.prolog2string(PreferenceLevel.int2prolog(pref))+" "+getName()+
-        		" ("+(hasNote()?getNote()+", ":"")+getCapacity()+" seats)'>"+
+        		" ("+(hasNote()?getNote()+", ":"")+getCapacity()+" seats, " + iRoomType + ")'>"+
         		(s?"<s>":"")+
         		getName()+
         		(s?"</s>":"")+
