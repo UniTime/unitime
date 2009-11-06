@@ -29,7 +29,11 @@ import org.unitime.timetable.model.dao.LocationDAO;
  * @author Tomas Muller
  */
 public class ClassRoomInfo implements Serializable, Comparable<ClassRoomInfo>{
-    private Long iId = null;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 210491037628622512L;
+	private Long iId = null;
     private String iName = null;
     private int iPreference = 0;
     private int iCapacity;
@@ -37,6 +41,7 @@ public class ClassRoomInfo implements Serializable, Comparable<ClassRoomInfo>{
     private boolean iIgnoreTooFar;
     private transient Location iLocation = null;
     private String iNote = null;
+    private boolean iIgnoreRoomChecks;
     
     public ClassRoomInfo(Location location, int preference) {
         iLocation = location;
@@ -47,6 +52,7 @@ public class ClassRoomInfo implements Serializable, Comparable<ClassRoomInfo>{
         iX = (location.getCoordinateX()==null?-1:location.getCoordinateX().intValue());
         iY = (location.getCoordinateY()==null?-1:location.getCoordinateY().intValue());
         iIgnoreTooFar = location.isIgnoreTooFar().booleanValue();
+        iIgnoreRoomChecks = location.isIgnoreRoomCheck();
     }
     
     public ClassRoomInfo(Location location, int preference, String note) {
@@ -123,5 +129,13 @@ public class ClassRoomInfo implements Serializable, Comparable<ClassRoomInfo>{
             getName()+
             "</span>";
     }
+
+	public boolean isIgnoreRoomChecks() {
+		return iIgnoreRoomChecks;
+	}
+
+	public void setIgnoreRoomChecks(boolean ignoreRoomChecks) {
+		iIgnoreRoomChecks = ignoreRoomChecks;
+	}
 
 }
