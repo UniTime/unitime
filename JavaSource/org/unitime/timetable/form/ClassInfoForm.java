@@ -40,6 +40,7 @@ public class ClassInfoForm extends ActionForm {
     private boolean iAllowRoomConflict = false;
     private String iRoomOrder = null;
     private boolean iAllRooms = false;
+    private boolean iKeepConflictingAssignments = false;
     public static String sRoomOrdNameAsc = "Name [asc]";
     public static String sRoomOrdNameDesc = "Name [desc]";
     public static String sRoomOrdSizeAsc = "Size [asc]";
@@ -64,6 +65,7 @@ public class ClassInfoForm extends ActionForm {
         iAllRooms = false;
         iRoomOrder = sRoomOrdNameAsc;
         iFilter = null;
+        iKeepConflictingAssignments = false;
     }
     
     public void load(HttpSession session) {
@@ -74,6 +76,7 @@ public class ClassInfoForm extends ActionForm {
         iAllowRoomConflict = "true".equals(session.getAttribute("ClassInfo.AllowRoomConflict"));
         iAllRooms = "true".equals(session.getAttribute("ClassInfo.AllRooms"));
         iFilter = (String)session.getAttribute("ClassInfo.Filter");
+        iKeepConflictingAssignments = "true".equals(session.getAttribute("ClassInfo.KeepConflictingAssignments"));
     }
     
     public void save(HttpSession session) {
@@ -95,6 +98,11 @@ public class ClassInfoForm extends ActionForm {
             session.setAttribute("ClassInfo.RoomFilter", iRoomFilter);
         session.setAttribute("ClassInfo.AllowRoomConflict", (iAllowRoomConflict?"true":"false"));
         session.setAttribute("ClassInfo.AllRooms", (iAllRooms?"true":"false"));
+        if (!iKeepConflictingAssignments)
+        	session.removeAttribute("ClassInfo.KeepConflictingAssignments");
+        else
+        	session.setAttribute("ClassInfo.KeepConflictingAssignments", (iKeepConflictingAssignments?"true":"false"));
+
         if (iFilter==null)
             session.removeAttribute("ClassInfo.Filter");
         else
@@ -123,4 +131,13 @@ public class ClassInfoForm extends ActionForm {
     public String[] getRoomOrders() { return sRoomOrds; }
     public String getFilter() { return iFilter; }
     public void setFilter(String filter) { iFilter = filter; }
+
+	public boolean getKeepConflictingAssignments() {
+		return iKeepConflictingAssignments;
+	}
+
+	public void setKeepConflictingAssignments(
+			boolean unassignConflictingAssignments) {
+		iKeepConflictingAssignments = unassignConflictingAssignments;
+	}
 }

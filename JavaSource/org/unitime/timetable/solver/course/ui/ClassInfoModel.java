@@ -90,9 +90,10 @@ public class ClassInfoModel implements Serializable {
     private int iTimesTableOrd = 0;
     private String iManagerExternalId = null;
     private boolean iShowStudentConflicts = "true".equalsIgnoreCase(ApplicationProperties.getProperty("tmtbl.classAssign.showStudentConflicts", "true"));
+    private boolean iUnassignConflictingAssignments = false;
     
     public void clear(TimetableManager manager) {
-        iClass = null; iChange = null; iRooms = null; iTimes = null;
+        iClass = null; iChange = null; iRooms = null; iTimes = null; iUnassignConflictingAssignments = false;
         iManagerExternalId = manager.getExternalUniqueId();
     }
     
@@ -118,6 +119,7 @@ public class ClassInfoModel implements Serializable {
         if (iChange==null) return;
         Vector<ClassAssignment> assignments = new Vector(iChange.getAssignments());
         Hashtable<Long,ClassAssignment> table = iChange.getAssignmentTable();
+        iUnassignConflictingAssignments = !iForm.getKeepConflictingAssignments();
         iChange.getAssignments().clear();
         for (ClassAssignment assignment : assignments) {
             iChange.getAssignments().add(new ClassAssignmentInfo(assignment.getClazz(),assignment.getTime(),assignment.getRooms(),table));
@@ -125,26 +127,29 @@ public class ClassInfoModel implements Serializable {
         iChange.getConflicts().clear();
         for (ClassAssignment assignment : iChange.getAssignments()) {
         	// Check for room conflicts
-            if (assignment.getRooms()!=null) for (ClassRoomInfo room : assignment.getRooms()) {
-            	for (Assignment a : room.getLocation().getCommitedAssignments()) {
-            		if (assignment.getTime().overlaps(new ClassTimeInfo(a,0))) {
-            			if (iChange.getCurrent(a.getClassId())==null && iChange.getConflict(a.getClassId())==null)
-            				iChange.getConflicts().add(new ClassAssignment(a));
-            		}
-            	}
-            }
-            
-            // Check for instructor conflicts
-            if (assignment.getInstructors()!=null) for (ClassInstructorInfo instructor : assignment.getInstructors()) {
-            	if (!instructor.isLead()) continue;
-            	for (Assignment a : instructor.getInstructor().getInstructor().getCommitedAssignments()) {
-            		if (assignment.getTime().overlaps(new ClassTimeInfo(a,0))) {
-            			if (iChange.getCurrent(a.getClassId())==null && iChange.getConflict(a.getClassId())==null)
-            				iChange.getConflicts().add(new ClassAssignment(a));
-            		}
-            	}
-            }
-
+        	if (iUnassignConflictingAssignments){
+	            if (assignment.getRooms()!=null) for (ClassRoomInfo room : assignment.getRooms()) {
+	            	if (!room.isIgnoreRoomChecks()){
+		            	for (Assignment a : room.getLocation().getCommitedAssignments()) {
+		            		if (assignment.getTime().overlaps(new ClassTimeInfo(a,0))) {
+		            			if (iChange.getCurrent(a.getClassId())==null && iChange.getConflict(a.getClassId())==null)
+		            				iChange.getConflicts().add(new ClassAssignment(a));
+		            		}
+		            	}
+	            	}
+	            }
+	            
+	            // Check for instructor conflicts
+	            if (assignment.getInstructors()!=null) for (ClassInstructorInfo instructor : assignment.getInstructors()) {
+	            	if (!instructor.isLead()) continue;
+	            	for (Assignment a : instructor.getInstructor().getInstructor().getCommitedAssignments()) {
+	            		if (assignment.getTime().overlaps(new ClassTimeInfo(a,0))) {
+	            			if (iChange.getCurrent(a.getClassId())==null && iChange.getConflict(a.getClassId())==null)
+	            				iChange.getConflicts().add(new ClassAssignment(a));
+	            		}
+	            	}
+	            }
+        	}
             // Check the course structure for conflicts
             Class_ clazz = assignment.getClazz(Class_DAO.getInstance().getSession());
             // a) all parents
