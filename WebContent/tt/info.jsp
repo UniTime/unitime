@@ -117,24 +117,27 @@
 			</tt:section-title></td></tr>
 			<tr><td colspan='2'>
 				<table border='0' width='100%'>
-					<tr><td>
+					<tr><td valign="top" nowrap>
 						Size:
 							<html:text property="minRoomSize" size="5" maxlength="5"/> - <html:text property="maxRoomSize" size="5" maxlength="5"/>
-					</td><td>
+					</td><td valign="top" nowrap>
 						Filter:
 							<html:text property="roomFilter" size="15" maxlength="100"/>
-					</td><td>
+					</td><td valign="top" nowrap>
 						Allow conflicts:
 							<html:checkbox property="allowRoomConflict"/>
-					</td><td>
+					</td><td valign="top" nowrap>
+					    Do not unassign<br>conflicting class<br>assignments:
+					    	<html:checkbox property="keepConflictingAssignments"/>
+					</td><td valign="top" nowrap>
 						All rooms:
 							<html:checkbox property="allRooms"/>
-					</td><td>
+					</td><tdvalign="top" nowrap>
 						Order:
 							<html:select property="roomOrder">
 								<html:options property="roomOrders"/>
 							</html:select>
-					</td><td align="right">
+					</td><td align="right" valign="top" nowrap>
 						<html:submit onclick="displayLoading();" property="op" value="Apply"/>
 					</td></tr>
 				</table>

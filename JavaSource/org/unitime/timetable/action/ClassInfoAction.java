@@ -125,6 +125,11 @@ public class ClassInfoAction extends Action {
 
         if ("Close".equals(op)) {
             myForm.setOp("Close");
+            
+        }
+        if (myForm.getOp() == null || myForm.getOp().equals("Close")){
+        	myForm.setKeepConflictingAssignments(false);
+            request.getSession().removeAttribute("ClassInfo.KeepConflictingAssignments");
         }
         
         /*
