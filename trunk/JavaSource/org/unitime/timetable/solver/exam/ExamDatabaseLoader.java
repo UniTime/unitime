@@ -100,6 +100,8 @@ public class ExamDatabaseLoader extends ExamLoader {
     private boolean iMakeupSameRoom = false;
     
     private boolean iRoomAvailabilityTimeStampIsSet = false;
+    
+    private static int sMaxNbrRooms = 10;
 
     public ExamDatabaseLoader(ExamModel model) {
         super(model);
@@ -258,6 +260,11 @@ public class ExamDatabaseLoader extends ExamLoader {
                 else x.setAveragePeriod(getModel().getPeriods().size()/2);
             }
             x.setModel(getModel());
+            
+            if (x.getMaxRooms()>sMaxNbrRooms) {
+            	iProgress.error("Exam "+getExamLabel(exam)+" has maximal number of rooms set to "+x.getMaxRooms()+" which exceeds the solver limit of "+sMaxNbrRooms+" rooms.");
+            	x.setMaxRooms(sMaxNbrRooms);
+            }
             
             int minSize = 0;
             Vector<ExamOwner> owners = new Vector();
