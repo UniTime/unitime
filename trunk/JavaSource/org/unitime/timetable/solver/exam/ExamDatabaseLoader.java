@@ -1,6 +1,6 @@
 /*
  * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * Copyright (C) 2008 - 2009, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -250,7 +250,7 @@ public class ExamDatabaseLoader extends ExamLoader {
                     exam.getUniqueId(),
                     exam.getLabel(),
                     exam.getLength(),
-                    (exam.getSeatingType()==org.unitime.timetable.model.Exam.sSeatingTypeExam),
+                    (exam.getSeatingType().intValue()==org.unitime.timetable.model.Exam.sSeatingTypeExam),
                     exam.getMaxNbrRooms(),
                     0,
                     periodPlacements,
