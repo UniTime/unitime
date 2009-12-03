@@ -650,7 +650,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		String pattern = createPatternString(startDates, endDates);
 		DatePattern dp = (DatePattern) this.
 		getHibSession().
-		createQuery("from DatePattern as d where d.session.uniqueId = :sessionId and d.pattern = :pattern and d.offset = :offset").
+		createQuery("from DatePattern as d where d.session.uniqueId = :sessionId and d.pattern = :pattern and d.offset = :offset and d.type = (select min(dd.type) from DatePattern as dd where dd.session.uniqueId = :sessionId and dd.pattern = :pattern and dd.offset = :offset)").
 		setLong("sessionId", session.getUniqueId().longValue()).
 		setString("pattern", pattern).
 		setInteger("offset", offset).
