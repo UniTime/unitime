@@ -66,7 +66,6 @@ import org.unitime.timetable.util.DateUtils;
 
 public class CourseOfferingExport extends BaseExport {
     protected static DecimalFormat sTwoNumbersDF = new DecimalFormat("00");
-    protected static DecimalFormat sShareDF = new DecimalFormat("0.00");
     protected static SimpleDateFormat sDateFormat = new SimpleDateFormat("yyyy/MM/dd");
     protected static SimpleDateFormat sTimeFormat = new SimpleDateFormat("HHmm");
     protected Hashtable<Long, TreeSet<Exam>> iExams = null;
@@ -289,7 +288,8 @@ public class CourseOfferingExport extends BaseExport {
     
     protected void exportInstructor(Element instructorElement, ClassInstructor instructor, Session session) {
         exportInstructor(instructorElement, instructor.getInstructor(), session);
-        instructorElement.addAttribute("share", sShareDF.format(((double)instructor.getPercentShare())/100.0));
+        if (instructor.getPercentShare()!=null)
+        	instructorElement.addAttribute("share", instructor.getPercentShare().toString());
         instructorElement.addAttribute("lead", instructor.isLead()?"true":"false");
     }
     

@@ -50,8 +50,8 @@
 				<time days="MWF" startTime="0730" endTime="0820"/>
 				<room id="" building="REC" roomNbr="101"/>
 				<room id="" building="REC" roomNbr="102"/>
-				<instructor id="23344" lname="" mname="" fname="" share="0.8" lead="true"/> <!-- only instructors that are allowed to be printed are included -->
-				<instructor id="23435" lname="" mname="" fname="" share="0.2"/>
+				<instructor id="23344" lname="" mname="" fname="" share="80" lead="true"/> <!-- only instructors that are allowed to be printed are included -->
+				<instructor id="23435" lname="" mname="" fname="" share="20"/>
 			</class>
 			<class id="" type="Lab" suffix="1" limit="15"/>
 			<class id="" type="Lab" suffix="2" limit="5"/>
