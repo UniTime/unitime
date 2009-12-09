@@ -473,6 +473,9 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
         printHeader();
         for (CourseOffering co : allCourses) {
             InstructionalOffering io = co.getInstructionalOffering();
+            if(io.isNotOffered().booleanValue()){
+            	continue;
+            }
             if (!co.isIsControl() && co.getInstructionalOffering().getControllingCourseOffering().getSubjectArea().equals(co.getSubjectArea())) continue;
             if (subject==null) {
                 subject = co.getSubjectArea();
