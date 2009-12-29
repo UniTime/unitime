@@ -810,6 +810,14 @@ public class InstructionalOfferingConfigEditAction extends Action {
 
 	        hibSession.flush();
             tx.commit();
+            
+            hibSession.refresh(io);
+
+        	String className = ApplicationProperties.getProperty("tmtbl.external.instr_offr_config.change_action.class");
+        	if (className != null && className.trim().length() > 0){
+	        	ExternalInstrOffrConfigChangeAction configChangeAction = (ExternalInstrOffrConfigChangeAction) (Class.forName(className).newInstance());
+	       		configChangeAction.performExternalInstrOffrConfigChangeAction(io, hibSession);
+        	}
 
         }
         catch (Exception e) {
