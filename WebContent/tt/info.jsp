@@ -17,6 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 --%>
 <%@ page language="java" autoFlush="true"%>
+<%@ page import="org.unitime.timetable.form.ClassInfoForm"%>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
@@ -24,6 +25,12 @@
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <script language="JavaScript" type="text/javascript" src="scripts/block.js"></script>
 <tiles:importAttribute />
+<%
+	// Get Form 
+	String frmName = "classInfoForm";
+	ClassInfoForm frm = (ClassInfoForm) request.getAttribute(frmName);
+
+%>
 <html:form action="/classInfo">
 	<html:submit onclick="displayLoading();" property="op" value="Apply" style="display:none;"/>
 	<bean:define id="model" name="classInfoForm" property="model"/>
@@ -55,8 +62,10 @@
 		<tr><td>Number of Rooms:</td><td><bean:write name="clazz" property="numberOfRooms"/></td></tr>
 		<tr><td>Room Ration:</td><td><bean:write name="clazz" property="roomRatio"/> ( Minimum Room Capacity: <bean:write name="clazz" property="minRoomCapacity"/> )</td></tr>
 		<logic:notEmpty name="clazz" property="instructors">
-			<tr><td>Leading Instructor(s):</td><td><bean:write name="clazz" property="leadingInstructorNames(<br>)"/></td></tr>
-		</logic:notEmpty>
+			<tr><td valign="top">Conflict Checked Instructor(s):</td><td>
+			<%= frm.getModel().getClazz().getLeadingInstructorNames("<br>") %> 
+		</td></tr> 
+ 		</logic:notEmpty>
 		<logic:notEmpty name="model" property="change">
 			<logic:notEmpty name="model" property="classOldAssignment">
 				<bean:define id="assignment" name="model" property="classOldAssignment"/>
