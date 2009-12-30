@@ -1,6 +1,6 @@
 <%--
  * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC
+ * Copyright (C) 2008-2009, UniTime LLC
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,12 +18,19 @@
 --%>
 <%@ page language="java" autoFlush="true"%>
 <%@page import="org.unitime.timetable.solver.exam.ui.ExamConflictStatisticsInfo"%>
+<%@ page import="org.unitime.timetable.form.ExamInfoForm"%>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <script language="JavaScript" type="text/javascript" src="scripts/block.js"></script>
+<%
+	// Get Form 
+	String frmName = "examInfoForm";
+	ExamInfoForm frm = (ExamInfoForm) request.getAttribute(frmName);
+
+%>
 <tiles:importAttribute />
 <html:form action="/examInfo">
 	<html:submit onclick="displayLoading();" property="op" value="Apply" style="display:none;"/>
@@ -60,7 +67,7 @@
 		<tr><td>Seating Type:</td><td><bean:write name="exam" property="seatingTypeLabel"/></td></tr>
 		<tr><td>Maximum Number of Rooms:</td><td><bean:write name="exam" property="maxRooms"/></td></tr>
 		<logic:notEmpty name="exam" property="instructors">
-			<tr><td>Instructor(s):</td><td><bean:write name="exam" property="instructorName(<br>)"/></td></tr>
+			<tr><td valign="top">Instructor(s):</td><td><%= frm.getModel().getExam().getInstructorName("<br>") %></td></tr>
 		</logic:notEmpty>
 		<logic:notEmpty name="model" property="change">
 			<logic:notEmpty name="model" property="examOldAssignment">
