@@ -1002,7 +1002,7 @@ public class ClassInfoModel implements Serializable {
     }
     
     public Vector<ClassRoomInfo> getRooms() {
-        if (getClazz().getClassLimit()==0) return null;
+        // if (getClazz().getClassLimit()==0) return null;
         int minRoomSize = -1;
         try {
             minRoomSize = (iForm.getMinRoomSize()==null || iForm.getMinRoomSize().length()==0 ? -1 : Integer.parseInt(iForm.getMinRoomSize().trim()));
