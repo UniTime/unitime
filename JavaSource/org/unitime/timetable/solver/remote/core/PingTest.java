@@ -112,7 +112,7 @@ public class PingTest {
 					RemoteIo.writeObject(socket,"ping");
 					Object response = RemoteIo.readObject(socket);
 					long t1 = System.currentTimeMillis();
-					System.out.println("Ping recieved in "+(t1-t0)+" ms.");
+					System.out.println("Ping received in "+(t1-t0)+" ms.");
 					sleep(250);
 				}
 				RemoteIo.writeObject(socket, "quit");

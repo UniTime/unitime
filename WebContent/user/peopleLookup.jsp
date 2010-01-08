@@ -72,7 +72,7 @@
 	
 	// Response
 	req.onreadystatechange = function() {
-		out.innerHTML = "<i>Response recieved.</i>";
+		out.innerHTML = "<i>Response received.</i>";
 		try {
 			if (req.readyState == 4 && req.status == 200) {
 				// Response
@@ -108,7 +108,7 @@
 						out.innerHTML = "<i>No matching record found for '"+query+"'.</i>";
 					}
 				} else {
-					out.innerHTML = "<i><font color='red'>Response recieved, no data provided.</font></i>";
+					out.innerHTML = "<i><font color='red'>Response received, no data provided.</font></i>";
 				}
 			}
 		} catch(e) {
