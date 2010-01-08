@@ -203,7 +203,7 @@ public class RoomAvailabilityService implements RoomAvailabilityInterface {
         return availability;
     }
     
-    protected Document recieveResponse() throws IOException, DocumentException {
+    protected Document receiveResponse() throws IOException, DocumentException {
         FileInputStream fis = null;
         try {
             if (!iResponseFile.exists() || !iResponseFile.canRead()) return null;
@@ -230,12 +230,12 @@ public class RoomAvailabilityService implements RoomAvailabilityInterface {
                 sLog.debug("Request "+iRequestFile+" created.");
                 Document response = null;
                 long waited = 0;
-                while ((response = recieveResponse())==null) {
+                while ((response = receiveResponse())==null) {
                     sLog.debug("Waiting for response ("+(waited/1000)+"s waited so far)...");
                     sleep(5000);
                     waited+=5000;
                     if (waited>iTimeout) {
-                        sLog.error("No response recieved after "+(iTimeout/1000)+"s.");
+                        sLog.error("No response received after "+(iTimeout/1000)+"s.");
                         throw new Exception("Timeout");
                     }
                 }

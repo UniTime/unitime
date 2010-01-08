@@ -101,7 +101,7 @@ public class ControlThread extends Thread implements ResourceProvider {
 		try {
 			answer = query("ping", 10000);
 		} catch (Exception e) {}
-		sLogger.debug(" -- answer ("+answer+") recieved in "+(System.currentTimeMillis()-t0)+" ms");
+		sLogger.debug(" -- answer ("+answer+") received in "+(System.currentTimeMillis()-t0)+" ms");
 		if (!"ack".equals(answer)) {
 			sLogger.debug("   -- answer is not ack, disconnecting");
 			try {
