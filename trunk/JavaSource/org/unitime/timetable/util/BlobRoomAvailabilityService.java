@@ -47,7 +47,7 @@ public class BlobRoomAvailabilityService extends RoomAvailabilityService {
         }
     }
     
-    protected Document recieveResponse() throws IOException, DocumentException {
+    protected Document receiveResponse() throws IOException, DocumentException {
         try {
             SessionFactoryImplementor hibSessionFactory = (SessionFactoryImplementor)new _RootDAO().getSession().getSessionFactory();
             Connection connection = hibSessionFactory.getConnectionProvider().getConnection();
@@ -67,7 +67,7 @@ public class BlobRoomAvailabilityService extends RoomAvailabilityService {
             reader.close();
             return document;
         } catch (Exception e) {
-            sLog.error("Unable to recieve response: "+e.getMessage(),e);
+            sLog.error("Unable to receive response: "+e.getMessage(),e);
             return null;
         } finally {
             _RootDAO.closeCurrentThreadSessions();
