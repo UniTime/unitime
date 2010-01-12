@@ -117,7 +117,26 @@ public class Exam extends BaseExam implements Comparable<Exam> {
 	public String generateName() {
         StringBuffer sb = new StringBuffer();
         ExamOwner prev = null;
-        for (Iterator i=new TreeSet(getOwners()).iterator();i.hasNext();) {
+        TreeSet owners = new TreeSet(getOwners());
+        if ("true".equals(ApplicationProperties.getProperty("tmtbl.exam.name.expandCrosslistedOfferingToCourses","false"))) {
+        	HashSet dummies = new HashSet();
+        	for (Iterator i=owners.iterator();i.hasNext();) {
+                ExamOwner owner = (ExamOwner)i.next();
+                if (owner.getOwnerType() != ExamOwner.sOwnerTypeOffering) continue;
+                InstructionalOffering offering = (InstructionalOffering)owner.getOwnerObject();
+                if (offering.getCourseOfferings().size() > 1) {
+                	i.remove();
+                	for (Iterator j=offering.getCourseOfferings().iterator(); j.hasNext();) {
+                		CourseOffering course = (CourseOffering)j.next();
+                		ExamOwner dummy = new ExamOwner();
+                		dummy.setOwner(course);
+                		dummies.add(dummy);
+                	}
+                }
+            }
+        	owners.addAll(dummies);
+        }
+        for (Iterator i=owners.iterator();i.hasNext();) {
             ExamOwner owner = (ExamOwner)i.next();
             Object ownerObject = owner.getOwnerObject();
             if (prev!=null && prev.getCourse().getSubjectArea().equals(owner.getCourse().getSubjectArea())) {
