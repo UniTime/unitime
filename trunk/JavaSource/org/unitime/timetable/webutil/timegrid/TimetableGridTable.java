@@ -124,6 +124,7 @@ public class TimetableGridTable {
 	private int iOrderBy = sOrderByNameAsc;
 	private int iWeek = -100;
 	private boolean iShowUselessTimes = false;
+	private boolean iShowInstructors = false;
 	
 	private String iDefaultDatePatternName = null;
 	
@@ -146,6 +147,8 @@ public class TimetableGridTable {
 	public void setWeek(int week) { iWeek = week; }
 	public boolean getShowUselessTimes() { return iShowUselessTimes; }
 	public void setShowUselessTimes(boolean showUselessTimes) { iShowUselessTimes = showUselessTimes; }
+	public boolean getShowInstructors() { return iShowInstructors; }
+	public void setShowInstructors(boolean showInstructors) { iShowInstructors = showInstructors; }
 	public Vector getWeeks(HttpSession httpSession) throws Exception { 
 		Vector weeks = new Vector();
 		weeks.addElement(new IdValue(new Long(-100),"All weeks"));
@@ -408,6 +411,8 @@ public class TimetableGridTable {
 							out.print(cell.getName());
 							if (getResourceType()!=TimetableGridModel.sResourceTypeRoom)
 								out.print("<BR>"+cell.getRoomName());
+							else if (getResourceType()!=TimetableGridModel.sResourceTypeInstructor && iShowInstructors)
+								out.print("<BR>"+cell.getInstructor());
 							else
 								out.print(cell.getShortComment()==null?"":"<BR>"+cell.getShortComment());
 							if (iWeek==-100 && cell.hasDays() && !cell.getDays().equals(iDefaultDatePatternName))
@@ -474,6 +479,8 @@ public class TimetableGridTable {
 							out.print(cell.getName());
 							if (getResourceType()!=TimetableGridModel.sResourceTypeRoom)
 								out.print("<BR>"+cell.getRoomName());
+							else if (getResourceType()!=TimetableGridModel.sResourceTypeInstructor && iShowInstructors)
+								out.print("<BR>"+cell.getInstructor());
 							else
 								out.print(cell.getShortComment()==null?"":"<BR>"+cell.getShortComment());
 							if (iWeek==-100 && cell.hasDays() && !cell.getDays().equals(iDefaultDatePatternName))
@@ -536,6 +543,8 @@ public class TimetableGridTable {
 							out.print(cell.getName());
 							if (getResourceType()!=TimetableGridModel.sResourceTypeRoom)
 								out.print("<BR>"+cell.getRoomName());
+							else if (getResourceType()!=TimetableGridModel.sResourceTypeInstructor && iShowInstructors)
+								out.print("<BR>"+cell.getInstructor());
 							else
 								out.print(cell.getShortComment()==null?"":"<BR>"+cell.getShortComment());
 							if (iWeek==-100 && cell.hasDays() && !cell.getDays().equals(iDefaultDatePatternName))
