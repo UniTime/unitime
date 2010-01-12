@@ -382,6 +382,17 @@ public class SolutionGridModel extends TimetableGridModel {
 			}
 		}
 		
+		String instructors = null;
+		for (Iterator i=assignment.getInstructors().iterator(); i.hasNext();) {
+			DepartmentalInstructor instructor = (DepartmentalInstructor)i.next();
+			if (instructors==null) {
+				instructors = "";
+			} else {
+				instructors += ", ";
+			}
+			instructors += instructor.getName(DepartmentalInstructor.sNameFormatShort);
+		}
+		
 		return new TimetableGridCell(
 				day,
 				slot,
@@ -398,6 +409,7 @@ public class SolutionGridModel extends TimetableGridModel {
 				0, 
 				nrMeetings,
 				assignment.getDatePattern().getName(),
-				assignment.getDatePattern().getPatternBitSet());
+				assignment.getDatePattern().getPatternBitSet(),
+				instructors);
 	}
 }
