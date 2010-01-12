@@ -320,6 +320,8 @@ public class PdfTimetableGridTable {
 						addText(c, cell.getName());
 						if (iTable.getResourceType()!=TimetableGridModel.sResourceTypeRoom)
 							addText(c, cell.getRoomName());
+						else if (iTable.getResourceType()!=TimetableGridModel.sResourceTypeInstructor && iTable.getShowInstructors())
+							addText(c, cell.getInstructor());
 						else
 							addText(c, cell.getShortCommentNoColors()==null?null:cell.getShortCommentNoColors());
 						if (iTable.getWeek()==-100 && cell.hasDays() && !cell.getDays().equals(iTable.getDefaultDatePatternName()))
@@ -375,6 +377,8 @@ public class PdfTimetableGridTable {
 							addText(c, cell.getName());
 							if (iTable.getResourceType()!=TimetableGridModel.sResourceTypeRoom)
 								addText(c, cell.getRoomName());
+							else if (iTable.getResourceType()!=TimetableGridModel.sResourceTypeInstructor && iTable.getShowInstructors())
+								addText(c, cell.getInstructor());
 							else
 								addText(c, cell.getShortCommentNoColors()==null?null:cell.getShortCommentNoColors());
 							if (iTable.getWeek()==-100 && cell.hasDays() && !cell.getDays().equals(iTable.getDefaultDatePatternName()))
@@ -427,6 +431,8 @@ public class PdfTimetableGridTable {
 								addTextVertical(c, cell.getDays());
 							if (iTable.getResourceType()!=TimetableGridModel.sResourceTypeRoom)
 								addTextVertical(c, cell.getRoomName());
+							else if (iTable.getResourceType()!=TimetableGridModel.sResourceTypeInstructor && iTable.getShowInstructors())
+								addTextVertical(c, cell.getInstructor());
 							else
 								addTextVertical(c, cell.getShortCommentNoColors()==null?null:cell.getShortCommentNoColors());
 							addTextVertical(c, cell.getName());

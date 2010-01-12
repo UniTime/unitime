@@ -36,6 +36,7 @@ public class TimetableGridCell implements Serializable, Comparable {
 	private String iName;
 	private String iShortComment;
 	private String iShortCommentNoColors;
+	private String iInstructor;
 	private String iOnClick;
 	private String iTitle;
 	private String iBackground;
@@ -61,7 +62,7 @@ public class TimetableGridCell implements Serializable, Comparable {
 	public static String sBgColorNotAvailable = "rgb(200,200,200)";
 	public static String sBgColorNotAvailableButAssigned = sBgColorProhibited;
 	
-	public TimetableGridCell(int day, int slot, long assignmentId, int roomId, String roomName, String name, String shortComment, String shortCommentNoColors, String onClick, String title, String background, int length, int meetingNumber, int nrMeetings, String datePatternName, BitSet weekCode) {
+	public TimetableGridCell(int day, int slot, long assignmentId, int roomId, String roomName, String name, String shortComment, String shortCommentNoColors, String onClick, String title, String background, int length, int meetingNumber, int nrMeetings, String datePatternName, BitSet weekCode, String instructor) {
 		iDay = day;
 		iSlot = slot;
 		iAssignmentId = assignmentId;
@@ -78,6 +79,7 @@ public class TimetableGridCell implements Serializable, Comparable {
 		iRoomId = roomId;
 		iWeekCode = weekCode;
 		iDatePatternName = datePatternName;
+		iInstructor = instructor;
 	}
 	
 	public TimetableGridCell copyCell(int day, int mtgNumber) {
@@ -97,7 +99,8 @@ public class TimetableGridCell implements Serializable, Comparable {
 				mtgNumber,
 				iNrMeetings,
 				iDatePatternName,
-				iWeekCode);
+				iWeekCode,
+				null);
 	}
 	
 	public String getName() { return iName; }
@@ -114,6 +117,7 @@ public class TimetableGridCell implements Serializable, Comparable {
 	public long getAssignmentId() { return iAssignmentId; }
 	public int getRoomId() { return iRoomId; }
 	public String getRoomName() { return iRoomName; }
+	public String getInstructor() { return (iInstructor==null?"":iInstructor); }
 	
     public static String pref2color(String pref) {
     	return PreferenceLevel.prolog2bgColor(pref);

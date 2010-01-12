@@ -43,7 +43,7 @@ try {
 		<TR>
 			<TD>Resource:</TD>
 			<TD>
-				<html:select property="resource">
+				<html:select property="resource" onchange="document.getElementById('show_instructors').style.display=(this.value=='Room'?'':'none');">
 					<html:options name="timetableForm" property="resources"/>
 				</html:select>
 			</TD>
@@ -92,6 +92,12 @@ try {
 				<html:checkbox property="showUselessTimes"/>
 			</TD>
 		</TR>
+		<TR id="show_instructors">
+			<TD>Show instructors:</TD>
+			<TD>
+				<html:checkbox property="showInstructors"/>
+			</TD>
+		</TR>
 		<TR>
 			<TD>Order By:</TD>
 			<TD>
@@ -108,6 +114,9 @@ try {
 			</TD>
 		</TR>
 	</TABLE>
+	<logic:notEqual name="timetableForm" property="resource" value="Room">
+		<script language="JavaScript">document.getElementById('show_instructors').style.display='none';</script>
+	</logic:notEqual>
 	<script language="JavaScript">blEnd('dispFilter');blStartCollapsed('dispFilter');</script>
 		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
 			<TR>

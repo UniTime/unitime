@@ -410,6 +410,7 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 				0, 
 				nrMeetings,
 				placement.getTimeLocation().getDatePatternName(),
-				placement.getTimeLocation().getWeekCode());
+				placement.getTimeLocation().getWeekCode(),
+				lecture.getInstructorName());
 	}
 }
