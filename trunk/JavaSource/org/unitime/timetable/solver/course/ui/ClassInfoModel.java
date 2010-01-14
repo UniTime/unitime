@@ -1,6 +1,6 @@
 /*
  * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2009, UniTime LLC, and individual contributors
+ * Copyright (C) 2009 - 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -20,6 +20,7 @@
 package org.unitime.timetable.solver.course.ui;
 
 import java.io.Serializable;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -29,6 +30,7 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -801,11 +803,21 @@ public class ClassInfoModel implements Serializable {
             }
  			
             //TODO: This might still be done much faster.
-            Hashtable<Long,Set<Long>> room2classIds = Location.findClassLocationTable(permIds, period.getStartSlot(), period.getLength(), period.getDates());
+ 			Calendar cal = Calendar.getInstance(Locale.US);
+ 			cal.setTime(new Date());
+ 			cal.set(Calendar.HOUR, 0);
+ 			cal.set(Calendar.MINUTE, 0);
+ 			cal.set(Calendar.MILLISECOND, 0);
+ 			Vector <Date>datesToCheck = new Vector<Date>();
+ 			for(Date aDate : period.getDates()){
+ 				if (aDate.compareTo(cal.getTime()) > 0)
+ 					datesToCheck.add(aDate);
+ 			}
+            Hashtable<Long,Set<Long>> room2classIds = Location.findClassLocationTable(permIds, period.getStartSlot(), period.getLength(), datesToCheck);
             
             Hashtable<Long,Set<Event>> room2events = null;
             if (RoomAvailability.getInstance()!=null && RoomAvailability.getInstance() instanceof DefaultRoomAvailabilityService) {
-            	room2events = Location.findEvemtTable(permIds, period.getStartSlot(), period.getLength(), period.getDates());
+            	room2events = Location.findEvemtTable(permIds, period.getStartSlot(), period.getLength(), datesToCheck);
             }
 
  			rooms: for (Map.Entry<Location, Integer> entry: filteredRooms.entrySet()) {
