@@ -193,7 +193,7 @@
 		</TD>
 	</TR>
 	<logic:equal name="examPdfReportForm" property="canEmail" value="false">
-		<html:hidden property="delivery"/>
+		<html:hidden property="email"/>
 	</logic:equal>
 	<logic:equal name="examPdfReportForm" property="canEmail" value="true">
 	<TR>
