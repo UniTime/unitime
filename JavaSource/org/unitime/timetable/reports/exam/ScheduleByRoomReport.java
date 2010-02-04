@@ -54,8 +54,8 @@ public class ScheduleByRoomReport extends PdfLegacyExamReport {
         Vector periods = new Vector(ExamPeriod.findAll(getSession().getUniqueId(), getExamType()));
         sLog.info("  Printing report...");
         setHeader(new String[] {
-                "Bldg  Room  Capacity  ExCap Period Date And Time                          Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect  Enrl",
-                "----- ----- -------- ------ ------ -------------------------------------- ---- ------ "+(iItype?"------ ":"")+"---- -----"});
+                "Bldg  Room  Capacity  ExCap Period Date And Time                          Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect   Enrl",
+                "----- ----- -------- ------ ------ -------------------------------------- ---- ------ "+(iItype?"------ ":"")+"----- -----"});
         printHeader();
         for (Iterator<ExamRoomInfo> i = rooms.iterator();i.hasNext();) {
             ExamRoomInfo room = i.next();
@@ -96,7 +96,7 @@ public class ScheduleByRoomReport extends PdfLegacyExamReport {
                                 rpad(iSubjectPrinted?"":section.getSubject(),4)+" "+
                                 rpad(iCoursePrinted?"":section.getCourseNbr(), 6)+" "+
                                 (iItype?rpad(iITypePrinted?"":section.getItype(), 6)+" ":"")+
-                                lpad(section.getSection(),4)+" "+
+                                lpad(section.getSection(),5)+" "+
                                 lpad(String.valueOf(section.getNrStudents()),5)
                                 );
                         iPeriodPrinted = iStudentPrinted = iSubjectPrinted = iCoursePrinted = iITypePrinted = !iNewPage;
