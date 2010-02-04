@@ -320,8 +320,44 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
         public String getSubject() {
             return getOwner().getSubject();
         }
+        public String getSubject(Student student) {
+        	CourseOffering course = getOwner().getCourse();
+        	// Not cross-listed -> just return the name
+        	if (course.getInstructionalOffering().getCourseOfferings().size()<=1) return getSubject();
+        	// Get the correct course
+        	CourseOffering correctedCourse = null;
+        	for (Iterator i=student.getClassEnrollments().iterator();i.hasNext();) {
+        		StudentClassEnrollment sce = (StudentClassEnrollment)i.next();
+        		if (sce.getCourseOffering().getInstructionalOffering().equals(course.getInstructionalOffering())) {
+        			correctedCourse = sce.getCourseOffering();
+        			break;
+        		}
+        	}
+        	if (correctedCourse!=null && !correctedCourse.equals(course)) 
+        		return correctedCourse.getSubjectAreaAbbv();
+        	// Fallback (same course)
+        	return getSubject();
+        }
         public String getCourseNbr() {
             return getOwner().getCourseNbr();
+        }
+        public String getCourseNbr(Student student) {
+        	CourseOffering course = getOwner().getCourse();
+        	// Not cross-listed -> just return the name
+        	if (course.getInstructionalOffering().getCourseOfferings().size()<=1) return getCourseNbr();
+        	// Get the correct course
+        	CourseOffering correctedCourse = null;
+        	for (Iterator i=student.getClassEnrollments().iterator();i.hasNext();) {
+        		StudentClassEnrollment sce = (StudentClassEnrollment)i.next();
+        		if (sce.getCourseOffering().getInstructionalOffering().equals(course.getInstructionalOffering())) {
+        			correctedCourse = sce.getCourseOffering();
+        			break;
+        		}
+        	}
+        	if (correctedCourse!=null && !correctedCourse.equals(course)) 
+        		return correctedCourse.getCourseNbr();
+        	// Fallback (same course)
+        	return getCourseNbr();
         }
         public String getItype() {
             return getOwner().getItype();
