@@ -604,20 +604,21 @@ public class PersonalizedExamReportAction extends Action {
             if (exam.getPeriod()==null) continue;
             for (ExamSectionInfo section : exam.getSections()) {
                 if (!section.getStudentIds().contains(student.getUniqueId())) continue;
+                String sectionName = section.getNameForStudent(student);
                 table.addLine(
                         new String[] {
-                                section.getName(),
+                        		sectionName,
                                 getMeetingTime(section),
                                 exam.getDate(false),
                                 exam.getTime(false),
                                 (exam.getNrRooms()==0?noRoom:exam.getRoomsName(false,", "))
                         },
                         new Comparable[] {
-                            new MultiComparable(section.getName(), exam),
-                            new MultiComparable(getMeetingComparable(section), section.getName(), exam),
-                            new MultiComparable(exam.getPeriodOrd(), section.getName(), exam),
-                            new MultiComparable(exam.getPeriod()==null?-1:exam.getPeriod().getStartSlot(), section.getName(), exam),
-                            new MultiComparable(exam.getRoomsName(":"), section.getName(), exam)
+                            new MultiComparable(sectionName, exam),
+                            new MultiComparable(getMeetingComparable(section), sectionName, exam),
+                            new MultiComparable(exam.getPeriodOrd(), sectionName, exam),
+                            new MultiComparable(exam.getPeriod()==null?-1:exam.getPeriod().getStartSlot(), sectionName, exam),
+                            new MultiComparable(exam.getRoomsName(":"), sectionName, exam)
                         });
             }
         }
@@ -651,7 +652,7 @@ public class PersonalizedExamReportAction extends Action {
                     if (classes.length()>0) {
                         blank+=nl; classes += nl; date += nl; time += nl; room += nl; distance += nl;
                     }
-                    classes += section.getName();
+                    classes += section.getNameForStudent(student);
                     if (firstSection) {
                         date += exam.getDate(false);
                         time += exam.getTime(false);
@@ -666,7 +667,7 @@ public class PersonalizedExamReportAction extends Action {
                         if (classes.length()>0) {
                             blank+=nl; classes += nl; date += nl; time += nl; room += nl; distance += nl;
                         }
-                        classes += section.getName();
+                        classes += section.getNameForStudent(student);
                         if (firstSection) {
                             room += (conflict.getOtherExam().getNrRooms()==0?noRoom:conflict.getOtherExam().getRoomsName(false,", "));
                         }
@@ -706,7 +707,7 @@ public class PersonalizedExamReportAction extends Action {
                     if (classes.length()>0) {
                         blank+=nl; classes += nl; date += nl; time += nl; room += nl; distance += nl;
                     }
-                    classes += section.getName();
+                    classes += section.getNameForStudent(student);
                     if (firstSection) {
                         date += exam.getDate(false);
                         time += exam.getTime(false);
@@ -720,7 +721,7 @@ public class PersonalizedExamReportAction extends Action {
                     if (classes.length()>0) {
                         blank+=nl; classes += nl; date += nl; time += nl; room += nl; distance += nl;
                     }
-                    classes += section.getName();
+                    classes += section.getNameForStudent(student);
                     if (firstSection) {
                         time += conflict.getOtherExam().getTime(false);
                         room += (conflict.getOtherExam().getNrRooms()==0?noRoom:conflict.getOtherExam().getRoomsName(false,", "));
@@ -755,7 +756,7 @@ public class PersonalizedExamReportAction extends Action {
                     if (classes.length()>0) {
                         blank+=nl; classes += nl; date += nl; time += nl; room += nl; distance += nl;
                     }
-                    classes += section.getName();
+                    classes += section.getNameForStudent(student);
                     if (firstSection) {
                         date += exam.getDate(false);
                         time += exam.getTime(false);
@@ -770,7 +771,7 @@ public class PersonalizedExamReportAction extends Action {
                         if (classes.length()>0) {
                             blank+=nl; classes += nl; date += nl; time += nl; room += nl; distance += nl;
                         }
-                        classes += section.getName();
+                        classes += section.getNameForStudent(student);
                         if (firstSection) {
                             time += other.getTime(false);
                             room += (other.getNrRooms()==0?noRoom:other.getRoomsName(false,", "));
@@ -1496,7 +1497,7 @@ public class PersonalizedExamReportAction extends Action {
                         Calendar endTime = Calendar.getInstance(); endTime.setTime(exam.getAssignedPeriod().getStartTime());
                         endTime.add(Calendar.MINUTE, exam.getLength());
                         out.println("DTEND:"+df.format(endTime.getTime())+"T"+tf.format(endTime.getTime())+"Z");
-                        out.println("SUMMARY:"+section.getName()+" ("+ApplicationProperties.getProperty("tmtbl.exam.name.type."+Exam.sExamTypes[exam.getExamType()],Exam.sExamTypes[exam.getExamType()])+" Exam)");
+                        out.println("SUMMARY:"+section.getNameForStudent(student)+" ("+ApplicationProperties.getProperty("tmtbl.exam.name.type."+Exam.sExamTypes[exam.getExamType()],Exam.sExamTypes[exam.getExamType()])+" Exam)");
                         //out.println("DESCRIPTION:"+exam.getExamName()+" ("+Exam.sExamTypes[exam.getExamType()]+" Exam)");
                         if (!exam.getAssignedRooms().isEmpty()) {
                             String rooms = "";
