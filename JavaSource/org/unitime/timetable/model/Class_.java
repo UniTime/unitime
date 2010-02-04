@@ -44,6 +44,7 @@ import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.interfaces.ExternalClassEditAction;
+import org.unitime.timetable.interfaces.ExternalClassNameHelperInterface;
 import org.unitime.timetable.model.base.BaseClass_;
 import org.unitime.timetable.model.comparators.AcadAreaReservationComparator;
 import org.unitime.timetable.model.comparators.CourseReservationComparator;
@@ -62,13 +63,15 @@ import org.unitime.timetable.solver.course.ui.ClassInstructorInfo;
 import org.unitime.timetable.solver.course.ui.ClassRoomInfo;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.DefaultExternalClassNameHelper;
 import org.unitime.timetable.webutil.Navigation;
 
 
 public class Class_ extends BaseClass_ {
     private static final long serialVersionUID = 1L;
+    private static ExternalClassNameHelperInterface externalClassNameHelper = null;
 
-    /* [CONSTRUCTOR MARKER BEGIN] */
+	/* [CONSTRUCTOR MARKER BEGIN] */
 	public Class_ () {
 		super();
 	}
@@ -555,10 +558,12 @@ public class Class_ extends BaseClass_ {
     		itypeDesc += " [" + ss.getInstrOfferingConfig().getName() + "]";
         */
     	return getCourseName()+" "+getItypeDesc().trim()+" "+getSectionNumberString();
+//    	return(getClassLabel(getSchedulingSubpart().getControllingCourseOffering()));
     }
 
     public String getClassLabelWithTitle() {
     	return getCourseNameWithTitle()+" "+getItypeDesc().trim()+" "+getSectionNumberString();
+//    	return(getClassLabelWithTitle(getSchedulingSubpart().getControllingCourseOffering()));
     }
 
     /**
@@ -1617,5 +1622,55 @@ public class Class_ extends BaseClass_ {
 	    return(sb.toString());
 	}
 
+	public static ExternalClassNameHelperInterface getExternalClassNameHelper() {
+		if (externalClassNameHelper == null){
+            String className = ApplicationProperties.getProperty("tmtbl.class.naming.helper", "org.unitime.timetable.util.DefaultExternalClassNameHelper");
+        	if (className != null && className.trim().length() > 0){
+        		try {
+					externalClassNameHelper = (ExternalClassNameHelperInterface) (Class.forName(className).newInstance());
+				} catch (InstantiationException e) {
+					Debug.error("Failed to instantiate instance of: " + className + " using the default class name helper.");
+					e.printStackTrace();
+	        		externalClassNameHelper = new DefaultExternalClassNameHelper();
+				} catch (IllegalAccessException e) {
+					Debug.error("Illegal Access Exception on: " + className + " using the default class name helper.");
+					e.printStackTrace();
+	        		externalClassNameHelper = new DefaultExternalClassNameHelper();
+				} catch (ClassNotFoundException e) {
+					Debug.error("Failed to find class: " + className + " using the default class name helper.");
+					e.printStackTrace();
+	        		externalClassNameHelper = new DefaultExternalClassNameHelper();
+				}
+        	} else {
+        		externalClassNameHelper = new DefaultExternalClassNameHelper();
+        	}
+		}
+		return externalClassNameHelper;
+	}
     
+	public String getClassLabel(CourseOffering courseOffering) {
+		return(getExternalClassNameHelper().getClassLabel(this, courseOffering));
+	}
+
+	public String getClassSuffix(CourseOffering courseOffering) {
+		return(getExternalClassNameHelper().getClassSuffix(this, courseOffering));
+	}
+
+	public String getClassLabelWithTitle(CourseOffering courseOffering) {
+		return(getExternalClassNameHelper().getClassLabelWithTitle(this,courseOffering));
+	}
+
+	public String getExternalId(Class_ clazz, CourseOffering courseOffering) {
+		return(getExternalClassNameHelper().getExternalId(this, courseOffering));
+	}
+
+//	/* (non-Javadoc)
+//	 * @see org.unitime.timetable.model.base.BaseClass_#getClassSuffix()
+//	 */
+//	@Override
+//	public String getClassSuffix() {
+//		return(getClassSuffix(getSchedulingSubpart().getControllingCourseOffering()));
+//	}
+
+
 }
