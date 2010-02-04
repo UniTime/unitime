@@ -40,8 +40,8 @@ public class ScheduleByCourseReport extends PdfLegacyExamReport {
         }
         sLog.debug("  Printing report...");
         setHeader(new String[] {
-                "Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect   Meeting Times                         Enrl    Date And Time                   Room         Cap ExCap ",
-                "---- ------ "+(iItype?"------ ":"")+"---- -------------------------------------- -----  -------------------------------- ----------- ----- -----"});
+                "Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect    Meeting Times                         Enrl    Date And Time                   Room         Cap ExCap ",
+                "---- ------ "+(iItype?"------ ":"")+"----- -------------------------------------- -----  -------------------------------- ----------- ----- -----"});
         printHeader();
         for (Iterator<String> i = new TreeSet<String>(subject2courseSections.keySet()).iterator(); i.hasNext();) {
             String subject = i.next();
@@ -59,7 +59,7 @@ public class ScheduleByCourseReport extends PdfLegacyExamReport {
                             rpad(iSubjectPrinted?"":subject, 4)+" "+
                             rpad(iCoursePrinted?"":section.getCourseNbr(), 6)+" "+
                             (iItype?rpad(iITypePrinted?"":section.getItype(), 6)+" ":"")+
-                            lpad(section.getSection(), 4)+" "+
+                            lpad(section.getSection(), 5)+" "+
                             rpad(getMeetingTime(section),38)+" "+
                             lpad(String.valueOf(section.getNrStudents()),5)+"  "+
                             rpad((section.getExamAssignment()==null?"":section.getExamAssignment().getPeriodNameFixedLength()),32)+" "+
@@ -73,7 +73,7 @@ public class ScheduleByCourseReport extends PdfLegacyExamReport {
                                 rpad(!firstRoom || iSubjectPrinted?"":subject, 4)+" "+
                                 rpad(!firstRoom || iCoursePrinted?"":section.getCourseNbr(), 6)+" "+
                                 (iItype?rpad(!firstRoom || iITypePrinted?"":section.getItype(), 6)+" ":"")+
-                                lpad(!firstRoom?"":section.getSection(), 4)+" "+
+                                lpad(!firstRoom?"":section.getSection(), 5)+" "+
                                 rpad(!firstRoom?"":getMeetingTime(section),38)+" "+
                                 lpad(!firstRoom?"":String.valueOf(section.getNrStudents()),5)+"  "+
                                 rpad(!firstRoom?"":(section.getExamAssignment()==null?"":section.getExamAssignment().getPeriodNameFixedLength()),32)+" "+

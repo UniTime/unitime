@@ -250,8 +250,8 @@ public class InstructorExamReport extends PdfLegacyExamReport {
             if (!allClasses.isEmpty()) {
                 println("");
                 setHeader(new String[]{
-                        "Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect  Dates                     Time            Room       Chk  Share",
-                        "---- ------ "+(iItype?"------ ":"")+"---- ------------------------- --------------- ----------- ---- -----"});
+                        "Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect   Dates                     Time            Room       Chk  Share",
+                        "---- ------ "+(iItype?"------ ":"")+"----- ------------------------- --------------- ----------- ---- -----"});
                 println(mpad("~ ~ ~ ~ ~ CLASS SECHEDULE ~ ~ ~ ~ ~",iNrChars));
                 for (int i=0;i<getHeader().length;i++) println(getHeader()[i]);
                 for (Iterator i=allClasses.iterator();i.hasNext();) {
@@ -266,7 +266,7 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                                 rpad(subject,4)+" "+
                                 rpad(course,6)+" "+
                                 (iItype?rpad(itype,6)+" ":"")+
-                                lpad(section,4)+" "+
+                                lpad(section,5)+" "+
                                 rpad("ARRANGED HOURS", 54)+
                                 rpad(ci.isLead()?"yes":"no",4)+" "+
                                 lpad(ci.getPercentShare()+"%",5)
@@ -281,9 +281,9 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                                 line = rpad(subject,4)+" "+
                                 rpad(course,6)+" "+
                                 (iItype?rpad(itype,6)+" ":"")+
-                                lpad(section,4)+" ";
+                                lpad(section,5)+" ";
                             } else {
-                                line = rpad("",17+(iItype?7:0));
+                                line = rpad("",18+(iItype?7:0));
                             }
                             String date = getMeetingDate(meeting);
                             String time = getMeetingTime(meeting.getMeetings().first());
@@ -318,8 +318,8 @@ public class InstructorExamReport extends PdfLegacyExamReport {
         }
         println("");
         setHeader(new String[]{
-                "Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect   Meeting Times                         Enrl    Date And Time                   Room         Cap ExCap",
-                "---- ------ "+(iItype?"------ ":"")+"---- -------------------------------------- -----  -------------------------------- ----------- ----- -----"});
+                "Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect    Meeting Times                         Enrl    Date And Time                   Room         Cap ExCap",
+                "---- ------ "+(iItype?"------ ":"")+"----- -------------------------------------- -----  -------------------------------- ----------- ----- -----"});
         println(mpad("~ ~ ~ ~ ~ EXAMINATION SECHEDULE ~ ~ ~ ~ ~",iNrChars));
         for (int i=0;i<getHeader().length;i++) println(getHeader()[i]);
         iSubjectPrinted = false; String lastSubject = null;
@@ -338,7 +338,7 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                             rpad(iSubjectPrinted?"":section.getSubject(), 4)+" "+
                             rpad(iCoursePrinted?"":section.getCourseNbr(), 6)+" "+
                             (iItype?rpad(iITypePrinted?"":section.getItype(), 6)+" ":"")+
-                            lpad(iPeriodPrinted?"":section.getSection(), 4)+" "+
+                            lpad(iPeriodPrinted?"":section.getSection(), 5)+" "+
                             rpad(getMeetingTime(section),38)+" "+
                             lpad(String.valueOf(section.getNrStudents()),5)+"  "+
                             rpad((section.getExamAssignment()==null?"":section.getExamAssignment().getPeriodNameFixedLength()),32)+" "+
@@ -352,7 +352,7 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                                 rpad(!firstRoom || iSubjectPrinted?"":section.getSubject(), 4)+" "+
                                 rpad(!firstRoom || iCoursePrinted?"":section.getCourseNbr(), 6)+" "+
                                 (iItype?rpad(!firstRoom || iITypePrinted?"":section.getItype(), 6)+" ":"")+
-                                lpad(!firstRoom || iPeriodPrinted?"":section.getSection(), 4)+" "+
+                                lpad(!firstRoom || iPeriodPrinted?"":section.getSection(), 5)+" "+
                                 rpad(!firstRoom?"":getMeetingTime(section),38)+" "+
                                 lpad(!firstRoom?"":String.valueOf(section.getNrStudents()),5)+"  "+
                                 rpad(!firstRoom?"":(section.getExamAssignment()==null?"":section.getExamAssignment().getPeriodNameFixedLength()),32)+" "+
@@ -396,8 +396,8 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                                 setHeader(null);
                                 if (getLineNumber()+5>=iNrLines) newPage();
                                 setHeader(new String[] {
-                                        "Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect Date And Time                Type   Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect Time                 ",
-                                        "---- ------ "+(iItype?"------ ":"")+"---- ---------------------------- ------ ---- ------ "+(iItype?"------ ":"")+"---- ---------------------"});
+                                        "Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect  Date And Time                Type   Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect  Time                 ",
+                                        "---- ------ "+(iItype?"------ ":"")+"----- ---------------------------- ------ ---- ------ "+(iItype?"------ ":"")+"----- ---------------------"});
                                 println(mpad("~ ~ ~ ~ ~ INSTRUCTOR CONFLICTS ~ ~ ~ ~ ~",iNrChars));
                                 for (int i=0;i<getHeader().length;i++) println(getHeader()[i]);
                                 setCont(instructor.getName()+"  INSTRUCTOR CONFLICTS");
@@ -407,13 +407,13 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                                     rpad(iSubjectPrinted?"":section.getSubject(),4)+" "+
                                     rpad(iCoursePrinted?"":section.getCourseNbr(), 6)+" "+
                                     (iItype?rpad(iCoursePrinted?"":section.getItype(), 6)+" ":"")+
-                                    lpad(iCoursePrinted?"":section.getSection(),4)+" "+
+                                    lpad(iCoursePrinted?"":section.getSection(),5)+" "+
                                     rpad(iCoursePrinted?"":exam.getPeriodNameFixedLength(),28)+" "+
                                     rpad(iPeriodPrinted?"":"DIRECT",6)+" "+
                                     rpad(other.getSubject(),4)+" "+
                                     rpad(other.getCourseNbr(),6)+" "+
                                     (iItype?rpad(other.getItype(),6)+" ":"")+
-                                    lpad(other.getSection(),4)+" "+
+                                    lpad(other.getSection(),5)+" "+
                                     other.getExamAssignment().getTimeFixedLength()
                                     );
                             iSubjectPrinted = iCoursePrinted = iStudentPrinted = iPeriodPrinted = !iNewPage;
@@ -425,8 +425,8 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                             setHeader(null);
                             if (getLineNumber()+5>=iNrLines) newPage();
                             setHeader(new String[] {
-                                    "Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect Date And Time                Type   Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect Time                 ",
-                                    "---- ------ "+(iItype?"------ ":"")+"---- ---------------------------- ------ ---- ------ "+(iItype?"------ ":"")+"---- ---------------------"});
+                                    "Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect  Date And Time                Type   Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect  Time                 ",
+                                    "---- ------ "+(iItype?"------ ":"")+"----- ---------------------------- ------ ---- ------ "+(iItype?"------ ":"")+"----- ---------------------"});
                             println(mpad("~ ~ ~ ~ ~ INSTRUCTOR CONFLICTS ~ ~ ~ ~ ~",iNrChars));
                             for (int i=0;i<getHeader().length;i++) println(getHeader()[i]);
                             setCont(instructor.getName()+"  INSTRUCTOR CONFLICTS");
@@ -437,13 +437,13 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                                     rpad(iSubjectPrinted?"":section.getSubject(),4)+" "+
                                     rpad(iCoursePrinted?"":section.getCourseNbr(), 6)+" "+
                                     (iItype?rpad(iCoursePrinted?"":section.getItype(), 6)+" ":"")+
-                                    lpad(iCoursePrinted?"":section.getSection(),4)+" "+
+                                    lpad(iCoursePrinted?"":section.getSection(),5)+" "+
                                     rpad(iCoursePrinted?"":exam.getPeriodNameFixedLength(),28)+" "+
                                     rpad(iPeriodPrinted?"":"CLASS",6)+" "+
                                     rpad(conflict.getOtherClass().getSchedulingSubpart().getControllingCourseOffering().getSubjectAreaAbbv(),4)+" "+
                                     rpad(conflict.getOtherClass().getSchedulingSubpart().getControllingCourseOffering().getCourseNbr(),6)+" "+
                                     (iItype?rpad(iExternal?conflict.getOtherClass().getExternalUniqueId():conflict.getOtherClass().getSchedulingSubpart().getItypeDesc(),6)+" ":"")+
-                                    lpad(iUseClassSuffix && conflict.getOtherClass().getClassSuffix()!=null?conflict.getOtherClass().getClassSuffix():conflict.getOtherClass().getSectionNumberString(),4)+" "+
+                                    lpad(iUseClassSuffix && conflict.getOtherClass().getClassSuffix()!=null?conflict.getOtherClass().getClassSuffix():conflict.getOtherClass().getSectionNumberString(),5)+" "+
                                     getMeetingTime(conflict.getOtherEventTime())
                                     );
                         } else {
@@ -451,10 +451,10 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                                     rpad(iSubjectPrinted?"":section.getSubject(),4)+" "+
                                     rpad(iCoursePrinted?"":section.getCourseNbr(), 6)+" "+
                                     (iItype?rpad(iCoursePrinted?"":section.getItype(), 6)+" ":"")+
-                                    lpad(iCoursePrinted?"":section.getSection(),4)+" "+
+                                    lpad(iCoursePrinted?"":section.getSection(),5)+" "+
                                     rpad(iCoursePrinted?"":exam.getPeriodNameFixedLength(),28)+" "+
                                     rpad(iPeriodPrinted?"":"EVENT",6)+" "+
-                                    rpad(conflict.getOtherEventName(),(iItype?23:16))+" "+
+                                    rpad(conflict.getOtherEventName(),(iItype?24:17))+" "+
                                     getMeetingTime(conflict.getOtherEventTime())
                                     );
                         }
@@ -473,8 +473,8 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                                 setHeader(null);
                                 if (getLineNumber()+5>=iNrLines) newPage();
                                 setHeader(new String[] {
-                                        "Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect Date And Time                Type   Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect Time                 ",
-                                        "---- ------ "+(iItype?"------ ":"")+"---- ---------------------------- ------ ---- ------ "+(iItype?"------ ":"")+"---- ---------------------"});
+                                        "Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect  Date And Time                Type   Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect  Time                 ",
+                                        "---- ------ "+(iItype?"------ ":"")+"----- ---------------------------- ------ ---- ------ "+(iItype?"------ ":"")+"----- ---------------------"});
                                 println(mpad("~ ~ ~ ~ ~ INSTRUCTOR CONFLICTS ~ ~ ~ ~ ~",iNrChars));
                                 for (int i=0;i<getHeader().length;i++) println(getHeader()[i]);
                                 setCont(instructor.getName()+"  INSTRUCTOR CONFLICTS");
@@ -484,13 +484,13 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                                     rpad(iSubjectPrinted?"":section.getSubject(),4)+" "+
                                     rpad(iCoursePrinted?"":section.getCourseNbr(), 6)+" "+
                                     (iItype?rpad(iCoursePrinted?"":section.getItype(), 6)+" ":"")+
-                                    lpad(iCoursePrinted?"":section.getSection(),4)+" "+
+                                    lpad(iCoursePrinted?"":section.getSection(),5)+" "+
                                     rpad(iCoursePrinted?"":exam.getPeriodNameFixedLength(),28)+" "+
                                     rpad(iPeriodPrinted?"":">2-DAY",6)+" "+
                                     rpad(other.getSubject(),4)+" "+
                                     rpad(other.getCourseNbr(),6)+" "+
                                     (iItype?rpad(other.getItype(),6)+" ":"")+
-                                    lpad(other.getSection(),4)+" "+
+                                    lpad(other.getSection(),5)+" "+
                                     other.getExamAssignment().getTimeFixedLength()
                                     );
                             iSubjectPrinted = iCoursePrinted = iStudentPrinted = iPeriodPrinted = !iNewPage;
@@ -508,8 +508,8 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                             setHeader(null);
                             if (getLineNumber()+5>=iNrLines) newPage();
                             setHeader(new String[] {
-                                    "Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect Date And Time                Type   Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect Time                 ",
-                                    "---- ------ "+(iItype?"------ ":"")+"---- ---------------------------- ------ ---- ------ "+(iItype?"------ ":"")+"---- ---------------------"});
+                                    "Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect  Date And Time                Type   Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect Time                 ",
+                                    "---- ------ "+(iItype?"------ ":"")+"----- ---------------------------- ------ ---- ------ "+(iItype?"------ ":"")+"---- ---------------------"});
                             println(mpad("~ ~ ~ ~ ~ INSTRUCTOR CONFLICTS ~ ~ ~ ~ ~",iNrChars));
                             for (int i=0;i<getHeader().length;i++) println(getHeader()[i]);
                             setCont(instructor.getName()+"  INSTRUCTOR CONFLICTS");
@@ -519,7 +519,7 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                                 rpad(iSubjectPrinted?"":section.getSubject(),4)+" "+
                                 rpad(iCoursePrinted?"":section.getCourseNbr(), 6)+" "+
                                 (iItype?rpad(iCoursePrinted?"":section.getItype(), 6)+" ":"")+
-                                lpad(iCoursePrinted?"":section.getSection(),4)+" "+
+                                lpad(iCoursePrinted?"":section.getSection(),5)+" "+
                                 rpad(iCoursePrinted?"":exam.getPeriodNameFixedLength(),28)+" "+
                                 rpad(iPeriodPrinted?"":"BTB",6)+" "+
                                 rpad(other.getSubject(),4)+" "+
@@ -563,8 +563,8 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                                 if (!iNewPage) println("");
                                 if (getLineNumber()+5>=iNrLines) newPage(); else println("");
                                 setHeader(new String[] {
-                                        "Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect Date And Time                Name                      Type   Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect Time                 ",
-                                        "---- ------ "+(iItype?"------ ":"")+"---- ---------------------------- ------------------------- ------ ---- ------ "+(iItype?"------ ":"")+"---- ---------------------"});
+                                        "Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect  Date And Time                Name                      Type   Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect  Time                 ",
+                                        "---- ------ "+(iItype?"------ ":"")+"----- ---------------------------- ------------------------- ------ ---- ------ "+(iItype?"------ ":"")+"----- ---------------------"});
                                 println(mpad("~ ~ ~ ~ ~ STUDENT CONFLICTS ~ ~ ~ ~ ~",iNrChars));
                                 for (int i=0;i<getHeader().length;i++) println(getHeader()[i]);
                                 setCont(instructor.getName()+"  STUDENT CONFLICTS");
@@ -574,14 +574,14 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                                     rpad(iSubjectPrinted?"":section.getSubject(),4)+" "+
                                     rpad(iCoursePrinted?"":section.getCourseNbr(), 6)+" "+
                                     (iItype?rpad(iCoursePrinted?"":section.getItype(), 6)+" ":"")+
-                                    lpad(iCoursePrinted?"":section.getSection(),4)+" "+
+                                    lpad(iCoursePrinted?"":section.getSection(),5)+" "+
                                     rpad(iCoursePrinted?"":exam.getPeriodNameFixedLength(),28)+" "+
                                     rpad(iStudentPrinted?"":getStudentName(studentId),25)+" "+
                                     rpad(iPeriodPrinted?"":"DIRECT",6)+" "+
                                     rpad(other.getSubject(),4)+" "+
                                     rpad(other.getCourseNbr(),6)+" "+
                                     (iItype?rpad(other.getItype(),6)+" ":"")+
-                                    lpad(other.getSection(),4)+" "+
+                                    lpad(other.getSection(),5)+" "+
                                     other.getExamAssignment().getTimeFixedLength()
                                     );
                             iSubjectPrinted = iCoursePrinted = iStudentPrinted = iPeriodPrinted = !iNewPage;
@@ -592,8 +592,8 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                             if (!iNewPage) println("");
                             if (getLineNumber()+5>=iNrLines) newPage(); else println("");
                             setHeader(new String[] {
-                                    "Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect Date And Time                Name                      Type   Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect Time                 ",
-                                    "---- ------ "+(iItype?"------ ":"")+"---- ---------------------------- ------------------------- ------ ---- ------ "+(iItype?"------ ":"")+"---- ---------------------"});
+                                    "Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect  Date And Time                Name                      Type   Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect  Time                 ",
+                                    "---- ------ "+(iItype?"------ ":"")+"----- ---------------------------- ------------------------- ------ ---- ------ "+(iItype?"------ ":"")+"----- ---------------------"});
                             println(mpad("~ ~ ~ ~ ~ STUDENT CONFLICTS ~ ~ ~ ~ ~",iNrChars));
                             for (int i=0;i<getHeader().length;i++) println(getHeader()[i]);
                             setCont(instructor.getName()+"  STUDENT CONFLICTS");
@@ -604,14 +604,14 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                                     rpad(iSubjectPrinted?"":section.getSubject(),4)+" "+
                                     rpad(iCoursePrinted?"":section.getCourseNbr(), 6)+" "+
                                     (iItype?rpad(iCoursePrinted?"":section.getItype(), 6)+" ":"")+
-                                    lpad(iCoursePrinted?"":section.getSection(),4)+" "+
+                                    lpad(iCoursePrinted?"":section.getSection(),5)+" "+
                                     rpad(iCoursePrinted?"":exam.getPeriodNameFixedLength(),28)+" "+
                                     rpad(iStudentPrinted?"":getStudentName(studentId),25)+" "+
                                     rpad(iPeriodPrinted?"":"CLASS",6)+" "+
                                     rpad(conflict.getOtherClass().getSchedulingSubpart().getControllingCourseOffering().getSubjectAreaAbbv(),4)+" "+
                                     rpad(conflict.getOtherClass().getSchedulingSubpart().getControllingCourseOffering().getCourseNbr(),6)+" "+
                                     (iItype?rpad(iExternal?conflict.getOtherClass().getExternalUniqueId():conflict.getOtherClass().getSchedulingSubpart().getItypeDesc(),6)+" ":"")+
-                                    lpad(iUseClassSuffix && conflict.getOtherClass().getClassSuffix()!=null?conflict.getOtherClass().getClassSuffix():conflict.getOtherClass().getSectionNumberString(),4)+" "+
+                                    lpad(iUseClassSuffix && conflict.getOtherClass().getClassSuffix()!=null?conflict.getOtherClass().getClassSuffix():conflict.getOtherClass().getSectionNumberString(),5)+" "+
                                     getMeetingTime(conflict.getOtherEventTime())
                                     );
                         } else {
@@ -619,11 +619,11 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                                     rpad(iSubjectPrinted?"":section.getSubject(),4)+" "+
                                     rpad(iCoursePrinted?"":section.getCourseNbr(), 6)+" "+
                                     (iItype?rpad(iCoursePrinted?"":section.getItype(), 6)+" ":"")+
-                                    lpad(iCoursePrinted?"":section.getSection(),4)+" "+
+                                    lpad(iCoursePrinted?"":section.getSection(),5)+" "+
                                     rpad(iCoursePrinted?"":exam.getPeriodNameFixedLength(),28)+" "+
                                     rpad(iStudentPrinted?"":getStudentName(studentId),25)+" "+
                                     rpad(iPeriodPrinted?"":"EVENT",6)+" "+
-                                    rpad(conflict.getOtherEventName(),(iItype?23:16))+" "+
+                                    rpad(conflict.getOtherEventName(),(iItype?24:17))+" "+
                                     getMeetingTime(conflict.getOtherEventTime())
                                     );
                         }
@@ -641,8 +641,8 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                                 if (!iNewPage) println("");
                                 if (getLineNumber()+5>=iNrLines) newPage(); else println("");
                                 setHeader(new String[] {
-                                        "Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect Date And Time                Name                      Type   Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect Time                 ",
-                                        "---- ------ "+(iItype?"------ ":"")+"---- ---------------------------- ------------------------- ------ ---- ------ "+(iItype?"------ ":"")+"---- ---------------------"});
+                                        "Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect  Date And Time                Name                      Type   Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect  Time                 ",
+                                        "---- ------ "+(iItype?"------ ":"")+"----- ---------------------------- ------------------------- ------ ---- ------ "+(iItype?"------ ":"")+"----- ---------------------"});
                                 println(mpad("~ ~ ~ ~ ~ STUDENT CONFLICTS ~ ~ ~ ~ ~",iNrChars));
                                 for (int i=0;i<getHeader().length;i++) println(getHeader()[i]);
                                 setCont(instructor.getName()+"  STUDENT CONFLICTS");
@@ -652,14 +652,14 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                                     rpad(iSubjectPrinted?"":section.getSubject(),4)+" "+
                                     rpad(iCoursePrinted?"":section.getCourseNbr(), 6)+" "+
                                     (iItype?rpad(iCoursePrinted?"":section.getItype(), 6)+" ":"")+
-                                    lpad(iCoursePrinted?"":section.getSection(),4)+" "+
+                                    lpad(iCoursePrinted?"":section.getSection(),5)+" "+
                                     rpad(iCoursePrinted?"":exam.getPeriodNameFixedLength(),28)+" "+
                                     rpad(iStudentPrinted?"":getStudentName(studentId),25)+" "+
                                     rpad(iPeriodPrinted?"":">2-DAY",6)+" "+
                                     rpad(other.getSubject(),4)+" "+
                                     rpad(other.getCourseNbr(),6)+" "+
                                     (iItype?rpad(other.getItype(),6)+" ":"")+
-                                    lpad(other.getSection(),4)+" "+
+                                    lpad(other.getSection(),5)+" "+
                                     other.getExamAssignment().getTimeFixedLength()
                                     );
                             iSubjectPrinted = iCoursePrinted = iStudentPrinted = iPeriodPrinted = !iNewPage;
@@ -676,8 +676,8 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                             if (!iNewPage) println("");
                             if (getLineNumber()+5>=iNrLines) newPage(); else println("");
                             setHeader(new String[] {
-                                    "Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect Date And Time                Name                      Type   Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect Time                 ",
-                                    "---- ------ "+(iItype?"------ ":"")+"---- ---------------------------- ------------------------- ------ ---- ------ "+(iItype?"------ ":"")+"---- ---------------------"});
+                                    "Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect  Date And Time                Name                      Type   Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect  Time                 ",
+                                    "---- ------ "+(iItype?"------ ":"")+"----- ---------------------------- ------------------------- ------ ---- ------ "+(iItype?"------ ":"")+"----- ---------------------"});
                             println(mpad("~ ~ ~ ~ ~ STUDENT CONFLICTS ~ ~ ~ ~ ~",iNrChars));
                             for (int i=0;i<getHeader().length;i++) println(getHeader()[i]);
                             setCont(instructor.getName()+"  STUDENT CONFLICTS");
@@ -687,14 +687,14 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                                 rpad(iSubjectPrinted?"":section.getSubject(),4)+" "+
                                 rpad(iCoursePrinted?"":section.getCourseNbr(), 6)+" "+
                                 (iItype?rpad(iCoursePrinted?"":section.getItype(), 6)+" ":"")+
-                                lpad(iCoursePrinted?"":section.getSection(),4)+" "+
+                                lpad(iCoursePrinted?"":section.getSection(),5)+" "+
                                 rpad(iCoursePrinted?"":exam.getPeriodNameFixedLength(),28)+" "+
                                 rpad(iStudentPrinted?"":getStudentName(studentId),25)+" "+
                                 rpad(iPeriodPrinted?"":"BTB",6)+" "+
                                 rpad(other.getSubject(),4)+" "+
                                 rpad(other.getCourseNbr(),6)+" "+
                                 (iItype?rpad(other.getItype(),6)+" ":"")+
-                                lpad(other.getSection(),4)+" "+
+                                lpad(other.getSection(),5)+" "+
                                 other.getExamAssignment().getTimeFixedLength()
                                 );
                         iSubjectPrinted = iCoursePrinted = iStudentPrinted = iPeriodPrinted = !iNewPage;
