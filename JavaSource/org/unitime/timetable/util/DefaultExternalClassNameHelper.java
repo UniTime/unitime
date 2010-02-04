@@ -25,7 +25,7 @@ public class DefaultExternalClassNameHelper implements
 	 * @see org.unitime.timetable.interfaces.ExternalClassNameHelperInterface#getClassLabel(org.unitime.timetable.model.Class_, org.unitime.timetable.model.CourseOffering)
 	 */
 	public String getClassLabel(Class_ clazz, CourseOffering courseOffering) {
-		return(clazz.getClassLabel());
+    	return courseOffering.getCourseName()+" "+clazz.getItypeDesc().trim()+" "+clazz.getSectionNumberString();
 	}
 
 	/* (non-Javadoc)
@@ -39,7 +39,7 @@ public class DefaultExternalClassNameHelper implements
 	 * @see org.unitime.timetable.interfaces.ExternalClassNameHelperInterface#getClassLabelWithTitle(org.unitime.timetable.model.Class_, org.unitime.timetable.model.CourseOffering)
 	 */
 	public String getClassLabelWithTitle(Class_ clazz, CourseOffering courseOffering) {
-		return(clazz.getClassLabelWithTitle());
+    	return courseOffering.getCourseNameWithTitle()+" "+clazz.getItypeDesc().trim()+" "+clazz.getSectionNumberString();
 	}
 
 	/* (non-Javadoc)
