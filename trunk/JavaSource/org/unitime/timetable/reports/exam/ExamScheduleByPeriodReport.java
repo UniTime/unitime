@@ -26,8 +26,8 @@ public class ExamScheduleByPeriodReport extends PdfLegacyExamReport {
     
     public void printReport() throws DocumentException {
         setHeader(new String[] {
-                "Date And Time                          Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect   Meeting Times                         Enrl"+(iDispRooms?"  Room         Cap ExCap":""),
-                "-------------------------------------- ---- ------ "+(iItype?"------ ":"")+"---- -------------------------------------- -----"+(iDispRooms?" ----------- ----- -----":"")});
+                "Date And Time                          Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect    Meeting Times                         Enrl"+(iDispRooms?"  Room         Cap ExCap":""),
+                "-------------------------------------- ---- ------ "+(iItype?"------ ":"")+"----- -------------------------------------- -----"+(iDispRooms?" ----------- ----- -----":"")});
         printHeader();
         sLog.debug("  Sorting exams...");
         TreeSet<ExamAssignmentInfo> exams = new TreeSet();
@@ -71,7 +71,7 @@ public class ExamScheduleByPeriodReport extends PdfLegacyExamReport {
                             rpad(iSubjectPrinted?"":section.getSubject(),4)+" "+
                             rpad(iCoursePrinted?"":section.getCourseNbr(), 6)+" "+
                             (iItype?rpad(iStudentPrinted?"":section.getItype(), 6)+" ":"")+
-                            lpad(section.getSection(),4)+" "+
+                            lpad(section.getSection(),5)+" "+
                             rpad(getMeetingTime(section),38)+" "+
                             lpad(String.valueOf(section.getNrStudents()),5)
                             );
@@ -83,7 +83,7 @@ public class ExamScheduleByPeriodReport extends PdfLegacyExamReport {
                                     rpad(iSubjectPrinted?"":section.getSubject(),4)+" "+
                                     rpad(iCoursePrinted?"":section.getCourseNbr(), 6)+" "+
                                     (iItype?rpad(iStudentPrinted?"":section.getItype(), 6)+" ":"")+
-                                    lpad(section.getSection(),4)+" "+
+                                    lpad(section.getSection(),5)+" "+
                                     rpad(getMeetingTime(section),38)+" "+
                                     lpad(String.valueOf(section.getNrStudents()),5)+" "+iNoRoom
                                     );
@@ -97,7 +97,7 @@ public class ExamScheduleByPeriodReport extends PdfLegacyExamReport {
                                         rpad(!firstRoom || iSubjectPrinted?"":section.getSubject(),4)+" "+
                                         rpad(!firstRoom || iCoursePrinted?"":section.getCourseNbr(), 6)+" "+
                                         (iItype?rpad(!firstRoom || iStudentPrinted?"":section.getItype(), 6)+" ":"")+
-                                        lpad(!firstRoom?"":section.getSection(),4)+" "+
+                                        lpad(!firstRoom?"":section.getSection(),5)+" "+
                                         rpad(!firstRoom?"":getMeetingTime(section),38)+" "+
                                         lpad(!firstRoom?"":String.valueOf(section.getNrStudents()),5)+" "+
                                         formatRoom(room.getName())+" "+
