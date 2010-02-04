@@ -1477,7 +1477,7 @@ public class PersonalizedExamReportAction extends Action {
                             out.println("UID:m"+meeting.getUniqueId());
                             out.println("DTSTART:"+df.format(meeting.getStartTime())+"T"+tf.format(meeting.getStartTime())+"Z");
                             out.println("DTEND:"+df.format(meeting.getStopTime())+"T"+tf.format(meeting.getStopTime())+"Z");
-                            out.println("SUMMARY:"+meeting.getEvent().getEventName()+" ("+meeting.getEvent().getEventTypeLabel()+")");
+                            out.println("SUMMARY:"+sce.getClazz().getClassLabel(sce.getCourseOffering())+" ("+meeting.getEvent().getEventTypeLabel()+")");
                             if (meeting.getLocation()!=null)
                                 out.println("LOCATION:"+meeting.getLocation().getLabel());
                             out.println("END:VEVENT");
