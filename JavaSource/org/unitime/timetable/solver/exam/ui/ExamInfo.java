@@ -32,9 +32,12 @@ import net.sf.cpsolver.exam.model.ExamModel;
 import net.sf.cpsolver.exam.model.ExamStudent;
 import net.sf.cpsolver.ifs.model.Constraint;
 
+import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamOwner;
+import org.unitime.timetable.model.Student;
+import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.ExamDAO;
@@ -273,6 +276,29 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
             return iOwner;
         }
         public String getName() { return iName; }
+        public String getNameForStudent(Student student) {
+        	CourseOffering course = getOwner().getCourse();
+        	// Not cross-listed -> just return the name
+        	if (course.getInstructionalOffering().getCourseOfferings().size()<=1) return getName();
+        	// Get the correct course
+        	CourseOffering correctedCourse = null;
+        	for (Iterator i=student.getClassEnrollments().iterator();i.hasNext();) {
+        		StudentClassEnrollment sce = (StudentClassEnrollment)i.next();
+        		if (sce.getCourseOffering().getInstructionalOffering().equals(course.getInstructionalOffering())) {
+        			correctedCourse = sce.getCourseOffering();
+        			break;
+        		}
+        	}
+        	if (correctedCourse!=null && !correctedCourse.equals(course)) {
+        		ExamOwner dummy = new ExamOwner();
+        		dummy.setOwnerId(getOwnerId());
+        		dummy.setOwnerType(getOwnerType());
+        		dummy.setCourse(correctedCourse);
+        		return dummy.getLabel();
+        	}
+        	// Fallback (same course)
+        	return getName();
+        }
         public int getNrStudents() {
             if (iNrStudents<0)
                 iNrStudents = getOwner().getSize();
