@@ -171,6 +171,29 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
         return iSections;
     }
     
+    public Vector<ExamSectionInfo> getSectionsIncludeCrosslistedDummies() {
+        Vector sections = new Vector();
+        for (Iterator i=new TreeSet(getExam().getOwners()).iterator();i.hasNext();) {
+        	ExamOwner owner = (ExamOwner)i.next();
+        	ExamSectionInfo section = new ExamSectionInfo(owner);
+        	sections.add(section);
+            if (owner.getCourse().getInstructionalOffering().getCourseOfferings().size()>1) {
+            	for (Iterator j=owner.getCourse().getInstructionalOffering().getCourseOfferings().iterator();j.hasNext();) {
+            		CourseOffering course = (CourseOffering)j.next();
+            		if (course.isIsControl()) continue;
+            		ExamOwner dummy = new ExamOwner();
+            		dummy.setOwnerId(owner.getOwnerId());
+            		dummy.setOwnerType(owner.getOwnerType());
+            		dummy.setCourse(course);
+            		ExamSectionInfo dummySection = new ExamSectionInfo(dummy);
+            		dummySection.setMaster(section);
+            		sections.add(dummySection);
+            	}
+            }
+        }
+        return sections;
+    }
+
     public Set<Long> getStudentIds() {
         HashSet<Long> studentIds = new HashSet();
         for (ExamSectionInfo section : getSections()) {
@@ -244,6 +267,7 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
         protected int iNrStudents = -1;
         protected transient ExamOwner iOwner = null;
         protected Set<Long> iStudentIds = null;
+        protected ExamSectionInfo iMaster = null;
         public ExamSectionInfo(Long id, String name, Set<Long> studentIds) {
             iId = id;
             iName = name;
@@ -302,6 +326,11 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
         public int getNrStudents() {
             if (iNrStudents<0)
                 iNrStudents = getOwner().getSize();
+            return iNrStudents;
+        }
+        public int getNrStudents(CourseOffering co) {
+            if (iNrStudents<0)
+                iNrStudents = getMaster().getOwner().getSize(co);
             return iNrStudents;
         }
         public ExamInfo getExam() {
@@ -379,6 +408,12 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
         }
         public String toString() {
             return getName();
+        }
+        public ExamSectionInfo getMaster() {
+        	return (iMaster==null?this:iMaster);
+        }
+        public void setMaster(ExamSectionInfo master) {
+        	iMaster = master;
         }
     }
     
