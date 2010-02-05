@@ -1660,7 +1660,7 @@ public class Class_ extends BaseClass_ {
 		return(getExternalClassNameHelper().getClassLabelWithTitle(this,courseOffering));
 	}
 
-	public String getExternalId(Class_ clazz, CourseOffering courseOffering) {
+	public String getExternalId(CourseOffering courseOffering) {
 		return(getExternalClassNameHelper().getExternalId(this, courseOffering));
 	}
 
