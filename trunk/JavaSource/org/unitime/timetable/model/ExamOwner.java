@@ -772,7 +772,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
         switch (getOwnerType()) {
             case sOwnerTypeClass : 
                 if ("true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.external","false"))) {
-                    String ext = ((Class_)getOwnerObject()).getExternalUniqueId();
+                    String ext = ((Class_)getOwnerObject()).getExternalId(getCourse());
                     return (ext==null?"":ext);
                 } else
                     return ((Class_)getOwnerObject()).getSchedulingSubpart().getItypeDesc();
@@ -789,7 +789,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
         switch (getOwnerType()) {
             case sOwnerTypeClass :
                 Class_ clazz = (Class_)getOwnerObject();
-                return ("true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.suffix","false")) && clazz.getClassSuffix()!=null?clazz.getClassSuffix():clazz.getSectionNumberString());
+                return ("true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.suffix","false")) && clazz.getClassSuffix(getCourse())!=null?clazz.getClassSuffix(getCourse()):clazz.getSectionNumberString());
             case sOwnerTypeConfig : 
                 if ("false".equals(ApplicationProperties.getProperty("tmtbl.exam.report.itype","true")))
                     return "["+((InstrOfferingConfig)getOwnerObject()).getName()+"]";
@@ -860,7 +860,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
             return (d.getAbbreviation()==null || d.getAbbreviation().length()==0?d.getDeptCode():d.getAbbreviation());
         case 'a' :
             switch (getOwnerType()) {
-            case sOwnerTypeClass : return ((Class_)getOwnerObject()).getClassSuffix();
+            case sOwnerTypeClass : return ((Class_)getOwnerObject()).getClassSuffix(getCourse());
             default : return "";
             }
         case 'y' :
@@ -870,7 +870,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
             }
         case 'e' :
             switch (getOwnerType()) {
-            case sOwnerTypeClass : return ((Class_)getOwnerObject()).getExternalUniqueId();
+            case sOwnerTypeClass : return ((Class_)getOwnerObject()).getExternalId(getCourse());
             default : return "";
             }
         case 'f' :
