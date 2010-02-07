@@ -24,7 +24,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
 
@@ -361,8 +360,8 @@ public class PdfWebTable extends WebTable {
         if (ordCol != 0) {
             Collections.sort(iLines, new WebTableComparator(Math.abs(ordCol) - 1, asc));
         }
-        for (Enumeration el = iLines.elements(); el.hasMoreElements();) {
-            WebTableLine wtline = (WebTableLine) el.nextElement();
+        for (int el = 0 ; el < iLines.size(); el++) {
+            WebTableLine wtline = (WebTableLine) iLines.elementAt(el);
             String[] line = wtline.getLine();
             boolean blank = iBlankWhenSame;
             for (int i = 0; i < iColumns; i++) {
@@ -378,6 +377,7 @@ public class PdfWebTable extends WebTable {
             		c.setHorizontalAlignment(Element.ALIGN_RIGHT);
             	if ("center".equals(align))
             		c.setHorizontalAlignment(Element.ALIGN_CENTER);
+                applyPdfStyle(c, wtline, (el+1<iLines.size()?(WebTableLine)iLines.elementAt(el+1):null), ordCol);
             	table.addCell(c);
             	lastLine[i] = line[i];
             }
@@ -442,5 +442,16 @@ public class PdfWebTable extends WebTable {
         	} catch (IOException e) {}
     	}    		
     }
+    
+	public void applyPdfStyle(PdfPCell cell, WebTableLine currentLine, WebTableLine nextLine, int order) {
+		if (iWebTableTweakStyle==null || !(iWebTableTweakStyle instanceof PdfWebTableTweakStyle)) return;
+		((PdfWebTableTweakStyle)iWebTableTweakStyle).applyPdfStyle(cell, currentLine, nextLine, order);
+	}
+    
+    
+    public static interface PdfWebTableTweakStyle extends WebTableTweakStyle {
+    	public void applyPdfStyle(PdfPCell cell, WebTableLine currentLine, WebTableLine nextLine, int orderBy);
+    }
+
 
 }
