@@ -77,6 +77,8 @@ public class WebTable {
     
     protected boolean iBlankWhenSame = false;
     
+    protected WebTableTweakStyle iWebTableTweakStyle = null;
+    
     /** creates a WebTable instance */
     public WebTable(int columns, String name, String[] headers, String[] align, boolean[] asc) {
         this(columns, name, null, headers, align, asc);
@@ -98,6 +100,15 @@ public class WebTable {
     public void setColumnFilter(Hashtable filter, String[] keys) {
         iColumnFilter = filter;
         iColumnFilterKeys = keys;
+    }
+    
+    public void setWebTableTweakStyle(WebTableTweakStyle style) {
+    	iWebTableTweakStyle = style;
+    }
+    
+    public String getStyle(WebTableLine line, WebTableLine next, int order) {
+    	String style = (iRowStyle==null?"":iRowStyle+";")+(iWebTableTweakStyle==null?"":iWebTableTweakStyle.getStyleHtml(line, next, order));
+    	return (style==null || style.isEmpty()? "" : "style=\""+style+"\"");
     }
     
     /** sets row (cell) style */
@@ -301,11 +312,12 @@ public class WebTable {
             Collections.sort(iLines,
                     new WebTableComparator(Math.abs(ordCol) - 1, asc));
         }
-        for (Enumeration el = iLines.elements(); el.hasMoreElements();) {
-            WebTableLine wtline = (WebTableLine) el.nextElement();
+        for (int el = 0; el < iLines.size(); el++) {
+            WebTableLine wtline = (WebTableLine) iLines.elementAt(el);
             String[] line = wtline.getLine();
             String onClick = wtline.getOnClick();
             String bgColor = wtline.getBgColor();
+            String style = getStyle(wtline, (el+1<iLines.size()?(WebTableLine)iLines.elementAt(el+1):null), ordCol);
             int last = iColumns - line.length + 1;
             boolean anchor = (onClick != null && onClick.startsWith("<"));
 
@@ -330,9 +342,7 @@ public class WebTable {
                         blank=false;
                     if (!blank && line[i] != null) {
                         sb.append("<td "
-                                + (iRowStyle == null
-                                        ? ""
-                                        : "style=\"" + iRowStyle + "\"")
+                                + style
                                 + " align=\""
                                 + (iAlign != null ? iAlign[i] : "left")
                                 + "\""
@@ -344,9 +354,7 @@ public class WebTable {
                                 + "</td>");
                     } else {
                         sb.append("<td "
-                                + (iRowStyle == null
-                                        ? ""
-                                        : "style=\"" + iRowStyle + "\"")
+                                + style
                                 + " "
                                 + (i == line.length - 1
                                         ? " colspan=" + last + " "
@@ -601,4 +609,8 @@ public class WebTable {
     
     public void setRef(String ref) { iRef = ref; }
     public void setName(String name) { iName = name; }
+    
+    public static interface WebTableTweakStyle {
+    	public String getStyleHtml(WebTableLine currentLine, WebTableLine nextLine, int orderBy);
+    }
 }
