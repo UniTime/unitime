@@ -61,7 +61,7 @@ public class ScheduleByCourseReport extends PdfLegacyExamReport {
                             (iItype?rpad(iITypePrinted?"":section.getItype(), 6)+" ":"")+
                             lpad(section.getSection(), 5)+" "+
                             rpad(getMeetingTime(section),38)+" "+
-                            lpad(String.valueOf(section.getNrStudents(section.getOwner().getCourse())),5)+"  "+
+                            lpad(String.valueOf(section.getNrStudents()),5)+"  "+
                             rpad((section.getExamAssignment()==null?"":section.getExamAssignment().getPeriodNameFixedLength()),32)+" "+
                             (section.getExamAssignment()==null?"":iNoRoom)
                             );
@@ -75,7 +75,7 @@ public class ScheduleByCourseReport extends PdfLegacyExamReport {
                                 (iItype?rpad(!firstRoom || iITypePrinted?"":section.getItype(), 6)+" ":"")+
                                 lpad(!firstRoom?"":section.getSection(), 5)+" "+
                                 rpad(!firstRoom?"":getMeetingTime(section),38)+" "+
-                                lpad(!firstRoom?"":String.valueOf(section.getNrStudents(section.getOwner().getCourse())),5)+"  "+
+                                lpad(!firstRoom?"":String.valueOf(section.getNrStudents()),5)+"  "+
                                 rpad(!firstRoom?"":(section.getExamAssignment()==null?"":section.getExamAssignment().getPeriodNameFixedLength()),32)+" "+
                                 formatRoom(room.getName())+" "+
                                 lpad(""+room.getCapacity(),5)+" "+

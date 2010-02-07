@@ -29,7 +29,7 @@ public class ScheduleByPeriodReport extends PdfLegacyExamReport {
         sLog.debug("  Sorting sections...");
         Hashtable<String,TreeSet<ExamSectionInfo>> subject2courseSections = new Hashtable();
         for (ExamInfo exam : getExams()) {
-            for (ExamSectionInfo section : exam.getSections()) {
+            for (ExamSectionInfo section : exam.getSectionsIncludeCrosslistedDummies()) {
                 if (getSubjectArea()!=null && !getSubjectArea().getSubjectAreaAbbreviation().equals(section.getSubject())) continue;
                 TreeSet<ExamSectionInfo> sections = subject2courseSections.get(section.getSubject());
                 if (sections==null) {

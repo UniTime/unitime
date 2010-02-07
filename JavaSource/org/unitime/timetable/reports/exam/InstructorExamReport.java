@@ -16,6 +16,7 @@ import org.apache.log4j.Logger;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.ClassInstructor;
+import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Location;
@@ -110,7 +111,7 @@ public class InstructorExamReport extends PdfLegacyExamReport {
     public boolean isOfSubjectArea(TreeSet<ExamAssignmentInfo> exams) {
         if (getSubjectArea()==null) return true;
         for (ExamAssignmentInfo exam : exams)
-            for (ExamSectionInfo section : exam.getSections())
+            for (ExamSectionInfo section : exam.getSectionsIncludeCrosslistedDummies())
                 if (getSubjectArea().equals(section.getOwner().getCourse().getSubjectArea())) return true;
         return false;
     }
@@ -215,7 +216,7 @@ public class InstructorExamReport extends PdfLegacyExamReport {
     
     public void printReport(ExamInstructorInfo instructor, TreeSet<ExamAssignmentInfo> exams) throws DocumentException {
         TreeSet<ExamSectionInfo> sections = new TreeSet<ExamSectionInfo>();
-        for (ExamAssignmentInfo exam : exams) sections.addAll(exam.getSections());
+        for (ExamAssignmentInfo exam : exams) sections.addAll(exam.getSectionsIncludeCrosslistedDummies());
         setFooter(instructor.getName());//+" ("+instructor.getInstructor().getExternalUniqueId()+")");
         setCont(instructor.getName());
         println("Instructor:  "+instructor.getName());
@@ -261,6 +262,8 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                     String itype =  getItype(ci.getClassInstructing());
                     String section = (iUseClassSuffix && ci.getClassInstructing().getClassSuffix()!=null?ci.getClassInstructing().getClassSuffix():ci.getClassInstructing().getSectionNumberString());
                     ClassEvent event = (iClass2event==null?ci.getClassInstructing().getEvent():iClass2event.get(ci.getClassInstructing().getUniqueId()));
+                    if (event==null && iClass2event!=null && getSubjectArea()!=null && !getSubjectArea().equals(subject))
+                    	event = ci.getClassInstructing().getEvent();
                     if (event==null || event.getMeetings().isEmpty()) {
                         println(
                                 rpad(subject,4)+" "+
@@ -295,6 +298,8 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                             }
                             Long permId = meeting.getMeetings().first().getLocationPermanentId();
                             Location location = (permId==null?null:(iLocations==null?meeting.getMeetings().first().getLocation():iLocations.get(permId)));
+                            if (location==null && iLocations!=null && getSubjectArea()!=null && !getSubjectArea().equals(subject))
+                            	location = meeting.getMeetings().first().getLocation();
                             String loc = (location==null?"":formatRoom(location.getLabel()));
                             if (last==null || !loc.equals(lastLoc)) {
                                 line += loc + " ";
@@ -313,6 +318,20 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                             if (iNewPage) { last=null; lastTime = null; lastDate = null; lastLoc = null; }
                         }
                     }
+                    if (ci.getClassInstructing().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings().size()>1) {
+                        for (Iterator j=ci.getClassInstructing().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings().iterator(); j.hasNext();) {
+                        	CourseOffering co = (CourseOffering)j.next();
+                        	if (co.isIsControl()) continue;
+                            String xsubject = co.getSubjectAreaAbbv(); 
+                            String xcourse = co.getCourseNbr();
+                            println("            CROSS-LISTED WITH "+
+                                    rpad(xsubject,4)+" "+
+                                    rpad(xcourse,6)+" "+
+                                    (iItype?rpad(itype,6)+" ":"")+
+                                    lpad(section,5)
+                                    );
+                        }
+                    }
                 }
             }
         }
@@ -327,7 +346,7 @@ public class InstructorExamReport extends PdfLegacyExamReport {
         iITypePrinted = false; String lastItype = null;
         iPeriodPrinted = false; String lastSection = null;
         for (ExamAssignmentInfo exam : exams) {
-            for (Iterator<ExamSectionInfo> j = exam.getSections().iterator(); j.hasNext();) {
+            for (Iterator<ExamSectionInfo> j = exam.getSectionsIncludeCrosslistedDummies().iterator(); j.hasNext();) {
                 ExamSectionInfo  section = j.next();
                 if (iSubjectPrinted && !section.getSubject().equals(lastSubject)) { iSubjectPrinted = false; iCoursePrinted = false; iITypePrinted = false; iPeriodPrinted = false; }
                 if (iCoursePrinted && !section.getCourseNbr().equals(lastCourse)) { iCoursePrinted = false; iITypePrinted = false; iPeriodPrinted = false; }
@@ -389,7 +408,7 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                     if (!conflict.getStudents().contains(instructor.getId())) continue;
                     iPeriodPrinted = false;
                     if (conflict.getOtherExam()!=null) {
-                        for (ExamSectionInfo other : conflict.getOtherExam().getSections()) {
+                        for (ExamSectionInfo other : conflict.getOtherExam().getSectionsIncludeCrosslistedDummies()) {
                             if (!conflict.getOtherExam().getInstructors().contains(instructor)) continue;
                             if (!headerPrinted) {
                                 if (!iNewPage) println("");
@@ -467,7 +486,7 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                     iPeriodPrinted = false;
                     for (ExamAssignment otherExam : conflict.getOtherExams()) {
                         if (!otherExam.getInstructors().contains(instructor)) continue;
-                        for (ExamSectionInfo other : otherExam.getSections()) {
+                        for (ExamSectionInfo other : otherExam.getSectionsIncludeCrosslistedDummies()) {
                             if (!headerPrinted) {
                                 if (!iNewPage) println("");
                                 setHeader(null);
@@ -501,7 +520,7 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                 if (iBtb) for (BackToBackConflict conflict : exam.getInstructorBackToBackConflicts()) {
                     if (!conflict.getStudents().contains(instructor.getId())) continue;
                     iPeriodPrinted = false;
-                    for (ExamSectionInfo other : conflict.getOtherExam().getSections()) {
+                    for (ExamSectionInfo other : conflict.getOtherExam().getSectionsIncludeCrosslistedDummies()) {
                         if (!conflict.getOtherExam().getInstructors().contains(instructor)) continue;
                         if (!headerPrinted) {
                             if (!iNewPage) println("");
@@ -557,7 +576,7 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                     if (!conflict.getStudents().contains(studentId)) continue;
                     iPeriodPrinted = false;
                     if (conflict.getOtherExam()!=null) {
-                        for (ExamSectionInfo other : conflict.getOtherExam().getSections()) {
+                        for (ExamSectionInfo other : conflict.getOtherExam().getSectionsIncludeCrosslistedDummies()) {
                             if (!other.getStudentIds().contains(studentId)) continue;
                             if (!headerPrinted) {
                                 if (!iNewPage) println("");
@@ -635,7 +654,7 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                     if (!conflict.getStudents().contains(studentId)) continue;
                     iPeriodPrinted = false;
                     for (ExamAssignment otherExam : conflict.getOtherExams()) {
-                        for (ExamSectionInfo other : otherExam.getSections()) {
+                        for (ExamSectionInfo other : otherExam.getSectionsIncludeCrosslistedDummies()) {
                             if (!other.getStudentIds().contains(studentId)) continue;
                             if (!headerPrinted) {
                                 if (!iNewPage) println("");
@@ -670,7 +689,7 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                 if (iBtb) for (BackToBackConflict conflict : exam.getBackToBackConflicts()) {
                     if (!conflict.getStudents().contains(studentId)) continue;
                     iPeriodPrinted = false;
-                    for (ExamSectionInfo other : conflict.getOtherExam().getSections()) {
+                    for (ExamSectionInfo other : conflict.getOtherExam().getSectionsIncludeCrosslistedDummies()) {
                         if (!other.getStudentIds().contains(studentId)) continue;
                         if (!headerPrinted) {
                             if (!iNewPage) println("");

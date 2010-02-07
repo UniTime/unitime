@@ -62,7 +62,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
     public TreeSet<ExamAssignmentInfo> getExams(CourseOffering course) {
         TreeSet<ExamAssignmentInfo> exams = new TreeSet();
         for (ExamAssignmentInfo exam : getExams()) {
-            for (ExamSectionInfo section : exam.getSections()) {
+            for (ExamSectionInfo section : exam.getSectionsIncludeCrosslistedDummies()) {
                 if (section.getOwnerType()==ExamOwner.sOwnerTypeCourse && section.getOwnerId().equals(course.getUniqueId()))
                     exams.add(exam);
                 if (section.getOwnerType()==ExamOwner.sOwnerTypeOffering && section.getOwnerId().equals(course.getInstructionalOffering().getUniqueId()))
@@ -75,7 +75,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
     public TreeSet<ExamAssignmentInfo> getExams(Class_ clazz) {
         TreeSet<ExamAssignmentInfo> exams = new TreeSet();
         for (ExamAssignmentInfo exam : getExams()) {
-            for (ExamSectionInfo section : exam.getSections()) {
+            for (ExamSectionInfo section : exam.getSectionsIncludeCrosslistedDummies()) {
                 if (section.getOwnerType()==ExamOwner.sOwnerTypeClass && section.getOwnerId().equals(clazz.getUniqueId()))
                     exams.add(exam);
                 if (section.getOwnerType()==ExamOwner.sOwnerTypeConfig && section.getOwnerId().equals(clazz.getSchedulingSubpart().getInstrOfferingConfig().getUniqueId()))
@@ -325,7 +325,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
             Vector<String> meetsWith = new Vector();
             int cnt = 0;
             int maxCnt = Math.max(4,Math.max(rooms.size(), times.size())-1);
-            for (ExamSectionInfo section : exam.getSections()) {
+            for (ExamSectionInfo section : exam.getSectionsIncludeCrosslistedDummies()) {
                 if (section.getOwnerType()==ExamOwner.sOwnerTypeClass && same.contains(section.getOwner().getOwnerObject())) continue;
                 if (section.getOwnerType()==ExamOwner.sOwnerTypeConfig && section.getOwnerId().equals(same.firstElement().getSchedulingSubpart().getInstrOfferingConfig().getUniqueId())) continue;
                 if (cnt>=maxCnt) {
@@ -585,7 +585,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                     Vector<String> meetsWith = new Vector();
                     int cnt = 0;
                     int maxCnt = Math.max(4,Math.max(rooms.size(), times.size())-1);
-                    for (ExamSectionInfo section : exam.getSections()) {
+                    for (ExamSectionInfo section : exam.getSectionsIncludeCrosslistedDummies()) {
                         if (section.getOwnerType()==ExamOwner.sOwnerTypeCourse && course.getUniqueId().equals(section.getOwnerId())) continue;
                         if (section.getOwnerType()==ExamOwner.sOwnerTypeOffering && course.getInstructionalOffering().getUniqueId().equals(section.getOwnerId())) continue;
                         if (cnt>=maxCnt) {

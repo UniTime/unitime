@@ -48,7 +48,7 @@ public class ExamScheduleByPeriodReport extends PdfLegacyExamReport {
                     if (!iNewPage) println("");
                 }
                 ExamSectionInfo lastSection = null;
-                for (Iterator<ExamSectionInfo> j = exam.getSections().iterator(); j.hasNext();) {
+                for (Iterator<ExamSectionInfo> j = exam.getSectionsIncludeCrosslistedDummies().iterator(); j.hasNext();) {
                     ExamSectionInfo  section = j.next();
                     if (getSubjectArea()!=null && !getSubjectArea().getSubjectAreaAbbreviation().equals(section.getSubject())) continue;
                     iSubjectPrinted = iCoursePrinted = iStudentPrinted = false;
