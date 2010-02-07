@@ -39,7 +39,7 @@ public class AbbvExamScheduleByCourseReport extends PdfLegacyExamReport {
                         return s1.compareTo(s2);
                     }
                  });
-                 sections.addAll(exam.getSections());
+                 sections.addAll(exam.getSectionsIncludeCrosslistedDummies());
                 for (ExamSectionInfo section : sections) {
                     boolean sameSubj = false, sameCrs = false, sameSct = false, sameItype = false;
                     if ((lx%n)!=0 && last!=null) {
@@ -126,7 +126,7 @@ public class AbbvExamScheduleByCourseReport extends PdfLegacyExamReport {
                 } else for (ExamRoomInfo room : exam.getRooms()) {
                     rooms.add(formatRoom(room.getName()));
                 }
-                Vector<ExamSectionInfo> sections = new Vector(exam.getSections());
+                Vector<ExamSectionInfo> sections = new Vector(exam.getSectionsIncludeCrosslistedDummies());
                 Collections.sort(sections, new Comparator<ExamSectionInfo>() {
                     public int compare(ExamSectionInfo s1, ExamSectionInfo s2) {
                         if (getSubjectArea()==null) return s1.compareTo(s2);

@@ -23,7 +23,7 @@ public class AbbvScheduleByCourseReport extends PdfLegacyExamReport {
         TreeSet<ExamSectionInfo> sections = new TreeSet();
         for (ExamAssignmentInfo exam : getExams()) {
             if (exam.getPeriod()==null) continue;
-            for (ExamSectionInfo section : exam.getSections()) {
+            for (ExamSectionInfo section : exam.getSectionsIncludeCrosslistedDummies()) {
                 if (getSubjectArea()!=null && !getSubjectArea().getSubjectAreaAbbreviation().equals(section.getSubject())) continue;
                 sections.add(section);
             }

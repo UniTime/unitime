@@ -119,9 +119,9 @@ public class ExamPeriodChartReport extends PdfLegacyExamReport {
                     int linesThisSections = 6;
                     for (ExamAssignmentInfo exam : exams) {
                         int size = 0;
-                        for (ExamSectionInfo section: exam.getSections()) size+= section.getNrStudents();
+                        for (ExamSectionInfo section: exam.getSectionsIncludeCrosslistedDummies()) size+= section.getNrStudents();
                         if (iLimit<0 || size>=iLimit) {
-                            for (ExamSectionInfo section: exam.getSections())
+                            for (ExamSectionInfo section: exam.getSectionsIncludeCrosslistedDummies())
                                 if (getSubjectArea()==null || getSubjectArea().getSubjectAreaAbbreviation().equals(section.getSubject())) linesThisSections++;
                         }
                     }
@@ -181,8 +181,8 @@ public class ExamPeriodChartReport extends PdfLegacyExamReport {
                     for (ExamAssignmentInfo exam : exams) {
                         boolean sizePrinted = false;
                         int size = 0;
-                        for (ExamSectionInfo section: exam.getSections()) size+= section.getNrStudents();
-                        for (ExamSectionInfo section : exam.getSections()) {
+                        for (ExamSectionInfo section: exam.getSectionsIncludeCrosslistedDummies()) size+= section.getNrStudents();
+                        for (ExamSectionInfo section : exam.getSectionsIncludeCrosslistedDummies()) {
                             if (getSubjectArea()!=null && !getSubjectArea().getSubjectAreaAbbreviation().equals(section.getSubject())) continue;
                             total += section.getNrStudents();
                             if (iLimit>=0 && size<iLimit) continue;

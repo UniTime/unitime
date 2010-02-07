@@ -3,6 +3,7 @@ package org.unitime.timetable.reports.exam;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -22,7 +23,6 @@ import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.Event.MultiMeeting;
-import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.reports.exam.InstructorExamReport.FileGenerator;
@@ -109,7 +109,7 @@ public class StudentExamReport extends PdfLegacyExamReport {
         Hashtable<Student,TreeSet<ExamSectionInfo>> sections = new Hashtable();
         for (ExamAssignmentInfo exam:getExams()) {
             if (exam.getPeriod()==null) continue;
-            for (ExamSectionInfo section:exam.getSections()) {
+            for (ExamSectionInfo section:exam.getSectionsIncludeCrosslistedDummies()) {
                 for (Long studentId : section.getStudentIds()) {
                     Student student = iStudents.get(studentId);
                     TreeSet<ExamSectionInfo> sectionsThisStudent = sections.get(student);
@@ -145,7 +145,7 @@ public class StudentExamReport extends PdfLegacyExamReport {
         TreeSet<ExamSectionInfo> sections = new TreeSet();
         for (ExamAssignmentInfo exam : getExams()) {
             if (exam.getPeriod()==null) continue;
-            for (ExamSectionInfo section : exam.getSections())
+            for (ExamSectionInfo section : exam.getSectionsIncludeCrosslistedDummies())
                 if (section.getStudentIds().contains(studentId)) sections.add(section);
         }
         if (sections.isEmpty()) return;
@@ -153,6 +153,45 @@ public class StudentExamReport extends PdfLegacyExamReport {
         printHeader();
         printReport(student, sections);
         lastPage();
+    }
+    
+    public static class StudentClassComparator implements Comparator<Class_> {
+    	private Student iStudent;
+    	public StudentClassComparator(Student student) {
+    		iStudent = student;
+    	}
+    	public CourseOffering getCourse(Class_ clazz) {
+        	CourseOffering correctedCourse = clazz.getSchedulingSubpart().getControllingCourseOffering();
+        	for (Iterator i=iStudent.getClassEnrollments().iterator();i.hasNext();) {
+        		StudentClassEnrollment sce = (StudentClassEnrollment)i.next();
+        		if (sce.getCourseOffering().getInstructionalOffering().equals(clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering())) {
+        			correctedCourse = sce.getCourseOffering();
+        			break;
+        		}
+        	}
+        	return correctedCourse;
+    	}
+    	public int compare(Class_ c1, Class_ c2) {
+    		CourseOffering co1 = getCourse(c1);
+    		CourseOffering co2 = getCourse(c2);
+    		int cmp = co1.getSubjectAreaAbbv().compareTo(co2.getSubjectAreaAbbv());
+    		if (cmp!=0) return cmp;
+    		cmp = co1.getCourseNbr().compareTo(co2.getCourseNbr());
+    		if (cmp!=0) return cmp;
+    		if (isParentOf(c1, c2)) return -1;
+    		if (isParentOf(c2, c1)) return 1;
+    		if (cmp!=0) return cmp;
+    		cmp = c1.getSchedulingSubpart().getItype().compareTo(c2.getSchedulingSubpart().getItype());
+    		if (cmp!=0) return cmp;
+    		return c1.getUniqueId().compareTo(c2.getUniqueId());
+    	}
+    	public boolean isParentOf(Class_ c1, Class_ c2) {
+    		if (c2.getParentClass()!=null) {
+    			if (c2.getParentClass().equals(c1)) return true;
+    			return isParentOf(c1, c2.getParentClass());
+    		}
+    		return false;
+    	}
     }
 
     public void printReport(Student student, TreeSet<ExamSectionInfo> sections) throws DocumentException {
@@ -166,7 +205,8 @@ public class StudentExamReport extends PdfLegacyExamReport {
         Date lastChange = null;
         String changeObject = null;
         if (iClassSchedule) {
-            TreeSet<Class_> allClasses = new TreeSet(new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
+        	StudentClassComparator scc = new StudentClassComparator(student);
+            TreeSet<Class_> allClasses = new TreeSet(scc);
             for (Iterator i=student.getClassEnrollments().iterator();i.hasNext();) {
                 StudentClassEnrollment sce = (StudentClassEnrollment)i.next();
                 allClasses.add(sce.getClazz());
@@ -187,19 +227,14 @@ public class StudentExamReport extends PdfLegacyExamReport {
                             instructor += ci.getInstructor().getName(DepartmentalInstructor.sNameFormatLastInitial);
                         }
                     }
-                	CourseOffering correctedCourse = clazz.getSchedulingSubpart().getControllingCourseOffering();
-                	for (Iterator i=student.getClassEnrollments().iterator();i.hasNext();) {
-                		StudentClassEnrollment sce = (StudentClassEnrollment)i.next();
-                		if (sce.getCourseOffering().getInstructionalOffering().equals(clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering())) {
-                			correctedCourse = sce.getCourseOffering();
-                			break;
-                		}
-                	}
+                	CourseOffering correctedCourse = scc.getCourse(clazz);
                     String subject = correctedCourse.getSubjectAreaAbbv(); 
                     String course = correctedCourse.getCourseNbr();
                     String itype =  getItype(clazz);
                     String section = (iUseClassSuffix && clazz.getClassSuffix()!=null?clazz.getClassSuffix():clazz.getSectionNumberString());
                     ClassEvent event = (iClass2event==null?clazz.getEvent():iClass2event.get(clazz.getUniqueId()));
+                    if (event==null && iClass2event!=null && getSubjectArea()!=null && !getSubjectArea().equals(subject))
+                    	event = clazz.getEvent();
                     if (event==null || event.getMeetings().isEmpty()) {
                         println(
                                 rpad(subject,4)+" "+
@@ -233,14 +268,16 @@ public class StudentExamReport extends PdfLegacyExamReport {
                             }
                             Long permId = meeting.getMeetings().first().getLocationPermanentId();
                             Location location = (permId==null?null:(iLocations==null?meeting.getMeetings().first().getLocation():iLocations.get(permId)));
-                            String loc = (location==null?"":formatRoom(location.getLabel()));
+                            if (location==null && iLocations!=null && getSubjectArea()!=null && !getSubjectArea().equals(subject))
+                            	location = meeting.getMeetings().first().getLocation();
+                            String loc = (location==null?rpad("",11):formatRoom(location.getLabel()));
                             if (last==null || !loc.equals(lastLoc)) {
                                 line += loc + " ";
                             } else {
                                 line += rpad("",12);
                             }
                             if (last==null)
-                                line += rpad(instructor,55);
+                                line += instructor;
                             lastLoc = loc;
                             lastTime = time; lastDate = date;
                             last = meeting;
@@ -262,14 +299,14 @@ public class StudentExamReport extends PdfLegacyExamReport {
         iITypePrinted = false; String lastItype = null;
         iPeriodPrinted = false; String lastSection = null;
         for (ExamSectionInfo section : sections) {
-            if (iSubjectPrinted && !section.getSubject(student).equals(lastSubject)) { iSubjectPrinted = false; iCoursePrinted = false; iITypePrinted = false; iPeriodPrinted = false; }
-            if (iCoursePrinted && !section.getCourseNbr(student).equals(lastCourse)) { iCoursePrinted = false; iITypePrinted = false; iPeriodPrinted = false; }
+            if (iSubjectPrinted && !section.getSubject().equals(lastSubject)) { iSubjectPrinted = false; iCoursePrinted = false; iITypePrinted = false; iPeriodPrinted = false; }
+            if (iCoursePrinted && !section.getCourseNbr().equals(lastCourse)) { iCoursePrinted = false; iITypePrinted = false; iPeriodPrinted = false; }
             if (iITypePrinted && !section.getItype().equals(lastItype)) { iITypePrinted = false; iPeriodPrinted = false; }
             if (iPeriodPrinted && !section.getSection().equals(lastSection)) { iPeriodPrinted = false; }
             if (section.getExamAssignment().getRooms()==null || section.getExamAssignment().getRooms().isEmpty()) {
                 println(
-                        rpad(iSubjectPrinted?"":section.getSubject(student), 4)+" "+
-                        rpad(iCoursePrinted?"":section.getCourseNbr(student), 6)+" "+
+                        rpad(iSubjectPrinted?"":section.getSubject(), 4)+" "+
+                        rpad(iCoursePrinted?"":section.getCourseNbr(), 6)+" "+
                         (iItype?rpad(iITypePrinted?"":section.getItype(), 6)+" ":"")+
                         lpad(iPeriodPrinted?"":section.getSection(), 5)+" "+
                         rpad(getMeetingTime(section),38)+" "+
@@ -281,8 +318,8 @@ public class StudentExamReport extends PdfLegacyExamReport {
                 boolean firstRoom = true;
                 for (ExamRoomInfo room : section.getExamAssignment().getRooms()) {
                     println(
-                            rpad(!firstRoom || iSubjectPrinted?"":section.getSubject(student), 4)+" "+
-                            rpad(!firstRoom || iCoursePrinted?"":section.getCourseNbr(student), 6)+" "+
+                            rpad(!firstRoom || iSubjectPrinted?"":section.getSubject(), 4)+" "+
+                            rpad(!firstRoom || iCoursePrinted?"":section.getCourseNbr(), 6)+" "+
                             (iItype?rpad(!firstRoom || iITypePrinted?"":section.getItype(), 6)+" ":"")+
                             lpad(!firstRoom || iPeriodPrinted?"":section.getSection(), 5)+" "+
                             rpad(!firstRoom?"":getMeetingTime(section),38)+" "+
@@ -296,9 +333,9 @@ public class StudentExamReport extends PdfLegacyExamReport {
                 lastSubject = lastItype = lastCourse = lastSection = null;
             } else {
                 iSubjectPrinted = iITypePrinted = iCoursePrinted = iPeriodPrinted = true;
-                lastSubject = section.getSubject(student);
+                lastSubject = section.getSubject();
                 lastItype = section.getItype();
-                lastCourse = section.getCourseNbr(student);
+                lastCourse = section.getCourseNbr();
                 lastSection = section.getSection();
             }
         }
@@ -306,7 +343,7 @@ public class StudentExamReport extends PdfLegacyExamReport {
         boolean headerPrinted = false;
         lastSubject = null;
         for (ExamSectionInfo section : sections) {
-            iSubjectPrinted = (!iNewPage && lastSubject!=null && lastSubject.equals(section.getSubject(student)));
+            iSubjectPrinted = (!iNewPage && lastSubject!=null && lastSubject.equals(section.getSubject()));
             ExamAssignmentInfo exam = section.getExamAssignmentInfo();
             if (exam==null || exam.getPeriod()==null) continue;
             ExamPeriod period = exam.getPeriod();
@@ -315,7 +352,7 @@ public class StudentExamReport extends PdfLegacyExamReport {
                     if (!conflict.getStudents().contains(student.getUniqueId())) continue;
                     iPeriodPrinted = false;
                     if (conflict.getOtherExam()!=null) {
-                        for (ExamSectionInfo other : conflict.getOtherExam().getSections()) {
+                        for (ExamSectionInfo other : conflict.getOtherExam().getSectionsIncludeCrosslistedDummies()) {
                             if (!other.getStudentIds().contains(student.getUniqueId())) continue;
                             if (!headerPrinted) {
                                 if (!iNewPage) println("");
@@ -330,20 +367,20 @@ public class StudentExamReport extends PdfLegacyExamReport {
                                 headerPrinted = true;
                             }
                             println(
-                                    rpad(iSubjectPrinted?"":section.getSubject(student),4)+" "+
-                                    rpad(iCoursePrinted?"":section.getCourseNbr(student), 6)+" "+
+                                    rpad(iSubjectPrinted?"":section.getSubject(),4)+" "+
+                                    rpad(iCoursePrinted?"":section.getCourseNbr(), 6)+" "+
                                     (iItype?rpad(iCoursePrinted?"":section.getItype(), 6)+" ":"")+
                                     lpad(iCoursePrinted?"":section.getSection(),5)+" "+
                                     rpad(iCoursePrinted?"":exam.getPeriodNameFixedLength(),28)+" "+
                                     rpad(iPeriodPrinted?"":"DIRECT",6)+" "+
-                                    rpad(other.getSubject(student),4)+" "+
-                                    rpad(other.getCourseNbr(student),6)+" "+
+                                    rpad(other.getSubject(),4)+" "+
+                                    rpad(other.getCourseNbr(),6)+" "+
                                     (iItype?rpad(other.getItype(),6)+" ":"")+
                                     lpad(other.getSection(),5)+" "+
                                     other.getExamAssignment().getTimeFixedLength()
                                     );
                             iSubjectPrinted = iCoursePrinted = iStudentPrinted = iPeriodPrinted = !iNewPage;
-                            lastSubject = section.getSubject(student);
+                            lastSubject = section.getSubject();
                         }
                     } else if (conflict.getOtherEventId()!=null) {
                         if (!headerPrinted) {
@@ -360,8 +397,8 @@ public class StudentExamReport extends PdfLegacyExamReport {
                         }
                         if (conflict.isOtherClass()) {
                             println(
-                                    rpad(iSubjectPrinted?"":section.getSubject(student),4)+" "+
-                                    rpad(iCoursePrinted?"":section.getCourseNbr(student), 6)+" "+
+                                    rpad(iSubjectPrinted?"":section.getSubject(),4)+" "+
+                                    rpad(iCoursePrinted?"":section.getCourseNbr(), 6)+" "+
                                     (iItype?rpad(iCoursePrinted?"":section.getItype(), 6)+" ":"")+
                                     lpad(iCoursePrinted?"":section.getSection(),5)+" "+
                                     rpad(iCoursePrinted?"":exam.getPeriodNameFixedLength(),28)+" "+
@@ -374,8 +411,8 @@ public class StudentExamReport extends PdfLegacyExamReport {
                                     );
                         } else {
                             println(
-                                    rpad(iSubjectPrinted?"":section.getSubject(student),4)+" "+
-                                    rpad(iCoursePrinted?"":section.getCourseNbr(student), 6)+" "+
+                                    rpad(iSubjectPrinted?"":section.getSubject(),4)+" "+
+                                    rpad(iCoursePrinted?"":section.getCourseNbr(), 6)+" "+
                                     (iItype?rpad(iCoursePrinted?"":section.getItype(), 6)+" ":"")+
                                     lpad(iCoursePrinted?"":section.getSection(),5)+" "+
                                     rpad(iCoursePrinted?"":exam.getPeriodNameFixedLength(),28)+" "+
@@ -385,14 +422,14 @@ public class StudentExamReport extends PdfLegacyExamReport {
                                     );
                         }
                         iSubjectPrinted = iCoursePrinted = iStudentPrinted = iPeriodPrinted = !iNewPage;
-                        lastSubject = section.getSubject(student);
+                        lastSubject = section.getSubject();
                     }
                 }
                 if (iM2d) for (MoreThanTwoADayConflict conflict : exam.getMoreThanTwoADaysConflicts()) {
                     if (!conflict.getStudents().contains(student.getUniqueId())) continue;
                     iPeriodPrinted = false;
                     for (ExamAssignment otherExam : conflict.getOtherExams()) {
-                        for (ExamSectionInfo other : otherExam.getSections()) {
+                        for (ExamSectionInfo other : otherExam.getSectionsIncludeCrosslistedDummies()) {
                             if (!other.getStudentIds().contains(student.getUniqueId())) continue;
                             if (!headerPrinted) {
                                 if (!iNewPage) println("");
@@ -407,27 +444,27 @@ public class StudentExamReport extends PdfLegacyExamReport {
                                 headerPrinted = true;
                             }
                             println(
-                                    rpad(iSubjectPrinted?"":section.getSubject(student),4)+" "+
-                                    rpad(iCoursePrinted?"":section.getCourseNbr(student), 6)+" "+
+                                    rpad(iSubjectPrinted?"":section.getSubject(),4)+" "+
+                                    rpad(iCoursePrinted?"":section.getCourseNbr(), 6)+" "+
                                     (iItype?rpad(iCoursePrinted?"":section.getItype(), 6)+" ":"")+
                                     lpad(iCoursePrinted?"":section.getSection(),5)+" "+
                                     rpad(iCoursePrinted?"":exam.getPeriodNameFixedLength(),28)+" "+
                                     rpad(iPeriodPrinted?"":">2-DAY",6)+" "+
-                                    rpad(other.getSubject(student),4)+" "+
-                                    rpad(other.getCourseNbr(student),6)+" "+
+                                    rpad(other.getSubject(),4)+" "+
+                                    rpad(other.getCourseNbr(),6)+" "+
                                     (iItype?rpad(other.getItype(),6)+" ":"")+
                                     lpad(other.getSection(),5)+" "+
                                     other.getExamAssignment().getTimeFixedLength()
                                     );
                             iSubjectPrinted = iCoursePrinted = iStudentPrinted = iPeriodPrinted = !iNewPage;
-                            lastSubject = section.getSubject(student);
+                            lastSubject = section.getSubject();
                         }
                     }
                 }
                 if (iBtb) for (BackToBackConflict conflict : exam.getBackToBackConflicts()) {
                     if (!conflict.getStudents().contains(student.getUniqueId())) continue;
                     iPeriodPrinted = false;
-                    for (ExamSectionInfo other : conflict.getOtherExam().getSections()) {
+                    for (ExamSectionInfo other : conflict.getOtherExam().getSectionsIncludeCrosslistedDummies()) {
                         if (!other.getStudentIds().contains(student.getUniqueId())) continue;
                         if (!headerPrinted) {
                             if (!iNewPage) println("");
@@ -442,20 +479,20 @@ public class StudentExamReport extends PdfLegacyExamReport {
                             headerPrinted = true;
                         }
                         println(
-                                rpad(iSubjectPrinted?"":section.getSubject(student),4)+" "+
-                                rpad(iCoursePrinted?"":section.getCourseNbr(student), 6)+" "+
+                                rpad(iSubjectPrinted?"":section.getSubject(),4)+" "+
+                                rpad(iCoursePrinted?"":section.getCourseNbr(), 6)+" "+
                                 (iItype?rpad(iCoursePrinted?"":section.getItype(), 6)+" ":"")+
                                 lpad(iCoursePrinted?"":section.getSection(),5)+" "+
                                 rpad(iCoursePrinted?"":exam.getPeriodNameFixedLength(),28)+" "+
                                 rpad(iPeriodPrinted?"":"BTB",6)+" "+
-                                rpad(other.getSubject(student),4)+" "+
-                                rpad(other.getCourseNbr(student),6)+" "+
+                                rpad(other.getSubject(),4)+" "+
+                                rpad(other.getCourseNbr(),6)+" "+
                                 (iItype?rpad(other.getItype(),6)+" ":"")+
                                 lpad(other.getSection(),5)+" "+
                                 other.getExamAssignment().getTimeFixedLength()
                                 );
                         iSubjectPrinted = iCoursePrinted = iStudentPrinted = iPeriodPrinted = !iNewPage;
-                        lastSubject = section.getSubject(student);
+                        lastSubject = section.getSubject();
                     }
             }
         }
@@ -481,7 +518,7 @@ public class StudentExamReport extends PdfLegacyExamReport {
         Hashtable<Student,File> files = new Hashtable();
         Hashtable<Student,TreeSet<ExamSectionInfo>> sections = new Hashtable();
         for (ExamAssignmentInfo exam:getExams()) {
-            for (ExamSectionInfo section:exam.getSections()) {
+            for (ExamSectionInfo section:exam.getSectionsIncludeCrosslistedDummies()) {
                 for (Long studentId : section.getStudentIds()) {
                     Student student = iStudents.get(studentId);
                     TreeSet<ExamSectionInfo> sectionsThisStudent = sections.get(student);
