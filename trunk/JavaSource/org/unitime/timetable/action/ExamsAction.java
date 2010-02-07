@@ -145,7 +145,7 @@ public class ExamsAction extends Action {
                     exams = Exam.findAll(myForm.getSession(), myForm.getExamType());
                 else {
                     SubjectArea sa = SubjectArea.findByAbbv(myForm.getSession(), myForm.getSubjectArea());
-                    if (sa!=null) exams = Exam.findExamsOfSubjectArea(sa.getUniqueId(), myForm.getExamType());
+                    if (sa!=null) exams = Exam.findExamsOfSubjectAreaIncludeCrossLists(sa.getUniqueId(), myForm.getExamType());
                 }
                 if (exams!=null && !exams.isEmpty()) { 
                     Vector<ExamAssignment> assignments = new Vector();
@@ -186,7 +186,7 @@ public class ExamsAction extends Action {
         table.setRowStyle("white-space:nowrap");
         String noRoom = ApplicationProperties.getProperty("tmtbl.exam.report.noroom","");
         for (ExamAssignment exam : exams) {
-            for (ExamSectionInfo section : exam.getSections()) {
+            for (ExamSectionInfo section : exam.getSectionsIncludeCrosslistedDummies()) {
                 if (!"--ALL--".equals(form.getSubjectArea()) && !section.getSubject().equals(form.getSubjectArea())) continue;
                 table.addLine(
                         new String[] {
