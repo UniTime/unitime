@@ -43,7 +43,7 @@ public class PeriodChartReport extends PdfLegacyExamReport {
                 sections = new TreeSet();
                 period2courseSections.put(exam.getPeriod(),sections);
             }
-            for (ExamSectionInfo section : exam.getSections()) {
+            for (ExamSectionInfo section : exam.getSectionsIncludeCrosslistedDummies()) {
                 if (getSubjectArea()!=null && !getSubjectArea().getSubjectAreaAbbreviation().equals(section.getSubject())) continue;
                 sections.add(section);
             }

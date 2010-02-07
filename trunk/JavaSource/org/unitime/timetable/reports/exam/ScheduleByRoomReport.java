@@ -72,7 +72,7 @@ public class ScheduleByRoomReport extends PdfLegacyExamReport {
                 if (exam!=null) {
                     ExamSectionInfo lastSection = null;
                     iSubjectPrinted = iCoursePrinted = iITypePrinted = false;
-                    for (ExamSectionInfo section : exam.getSections()) {
+                    for (ExamSectionInfo section : exam.getSectionsIncludeCrosslistedDummies()) {
                         if (getSubjectArea()!=null && !getSubjectArea().getSubjectAreaAbbreviation().equals(section.getSubject())) continue;
                         if (lastSection!=null && iSubjectPrinted) {
                             iSubjectPrinted = iCoursePrinted = iITypePrinted = false;

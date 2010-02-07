@@ -47,7 +47,7 @@ public class ConflictsByCourseAndStudentReport extends PdfLegacyExamReport {
         Hashtable<String,TreeSet<ExamSectionInfo>> subject2courseSections = new Hashtable();
         for (ExamAssignmentInfo exam : getExams()) {
             if (exam.getPeriod()==null) continue;
-            for (ExamSectionInfo section : exam.getSections()) {
+            for (ExamSectionInfo section : exam.getSectionsIncludeCrosslistedDummies()) {
                 if (getSubjectArea()!=null && !getSubjectArea().getSubjectAreaAbbreviation().equals(section.getSubject())) continue;
                 TreeSet<ExamSectionInfo> sections = subject2courseSections.get(section.getSubject());
                 if (sections==null) {
@@ -88,7 +88,7 @@ public class ConflictsByCourseAndStudentReport extends PdfLegacyExamReport {
                         if (!conflict.getStudents().contains(studentId)) continue;
                         iPeriodPrinted = false;
                         if (conflict.getOtherExam()!=null) {
-                            for (ExamSectionInfo other : conflict.getOtherExam().getSections()) {
+                            for (ExamSectionInfo other : conflict.getOtherExam().getSectionsIncludeCrosslistedDummies()) {
                                 if (!other.getStudentIds().contains(studentId)) continue;
                                 println(
                                         rpad(iSubjectPrinted?"":subject,4)+" "+
@@ -142,7 +142,7 @@ public class ConflictsByCourseAndStudentReport extends PdfLegacyExamReport {
                         if (!conflict.getStudents().contains(studentId)) continue;
                         iPeriodPrinted = false;
                         for (ExamAssignment otherExam : conflict.getOtherExams()) {
-                            for (ExamSectionInfo other : otherExam.getSections()) {
+                            for (ExamSectionInfo other : otherExam.getSectionsIncludeCrosslistedDummies()) {
                                 if (!other.getStudentIds().contains(studentId)) continue;
                                 println(
                                         rpad(iSubjectPrinted?"":subject,4)+" "+
@@ -165,7 +165,7 @@ public class ConflictsByCourseAndStudentReport extends PdfLegacyExamReport {
                     if (iBtb) for (BackToBackConflict conflict : exam.getBackToBackConflicts()) {
                         if (!conflict.getStudents().contains(studentId)) continue;
                         iPeriodPrinted = false;
-                        for (ExamSectionInfo other : conflict.getOtherExam().getSections()) {
+                        for (ExamSectionInfo other : conflict.getOtherExam().getSectionsIncludeCrosslistedDummies()) {
                             if (!other.getStudentIds().contains(studentId)) continue;
                             println(
                                     rpad(iSubjectPrinted?"":subject,4)+" "+
