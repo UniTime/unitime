@@ -327,7 +327,7 @@ public class ClassesAction extends Action {
                 String course = co.getCourseName();
                 String itype =  clazz.getSchedulingSubpart().getItypeDesc();
                 int itypeCmp = clazz.getSchedulingSubpart().getItype().getItype();
-                String section = (suffix && clazz.getClassSuffix()!=null?clazz.getClassSuffix():clazz.getSectionNumberString());
+                String section = (suffix && clazz.getClassSuffix(co)!=null?clazz.getClassSuffix(co):clazz.getSectionNumberString());
                 String time = getMeetingTime(clazz);
                 long timeCmp = getMeetingComparable(clazz);
                 String room = getMeetingRooms(clazz);
