@@ -83,4 +83,6 @@ public class MultiComparable implements Comparable<MultiComparable>{
         if (iCmp.length<mc.iCmp.length) return -1;
         return 0;
     }
+    
+    public Comparable[] getContent() { return iCmp; }
 }
