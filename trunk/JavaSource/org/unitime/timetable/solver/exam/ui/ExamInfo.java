@@ -36,8 +36,6 @@ import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamOwner;
-import org.unitime.timetable.model.Student;
-import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.ExamDAO;
@@ -189,6 +187,7 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
             		dummySection.setMaster(section);
             		sections.add(dummySection);
             	}
+            	section.setMaster(section);
             }
         }
         return sections;
@@ -288,7 +287,12 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
             }
         }
         public Set<Long> getStudentIds() {
-            if (iStudentIds==null) iStudentIds = new HashSet<Long>(getOwner().getStudentIds());
+            if (iStudentIds==null) {
+            	if (getMaster()!=null)
+                	iStudentIds = new HashSet<Long>(getMaster().getOwner().getStudentIds(getOwner().getCourse()));
+            	else
+                	iStudentIds = new HashSet<Long>(getOwner().getStudentIds());
+            }
             return iStudentIds;
         }
         public Long getId() { return iId; }
@@ -300,37 +304,13 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
             return iOwner;
         }
         public String getName() { return iName; }
-        public String getNameForStudent(Student student) {
-        	CourseOffering course = getOwner().getCourse();
-        	// Not cross-listed -> just return the name
-        	if (course.getInstructionalOffering().getCourseOfferings().size()<=1) return getName();
-        	// Get the correct course
-        	CourseOffering correctedCourse = null;
-        	for (Iterator i=student.getClassEnrollments().iterator();i.hasNext();) {
-        		StudentClassEnrollment sce = (StudentClassEnrollment)i.next();
-        		if (sce.getCourseOffering().getInstructionalOffering().equals(course.getInstructionalOffering())) {
-        			correctedCourse = sce.getCourseOffering();
-        			break;
-        		}
-        	}
-        	if (correctedCourse!=null && !correctedCourse.equals(course)) {
-        		ExamOwner dummy = new ExamOwner();
-        		dummy.setOwnerId(getOwnerId());
-        		dummy.setOwnerType(getOwnerType());
-        		dummy.setCourse(correctedCourse);
-        		return dummy.getLabel();
-        	}
-        	// Fallback (same course)
-        	return getName();
-        }
         public int getNrStudents() {
-            if (iNrStudents<0)
-                iNrStudents = getOwner().getSize();
-            return iNrStudents;
-        }
-        public int getNrStudents(CourseOffering co) {
-            if (iNrStudents<0)
-                iNrStudents = getMaster().getOwner().getSize(co);
+            if (iNrStudents<0) {
+            	if (getMaster()!=null)
+            		iNrStudents = getMaster().getOwner().getSize(getOwner().getCourse());
+            	else
+                    iNrStudents = getOwner().getSize();
+            }
             return iNrStudents;
         }
         public ExamInfo getExam() {
@@ -349,44 +329,8 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
         public String getSubject() {
             return getOwner().getSubject();
         }
-        public String getSubject(Student student) {
-        	CourseOffering course = getOwner().getCourse();
-        	// Not cross-listed -> just return the name
-        	if (course.getInstructionalOffering().getCourseOfferings().size()<=1) return getSubject();
-        	// Get the correct course
-        	CourseOffering correctedCourse = null;
-        	for (Iterator i=student.getClassEnrollments().iterator();i.hasNext();) {
-        		StudentClassEnrollment sce = (StudentClassEnrollment)i.next();
-        		if (sce.getCourseOffering().getInstructionalOffering().equals(course.getInstructionalOffering())) {
-        			correctedCourse = sce.getCourseOffering();
-        			break;
-        		}
-        	}
-        	if (correctedCourse!=null && !correctedCourse.equals(course)) 
-        		return correctedCourse.getSubjectAreaAbbv();
-        	// Fallback (same course)
-        	return getSubject();
-        }
         public String getCourseNbr() {
             return getOwner().getCourseNbr();
-        }
-        public String getCourseNbr(Student student) {
-        	CourseOffering course = getOwner().getCourse();
-        	// Not cross-listed -> just return the name
-        	if (course.getInstructionalOffering().getCourseOfferings().size()<=1) return getCourseNbr();
-        	// Get the correct course
-        	CourseOffering correctedCourse = null;
-        	for (Iterator i=student.getClassEnrollments().iterator();i.hasNext();) {
-        		StudentClassEnrollment sce = (StudentClassEnrollment)i.next();
-        		if (sce.getCourseOffering().getInstructionalOffering().equals(course.getInstructionalOffering())) {
-        			correctedCourse = sce.getCourseOffering();
-        			break;
-        		}
-        	}
-        	if (correctedCourse!=null && !correctedCourse.equals(course)) 
-        		return correctedCourse.getCourseNbr();
-        	// Fallback (same course)
-        	return getCourseNbr();
         }
         public String getItype() {
             return getOwner().getItype();
@@ -410,7 +354,7 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
             return getName();
         }
         public ExamSectionInfo getMaster() {
-        	return (iMaster==null?this:iMaster);
+        	return iMaster;
         }
         public void setMaster(ExamSectionInfo master) {
         	iMaster = master;
