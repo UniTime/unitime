@@ -1586,50 +1586,68 @@ public class WebInstructionalOfferingTableBuilder {
             cell.setAlign("right");
             row.addContent(cell);
     	} 
+    	int emptyCells = 0;
+    	cell = null;
     	if (isShowRoomRatio()){
-            row.addContent(initNormalCell("", isEditable));
+    		emptyCells ++;
     	} 
     	if (isShowManager()){
-            row.addContent(initNormalCell("", isEditable));
+    		emptyCells ++;
     	}
     	if (isShowDatePattern()){
-            row.addContent(initNormalCell("", isEditable));
+    		emptyCells ++;
        	}
     	if (isShowMinPerWk()){
-            row.addContent(initNormalCell("", isEditable));
+    		emptyCells ++;
     	} 
-    	cell = null;
-    	if (isShowTimePattern()){
-            if (isManagedAs) {
-            	cell = initNormalCell("<span title='" + io.getControllingCourseOffering().getCourseNameWithTitle() + "'>Managed As " + io.getControllingCourseOffering().getCourseName() + "</span>", isEditable);
-            	cell.setColSpan(1);
-            	row.addContent(cell);
-            } else {
-                row.addContent(initNormalCell(indent, io.isViewableBy(user)));
-            }
+    	if (isShowTimePattern()) {
+    		emptyCells ++;
     	}
-    	if (isShowPreferences()){
-	        for (int j = 0; j < PREFERENCE_COLUMN_ORDER.length + (iDisplayDistributionPrefs?0:-1); j++) {
-    			if (isManagedAs && cell!=null)
-    				cell.setColSpan(1+cell.getColSpan());
-    			else
-    				row.addContent(initNormalCell("", isEditable));
-	        }
+    	if (isShowPreferences()) {
+    		emptyCells += PREFERENCE_COLUMN_ORDER.length + (iDisplayDistributionPrefs?0:-1);
     	}
     	if (isShowInstructor()){
-			if (isManagedAs && cell!=null)
-				cell.setColSpan(1+cell.getColSpan());
-			else
-				row.addContent(initNormalCell("", isEditable));
+    		emptyCells ++;
     	}
-    	if (getDisplayTimetable() && isShowTimetable()){
-    		for (int j = 0; j < TIMETABLE_COLUMN_ORDER.length; j++){
-    			if (isManagedAs && cell!=null)
-    				cell.setColSpan(1+cell.getColSpan());
-    			else
-    				row.addContent(initNormalCell("", isEditable));
-    		}
-    	} 
+    	if (getDisplayTimetable() && isShowTimetable()) {
+    		emptyCells += TIMETABLE_COLUMN_ORDER.length;
+    	}
+    	if (emptyCells>0) {
+            if (isManagedAs) {
+            	if (!isShowTitle() && io.getControllingCourseOffering().getTitle()!=null) {
+            		String title = "";
+            		if (co.getTitle()!=null && !co.getTitle().isEmpty()) {
+            			title += co.getTitle();
+            			title += " (<span title='" + io.getControllingCourseOffering().getCourseNameWithTitle() + "'>Managed As " + io.getControllingCourseOffering().getCourseName() + "</span>)";
+            		} else {
+            			title = "<span title='" + io.getControllingCourseOffering().getCourseNameWithTitle() + "'>Managed As " + io.getControllingCourseOffering().getCourseName() + "</span>";
+            		}
+                    for (Iterator it = io.courseOfferingsMinusSortCourseOfferingForSubjectArea(co.getSubjectArea().getUniqueId()).iterator(); it.hasNext();) {
+                    	CourseOffering x = (CourseOffering)it.next();
+                    	title += "<br>";
+                    	if (x.getTitle()!=null) title += x.getTitle();
+                    }
+                	cell = initNormalCell(title, isEditable);
+            	} else {
+            		cell = initNormalCell("<span title='" + io.getControllingCourseOffering().getCourseNameWithTitle() + "'>Managed As " + io.getControllingCourseOffering().getCourseName() + "</span>", isEditable);
+            	}
+            } else {
+            	if (!isShowTitle() && io.getControllingCourseOffering().getTitle()!=null) {
+            		String title = (co.getTitle()==null?"":co.getTitle());
+            		for (Iterator it = io.courseOfferingsMinusSortCourseOfferingForSubjectArea(co.getSubjectArea().getUniqueId()).iterator(); it.hasNext();) {
+                    	CourseOffering x = (CourseOffering)it.next();
+                    	title += "<br>";
+                    	if (x.getTitle()!=null) title += x.getTitle();
+                    }
+            		cell = initNormalCell(title, isEditable);
+            	} else {
+            		cell = initNormalCell("", isEditable);
+            	}
+            }
+            cell.setColSpan(emptyCells);
+            cell.setAlign("center");
+            row.addContent(cell);
+    	}
     	if (isShowTitle()){
     		row.addContent(initNormalCell(io.getControllingCourseOffering().getTitle()!=null ? io.getControllingCourseOffering().getTitle() : "&nbsp;", isEditable));
     	}
