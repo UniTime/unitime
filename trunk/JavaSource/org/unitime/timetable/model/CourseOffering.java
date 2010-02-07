@@ -47,7 +47,7 @@ import org.unitime.timetable.util.ComboBoxLookup;
 
 
 
-public class CourseOffering extends BaseCourseOffering {
+public class CourseOffering extends BaseCourseOffering implements Comparable {
 	private static final long serialVersionUID = 1L;
 	private String courseName;
 	
@@ -536,4 +536,14 @@ public class CourseOffering extends BaseCourseOffering {
  		   throw(e);
         }
      }
+    
+    public int compareTo(Object o) {
+    	if (o == null || !(o instanceof CourseOffering)) return -1;
+    	CourseOffering co = (CourseOffering)o;
+    	int cmp = getSubjectAreaAbbv().compareTo(co.getSubjectAreaAbbv());
+    	if (cmp!=0) return cmp;
+    	cmp = getCourseNbr().compareTo(co.getCourseNbr());
+    	if (cmp!=0) return cmp;
+    	return getUniqueId().compareTo(co.getUniqueId());
+    }
 }
