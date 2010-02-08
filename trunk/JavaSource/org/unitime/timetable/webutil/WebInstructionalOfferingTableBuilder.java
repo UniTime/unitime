@@ -1615,17 +1615,17 @@ public class WebInstructionalOfferingTableBuilder {
     	if (emptyCells>0) {
             if (isManagedAs) {
             	if (!isShowTitle() && io.getControllingCourseOffering().getTitle()!=null) {
-            		String title = "";
+            		String title = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
             		if (co.getTitle()!=null && !co.getTitle().isEmpty()) {
-            			title += co.getTitle();
+            			title += "<b><font color=\"" + disabledColor + "\">" + co.getTitle() + "</font></b>";
             			title += " (<span title='" + io.getControllingCourseOffering().getCourseNameWithTitle() + "'>Managed As " + io.getControllingCourseOffering().getCourseName() + "</span>)";
             		} else {
             			title = "<span title='" + io.getControllingCourseOffering().getCourseNameWithTitle() + "'>Managed As " + io.getControllingCourseOffering().getCourseName() + "</span>";
             		}
                     for (Iterator it = io.courseOfferingsMinusSortCourseOfferingForSubjectArea(co.getSubjectArea().getUniqueId()).iterator(); it.hasNext();) {
                     	CourseOffering x = (CourseOffering)it.next();
-                    	title += "<br>";
-                    	if (x.getTitle()!=null) title += x.getTitle();
+                    	title += "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+                    	if (x.getTitle()!=null) title += "<font color=\"" + disabledColor + "\">" +x.getTitle() + "</font>";
                     }
                 	cell = initNormalCell(title, isEditable);
             	} else {
@@ -1633,11 +1633,16 @@ public class WebInstructionalOfferingTableBuilder {
             	}
             } else {
             	if (!isShowTitle() && io.getControllingCourseOffering().getTitle()!=null) {
-            		String title = (co.getTitle()==null?"":co.getTitle());
+            		String title = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+            		if (co.isIsControl().booleanValue()) title += "<b>";
+            		title += (co.getTitle()==null?"":co.getTitle());
+            		if (co.isIsControl().booleanValue()) title += "</b>";
             		for (Iterator it = io.courseOfferingsMinusSortCourseOfferingForSubjectArea(co.getSubjectArea().getUniqueId()).iterator(); it.hasNext();) {
                     	CourseOffering x = (CourseOffering)it.next();
                     	title += "<br>";
-                    	if (x.getTitle()!=null) title += x.getTitle();
+                    	if (x.getTitle()!=null) {
+                    		title += "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + x.getTitle();
+                    	}
                     }
             		cell = initNormalCell(title, isEditable);
             	} else {
@@ -1645,7 +1650,7 @@ public class WebInstructionalOfferingTableBuilder {
             	}
             }
             cell.setColSpan(emptyCells);
-            cell.setAlign("center");
+            cell.setAlign("left");
             row.addContent(cell);
     	}
     	if (isShowTitle()){
