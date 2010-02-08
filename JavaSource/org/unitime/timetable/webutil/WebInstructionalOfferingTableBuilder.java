@@ -1641,7 +1641,7 @@ public class WebInstructionalOfferingTableBuilder {
                     	CourseOffering x = (CourseOffering)it.next();
                     	title += "<br>";
                     	if (x.getTitle()!=null) {
-                    		title += "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + x.getTitle();
+                    		title += "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=\"" + disabledColor + "\">" + x.getTitle() + "</font>";
                     	}
                     }
             		cell = initNormalCell(title, isEditable);
