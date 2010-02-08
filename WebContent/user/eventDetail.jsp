@@ -222,18 +222,18 @@
 				<bean:define id="color" value="black"/>
 				<bean:define id="fs" value="normal"/>
 				<logic:equal name="meeting" property="isPast" value="true">
-					<bean:define id="fs" value="italic"/>
-					<bean:define id="color" value="gray"/>
+				  <% fs = "italic"; %>
+				  <% color = "gray"; %>
 				</logic:equal>
 				<logic:notEmpty name="meeting" property="overlaps">
-					<bean:define id="color" value="red"/>
+				  <% color = "red"; %>
 				</logic:notEmpty>
 				<logic:notEqual name="meeting" property="isPast" value="true">
 					<logic:empty name="meeting" property="approvedDate">
-						<bean:define id="bg" value="#FFFFDD"/>
+						<% color = "#FFFFDD"; %>
 					</logic:empty>
 					<logic:notEmpty name="meeting" property="approvedDate">
-						<bean:define id="bg" value="#DDFFDD"/>
+						<% color = "#DDFFDD"; %>
 					</logic:notEmpty>
 				</logic:notEqual>
 				<TR onmouseover="style.backgroundColor='rgb(223,231,242)';" onmouseout="style.backgroundColor='<%=bg%>';" style="color:<%=color%>;background-color:<%=bg%>;font-style:<%=fs%>;">
