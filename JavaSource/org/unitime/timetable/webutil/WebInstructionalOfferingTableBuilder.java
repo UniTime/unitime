@@ -1617,19 +1617,19 @@ public class WebInstructionalOfferingTableBuilder {
             	if (!isShowTitle() && io.getControllingCourseOffering().getTitle()!=null) {
             		String title = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
             		if (co.getTitle()!=null && !co.getTitle().isEmpty()) {
-            			title += "<b><font color=\"" + disabledColor + "\">" + co.getTitle() + "</font></b>";
+            			title += "<b>" + co.getTitle() + "</b>";
             			title += " (<span title='" + io.getControllingCourseOffering().getCourseNameWithTitle() + "'>Managed As " + io.getControllingCourseOffering().getCourseName() + "</span>)";
             		} else {
-            			title = "<span title='" + io.getControllingCourseOffering().getCourseNameWithTitle() + "'>Managed As " + io.getControllingCourseOffering().getCourseName() + "</span>";
+            			title += "<span title='" + io.getControllingCourseOffering().getCourseNameWithTitle() + "'>Managed As " + io.getControllingCourseOffering().getCourseName() + "</span>";
             		}
                     for (Iterator it = io.courseOfferingsMinusSortCourseOfferingForSubjectArea(co.getSubjectArea().getUniqueId()).iterator(); it.hasNext();) {
                     	CourseOffering x = (CourseOffering)it.next();
                     	title += "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
                     	if (x.getTitle()!=null) title += "<font color=\"" + disabledColor + "\">" +x.getTitle() + "</font>";
                     }
-                	cell = initNormalCell(title, isEditable);
+                	cell = initNormalCell("<font color=\"" + disabledColor + "\">"+title+"</font>", isEditable);
             	} else {
-            		cell = initNormalCell("<span title='" + io.getControllingCourseOffering().getCourseNameWithTitle() + "'>Managed As " + io.getControllingCourseOffering().getCourseName() + "</span>", isEditable);
+            		cell = initNormalCell("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=\"" + disabledColor + "\"><span title='" + io.getControllingCourseOffering().getCourseNameWithTitle() + "'>Managed As " + io.getControllingCourseOffering().getCourseName() + "</span></font>", isEditable);
             	}
             } else {
             	if (!isShowTitle() && io.getControllingCourseOffering().getTitle()!=null) {
