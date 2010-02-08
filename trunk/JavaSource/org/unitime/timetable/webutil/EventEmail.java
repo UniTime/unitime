@@ -156,8 +156,8 @@ public class EventEmail {
                 message += "<tr><td><i>Date</i></td><td><i>Time</i></td><td><i>Location</i></td></tr>";
                 for (MultiMeeting m : iMeetings) {
                     message += "<tr><td>";
-                    message += m.getDays()+" "+new SimpleDateFormat("MM/dd").format(m.getMeetings().first().getMeetingDate());
-                    message += (m.getMeetings().size()>1?" - "+new SimpleDateFormat("MM/dd").format(m.getMeetings().last().getMeetingDate()):"");
+                    message += m.getDays()+" "+new SimpleDateFormat("MM/dd/yyyy").format(m.getMeetings().first().getMeetingDate());
+                    message += (m.getMeetings().size()>1?" - "+new SimpleDateFormat("MM/dd/yyyy").format(m.getMeetings().last().getMeetingDate()):"");
                     message += "</td><td>";
                     message += m.getMeetings().first().startTime()+" - "+m.getMeetings().first().stopTime();
                     message += "</td><td>";
@@ -189,8 +189,8 @@ public class EventEmail {
                     message += "<tr><td><i>Date</i></td><td><i>Time</i></td><td><i>Location</i></td><td><i>Capacity</i></td><td><i>Approved</i></td></tr>";
                     for (MultiMeeting m : iEvent.getMultiMeetings()) {
                         message += "<tr><td>";
-                        message += m.getDays()+" "+new SimpleDateFormat("MM/dd").format(m.getMeetings().first().getMeetingDate());
-                        message += (m.getMeetings().size()>1?" - "+new SimpleDateFormat("MM/dd").format(m.getMeetings().last().getMeetingDate()):"");
+                        message += m.getDays()+" "+new SimpleDateFormat("MM/dd/yyyy").format(m.getMeetings().first().getMeetingDate());
+                        message += (m.getMeetings().size()>1?" - "+new SimpleDateFormat("MM/dd/yyyy").format(m.getMeetings().last().getMeetingDate()):"");
                         message += "</td><td>";
                         message += m.getMeetings().first().startTime()+" - "+m.getMeetings().first().stopTime();
                         message += "</td><td>";
@@ -203,7 +203,7 @@ public class EventEmail {
                         } else if (m.getMeetings().first().getApprovedDate()==null) {
                             message += "<i>Waiting Approval</i>";
                         } else {
-                            message += new SimpleDateFormat("MM/dd").format(m.getMeetings().first().getApprovedDate());
+                            message += new SimpleDateFormat("MM/dd/yyyy").format(m.getMeetings().first().getApprovedDate());
                         }
                         message += "</td></tr>";
                     }
@@ -217,7 +217,7 @@ public class EventEmail {
                 message += "<tr><td><i>Date</i></td><td><i>Action</i></td><td><i>Meetings</i></td><td><i>Note</i></td></tr>";
                 for (EventNote note : new TreeSet<EventNote>(iEvent.getNotes())) {
                     message += "<tr style=\"background-color:"+EventNote.sEventNoteTypeBgColor[note.getNoteType()]+";\" valign='top'>";
-                    message += "<td>"+new SimpleDateFormat("MM/dd hh:mmaa").format(note.getTimeStamp())+"</td>";
+                    message += "<td>"+new SimpleDateFormat("MM/dd/yyyy hh:mmaa").format(note.getTimeStamp())+"</td>";
                     message += "<td>"+EventNote.sEventNoteTypeName[note.getNoteType()]+"</td>";
                     message += "<td>"+note.getMeetingsHtml()+"</td>";
                     message += "<td>"+(note.getTextNote()==null?"":note.getTextNote().replaceAll("\n", "<br>"))+"</td>";
@@ -233,6 +233,7 @@ public class EventEmail {
             message += ",<br>by UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?");
             message += " (University Timetabling Application, http://www.unitime.org).";
             message += "</td></tr></table>";
+            message += "</body></html>";
             
             Properties p = ApplicationProperties.getProperties();
             if (p.getProperty("mail.smtp.host")==null && p.getProperty("tmtbl.smtp.host")!=null)
