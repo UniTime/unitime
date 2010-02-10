@@ -184,6 +184,11 @@
 		<url-pattern>/solver/solver.jnlp</url-pattern>
 	</filter-mapping>
 	
+	<filter-mapping>
+		<filter-name>Logged-in Only Filter</filter-name>		
+		<url-pattern>/temp/*</url-pattern>
+	</filter-mapping>
+
 	<!-- Use if needed to track sessions -->
 	<!-- 
 	<listener>
