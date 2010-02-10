@@ -215,7 +215,7 @@ public class ExamPeriodEditAction extends Action {
     private void getExamPeriods(HttpServletRequest request) throws Exception {
 		WebTable.setOrder(request.getSession(),"examPeriods.ord",request.getParameter("ord"),1);
 		// Create web table instance 
-        WebTable webTable = new WebTable( 4,
+        WebTable webTable = new WebTable( 8,
 			    null, "examPeriodEdit.do?ord=%%",
 			    new String[] {"Type","Date", "Start Time", "End Time", "Length", "Event Start Offset", "Event Stop Offset", "Preference"},
 			    new String[] {"left","left", "left", "left", "right", "right", "right", "left"},
