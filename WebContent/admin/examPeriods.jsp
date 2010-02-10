@@ -391,7 +391,7 @@
 <logic:equal name="examPeriodEditForm" property="op" value="List">
 <TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
 	<TR>
-		<TD colspan='6'>
+		<TD colspan='8'>
 			<tt:section-header>
 				<tt:section-title>Examination Periods</tt:section-title>
 				<html:submit property="op" value="Add Period" title="Create a new examination period"/>
@@ -403,12 +403,12 @@
 	</TR>
 	<%= request.getAttribute("ExamPeriods.table") %>
 	<TR>
-		<TD colspan='6'>
+		<TD colspan='8'>
 			<tt:section-title/>
 		</TD>
 	</TR>
 	<TR>
-		<TD colspan='6' align="right">
+		<TD colspan='8' align="right">
 			<html:submit property="op" value="Add Period" title="Create a new examination period"/>
 			<logic:equal name="examPeriodEditForm" property="canAutoSetup" value="true">
 				<html:submit property="op" value="Midterm Periods" title="Setup periods for midterm exams"/>
