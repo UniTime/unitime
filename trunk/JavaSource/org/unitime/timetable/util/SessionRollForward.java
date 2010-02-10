@@ -1138,6 +1138,8 @@ public class SessionRollForward {
 			fromExamPeriod = (ExamPeriod)examPeriodIt.next();
 			toExamPeriod = (ExamPeriod)fromExamPeriod.clone();
 			toExamPeriod.setSession(toSession);
+			if (toExamPeriod.getEventStartOffset()==null) toExamPeriod.setEventStartOffset(0);
+			if (toExamPeriod.getEventStopOffset()==null) toExamPeriod.setEventStopOffset(0);
 			examPeriodDao.save(toExamPeriod);
 		}
 	}
