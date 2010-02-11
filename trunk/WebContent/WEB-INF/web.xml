@@ -163,12 +163,30 @@
 		</init-param>
 	</filter>
 
+	<filter>
+		<filter-name>
+			Encoding Filter
+		</filter-name>
+		<filter-class>
+			org.unitime.timetable.filter.EncodingFilter
+		</filter-class>
+		<init-param>
+			<param-name>encoding</param-name>
+			<param-value>UTF-8</param-value>
+		</init-param>
+	</filter>
+
 	<!-- Filter Mappings -->
 	<filter-mapping>
 		<filter-name>Page Access Filter</filter-name>
 		<url-pattern>/*</url-pattern>
 	</filter-mapping>
 	
+	<filter-mapping>
+		<filter-name>Encoding Filter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
 	<filter-mapping>
 		<filter-name>Hibernate Session Filter</filter-name>
 		<url-pattern>/*</url-pattern>
