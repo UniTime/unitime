@@ -33,6 +33,8 @@
 	<property name="connection.autocommit">true</property>
 	<property name="dialect">org.hibernate.dialect.MySQLInnoDBDialect</property>
 	<property name="tmtbl.uniqueid.generator">org.hibernate.id.TableHiLoGenerator</property>
+	<property name="hibernate.connection.useUnicode">true</property>
+	<property name="hibernate.connection.characterEncoding">utf8</property>
 	<!-- End of MySQL Configuration -->
 	
 	<!-- Oracle Configuration -->
