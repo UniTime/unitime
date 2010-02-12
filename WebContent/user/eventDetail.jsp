@@ -230,10 +230,10 @@
 				</logic:notEmpty>
 				<logic:notEqual name="meeting" property="isPast" value="true">
 					<logic:empty name="meeting" property="approvedDate">
-						<% color = "#FFFFDD"; %>
+						<% bg = "#FFFFDD"; %>
 					</logic:empty>
 					<logic:notEmpty name="meeting" property="approvedDate">
-						<% color = "#DDFFDD"; %>
+						<% bg = "#DDFFDD"; %>
 					</logic:notEmpty>
 				</logic:notEqual>
 				<TR onmouseover="style.backgroundColor='rgb(223,231,242)';" onmouseout="style.backgroundColor='<%=bg%>';" style="color:<%=color%>;background-color:<%=bg%>;font-style:<%=fs%>;">
