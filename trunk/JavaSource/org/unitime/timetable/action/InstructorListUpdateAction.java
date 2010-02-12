@@ -225,7 +225,8 @@ public class InstructorListUpdateAction extends Action {
 				for (Iterator iter = assigned.iterator(); iter.hasNext(); ) {
 					DepartmentalInstructor inst = (DepartmentalInstructor) iter.next();
 					if (s1.indexOf(inst.getUniqueId().toString()) == -1) {
-
+						if (!inst.getExams().isEmpty() || !inst.getClasses().isEmpty()) continue;
+						
                         ChangeLog.addChange(
                                 hibSession, 
                                 request, 
