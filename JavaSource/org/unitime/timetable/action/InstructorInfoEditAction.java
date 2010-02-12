@@ -329,6 +329,8 @@ public class InstructorInfoEditAction extends InstructorAction {
 		}
         
         frm.setIgnoreDist(inst.isIgnoreToFar()==null?false:inst.isIgnoreToFar().booleanValue());
+        
+        frm.setCanDelete(inst.getClasses().isEmpty() && inst.getExams().isEmpty());
 		
         try {
 			User user = Web.getUser(request.getSession());
