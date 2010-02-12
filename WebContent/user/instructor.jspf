@@ -32,12 +32,14 @@
 						<html:submit property="op" 
 							styleClass="btn" accesskey="U" titleKey="title.updateInstructor" >
 							<bean:message key="button.update" />
-						</html:submit> 					
+						</html:submit> 	
+						<logic:equal name="<%=frmName%>" property="canDelete" value="true">			
 						<html:submit property="op" 
 							styleClass="btn" accesskey="D" titleKey="title.deleteInstructor" 
 							onclick="return(confirmDelete());">
 							<bean:message key="button.deleteInstructor" />
 						</html:submit> 
+						</logic:equal>	
 					<% } %>
 					
 					<html:submit property="op" 
@@ -177,11 +179,13 @@
 						styleClass="btn" accesskey="U" titleKey="title.updateInstructor" >
 						<bean:message key="button.update" />
 					</html:submit> 					
+					<logic:equal name="<%=frmName%>" property="canDelete" value="true">			
 					<html:submit property="op" 
 						styleClass="btn" accesskey="D" titleKey="title.deleteInstructor" 
 						onclick="return(confirmDelete());" >
 						<bean:message key="button.deleteInstructor" />
 					</html:submit> 
+					</logic:equal>
 				<% } %>
 				
 				<html:submit property="op" 

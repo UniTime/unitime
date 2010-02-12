@@ -43,7 +43,7 @@
 		for (;;) {
 			var idName = styleId + '_' + i;
 			var idVal = document.getElementById(idName);
-			if (idVal!=null && idVal.value!=null) {
+			if (idVal!=null && idVal.value!=null && !idVal.disabled) {
 				idVal.checked = checked;
 			}
 			else {
@@ -186,6 +186,7 @@
 						<%	
 							DepartmentalInstructor inst = (DepartmentalInstructor) instr;
 							PositionType posType = inst.getPositionType();
+							boolean canDelete = inst.getClasses().isEmpty() && inst.getExams().isEmpty();
 							
 							if (posType == null) {
 								currPosType = "Position Type Not Set";
@@ -220,9 +221,9 @@
 						
 						<TR align="center">
 							<TD class="BottomBorderGray">
-								<html:multibox property="assignedSelected" styleId="<%=posId2%>">
+								<html:multibox property="assignedSelected" styleId="<%=posId2%>" disabled="<%=!canDelete%>">
 									<%=inst.getUniqueId()%>
-								</html:multibox>										
+								</html:multibox>
 							</TD>
 							<TD align="left" class="BottomBorderGray">
 								<% if (inst.getExternalUniqueId() != null) {
