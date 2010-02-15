@@ -244,7 +244,7 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
                         	if (!en.getStudent().isDummy()) enrl++;
                         }
                         clazz.setEnrollment(enrl);
-                        iProgress.debug("  -- "+section.getName()+" has an enrollment of "+enrl);
+                        iProgress.debug(section.getName()+" has an enrollment of "+enrl);
                         hibSession.saveOrUpdate(clazz);
                         flushIfNeeded(hibSession);
                     }
