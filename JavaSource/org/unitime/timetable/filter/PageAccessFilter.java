@@ -119,13 +119,21 @@ public class PageAccessFilter implements Filter {
 		}
 		
 		// Process request
-		chain.doFilter(request,response);
+		Throwable exception = null;
+		try {
+			chain.doFilter(request,response);
+		} catch (Throwable t) {
+			exception = t;
+		}
 		
 		long t1 = System.currentTimeMillis(); 
-		if (request instanceof HttpServletRequest && (t1-t0)>debugTime) {
+		if (request instanceof HttpServletRequest && ((t1-t0)>debugTime || exception!=null)) {
 			HttpServletRequest r = (HttpServletRequest)request;
 			String message = "Page "+r.getRequestURI()+" took "+sDF.format((t1-t0)/1000.0)+" s.";
-			if ((t1-t0)>dumpTime) {
+			if (exception!=null) {
+				message = exception+" seen on page "+r.getRequestURI()+" (page took "+sDF.format((t1-t0)/1000.0)+" s).";
+			}
+			if (exception!=null || (t1-t0)>dumpTime) {
 				User u = Web.getUser(r.getSession());
 				if (u==null) {
 					message += "\n  User: no user";
@@ -153,8 +161,21 @@ public class PageAccessFilter implements Filter {
 					message += "  (User: "+u.getLogin()+(u.getCurrentRole()!=null?", "+u.getCurrentRole():u.isAdmin()?", admin":"")+")";
 				}
 			}
-			sLog.info(message);
+			if (exception!=null)
+				sLog.warn(message);
+			else
+				sLog.info(message);
 		}		
+
+		if (exception!=null) {
+			if (exception instanceof ServletException)
+				throw (ServletException)exception;
+			if (exception instanceof IOException)
+				throw (IOException)exception;
+			if (exception instanceof RuntimeException)
+				throw (RuntimeException)exception;
+			throw new ServletException(exception);
+		}
 	}
 
 	public void destroy() {
