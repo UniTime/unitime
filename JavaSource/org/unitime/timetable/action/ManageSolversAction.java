@@ -26,6 +26,7 @@ import java.util.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import net.sf.cpsolver.ifs.util.DataProperties;
 import net.sf.cpsolver.ifs.util.ToolBox;
 
 import org.apache.struts.action.Action;
@@ -225,8 +226,11 @@ public class ManageSolversAction extends Action {
 			HashSet solvers = new HashSet(WebSolver.getSolvers().values());
 			for (Iterator i=solvers.iterator();i.hasNext();) {
 				SolverProxy solver = (SolverProxy)i.next();
-				String runnerName = getName(solver.getProperties().getProperty("General.OwnerPuid","N/A"));
-			   Long[] solverGroupId = solver.getProperties().getPropertyLongArry("General.SolverGroupId",null);
+				if (solver==null) continue;
+				DataProperties properties = solver.getProperties();
+				if (properties==null) continue;
+				String runnerName = getName(properties.getProperty("General.OwnerPuid","N/A"));
+			   Long[] solverGroupId = properties.getPropertyLongArry("General.SolverGroupId",null);
 			   String ownerName = "";
 			   if (solverGroupId!=null) {
 				   for (int j=0;j<solverGroupId.length;j++) {
@@ -244,22 +248,31 @@ public class ManageSolversAction extends Action {
 					runnerName = ownerName;
 				if (!ownerName.equals(runnerName))
 					ownerName = runnerName+" as "+ownerName;
-				Session session = (new SessionDAO()).get(solver.getProperties().getPropertyLong("General.SessionId",new Long(-1)));
+				Session session = (new SessionDAO()).get(properties.getPropertyLong("General.SessionId",new Long(-1)));
 				String sessionLabel = "N/A";
 				if (session!=null)
 					sessionLabel = session.getLabel();
-				SolverPredefinedSetting setting = (new SolverPredefinedSettingDAO()).get(solver.getProperties().getPropertyLong("General.SettingsId",new Long(-1)));
-				String settingLabel = solver.getProperties().getProperty("Basic.Mode","N/A");
+				SolverPredefinedSetting setting = (new SolverPredefinedSettingDAO()).get(properties.getPropertyLong("General.SettingsId",new Long(-1)));
+				String settingLabel = properties.getProperty("Basic.Mode","N/A");
 				if (setting!=null)
 					settingLabel = setting.getDescription();
 				String onClick = null;
-				if (session.getUniqueId().equals(currentSessionId) && solver.getProperties().getProperty("General.OwnerPuid")!=null)
-					onClick = "onClick=\"document.location='manageSolvers.do?op=Select&puid=" + solver.getProperties().getProperty("General.OwnerPuid") + "';\"";
-				String status = (String)solver.getProgress().get("STATUS");
+				if (session!=null && session.getUniqueId().equals(currentSessionId) && properties.getProperty("General.OwnerPuid")!=null)
+					onClick = "onClick=\"document.location='manageSolvers.do?op=Select&puid=" + properties.getProperty("General.OwnerPuid") + "';\"";
+				String status = "N/A";
+				try {
+					status = (String)solver.getProgress().get("STATUS");
+				} catch (Exception e) {}
 				
-				String note = solver.getNote();
-					if (note!=null) note = note.replaceAll("\n","<br>");
-				PropertiesInfo globalInfo = solver.getGlobalInfo();
+				String note = null;
+				try {
+					note = solver.getNote();
+				} catch (Exception e) {}
+				if (note!=null) note = note.replaceAll("\n","<br>");
+				PropertiesInfo globalInfo = null;
+				try {
+					globalInfo = solver.getGlobalInfo();
+				} catch (Exception e) {}
 				String assigned = (globalInfo==null?"?":globalInfo.getProperty("Assigned variables","N/A"));
 				String totVal = (globalInfo==null?"?":globalInfo.getProperty("Overall solution value","N/A"));
 				String timePr = (globalInfo==null?"?":globalInfo.getProperty("Time preferences","N/A"));
@@ -286,14 +299,16 @@ public class ManageSolversAction extends Action {
 				Date lastUsed = solver.getLastUsed(); 
 				
                 String bgColor = null;
-                if (x!=null && ToolBox.equals(solver.getProperties().getProperty("General.OwnerPuid"), xId))
-                    bgColor = "rgb(168,187,225)";
+            	if (x!=null && ToolBox.equals(properties.getProperty("General.OwnerPuid"), xId))
+            		bgColor = "rgb(168,187,225)";
+                
+                String host = solver.getHostLabel();
 
 				webTable.addLine(onClick, new String[] {
 							(loaded==null?"N/A":sDF.format(loaded)),
 							(lastUsed==null?"N/A":sDF.format(lastUsed)),
 							sessionLabel,
-							solver.getHostLabel(),
+							host,
 							settingLabel,
 							status,
 							ownerName, 
@@ -538,24 +553,30 @@ public class ManageSolversAction extends Action {
 	            String xId = (x==null?null:x.getProperties().getProperty("General.OwnerPuid"));
 	            
 	            for (ExamSolverProxy solver : WebSolver.getExamSolvers().values()) {
-	                String runnerName = getName(solver.getProperties().getProperty("General.OwnerPuid","N/A"));
+	            	if (solver==null) continue;
+					DataProperties properties = solver.getProperties();
+					if (properties==null) continue;
+	                String runnerName = getName(properties.getProperty("General.OwnerPuid","N/A"));
 	                int examType = solver.getExamType();
 	                if (runnerName==null)
 	                    runnerName = "N/A";
-	                Session session = (new SessionDAO()).get(solver.getProperties().getPropertyLong("General.SessionId",new Long(-1)));
+	                Session session = (new SessionDAO()).get(properties.getPropertyLong("General.SessionId",new Long(-1)));
 	                String sessionLabel = "N/A";
 	                if (session!=null)
 	                    sessionLabel = session.getLabel();
-	                SolverPredefinedSetting setting = (new SolverPredefinedSettingDAO()).get(solver.getProperties().getPropertyLong("General.SettingsId",new Long(-1)));
-	                String settingLabel = solver.getProperties().getProperty("Basic.Mode","N/A");
+	                SolverPredefinedSetting setting = (new SolverPredefinedSettingDAO()).get(properties.getPropertyLong("General.SettingsId",new Long(-1)));
+	                String settingLabel = properties.getProperty("Basic.Mode","N/A");
 	                if (setting!=null)
 	                    settingLabel = setting.getDescription();
 	                String onClick = null;
-	                if (session.getUniqueId().equals(currentSessionId) && solver.getProperties().getProperty("General.OwnerPuid")!=null)
-	                    onClick = "onClick=\"document.location='manageSolvers.do?op=Select&examPuid=" + solver.getProperties().getProperty("General.OwnerPuid") + "';\"";
+	                if (session.getUniqueId().equals(currentSessionId) && properties.getProperty("General.OwnerPuid")!=null)
+	                    onClick = "onClick=\"document.location='manageSolvers.do?op=Select&examPuid=" + properties.getProperty("General.OwnerPuid") + "';\"";
 	                String status = (String)solver.getProgress().get("STATUS");
 	                
-	                Hashtable info = solver.currentSolutionInfo();
+	                Hashtable info = null;
+	                try {
+	                	info = solver.currentSolutionInfo();
+	                } catch (Exception e) {}
 	                String assigned = (String)info.get("Assigned variables");
 	                String totVal = (String)info.get("Overall solution value");
 	                String dc = (String)info.get("Direct Conflicts");
@@ -577,7 +598,7 @@ public class ManageSolversAction extends Action {
 	                Date lastUsed = solver.getLastUsed(); 
 	                
                     String bgColor = null;
-                    if (x!=null && ToolBox.equals(solver.getProperties().getProperty("General.OwnerPuid"), xId))
+                    if (x!=null && ToolBox.equals(properties.getProperty("General.OwnerPuid"), xId))
                         bgColor = "rgb(168,187,225)";
 	                
 	                webTable.addLine(onClick, new String[] {
@@ -649,23 +670,29 @@ public class ManageSolversAction extends Action {
                String xId = (x==null?null:x.getProperties().getProperty("General.OwnerPuid"));
                
                for (StudentSolverProxy solver : WebSolver.getStudentSolvers().values()) {
-                   String runnerName = getName(solver.getProperties().getProperty("General.OwnerPuid","N/A"));
+      				if (solver==null) continue;
+    				DataProperties properties = solver.getProperties();
+    				if (properties==null) continue;
+                   String runnerName = getName(properties.getProperty("General.OwnerPuid","N/A"));
                    if (runnerName==null)
                        runnerName = "N/A";
-                   Session session = (new SessionDAO()).get(solver.getProperties().getPropertyLong("General.SessionId",new Long(-1)));
+                   Session session = (new SessionDAO()).get(properties.getPropertyLong("General.SessionId",new Long(-1)));
                    String sessionLabel = "N/A";
                    if (session!=null)
                        sessionLabel = session.getLabel();
-                   SolverPredefinedSetting setting = (new SolverPredefinedSettingDAO()).get(solver.getProperties().getPropertyLong("General.SettingsId",new Long(-1)));
-                   String settingLabel = solver.getProperties().getProperty("Basic.Mode","N/A");
+                   SolverPredefinedSetting setting = (new SolverPredefinedSettingDAO()).get(properties.getPropertyLong("General.SettingsId",new Long(-1)));
+                   String settingLabel = properties.getProperty("Basic.Mode","N/A");
                    if (setting!=null)
                        settingLabel = setting.getDescription();
                    String onClick = null;
-                   if (session.getUniqueId().equals(currentSessionId) && solver.getProperties().getProperty("General.OwnerPuid")!=null)
-                       onClick = "onClick=\"document.location='manageSolvers.do?op=Select&sectionPuid=" + solver.getProperties().getProperty("General.OwnerPuid") + "';\"";
+                   if (session.getUniqueId().equals(currentSessionId) && properties.getProperty("General.OwnerPuid")!=null)
+                       onClick = "onClick=\"document.location='manageSolvers.do?op=Select&sectionPuid=" + properties.getProperty("General.OwnerPuid") + "';\"";
                    String status = (String)solver.getProgress().get("STATUS");
                    
-                   Hashtable info = solver.currentSolutionInfo();
+                   Hashtable info = null;
+                   try {
+                	   info = solver.currentSolutionInfo();
+                   } catch (Exception e) {}
                    String assigned = (String)info.get("Assigned variables");
                    String totVal = (String)info.get("Overall solution value");
                    String compSch = (String)info.get("Students with complete schedule");
@@ -675,7 +702,7 @@ public class ManageSolversAction extends Action {
                    Date lastUsed = solver.getLastUsed(); 
                    
                    String bgColor = null;
-                   if (x!=null && ToolBox.equals(solver.getProperties().getProperty("General.OwnerPuid"), xId))
+                   if (x!=null && ToolBox.equals(properties.getProperty("General.OwnerPuid"), xId))
                        bgColor = "rgb(168,187,225)";
                    
                    webTable.addLine(onClick, new String[] {
