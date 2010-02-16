@@ -143,6 +143,7 @@ public class PageAccessFilter implements Filter {
 				message += "\n  Request parameters:";
 				for (Enumeration e=r.getParameterNames(); e.hasMoreElements();) {
 					String n = (String)e.nextElement();
+					if ("password".equals(n)) continue;
 					message+="\n    "+n+"="+r.getParameter(n);
 				}
 				if (dumpSessionAttribues) {
