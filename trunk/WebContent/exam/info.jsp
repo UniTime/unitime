@@ -168,6 +168,48 @@
 					</td></tr>
 				</table>
 			</td></tr>
+			<tr><td colspan='2'>
+				<table border='0' width="100%"><tr>
+					<td nowrap>Room Types:</td>
+					<logic:iterate name="examInfoForm" property="allRoomTypes" id="rf" indexId="rfIdx">
+						<td nowrap>
+							<html:multibox property="roomTypes">
+								<bean:write name="rf" property="uniqueId"/>
+							</html:multibox>
+							<bean:write name="rf" property="label"/>&nbsp;&nbsp;&nbsp;
+						</td>
+						<% if (rfIdx%3==2) { %>
+							</tr><tr><td></td>
+						<% } %>
+					</logic:iterate>
+				</tr><tr>
+					<td nowrap>Room Groups:</td>
+					<logic:iterate name="examInfoForm" property="allRoomGroups" id="rf" indexId="rfIdx">
+						<td nowrap>
+							<html:multibox property="roomGroups">
+								<bean:write name="rf" property="uniqueId"/>
+							</html:multibox>
+							<bean:write name="rf" property="name"/>&nbsp;&nbsp;&nbsp;
+						</td>
+						<% if (rfIdx%3==2) { %>
+							</tr><tr><td></td>
+						<% } %>
+					</logic:iterate>
+				</tr><tr>
+					<td nowrap>Room Features:</td>
+					<logic:iterate name="examInfoForm" property="allRoomFeatures" id="rf" indexId="rfIdx">
+						<td nowrap>
+							<html:multibox property="roomFeatures">
+								<bean:write name="rf" property="uniqueId"/>
+							</html:multibox>
+							<bean:write name="rf" property="label"/>&nbsp;&nbsp;&nbsp;
+						</td>
+						<% if (rfIdx%3==2) { %>
+							</tr><tr><td></td>
+						<% } %>
+					</logic:iterate>
+				</tr></table>
+			</td></tr>
 			<logic:empty name="model" property="roomTable">
 				<tr><td colspan='2'><i>No room matching the above criteria was found.</td></tr>
 			</logic:empty>

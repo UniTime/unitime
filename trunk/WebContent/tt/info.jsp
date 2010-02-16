@@ -105,9 +105,11 @@
 		<tr><td colspan='2'><bean:write name="model" property="studentConflictTable" filter="false"/></td></tr>
 		<tr><td colspan='2'><tt:section-title>
 			<br>Available Times for <bean:write name="clazz" property="className"/> &nbsp;&nbsp;
-		</tt:section-title></td></tr>	
+		</tt:section-title></td></tr>
 		<logic:notEmpty name="model" property="times">
+			<tr><td colspan='2'>
 			<bean:write name="model" property="timesTable" filter="false"/>
+			</td></tr>
 		</logic:notEmpty>
 		<logic:empty name="model" property="times">
 			<tr><td colspan='2'><i>No times available.</td></tr>
@@ -149,6 +151,48 @@
 						<html:submit onclick="displayLoading();" property="op" value="Apply"/>
 					</td></tr>
 				</table>
+			</td></tr>
+			<tr><td colspan='2'>
+				<table border='0' width="100%"><tr>
+					<td nowrap>Room Types:</td>
+					<logic:iterate name="classInfoForm" property="allRoomTypes" id="rf" indexId="rfIdx">
+						<td nowrap>
+							<html:multibox property="roomTypes">
+								<bean:write name="rf" property="uniqueId"/>
+							</html:multibox>
+							<bean:write name="rf" property="label"/>&nbsp;&nbsp;&nbsp;
+						</td>
+						<% if (rfIdx%3==2) { %>
+							</tr><tr><td></td>
+						<% } %>
+					</logic:iterate>
+				</tr><tr>
+					<td nowrap>Room Groups:</td>
+					<logic:iterate name="classInfoForm" property="allRoomGroups" id="rf" indexId="rfIdx">
+						<td nowrap>
+							<html:multibox property="roomGroups">
+								<bean:write name="rf" property="uniqueId"/>
+							</html:multibox>
+							<bean:write name="rf" property="name"/>&nbsp;&nbsp;&nbsp;
+						</td>
+						<% if (rfIdx%3==2) { %>
+							</tr><tr><td></td>
+						<% } %>
+					</logic:iterate>
+				</tr><tr>
+					<td nowrap>Room Features:</td>
+					<logic:iterate name="classInfoForm" property="allRoomFeatures" id="rf" indexId="rfIdx">
+						<td nowrap>
+							<html:multibox property="roomFeatures">
+								<bean:write name="rf" property="uniqueId"/>
+							</html:multibox>
+							<bean:write name="rf" property="label"/>&nbsp;&nbsp;&nbsp;
+						</td>
+						<% if (rfIdx%3==2) { %>
+							</tr><tr><td></td>
+						<% } %>
+					</logic:iterate>
+				</tr></table>
 			</td></tr>
 			<logic:empty name="model" property="roomTable">
 				<tr><td colspan='2'><i>No room matching the above criteria was found.</td></tr>

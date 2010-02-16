@@ -19,12 +19,17 @@
 */
 package org.unitime.timetable.form;
 
+import java.util.Collection;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
+import org.unitime.timetable.model.RoomFeature;
+import org.unitime.timetable.model.RoomGroup;
+import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.solver.course.ui.ClassInfoModel;
 
 /**
@@ -46,6 +51,9 @@ public class ClassInfoForm extends ActionForm {
     public static String sRoomOrdSizeAsc = "Size [asc]";
     public static String sRoomOrdSizeDesc = "Size [desc]";
     public static String[] sRoomOrds = new String[] { sRoomOrdNameAsc, sRoomOrdNameDesc, sRoomOrdSizeAsc, sRoomOrdSizeDesc };
+	private Long[] iRoomFeatures = null;
+	private Long[] iRoomTypes = null;
+	private Long[] iRoomGroups = null;
     
     private String iFilter = null;
     
@@ -66,6 +74,9 @@ public class ClassInfoForm extends ActionForm {
         iRoomOrder = sRoomOrdNameAsc;
         iFilter = null;
         iKeepConflictingAssignments = false;
+        iRoomTypes = null;
+        iRoomFeatures = null;
+        iRoomGroups = null;
     }
     
     public void load(HttpSession session) {
@@ -77,6 +88,9 @@ public class ClassInfoForm extends ActionForm {
         iAllRooms = "true".equals(session.getAttribute("ClassInfo.AllRooms"));
         iFilter = (String)session.getAttribute("ClassInfo.Filter");
         iKeepConflictingAssignments = "true".equals(session.getAttribute("ClassInfo.KeepConflictingAssignments"));
+        iRoomTypes = (Long[]) session.getAttribute("ClassInfo.RoomTypes");
+        iRoomGroups = (Long[]) session.getAttribute("ClassInfo.RoomGroups");
+		iRoomFeatures = (Long[]) session.getAttribute("ClassInfo.RoomFeatures");
     }
     
     public void save(HttpSession session) {
@@ -107,6 +121,19 @@ public class ClassInfoForm extends ActionForm {
             session.removeAttribute("ClassInfo.Filter");
         else
             session.setAttribute("ClassInfo.Filter", iFilter);
+        
+        if (iRoomTypes==null)
+        	session.removeAttribute("ClassInfo.RoomTypes");
+        else
+        	session.setAttribute("ClassInfo.RoomTypes", iRoomTypes);
+        if (iRoomGroups==null)
+        	session.removeAttribute("ClassInfo.RoomGroups");
+        else
+        	session.setAttribute("ClassInfo.RoomGroups", iRoomGroups);
+        if (iRoomFeatures==null)
+        	session.removeAttribute("ClassInfo.RoomFeatures");
+        else
+        	session.setAttribute("ClassInfo.RoomFeatures", iRoomFeatures);
     }
     
     public String getOp() { return iOp; }
@@ -136,8 +163,28 @@ public class ClassInfoForm extends ActionForm {
 		return iKeepConflictingAssignments;
 	}
 
-	public void setKeepConflictingAssignments(
-			boolean unassignConflictingAssignments) {
+	public void setKeepConflictingAssignments(boolean unassignConflictingAssignments) {
 		iKeepConflictingAssignments = unassignConflictingAssignments;
 	}
+	
+    public Long[] getRoomTypes() { return iRoomTypes; }
+	public void setRoomTypes(Long[] rts) { iRoomTypes = rts; }
+
+    public Long[] getRoomGroups() { return iRoomGroups; }
+    public void setRoomGroups(Long[] rgs) { iRoomGroups= rgs; }
+
+    public Long[] getRoomFeatures() { return iRoomFeatures; }
+    public void setRoomFeatures(Long[] rfs) { iRoomFeatures = rfs; }
+    
+    public Collection<RoomFeature> getAllRoomFeatures() {
+    	return RoomFeature.getAllGlobalRoomFeatures();
+    }
+    
+    public Collection<RoomGroup> getAllRoomGroups() {
+        return RoomGroup.getAllGlobalRoomGroups();
+    }
+
+    public Collection<RoomType> getAllRoomTypes() {
+        return RoomType.findAll();
+    }
 }
