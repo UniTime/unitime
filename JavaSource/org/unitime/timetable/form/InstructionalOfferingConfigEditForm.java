@@ -237,6 +237,11 @@ public class InstructionalOfferingConfigEditForm extends ActionForm {
 	        }               
         }
         else {
+            
+            // Check no. of classes
+            if(nc<=0)
+                errors.add("subparts"+indx, new ActionMessage("errors.integerGt", "Number of classes" + lblSubpart, "0" ));
+        	
             if(mpw<0)
                 errors.add("subparts"+indx, new ActionMessage("errors.integerGtEq", "Minutes per week" + lblSubpart, "0" ));
         }
@@ -282,6 +287,11 @@ public class InstructionalOfferingConfigEditForm extends ActionForm {
 		                csic.setHasError(true);
 		                return ERR_LS;
 	                }
+                } else {
+	                if(sic.getNumClasses()!=0 && csic.getNumClasses() % sic.getNumClasses() != 0) {
+		                csic.setHasError(true);
+		                return ERR_NC;
+		            }                	
                 }
                 
                 //csic.setHasError(false);

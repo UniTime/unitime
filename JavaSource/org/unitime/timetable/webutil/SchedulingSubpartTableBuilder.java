@@ -256,7 +256,6 @@ public class SchedulingSubpartTableBuilder {
         if (unlimitedEnroll) {
     		mnlpc = -1;
     		mxlpc = -1;
-            nc = 1;
             nr = -1;
             rr = -1;
         }
@@ -355,7 +354,7 @@ public class SchedulingSubpartTableBuilder {
 	                        	+ onBlur2
 	                        	+ " >" ) ),
                             	
-                       	((disabled || uDisabled) 
+                       	((disabled) 
 	                        ? ( "\n\t<INPUT " 
 	                        	+ " name=\"nc" + sicId 
 	                            + "\" type=\"hidden\" value=\"" 

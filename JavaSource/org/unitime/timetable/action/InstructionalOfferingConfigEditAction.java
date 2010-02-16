@@ -1591,7 +1591,6 @@ public class InstructionalOfferingConfigEditAction extends Action {
         if (ioc.isUnlimitedEnrollment().booleanValue()) {
     		mnlpc = 0;
     		mxlpc = 0;
-            nc = 1;
             nr = 0;
             rr = 0;
         }
