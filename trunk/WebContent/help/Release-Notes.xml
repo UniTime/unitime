@@ -315,7 +315,7 @@
 		</item>
 		<item>
 			<name>Other Changes</name>
-			<desctiption>
+			<description>
 				<line>Fixed spelling of word "below" was incorrectly spelled as "bellow".</line>
 				<line>Fixed Internet Explorer drop down not resizing when course number + course title is displayed in the drop down.</line>
 				<line>Changed "Lead" to "Check Conflicts".</line>
@@ -329,7 +329,7 @@
 				<line>WebTable / PdfWebTable -- added ability to tweak the style of a line based on the line and the next line (e.g., to be able to insert a line separating certain lines).</line>
 				<line>To avoid JSP compilation problems in Tomcat 6.0.24 and possibly later releases, avoid redefining local variables using &lt;bean:define&gt;. See https://issues.apache.org/bugzilla/show_bug.cgi?id=48616 for more details.</line>
 				<line>Ensure that all strings are encoded in UTF-8. This should allow the application to handle special characters (e.g., like diacritics) properly.</line>
-			</desctiption>
+			</description>
 		</item>
 	</category>
 </release>
