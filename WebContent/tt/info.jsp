@@ -33,6 +33,7 @@
 %>
 <html:form action="/classInfo">
 	<html:submit onclick="displayLoading();" property="op" value="Apply" style="display:none;"/>
+	<input type='hidden' name='op2' value=''>
 	<bean:define id="model" name="classInfoForm" property="model"/>
 	<bean:define id="clazz" name="model" property="clazz"/>
 	<bean:define id="classId" name="clazz" property="classId"/>
@@ -84,6 +85,7 @@
 			<bean:define name="model" property="change" id="change"/>
 			<tr><td colspan='2'><tt:section-title><br>New Assignment(s)</tt:section-title></td></tr>
 			<tr><td colspan='2'><bean:write name="change" property="htmlTable" filter="false"/></td></tr>
+			<tr><td colspan='2'>Do not unassign conflicting classes: <html:checkbox property="keepConflictingAssignments" onchange="op2.value='Apply'; submit();"/></td></tr>
 			<logic:equal name="model" property="canAssign" value="true">
 				<tr><td colspan='2' align="right">
 					<html:submit onclick="displayLoading();" property="op" value="Assign" onclick="return confirmAssign();" />
@@ -136,12 +138,9 @@
 						Allow conflicts:
 							<html:checkbox property="allowRoomConflict"/>
 					</td><td valign="top" nowrap>
-					    Do not unassign<br>conflicting class<br>assignments:
-					    	<html:checkbox property="keepConflictingAssignments"/>
-					</td><td valign="top" nowrap>
 						All rooms:
 							<html:checkbox property="allRooms"/>
-					</td><tdvalign="top" nowrap>
+					</td><td valign="top" nowrap>
 						Order:
 							<html:select property="roomOrder">
 								<html:options property="roomOrders"/>
