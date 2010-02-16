@@ -781,7 +781,7 @@ public abstract class Location extends BaseLocation implements Comparable {
     }
 
     public static Hashtable<Long,Set<Long>> findClassLocationTable(Set<Long> permanentIds, int startSlot, int length, Vector<Date> dates) {
-    	if (permanentIds.isEmpty()) return new Hashtable();
+    	if (permanentIds.isEmpty() || dates.isEmpty()) return new Hashtable();
     	String datesStr = "";
     	for (int i=0; i<dates.size(); i++) {
     		if (i>0) datesStr += ", ";
@@ -816,8 +816,8 @@ public abstract class Location extends BaseLocation implements Comparable {
         return table;
     }
 
-    public static Hashtable<Long,Set<Event>> findEvemtTable(Set<Long> permanentIds, int startSlot, int length, Vector<Date> dates) {
-    	if (permanentIds.isEmpty()) return new Hashtable();
+    public static Hashtable<Long,Set<Event>> findEventTable(Set<Long> permanentIds, int startSlot, int length, Vector<Date> dates) {
+    	if (permanentIds.isEmpty() || dates.isEmpty()) return new Hashtable();
     	String datesStr = "";
     	for (int i=0; i<dates.size(); i++) {
     		if (i>0) datesStr += ", ";
