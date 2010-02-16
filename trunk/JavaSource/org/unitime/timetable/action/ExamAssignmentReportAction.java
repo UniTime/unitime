@@ -2196,11 +2196,13 @@ public class ExamAssignmentReportAction extends Action {
         
         table.addLine(new String[] {sp,""}, new Comparable[] {row++,null,null});
 
+        /*
         table.addLine(new String[] {
                 "Registered students", 
                 df2.format(new StudentDAO().getSession().createQuery("select count(s) from Student s where s.session.uniqueId=:sessionId")
                 .setLong("sessionId", sessionId).uniqueResult())
                 }, new Comparable[] {row++,null,null});
+                */
         table.addLine(new String[] {
                 indent+"Students enrolled in classes", 
                 df2.format(new StudentDAO().getSession().createQuery("select count(distinct s) from Student s inner join s.classEnrollments c where s.session.uniqueId=:sessionId")
