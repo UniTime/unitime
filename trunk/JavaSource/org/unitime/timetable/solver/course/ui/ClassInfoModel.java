@@ -598,7 +598,7 @@ public class ClassInfoModel implements Serializable {
         Set roomPrefs = clazz.effectivePreferences(RoomPref.class);
         Set bldgPrefs = clazz.effectivePreferences(BuildingPref.class);
         Set featurePrefs = clazz.effectivePreferences(RoomFeaturePref.class);
-        
+                
         if (nrRooms>0) {
         	int minClassLimit = clazz.getExpectedCapacity().intValue();
         	int maxClassLimit = clazz.getMaxExpectedCapacity().intValue();
@@ -609,8 +609,15 @@ public class ClassInfoModel implements Serializable {
             int discouragedCapacity = (int)Math.round(0.99 * roomCapacity);
             int stronglyDiscouragedCapacity = (int)Math.round(0.98 * roomCapacity);
             
-            Date[] bounds = DatePattern.getBounds(clazz.getSessionId());
+    		Calendar cal = Calendar.getInstance(Locale.US);
+    		cal.setTime(new Date());
+    		cal.set(Calendar.HOUR_OF_DAY, 0);
+    		cal.set(Calendar.MINUTE, 0);
+    		cal.set(Calendar.SECOND, 0);
+    		Date today = cal.getTime();
 
+    		Date[] bounds = DatePattern.getBounds(clazz.getSessionId());
+    		
             boolean reqRoom = false;
             boolean reqBldg = false;
             boolean reqGroup = false;
@@ -803,21 +810,21 @@ public class ClassInfoModel implements Serializable {
             }
  			
             //TODO: This might still be done much faster.
- 			Calendar cal = Calendar.getInstance(Locale.US);
- 			cal.setTime(new Date());
- 			cal.set(Calendar.HOUR, 0);
- 			cal.set(Calendar.MINUTE, 0);
- 			cal.set(Calendar.MILLISECOND, 0);
- 			Vector <Date>datesToCheck = new Vector<Date>();
- 			for(Date aDate : period.getDates()){
- 				if (aDate.compareTo(cal.getTime()) > 0)
- 					datesToCheck.add(aDate);
+ 			Vector <Date>datesToCheck = null;
+ 			if ("true".equals(ApplicationProperties.getProperty("tmtbl.classAssign.ignorePastMeetings", "true"))) {
+ 				datesToCheck = new Vector<Date>();
+ 	 			for(Date aDate : period.getDates()){
+ 	 				if (aDate.compareTo(today) > 0)
+ 	 					datesToCheck.add(aDate);
+ 	 			}
+ 			} else {
+ 				datesToCheck = period.getDates();
  			}
-            Hashtable<Long,Set<Long>> room2classIds = Location.findClassLocationTable(permIds, period.getStartSlot(), period.getLength(), datesToCheck);
+            Hashtable<Long,Set<Long>> room2classIds = Location.findClassLocationTable(permIds, period.getStartSlot(), period.getLength(), period.getDates());
             
             Hashtable<Long,Set<Event>> room2events = null;
             if (RoomAvailability.getInstance()!=null && RoomAvailability.getInstance() instanceof DefaultRoomAvailabilityService) {
-            	room2events = Location.findEvemtTable(permIds, period.getStartSlot(), period.getLength(), datesToCheck);
+            	room2events = Location.findEventTable(permIds, period.getStartSlot(), period.getLength(), datesToCheck);
             }
 
  			rooms: for (Map.Entry<Location, Integer> entry: filteredRooms.entrySet()) {
@@ -877,7 +884,17 @@ public class ClassInfoModel implements Serializable {
                             room,
                             bounds[0], bounds[1], 
                             RoomAvailabilityInterface.sClassType);
-            		TimeBlock time = period.overlaps(times);
+            		Collection<TimeBlock> timesToCheck = null;
+            		if ("true".equals(ApplicationProperties.getProperty("tmtbl.classAssign.ignorePastMeetings", "true"))) {
+            			timesToCheck = new Vector();
+            			for (TimeBlock time: times) {
+            				if (time.getEndTime().compareTo(today) > 0) 
+            					timesToCheck.add(time);
+            			}
+            		} else {
+            			timesToCheck = times;
+            		}
+            		TimeBlock time = period.overlaps(timesToCheck);
             		if (time!=null) {
             			if (room.getLabel().equals(filter)) iForm.setMessage("Room "+room.getLabel()+" is not available for "+period.getLongName()+" due to "+time);
         				sLog.info("Room "+room.getLabel()+" is not available for "+period.getLongName()+" due to "+time);
@@ -1068,5 +1085,9 @@ public class ClassInfoModel implements Serializable {
             if (match) return true;
         }
         return false;        
+    }
+    
+    public boolean isKeepConflictingAssignments() {
+    	return !iUnassignConflictingAssignments;
     }
 }
