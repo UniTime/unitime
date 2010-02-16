@@ -58,6 +58,10 @@ public class ClassInfoAction extends Action {
         }
         
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
+        if (request.getParameter("op2")!=null && request.getParameter("op2").length()>0) {
+        	op = request.getParameter("op2");
+        	myForm.setOp(op);
+        }
 
         ClassInfoModel model = (ClassInfoModel)request.getSession().getAttribute("ClassInfo.model");
         if (model==null) {
@@ -83,6 +87,8 @@ public class ClassInfoAction extends Action {
             model.clear(TimetableManager.getManager(Web.getUser(request.getSession())));
         } else if ("Apply".equals(op)) {
             model.refreshRooms();
+            if (model.isKeepConflictingAssignments()!=myForm.getKeepConflictingAssignments())
+            	model.update();
         }
         
         if (request.getParameter("classId")!=null) {
