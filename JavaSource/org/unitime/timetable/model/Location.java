@@ -79,10 +79,10 @@ public abstract class Location extends BaseLocation implements Comparable {
 
 /*[CONSTRUCTOR MARKER END]*/
 	
-	private static final int sExamLocationTypeNone = 0;
-	private static final int sExamLocationTypeFinal = 1;
-	private static final int sExamLocationTypeMidterm = 2;
-	private static final int sExamLocationTypeBoth = 3;
+	public static final int sExamLocationTypeNone = 0;
+	public static final int sExamLocationTypeFinal = 1;
+	public static final int sExamLocationTypeMidterm = 2;
+	public static final int sExamLocationTypeBoth = 3;
 
 	public int compareTo(Object o) {
 		if (o==null || !(o instanceof Location)) return -1;
@@ -229,6 +229,13 @@ public abstract class Location extends BaseLocation implements Comparable {
 		return b;
 	}
 	
+	public boolean hasGroup (Long roomGroup) {
+		for (Iterator it = getRoomGroups().iterator(); it.hasNext();)
+			if (roomGroup.equals(((RoomGroup) it.next()).getUniqueId())) return true;
+		return false;
+	}
+
+	
 	/**
 	 * 
 	 * @param roomDept
@@ -262,6 +269,12 @@ public abstract class Location extends BaseLocation implements Comparable {
 		return b;
 	}
 	
+	public boolean hasFeature (Long roomFeature) {
+		for (Iterator it = getFeatures().iterator(); it.hasNext();)
+			if (roomFeature.equals(((RoomFeature) it.next()).getUniqueId())) return true;
+		return false;
+	}
+
 	/**
 	 * 
 	 * @param sisReference

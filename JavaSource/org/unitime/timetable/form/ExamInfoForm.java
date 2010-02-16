@@ -19,12 +19,17 @@
 */
 package org.unitime.timetable.form;
 
+import java.util.Collection;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
+import org.unitime.timetable.model.RoomFeature;
+import org.unitime.timetable.model.RoomGroup;
+import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.solver.exam.ui.ExamInfoModel;
 
 /**
@@ -50,6 +55,11 @@ public class ExamInfoForm extends ActionForm {
     private int iDepth = 2;
     private long iTimeout = 5000;
     private int iLimit = 30;
+    
+	private Long[] iRoomFeatures = null;
+	private Long[] iRoomTypes = null;
+	private Long[] iRoomGroups = null;
+
 
     public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
         ActionErrors errors = new ActionErrors();
@@ -70,6 +80,9 @@ public class ExamInfoForm extends ActionForm {
         iDepth = 2;
         iTimeout = 5000;
         iLimit = 30;
+        iRoomTypes = null;
+        iRoomFeatures = null;
+        iRoomGroups = null;
     }
     
     public void load(HttpSession session) {
@@ -87,6 +100,9 @@ public class ExamInfoForm extends ActionForm {
             iTimeout = (Long)session.getAttribute("ExamInfo.Timeout");
         if (session.getAttribute("ExamInfo.ComputeSuggestions")!=null)
             iComputeSuggestions = (Boolean)session.getAttribute("ExamInfo.ComputeSuggestions");
+        iRoomTypes = (Long[]) session.getAttribute("ExamInfo.RoomTypes");
+        iRoomGroups = (Long[]) session.getAttribute("ExamInfo.RoomGroups");
+		iRoomFeatures = (Long[]) session.getAttribute("ExamInfo.RoomFeatures");
     }
     
     public void save(HttpSession session) {
@@ -115,6 +131,18 @@ public class ExamInfoForm extends ActionForm {
         session.setAttribute("ExamInfo.Timeout", iTimeout);
         session.setAttribute("ExamInfo.Limit", iLimit);
         session.setAttribute("ExamInfo.ComputeSuggestions", iComputeSuggestions);
+        if (iRoomTypes==null)
+        	session.removeAttribute("ExamInfo.RoomTypes");
+        else
+        	session.setAttribute("ExamInfo.RoomTypes", iRoomTypes);
+        if (iRoomGroups==null)
+        	session.removeAttribute("ExamInfo.RoomGroups");
+        else
+        	session.setAttribute("ExamInfo.RoomGroups", iRoomGroups);
+        if (iRoomFeatures==null)
+        	session.removeAttribute("ExamInfo.RoomFeatures");
+        else
+        	session.setAttribute("ExamInfo.RoomFeatures", iRoomFeatures);
     }
     
     public String getOp() { return iOp; }
@@ -145,4 +173,25 @@ public class ExamInfoForm extends ActionForm {
     public void setTimeout(long timeout) { iTimeout = timeout; }
     public String getFilter() { return iFilter; }
     public void setFilter(String filter) { iFilter = filter; }
+    
+    public Long[] getRoomTypes() { return iRoomTypes; }
+	public void setRoomTypes(Long[] rts) { iRoomTypes = rts; }
+
+    public Long[] getRoomGroups() { return iRoomGroups; }
+    public void setRoomGroups(Long[] rgs) { iRoomGroups= rgs; }
+
+    public Long[] getRoomFeatures() { return iRoomFeatures; }
+    public void setRoomFeatures(Long[] rfs) { iRoomFeatures = rfs; }
+    
+    public Collection<RoomFeature> getAllRoomFeatures() {
+    	return RoomFeature.getAllGlobalRoomFeatures();
+    }
+    
+    public Collection<RoomGroup> getAllRoomGroups() {
+        return RoomGroup.getAllGlobalRoomGroups();
+    }
+
+    public Collection<RoomType> getAllRoomTypes() {
+        return RoomType.findAll();
+    }
 }

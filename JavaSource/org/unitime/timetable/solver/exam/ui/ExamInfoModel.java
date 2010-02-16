@@ -58,6 +58,7 @@ import org.unitime.timetable.model.RoomGroupPref;
 import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.ExamDAO;
+import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.util.RoomAvailability;
 
@@ -431,6 +432,45 @@ public class ExamInfoModel implements Serializable {
         return iPeriods;
     }
     
+    public TreeSet findAllExamLocations(Long sessionId, int examType) {
+		String a = "", b = "";
+		if (iForm.getRoomFeatures()!=null && iForm.getRoomFeatures().length>0) {
+			for (int i=0;i<iForm.getRoomFeatures().length;i++) {
+				a+= ", GlobalRoomFeature f"+i;
+				b+= " and f"+i+".uniqueId="+iForm.getRoomFeatures()[i]+" and f"+i+" in elements(r.features)";
+			}
+		}
+        if (iForm.getRoomGroups()!=null && iForm.getRoomGroups().length>0) {
+            b+= " and (";
+            for (int i=0;i<iForm.getRoomGroups().length;i++) {
+                if (i>0) b+=" or";
+                a+= ", RoomGroup g"+i;
+                b+= " (g"+i+".uniqueId="+iForm.getRoomGroups()[i]+" and g"+i+" in elements(r.roomGroups))";
+            }
+            b+=")";
+        }
+        if (iForm.getRoomTypes()!=null && iForm.getRoomTypes().length>0) {
+            b+= " and r.roomType.uniqueId in (";
+            for (int i=0;i<iForm.getRoomTypes().length;i++) {
+                if (i>0) b+=",";
+                b+= iForm.getRoomTypes()[i];
+            }
+            b+=")";
+        }    
+        switch (examType) {
+        case Exam.sExamTypeFinal :
+        	b+=" and r.examType in ("+Location.sExamLocationTypeFinal+","+Location.sExamLocationTypeBoth+")";
+        case Exam.sExamTypeMidterm :
+        	b+=" and r.examType in ("+Location.sExamLocationTypeMidterm+","+Location.sExamLocationTypeBoth+")";
+        default :
+        	b+=" and r.examType != "+Location.sExamLocationTypeNone;
+        }
+        return new TreeSet(
+                (new LocationDAO()).getSession()
+                .createQuery("select r from Location r"+a+" where r.session.uniqueId = :sessionId "+b)
+                .setLong("sessionId", sessionId).setCacheable(true).list());
+    }
+    
     protected Vector<ExamRoomInfo> findRooms(ExamPeriod period, int minRoomSize, int maxRoomSize, String filter, boolean allowConflicts) {
         Vector<ExamRoomInfo> rooms = new Vector<ExamRoomInfo>();
         boolean reqRoom = false;
@@ -443,7 +483,7 @@ public class ExamInfoModel implements Serializable {
         Set bldgPrefs = exam.getPreferences(BuildingPref.class);
         Set featurePrefs = exam.getPreferences(RoomFeaturePref.class);
         
-        TreeSet locations = Location.findAllExamLocations(period.getSession().getUniqueId(), period.getExamType());
+        TreeSet locations = findAllExamLocations(period.getSession().getUniqueId(), period.getExamType());
         Hashtable<Long, Long> locationTable = Location.findExamLocationTable(period.getUniqueId());
         
         if (getExamAssignment()!=null) {

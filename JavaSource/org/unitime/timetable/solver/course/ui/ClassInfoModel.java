@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Queue;
@@ -75,6 +76,7 @@ import org.unitime.timetable.model.TimePatternModel;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.Class_DAO;
+import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.solver.course.ui.ClassAssignmentInfo.StudentConflict;
 import org.unitime.timetable.util.DefaultRoomAvailabilityService;
 import org.unitime.timetable.util.RoomAvailability;
@@ -587,6 +589,35 @@ public class ClassInfoModel implements Serializable {
     	return (PreferenceLevel)roomPreferencesThisDept.get(locationId);
     }
     
+    protected List findAllRooms(Long sessionId) {
+		String a = "", b = "";
+		if (iForm.getRoomFeatures()!=null && iForm.getRoomFeatures().length>0) {
+			for (int i=0;i<iForm.getRoomFeatures().length;i++) {
+				a+= ", GlobalRoomFeature f"+i;
+				b+= " and f"+i+".uniqueId="+iForm.getRoomFeatures()[i]+" and f"+i+" in elements(r.features)";
+			}
+		}
+        if (iForm.getRoomGroups()!=null && iForm.getRoomGroups().length>0) {
+            b+= " and (";
+            for (int i=0;i<iForm.getRoomGroups().length;i++) {
+                if (i>0) b+=" or";
+                a+= ", RoomGroup g"+i;
+                b+= " (g"+i+".uniqueId="+iForm.getRoomGroups()[i]+" and g"+i+" in elements(r.roomGroups))";
+            }
+            b+=")";
+        }
+        if (iForm.getRoomTypes()!=null && iForm.getRoomTypes().length>0) {
+            b+= " and r.roomType.uniqueId in (";
+            for (int i=0;i<iForm.getRoomTypes().length;i++) {
+                if (i>0) b+=",";
+                b+= iForm.getRoomTypes()[i];
+            }
+            b+=")";
+        }    	
+        String query = "select r from Location r " + a + " where r.session.uniqueId=:sessionId " + b;
+        return LocationDAO.getInstance().getSession().createQuery(query).setLong("sessionId", sessionId).setCacheable(true).list();
+    }
+    
     protected Vector<ClassRoomInfo> findRooms(ClassTimeInfo period, int minRoomSize, int maxRoomSize, String filter, boolean allowConflicts, boolean showAllRooms) {
     	Vector<ClassRoomInfo> rooms = new Vector<ClassRoomInfo>();
         
@@ -623,10 +654,35 @@ public class ClassInfoModel implements Serializable {
             boolean reqGroup = false;
 
  			Set availRooms = clazz.getAvailableRooms();
+        	rooms: for (Iterator i1=availRooms.iterator();i1.hasNext();) {
+        		Location room = (Location)i1.next();
+        		if (iForm.getRoomTypes()!=null && iForm.getRoomTypes().length>0) {
+        			boolean ok = false;
+        			for (int i=0;i<iForm.getRoomTypes().length;i++)
+        				if (room.getRoomType().getUniqueId().equals(iForm.getRoomTypes()[i])) {
+        					ok = true; break;
+        				}
+        			if (!ok) {
+        				i1.remove(); continue rooms;
+        			}
+        		}
+        		if (iForm.getRoomFeatures()!=null && iForm.getRoomFeatures().length>0) {
+            		for (int i=0;i<iForm.getRoomFeatures().length;i++)
+            			if (!room.hasFeature(iForm.getRoomFeatures()[i])) {
+            				i1.remove(); continue rooms;
+            			}
+        		}
+        		if (iForm.getRoomGroups()!=null && iForm.getRoomGroups().length>0) {
+        			for (int i=0;i<iForm.getRoomGroups().length;i++)
+        				if (room.hasGroup(iForm.getRoomGroups()[i])) continue rooms;
+        			i1.remove();
+        		}
+        	}
+ 			
  			Set allRooms = availRooms;
  			if (showAllRooms) {
  				allRooms = new TreeSet(availRooms);
- 				allRooms.addAll(Room.findAllRooms(getClazz().getClazz().getSessionId()));
+ 				allRooms.addAll(findAllRooms(getClazz().getClazz().getSessionId()));
  			}
  			
  			Long departmentId = getClazz().getClazz().getManagingDept().getUniqueId();
@@ -641,7 +697,7 @@ public class ClassInfoModel implements Serializable {
                 if (maxRoomSize>=0 && room.getCapacity()>maxRoomSize) continue;
         		
         		if (!match(room.getLabel(),filter)) continue;
-
+        		
         		PreferenceCombination pref = new SumPreferenceCombination();
         		
         		if (showAllRooms && !availRooms.contains(room)) pref.addPreferenceProlog(PreferenceLevel.sProhibited);
