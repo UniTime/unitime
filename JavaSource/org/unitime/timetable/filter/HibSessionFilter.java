@@ -105,6 +105,7 @@ public class HibSessionFilter implements Filter {
             
             if (ex instanceof ServletException) throw (ServletException)ex;
             if (ex instanceof IOException) throw (IOException)ex;
+			if (ex instanceof RuntimeException) throw (RuntimeException)ex;
 
             // Let others handle it... maybe another interceptor for exceptions?
             throw new ServletException(ex);
