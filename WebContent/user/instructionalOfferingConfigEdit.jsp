@@ -40,9 +40,7 @@
 			  }
 			}
 			  figure out max number of classes */
-			if (numClasses == 9999) { 
-			   return(false); 
-		    } else if(numClasses > 600) {
+			if(numClasses > 100) {
 				if (!confirmDelete('This will create ' + numClasses + ' classes.  Continue?')){
 			        return(false);
 				}

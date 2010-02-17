@@ -361,7 +361,7 @@ public class SchedulingSubpartTableBuilder {
 	                        	+ (nc>=0?""+nc:"")  + "\">" + (nc>=0?""+nc:"") )
 	                        : ( "\n\t<INPUT " 
 	                        	+ " name=\"nc" + sicId 
-	                        	+ "\" type=\"text\" size=\"4\" maxlength=\"4\" value=\"" 
+	                        	+ "\" type=\"text\" size=\"3\" maxlength=\"3\" value=\"" 
 	                        	+ (nc>=0?""+nc:"")  + "\" onblur=\"if (!confirmNumClasses(this.value)) { this.value = 0 }\">" ) ),
 
                        	((disabled) 
