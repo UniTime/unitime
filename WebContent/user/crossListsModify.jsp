@@ -139,7 +139,7 @@
 			<TD>Instructional Offering Limit: </TD>
 			<TD align="left">
 				<logic:equal name="crossListsModifyForm" property="unlimited" value="true">
-					<img src='images/infinity.gif' alt='Unlimited Enrollment' title='Unlimited Enrollment' border='0' align='top'>
+					<span title="Unlimited Enrollment"><font size="+1">&infin;</font></span>
 					<bean:define id="instrOffrLimit" value="-1" />
 				</logic:equal>
 				<logic:notEqual name="crossListsModifyForm" property="unlimited" value="true">
