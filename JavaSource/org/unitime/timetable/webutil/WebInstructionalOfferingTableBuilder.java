@@ -782,7 +782,7 @@ public class WebInstructionalOfferingTableBuilder {
 	    		if (nowrap) cell.setNoWrap(true);
 	    	}
 	    	else {
-	    	    cell = initNormalCell("&nbsp;", isEditable);	    	    
+	    	    cell = initNormalCell("<font size=\"+1\">&infin;</font>", isEditable);	    	    
 	    	}
 	    		
     	} else {
@@ -1396,7 +1396,7 @@ public class WebInstructionalOfferingTableBuilder {
     		} 
         	if (isShowLimit()){
     		    cell = this.initNormalCell(
-    	            	(unlimited ? "<img src='images/infinity.gif' alt='Unlimited Enrollment' title='Unlimited Enrollment' border='0' align='top'>" : ioc.getLimit().toString()),  
+    	            	(unlimited ? "<font size=\"+1\">&infin;</font>" : ioc.getLimit().toString()),  
     		            isEditable);
     		    cell.setAlign("right");
 	            row.addContent(cell);
@@ -1580,7 +1580,7 @@ public class WebInstructionalOfferingTableBuilder {
 				if ((((InstrOfferingConfig)x.next())).isUnlimitedEnrollment().booleanValue())
 					unlimited = true;
 			if (unlimited)
-				cell = initNormalCell("<img src='images/infinity.gif' alt='Unlimited Enrollment' title='Unlimited Enrollment' border='0' align='top'>", co.isIsControl().booleanValue());
+				cell = initNormalCell("<font size=\"+1\">&infin;</font>", co.isIsControl().booleanValue());
 			else
 				cell = initNormalCell(io.getLimit() != null?io.getLimit().toString():"", co.isIsControl().booleanValue());
             cell.setAlign("right");

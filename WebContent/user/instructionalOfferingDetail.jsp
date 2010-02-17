@@ -315,7 +315,7 @@
 					<% } %>
 				</logic:equal>
 				<logic:equal name="instructionalOfferingDetailForm" property="unlimited" value="true">
-					<img src='images/infinity.gif' alt='Unlimited Enrollment' title='Unlimited Enrollment' border='0' align='top'>
+					<span title="Unlimited Enrollment"><font size="+1">&infin;</font></span>
 				</logic:equal>
 			</TD>
 		</TR>
