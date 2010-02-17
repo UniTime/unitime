@@ -29,6 +29,57 @@
 	<category>
 		<title>BUG FIXES &amp; OTHER IMPROVEMENTS</title>
 		<item>
+			<name>Instructional Offerings</name>
+			<description>
+				<line>Put in temporary change to prevent users from entering 9999 in the "Number of Classes" field on the "Instructional Offering Configuration" edit page.  If the user enters 9999 in the field when they leave the field the value is set to 0.</line>
+				<line>Remove restriction from Instructional Offering Configuration edit page that prevented the user from creating more than one class per scheduling subpart when working with a configuration marked as having unlimited enrollment.</line>
+			</description>
+		</item>
+		<item>
+			<name>Class Assignment</name>
+			<description>
+				<line>The functionality concerning checking of past events corrected:
+					<line>Check for all events when tmtbl.classAssign.ignorePastMeetings is false (default is true)</line>
+					<line>Only do not check for past non-class events (classes are checked for conflicts later in update() using their date patterns, the former behavior was causing an inconsistency when a conflicting room was shown as non-conflicting)</line>
+					<line>Also do not check for past events when a different room availability than default is use</line>
+				</line>
+				<line>Toggle "Do not unassign conflicting classes" moved to a more appropriate place (under the table with new assignments). The conflicting assignments are now recomputed on change.</line>
+				<line>Added ability to filter the list of rooms by room types, global room groups and global room features.</line>
+			</description>
+		</item>
+		<item>
+			<name>Examination Assignment</name>
+			<description>
+				<line>Added ability to filter the list of rooms by room types, global room groups and global room features.</line>
+			</description>
+		</item>
+		<item>
+			<name>Examination Reports</name>
+			<description>
+				<line>Removed number of registered students from the Exam Statistics Report as this number may be misleading (it could include last-like students).</line>
+			</description>
+		</item>
+		<item>
+			<name>Administration</name>
+			<description>
+				<line>Manage Solvers: Improved checking for solver inconsistencies (fewer exceptions should be thrown when a solver instance is caught in an inconsistent state)</line>
+			</description>
+		</item>
+		<item>
+			<name>Other</name>
+			<description>
+				<line>If an exception is seen print a warning message (including request URI, user login and request parameters for easier debugging).</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.1.241</version>
+	<release-date>Tue, 16 Feb 2010</release-date>
+	<category>
+		<title>BUG FIXES &amp; OTHER IMPROVEMENTS</title>
+		<item>
 			<name>Administration</name>
 			<description>
 				<line>Allow the user to override the name information retrieved from LDAP.</line>
