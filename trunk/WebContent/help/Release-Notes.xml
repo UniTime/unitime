@@ -29,10 +29,23 @@
 	<category>
 		<title>BUG FIXES &amp; OTHER IMPROVEMENTS</title>
 		<item>
+			<name>Timetable page (containing the time grid)</name>
+			<description>
+				<line>Added following properties in order to be able to change the periods in which the time is printed (30 minutes periods starting 7:30am by default). The default values are as follows:
+					<line>tmtbl.timeGrid.slotsPerPeriod=6 # Number of time (5-minute long) slots per period</line>
+					<line>tmtbl.timeGrid.firstDaySlot=90 # 90 5-minutes slots from midnight ~ 7:30 am</line>
+					<line>tmtbl.timeGrid.lastDaySlot=209 # last day slot 5:25 pm - 5:30 pm</line>
+					<line>tmtbl.timeGrid.lastEveningSlot=275 # last evening slot 10:55 pm - 11:00 pm</line>
+				</line>
+			</description>
+		</item>
+		<item>
 			<name>Instructional Offerings</name>
 			<description>
 				<line>Put in temporary change to prevent users from entering 9999 in the "Number of Classes" field on the "Instructional Offering Configuration" edit page.  If the user enters 9999 in the field when they leave the field the value is set to 0.</line>
 				<line>Remove restriction from Instructional Offering Configuration edit page that prevented the user from creating more than one class per scheduling subpart when working with a configuration marked as having unlimited enrollment.</line>
+				<line>Added display of infinity symbol to limits column for classes that are part of unlimited enrollment configurations. Changed drunken 8 to be a true infinity symbol.</line>
+				<line>Limit size of number of classes field to 3 digits on the Configuration Edit screen.</line>
 			</description>
 		</item>
 		<item>
