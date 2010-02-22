@@ -38,6 +38,7 @@ import org.hibernate.Query;
 import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.Web;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
@@ -58,6 +59,7 @@ import org.unitime.timetable.util.DateUtils;
  */
 public class TimetableGridTable {
 	private static SimpleDateFormat sDF = new SimpleDateFormat("MM/dd/yy");
+	public static int sNrSlotsPerPeriod = 6; // Group slots into 30 minute periods.
 	public static final int sDaysAll = 0;
 	public static final int sDaysAllExceptSat = 1;
 	public static final int sDaysMon = 2;
@@ -213,6 +215,7 @@ public class TimetableGridTable {
 	}
 	
 	public void printToHtml(PrintWriter out) {
+		sNrSlotsPerPeriod = Integer.parseInt(ApplicationProperties.getProperty("tmtbl.timeGrid.slotsPerPeriod", "6"));
         out.println("<table border='0' cellpadding='2' cellspacing='0'>");
         int rowNumber=0; 
         for (Enumeration e = models().elements(); e.hasMoreElements(); rowNumber++) {
@@ -277,9 +280,9 @@ public class TimetableGridTable {
 		switch (iDayMode) {
 			case sDayModeDay : 
 			case sDayModeDayEvening :
-				return Constants.DAY_SLOTS_FIRST;
+				return Integer.parseInt(ApplicationProperties.getProperty("tmtbl.timeGrid.firstDaySlot", String.valueOf(Constants.DAY_SLOTS_FIRST)));
 			case sDayModeEvening : 
-				return Constants.EVENING_SLOTS_FIRST;
+				return Integer.parseInt(ApplicationProperties.getProperty("tmtbl.timeGrid.lastDaySlot", String.valueOf(Constants.DAY_SLOTS_LAST))) + 1;
 			case sDayModeAll :
 			default :
 				return 0;
@@ -290,10 +293,10 @@ public class TimetableGridTable {
 	public int lastSlot() {
 		switch (iDayMode) {
 			case sDayModeDay : 
-				return Constants.DAY_SLOTS_LAST;
+				return Integer.parseInt(ApplicationProperties.getProperty("tmtbl.timeGrid.lastDaySlot", String.valueOf(Constants.DAY_SLOTS_LAST)));
 			case sDayModeDayEvening :
 			case sDayModeEvening : 
-				return Constants.EVENING_SLOTS_LAST;
+				return Integer.parseInt(ApplicationProperties.getProperty("tmtbl.timeGrid.lastEveningSlot", String.valueOf(Constants.EVENING_SLOTS_LAST)));
 			case sDayModeAll :
 			default :
 				return Constants.SLOTS_PER_DAY-1;
@@ -319,11 +322,11 @@ public class TimetableGridTable {
 			}
 		} else { //isDispModeInRow() || isDispModePerWeekVertical()
 			for (int day=startDay();(isDispModeInRow() && day<=endDay()) || (isDispModePerWeek() && day==startDay());day++) {
-				for (int slot=firstSlot();slot<=lastSlot();slot+=6) {
+				for (int slot=firstSlot();slot<=lastSlot();slot+=sNrSlotsPerPeriod) {
 					int time = slot*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
-					boolean eod = (slot+5==lastSlot());
+					boolean eod = (slot+sNrSlotsPerPeriod-1==lastSlot());
 					boolean eol = (eod && (isDispModePerWeek() || day==endDay()));
-					out.println("<th width='40' height='40' colspan='6' class='Timetable" + (rowNumber==0?"Head":"") + "Cell" + (eol?"EOL":eod?"EOD":"") + "'>");
+					out.println("<th width='40' height='40' colspan='"+sNrSlotsPerPeriod+"' class='Timetable" + (rowNumber==0?"Head":"") + "Cell" + (eol?"EOL":eod?"EOD":"") + "'>");
 					if (isDispModeInRow())
 						out.println(Constants.DAY_NAME[day]+"<br>");
 					out.println(Constants.toTime(time));
@@ -380,7 +383,7 @@ public class TimetableGridTable {
 							boolean eod = (slot == lastSlot());
 							boolean eol = (eod && (isDispModePerWeek() || day==endDay()));
 							boolean first = (slot == firstSlot() || model.getCell(day,slot-1,idx)!=null);
-							boolean in = !first && !eod && !eol && (model.getCell(day,slot+1,idx)==null || model.getCell(day,slot-1,idx)==null) && ((slot%6) !=0);
+							boolean in = !first && !eod && !eol && (model.getCell(day,slot+1,idx)==null || model.getCell(day,slot-1,idx)==null) && ((slot%sNrSlotsPerPeriod) !=0);
 							boolean inEod = eod && model.getCell(day,slot-1,idx)==null;
 							boolean inEol = eol && model.getCell(day,slot-1,idx)==null;
 							out.println("<td class='TimetableCell" + (first?"First":in?"In":inEol?"InEOL":inEod?"InEOD":eol?"EOL":eod?"EOD":"") + "' rowSpan='"+rowSpan+"' colSpan='"+colSpan+"' "+(bgColor==null?"":"style='background-color:"+bgColor+"'")+">&nbsp;</td>");
@@ -447,7 +450,7 @@ public class TimetableGridTable {
 							boolean eod = (slot == lastSlot());
 							boolean eol = (eod && (isDispModePerWeek() || day==endDay()));
 							boolean first = (slot == firstSlot() || model.getCell(day,slot-1,idx)!=null);
-							boolean in = !first && !eod && !eol && (model.getCell(day,slot+1,idx)==null || model.getCell(day,slot-1,idx)==null) && ((slot%6) !=0); 
+							boolean in = !first && !eod && !eol && (model.getCell(day,slot+1,idx)==null || model.getCell(day,slot-1,idx)==null) && ((slot%sNrSlotsPerPeriod) !=0); 
 							boolean inEod = eod && model.getCell(day,slot-1,idx)==null;
 							boolean inEol = eol && model.getCell(day,slot-1,idx)==null;
 							//boolean last = !eod && !eol && model.getCell(day,slot+1,idx)!=null;
@@ -492,12 +495,12 @@ public class TimetableGridTable {
 				}
 			}
 		} else { //isDispModePerWeekVertical
-			//FIXME time goes for half-hours (only every 6th slot is checked)
-			int step = 6;
+			//FIXME time goes for half-hours (only every sNrSlotsPerPeriod-th slot is checked)
+			int step = sNrSlotsPerPeriod;
 			for (int slot=firstSlot();slot<=lastSlot();slot+=step) {
 				int time = slot * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
                 int slotsToEnd = lastSlot()-slot+1;
-                if ((slot%6) == 0) {
+                if (((slot-firstSlot())%sNrSlotsPerPeriod) == 0) {
                 	out.println("<th width='40' height='40' class='TimetableHeadCell"+(slot==firstSlot()?"":"In")+"Vertical'>" + Constants.toTime(time) + "</th>");
                 } else {
                 	out.println("<th width='40' height='40' class='TimetableHeadCellInVertical'>&nbsp;</th>");
