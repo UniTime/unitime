@@ -111,8 +111,8 @@ public class PdfTimetableGridTable {
 				nrCols++;
 		} else {//isDispModeInRow() || isDispModePerWeekVertical()
 			for (int day=iTable.startDay();(iTable.isDispModeInRow() && day<=iTable.endDay()) || (iTable.isDispModePerWeek() && day==iTable.startDay());day++) {
-				for (int slot=iTable.firstSlot();slot<=iTable.lastSlot();slot+=6) {
-					nrCols+=6;
+				for (int slot=iTable.firstSlot();slot<=iTable.lastSlot();slot+=TimetableGridTable.sNrSlotsPerPeriod) {
+					nrCols+=TimetableGridTable.sNrSlotsPerPeriod;
 				}
 			}
 		}
@@ -203,10 +203,10 @@ public class PdfTimetableGridTable {
 	
 	public void printHeader(TimetableGridModel model, int rowNumber) throws Exception {
 		if (iTable.isDispModePerWeekVertical()) {
-			for (int slot=iTable.lastSlot();slot>=iTable.firstSlot();slot-=6) {
-				int time = (slot-5)*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
+			for (int slot=iTable.lastSlot();slot>=iTable.firstSlot();slot-=TimetableGridTable.sNrSlotsPerPeriod) {
+				int time = (slot-TimetableGridTable.sNrSlotsPerPeriod+1)*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
 				PdfPCell c = createCell();
-				c.setColspan(6);
+				c.setColspan(TimetableGridTable.sNrSlotsPerPeriod);
 				if (slot<iTable.lastSlot()) c.setBorderWidthLeft(0);
 				addTextVertical(c, Constants.toTime(time), true);
 				iPdfTable.addCell(c);
@@ -224,11 +224,11 @@ public class PdfTimetableGridTable {
 			else
 				addText(c, model.getName()+(model.getSize()>0?" ("+model.getSize()+")":""), true);
 			iPdfTable.addCell(c);
-			for (int slot=iTable.firstSlot();slot<=iTable.lastSlot();slot+=6) {
+			for (int slot=iTable.firstSlot();slot<=iTable.lastSlot();slot+=TimetableGridTable.sNrSlotsPerPeriod) {
 				int time = slot*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
 				c = createCell();
 				c.setBorderWidthLeft(0);
-				c.setColspan(6);
+				c.setColspan(TimetableGridTable.sNrSlotsPerPeriod);
 				addText(c, Constants.toTime(time), true);
 				iPdfTable.addCell(c);
 			}
@@ -297,7 +297,7 @@ public class PdfTimetableGridTable {
 						c.setBorderWidthBottom(idx==maxIdx?1:model.getCell(iDay,slot,idx+1)!=null?1:0);
 						c.setBorderWidthLeft(0);
 						boolean eod = (slot == iTable.lastSlot());
-						boolean in = !eod && model.getCell(iDay,slot+1,idx)==null && ((slot+1)%6)!=0;
+						boolean in = !eod && model.getCell(iDay,slot+1,idx)==null && ((slot+1)%TimetableGridTable.sNrSlotsPerPeriod)!=0;
 						c.setBorderWidthRight(eod || !in?1:0);
 						c.setColspan(colSpan);
 						if (bgColor!=null)
@@ -356,7 +356,7 @@ public class PdfTimetableGridTable {
 							c.setBorderWidthBottom(idx==maxIdx?1:model.getCell(day,slot,idx+1)!=null?1:0);
 							c.setBorderWidthLeft(0);
 							boolean eod = (slot == iTable.lastSlot());
-							boolean in = !eod && model.getCell(day,slot+1,idx)==null && ((slot+1)%6)!=0;
+							boolean in = !eod && model.getCell(day,slot+1,idx)==null && ((slot+1)%TimetableGridTable.sNrSlotsPerPeriod)!=0;
 							c.setBorderWidthRight(eod || !in?1:0);
 							iPdfTable.addCell(c);
 						} else {
@@ -409,7 +409,7 @@ public class PdfTimetableGridTable {
 							c.setBorderWidthBottom(idx==maxIdx?1:model.getCell(day,slot,idx+1)!=null?1:0);
 							c.setBorderWidthLeft(slot==iTable.lastSlot()?1:0);
 							boolean eod = (slot == iTable.firstSlot());
-							boolean in = !eod && model.getCell(day,slot-1,idx)==null && (slot%6)!=0;
+							boolean in = !eod && model.getCell(day,slot-1,idx)==null && (slot%TimetableGridTable.sNrSlotsPerPeriod)!=0;
 							c.setBorderWidthRight(eod || !in?1:0);
 							iPdfTable.addCell(c);
 						} else {
@@ -451,11 +451,11 @@ public class PdfTimetableGridTable {
 				}
 			}
 			/*
-			int step = 6;
+			int step = TimetableGridTable.sNrSlotsPerPeriod;
 			for (int slot=iTable.firstSlot();slot<=iTable.lastSlot();slot+=step) {
 				int time = slot * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
                 int slotsToEnd = iTable.lastSlot()-slot+1;
-                if ((slot%6) == 0) {
+                if ((slot%TimetableGridTable.sNrSlotsPerPeriod) == 0) {
     				c = createCell("TimetableHeadCell"+(slot==iTable.firstSlot()?"":"In")+"Vertical");
     				addText(c, Constants.toTime(time), true);
     				iPdfTable.addCell(c);
