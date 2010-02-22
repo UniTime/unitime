@@ -16,7 +16,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  --%>
-<%@ page language="java" %>
+<%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8"%>
 <%@ page errorPage="../error.jsp" %>
 <%@ page import="org.unitime.commons.User" %>
 <%@ page import="org.unitime.commons.hibernate.util.HibernateUtil" %>
