@@ -460,8 +460,10 @@ public class ExamInfoModel implements Serializable {
         switch (examType) {
         case Exam.sExamTypeFinal :
         	b+=" and r.examType in ("+Location.sExamLocationTypeFinal+","+Location.sExamLocationTypeBoth+")";
+        	break;
         case Exam.sExamTypeMidterm :
         	b+=" and r.examType in ("+Location.sExamLocationTypeMidterm+","+Location.sExamLocationTypeBoth+")";
+        	break;
         default :
         	b+=" and r.examType != "+Location.sExamLocationTypeNone;
         }
