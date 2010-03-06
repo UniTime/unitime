@@ -1616,7 +1616,7 @@ public class WebInstructionalOfferingTableBuilder {
             if (isManagedAs) {
             	if (!isShowTitle() && io.getControllingCourseOffering().getTitle()!=null) {
             		String title = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-            		if (co.getTitle()!=null && !co.getTitle().isEmpty()) {
+            		if (co.getTitle()!=null && co.getTitle().length()>0) {
             			title += "<b>" + co.getTitle() + "</b>";
             			title += " (<span title='" + io.getControllingCourseOffering().getCourseNameWithTitle() + "'>Managed As " + io.getControllingCourseOffering().getCourseName() + "</span>)";
             		} else {
