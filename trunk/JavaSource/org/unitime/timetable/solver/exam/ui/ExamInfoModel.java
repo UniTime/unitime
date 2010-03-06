@@ -473,6 +473,33 @@ public class ExamInfoModel implements Serializable {
                 .setLong("sessionId", sessionId).setCacheable(true).list());
     }
     
+    protected void filterRooms() {
+    	rooms: for (Iterator<ExamRoomInfo> i1 = iRooms.iterator(); i1.hasNext();) {
+        	ExamRoomInfo r = i1.next();
+    		if (iForm.getRoomTypes()!=null && iForm.getRoomTypes().length>0) {
+    			boolean ok = false;
+    			for (int i=0;i<iForm.getRoomTypes().length;i++)
+    				if (r.getLocation().getRoomType().getUniqueId().equals(iForm.getRoomTypes()[i])) {
+    					ok = true; break;
+    				}
+    			if (!ok) {
+    				i1.remove(); continue rooms;
+    			}
+    		}
+    		if (iForm.getRoomFeatures()!=null && iForm.getRoomFeatures().length>0) {
+        		for (int i=0;i<iForm.getRoomFeatures().length;i++)
+        			if (!r.getLocation().hasFeature(iForm.getRoomFeatures()[i])) {
+        				i1.remove(); continue rooms;
+        			}
+    		}
+    		if (iForm.getRoomGroups()!=null && iForm.getRoomGroups().length>0) {
+    			for (int i=0;i<iForm.getRoomGroups().length;i++)
+    				if (r.getLocation().hasGroup(iForm.getRoomGroups()[i])) continue rooms;
+    			i1.remove();
+    		}
+    	}
+    }
+    
     protected Vector<ExamRoomInfo> findRooms(ExamPeriod period, int minRoomSize, int maxRoomSize, String filter, boolean allowConflicts) {
         Vector<ExamRoomInfo> rooms = new Vector<ExamRoomInfo>();
         boolean reqRoom = false;
@@ -781,6 +808,7 @@ public class ExamInfoModel implements Serializable {
                 if (getSolver()!=null && getSolver().getExamType()==getExam().getExamType()) {
                     iRooms = getSolver().getRooms(getExam().getExamId(), getSelectedAssignment()!=null?getSelectedAssignment().getPeriodId():getExamAssignment().getPeriodId(),
                             iChange, minRoomSize, maxRoomSize, iForm.getRoomFilter(), iForm.getAllowRoomConflict());
+                    filterRooms();
                 } else {
                     iRooms = findRooms(getSelectedAssignment()!=null?getSelectedAssignment().getPeriod():getExamAssignment().getPeriod(),
                             minRoomSize, maxRoomSize, iForm.getRoomFilter(), iForm.getAllowRoomConflict());
