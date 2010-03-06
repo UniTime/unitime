@@ -82,6 +82,7 @@
 			<name>Other</name>
 			<description>
 				<line>If an exception is seen print a warning message (including request URI, user login and request parameters for easier debugging).</line>
+				<line>Fixed broken compatibility with Java 5.</line>
 			</description>
 		</item>
 	</category>
