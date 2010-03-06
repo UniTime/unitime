@@ -1496,7 +1496,7 @@ public class PersonalizedExamReportAction extends Action {
             	for (Iterator j=ci.getClassInstructing().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings().iterator();j.hasNext();) {
             		CourseOffering co = (CourseOffering)j.next();
             		if (co.isIsControl()) continue;
-            		if (!clist.isEmpty()) clist += ", ";
+            		if (clist.length()>0) clist += ", ";
             		String xcourse = co.getCourseName();
             		String xsection = (suffix && ci.getClassInstructing().getClassSuffix(co)!=null?ci.getClassInstructing().getClassSuffix(co):ci.getClassInstructing().getSectionNumberString());
                 	table.addLine(

@@ -1406,7 +1406,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     		PdfPCell managedCell = createCell();
             if (isManagedAs) {
             	if (!isShowTitle() && io.getControllingCourseOffering().getTitle()!=null) {
-            		if (co.getTitle()!=null && !co.getTitle().isEmpty()) {
+            		if (co.getTitle()!=null && co.getTitle().length()>0) {
             			addText(managedCell, "     " + co.getTitle()+" (Managed As " + io.getControllingCourseOffering().getCourseName() + ")", true, false, Element.ALIGN_LEFT, sDisableColor, false);
             		} else {
             			addText(managedCell, "     Managed As " + io.getControllingCourseOffering().getCourseName(), true, false, Element.ALIGN_LEFT, sDisableColor, true);

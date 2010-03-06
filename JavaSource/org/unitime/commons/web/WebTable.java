@@ -108,7 +108,7 @@ public class WebTable {
     
     public String getStyle(WebTableLine line, WebTableLine next, int order) {
     	String style = (iRowStyle==null?"":iRowStyle+";")+(iWebTableTweakStyle==null?"":iWebTableTweakStyle.getStyleHtml(line, next, order));
-    	return (style==null || style.isEmpty()? "" : "style=\""+style+"\"");
+    	return (style==null || style.length()==0? "" : "style=\""+style+"\"");
     }
     
     /** sets row (cell) style */
