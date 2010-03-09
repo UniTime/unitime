@@ -711,8 +711,13 @@ public class ClassInfoModel implements Serializable {
                 		for (int t = startTime; t<=endTime; t++) {
                 			Long px = Long.valueOf(sharingModel.getPreference(d,t));
                 			if (px.equals(RoomSharingModel.sNotAvailablePref)) {
-                    			if (room.getLabel().equals(filter)) iForm.setMessage("Room "+room.getLabel()+" is not available for "+period.getLongName()+" due to the room sharing preferences.");
-                				continue rooms;
+                				if (showAllRooms) {
+                					pref.addPreferenceProlog(PreferenceLevel.sProhibited);
+                					break sharing;
+                				} else {
+                        			if (room.getLabel().equals(filter)) iForm.setMessage("Room "+room.getLabel()+" is not available for "+period.getLongName()+" due to the room sharing preferences.");
+                    				continue rooms;
+                				}
                 			}
                 			if (px.equals(RoomSharingModel.sFreeForAllPref)) continue;
                 			if (departmentId!=null && !departmentId.equals(px)) {
