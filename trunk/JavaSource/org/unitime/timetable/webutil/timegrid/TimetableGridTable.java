@@ -383,7 +383,7 @@ public class TimetableGridTable {
 							boolean eod = (slot == lastSlot());
 							boolean eol = (eod && (isDispModePerWeek() || day==endDay()));
 							boolean first = (slot == firstSlot() || model.getCell(day,slot-1,idx)!=null);
-							boolean in = !first && !eod && !eol && (model.getCell(day,slot+1,idx)==null || model.getCell(day,slot-1,idx)==null) && ((slot%sNrSlotsPerPeriod) !=0);
+							boolean in = !first && !eod && !eol && (model.getCell(day,slot+1,idx)==null || model.getCell(day,slot-1,idx)==null) && (((slot - firstSlot())%sNrSlotsPerPeriod) !=0);
 							boolean inEod = eod && model.getCell(day,slot-1,idx)==null;
 							boolean inEol = eol && model.getCell(day,slot-1,idx)==null;
 							out.println("<td class='TimetableCell" + (first?"First":in?"In":inEol?"InEOL":inEod?"InEOD":eol?"EOL":eod?"EOD":"") + "' rowSpan='"+rowSpan+"' colSpan='"+colSpan+"' "+(bgColor==null?"":"style='background-color:"+bgColor+"'")+">&nbsp;</td>");
@@ -450,7 +450,7 @@ public class TimetableGridTable {
 							boolean eod = (slot == lastSlot());
 							boolean eol = (eod && (isDispModePerWeek() || day==endDay()));
 							boolean first = (slot == firstSlot() || model.getCell(day,slot-1,idx)!=null);
-							boolean in = !first && !eod && !eol && (model.getCell(day,slot+1,idx)==null || model.getCell(day,slot-1,idx)==null) && ((slot%sNrSlotsPerPeriod) !=0); 
+							boolean in = !first && !eod && !eol && (model.getCell(day,slot+1,idx)==null || model.getCell(day,slot-1,idx)==null) && (((slot - firstSlot())%sNrSlotsPerPeriod) !=0); 
 							boolean inEod = eod && model.getCell(day,slot-1,idx)==null;
 							boolean inEol = eol && model.getCell(day,slot-1,idx)==null;
 							//boolean last = !eod && !eol && model.getCell(day,slot+1,idx)!=null;
