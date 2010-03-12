@@ -297,7 +297,7 @@ public class PdfTimetableGridTable {
 						c.setBorderWidthBottom(idx==maxIdx?1:model.getCell(iDay,slot,idx+1)!=null?1:0);
 						c.setBorderWidthLeft(0);
 						boolean eod = (slot == iTable.lastSlot());
-						boolean in = !eod && model.getCell(iDay,slot+1,idx)==null && ((slot+1)%TimetableGridTable.sNrSlotsPerPeriod)!=0;
+						boolean in = !eod && model.getCell(iDay,slot+1,idx)==null && ((slot+1-iTable.firstSlot())%TimetableGridTable.sNrSlotsPerPeriod)!=0;
 						c.setBorderWidthRight(eod || !in?1:0);
 						c.setColspan(colSpan);
 						if (bgColor!=null)
@@ -356,7 +356,7 @@ public class PdfTimetableGridTable {
 							c.setBorderWidthBottom(idx==maxIdx?1:model.getCell(day,slot,idx+1)!=null?1:0);
 							c.setBorderWidthLeft(0);
 							boolean eod = (slot == iTable.lastSlot());
-							boolean in = !eod && model.getCell(day,slot+1,idx)==null && ((slot+1)%TimetableGridTable.sNrSlotsPerPeriod)!=0;
+							boolean in = !eod && model.getCell(day,slot+1,idx)==null && ((slot+1-iTable.firstSlot())%TimetableGridTable.sNrSlotsPerPeriod)!=0;
 							c.setBorderWidthRight(eod || !in?1:0);
 							iPdfTable.addCell(c);
 						} else {
@@ -409,7 +409,7 @@ public class PdfTimetableGridTable {
 							c.setBorderWidthBottom(idx==maxIdx?1:model.getCell(day,slot,idx+1)!=null?1:0);
 							c.setBorderWidthLeft(slot==iTable.lastSlot()?1:0);
 							boolean eod = (slot == iTable.firstSlot());
-							boolean in = !eod && model.getCell(day,slot-1,idx)==null && (slot%TimetableGridTable.sNrSlotsPerPeriod)!=0;
+							boolean in = !eod && model.getCell(day,slot-1,idx)==null && ((slot-iTable.firstSlot())%TimetableGridTable.sNrSlotsPerPeriod)!=0;
 							c.setBorderWidthRight(eod || !in?1:0);
 							iPdfTable.addCell(c);
 						} else {
