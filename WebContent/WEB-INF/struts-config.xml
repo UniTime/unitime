@@ -146,6 +146,7 @@
   	  <form-bean name="meetingListForm" type="org.unitime.timetable.form.MeetingListForm" />
   	  <form-bean name="curriculumListForm" type="org.unitime.timetable.form.CurriculumListForm" />
 	  <form-bean name="classInfoForm" type="org.unitime.timetable.form.ClassInfoForm" />
+	  <form-bean name="enrollmentAuditPdfReportForm" type="org.unitime.timetable.form.EnrollmentAuditPdfReportForm" />
    </form-beans>
 
    <global-exceptions>
@@ -2572,6 +2573,20 @@
     		redirect="true" />
     </action>
 
+    <action
+    	path="/enrollmentAuditPdfReport"
+    	type="org.unitime.timetable.action.EnrollmentAuditPdfReportAction"
+    	attribute="enrollmentAuditPdfReportForm"
+    	input="enrollmentAuditPdfReportTile"
+    	name="enrollmentAuditPdfReportForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+    		name="show"
+    		path="enrollmentAuditPdfReportTile"
+    		redirect="true" />
+    </action>
+    
     </action-mappings>
 
 	<!-- Struts Layout Controller -->
