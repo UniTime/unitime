@@ -900,7 +900,6 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                 if (perSubject) {
                     for (SubjectArea subject : subjects) {
                         File file = new File(new File(ApplicationProperties.getProperty("output",".")),
-                        	//TODO: checked OK, tested OK
                             session.getAcademicTerm()+session.getSessionStartYear()+(examType==Exam.sExamTypeMidterm?"evn":"fin")+"_"+reportName+"_"+subject.getSubjectAreaAbbreviation()+(mode==sModeText?".txt":".pdf"));
                         long t0 = System.currentTimeMillis();
                         sLog.info("Generating report "+file+" ("+subject.getSubjectAreaAbbreviation()+") ...");
@@ -917,7 +916,6 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                         sLog.info("Report "+file+" generated in "+sDF.format((t1-t0)/1000.0)+"s.");
                         if (report instanceof InstructorExamReport && "true".equals(System.getProperty("email.instructors","false"))) {
                             ireports = ((InstructorExamReport)report).printInstructorReports(
-                            		//TODO: checked OK, tested OK
                                     mode, session.getAcademicTerm()+session.getSessionStartYear()+(examType==Exam.sExamTypeMidterm?"evn":"fin"), new InstructorExamReport.FileGenerator() {
                                         public File generate(String prefix, String ext) {
                                             int idx = 0;
@@ -931,7 +929,6 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                                     });
                         } else if (report instanceof StudentExamReport && "true".equals(System.getProperty("email.students","false"))) {
                             sreports = ((StudentExamReport)report).printStudentReports(
-                            		//TODO: checked OK, tested OK
                                     mode, session.getAcademicTerm()+session.getSessionStartYear()+(examType==Exam.sExamTypeMidterm?"evn":"fin"), new InstructorExamReport.FileGenerator() {
                                         public File generate(String prefix, String ext) {
                                             int idx = 0;
@@ -947,7 +944,6 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                     }
                 } else {
                     File file = new File(new File(ApplicationProperties.getProperty("output",".")),
-                    		//TODO: checked OK, tested OK
                             session.getAcademicTerm()+session.getSessionStartYear()+(examType==Exam.sExamTypeMidterm?"evn":"fin")+"_"+reportName+(mode==sModeText?".txt":".pdf"));
                     long t0 = System.currentTimeMillis();
                     sLog.info("Generating report "+file+" ...");
@@ -959,7 +955,6 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                     sLog.info("Report "+file.getName()+" generated in "+sDF.format((t1-t0)/1000.0)+"s.");
                     if (report instanceof InstructorExamReport && "true".equals(System.getProperty("email.instructors","false"))) {
                         ireports = ((InstructorExamReport)report).printInstructorReports(
-                        		//TODO: checked OK, tested OK
                                mode, session.getAcademicTerm()+session.getSessionStartYear()+(examType==Exam.sExamTypeMidterm?"evn":"fin"), new InstructorExamReport.FileGenerator() {
                                     public File generate(String prefix, String ext) {
                                         int idx = 0;
@@ -973,7 +968,6 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                                 });
                     } else if (report instanceof StudentExamReport && "true".equals(System.getProperty("email.students","false"))) {
                         sreports = ((StudentExamReport)report).printStudentReports(
-                        		//TODO: checked OK, tested OK
                                 mode, session.getAcademicTerm()+session.getSessionStartYear()+(examType==Exam.sExamTypeMidterm?"evn":"fin"), new InstructorExamReport.FileGenerator() {
                                     public File generate(String prefix, String ext) {
                                         int idx = 0;
@@ -989,7 +983,6 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                 }
             }
             if ("true".equals(System.getProperty("email","false"))) {
-        		//TODO: checked OK, tested OK
                 sendEmails(session.getAcademicTerm()+session.getSessionStartYear()+(examType==Exam.sExamTypeMidterm?"evn":"fin"), output, outputPerSubject, ireports, sreports);
             }
             sLog.info("All done.");

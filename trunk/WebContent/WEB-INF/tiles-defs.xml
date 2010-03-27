@@ -1030,4 +1030,9 @@
 		<put name="body" value="/tt/info.jsp" />
   	</definition>
 
+ 	<definition	name="enrollmentAuditPdfReportTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Enrollment Audit PDF Reports"/>
+		<put name="body" value="/user/pdfEnrollmentAuditReport.jsp" />
+  	</definition>
+
 </tiles-definitions>
