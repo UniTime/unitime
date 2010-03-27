@@ -110,6 +110,7 @@
 			leaf_item('Log','Student Sectioning Solver Log','studentSolverLog.do');
 		enditem();//71
 		leaf_item('Online Demo','Student Sectioning Online Demo','sectioningDemo.do');
+		leaf_item('Enrollment Audits','Enrollment Audit PDF Reports','enrollmentAuditPdfReport.do');
 	enditem();//7
 <% } %>
 <% } %>
