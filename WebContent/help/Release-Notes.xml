@@ -29,6 +29,24 @@
 	<category>
 		<title>BUG FIXES &amp; OTHER IMPROVEMENTS</title>
 		<item>
+			<name>Student Sectioning</name>
+			<description>
+				<line>Added a set of Enrollment Audit PDF reports.
+					<line>Enrollments Violating Course Structure - This report lists where students are enrolled in a class that has a parent class but the student is not enrolled in the parent class.</line>
+					<line>Missing Course Enrollments - This report lists where student are enrolled in a course offering but are not enrolled in a class in each of the subparts within a configuration of the courses offering.</line>
+					<line>Multiple Course Enrollments - This reports lists where students are enrolled in more than one class within a subpart. If a student is allowed to enroll in a course offering more than once in a term this student will be listed here as well.</line>
+				</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.1.248</version>
+	<release-date>Tue, 13 Mar 2010</release-date>
+	<category>
+		<title>BUG FIXES &amp; OTHER IMPROVEMENTS</title>
+		<item>
 			<name>Timetable page (containing the time grid)</name>
 			<description>
 				<line>Added following properties in order to be able to change the periods in which the time is printed (30 minutes periods starting 7:30am by default). The default values are as follows:
