@@ -29,6 +29,7 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
 
+import javax.security.auth.Subject;
 import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
 import javax.servlet.http.HttpServletRequest;
@@ -46,6 +47,7 @@ import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.authenticate.jaas.LoginConfiguration;
 import org.unitime.timetable.authenticate.jaas.UserPasswordHandler;
 import org.unitime.timetable.form.ClassesForm;
 import org.unitime.timetable.model.ApplicationConfig;
@@ -108,7 +110,7 @@ public class ClassesAction extends Action {
         		} else {
 	                try {
 	                    UserPasswordHandler handler = new UserPasswordHandler(myForm.getUsername(), myForm.getPassword());
-	                    LoginContext lc = new LoginContext("Timetabling", handler);
+	                    LoginContext lc = new LoginContext("Timetabling", new Subject(), handler, new LoginConfiguration());
 	                    lc.login();
 	                    
 	                    Set creds = lc.getSubject().getPublicCredentials();
