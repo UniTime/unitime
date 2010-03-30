@@ -130,6 +130,8 @@ public class LdapAuthenticateModule extends AuthenticateModule {
 	 * Authenticate the user
 	 */
 	public boolean login() throws LoginException {
+		// Skip this module when LDAP provider is not set
+		if (ApplicationProperties.getProperty("tmtbl.authenticate.ldap.provider") == null) return false;
 
 		if (isDebug()) System.out.println("Performing ldap authentication ... ");
 
