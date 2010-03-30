@@ -14,7 +14,6 @@
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/xercesImpl.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/concurrent-1.3.3.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/connector.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jaas.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jboss-cache.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jboss-common.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jboss-jmx.jar"/>
@@ -53,9 +52,6 @@
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-jxpath-1.2.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-lang-2.3.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-logging-1.1.jar"/>
-	<!--  Uncomment when cpsolver_v1 project is present
-	<classpathentry kind="src" path="/cpsolver_v1"/>
-	-->
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/cpsolver-all-1.1.jar" sourcepath="/cpsolver_v1/src"/>
 	<classpathentry kind="lib" path="3rd_party/log4j-1.2.8.jar"/>
 	<classpathentry kind="lib" path="3rd_party/ojdbc14.jar"/>
