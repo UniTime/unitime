@@ -38,6 +38,15 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Configuration</name>
+			<description>
+				<line>Hibernate DTDs bundled with the application.
+					<line>This is to avoid application deployment problems when Hibernate is unable to validate configuration because of a poor internet connection.</line>
+					<line>See Q9 of http://wiki.unitime.org/Timetabling_Installation_FAQ</line>
+				</line>
+			</description>
+		</item>
 	</category>
 </release>
 

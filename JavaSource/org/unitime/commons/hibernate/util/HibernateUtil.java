@@ -47,6 +47,8 @@ import org.unitime.timetable.model.dao._RootDAO;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.InputSource;
 
 /**
  * @author Tomas Muller
@@ -212,6 +214,19 @@ public class HibernateUtil {
         
         Configuration cfg = new Configuration();
         sLog.debug("  -- configuration object created");
+        
+    	cfg.setEntityResolver(new EntityResolver() {
+    	    public InputSource resolveEntity(String publicId, String systemId) {
+    	        if (publicId.equals("-//Hibernate/Hibernate Mapping DTD 3.0//EN")) {
+    	            return new InputSource(HibernateUtil.class.getClassLoader().getResourceAsStream("hibernate-mapping-3.0.dtd"));
+    	        } else if (publicId.equals("-//Hibernate/Hibernate Configuration DTD 3.0//EN")) {
+    	            return new InputSource(HibernateUtil.class.getClassLoader().getResourceAsStream("hibernate-configuration-3.0.dtd"));
+    	        }
+    	        return null;
+    	    }
+    	});
+        sLog.debug("  -- added entity resolver");
+        
         cfg.configure(document);
         sLog.debug("  -- hibernate configured");
 
@@ -242,6 +257,18 @@ public class HibernateUtil {
     
     public static void configureHibernateFromRootDAO(String cfgName, Configuration cfg) {
         try {
+        	cfg.setEntityResolver(new EntityResolver() {
+        	    public InputSource resolveEntity(String publicId, String systemId) {
+        	        if (publicId.equals("-//Hibernate/Hibernate Mapping DTD 3.0//EN")) {
+        	            return new InputSource(HibernateUtil.class.getClassLoader().getResourceAsStream("hibernate-mapping-3.0.dtd"));
+        	        } else if (publicId.equals("-//Hibernate/Hibernate Configuration DTD 3.0//EN")) {
+        	            return new InputSource(HibernateUtil.class.getClassLoader().getResourceAsStream("hibernate-configuration-3.0.dtd"));
+        	        }
+        	        return null;
+        	    }
+        	});
+            sLog.debug("  -- added entity resolver");
+
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             sLog.debug("  -- document factory created");
             DocumentBuilder builder = factory.newDocumentBuilder();
