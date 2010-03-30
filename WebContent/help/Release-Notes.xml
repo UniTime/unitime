@@ -45,6 +45,11 @@
 					<line>This is to avoid application deployment problems when Hibernate is unable to validate configuration because of a poor internet connection.</line>
 					<line>See Q9 of http://wiki.unitime.org/Timetabling_Installation_FAQ</line>
 				</line>
+				<line>Simplified JAAS configuration by using tmtbl.authenticate.modules rather than .java.login.config file.
+					<line>It contains a semicolon separated list of authentication modules with their configuration flag.</line>
+					<line>Default is sufficient DbAuthenticateModule;sufficient LdapAuthenticateModule</line>
+					<line>Ldap module is ignored if LDAP provider is not set</line>
+				</line>
 			</description>
 		</item>
 	</category>
