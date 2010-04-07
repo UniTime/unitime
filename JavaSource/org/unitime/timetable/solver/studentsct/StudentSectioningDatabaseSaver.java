@@ -37,6 +37,7 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.WaitList;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.model.dao.StudentDAO;
 
 import net.sf.cpsolver.ifs.solver.Solver;
 import net.sf.cpsolver.ifs.util.Progress;
@@ -122,6 +123,8 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
     
     public void saveStudent(org.hibernate.Session hibSession, Student student) {
         org.unitime.timetable.model.Student s = iStudents.get(student.getId());
+        if (s==null)
+        	s = StudentDAO.getInstance().get(student.getId(), hibSession);
         if (s==null) {
             iProgress.warn("Student "+student.getId()+" not found.");
             return;
@@ -168,7 +171,7 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
     
     public void save(Session session, org.hibernate.Session hibSession) {
         iClasses = new Hashtable<Long, Class_>();
-        for (Iterator i=Class_.findAll(session.getUniqueId()).iterator();i.hasNext();) {
+        for (Iterator i=Class_.findAll(hibSession, session.getUniqueId()).iterator();i.hasNext();) {
             Class_ clazz = (Class_)i.next();
             iClasses.put(clazz.getUniqueId(),clazz);
         }
@@ -176,7 +179,7 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
             iStudents = new Hashtable();
             iCourses = new Hashtable();
             iRequests = new Hashtable();
-            List courseDemands = CourseDemand.findAll(session.getUniqueId());
+            List courseDemands = CourseDemand.findAll(hibSession, session.getUniqueId());
             iProgress.setPhase("Saving student enrollments...", courseDemands.size());
             for (Iterator i=courseDemands.iterator();i.hasNext();) {
                 CourseDemand demand = (CourseDemand)i.next(); iProgress.incProgress();
