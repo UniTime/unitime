@@ -72,8 +72,11 @@ public class CourseDemand extends BaseCourseDemand implements Comparable {
     }
     
     public static List findAll(Long sessionId) {
-        return new CourseDemandDAO().
-            getSession().
+    	return findAll(CourseDemandDAO.getInstance().getSession(), sessionId);
+    }
+    
+    public static List findAll(org.hibernate.Session hibSession, Long sessionId) {
+        return hibSession.
             createQuery("select c from CourseDemand c where c.student.session.uniqueId=:sessionId").
             setLong("sessionId", sessionId.longValue()).
             list(); 
