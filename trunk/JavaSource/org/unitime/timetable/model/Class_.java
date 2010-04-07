@@ -856,14 +856,17 @@ public class Class_ extends BaseClass_ {
     }
 
     public static List findAll(Long sessionId) {
-    	return (new Class_DAO()).
-    		getSession().
+    	return findAll(Class_DAO.getInstance().getSession(), sessionId);
+    }
+    
+    public static List findAll(org.hibernate.Session hibSession, Long sessionId) {
+    	return hibSession.
     		createQuery("select distinct c from Class_ c where " +
     				"c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId=:sessionId").
     		setLong("sessionId",sessionId.longValue()).
     		list();
     }
-    
+
     public static List findAllForControllingSubjectArea(String subjectAreaAbbv, Long sessionId) {
     	return (new Class_DAO()).
     		getSession().
