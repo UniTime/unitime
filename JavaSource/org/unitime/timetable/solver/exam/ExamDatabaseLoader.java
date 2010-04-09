@@ -888,7 +888,7 @@ public class ExamDatabaseLoader extends ExamLoader {
             iProgress.incProgress();
             Exam exam = (Exam)e.nextElement();
             if (exam.getPeriodPlacements().isEmpty()) {
-                iProgress.error("Exam "+getExamLabel(exam)+" has not period available.");
+                iProgress.error("Exam "+getExamLabel(exam)+" has no period available.");
                 continue;
             }
             if (exam.getMaxRooms()>0) {
@@ -898,7 +898,7 @@ public class ExamDatabaseLoader extends ExamLoader {
                     capacity += r.getSize(exam.hasAltSeating());
                 }
                 if (capacity<exam.getSize()) {
-                    iProgress.error("Exam "+getExamLabel(exam)+" has not room placement available.");
+                    iProgress.error("Exam "+getExamLabel(exam)+" has no room placement available.");
                     continue;
                 }
                 boolean hasValue = false;
@@ -907,7 +907,7 @@ public class ExamDatabaseLoader extends ExamLoader {
                     if (exam.findBestAvailableRooms(period)!=null) hasValue = true;
                 }
                 if (!hasValue) {
-                    iProgress.error("Exam "+getExamLabel(exam)+" has not assignment available.");
+                    iProgress.error("Exam "+getExamLabel(exam)+" has no assignment available.");
                     continue;
                 }
             }
