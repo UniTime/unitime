@@ -514,7 +514,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         
         if (timePrefs.isEmpty()) {
             if (clazz.getSchedulingSubpart().getMinutesPerWk().intValue()!=0)
-                iProgress.warn("Class "+getClassLabel(clazz)+" has no time pattern selected (class not loaded). <i>If not changed, this class will be treated as Arrange "+Math.round(clazz.getSchedulingSubpart().getMinutesPerWk().intValue()/50.0)+" Hours in MSF.</i>");
+                iProgress.warn("Class "+getClassLabel(clazz)+" has no time pattern selected (class not loaded). <i>If not changed, this class will be treated as Arrange "+Math.round(clazz.getSchedulingSubpart().getMinutesPerWk().intValue()/50.0)+" Hours.</i>");
             return null;
         }
         
