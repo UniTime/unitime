@@ -1582,6 +1582,7 @@ public class PersonalizedExamReportAction extends Action {
                     }
                 }
             }
+            out.println("END:VCALENDAR");
         } finally {
             if (out!=null) { out.flush(); out.close(); }
         }
@@ -1644,6 +1645,7 @@ public class PersonalizedExamReportAction extends Action {
                 }
                 out.println("END:VEVENT");                
             }
+            out.println("END:VCALENDAR");
         } finally {
             if (out!=null) { out.flush(); out.close(); }
         }
