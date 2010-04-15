@@ -107,9 +107,6 @@ public class RollForwardSessionAction extends Action {
         	if (errors.size() == 0 && rollForwardSessionForm.getRollForwardCourseOfferings().booleanValue()){
         		sessionRollForward.rollCourseOfferingsForward(errors, rollForwardSessionForm);
         	}
-        	if (errors.size() == 0 && rollForwardSessionForm.getRollForwardClassPreferences().booleanValue()){
-        		sessionRollForward.rollClassPreferencesForward(errors, rollForwardSessionForm);
-        	}
         	if (errors.size() == 0 && rollForwardSessionForm.getRollForwardClassInstructors().booleanValue()){
         		sessionRollForward.rollClassInstructorsForward(errors, rollForwardSessionForm);
         	}
