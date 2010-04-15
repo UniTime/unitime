@@ -257,7 +257,7 @@ public class HibernateUtil {
     
     public static void configureHibernateFromRootDAO(String cfgName, Configuration cfg) {
         try {
-        	cfg.setEntityResolver(new EntityResolver() {
+        	EntityResolver entityResolver = new EntityResolver() {
         	    public InputSource resolveEntity(String publicId, String systemId) {
         	        if (publicId.equals("-//Hibernate/Hibernate Mapping DTD 3.0//EN")) {
         	            return new InputSource(HibernateUtil.class.getClassLoader().getResourceAsStream("hibernate-mapping-3.0.dtd"));
@@ -266,12 +266,15 @@ public class HibernateUtil {
         	        }
         	        return null;
         	    }
-        	});
+        	};
+        	
+        	cfg.setEntityResolver(entityResolver);
             sLog.debug("  -- added entity resolver");
 
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             sLog.debug("  -- document factory created");
             DocumentBuilder builder = factory.newDocumentBuilder();
+            builder.setEntityResolver(entityResolver);
             sLog.debug("  -- document builder created");
             Document document = builder.parse(ConfigHelper.getConfigStream(cfgName==null?"hibernate.cfg.xml":cfgName));
             
