@@ -1592,7 +1592,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                 		.setDate("startDate", getPeriod().getStartDate())
                 		.setInteger("startSlot", getPeriod().getStartSlot()-nrTravelSlots)
                 		.setInteger("endSlot", getPeriod().getEndSlot()+nrTravelSlots)
-                		.setCacheable(true).iterate();i.hasNext();) {
+                		.setCacheable(true).list().iterator();i.hasNext();) {
             		iDirects.add(new DirectConflict((Meeting)i.next(), studentIds));
             	}
             	for (Iterator i=ExamDAO.getInstance().getSession().createQuery(
