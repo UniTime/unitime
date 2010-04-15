@@ -82,9 +82,6 @@ public class RollForwardSessionForm extends ActionForm {
 	private Long sessionToRollCourseOfferingsForwardFrom;
 	private Collection availableRollForwardSubjectAreas;
 	private String[] rollForwardSubjectAreaIds;
-	private Boolean rollForwardClassPreferences;
-	private Collection availableClassSubjectAreas;
-	private String[] rollForwardClassPrefsSubjectIds;
 	private Boolean rollForwardClassInstructors;
 	private String[] rollForwardClassInstrSubjectIds;
 	private Boolean addNewCourseOfferings;
@@ -238,9 +235,6 @@ public class RollForwardSessionForm extends ActionForm {
 		sessionToRollCourseOfferingsForwardFrom = null;
 		availableRollForwardSubjectAreas = new ArrayList();
 		rollForwardSubjectAreaIds = new String[0];
-		rollForwardClassPreferences = new Boolean(false);
-		availableClassSubjectAreas = new ArrayList();
-		rollForwardClassPrefsSubjectIds = new String[0];
 		rollForwardClassInstructors = new Boolean(false);
 		rollForwardClassInstrSubjectIds = new String[0];
 		addNewCourseOfferings = new Boolean(false);
@@ -294,13 +288,6 @@ public class RollForwardSessionForm extends ActionForm {
 		this.isAdmin = isAdmin;
 	}
 
-	public Collection getAvailableClassSubjectAreas() {
-		return availableClassSubjectAreas;
-	}
-
-	public void setAvailableClassSubjectAreas(Collection availableClassSubjectAreas) {
-		this.availableClassSubjectAreas = availableClassSubjectAreas;
-	}
 
 	public Collection getAvailableRollForwardSubjectAreas() {
 		return availableRollForwardSubjectAreas;
@@ -309,23 +296,6 @@ public class RollForwardSessionForm extends ActionForm {
 	public void setAvailableRollForwardSubjectAreas(
 			Collection availableRollForwardSubjectAreas) {
 		this.availableRollForwardSubjectAreas = availableRollForwardSubjectAreas;
-	}
-
-	public Boolean getRollForwardClassPreferences() {
-		return rollForwardClassPreferences;
-	}
-
-	public void setRollForwardClassPreferences(Boolean rollForwardClassPreferences) {
-		this.rollForwardClassPreferences = rollForwardClassPreferences;
-	}
-
-	public String[] getRollForwardClassPrefsSubjectIds() {
-		return rollForwardClassPrefsSubjectIds;
-	}
-
-	public void setRollForwardClassPrefsSubjectIds(
-			String[] rollForwardClassPrefsSubjectIds) {
-		this.rollForwardClassPrefsSubjectIds = rollForwardClassPrefsSubjectIds;
 	}
 
 	public Boolean getRollForwardCourseOfferings() {

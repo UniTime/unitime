@@ -1,6 +1,6 @@
 <%-- 
  * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC
+ * Copyright (C) 2008 - 2010, UniTime LLC
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -118,16 +118,6 @@
 				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;For Subject Areas:
 				</td><td>
 				<html:select size="<%=String.valueOf(Math.min(7,frm.getSubjectAreas().size()))%>" name="<%=frmName%>" styleClass="cmb" property="rollForwardSubjectAreaIds" multiple="true" onfocus="setUp();" onkeypress="return selectSearch(event, this);" onkeydown="return checkKey(event, this);">
-					<html:optionsCollection property="subjectAreas" label="subjectAreaAbbreviation" value="uniqueId" />
-				</html:select>
-			</td></tr></table>
-			</td>
-		</tr>
-		<tr>
-			<td valign="top">
-			<table><tr>	<td valign="top" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardClassPreferences"/> Roll Forward Preferences to the Class Level For Subject Areas: 
-				</td><td>
-				<html:select size="<%=String.valueOf(Math.min(7,frm.getSubjectAreas().size()))%>" name="<%=frmName%>" styleClass="cmb" property="rollForwardClassPrefsSubjectIds" multiple="true" onfocus="setUp();" onkeypress="return selectSearch(event, this);" onkeydown="return checkKey(event, this);">
 					<html:optionsCollection property="subjectAreas" label="subjectAreaAbbreviation" value="uniqueId" />
 				</html:select>
 			</td></tr></table>
