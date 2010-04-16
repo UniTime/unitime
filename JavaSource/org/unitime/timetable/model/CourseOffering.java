@@ -277,7 +277,7 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
         Vector l = new Vector();
         for (Iterator i=new CourseOfferingDAO().getSession().createQuery(
                 "select co.uniqueId, co.subjectAreaAbbv, co.courseNbr from CourseOffering co where co.isControl=true and co.subjectArea.session.uniqueId=:sessionId").
-                setLong("sessionId", sessionId.longValue()).setCacheable(true).iterate();i.hasNext();) {
+                setLong("sessionId", sessionId.longValue()).setCacheable(true).list().iterator();i.hasNext();) {
             Object[] o = (Object[])i.next();
             l.addElement(new ComboBoxLookup(o[0].toString(), o[1]+" "+o[2]));
         }
