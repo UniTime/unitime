@@ -50,7 +50,7 @@ public class StudentExamReport extends PdfLegacyExamReport {
         if (iStudents==null) {
             sLog.info("  Loading students...");
             iStudents = new Hashtable();
-            for (Iterator i=new StudentDAO().getSession().createQuery("select s from Student s where s.session.uniqueId=:sessionId").setLong("sessionId", getSession().getUniqueId()).setCacheable(true).iterate();i.hasNext();) {
+            for (Iterator i=new StudentDAO().getSession().createQuery("select s from Student s where s.session.uniqueId=:sessionId").setLong("sessionId", getSession().getUniqueId()).setCacheable(true).list().iterator();i.hasNext();) {
                 Student s = (Student)i.next();
                 iStudents.put(s.getUniqueId(), s);
             }

@@ -196,7 +196,7 @@ public class Student extends BaseStudent implements Comparable<Student> {
     	for (int i=0; i<dates.size(); i++) {
     		q.setDate("date"+i, dates.elementAt(i));
     	}
-        for (Iterator i = q.setCacheable(true).iterate();i.hasNext();) {
+        for (Iterator i = q.setCacheable(true).list().iterator();i.hasNext();) {
             Object[] o = (Object[])i.next();
             Set<Long> set = table.get((Long)o[0]);
             if (set==null) {

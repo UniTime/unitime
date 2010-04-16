@@ -665,7 +665,7 @@ public class ExamDatabaseLoader extends ExamLoader {
                 .setInteger("travelTime", Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.classEvent","6")))
                 .setInteger("examType", iExamType)
                 .setLong("sessionId", iSessionId)
-                .setCacheable(true).iterate();i.hasNext();) {
+                .setCacheable(true).list().iterator();i.hasNext();) {
             Object[] o = (Object[])i.next();
             Long eventId = (Long)o[0];
             Long studentId = (Long)o[1];
@@ -685,7 +685,7 @@ public class ExamDatabaseLoader extends ExamLoader {
                 .setInteger("travelTime", Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.classEvent","6")))
                 .setInteger("examType", iExamType)
                 .setLong("sessionId", iSessionId)
-                .setCacheable(true).iterate();i.hasNext();) {
+                .setCacheable(true).list().iterator();i.hasNext();) {
             Object[] o = (Object[])i.next();
             Long eventId = (Long)o[0];
             ExamInstructor instructor = getInstructor((DepartmentalInstructor)o[1]);

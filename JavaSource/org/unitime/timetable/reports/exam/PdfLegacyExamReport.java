@@ -762,7 +762,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                     HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate and p.session.uniqueId=:sessionId and p.examType=:examType")
                     .setInteger("travelTime", Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.classEvent","6")))
                     .setLong("sessionId", sessionId).setInteger("examType", examType)
-                    .setCacheable(true).iterate(); i.hasNext();) {
+                    .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
                 Long periodId = (Long)o[0];
                 ClassEvent event = (ClassEvent)o[1];
@@ -780,7 +780,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                     HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate and p.session.uniqueId=:sessionId and p.examType=:examType")
                     .setInteger("travelTime", Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.courseEvent","0")))
                     .setLong("sessionId", sessionId).setInteger("examType", examType)
-                    .setCacheable(true).iterate(); i.hasNext();) {
+                    .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
                 Long periodId = (Long)o[0];
                 CourseEvent event = (CourseEvent)o[1];

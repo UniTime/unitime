@@ -71,7 +71,7 @@ public class StudentClassEnrollment extends BaseStudentClassEnrollment {
         return new StudentClassEnrollmentDAO().getSession().createQuery(
                 "select e from StudentClassEnrollment e where "+
                 "e.student.uniqueId=:studentId").
-                setLong("studentId", studentId.longValue()).setCacheable(true).iterate();
+                setLong("studentId", studentId.longValue()).setCacheable(true).list().iterator();
     }
 
 	public static boolean sessionHasEnrollments(Long sessionId) {

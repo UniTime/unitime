@@ -71,7 +71,7 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
                     .setInteger("startSlot", startSlot)
                     .setInteger("endSlot", endSlot)
                     .setCacheable(true);
-            for (Iterator i=q.iterate();i.hasNext();) {
+            for (Iterator i=q.list().iterator();i.hasNext();) {
                 Meeting m = (Meeting)i.next(); 
                 ret.add(new MeetingTimeBlock(m));
             }
@@ -161,7 +161,7 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
                     .setInteger("startSlot", iTime.getStartSlot())
                     .setInteger("endSlot", iTime.getEndSlot())
                     .setCacheable(true);
-            for (Iterator i=q.iterate();i.hasNext();) {
+            for (Iterator i=q.list().iterator();i.hasNext();) {
                 Meeting m = (Meeting)i.next(); 
                 TreeSet<TimeBlock> blocks = iAvailability.get(m.getLocationPermanentId());
                 if (blocks==null) {

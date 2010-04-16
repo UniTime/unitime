@@ -641,7 +641,7 @@ public abstract class Location extends BaseLocation implements Comparable {
         for (Iterator i = (new LocationDAO()).getSession()
                     .createQuery("select distinct r.uniqueId, x.uniqueId from Exam x inner join x.assignedRooms r where x.assignedPeriod.uniqueId=:periodId")
                     .setLong("periodId",periodId)
-                    .setCacheable(true).iterate();i.hasNext();) {
+                    .setCacheable(true).list().iterator();i.hasNext();) {
             Object[] o = (Object[])i.next();
             table.put((Long)o[0],(Long)o[1]);
         }
@@ -760,7 +760,7 @@ public abstract class Location extends BaseLocation implements Comparable {
     	for (int i=0; i<dates.size(); i++) {
     		q.setDate("date"+i, dates.elementAt(i));
     	}
-        for (Iterator i = q.setCacheable(true).iterate();i.hasNext();) {
+        for (Iterator i = q.setCacheable(true).list().iterator();i.hasNext();) {
             Object[] o = (Object[])i.next();
             Set<Long> ids = table.get((Long)o[0]);
             if (ids==null) {
@@ -817,7 +817,7 @@ public abstract class Location extends BaseLocation implements Comparable {
     		q.setDate("date"+i, dates.elementAt(i));
     	}
     	Hashtable<Long,Set<Long>> table = new Hashtable();
-        for (Iterator i = q.setCacheable(true).iterate();i.hasNext();) {
+        for (Iterator i = q.setCacheable(true).list().iterator();i.hasNext();) {
             Object[] o = (Object[])i.next();
             Set<Long> ids = table.get((Long)o[0]);
             if (ids==null) {
@@ -854,7 +854,7 @@ public abstract class Location extends BaseLocation implements Comparable {
     		q.setDate("date"+i, dates.elementAt(i));
     	}
     	Hashtable<Long,Set<Event>> table = new Hashtable();
-        for (Iterator i = q.setCacheable(true).iterate();i.hasNext();) {
+        for (Iterator i = q.setCacheable(true).list().iterator();i.hasNext();) {
             Object[] o = (Object[])i.next();
             Set<Event> events = table.get((Long)o[0]);
             if (events==null) {
