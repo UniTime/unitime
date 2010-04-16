@@ -297,7 +297,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                 .setInteger("ownerType", ExamOwner.sOwnerTypeClass)
                 .setInteger("examType", getExam().getExamType())
                 .setLong("examOwnerId", getOwnerId())
-                .setCacheable(true).iterate(); i.hasNext();) {
+                .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
                 Long studentId = (Long)o[0];
                 Exam exam = (Exam)o[1];
@@ -312,7 +312,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     .setInteger("ownerType", ExamOwner.sOwnerTypeConfig)
                     .setInteger("examType", getExam().getExamType())
                     .setLong("examOwnerId", getOwnerId())
-                    .setCacheable(true).iterate(); i.hasNext();) {
+                    .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
                 Long studentId = (Long)o[0];
                 Exam exam = (Exam)o[1];
@@ -327,7 +327,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     .setInteger("ownerType", ExamOwner.sOwnerTypeCourse)
                     .setInteger("examType", getExam().getExamType())
                     .setLong("examOwnerId", getOwnerId())
-                    .setCacheable(true).iterate(); i.hasNext();) {
+                    .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
                 Long studentId = (Long)o[0];
                 Exam exam = (Exam)o[1];
@@ -342,7 +342,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     .setInteger("ownerType", ExamOwner.sOwnerTypeOffering)
                     .setInteger("examType", getExam().getExamType())
                     .setLong("examOwnerId", getOwnerId())
-                    .setCacheable(true).iterate(); i.hasNext();) {
+                    .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
                 Long studentId = (Long)o[0];
                 Exam exam = (Exam)o[1];
@@ -359,7 +359,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     .setInteger("ownerType", ExamOwner.sOwnerTypeClass)
                     .setInteger("examType", getExam().getExamType())
                     .setLong("examOwnerId", getOwnerId())
-                    .setCacheable(true).iterate(); i.hasNext();) {
+                    .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
                 Long studentId = (Long)o[0];
                 Exam exam = (Exam)o[1];
@@ -374,7 +374,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     .setInteger("ownerType", ExamOwner.sOwnerTypeConfig)
                     .setInteger("examType", getExam().getExamType())
                     .setLong("examOwnerId", getOwnerId())
-                    .setCacheable(true).iterate(); i.hasNext();) {
+                    .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
                 Long studentId = (Long)o[0];
                 Exam exam = (Exam)o[1];
@@ -389,7 +389,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     .setInteger("ownerType", ExamOwner.sOwnerTypeCourse)
                     .setInteger("examType", getExam().getExamType())
                     .setLong("examOwnerId", getOwnerId())
-                    .setCacheable(true).iterate(); i.hasNext();) {
+                    .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
                 Long studentId = (Long)o[0];
                 Exam exam = (Exam)o[1];
@@ -404,7 +404,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     .setInteger("ownerType", ExamOwner.sOwnerTypeOffering)
                     .setInteger("examType", getExam().getExamType())
                     .setLong("examOwnerId", getOwnerId())
-                    .setCacheable(true).iterate(); i.hasNext();) {
+                    .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
                 Long studentId = (Long)o[0];
                 Exam exam = (Exam)o[1];
@@ -421,7 +421,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     .setInteger("ownerType", ExamOwner.sOwnerTypeClass)
                     .setInteger("examType", getExam().getExamType())
                     .setLong("examOwnerId", getOwnerId())
-                    .setCacheable(true).iterate(); i.hasNext();) {
+                    .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
                 Long studentId = (Long)o[0];
                 Exam exam = (Exam)o[1];
@@ -436,7 +436,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     .setInteger("ownerType", ExamOwner.sOwnerTypeConfig)
                     .setInteger("examType", getExam().getExamType())
                     .setLong("examOwnerId", getOwnerId())
-                    .setCacheable(true).iterate(); i.hasNext();) {
+                    .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
                 Long studentId = (Long)o[0];
                 Exam exam = (Exam)o[1];
@@ -451,7 +451,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     .setInteger("ownerType", ExamOwner.sOwnerTypeCourse)
                     .setInteger("examType", getExam().getExamType())
                     .setLong("examOwnerId", getOwnerId())
-                    .setCacheable(true).iterate(); i.hasNext();) {
+                    .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
                 Long studentId = (Long)o[0];
                 Exam exam = (Exam)o[1];
@@ -466,7 +466,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     .setInteger("ownerType", ExamOwner.sOwnerTypeOffering)
                     .setInteger("examType", getExam().getExamType())
                     .setLong("examOwnerId", getOwnerId())
-                    .setCacheable(true).iterate(); i.hasNext();) {
+                    .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
                 Long studentId = (Long)o[0];
                 Exam exam = (Exam)o[1];
@@ -483,7 +483,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     .setInteger("ownerType", ExamOwner.sOwnerTypeClass)
                     .setInteger("examType", getExam().getExamType())
                     .setLong("examOwnerId", getOwnerId())
-                    .setCacheable(true).iterate(); i.hasNext();) {
+                    .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
                 Long studentId = (Long)o[0];
                 Exam exam = (Exam)o[1];
@@ -498,7 +498,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     .setInteger("ownerType", ExamOwner.sOwnerTypeConfig)
                     .setInteger("examType", getExam().getExamType())
                     .setLong("examOwnerId", getOwnerId())
-                    .setCacheable(true).iterate(); i.hasNext();) {
+                    .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
                 Long studentId = (Long)o[0];
                 Exam exam = (Exam)o[1];
@@ -513,7 +513,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     .setInteger("ownerType", ExamOwner.sOwnerTypeCourse)
                     .setInteger("examType", getExam().getExamType())
                     .setLong("examOwnerId", getOwnerId())
-                    .setCacheable(true).iterate(); i.hasNext();) {
+                    .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
                 Long studentId = (Long)o[0];
                 Exam exam = (Exam)o[1];
@@ -528,7 +528,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     .setInteger("ownerType", ExamOwner.sOwnerTypeOffering)
                     .setInteger("examType", getExam().getExamType())
                     .setLong("examOwnerId", getOwnerId())
-                    .setCacheable(true).iterate(); i.hasNext();) {
+                    .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
                 Long studentId = (Long)o[0];
                 Exam exam = (Exam)o[1];
@@ -548,7 +548,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                 "where c.uniqueId = :examOwnerId and " +
                 "e.student=f.student and f.clazz = a.clazz and a.solution.commited = true")
                 .setLong("examOwnerId", getOwnerId())
-                .setCacheable(true).iterate(); i.hasNext();) {
+                .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
                 Long studentId = (Long)o[0];
                 Assignment assignment = (Assignment)o[1];
@@ -563,7 +563,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :examOwnerId and " +
                     "e.student=f.student and f.clazz = a.clazz and a.solution.commited = true")
                     .setLong("examOwnerId", getOwnerId())
-                    .setCacheable(true).iterate(); i.hasNext();) {
+                    .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
                 Long studentId = (Long)o[0];
                 Assignment assignment = (Assignment)o[1];
@@ -578,7 +578,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "where co.uniqueId = :examOwnerId and " +
                     "e.student=f.student and f.clazz = a.clazz and a.solution.commited = true")
                     .setLong("examOwnerId", getOwnerId())
-                    .setCacheable(true).iterate(); i.hasNext();) {
+                    .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
                 Long studentId = (Long)o[0];
                 Assignment assignment = (Assignment)o[1];
@@ -593,7 +593,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "where co.instructionalOffering.uniqueId = :examOwnerId and " +
                     "e.student=f.student and f.clazz = a.clazz and a.solution.commited = true")
                     .setLong("examOwnerId", getOwnerId())
-                    .setCacheable(true).iterate(); i.hasNext();) {
+                    .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
                 Long studentId = (Long)o[0];
                 Assignment assignment = (Assignment)o[1];
@@ -616,7 +616,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                 .setLong("examOwnerId", getOwnerId())
                 .setInteger("travelTime", Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.classEvent","6")))
                 .setLong("periodId", periodId)
-                .setCacheable(true).iterate(); i.hasNext();) {
+                .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
                 Long studentId = (Long)o[0];
                 Meeting meeting = (Meeting)o[1];
@@ -634,7 +634,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     .setLong("examOwnerId", getOwnerId())
                     .setInteger("travelTime", Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.classEvent","6")))
                     .setLong("periodId", periodId)
-                    .setCacheable(true).iterate(); i.hasNext();) {
+                    .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
                 Long studentId = (Long)o[0];
                 Meeting meeting = (Meeting)o[1];
@@ -652,7 +652,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     .setLong("examOwnerId", getOwnerId())
                     .setInteger("travelTime", Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.classEvent","6")))
                     .setLong("periodId", periodId)
-                    .setCacheable(true).iterate(); i.hasNext();) {
+                    .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
                 Long studentId = (Long)o[0];
                 Meeting meeting = (Meeting)o[1];
@@ -670,7 +670,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     .setLong("examOwnerId", getOwnerId())
                     .setInteger("travelTime", Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.classEvent","6")))
                     .setLong("periodId", periodId)
-                    .setCacheable(true).iterate(); i.hasNext();) {
+                    .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
                 Long studentId = (Long)o[0];
                 Meeting meeting = (Meeting)o[1];

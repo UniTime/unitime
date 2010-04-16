@@ -332,7 +332,7 @@ public class DatePattern extends BaseDatePattern implements Comparable {
 		for (Iterator i=
 			new DatePatternDAO().getSession().
 			createQuery("select distinct s from SchedulingSubpart as s inner join s.datePattern as dp where dp.uniqueId=:uniqueId").
-			setInteger("uniqueId", uniqueId.intValue()).setCacheable(true).iterate();
+			setInteger("uniqueId", uniqueId.intValue()).setCacheable(true).list().iterator();
 			i.hasNext();) {
 			SchedulingSubpart s = (SchedulingSubpart)i.next();
 			for (Iterator k=s.getClasses().iterator();k.hasNext();) {

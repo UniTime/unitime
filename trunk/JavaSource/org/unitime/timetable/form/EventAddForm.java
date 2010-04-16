@@ -863,8 +863,6 @@ public class EventAddForm extends ActionForm {
                     " and 1 = (select rto.status from RoomTypeOption rto where rto.session.uniqueId = " + getSessionId().toString() + " and rto.roomType.uniqueId = r.roomType.uniqueId) ";
             if (iBuildingId!=null && iBuildingId>=0) { query += " and r.building.uniqueId=:buildingId"; }   
         }
-        
-       
 			
 		if (iMinCapacity!=null && iMinCapacity.length()>0) { query+= " and r.capacity>= :minCapacity";	}
 		if (iMaxCapacity!=null && iMaxCapacity.length()>0) { query+= " and r.capacity<= :maxCapacity";	}
@@ -883,7 +881,7 @@ public class EventAddForm extends ActionForm {
 		}
 		hibQuery.setLong("sessionId", iSessionId);
 		
-		for (Iterator i=hibQuery.setCacheable(true).iterate();i.hasNext();) {
+		for (Iterator i=hibQuery.setCacheable(true).list().iterator();i.hasNext();) {
 			Location location = (Location)i.next();
 			if (location.getPermanentId()!=null)
 				locations.put(location.getPermanentId(), location);
@@ -910,7 +908,7 @@ public class EventAddForm extends ActionForm {
             }
             hibQuery.setLong("sessionId", iSessionId);
             
-            for (Iterator i=hibQuery.setCacheable(true).iterate();i.hasNext();) {
+            for (Iterator i=hibQuery.setCacheable(true).list().iterator();i.hasNext();) {
                 Location location = (Location)i.next();
                 if (location.getPermanentId()!=null)
                     locations.put(location.getPermanentId(), location);
