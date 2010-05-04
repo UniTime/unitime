@@ -135,9 +135,9 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 				
 				CBSConstraint con = null;
 				if (constraint instanceof RoomConstraint) {
-					con = new CBSConstraint(val, sConstraintTypeRoom,((RoomConstraint)constraint).getResourceId().intValue(), constraint.getName(), PreferenceLevel.sRequired);
+					con = new CBSConstraint(val, sConstraintTypeRoom,((RoomConstraint)constraint).getResourceId(), constraint.getName(), PreferenceLevel.sRequired);
 				} else if (constraint instanceof InstructorConstraint) {
-					con = new CBSConstraint(val, sConstraintTypeInstructor,((InstructorConstraint)constraint).getResourceId().intValue(),constraint.getName(), PreferenceLevel.sRequired);
+					con = new CBSConstraint(val, sConstraintTypeInstructor,((InstructorConstraint)constraint).getResourceId(),constraint.getName(), PreferenceLevel.sRequired);
 				} else if (constraint instanceof GroupConstraint) {
 					con = new CBSConstraint(val, sConstraintTypeGroup, ((GroupConstraint)constraint).getId(), constraint.getName(), ((GroupConstraint)constraint).getPrologPreference());
 				} else if (constraint instanceof DepartmentSpreadConstraint) {

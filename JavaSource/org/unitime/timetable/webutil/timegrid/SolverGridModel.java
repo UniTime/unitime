@@ -58,7 +58,7 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 	}
 	
 	public SolverGridModel(Solver solver, RoomConstraint room, int firstDay, int bgMode) {
-		super(sResourceTypeRoom, room.getResourceId().intValue());
+		super(sResourceTypeRoom, room.getResourceId());
 		if (room instanceof DiscouragedRoomConstraint)
 			setName("<span style='color:"+PreferenceLevel.prolog2color(PreferenceLevel.sStronglyDiscouraged)+"'>"+
 					room.getRoomName()+
@@ -109,7 +109,7 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 	}
 	
 	public SolverGridModel(Solver solver, InstructorConstraint instructor, int firstDay, int bgMode) {
-		super(sResourceTypeInstructor, instructor.getResourceId().intValue());
+		super(sResourceTypeInstructor, instructor.getResourceId());
 		setName(instructor.getName());
         setType(instructor.getType());
 		iYear = ((TimetableModel)solver.currentSolution().getModel()).getYear();
@@ -398,7 +398,7 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 				day,
 				slot,
 				placement.getId(), 
-				(iRoomId==null?0:iRoomId.intValue()),
+				(iRoomId==null?0:iRoomId),
 				placement.getRoomName(","),
 				name, 
 				shortComment,
