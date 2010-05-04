@@ -219,9 +219,13 @@ public class HibernateUtil {
     	    public InputSource resolveEntity(String publicId, String systemId) {
     	        if (publicId.equals("-//Hibernate/Hibernate Mapping DTD 3.0//EN")) {
     	            return new InputSource(HibernateUtil.class.getClassLoader().getResourceAsStream("hibernate-mapping-3.0.dtd"));
+    	        } else if (publicId.equals("-//Hibernate/Hibernate Mapping DTD//EN")) {
+        	            return new InputSource(HibernateUtil.class.getClassLoader().getResourceAsStream("hibernate-mapping-3.0.dtd"));
     	        } else if (publicId.equals("-//Hibernate/Hibernate Configuration DTD 3.0//EN")) {
     	            return new InputSource(HibernateUtil.class.getClassLoader().getResourceAsStream("hibernate-configuration-3.0.dtd"));
-    	        }
+    	        } else if (publicId.equals("-//Hibernate/Hibernate Configuration DTD//EN")) {
+    	            return new InputSource(HibernateUtil.class.getClassLoader().getResourceAsStream("hibernate-configuration-3.0.dtd"));
+        	    }
     	        return null;
     	    }
     	});
@@ -261,9 +265,13 @@ public class HibernateUtil {
         	    public InputSource resolveEntity(String publicId, String systemId) {
         	        if (publicId.equals("-//Hibernate/Hibernate Mapping DTD 3.0//EN")) {
         	            return new InputSource(HibernateUtil.class.getClassLoader().getResourceAsStream("hibernate-mapping-3.0.dtd"));
+        	        } else if (publicId.equals("-//Hibernate/Hibernate Mapping DTD//EN")) {
+            	            return new InputSource(HibernateUtil.class.getClassLoader().getResourceAsStream("hibernate-mapping-3.0.dtd"));
         	        } else if (publicId.equals("-//Hibernate/Hibernate Configuration DTD 3.0//EN")) {
         	            return new InputSource(HibernateUtil.class.getClassLoader().getResourceAsStream("hibernate-configuration-3.0.dtd"));
-        	        }
+        	        } else if (publicId.equals("-//Hibernate/Hibernate Configuration DTD//EN")) {
+        	            return new InputSource(HibernateUtil.class.getClassLoader().getResourceAsStream("hibernate-configuration-3.0.dtd"));
+            	    }
         	        return null;
         	    }
         	};
