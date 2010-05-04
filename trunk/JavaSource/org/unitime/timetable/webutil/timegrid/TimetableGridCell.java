@@ -44,7 +44,7 @@ public class TimetableGridCell implements Serializable, Comparable {
 	private int iNrMeetings;
 	private int iMeetingNumber;
 	private long iAssignmentId;
-	private int iRoomId;
+	private long iRoomId;
 	private String iRoomName;
 	private BitSet iWeekCode;
 	private String iDatePatternName;
@@ -62,7 +62,7 @@ public class TimetableGridCell implements Serializable, Comparable {
 	public static String sBgColorNotAvailable = "rgb(200,200,200)";
 	public static String sBgColorNotAvailableButAssigned = sBgColorProhibited;
 	
-	public TimetableGridCell(int day, int slot, long assignmentId, int roomId, String roomName, String name, String shortComment, String shortCommentNoColors, String onClick, String title, String background, int length, int meetingNumber, int nrMeetings, String datePatternName, BitSet weekCode, String instructor) {
+	public TimetableGridCell(int day, int slot, long assignmentId, long roomId, String roomName, String name, String shortComment, String shortCommentNoColors, String onClick, String title, String background, int length, int meetingNumber, int nrMeetings, String datePatternName, BitSet weekCode, String instructor) {
 		iDay = day;
 		iSlot = slot;
 		iAssignmentId = assignmentId;
@@ -115,7 +115,7 @@ public class TimetableGridCell implements Serializable, Comparable {
 	public int getNrMeetings() { return iNrMeetings; }
 	public int getMeetingNumber() { return iMeetingNumber; }
 	public long getAssignmentId() { return iAssignmentId; }
-	public int getRoomId() { return iRoomId; }
+	public long getRoomId() { return iRoomId; }
 	public String getRoomName() { return iRoomName; }
 	public String getInstructor() { return (iInstructor==null?"":iInstructor); }
 	
