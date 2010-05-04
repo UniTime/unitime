@@ -254,13 +254,14 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         this(exam, "true".equals(ApplicationProperties.getProperty("tmtbl.exams.conflicts.cache","true")));
     }
     
-    public ExamAssignmentInfo(org.unitime.timetable.model.Exam exam, Hashtable<Long,Set<Long>> owner2students, Hashtable<Long, Set<org.unitime.timetable.model.Exam>> studentExams, Hashtable<Long, Set<Meeting>> period2meetings, Parameters p) {
-        super(exam, owner2students);
+    public ExamAssignmentInfo(org.unitime.timetable.model.Exam exam, Hashtable<Long,Set<Long>> owner2students, Hashtable<Long,Hashtable<Long,Set<Long>>> onwer2course2students, 
+    		Hashtable<Long, Set<org.unitime.timetable.model.Exam>> studentExams, Hashtable<Long, Set<Meeting>> period2meetings, Parameters p) {
+        super(exam, owner2students, onwer2course2students);
         Hashtable<Long,Set<org.unitime.timetable.model.Exam>> examStudents = new Hashtable();
         for (ExamSectionInfo section: getSections())
             for (Long studentId : section.getStudentIds())
                 examStudents.put(studentId, studentExams.get(studentId));
-        generateConflicts(exam, examStudents, null, period2meetings, p);
+        generateConflicts(exam, examStudents, null, period2meetings, p, owner2students, onwer2course2students);
     }
     
     public ExamAssignmentInfo(org.unitime.timetable.model.Exam exam, boolean useCache) {
@@ -565,9 +566,9 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         return rooms;
     }
     
-    public static ExamAssignment getAssignment(org.unitime.timetable.model.Exam exam, Hashtable<Long, ExamAssignment> table) {
+    public static ExamAssignment getAssignment(org.unitime.timetable.model.Exam exam, Hashtable<Long, ExamAssignment> table, Hashtable<Long, Set<Long>> owner2students, Hashtable<Long,Hashtable<Long,Set<Long>>> onwer2course2students) {
         ExamAssignment assignment = (table==null?null:table.get(exam.getUniqueId()));
-        return (assignment==null?new ExamAssignment(exam):assignment);
+        return (assignment==null?new ExamAssignment(exam, owner2students, onwer2course2students):assignment);
     }
 
     public ExamAssignmentInfo(org.unitime.timetable.model.Exam exam, ExamPeriod period, Collection<ExamRoomInfo> rooms) throws Exception {
@@ -590,10 +591,11 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
     }
     
     public void generateConflicts(org.unitime.timetable.model.Exam exam, Hashtable<Long, Set<org.unitime.timetable.model.Exam>> examStudents, Hashtable<Long, ExamAssignment> table) {
-        generateConflicts(exam, examStudents, table, null, new Parameters(exam.getSession().getUniqueId(), exam.getExamType()));
+        generateConflicts(exam, examStudents, table, null, new Parameters(exam.getSession().getUniqueId(), exam.getExamType()), null, null);
     }
     
-    public void generateConflicts(org.unitime.timetable.model.Exam exam, Hashtable<Long, Set<org.unitime.timetable.model.Exam>> examStudents, Hashtable<Long, ExamAssignment> table, Hashtable<Long, Set<Meeting>> period2meetings, Parameters p) {
+    public void generateConflicts(org.unitime.timetable.model.Exam exam, Hashtable<Long, Set<org.unitime.timetable.model.Exam>> examStudents, Hashtable<Long, ExamAssignment> table, Hashtable<Long, Set<Meeting>> period2meetings, Parameters p,
+    		Hashtable<Long, Set<Long>> owner2students, Hashtable<Long,Hashtable<Long,Set<Long>>> onwer2course2students) {
         if (getPeriod()==null) return;
         
         Hashtable<org.unitime.timetable.model.Exam,DirectConflict> directs = new Hashtable();
@@ -608,7 +610,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                 if (getPeriod().equals(otherPeriod)) { //direct conflict
                     DirectConflict dc = directs.get(other);
                     if (dc==null) {
-                        dc = new DirectConflict(getAssignment(other, table));
+                        dc = new DirectConflict(getAssignment(other, table, owner2students, onwer2course2students));
                         directs.put(other, dc);
                     } else dc.incNrStudents();
                     dc.getStudents().add(studentExams.getKey());
@@ -617,7 +619,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                     BackToBackConflict btb = backToBacks.get(other);
                     double distance = Location.getDistance(getRooms(), getAssignedRooms(other, table));
                     if (btb==null) {
-                        btb = new BackToBackConflict(getAssignment(other, table), (p.getBackToBackDistance()<0?false:distance>p.getBackToBackDistance()), distance);
+                        btb = new BackToBackConflict(getAssignment(other, table, owner2students, onwer2course2students), (p.getBackToBackDistance()<0?false:distance>p.getBackToBackDistance()), distance);
                         backToBacks.put(other, btb);
                     } else btb.incNrStudents();
                     btb.getStudents().add(studentExams.getKey());
@@ -633,7 +635,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                 for (Iterator j=sameDateExams.iterator();j.hasNext();) {
                     org.unitime.timetable.model.Exam other = (org.unitime.timetable.model.Exam)j.next();
                     examIds.add(other.getUniqueId());
-                    otherExams.add(getAssignment(other, table));
+                    otherExams.add(getAssignment(other, table, owner2students, onwer2course2students));
                 }
                 MoreThanTwoADayConflict m2d = m2ds.get(examIds.toString());
                 if (m2d==null) {
@@ -665,7 +667,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                 if (getPeriod().equals(otherPeriod)) { //direct conflict
                     DirectConflict dc = idirects.get(other);
                     if (dc==null) {
-                        dc = new DirectConflict(getAssignment(other, table));
+                        dc = new DirectConflict(getAssignment(other, table, owner2students, onwer2course2students));
                         idirects.put(other, dc);
                     } else dc.incNrStudents();
                     iNrInstructorDirectConflicts++;
@@ -674,7 +676,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                     BackToBackConflict btb = ibackToBacks.get(other);
                     double distance = Location.getDistance(getRooms(), getAssignedRooms(other, table));
                     if (btb==null) {
-                        btb = new BackToBackConflict(getAssignment(other, table), (p.getBackToBackDistance()<0?false:distance>p.getBackToBackDistance()), distance);
+                        btb = new BackToBackConflict(getAssignment(other, table, owner2students, onwer2course2students), (p.getBackToBackDistance()<0?false:distance>p.getBackToBackDistance()), distance);
                         ibackToBacks.put(other, btb);
                     } else btb.incNrStudents();
                     iNrInstructorBackToBackConflicts++;
@@ -692,7 +694,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                 for (Iterator j=sameDateExams.iterator();j.hasNext();) {
                     org.unitime.timetable.model.Exam other = (org.unitime.timetable.model.Exam)j.next();
                     examIds.add(other.getUniqueId());
-                    otherExams.add(getAssignment(other, table));
+                    otherExams.add(getAssignment(other, table, owner2students, onwer2course2students));
                 }
                 MoreThanTwoADayConflict m2d = im2ds.get(examIds.toString());
                 if (m2d==null) {
