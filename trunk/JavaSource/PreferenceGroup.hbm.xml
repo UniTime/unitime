@@ -473,8 +473,9 @@
 						d.solver_group_id=g.uniqueId ) "
 			/> 
 			
+			<!--
 			<one-to-one name="sectioningInfo" class="SectioningInfo" property-ref="clazz" cascade="all"/>
-			
+			-->
 					
 			<property
 				name="uniqueIdRolledForwardFrom"

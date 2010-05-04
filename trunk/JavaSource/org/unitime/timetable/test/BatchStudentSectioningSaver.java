@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -175,6 +176,14 @@ public class BatchStudentSectioningSaver extends StudentSectioningSaver {
             if (iIncludeLastLikeStudents) {
                 getModel().computeOnlineSectioningInfos();
                 
+            	Hashtable<Long, SectioningInfo> infoTable = new Hashtable<Long, SectioningInfo>();
+            	List<SectioningInfo> infos = hibSession.createQuery(
+            			"select i from SectioningInfo i where i.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId")
+            			.setLong("sessionId", session.getUniqueId())
+            			.list();
+            	for (SectioningInfo info : infos)
+            		infoTable.put(info.getClazz().getUniqueId(), info);
+
                 for (Enumeration e=getModel().getOfferings().elements();e.hasMoreElements();) {
                     Offering offering = (Offering)e.nextElement();
                     for (Enumeration f=offering.getConfigs().elements();f.hasMoreElements();) {
@@ -185,14 +194,14 @@ public class BatchStudentSectioningSaver extends StudentSectioningSaver {
                                 Section section = (Section)h.nextElement();
                                 Class_ clazz = iClasses.get(section.getId());
                                 if (clazz==null) continue;
-                                SectioningInfo info = clazz.getSectioningInfo();
+                                SectioningInfo info = infoTable.get(section.getId());
                                 if (info==null) {
                                     info = new SectioningInfo();
                                     info.setClazz(clazz);
                                 }
+                                sLog.debug("  -- "+info.getClazz().getClassLabel()+" expects "+info.getNbrExpectedStudents()+", holds "+info.getNbrHoldingStudents()+" of "+section.getLimit());
                                 info.setNbrExpectedStudents(section.getSpaceExpected());
                                 info.setNbrHoldingStudents(section.getSpaceHeld());
-                                sLog.debug("  -- "+info.getClazz().getClassLabel()+" expects "+info.getNbrExpectedStudents()+", holds "+info.getNbrHoldingStudents()+" of "+section.getLimit());
                                 hibSession.saveOrUpdate(info);
                                 flushIfNeeded(hibSession);
                             }
