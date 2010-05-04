@@ -56,6 +56,9 @@ public class DateUtils {
 		c.set(Calendar.DAY_OF_YEAR,dayOfYear);
 		return c.getTime();
     }
+    public static Date getDate(int day, int month, int year) {
+    	return calendarFor(day, month, year).getTime();
+    }
     public static Date getStartDate(int year, int week) {
 		Calendar c = Calendar.getInstance(Locale.US);
 		c.set(year,1,1,0,0,0);

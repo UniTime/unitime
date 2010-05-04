@@ -123,7 +123,7 @@ public class ExamAssignmentReportAction extends Action {
             if (solver!=null && solver.getExamType()==myForm.getExamType())
                 assignedExams = solver.getAssignedExams(myForm.getSubjectArea());
             else {
-                if ("true".equals(ApplicationProperties.getProperty("tmtbl.exams.conflicts.cache","true")))
+                if ("true".equals(ApplicationProperties.getProperty("tmtbl.exams.conflicts.cache","true")) && myForm.getSubjectArea()!=null && myForm.getSubjectArea()>0)
                     assignedExams = Exam.findAssignedExams(session.getUniqueId(),myForm.getSubjectArea(),myForm.getExamType());
                 else
                     assignedExams = findAssignedExams(session.getUniqueId(),myForm.getSubjectArea(),myForm.getExamType());
@@ -187,9 +187,10 @@ public class ExamAssignmentReportAction extends Action {
                 .setInteger("offeringType", ExamOwner.sOwnerTypeOffering).setCacheable(true).list();
         Hashtable<Long,Set<Long>> owner2students = new Hashtable();
         Hashtable<Long,Set<Exam>> student2exams = new Hashtable();
+        Hashtable<Long,Hashtable<Long,Set<Long>>> owner2course2students = new Hashtable();
             for (Iterator i=
                 new ExamDAO().getSession().createQuery(
-                "select x.uniqueId, o.uniqueId, e.student.uniqueId from "+
+                "select x.uniqueId, o.uniqueId, e.student.uniqueId, e.courseOffering.uniqueId from "+
                 "Exam x inner join x.owners o, "+
                 "StudentClassEnrollment e inner join e.clazz c "+
                 "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
@@ -211,10 +212,22 @@ public class ExamAssignmentReportAction extends Action {
                         student2exams.put(studentId, examsOfStudent);
                     }
                     examsOfStudent.add(exams.get(examId));
+                    Long courseId = (Long)o[3];
+                    Hashtable<Long, Set<Long>> course2students = owner2course2students.get(ownerId);
+                    if (course2students == null) {
+                    	course2students = new Hashtable<Long, Set<Long>>();
+                    	owner2course2students.put(ownerId, course2students);
+                    }
+                    Set<Long> studentsOfCourse = course2students.get(courseId);
+                    if (studentsOfCourse == null) {
+                    	studentsOfCourse = new HashSet<Long>();
+                    	course2students.put(courseId, studentsOfCourse);
+                    }
+                    studentsOfCourse.add(studentId);
                 }
             for (Iterator i=
                 new ExamDAO().getSession().createQuery(
-                        "select x.uniqueId, o.uniqueId, e.student.uniqueId from "+
+                        "select x.uniqueId, o.uniqueId, e.student.uniqueId, e.courseOffering.uniqueId from "+
                         "Exam x inner join x.owners o, "+
                         "StudentClassEnrollment e inner join e.clazz c " +
                         "inner join c.schedulingSubpart.instrOfferingConfig ioc " +
@@ -237,10 +250,22 @@ public class ExamAssignmentReportAction extends Action {
                     student2exams.put(studentId, examsOfStudent);
                 }
                 examsOfStudent.add(exams.get(examId));
+                Long courseId = (Long)o[3];
+                Hashtable<Long, Set<Long>> course2students = owner2course2students.get(ownerId);
+                if (course2students == null) {
+                	course2students = new Hashtable<Long, Set<Long>>();
+                	owner2course2students.put(ownerId, course2students);
+                }
+                Set<Long> studentsOfCourse = course2students.get(courseId);
+                if (studentsOfCourse == null) {
+                	studentsOfCourse = new HashSet<Long>();
+                	course2students.put(courseId, studentsOfCourse);
+                }
+                studentsOfCourse.add(studentId);
             }
             for (Iterator i=
                 new ExamDAO().getSession().createQuery(
-                        "select x.uniqueId, o.uniqueId, e.student.uniqueId from "+
+                        "select x.uniqueId, o.uniqueId, e.student.uniqueId, e.courseOffering.uniqueId from "+
                         "Exam x inner join x.owners o, "+
                         "StudentClassEnrollment e inner join e.courseOffering co " +
                         "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
@@ -262,10 +287,22 @@ public class ExamAssignmentReportAction extends Action {
                     student2exams.put(studentId, examsOfStudent);
                 }
                 examsOfStudent.add(exams.get(examId));
+                Long courseId = (Long)o[3];
+                Hashtable<Long, Set<Long>> course2students = owner2course2students.get(ownerId);
+                if (course2students == null) {
+                	course2students = new Hashtable<Long, Set<Long>>();
+                	owner2course2students.put(ownerId, course2students);
+                }
+                Set<Long> studentsOfCourse = course2students.get(courseId);
+                if (studentsOfCourse == null) {
+                	studentsOfCourse = new HashSet<Long>();
+                	course2students.put(courseId, studentsOfCourse);
+                }
+                studentsOfCourse.add(studentId);
             }
             for (Iterator i=
                 new ExamDAO().getSession().createQuery(
-                        "select x.uniqueId, o.uniqueId, e.student.uniqueId from "+
+                        "select x.uniqueId, o.uniqueId, e.student.uniqueId, e.courseOffering.uniqueId from "+
                         "Exam x inner join x.owners o, "+
                         "StudentClassEnrollment e inner join e.courseOffering.instructionalOffering io " +
                         "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
@@ -287,6 +324,18 @@ public class ExamAssignmentReportAction extends Action {
                     student2exams.put(studentId, examsOfStudent);
                 }
                 examsOfStudent.add(exams.get(examId));
+                Long courseId = (Long)o[3];
+                Hashtable<Long, Set<Long>> course2students = owner2course2students.get(ownerId);
+                if (course2students == null) {
+                	course2students = new Hashtable<Long, Set<Long>>();
+                	owner2course2students.put(ownerId, course2students);
+                }
+                Set<Long> studentsOfCourse = course2students.get(courseId);
+                if (studentsOfCourse == null) {
+                	studentsOfCourse = new HashSet<Long>();
+                	course2students.put(courseId, studentsOfCourse);
+                }
+                studentsOfCourse.add(studentId);
             }
             Hashtable<Long, Set<Meeting>> period2meetings = new Hashtable();
             for (Iterator i=new ExamDAO().getSession().createQuery(
@@ -334,7 +383,7 @@ public class ExamAssignmentReportAction extends Action {
                     setLong("examType", examType).
                     setCacheable(true).list().iterator();i.hasNext();) {
                 Exam exam = (Exam)i.next();
-                ExamAssignmentInfo info = new ExamAssignmentInfo(exam, owner2students, student2exams, period2meetings, p);
+                ExamAssignmentInfo info = new ExamAssignmentInfo(exam, owner2students, owner2course2students, student2exams, period2meetings, p);
                 ret.add(info);
             }
         } else {
@@ -348,7 +397,7 @@ public class ExamAssignmentReportAction extends Action {
                     setLong("subjectAreaId", subjectAreaId).
                     setCacheable(true).list().iterator();i.hasNext();) {
                 Exam exam = (Exam)i.next();
-                ExamAssignmentInfo info = new ExamAssignmentInfo(exam, owner2students, student2exams, period2meetings, p);
+                ExamAssignmentInfo info = new ExamAssignmentInfo(exam, owner2students, owner2course2students, student2exams, period2meetings, p);
                 ret.add(info);
             }
         }
