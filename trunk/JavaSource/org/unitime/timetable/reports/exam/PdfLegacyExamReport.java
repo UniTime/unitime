@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -51,18 +52,26 @@ import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
+import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.Event.MultiMeeting;
+import org.unitime.timetable.model.dao.ClassEventDAO;
 import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.reports.PdfLegacyReport;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
+import org.unitime.timetable.solver.exam.ui.ExamInfo;
+import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.BackToBackConflict;
+import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.DirectConflict;
+import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.DistributionConflict;
+import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.MoreThanTwoADayConflict;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.Parameters;
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamInstructorInfo;
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamSectionInfo;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.DateUtils;
 
 import com.lowagie.text.DocumentException;
 
@@ -93,6 +102,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
     protected boolean iExternal = false;
     protected boolean iDispFullTermDates = false;
     protected boolean iFullTermCheckDatePattern = true;
+    protected boolean iMeetingTimeUseEvents = false;
     
     protected static DecimalFormat sDF = new DecimalFormat("0.0");
     
@@ -138,6 +148,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
         iClassSchedule = "true".equals(System.getProperty("cschedule",ApplicationProperties.getProperty("tmtbl.exam.report.cschedule","true")));
         iDispFullTermDates = "true".equals(System.getProperty("fullterm","false"));
         iFullTermCheckDatePattern = "true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.fullterm.checkdp","true"));
+        iMeetingTimeUseEvents = "true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.meeting_time.use_events","true"));
         if (System.getProperty("since")!=null) {
             try {
                 iSince = new SimpleDateFormat(System.getProperty("sinceFormat","MM/dd/yy")).parse(System.getProperty("since"));
@@ -250,6 +261,24 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
             df.format(m.getMeetings().last().getMeetingDate())+" "+m.getDays(DAY_NAMES_SHORT,DAY_NAMES_SHORT);
     }
     
+    public boolean isFullTerm(DatePattern dp, Date[] firstLast) {
+        if (iFullTermCheckDatePattern) {
+            if (dp!=null) return dp.isDefault();
+        }
+        if (firstLast != null) {
+            Date first = firstLast[0], last = firstLast[1];
+            Calendar c = Calendar.getInstance(Locale.US);
+            c.setTime(getSession().getSessionBeginDateTime());
+            c.add(Calendar.WEEK_OF_YEAR, 2);
+            if (first.compareTo(c.getTime())>=0) return false;  
+            c.setTime(getSession().getClassesEndDateTime());
+            c.add(Calendar.WEEK_OF_YEAR, -2);
+            if (last.compareTo(c.getTime())<=0) return false;
+            return true;
+        }
+        return false;
+    }
+    
     public boolean isFullTerm(ClassEvent classEvent) {
         if (iFullTermCheckDatePattern) {
             DatePattern dp = classEvent.getClazz().effectiveDatePattern();
@@ -275,48 +304,134 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
     }
     
     protected String getMeetingTime(ExamSectionInfo section) {
-        String meetingTime = "";
         if (section.getOwner().getOwnerObject() instanceof Class_) {
             SimpleDateFormat dpf = new SimpleDateFormat("MM/dd");
             Class_ clazz = (Class_)section.getOwner().getOwnerObject();
-            Assignment assignment = clazz.getCommittedAssignment();
-            TreeSet meetings = (clazz.getEvent()==null?null:new TreeSet(clazz.getEvent().getMeetings()));
-            if (meetings!=null && !meetings.isEmpty()) {
-                int dayCode = getDaysCode(meetings);
-                String days = "";
-                for (int i=0;i<Constants.DAY_CODES.length;i++)
-                    if ((dayCode & Constants.DAY_CODES[i])!=0) days += DAY_NAMES_SHORT[i];
-                meetingTime += rpad(days,5);
-                Meeting first = (Meeting)meetings.first();
-                meetingTime += " "+lpad(first.startTime(),6)+" - "+lpad(first.stopTime(),6);
-            } else if (assignment!=null) {
-                TimeLocation t = assignment.getTimeLocation();
-                meetingTime += rpad(t.getDayHeader(),5)+" "+lpad(t.getStartTimeHeader(),6)+" - "+lpad(t.getEndTimeHeader(),6);
-            } else {
-                meetingTime += rpad("",21);
-            }
-            if (meetings!=null && !meetings.isEmpty()) {
-                Date first = ((Meeting)meetings.first()).getMeetingDate();
-                Date last = ((Meeting)meetings.last()).getMeetingDate();
-                if (!iDispFullTermDates && isFullTerm(clazz.getEvent())) {
-                    meetingTime += rpad("",14);
-                } else {
-                    meetingTime += dpf.format(first)+" - "+dpf.format(last);
-                }
-            } else if (assignment!=null && assignment.getDatePattern()!=null) {
-                DatePattern dp = assignment.getDatePattern();
-                if (dp!=null && !dp.isDefault()) {
-                    if (dp.getType().intValue()==DatePattern.sTypeAlternate)
-                        meetingTime += " "+rpad(dp.getName(),13);
-                    else {
-                        meetingTime += " "+dpf.format(dp.getStartDate())+" - "+dpf.format(dp.getEndDate());
+            if (iMeetingTimeUseEvents) {
+                Set meetings = (clazz.getCachedEvent() == null ? null : clazz.getCachedEvent().getMeetings());
+                if (meetings!=null && !meetings.isEmpty()) {
+                    int dayCode = getDaysCode(meetings);
+                    String days = "";
+                    for (int i=0;i<Constants.DAY_CODES.length;i++)
+                        if ((dayCode & Constants.DAY_CODES[i])!=0) days += DAY_NAMES_SHORT[i];
+                    String meetingTime = rpad(days,5);
+                    Meeting[] firstLastMeeting = firstLastMeeting(clazz.getCachedEvent());
+                    meetingTime += " "+lpad(firstLastMeeting[0].startTime(),6)+" - "+lpad(firstLastMeeting[0].stopTime(),6) + " ";
+                    Date first = firstLastMeeting[0].getMeetingDate();
+                    Date last = firstLastMeeting[1].getMeetingDate();
+                    if (!iDispFullTermDates && isFullTerm(clazz.getEvent())) {
+                        meetingTime += rpad("",14);
+                    } else {
+                        meetingTime += dpf.format(first)+" - "+dpf.format(last);
                     }
+                    return meetingTime;
                 }
-            } else {
-                meetingTime += rpad("",14);
+            }
+            Assignment assignment = clazz.getCommittedAssignment();
+            Date[] firstLast = (assignment == null ? null : firstLastDate(assignment.getTimeLocation()));
+            if (assignment != null) {
+                TimeLocation t = assignment.getTimeLocation();
+                String meetingTime = rpad(t.getDayHeader(),5)+" "+lpad(t.getStartTimeHeader(),6)+" - "+lpad(t.getEndTimeHeader(),6) + " ";
+                if (!iDispFullTermDates && isFullTerm(assignment.getDatePattern(), firstLast)) {
+                    meetingTime += rpad("",14);
+                } else if (firstLast != null) {
+                    meetingTime += dpf.format(firstLast[0])+" - "+dpf.format(firstLast[1]);
+                } else {
+                	meetingTime += rpad(t.getDatePatternName(), 14);
+                }
+                return meetingTime;
             }
         }
-        return meetingTime;
+        return rpad("", 36);
+    }
+    
+    private Meeting[] firstLastMeeting(ClassEvent event) {
+    	if (event == null) return null;
+    	Meeting first = null, last = null;
+    	for (Iterator i = event.getMeetings().iterator(); i.hasNext();) {
+    		Meeting m = (Meeting)i.next();
+    		if (first == null || first.getMeetingDate().after(m.getMeetingDate())) first = m;
+    		if (last == null || last.getMeetingDate().before(m.getMeetingDate())) last = m;
+    	}
+    	if (first == null) return null;
+    	return new Meeting[] { first, last };
+    }
+
+    private Date iSessionFirstDate = null;
+    private Date[] firstLastDate(TimeLocation time) {
+    	if (time == null || time.getWeekCode().isEmpty()) return null;
+    	Calendar cal = Calendar.getInstance(Locale.US); cal.setLenient(true);
+    	if (iSessionFirstDate == null)
+    		iSessionFirstDate = DateUtils.getDate(1, iSession.getStartMonth() - 3, iSession.getSessionStartYear());
+    	cal.setTime(iSessionFirstDate);
+    	int idx = time.getWeekCode().nextSetBit(0);
+    	cal.add(Calendar.DAY_OF_YEAR, idx);
+    	Date first = null;
+    	while (idx < time.getWeekCode().size() && first == null) {
+    		if (time.getWeekCode().get(idx)) {
+        		int dow = cal.get(Calendar.DAY_OF_WEEK);
+        		switch (dow) {
+        		case Calendar.MONDAY:
+        			if ((time.getDayCode() & Constants.DAY_CODES[Constants.DAY_MON]) != 0) first = cal.getTime();
+        			break;
+        		case Calendar.TUESDAY:
+        			if ((time.getDayCode() & Constants.DAY_CODES[Constants.DAY_TUE]) != 0) first = cal.getTime();
+        			break;
+        		case Calendar.WEDNESDAY:
+        			if ((time.getDayCode() & Constants.DAY_CODES[Constants.DAY_WED]) != 0) first = cal.getTime();
+        			break;
+        		case Calendar.THURSDAY:
+        			if ((time.getDayCode() & Constants.DAY_CODES[Constants.DAY_THU]) != 0) first = cal.getTime();
+        			break;
+        		case Calendar.FRIDAY:
+        			if ((time.getDayCode() & Constants.DAY_CODES[Constants.DAY_FRI]) != 0) first = cal.getTime();
+        			break;
+        		case Calendar.SATURDAY:
+        			if ((time.getDayCode() & Constants.DAY_CODES[Constants.DAY_SAT]) != 0) first = cal.getTime();
+        			break;
+        		case Calendar.SUNDAY:
+        			if ((time.getDayCode() & Constants.DAY_CODES[Constants.DAY_SUN]) != 0) first = cal.getTime();
+        			break;
+        		}
+        	}
+    		cal.add(Calendar.DAY_OF_YEAR, 1); idx++;
+    	}
+    	if (first == null) return null;
+    	cal.setTime(iSessionFirstDate);
+    	idx = time.getWeekCode().length() - 1;
+    	cal.add(Calendar.DAY_OF_YEAR, idx);
+    	Date last = null;
+    	while (idx >= 0 && last == null) {
+    		if (time.getWeekCode().get(idx)) {
+        		int dow = cal.get(Calendar.DAY_OF_WEEK);
+        		switch (dow) {
+        		case Calendar.MONDAY:
+        			if ((time.getDayCode() & Constants.DAY_CODES[Constants.DAY_MON]) != 0) last = cal.getTime();
+        			break;
+        		case Calendar.TUESDAY:
+        			if ((time.getDayCode() & Constants.DAY_CODES[Constants.DAY_TUE]) != 0) last = cal.getTime();
+        			break;
+        		case Calendar.WEDNESDAY:
+        			if ((time.getDayCode() & Constants.DAY_CODES[Constants.DAY_WED]) != 0) last = cal.getTime();
+        			break;
+        		case Calendar.THURSDAY:
+        			if ((time.getDayCode() & Constants.DAY_CODES[Constants.DAY_THU]) != 0) last = cal.getTime();
+        			break;
+        		case Calendar.FRIDAY:
+        			if ((time.getDayCode() & Constants.DAY_CODES[Constants.DAY_FRI]) != 0) last = cal.getTime();
+        			break;
+        		case Calendar.SATURDAY:
+        			if ((time.getDayCode() & Constants.DAY_CODES[Constants.DAY_SAT]) != 0) last = cal.getTime();
+        			break;
+        		case Calendar.SUNDAY:
+        			if ((time.getDayCode() & Constants.DAY_CODES[Constants.DAY_SUN]) != 0) last = cal.getTime();
+        			break;
+        		}
+        	}
+    		cal.add(Calendar.DAY_OF_YEAR, -1); idx--;
+    	}
+    	if (last == null) return null;
+    	return new Date[] { first, last };
     }
     
     protected String getMeetingTime(Meeting meeting) {
@@ -620,7 +735,8 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
             Exam exam = (Exam)i.next();
             exams.put(exam.getUniqueId(), exam);
         }
-        sLog.info("  Fetching related objects (class)...");
+        
+		sLog.info("  Fetching related objects (class)...");
         new ExamDAO().getSession().createQuery(
                 "select c from Class_ c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType=:examType and o.ownerType=:classType and c.uniqueId=o.ownerId")
                 .setLong("sessionId", sessionId)
@@ -644,13 +760,27 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                 .setLong("sessionId", sessionId)
                 .setInteger("examType", examType)
                 .setInteger("offeringType", ExamOwner.sOwnerTypeOffering).setCacheable(true).list();
+        
+		sLog.info("  Fetching related class events...");
+        Hashtable<Long, ClassEvent> classEvents = new Hashtable();
+        for (Iterator i=
+        	ExamDAO.getInstance().getSession().createQuery(
+        			"select c from ClassEvent c left join fetch c.meetings m, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType=:examType and o.ownerType=:classType and c.clazz.uniqueId=o.ownerId")
+                .setLong("sessionId", sessionId)
+                .setInteger("examType", examType)
+                .setInteger("classType", ExamOwner.sOwnerTypeClass).setCacheable(true).list().iterator(); i.hasNext();) {
+        	ClassEvent ce = (ClassEvent)i.next();
+        	classEvents.put(ce.getClazz().getUniqueId(), ce);
+        }
+        
         Hashtable<Long,Set<Long>> owner2students = new Hashtable();
         Hashtable<Long,Set<Exam>> student2exams = new Hashtable();
+        Hashtable<Long,Hashtable<Long,Set<Long>>> owner2course2students = new Hashtable();
         if (assgn) {
             sLog.info("  Loading students (class)...");
             for (Iterator i=
                 new ExamDAO().getSession().createQuery(
-                "select x.uniqueId, o.uniqueId, e.student.uniqueId from "+
+                "select x.uniqueId, o.uniqueId, e.student.uniqueId, e.courseOffering.uniqueId from "+
                 "Exam x inner join x.owners o, "+
                 "StudentClassEnrollment e inner join e.clazz c "+
                 "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
@@ -672,11 +802,23 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                         student2exams.put(studentId, examsOfStudent);
                     }
                     examsOfStudent.add(exams.get(examId));
+                    Long courseId = (Long)o[3];
+                    Hashtable<Long, Set<Long>> course2students = owner2course2students.get(ownerId);
+                    if (course2students == null) {
+                    	course2students = new Hashtable<Long, Set<Long>>();
+                    	owner2course2students.put(ownerId, course2students);
+                    }
+                    Set<Long> studentsOfCourse = course2students.get(courseId);
+                    if (studentsOfCourse == null) {
+                    	studentsOfCourse = new HashSet<Long>();
+                    	course2students.put(courseId, studentsOfCourse);
+                    }
+                    studentsOfCourse.add(studentId);
                 }
             sLog.info("  Loading students (config)...");
             for (Iterator i=
                 new ExamDAO().getSession().createQuery(
-                        "select x.uniqueId, o.uniqueId, e.student.uniqueId from "+
+                        "select x.uniqueId, o.uniqueId, e.student.uniqueId, e.courseOffering.uniqueId from "+
                         "Exam x inner join x.owners o, "+
                         "StudentClassEnrollment e inner join e.clazz c " +
                         "inner join c.schedulingSubpart.instrOfferingConfig ioc " +
@@ -699,11 +841,23 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                     student2exams.put(studentId, examsOfStudent);
                 }
                 examsOfStudent.add(exams.get(examId));
+                Long courseId = (Long)o[3];
+                Hashtable<Long, Set<Long>> course2students = owner2course2students.get(ownerId);
+                if (course2students == null) {
+                	course2students = new Hashtable<Long, Set<Long>>();
+                	owner2course2students.put(ownerId, course2students);
+                }
+                Set<Long> studentsOfCourse = course2students.get(courseId);
+                if (studentsOfCourse == null) {
+                	studentsOfCourse = new HashSet<Long>();
+                	course2students.put(courseId, studentsOfCourse);
+                }
+                studentsOfCourse.add(studentId);
             }
             sLog.info("  Loading students (course)...");
             for (Iterator i=
                 new ExamDAO().getSession().createQuery(
-                        "select x.uniqueId, o.uniqueId, e.student.uniqueId from "+
+                        "select x.uniqueId, o.uniqueId, e.student.uniqueId, e.courseOffering.uniqueId from "+
                         "Exam x inner join x.owners o, "+
                         "StudentClassEnrollment e inner join e.courseOffering co " +
                         "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
@@ -725,11 +879,23 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                     student2exams.put(studentId, examsOfStudent);
                 }
                 examsOfStudent.add(exams.get(examId));
+                Long courseId = (Long)o[3];
+                Hashtable<Long, Set<Long>> course2students = owner2course2students.get(ownerId);
+                if (course2students == null) {
+                	course2students = new Hashtable<Long, Set<Long>>();
+                	owner2course2students.put(ownerId, course2students);
+                }
+                Set<Long> studentsOfCourse = course2students.get(courseId);
+                if (studentsOfCourse == null) {
+                	studentsOfCourse = new HashSet<Long>();
+                	course2students.put(courseId, studentsOfCourse);
+                }
+                studentsOfCourse.add(studentId);
             }
             sLog.info("  Loading students (offering)...");
             for (Iterator i=
                 new ExamDAO().getSession().createQuery(
-                        "select x.uniqueId, o.uniqueId, e.student.uniqueId from "+
+                        "select x.uniqueId, o.uniqueId, e.student.uniqueId, e.courseOffering.uniqueId from "+
                         "Exam x inner join x.owners o, "+
                         "StudentClassEnrollment e inner join e.courseOffering.instructionalOffering io " +
                         "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
@@ -751,6 +917,18 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                     student2exams.put(studentId, examsOfStudent);
                 }
                 examsOfStudent.add(exams.get(examId));
+                Long courseId = (Long)o[3];
+                Hashtable<Long, Set<Long>> course2students = owner2course2students.get(ownerId);
+                if (course2students == null) {
+                	course2students = new Hashtable<Long, Set<Long>>();
+                	owner2course2students.put(ownerId, course2students);
+                }
+                Set<Long> studentsOfCourse = course2students.get(courseId);
+                if (studentsOfCourse == null) {
+                	studentsOfCourse = new HashSet<Long>();
+                	course2students.put(courseId, studentsOfCourse);
+                }
+                studentsOfCourse.add(studentId);
             }
         }
         Hashtable<Long, Set<Meeting>> period2meetings = new Hashtable();
@@ -797,8 +975,13 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
         TreeSet<ExamAssignmentInfo> ret = new TreeSet();
         for (Enumeration<Exam> e = exams.elements(); e.hasMoreElements();) {
             Exam exam = (Exam)e.nextElement();
-            ExamAssignmentInfo info = (assgn?new ExamAssignmentInfo(exam, owner2students, student2exams, period2meetings, p):new ExamAssignmentInfo(exam, (ExamPeriod)null, null));
-            if (ignNoEnrl && info.getStudentIds().isEmpty()) continue;
+            ExamAssignmentInfo info = (assgn?new ExamAssignmentInfo(exam, owner2students, owner2course2students, student2exams, period2meetings, p):new ExamAssignmentInfo(exam, (ExamPeriod)null, null));
+            for (ExamSectionInfo section: info.getSections()) {
+            	if (section.getOwnerType() != ExamOwner.sOwnerTypeClass) continue;
+            	ClassEvent evt = classEvents.get(section.getOwnerId());
+            	if (evt != null) ((Class_)section.getOwner().getOwnerObject()).setEvent(evt);
+            }
+        	if (ignNoEnrl && info.getStudentIds().isEmpty()) continue;
             ret.add(info);
         }
         long t1 = System.currentTimeMillis();

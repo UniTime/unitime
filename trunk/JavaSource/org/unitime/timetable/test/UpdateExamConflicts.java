@@ -518,10 +518,11 @@ public class UpdateExamConflicts {
                 .setInteger("offeringType", ExamOwner.sOwnerTypeOffering).setCacheable(true).list();
         Hashtable<Long,Set<Long>> owner2students = new Hashtable();
         Hashtable<Long,Set<Exam>> student2exams = new Hashtable();
+        Hashtable<Long,Hashtable<Long,Set<Long>>> owner2course2students = new Hashtable();
         info("  Loading students (class)...");
         for (Iterator i=
             new ExamDAO().getSession().createQuery(
-            "select x.uniqueId, o.uniqueId, e.student.uniqueId from "+
+            "select x.uniqueId, o.uniqueId, e.student.uniqueId, e.courseOffering.uniqueId from "+
             "Exam x inner join x.owners o, "+
             "StudentClassEnrollment e inner join e.clazz c "+
             "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
@@ -543,11 +544,23 @@ public class UpdateExamConflicts {
                     student2exams.put(studentId, examsOfStudent);
                 }
                 examsOfStudent.add(exams.get(examId));
+                Long courseId = (Long)o[3];
+                Hashtable<Long, Set<Long>> course2students = owner2course2students.get(ownerId);
+                if (course2students == null) {
+                	course2students = new Hashtable<Long, Set<Long>>();
+                	owner2course2students.put(ownerId, course2students);
+                }
+                Set<Long> studentsOfCourse = course2students.get(courseId);
+                if (studentsOfCourse == null) {
+                	studentsOfCourse = new HashSet<Long>();
+                	course2students.put(courseId, studentsOfCourse);
+                }
+                studentsOfCourse.add(studentId);
             }
         info("  Loading students (config)...");
         for (Iterator i=
             new ExamDAO().getSession().createQuery(
-                    "select x.uniqueId, o.uniqueId, e.student.uniqueId from "+
+                    "select x.uniqueId, o.uniqueId, e.student.uniqueId, e.courseOffering.uniqueId from "+
                     "Exam x inner join x.owners o, "+
                     "StudentClassEnrollment e inner join e.clazz c " +
                     "inner join c.schedulingSubpart.instrOfferingConfig ioc " +
@@ -570,11 +583,23 @@ public class UpdateExamConflicts {
                 student2exams.put(studentId, examsOfStudent);
             }
             examsOfStudent.add(exams.get(examId));
+            Long courseId = (Long)o[3];
+            Hashtable<Long, Set<Long>> course2students = owner2course2students.get(ownerId);
+            if (course2students == null) {
+            	course2students = new Hashtable<Long, Set<Long>>();
+            	owner2course2students.put(ownerId, course2students);
+            }
+            Set<Long> studentsOfCourse = course2students.get(courseId);
+            if (studentsOfCourse == null) {
+            	studentsOfCourse = new HashSet<Long>();
+            	course2students.put(courseId, studentsOfCourse);
+            }
+            studentsOfCourse.add(studentId);
         }
         info("  Loading students (course)...");
         for (Iterator i=
             new ExamDAO().getSession().createQuery(
-                    "select x.uniqueId, o.uniqueId, e.student.uniqueId from "+
+                    "select x.uniqueId, o.uniqueId, e.student.uniqueId, e.courseOffering.uniqueId from "+
                     "Exam x inner join x.owners o, "+
                     "StudentClassEnrollment e inner join e.courseOffering co " +
                     "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
@@ -596,11 +621,23 @@ public class UpdateExamConflicts {
                 student2exams.put(studentId, examsOfStudent);
             }
             examsOfStudent.add(exams.get(examId));
+            Long courseId = (Long)o[3];
+            Hashtable<Long, Set<Long>> course2students = owner2course2students.get(ownerId);
+            if (course2students == null) {
+            	course2students = new Hashtable<Long, Set<Long>>();
+            	owner2course2students.put(ownerId, course2students);
+            }
+            Set<Long> studentsOfCourse = course2students.get(courseId);
+            if (studentsOfCourse == null) {
+            	studentsOfCourse = new HashSet<Long>();
+            	course2students.put(courseId, studentsOfCourse);
+            }
+            studentsOfCourse.add(studentId);
         }
         info("  Loading students (offering)...");
         for (Iterator i=
             new ExamDAO().getSession().createQuery(
-                    "select x.uniqueId, o.uniqueId, e.student.uniqueId from "+
+                    "select x.uniqueId, o.uniqueId, e.student.uniqueId, e.courseOffering.uniqueId from "+
                     "Exam x inner join x.owners o, "+
                     "StudentClassEnrollment e inner join e.courseOffering.instructionalOffering io " +
                     "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
@@ -622,6 +659,18 @@ public class UpdateExamConflicts {
                 student2exams.put(studentId, examsOfStudent);
             }
             examsOfStudent.add(exams.get(examId));
+            Long courseId = (Long)o[3];
+            Hashtable<Long, Set<Long>> course2students = owner2course2students.get(ownerId);
+            if (course2students == null) {
+            	course2students = new Hashtable<Long, Set<Long>>();
+            	owner2course2students.put(ownerId, course2students);
+            }
+            Set<Long> studentsOfCourse = course2students.get(courseId);
+            if (studentsOfCourse == null) {
+            	studentsOfCourse = new HashSet<Long>();
+            	course2students.put(courseId, studentsOfCourse);
+            }
+            studentsOfCourse.add(studentId);
         }
         Hashtable<Long, Set<Meeting>> period2meetings = new Hashtable();
         Parameters p = new Parameters(sessionId, examType);
@@ -629,7 +678,7 @@ public class UpdateExamConflicts {
         TreeSet<ExamAssignmentInfo> ret = new TreeSet();
         for (Enumeration<Exam> e = exams.elements(); e.hasMoreElements();) {
             Exam exam = (Exam)e.nextElement();
-            ExamAssignmentInfo info = new ExamAssignmentInfo(exam, owner2students, student2exams, period2meetings, p);
+            ExamAssignmentInfo info = new ExamAssignmentInfo(exam, owner2students, owner2course2students, student2exams, period2meetings, p);
             ret.add(info);
         }
         long t1 = System.currentTimeMillis();

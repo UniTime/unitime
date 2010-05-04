@@ -24,6 +24,7 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Set;
@@ -141,13 +142,10 @@ public class ExamAssignment extends ExamInfo implements Serializable {
         }
     }
     
-    public ExamAssignment(Exam exam, Hashtable<Long, Set<Long>> owner2students) {
+    public ExamAssignment(Exam exam, Hashtable<Long, Set<Long>> owner2students, Hashtable<Long,Hashtable<Long,Set<Long>>> onwer2course2students) {
         this(exam);
-        iSections = new Vector();
-        for (Iterator i=new TreeSet(getExam().getOwners()).iterator();i.hasNext();) {
-            ExamOwner owner = (ExamOwner)i.next();
-            iSections.add(new ExamSectionInfo(owner, owner2students.get(owner.getUniqueId())));
-        }
+        if (owner2students != null) createSections(owner2students);
+        if (onwer2course2students != null) createSectionsIncludeCrosslistedDummies(onwer2course2students);
     }
     
     public ExamAssignment(Exam exam, ExamPeriod period, Collection<ExamRoomInfo> rooms) throws Exception {

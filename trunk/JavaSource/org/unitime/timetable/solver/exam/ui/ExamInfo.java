@@ -22,6 +22,7 @@ package org.unitime.timetable.solver.exam.ui;
 import java.io.Serializable;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
@@ -56,6 +57,7 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
     protected int iPrintOffset;
     protected Vector<ExamSectionInfo> iSections = null;
     protected Vector<ExamInstructorInfo> iInstructors = null;
+    protected Vector<ExamSectionInfo> iSectionsIncludeCrosslistedDummies = null;
     
     private ExamInfo() {
     }
@@ -140,7 +142,12 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
     }
 
     public int getNrStudents() {
-        if (iNrStudents<0) iNrStudents = getExam().getSize();
+        if (iNrStudents<0) {
+        	Set<Long> studentIds = new HashSet<Long>();
+        	for (ExamSectionInfo section: getSections())
+        		studentIds.addAll(section.getStudentIds());
+        	iNrStudents = studentIds.size();
+        }
         return iNrStudents;
     }
     
@@ -159,23 +166,32 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
     public int getMaxRooms() {
         return iMaxRooms;
     }
+    
+    public void createSections(Hashtable<Long,Set<Long>> students) {
+        iSections = new Vector();
+        for (Iterator i=new TreeSet(getExam().getOwners()).iterator();i.hasNext();) {
+        	ExamSectionInfo section = new ExamSectionInfo((ExamOwner)i.next());
+        	if (students != null) {
+        		Set<Long> studentsOfOwner = students.get(section.getOwner().getUniqueId());
+        		section.setStudentIds(studentsOfOwner == null ? new HashSet<Long>() : studentsOfOwner);
+        	}
+        	iSections.add(section);
+        }
+    }
 
     public Vector<ExamSectionInfo> getSections() {
-        if (iSections==null) {
-            iSections = new Vector();
-            for (Iterator i=new TreeSet(getExam().getOwners()).iterator();i.hasNext();)
-                iSections.add(new ExamSectionInfo((ExamOwner)i.next()));
-        }
+        if (iSections==null) createSections(null);
         return iSections;
     }
     
-    public Vector<ExamSectionInfo> getSectionsIncludeCrosslistedDummies() {
-        Vector sections = new Vector();
-        for (Iterator i=new TreeSet(getExam().getOwners()).iterator();i.hasNext();) {
-        	ExamOwner owner = (ExamOwner)i.next();
-        	ExamSectionInfo section = new ExamSectionInfo(owner);
-        	sections.add(section);
+    public void createSectionsIncludeCrosslistedDummies(Hashtable<Long,Hashtable<Long,Set<Long>>> students) {
+    	iSectionsIncludeCrosslistedDummies = new Vector();
+    	for (ExamSectionInfo original: getSections()) {
+        	ExamOwner owner = original.getOwner();
             if (owner.getCourse().getInstructionalOffering().getCourseOfferings().size()>1) {
+            	Hashtable<Long, Set<Long>> studentsOfOwner = (students == null ? null : students.get(owner.getUniqueId()));
+            	ExamSectionInfo section = new ExamSectionInfo(owner);
+            	iSectionsIncludeCrosslistedDummies.add(section);
             	for (Iterator j=owner.getCourse().getInstructionalOffering().getCourseOfferings().iterator();j.hasNext();) {
             		CourseOffering course = (CourseOffering)j.next();
             		if (course.isIsControl()) continue;
@@ -185,12 +201,31 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
             		dummy.setCourse(course);
             		ExamSectionInfo dummySection = new ExamSectionInfo(dummy);
             		dummySection.setMaster(section);
-            		sections.add(dummySection);
+            		if (students != null) {
+                		if (studentsOfOwner != null) {
+                			Set<Long> studentsOfCourse = studentsOfOwner.get(course.getUniqueId());
+                			dummySection.setStudentIds(studentsOfCourse == null ? new HashSet<Long>() : studentsOfCourse);
+                		} else dummySection.setStudentIds(new HashSet<Long>());
+            		}
+            		iSectionsIncludeCrosslistedDummies.add(dummySection);
             	}
+        		if (students != null) {
+            		if (studentsOfOwner != null) {
+            			Set<Long> studentsOfCourse = studentsOfOwner.get(owner.getCourse().getUniqueId());
+            			section.setStudentIds(studentsOfCourse == null ? new HashSet<Long>() : studentsOfCourse);
+            		} else section.setStudentIds(new HashSet<Long>());
+        		}
             	section.setMaster(section);
+            } else {
+            	iSectionsIncludeCrosslistedDummies.add(original);
             }
         }
-        return sections;
+    }
+
+    
+    public Vector<ExamSectionInfo> getSectionsIncludeCrosslistedDummies() {
+    	if (iSectionsIncludeCrosslistedDummies == null) createSectionsIncludeCrosslistedDummies(null);
+        return iSectionsIncludeCrosslistedDummies;
     }
 
     public Set<Long> getStudentIds() {
@@ -293,7 +328,12 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
             	else
                 	iStudentIds = new HashSet<Long>(getOwner().getStudentIds());
             }
+            iNrStudents = iStudentIds.size();
             return iStudentIds;
+        }
+        public void setStudentIds(Set<Long> studentIds) {
+        	iStudentIds = studentIds;
+        	iNrStudents = studentIds.size();
         }
         public Long getId() { return iId; }
         public Long getOwnerId() { return getOwner().getOwnerId(); }

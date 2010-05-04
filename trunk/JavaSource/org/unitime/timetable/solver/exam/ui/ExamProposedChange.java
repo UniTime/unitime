@@ -6,6 +6,7 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.solver.interactive.ClassAssignmentDetails;
 
@@ -97,7 +98,7 @@ public class ExamProposedChange implements Serializable, Comparable<ExamProposed
         Hashtable<Long,ExamAssignment> table = new Hashtable();
         try {
             for (ExamAssignment conflict : iConflicts)
-                table.put(conflict.getExamId(), new ExamAssignment(conflict.getExam(),null,null));
+                table.put(conflict.getExamId(), new ExamAssignment(conflict.getExam(),(ExamPeriod)null,null));
         } catch (Exception e) {}
         for (ExamAssignment assignment : iAssignments)
             table.put(assignment.getExamId(), assignment);
