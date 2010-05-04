@@ -204,6 +204,14 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
             getModel().computeOnlineSectioningInfos();
             iProgress.incProgress();
             
+        	Hashtable<Long, SectioningInfo> infoTable = new Hashtable<Long, SectioningInfo>();
+        	List<SectioningInfo> infos = hibSession.createQuery(
+        			"select i from SectioningInfo i where i.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId")
+        			.setLong("sessionId", session.getUniqueId())
+        			.list();
+        	for (SectioningInfo info : infos)
+        		infoTable.put(info.getClazz().getUniqueId(), info);
+            
             iProgress.setPhase("Saving expected/held space for online sectioning...", getModel().getOfferings().size());
             for (Enumeration e=getModel().getOfferings().elements();e.hasMoreElements();) {
                 Offering offering = (Offering)e.nextElement(); iProgress.incProgress();
@@ -215,7 +223,7 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
                             Section section = (Section)h.nextElement();
                             Class_ clazz = iClasses.get(section.getId());
                             if (clazz==null) continue;
-                            SectioningInfo info = clazz.getSectioningInfo();
+                            SectioningInfo info = infoTable.get(section.getId());
                             if (info==null) {
                                 info = new SectioningInfo();
                                 info.setClazz(clazz);
