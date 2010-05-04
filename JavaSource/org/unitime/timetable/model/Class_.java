@@ -55,6 +55,7 @@ import org.unitime.timetable.model.comparators.PosReservationComparator;
 import org.unitime.timetable.model.comparators.StudentGroupReservationComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
+import org.unitime.timetable.model.dao.SectioningInfoDAO;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.solver.CommitedClassAssignmentProxy;
@@ -1361,6 +1362,9 @@ public class Class_ extends BaseClass_ {
     public void setEvent(ClassEvent event) {
         iEvent = event;
     }
+    public ClassEvent getCachedEvent() {
+    	return iEvent;
+    }
     
     public static void updateClassEnrollmentForSession(Session acadSession, org.hibernate.Session hibSession) throws Exception{
        Transaction trans = null;
@@ -1665,6 +1669,12 @@ public class Class_ extends BaseClass_ {
 
 	public String getExternalId(CourseOffering courseOffering) {
 		return(getExternalClassNameHelper().getExternalId(this, courseOffering));
+	}
+	
+	public SectioningInfo getSectioningInfo() {
+		return (SectioningInfo) SectioningInfoDAO.getInstance().getSession().createQuery(
+				"select i from SectioningInfo i where i.clazz.uniqueId = :classId")
+				.setLong("classId", getUniqueId()).setCacheable(true).uniqueResult();
 	}
 
 //	/* (non-Javadoc)

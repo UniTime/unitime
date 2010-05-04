@@ -81,9 +81,6 @@ public abstract class BaseClass_ extends org.unitime.timetable.model.PreferenceG
 	private java.lang.String externalUniqueId;
 	private java.lang.Integer enrollment;
 
-	// one to one
-	private org.unitime.timetable.model.SectioningInfo sectioningInfo;
-
 	// many to one
 	private org.unitime.timetable.model.Department controllingDept;
 	private org.unitime.timetable.model.Department managingDept;
@@ -326,24 +323,6 @@ public abstract class BaseClass_ extends org.unitime.timetable.model.PreferenceG
 	public void setEnrollment (java.lang.Integer enrollment) {
 		this.enrollment = enrollment;
 	}
-
-
-
-	/**
-	 * Return the value associated with the column: sectioningInfo
-	 */
-	public org.unitime.timetable.model.SectioningInfo getSectioningInfo () {
-		return sectioningInfo;
-	}
-
-	/**
-	 * Set the value related to the column: sectioningInfo
-	 * @param sectioningInfo the sectioningInfo value
-	 */
-	public void setSectioningInfo (org.unitime.timetable.model.SectioningInfo sectioningInfo) {
-		this.sectioningInfo = sectioningInfo;
-	}
-
 
 
 	/**
