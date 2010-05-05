@@ -39,6 +39,24 @@
 			</description>
 		</item>
 		<item>
+			<name>Session Roll-Forward</name>
+			<description>
+				<line>Fixed bug that occurred when rolling forward courses that do not have a unique subject area and course number.</line>
+				<line>Added functionality to push class time patterns up to the scheduling subpart level as part of the roll forward of scheduling subparts.</line>
+				<line>Fixed bug with rolling forward a room preference for a room that does not have an external id.</line>
+			</description>
+		</item>
+		<item>
+			<name>PDF Exam reports speedup</name>
+			<description>
+				<line>Preloading student exam enrollments (this broke with the change for cross-listed exams).</line>
+				<line>Preloading Class_ -> ClassEvent relation.</line>
+				<line>When solver is used, preload crosslisted exams (solver does not know about them, it takes too long to load them one by one).</line>
+				<line>Removed relation Class_-> sectioningInfo (using SectioningInfo -> Class_ instead where needed) to avoid unnecessary queries.</line>
+				<line>Few other small changes.</line>
+			</description>
+		</item>
+		<item>
 			<name>Configuration</name>
 			<description>
 				<line>Hibernate DTDs bundled with the application.
