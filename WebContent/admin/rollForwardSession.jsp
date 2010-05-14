@@ -18,6 +18,7 @@
  --%>
 <%@ page language="java" pageEncoding="ISO-8859-1"%>
 <%@ page import="org.unitime.timetable.form.RollForwardSessionForm"%>
+<%@page import="org.unitime.timetable.util.SessionRollForward"%>
 <%@ taglib uri="http://jakarta.apache.org/struts/tags-bean" prefix="bean"%> 
 <%@ taglib uri="http://jakarta.apache.org/struts/tags-html" prefix="html"%>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
@@ -114,13 +115,22 @@
 		</tr>
 		<TR>
 			<TD valign="top">
-			<table><tr><td valign="top">
-				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;For Subject Areas:
-				</td><td>
-				<html:select size="<%=String.valueOf(Math.min(7,frm.getSubjectAreas().size()))%>" name="<%=frmName%>" styleClass="cmb" property="rollForwardSubjectAreaIds" multiple="true" onfocus="setUp();" onkeypress="return selectSearch(event, this);" onkeydown="return checkKey(event, this);">
+			<table><tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+			    <td valign="top">For Subject Areas:</td>
+			    <td><html:select size="<%=String.valueOf(Math.min(7,frm.getSubjectAreas().size()))%>" name="<%=frmName%>" styleClass="cmb" property="rollForwardSubjectAreaIds" multiple="true" onfocus="setUp();" onkeypress="return selectSearch(event, this);" onkeydown="return checkKey(event, this);">
 					<html:optionsCollection property="subjectAreas" label="subjectAreaAbbreviation" value="uniqueId" />
 				</html:select>
-			</td></tr></table>
+			    </td></tr>
+			<tr><td>&nbsp;</td><td></td><td></td></tr>
+			<tr><td></td><td valign="right">Scheduling Subpart Level Time Preference Options:</td><td><html:radio property="subpartTimePrefsAction" value="<%= SessionRollForward.ROLL_PREFS_ACTION %>"> Roll forward scheduling subpart time preferences</html:radio></td></tr>
+			<tr><td></td><td valign="right"></td><td><html:radio property="subpartTimePrefsAction" value="<%= SessionRollForward.DO_NOT_ROLL_ACTION %>"> Do not roll forward scheduling subpart time preferences</html:radio></td></tr>
+			<tr><td>&nbsp;</td><td></td><td></td></tr>
+			<tr><td></td><td valign="right">Scheduling Subpart Level Location Preference Options:</td><td><html:radio property="subpartLocationPrefsAction" value="<%= SessionRollForward.ROLL_PREFS_ACTION %>"> Roll forward scheduling subpart location preferences</html:radio></td></tr>
+			<tr><td></td><td valign="right"></td><td><html:radio property="subpartLocationPrefsAction" value="<%= SessionRollForward.DO_NOT_ROLL_ACTION %>"> Do not roll forward scheduling subpart location preferences</html:radio></td></tr>
+			<tr><td>&nbsp;</td><td></td><td></td></tr>
+			<tr><td></td><td valign="right">Class Level Preference Options:</td><td><html:radio property="classPrefsAction" value="<%= SessionRollForward.DO_NOT_ROLL_ACTION %>"> Ignore all class level preferences</html:radio></td></tr>
+			<tr><td></td><td valign="right"></td><td><html:radio property="classPrefsAction" value="<%= SessionRollForward.PUSH_UP_ACTION %>"> Promote appropriate class level preferences to subparts</html:radio></td></tr>
+			</table>
 			</td>
 		</tr>
 		<tr>

@@ -626,9 +626,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 
 	    	if (courseNumbersMustBeUnique.equalsIgnoreCase("true")){
 	    		co = CourseOffering.findBySessionSubjAreaAbbvCourseNbr(toSession.getUniqueId(), fromInstructionalOffering.getControllingCourseOffering().getSubjectArea().getSubjectAreaAbbreviation(), fromInstructionalOffering.getControllingCourseOffering().getCourseNbr());
-	    	} else {
-	    		co = CourseOffering.findBySessionSubjAreaAbbvCourseNbrTitle(toSession.getUniqueId(), fromInstructionalOffering.getControllingCourseOffering().getSubjectArea().getSubjectAreaAbbreviation(), fromInstructionalOffering.getControllingCourseOffering().getCourseNbr(), fromInstructionalOffering.getControllingCourseOffering().getTitle());
-	    	}
+	    	} 
 		}
 		
 		if (co != null){

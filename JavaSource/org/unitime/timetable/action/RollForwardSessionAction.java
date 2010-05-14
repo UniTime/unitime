@@ -134,6 +134,15 @@ public class RollForwardSessionAction extends Action {
 		rollForwardSessionForm.setAdmin(user.isAdmin());
 		setToFromSessionsInForm(rollForwardSessionForm);
 		rollForwardSessionForm.setSubjectAreas(getSubjectAreas(rollForwardSessionForm.getSessionToRollForwardTo()));
+		if (rollForwardSessionForm.getSubpartLocationPrefsAction() == null){
+			rollForwardSessionForm.setSubpartLocationPrefsAction(SessionRollForward.ROLL_PREFS_ACTION);
+		}
+		if (rollForwardSessionForm.getSubpartTimePrefsAction() == null){
+			rollForwardSessionForm.setSubpartTimePrefsAction(SessionRollForward.ROLL_PREFS_ACTION);			
+		}
+		if (rollForwardSessionForm.getClassPrefsAction() == null){
+			rollForwardSessionForm.setClassPrefsAction(SessionRollForward.DO_NOT_ROLL_ACTION);			
+		}
   		return mapping.findForward("displayRollForwardSessionForm");
 	}
 	
