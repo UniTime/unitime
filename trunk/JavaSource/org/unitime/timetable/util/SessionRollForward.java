@@ -114,8 +114,46 @@ public class SessionRollForward {
 	private static HashMap sessionHasExternalRoomList;
 	private static HashMap sessionHasExternalRoomDeptList;
 	private static HashMap sessionHasExternalRoomFeatureList;
+	
+	private boolean subpartTimeRollForward;
+	private boolean subpartLocationRollForward;
+	
+	private boolean classPrefsPushUp;
+
+	public static String ROLL_PREFS_ACTION = "rollUnchanged";
+	public static String DO_NOT_ROLL_ACTION = "doNotRoll";
+	public static String PUSH_UP_ACTION = "pushUp";
 
 
+	public void setSubpartLocationPrefRollForwardParameters(String subpartLocationPrefsAction){
+		if (subpartLocationPrefsAction == null || subpartLocationPrefsAction.equalsIgnoreCase(ROLL_PREFS_ACTION)){
+			subpartLocationRollForward = true;
+		} else if (subpartLocationPrefsAction.equalsIgnoreCase(DO_NOT_ROLL_ACTION)) {
+			subpartLocationRollForward = false;
+		} else {
+			subpartLocationRollForward = true;
+		}
+	}
+	
+	public void setSubpartTimePrefRollForwardParameters(String subpartTimePrefsAction){
+		if (subpartTimePrefsAction == null || subpartTimePrefsAction.equalsIgnoreCase(ROLL_PREFS_ACTION)){
+			subpartTimeRollForward = true;
+		} else if (subpartTimePrefsAction.equalsIgnoreCase(DO_NOT_ROLL_ACTION)) {
+			subpartTimeRollForward = false;
+		} else {
+			subpartTimeRollForward = true;
+		}
+	}
+	
+	public void setClassPrefRollForwardParameter(String classPrefsAction){
+		if (classPrefsAction == null || classPrefsAction.equalsIgnoreCase(DO_NOT_ROLL_ACTION)){
+			classPrefsPushUp = false;
+		} else if (classPrefsAction.equalsIgnoreCase(PUSH_UP_ACTION)){
+			classPrefsPushUp = true;
+		} else {
+			classPrefsPushUp = false;
+		}
+	}
 	public void rollBuildingAndRoomDataForward(ActionMessages errors, RollForwardSessionForm rollForwardSessionForm) {
 		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
 		Session fromSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollRoomDataForwardFrom());
@@ -894,201 +932,356 @@ public class SessionRollForward {
 		return(toDepartment);
 	}
 	
-	protected void rollForwardBuildingPrefs(PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession) throws Exception{
-		if (fromPrefGroup.getBuildingPreferences() != null && !fromPrefGroup.getBuildingPreferences().isEmpty()){
-			BuildingPref fromBuildingPref = null;
-			BuildingPref toBuildingPref = null;
-			boolean isExamPref = false;
-			if (fromPrefGroup instanceof Exam) {
-				isExamPref = true;
-			}
-			Department toDepartment = findToManagingDepartmentForPrefGroup(toPrefGroup, fromPrefGroup, toSession);
-			if (!isExamPref && toDepartment == null){
-				return;
-			}
-			if (!isExamPref && !getRoomList().containsKey(toDepartment)){
-				getRoomList().put(toDepartment, buildRoomListForDepartment(toDepartment, toSession));
-			} 
-			for (Iterator it = fromPrefGroup.getBuildingPreferences().iterator(); it.hasNext(); ){
-				fromBuildingPref = (BuildingPref) it.next();	
-				Building toBuilding = fromBuildingPref.getBuilding().findSameBuildingInSession(toSession);
-				if (toBuilding != null){
-					boolean deptHasRoomInBuilding = false;
-					if(!isExamPref){
-						Location loc = null;
-						Room r = null;
-						Iterator rIt = ((Set)getRoomList().get(toDepartment)).iterator();
-						while(rIt.hasNext() && !deptHasRoomInBuilding){
-							loc = (Location)rIt.next();
-							if (loc instanceof Room) {
-								r = (Room) loc;
-								if (r.getBuilding() != null && r.getBuilding().getUniqueId().equals(toBuilding.getUniqueId())){
-									deptHasRoomInBuilding = true;
-								}
-							}
+	private void createToBuildingPref(BuildingPref fromBuildingPref, PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession, Set locations, boolean isExamPref) throws Exception{
+		if (fromPrefGroup instanceof Class_) return;
+		BuildingPref toBuildingPref = null;
+		Building toBuilding = fromBuildingPref.getBuilding().findSameBuildingInSession(toSession);
+		if (toBuilding != null){
+			boolean deptHasRoomInBuilding = false;
+			if(!isExamPref){
+				Location loc = null;
+				Room r = null;
+				Iterator rIt = locations.iterator();
+				while(rIt.hasNext() && !deptHasRoomInBuilding){
+					loc = (Location)rIt.next();
+					if (loc instanceof Room) {
+						r = (Room) loc;
+						if (r.getBuilding() != null && r.getBuilding().getUniqueId().equals(toBuilding.getUniqueId())){
+							deptHasRoomInBuilding = true;
 						}
-					}
-					
-					if (isExamPref || deptHasRoomInBuilding){
-						toBuildingPref = new BuildingPref();
-						toBuildingPref.setBuilding(toBuilding);
-						toBuildingPref.setPrefLevel(fromBuildingPref.getPrefLevel());
-						toBuildingPref.setDistanceFrom(fromBuildingPref.getDistanceFrom());
-						toBuildingPref.setOwner(toPrefGroup);
-						toPrefGroup.addTopreferences(toBuildingPref);
 					}
 				}
 			}
+			
+			if (isExamPref || deptHasRoomInBuilding){
+				toBuildingPref = new BuildingPref();
+				toBuildingPref.setBuilding(toBuilding);
+				toBuildingPref.setPrefLevel(fromBuildingPref.getPrefLevel());
+				toBuildingPref.setDistanceFrom(fromBuildingPref.getDistanceFrom());
+				toBuildingPref.setOwner(toPrefGroup);
+				toPrefGroup.addTopreferences(toBuildingPref);
+			}
+		}
+	
+	}
+	protected void rollForwardBuildingPrefs(PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession) throws Exception{
+		Set locations = null;
+		boolean isExamPref = false;
+		if (fromPrefGroup instanceof Exam) {
+			isExamPref = true;
+		}
+		if (fromPrefGroup.getBuildingPreferences() != null 
+				&& !fromPrefGroup.getBuildingPreferences().isEmpty() 
+				&& !(fromPrefGroup instanceof Class_)
+				&& (!(fromPrefGroup instanceof SchedulingSubpart) || isSubpartLocationRollForward())){
+			BuildingPref fromBuildingPref = null;
+			locations = getLocationsFor(fromPrefGroup, toPrefGroup, toSession);
+			if (!isExamPref && locations == null){
+				return;
+			}
+			for (Iterator it = fromPrefGroup.getBuildingPreferences().iterator(); it.hasNext(); ){
+				createToBuildingPref((BuildingPref) it.next(), fromPrefGroup, toPrefGroup, toSession, locations, isExamPref);
+			}
 		}		
+		if (fromPrefGroup instanceof SchedulingSubpart && isClassPrefsPushUp() && (toPrefGroup.getBuildingPreferences() == null || toPrefGroup.getBuildingPreferences().isEmpty())) {
+			SchedulingSubpart ss = (SchedulingSubpart) fromPrefGroup;
+			if (locations == null){
+				locations = getLocationsFor(fromPrefGroup, toPrefGroup, toSession);
+			}
+			if (locations != null && locations.size() >0  && ss.getClasses() != null && !ss.getClasses().isEmpty()){
+				HashMap<String, BuildingPref> prefMap = new HashMap<String, BuildingPref>();
+				HashMap<String, Integer> prefCount = new HashMap<String, Integer>();
+				String key;
+				for (Iterator cIt = ss.getClasses().iterator(); cIt.hasNext();){
+					Class_ c = (Class_)cIt.next();
+					if (c.getBuildingPreferences() != null && !c.getBuildingPreferences().isEmpty()){
+						for (Iterator rfpIt = c.getBuildingPreferences().iterator(); rfpIt.hasNext();){
+							BuildingPref rfp = (BuildingPref) rfpIt.next();
+							key = rfp.getPrefLevel().getPrefName() + rfp.getBuilding().getUniqueId().toString();
+							prefMap.put(key, rfp);
+							int cnt = 0;
+							if (prefCount.containsKey(key)){
+								cnt = prefCount.get(key).intValue();
+							}
+							cnt++;
+							prefCount.put(key, new Integer(cnt));
+						}
+					}
+				}
+				int clsCnt = ss.getClasses().size();
+				for (String pref : prefCount.keySet()){
+					if (prefCount.get(pref).intValue() == clsCnt){
+						createToBuildingPref(prefMap.get(pref), fromPrefGroup, toPrefGroup, toSession, locations, isExamPref);
+					}
+				}
+			}				
+		}
 	}
 	
+	private void createToRoomPref(RoomPref fromRoomPref, PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession, Set locations){
+		if (fromPrefGroup instanceof Class_) return;
+		RoomPref toRoomPref = new RoomPref();
+		if (fromRoomPref.getRoom() instanceof Room) {
+			Room fromRoom = (Room) fromRoomPref.getRoom();
+			Location loc = null;
+			Room toRoom = null;
+			for (Iterator rmIt = locations.iterator(); rmIt.hasNext();){
+				loc = (Location) rmIt.next();
+				if (loc instanceof Room) {
+					toRoom = (Room) loc;
+					if (((toRoom.getBuilding().getExternalUniqueId() != null && fromRoom.getBuilding().getExternalUniqueId() != null
+							&& toRoom.getBuilding().getExternalUniqueId().equals(fromRoom.getBuilding().getExternalUniqueId())) 
+							|| ((toRoom.getBuilding().getExternalUniqueId() == null || fromRoom.getBuilding().getExternalUniqueId() == null)
+									&& toRoom.getBuilding().getAbbreviation().equals(fromRoom.getBuilding().getAbbreviation())))
+							&& toRoom.getRoomNumber().equals(fromRoom.getRoomNumber())){
+						break;
+					}								
+				}
+			}
+			if (toRoom != null && ((toRoom.getBuilding().getExternalUniqueId() != null && fromRoom.getBuilding().getExternalUniqueId() != null
+					&& toRoom.getBuilding().getExternalUniqueId().equals(fromRoom.getBuilding().getExternalUniqueId())) 
+					|| ((toRoom.getBuilding().getExternalUniqueId() == null || fromRoom.getBuilding().getExternalUniqueId() == null)
+							&& toRoom.getBuilding().getAbbreviation().equals(fromRoom.getBuilding().getAbbreviation())))
+					&& toRoom.getRoomNumber().equals(fromRoom.getRoomNumber())){
+				toRoomPref.setRoom(toRoom);
+				toRoomPref.setPrefLevel(fromRoomPref.getPrefLevel());
+				toRoomPref.setOwner(toPrefGroup);
+				toPrefGroup.addTopreferences(toRoomPref);
+			}	
+		} else if (fromRoomPref.getRoom() instanceof NonUniversityLocation) {
+			NonUniversityLocation fromNonUniversityLocation = (NonUniversityLocation) fromRoomPref.getRoom();
+			Location loc = null;
+			NonUniversityLocation toNonUniversityLocation = null;
+			for (Iterator rmIt = locations.iterator(); rmIt.hasNext();){
+				loc = (Location) rmIt.next();
+				if (loc instanceof NonUniversityLocation) {
+					toNonUniversityLocation = (NonUniversityLocation) loc;
+					if (toNonUniversityLocation.getName().equals(fromNonUniversityLocation.getName())){
+						break;
+					}								
+				}
+			}
+			if (toNonUniversityLocation != null && toNonUniversityLocation.getName().equals(fromNonUniversityLocation.getName())){
+				toRoomPref.setRoom(toNonUniversityLocation);
+				toRoomPref.setPrefLevel(fromRoomPref.getPrefLevel());
+				toRoomPref.setOwner(toPrefGroup);
+				toPrefGroup.addTopreferences(toRoomPref);
+			}	
+		}				
+	}
+	
+	private Set getLocationsFor(PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession){
+		Department toDepartment = findToManagingDepartmentForPrefGroup(toPrefGroup, fromPrefGroup, toSession);
+		if (toDepartment == null){
+			return(null);
+		}
+		if (!getRoomList().containsKey(toDepartment)){
+			getRoomList().put(toDepartment, buildRoomListForDepartment(toDepartment, toSession));
+		} 
+		return ((Set)getRoomList().get(toDepartment));
+	}
 	protected void rollForwardRoomPrefs(PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession){
-		if (fromPrefGroup.getRoomPreferences() != null && !fromPrefGroup.getRoomPreferences().isEmpty()){
-			RoomPref fromRoomPref = null;
-			RoomPref toRoomPref = null;
+		Set locations = null;
+		if (fromPrefGroup.getRoomPreferences() != null 
+				&& !fromPrefGroup.getRoomPreferences().isEmpty() 
+				&& !(fromPrefGroup instanceof Class_)
+				&& (!(fromPrefGroup instanceof SchedulingSubpart) || isSubpartLocationRollForward())){
+			locations = getLocationsFor(fromPrefGroup, toPrefGroup, toSession);
+			if (locations != null && locations.size() >0 ){					
+				for (Iterator it = fromPrefGroup.getRoomPreferences().iterator(); it.hasNext();){
+					createToRoomPref((RoomPref) it.next(), fromPrefGroup, toPrefGroup, toSession, locations);
+				}
+			}
+		}
+		if (fromPrefGroup instanceof SchedulingSubpart && isClassPrefsPushUp() && (toPrefGroup.getRoomPreferences() == null || toPrefGroup.getRoomPreferences().isEmpty())) {
+			SchedulingSubpart ss = (SchedulingSubpart) fromPrefGroup;
+			if (locations == null){
+				locations = getLocationsFor(fromPrefGroup, toPrefGroup, toSession);
+			}
+			if (locations != null && locations.size() >0  && ss.getClasses() != null && !ss.getClasses().isEmpty()){
+				HashMap<String, RoomPref> prefMap = new HashMap<String, RoomPref>();
+				HashMap<String, Integer> prefCount = new HashMap<String, Integer>();
+				String key;
+				for (Iterator cIt = ss.getClasses().iterator(); cIt.hasNext();){
+					Class_ c = (Class_)cIt.next();
+					if (c.getRoomPreferences() != null && !c.getRoomPreferences().isEmpty()){
+						for (Iterator rfpIt = c.getRoomPreferences().iterator(); rfpIt.hasNext();){
+							RoomPref rfp = (RoomPref) rfpIt.next();
+							key = rfp.getPrefLevel().getPrefName() + rfp.getRoom().getUniqueId().toString();
+							prefMap.put(key, rfp);
+							int cnt = 0;
+							if (prefCount.containsKey(key)){
+								cnt = prefCount.get(key).intValue();
+							}
+							cnt++;
+							prefCount.put(key, new Integer(cnt));
+						}
+					}
+				}
+				int clsCnt = ss.getClasses().size();
+				for (String pref : prefCount.keySet()){
+					if (prefCount.get(pref).intValue() == clsCnt){
+						createToRoomPref(prefMap.get(pref), fromPrefGroup, toPrefGroup, toSession, locations);
+					}
+				}
+			}				
+		}
+	}
+	
+	private void createToRoomFeaturePref(RoomFeaturePref fromRoomFeaturePref, PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession){
+		if (fromPrefGroup instanceof Class_) return;
+		RoomFeaturePref toRoomFeaturePref = new RoomFeaturePref();
+		if (fromRoomFeaturePref.getRoomFeature() instanceof GlobalRoomFeature) {
+			GlobalRoomFeature grf = (GlobalRoomFeature) fromRoomFeaturePref.getRoomFeature();
+			toRoomFeaturePref.setRoomFeature(grf);
+			toRoomFeaturePref.setPrefLevel(fromRoomFeaturePref.getPrefLevel());
+			toRoomFeaturePref.setOwner(toPrefGroup);
+			toPrefGroup.addTopreferences(toRoomFeaturePref);
+		} else {
 			Department toDepartment = findToManagingDepartmentForPrefGroup(toPrefGroup, fromPrefGroup, toSession);
 			if (toDepartment == null){
 				return;
 			}
-			if (!getRoomList().containsKey(toDepartment)){
-				getRoomList().put(toDepartment, buildRoomListForDepartment(toDepartment, toSession));
-			} 
-			Set l = (Set)getRoomList().get(toDepartment);
-			if (l != null && l.size() >0 ){					
-				for (Iterator it = fromPrefGroup.getRoomPreferences().iterator(); it.hasNext();){
-					fromRoomPref = (RoomPref) it.next();
-					toRoomPref = new RoomPref();
-					if (fromRoomPref.getRoom() instanceof Room) {
-						Room fromRoom = (Room) fromRoomPref.getRoom();
-						Location loc = null;
-						Room toRoom = null;
-						for (Iterator rmIt = l.iterator(); rmIt.hasNext();){
-							loc = (Location) rmIt.next();
-							if (loc instanceof Room) {
-								toRoom = (Room) loc;
-								if (((toRoom.getBuilding().getExternalUniqueId() != null && fromRoom.getBuilding().getExternalUniqueId() != null
-										&& toRoom.getBuilding().getExternalUniqueId().equals(fromRoom.getBuilding().getExternalUniqueId())) 
-										|| ((toRoom.getBuilding().getExternalUniqueId() == null || fromRoom.getBuilding().getExternalUniqueId() == null)
-												&& toRoom.getBuilding().getAbbreviation().equals(fromRoom.getBuilding().getAbbreviation())))
-										&& toRoom.getRoomNumber().equals(fromRoom.getRoomNumber())){
-									break;
-								}								
-							}
-						}
-						if (toRoom != null && ((toRoom.getBuilding().getExternalUniqueId() != null && fromRoom.getBuilding().getExternalUniqueId() != null
-								&& toRoom.getBuilding().getExternalUniqueId().equals(fromRoom.getBuilding().getExternalUniqueId())) 
-								|| ((toRoom.getBuilding().getExternalUniqueId() == null || fromRoom.getBuilding().getExternalUniqueId() == null)
-										&& toRoom.getBuilding().getAbbreviation().equals(fromRoom.getBuilding().getAbbreviation())))
-								&& toRoom.getRoomNumber().equals(fromRoom.getRoomNumber())){
-							toRoomPref.setRoom(toRoom);
-							toRoomPref.setPrefLevel(fromRoomPref.getPrefLevel());
-							toRoomPref.setOwner(toPrefGroup);
-							toPrefGroup.addTopreferences(toRoomPref);
-						}	
-					} else if (fromRoomPref.getRoom() instanceof NonUniversityLocation) {
-						NonUniversityLocation fromNonUniversityLocation = (NonUniversityLocation) fromRoomPref.getRoom();
-						Location loc = null;
-						NonUniversityLocation toNonUniversityLocation = null;
-						for (Iterator rmIt = l.iterator(); rmIt.hasNext();){
-							loc = (Location) rmIt.next();
-							if (loc instanceof NonUniversityLocation) {
-								toNonUniversityLocation = (NonUniversityLocation) loc;
-								if (toNonUniversityLocation.getName().equals(fromNonUniversityLocation.getName())){
-									break;
-								}								
-							}
-						}
-						if (toNonUniversityLocation != null && toNonUniversityLocation.getName().equals(fromNonUniversityLocation.getName())){
-							toRoomPref.setRoom(toNonUniversityLocation);
-							toRoomPref.setPrefLevel(fromRoomPref.getPrefLevel());
-							toRoomPref.setOwner(toPrefGroup);
-							toPrefGroup.addTopreferences(toRoomPref);
-						}	
-					}				
+			Collection l = DepartmentRoomFeature.getAllDepartmentRoomFeatures(toDepartment);
+			DepartmentRoomFeature fromDepartmentRoomFeature = (DepartmentRoomFeature) fromRoomFeaturePref.getRoomFeature();
+			if (l != null && l.size() > 0){
+				DepartmentRoomFeature toDepartmentRoomFeature = null;
+				for (Iterator rfIt = l.iterator(); rfIt.hasNext();){
+					toDepartmentRoomFeature = (DepartmentRoomFeature) rfIt.next();
+					if (toDepartmentRoomFeature.getLabel().equals(fromDepartmentRoomFeature.getLabel())){
+						break;
+					}
 				}
-			}
-		}		
-	}
-	protected void rollForwardRoomFeaturePrefs(PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession){
-		if (fromPrefGroup.getRoomFeaturePreferences() != null && !fromPrefGroup.getRoomFeaturePreferences().isEmpty()){
-			RoomFeaturePref fromRoomFeaturePref = null;
-			RoomFeaturePref toRoomFeaturePref = null;
-			for (Iterator it = fromPrefGroup.getRoomFeaturePreferences().iterator(); it.hasNext(); ){
-				fromRoomFeaturePref = (RoomFeaturePref) it.next();
-				toRoomFeaturePref = new RoomFeaturePref();
-				if (fromRoomFeaturePref.getRoomFeature() instanceof GlobalRoomFeature) {
-					GlobalRoomFeature grf = (GlobalRoomFeature) fromRoomFeaturePref.getRoomFeature();
-					toRoomFeaturePref.setRoomFeature(grf);
+				if (toDepartmentRoomFeature.getLabel().equals(fromDepartmentRoomFeature.getLabel())){
+					toRoomFeaturePref.setRoomFeature(toDepartmentRoomFeature);
 					toRoomFeaturePref.setPrefLevel(fromRoomFeaturePref.getPrefLevel());
 					toRoomFeaturePref.setOwner(toPrefGroup);
 					toPrefGroup.addTopreferences(toRoomFeaturePref);
-				} else {
-					Department toDepartment = findToManagingDepartmentForPrefGroup(toPrefGroup, fromPrefGroup, toSession);
-					if (toDepartment == null){
-						continue;
-					}
-					Collection l = DepartmentRoomFeature.getAllDepartmentRoomFeatures(toDepartment);
-					DepartmentRoomFeature fromDepartmentRoomFeature = (DepartmentRoomFeature) fromRoomFeaturePref.getRoomFeature();
-					if (l != null && l.size() > 0){
-						DepartmentRoomFeature toDepartmentRoomFeature = null;
-						for (Iterator rfIt = l.iterator(); rfIt.hasNext();){
-							toDepartmentRoomFeature = (DepartmentRoomFeature) rfIt.next();
-							if (toDepartmentRoomFeature.getLabel().equals(fromDepartmentRoomFeature.getLabel())){
-								break;
+				}
+			}
+		}
+
+	}
+	
+	protected void rollForwardRoomFeaturePrefs(PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession){
+		if (fromPrefGroup.getRoomFeaturePreferences() != null 
+				&& !fromPrefGroup.getRoomFeaturePreferences().isEmpty() 
+				&& !(fromPrefGroup instanceof Class_)
+				&& (!(fromPrefGroup instanceof SchedulingSubpart) || isSubpartLocationRollForward())){
+			for (Iterator it = fromPrefGroup.getRoomFeaturePreferences().iterator(); it.hasNext(); ){
+				createToRoomFeaturePref((RoomFeaturePref) it.next(), fromPrefGroup, toPrefGroup, toSession);
+			}
+		}
+		if (fromPrefGroup instanceof SchedulingSubpart && isClassPrefsPushUp() && (toPrefGroup.getRoomFeaturePreferences() == null || toPrefGroup.getRoomFeaturePreferences().isEmpty())) {
+			SchedulingSubpart ss = (SchedulingSubpart) fromPrefGroup;
+			if (ss.getClasses() != null && !ss.getClasses().isEmpty()){
+				HashMap<String, RoomFeaturePref> prefMap = new HashMap<String, RoomFeaturePref>();
+				HashMap<String, Integer> prefCount = new HashMap<String, Integer>();
+				String key;
+				for (Iterator cIt = ss.getClasses().iterator(); cIt.hasNext();){
+					Class_ c = (Class_)cIt.next();
+					if (c.getRoomFeaturePreferences() != null && !c.getRoomFeaturePreferences().isEmpty()){
+						for (Iterator rfpIt = c.getRoomFeaturePreferences().iterator(); rfpIt.hasNext();){
+							RoomFeaturePref rfp = (RoomFeaturePref) rfpIt.next();
+							key = rfp.getPrefLevel().getPrefName() + rfp.getRoomFeature().getUniqueId().toString();
+							prefMap.put(key, rfp);
+							int cnt = 0;
+							if (prefCount.containsKey(key)){
+								cnt = prefCount.get(key).intValue();
 							}
-						}
-						if (toDepartmentRoomFeature.getLabel().equals(fromDepartmentRoomFeature.getLabel())){
-							toRoomFeaturePref.setRoomFeature(toDepartmentRoomFeature);
-							toRoomFeaturePref.setPrefLevel(fromRoomFeaturePref.getPrefLevel());
-							toRoomFeaturePref.setOwner(toPrefGroup);
-							toPrefGroup.addTopreferences(toRoomFeaturePref);
+							cnt++;
+							prefCount.put(key, new Integer(cnt));
 						}
 					}
 				}
-			}
-		}		
+				int clsCnt = ss.getClasses().size();
+				for (String pref : prefCount.keySet()){
+					if (prefCount.get(pref).intValue() == clsCnt){
+						createToRoomFeaturePref(prefMap.get(pref), fromPrefGroup, toPrefGroup, toSession);
+					}
+				}
+			}				
+		}
 	}
 	
-	protected void rollForwardRoomGroupPrefs(PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession){
-		if (fromPrefGroup.getRoomGroupPreferences() != null && !fromPrefGroup.getRoomGroupPreferences().isEmpty()){
-			RoomGroupPref fromRoomGroupPref = null;
-			RoomGroupPref toRoomGroupPref = null;
-			for (Iterator it = fromPrefGroup.getRoomGroupPreferences().iterator(); it.hasNext();){
-				fromRoomGroupPref = (RoomGroupPref) it.next();
-				toRoomGroupPref = new RoomGroupPref();
-				if (fromRoomGroupPref.getRoomGroup().isDefaultGroup().booleanValue()){
-					toRoomGroupPref.setRoomGroup(fromRoomGroupPref.getRoomGroup());
+	private void createToRoomGroupPref(RoomGroupPref fromRoomGroupPref, PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession){
+		if (fromPrefGroup instanceof Class_) return;
+		RoomGroupPref toRoomGroupPref = new RoomGroupPref();
+		if (fromRoomGroupPref.getRoomGroup().isDefaultGroup().booleanValue()){
+			toRoomGroupPref.setRoomGroup(fromRoomGroupPref.getRoomGroup());
+			toRoomGroupPref.setPrefLevel(fromRoomGroupPref.getPrefLevel());
+			toRoomGroupPref.setOwner(toPrefGroup);
+			toPrefGroup.addTopreferences(toRoomGroupPref);
+		} else {
+			Department toDepartment = findToManagingDepartmentForPrefGroup(toPrefGroup, fromPrefGroup, toSession);
+			if (toDepartment == null){
+				return;
+			}
+			Collection l = RoomGroup.getAllDepartmentRoomGroups(toDepartment);
+			if (l != null && l.size() > 0) {
+				RoomGroup toRoomGroup = null;
+				for (Iterator itRg = l.iterator(); itRg.hasNext();){
+					toRoomGroup = (RoomGroup) itRg.next();
+					if (toRoomGroup.getName().equals(fromRoomGroupPref.getRoomGroup().getName())){
+						break;
+					}
+				}
+				if (toRoomGroup.getName().equals(fromRoomGroupPref.getRoomGroup().getName())){
+					toRoomGroupPref.setRoomGroup(toRoomGroup);
 					toRoomGroupPref.setPrefLevel(fromRoomGroupPref.getPrefLevel());
 					toRoomGroupPref.setOwner(toPrefGroup);
 					toPrefGroup.addTopreferences(toRoomGroupPref);
-				} else {
-					Department toDepartment = findToManagingDepartmentForPrefGroup(toPrefGroup, fromPrefGroup, toSession);
-					if (toDepartment == null){
-						continue;
-					}
-					Collection l = RoomGroup.getAllDepartmentRoomGroups(toDepartment);
-					if (l != null && l.size() > 0) {
-						RoomGroup toRoomGroup = null;
-						for (Iterator itRg = l.iterator(); itRg.hasNext();){
-							toRoomGroup = (RoomGroup) itRg.next();
-							if (toRoomGroup.getName().equals(fromRoomGroupPref.getRoomGroup().getName())){
-								break;
+				}						
+			}
+		}
+	}
+	
+	protected void rollForwardRoomGroupPrefs(PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession){
+		if (fromPrefGroup.getRoomGroupPreferences() != null 
+				&& !fromPrefGroup.getRoomGroupPreferences().isEmpty() 
+				&& !(fromPrefGroup instanceof Class_)
+				&& (!(fromPrefGroup instanceof SchedulingSubpart) || isSubpartLocationRollForward())){
+			for (Iterator it = fromPrefGroup.getRoomGroupPreferences().iterator(); it.hasNext();){
+				createToRoomGroupPref((RoomGroupPref) it.next(), fromPrefGroup, toPrefGroup, toSession);
+			}
+		}
+		if (fromPrefGroup instanceof SchedulingSubpart && isClassPrefsPushUp() && (toPrefGroup.getRoomGroupPreferences() == null || toPrefGroup.getRoomGroupPreferences().isEmpty())) {
+			SchedulingSubpart ss = (SchedulingSubpart) fromPrefGroup;
+			if (ss.getClasses() != null && !ss.getClasses().isEmpty()){
+				HashMap<String, RoomGroupPref> prefMap = new HashMap<String, RoomGroupPref>();
+				HashMap<String, Integer> prefCount = new HashMap<String, Integer>();
+				String key;
+				for (Iterator cIt = ss.getClasses().iterator(); cIt.hasNext();){
+					Class_ c = (Class_)cIt.next();
+					if (c.getRoomGroupPreferences() != null && !c.getRoomGroupPreferences().isEmpty()){
+						for (Iterator rfpIt = c.getRoomGroupPreferences().iterator(); rfpIt.hasNext();){
+							RoomGroupPref rfp = (RoomGroupPref) rfpIt.next();
+							key = rfp.getPrefLevel().getPrefName() + rfp.getRoomGroup().getUniqueId().toString();
+							prefMap.put(key, rfp);
+							int cnt = 0;
+							if (prefCount.containsKey(key)){
+								cnt = prefCount.get(key).intValue();
 							}
+							cnt++;
+							prefCount.put(key, new Integer(cnt));
 						}
-						if (toRoomGroup.getName().equals(fromRoomGroupPref.getRoomGroup().getName())){
-							toRoomGroupPref.setRoomGroup(toRoomGroup);
-							toRoomGroupPref.setPrefLevel(fromRoomGroupPref.getPrefLevel());
-							toRoomGroupPref.setOwner(toPrefGroup);
-							toPrefGroup.addTopreferences(toRoomGroupPref);
-						}						
 					}
 				}
-			}
-		}		
+				int clsCnt = ss.getClasses().size();
+				for (String pref : prefCount.keySet()){
+					if (prefCount.get(pref).intValue() == clsCnt){
+						createToRoomGroupPref(prefMap.get(pref), fromPrefGroup, toPrefGroup, toSession);
+					}
+				}
+			}				
+		}
 	}
 	
 	protected void rollForwardTimePrefs(PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession){
-		if (fromPrefGroup.getTimePreferences() != null && !fromPrefGroup.getTimePreferences().isEmpty()){
+		if (fromPrefGroup.getTimePreferences() != null 
+				&& !fromPrefGroup.getTimePreferences().isEmpty() 
+				&& !(fromPrefGroup instanceof Class_)
+				&& (!(fromPrefGroup instanceof SchedulingSubpart) || isSubpartTimeRollForward())){
 			TimePref fromTimePref = null;
 			TimePref toTimePref = null;
 			for (Iterator it = fromPrefGroup.getTimePreferences().iterator(); it.hasNext();){
@@ -1098,48 +1291,92 @@ public class SessionRollForward {
 				} else {
 					toTimePref = TimePattern.getMatchingTimePreference(toSession.getUniqueId(), fromTimePref);
 				}
-				if (fromPrefGroup instanceof SchedulingSubpart || fromPrefGroup instanceof Class_) {
-					toTimePref.weakenHardPreferences();
-				}
 				toTimePref.setOwner(toPrefGroup);
 				toPrefGroup.addTopreferences(toTimePref);
 			}
 		}
-		if (fromPrefGroup instanceof SchedulingSubpart) {
+		// If subpart time preferences are not to be rolled forward, make sure any subpart time patterns are rolled forward without their time preferences. 
+		if (fromPrefGroup instanceof SchedulingSubpart && !isSubpartTimeRollForward()){
+			TimePref fromTimePref = null;
+			TimePref toTimePref = null;
+			for (Iterator it = fromPrefGroup.getTimePreferences().iterator(); it.hasNext();){
+				fromTimePref = (TimePref) it.next();
+				if (fromTimePref.getTimePattern() == null) {
+					toTimePref = (TimePref)fromTimePref.clone();
+				} else {
+					toTimePref = TimePattern.getMatchingTimePreference(toSession.getUniqueId(), fromTimePref);
+				}
+				toTimePref.setPreference(null);
+				toTimePref.setOwner(toPrefGroup);
+				toPrefGroup.addTopreferences(toTimePref);
+			}			
+		}
+		if (fromPrefGroup instanceof SchedulingSubpart && isClassPrefsPushUp()) {
 			SchedulingSubpart ss = (SchedulingSubpart) fromPrefGroup;
-			if (ss.getTimePreferences() == null || ss.getTimePreferences().isEmpty()){
-				if (ss.getClasses() != null && !ss.getClasses().isEmpty()) {
-					HashSet<TimePattern> timePatterns = new HashSet<TimePattern>();
-					for(Iterator cIt = ss.getClasses().iterator(); cIt.hasNext();){
-						Class_ c = (Class_) cIt.next();
-						if (c.getTimePreferences() != null && !c.getTimePreferences().isEmpty()){
-							for(Iterator tpIt = c.getTimePreferences().iterator(); tpIt.hasNext();){
-								TimePref tp = (TimePref) tpIt.next();
-								timePatterns.add(tp.getTimePattern());
+			if ((ss.getTimePreferences() == null || ss.getTimePreferences().isEmpty()) && ss.getClasses() != null && !ss.getClasses().isEmpty()){
+				HashMap<String, TimePref> prefMap = new HashMap<String, TimePref>();
+				HashMap<String, Integer> prefCount = new HashMap<String, Integer>();
+				HashSet<TimePattern> timePatterns = new HashSet<TimePattern>();
+				String key;
+				for (Iterator cIt = ss.getClasses().iterator(); cIt.hasNext();){
+					Class_ c = (Class_)cIt.next();
+					if (c.getTimePreferences() != null && !c.getTimePreferences().isEmpty()){
+						for (Iterator tpIt = c.getTimePreferences().iterator(); tpIt.hasNext();){
+							TimePref tp = (TimePref) tpIt.next();
+							key = tp.getPrefLevel().getPrefName() + tp.getTimePattern().getUniqueId().toString() + tp.getPreference();
+							prefMap.put(key, tp);
+							timePatterns.add(tp.getTimePattern());
+							int cnt = 0;
+							if (prefCount.containsKey(key)){
+								cnt = prefCount.get(key).intValue();
 							}
-						}
-					}
-					if (!timePatterns.isEmpty()){
-						for(TimePattern fromTp : timePatterns){
-							TimePattern toTp = TimePattern.getMatchingTimePattern(toSession.getUniqueId(), fromTp);
-							TimePref toTimePref = null;
-							if (toTp != null){
-								toTimePref = new TimePref();
-								toTimePref.setOwner(toPrefGroup);
-								toTimePref.setTimePattern(toTp);
-								toTimePref.setPrefLevel(PreferenceLevel.getPreferenceLevel(""+PreferenceLevel.sCharLevelRequired));
-								toPrefGroup.addTopreferences(toTimePref);
-							}
+							cnt++;
+							prefCount.put(key, new Integer(cnt));
 						}
 					}
 				}
+				int clsCnt = ss.getClasses().size();
+				for (String pref : prefCount.keySet()){
+					if (prefCount.get(pref).intValue() == clsCnt){
+						TimePref fromTimePref = prefMap.get(pref);
+						TimePref toTimePref = null;
+						if (fromTimePref.getTimePattern() == null) {
+							toTimePref = (TimePref)fromTimePref.clone();
+						} else {
+							if (fromTimePref.getTimePattern().getType().intValue() == (TimePattern.sTypeExactTime)){
+								continue;
+							}
+							toTimePref = TimePattern.getMatchingTimePreference(toSession.getUniqueId(), fromTimePref);
+						}
+						toTimePref.setOwner(toPrefGroup);
+						toPrefGroup.addTopreferences(toTimePref);
+						if (toTimePref.getPreference().contains(""+PreferenceLevel.sCharLevelRequired) || toTimePref.getPreference().contains(""+PreferenceLevel.sCharLevelProhibited)){
+							toTimePref.setPreference(null);
+						}
+						timePatterns.remove(fromTimePref.getTimePattern());
+					}
+				}
+
+				for(TimePattern fromTp : timePatterns){
+					if (fromTp.getType().intValue() == (TimePattern.sTypeExactTime)){
+						continue;
+					}			
+					TimePattern toTp = TimePattern.getMatchingTimePattern(toSession.getUniqueId(), fromTp);
+					TimePref toTimePref = null;
+					if (toTp != null){
+						toTimePref = new TimePref();
+						toTimePref.setOwner(toPrefGroup);
+						toTimePref.setTimePattern(toTp);
+						toTimePref.setPrefLevel(PreferenceLevel.getPreferenceLevel(""+PreferenceLevel.sCharLevelRequired));
+						toPrefGroup.addTopreferences(toTimePref);
+					}					
+				}
 			}
 		}
-
 	}
 
 	protected void rollForwardDistributionPrefs(PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession, org.hibernate.Session hibSession){
-		if (fromPrefGroup.getDistributionObjects() != null && !fromPrefGroup.getDistributionObjects().isEmpty()){
+		if (fromPrefGroup.getDistributionObjects() != null && !fromPrefGroup.getDistributionObjects().isEmpty() && !(fromPrefGroup instanceof Class_)){
 			DistributionObject fromDistObj = null;
 			DistributionObject toDistObj = null;
 			DistributionPref fromDistributionPref = null;
@@ -1436,6 +1673,9 @@ public class SessionRollForward {
 		if (toSession.getSubjectAreas() != null) {
 			SubjectArea subjectArea = null;
 			InstructionalOfferingRollForward instrOffrRollFwd = new InstructionalOfferingRollForward();
+			instrOffrRollFwd.setClassPrefRollForwardParameter(rollForwardSessionForm.getClassPrefsAction());
+			instrOffrRollFwd.setSubpartLocationPrefRollForwardParameters(rollForwardSessionForm.getSubpartLocationPrefsAction());
+			instrOffrRollFwd.setSubpartTimePrefRollForwardParameters(rollForwardSessionForm.getSubpartTimePrefsAction());
 			for (Iterator saIt = subjects.iterator(); saIt.hasNext();){
 				subjectArea = (SubjectArea) saIt.next();
 				SubjectArea.loadSubjectAreas(toSession.getUniqueId());
@@ -1807,5 +2047,26 @@ public class SessionRollForward {
         }
         hibSession.flush(); hibSession.clear();
     }
+
+	/**
+	 * @return the subpartTimeRollForward
+	 */
+	public boolean isSubpartTimeRollForward() {
+		return subpartTimeRollForward;
+	}
+
+	/**
+	 * @return the subpartLocationRollForward
+	 */
+	public boolean isSubpartLocationRollForward() {
+		return subpartLocationRollForward;
+	}
+
+	/**
+	 * @return the classPrefsPushUp
+	 */
+	public boolean isClassPrefsPushUp() {
+		return classPrefsPushUp;
+	}
 
 }

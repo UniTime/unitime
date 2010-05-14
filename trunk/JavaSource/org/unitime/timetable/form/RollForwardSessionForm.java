@@ -42,6 +42,7 @@ import org.unitime.timetable.model.dao.RoomFeatureDAO;
 import org.unitime.timetable.model.dao.RoomGroupDAO;
 import org.unitime.timetable.model.dao.StudentClassEnrollmentDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
+import org.unitime.timetable.util.SessionRollForward;
 
 
 /** 
@@ -92,6 +93,9 @@ public class RollForwardSessionForm extends ActionForm {
 	private Boolean rollForwardFinalExams;
 	private Boolean rollForwardStudents;
 	private Integer rollForwardStudentsMode;
+	private String subpartLocationPrefsAction;
+	private String subpartTimePrefsAction;
+	private String classPrefsAction;
 
 	/** 
 	 * Method validate
@@ -168,6 +172,21 @@ public class RollForwardSessionForm extends ActionForm {
 		}
 		
 		if (getRollForwardCourseOfferings().booleanValue()){
+			if (getSubpartLocationPrefsAction() != null 
+					&& !getSubpartLocationPrefsAction().equalsIgnoreCase(SessionRollForward.DO_NOT_ROLL_ACTION)
+					&& !getSubpartLocationPrefsAction().equalsIgnoreCase(SessionRollForward.ROLL_PREFS_ACTION)){
+				errors.add("invalidSubpartLocationAction", new ActionMessage("errors.generic", "Invalid subpart location preference roll forward action:  " + getSubpartLocationPrefsAction()));			
+			}
+			if (getSubpartTimePrefsAction() != null 
+					&& !getSubpartTimePrefsAction().equalsIgnoreCase(SessionRollForward.DO_NOT_ROLL_ACTION)
+					&& !getSubpartTimePrefsAction().equalsIgnoreCase(SessionRollForward.ROLL_PREFS_ACTION)){
+				errors.add("invalidSubpartTimeAction", new ActionMessage("errors.generic", "Invalid subpart time preference roll forward action:  " + getSubpartLocationPrefsAction()));			
+			}
+			if (getClassPrefsAction() != null 
+					&& !getClassPrefsAction().equalsIgnoreCase(SessionRollForward.DO_NOT_ROLL_ACTION)
+					&& !getClassPrefsAction().equalsIgnoreCase(SessionRollForward.PUSH_UP_ACTION)){
+				errors.add("invalidClassAction", new ActionMessage("errors.generic", "Invalid class preference roll forward action:  " + getClassPrefsAction()));			
+			}
 			validateRollForward(errors, s, getSessionToRollCourseOfferingsForwardFrom(), "Course Offerings", new ArrayList());
 			CourseOfferingDAO coDao = new CourseOfferingDAO();
 			for (int i = 0; i < getRollForwardSubjectAreaIds().length; i++){
@@ -245,6 +264,9 @@ public class RollForwardSessionForm extends ActionForm {
 		rollForwardFinalExams = new Boolean(false);
 		rollForwardStudents = new Boolean(false);
 		rollForwardStudentsMode = new Integer(0);
+		subpartLocationPrefsAction = null;
+		subpartTimePrefsAction = null;
+		classPrefsAction = null;
 	}
 
 	/** 
@@ -569,4 +591,52 @@ public class RollForwardSessionForm extends ActionForm {
     public void setRollForwardStudentsMode(Integer rollForwardStudentsMode) {
         this.rollForwardStudentsMode = rollForwardStudentsMode;
     }
+
+
+	/**
+	 * @return the subpartLocationPrefsAction
+	 */
+	public String getSubpartLocationPrefsAction() {
+		return subpartLocationPrefsAction;
+	}
+
+
+	/**
+	 * @param subpartLocationPrefsAction the subpartLocationPrefsAction to set
+	 */
+	public void setSubpartLocationPrefsAction(String subpartLocationPrefsAction) {
+		this.subpartLocationPrefsAction = subpartLocationPrefsAction;
+	}
+
+
+	/**
+	 * @return the subpartTimePrefsAction
+	 */
+	public String getSubpartTimePrefsAction() {
+		return subpartTimePrefsAction;
+	}
+
+
+	/**
+	 * @param subpartTimePrefsAction the subpartTimePrefsAction to set
+	 */
+	public void setSubpartTimePrefsAction(String subpartTimePrefsAction) {
+		this.subpartTimePrefsAction = subpartTimePrefsAction;
+	}
+
+
+	/**
+	 * @return the classPrefsAction
+	 */
+	public String getClassPrefsAction() {
+		return classPrefsAction;
+	}
+
+
+	/**
+	 * @param classPrefsAction the classPrefsAction to set
+	 */
+	public void setClassPrefsAction(String classPrefsAction) {
+		this.classPrefsAction = classPrefsAction;
+	}
 }
