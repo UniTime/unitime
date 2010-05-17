@@ -679,7 +679,7 @@ public class RoomListAction extends Action {
                 comp[idx] = "";
 				for (Iterator it = new TreeSet(location.getRoomGroups()).iterator(); it.hasNext();) {
 					RoomGroup rg = (RoomGroup) it.next();
-					if (!rg.isGlobal().booleanValue() && (examType<0 || !depts.contains(rg.getDepartment()))) continue;
+					if (!rg.isGlobal().booleanValue() && (examType>=0 || !depts.contains(rg.getDepartment()))) continue;
 					if (!rg.isGlobal().booleanValue()) {
                         boolean skip = true;
                         for (Iterator j=location.getRoomDepts().iterator();j.hasNext();) {
@@ -707,6 +707,7 @@ public class RoomListAction extends Action {
 					if (examType<0)
 					    for (Iterator it = new TreeSet(location.getDepartmentRoomFeatures()).iterator(); it.hasNext();) {
 					        DepartmentRoomFeature drf = (DepartmentRoomFeature) it.next();
+							if (!depts.contains(drf.getDepartment())) continue;
 					        boolean skip = true;
 					        for (Iterator j=location.getRoomDepts().iterator();j.hasNext();) {
 					            RoomDept rd = (RoomDept)j.next();
@@ -1171,7 +1172,7 @@ public class RoomListAction extends Action {
 				text[idx] = "";
 				for (Iterator it = new TreeSet(location.getRoomGroups()).iterator(); it.hasNext();) {
 					RoomGroup rg = (RoomGroup) it.next();
-					if (!rg.isGlobal().booleanValue() && (examType<0 || !depts.contains(rg.getDepartment()))) continue;
+					if (!rg.isGlobal().booleanValue() && (examType>=0 || !depts.contains(rg.getDepartment()))) continue;
                     if (!rg.isGlobal().booleanValue()) {
                         boolean skip = true;
                         for (Iterator j=location.getRoomDepts().iterator();j.hasNext();) {
@@ -1198,6 +1199,7 @@ public class RoomListAction extends Action {
 					if (examType<0)
 	                    for (Iterator it = new TreeSet(location.getDepartmentRoomFeatures()).iterator(); it.hasNext();) {
 	                        DepartmentRoomFeature drf = (DepartmentRoomFeature) it.next();
+							if (!depts.contains(drf.getDepartment())) continue;
 	                        boolean skip = true;
 	                        for (Iterator j=location.getRoomDepts().iterator();j.hasNext();) {
 	                            RoomDept rd = (RoomDept)j.next();
