@@ -86,8 +86,13 @@
 		<TR>
 			<TD>External Id:</TD>
 			<TD>
-				<bean:write name="<%=frmName%>"  property="puId" />	
-				<html:hidden name="<%=frmName%>"  property="puId" styleId="uid"/>
+				<tt:propertyEquals name="tmtbl.instructor.allowExternalIdEdit" value="true">
+					<html:text property="puId" maxlength="10" size="10"/> 
+				</tt:propertyEquals>
+				<tt:propertyNotEquals name="tmtbl.instructor.allowExternalIdEdit" value="true">
+					<bean:write name="<%=frmName%>"  property="puId" />	
+					<html:hidden name="<%=frmName%>"  property="puId" styleId="uid"/>
+				</tt:propertyNotEquals>
 			<TD>
 		</TR>
 		
