@@ -87,7 +87,7 @@
 			<TD>External Id:</TD>
 			<TD>
 				<tt:propertyEquals name="tmtbl.instructor.allowExternalIdEdit" value="true">
-					<html:text property="puId" maxlength="10" size="10"/> 
+					<html:text property="puId" maxlength="40" size="10"/> 
 				</tt:propertyEquals>
 				<tt:propertyNotEquals name="tmtbl.instructor.allowExternalIdEdit" value="true">
 					<bean:write name="<%=frmName%>"  property="puId" />	
