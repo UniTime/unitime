@@ -178,6 +178,7 @@ public class Student extends BaseStudent implements Comparable<Student> {
     
     public static Hashtable<Long,Set<Long>> findConflictingStudents(Long classId, int startSlot, int length, Vector<Date> dates) {
     	Hashtable<Long,Set<Long>> table = new Hashtable();
+    	if (dates.isEmpty()) return table;
     	String datesStr = "";
     	for (int i=0; i<dates.size(); i++) {
     		if (i>0) datesStr += ", ";
