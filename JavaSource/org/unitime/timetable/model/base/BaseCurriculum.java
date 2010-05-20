@@ -67,6 +67,7 @@ public abstract class BaseCurriculum  implements Serializable {
 
 	// collections
 	private java.util.Set classifications;
+	private java.util.Set majors;
 
 
 
@@ -180,7 +181,25 @@ public abstract class BaseCurriculum  implements Serializable {
 		getClassifications().add(curriculumClassification);
 	}
 
+	/**
+	 * Return the value associated with the column: majors
+	 */
+	public java.util.Set getMajors () {
+		return majors;
+	}
 
+	/**
+	 * Set the value related to the column: majors
+	 * @param majors the majors value
+	 */
+	public void setMajors (java.util.Set majors) {
+		this.majors = majors;
+	}
+
+	public void addTomajors (org.unitime.timetable.model.PosMajor major) {
+		if (null == getMajors()) setMajors(new java.util.HashSet());
+		getMajors().add(major);
+	}
 
 
 

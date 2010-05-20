@@ -18,7 +18,6 @@ public abstract class BaseCurriculumClassification  implements Serializable {
 	public static String PROP_NAME = "name";
 	public static String PROP_NR_STUDENTS = "nrStudents";
 	public static String PROP_LL_STUDENTS = "llStudents";
-	public static String PROP_LL_ENROLLMENT = "llEnrollment";
 	public static String PROP_ORD = "ord";
 
 
@@ -66,7 +65,6 @@ public abstract class BaseCurriculumClassification  implements Serializable {
 	private java.lang.String name;
 	private java.lang.Integer nrStudents;
 	private java.lang.Integer llStudents;
-	private java.lang.Integer llEnrollment;
 	private java.lang.Integer ord;
 
 	// many to one
@@ -147,23 +145,6 @@ public abstract class BaseCurriculumClassification  implements Serializable {
 	 */
 	public void setLlStudents (java.lang.Integer llStudents) {
 		this.llStudents = llStudents;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: llEnrollment
-	 */
-	public java.lang.Integer getLlEnrollment () {
-		return llEnrollment;
-	}
-
-	/**
-	 * Set the value related to the column: llEnrollment
-	 * @param llEnrollment the llEnrollment value
-	 */
-	public void setLlEnrollment (java.lang.Integer llEnrollment) {
-		this.llEnrollment = llEnrollment;
 	}
 
 
