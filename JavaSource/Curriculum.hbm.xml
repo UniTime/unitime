@@ -64,6 +64,14 @@
 			foreign-key="fk_curriculum_acad_area"
 		/>
 		
+		<set name="majors" table="curriculum_major" inverse="false" lazy="true">
+			<cache include="non-lazy" usage="read-write"/>
+			<key column="curriculum_id"/> 
+			<many-to-many class="org.unitime.timetable.model.PosMajor" 
+				column="major_id" 
+				/>
+		</set>
+		
 		<many-to-one 
 			name="department" 
 			class="Department" 
@@ -139,14 +147,6 @@
 			not-null="false"
 		/>
 		
- 		<property
-			name="llEnrollment"
-			type="java.lang.Integer"
-			formula="(select count(distinct aa.student_id) 
-				from %SCHEMA%.student_acad_area aa, %SCHEMA%.curriculum c where
-				c.uniqueid = curriculum_id and aa.acad_clasf_id = acad_clasf_id and aa.acad_area_id = c.acad_area_id)"
-		/>
-
  		<property
 			name="ord"
 			column="ord"

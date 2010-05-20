@@ -2505,6 +2505,30 @@
 		<plsql>alter table %SCHEMA%.timetable_manager modify last_name varchar2(100)</plsql>
 		<mysql>alter table %SCHEMA%.timetable_manager modify last_name varchar(100)</mysql>		
 	</update>
+	<update version="50" date="19-May-2010" comment="Curriculum majors">
+		<plsql>
+			create table %SCHEMA%.curriculum_major (
+				curriculum_id number(20,0) constraint nn_curriculum_major_cur_id not null,
+				major_id number(20,0) constraint nn_curriculum_major_maj_id not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.curriculum_major add constraint pk_curriculum_major primary key (curriculum_id, major_id)</plsql>
+		<mysql>
+			create table %SCHEMA%.curriculum_major (
+				curriculum_id decimal(20,0) not null,
+				major_id decimal(20,0) not null,
+				primary key (curriculum_id, major_id)
+			) engine = INNODB
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.curriculum_major add constraint fk_curriculum_major_curriculum foreign key (curriculum_id)
+			references %SCHEMA%.curriculum (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.curriculum_major add constraint fk_curriculum_major_major foreign key (major_id)
+			references %SCHEMA%.pos_major (uniqueid) on delete cascade
+		</sql>
+	</update>
 	
 	
 </dbupdate>
