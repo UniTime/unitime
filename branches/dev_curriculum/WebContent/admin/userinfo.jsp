@@ -83,7 +83,6 @@
 	<tt:hasProperty name="tmtbl.custom.css">
 		<LINK rel="stylesheet" type="text/css" href="../%tmtbl.custom.css%" />
 	</tt:hasProperty>
-	<SCRIPT language="javascript" type="text/javascript" src="../tree.js"></SCRIPT>
 
 </HEAD>
 
