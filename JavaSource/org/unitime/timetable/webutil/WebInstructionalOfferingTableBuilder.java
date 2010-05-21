@@ -159,7 +159,7 @@ public class WebInstructionalOfferingTableBuilder {
     										EXAM};
     
     //set to false for old behaviour
-    protected static final boolean sAggregateRoomPrefs = true;
+    protected static boolean sAggregateRoomPrefs = true;
     
     protected static String[] PREFERENCE_COLUMN_ORDER = ( sAggregateRoomPrefs ?
     		 												new String[] {

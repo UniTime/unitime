@@ -24,7 +24,6 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Set;
@@ -33,7 +32,6 @@ import java.util.TreeSet;
 import java.util.Vector;
 
 import org.unitime.timetable.model.Exam;
-import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.ExamPeriodPref;
 import org.unitime.timetable.model.Location;
