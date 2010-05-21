@@ -29,7 +29,6 @@ import java.util.Vector;
 
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
-import org.unitime.timetable.model.dao.StudentClassEnrollmentDAO;
 
 import com.lowagie.text.DocumentException;
 
