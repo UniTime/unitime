@@ -1,0 +1,860 @@
+.unitime-Body {
+	background-image: url(http://www.unitime.org/include/bg.jpg);
+	background-color: #FFFFFF;
+	background-position: top center;
+	background-repeat: no-repeat;
+	background-attachment: scroll;
+	font-family: sans-serif, verdana, arial;
+}
+
+.unitime-Page {
+	border: 1px solid #9CB0CE;
+	padding: 5px;
+	margin-top: 10px;
+	background-color: #FFFFFF;
+	vertical-align: center;
+}
+
+.unitime-Title {
+	font-size: x-large;
+	font-weight: bold;
+	color: #333333;
+	margin-bottom: 10px;
+}
+
+.unitime-SubTitle {
+	font-size: medium;
+	font-weight: bold;
+	color: #333333;
+	margin-bottom: 10px;
+}
+
+.unitime-Footer {
+	font-size: x-small;
+	text-align: right;
+	font-style: italic;
+	text-align: right;
+	color: #9CB0CE;
+	width: 100%;
+	margin-top: -6px;
+}
+mull
+.unitime-PrintIcon {
+	cursor: pointer;	
+}
+
+.unitime-FocusPanel {
+}
+
+.unitime-FocusPanel:focus {
+	outline: none;
+}
+
+A.unitime-FooterLink:link,A.unitime-FooterLink:visited,A.unitime-FooterLink:active,A.unitime-FooterLink:hover {
+	color: #9CB0CE;
+    text-decoration: none;
+    background-color : transparent;
+}
+
+A.unitime-SimpleLink:link,A.unitime-SimpleLink:visited,A.unitime-SimpleLink:active,A.unitime-SimpleLink:hover {
+	color: inherit;
+    text-decoration: none;
+    background-color : transparent;
+}
+
+h1 {
+  font-size: 2em;
+  font-weight: bold;
+  color: #777777;
+  margin: 15px 0px 5px;
+  text-align: left;
+}
+
+.gwt-SuggestBoxCanvas {
+	width: 200px;
+	height: 20px;
+	background: #ffffff;
+	border: none;
+}
+
+.gwt-SuggestBox{
+	font-family: Verdana, sans-serif;
+	font-size: 8pt;
+	font-weight: 400;
+	font-style: normal;
+	color: #333333;
+	line-height: 15px;
+	vertical-align: baseline;
+	background: #FFFFFF;
+	height: 22px;
+	border: 1px solid #9CB0CE;
+	padding: 2px;
+}
+
+.gwt-SuggestBoxPopup {
+	margin-left: 3px;
+	z-index: 1000000;
+}
+
+.unitime-MainTableHeaderRow {
+}
+
+.unitime-MainTableHeader {
+	width: 100%;
+	border-bottom: 1px solid #9CB0CE;
+	padding-top: 5px;
+	font-size: 1em;
+	font-weight: bold;
+	color: black;
+	text-align: left;
+}
+
+.unitime-MainTableBottomHeader {
+	width: 100%;
+	font-size: 1em;
+	font-weight: bold;
+	color: black;
+	padding-top: 5px;
+	text-align: right;
+}
+
+.unitime-MainTable {
+}
+
+.unitime-TableHeader {
+	border-bottom: 1px dashed #9CB0CE;
+	font-weight: bold;
+	text-align: left;
+	padding-top: 5px;
+}
+
+.unitime-TableEmpty {
+	font-style: italic;
+	text-align: center;
+}
+
+.unitime-TableRowSelected {
+	background-color: #92c1f0;
+}
+
+.unitime-TableRowSelectedHover {
+	cursor: pointer;
+	background-color: #92c1f0;
+}
+
+.unitime-TableRowHover {
+	cursor: pointer;
+	background-color: #d0e4f6;
+}
+
+.unitime-ScrollPanel {
+	padding: 2px;
+	border: 1px solid #9CB0CE;
+	overflow: scroll;
+	overflow-x: hidden;	
+}
+
+.unitime-ScrollPanel-inner {
+	padding: 2px;
+	overflow: scroll;
+	overflow-x: hidden;	
+}
+
+.unitime-TabPanel{
+	border: 1px solid #9CB0CE;
+	padding-bottom: 4px;
+	padding-right: 4px;
+}
+
+.unitime-SessionSelector{
+	cursor: pointer;
+	text-align: center;
+}
+
+.unitime-Hint{
+	font-size: xx-small;
+	font-style: italic;
+	color: #9CB0CE;
+	text-align: right;
+	margin-top: -4px;
+	cursor: pointer;
+}
+
+.unitime-ErrorHint{
+	font-size: xx-small;
+	font-style: italic;
+	color: red;
+	text-align: right;
+	vertical-align: top;
+	margin-top: -2px;
+}
+
+.unitime-FreeTimePicker-TopLeftCorner {
+	border-bottom: 1px solid #9CB0CE;
+	border-right: 1px solid #9CB0CE;
+}
+
+.unitime-FreeTimePicker-HorizontalHeader {
+	font-size: xx-small;
+	text-align: center;
+	border-bottom: 1px solid #9CB0CE;
+	border-right: 1px solid #9CB0CE;
+	border-top: 1px solid #9CB0CE;
+	width: 26px;
+}
+
+.unitime-FreeTimePicker-VerticalHeader {
+	font-size: x-small;
+	text-align: center;
+	border-bottom: 1px solid #9CB0CE;
+	border-right: 1px solid #9CB0CE;
+	border-left: 1px solid #9CB0CE;
+	width: 25px;
+}
+
+.unitime-FreeTimePicker-Slot {
+	font-size: x-small;
+	text-align: center;
+	color: #AAAAAA;
+	border-bottom: 1px solid #9CB0CE;
+	border-right: 1px solid #9CB0CE;
+	cursor: pointer;
+}
+
+.unitime-ErrorMessage {
+	color: red;
+	text-align: center;
+	font-style: italic;
+	font-weight: normal;
+}
+
+.unitime-ProgressMessage {
+	text-align: center;
+	font-style: italic;
+}
+
+.unitime-ValidationErrors {
+	width: 100%;
+}
+
+.unitime-TextBoxHint {
+	font-family: Verdana, sans-serif;
+	font-size: 6pt;
+	font-weight: 400;
+	font-style: normal;
+	color: #AAAAAA;
+	line-height: 15px;
+	vertical-align: baseline;
+	background: #FFFFFF;
+	height: 22px;
+	border: 1px solid #9CB0CE;
+	padding: 2px;
+}
+
+.unitime-ClassRow {
+	white-space: nowrap;
+}
+
+.unitime-ClassRowFirst {
+	border-top: 1px dashed #9CB0CE;
+	white-space: nowrap;
+}
+
+.unitime-ClassRowFirst2 {
+	border-top: 1px solid #9CB0CE;
+	white-space: nowrap;
+}
+
+.unitime-ClassRowRed {
+	color: red;
+	white-space: nowrap;
+}
+
+.unitime-ClassRowRedFirst {
+	border-top: 1px dashed #9CB0CE;
+	color: red;
+	white-space: nowrap;
+}
+
+.unitime-ClassRowRedFirst2 {
+	border-top: 1px solid #9CB0CE;
+	color: red;
+	white-space: nowrap;
+}
+
+.unitime-ClassRowBlue {
+	color: blue;
+	white-space: nowrap;
+}
+
+.unitime-ClassRowBlueFirst {
+	border-top: 1px dashed #9CB0CE;
+	color: blue;
+	white-space: nowrap;
+}
+
+.unitime-ClassRowBlueFirst2 {
+	border-top: 1px solid #9CB0CE;
+	color: blue;
+	white-space: nowrap;
+}
+
+.unitime-ClassRowUnavail {
+	color: #AAAAAA;
+	font-style: italic;;
+	white-space: nowrap;
+}
+
+.unitime-ClassRowFirstUnavail {
+	color: #AAAAAA;
+	font-style: italic;;
+	border-top: 1px dashed #9CB0CE;
+	white-space: nowrap;
+}
+
+.unitime-ClassRowProblem {
+	color: red;
+	text-align: center;
+	white-space: nowrap;
+}
+
+.unitime-ClassRowProblemFirst {
+	color: red;
+	text-align: center;
+	border-top: 1px dashed #9CB0CE;
+	white-space: nowrap;
+}
+
+.unitime-ClassRowProblemFirst2 {
+	color: red;
+	text-align: center;
+	border-top: 1px solid #9CB0CE;
+	white-space: nowrap;
+}
+
+.gwt-TabPanelBottom {
+	border: 2px solid #9CB0CE;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+}
+
+.gwt-TabBar .gwt-TabBarItem {
+	border-top: 1px solid #9CB0CE;
+	border-left: 1px solid #9CB0CE;
+	border-right: 1px solid #9CB0CE;
+	color: #9CB0CE;
+	font-size: 1em;
+	font-weight: bold;
+	background-color: #FFFFFF;	
+	margin-left: 6px;
+	padding: 3px 6px 3px 6px;
+	-webkit-border-top-left-radius: 5px;
+	-webkit-border-top-right-radius: 5px;
+	-moz-border-radius-topleft: 5px;
+	-moz-border-radius-topright: 5px;
+}
+.gwt-TabBarItem:focus {
+	outline: none;
+}
+.gwt-TabBar .gwt-TabBarItem-selected {
+	border-top: 3px solid #9CB0CE;
+	border-left: 3px solid #9CB0CE;
+	border-right: 3px solid #9CB0CE;
+	cursor: default;
+	background-color: #9CB0CE;
+	color: #FFFFFF;
+	font-weight: bold;
+}
+
+.unitime-BottomLine {
+	border-bottom: 1px solid #9CB0CE;
+}
+
+.unitime-TimeGridHorizontalHeaderFirst {
+	border: 1px solid #9CB0CE;
+	background-color: #92c1f0;
+}
+
+.unitime-TimeGridHorizontalHeader {
+	border-top: 1px solid #9CB0CE;
+	border-bottom: 1px solid #9CB0CE;
+	color: #92c1f0;
+	font-weight: bold;
+	width: 100px;
+}
+
+.unitime-TimeGridHorizontalSeparator {
+	border-top: 1px solid red;
+	border-right: 1px solid red;
+	border-left: 1px solid red;
+	width: 2px;
+}
+
+.unitime-TimeGridHorizontalHeaderLast {
+	border-top: 1px solid #9CB0CE;
+	border-right: 1px solid #9CB0CE;
+	border-bottom: 1px solid #9CB0CE;
+	background-color: #92c1f0;
+}
+
+.unitime-TimeGridVerticalHeaderFirst {
+	border: 1px solid #9CB0CE;
+	background-color: #92c1f0;
+}
+
+.unitime-TimeGridVerticalHeader {
+	border-left: 1px solid #9CB0CE;
+	border-right: 1px solid #9CB0CE;
+	border-bottom: 1px solid #9CB0CE;
+	background-color: #92c1f0;
+}
+
+.unitime-TimeGridVerticalHeaderLast {
+	border-left: 1px solid #9CB0CE;
+	border-right: 1px solid #9CB0CE;
+	border-bottom: 1px solid #9CB0CE;
+	background-color: #92c1f0;
+}
+
+.unitime-TimeGrid {
+}
+
+.unitime-TimeGrid .major-time-interval {
+	display: block;
+	border-top: 1px solid #DDDDDD;
+	width: 100%;
+}
+
+.unitime-TimeGrid .minor-time-interval {
+	display: block;
+	border-top: 1px dotted #DDDDDD;
+	width: 100%;
+}
+
+.unitime-TimeGrid .header-time-interval {
+	font-size: x-small;
+	text-align: center;
+	color: #6991CE;
+	display: block;
+	width: 100px;
+}
+
+.unitime-TimeGrid .dummy-time-interval {
+	font-size: x-small;
+	text-align: center;
+	padding-right: 2px;
+	color: #6991CE;
+	display: block;
+	border-top: 1px solid transparent;
+	height: 100%;
+	width: 28px;
+}
+
+.unitime-TimeGrid .working-hours {
+	background: #FFFDDD;
+	width: 100%
+}
+
+.unitime-TimeGrid .day-separator {
+	height: 100%;
+	position: absolute;
+	top: 0px;
+	left: 0%;
+	border-left: 1px solid #DDDDDD;
+	border-right: 1px solid #DDDDDD;
+	width: 2px;
+}
+
+.unitime-TimeGrid .meeting {
+	position: absolute;
+	font-size: x-small;
+	font-family: arial;
+	overflow: hidden;
+	filter: alpha(opacity = 75);
+	opacity: .75;
+    -moz-opacity: .75;
+	-webkit-border-radius: 6px;
+	-moz-border-radius: 6px;
+	color: #FFFFFF;
+}
+
+.unitime-TimeGrid .meeting .header {
+	padding-left: 4px;
+	padding-right: 4px;
+	padding-bottom: 2px;
+	padding-top: 2px;
+	width: 100%;
+	-webkit-border-top-left-radius: 5px;
+	-webkit-border-top-right-radius: 5px;
+	-moz-border-radius-topleft: 5px;
+	-moz-border-radius-topright: 5px;	
+}
+
+.unitime-TimeGrid .meeting .header .label {
+	padding-left: 2px;
+	width: 100%;
+	font-size: x-small;
+	white-space: nowrap;
+	overflow: hidden;
+	color: #FFFFFF;
+}
+
+@media print {
+	.unitime-TimeGrid .meeting {
+		color: #000000;
+		background-color: #FFFFFF;
+	}
+	.unitime-TimeGrid .meeting .header {
+		padding-bottom: 0px;
+	}
+	.unitime-TimeGrid .meeting .header .label {
+		color: #000000;
+		background-color: #FFFFFF;
+	}
+}
+
+.unitime-TimeGrid .meeting .footer {
+	font-size: x-small;
+	padding-left: 4px;
+	white-space: wrap;
+	-webkit-border-bottom-left-radius: 5px;
+	-webkit-border-bottom-right-radius: 5px;
+	-moz-border-radius-bottomleft: 5px;
+	-moz-border-radius-bottomright: 5px;	
+}
+
+.unitime-TimeGrid .meeting-selected {
+	-webkit-box-shadow: 3px 3px 5px #B7B7B7;
+	-moz-box-shadow: 3px 3px 5px #B7B7B7;
+	filter: alpha(opacity=100)  
+		progid:DXImageTransform.Microsoft.dropshadow(OffX=3, OffY=3,Color='#C7C7C7', Positive='true');
+	opacity: 1;
+    -moz-opacity:1;
+	cursor: pointer;
+}
+
+.unitime-TimeGrid .meeting-selected-noshadow {
+	filter: alpha(opacity=100)  
+		progid:DXImageTransform.Microsoft.dropshadow(OffX=3, OffY=3,Color='#C7C7C7', Positive='true');
+	opacity: 1;
+    -moz-opacity:1;
+}
+
+.unitime-TimeGrid .meeting-right {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	height: 100%;
+	background: #FFF;
+	border-right: 1px solid #000;
+	width: 5px;
+	display:none;
+	-webkit-border-top-left-radius: 5px;
+	-webkit-border-bottom-left-radius: 5px;
+	-moz-border-radius-topleft: 5px;
+	-moz-border-radius-bottomleft: 5px;}
+
+.unitime-TimeGrid .meeting-fill {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	left: 0px;
+	-webkit-border-top-left-radius: 5px;
+	-webkit-border-bottom-left-radius: 5px;
+	-moz-border-radius-topleft: 5px;
+	-moz-border-radius-bottomleft: 5px;
+}
+
+.unitime-TimeGrid .bottom-line {
+	border-bottom: 1px solid #DDDDDD;
+}
+
+.unitime-TimeGrid .calendar-scroll {
+	height: 550px;
+	width: 750px;
+	overflow: scroll;
+	overflow-x: hidden;
+}
+
+.blue {
+	border: 1px solid #2952A3;
+	background: #668CD9;
+	color: #FFFFFF;
+}
+.blue .header {
+	background: #2952A3;
+}
+@media print {
+	.blue .header {
+		border-bottom: 1px solid #2952A3;
+	}
+}
+
+.red {
+	border: 1px solid #A32929;
+	background: #D96666;
+	color: #FFFFFF;
+}
+.red .header {
+	background: #A32929;
+}
+@media print {
+	.red .header {
+		border-bottom: 1px solid #A32929;
+	}
+}
+
+.pink {
+	border: 1px solid #B1365F;
+	background: #E67399;
+	color: #FFFFFF;
+}
+.pink .header {
+	background: #B1365F;
+}
+@media print {
+	.pink .header {
+		border-bottom: 1px solid #B1365F;
+	}
+}
+
+
+.purple {
+	border: 1px solid #7A367A;
+	background: #B373B3;
+}
+.purple .header {
+	background: #7A367A;
+}
+@media print {
+	.purple .header {
+		border-bottom: 1px solid #7A367A;
+	}
+}
+
+
+.darkpurple {
+	border: 1px solid #5229A3;
+	background: #8C66D9;
+}
+.darkpurple .header {
+	background: #5229A3;
+}
+@media print {
+	.darkpurple .header {
+		border-bottom: 1px solid #5229A3;
+	}
+}
+
+.steelblue {
+	border: 1px solid #29527A;
+	background: #668CB3;
+}
+.steelblue .header {
+	background: #29527A;
+}
+@media print {
+	.steelblue .header {
+		border-bottom: 1px solid #29527A;
+	}
+}
+
+.lightblue {
+	border: 1px solid #1B887A;
+	background: #59BFB3;
+}
+.lightblue .header {
+	background: #1B887A;
+}
+@media print {
+	.lightblue .header {
+		border-bottom: 1px solid #1B887A;
+	}
+}
+
+.teal {
+	border: 1px solid #28754E;
+	background: #65AD89;
+}
+.teal .header {
+	background: #28754E;
+}
+@media print {
+	.teal .header {
+		border-bottom: 1px solid #28754E;
+	}
+}
+
+.green {
+	border: 1px solid #0D7813;
+	background: #4CB052;
+}
+.green .header {
+	background: #0D7813;
+}
+@media print {
+	.green .header {
+		border-bottom: 1px solid #0D7813;
+	}
+}
+
+.lightgreen {
+	border: 1px solid #528800;
+	background: #8CBF40;
+}
+.lightgreen .header {
+	background: #528800;
+}
+@media print {
+	.lightgreen .header {
+		border-bottom: 1px solid #528800;
+	}
+}
+
+.yellowgreen {
+	border: 1px solid #88880E;
+	background: #BFBF4D;
+}
+.yellowgreen .header {
+	background: #88880E;
+}
+@media print {
+	.yellowgreen .header {
+		border-bottom: 1px solid #88880E;
+	}
+}
+
+.yellow {
+	border: 1px solid #AB8B00;
+	background: #E0C240;
+}
+.yellow .header {
+	background: #AB8B00;
+}
+@media print {
+	.yellow .header {
+		border-bottom: 1px solid #AB8B00;
+	}
+}
+
+.orange {
+	border: 1px solid #BE6D00;
+	background: #F2A640;
+}
+.orange .header {
+	background: #BE6D00;
+}
+@media print {
+	.orange .header {
+		border-bottom: 1px solid #BE6D00;
+	}
+}
+
+.redorange {
+	border: 1px solid #B1440E;
+	background: #E6804D;
+}
+.redorange .header {
+	background: #B1440E;
+}
+@media print {
+	.redorange .header {
+		border-bottom: 1px solid #B1440E;
+	}
+}
+
+.lightbrown {
+	border: 1px solid #865A5A;
+	background: #BE9494;
+}
+.lightbrown .header {
+	background: #865A5A;
+}
+@media print {
+	.lightbrown .header {
+		border-bottom: 1px solid #865A5A;
+	}
+}
+
+.lightpurple {
+	border: 1px solid #705770;
+	background: #A992A9;
+}
+.lightpurple .header {
+	background: #705770;
+}
+@media print {
+	.lightpurple .header {
+		border-bottom: 1px solid #705770;
+	}
+}
+
+.grey {
+	border: 1px solid #4E5D6C;
+	background: #8997A5;
+}
+.grey .header {
+	background: #4E5D6C;
+}
+@media print {
+	.grey .header {
+		border-bottom: 1px solid #4E5D6C;
+	}
+}
+
+.bluegrey {
+	border: 1px solid #5A6986;
+	background: #94A2bE;
+}
+.bluegrey .header {
+	background: #5A6986;
+}
+@media print {
+	.bluegrey .header {
+		border-bottom: 1px solid #5A6986;
+	}
+}
+
+.lightteal {
+	border: 1px solid #4A716C;
+	background: #85AAA5;
+}
+.lightteal .header {
+	background: #4A716C;
+}
+@media print {
+	.lightteal .header {
+		border-bottom: 1px solid #4A716C;
+	}
+}
+
+.yellowgrey {
+	border: 1px solid #6E6E41;
+	background: #A7A77D;
+}
+.yellowgrey .header {
+	background: #6E6E41;
+}
+@media print {
+	.yellowgrey .header {
+		border-bottom: 1px solid #6E6E41;
+	}
+}
+
+.brown {
+	border: 1px solid #8D6F47;
+	background: #C4A883;
+}
+.brown .header {
+	background: #8D6F47;
+}
+@media print {
+	.brown .header {
+		border-bottom: 1px solid #8D6F47;
+	}
+}
+
+.unitime-PrintedComponent {
+	margin-top: 10px;
+	width: 100%;
+}

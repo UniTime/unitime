@@ -18,6 +18,13 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  -->
 <project name="UniTime" basedir="." default="build">
+	<!-- Mac GWT requires -XstartOnFirstThread -->
+	<condition property="mac">
+		<os name="Mac OS X"/>
+	</condition>	
+	<condition property="macJvmArgs" value="-XstartOnFirstThread" else="-Dgwt.dummy.arg1=">
+		<isset property="mac"/>
+	</condition>
 
 	<target name="load-properties">
 		<loadproperties srcFile="${basedir}/build.properties" />
@@ -60,6 +67,8 @@
         </propertyfile>
         <copy todir="${build.dir}" overwrite="Yes" preservelastmodified="Yes">
             <fileset dir="${src.dir}" includes="**/*.java"/>
+            <fileset dir="${src.dir}" includes="**/*.gwt.xml"/>
+            <fileset dir="${src.dir}" includes="org/unitime/timetable/gwt/resources/**/*.*"/>
         </copy>
         <replace file="${build.dir}/org/unitime/timetable/util/Constants.java" propertyFile="build.date">
             <replacefilter token="@build.date@" property="build.date"/>
@@ -84,6 +93,16 @@
 		</javac>
 		
 		<delete file="build.date" failonerror="false" />		
+	</target>
+	
+	<target name="compile-gwt" depends="compile-java">
+		<java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler" dir="${temp.dir}">
+			<classpath refid="build.classpath" />
+			<classpath path="${build.dir}"/>
+			<jvmarg value="-Xmx600M"/>
+			<jvmarg value="${macJvmArgs}"/>
+			<arg value="org.unitime.timetable.gwt.UniTime4"/>
+		</java>
 	</target>
 
 	<target name="timetable-jar" depends="compile-java">
@@ -169,6 +188,7 @@
 				<include name="help/**/*.*" />
 				<include name="scripts/**/*.gif" />
 				<exclude name="WEB-INF/classes/**/*.*" />
+				<exclude name="unitime4/**/*.*" />
 				<exclude name="test/**/*.*" />
 			</fileset>
 		</copy>
@@ -178,8 +198,14 @@
 		<copy todir="${dist.dir}" file="${war.dir}/help/Release-Notes.xml"/>
 		<copy todir="${dist.dir}" file="${war.dir}/help/Release-Notes.css"/>
 	</target>
+	
+	<target name="copy-gwt" depends="init, compile-gwt">
+		<copy todir="${war.dir}" overwrite="Yes" preservelastmodified="Yes">
+			<fileset dir="${temp.dir}/war"/>
+		</copy>
+	</target>
 
-	<target name="compile-war" depends="timetable-jar,copy-libs,copy-jsp">
+	<target name="compile-war" depends="timetable-jar,compile-gwt,copy-libs,copy-jsp,copy-gwt">
 		<copy todir="${war.dir}/WEB-INF/lib" file="${dist.dir}/timetable.jar"/>
 		<jar destfile="${dist.dir}/UniTime.war">
 			<fileset dir="${war.dir}">
