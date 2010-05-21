@@ -1,0 +1,246 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC 
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<!-- 
+ * UniTime 3.1 (University Timetabling Application)
+ * Copyright (C) 2008, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ -->
+
+<hibernate-mapping package="org.unitime.timetable.model">
+	<class
+		name="RefTableEntry"
+		abstract="true">
+
+		<cache usage="read-write" />
+		
+		<id 
+            name="uniqueId"
+            column="UNIQUEID" 
+            type="java.lang.Long">            
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+				<param name="sequence">REF_TABLE_SEQ</param>
+			</generator>
+            
+        </id>
+
+		<property
+			name="reference"
+			column="REFERENCE"
+			type="string"
+			not-null="true"
+			length="20"
+			unique="true"
+		/>
+		<property
+			name="label"
+			column="LABEL"
+			type="string"
+			not-null="false"
+			length="60"
+			unique="true"
+		/>
+		
+		<union-subclass
+		 	name="DistributionType"
+		 	table="DISTRIBUTION_TYPE"
+		 	abstract="false">
+		 	
+		 	<property
+		 		name="sequencingRequired"
+		 		column="SEQUENCING_REQUIRED"
+		 		type="boolean"
+		 		not-null="true"
+		 		/>
+		 	<property
+		 		name="requirementId"
+		 		column="REQ_ID"
+		 		type="java.lang.Integer"
+		 		not-null="true"		 		
+		 		/>
+		 	<property
+		 		name="allowedPref"
+		 		column="ALLOWED_PREF"
+		 		type="java.lang.String"
+		 		length="10"
+		 		/>	
+		 	<property
+		 		name="descr"
+		 		column="DESCRIPTION"
+		 		type="java.lang.String"
+		 		/>	
+		 	<property
+		 		name="abbreviation"
+		 		column="ABBREVIATION"
+		 		type="java.lang.String"
+		 		/>	
+		 	<property
+		 		name="instructorPref"
+		 		column="INSTRUCTOR_PREF"
+		 		type="java.lang.Boolean"
+		 		not-null="true"
+		 		/>
+		 	<property
+		 		name="examPref"
+		 		column="EXAM_PREF"
+		 		type="java.lang.Boolean"
+		 		not-null="true"
+		 		/>
+			<set name="departments" table="DIST_TYPE_DEPT" inverse="false">
+				<cache include="non-lazy" usage="read-write"/>
+				<key column="DIST_TYPE_ID"/> 
+				<many-to-many class="Department" 
+					column="DEPT_ID" 
+					foreign-key="FK_DIST_TYPE_DEPT_DEPT"
+					/>
+			</set>
+		</union-subclass>
+
+		<union-subclass
+			name="DemandOfferingType"
+			table="DEMAND_OFFR_TYPE"
+			abstract ="false"
+			>
+		</union-subclass>
+		
+		<union-subclass
+			name="OfferingConsentType"
+			table="OFFR_CONSENT_TYPE"
+			abstract ="false"
+			>
+		</union-subclass>
+			
+		<union-subclass
+			name="ReservationType"
+			table="RESERVATION_TYPE"
+			abstract ="false"
+			>
+		</union-subclass>
+		
+		<union-subclass
+		 	name="CourseCreditFormat"
+		 	table="CRSE_CREDIT_FORMAT"
+		 	abstract="false"
+		 	>
+
+		 	<property
+		 		name="abbreviation"
+		 		column="ABBREVIATION"
+		 		type="java.lang.String"
+		 		length="10"
+		 		/>	
+		</union-subclass>
+		
+		<union-subclass
+		 	name="CourseCreditType"
+		 	table="COURSE_CREDIT_TYPE"
+		 	abstract="false"
+		 	>
+		 	
+		 	<property
+		 		name="legacyCourseMasterCode"
+		 		column="LEGACY_CRSE_MASTER_CODE"
+		 		type="java.lang.String"
+		 		length="10"
+		 		/>	
+		 		
+		 	<property
+		 		name="abbreviation"
+		 		column="ABBREVIATION"
+		 		type="java.lang.String"
+		 		length="10"
+		 		/>	
+		 	
+		</union-subclass>
+		
+		<union-subclass
+		 	name="CourseCreditUnitType"
+		 	table="COURSE_CREDIT_UNIT_TYPE"
+		 	abstract="false"
+		 	>
+
+		 	<property
+		 		name="abbreviation"
+		 		column="ABBREVIATION"
+		 		type="java.lang.String"
+		 		/>	
+		</union-subclass>
+
+		<union-subclass
+		 	name="PositionType"
+		 	table="POSITION_TYPE"
+		 	abstract="false"
+		 	>
+		 	
+		 	<property
+		 		name="sortOrder"
+		 		column="SORT_ORDER"
+		 		type="java.lang.Integer"
+		 		not-null="true"		 		
+		 		/>
+		</union-subclass>
+		
+		<union-subclass
+		 	name="DepartmentStatusType"
+		 	table="DEPT_STATUS_TYPE"
+		 	abstract="false"
+		 	>
+
+		 	<property
+		 		name="status"
+		 		column="STATUS"
+		 		type="java.lang.Integer"
+		 		not-null="true"		 		
+		 		/>
+
+		 	<property
+		 		name="apply"
+		 		column="APPLY"
+		 		type="java.lang.Integer"
+		 		not-null="true"		 		
+		 		/>
+
+		 	<property
+		 		name="ord"
+		 		column="ORD"
+		 		type="java.lang.Integer"
+		 		not-null="true"		 		
+		 		/>
+		</union-subclass>
+		
+		<union-subclass
+			name="RoomType"
+			table="ROOM_TYPE"
+			abstract ="false">
+
+		 	<property
+		 		name="ord"
+		 		column="ORD"
+		 		type="java.lang.Integer"
+		 		not-null="true"		 		
+		 		/>
+		 		
+		 	<property
+		 		name="room"
+		 		column="IS_ROOM"
+		 		type="java.lang.Boolean"
+		 		not-null="true"		 		
+		 		/>
+		</union-subclass>
+	</class>	
+</hibernate-mapping>

@@ -1,0 +1,2534 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- 
+ * UniTime 3.1 (University Timetabling Application)
+ * Copyright (C) 2008-2009, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ -->
+
+<dbupdate>
+	<dialect type="mysql">org.hibernate.dialect.MySQLInnoDBDialect</dialect>
+	<dialect type="plsql">org.hibernate.dialect.OracleDialect</dialect>
+	<update version="1" date="11-Jun-2007" comment="Package Renames, Column Renames">
+		<sql>
+			update %SCHEMA%.solver_info_def set implementation=replace(implementation,'edu.purdue.smas','org.unitime') where implementation like 'edu.purdue.smas%'
+		</sql>
+		<sql>
+			update %SCHEMA%.solver_parameter_def set default_value=replace(default_value,'edu.purdue.smas','org.unitime') where default_value like 'edu.purdue.smas%'
+		</sql>
+		<sql>
+			update %SCHEMA%.change_log set obj_type=replace(obj_type,'edu.purdue.smas','org.unitime') where obj_type like 'edu.purdue.smas%'
+		</sql>
+		<plsql onFail="done">
+			alter table %SCHEMA%.tmtbl_mgr_to_roles rename column primary to is_primary
+		</plsql>
+		<mysql onFail="done">
+			alter table %SCHEMA%.tmtbl_mgr_to_roles change column `primary` is_primary int(1) null
+		</mysql>
+	</update>
+	<update version="2" date="13-Jul-2007" comment="Room group feature abbv">
+		<plsql onFail="next">
+			alter table %SCHEMA%.room_feature add abbv varchar2(20)
+		</plsql>
+		<plsql onFail="next">
+			alter table %SCHEMA%.room_group add abbv varchar2(20)
+		</plsql>
+		<mysql onFail="next">
+			alter table %SCHEMA%.room_feature add abbv varchar(20) binary null
+		</mysql>
+		<mysql onFail="next">
+			alter table %SCHEMA%.room_group add abbv varchar(20) binary null
+		</mysql>
+	</update>
+	<update version="3" date="13-Jul-2007" comment="On fly student sectioning">
+		<sql onEqual="done" value="1">
+			select count(*) from %SCHEMA%.solver_parameter_group g where g.name='OnFlySectioning'
+		</sql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_group (uniqueid, name, description, ord) values 
+			(%SCHEMA%.solver_parameter_group_seq.nextval, 'OnFlySectioning', 'On Fly Student Sectioning', -1)
+		</plsql>
+		<plsql>
+			update %SCHEMA%.solver_parameter_group g set g.ord = ( select max(x.ord)+1 from %SCHEMA%.solver_parameter_group x )
+			where g.name='OnFlySectioning'
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+			'OnFlySectioning.Enabled' as name, 'false' as default_value, 
+			'Enable on fly sectioning (if enabled, students will be resectioned after each iteration)' as description,
+			'boolean' as type, 0 as ord, 1 as visible, 
+			uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='OnFlySectioning')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+			'OnFlySectioning.Recursive' as name, 'true' as default_value,
+			'Recursively resection lectures affected by a student swap' as description,
+			'boolean' as type, 1 as ord, 1 as visible,
+			uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='OnFlySectioning')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+			'OnFlySectioning.ConfigAsWell' as name, 'false' as default_value,
+			'Resection students between configurations as well' as description,
+			'boolean' as type, 2 as ord, 1 as visible,
+			uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='OnFlySectioning')
+		</plsql>
+		<mysql into="ID">
+			select 32767 * next_hi from %SCHEMA%.hibernate_unique_key			
+		</mysql>
+		<mysql into="ORD">
+			select max(ord)+1 from %SCHEMA%.solver_parameter_group
+		</mysql>
+		<mysql>
+			insert into %SCHEMA%.solver_parameter_group (uniqueid, name, description, ord) values
+			(%ID%, 'OnFlySectioning', 'On Fly Student Sectioning', %ORD%)
+		</mysql>
+		<mysql>
+			insert into %SCHEMA%.solver_parameter_def
+			(uniqueid, name, default_value, description, type, ord, visible, solver_param_group_id) values
+			(%ID%+1, 'OnFlySectioning.Enabled', 'false', 'Enable on fly sectioning (if enabled, students will be resectioned after each iteration)', 'boolean', 0, 1, %ID%),
+			(%ID%+2, 'OnFlySectioning.Recursive', 'true', 'Recursively resection lectures affected by a student swap', 'boolean', 1, 1, %ID%),
+			(%ID%+3, 'OnFlySectioning.ConfigAsWell', 'false', 'Resection students between configurations as well', 'boolean', 2, 1, %ID%) 
+		</mysql>
+		<mysql>
+			update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1
+		</mysql>
+	</update>
+	<update version="4" date="22-Aug-2007" comment="Timetable Grid Fix">
+		<sql>
+			update %SCHEMA%.user_data set value='-100' where name='TimetableGridTable.week' and value='-1'
+		</sql>
+	</update>
+	<update version="5" date="04-Sep-2007" comment="Application config name size">
+		<plsql onFail="done">
+			alter table %SCHEMA%.application_config modify name varchar2(512)
+		</plsql>
+		<mysql onFail="done">
+			alter table %SCHEMA%.application_config modify name varchar(512) binary not null
+		</mysql>
+	</update>
+	<update version="6" date="15-Oct-2007" comment="Lastlike course demand permid">
+		<mysql onFail="next">
+			create index idx_ll_course_demand_permid on %SCHEMA%.lastlike_course_demand(course_perm_id)
+		</mysql>
+		<mysql onFail="next">
+			alter table %SCHEMA%.course_offering modify perm_id varchar(20) binary null
+		</mysql>
+		<plsql onFail="next">
+			create index %SCHEMA%.idx_ll_course_demand_permid on %SCHEMA%.lastlike_course_demand(course_perm_id)
+		</plsql>
+		<plsql onFail="next">
+			alter table %SCHEMA%.course_offering drop constraint nn_course_offering_perm_id
+		</plsql>
+		<sql>
+			update %SCHEMA%.lastlike_course_demand set course_perm_id = null where course_perm_id = '-1'
+		</sql>
+		<sql>
+			update %SCHEMA%.course_offering set perm_id = null where perm_id = '-1'
+		</sql>
+	</update>
+	<update version="7" date="16-Oct-2007" comment="IType Abbreviation">
+		<sql onFail="next">
+			update %SCHEMA%.itype_desc set abbv=smas_abbv where trim(abbv) is null or trim(abbv) = ''
+		</sql>
+		<sql onFail="next">
+			alter table %SCHEMA%.itype_desc drop column smas_abbv
+		</sql>
+	</update>
+	<update version="8" date="25-Oct-2007" comment="Distribution Pref add column">
+		<plsql onFail="next">
+			alter table %SCHEMA%.distribution_pref add uid_rolled_fwd_from number(20)
+		</plsql>
+		<mysql onFail="next">
+			alter table %SCHEMA%.distribution_pref add uid_rolled_fwd_from decimal(20,0) null
+		</mysql>
+	</update>
+	<update version="9" date="27-Nov-2007" comment="ItypeDesc parent">
+		<plsql onFail="next">
+			alter table %SCHEMA%.itype_desc add parent number(2)
+		</plsql>
+		<mysql onFail="next">
+			alter table %SCHEMA%.itype_desc add parent int(2)
+		</mysql>
+		<plsql onFail="next">
+			alter table %SCHEMA%.itype_desc add constraint fk_itype_parent foreign key (parent) references %SCHEMA%.itype_desc(itype)
+		</plsql>
+		<mysql onFail="next">
+			alter table %SCHEMA%.itype_desc add constraint fk_itype_parent foreign key fk_itype_parent (parent) references %SCHEMA%.itype_desc(itype)
+		</mysql>
+		<plsql><![CDATA[
+			update %SCHEMA%.itype_desc x set x.parent=(select max(i.itype) from %SCHEMA%.itype_desc i where i.itype<x.itype and i.basic=1) where x.basic=0
+		]]></plsql>
+		<mysql><![CDATA[
+			create table %SCHEMA%.itype_dummy as (select i.itype, max(x.itype) as parent from %SCHEMA%.itype_desc i, %SCHEMA%.itype_desc x where i.basic=0 and x.basic=1 and x.itype<i.itype group by i.itype)
+		]]></mysql>
+		<mysql>
+			update %SCHEMA%.itype_desc i set i.parent=(select x.parent from %SCHEMA%.itype_dummy x where x.itype=i.itype)
+		</mysql>
+		<mysql>
+			drop table %SCHEMA%.itype_dummy
+		</mysql>
+	</update>
+	<update version="10" date="29-Nov-2007" comment="Course offering cache number of last-like course demands">
+		<mysql>
+			alter table %SCHEMA%.course_offering add lastlike_demand bigint(10) not null default 0
+		</mysql>
+		<plsql>
+			alter table %SCHEMA%.course_offering add lastlike_demand number(10) default 0
+		</plsql>
+		<plsql>
+			alter table %SCHEMA%.course_offering add constraint nn_course_offering_ll_demand check (lastlike_demand is not null)
+		</plsql>
+		<sql>
+			update %SCHEMA%.course_offering co set co.lastlike_demand = (
+				select count(distinct cod.student_id) from %SCHEMA%.lastlike_course_demand cod
+				where co.subject_area_id=cod.subject_area_id and co.course_nbr=cod.course_nbr
+			) where co.perm_id is null
+		</sql>
+		<sql>
+			update %SCHEMA%.course_offering co
+			set co.lastlike_demand = (
+				select count(distinct cod.student_id) from %SCHEMA%.lastlike_course_demand cod, %SCHEMA%.subject_area sa, %SCHEMA%.student s
+				where co.perm_id=cod.course_perm_id and co.subject_area_id=sa.uniqueid and
+				cod.student_id=s.uniqueid and s.session_id=sa.session_id
+			) where co.perm_id is not null
+		</sql>
+	</update>
+	<update version="11" date="07-Feb-2008" comment="Examination timetabling">
+		<!-- Table DISTRIBUTION_TYPE, add column exam_pref (boolean) -->
+		<plsql>alter table %SCHEMA%.distribution_type add exam_pref number(1) default 0</plsql>
+		<mysql>alter table %SCHEMA%.distribution_type add exam_pref int(1) default 0</mysql>
+		<!-- Added few exam distribution types (same period, same room, precedence) -->
+		<plsql><![CDATA[
+			insert into %SCHEMA%.distribution_type (uniqueid, reference, label, sequencing_required, req_id, allowed_pref, description, abbreviation, instructor_pref, exam_pref) values
+			(%SCHEMA%.ref_table_seq.nextval, 'EX_SAME_PER', 'Same Period', 0, 36, 'P43210R', 'Exams are to be placed at the same period. <BR>When prohibited or (strongly) discouraged: exams are to be placed at different periods.', 'Same Per', 0, 1)
+		]]></plsql>
+		<plsql><![CDATA[
+			insert into %SCHEMA%.distribution_type (uniqueid, reference, label, sequencing_required, req_id, allowed_pref, description, abbreviation, instructor_pref, exam_pref) values
+			(%SCHEMA%.ref_table_seq.nextval, 'EX_SAME_ROOM', 'Same Room', 0, 37, 'P43210R', 'Exams are to be placed at the same room(s). <BR>When prohibited or (strongly) discouraged: exams are to be placed at different rooms.', 'Same Room', 0, 1)
+		]]></plsql>
+		 <plsql><![CDATA[
+		 	insert into %SCHEMA%.distribution_type (uniqueid, reference, label, sequencing_required, req_id, allowed_pref, description, abbreviation, instructor_pref, exam_pref) values
+		 	(%SCHEMA%.ref_table_seq.nextval, 'EX_PRECEDENCE', 'Precedence', 1, 38, 'P43210R', 'Exams are to be placed in the given order. <BR>When prohibited or (strongly) discouraged: exams are to be placed in the order reverse to the given one.', 'Precede', 0, 1)
+		 ]]></plsql>
+		<mysql into="ID">
+			select 32767 * next_hi from %SCHEMA%.hibernate_unique_key			
+		</mysql>
+		<mysql> <![CDATA[
+			insert into %SCHEMA%.distribution_type (uniqueid, reference, label, sequencing_required, req_id, allowed_pref, description, abbreviation, instructor_pref, exam_pref) values 
+			(%ID%, 'EX_SAME_PER', 'Same Period', 0, 36, 'P43210R', 'Exams are to be placed at the same period. <BR>When prohibited or (strongly) discouraged: exams are to be placed at different periods.', 'Same Per', 0, 1), 
+			(%ID%+1, 'EX_SAME_ROOM', 'Same Room', 0, 37, 'P43210R', 'Exams are to be placed at the same room(s). <BR>When prohibited or (strongly) discouraged: exams are to be placed at different rooms.', 'Same Room', 0, 1), 
+			(%ID%+2, 'EX_PRECEDENCE', 'Precedence', 1, 38, 'P43210R', 'Exams are to be placed in the given order. <BR>When prohibited or (strongly) discouraged: exams are to be placed in the order reverse to the given one.', 'Precede', 0, 1) 
+		 ]]></mysql>
+		<!-- Add exam start date to sessions -->	
+		<plsql>alter table %SCHEMA%.sessions add exam_begin_date date</plsql>
+		<plsql>update %SCHEMA%.sessions set exam_begin_date = session_begin_date_time+112</plsql>
+		<mysql>alter table %SCHEMA%.sessions add exam_begin_date datetime</mysql>
+		<mysql>update %SCHEMA%.sessions set exam_begin_date = adddate(session_begin_date_time,112)</mysql>	
+		<sql>alter table %SCHEMA%.sessions add constraint nn_sessions_exam_begin_date check (exam_begin_date is not null)</sql>
+		<!-- Create table exam_period -->
+		<plsql>
+			create table %SCHEMA%.exam_period (
+				uniqueid number(20,0) constraint nn_exam_period_uniqueid not null,
+				session_id number(20,0) constraint nn_exam_period_session not null,
+				date_ofs number(10,0)  constraint nn_exam_period_date_ofs not null,
+				start_slot number(10,0)  constraint nn_exam_period_start_slot not null,
+				length number(10,0)  constraint nn_exam_period_length not null,
+				pref_level_id number(20,0) constraint nn_exam_period_pref not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.exam_period add constraint pk_exam_period primary key (uniqueid)</plsql>
+		<mysql>
+			create table %SCHEMA%.exam_period (
+				uniqueid decimal(20,0) primary key not null,
+				session_id decimal(20,0) not null,
+				date_ofs bigint(10)  not null,
+				start_slot bigint(10)  not null,
+				length bigint(10)  not null,
+				pref_level_id decimal(20,0) not null
+			) engine = INNODB
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.exam_period add constraint fk_exam_period_session foreign key (session_id)
+			references %SCHEMA%.sessions (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.exam_period add constraint fk_exam_period_pref foreign key (pref_level_id)
+			references %SCHEMA%.preference_level (uniqueid) on delete cascade
+		</sql>
+		<!-- Rooms, and non-university locations - added columns exam_enable (boolean), exam_capacity (exam seating capacity, int), exam_pref (exam period preferences) -->
+		<plsql>alter table %SCHEMA%.room add exam_enable number(1) default 0</plsql>
+		<plsql>alter table %SCHEMA%.room add exam_capacity number(10) default 0</plsql>
+		<plsql>alter table %SCHEMA%.room add exam_pref varchar2(1000)</plsql>
+		<plsql>update %SCHEMA%.room set exam_capacity = capacity /2</plsql>
+		<plsql>alter table %SCHEMA%.non_university_location add exam_enable number(1) default 0</plsql>
+		<plsql>alter table %SCHEMA%.non_university_location add exam_capacity number(10) default 0</plsql>
+		<plsql>alter table %SCHEMA%.non_university_location add exam_pref varchar2(1000)</plsql>
+		<mysql>alter table %SCHEMA%.room add exam_enable int(1) default 0</mysql>
+		<mysql>alter table %SCHEMA%.room add exam_capacity bigint(10) default 0</mysql>
+		<mysql>alter table %SCHEMA%.room add exam_pref varchar(1000)</mysql>
+		<mysql>update %SCHEMA%.room set exam_capacity = capacity /2</mysql>
+		<mysql>alter table %SCHEMA%.non_university_location add exam_enable int(1) default 0</mysql>
+		<mysql>alter table %SCHEMA%.non_university_location add exam_capacity bigint(10) default 0</mysql>
+		<mysql>alter table %SCHEMA%.non_university_location add exam_pref varchar(1000)</mysql>
+		<!-- Create exam manager role -->
+		<plsql>insert into %SCHEMA%.roles (role_id, reference, abbv) values (%SCHEMA%.ROLE_SEQ.nextval, 'Exam Mgr', 'Examination Timetabling Manager')</plsql>
+		<mysql>insert into %SCHEMA%.roles (role_id, reference, abbv) values (%ID%+3, 'Exam Mgr', 'Examination Timetabling Manager')</mysql>
+		<mysql>update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1</mysql>
+		<!-- Create table exam -->
+		<plsql>
+			create table %SCHEMA%.exam (
+				uniqueid number(20,0) constraint nn_exam_uniqueid not null,
+				session_id number(20,0) constraint nn_exam_session not null,
+				name varchar2(100),
+				note varchar2(1000),
+				length number(10,0) constraint nn_exam_length not null,
+				max_nbr_rooms number(10,0) default 1 constraint nn_exam_nbr_rooms not null,
+				seating_type number(10,0) constraint nn_exam_seating not null,
+				assigned_period number (20,0)
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.exam add constraint pk_exam primary key (uniqueid)</plsql>
+		<mysql>
+			create table %SCHEMA%.exam (
+				uniqueid decimal(20,0) primary key not null,
+				session_id decimal(20,0) not null,
+				name varchar(100),
+				note varchar(1000),
+				length bigint(10) not null,
+				max_nbr_rooms bigint(10) default 1 not null,
+				seating_type bigint(10) not null,
+				assigned_period decimal(20,0)
+			) engine = INNODB
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.exam add constraint fk_exam_session foreign key (session_id)
+			references %SCHEMA%.sessions (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.exam add constraint fk_exam_period foreign key (assigned_period)
+			references %SCHEMA%.exam_period (uniqueid) on delete cascade
+		</sql>
+		<!-- Create relation between exams and other objects (classes, configs, courses etc.) -->
+		<plsql>
+			create table %SCHEMA%.exam_owner (
+				uniqueid number(20,0) constraint nn_exam_owner_unique_id not null,
+				exam_id number(20,0) constraint nn_exam_owner_exam_id not null,
+				owner_id number(20,0) constraint nn_exam_owner_owner_id not null,
+				owner_type number(10,0) constraint nn_exam_owner_owner_type not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.exam_owner add constraint pk_exam_owner primary key (uniqueid)</plsql>
+		<mysql>
+			create table %SCHEMA%.exam_owner (
+				uniqueid decimal(20,0) primary key not null,
+				exam_id decimal(20,0) not null,
+				owner_id decimal(20,0) not null,
+				owner_type bigint(10) not null
+			) engine = INNODB
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.exam_owner add constraint fk_exam_owner_exam foreign key (exam_id)
+			references %SCHEMA%.exam (uniqueid) on delete cascade
+		</sql>
+		<plsql>create index %SCHEMA%.idx_exam_owner_exam on %SCHEMA%.exam_owner(exam_id)</plsql>
+		<plsql>create index %SCHEMA%.idx_exam_owner_owner on %SCHEMA%.exam_owner(owner_id, owner_type)</plsql>
+		<mysql>create index idx_exam_owner_exam on %SCHEMA%.exam_owner(exam_id)</mysql>
+		<mysql>create index idx_exam_owner_owner on %SCHEMA%.exam_owner(owner_id, owner_type)</mysql>
+		<!-- Create table exam_room_assignment (relation exam - location) -->
+		<plsql>
+			create table %SCHEMA%.exam_room_assignment (
+				exam_id number(20,0) constraint nn_exam_room_exam_id not null,
+				location_id number(20,0) constraint nn_exam_room_location_id not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.exam_room_assignment add constraint pk_exam_room_assignment primary key (exam_id, location_id)</plsql>
+		<mysql>
+			create table %SCHEMA%.exam_room_assignment (
+				exam_id decimal(20,0) not null,
+				location_id decimal(20,0) not null,
+				primary key (exam_id, location_id)
+			) engine = INNODB
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.exam_room_assignment add constraint fk_exam_room_exam foreign key (exam_id)
+			references %SCHEMA%.exam (uniqueid) on delete cascade
+		</sql>
+		<!-- Added exam period preferences -->
+		<plsql>
+			create table %SCHEMA%.exam_period_pref (
+				uniqueid number(20,0) constraint nn_exam_period_pref_uniqueid not null,
+				owner_id number(20,0) constraint nn_exam_period_pref_owner not null,
+				pref_level_id number(20,0) constraint nn_exam_period_pref_pref not null,
+				period_id number(20,0) constraint nn_exam_period_pref_period not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.exam_period_pref add constraint pk_exam_period_pref primary key (uniqueid)</plsql>
+		<mysql>
+			create table %SCHEMA%.exam_period_pref (
+				uniqueid decimal(20,0) primary key not null,
+				owner_id decimal(20,0) not null,
+				pref_level_id decimal(20,0) not null,
+				period_id decimal(20,0) not null
+			) engine = INNODB
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.exam_period_pref add constraint fk_exam_period_pref_pref foreign key (pref_level_id)
+			references %SCHEMA%.preference_level (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.exam_period_pref add constraint fk_exam_period_pref_period foreign key (period_id)
+			references %SCHEMA%.exam_period (uniqueid) on delete cascade
+		</sql>
+		<!-- Instructor assignment -->
+		<plsql>
+			create table %SCHEMA%.exam_instructor (
+				exam_id number(20,0) constraint nn_exam_instructor_exam not null,
+				instructor_id number(20,0) constraint nn_exam_instructor_instructor not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.exam_instructor add constraint pk_exam_instructor primary key (exam_id, instructor_id)</plsql>
+		<mysql>
+			create table %SCHEMA%.exam_instructor (
+				exam_id decimal(20,0) primary key not null,
+				instructor_id decimal(20,0) not null
+			) engine = INNODB
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.exam_instructor add constraint fk_exam_instructor_exam foreign key (exam_id)
+			references %SCHEMA%.exam (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.exam_instructor add constraint fk_exam_instructor_instructor foreign key (instructor_id)
+			references %SCHEMA%.departmental_instructor (uniqueid) on delete cascade
+		</sql>
+	</update>
+	<update version="12" date="08-Feb-2008" comment="Add course offering id to StudentClassEnrollment table">
+		<plsql>alter table %SCHEMA%.student_class_enrl add course_offering_id number(20,0)</plsql>
+		<mysql>alter table %SCHEMA%.student_class_enrl add course_offering_id decimal(20,0)</mysql>
+		<sql>
+			alter table %SCHEMA%.student_class_enrl add constraint fk_student_class_enrl_course foreign key (course_offering_id)
+			references %SCHEMA%.course_offering (uniqueid) on delete cascade
+		</sql>
+	</update>
+	<update version="13" date="11-Feb-2008" comment="Exams speedup">
+		<plsql>alter table %SCHEMA%.exam_owner add course_id number(20,0)</plsql>
+		<mysql>alter table %SCHEMA%.exam_owner add course_id decimal(20,0)</mysql>
+		<sql>
+			alter table %SCHEMA%.exam_owner add constraint fk_exam_owner_course foreign key (course_id)
+			references course_offering (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			update %SCHEMA%.exam_owner o set o.course_id =
+				(select co.uniqueid from %SCHEMA%.course_offering co where co.instr_offr_id=o.owner_id and co.is_control=1)
+				where o.owner_type=0
+		</sql>
+		<sql>
+			update %SCHEMA%.exam_owner set course_id = owner_id where owner_type=1
+		</sql>
+		<sql>
+			update %SCHEMA%.exam_owner o set o.course_id =
+			(select co.uniqueid from %SCHEMA%.instr_offering_config ioc, %SCHEMA%.course_offering co
+			where ioc.uniqueid=o.owner_id and ioc.instr_offr_id=co.instr_offr_id and co.is_control=1)
+			where o.owner_type=2
+		</sql>
+		<sql>
+			update %SCHEMA%.exam_owner o set o.course_id =
+			(select co.uniqueid from %SCHEMA%.instr_offering_config ioc, %SCHEMA%.course_offering co, %SCHEMA%.scheduling_subpart ss, %SCHEMA%.class_ c
+			where c.uniqueid=o.owner_id and c.subpart_id=ss.uniqueid and
+			ss.config_id=ioc.uniqueid and ioc.instr_offr_id=co.instr_offr_id and co.is_control=1)
+			where o.owner_type=3
+		</sql>
+		<plsql>
+			alter table %SCHEMA%.exam_owner add constraint nn_exam_owner_course check (course_id is not null)
+		</plsql>
+		<mysql>
+			alter table %SCHEMA%.exam_owner modify course_id decimal(20,0) not null
+		</mysql>
+		<plsql>
+			create index %SCHEMA%.idx_exam_owner_course on %SCHEMA%.exam_owner(course_id)
+		</plsql>
+		<mysql>
+			create index idx_exam_owner_course on %SCHEMA%.exam_owner(course_id)
+		</mysql>
+	</update>
+	<update version="14" date="22-Feb-2008" comment="Exam solver parameters">
+		<plsql>alter table %SCHEMA%.solver_parameter_group add param_type number(10) default 0</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_group
+				(uniqueid, name, description, condition, ord, param_type) values 
+				(%SCHEMA%.solver_parameter_group_seq.nextval, 'ExamBasic', 'Basic Parameters', '', -1,1)
+		</plsql>
+		<plsql>
+			update %SCHEMA%.solver_parameter_group g set g.ord = ( select max(x.ord)+1 from %SCHEMA%.solver_parameter_group x )
+				where g.name='ExamBasic'
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'ExamBasic.Mode' as name, 
+				'Initial' as default_value, 
+				'Solver mode' as description, 
+				'enum(Initial,MPP)' as type, 
+				0 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamBasic')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'ExamBasic.WhenFinished' as name, 
+				'No Action' as default_value, 
+				'When finished' as description, 
+				'enum(No Action,Save,Save and Unload)' as type, 
+				1 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamBasic')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_group
+				(uniqueid, name, description, condition, ord, param_type) values
+				(%SCHEMA%.solver_parameter_group_seq.nextval, 'ExamWeights', 'Examination Weights', '', -1,1)
+		</plsql>
+		<plsql>
+			update %SCHEMA%.solver_parameter_group g set g.ord = ( select max(x.ord)+1 from %SCHEMA%.solver_parameter_group x)
+				where g.name='ExamWeights'
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Exams.MaxRooms' as name, 
+				'4' as default_value, 
+				'Default number of room splits per exam' as description, 
+				'integer' as type, 
+				0 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'Exams.IsDayBreakBackToBack' as name, 
+				'false' as default_value, 
+				'Consider back-to-back over day break' as description, 
+				'boolean' as type, 
+				1 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'Exams.DirectConflictWeight' as name, 
+				'1000.0' as default_value, 
+				'Direct conflict weight' as description, 
+				'double' as type, 
+				2 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'Exams.MoreThanTwoADayWeight' as name, 
+				'100.0' as default_value, 
+				'Three or more exams a day conflict weight' as description, 
+				'double' as type, 
+				3 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'Exams.BackToBackConflictWeight' as name, 
+				'10.0' as default_value, 
+				'Back-to-back conflict weight' as description, 
+				'double' as type, 
+				4 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'Exams.DistanceBackToBackConflictWeight' as name, 
+				'25.0' as default_value, 
+				'Distance back-to-back conflict weight' as description, 
+				'double' as type, 
+				5 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'Exams.BackToBackDistance' as name, 
+				'-1' as default_value, 
+				'Back-to-back distance (-1 means disabled)' as description, 
+				'double' as type, 
+				6 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'Exams.PeriodWeight' as name, 
+				'1.0' as default_value, 
+				'Period preference weight' as description, 
+				'double' as type, 
+				7 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'Exams.RoomWeight' as name, 
+				'1.0' as default_value, 
+				'Room preference weight' as description, 
+				'double' as type, 
+				8 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'Exams.DistributionWeight' as name, 
+				'1.0' as default_value, 
+				'Distribution preference weight' as description, 
+				'double' as type, 
+				9 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def 
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'Exams.RoomSplitWeight' as name, 
+				'10.0' as default_value, 
+				'Room split weight' as description, 
+				'double' as type, 
+				10 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'Exams.RoomSizeWeight' as name, 
+				'0.001' as default_value, 
+				'Excessive room size weight' as description, 
+				'double' as type, 
+				11 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'Exams.NotOriginalRoomWeight' as name, 
+				'1.0' as default_value, 
+				'Not original room weight' as description, 
+				'double' as type, 
+				12 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'Exams.RotationWeight' as name, 
+				'0.001' as default_value, 
+				'Exam rotation weight' as description, 
+				'double' as type, 
+				13 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_group 
+			(uniqueid, name, description, condition, ord, param_type) values 
+			(%SCHEMA%.solver_parameter_group_seq.nextval, 'Exam', 'General Parameters', '', -1,1)
+		</plsql>
+		<plsql>
+			update %SCHEMA%.solver_parameter_group g set g.ord = ( select max(x.ord)+1 from %SCHEMA%.solver_parameter_group x )
+				where g.name='Exam'
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'Neighbour.Class' as name, 
+				'net.sf.cpsolver.exam.heuristics.ExamNeighbourSelection' as default_value, 
+				'Examination timetabling neighbour selection class' as description, 
+				'text' as type, 
+				0 as ord, 
+				0 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='Exam')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'Termination.TimeOut' as name, 
+				'1800' as default_value, 
+				'Maximal solver time (in sec)' as description, 
+				'integer' as type, 
+				1 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='Exam')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'Exam.Algorithm' as name, 
+				'Great Deluge' as default_value, 
+				'Used heuristics' as description, 
+				'enum(Great Deluge,Simulated Annealing)' as type, 
+				2 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='Exam')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'HillClimber.MaxIdle' as name, 
+				'25000' as default_value, 
+				'Hill Climber: maximal idle iteration' as description, 
+				'integer' as type, 
+				3 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='Exam')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'Termination.StopWhenComplete' as name, 
+				'false' as default_value, 
+				'Stop when a complete solution if found' as description, 
+				'boolean' as type, 
+				4 as ord, 
+				0 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='Exam')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'General.SaveBestUnassigned' as name, 
+				'-1' as default_value, 
+				'Save best when x unassigned' as description, 
+				'integer' as type, 
+				5 as ord, 
+				0 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='Exam')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_group 
+			(uniqueid, name, description, condition, ord, param_type) values 
+			(%SCHEMA%.solver_parameter_group_seq.nextval, 'ExamGD', 'Great Deluge Parameters', '', -1,1)
+		</plsql>
+		<plsql>
+			update %SCHEMA%.solver_parameter_group g set g.ord = ( select max(x.ord)+1 from %SCHEMA%.solver_parameter_group x )
+			where g.name='ExamGD'
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'GreatDeluge.CoolRate' as name, 
+				'0.99999995' as default_value, 
+				'Cooling rate' as description, 
+				'double' as type, 
+				0 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamGD')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'GreatDeluge.UpperBoundRate' as name, 
+				'1.05' as default_value, 
+				'Upper bound rate' as description, 
+				'double' as type, 
+				1 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamGD')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'GreatDeluge.LowerBoundRate' as name, 
+				'0.95' as default_value, 
+				'Lower bound rate' as description, 
+				'double' as type, 
+				2 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamGD')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_group 
+			(uniqueid, name, description, condition, ord, param_type) values 
+			(%SCHEMA%.solver_parameter_group_seq.nextval, 'ExamSA', 'Simulated Annealing Parameters', '', -1,1)
+		</plsql>
+		<plsql>
+			update %SCHEMA%.solver_parameter_group g set g.ord = ( select max(x.ord)+1 from %SCHEMA%.solver_parameter_group x )
+			where g.name='ExamSA'
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'SimulatedAnnealing.InitialTemperature' as name, 
+				'1.5' as default_value, 
+				'Initial temperature' as description, 
+				'double' as type, 
+				0 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamSA')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'SimulatedAnnealing.CoolingRate' as name, 
+				'0.95' as default_value, 
+				'Cooling rate' as description, 
+				'double' as type, 
+				1 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamSA')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'SimulatedAnnealing.TemperatureLength' as name, 
+				'25000' as default_value, 
+				'Temperature length' as description, 
+				'integer' as type, 
+				2 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamSA')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid, 
+				'SimulatedAnnealing.ReheatLengthCoef' as name, 
+				'5' as default_value, 
+				'Reheat length coefficient' as description, 
+				'double' as type, 
+				3 as ord, 
+				1 as visible, 
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamSA')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_predef_setting (uniqueid, name, description, appearance)
+			values(%SCHEMA%.solver_predef_setting_seq.nextval, 'Exam.Default', 'Default', 2)
+		</plsql>
+		<mysql>alter table %SCHEMA%.solver_parameter_group add param_type bigint(10) default 0</mysql>
+		<mysql into="ID">
+			select 32767 * next_hi from %SCHEMA%.hibernate_unique_key			
+		</mysql>
+		<mysql into="ORD">
+			select max(ord)+1 from %SCHEMA%.solver_parameter_group
+		</mysql>
+		<mysql>
+			insert into %SCHEMA%.solver_parameter_group (uniqueid, name, description, ord, param_type) values
+			(%ID%, 'ExamBasic', 'Basic Parameters', %ORD%, 1),
+			(%ID%+1, 'ExamWeights', 'Examination Weights', %ORD%+1, 1),
+			(%ID%+2, 'Exam', 'General Parameters', %ORD%+2, 1),
+			(%ID%+3, 'ExamGD', 'Great Deluge Parameters', %ORD%+3, 1),
+			(%ID%+4, 'ExamSA', 'Simulated Annealing Parameters', %ORD%+4, 1)
+		</mysql>
+		<mysql>
+			insert into %SCHEMA%.solver_parameter_def
+			(uniqueid, name, default_value, description, type, ord, visible, solver_param_group_id) values
+			(%ID%+5, 'ExamBasic.Mode', 'Initial', 'Solver mode', 'enum(Initial,MPP)', 0, 1, %ID%),
+			(%ID%+6, 'ExamBasic.WhenFinished', 'No Action', 'When finished', 'enum(No Action,Save,Save and Unload)', 1, 1, %ID%),
+			(%ID%+7, 'Exams.MaxRooms', '4', 'Default number of room splits per exam', 'integer', 0, 1, %ID%+1),
+			(%ID%+8, 'Exams.IsDayBreakBackToBack', 'false', 'Consider back-to-back over day break', 'boolean', 1, 1, %ID%+1),
+			(%ID%+9, 'Exams.DirectConflictWeight', '1000.0', 'Direct conflict weight', 'double', 2, 1, %ID%+1),
+			(%ID%+10, 'Exams.MoreThanTwoADayWeight', '100.0', 'Three or more exams a day conflict weight', 'double', 3, 1, %ID%+1),
+			(%ID%+11, 'Exams.BackToBackConflictWeight', '10.0', 'Back-to-back conflict weight', 'double', 4, 1, %ID%+1),
+			(%ID%+12, 'Exams.DistanceBackToBackConflictWeight', '25.0', 'Distance back-to-back conflict weight', 'double', 5, 1, %ID%+1),
+			(%ID%+13, 'Exams.BackToBackDistance', '-1', 'Back-to-back distance (-1 means disabled)', 'double', 6, 1, %ID%+1),
+			(%ID%+14, 'Exams.PeriodWeight', '1.0', 'Period preference weight', 'double', 7, 1, %ID%+1),
+			(%ID%+15, 'Exams.RoomWeight', '1.0', 'Room preference weight', 'double', 8, 1, %ID%+1),
+			(%ID%+16, 'Exams.DistributionWeight', '1.0', 'Distribution preference weight', 'double', 9, 1, %ID%+1),
+			(%ID%+17, 'Exams.RoomSplitWeight', '10.0', 'Room split weight', 'double', 10, 1, %ID%+1),
+			(%ID%+18, 'Exams.RoomSizeWeight', '0.001', 'Excessive room size weight', 'double', 11, 1, %ID%+1),
+			(%ID%+19, 'Exams.NotOriginalRoomWeight', '1.0', 'Not original room weight', 'double', 12, 1, %ID%+1),
+			(%ID%+20, 'Exams.RotationWeight', '0.001', 'Exam rotation weight', 'double', 13, 1, %ID%+1),
+			(%ID%+21, 'Neighbour.Class', 'net.sf.cpsolver.exam.heuristics.ExamNeighbourSelection', 'Examination timetabling neighbour selection class', 'text', 0, 0, %ID%+2),
+			(%ID%+22, 'Termination.TimeOut', '1800', 'Maximal solver time (in sec)', 'integer', 1, 1, %ID%+2),
+			(%ID%+23, 'Exam.Algorithm', 'Great Deluge', 'Used heuristics', 'enum(Great Deluge,Simulated Annealing)', 2, 1, %ID%+2),
+			(%ID%+24, 'HillClimber.MaxIdle', '25000', 'Hill Climber: maximal idle iteration', 'integer', 3, 1, %ID%+2),
+			(%ID%+25, 'Termination.StopWhenComplete', 'false', 'Stop when a complete solution if found', 'boolean', 4, 0, %ID%+2),
+			(%ID%+26, 'General.SaveBestUnassigned', '-1', 'Save best when x unassigned', 'integer', 5, 0, %ID%+2),
+			(%ID%+27, 'GreatDeluge.CoolRate', '0.99999995', 'Cooling rate', 'double', 0, 1, %ID%+3),
+			(%ID%+28, 'GreatDeluge.UpperBoundRate', '1.05', 'Upper bound rate', 'double', 1, 1, %ID%+3),
+			(%ID%+29, 'GreatDeluge.LowerBoundRate', '0.95', 'Lower bound rate', 'double', 2, 1, %ID%+3),
+			(%ID%+30, 'SimulatedAnnealing.InitialTemperature', '1.5', 'Initial temperature', 'double', 0, 1, %ID%+4),
+			(%ID%+31, 'SimulatedAnnealing.CoolingRate', '0.95', 'Cooling rate', 'double', 1, 1, %ID%+4),
+			(%ID%+32, 'SimulatedAnnealing.TemperatureLength', '25000', 'Temperature length', 'integer', 2, 1, %ID%+4),
+			(%ID%+33, 'SimulatedAnnealing.ReheatLengthCoef', '5', 'Reheat length coefficient', 'double', 3, 1, %ID%+4)
+		</mysql>
+		<mysql>
+			insert into %SCHEMA%.solver_predef_setting (uniqueid, name, description, appearance) values 
+			(%ID%+34, 'Exam.Default', 'Default', 2)
+		</mysql>
+		<mysql>
+			update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1
+		</mysql>
+	</update>
+	<update version="15" date="25-Feb-2008" comment="Exam conflicts">
+		<plsql>
+			create table %SCHEMA%.xconflict (
+				uniqueid number(20,0) constraint nn_xconflict_uniqueid not null,
+				conflict_type number(10,0) constraint nn_xconflict_type not null,
+				distance float)
+		</plsql>
+		<plsql>
+			alter table %SCHEMA%.xconflict
+			add constraint pk_xconflict primary key (uniqueid)
+		</plsql>
+		<mysql>
+			create table %SCHEMA%.xconflict (
+				uniqueid decimal(20,0) not null primary key,
+				conflict_type decimal(10,0) not null,
+				distance double) engine = INNODB
+		</mysql>
+		<plsql>
+			create table %SCHEMA%.xconflict_exam (
+				conflict_id number(20,0) constraint nn_xconflict_ex_conf not null,
+				exam_id number(20,0) constraint nn_xconflict_ex_exam not null)
+		</plsql>
+		<plsql>
+			alter table %SCHEMA%.xconflict_exam
+  			add constraint pk_xconflict_exam primary key (conflict_id, exam_id)
+  		</plsql>
+  		<mysql>
+  			create table %SCHEMA%.xconflict_exam (
+				conflict_id decimal(20,0) not null,
+				exam_id decimal(20,0) not null,
+				primary key (conflict_id, exam_id)) engine = INNODB
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.xconflict_exam
+  				add constraint fk_xconflict_ex_conf foreign key (conflict_id)
+  				references %SCHEMA%.xconflict (uniqueid) on delete cascade
+  		</sql>
+  		<sql>
+  			alter table %SCHEMA%.xconflict_exam
+  				add constraint fk_xconflict_ex_exam  foreign key (exam_id)
+  				references %SCHEMA%.exam (uniqueid) on delete cascade
+  		</sql>
+  		<plsql>
+  			create table %SCHEMA%.xconflict_student (
+  				conflict_id number(20,0) constraint nn_xconflict_st_conf  not null,
+				student_id number(20,0) constraint nn_xconflict_st_student  not null)
+		</plsql>
+		<plsql>
+			alter table %SCHEMA%.xconflict_student
+  			add constraint pk_xconflict_student primary key (conflict_id, student_id)
+  		</plsql>
+  		<mysql>
+  			create table %SCHEMA%.xconflict_student (
+  				conflict_id decimal(20,0) not null,
+				student_id decimal(20,0) not null,
+				primary key (conflict_id, student_id)
+			) engine = INNODB
+  		</mysql>
+  		<sql>
+  			alter table %SCHEMA%.xconflict_student
+  			add constraint fk_xconflict_st_conf foreign key (conflict_id)
+  			references %SCHEMA%.xconflict (uniqueid) on delete cascade
+  		</sql>
+  		<sql>
+  			alter table %SCHEMA%.xconflict_student
+  			add constraint fk_xconflict_st_student foreign key (student_id)
+  			references %SCHEMA%.student (uniqueid) on delete cascade
+  		</sql>
+  		<plsql>
+  			create index %SCHEMA%.idx_xconflict_exam on %SCHEMA%.xconflict_exam(exam_id)
+  		</plsql>
+  		<mysql>
+  			create index idx_xconflict_exam on %SCHEMA%.xconflict_exam(exam_id)
+  		</mysql>
+	</update>
+	<update version="16" date="28-Feb-2008" comment="Exam instructor conflicts">
+		<plsql>
+			create table %SCHEMA%.xconflict_instructor (
+				conflict_id number(20,0) constraint nn_xconflict_in_conf  not null,
+				instructor_id number(20,0) constraint nn_xconflict_in_student  not null
+			)
+		</plsql>
+		<plsql>
+			alter table %SCHEMA%.xconflict_instructor
+  			add constraint pk_xconflict_instructor primary key (conflict_id, instructor_id)
+  		</plsql>
+  		<mysql>
+  			create table %SCHEMA%.xconflict_instructor (
+				conflict_id decimal(20,0) not null,
+				instructor_id decimal(20,0) not null,
+				primary key(conflict_id, instructor_id)
+			) engine = INNODB
+  		</mysql>
+  		<sql>
+			alter table %SCHEMA%.xconflict_instructor
+  			add constraint fk_xconflict_in_conf foreign key (conflict_id)
+  			references %SCHEMA%.xconflict (uniqueid) on delete cascade
+  		</sql>
+  		<sql>
+  			alter table %SCHEMA%.xconflict_instructor
+  			add constraint fk_xconflict_in_instructor foreign key (instructor_id)
+  			references %SCHEMA%.departmental_instructor (uniqueid) on delete cascade
+  		</sql>
+  		<plsql>
+  			alter table %SCHEMA%.exam add assigned_pref varchar2(100)
+  		</plsql>
+  		<mysql>
+  			alter table %SCHEMA%.exam add assigned_pref varchar(100)
+  		</mysql>
+	</update>
+	<update version="17" date="3-Mar-2008" comment="Midterm exams">
+		<plsql>
+			alter table %SCHEMA%.exam add exam_type number(10,0) default 0
+		</plsql>
+		<plsql>
+			alter table %SCHEMA%.exam_period add exam_type number(10,0) default 0
+		</plsql>
+		<mysql>
+			alter table %SCHEMA%.exam add exam_type bigint(10) default 0
+		</mysql>
+		<mysql>
+			alter table %SCHEMA%.exam_period add exam_type bigint(10) default 0
+		</mysql>
+	</update>
+	<update version="18" date="03-Mar-2008" comment="Location permanent id">
+		<plsql>
+			alter table %SCHEMA%.room add permanent_id number(20)
+		</plsql>
+		<mysql>
+			alter table %SCHEMA%.room add permanent_id decimal(20,0)
+		</mysql>
+		<plsql>
+			alter table %SCHEMA%.non_university_location add permanent_id number(20)
+		</plsql>
+		<mysql>
+			alter table %SCHEMA%.non_university_location add permanent_id decimal(20,0)
+		</mysql>
+		<plsql>
+			create table %SCHEMA%.temp_perm_id
+				(
+				  external_uid varchar(40) not null,
+				  perm_id      number(20) not null
+				)
+		</plsql>
+		<mysql>
+			create table %SCHEMA%.temp_perm_id
+				(
+				  external_uid varchar(40) not null,
+				  perm_id      bigint(10) not null auto_increment primary key
+				) engine memory
+		</mysql>
+		<plsql>
+			create sequence %SCHEMA%.loc_perm_id_seq
+				minvalue 1
+				maxvalue 99999999999999999999
+				start with 1
+				increment by 1
+				cache 20
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.temp_perm_id tpi
+				select s.eid, %SCHEMA%.loc_perm_id_seq.nextval from (select distinct r.external_uid as eid 
+				from %SCHEMA%.room r
+				where r.external_uid is not null
+				order by r.external_uid) s
+		</plsql>
+		<plsql>
+			update %SCHEMA%.room r
+				set r.permanent_id = (select tpi.perm_id from %SCHEMA%.temp_perm_id tpi where tpi.external_uid = r.external_uid)
+				where r.external_uid is not null
+		</plsql>
+		<plsql>
+			update %SCHEMA%.room r
+				set r.permanent_id = %SCHEMA%.loc_perm_id_seq.nextval
+				where r.external_uid is null
+		</plsql>
+		<plsql>
+			update %SCHEMA%.non_university_location nul
+				set nul.permanent_id = %SCHEMA%.loc_perm_id_seq.nextval
+		</plsql>
+		<mysql into="ID">
+			select 32767 * next_hi from %SCHEMA%.hibernate_unique_key
+		</mysql>
+		<mysql>
+			insert into temp_perm_id (external_uid, perm_id) values ('DUMMY', %ID%-1)
+		</mysql>
+		<mysql>
+			insert into %SCHEMA%.temp_perm_id ( external_uid )
+				select s.eid from (select distinct r.external_uid as eid 
+				from %SCHEMA%.room r
+				where r.external_uid is not null
+				union (select distinct cast(r1.uniqueid as char) as eid from %SCHEMA%.room r1 where r1.external_uid is null)
+				union (select distinct cast(nul.uniqueid as char) as eid from %SCHEMA%.non_university_location nul)) s
+		</mysql>
+		<mysql>
+			update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1
+		</mysql>
+		<mysql>
+			update %SCHEMA%.room r
+				set r.permanent_id = (select tpi.perm_id from %SCHEMA%.temp_perm_id tpi where tpi.external_uid = r.external_uid)
+				where r.external_uid is not null
+		</mysql>
+		<mysql>
+			update %SCHEMA%.room r
+				set r.permanent_id = (select tpi.perm_id from %SCHEMA%.temp_perm_id tpi where tpi.external_uid = cast(r.uniqueid as char))
+				where r.external_uid is null
+		</mysql>
+		<mysql>
+			update %SCHEMA%.non_university_location nul
+				set nul.permanent_id = (select tpi.perm_id from %SCHEMA%.temp_perm_id tpi where tpi.external_uid = cast(nul.uniqueid as char))
+		</mysql>
+		<sql>
+			drop table %SCHEMA%.temp_perm_id
+		</sql>
+		<plsql>
+			alter table %SCHEMA%.room modify permanent_id not null
+		</plsql>
+		<plsql>
+			alter table %SCHEMA%.non_university_location modify permanent_id not null
+		</plsql>
+		<mysql>
+			alter table %SCHEMA%.room modify permanent_id decimal(20,0) not null
+		</mysql>
+		<mysql>
+			alter table %SCHEMA%.non_university_location modify permanent_id decimal(20,0) not null
+		</mysql>
+	</update>
+	<update version="19" date="05-Mar-2008" comment="Add event tables">
+		<plsql>
+			create table %SCHEMA%.event_type	
+				(
+				UNIQUEID  NUMBER(20),
+				REFERENCE VARCHAR2(20), 
+				LABEL VARCHAR2(60)
+				)
+		</plsql>
+		<plsql>
+			alter table %SCHEMA%.EVENT_TYPE 
+			add constraint PK_EVENT_TYPE primary key (UNIQUEID)
+		</plsql>
+		<plsql>
+			alter table %SCHEMA%.EVENT_TYPE 
+			add constraint NN_EVENT_TYPE_LABEL 
+			check ("LABEL" IS NOT NULL)
+		</plsql>
+		<plsql>
+			alter table %SCHEMA%.EVENT_TYPE 
+			add constraint NN_EVENT_TYPE_REFERENCE 
+			check ("REFERENCE" IS NOT NULL)
+		</plsql>		
+		<plsql>
+			alter table %SCHEMA%.EVENT_TYPE 
+			add constraint NN_EVENT_TYPE_UNIQUEID 
+			check ("UNIQUEID" IS NOT NULL)
+		</plsql>
+		<mysql>
+			create table %SCHEMA%.EVENT_TYPE
+				(
+  				UNIQUEID  DECIMAL(20,0) primary key not null,
+  				REFERENCE VARCHAR(20) not null,
+  				LABEL     VARCHAR(60) not null
+				) engine = INNODB
+		</mysql>
+		<plsql>
+			insert into %SCHEMA%.event_type values(%SCHEMA%.ref_table_seq.nextval, 'class', 'Class')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.event_type values(%SCHEMA%.ref_table_seq.nextval, 'final', 'Final Exam')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.event_type values(%SCHEMA%.ref_table_seq.nextval, 'evening', 'Evening Exam')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.event_type values(%SCHEMA%.ref_table_seq.nextval, 'otherWithConflict', 'Other Course Event with Conflict Checking')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.event_type values(%SCHEMA%.ref_table_seq.nextval, 'otherNoConflict', 'Other Course Event with No Conflict Checking')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.event_type values(%SCHEMA%.ref_table_seq.nextval, 'special', 'Special Event')
+		</plsql>
+		<mysql into="ID">
+			select 32767 * next_hi from %SCHEMA%.hibernate_unique_key
+		</mysql>
+		<mysql>
+			insert into %SCHEMA%.event_type (uniqueid, reference, label) values
+				(%ID%, 'class', 'Class'),
+				(%ID%+1, 'final', 'Final Exam'),
+				(%ID%+2, 'evening', 'Evening Exam'),
+				(%ID%+3, 'otherWithConflict', 'Other Course Event with Conflict Checking'),
+				(%ID%+4, 'otherNoConflict', 'Other Course Event with No Conflict Checking'),
+				(%ID%+5, 'special', 'Special Event')
+		</mysql>
+		<mysql>
+			update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1
+		</mysql>
+		<plsql>
+			create table %SCHEMA%.event_contact
+				(
+				uniqueid    number(20) constraint nn_event_contact_uniqueid not null,
+  				external_id varchar2(40),
+				email       varchar2(100)  constraint nn_event_contact_email not null,
+  				phone       varchar2(10)  constraint nn_event_contact_phone not null,
+  				firstName   varchar2(20),
+  				middleName  varchar2(20),
+  				lastName    varchar2(30)
+				)
+		</plsql>
+		<plsql>
+			alter table %SCHEMA%.event_contact add constraint pk_event_contact_uniqueid primary key (UNIQUEID)
+		</plsql>
+		<mysql>
+			create table %SCHEMA%.event_contact
+				(
+  				uniqueid    decimal(20,0) primary key not null,
+  				external_id varchar(40),
+  				email       varchar(100)  not null,
+  				phone       varchar(10)  not null,
+  				firstName   varchar(20),
+  				middleName  varchar(20),
+  				lastName    varchar(30)
+				) engine = INNODB
+		</mysql>
+		<plsql>
+			create table %SCHEMA%.event
+				(
+  				uniqueid       number(20) not null,
+  				event_type     number(20) not null,
+  				event_name     varchar2(100),
+  				min_capacity   number(10),
+  				max_capacity   number(10),
+  				sponsoring_org number(20),
+  				main_contact_id	number(20)
+				)
+		</plsql>
+		<plsql>
+			alter table %SCHEMA%.event add constraint pk_event_uniqueid primary key (UNIQUEID)
+		</plsql>
+		<mysql>
+			create table %SCHEMA%.event
+				(
+  				uniqueid       decimal(20,0) not null primary key,
+  				event_type     decimal(20,0) not null,
+  				event_name     varchar(100),
+  				min_capacity   bigint(10),
+  				max_capacity   bigint(10),
+  				sponsoring_org decimal(20,0),
+  				main_contact_id	decimal(20,0)
+				) engine = INNODB
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.event 
+			add constraint fk_event_event_type foreign key (EVENT_TYPE) 
+			references %SCHEMA%.event_type (UNIQUEID) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.event
+  			add constraint fk_event_main_contact foreign key (MAIN_CONTACT_ID)
+  			references %SCHEMA%.event_contact (UNIQUEID) on delete  set null
+		</sql>
+		<plsql>
+			create table %SCHEMA%.event_join_event_contact
+				(
+  				event_id         number(20) constraint nn_event_join_event_id not null,
+  				event_contact_id number(20) constraint nn_event_join_event_contact_id not null
+				)
+		</plsql>
+		<mysql>
+			create table %SCHEMA%.event_join_event_contact
+				(
+  				event_id         decimal(20,0) not null,
+  				event_contact_id decimal(20,0) not null
+				)		 engine = INNODB
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.event_join_event_contact
+  			add constraint fk_event_id_join foreign key (EVENT_ID)
+  			references %SCHEMA%.event (UNIQUEID) on delete cascade
+  		</sql>
+  		<sql>
+			alter table %SCHEMA%.event_join_event_contact
+  			add constraint fk_event_contact_join foreign key (EVENT_CONTACT_ID)
+  			references %SCHEMA%.event_contact (UNIQUEID) on delete cascade
+		</sql>
+		<plsql>
+			create table %SCHEMA%.related_course_info 
+				(
+  				uniqueid number(20,0) constraint nn_rel_crs_info_unique_id not null,
+  				event_id number(20,0) constraint nn_rel_crs_info_event_id not null,
+  				owner_id number(20,0) constraint nn_rel_crs_info_owner_id not null,
+  				owner_type number(10,0) constraint nn_rel_crs_info_owner_type not null,
+  				course_id number(20,0) constraint nn_rel_crs_info_course_id not null
+				)
+		</plsql>
+		<plsql>
+			alter table %SCHEMA%.related_course_info add constraint pk_related_crs_info primary key (uniqueid)
+		</plsql>
+		<mysql>
+			create table %SCHEMA%.related_course_info 
+				(
+  				uniqueid decimal(20,0) primary key not null,
+  				event_id decimal(20,0) not null,
+  				owner_id decimal(20,0) not null,
+  				owner_type decimal(10,0) not null,
+  				course_id decimal (20,0) not null
+				) engine = INNODB
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.related_course_info 
+			add constraint fk_event_owner_event foreign key (event_id) 
+			references %SCHEMA%.event (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.related_course_info 
+			add constraint fk_event_owner_course foreign key (course_id) 
+			references %SCHEMA%.course_offering (uniqueid) on delete cascade
+		</sql>
+		<plsql> 
+			create index %SCHEMA%.idx_event_owner_event on %SCHEMA%.related_course_info(event_id)
+		</plsql>
+		<plsql>
+			create index %SCHEMA%.idx_event_owner_owner on %SCHEMA%.related_course_info(owner_id, owner_type)
+		</plsql>
+		<mysql>
+			create index idx_event_owner_event on %SCHEMA%.related_course_info(event_id)
+		</mysql>
+		<mysql>
+			create index idx_event_owner_owner on %SCHEMA%.related_course_info(owner_id, owner_type)
+		</mysql>
+		<plsql>
+			create table %SCHEMA%.meeting
+				(
+  				uniqueid           number(20) constraint nn_meeting_uniqueid not null,
+  				event_id           number(20) constraint nn_meeting_event_id not null,
+  				event_type         number(20) constraint nn_meeting_event_type not null,
+  				meeting_date       date constraint nn_meeting_date not null,
+  				start_period       number(10) constraint nn_meeting_start_period not null,
+  				start_offset       number(10),
+  				stop_period        number(10) constraint nn_meeting_stop_period not null,
+				stop_offset        number(10),
+				location_perm_id   number(20),
+				class_can_override number(1) constraint nn_meeting_override not null,
+				approved_date      date
+				)
+		</plsql>
+		<plsql>
+			alter table %SCHEMA%.meeting
+			add constraint pk_meeting_uniqueid primary key (UNIQUEID)
+		</plsql>
+		<mysql>
+			create table %SCHEMA%.meeting
+				(
+				uniqueid           decimal(20,0) primary key not null,
+				event_id           decimal(20,0)  not null,
+				event_type         decimal(20,0) not null,
+				meeting_date       date not null,
+				start_period       bigint(10) not null,
+				start_offset       bigint(10),
+				stop_period        bigint(10) not null,
+				stop_offset        bigint(10),
+				location_perm_id   decimal(20,0),
+				class_can_override int(1) not null,
+				approved_date      date
+				) engine = INNODB
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.meeting
+  			add constraint fk_meeting_event foreign key (EVENT_ID)
+  			references %SCHEMA%.event (UNIQUEID) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.meeting
+  			add constraint fk_meeting_event_type foreign key (EVENT_TYPE)
+  			references %SCHEMA%.event_type (UNIQUEID) on delete cascade
+		</sql>
+		<plsql>
+		create table %SCHEMA%.STANDARD_EVENT_NOTE
+			(
+  			UNIQUEID  NUMBER(20),
+  			REFERENCE VARCHAR2(20),
+  			NOTE      VARCHAR2(1000)
+			)
+		</plsql>
+		<plsql>
+			alter table %SCHEMA%.STANDARD_EVENT_NOTE
+			add constraint PK_STANDARD_EVENT_NOTE primary key (UNIQUEID)
+		</plsql>
+		<plsql>
+			alter table %SCHEMA%.STANDARD_EVENT_NOTE
+			add constraint NN_STD_EVENT_NOTE_NOTE
+			check ("NOTE" IS NOT NULL)
+		</plsql>
+		<plsql>
+			alter table %SCHEMA%.STANDARD_EVENT_NOTE
+		  	add constraint NN_STD_EVENT_NOTE_REFERENCE
+		  	check ("REFERENCE" IS NOT NULL)
+		</plsql>
+		<plsql>
+			alter table %SCHEMA%.STANDARD_EVENT_NOTE
+		  	add constraint NN_STD_EVENT_NOTE_UNIQUEID
+		  	check ("UNIQUEID" IS NOT NULL)
+		</plsql>		
+		<mysql>
+			create table %SCHEMA%.STANDARD_EVENT_NOTE
+				(
+  				UNIQUEID  DECIMAL(20,0) primary key not null,
+  				REFERENCE VARCHAR(20) not null,
+  				NOTE     VARCHAR(1000) not null
+				) engine = INNODB
+		</mysql>
+		<plsql>
+			create table %SCHEMA%.event_note
+				(
+  				uniqueid  number(20) constraint nn_event_note_uniqueid not null,
+  				event_id  number(20) constraint nn_event_note_event_uniqueid not null,
+  				note_id   number(20),
+  				text_note varchar2(1000)
+				)
+		</plsql>
+		<plsql>
+			alter table %SCHEMA%.event_note
+  			add constraint pk_event_note_uniqueid primary key (UNIQUEID)
+		</plsql>
+		<mysql>
+			create table %SCHEMA%.event_note
+				(
+  				uniqueid  decimal(20,0) primary key not null,
+  				event_id  decimal(20,0) not null,
+  				note_id   decimal(20,0),
+  				text_note varchar(1000)
+				) engine = INNODB
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.event_note
+			add constraint fk_event_note_event foreign key (EVENT_ID)
+  			references %SCHEMA%.event (UNIQUEID) on delete cascade	
+		</sql>
+		<sql>
+			alter table %SCHEMA%.event_note
+  			add constraint fk_event_note_std_note foreign key (NOTE_ID)
+  			references %SCHEMA%.standard_event_note (UNIQUEID) on delete set null
+		</sql>
+	</update>
+	<update version="20" date="12-Mar-2008" comment="Exam room changes">
+		<plsql>alter table %SCHEMA%.room add exam_type number(10,0) default 0</plsql>
+		<plsql>alter table %SCHEMA%.non_university_location add exam_type number(10,0) default 0</plsql>
+		<mysql>alter table %SCHEMA%.room add exam_type bigint(10) default 0</mysql>
+		<mysql>alter table %SCHEMA%.non_university_location add exam_type bigint(10) default 0</mysql>
+		<sql>update %SCHEMA%.room set exam_type = 1 where exam_enable = 1</sql>
+		<sql>update %SCHEMA%.non_university_location set exam_type = 1 where exam_enable = 1</sql>
+		<sql>alter table %SCHEMA%.room drop column exam_enable</sql>
+		<sql>alter table %SCHEMA%.non_university_location drop column exam_enable</sql>
+		<sql>alter table %SCHEMA%.room drop column exam_pref</sql>
+		<sql>alter table %SCHEMA%.non_university_location drop column exam_pref</sql>
+		<plsql>
+			create table %SCHEMA%.exam_location_pref (
+				uniqueid number(20,0) constraint nn_exam_location_pref_uniqueid not null,
+				location_id number(20,0) constraint nn_exam_location_pref_owner not null,
+				pref_level_id number(20,0) constraint nn_exam_location_pref_pref not null,
+				period_id number(20,0) constraint nn_exam_location_pref_period not null
+			)
+		</plsql>
+		<plsql>
+			alter table %SCHEMA%.exam_location_pref add constraint pk_exam_location_pref primary key (uniqueid)
+		</plsql>
+		<mysql>
+			create table %SCHEMA%.exam_location_pref (
+				uniqueid decimal(20,0) primary key not null,
+				location_id decimal(20,0) not null,
+				pref_level_id decimal(20,0) not null,
+				period_id decimal(20,0) not null
+			) engine = INNODB
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.exam_location_pref 
+			add constraint fk_exam_location_pref_pref foreign key (pref_level_id)
+			references %SCHEMA%.preference_level (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.exam_location_pref
+			add constraint fk_exam_location_pref_period foreign key (period_id)
+			references %SCHEMA%.exam_period (uniqueid) on delete cascade
+		</sql>
+		<plsql>
+			create index %SCHEMA%.idx_exam_location_pref on %SCHEMA%.exam_location_pref(location_id)
+		</plsql>
+		<mysql>
+			create index idx_exam_location_pref on %SCHEMA%.exam_location_pref(location_id)
+		</mysql>
+	</update>
+	<update version="21" date="06-Mar-2008" comment="Add External Uids to Class and Instr Offr">
+		<plsql>
+			alter table %SCHEMA%.INSTRUCTIONAL_OFFERING add external_uid varchar2(40)
+		</plsql>
+		<plsql>
+			alter table %SCHEMA%.CLASS_ add external_uid varchar2(40)
+		</plsql>
+		<mysql>
+			alter table %SCHEMA%.INSTRUCTIONAL_OFFERING add external_uid varchar(40)
+		</mysql>
+		<mysql>
+			alter table %SCHEMA%.CLASS_ add external_uid varchar(40)
+		</mysql>
+	</update>
+	<update version="22" date="01-Apr-2008" comment="Class exam event relation">
+		<plsql>alter table %SCHEMA%.assignment add event_id number(20,0)</plsql>
+		<mysql>alter table %SCHEMA%.assignment add event_id decimal(20,0)</mysql>
+		<sql>
+			alter table %SCHEMA%.assignment add constraint fk_assignment_event foreign key (event_id)
+			references %SCHEMA%.event (uniqueid) on delete set null
+		</sql>
+		<plsql>alter table %SCHEMA%.exam add event_id number(20,0)</plsql>
+		<mysql>alter table %SCHEMA%.exam add event_id decimal(20,0)</mysql>
+		<sql>
+			alter table %SCHEMA%.exam add constraint fk_exam_event foreign key (event_id)
+			references %SCHEMA%.event (uniqueid) on delete set null
+		</sql>
+	</update>
+	<update version="23" date="09-Apr-2008" comment="External Room add exam capacity">
+		<plsql>alter table %SCHEMA%.external_room add exam_capacity number(10)</plsql>
+		<mysql>alter table %SCHEMA%.external_room add exam_capacity bigint(10)</mysql>
+	</update>
+	<update version="24" date="11-Apr-2008" comment="Exam avg period, instructor email, itype organized flag">
+		<plsql>alter table %SCHEMA%.exam add avg_period number(10)</plsql>
+		<mysql>alter table %SCHEMA%.exam add avg_period bigint(10)</mysql>
+		<plsql>alter table %SCHEMA%.itype_desc add organized number(1)</plsql>
+		<mysql>alter table %SCHEMA%.itype_desc add organized int(1)</mysql>
+		<sql>update %SCHEMA%.itype_desc set organized = 0</sql>
+		<sql>update %SCHEMA%.itype_desc set organized = 1 where abbv like 'Lec%'</sql>
+		<sql>update %SCHEMA%.itype_desc set organized = 1 where abbv like 'Rec%'</sql>
+		<sql>update %SCHEMA%.itype_desc set organized = 1 where abbv like 'Prsn%'</sql>
+		<sql>update %SCHEMA%.itype_desc set organized = 1 where abbv like 'Lab%'</sql>
+		<sql>update %SCHEMA%.itype_desc set organized = 1 where abbv like 'LabP%'</sql>
+		<sql>update %SCHEMA%.itype_desc set organized = 1 where abbv like 'Stdo%'</sql>
+		<mysql>alter table %SCHEMA%.itype_desc modify organized int(1) not null</mysql>
+		<plsql>alter table %SCHEMA%.itype_desc add constraint nn_itype_desc_organized check (organized is not null)</plsql>
+		<plsql>alter table %SCHEMA%.departmental_instructor add email varchar2(200)</plsql>
+		<mysql>alter table %SCHEMA%.departmental_instructor add email varchar(200)</mysql>
+	</update>
+	<update version="25" date="17-Apr-2008" comment="Exam added unique id rolled foward from">
+		<plsql>alter table %SCHEMA%.exam add uid_rolled_fwd_from number(20)</plsql>
+		<mysql>alter table %SCHEMA%.exam add uid_rolled_fwd_from decimal(20,0)</mysql>
+	</update>
+	<update version="26" date="8-May-2008" comment="Event changes">
+		<mysql>alter table %SCHEMA%.event add class_id decimal(20,0)</mysql>
+		<mysql>alter table %SCHEMA%.event add exam_id decimal(20,0)</mysql>
+		<mysql>alter table %SCHEMA%.event add new_event_type bigint(10)</mysql>
+		<mysql>alter table %SCHEMA%.event add req_attd int(1)</mysql>
+		<plsql>alter table %SCHEMA%.event add class_id number(20,0)</plsql>
+		<plsql>alter table %SCHEMA%.event add exam_id number(20,0)</plsql>
+		<plsql>alter table %SCHEMA%.event add new_event_type number(10,0)</plsql>
+		<plsql>alter table %SCHEMA%.event add req_attd number(1,0)</plsql>
+		<sql>
+			alter table %SCHEMA%.event add constraint fk_event_class foreign key (class_id)
+			references %SCHEMA%.class_ (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.event add constraint fk_event_exam foreign key (exam_id)
+			references %SCHEMA%.exam (uniqueid) on delete cascade
+		</sql>
+		<sql>update %SCHEMA%.event e set e.new_event_type = 0 where e.event_type = (select t.uniqueid from %SCHEMA%.event_type t where t.reference = 'class')</sql>
+		<sql>update %SCHEMA%.event e set e.new_event_type = 1 where e.event_type = (select t.uniqueid from %SCHEMA%.event_type t where t.reference = 'final')</sql>
+		<sql>update %SCHEMA%.event e set e.new_event_type = 2 where e.event_type = (select t.uniqueid from %SCHEMA%.event_type t where t.reference = 'evening')</sql>
+		<sql>update %SCHEMA%.event e set e.new_event_type = 3, e.req_attd=1 where e.event_type = (select t.uniqueid from %SCHEMA%.event_type t where t.reference = 'otherWithConflict')</sql>
+		<sql>update %SCHEMA%.event e set e.new_event_type = 3, e.req_attd=0 where e.event_type = (select t.uniqueid from %SCHEMA%.event_type t where t.reference = 'otherNoConflict')</sql>
+		<sql>update %SCHEMA%.event e set e.new_event_type = 4 where e.event_type = (select t.uniqueid from %SCHEMA%.event_type t where t.reference = 'special')</sql>
+		<mysql>alter table %SCHEMA%.event drop foreign key fk_event_event_type</mysql>
+		<mysql>alter table %SCHEMA%.event drop column event_type</mysql>
+		<mysql>alter table %SCHEMA%.event change column new_event_type event_type bigint(10) not null</mysql>
+		<mysql>alter table %SCHEMA%.meeting drop foreign key fk_meeting_event_type</mysql>
+		<mysql>alter table %SCHEMA%.meeting drop column event_type</mysql>
+		<plsql>alter table %SCHEMA%.event drop constraint fk_event_event_type</plsql>
+		<plsql>alter table %SCHEMA%.event drop column event_type</plsql>
+		<plsql>alter table %SCHEMA%.event rename column new_event_type to event_type</plsql>
+		<plsql>alter table %SCHEMA%.event add constraint nn_event_type check (event_type is not null)</plsql>
+		<plsql>alter table %SCHEMA%.meeting drop constraint fk_meeting_event_type</plsql>
+		<plsql>alter table %SCHEMA%.meeting drop column event_type</plsql>
+		<sql>drop table %SCHEMA%.event_type</sql>
+		<sql>update %SCHEMA%.event e set e.exam_id = (select x.uniqueid from %SCHEMA%.exam x where x.event_id=e.uniqueid) where e.event_type in (1, 2)</sql>
+		<sql>update %SCHEMA%.event e set e.class_id = (select a.class_id from %SCHEMA%.assignment a where a.event_id=e.uniqueid) where e.event_type = 0</sql>
+		<sql>delete from %SCHEMA%.related_course_info where event_id in (select e.uniqueid from %SCHEMA%.event e where e.event_type != 3)</sql>
+		<mysql>alter table %SCHEMA%.assignment drop foreign key fk_assignment_event</mysql>
+		<mysql>alter table %SCHEMA%.assignment drop column event_id</mysql>
+		<mysql>alter table %SCHEMA%.exam drop foreign key fk_exam_event</mysql>
+		<mysql>alter table %SCHEMA%.exam drop column event_id</mysql>
+		<plsql>alter table %SCHEMA%.assignment drop constraint fk_assignment_event</plsql>
+		<plsql>alter table %SCHEMA%.assignment drop column event_id</plsql>
+		<plsql>alter table %SCHEMA%.exam drop constraint fk_exam_event</plsql>
+		<plsql>alter table %SCHEMA%.exam drop column event_id</plsql>
+	</update>
+	<update version="27" date="12-May-2008" comment="Exam solver parameters update">
+		<mysql into="GID">select uniqueid from %SCHEMA%.solver_parameter_group where name='ExamWeights'</mysql>
+		<mysql into="ORD">select ord from %SCHEMA%.solver_parameter_def where name='Exams.NotOriginalRoomWeight'</mysql>
+		<mysql>delete from %SCHEMA%.solver_parameter_def where name='Exams.NotOriginalRoomWeight'</mysql>
+		<mysql><![CDATA[update %SCHEMA%.solver_parameter_def set ord = ord - 1 where solver_param_group_id=%GID% and ord>%ORD%]]></mysql>
+		<mysql into="ORD">select max(ord) from %SCHEMA%.solver_parameter_def where solver_param_group_id=%GID%</mysql>
+		<mysql into="ID">select 32767 * next_hi from %SCHEMA%.hibernate_unique_key</mysql>
+		<mysql>
+			insert into %SCHEMA%.solver_parameter_def
+				(uniqueid, name, default_value, description, type, ord, visible, solver_param_group_id) values
+ 				(%ID%+0, 'Exams.InstructorDirectConflictWeight', '0.0', 'Direct instructor conflict weight', 'double', %ORD%+1, 1, %GID%),
+				(%ID%+1, 'Exams.InstructorMoreThanTwoADayWeight', '0.0', 'Three or more exams a day instructor conflict weight', 'double', %ORD%+2, 1, %GID%),
+				(%ID%+2, 'Exams.InstructorBackToBackConflictWeight', '0.0', 'Back-to-back instructor conflict weight', 'double', %ORD%+3, 1, %GID%),
+				(%ID%+3, 'Exams.InstructorDistanceBackToBackConflictWeight', '0.0', 'Distance back-to-back instructor conflict weight', 'double', %ORD%+4, 1, %GID%),
+				(%ID%+4, 'Exams.PerturbationWeight', '0.01', 'Perturbation penalty weight', 'double', %ORD%+5, 1, %GID%)
+		</mysql>
+		<mysql>update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1</mysql>
+		<plsql><![CDATA[
+			update %SCHEMA%.solver_parameter_def x set x.ord = x.ord - 1 where
+			x.solver_param_group_id = (select g.uniqueid from %SCHEMA%.solver_parameter_group g where g.name='ExamWeights') and
+			x.ord > (select p.ord from %SCHEMA%.solver_parameter_def p where p.name='Exams.NotOriginalRoomWeight')
+		]]></plsql>
+		<plsql>delete %SCHEMA%.solver_parameter_def where name='Exams.NotOriginalRoomWeight'</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Exams.InstructorDirectConflictWeight' as name,
+				'0.0' as default_vale,
+				'Direct instructor conflict weight' as description,
+				'double' as type, 13 as ord, 1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Exams.InstructorMoreThanTwoADayWeight' as name,
+				'0.0' as default_vale,
+				'Three or more exams a day instructor conflict weight' as description,
+				'double' as type, 14 as ord, 1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Exams.InstructorBackToBackConflictWeight' as name,
+				'0.0' as default_vale,
+				'Back-to-back instructor conflict weight' as description,
+				'double' as type, 15 as ord, 1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Exams.InstructorDistanceBackToBackConflictWeight' as name,
+				'0.0' as default_vale,
+				'Distance back-to-back instructor conflict weight' as description,
+				'double' as type, 16 as ord, 1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Exams.PerturbationWeight' as name,
+				'0.001' as default_vale,
+				'Perturbation penalty weight' as description,
+				'double' as type, 17 as ord, 1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamWeights')
+		</plsql>
+	</update>
+	<update version="28" date="22-May-2008" comment="Exam solver parameters update">
+		<mysql into="GID">select uniqueid from %SCHEMA%.solver_parameter_group where name='ExamWeights'</mysql>
+		<mysql into="ORD">select max(ord) from %SCHEMA%.solver_parameter_def where solver_param_group_id=%GID%</mysql>
+		<mysql into="ID">select 32767 * next_hi from %SCHEMA%.hibernate_unique_key</mysql>
+		<mysql><![CDATA[
+			insert into %SCHEMA%.solver_parameter_def
+			(uniqueid, name, default_value, description, type, ord, visible, solver_param_group_id) values
+ 			(%ID%+0, 'Exams.RoomSplitDistanceWeight', '0.01', 'If an examination in split between two or more rooms, weight for an average distance between these rooms', 'double', %ORD%+1, 1, %GID%),
+			(%ID%+1, 'Exams.LargeSize', '-1', 'Large Exam Penalty: minimal size of a large exam (disabled if -1)', 'integer', %ORD%+2, 1, %GID%),
+			(%ID%+2, 'Exams.LargePeriod', '0.67', 'Large Exam Penalty: first discouraged period = number of periods x this factor', 'double', %ORD%+3, 1, %GID%),
+			(%ID%+3, 'Exams.LargeWeight', '1.0', 'Large Exam Penalty: weight of a large exam that is assigned on or after the first discouraged period', 'double', %ORD%+4, 1, %GID%)
+		]]></mysql>
+		<mysql>
+			update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1
+		</mysql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Exams.RoomSplitDistanceWeight' as name,
+				'0.01' as default_vale,
+				'If an examination in split between two or more rooms, weight for an average distance between these rooms' as description,
+				'double' as type, 18 as ord, 1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Exams.LargeSize' as name,
+				'-1' as default_vale,
+				'Large Exam Penalty: minimal size of a large exam (disabled if -1)' as description,
+				'integer' as type, 19 as ord, 1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamWeights')
+		</plsql>
+		<plsql><![CDATA[
+			insert into %SCHEMA%.solver_parameter_def (select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Exams.LargePeriod' as name,
+				'0.67' as default_vale,
+				'Large Exam Penalty: first discouraged period = number of periods x this factor' as description,
+				'double' as type, 20 as ord, 1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamWeights')
+		]]></plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Exams.LargeWeight' as name,
+				'1.0' as default_vale,
+				'Large Exam Penalty: weight of a large exam that is assigned on or after the first discouraged period' as description,
+				'double' as type, 21 as ord, 1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamWeights')
+		</plsql>		
+	</update>
+	<update version="29" date="2-Jun-2008" comment="Event speedup">
+		<mysql>create index idx_event_class on %SCHEMA%.event(class_id)</mysql>
+		<mysql>create index idx_event_exam on %SCHEMA%.event(exam_id)</mysql>
+		<mysql>create index idx_room_permid on %SCHEMA%.room(permanent_id, session_id)</mysql>
+		<mysql>create index idx_location_permid on %SCHEMA%.non_university_location(permanent_id, session_id)</mysql>
+		<mysql>create index idx_student_class_enrl_course on %SCHEMA%.student_class_enrl(course_offering_id)</mysql>
+		<plsql>create index %SCHEMA%.idx_event_class on %SCHEMA%.event(class_id)</plsql>
+		<plsql>create index %SCHEMA%.idx_event_exam on %SCHEMA%.event(exam_id)</plsql>
+		<plsql>create index %SCHEMA%.idx_room_permid on %SCHEMA%.room(permanent_id, session_id)</plsql>
+		<plsql>create index %SCHEMA%.idx_location_permid on %SCHEMA%.non_university_location(permanent_id, session_id)</plsql>
+		<plsql>create index %SCHEMA%.idx_student_class_enrl_course on %SCHEMA%.student_class_enrl(course_offering_id)</plsql>
+	</update>
+	<update version="30" date="16-Jun-2008" comment="Room type">
+		<plsql>
+			create table %SCHEMA%.room_type (
+				uniqueid number(20,0) constraint nn_room_type_uid not null,
+				reference varchar2(20) constraint nn_room_type_ref not null,
+				label varchar2(60) constraint nn_room_type_label not null,
+				ord number(10,0) constraint nn_room_type_ord not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.room_type add constraint pk_room_type primary key (uniqueid)</plsql>
+		<mysql>
+			create table %SCHEMA%.room_type (
+				uniqueid decimal(20,0) not null primary key,
+				reference varchar(20) not null,
+				label varchar(60) not null,
+				ord int(10) not null
+			) engine = INNODB
+		</mysql>
+		<plsql>insert into %SCHEMA%.room_type(uniqueid, reference, label, ord) values (ref_table_seq.nextval, 'genClassroom', 'Classrooms', 0)</plsql>
+		<plsql>insert into %SCHEMA%.room_type(uniqueid, reference, label, ord) values (ref_table_seq.nextval, 'computingLab', 'Computing Laboratories', 1)</plsql>
+		<plsql>insert into %SCHEMA%.room_type(uniqueid, reference, label, ord) values (ref_table_seq.nextval, 'departmental', 'Additional Instructional Rooms', 2)</plsql>
+		<plsql>insert into %SCHEMA%.room_type(uniqueid, reference, label, ord) values (ref_table_seq.nextval, 'specialUse', 'Special Use Rooms',3)</plsql>
+		<mysql into="ID">select 32767 * next_hi from %SCHEMA%.hibernate_unique_key</mysql>
+		<mysql>
+			insert into %SCHEMA%.room_type(uniqueid, reference, label, ord) values
+			(%ID%+0, 'genClassroom', 'Classrooms', 0),
+			(%ID%+1, 'computingLab', 'Computing Laboratories', 1),
+			(%ID%+2, 'departmental', 'Additional Instructional Rooms', 2),
+			(%ID%+3, 'specialUse', 'Special Use Rooms', 3)
+		</mysql>
+		<mysql>update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1</mysql>
+		<plsql>alter table %SCHEMA%.room add room_type number(20,0)</plsql>
+		<mysql>alter table %SCHEMA%.room add room_type decimal(20,0)</mysql>
+		<sql>update %SCHEMA%.room r set r.room_type = (select t.uniqueid from %SCHEMA%.room_type t where t.reference=r.scheduled_room_type)</sql>
+		<sql>alter table %SCHEMA%.room drop column scheduled_room_type</sql>
+		<sql>alter table %SCHEMA%.room add constraint nn_room_type check  (room_type is not null)</sql>
+		<sql>
+			alter table %SCHEMA%.room add constraint fk_room_type foreign key (room_type)
+				references %SCHEMA%.room_type (uniqueid) on delete cascade
+		</sql>
+		<plsql>alter table %SCHEMA%.external_room add room_type number(20,0)</plsql>
+		<mysql>alter table %SCHEMA%.external_room add room_type decimal(20,0)</mysql>
+		<sql>update %SCHEMA%.external_room r set r.room_type = (select t.uniqueid from %SCHEMA%.room_type t where t.reference=r.scheduled_room_type)</sql>
+		<sql>alter table %SCHEMA%.external_room drop column scheduled_room_type</sql>
+		<sql>alter table %SCHEMA%.external_room add constraint nn_external_room_type check  (room_type is not null)</sql>
+		<sql>
+			alter table %SCHEMA%.external_room add constraint fk_external_room_type foreign key (room_type)
+				references %SCHEMA%.room_type (uniqueid) on delete cascade
+		</sql>
+		<plsql>
+			create table %SCHEMA%.room_type_option (
+				room_type number(20,0) constraint nn_rtype_opt_type not null,
+				session_id number(20,0) constraint nn_rtype_opt_session not null,
+				status number(10,0) constraint nn_rtype_opt_status not null,
+				message varchar2(200)
+			)
+		</plsql>
+		<plsql>
+			alter table %SCHEMA%.room_type_option
+				add constraint pk_room_type_option primary key (room_type, session_id)
+		</plsql>
+		<mysql>
+			create table %SCHEMA%.room_type_option (
+				room_type decimal(20,0) not null,
+				session_id decimal(20,0) not null,
+				status int(10) not null,
+				message varchar(200),
+				primary key (room_type, session_id)
+			) engine = INNODB
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.room_type_option add constraint fk_rtype_option_type foreign key (room_type)
+				references %SCHEMA%.room_type (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.room_type_option add constraint fk_rtype_option_session foreign key (session_id)
+				references %SCHEMA%.sessions (uniqueid) on delete cascade
+		</sql>
+	</update>
+	<update version="31" date="7-Jul-2008" comment="Student sectioning solver parameters">
+		<mysql into="ID">select 32767 * next_hi from %SCHEMA%.hibernate_unique_key</mysql>
+		<mysql into="ORD">select max(ord)+1 from %SCHEMA%.solver_parameter_group</mysql>
+		<mysql>
+			insert into %SCHEMA%.solver_parameter_group (uniqueid, name, description, ord, param_type) values
+			(%ID%, 'StudentSctBasic', 'Basic Parameters', %ORD%, 2),
+			(%ID%+1, 'StudentSct', 'General Parameters', %ORD%+1, 2)
+		</mysql>
+		<mysql><![CDATA[
+			insert into %SCHEMA%.solver_parameter_def
+			(uniqueid, name, default_value, description, type, ord, visible, solver_param_group_id) values
+			(%ID%+2, 'StudentSctBasic.Mode', 'Initial', 'Solver mode', 'enum(Initial,MPP)', 0, 1, %ID%),
+			(%ID%+3, 'StudentSctBasic.WhenFinished', 'No Action', 'When finished', 'enum(No Action,Save,Save and Unload)', 1, 1, %ID%),
+			(%ID%+4, 'Termination.Class', 'net.sf.cpsolver.ifs.termination.GeneralTerminationCondition','Student sectioning termination class','text', 0, 0, %ID%+1),
+			(%ID%+5, 'Termination.StopWhenComplete','true', 'Stop when a complete solution if found', 'boolean', 1, 1, %ID%+1),
+			(%ID%+6, 'Termination.TimeOut','28800', 'Maximal solver time (in sec)', 'integer', 2, 1, %ID%+1),
+			(%ID%+7, 'Comparator.Class', 'net.sf.cpsolver.ifs.solution.GeneralSolutionComparator', 'Student sectioning solution comparator class', 'text', 3, 0, %ID%+1),
+			(%ID%+8, 'Value.Class', 'net.sf.cpsolver.studentsct.heuristics.EnrollmentSelection',  'Student sectioning value selection class', 'text', 4, 0, %ID%+1),
+			(%ID%+9, 'Value.WeightConflicts', '1.0', 'CBS weight', 'double', 5, 0, %ID%+1),
+			(%ID%+10, 'Value.WeightNrAssignments', '0.0', 'Number of past assignments weight', 'double', 6, 0, %ID%+1),
+			(%ID%+11, 'Variable.Class', 'net.sf.cpsolver.ifs.heuristics.GeneralVariableSelection', 'Student sectioning variable selection class', 'text', 7, 0, %ID%+1),
+			(%ID%+12, 'Neighbour.Class', 'net.sf.cpsolver.studentsct.heuristics.StudentSctNeighbourSelection', 'Student sectioning neighbour selection class', 'text', 8, 0, %ID%+1),
+			(%ID%+13, 'General.SaveBestUnassigned', '-1', 'Save best even when no complete solution is found', 'integer', 9, 0, %ID%+1),
+			(%ID%+14, 'StudentSct.StudentDist', 'true', 'Use student distance conflicts', 'boolean', 10, 1, %ID%+1),
+			(%ID%+15, 'StudentSct.CBS', 'true', 'Use conflict-based statistics', 'boolean', 11, 1, %ID%+1),
+			(%ID%+16, 'Load.IncludeCourseDemands', 'true', 'Load real student requests', 'boolean', 12, 0, %ID%+1),
+			(%ID%+17, 'Load.IncludeLastLikeStudents', 'true', 'Load last-like  course demands', 'boolean', 13, 0, %ID%+1),
+			(%ID%+18, 'SectionLimit.PreferDummyStudents', 'true', 'Section limit constraint: favour unassignment of last-like course requests', 'boolean', 14, 0, %ID%+1),
+			(%ID%+19, 'Student.DummyStudentWeight', '0.01', 'Last-like student request weight', 'double', 15, 1, %ID%+1),
+			(%ID%+20, 'Neighbour.BranchAndBoundMinimizePenalty', 'false', 'Branch&bound: If true, section penalties (instead of section values) are minimized', 'boolean',16, 0, %ID%+1),
+			(%ID%+21, 'Neighbour.BranchAndBoundTimeout', '5000','Branch&bound: Timeout for each neighbour selection (in milliseconds)', 'integer',17, 1, %ID%+1),
+			(%ID%+22, 'Neighbour.RandomUnassignmentProb','0.5','Random Unassignment: Probability of a random selection of a student','double',18,1,%ID%+1),
+			(%ID%+23, 'Neighbour.RandomUnassignmentOfProblemStudentProb','0.9','Random Unassignment: Probability of a random selection of a problematic student','double',19,1,%ID%+1),			
+			(%ID%+24, 'Neighbour.SwapStudentsTimeout', '5000', 'Student Swap: Timeout for each neighbour selection (in milliseconds)','integer',20,1,%ID%+1),
+			(%ID%+25, 'Neighbour.SwapStudentsMaxValues', '100', 'Student Swap: Limit for the number of considered values for each course request', 'integer', 21, 1, %ID%+1),
+			(%ID%+26, 'Neighbour.MaxValues', '100', 'Backtrack: Limit on the number of enrollments to be visited of each course request', 'integer', 22, 1, %ID%+1),
+			(%ID%+27, 'Neighbour.BackTrackTimeout', '5000', 'Backtrack: Timeout for each neighbour selection (in milliseconds)','integer',23,1,%ID%+1),
+			(%ID%+28, 'Neighbour.BackTrackDepth', '4', 'Backtrack: Search depth.','integer',24,1,%ID%+1),
+			(%ID%+29, 'CourseRequest.SameTimePrecise', 'true', 'More precise (but slower) computation of enrollments of a course request while skipping enrollments with the same times.', 'boolean', 25, 0, %ID%+1)
+		]]></mysql>
+		<mysql>
+			insert into %SCHEMA%.solver_predef_setting (uniqueid, name, description, appearance) values 
+			(%ID%+30, 'StudentSct.Default', 'Default', 3)
+		</mysql>
+		<mysql>update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1</mysql>
+		<plsql>
+			insert into %SCHEMA%.SOLVER_PARAMETER_GROUP (UNIQUEID, NAME, DESCRIPTION, CONDITION, ORD, PARAM_TYPE) values
+			(%SCHEMA%.SOLVER_PARAMETER_GROUP_SEQ.nextval, 'StudentSctBasic', 'Basic Parameters', '', -1,2)
+		</plsql>
+		<plsql>
+			update %SCHEMA%.SOLVER_PARAMETER_GROUP g set g.ord = ( select max(x.ord)+1 from %SCHEMA%.SOLVER_PARAMETER_GROUP x ) where g.name='StudentSctBasic'
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.SOLVER_PARAMETER_DEF (select %SCHEMA%.SOLVER_PARAMETER_DEF_SEQ.nextval as UNIQUEID,
+				'StudentSctBasic.Mode' as NAME, 'Initial' as DEFAULT_VALUE,
+				'Solver mode' as DESCRIPTION, 'enum(Initial,MPP)' as TYPE, 0 as ORD, 1 as VISIBLE,
+				UNIQUEID as SOLVER_PARAM_GROUP_ID from %SCHEMA%.SOLVER_PARAMETER_GROUP where NAME='StudentSctBasic')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.SOLVER_PARAMETER_DEF (select %SCHEMA%.SOLVER_PARAMETER_DEF_SEQ.nextval as UNIQUEID,
+				'StudentSctBasic.WhenFinished' as NAME, 'No Action' as DEFAULT_VALUE,
+				'When finished' as DESCRIPTION, 'enum(No Action,Save,Save and Unload)' as TYPE, 1 as ORD, 1 as VISIBLE,
+				UNIQUEID as SOLVER_PARAM_GROUP_ID from %SCHEMA%.SOLVER_PARAMETER_GROUP where NAME='StudentSctBasic')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.SOLVER_PARAMETER_GROUP (UNIQUEID, NAME, DESCRIPTION, CONDITION, ORD, PARAM_TYPE) values
+			(%SCHEMA%.SOLVER_PARAMETER_GROUP_SEQ.nextval, 'StudentSct', 'General Parameters', '', -1,2)
+		</plsql>
+		<plsql>
+			update %SCHEMA%.SOLVER_PARAMETER_GROUP g set g.ord = ( select max(x.ord)+1 from %SCHEMA%.SOLVER_PARAMETER_GROUP x ) where g.name='StudentSct'
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.SOLVER_PARAMETER_DEF (select %SCHEMA%.SOLVER_PARAMETER_DEF_SEQ.nextval as UNIQUEID,
+				'Termination.Class' as NAME, 'net.sf.cpsolver.ifs.termination.GeneralTerminationCondition' as DEFAULT_VALUE,
+				'Student sectioning termination class' as DESCRIPTION, 'text' as TYPE, 0 as ORD, 0 as VISIBLE,
+				UNIQUEID as SOLVER_PARAM_GROUP_ID from %SCHEMA%.SOLVER_PARAMETER_GROUP where NAME='StudentSct')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.SOLVER_PARAMETER_DEF (select %SCHEMA%.SOLVER_PARAMETER_DEF_SEQ.nextval as UNIQUEID, 
+				'Termination.StopWhenComplete' as NAME, 'true' as DEFAULT_VALUE,
+				'Stop when a complete solution if found' as DESCRIPTION, 'boolean' as TYPE, 1 as ORD, 1 as VISIBLE,
+				UNIQUEID as SOLVER_PARAM_GROUP_ID from %SCHEMA%.SOLVER_PARAMETER_GROUP where NAME='StudentSct')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.SOLVER_PARAMETER_DEF (select %SCHEMA%.SOLVER_PARAMETER_DEF_SEQ.nextval as UNIQUEID,
+				'Termination.TimeOut' as NAME, '28800' as DEFAULT_VALUE,
+				'Maximal solver time (in sec)' as DESCRIPTION, 'integer' as TYPE, 2 as ORD, 1 as VISIBLE,
+			UNIQUEID as SOLVER_PARAM_GROUP_ID from %SCHEMA%.SOLVER_PARAMETER_GROUP where NAME='StudentSct')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.SOLVER_PARAMETER_DEF (select %SCHEMA%.SOLVER_PARAMETER_DEF_SEQ.nextval as UNIQUEID,
+				'Comparator.Class' as NAME, 'net.sf.cpsolver.ifs.solution.GeneralSolutionComparator' as DEFAULT_VALUE,
+				'Student sectioning solution comparator class' as DESCRIPTION, 'text' as TYPE, 3 as ORD, 0 as VISIBLE,
+				UNIQUEID as SOLVER_PARAM_GROUP_ID from %SCHEMA%.SOLVER_PARAMETER_GROUP where NAME='StudentSct')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.SOLVER_PARAMETER_DEF (select %SCHEMA%.SOLVER_PARAMETER_DEF_SEQ.nextval as UNIQUEID,
+				'Value.Class' as NAME, 'net.sf.cpsolver.studentsct.heuristics.EnrollmentSelection' as DEFAULT_VALUE, 
+				'Student sectioning value selection class' as DESCRIPTION, 'text' as TYPE, 4 as ORD, 0 as VISIBLE,
+				 UNIQUEID as SOLVER_PARAM_GROUP_ID from %SCHEMA%.SOLVER_PARAMETER_GROUP where NAME='StudentSct')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.SOLVER_PARAMETER_DEF (select %SCHEMA%.SOLVER_PARAMETER_DEF_SEQ.nextval as UNIQUEID,
+				'Value.WeightConflicts' as NAME, '1.0' as DEFAULT_VALUE,
+				'CBS weight' as DESCRIPTION, 'double' as TYPE, 5 as ORD, 0 as VISIBLE,
+				UNIQUEID as SOLVER_PARAM_GROUP_ID from %SCHEMA%.SOLVER_PARAMETER_GROUP where NAME='StudentSct')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.SOLVER_PARAMETER_DEF (select %SCHEMA%.SOLVER_PARAMETER_DEF_SEQ.nextval as UNIQUEID,
+				'Value.WeightNrAssignments' as NAME, '0.0' as DEFAULT_VALUE,
+				'Number of past assignments weight' as DESCRIPTION, 'double' as TYPE, 6 as ORD, 0 as VISIBLE,
+				UNIQUEID as SOLVER_PARAM_GROUP_ID from %SCHEMA%.SOLVER_PARAMETER_GROUP where NAME='StudentSct')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.SOLVER_PARAMETER_DEF (select %SCHEMA%.SOLVER_PARAMETER_DEF_SEQ.nextval as UNIQUEID,
+				'Variable.Class' as NAME, 'net.sf.cpsolver.ifs.heuristics.GeneralVariableSelection' as DEFAULT_VALUE,
+				'Student sectioning variable selection class' as DESCRIPTION, 'text' as TYPE, 7 as ORD, 0 as VISIBLE,
+				UNIQUEID as SOLVER_PARAM_GROUP_ID from %SCHEMA%.SOLVER_PARAMETER_GROUP where NAME='StudentSct')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.SOLVER_PARAMETER_DEF (select %SCHEMA%.SOLVER_PARAMETER_DEF_SEQ.nextval as UNIQUEID,
+				'Neighbour.Class' as NAME, 'net.sf.cpsolver.studentsct.heuristics.StudentSctNeighbourSelection' as DEFAULT_VALUE,
+				'Student sectioning neighbour selection class' as DESCRIPTION, 'text' as TYPE, 8 as ORD, 0 as VISIBLE,
+				UNIQUEID as SOLVER_PARAM_GROUP_ID from %SCHEMA%.SOLVER_PARAMETER_GROUP where NAME='StudentSct')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.SOLVER_PARAMETER_DEF (select %SCHEMA%.SOLVER_PARAMETER_DEF_SEQ.nextval as UNIQUEID,
+				'General.SaveBestUnassigned' as NAME, '-1' as DEFAULT_VALUE,
+				'Save best even when no complete solution is found' as DESCRIPTION, 'integer' as TYPE, 9 as ORD, 0 as VISIBLE,
+				UNIQUEID as SOLVER_PARAM_GROUP_ID from %SCHEMA%.SOLVER_PARAMETER_GROUP where NAME='StudentSct')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.SOLVER_PARAMETER_DEF (select %SCHEMA%.SOLVER_PARAMETER_DEF_SEQ.nextval as UNIQUEID,
+				'StudentSct.StudentDist' as NAME, 'true' as DEFAULT_VALUE, 
+				'Use student distance conflicts' as DESCRIPTION, 'boolean' as TYPE, 10 as ORD, 1 as VISIBLE,
+				UNIQUEID as SOLVER_PARAM_GROUP_ID from %SCHEMA%.SOLVER_PARAMETER_GROUP where NAME='StudentSct')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.SOLVER_PARAMETER_DEF (select %SCHEMA%.SOLVER_PARAMETER_DEF_SEQ.nextval as UNIQUEID,
+				'StudentSct.CBS' as NAME, 'true' as DEFAULT_VALUE,
+				'Use conflict-based statistics' as DESCRIPTION, 'boolean' as TYPE, 11 as ORD, 1 as VISIBLE,
+				UNIQUEID as SOLVER_PARAM_GROUP_ID from %SCHEMA%.SOLVER_PARAMETER_GROUP where NAME='StudentSct')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.SOLVER_PARAMETER_DEF (select %SCHEMA%.SOLVER_PARAMETER_DEF_SEQ.nextval as UNIQUEID,
+				'Load.IncludeCourseDemands' as NAME, 'true' as DEFAULT_VALUE,
+				'Load real student requests' as DESCRIPTION, 'boolean' as TYPE, 12 as ORD, 0 as VISIBLE,
+				UNIQUEID as SOLVER_PARAM_GROUP_ID from %SCHEMA%.SOLVER_PARAMETER_GROUP where NAME='StudentSct')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.SOLVER_PARAMETER_DEF (select %SCHEMA%.SOLVER_PARAMETER_DEF_SEQ.nextval as UNIQUEID,
+				'Load.IncludeLastLikeStudents' as NAME, 'true' as DEFAULT_VALUE,
+				'Load last-like  course demands' as DESCRIPTION, 'boolean' as TYPE, 13 as ORD, 0 as VISIBLE,
+				UNIQUEID as SOLVER_PARAM_GROUP_ID from %SCHEMA%.SOLVER_PARAMETER_GROUP where NAME='StudentSct')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.SOLVER_PARAMETER_DEF (select %SCHEMA%.SOLVER_PARAMETER_DEF_SEQ.nextval as UNIQUEID,
+				'SectionLimit.PreferDummyStudents' as NAME, 'true' as DEFAULT_VALUE,
+				'Section limit constraint: favour unassignment of last-like course requests' as DESCRIPTION, 
+				'boolean' as TYPE, 14 as ORD, 0 as VISIBLE,
+				UNIQUEID as SOLVER_PARAM_GROUP_ID from %SCHEMA%.SOLVER_PARAMETER_GROUP where NAME='StudentSct')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.SOLVER_PARAMETER_DEF (select %SCHEMA%.SOLVER_PARAMETER_DEF_SEQ.nextval as UNIQUEID,
+				'Student.DummyStudentWeight' as NAME, '0.01' as DEFAULT_VALUE,
+				'Last-like student request weight' as DESCRIPTION, 'double' as TYPE, 15 as ORD, 1 as VISIBLE,
+				UNIQUEID as SOLVER_PARAM_GROUP_ID from %SCHEMA%.SOLVER_PARAMETER_GROUP where NAME='StudentSct')
+		</plsql>
+		<plsql><![CDATA[
+			insert into %SCHEMA%.SOLVER_PARAMETER_DEF (select %SCHEMA%.SOLVER_PARAMETER_DEF_SEQ.nextval as UNIQUEID,
+				'Neighbour.BranchAndBoundMinimizePenalty' as NAME, 'false' as DEFAULT_VALUE,
+				'Branch&bound: If true, section penalties (instead of section values) are minimized' as DESCRIPTION,
+				'boolean' as TYPE, 16 as ORD, 0 as VISIBLE,
+				UNIQUEID as SOLVER_PARAM_GROUP_ID from %SCHEMA%.SOLVER_PARAMETER_GROUP where NAME='StudentSct')
+		]]></plsql>
+		<plsql><![CDATA[
+			insert into %SCHEMA%.SOLVER_PARAMETER_DEF (select %SCHEMA%.SOLVER_PARAMETER_DEF_SEQ.nextval as UNIQUEID,
+				'Neighbour.BranchAndBoundTimeout' as NAME, '5000' as DEFAULT_VALUE,
+				'Branch&bound: Timeout for each neighbour selection (in milliseconds)' as DESCRIPTION,
+				'integer' as TYPE, 17 as ORD, 1 as VISIBLE,
+				UNIQUEID as SOLVER_PARAM_GROUP_ID from %SCHEMA%.SOLVER_PARAMETER_GROUP where NAME='StudentSct')
+		]]></plsql>
+		<plsql>
+			insert into %SCHEMA%.SOLVER_PARAMETER_DEF (select %SCHEMA%.SOLVER_PARAMETER_DEF_SEQ.nextval as UNIQUEID,
+				'Neighbour.RandomUnassignmentProb' as NAME, '0.5' as DEFAULT_VALUE,
+				'Random Unassignment: Probability of a random selection of a student' as DESCRIPTION,
+				'double' as TYPE, 18 as ORD, 1 as VISIBLE,
+				UNIQUEID as SOLVER_PARAM_GROUP_ID from %SCHEMA%.SOLVER_PARAMETER_GROUP where NAME='StudentSct')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.SOLVER_PARAMETER_DEF (select %SCHEMA%.SOLVER_PARAMETER_DEF_SEQ.nextval as UNIQUEID,
+				'Neighbour.RandomUnassignmentOfProblemStudentProb' as NAME, '0.9' as DEFAULT_VALUE,
+				'Random Unassignment: Probability of a random selection of a problematic student' as DESCRIPTION,
+				'double' as TYPE, 19 as ORD, 1 as VISIBLE,
+				UNIQUEID as SOLVER_PARAM_GROUP_ID from %SCHEMA%.SOLVER_PARAMETER_GROUP where NAME='StudentSct')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.SOLVER_PARAMETER_DEF (select %SCHEMA%.SOLVER_PARAMETER_DEF_SEQ.nextval as UNIQUEID,
+				'Neighbour.SwapStudentsTimeout' as NAME, '5000' as DEFAULT_VALUE,
+				'Student Swap: Timeout for each neighbour selection (in milliseconds)' as DESCRIPTION,
+				'integer' as TYPE, 20 as ORD, 1 as VISIBLE,
+				UNIQUEID as SOLVER_PARAM_GROUP_ID from %SCHEMA%.SOLVER_PARAMETER_GROUP where NAME='StudentSct')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.SOLVER_PARAMETER_DEF (select %SCHEMA%.SOLVER_PARAMETER_DEF_SEQ.nextval as UNIQUEID,
+				'Neighbour.SwapStudentsMaxValues' as NAME, '100' as DEFAULT_VALUE,
+				'Student Swap: Limit for the number of considered values for each course request' as DESCRIPTION,
+				'integer' as TYPE, 21 as ORD, 1 as VISIBLE,
+				UNIQUEID as SOLVER_PARAM_GROUP_ID from %SCHEMA%.SOLVER_PARAMETER_GROUP where NAME='StudentSct')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.SOLVER_PARAMETER_DEF (select %SCHEMA%.SOLVER_PARAMETER_DEF_SEQ.nextval as UNIQUEID,
+				'Neighbour.MaxValues' as NAME, '100' as DEFAULT_VALUE,
+				'Backtrack: Limit on the number of enrollments to be visited of each course request' as DESCRIPTION,
+				'integer' as TYPE, 22 as ORD,1 as VISIBLE,
+				UNIQUEID as SOLVER_PARAM_GROUP_ID from %SCHEMA%.SOLVER_PARAMETER_GROUP where NAME='StudentSct')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.SOLVER_PARAMETER_DEF (select %SCHEMA%.SOLVER_PARAMETER_DEF_SEQ.nextval as UNIQUEID,
+				'Neighbour.BackTrackTimeout' as NAME, '5000' as DEFAULT_VALUE, 
+				'Backtrack: Timeout for each neighbour selection (in milliseconds)' as DESCRIPTION,
+				'integer' as TYPE, 23 as ORD, 1 as VISIBLE,
+				UNIQUEID as SOLVER_PARAM_GROUP_ID from %SCHEMA%.SOLVER_PARAMETER_GROUP where NAME='StudentSct')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.SOLVER_PARAMETER_DEF (select %SCHEMA%.SOLVER_PARAMETER_DEF_SEQ.nextval as UNIQUEID,
+				'Neighbour.BackTrackDepth' as NAME, '4' as DEFAULT_VALUE,
+				'Backtrack: Search depth' as DESCRIPTION, 'integer' as TYPE, 24 as ORD, 1 as VISIBLE,
+				UNIQUEID as SOLVER_PARAM_GROUP_ID from %SCHEMA%.SOLVER_PARAMETER_GROUP where NAME='StudentSct')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.SOLVER_PARAMETER_DEF (select %SCHEMA%.SOLVER_PARAMETER_DEF_SEQ.nextval as UNIQUEID,
+			'CourseRequest.SameTimePrecise' as NAME, 'true' as DEFAULT_VALUE,
+			'More precise (but slower) computation of enrollments of a course request while skipping enrollments with the same times' as DESCRIPTION,
+			'boolean' as TYPE, 25 as ORD, 0 as VISIBLE,
+			UNIQUEID as SOLVER_PARAM_GROUP_ID from %SCHEMA%.SOLVER_PARAMETER_GROUP where NAME='StudentSct')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.SOLVER_PREDEF_SETTING (uniqueid, name, description, appearance)
+				values(%SCHEMA%.Solver_Predef_Setting_Seq.Nextval, 'StudentSct.Default', 'Default', 3)
+		</plsql>
+	</update>
+	<update version="32" date="9-Jul-2008" comment="Event changes">
+		<mysql>alter table %SCHEMA%.event_contact modify phone varchar(10)</mysql>
+		<mysql>alter table %SCHEMA%.event_contact modify email varchar(200)</mysql>
+		<mysql>alter table %SCHEMA%.timetable_manager modify email_address varchar(200)</mysql>
+		<plsql>alter table %SCHEMA%.event_contact drop constraint nn_event_contact_phone</plsql>
+		<plsql>alter table %SCHEMA%.event_contact drop constraint nn_event_contact_email</plsql>
+		<plsql>alter table %SCHEMA%.event_contact modify email varchar2(200)</plsql>
+		<plsql>alter table %SCHEMA%.timetable_manager modify email_address varchar2(200)</plsql>
+		<mysql into="ID">select 32767 * next_hi from %SCHEMA%.hibernate_unique_key</mysql>
+		<mysql>update %SCHEMA%.hibernate_unique_key set next_hi = next_hi+1</mysql>
+		<mysql>insert into %SCHEMA%.roles (role_id, reference, abbv) values (%ID%, 'Event Mgr', 'Event Manager')</mysql>
+		<plsql>insert into %SCHEMA%.roles (role_id, reference, abbv) values (%SCHEMA%.role_seq.nextval, 'Event Mgr', 'Event Manager')</plsql>
+		<mysql>alter table %SCHEMA%.event add email varchar(1000)</mysql>
+		<plsql>alter table %SCHEMA%.event add email varchar2(1000)</plsql>
+		<mysql>
+			create table %SCHEMA%.sponsoring_organization (
+				uniqueid decimal(20,0) primary key not null,
+				name varchar(100) not null,
+				email varchar(200)
+			) engine = INNODB
+		</mysql>
+		<plsql>
+			create table %SCHEMA%.sponsoring_organization (
+				uniqueid number(20,0) constraint nn_sponsor_org_id not null,
+				name varchar2(100) constraint nn_sponsor_org_name not null,
+				email varchar2(200)
+			)
+		</plsql>
+		<plsql>
+			alter table %SCHEMA%.sponsoring_organization
+			add constraint pk_sponsoring_organization primary key (uniqueid)
+		</plsql>
+		<mysql>alter table %SCHEMA%.event add sponsor_org_id decimal(20,0)</mysql>
+		<plsql>alter table %SCHEMA%.event add sponsor_org_id number(20,0)</plsql>
+		<sql>
+			alter table %SCHEMA%.event add constraint fk_event_sponsor_org foreign key (sponsor_org_id)
+  			references %SCHEMA%.sponsoring_organization (uniqueid) on delete set null
+  		</sql>
+	</update>
+	<update version="33" date="16-Jul-2008" comment="Room Type">
+		<mysql>alter table %SCHEMA%.room_type add is_room int(1) not null default 1</mysql>
+		<mysql into="ID">select 32767 * next_hi from %SCHEMA%.hibernate_unique_key</mysql>
+		<mysql>
+			insert into %SCHEMA%.room_type(uniqueid, reference, label, ord, is_room) values
+			(%ID%, 'nonUniversity', 'Non-University Locations', 4, 0)
+		</mysql>
+		<mysql>update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1</mysql>
+		<mysql>alter table %SCHEMA%.non_university_location add room_type decimal(20,0)</mysql>
+		<plsql>alter table %SCHEMA%.room_type add is_room number(1) default 1 constraint nn_room_type_room not null</plsql>
+		<plsql>
+			insert into %SCHEMA%.room_type(uniqueid, reference, label, ord, is_room) 
+			values (%SCHEMA%.ref_table_seq.nextval, 'nonUniversity', 'Non-University Locations', 4, 0)
+		</plsql>
+		<plsql>alter table %SCHEMA%.non_university_location add room_type number(20,0)</plsql>
+		<sql>
+			update %SCHEMA%.non_university_location r set r.room_type = 
+			(select t.uniqueid from %SCHEMA%.room_type t where t.reference='nonUniversity')
+		</sql>
+		<sql>
+			alter table %SCHEMA%.non_university_location 
+			add constraint nn_location_type check (room_type is not null)
+		</sql>
+		<sql>
+			alter table %SCHEMA%.non_university_location add constraint fk_location_type 
+			foreign key (room_type)	references %SCHEMA%.room_type (uniqueid) on delete cascade
+		</sql>
+	</update>
+	<update version="34" date="29-Jul-2008" comment="Event Notes">
+		<mysql>alter table %SCHEMA%.event_note drop foreign key fk_event_note_std_note</mysql>
+		<mysql>alter table %SCHEMA%.event_note drop column note_id</mysql>
+		<mysql>alter table %SCHEMA%.event_note add time_stamp datetime</mysql>
+		<mysql>update %SCHEMA%.event_note set time_stamp = now()</mysql>
+		<mysql>alter table %SCHEMA%.event_note add constraint nn_event_note_ts check  (time_stamp is not null)</mysql>
+		<mysql>alter table %SCHEMA%.event_note add note_type int(10) not null default 0</mysql>
+		<mysql>alter table %SCHEMA%.event_note add uname varchar(100)</mysql>
+		<mysql>alter table %SCHEMA%.event_note add meetings varchar(1000)</mysql>
+		<plsql>alter table %SCHEMA%.event_note drop constraint fk_event_note_std_note</plsql>
+		<plsql>alter table %SCHEMA%.event_note drop column note_id</plsql>
+		<plsql>alter table %SCHEMA%.event_note add time_stamp date</plsql>
+		<plsql>update %SCHEMA%.event_note set time_stamp = CURRENT_TIMESTAMP</plsql>
+		<plsql>alter table %SCHEMA%.event_note add constraint nn_event_note_ts check  (time_stamp is not null)</plsql>
+		<plsql>alter table %SCHEMA%.event_note add note_type number(10) default 0 constraint nn_event_note_type not null</plsql>
+		<plsql>alter table %SCHEMA%.event_note add uname varchar2(100)</plsql>
+		<plsql>alter table %SCHEMA%.event_note add meetings varchar2(1000)</plsql>
+	</update>
+	<update version="35" date="5-Aug-2008" comment="Event phone, session dates">
+		<mysql>alter table event_contact modify phone varchar(25)</mysql>
+		<mysql>alter table sessions add event_begin_date date</mysql>
+		<mysql>update sessions set event_begin_date = adddate(session_begin_date_time,-31)</mysql>
+		<mysql>alter table sessions add constraint nn_sessions_event_begin_date check (event_begin_date is not null)</mysql>
+		<mysql>alter table sessions add event_end_date date</mysql>
+		<mysql>update sessions set event_end_date = adddate(session_end_date_time,31)</mysql>
+		<mysql>alter table sessions add constraint nn_sessions_event_end_date check (event_end_date is not null)</mysql>
+		<plsql>alter table event_contact modify phone varchar2(25)</plsql>
+		<plsql>alter table sessions add event_begin_date date</plsql>
+		<plsql>update sessions set event_begin_date = session_begin_date_time-31</plsql>
+		<plsql>alter table sessions add constraint nn_sessions_event_begin_date check (event_begin_date is not null)</plsql>
+		<plsql>alter table sessions add event_end_date date</plsql>
+		<plsql>update sessions set event_end_date = session_end_date_time+31</plsql>
+		<plsql>alter table sessions add constraint nn_sessions_event_end_date check (event_end_date is not null)</plsql>
+	</update>
+	<update version="36" date="9-Sep-2008" comment="Added (optional) exam size">
+		<mysql>alter table exam add exam_size int(10)</mysql>
+		<plsql>alter table exam add exam_size number(10,0)</plsql>
+	</update>
+	<update version="37" date="9-Sep-2008" comment="Float data types">
+		<sql onFail="next">alter table class_ modify room_ratio float</sql>
+		<sql onFail="next">alter table course_subpart_credit modify fixed_min_credit float</sql>
+		<sql onFail="next">alter table course_subpart_credit modify max_credit float</sql>
+		<sql onFail="next">alter table course_credit_unit_config modify fixed_units float</sql>
+		<sql onFail="next">alter table course_credit_unit_config modify min_units float</sql>
+		<sql onFail="next">alter table course_credit_unit_config modify max_units float</sql>
+		<sql onFail="next">alter table course_catalog modify fixed_min_credit float</sql>
+		<sql onFail="next">alter table course_catalog modify max_credit float</sql>
+	</update>
+	<update version="38" date="9-Sep-2008" comment="Curricula tables">
+		<!-- Create tables -->
+		<plsql>
+			create table %SCHEMA%.curricula
+				(
+				  uniqueid  number(20) constraint nn_curricula_uniqueid not null, 
+				  abbv varchar2(20) constraint nn_curricula_abbv not null,
+				  name varchar2(60) constraint nn_curricula_name not null,
+				  acad_area_id  number(20),
+				  dept_id number(20) constraint nn_curricula_dept not null,
+				  constraint pk_curricula primary key (uniqueid)
+				)
+		</plsql>
+		<plsql>
+			create table %SCHEMA%.curricula_clasf
+				(
+				  uniqueid    number(20) constraint nn_curricula_clasf_uniqueid not null,
+				  curricula_id  number(20) constraint nn_curricula_clasf_cur_id not null,
+				  name   varchar2(20) constraint nn_curricula_clasf_name not null,
+				  acad_clasf_id     number(20) ,
+				  nr_students   number(10) constraint nn_curricula_clasf_nr_students not null,
+				  ll_students   number(10),
+				  ord    number(10) constraint nn_curricula_clasf_ord not null,
+				  constraint pk_curricula_clasf primary key (uniqueid)
+				)
+		</plsql>
+		<plsql>
+			create table %SCHEMA%.curricula_course
+				(
+				  uniqueid       number(20) constraint nn_curricula_course_uniqueid not null,
+				  course_id           number(20) constraint nn_curricula_course_course_id not null,
+				  cur_clasf_id          number(20) constraint nn_curricula_cur_clasf_id not null,
+				  pr_share  float constraint nn_curricula_course_prsh not null,
+				  ll_share   float,
+				  group_nr number(10) constraint nn_curricula_course_group_nr not null,
+				  ord         number(10) constraint nn_curricula_course_ord not null,
+				  constraint pk_curricula_course primary key (uniqueid)
+				)
+		</plsql>
+		<mysql>
+			create table %SCHEMA%.curricula
+				(
+				  uniqueid  decimal(20,0) primary key not null,
+				  abbv varchar(20) not null,
+				  name varchar(60) not null,
+				  acad_area_id  decimal(20,0),
+				  dept_id decimal(20,0) not null
+				) engine = INNODB
+		</mysql>		
+		<mysql>
+			create table %SCHEMA%.curricula_clasf
+				(
+				  uniqueid    decimal(20,0) primary key not null,
+				  curricula_id  decimal(20,0) not null,
+				  name   varchar(20)  not null,
+				  acad_clasf_id     decimal(20,0),
+				  nr_students   bigint(10) not null,
+				  ll_students   bigint(10),
+				  ord    bigint(10) not null
+				) engine = INNODB
+		</mysql>
+		<mysql>
+			create table %SCHEMA%.curricula_course
+				(
+				  uniqueid       decimal(20,0) not null primary key,
+				  course_id           decimal(20,0) not null,
+				  cur_clasf_id          decimal(20,0) not null,
+				  pr_share  float not null,
+				  ll_share   float,
+				  group_nr bigint(10) not null,
+				  ord         bigint(10) not null
+				) engine = INNODB
+		</mysql>
+		<!-- Create foreign keys -->
+		<sql>
+			alter table %SCHEMA%.curricula 
+				add constraint fk_curricula_dept foreign key (dept_id)
+				references %SCHEMA%.department (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.curricula
+				add constraint fk_curricula_acad_area foreign key (acad_area_id)
+				references %SCHEMA%.academic_area (uniqueid) on delete set null
+		</sql>
+		<sql>
+			alter table %SCHEMA%.curricula_clasf
+			   add constraint fk_curricula_clasf_curricula foreign key (curricula_id)
+			   references %SCHEMA%.curricula (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.curricula_clasf
+				add constraint fk_curricula_clasf_acad_clasf foreign key (acad_clasf_id)
+				references %SCHEMA%.academic_classification (uniqueid) on delete set null
+		</sql>
+		<sql>
+			alter table %SCHEMA%.curricula_course
+				add constraint fk_curricula_course_clasf foreign key (cur_clasf_id)
+				references %SCHEMA%.curricula_clasf (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.curricula_course
+				add constraint fk_curricula_course_course foreign key (course_id)
+				references %SCHEMA%.course_offering (uniqueid) on delete cascade
+		</sql>
+	</update>
+	<update version="39" date="10-Sep-2008" comment="Curricula changes">
+		<mysql>alter table %SCHEMA%.curricula_course modify group_nr varchar(20) null</mysql>
+		<plsql>alter table %SCHEMA%.curricula_course drop constraints nn_curricula_course_group_nr</plsql>
+		<plsql>alter table %SCHEMA%.curricula_course modify group_nr varchar2(20)</plsql>
+	</update>
+	<update version="40" date="10-Sep-2008" comment="Curricula renames">
+		<plsql>alter table %SCHEMA%.curricula rename to curriculum</plsql>
+		<plsql>alter table %SCHEMA%.curricula_clasf rename to curriculum_clasf</plsql>
+		<plsql>alter table %SCHEMA%.curricula_course rename to curriculum_course</plsql>
+		<plsql>alter table %SCHEMA%.curriculum rename constraint nn_curricula_uniqueid to nn_curriculum_uniqueid</plsql>
+		<plsql>alter table %SCHEMA%.curriculum rename constraint nn_curricula_abbv to nn_curriculum_abbv</plsql>
+		<plsql>alter table %SCHEMA%.curriculum rename constraint nn_curricula_name to nn_curriculum_name</plsql>
+		<plsql>alter table %SCHEMA%.curriculum rename constraint nn_curricula_dept to nn_curriculum_dept</plsql>
+		<plsql>alter table %SCHEMA%.curriculum rename constraint pk_curricula to pk_curriculum</plsql>
+		<plsql>alter table %SCHEMA%.curriculum rename constraint fk_curricula_dept to fk_curriculum_dept</plsql>
+		<plsql>alter table %SCHEMA%.curriculum rename constraint fk_curricula_acad_area to fk_curriculum_acad_area</plsql>
+		<plsql>alter table %SCHEMA%.curriculum_clasf rename constraint nn_curricula_clasf_uniqueid to nn_curriculum_clasf_uniqueid</plsql>
+		<plsql>alter table %SCHEMA%.curriculum_clasf rename constraint nn_curricula_clasf_cur_id to nn_curriculum_clasf_cur_id</plsql>
+		<plsql>alter table %SCHEMA%.curriculum_clasf rename constraint nn_curricula_clasf_name to nn_curriculum_clasf_name</plsql>
+		<plsql>alter table %SCHEMA%.curriculum_clasf rename constraint nn_curricula_clasf_nr_students to nn_curriculum_clasf_nrstudents</plsql>
+		<plsql>alter table %SCHEMA%.curriculum_clasf rename constraint nn_curricula_clasf_ord to nn_curriculum_clasf_ord</plsql>
+		<plsql>alter table %SCHEMA%.curriculum_clasf rename constraint pk_curricula_clasf to pk_curriculum_clasf</plsql>
+		<plsql>alter table %SCHEMA%.curriculum_clasf rename constraint fk_curricula_clasf_curricula to fk_curriculum_clasf_curriculum</plsql>
+		<plsql>alter table %SCHEMA%.curriculum_clasf rename constraint fk_curricula_clasf_acad_clasf to fk_curriculum_clasf_acad_clasf</plsql>
+		<plsql>alter table %SCHEMA%.curriculum_course rename constraint nn_curricula_course_uniqueid to nn_curriculum_course_uniqueid</plsql>
+		<plsql>alter table %SCHEMA%.curriculum_course rename constraint nn_curricula_course_course_id to nn_curriculum_course_course_id</plsql>
+		<plsql>alter table %SCHEMA%.curriculum_course rename constraint nn_curricula_cur_clasf_id to nn_curriculum_cur_clasf_id</plsql>
+		<plsql>alter table %SCHEMA%.curriculum_course rename constraint nn_curricula_course_prsh to nn_curriculum_course_prsh</plsql>
+		<plsql>alter table %SCHEMA%.curriculum_course rename constraint nn_curricula_course_ord to nn_curriculum_course_ord</plsql>
+		<plsql>alter table %SCHEMA%.curriculum_course rename constraint pk_curricula_course to pk_curriculum_course</plsql>
+		<plsql>alter table %SCHEMA%.curriculum_course rename constraint fk_curricula_course_clasf to fk_curriculum_course_clasf</plsql>
+		<plsql>alter table %SCHEMA%.curriculum_course rename constraint fk_curricula_course_course to fk_curriculum_course_course</plsql>
+		<plsql>alter table %SCHEMA%.curriculum_clasf rename column curricula_id to curriculum_id</plsql>
+		<mysql>alter table %SCHEMA%.curricula rename to %SCHEMA%.curriculum</mysql>
+		<mysql>alter table %SCHEMA%.curricula_clasf rename to %SCHEMA%.curriculum_clasf</mysql>
+		<mysql>alter table %SCHEMA%.curricula_course rename to %SCHEMA%.curriculum_course</mysql>
+		<mysql>alter table %SCHEMA%.curriculum drop foreign key fk_curricula_dept</mysql>
+		<mysql>alter table %SCHEMA%.curriculum drop foreign key fk_curricula_acad_area</mysql>
+		<mysql>alter table %SCHEMA%.curriculum_clasf drop foreign key fk_curricula_clasf_curricula</mysql>
+		<mysql>alter table %SCHEMA%.curriculum_clasf drop foreign key fk_curricula_clasf_acad_clasf</mysql>
+		<mysql>alter table %SCHEMA%.curriculum_course drop foreign key fk_curricula_course_clasf</mysql>
+		<mysql>alter table %SCHEMA%.curriculum_course drop foreign key fk_curricula_course_course</mysql>
+		<mysql>alter table %SCHEMA%.curriculum_clasf change column curricula_id curriculum_id decimal(20,0) not null</mysql>
+		<mysql>
+			alter table %SCHEMA%.curriculum
+				add constraint fk_curriculum_dept foreign key (dept_id)
+				references %SCHEMA%.department (uniqueid) on delete cascade
+		</mysql>
+		<mysql>
+			alter table %SCHEMA%.curriculum
+				add constraint fk_curriculum_acad_area foreign key (acad_area_id)
+				references %SCHEMA%.academic_area (uniqueid) on delete set null
+		</mysql>
+		<mysql>
+			alter table %SCHEMA%.curriculum_clasf
+				add constraint fk_curriculum_clasf_curriculum foreign key (curriculum_id)
+				references %SCHEMA%.curriculum (uniqueid) on delete cascade
+		</mysql>
+		<mysql>
+			alter table %SCHEMA%.curriculum_clasf
+				add constraint fk_curriculum_clasf_acad_clasf foreign key (acad_clasf_id)
+				references %SCHEMA%.academic_classification (uniqueid) on delete set null
+		</mysql>
+		<mysql>
+			alter table %SCHEMA%.curriculum_course
+				add constraint fk_curriculum_course_clasf foreign key (cur_clasf_id)
+				references %SCHEMA%.curriculum_clasf (uniqueid) on delete cascade
+		</mysql>
+		<mysql>
+			alter table %SCHEMA%.curriculum_course
+				add constraint fk_curriculum_course_course foreign key (course_id)
+				references %SCHEMA%.course_offering (uniqueid) on delete cascade
+		</mysql>
+	</update>
+	<update version="41" date="15-Sep-2008" comment="Exam print offset">
+		<mysql>alter table %SCHEMA%.exam add print_offset int(10)</mysql>
+		<plsql>alter table %SCHEMA%.exam add print_offset number(10,0)</plsql>
+	</update>
+	<update version="42" date="23-Sep-2008" comment="Exam solver parameter update">
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select solver_parameter_def_seq.nextval as uniqueid,
+				'Exams.PeriodSizeWeight' as name, '1.0' as default_vale, 'Examination period x examination size weight' as description,
+				'double' as type, 22 as ord, 1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select solver_parameter_def_seq.nextval as uniqueid,
+				'Exams.PeriodIndexWeight' as name, '0.0000001' as default_vale, 'Examination period index weight' as description,
+				'double' as type, 23 as ord, 1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select solver_parameter_def_seq.nextval as uniqueid,
+				'Exams.RoomPerturbationWeight' as name, '0.1' as default_vale, 'Room perturbation penalty (change of room) weight' as description,
+				'double' as type, 24 as ord, 1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='ExamWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select solver_parameter_def_seq.nextval as uniqueid,
+				'Comparator.Class' as name, 'net.sf.cpsolver.ifs.solution.GeneralSolutionComparator' as default_vale,
+				'Examination solution comparator class' as description,
+				'text' as type, 6 as ord, 0 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='Exam')
+		</plsql>
+		<mysql into="GID">select uniqueid from %SCHEMA%.solver_parameter_group where name='ExamWeights'</mysql>
+		<mysql into="ORD">select max(ord) from %SCHEMA%.solver_parameter_def where solver_param_group_id=%GID%</mysql>
+		<mysql into="ID">select 32767 * next_hi from %SCHEMA%.hibernate_unique_key</mysql>
+		<mysql>
+			insert into %SCHEMA%.solver_parameter_def
+			(uniqueid, name, default_value, description, type, ord, visible, solver_param_group_id) values
+ 			(%ID%+0, 'Exams.PeriodSizeWeight', '1.0', 'Examination period x examination size weight', 'double', %ORD%+1, 1, %GID%),
+			(%ID%+1, 'Exams.PeriodIndexWeight', '0.0000001', 'Examination period index weight', 'integer', %ORD%+2, 1, %GID%),
+			(%ID%+2, 'Exams.RoomPerturbationWeight', '0.01', 'Room perturbation penalty (change of room) weight', 'double', %ORD%+3, 1, %GID%)
+		</mysql>
+		<mysql into="GID">select uniqueid from %SCHEMA%.solver_parameter_group where name='Exam'</mysql>
+		<mysql into="ORD">select max(ord) from %SCHEMA%.solver_parameter_def where solver_param_group_id=%GID%</mysql>
+		<mysql>
+			insert into %SCHEMA%.solver_parameter_def
+			(uniqueid, name, default_value, description, type, ord, visible, solver_param_group_id) values
+ 			(%ID%+3, 'Comparator.Class', 'net.sf.cpsolver.ifs.solution.GeneralSolutionComparator', 'Examination solution comparator class', 'text', %ORD%+1, 0, %GID%)
+ 		</mysql>
+		<mysql>
+			update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1
+		</mysql>
+	</update>
+	<update version="43" date="12-Mar-2009" comment="increase class suffix size">
+		<plsql>
+			alter table %SCHEMA%.class_ modify class_suffix varchar2(10)
+		</plsql>
+		<mysql>
+			alter table %SCHEMA%.class_ modify class_suffix varchar(10)
+		</mysql>
+	</update>
+	<update version="44" date="24-Mar-2009" comment="add enrollment columns">
+	 	<plsql>
+			alter table %SCHEMA%.class_ add enrollment number(4)
+		</plsql>
+		<mysql>
+			alter table %SCHEMA%.class_ add enrollment int(4)
+		</mysql>
+		<sql>
+			update %SCHEMA%.class_ c
+			set c.enrollment = (select count(distinct sce.student_id) 
+        	from %SCHEMA%.student_class_enrl sce
+        	where sce.class_id = c.uniqueid)
+		</sql>
+	  	<plsql>
+			alter table %SCHEMA%.event_note modify meetings varchar2(2000)
+		</plsql>
+		<mysql>
+			alter table %SCHEMA%.event_note modify meetings varchar(2000)
+		</mysql>
+		<plsql>
+			alter table %SCHEMA%.course_offering add enrollment number(10)
+		</plsql>
+		<mysql>
+			alter table %SCHEMA%.course_offering add enrollment int(10)
+		</mysql>
+		<sql>
+			update %SCHEMA%.course_offering co
+			set co.enrollment = (select count(distinct sce.student_id) 
+        	from %SCHEMA%.student_class_enrl sce
+        	where sce.course_offering_id = co.uniqueid)
+		</sql>
+	</update>
+	<update version="45" date="18-Jun-2009" comment="Increase size of sched_print_note">
+		<plsql>insert into %SCHEMA%.settings (uniqueid, name, default_value, allowed_values, description)
+		            values(%SCHEMA%.settings_seq.nextval, 'printNoteDisplay', 'icon', 'icon,shortened text,full text', 'Display an icon or shortened text when a class has a schedule print note.')
+		</plsql>
+		<plsql>insert into %SCHEMA%.settings (uniqueid, name, default_value, allowed_values, description)
+		            values(%SCHEMA%.settings_seq.nextval, 'crsOffrNoteDisplay', 'icon', 'icon,shortened text,full text', 'Display an icon or shortened text when a course offering has a schedule note.')
+		</plsql>
+		<plsql>insert into %SCHEMA%.settings (uniqueid, name, default_value, allowed_values, description)
+		            values(%SCHEMA%.settings_seq.nextval, 'mgrNoteDisplay', 'icon', 'icon,shortened text,full text', 'Display an icon or shortened text when a class has a note to the schedule manager.')
+		</plsql>
+		<mysql into="ID">select 32767 * next_hi from %SCHEMA%.hibernate_unique_key</mysql>
+		<mysql>
+		insert into %SCHEMA%.settings 
+		    (uniqueid, name, default_value, allowed_values, description) values
+ 					(%ID% + 0, 'printNoteDisplay', 'icon', 'icon,shortened text,full text', 'Display an icon or shortened text when a class has a schedule print note.'),
+		            (%ID% + 1, 'crsOffrNoteDisplay', 'icon', 'icon,shortened text,full text', 'Display an icon or shortened text when a course offering has a schedule note.'),
+		            (%ID% + 2, 'mgrNoteDisplay', 'icon', 'icon,shortened text,full text', 'Display an icon or shortened text when a class has a note to the schedule manager.')
+		</mysql>
+		<mysql>
+			update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1
+		</mysql>
+		<plsql>alter table %SCHEMA%.class_ modify sched_print_note varchar2(2000)</plsql>
+		<mysql>alter table %SCHEMA%.class_ modify sched_print_note varchar(2000)</mysql>
+	</update>
+	<update version="46" date="1-Aug-2009" comment="Committed student enrollments solver load speed up">
+		<mysql onFail="next">
+			create index idx_student_enrl_assignment on %SCHEMA%.student_enrl(solution_id,class_id)
+		</mysql>
+		<plsql onFail="next">
+			create index %SCHEMA%.idx_student_enrl_assignment on %SCHEMA%.student_enrl(solution_id,class_id)
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'General.IgnoreCommittedStudentConflicts' as name, 'false' as default_vale, 'Do not load committed student conflicts' as description,
+				'boolean' as type, 13 as ord, 1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='General')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select %SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'General.WeightStudents' as name, 'true' as default_vale, 'Weight last-like students' as description,
+				'boolean' as type, 14 as ord, 0 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name='General')
+		</plsql>
+		<mysql into="GID">select uniqueid from %SCHEMA%.solver_parameter_group where name='General'</mysql>
+		<mysql into="ORD">select max(ord) from %SCHEMA%.solver_parameter_def where solver_param_group_id=%GID%</mysql>
+		<mysql into="ID">select 32767 * next_hi from %SCHEMA%.hibernate_unique_key</mysql>
+		<mysql>
+			insert into %SCHEMA%.solver_parameter_def
+			(uniqueid, name, default_value, description, type, ord, visible, solver_param_group_id) values
+ 			(%ID%+0, 'General.IgnoreCommittedStudentConflicts', 'false', 'Do not load committed student conflicts', 'boolean', %ORD%+1, 1, %GID%),
+			(%ID%+1, 'General.WeightStudents', 'true', 'Weight last-like students', 'boolean', %ORD%+2, 0, %GID%)
+		</mysql>
+		<mysql>
+			update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1
+		</mysql>
+	</update>
+	<update version="47" date="26-Aug-2009" comment="Receive Emails for Manager Role">
+		<mysql>alter table %SCHEMA%.tmtbl_mgr_to_roles add receive_emails int(1) default 1</mysql>
+		<plsql>alter table %SCHEMA%.tmtbl_mgr_to_roles add receive_emails number(1) default 1</plsql>
+	</update>
+	<update version="48" date="05-Oct-2009" comment="Add Exam Event Start and Stop Offsets">
+		<mysql>alter table %SCHEMA%.exam_period add event_start_offset int(10) default 0</mysql>
+		<mysql>alter table %SCHEMA%.exam_period add event_stop_offset int(10) default 0</mysql>
+		<plsql>alter table %SCHEMA%.exam_period add event_start_offset number(10,0) default 0 not null</plsql>
+		<plsql>alter table %SCHEMA%.exam_period add event_stop_offset number(10,0) default 0 not null</plsql>
+	</update>
+	<update version="49" date="21-Oct-2009" comment="Name Length Changes">
+		<plsql>alter table %SCHEMA%.departmental_instructor modify fname varchar2(100)</plsql>
+		<mysql>alter table %SCHEMA%.departmental_instructor modify fname varchar(100)</mysql>
+		<plsql>alter table %SCHEMA%.departmental_instructor modify mname varchar2(100)</plsql>
+		<mysql>alter table %SCHEMA%.departmental_instructor modify mname varchar(100)</mysql>
+		<plsql>alter table %SCHEMA%.departmental_instructor modify lname varchar2(100)</plsql>
+		<mysql>alter table %SCHEMA%.departmental_instructor modify lname varchar(100)</mysql>
+		<plsql>alter table %SCHEMA%.event_contact modify firstname varchar2(100)</plsql>
+		<mysql>alter table %SCHEMA%.event_contact modify firstname varchar(100)</mysql>
+		<plsql>alter table %SCHEMA%.event_contact modify middlename varchar2(100)</plsql>
+		<mysql>alter table %SCHEMA%.event_contact modify middlename varchar(100)</mysql>
+		<plsql>alter table %SCHEMA%.event_contact modify lastname varchar2(100)</plsql>
+		<mysql>alter table %SCHEMA%.event_contact modify lastname varchar(100)</mysql>
+		<plsql>alter table %SCHEMA%.staff modify fname varchar2(100)</plsql>
+		<mysql>alter table %SCHEMA%.staff modify fname varchar(100)</mysql>
+		<plsql>alter table %SCHEMA%.staff modify mname varchar2(100)</plsql>
+		<mysql>alter table %SCHEMA%.staff modify mname varchar(100)</mysql>		
+		<plsql>alter table %SCHEMA%.student modify first_name varchar2(100)</plsql>
+		<mysql>alter table %SCHEMA%.student modify first_name varchar(100)</mysql>
+		<plsql>alter table %SCHEMA%.student modify middle_name varchar2(100)</plsql>
+		<mysql>alter table %SCHEMA%.student modify middle_name varchar(100)</mysql>
+		<plsql>alter table %SCHEMA%.timetable_manager modify first_name varchar2(100)</plsql>
+		<mysql>alter table %SCHEMA%.timetable_manager modify first_name varchar(100)</mysql>
+		<plsql>alter table %SCHEMA%.timetable_manager modify middle_name varchar2(100)</plsql>
+		<mysql>alter table %SCHEMA%.timetable_manager modify middle_name varchar(100)</mysql>
+		<plsql>alter table %SCHEMA%.timetable_manager modify last_name varchar2(100)</plsql>
+		<mysql>alter table %SCHEMA%.timetable_manager modify last_name varchar(100)</mysql>		
+	</update>
+	<update version="50" date="19-May-2010" comment="Curriculum majors">
+		<plsql>
+			create table %SCHEMA%.curriculum_major (
+				curriculum_id number(20,0) constraint nn_curriculum_major_cur_id not null,
+				major_id number(20,0) constraint nn_curriculum_major_maj_id not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.curriculum_major add constraint pk_curriculum_major primary key (curriculum_id, major_id)</plsql>
+		<mysql>
+			create table %SCHEMA%.curriculum_major (
+				curriculum_id decimal(20,0) not null,
+				major_id decimal(20,0) not null,
+				primary key (curriculum_id, major_id)
+			) engine = INNODB
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.curriculum_major add constraint fk_curriculum_major_curriculum foreign key (curriculum_id)
+			references %SCHEMA%.curriculum (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.curriculum_major add constraint fk_curriculum_major_major foreign key (major_id)
+			references %SCHEMA%.pos_major (uniqueid) on delete cascade
+		</sql>
+	</update>
+	
+	
+</dbupdate>

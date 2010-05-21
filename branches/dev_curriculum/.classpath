@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="JavaSource"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/struts.jar" sourcepath="/3rd_party/struts-1.2.9/src/share"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-beanutils.jar" sourcepath="/3rd_party/common-beanutils-1.7.0/src/java"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-fileupload.jar" sourcepath="/3rd_party/common-fileupload-1.1.1/src/java"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jaxen-full.jar" sourcepath="/3rd_party/jaxen-1.1b11/src/java/main"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jaxp-api.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jdbc2_0-stdext.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jstl.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/sax.jar" sourcepath="/3rd_party/sax-2.0.2/src"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/saxpath.jar" sourcepath="/3rd_party/saxpath-1.0/src/java/main"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/standard.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/xercesImpl.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/concurrent-1.3.3.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/connector.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jboss-cache.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jboss-common.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jboss-jmx.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jboss-system.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jta.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/junit-3.8.1.jar" sourcepath="/3rd_party/junit-4.1/src"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/proxool-0.8.3.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/swarmcache-1.0rc2.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/xalan-2.4.0.jar" sourcepath="/3rd_party/xalan-2.7.0/src"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/xml-apis.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/hibernate3.jar" sourcepath="/3rd_party/hibernate-3.2.2/src"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jakarta-oro.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/asm-attrs.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/asm.jar" sourcepath="/3rd_party/asm-3.0/src"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/ehcache-1.2.3.jar" sourcepath="/3rd_party/ehcache-1.2.0/src"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/oscache-2.1.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/versioncheck.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/xerces-2.6.2.jar" sourcepath="/3rd_party/xerces-2.8.1/src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="com.genuitec.eclipse.j2eedt.core.J2EE14_CONTAINER"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/Struts-Layout.jar" sourcepath="/3rd_party/struts-layout-1.2/src/library"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/antlr-2.7.6.jar" sourcepath="/3rd_party/antlr-2.7.7/src"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/cglib-2.1.3.jar" sourcepath="/3rd_party/cglib-2.1.3/src/proxy"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/dom4j-1.6.1.jar" sourcepath="/3rd_party/dom4j-1.6.1/src/java"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jgroups-2.2.8.jar" sourcepath="/3rd_party/jgroups-2.4.0/src"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/itext-1.4.5.jar" sourcepath="/3rd_party/itext-1.4.5/src"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-pool-1.3.jar" sourcepath="/3rd_party/commons-pool-1.3/src/java"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/c3p0-0.9.1.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-beanutils-bean-collections.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-beanutils-core.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-codec-1.3.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-collections-3.2.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-configuration-1.4.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-dbcp-1.2.2.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-digester-1.8.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-jxpath-1.2.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-lang-2.3.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-logging-1.1.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/cpsolver-all-1.1.jar" sourcepath="/cpsolver_v1/src"/>
+	<classpathentry kind="lib" path="3rd_party/log4j-1.2.8.jar"/>
+	<classpathentry kind="lib" path="3rd_party/ojdbc14.jar"/>
+	<classpathentry kind="lib" path="3rd_party/ant.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/mail.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/activation.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/mysql-connector-java-5.0.5-bin.jar"/>
+	<classpathentry kind="output" path="WebContent/WEB-INF/classes"/>
+</classpath>

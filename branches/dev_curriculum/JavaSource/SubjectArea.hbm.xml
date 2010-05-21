@@ -1,0 +1,141 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<!-- 
+ * UniTime 3.1 (University Timetabling Application)
+ * Copyright (C) 2008, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ -->
+
+<hibernate-mapping package="org.unitime.timetable.model">
+	<class
+		name="SubjectArea"
+		table="SUBJECT_AREA">
+
+ 		<cache include="non-lazy" usage="read-write"/>
+
+        <id
+            name="uniqueId"
+            column="UNIQUEID"
+            type="java.lang.Long"
+        >
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">SUBJECT_AREA_SEQ</param>
+            </generator>
+        </id>
+
+
+		<property
+			name="externalUniqueId"
+			column="EXTERNAL_UID"
+			type="java.lang.String"
+			not-null="false"
+			length="40"
+		/>
+
+		<property
+			name="subjectAreaAbbreviation"
+			column="SUBJECT_AREA_ABBREVIATION"
+			type="java.lang.String"
+			not-null="true"
+			length="10"
+		/>
+
+		<property
+			name="shortTitle"
+			column="SHORT_TITLE"
+			type="java.lang.String"
+			not-null="true"
+			length="50"
+		/>
+
+		<property
+			name="longTitle"
+			column="LONG_TITLE"
+			type="java.lang.String"
+			not-null="true"
+			length="100"
+		/>
+
+		<property
+			name="scheduleBookOnly"
+			column="SCHEDULE_BOOK_ONLY"
+			type="java.lang.Boolean"
+			not-null="true"
+		/>
+
+		<property
+			name="pseudoSubjectArea"
+			column="PSEUDO_SUBJECT_AREA"
+			type="java.lang.Boolean"
+			not-null="true"
+		/>
+
+		<many-to-one
+			name="session"
+			class="Session"
+			column="SESSION_ID"
+			not-null="true"
+		/>
+
+		<many-to-one
+			name="department"
+			class="Department"
+			column="DEPARTMENT_UNIQUEID"
+			not-null="true"
+			foreign-key="FK_SUBJECT_AREA_DEPT"
+			>
+		</many-to-one>
+
+		<set name="courseOfferings"
+            inverse="true"
+			cascade="all-delete-orphan">
+	 		<cache include="non-lazy" usage="read-write"/>
+	 		<key column="SUBJECT_AREA_ID"/>
+			<one-to-many class="CourseOffering" />
+		</set>
+	
+		<set name="instructionalOfferings" 
+            table="course_offering"
+            inverse="true"
+            cascade="all-delete-orphan">
+			<cache include="non-lazy" usage="read-write"/>
+           <key column="subject_area_id"/>           
+		   <many-to-many
+		    column="instr_offr_id"
+		    class="InstructionalOffering"
+		    foreign-key="fk_crs_offr_instr_offr"
+		    unique="true"
+			/>
+		</set>
+	
+		<set
+			name="designatorInstructors"
+			cascade="all"
+			lazy="true"
+			inverse="true"
+			table="DESIGNATOR"
+			>
+			<cache include="non-lazy" usage="read-write"/>
+			<key column="SUBJECT_AREA_ID"/>
+			<one-to-many 
+				class="Designator"/>
+		</set>
+						
+	</class>
+</hibernate-mapping>
