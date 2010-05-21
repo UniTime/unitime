@@ -44,6 +44,21 @@
 				<line>Fixed bug that occurred when rolling forward courses that do not have a unique subject area and course number.</line>
 				<line>Added functionality to push class time patterns up to the scheduling subpart level as part of the roll forward of scheduling subparts.</line>
 				<line>Fixed bug with rolling forward a room preference for a room that does not have an external id.</line>
+				<line>The course offering roll forward is being modified to do the following:
+					<line>1. An option has been added to allow the user to select whether or not to roll forward subpart level time preferences.
+					The default is for these preferences to roll forward as is.  Required stays required, prohibited stays prohibited, etc.
+					If the user chooses not to roll forward subpart level time preferences the time patterns will remain but the time preferences for those patterns a removed.</line>
+					<line>2. An option has been added to allow the user to select whether or not to roll forward subpart level location preferences.
+					The default is for these preferences is to roll forward as is.  If the user chooses not to roll forward subpart level location preferences, no room,
+					building, room feature or room group preferences are moved forward.</line>
+					<line>3. An option has been added to allow the user to promote appropriate class preferences to the subpart level.
+					The default is to do nothing with class level preferences.  If the user selects to promote the appropriate class preferences to the subpart level
+					and the scheduling subpart does not already have a room preference, then any room preferences that exist on all classes within a scheduling subpart
+					are moved to the subpart level as is.  The same rule applies to building, room group, and room feature preferences.  In this case required stays required,
+					prohibited stays prohibited, etc.  If a scheduling subpart does not have any time patterns assigned to it, all time patterns on its child classes will
+					be pushed up the the subpart level.  In addition if the same time preference exists on all classes within a scheduling subpart and does not contain any
+					requires or prohibits then that time preference is also moved to the subpart level.</line>
+				</line>
 			</description>
 		</item>
 		<item>
@@ -68,6 +83,15 @@
 					<line>Default is sufficient DbAuthenticateModule;sufficient LdapAuthenticateModule</line>
 					<line>Ldap module is ignored if LDAP provider is not set</line>
 				</line>
+			</description>
+		</item>
+		<item>
+			<name>Other</name>
+			<description>
+				<line>Instructors: When application property tmtbl.instructor.allowExternalIdEdit exists and is set to true, it is allowed to edit instructor external id.</line>
+				<line>Rooms: Corrected display of departmental room groups and features (i.e., display departmental features/groups of the selected department).</line>
+				<line>Added many to many relation between curricula and majors.</line>
+				<line>Class assignment: Avoid throwing an exception when given dates are empty (this fixes the issue with SCI 90900 Ind 1).</line>
 			</description>
 		</item>
 	</category>
