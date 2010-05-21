@@ -34,6 +34,7 @@
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/xerces-2.6.2.jar" sourcepath="/3rd_party/xerces-2.8.1/src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="com.genuitec.eclipse.j2eedt.core.J2EE14_CONTAINER"/>
+	<classpathentry kind="con" path="com.google.gwt.eclipse.core.GWT_CONTAINER"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/Struts-Layout.jar" sourcepath="/3rd_party/struts-layout-1.2/src/library"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/antlr-2.7.6.jar" sourcepath="/3rd_party/antlr-2.7.7/src"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/cglib-2.1.3.jar" sourcepath="/3rd_party/cglib-2.1.3/src/proxy"/>
@@ -59,5 +60,6 @@
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/mail.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/activation.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/mysql-connector-java-5.0.5-bin.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/gwt-servlet.jar"/>
 	<classpathentry kind="output" path="WebContent/WEB-INF/classes"/>
 </classpath>
