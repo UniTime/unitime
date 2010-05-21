@@ -78,7 +78,28 @@
 		<load-on-startup>0</load-on-startup>
 	</servlet>
 
+	<!--  GWT Servlets -->
+	<servlet>
+    	<servlet-name>sectioningServiceServlet</servlet-name>
+    	<servlet-class>org.unitime.timetable.gwt.server.SectioningServlet</servlet-class>
+    	<load-on-startup>3</load-on-startup>
+    </servlet>
+  
+	<servlet>
+    	<servlet-name>calendarServlet</servlet-name>
+    	<servlet-class>org.unitime.timetable.gwt.server.CalendarServlet</servlet-class>
+    </servlet>
 
+    <servlet-mapping>
+        <servlet-name>sectioningServiceServlet</servlet-name>
+        <url-pattern>/unitime4/sectioningService</url-pattern>
+    </servlet-mapping>
+  
+    <servlet-mapping>
+      <servlet-name>calendarServlet</servlet-name>
+      <url-pattern>/calendar</url-pattern>
+    </servlet-mapping>
+	
 	<!-- Servlet Mappings -->
 	<servlet-mapping>
 		<servlet-name>action</servlet-name>
