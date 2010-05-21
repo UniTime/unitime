@@ -1,0 +1,155 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC 
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<!-- 
+ * UniTime 3.1 (University Timetabling Application)
+ * Copyright (C) 2008, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ -->
+
+<hibernate-mapping package="org.unitime.timetable.model">
+	<class
+		name="Assignment"
+		table="ASSIGNMENT">
+		
+		<cache include="non-lazy" usage="read-write"/>
+
+        <id
+            name="uniqueId"
+            column="UNIQUEID"
+            type="java.lang.Long"
+        >
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">ASSIGNMENT_SEQ</param>
+            </generator>
+        </id>
+		
+		<property
+			name="days"
+			column="DAYS"
+			type="java.lang.Integer"
+			not-null="false"
+			length="4"
+		/>
+
+		<property
+			name="startSlot"
+			column="SLOT"
+			type="java.lang.Integer"
+			not-null="false"
+			length="4"
+		/>
+		
+		<property
+			name="classId"
+			column="CLASS_ID"
+			type="java.lang.Long"
+			not-null="false"
+			insert="false"
+			update="false"
+		/>
+		
+		<property
+			name="className"
+			column="CLASS_NAME"
+			type="java.lang.String"
+			not-null="false"
+			length="100"
+		/>
+
+		<many-to-one 
+			name="timePattern" 
+			class="TimePattern" 
+			column="TIME_PATTERN_ID" 
+			not-null="true"
+			foreign-key="FK_ASSIGNMENT_TIME_PATTERN"
+		/>
+		
+		<many-to-one 
+			name="solution" 
+			class="Solution" 
+			column="SOLUTION_ID" 
+			not-null="true"
+			foreign-key="FK_ASSIGNMENT_SOLUTION"
+		/>		
+
+		<set
+			name="instructors"
+			lazy="true" 
+			table="ASSIGNED_INSTRUCTORS"
+			>
+			<cache include="non-lazy" usage="read-write"/>
+			<key column="ASSIGNMENT_ID"/>
+			<many-to-many 
+				class="DepartmentalInstructor"
+				column="INSTRUCTOR_ID"
+				foreign-key="FK_ASSIGNED_INSTRUCTOR"
+			/>
+		</set>
+
+		<set
+			name="rooms"
+			lazy="true" 
+			table="ASSIGNED_ROOMS"
+			>
+			<cache include="non-lazy" usage="read-write"/>
+			<key column="ASSIGNMENT_ID"/>
+			<many-to-many 
+				class="Location"
+				column="ROOM_ID"
+			/>
+		</set>
+
+		<many-to-one 
+			name="clazz" 
+			class="Class_"
+			column="CLASS_ID" 
+			lazy="proxy"
+			not-null="true"
+			foreign-key="FK_ASSIGNMENT_CLASS"
+		/>
+
+		<set
+			name="assignmentInfo"
+			inverse="true"
+			cascade="all"
+			lazy="true" 
+			table="SOLVER_INFO"
+			>
+			<cache include="non-lazy" usage="read-write"/>
+			<key column="ASSIGNMENT_ID"/>
+			<one-to-many class="AssignmentInfo"/>
+		</set>
+
+		<set
+			name="constraintInfo"
+			inverse="true"
+			lazy="true" 
+			cascade="delete-orphan"
+			table="CONSTRAINT_INFO"
+			>
+			<cache include="non-lazy" usage="read-write"/>
+			<key column="ASSIGNMENT_ID"/>
+			<many-to-many 
+				class="ConstraintInfo"
+				column="SOLVER_INFO_ID"
+				foreign-key="FK_CONSTRAINT_INFO_SOLVER"
+			/>
+		</set>
+	</class>
+</hibernate-mapping>

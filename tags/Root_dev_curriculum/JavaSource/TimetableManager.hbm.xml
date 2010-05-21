@@ -1,0 +1,125 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC 
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<!-- 
+ * UniTime 3.1 (University Timetabling Application)
+ * Copyright (C) 2008, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ -->
+
+<hibernate-mapping package="org.unitime.timetable.model">
+	<class
+		name="TimetableManager"
+		abstract="false"
+		table="TIMETABLE_MANAGER">
+
+		<cache include="non-lazy" usage="read-write"/>
+
+		<id 
+            name="uniqueId"
+            column="UNIQUEID" 
+            type="java.lang.Long">            
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+				<param name="sequence">TIMETABLE_MGR_SEQ</param>
+			</generator>
+            
+        </id>
+        
+		<property
+			name="externalUniqueId"
+			column="EXTERNAL_UID"
+			type="string"
+			not-null="false"
+			length="40"
+		/>
+		
+		<set 
+			name="settings" 
+			table="MANAGER_SETTINGS" 
+			cascade="all-delete-orphan" 
+			lazy="true"
+			inverse="true"
+		>				
+			<cache include="non-lazy" usage="read-write"/>
+			<key column="USER_UNIQUEID" />
+			<one-to-many class="ManagerSettings" />
+		</set>				
+		
+		<property
+			name="firstName"
+			column="FIRST_NAME"
+			type="string"
+			not-null="true"
+			length="100"
+		/>
+		
+		<property
+			name="middleName"
+			column="MIDDLE_NAME"
+			type="string"
+			not-null="false"
+			length="100"
+		/>
+		
+		<property
+			name="lastName"
+			column="LAST_NAME"
+			type="string"
+			not-null="true"
+			length="100"
+		/>
+		
+		<property
+			name="emailAddress"
+			column="EMAIL_ADDRESS"
+			type="string"
+			not-null="false"
+			length="200"
+		/>
+		
+		<set name="departments"
+			table="DEPT_TO_TT_MGR" >
+			 <cache include="non-lazy" usage="read-write"/>
+			 <key column="TIMETABLE_MGR_ID"/>			
+			<many-to-many 
+				class="Department" 
+				column="DEPARTMENT_ID" 
+				foreign-key="FK_DEPT_MGR_TO_DEPT"/>
+		</set>
+		
+		<set
+			name="managerRoles"
+			lazy="true"
+			cascade="all-delete-orphan"
+			inverse="true"
+			>
+			<cache include="non-lazy" usage="read-write"/>
+			<key column="MANAGER_ID" not-null="true"/>
+			<one-to-many class="ManagerRole"/>
+		</set>				
+					
+		<set name="solverGroups" table="SOLVER_GR_TO_TT_MGR" >
+	 		<cache include="non-lazy" usage="read-write"/>
+			<key column="TIMETABLE_MGR_ID"/>			
+			<many-to-many 
+				class="SolverGroup" 
+				column="SOLVER_GROUP_ID" 
+				foreign-key="FK_SOLVER_GR_TO_TT_MGR_SG"/>
+		</set>	
+	</class>
+</hibernate-mapping>

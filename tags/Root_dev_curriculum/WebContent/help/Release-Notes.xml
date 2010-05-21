@@ -1,0 +1,2055 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<?xml-stylesheet type="text/css" href="Release-Notes.css"?>
+<!-- 
+ * UniTime 3.1 (University Timetabling Application)
+ * Copyright (C) 2008, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ -->
+
+<release-history>
+
+<doc-title>Timetabling - Release Notes</doc-title>
+
+<release>
+	<version>3.1.@build.number@</version>
+	<release-date>@release.date@</release-date>
+	<category>
+		<title>BUG FIXES &amp; OTHER IMPROVEMENTS</title>
+		<item>
+			<name>Student Sectioning</name>
+			<description>
+				<line>Added a set of Enrollment Audit PDF reports.
+					<line>Enrollments Violating Course Structure - This report lists where students are enrolled in a class that has a parent class but the student is not enrolled in the parent class.</line>
+					<line>Missing Course Enrollments - This report lists where student are enrolled in a course offering but are not enrolled in a class in each of the subparts within a configuration of the courses offering.</line>
+					<line>Multiple Course Enrollments - This reports lists where students are enrolled in more than one class within a subpart. If a student is allowed to enroll in a course offering more than once in a term this student will be listed here as well.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Session Roll-Forward</name>
+			<description>
+				<line>Fixed bug that occurred when rolling forward courses that do not have a unique subject area and course number.</line>
+				<line>Added functionality to push class time patterns up to the scheduling subpart level as part of the roll forward of scheduling subparts.</line>
+				<line>Fixed bug with rolling forward a room preference for a room that does not have an external id.</line>
+				<line>The course offering roll forward is being modified to do the following:
+					<line>1. An option has been added to allow the user to select whether or not to roll forward subpart level time preferences.
+					The default is for these preferences to roll forward as is.  Required stays required, prohibited stays prohibited, etc.
+					If the user chooses not to roll forward subpart level time preferences the time patterns will remain but the time preferences for those patterns a removed.</line>
+					<line>2. An option has been added to allow the user to select whether or not to roll forward subpart level location preferences.
+					The default is for these preferences is to roll forward as is.  If the user chooses not to roll forward subpart level location preferences, no room,
+					building, room feature or room group preferences are moved forward.</line>
+					<line>3. An option has been added to allow the user to promote appropriate class preferences to the subpart level.
+					The default is to do nothing with class level preferences.  If the user selects to promote the appropriate class preferences to the subpart level
+					and the scheduling subpart does not already have a room preference, then any room preferences that exist on all classes within a scheduling subpart
+					are moved to the subpart level as is.  The same rule applies to building, room group, and room feature preferences.  In this case required stays required,
+					prohibited stays prohibited, etc.  If a scheduling subpart does not have any time patterns assigned to it, all time patterns on its child classes will
+					be pushed up the the subpart level.  In addition if the same time preference exists on all classes within a scheduling subpart and does not contain any
+					requires or prohibits then that time preference is also moved to the subpart level.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>PDF Exam reports speedup</name>
+			<description>
+				<line>Preloading student exam enrollments (this broke with the change for cross-listed exams).</line>
+				<line>Preloading Class_ -> ClassEvent relation.</line>
+				<line>When solver is used, preload crosslisted exams (solver does not know about them, it takes too long to load them one by one).</line>
+				<line>Removed relation Class_-> sectioningInfo (using SectioningInfo -> Class_ instead where needed) to avoid unnecessary queries.</line>
+				<line>Few other small changes.</line>
+			</description>
+		</item>
+		<item>
+			<name>Configuration</name>
+			<description>
+				<line>Hibernate DTDs bundled with the application.
+					<line>This is to avoid application deployment problems when Hibernate is unable to validate configuration because of a poor internet connection.</line>
+					<line>See Q9 of http://wiki.unitime.org/Timetabling_Installation_FAQ</line>
+				</line>
+				<line>Simplified JAAS configuration by using tmtbl.authenticate.modules rather than .java.login.config file.
+					<line>It contains a semicolon separated list of authentication modules with their configuration flag.</line>
+					<line>Default is sufficient DbAuthenticateModule;sufficient LdapAuthenticateModule</line>
+					<line>Ldap module is ignored if LDAP provider is not set</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Other</name>
+			<description>
+				<line>Instructors: When application property tmtbl.instructor.allowExternalIdEdit exists and is set to true, it is allowed to edit instructor external id.</line>
+				<line>Rooms: Corrected display of departmental room groups and features (i.e., display departmental features/groups of the selected department).</line>
+				<line>Added many to many relation between curricula and majors.</line>
+				<line>Class assignment: Avoid throwing an exception when given dates are empty (this fixes the issue with SCI 90900 Ind 1).</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.1.248</version>
+	<release-date>Tue, 13 Mar 2010</release-date>
+	<category>
+		<title>BUG FIXES &amp; OTHER IMPROVEMENTS</title>
+		<item>
+			<name>Timetable page (containing the time grid)</name>
+			<description>
+				<line>Added following properties in order to be able to change the periods in which the time is printed (30 minutes periods starting 7:30am by default). The default values are as follows:
+					<line>tmtbl.timeGrid.slotsPerPeriod=6 # Number of time (5-minute long) slots per period</line>
+					<line>tmtbl.timeGrid.firstDaySlot=90 # 90 5-minutes slots from midnight ~ 7:30 am</line>
+					<line>tmtbl.timeGrid.lastDaySlot=209 # last day slot 5:25 pm - 5:30 pm</line>
+					<line>tmtbl.timeGrid.lastEveningSlot=275 # last evening slot 10:55 pm - 11:00 pm</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructional Offerings</name>
+			<description>
+				<line>Put in temporary change to prevent users from entering 9999 in the "Number of Classes" field on the "Instructional Offering Configuration" edit page.  If the user enters 9999 in the field when they leave the field the value is set to 0.</line>
+				<line>Remove restriction from Instructional Offering Configuration edit page that prevented the user from creating more than one class per scheduling subpart when working with a configuration marked as having unlimited enrollment.</line>
+				<line>Added display of infinity symbol to limits column for classes that are part of unlimited enrollment configurations. Changed drunken 8 to be a true infinity symbol.</line>
+				<line>Limit size of number of classes field to 3 digits on the Configuration Edit screen.</line>
+			</description>
+		</item>
+		<item>
+			<name>Class Assignment</name>
+			<description>
+				<line>The functionality concerning checking of past events corrected:
+					<line>Check for all events when tmtbl.classAssign.ignorePastMeetings is false (default is true)</line>
+					<line>Only do not check for past non-class events (classes are checked for conflicts later in update() using their date patterns, the former behavior was causing an inconsistency when a conflicting room was shown as non-conflicting)</line>
+					<line>Also do not check for past events when a different room availability than default is use</line>
+				</line>
+				<line>Toggle "Do not unassign conflicting classes" moved to a more appropriate place (under the table with new assignments). The conflicting assignments are now recomputed on change.</line>
+				<line>Added ability to filter the list of rooms by room types, global room groups and global room features.</line>
+			</description>
+		</item>
+		<item>
+			<name>Examination Assignment</name>
+			<description>
+				<line>Added ability to filter the list of rooms by room types, global room groups and global room features.</line>
+			</description>
+		</item>
+		<item>
+			<name>Examination Reports</name>
+			<description>
+				<line>Removed number of registered students from the Exam Statistics Report as this number may be misleading (it could include last-like students).</line>
+			</description>
+		</item>
+		<item>
+			<name>Administration</name>
+			<description>
+				<line>Manage Solvers: Improved checking for solver inconsistencies (fewer exceptions should be thrown when a solver instance is caught in an inconsistent state)</line>
+			</description>
+		</item>
+		<item>
+			<name>Other</name>
+			<description>
+				<line>If an exception is seen print a warning message (including request URI, user login and request parameters for easier debugging).</line>
+				<line>Fixed broken compatibility with Java 5.</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.1.241</version>
+	<release-date>Tue, 16 Feb 2010</release-date>
+	<category>
+		<title>BUG FIXES &amp; OTHER IMPROVEMENTS</title>
+		<item>
+			<name>Administration</name>
+			<description>
+				<line>Allow the user to override the name information retrieved from LDAP.</line>
+				<line>Validate field lengths on department edit screen.</line>
+				<line>Added ability to mark a role for a Timetable Manager as wanting to receive email or not.  Also added a check into the exam pdf report email functionality to check to see of the department schedule manager is set to receive email.  If the manager is not the report is not sent to them.</line>
+				<line>Fix bug when adding a new timetable manager.</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructors</name>
+			<description>
+				<line>Added hook to delete of instructor to allow external code to be called for the classes associated with the delete.</line>
+				<line>Do not set the instructor external id to the string "null".</line>
+				<line>Added instructor name format of last-first-middle.</line>
+				<line>Added ability to call external code for classes changed when an instructor is removed from a department's list of instructors.</line>
+				<line>Added dialog to confirm the user wants to unassign all instructors for a course offering when the user clicks the "Unassign All" button.  It the user does not wish to see confirmation dialogs this dialog is not displayed.</line>
+				<line>Manage Instructor List, Edit Instructor Information: it is no longer allowed to delete an instructor that has classes or exams assigned to him/he.</line>
+			</description>
+		</item>
+		<item>
+			<name>Class Assignments</name>
+			<description>
+				<line>A very minimalistic version of the ability to reassign a class without using the interactive solver added. See http://wiki.unitime.org/Class_Assignment for more details.</line>
+				<line>Class Assignment dialog speedups
+					<line>only check conflicts for the rooms in the list (may still take way too much time when someone asks for all rooms, hopefully this toggle will be used with the filter as well, e.g., all rooms in given building)</line>
+					<line>number of student conflicts is not displayed (computed) for available periods</line>
+				</line>
+				<line>Class Assignment dialog improvements
+					<line>only load room availability when the dialog opens</line>
+					<line>bypass default room availability service (if used) and load conflicting events directly</line>
+					<line>show student conflicts (next to available periods) when application property tmtbl.classAssign.showStudentConflicts is set to true (enabled by default)</line>
+					<line>computation of conflicting rooms improved</line>
+					<line>for conflicting rooms, display conflicting class in a hint</line>
+				</line>
+				<line>Fixed bug where class events generated by making class assignments using the database solver were not given an event name.</line>
+				<line>In some cases the user needs to have more than one class assigned to the same room at the same time.  The database solver did not allow for that situation to occur.  I have added support to allow the user to check a box that says "Do not unassign conflicting class assignments" in the room filter.  Checking this box tells the database solver to ignore room conflicts and instructor conflicts when making the assignment.  This prevents the database solver from unassigning classes with these types of conflicts when the user puts a class into a room. Also, locations that are marked as ignore room checks no longer cause classes that have conflicting assignments to become unassigned when an additional class is assigned to the location.  The location is still shown with a line through it if there are conflicting assignments so the user knows they are selecting a location that has conflicts.</line>
+				<line>Added room type to data shown in location mouse over on database solver page.</line>
+				<line>On the Exam Assignment and Class Assignment pages, changed code so &lt;br&gt; is treated as html rather than text when there is more than one instructor.  Also, on the Class Assignment Page, changed the "Lead Instructor(s)" label to be "Conflict Checked Instructors".</line>
+				<line>Class offline assignment -- allow assignment of rooms for classes with zero limit.</line>
+				<line>When working in the current term, if a class needed to be moved into a room that has events that have occurred within the term but prior to now, the room was not available for the class.  I have changed the code so the Class Assignment page will ignore events that have occurred in the past.  In order for the page to allow classes to be moved into rooms that have events that occurred "today" but earlier in the day, the page must also ignore all events that occur "today".</line>
+			</description>
+		</item>
+		<item>
+			<name>Side bar menu</name>
+			<description>
+				<line>Added link to Event Management Documentation to the help menu.</line>
+				<line>Added hooks to menu so that custom web pages could be added to the Course Timetabling menu.</line>
+				<line>Allow certain functionality on the side bar menu to be turned off for non admin users through editing of application properties.
+					<line>tmtbl.menu.display_course_timetabling - If false the Course Timetabling side bar menu will not be displayed.</line>
+					<line>tmtbl.menu.display_student_sectioning - If false the Student Sectioning side bar menu will not be displayed.</line>
+					<line>tmtbl.menu.display_exam_timetabling - If false the Examination Timetabling side bar menu will not be displayed.</line>
+					<line>tmtbl.menu.display_personal_schedule - If false the Personal Schedule side bar menu will not be displayed.</line>
+					<line>tmtbl.menu.display_event_management - If false the Event Management side bar menu will not be displayed.</line>
+					<line>If these values are not set they default to true which means if the user has rights to view the menu the user will see the menu.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Constraint Solver</name>
+			<description>
+				<line>Constraint solver updated -- small bugfix in student sectioning solver.</line>
+				<line>Batch student sectioning -- update class enrollment on save.</line>
+				<line>Student sectioning in course timetabling -- if students are not weighted (to fill all the sections completely), allow moving students between sections.</line>
+				<line>Examination timetabling: fixed a typo (two small room), anticipate negative solution values in Great Deluge.</line>
+			</description>
+		</item>
+		<item>
+			<name>Database Changes</name>
+			<description>
+				<line>Increase allowed size of the classSuffix field in a Class_ to be 10.</line>
+				<line>Added enrollments total to classes and course offerings. Propagated the display of enrollments throughout the user interfaces where appropriate. Updated the student enrollment load to update the student enrollment counts on classes and course offerings. Update dbupdate.xml to create and initialize the new columns. Added sql to create and initialize the new columns.</line>
+				<line>Correct hql for updating course and class enrollments.</line>
+				<line>Fixed bug with method to calculate all enrollments counts for a session.  The value of the session uniqueid needed to be converted from a "jave.util.Long" to a plain old "long".</line>
+				<line>Added additional checks for null values.</line>
+				<line>Increased the size of the Schedule Print Note on classes to 2000 characters.</line>
+				<line>Modified exam periods to contain the start and stop offset lengths to be used for generating their corresponding events.</line>
+				<line>Increase the length of all person name fields to 100 characters.</line>
+			</description>
+		</item>
+		<item>
+			<name>Examination Timetabling</name>
+			<description>
+				<line>Corrected spelling in error message when no examination periods are found.</line>
+				<line>Updated exam functionality to allow for a default period of time to be blocked in the corresponding meetings to allow students to enter or leave an exam room.  This adjust the time displayed for the exam.</line>
+				<line>Fixed null pointer exception that occurred when an exam did not yet have an assignement.</line>
+				<line>If there are more than 300 exams for a session, do not allow the user to have the option to display all exams for all subject areas.</line>
+				<line>Modified exam periods to contain the start and stop offset lengths to be used for generating their corresponding events.</line>
+				<line>Enforce the maximum number of rooms an exam can use (currently set to 10 in the solver), print an error message when there is an exam that can use more rooms.</line>
+				<line>Make sure a true 'int' compare is being done when determining the seating type to be used for an exam.</line>
+				<line>If tmtbl.exam.name.expandCrosslistedOfferingToCourses property is set to true (default is false), offering is expanded to all courses for naming purposes. This means that the exam is named after all the courses, not just the controlling one.</line>
+				<line>More weird exam names when tmtbl.exam.name.expandCrosslistedOfferingToCourses is true (e.g., a class exam is named multiple times with all the courses in the offering).</line>
+				<line>Exam Periods page -- fixed the colspan.</line>
+			</description>
+		</item>
+		<item>
+			<name>Examination Reports</name>
+			<description>
+				<line>Perzonalized Report: Fixed stack overflow problem that occurred whenever a student had a conflict listed and clicked on an item in the list.  Changed so that if the user does not have a role the items in the conflict list are not clickable.</line>
+				<line>Removed not offered courses from the Exam Verification Report.</line>
+				<line>Fixed a bug when canEmail = false</line>
+				<line>Personalized examination schedule for a student -- display course name based on the course to which the student is enrolled to instead of the controlling course (makes a difference only for cross-listed courses).</line>
+				<line>Student examination report -- print course name based on the course to which the student is enrolled to instead of the controlling course (makes a difference only for cross-listed courses), increase Sect length to 5 characters.</line>
+				<line>Various examination reports -- increase length of the Sect column to 5 characters</line>
+				<line>Personalized examination schedule for a student, export to iCal -- print course name based on the course to which the student is enrolled to instead of the controlling course (makes a difference only for cross-listed courses).</line>
+				<line>Schedule by Course exam report -- list each exam under all the cross-listed courses.</line>
+				<line>Examination Schedule: display all cross-listed exams</line>
+				<line>Personalized Schedule for Instructors
+					<line>For instructors -- display cross-listed classes (in class schedule, if enabled)</line>
+					<line>For instructors -- display all cross-listed exams (in exam schedule, if enabled)</line>
+					<line>Examination schedule and conflicts -- split exams between midterm and final</line>
+					<line>Fixed few issues when the page is used by admin (disappearing list of sessions, NullPointerException)</line>
+					<line>Few minor corrections in exported PDFs and iCals</line>
+				</line>
+				<line>Examination PDF reports
+					<line>Display all cross-listed exams</line>
+					<line>On individual instructor schedule report -- also display cross-lists on class schedule</line>
+					<line>Student/Instructor schedule report -- fixed a problem with assigned times/rooms for classes of different than selected subject area (class schedule, when report is generated just for a given subject)</line>
+ 				</line>
+			</description>
+		</item>
+		<item>
+			<name>Rooms</name>
+			<description>
+				<line>Updated add Non University Location page to allow the user to enter a name that is up to 20 characters long and tied the format of the name to an applicatoin property.
+					The user can set the property tmtbl.nonUniversityLocation.pattern to a regular expression in order to specify a specific pattern the Non University Location names must conform to.
+					If tmtbl.nonUniversityLocation.pattern is not set the name is checked to make sure it only contains the standard set valid characters.
+					tmtbl.nonUniversityLocation.patternInfo can be used to provide an error message when the name does not match the regular expression.</line>
+				<line>Fixed bug on pattern checking validation of Non-University Location names.</line>
+				<line>Fixed bug that occurred when using the room feature edit screen to add rooms to a global room feature.</line>
+				<line>Fixed bug that occurred when using the room group edit screen to add rooms to a global room group.</line>
+				<line>Ensure property 'global' is stored in the session so that the correct value is returned to the form on page submit.  This was preventing global room groups from being edited.</line>
+				<line>Ensure property 'global' is stored in the session so that the correct value is returned to the form on page submit.  This was preventing global room features from being edited.</line>
+			</description>
+		</item>
+		<item>
+			<name>User Access</name>
+			<description>
+				<line>Added temporary user lockout when user exceeds maximum failed login attempt limit.  This is configurable with the following parameters
+					<line>tmtbl.login.max.failed.attempts  - used to set the number of failed login attempts that causes a user to be logged out.  Defaults to 7.</line>
+					<line>tmtbl.login.failed.lockout.minutes - used to set the number of minutes the user is locked out of the system before they can attempt to log in again.  Defaults to 15 minutes.</line>
+					<line>tmtbl.login.failed.delay.milliseconds - used to set the amount of delay in responding to the user with a failed login error message after the user has made more  than max failed attempts + 3 attempts to log in.  Defaults to 15000 milliseconds.</line>
+				</line>
+				<line>Added a new filter that checks user access based on the rules defined in tiles-defs.xml (checkLogin, checkAdmin, checkRole etc.). This should avoid log file to be full of exceptions caused by users with invalid session (when user access the application after a long time of inactivity). All the functionality should remain as it is, especially since the same check is already being done in pageLayout.jsp.</line>
+				<line>Only allow authenticated users to access temp files.</line>
+			</description>
+		</item>
+		<item>
+			<name>Data Exchange</name>
+			<description>
+				<line>Added support for one time Event loads through the xml interface.
+					The event load can be used to populate the event system with the events from a different system.
+					The event load process does not check for duplicate events.
+					Therefore if an event already exists in the Event system and an xml file with the same event is load, then the event will exist two times in the event system.
+				</line>
+				<line>Updated Last Like Course Demand Import to create students if they don't already exists.  Also allowed the use of an external id to look up a course offering.</line>
+				<line>Refactored Course Offering import to make it easier to create customized imports that can inherit from a base course offering import.</line>
+				<line>Staff Import - Surrounded conversion of externalId to a number with a try catch statement.  This fixes bug where an external id was expected to be a number but was not.</line>
+				<line>Add additional info to logging output from Student Enrollment Import.</line>
+				<line>Changed the course offering import to move the end date of a class to the classes end date for the session if the end date of the class falls between the classes end date and the end of the session.</line>
+				<line>Course Offering Import: Added hooks for customized code on various places.</line>
+				<line>CourseOfferingImport - Update event information if the related information has changed on the class.</line>
+				<line>In course offering import, modified code to match the sis_ref if it is used instead of the itype abbreviation in the import file.</line>
+				<line>Academic Session Import: Import additional fields: examBegin (defaults to classesEnd), eventBegin (defaults to beginDate), eventEnd (defaults to endDate), and dateFormat (optional, defaults to the format that was used before)</line>
+				<line>Student Enrollment Import: Fix bug where course enrollment counts were not being updated.</line>
+				<line>A problem with import of course requests fixed (courses were not imported for new students).</line>
+				<line>Course Offering Import: Make sure a unique date pattern is returned when searching for a matching date pattern.</line>
+				<line>Course Offering Export: To be consistent with the import, export instructor share as integer 0 - 100 (not as a double 0.00 - 1.00).</line>
+			</description>
+		</item>
+		<item>
+			<name>Course Timetabling</name>
+			<description>
+				<line>Fixed problem with the automatically generated same student constraints.</line>
+				<line>Fixed bug in removeDivSecNumbers() that occurred when the classSuffix was less that 6 digits but was expected to be 6 digits.</line>
+				<line>Added option not to weight last-like students to fill up all the sections completely.</line>
+				<line>Set the default of General.WeightStudents to true (weight last-like students so that each section is filled completely) to preserve the original behavior.</line>
+				<line>Course timetabling -- database load
+					<line>loading of committed student enrollments speedup (from 8 to 2 minutes in my test)</line>
+					<line>added a solver option not to load committed student conflicts at all (saves about 2 minutes in my test)</line>
+					<line>put the solver option not to weight last-like students into the database (not visible by default)</line>
+				</line>
+				<line>Fix bug that occurred on commit when a class was moved from one problem to another. In other words Class A was committed as part of the solution for Problem A then Class A was moved to Problem B and when the user attempted to commit solution for Problem B the commit failed because Class A already had an event associated with Problem A.</line>
+				<line>Course Timetable -- added ability to display instructor name(s) instead of the three numbers in the grid.</line>
+				<line>Class Schedule: display correct class suffix for cross-listed classes</line>
+			</description>
+		</item>
+		<item>
+			<name>Course Offerings</name>
+			<description>
+				<line>The user interfaces have been updated to allow a course number to be used multiple times within a single subject area if the tmtbl.courseNumber.unique parameter is set to false.
+					<line>If you set tmtbl.courseNumber.unique to false you must removed the unique key UK_COURSE_OFFERING_SUBJ_CRS and its corresponding index in the 'course_offering' table.</line>
+					<line>Property tmtbl.courseNumber.unique defaults to true.</line>
+				</line>
+				<line>Fixed the Course Offering Edit form to validate the course number matches the regular expression used to define how course numbers should be formatted.</line>
+				<line>Fix error that occurred when controlling course offering was null.  This could occur during the course import process when courses that are removed by the import are deleted.</line>
+				<line>Fixed bug with Ajax code where the call was failed when the title for a course offering was set to null.</line>
+				<line>Added hooks so that an external action could be called to do additional processing once an instructional offering configuration has been modified.</line>
+				<line>Added hooks to enable external code to be called.</line>
+				<line>Course Offering Comparator: Include title in sort.  Makes a difference when subject and course number are not unique.</line>
+				<line>Update course offering compare to handle course offerings with null titles.</line>
+				<line>Changed warning that occurred when the total of the course offering reservations did not equal the offering limit.   The user is warned now only when the sum of the course offering reservations is less than the offering limit.</line>
+				<line>Changed the  Instructional Offering List page to display an icon, or shortened text for the Course Offering Schedule of Classes Note, the Class Schedule Print Note and the Note to Manager depending a user setting.</line>
+				<line>Changed the Class List page to display an icon, or shortened text for the Class Schedule Print Note and the Note to Manager depending a user setting.</line>
+				<line>Changed the Class Assignment List page to display an icon, or shortened text for the Class Schedule Print Note and the Note to Manager depending a user setting.</line>
+				<line>Updated the corresponding pdfs to display either a shortened version of the notes or the full text of the notes based on their corresponding display settings.</line>
+				<line>Fixed bug in the Class Setup page where the user could press the update button before the page finished loading which resulted in classes being deleted.</line>
+				<line>Shifted locations of hooks for external process calls when committing and uncommitting solutions.</line>
+				<line>Added hooks for external process calls when committing and uncommitting a class assignment.</line>
+				<line>Added ability to display an external course catalog link to the Configuration Edit screen and then Course Offering Edit screen.</line>
+				<line>Ensure the instructional offering sent to the external action is not null.</line>
+				<line>When a configuration is deleted from an instructional offering, update the Offering Limit displayed on the Instructional Offering Detail page.</line>
+				<line>Fixed delete of instructional offering configuration -- on MySQL a delete of a configuration always resulted in the following exception as the delete configuration query was issued two times:
+					<line>org.hibernate.StaleStateException: Batch update returned unexpected row count from update [0]; actual row count: 0; expected: 1</line>
+				</line>
+				<line>Added title to course name in "Take Course Demands from Offering" drop down on the Edit Course Offering page.</line>
+				<line>When a class is selected, pre-select the committed time assignment if it exists and it is not in a conflict with the new (proposed) assignment.</line>
+				<line>Updated course number field to allow up to 10 characters to be entered.  This matches the maximum number of characters that can be stored for a course number in the database.   This is the same change made to the course number field on the Course Offering Edit page previously.</line>
+				<line>Fixed null pointer exception caused by course offerings that do no have titles defined.</line>
+				<line>Added a warning to the user when they try to set up more than 600 classes of a single itype.</line>
+				<line>Added ability to call external code for classes changed when a user changes the department a subject area is assigned to.</line>
+				<line>Added assigned time, room and instructor to the class setup page.</line>
+				<line>Reorganized columns class setup page. Made displaying of 'Display Instructors', 'Display Class', and 'External Id' configurable via application properties. Moved location of up, down, delete, and add buttons.</line>
+				<line>Instructional Offering Edit: Spell out External. For IE users expand with of Department and Date Pattern drop downs so contents are readable when editing.</line>
+				<line>Reorganized columns in Assign Instructors page. Made displaying of 'External Id' configurable via application properties.  Use the same property as the Class Setup page. Moved location of delete and add buttons.</line>
+				<line>Fixed bug in JavaScript that prevents the max limit from being set to the min limit when variable limits are not in use.</line>
+				<line>Add ability to call custom code after deleting a configuration from a course.</line>
+				<line>Added support for an External Class Name Helper.  If UniTime is used with an external system that uses different names to identify classes, it is now possible to implement the ExternalClassNameHelperInterface to create custom names for classes for display in places like the personal exam schedule.</line>
+				<line>Instructional Offerings: If title column is hidden, display title on the course offering line. If cross-listed, display title of each course of the cross-list.</line>
+			</description>
+		</item>
+		<item>
+			<name>Room Availability</name>
+			<description>
+				<line>Fixed bug with room availability not always detecting a cache available for the time frame being looked at.</line>
+				<line>Fixed bug in DefaultRoomAvailabilityService where the actual time a meeting has a room reserved was not being considered.</line>
+				<line>Room availability interface changes
+					<line>activate and timestamp calls now include event type that should be excluded (this is to avoid loading events that will be excluded by type later, if the implementation allows for that)</line>
+					<line>only one event type can be excluded (there is no need to exclude more)</line>
+				</line>
+				<line>Ensure the hibernate session is closed when a user gets a Stack Overflow error on clicking on a link.</line>
+			</description>
+		</item>
+		<item>
+			<name>Academic Sessions</name>
+			<description>
+				<line>Fixed NullPointerException thrown when eventBeginTime/eventEndTime is not set.</line>
+				<line>Changes made to support academic session dates crossing a year boundary.  An academic session still cannot contain more than 12 continuous calendar months, but those months may now cross the year boundary.  Also, date patterns can begin up to 3 months before the start of a session and end up to 3 months after the start of a session.  Date patterns also have the limitation of not being able to cover more than 12 continuous calendar months from start to end.</line>
+				<line>Updated default session selection to default based on user role when there is only one academic initiative.
+					<line>No Role - the default will be the session the current date falls within, if the current date does not fall with a session it will select the first future session, if there is no future session it will select the most recent past session.</line>
+					<line>Exam Manager - the default will be the session the current date falls within if final exams have not been published, if final exams have been published it will select the first future session, if the current date does not fall with a session it will select the first future session, if there is no future session it will select the most recent past session.</line>
+					<line>Event Manager - the default will be the session the current date falls within, if the current date does not fall with a session it will select the first future session, if there is no future session it will select the most recent past session.</line>
+					<line>View All - the default will be the session the current date falls within, if the current date does not fall with a session it will select the first future session, if there is no future session it will select the most recent past session.</line>
+					<line>Department Schedule Manager - the first future session, if there is no future session it will select the current session, if there is not current session it will select the most recent past session.</line>
+					<line>Administrator - the default will be the session the current date falls within, if the current date does not fall with a session it will select the first future session, if there is no future session it will select the most recent past session.</line>
+					<line>Fix bug that occurred when the user is adding a session and has not set the event end date yet but has just set the session end date.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Event Management</name>
+			<description>
+				<line>Since only 100 events or meetings are display, the queries were changed to return a maximum of 101 records.
+				This allows the code to know whether the query would return more than 100 records for purposes of the error messages, but minimizes memory used to hold the data returned.</line>
+				<line>Added location into hql search criteria for meeting searches to improve meeting searches that restrict on locations.</line>
+				<line>Modified code in event system to make the Events User Interface less vulnerable to cross-site scripting attacks.</line>
+				<line>Changed "Expected Capacity" labels to read "Expected Attendance".</line>
+				<line>Add Event: Only bring back rooms of room types that are currently allowed to be scheduled for the term that is being worked with.</line>
+				<line>Updated "Add Event" and "Room Availability" pages to by default select the room types an event manager can manage when entering the pages for the first time or resetting the pages.</line>
+				<line>Updated Event Create and Add Meeting email messages.</line>
+				<line>People Lookup: Fix bug that occurred when an event contact did not have an external id.</line>
+				<line>Increased the number of row return from event and meeting searches.  Added a note to the event and meeting pdfs that is displayed when the associated search returns more than 1500 rows.</line>
+				<line>Changed labels from "Course Event" to "Course Related Event".</line>
+				<line>Placed a limit on the size of a room availability grid that can be displayed in order to protect the system from a user trying to retrieve room availability for all rooms over a large number of days.  The limit for the room availability grid to number of rooms x 16 hours in a day x number of days &lt; 2240.  The limit for the room availability pdf to number of rooms x 16 hours in a day x number of days &lt;  4480.</line>
+				<line>Fixed infinite recursion that occurred when a room had more than 10 events listed for the same time on the same date.</line>
+				<line>Add Event: Fixed null pointer exception when there was no user found.</line>
+				<line>Refined the limit on the size of a room availability grid that can be displayed in order to protect the system from a user trying to retrieve room availability for all rooms over a large number of days.  The limit for the room availability grid to number of rooms x number of hours selected x number of days &lt; 15000.  The limit for the room availability pdf to number of rooms x number of hours selected x number of days &lt;  60000.</line>
+				<line>Fixed misspelling of the word University.</line>
+				<line>Corrected spelling of the word "asterisk."</line>
+				<line>Fix bug in creation of PDF room availability table that occurred when a special event did not have an expected attendance.</line>
+				<line>Fixed bug in Events that occurred when a user did not select any meetings before hitting the delete button.</line>
+				<line>Added the room type for each room displayed in the availability grids.</line>
+				<line>Event email -- added year to meeting dates (date format changed to MM/dd/yyyy).</line>
+		</description>
+		</item>
+		<item>
+			<name>Other Changes</name>
+			<description>
+				<line>Fixed spelling of word "below" was incorrectly spelled as "bellow".</line>
+				<line>Fixed Internet Explorer drop down not resizing when course number + course title is displayed in the drop down.</line>
+				<line>Changed "Lead" to "Check Conflicts".</line>
+				<line>Changed "Career Account" to "Account Name".</line>
+				<line>Changed "Tentative Div-Sec" to "Suffix".</line>
+				<line>Added  tmtbl.custom.css to blank.jsp.</line>
+				<line>Removed the use of header in loginRequired.jsp, which gives a cleaner looking page.</line>
+				<line>Change label for the class suffix in all interfaces to 'External Id'.</line>
+				<line>Change ID label to External Id in all instructor interfaces.</line>
+				<line>Corrected spelling of the word receive.</line>
+				<line>WebTable / PdfWebTable -- added ability to tweak the style of a line based on the line and the next line (e.g., to be able to insert a line separating certain lines).</line>
+				<line>To avoid JSP compilation problems in Tomcat 6.0.24 and possibly later releases, avoid redefining local variables using &lt;bean:define&gt;. See https://issues.apache.org/bugzilla/show_bug.cgi?id=48616 for more details.</line>
+				<line>Ensure that all strings are encoded in UTF-8. This should allow the application to handle special characters (e.g., like diacritics) properly.</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.1.129</version>
+	<release-date>Wed, 24 Dec 2008</release-date>
+	<category>
+		<title>BUG FIXES &amp; OTHER IMPROVEMENTS</title>
+		<item>
+			<name>Suggestions (Interactive Solver for Course Timetabling)</name>
+			<description>
+				<line>Following improvements have been implemented:
+					<line>order values (placements) by their impact on the objective function,</line>
+					<line>bound improved (estimate the solution value by taking the best possible value for unresolved variables).</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Personalized Schedule</name>
+			<description>
+				<line>
+					Significantly improved loading speed of student examination schedule and conflicts by tweaking the 
+					ExamAssignmentInfo model (only conflicts related to the student are generated and/or loaded).
+				</line>
+				<line>
+				   Changed message to read "Examination Conflicts and/or Back-To-Back Examinations for" to lesson student 
+				   confusion over whether they need to reschedule back-to-back exams.
+				</line>
+				<line>
+					Distinguish between conflicting class or course event.
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Exam Verification Report</name>
+			<description>
+				<line>Make sure that the last page gets printed.</line>
+			</description>
+		</item>
+		<item>
+			<name>Academic Sessions</name>
+			<description>
+				<line>Fixed the NullPointerException problem on Add Acedemic Session page.</line>
+			</description>
+		</item>
+		<item>
+			<name>Distribution Preferences</name>
+			<description>
+				<line>Fixed bug that occurred when a distribution preferences sequence number is not set.</line>
+			</description>
+		</item>
+		<item>
+			<name>Database</name>
+			<description>
+				<line>Database update to version 40 fixed (Oracle)
+					<line>
+						In Oracle,
+						"alter table &lt;schema&gt;.table rename to &lt;schema&gt;.new_table"
+						does not seem to work (the second &lt;schema&gt; should be avoided).
+					</line>
+				</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.1.122</version>
+	<release-date>Fri, 24 Oct 2008</release-date>
+	<category>
+		<title>BUG FIXES &amp; OTHER IMPROVEMENTS</title>
+		<item>
+			<name>Examination Timetabling</name>
+			<description>
+				<line>Examination Reports Statistics report: fixed a typo (instructor not available instead of student not available), 
+				do not print &amp;nbsp; as space in PDF.
+				</line>
+				<line>Personalized Schedule: by default read examination conflicts from cache.</line>
+				<line>Examination Schedule, Class Schedule: disable Apply buttons on submit.
+					<line>Fixed bug that did not submitted the screen in IE.</line>
+				</line>
+				<line>Distribution Types: Fix bug that occurred when user was not a TimetableManager.</line>
+				<line>Examination Periods: Fix case where number of students is divisible by 1000 (computation of student conflicts).</line>
+			</description>
+		</item>
+		<item>
+			<name>Course Timetabling</name>
+			<description>
+				<line>Course Offering Import: Fixed bug that occurred during the Course Offering Import when a class changed itypes.</line>
+				<line>Distribution Types:  Fix bug that occurred when session was null.</line>
+				<line>Preference Groups: Fixed bug in isEditableBy, now returns false if the user does not have a role.</line>
+				<line>Preference Groups: Fixed bug in isViewableBy(User) caused when the user does not have a role.</line>
+			</description>
+		</item>
+		<item>
+			<name>Event Management</name>
+			<description>
+				<line>Fixed bug that occurred when writing to the change log after deleting a meeting from an event.</line>
+			</description>
+		</item>
+		<item>
+			<name>Other</name>
+			<description>
+				<line>
+					In the recent versions of Tomcat (since 5.5.27 and 6.0.17) a &quot;bug&quot; which permitted illegal (but unambiguous) 
+					constructions in JSP files to be compiled and parsed is corrected. This means that all JSPs that contained 
+					the following code were no longer compilable:
+					<line>
+						&lt;mytags:tag value=&quot;&lt;%= &quot;hi!&quot; %&gt;&quot; /&gt;
+					</line>
+					All occurences of such a code had to be changed to
+					<line>
+						&lt;mytags:tag value=&quot;&lt;%= \&quot;hi!\&quot; %&gt;&quot; />
+					</line>
+					or
+					<line>
+						&lt;mytags:tag value='&lt;%= &quot;hi!&quot; %&gt;' /&gt;
+					</line>
+					See https://issues.apache.org/bugzilla/show_bug.cgi?id=45015 for more details.
+				</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.1.112</version>
+	<release-date>Thu, 25 Sep 2008</release-date>
+	<category>
+		<title>EXAMINATION TIMETABLING</title>
+		<item>
+			<name>Examination Print Offset</name>
+			<description>
+				<line>Optional examination property Print Offset introduced:
+					<line>When set (on Examination Edit page), it is used as a difference between 
+						examination period start time and the examination start time.
+						<line>For instance, an hour long examination assigned to 8:00pm - 10:00pm period and 15 print offset will 
+						  be have 8:15pm - 9:15pm in its time statement.</line>
+					</line>
+					<line>Used only for printing and reporting purposes, e.g., the requested room still needs to 
+					be available during the whole requested period.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Examination Reports</name>
+			<description>
+				<line>Room Split: display room normal/examination capacities based on examination type.</line>
+				<line>Statistics added: total number of exams, students, student exam enrollments, direct/m2d/back-to-back conflicts etc.</line>
+			</description>
+		</item>
+		<item>
+			<name>Examination PDF Reports</name>
+			<description>
+				<line>Added an option to do not print exams that have no student enrollment (set to true by default).</line>
+				<line>Corrected order of some of the exams in the report.</line>
+				<line>Student Conflict: display student names instead of student external ids</line>
+				<line>Abbreviated Schedule: print a break line every 9 lines</line>
+				<line>Period Chart (Exams) added: similar to Period Chart report but:
+					<line>the limit is applied to the enrollment size of exam (instead of particular course/class),</line>
+					<line>courses/classes of the same exam are printed next to each other (the size of the exam is printed next to the first class/course).</line>
+				</line>
+				<line>When application property tmtbl.exam.pdfReports.canUseSolution is set to true (default is false), it is allowed to generate PDF reports directly from the solver.</line>
+			</description> 
+		</item>
+		<item>
+			<name>Personalized Schedule</name>
+			<description>
+				<line>Allow users with a role to see the page (if they have a schedule).</line>
+				<line>Administrator can see the page and use People Lookup to see a schedule of another people.</line> 
+			</description>
+		</item>
+		<item>
+			<name>Room Availability</name>
+			<description>
+				<line>Break times (before and after) the exam for checking of room availability made problem specific, using the following properties:
+					<line>tmtbl.room.availability.final.breakTime.start -- required break time before an examination starts (final exams)</line>
+					<line>tmtbl.room.availability.final.breakTime.stop -- required break time after an examination stops (final exams)</line>
+					<line>tmtbl.room.availability.midterm.breakTime.start -- required break time before an examination starts (midterm exams)</line>
+					<line>tmtbl.room.availability.midterm.breakTime.stop -- required break time after an examination stops (midterm exams)</line>
+				</line>
+				<line>When tmtbl.room.availability.final.breakTime.compensate (final exams) or tmtbl.room.availability.midterm.breakTime.compensate 
+					(midterm exams) is true (default is false) the above break times are compensated when comparing exams with examination 
+					events on examination room availability page
+					<line>Needed when the event management systems returns examination meetings that include break times.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Enrollment Import (Data Exchange)</name>
+			<description>
+				<line>When application property tmtbl.data.import.studentEnrl.finalExam.updateConflicts is true, update student conflicts
+					for final exams after the import is finished (default is false).</line> 
+				<line>When application property tmtbl.data.import.studentEnrl.midtermExam.updateConflicts is true, update student conflicts
+					for midterm exams after the import is finished (default is false).</line> 
+			</description>
+		</item>
+		<item>
+			<name>Examination Solver</name>
+			<description>
+				<line>Room Swap neighbor:
+					<line>Check for the case when one of the rooms of a room split is changed 
+						for a bigger room so that another room of the room split no longer needs to be used.
+					</line>
+				</line>
+				<line>Following optimization criteria added:
+					<line>Period x Size Penalty (exam period penalty multiplied by examination size)</line>
+					<line>Period Index Penalty / Average Period (index of assigned period)</line>
+					<line>Room Perturbation Penalty (number of changed room assignments)</line>
+				</line>  
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.1.104</version>
+	<release-date>Thu, 11 Sep 2008</release-date>
+	<category>
+		<title>EXAMINATION TIMETABLING</title>
+		<item>
+			<name>Examination Edit</name>
+			<description>
+				<line>When an exam is changed, propagate new name and length to the event (if it already exists).</line>
+			</description>
+		</item>
+		<item>
+			<name>Examination Assignment</name>
+			<description>
+				<line>Eliminated shadow back-to-back conflicts when used with the solver.</line> 
+			</description>
+		</item>
+		<item>
+			<name>Examination Size</name>
+			<description>
+				<line>Added ability to customize computation of examination size
+					<line>when tmtbl.exam.useLimit.Final / tmtbl.exam.useLimit.Midterm is true (default: false for final, true for midterm):
+						<line>limit is a maximum of
+							<line>number of students enrolled in the exam</line>
+							<line>total limit of courses/classes associated with the exam</line>
+						</line>
+					</line>
+					<line>otherwise it is just the number of students enrolled in the exam.</line>
+				</line>
+				<line>Added ability to override examination size on an exam (optional field Exam.examSize added).</line>
+			</description>
+		</item>
+		<item>
+			<name>Room Availability</name>
+			<description>
+				<line>Added ability to add break times (before and after) the exam for checking of room availability, using the following properties:
+					<line>tmtbl.room.availability.breakTime.start -- required break time before an examination starts</line>
+					<line>tmtbl.room.availability.breakTime.stop -- required break time after an examination stops</line>
+				</line>
+				<line>When tmtbl.room.availability.breakTime.compensate is true (default is false) the above break times 
+					are compensated when comparing exams with examination events on examination room availability page
+					<line>Needed when the event management systems returns examination meetings that include break times.</line>
+				</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>OTHER CHANGES</title>
+		<item>
+			<name>Timetable Managers</name>
+			<description>
+				<line>Fixed a NullPointerException thrown while adding a new manager (introduced by the last change -- added lookup).</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.1.101</version>
+	<release-date>Fri, 5 Sep 2008</release-date>
+	<category>
+		<title>EVENT MANAGEMENT</title>
+		<item>
+			<name>Add Event, Event Room Availability (filter)</name>
+			<description>
+				<line>Room number is made case insensitive.</line>
+				<line>Distance for include close by locations can be customized using tmtbl.events.nearByDistance application property.</line>
+				<line>Date selection: alter between the selected / not selected preferences on click, that is
+					<line>when clicked on a day that is already selected, it become unselected (and vice versa)</line>
+					<line>when clicked on a column (day of week), a row (week), a table (month): if all relevant days are selected, they become unselected etc.</line>
+				</line> 
+			</description>
+		</item>
+		<item>
+			<name>Event Room Availability</name>
+			<description>
+				<line>Change of academic session corrected.</line>
+				<line>Added Clear button (filter is cleared, only selected academic session is kept).</line>
+				<line>When session is changed, the rest of the filter is kept (except of the selected dates).</line>
+			</description>
+		</item>
+		<item>
+			<name>Add Event, Edit Event</name>
+			<description>
+				<line>Added ability to set middle name for the main contact.</line>
+				<line>Fixed bug on Event Add Info page (while adding meetings to an existing course event): related courses/classes were not displayed.</line>
+			</description>
+		</item>
+		<item>
+			<name>Events, Meetings</name>
+			<description>
+				<line>Added ability to export meetings to iCalendar (ICS).</line>
+			</description>
+		</item>
+		<item>
+			<name>Standard Notes</name>
+			<description>
+				<line>Standard notes can be longer (limit is 1000 characters), they may contain line breaks as well.</line>
+				<line>Order standard notes by reference.</line>
+				<line>Event Detail page:
+					<line>Display standard note reference as well.</line>
+					<line>Limit the width of standard notes field.</line>
+					<line>Do not display standard notes, if no standard note is defined.</line>
+					<line>Notes field made bigger (5 lines, 80 columns).</line>
+				</line> 
+			</description>
+		</item>
+		<item>
+			<name>General</name>
+			<description>
+				<line>Event manager can now overbook his/her rooms.</line>
+				<line>Display time statement 12:00a - 12:00a as All Day.</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>OTHER CHANGES</title>
+		<item>
+			<name>Examination/Class Schedule</name>
+			<description>
+				<line>Added ability to display message set in application property tmtbl.exams.message (examination schedule) and tmtbl.classes.message (classes schedule).</line>
+			</description>
+		</item>
+		<item>
+			<name>Exam Verification Report (PDF Reports)</name>
+			<description>
+				<line>Fixed title Length (was Lenght), check for meets with being too long.</line>
+			</description>
+		</item>
+		<item>
+			<name>Data Import</name>
+			<description>
+				<line>Set approved date on class  meetings to date loaded when importing offerings from xml.</line>
+				<line>Added property to control removing of leading zeros on external ids for students, staff and instructors during staff xml load, student enrollment xml load and offerings xml load.</line>
+			</description>
+		</item>
+		<item>
+			<name>General</name>
+			<description>
+				<line>Unified displaying of time through the application (using method Constants.toTime(int minutesSinceMidnight)).
+					<line>Corrected display of midnight time.</line>
+				</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.1.92</version>
+	<release-date>Fri, 8 Aug 2008</release-date>
+	<category>
+		<title>GENERAL</title>
+		<item>
+			<name>First production version of UniTime 3.1</name>
+		</item>
+	</category>
+	<category>
+		<title>OTHER DEVELOPMENT</title>
+		<item>
+			<name>Event Management related development</name>
+			<description>
+				<line>All of the desired functionality implemented.</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.1.79</version>
+	<release-date>Sat, 19 Jul 2008</release-date>
+	<category>
+		<title>BUG FIXES</title>
+		<item>
+			<name>SQL Grammar Execption on Reports Page (ORA-01795: maximum number of expressions in a list is 1000)</name>
+			<description>
+				<line>problem with computing student class conflicts of exams with >1000 students corrected</line>
+			</description>
+		</item>
+		<item>
+			<name>Examination reassignment problem</name>
+			<description>
+				<line>fixed problem with saving instructor conflicts</line>
+			</description>
+		</item>
+		<item>
+			<name>PDF Reports</name>
+			<description>
+				<line>fixed NullPointerException on student conflicts report</line>
+				<line>abbreviated schedule report -- left column was shifted one character left</line>
+			</description>
+		</item>
+		<item>
+			<name>Examination Assignment page</name>
+			<description>
+				<line>do not generate solver warnings "Selected room(s) are two small" messages</line>
+				<line>(it is trying to assign an exam into a period without any rooms to find out how many conflict there will be)</line>
+			</description>
+		</item>
+		<item>
+			<name>Examination Schedule, Class Schedule pages</name>
+			<description>
+				<line>Added ability to pass the selection in URL, e.g.:
+					<line>classes.do?select=1&amp;year=2007&amp;term=Fal&amp;campus=woebegon&amp;subject=BIOL&amp;course=101</line>
+					<line>exams.do?select=1&amp;year=2007&amp;term=Fal&amp;campus=woebegon&amp;subject=--ALL--&amp;type=final</line>
+				</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>OTHER IMPROVEMENTS</title>
+		<item>
+			<name>Examination Detail, Examination Assignment page</name>
+			<description>
+				<line>mark direct conflicts with other classes as "Class" (displayed instead of "Direct")</line>
+			</description>
+		</item>
+		<item>
+			<name>Assigned Examaminations page</name>
+			<description>
+				<line>display direct conflicts with other classes in a separate column (called Student N/A -- direct conflicts caused by students unavailability)</line>
+			</description>
+		</item>
+		<item>
+			<name>Examination Solver page</name>
+			<description>
+				<line>Curent/Best Timetable: display number of class conflicts next to the total number of direct conflicts, for instance:
+					<line>
+						Direct Conflicts: 10 (5 N/A) means that there are 10 student direct conflicts 5 of which are caused by the fact 
+						that a student is not available (there is a class he/she is attending)
+					</line>
+				</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>OTHER DEVELOPMENT</title>
+		<item>
+			<name>Event Management related development</name>
+			<description>
+				<line>Continuous improvement and development of the event management functionality.</line>
+				<line>Room Types are now customizable and available for both rooms and non-university locations</line>
+			</description>
+		</item>
+		<item>
+			<name>Course Timetabling</name>
+			<description>
+				<line>Solver Load: added checking for room availability (same service as for examination timetabling).</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Sectioning</name>
+			<description>
+				<line>Added interface to the batch student sectioning solver.</line>
+			</description>
+		</item>
+		<item>
+			<name>Roll Forward</name>
+			<description>
+				<line>Added import of last-like course demands in one of the following modes
+					<line>copy last-like course demands from previous term</line>
+					<line>import last-like course demands from actual student class enrollments of previous term</line>
+					<line>import last-like course demands from actual course requests of previous term (alternatives are ignored)</line>
+				</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+
+<release>
+	<version>3.1.70</version>
+	<release-date>Mon, 7 Jul 2008</release-date>
+	<category>
+		<title>OTHER</title>
+		<item>
+			<name>Examination Timetabling</name>
+			<description>
+				<line>First alpha release of examination timetabling.</line>
+				<line>See http://wiki.unitime.org/Examination_Timetabling for the description of the examination problem.</line>
+			</description>
+		</item>
+		<item>
+			<name>Database</name>
+			<description>
+				<line>Oracle JDBC driver updated to version 10.2.0.4
+					<line>Special care about Oracle BLOBs is no longer needed, so it was removed.</line>
+					<line>This also fixes the issue: Unable to save timetable, reason: Unable to find a required class oracle.sql.BLOB</line>
+				</line> 
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.0.63</version>
+	<release-date>Thu, 28 Feb 2008</release-date>
+	<category>
+		<title>OTHER</title>
+		<item>
+			<name>User Rights</name>
+			<description>
+				<line>When the session/department status has on owner limited edit right, scheduling managers can:
+					<line>Assign classes to instructors (using Assign Instructors page)</line>
+					<line>Edit academic area reservations</line>
+					<line>Edit instructors and their designator numbers (but not instructor preferences)</line> 
+				</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.0.61</version>
+	<release-date>Thu, 31 Jan 2008</release-date>
+	<category>
+		<title>USER INTERFACE</title>
+		<item>
+			<name>Instructional Offering Cross Lists</name>
+			<description>
+				<line>Fixed "deleted object would be re-saved by cascade problem (CourseOfferingReservation)" 
+				thrown while un-cross listing an offering with two courses.</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructional Offering Configuration Edit</name>
+			<description>
+				<line>Fixed problem "Configuration could not be updated. If possible, split your configuration 
+				change into 2 or more separate operations." that occurred while a class with an instructor 
+				assignment was about to be deleted.</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>SOLVER</title>
+		<item>
+			<name>Database Load</name>
+			<description>
+				<line>Load of distribution constraints: order classes within a subpart by section 
+				numbers not by unique ids (due to the roll forward these two no longer match).</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>OTHER</title>
+		<item>
+			<name>Roll Forward</name>
+			<description>
+				<line>Added the ability to use the course catalog to add new course offerings to the set of 
+					course offerings for the term being rolled forward.
+					<line>This is should only be used after all course offerings for all subject areas have been rolled forward 
+					because it will cause problems with courses that are cross-listed across subject areas.</line>
+					<line>This is only useful if you have loaded the course catalog table for the term you are rolling forward.</line>
+					<line>If course subpart table is populated this will use that information to set up a default instructional 
+					offering configuration with the appropriate subparts.</line>
+					<line>All course offerings created will be marked as not offered.</line>
+				</line>
+				<line>Various bug fixed to roll forward process.</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.0.54</version>
+	<release-date>Sun, 2 Dec 2007</release-date>
+	<category>
+		<title>USER INTERFACE</title>
+		<item>
+			<name>Status Types</name>
+			<description>
+				<line>Page split to add/edit status and list of statuses.</line>
+				<line>Page visualization changed to be more consistent with other pages.</line>
+				<line>Order of statuses can now be changed by up and down arrows that are visible in the list of statuses.</line>
+				<line>Page title changed to "Status Types", "Add Status Type", "Edit Status Type" based on the operation.</line>
+				<line>Added delete status confirmation.</line>
+			</description>
+		</item>
+		<item>
+			<name>Users</name>
+			<description>
+				<line>Page split to add/edit user and list users.</line>
+				<line>Page visualization changed to be more consistent with other pages.</line>
+				<line>Page title changed to "Users (Database Authentication)", "Add User", "Edit User" based on the operation.</line>
+				<line>Added delete user confirmation.</line>
+			</description>
+		</item>
+		<item>
+			<name>Manager Settings</name>
+			<description>
+				<line>Page split to edit manager setting and list of manager settings.</line>
+				<line>Page visualization changed to be more consistent with other pages.</line>
+				<line>Page title changed to "Edit Manager Setting" when a setting is being changed.</line>
+				<line>List of manager settings is made sortable.</line>
+			</description>
+		</item>
+		<item>
+			<name>Solver Parameter Groups</name>
+			<description>
+				<line>Page split to add/edit solver parameter group and list of solver parameter groups.</line>
+				<line>Page visualization changed to be more consistent with other pages.</line>
+				<line>Page title changed based on the operation (list,add,edit).</line>
+				<line>Order of parameter groups can now be changed by up and down arrows that are visible Order column.</line>
+			</description>
+		</item>
+		<item>
+			<name>Solver Parameters</name>
+			<description>
+				<line>Page split to add/edit solver parameter and list of solver parameters.</line>
+				<line>Page visualization changed to be more consistent with other pages.</line>
+				<line>Hidden parameters are now displayed in gray.</line>
+				<line>Page title changed based on the operation (list,add,edit).</line>
+				<line>Order of parameter groups can now be changed by up and down arrows that are visible Order column.</line>
+				<line>After save/update/back/delete operation, the page is scrolled down to the affected parameter (group of parameters in the case of delete).</line>
+			</description>
+		</item>
+		<item>
+			<name>Solver Configurations</name>
+			<description>
+				<line>Page visualization changed to be more consistent with other pages.</line>
+				<line>Page title changed based on the operation (list,add,edit).</line>
+			</description>
+		</item>
+		<item>
+			<name>Solver Groups</name>
+			<description>
+				<line>Page visualization changed to be more consistent with other pages.</line>
+				<line>Page title changed based on the operation (list,add,edit).</line>
+				<line>After save/update/back operation, the page is scrolled down to the affected solver group.</line>
+			</description>
+		</item>
+		<item>
+			<name>Application Configuration</name>
+			<description>
+				<line>Page split to add/edit application setting and list of application settings &amp; properties.</line>
+				<line>Page visualization changed to be more consistent with other pages.</line>
+				<line>Page title changed based on the operation (list,add,edit).</line>
+				<line>Application settings/properties tables made sortable.</line>
+			</description>
+		</item>
+		<item>
+			<name>Default Manager Settings</name>
+			<description>
+				<line>Page split to add/edit manager setting and list of manager settings.</line>
+				<line>Page visualization changed to be more consistent with other pages.</line>
+				<line>Page title changed based on the operation (list,add,edit).</line>
+				<line>Manager settings table made sortable.</line>
+			</description>
+		</item>
+		<item>
+			<name>Hibernate Statistics</name>
+			<description>
+				<line>Page visualization changed to be more consistent with other pages.</line>
+				<line>Added ability to enable/disable gathering of hibernate statistics.</line>
+			</description>
+		</item>
+		<item>
+			<name>Test HQL</name>
+			<description>
+				<line>Page visualization changed to be more consistent with other pages.</line>
+				<line>Display query results in a table.</line>
+				<line>Added ability to execute update/delete query as well.</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructional Offerings</name>
+			<description>
+				<line>Added export to PDF work-sheets (button Worksheet PDF).</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructional Types</name>
+			<description>
+				<line>Added parent column (to be used on non-basic itypes to point to the appropriate basic itype, e.g., parent of Lecture 2 is Lecture).</line>
+				<line>Instructional Types page: display parent itype</line>
+				<line>Add Instructional Type, Edit Instructional Type pages: added ability to select/change parent itype</line>
+				<line>Classes, Class Assignments pages: when classes are filtered on (basic) itype, classes with non-basic itypes that points to the selected itype are visible as well
+					<line>For instance, if filtered on Lecture, classes with itypes Lecture 1, Lecture 2, etc. will be present as well.</line>
+				</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>SOLVER</title>
+		<item>
+			<name>Constraint Solver</name>
+			<description>
+				<line>Constraint solver updated, see http://sourceforge.net/mailarchive/forum.php?forum_name=unitime-cvs for more details.</line> 
+				<line>Major changes:
+					<line>Added initial implementation of examination timetabling solver.</line>
+				</line>
+			</description> 
+		</item>
+		<item>
+			<name>Minimum available memory limit</name>
+			<description>
+				<line>
+					Minimum amount of available memory (in megabytes) needed to be able to start additional solver instance
+					can be set by application property tmtbl.solver.mem_limit (default is 200).
+					<line>
+						If there is not enough memory on any of the registered solver servers, the following exception is thrown:
+						<line>"Not enough resources to create a solver instance, please try again later."</line>
+					</line>
+					<line>
+						This limit is applicable only on the tomcat side (it is used by WebSolver class), the same limit
+						is used for all solver servers.
+					</line>
+				</line> 
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>OTHER</title>
+		<item>
+			<name>Automatic Database Update</name>
+			<description>
+				<line>Added ability to automatically update the database during deployment of UniTime application.
+					<line>Current database version is stored in application config, key tmtbl.db.version</line>
+					<line>Updates are stored in dbupdate.xml resource file.
+						<line>Platform-dependent queries can be distinguished based on the used dialect.</line>
+						<line>All existing updates (since the first release of UniTime 3.0) were added, both for MySQL and Oracle.</line>
+					</line>
+				</line> 
+			</description> 
+		</item>
+		<item>
+			<name>Last-like course demands</name>
+			<description>
+				<line>
+					In order to improve loading speed of Instructional Offerings page on MySQL, 
+					number of last-like student enrollments is pre-computed on each course.  
+				</line> 
+			</description> 
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.0.41</version>
+	<release-date>Wed, 7 Nov 2007</release-date>
+	<category>
+		<title>USER INTERFACE</title>
+		<item>
+			<name>Roll Forward</name>
+			<description>
+				<line>Added support for rolling a session forward (Menu: Administration / Input Data / Roll Forward Session).</line>
+				<line>Modified "Roll Forward to a Session" screen to only show session in "Initial Data Load" status in the to session selection list.</line>
+				<line>Modified "Roll Forward to a Session" screen to refresh when a different "To Session" is selected to ensure the subject area lists display subject areas valid for the session being rolled forward to.</line>
+				<line>Modified "Roll Forward to a Session" screen to remove sessions in "Initial Data Load" status from the from session selection lists.</line>
+			</description>
+		</item>
+		<item>
+			<name>Room Detail</name>
+			<description>
+				<line>When a room is deleted, do not delete all assignments that become orphan -- keep the assignments without the room (i.e., keep time assignments).</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructional Offering Configuration, Scheduling Subpart Detail, Edit Scheduling Subpart</name>
+			<description>
+				<line>Added possibility to select non-basic instructional type
+					<line>Instructional type list has an option "More Options &gt;&gt;&gt;" that expands into the set of all itypes.</line>
+					<line>If all itypes are displayed, there is an option "&lt;&lt;&lt; Less Options" that collapses the list into just basic itypes.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Add Room</name>
+			<description>
+				<line>When a building is selected (or changed), populate room coordinates with building coordinates.</line>
+				<line>Change log message corrected: operation is create (was update); building abbreviation was null.</line>
+				<line>Change page title to "Add Room"</line>
+			</description>
+		</item>
+		<item>
+			<name>Buildings, Edit Building</name>
+			<description>
+				<line>Added ability to have no coordinates (saved as coordinates [-1,-1], displayed as empty coordinates).</line>
+				<line>Add create/update/delete message to the change log.</line>
+				<line>On delete, for all rooms of the building: make sure that all room assignments and room preferences are deleted.</line>
+				<line>If a new building is being added, change page title to "Add Building".</line>
+			</description>
+		</item>
+		<item>
+			<name>Date Patterns</name>
+			<description>
+				<line>Default date pattern is automatically marked as used.</line>
+				<line>If a new pattern is being added, change page title to "Add Date Pattern".</line>
+				<line>If an existing pattern is being edited, change page title to "Edit Date Pattern".</line>
+				<line>Add/edit pattern: display buttons at the top of the page as well.</line>
+			</description>
+		</item>
+		<item>
+			<name>Time Patterns</name>
+			<description>
+				<line>If a new pattern is being added, change page title to "Add Time Pattern".</line>
+				<line>If an existing pattern is being edited, change page title to "Edit Time Pattern".</line>
+				<line>Add/edit pattern: display buttons at the top of the page as well.</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructional Types</name>
+			<description>
+				<line>If a new itype is being added, change page title to "Add Instructional Type".</line>
+				<line>Display buttons at the top of the page as well.</line>
+			</description>
+		</item>
+		<item>
+			<name>Select User Role</name>
+			<description>
+				<line>To avoid having two pages entitled Academic Sessions (list of academic sessions, select user role), title of select user role was renamed as follows:
+					<line>"Academic Sessions" -> "Select Academic Session" (the case when there is only one role available for the user),</line>
+					<line>"User Roles" -> "Select User Role" (multiple roles available for the user).</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Distribution Preferences</name>
+			<description>
+				<line>Use AJAX to update the following properties without reloading the page:
+					<line>distribution constraint type description,</line>
+					<line>allowed preference levels,</line>
+					<line>constraint structure (grouping) description.</line>
+				</line>
+				<line>Button "Add New" changed to "Save".</line>
+				<line>Page title changed to "Add Distribution Preference" and "Edit Distribution Preference" when a distribution preference is being added / edited.</line>
+				<line>Export PDF: open PDF in a new window, display note with link</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>DATABASE</title>
+		<item>
+			<name>Hibernate Configuration</name>
+			<line>Connection auto-commit (option connection.autocommit) set to true.</line> 
+		</item>
+		<item>
+			<name>Woebegon College Example</name>
+			<line>Include all standard time and date patterns that are being used at Purdue.</line> 
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.0.33</version>
+	<release-date>Sat, 20 Oct 2007</release-date>
+	<category>
+		<title>USER INTERFACE</title>
+		<item>
+			<name>Instructional Offering Config, Multiple Class Setup</name>
+			<description>
+				<line>
+					Default room group might not be set; in such a case, create no default room group 
+					preference rather than throwing an exception.
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Edit Academic Session</name>
+			<description>
+				<line>Fixed some database/hibernate issues with a deletion of an academic session.</line>
+				<line>Added check so that a user cannot delete the very last one academic session.</line>
+			</description>
+		</item>
+		<item>
+			<name>Departments</name>
+			<description>
+				<line>
+					Added toggle: Show all departments (including departments with no manager and no subject area) 
+					that allows a user to see all departments (by default, only departments that are being used 
+					for timetabling are displayed).
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Edit Department</name>
+			<description>
+				<line>Column Externally Managed renamed to External Manager.</line>
+				<line>External Manager flag cannot be changed if:
+					<line>There is one or more subject areas associated with the department.</line>
+					<line>The department is marked as external manager, and there are classes that are managed by the department.</line>
+				</line>
+				<line>Added delete department functionality.
+					<line>A department cannot be deleted if there is a solver group associated with it,</line>
+					<line>or if there is course that is offered in one of its subject areas.</line>
+					<line>
+						If an externally managed department is about to be deleted, all classes that 
+						are managed by the department are changed to be departmental (old room and 
+						distribution preferences are deleted)
+					</line>
+				</line>
+				<line>Delete department: display confirmation
+					<line>The department and all associated data will be deleted. Continue?</line>
+				</line>
+				<line>On delete: added change log message, clear hibernate cache to prevent cache problems (e.g., while displaying timetabling managers).</line>
+			</description>
+		</item>
+		<item>
+			<name>Timetables</name>
+			<description>
+				<line>Fixed MySQL problem in solution delete.</line>
+			</description>
+		</item>
+		<item>
+			<name>Select User Role</name>
+			<description>
+				<line>Selection of user role and academic session redesigned in order to tackle the following problems:
+					<line>Academic initiative was not considered at all (can become a problem if the application is to be used for more than one campus).</line>
+					<line>Ordering of listed sessions was inconsistent (e.g., it was different for Administrator role and other roles).</line>
+					<line>Ability to display additional session information (e.g., academic initiative, session status).</line>
+					<line>Ability to display current selection (if used to change current user role / academic session).</line>
+					<line>Department code does not need to be of length 4.</line>
+				</line>
+				<line>Users with "View All" role:
+					<line>If the user has associated one or more departments, he/she can access only academic sessions of these departments.</line>
+					<line>If the user has no department associated, he/she can see all the academic sessions.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Edit Subject Area</name>
+			<description>
+				<line>A subject area can only be associated with a department that is not marked as external manager.</line>
+				<line>When a department of a subject area is changed:
+					<line>Managing department of all DEPARTMENTAL classes of the subject area is also changed to the new department.
+						<line>This also deletes existing class assignments of the affected classes.</line>
+					</line>
+					<line>Instructor assignments of all classes of the subject area are changed as follows:
+						<line>An instructor from the new department is used if there is one with the same external id in the new department,</line>
+						<line>instructor assignment is deleted otherwise.</line>
+					</line>
+					<line>Room, building, room group and room feature preferences of all DEPARTMENTAL classes of the subject area are deleted if
+						<line>Room / building is not shared with the new department</line>
+						<line>Room group / feature is departmental (not global)</line>
+					</line>
+					<line>Ownership of all distribution preferences that are owned by the old department and that have first class/subpart from the subject area are changed to the new department.</line>
+				</line>
+				<line>Hide delete button when a subject area cannot be deleted.</line>
+				<line>Disable department selection when a department cannot be changed (i.e., when there is a committed solution).</line>
+				<line>On delete: added change log message, clear hibernate cache to prevent cache problems (e.g., while displaying departments).</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructional Types</name>
+			<description>
+				<line>Table of instructional types made sortable, some columns were renamed.</line>
+				<line>Added export PDF.</line>
+				<line>Added add/modify/delete itype capabilities.
+					<line>An itype can only be deleted, if it is not used (there is no scheduling subpart with the given itype).</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Timetable Managers</name>
+			<description>
+				<line>Column "External Id" renamed to "External ID".</line>
+				<line>Do not display role icons.</line>
+				<line>Do not display external manager role (there is no such role), display externally managed departments in bold instead.</line>
+				<line>Last Change column: display message of pattern "page (operation) on date" instead of "date by user"
+					<line>
+						This way, it is more clear that the column displays the most recent change made by the manager 
+						(not when and by whom the manager was changed for the last time).
+					</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Edit Timetable Manager</name>
+			<description>
+				<line>Check for existence of another manager with the same External IDs on update as well.</line>
+				<line>Do not display role icons.</line>
+				<line>Do not display external manager role (there is no such role).</line>
+				<line>Display role abbreviations instead of references.</line>
+				<line>If there is only one role selected, it is automatically marked as primary.</line>
+				<line>
+					Only users with Department Schedule Manager role have to have at least one 
+					department associated (administrator and view only users do not need to have a department).
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Users</name>
+			<description>
+				<line>Column "External Id" renamed to "External ID".</line>
+				<line>Fixed problem with changing user name (identifier of an instance of User was altered).</line>
+			</description>
+		</item>
+		<item>
+			<name>Date Patterns</name>
+			<description>
+				<line>Date Patterns screen made more intuitive and consistent with other screens.
+					<line>Either list of date patterns or the add/edit date pattern form are displayed.</line>
+				</line>
+				<line>Column Default removed (default date pattern is printed in bold instead).</line>
+				<line>Column Visible removed (not visible date patterns are printed in gray instead).</line>
+				<line>On save / update / back, the page is scrolled down to the last edited date pattern.</line>
+			</description>
+		</item>
+		<item>
+			<name>Time Patterns</name>
+			<description>
+				<line>Time Patterns screen made more intuitive and consistent with other screens.
+					<line>Either list of time patterns or the add/edit time pattern form are displayed.</line>
+				</line>
+				<line>Column Visible removed (not visible time patterns are printed in gray instead).</line>
+				<line>On save / update / back, the page is scrolled down to the last edited time pattern.</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>SOLVER</title>
+		<item>
+			<name>Database Load</name>
+			<description>
+				<line>Loading of last-like course demand:
+					<line>Use course offering permanent id, if it is set and match with some last-like course demands,</line>
+					<line>use subject area / course number otherwise.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Suggestions</name>
+			<description>
+				<line>
+					Fixed problem with some classes being "mysteriously" unassigned when Suggestion screen 
+					was used on a solution loaded using automated (not-interactive) solver due to:
+					<line>Section Placements of Suggestions screen is used.</line>
+					<line>A wrong class get unassigned during assignment of a suggestion</line>
+				</line>
+				<line>
+					The problem was caused by constraints that returns a set of conflicting constraints 
+					in a non-deterministic way (e.g., spread in time constraint with initial allowance 
+					over 2 classes per a time slot -- e.g., spread of 21 or more classes over 10 
+					possible times). Undo of a tested placement or assignment of a suggestion was done 
+					in a way that did not anticipated a possibility of a different set of conflicting 
+					classes to be returned (different than during assignment of the tested placement / suggestion). 
+					To overcome this problem, all assignments that are to be changed need to be 
+					unassigned first, and then assigned to the new values.
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Solver Configurations</name>
+			<description>
+				<line>Solver Settings screen changed to Solver Configurations.</line>
+				<line>Configuration export operation corrected.</line>
+			</description>
+		</item>
+		<item>
+			<name>Solver Definitions</name>
+			<description>
+				<line>Solver Definition page removed from menu
+					<line>Since every solution info needs to be implemented anyway, it is not desired to change implementation class in the user interface.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Constraint Solver</name>
+			<description>
+				<line>Constraint solver updated, see https://lists.sourceforge.net/lists/listinfo/cpsolver-cvs for more details.</line> 
+				<line>Major changes:
+					<line>On fly student sectioning -- fixed problem with committed student conflict counter.</line>
+					<line>Message level of "Nothing to solve." changed to ERROR (was FATAL).</line>
+				</line>
+			</description> 
+		</item>
+	</category>
+	<category>
+		<title>OTHER</title>
+		<item>
+			<name>Database</name>
+			<description>
+				<line>MySQL: added script blank-data.sql
+					<line>
+						This scripts truncates all the timetabling tables and populates read-only tables 
+						with initial values. It also creates an administrator user (admin/admin) and 
+						an academic session with one department and a solver group.
+					</line>
+				</line>
+				<line>Course permanent ids:
+					<line>Added index on course permanent id column of LASTLIKE_COURSE_DEMAND table.</line>
+					<line>Allow course permanent id of a course offering to be NULL.</line>
+					<line>Set course permanent id to NULL whenever set to -1 for all last-like course requests.</line>
+					<line>Set course permanent id to NULL whenever set to -1 for all course offerings.</line>
+				</line>
+				<line>Added MySQL versions of existing change scripts.</line>
+				<line>Property ItypeDesc.smas_abbv removed, property ItypeDesc.abbv is used instead.</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.0.26</version>
+	<release-date>Fri, 28 Sep 2007</release-date>
+	<category>
+		<title>USER INTERFACE</title>
+		<item>
+			<name>Instructional Offerings</name>
+			<description>
+				<line>PDF Export: Horizontal alignment of the time preference column changed to left (was center).</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructional Offering Detail</name>
+			<description>
+				<line>Fix bug in IE: external link should open in a new window.</line>
+			</description>
+		</item>
+		<item>
+			<name>Edit Course Offering</name>
+			<description>
+				<line>
+					Fixed problem "The course cannot be renamed. A course with the same course number already exists." when a course offering edit 
+					screen was used on a non-controlling cross-listed course of a different subject area than the controlling course but with the 
+					same course number as the controlling course.
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructional Offering Cross Lists</name>
+			<description>
+				<line>
+					Fixed bug: When the change in cross-list results in a change of controlling department of an instructional offering, 
+					all departmental classes (i.e., classes that are managed by the controlling department) have to have their managing 
+					department changed to the new controlling department.
+				</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Solver</title>
+		<item>
+			<name>Database Load</name>
+			<description>
+				<line>
+					Property General.DepartmentIds was not correctly computed in the case when multiple solver groups were loaded together 
+					-- it did contain only departments of the first solver group.
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Other</name>
+			<description>
+				<line>Constraint solver updated, see https://lists.sourceforge.net/lists/listinfo/cpsolver-cvs for more details.</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>OTHER</title>
+		<item>
+			<name>Data Import</name>
+			<description>
+				<line>Import of Academic Area Reservations: Skip over a reservation if the academic area is not found.</line>
+			</description>
+		</item>
+		<item>
+			<name>Database</name>
+			<description>
+				<line>Fixed problems with creation of the database schema for certain versions of MySQL (table APPLICATION_CONFIG).
+					<line>Fixed problem ERROR 1071 (specified key was too long) on table application_config.</line>
+					<line>Fixed problem ERROR 1170 (BLOB/TEXT column 'name' used in key specification without a key length) that occurred on MySQL 4.1.</line> 
+				</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.0.25</version>
+	<release-date>Tue, 4 Sep 2007</release-date>
+	<category>
+		<title>USER INTERFACE</title>
+		<item>
+			<name>Edit Course Offering</name>
+			<description>
+				<line>Fix parse exception caused by non numeric io limit.</line>
+			</description>
+		</item>
+		<item>
+			<name>Reservations</name>
+			<description>
+				<line>Print instructional offering limit.</line>
+				<line>Course Reservations (on a class):
+					<line>Fixed problem: The instructional offering limit is not displayed.</line>
+					<line>Fixed problem: If there are two courses listed in a reservation on a class and the user wants to delete the first one (clicks on the Delete button next to the first one), the second course is deleted instead.</line></line>
+				<line>Fix parse exception cause by non numeric io limit.</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructional Offering Cross Lists</name>
+			<description>
+				<line>Fixed hibernate exception.</line>
+			</description>
+		</item>
+		<item>
+			<name>Multiple Class Setup</name>
+			<description>
+				<line>Updated display of schedule subpart limits</line>
+				<line>Added ability to mark all classes of a subpart as display instructors.</line>
+				<line>Added ability to mark all classes of a subpart as display in schedule.</line>
+				<line>Fixed bug with Display All Instructors and Display All in Schedule.</line>
+				<line>Changed <i>Display Instructors</i> and <i>Display in Schedule</i> to show the checkmark icon (tick.gif) when they are true and the schedule deputy does not have permission to edit the field.  Used to display the word <i>true</i> or <i>false</i>.  This applies to both the subpart rows and then class rows.</line>
+				<line>Added change in row background color when mousing over a subpart row.  Class rows did this already.</line>
+				<line>Cleaned up alignment of scheduling subpart limit labels.</line>
+				<line>Fixed Javascript Errors with subtotals in IE.</line>
+				<line>Fixed Javascript Error that prevented min/max limit from being syncronized.</line>
+				<line>Fixed Button alignment on bottom of screen.</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructional Offering Configuration Edit</name>
+			<description>
+				<line>Fix bug that deleted instr offering when a configuration was deleted.</line>
+			</description>
+		</item>
+		<item>
+			<name>Not-assigned Classes</name>
+			<description>
+				<line>Column Name renamed to Class.</line>
+			</description>
+		</item>
+		<item>
+			<name>Timetable Grid</name>
+			<description>
+				<line>Use NaturalOrderComparator for ordering cells in a timetable grid (the case when two or more classes overlap in time).</line>
+				<line>Week -1 can represent the last week of the previous year (visible, e.g., for Spring 2008 term), value of selection 'All weeks' changed to -100 (was -1).</line>
+				<line>Visualisation of the weeks of the previous year corrected (former reasoning "week &lt; 0 implies all weeks" was wrong in this case).</line>
+			</description>
+		</item>
+		<item>
+			<name>Application Configuration</name>
+			<description>
+				<line>Only display application properties that starts with <u>tmtbl.</u>
+					<line>This feature is customizable by property <u>tmtbl.appConfig.pattern</u>, default is the regular expression <u>^tmtbl\..*$</u></line>
+				</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Solver</title>
+		<item>
+			<name>Solver Warnings</name>
+			<description>
+				<line>With every class, estimate the number of possible placements and
+					<line>refuse to load a class if the number of placements exceed 1 000 000, the following error is printed:
+						<line>
+							Class C has too many possible placements (X).
+							The class was not loaded in order to prevent out of memory exception.
+							Please restrict the number of available rooms and/or times for this class.
+						</line>
+						<line>
+							( where C is the name of the class, and X is the estimated number of placements )
+						</line>
+					</line>
+					<line>otherwise, print the following warning if the number of placements exceed 10 000:
+						<line>
+							Class C has quite a lot of possible placements (X).
+							Solver may run too slow.
+							If possible, please restrict the number of available rooms and/or times for this class.
+						</line>
+						<line>
+							( where C is the name of the class, and X is the estimated number of placements )
+						</line>
+					</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Remote Solver</name>
+			<description>
+				<line>Ask web server for its application properties before constructing a database connection.</line>
+			</description>
+		</item>
+		<item>
+			<name>Other</name>
+			<description>
+				<line>Constraint solver updated, see https://lists.sourceforge.net/lists/listinfo/cpsolver-cvs for more details.</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>OTHER</title>
+		<item>
+			<name>Hibernate Configuration</name>
+			<description>
+				<line>Propagate application property default_schema into the hibernate configuration, if it is set.</line>
+			</description>
+		</item>
+		<item>
+			<name>Database</name>
+			<description>
+				<line>Size of column APPLICATION_CONFIG.NAME changed to match the hibernate configuration.</line>
+				<line>Woebegon College Example: In table APPLICATION_CONFIG, property systemAccessLevel changed to tmtbl.access_level, systemMessage changed to tmtbl.system_message.</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.0.24</version>
+	<release-date>Mon, 23 Jul 2007</release-date>
+	<category>
+		<title>USER INTERFACE</title>
+		<item>
+			<name>Cross-lists</name>
+			<description>
+				<line>Fixed exception that occurs when course has no configurations and hence no instructional offering limit.</line>
+				<line>Fix display of error message regarding mismatch in limits if the screen loads without any pre-existing reservations.</line>
+				<line>Suppress display of mimatch limits if there are any blank values in the reserved spaces field.</line>
+			</description>
+		</item>
+		<item>
+			<name>Reservations</name>
+			<description>
+				<line>For reservations on class: check that the number of reservation does not exceed the number of courses in the offering.</line>
+				<line>Allow deletion of course reservations on class.</line>
+				<line>Fix exceptions caused when inst offering limit and/or course offering limits are null.</line>
+				<line>Course Reservations: On screen load - Do not add blank row if no. of reservations >= no. of courses in the offering.</line>
+			</description>
+		</item>
+		<item>
+			<name>Room Features and Groups</name>
+			<description>
+				<line>For global room features/groups: only display rooms from the current academic session.</line>
+				<line>For departmental room features/groups: do not display rooms that are no longer shared by the feature's/group's department.</line>
+			</description>
+		</item>
+		<title>OTHER</title>
+		<item>
+			<name>Data Export</name>
+			<description>
+				<line>Course offering and course timetable export added
+					<line>DTDs CourseOfferingExport.dtd and CourseTimetable.dtd updated</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Custom Properties</name>
+			<description>
+				<line>Location of custom properties can be redefined by tmtbl.custom.properties property.
+					<line>It can also be passed to JVM as a system property, e.g., -Dtmtbl.custom.properties=~/my.properties.</line></line>
+			</description>
+		</item>
+		<item>
+			<name>Other</name>
+			<description>
+				<line>Macromedia image files imported from the old Timetabling project.</line>
+				<line>Constraint solver updated, see https://lists.sourceforge.net/lists/listinfo/cpsolver-cvs for more details.</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.0.23</version>
+	<release-date>Fri, 13 Jul 2007</release-date>
+	<category>
+		<title>USER INTERFACE</title>
+		<item>
+			<name>Rooms</name>
+			<description>
+				<line>For external manager with only one department (e.g., LAB) -- display the rooms of the department right away.</line>
+				<line>Fixed display problem of departmental room features (sometimes, multiple features were displayed in a single row).</line>
+				<line>Table ordering corrected (each table can be ordered separately, but only ordering of the class rooms table was actually used).</line>
+			</description>
+		</item>
+		<item>
+			<name>Rooms, Room Features, Room Groups</name>
+			<description>
+				<line>For external manager with only one department (e.g., LAB) -- display Export PDF button next to other buttons (Search/Export PDF component is not present).</line>
+			</description>
+		</item>
+		<item>
+			<name>Reservations</name>
+			<description>
+				<line>Removed color coding of total.</line>
+				<line>Made changes pertaining to display of totals.</line>
+				<line>Hide 'Add New' button as it is not useful</line>
+			</description>
+		</item>
+		<item>
+			<name>Cross-lists</name>
+			<description>
+				<line>Removed color coding of total.</line>
+				<line>Made changes pertaining to display of totals.</line>
+				<line>Fixed bug deleted object will be resaved ...</line>
+			</description>
+		</item>
+		<item>
+			<name>Departments</name>
+			<description>
+				<line>Fixed bug that makes abbv column un-sortable if any one value is null.</line>
+			</description>
+		</item>
+		<item>
+			<name>Subject Areas</name>
+			<description>
+				<line>Validate that subject area has no offered courses when delete operation is selected.</line>
+			</description>
+		</item>
+		<item>
+			<name>Menu</name>
+			<description>
+				<line>Use settings value to determine if menus are expanded on user login. By default it is not.</line>
+			</description>
+		</item>
+		<title>SOLVER</title>
+		<item>
+			<name>Course Timetabling</name>
+			<description>
+				<line>Added (optional) on fly student sectioning
+					<line>In this mode, students are resectioned after each iteration, but only between classes that are affected by the iteration.</line>
+					<line>This slows down the solver, but it can dramatically improve results in the case when there is more stress put on student conflicts (e.g., Woebegon College example).</line></line>
+			</description>
+		</item>
+		<item>
+			<name>Student Sectioning</name>
+			<description>
+				<line>Various fixes and improvements, see https://lists.sourceforge.net/lists/listinfo/cpsolver-cvs for more details.</line>
+			</description>
+		</item>
+		<title>OTHER</title>
+		<item>
+			<name>Data Import</name>
+			<description>
+				<line>StudentImport and LastLikeCourseDemandImport are now inherited from BaseImport.</line>
+				<line>StudentImport: speed improved by not using StudentDAO.save(student); all students for given academic session are deleted first</line>
+				<line>LastLikeCourseDemandImport: all last-like course demands for given academic session are deleted first</line>
+				<line>Data Import page now uploads the selected file (using Struts file upload).</line>
+			</description>
+		</item>
+		<item>
+			<name>Documentation</name>
+			<description>
+				<line>Added SQL scripts to create timetable schema and populate it with Woebegon College test suite for Oracle.</line>
+				<line>Offline copy of UniTime wiki (http://www.unitime.org/wiki) added into the distribution.</line>
+			</description>
+		</item>
+		<item>
+			<name>Woebegon College test suite</name>
+			<description>
+				<line>Added on fly student sectioning solver parameters.</line>
+				<line>Enabled on fly student sectioning in Default solver configuration.</line>
+				<line>Enabled load of student enrollments for commited solutions in Default solver configuration.</line>
+				<line>Added roomFeaturesInOneColumn user setting.</line>
+			</description>
+		</item>
+		<item>
+			<name>Other</name>
+			<description>
+				<line>Added methods for cloning of instructional offerings and all underlaying objects (configurations, subparts, classes, etc).</line>
+				<line>ApplicationProperties: Removed shutdown hook since InitServlet.destroy() shuts the listener down; removed encoding from messages</line>
+				<line>Changed timetabling banner to make consistent with the one used inside the application</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.0.22</version>
+	<release-date>Wed, 27 Jun 2007</release-date>
+	<category>
+		<title>USER INTERFACE</title>
+		<item>
+			<name>Rooms</name>
+			<description>
+				<line>Room Features, Room Groups: Abbreviation column added</line>
+				<line>Room Detail, Room Edit: Administrator can see and change external id.</line>
+				<line>Room Detail, Room Edit: Administrator can change room type (property Room.scheduledRoomType).</line>
+				<line>Allow Add Special Use Room only when external rooms are populated for the given session.</line>
+				<line>Added add any room capability (administrator only).</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructional Offering Cross Lits</name>
+			<description>
+				<line>Made screen more intuitive.</line>
+			</description>
+		</item>
+		<item>
+			<name>Date Patterns</name>
+			<description>
+				<line>Display of the selected date pattern corrected.</line>
+				<line>Fix Generated feature improved
+					<line>replace the generated date pattern with an existing one if the difference is not more than 5 days</line>
+					<line>otherwise rename the generated date pattern to "generated start - end" where start and end are start and end days in MM/dd format</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Administration</name>
+			<description>
+				<line>Subject Areas: Struts configuration corrected.</line>
+				<line>Buildings: Add/update/delete functions added.</line>
+				<line>Buildings, Timetable Managers, Departments, Subject Areas, Solver Groups: Export PDF function added.</line>
+				<line>Application Config: Display all effective properties set for the application.</line>
+			</description>
+		</item>
+		<item>
+			<name>Menu</name>
+			<description>
+				<line>FAQ and Tips &amp; Tricks pages moved to wiki.</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructors</name>
+			<description>
+				<line>Instructor Lookup: Fixed problem with I2A2 lookup (No getter method for property: "puid" of bean: "i2a2") -- User object has no longer method getPuid(), but it has getId().</line>
+				<line>Instructor Delete: Fixed hibernate problem (deleted object would be re-saved by cascade) when an instructor with some class assignments was deleted.</line>
+			</description>
+		</item>
+		<item>
+			<name>Distribution Preferences</name>
+			<description>
+				<line>Distribution preferences that are set on instructors were not filtered by course number, this is now corrected.</line>
+				<line>Add/Edit Distribution Preference: Compare classes using ClassComparator, not by their unique ids.</line>
+			</description>
+		</item>
+		<title>SOLVER</title>
+		<item>
+			<name>Student Sectioning</name>
+			<description>
+				<line>Load academic areas, classifications, majors, and minors</line>
+				<line>Solver update, https://lists.sourceforge.net/lists/listinfo/cpsolver-cvs for more details.</line>
+			</description>
+		</item>
+		<title>OTHER</title>
+		<item>
+			<name>Database</name>
+			<description>
+				<line>Database connection properties can be set in custom.property file</line>
+				<line>Buildings: Minor change to remove non-existent building as part of update process.</line>
+				<line>Major Import: Create empty set for academic areas if null.</line>
+				<line>Configuration Edit: Fixed org.hibernate.PropertyAccessException (Exception occurred inside setter of org.unitime.timetable.model.Class_.managingDept)</line>
+				<line>ChangeLog: queries made cacheable.</line>
+				<line>Last-like Course Demands Import: speed up -- cache the SubjectAreas and CourseOfferings.</line>
+			</description>
+		</item>
+		<item>
+			<name>Other</name>
+			<description>
+				<line>Timetabling CSS: Fixed a bug.</line>
+				<line>WebTable: Removed italic tag and instead depend on css to do all formatting</line>
+				<line>Changed logos to remove SMAS and put unitime.org.</line>
+				<line>File footer.jsp removed -- it is not used.</line>
+				<line>Tags propertyEquals and propertyNotEquals added.</line>
+				<line>Use property tags instead of using ApplicationProperties class directly in JSPs.</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.0.19</version>
+	<release-date>Wed, 13 Jun 2007</release-date>
+	<category>
+		<title>ALL MODULES</title>
+		<item>
+			<name>First Open Source Release</name>
+			<description>
+				<line>This is a first Open Source release of this application.</line>
+				<line>See http://www.unitime.org for more details.</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+</release-history>

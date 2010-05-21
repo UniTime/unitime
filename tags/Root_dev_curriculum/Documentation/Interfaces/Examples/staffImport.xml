@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE staff PUBLIC "-//UniTime//DTD University Course Timetabling/EN" "http://www.unitime.org/interface/Staff.dtd">
+
+<!-- 
+ * UniTime 3.1 (University Timetabling Application)
+ * Copyright (C) 2008, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ -->
+
+	<!-- staffMember ==> Required:  externamId, firstName, lastName, positionCode, department
+	                     Optional:  middleName, email
+	-->
+<staff campus="puWestLafayetteTrdtn" term="Fal" year="2007">
+	<staffMember externalId="9999911110" firstName="CAROL" middleName="F" lastName="CZAJA" positionCode="0060A" department="1267"/>
+	<staffMember externalId="9999911111" firstName="JOANN" middleName="L" lastName="MILLER" positionCode="0005F" department="1365" email="jlmiller@aol.com"/>
+  	<staffMember externalId="9999911112" firstName="DONALD" middleName="" lastName="COLLER" positionCode="0030A" department="1790"/>
+  	<staffMember externalId="9999911113" firstName="JACOB" middleName="P" lastName="MILLSPAW" positionCode="0062G" department="1396"/>
+</staff>

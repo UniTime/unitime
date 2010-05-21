@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+ * UniTime 3.1 (University Timetabling Application)
+ * Copyright (C) 2008, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ -->
+<web-app 
+	version="2.4"
+	xmlns="http://java.sun.com/xml/ns/j2ee"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee web-app_2_4.xsd">
+
+	<display-name>
+		UniTime
+	</display-name>
+	
+	<description>
+		University Course Timetabling &amp; Student Sectioning Application
+	</description>
+	
+	<welcome-file-list>
+		<welcome-file>
+			index.jsp
+		</welcome-file>
+	</welcome-file-list>
+	
+	
+	<!-- Error Pages -->
+	<error-page>
+		<exception-type>java.lang.Exception</exception-type>
+		<location>/error.jsp</location>
+	</error-page>
+
+    <session-config>
+        <session-timeout>45</session-timeout>
+    </session-config>
+
+	<!-- App Servlets -->
+	<servlet>
+		<servlet-name>InitServlet</servlet-name>
+		<servlet-class>
+			org.unitime.timetable.InitServlet
+		</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	
+	<!-- Struts Action Servlet -->
+	<servlet>
+		<servlet-name>action</servlet-name>
+		<servlet-class>
+			org.apache.struts.action.ActionServlet
+		</servlet-class>
+		<init-param>
+			<param-name>config</param-name>
+			<param-value>/WEB-INF/struts-config.xml</param-value>
+		</init-param>
+		<init-param>
+			<param-name>debug</param-name>
+			<param-value>3</param-value>
+		</init-param>
+		<init-param>
+			<param-name>detail</param-name>
+			<param-value>3</param-value>
+		</init-param>
+		<load-on-startup>0</load-on-startup>
+	</servlet>
+
+
+	<!-- Servlet Mappings -->
+	<servlet-mapping>
+		<servlet-name>action</servlet-name>
+		<url-pattern>*.do</url-pattern>
+	</servlet-mapping>
+
+	<!-- Filter to automatically close any open hibernate sessions -->
+	<filter>
+		<filter-name>
+			Hibernate Session Filter
+		</filter-name>
+		<filter-class>
+			org.unitime.timetable.filter.HibSessionFilter
+		</filter-class>
+	</filter>
+
+	<!-- Filter XSS characters and SQL injection -->
+	<!-- filter>
+		<filter-name>
+			XSS Filter
+		</filter-name>
+		<filter-class>
+			org.unitime.timetable.filter.XSSFilter
+		</filter-class>
+	</filter -->
+		<!-- 
+		<init-param>
+			<param-name>additional_chars</param-name>
+			<param-value>\=\/\+</param-value>
+			<description>
+				Additional Characters to be allowed besides the default
+			</description>
+		</init-param>
+		<init-param>
+			<param-name>replace_string</param-name>
+			<param-value>_</param-value>
+			<description>
+				The filtered characters will be replaced by this character.
+				Default value is underscore (_)
+			</description>
+		</init-param>
+		-->
+	
+	<filter>
+		<filter-name>
+			Admin Only Filter
+		</filter-name>
+		<filter-class>
+			org.unitime.timetable.filter.UserAccessFilter
+		</filter-class>
+		<init-param>
+			<param-name>allow</param-name>
+			<param-value>admin</param-value>
+			<!--  <description>Allow (all,logged-in,admin,none) users</description> -->
+		</init-param>
+	</filter>
+	
+	<filter>
+		<filter-name>
+			Logged-in Only Filter
+		</filter-name>
+		<filter-class>
+			org.unitime.timetable.filter.UserAccessFilter
+		</filter-class>
+		<init-param>
+			<param-name>allow</param-name>
+			<param-value>logged-in</param-value>
+			<!--  <description>Allow (all,logged-in,admin,none) users</description> -->
+		</init-param>
+	</filter>
+	
+	<filter>
+		<filter-name>
+			Page Access Filter
+		</filter-name>
+		<filter-class>
+			org.unitime.timetable.filter.PageAccessFilter
+		</filter-class>
+		<init-param>
+			<param-name>config</param-name>
+			<param-value>/WEB-INF/struts-config.xml</param-value>
+		</init-param>
+	</filter>
+
+	<filter>
+		<filter-name>
+			Encoding Filter
+		</filter-name>
+		<filter-class>
+			org.unitime.timetable.filter.EncodingFilter
+		</filter-class>
+		<init-param>
+			<param-name>encoding</param-name>
+			<param-value>UTF-8</param-value>
+		</init-param>
+	</filter>
+
+	<!-- Filter Mappings -->
+	<filter-mapping>
+		<filter-name>Page Access Filter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+	
+	<filter-mapping>
+		<filter-name>Encoding Filter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>Hibernate Session Filter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+	<!-- filter-mapping>
+		<filter-name>XSS Filter</filter-name>		
+		<url-pattern>/*</url-pattern>		
+	</filter-mapping -->
+
+	<filter-mapping>
+		<filter-name>Logged-in Only Filter</filter-name>		
+		<url-pattern>/solver/solver.jnlp</url-pattern>
+	</filter-mapping>
+	
+	<filter-mapping>
+		<filter-name>Logged-in Only Filter</filter-name>		
+		<url-pattern>/temp/*</url-pattern>
+	</filter-mapping>
+
+	<!-- Use if needed to track sessions -->
+	<!-- 
+	<listener>
+		<listener-class>
+		org.unitime.timetable.listeners.SessionListener
+		</listener-class>
+	</listener>
+	-->
+	
+</web-app>
+

@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC 
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<!-- 
+ * UniTime 3.1 (University Timetabling Application)
+ * Copyright (C) 2008, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ -->
+
+<hibernate-mapping package="org.unitime.timetable.model">
+	<class
+		name="ExternalRoomFeature"
+		table="EXTERNAL_ROOM_FEATURE">
+		
+ 		<cache include="non-lazy" usage="nonstrict-read-write"/>
+
+        <id
+            name="uniqueId"
+            column="UNIQUEID"
+            type="java.lang.Long"
+        >
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">PREF_GROUP_SEQ</param>
+            </generator>
+        </id>
+        
+		<property
+			name="name"
+			column="NAME"
+			type="java.lang.String"
+			not-null="true"
+			length="20"
+		/>
+		
+		<property
+			name="value"
+			column="VALUE"
+			type="java.lang.String"
+			not-null="true"
+			length="20"
+		/>
+		
+		<many-to-one
+			name="room"
+			class="ExternalRoom"
+			column="EXTERNAL_ROOM_ID"
+			not-null="true"
+			foreign-key="FK_EXT_FTR_ROOM"
+		/>
+
+	</class>	
+</hibernate-mapping>
