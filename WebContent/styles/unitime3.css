@@ -1,0 +1,72 @@
+.unitime-Body {
+	background-image: url(http://www.unitime.org/include/bg.jpg);
+	background-color: #FFFFFF;
+	background-position: top center;
+	background-repeat: no-repeat;
+	background-attachment: scroll;
+	font-family: sans-serif, verdana, arial;
+}
+
+.unitime-Page {
+	border: 1px solid #9CB0CE;
+	padding: 5px;
+	margin-top: 10px;
+	background-color: #FFFFFF;
+	vertical-align: center;
+}
+
+/*
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
+
+.unitime-Title {
+	font-size: x-large;
+	font-weight: bold;
+	color: #333333;
+	margin-bottom: 10px;
+}
+
+.unitime-SubTitle {
+	font-size: medium;
+	font-weight: bold;
+	color: #333333;
+	margin-bottom: 10px;
+}
+
+.unitime-Footer {
+	font-size: x-small;
+	text-align: right;
+	font-style: italic;
+	text-align: right;
+	color: #9CB0CE;
+	width: 100%;
+	margin-top: -6px;
+}
+
+.unitime-ErrorMessage {
+	color: red;
+	text-align: center;
+	font-style: italic;
+	font-weight: normal;
+}
+
+A.unitime-FooterLink:link,A.unitime-FooterLink:visited,A.unitime-FooterLink:active,A.unitime-FooterLink:hover {
+	color: #9CB0CE;
+    text-decoration: none;
+    background-color : transparent;
+}
