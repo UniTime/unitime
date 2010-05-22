@@ -50,6 +50,7 @@
 		menu_item('10','Input Data','Course Timetabling Input Data','','collapse');
 			leaf_item('Instructional Offerings','Instructional Offerings','instructionalOfferingShowSearch.do');
 			leaf_item('Classes','Classes','classShowSearch.do');
+			leaf_item('Curricula', 'Curricula', 'gwt.html?page=curricula');
 			menu_item('100','Instructors','Instructors','instructorSearch.do','collapse');
 				leaf_item('Designator List','Designator List','designatorList.do');
 			enditem(); //100

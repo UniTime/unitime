@@ -90,6 +90,12 @@
     	<servlet-class>org.unitime.timetable.gwt.server.CalendarServlet</servlet-class>
     </servlet>
 
+	<servlet>
+    	<servlet-name>curriculaServiceServlet</servlet-name>
+    	<servlet-class>org.unitime.timetable.gwt.server.CurriculaServlet</servlet-class>
+    	<load-on-startup>2</load-on-startup>
+    </servlet>
+
     <servlet-mapping>
         <servlet-name>sectioningServiceServlet</servlet-name>
         <url-pattern>/unitime4/sectioningService</url-pattern>
@@ -100,6 +106,11 @@
       <url-pattern>/calendar</url-pattern>
     </servlet-mapping>
 	
+    <servlet-mapping>
+        <servlet-name>curriculaServiceServlet</servlet-name>
+        <url-pattern>/unitime4/curriculaService</url-pattern>
+    </servlet-mapping>
+
 	<!-- Servlet Mappings -->
 	<servlet-mapping>
 		<servlet-name>action</servlet-name>
