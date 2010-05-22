@@ -1,6 +1,6 @@
 /*
  * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * Copyright (C) 2008-2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -46,22 +46,47 @@ import org.unitime.timetable.model.dao._RootDAO;
  * @author Tomas Muller
  *
  */
-public class DatabaseUpdate {
+public abstract class DatabaseUpdate {
     protected static Log sLog = LogFactory.getLog(DatabaseUpdate.class);
     private Element iRoot = null;
     private String iDialectSQL = null;
     
-    private DatabaseUpdate(Document document) throws Exception {
+    protected abstract String findDbUpdateFileName();
+    protected abstract String versionParameterName();
+    protected abstract String updateName();
+    
+    protected DatabaseUpdate(Document document) throws Exception {
         if (!"dbupdate".equals(document.getRootElement().getName())) throw new Exception("Unknown format.");
         iRoot = document.getRootElement();
     }
     
+    protected DatabaseUpdate() throws Exception {
+        Document document = null;
+        String dbUpdateFile = findDbUpdateFileName();
+        URL dbUpdateFileUrl = ApplicationProperties.class.getClassLoader().getResource(dbUpdateFile);
+        if (dbUpdateFileUrl!=null) {
+            Debug.info("Reading " + URLDecoder.decode(dbUpdateFileUrl.getPath(), "UTF-8") + " ...");
+            document = (new SAXReader()).read(dbUpdateFileUrl.openStream());
+        } else if (new File(dbUpdateFile).exists()) {
+            Debug.info("Reading " + dbUpdateFile + " ...");
+            document = (new SAXReader()).read(new File(dbUpdateFile));
+        }
+        if (document==null) {
+            sLog.error("Unable to execute " + updateName() + " database auto-update, reason: resource "+dbUpdateFile+" not found.");
+            return;
+        }
+
+        if (!"dbupdate".equals(document.getRootElement().getName())) throw new Exception("Unknown format.");
+        iRoot = document.getRootElement();
+    }
+    
+    
     public int getVersion() {
-        return Integer.parseInt(ApplicationConfig.getConfigValue("tmtbl.db.version", "0"));
+        return Integer.parseInt(ApplicationConfig.getConfigValue(versionParameterName(), "0"));
     }
     
     public void performUpdate() {
-        sLog.info("Current database version: "+getVersion());
+        sLog.info("Current " + updateName() + " database version: "+getVersion());
         String dialect = _RootDAO.getConfiguration().getProperty("dialect");
         for (Iterator i=iRoot.elementIterator("dialect");i.hasNext();) {
             Element dialectElement = (Element)i.next();
@@ -72,7 +97,7 @@ public class DatabaseUpdate {
             int updateVersion = Integer.parseInt(updateElement.attributeValue("version"));
             if (updateVersion>getVersion() && !performUpdate(updateElement)) break;
         }
-        sLog.info("New database version: "+getVersion());
+        sLog.info("New " + updateName() + " database version: "+getVersion());
     }
     
     public boolean performUpdate(Element updateElement) {
@@ -83,7 +108,7 @@ public class DatabaseUpdate {
         Hashtable variables = new Hashtable();
         try {
             tx = hibSession.beginTransaction();
-            sLog.info("  Performing update to version "+version+" ("+updateElement.attributeValue("comment")+")");
+            sLog.info("  Performing " + updateName() + " update to version "+version+" ("+updateElement.attributeValue("comment")+")");
             for (Iterator i=updateElement.elementIterator();i.hasNext();) {
                 Element queryElement = (Element)i.next();
                 String type = queryElement.getName();
@@ -130,7 +155,7 @@ public class DatabaseUpdate {
                             if ("next".equals(action)) continue;
                             if ("done".equals(action)) break;
                             if ("fail".equals(action)) {
-                                sLog.error("Update to version "+version+" failed (condition not met for query '"+query+"', con:"+condition+", act:"+action+", val:"+value+").");
+                                sLog.error("Update to " + updateName() + " version "+version+" failed (condition not met for query '"+query+"', con:"+condition+", act:"+action+", val:"+value+").");
                                 tx.rollback();
                                 return false;
                             }
@@ -152,14 +177,14 @@ public class DatabaseUpdate {
                 }
             }
 
-            ApplicationConfig versionCfg = ApplicationConfig.getConfig("tmtbl.db.version");
+            ApplicationConfig versionCfg = ApplicationConfig.getConfig(versionParameterName());
             if (versionCfg==null) {
-                versionCfg = new ApplicationConfig("tmtbl.db.version");
-                versionCfg.setDescription("Timetabling database version (please do not change -- this key is used by automatic database update)");
+                versionCfg = new ApplicationConfig(versionParameterName());
+                versionCfg.setDescription("Timetabling " + updateName() + " DB version (do not change -- this is used by automatic database update)");
             }
             versionCfg.setValue(String.valueOf(version));
             hibSession.saveOrUpdate(versionCfg);
-            sLog.info("    Database version increased to: "+version);
+            sLog.info("    " + updateName() + " Database version increased to: "+version);
             
             if (tx!=null && tx.isActive()) tx.commit();
             HibernateUtil.clearCache();
@@ -171,23 +196,16 @@ public class DatabaseUpdate {
         }
     }
     
+     
     public static void update() {
         try {
-            Document document = null;
-            String dbUpdateFile = ApplicationProperties.getProperty("tmtbl.db.update","dbupdate.xml");
-            URL dbUpdateFileUrl = ApplicationProperties.class.getClassLoader().getResource(dbUpdateFile);
-            if (dbUpdateFileUrl!=null) {
-                Debug.info("Reading " + URLDecoder.decode(dbUpdateFileUrl.getPath(), "UTF-8") + " ...");
-                document = (new SAXReader()).read(dbUpdateFileUrl.openStream());
-            } else if (new File(dbUpdateFile).exists()) {
-                Debug.info("Reading " + dbUpdateFile + " ...");
-                document = (new SAXReader()).read(new File(dbUpdateFile));
+            new UniTimeCoreDatabaseUpdate().performUpdate();
+            
+            String additionalUpdates = ApplicationProperties.getProperty("tmtbl.db.addon.update.class");
+            if (additionalUpdates != null && !additionalUpdates.trim().isEmpty()){
+            	DatabaseUpdate du = (DatabaseUpdate) (Class.forName(additionalUpdates).newInstance());;
+            	du.performUpdate();
             }
-            if (document==null) {
-                sLog.error("Unable to execute database auto-update, reason: resource "+dbUpdateFile+" not found.");
-                return;
-            }
-            new DatabaseUpdate(document).performUpdate();
         } catch (Exception e) {
             sLog.error("Unable to execute database auto-update, reason: "+e.getMessage(), e);
         }
