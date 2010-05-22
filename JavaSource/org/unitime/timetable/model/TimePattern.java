@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.hibernate.Query;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.base.BaseTimePattern;
 import org.unitime.timetable.model.dao.TimePatternDAO;
 import org.unitime.timetable.webutil.RequiredTimeTable;
@@ -52,6 +53,8 @@ public class TimePattern extends BaseTimePattern implements Comparable {
 
     /** Request attribute name for available time patterns **/
     public static String TIME_PATTERN_ATTR_NAME = "timePatternsList";
+    
+    private static Boolean sTimePatternEditableInitialDataLoad;
 
     /*[CONSTRUCTOR MARKER BEGIN]*/
 	public TimePattern () {
@@ -272,7 +275,12 @@ public class TimePattern extends BaseTimePattern implements Comparable {
     }
     
     public boolean isEditable() {
-    	return !findAllUsed(getSession()).contains(this);
+    	DepartmentStatusType statusType = DepartmentStatusType.findByRef("initial");
+    	if (isTimePatternEditableInitialDataLoad() && getSession().getStatusType().getUniqueId().equals(statusType.getUniqueId())) {
+    		return(true);
+    	} else {
+    		return !findAllUsed(getSession()).contains(this);
+    	}
     }
     
     public static RequiredTimeTable getDefaultRequiredTimeTable() {
@@ -486,5 +494,15 @@ public class TimePattern extends BaseTimePattern implements Comparable {
         newTimePref.setPreference(newModel.getPreferences());
         return newTimePref;
     }
+
+	/**
+	 * @return the sTimePatternEditableInitialDataLoad
+	 */
+	public static boolean isTimePatternEditableInitialDataLoad() {
+		if (sTimePatternEditableInitialDataLoad == null){
+			sTimePatternEditableInitialDataLoad = new Boolean(ApplicationProperties.getProperty("tmtbl.time_pattern.initial_data_load.editable", "false").equals("true"));
+		}
+		return sTimePatternEditableInitialDataLoad.booleanValue();
+	}
 	
 }
