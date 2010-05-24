@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
@@ -38,10 +39,12 @@ import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePatternDays;
 import org.unitime.timetable.model.TimePatternTime;
+import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.TimePatternDAO;
 import org.unitime.timetable.util.Constants;
@@ -179,6 +182,15 @@ public class TimePatternEditForm extends ActionForm {
 			for (Iterator i=tp.getDays().iterator();i.hasNext();) {
 				TimePatternDays d = (TimePatternDays)i.next();
 				hibSession.save(d);
+			}
+			DepartmentStatusType statusType = DepartmentStatusType.findByRef("initial");
+			if (tp.getSession() != null && tp.getSession().getStatusType().getUniqueId().equals(statusType.getUniqueId())){
+				List l = hibSession.createQuery("from TimePref tp where tp.timePattern.uniqueId = :tpid").setLong("tpid", tp.getUniqueId().longValue()).list();
+				for(Iterator it = l.iterator(); it.hasNext();){
+					TimePref tpref = (TimePref) it.next();
+					tpref.setPreference(null);
+					hibSession.update(tpref);
+				}
 			}
 		}
 		HashSet oldDepts = new HashSet(tp.getDepartments());
