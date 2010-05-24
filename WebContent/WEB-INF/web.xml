@@ -108,7 +108,7 @@
 	
     <servlet-mapping>
         <servlet-name>curriculaServiceServlet</servlet-name>
-        <url-pattern>/unitime4/curriculaService</url-pattern>
+        <url-pattern>/unitime3/curriculaService</url-pattern>
     </servlet-mapping>
 
 	<!-- Servlet Mappings -->
