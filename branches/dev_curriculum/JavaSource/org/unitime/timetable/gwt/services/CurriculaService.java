@@ -19,10 +19,16 @@
 */
 package org.unitime.timetable.gwt.services;
 
+import java.util.List;
+
+import org.unitime.timetable.gwt.shared.CurriculaException;
+
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
 @RemoteServiceRelativePath("curriculaService")
 public interface CurriculaService extends RemoteService {
+	public List<String[]> findCurricula(String filter) throws CurriculaException;
+	public List<String[]> getEnrollment(List<String> curriculumId) throws CurriculaException;
 
 }

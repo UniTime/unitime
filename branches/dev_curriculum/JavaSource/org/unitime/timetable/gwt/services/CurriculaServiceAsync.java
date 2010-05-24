@@ -19,6 +19,14 @@
 */
 package org.unitime.timetable.gwt.services;
 
+import java.util.List;
+
+import org.unitime.timetable.gwt.shared.CurriculaException;
+
+import com.google.gwt.user.client.rpc.AsyncCallback;
+
 public interface CurriculaServiceAsync {
+	public void findCurricula(String filter, AsyncCallback<List<String[]>> callback) throws CurriculaException;
+	public void getEnrollment(List<String> curriculumId, AsyncCallback<List<String[]>> callback) throws CurriculaException;
 
 }
