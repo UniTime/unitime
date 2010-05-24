@@ -83,6 +83,7 @@
 					<line>Default is sufficient DbAuthenticateModule;sufficient LdapAuthenticateModule</line>
 					<line>Ldap module is ignored if LDAP provider is not set</line>
 				</line>
+				<line>Changes to Database Update to allow custom add on packages to UniTime to install their own database updates on startup.</line>
 			</description>
 		</item>
 		<item>
@@ -92,6 +93,12 @@
 				<line>Rooms: Corrected display of departmental room groups and features (i.e., display departmental features/groups of the selected department).</line>
 				<line>Added many to many relation between curricula and majors.</line>
 				<line>Class assignment: Avoid throwing an exception when given dates are empty (this fixes the issue with SCI 90900 Ind 1).</line>
+				<line>Modified Time Pattern Edit to allow a time pattern that is in use to be edited if the session is in the Initial Data Load status and the
+					"tmtbl.time_pattern.initial_data_load.editable" application property is set to true.  By default this value is "false".
+					<line>If a time pattern is edited in this state, all time preferences that refer to the time pattern will have their preference string set back to null.
+						This is because modifying a time pattern changes the layout of the preference string for that time pattern so existing preferences using that time pattern are no longer valid.</line>	
+				</line>
+				
 			</description>
 		</item>
 	</category>
