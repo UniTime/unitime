@@ -30,6 +30,7 @@ import java.util.Vector;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.unitime.commons.Debug;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.RollForwardSessionForm;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.BuildingPref;
@@ -2026,7 +2027,7 @@ public class SessionRollForward {
         org.hibernate.Session hibSession = LastLikeCourseDemandDAO.getInstance().getSession();
         hibSession.createQuery("delete LastLikeCourseDemand d where d.subjectArea.uniqueId in " +
         		"(select s.uniqueId from SubjectArea s where s.session.uniqueId=:toSessionId)")
-        		.setLong("toSessionId", toSession.getUniqueId());
+        		.setLong("toSessionId", toSession.getUniqueId().longValue());
         
         int total = 0;
         for (int i=0;i<query.length;i++) {
@@ -2046,6 +2047,27 @@ public class SessionRollForward {
             }
         }
         hibSession.flush(); hibSession.clear();
+        if (ApplicationProperties.getProperty("tmtbl.courseNumber.unique","true").equals("true")){
+	        hibSession.createQuery("update CourseOffering c set c.demand="+
+	                "(select count(distinct d.student) from LastLikeCourseDemand d where "+
+	                "(c.subjectArea=d.subjectArea and c.courseNbr=d.courseNbr)) where "+
+	                "c.subjectArea.uniqueId in (select sa.uniqueId from SubjectArea sa where sa.session.uniqueId=:sessionId)").
+	                setLong("sessionId", toSession.getUniqueId().longValue()).executeUpdate();
+        } else {
+        	hibSession.createQuery("update CourseOffering c set c.demand="+
+                    "(select count(distinct d.student) from LastLikeCourseDemand d where "+
+                    "(c.subjectArea=d.subjectArea and c.courseNbr=d.courseNbr)) where "+
+                    "c.permId is null and c.subjectArea.uniqueId in (select sa.uniqueId from SubjectArea sa where sa.session.uniqueId=:sessionId)").
+                    setLong("sessionId", toSession.getUniqueId().longValue()).executeUpdate();
+
+        	hibSession.createQuery("update CourseOffering c set c.demand="+
+	                "(select count(distinct d.student) from LastLikeCourseDemand d where "+
+	                "d.student.session=c.subjectArea.session and c.permId=d.coursePermId) where "+
+	                "c.permId is not null and c.subjectArea.uniqueId in (select sa.uniqueId from SubjectArea sa where sa.session.uniqueId=:sessionId)").
+	                setLong("sessionId", toSession.getUniqueId().longValue()).executeUpdate();
+
+        }
+
     }
 
 	/**
