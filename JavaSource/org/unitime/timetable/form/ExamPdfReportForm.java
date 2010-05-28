@@ -70,7 +70,6 @@ public class ExamPdfReportForm extends ExamReportForm {
     private String iAddr, iCc, iBcc = null;
     private boolean iEmailDeputies = false;
     private boolean iItype = false;
-    private String iReport = null;
     private String iMessage = null;
     private String iSubject = null;
     private String iSince = null;
@@ -130,7 +129,6 @@ public class ExamPdfReportForm extends ExamReportForm {
         iEmailDeputies = false;
         iSubject = "Examination Report";
         iMessage = null;
-        iReport = null;
         iDispLimit = false;
         iSince = null;
         iEmailInstructors = false; 
@@ -247,12 +245,6 @@ public class ExamPdfReportForm extends ExamReportForm {
         return ApplicationProperties.getProperty("tmtbl.smtp.host")!=null &&
             ApplicationProperties.getProperty("tmtbl.smtp.host").trim().length()>0;
     }
-    public String getReport() { return iReport; }
-    public void setReport(String report) { iReport = report; }
-    public void log(String message) {
-        sLog.info(message);
-        iReport += message+"<br>"; 
-    }
     public String getMessage() { return iMessage; }
     public void setMessage(String message) { iMessage = message; }
     public String getSubject() { return iSubject; }
@@ -277,4 +269,38 @@ public class ExamPdfReportForm extends ExamReportForm {
     public void setClassSchedule(boolean classSchedule) { iClassSchedule = classSchedule; }
     public boolean getIgnoreEmptyExams() { return iIgnoreEmptyExams; }
     public void setIgnoreEmptyExams(boolean ignoreEmptyExams) { iIgnoreEmptyExams = ignoreEmptyExams; }
+    
+    public Object clone() {
+    	ExamPdfReportForm x = new ExamPdfReportForm();
+        x.setAll(getAll());
+        x.setReports(getReports());
+        x.setMode(getMode());
+        x.setSubjects(getSubjects());
+        x.setDispRooms(getDispRooms());
+        x.setNoRoom(getNoRoom());
+        x.setDirect(getDirect());
+        x.setM2d(getM2d());
+        x.setBtb(getBtb());
+        x.setLimit(getLimit());
+        x.setTotals(getTotals());
+        x.setRoomCodes(getRoomCodes());
+        x.setEmail(getEmail());
+        x.setAddress(getAddress());
+        x.setCc(getCc());
+        x.setBcc(getBcc());
+        x.setEmailDeputies(getEmailDeputies());
+        x.setMessage(getMessage());
+        x.setSubject(getSubject());
+        x.setDispLimit(getDispLimit());
+        x.setSince(getSince());
+        x.setEmailInstructors(getEmailInstructors());
+        x.setEmailStudents(getEmailStudents());
+        x.setItype(getItype());
+        x.setClassSchedule(getClassSchedule());
+        x.setIgnoreEmptyExams(getIgnoreEmptyExams());
+	    x.setShowSections(getShowSections());
+	    x.setSubjectArea(getSubjectArea());
+	    x.setExamType(getExamType());
+    	return x;
+    }
 }
