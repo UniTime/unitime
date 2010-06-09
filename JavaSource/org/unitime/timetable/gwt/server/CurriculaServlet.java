@@ -386,20 +386,21 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 				Long sessionId = getAcademicSessionId();
 				
 				Hashtable<String, CourseOffering> courses = new Hashtable<String, CourseOffering>();
-				for (CourseInterface course: curriculum.getCourses()) {
-					CourseOffering courseOffering = null;
-					for (CourseOffering co: (List<CourseOffering>)hibSession.createQuery(
-							"select c from CourseOffering c where " +
-							"c.subjectArea.session.uniqueId = :sessionId and " +
-							"lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) = :course")
-							.setString("course", course.getCourseName().toLowerCase())
-							.setLong("sessionId", sessionId)
-							.setCacheable(true).setMaxResults(1).list()) {
-						courseOffering = co; break;
+				if (curriculum.hasCourses())
+					for (CourseInterface course: curriculum.getCourses()) {
+						CourseOffering courseOffering = null;
+						for (CourseOffering co: (List<CourseOffering>)hibSession.createQuery(
+								"select c from CourseOffering c where " +
+								"c.subjectArea.session.uniqueId = :sessionId and " +
+								"lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) = :course")
+								.setString("course", course.getCourseName().toLowerCase())
+								.setLong("sessionId", sessionId)
+								.setCacheable(true).setMaxResults(1).list()) {
+							courseOffering = co; break;
+						}
+						if (courseOffering == null) throw new CurriculaException("course " + course.getCourseName() + " does not exist");
+						courses.put(course.getCourseName(), courseOffering);
 					}
-					if (courseOffering == null) throw new CurriculaException("course " + course.getCourseName() + " does not exist");
-					courses.put(course.getCourseName(), courseOffering);
-				}
 			
 				Curriculum c = null;
 				if (curriculum.getId() != null) {
@@ -504,69 +505,70 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 					}
 				}
 
-				for (CourseInterface course: curriculum.getCourses()) {
-					CourseOffering courseOffering = courses.get(course.getCourseName());
-					for (CurriculumCourseInterface cc: course.getCurriculumCourses()) {
-						if (cc == null) continue;
-						CurriculumClassification clasf = classifications.get(cc.getCurriculumClassificationId());
-						if (clasf == null) continue;
-						CurriculumCourse cx = null;
-						if (clasf.getCourses() == null) {
-							clasf.setCourses(new HashSet());
-						} else {
-							for (Iterator<CurriculumCourse> i = clasf.getCourses().iterator(); i.hasNext();) {
-								CurriculumCourse x = i.next();
-								if (x.getCourse().equals(courseOffering)) {
-									x.setPercShare(cc.getShare());
-									remaining.remove(x);
-									cx = x;
-									break;
+				if (curriculum.hasCourses())
+					for (CourseInterface course: curriculum.getCourses()) {
+						CourseOffering courseOffering = courses.get(course.getCourseName());
+						for (CurriculumCourseInterface cc: course.getCurriculumCourses()) {
+							if (cc == null) continue;
+							CurriculumClassification clasf = classifications.get(cc.getCurriculumClassificationId());
+							if (clasf == null) continue;
+							CurriculumCourse cx = null;
+							if (clasf.getCourses() == null) {
+								clasf.setCourses(new HashSet());
+							} else {
+								for (Iterator<CurriculumCourse> i = clasf.getCourses().iterator(); i.hasNext();) {
+									CurriculumCourse x = i.next();
+									if (x.getCourse().equals(courseOffering)) {
+										x.setPercShare(cc.getShare());
+										remaining.remove(x);
+										cx = x;
+										break;
+									}
 								}
 							}
-						}
-						if (cx == null) {
-							cx = new CurriculumCourse();
-							clasf.getCourses().add(cx);
-							cx.setClassification(clasf);
-							cx.setCourse(courseOffering);
-							cx.setPercShare(cc.getShare());
-							cx.setOrd(ord++);
-							if (cc.getLastLike() != null && clasf.getLlStudents() != null)
-								cx.setLlShare(((float)cc.getLastLike()) / clasf.getLlStudents());
-						}
-						if (course.hasGroups()) {
-							if (cx.getGroups() == null) cx.setGroups(new HashSet());
-							HashSet<CurriculumCourseGroup> delete = new HashSet<CurriculumCourseGroup>(cx.getGroups());
-							for (CurriculumCourseGroupInterface gr: course.getGroups()) {
-								CurriculumCourseGroup g = groups.get(gr.getName());
-								if (g == null) {
-									g = new CurriculumCourseGroup();
-									g.setName(gr.getName());
-									g.setColor(gr.getColor());
-									g.setType(gr.getType());
-									g.setCurriculum(c);
-									groups.put(g.getName(), g);
-									hibSession.saveOrUpdate(g);
-								} else {
-									g.setName(gr.getName());
-									g.setColor(gr.getColor());
-									g.setType(gr.getType());
-									hibSession.saveOrUpdate(g);
-									remainingGroups.remove(g);
-								}
-								if (!delete.remove(g)) {
-									cx.getGroups().add(g);
-								}
+							if (cx == null) {
+								cx = new CurriculumCourse();
+								clasf.getCourses().add(cx);
+								cx.setClassification(clasf);
+								cx.setCourse(courseOffering);
+								cx.setPercShare(cc.getShare());
+								cx.setOrd(ord++);
+								if (cc.getLastLike() != null && clasf.getLlStudents() != null)
+									cx.setLlShare(((float)cc.getLastLike()) / clasf.getLlStudents());
 							}
-							if (!delete.isEmpty()) {
-								cx.getGroups().removeAll(delete);
+							if (course.hasGroups()) {
+								if (cx.getGroups() == null) cx.setGroups(new HashSet());
+								HashSet<CurriculumCourseGroup> delete = new HashSet<CurriculumCourseGroup>(cx.getGroups());
+								for (CurriculumCourseGroupInterface gr: course.getGroups()) {
+									CurriculumCourseGroup g = groups.get(gr.getName());
+									if (g == null) {
+										g = new CurriculumCourseGroup();
+										g.setName(gr.getName());
+										g.setColor(gr.getColor());
+										g.setType(gr.getType());
+										g.setCurriculum(c);
+										groups.put(g.getName(), g);
+										hibSession.saveOrUpdate(g);
+									} else {
+										g.setName(gr.getName());
+										g.setColor(gr.getColor());
+										g.setType(gr.getType());
+										hibSession.saveOrUpdate(g);
+										remainingGroups.remove(g);
+									}
+									if (!delete.remove(g)) {
+										cx.getGroups().add(g);
+									}
+								}
+								if (!delete.isEmpty()) {
+									cx.getGroups().removeAll(delete);
+								}
+							} else if (cx.getGroups() != null && !cx.getGroups().isEmpty()) {
+								cx.getGroups().clear();
 							}
-						} else if (cx.getGroups() != null && !cx.getGroups().isEmpty()) {
-							cx.getGroups().clear();
+							hibSession.saveOrUpdate(cx);
 						}
-						hibSession.saveOrUpdate(cx);
 					}
-				}
 				
 				if (!remaining.isEmpty()) {
 					for (CurriculumCourse cc: remaining) {
