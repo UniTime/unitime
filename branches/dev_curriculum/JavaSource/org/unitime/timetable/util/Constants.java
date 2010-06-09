@@ -68,7 +68,7 @@ public class Constants extends net.sf.cpsolver.coursett.Constants {
     public static int EVENING_SLOTS_LAST = (23*60 + 00)/5 - 1; // evening ends at 23:00
 
     /** version */
-    public static String VERSION = "3.1";
+    public static String VERSION = "3.2";
 
     /** release date */
     public static String REL_DATE = "@build.date@";
