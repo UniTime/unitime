@@ -623,6 +623,15 @@ public class SessionRollForward {
 								tm.getDepartments().add(toDepartment);
 								tmDao.saveOrUpdate(tm);
 								tmDao.getSession().flush();
+								if (tm.getSolverGroups(toSession).isEmpty()){
+									for(Iterator sgIt = tm.getSolverGroups(fromSession).iterator(); sgIt.hasNext();){
+										SolverGroup fromSg = (SolverGroup) sgIt.next();
+										SolverGroup toSg = SolverGroup.findBySessionIdAbbv(toSession.getUniqueId(), fromSg.getAbbv());
+										if (toSg != null && !tm.getSolverGroups().contains(toSg)){
+											tm.getSolverGroups().add(toSg);
+										}
+									}
+								}
 							}
 						}
 					}
