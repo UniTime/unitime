@@ -214,28 +214,67 @@
 		/>
 		
  		<property
-			name="group"
-			column="group_nr"
-			type="java.lang.String"
-			length="20"
-			not-null="false"
-		/>
-
- 		<property
 			name="ord"
 			column="ord"
 			type="java.lang.Integer"
 			not-null="true"
 		/>
+		
+		<set name="groups" table="curriculum_course_group" lazy="true">
+			<cache include="non-lazy" usage="read-write"/>
+			<key column="cur_course_id"/> 
+			<many-to-many class="org.unitime.timetable.model.CurriculumCourseGroup" 
+				column="group_id" 
+				foreign-key="fk_cur_course_group_group"
+				/>
+		</set>
+		
+	</class>
+	
+	<class name="CurriculumCourseGroup" table="curriculum_group">
+	
+ 		<cache include="non-lazy" usage="read-write"/>
 
- 		<property
-			name="llEnrollment"
-			type="java.lang.Integer"
-			formula="(select count(distinct d.student_id) 
-				from %SCHEMA%.lastlike_course_demand d, course_offering co where
-				co.uniqueid = course_id and co.subject_area_id = d.subject_area_id and
-				((d.course_perm_id is not null and co.perm_id=d.course_perm_id) or
-				(d.course_perm_id is null and co.course_nbr=d.course_nbr)))"
+		<id 
+            name="uniqueId"
+            column="uniqueid" 
+            type="java.lang.Long">            
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+				<param name="sequence">PREF_GROUP_SEQ</param>
+			</generator>
+            
+        </id>
+        
+         <property
+			name="name"
+			column="name"
+			length="20"
+			type="java.lang.String"
+			not-null="true"
 		/>
+
+        <property
+			name="color"
+			column="color"
+			length="20"
+			type="java.lang.String"
+			not-null="false"
+		/>
+
+         <property
+			name="type"
+			column="type"
+			type="java.lang.Integer"
+			not-null="true"
+		/>
+		
+		<many-to-one 
+			name="curriculum" 
+			class="Curriculum" 
+			column="curriculum_id" 
+			not-null="true"
+			foreign-key="fk_curriculum_group_curriculum"
+		/>
+		
 	</class>
 </hibernate-mapping>

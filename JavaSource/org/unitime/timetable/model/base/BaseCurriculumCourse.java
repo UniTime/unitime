@@ -17,9 +17,7 @@ public abstract class BaseCurriculumCourse  implements Serializable {
 	public static String REF = "CurriculumCourse";
 	public static String PROP_PERC_SHARE = "percShare";
 	public static String PROP_LL_SHARE = "llShare";
-	public static String PROP_GROUP = "group";
 	public static String PROP_ORD = "ord";
-	public static String PROP_LL_ENROLLMENT = "llEnrollment";
 
 
 	// constructors
@@ -65,14 +63,14 @@ public abstract class BaseCurriculumCourse  implements Serializable {
 	// fields
 	private java.lang.Float percShare;
 	private java.lang.Float llShare;
-	private java.lang.String group;
 	private java.lang.Integer ord;
-	private java.lang.Integer llEnrollment;
 
 	// many to one
 	private org.unitime.timetable.model.CurriculumClassification classification;
 	private org.unitime.timetable.model.CourseOffering course;
 
+	// collections
+	private java.util.Set groups;
 
 
 	/**
@@ -132,23 +130,6 @@ public abstract class BaseCurriculumCourse  implements Serializable {
 
 
 	/**
-	 * Return the value associated with the column: group_nr
-	 */
-	public java.lang.String getGroup () {
-		return group;
-	}
-
-	/**
-	 * Set the value related to the column: group_nr
-	 * @param group the group_nr value
-	 */
-	public void setGroup (java.lang.String group) {
-		this.group = group;
-	}
-
-
-
-	/**
 	 * Return the value associated with the column: ord
 	 */
 	public java.lang.Integer getOrd () {
@@ -161,23 +142,6 @@ public abstract class BaseCurriculumCourse  implements Serializable {
 	 */
 	public void setOrd (java.lang.Integer ord) {
 		this.ord = ord;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: llEnrollment
-	 */
-	public java.lang.Integer getLlEnrollment () {
-		return llEnrollment;
-	}
-
-	/**
-	 * Set the value related to the column: llEnrollment
-	 * @param llEnrollment the llEnrollment value
-	 */
-	public void setLlEnrollment (java.lang.Integer llEnrollment) {
-		this.llEnrollment = llEnrollment;
 	}
 
 
@@ -216,7 +180,20 @@ public abstract class BaseCurriculumCourse  implements Serializable {
 
 
 
+	/**
+	 * Return the value associated with the column: groups
+	 */
+	public java.util.Set getGroups () {
+		return groups;
+	}
 
+	/**
+	 * Set the value related to the column: instructors
+	 * @param courses the courses value
+	 */
+	public void setGroups (java.util.Set groups) {
+		this.groups = groups;
+	}
 
 	public boolean equals (Object obj) {
 		if (null == obj) return false;
