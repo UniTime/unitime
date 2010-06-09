@@ -594,7 +594,18 @@ public class CurriculaCourses extends Composite {
 						}
 						if (gr == null) {
 							gr = new Group(g.getName(), g.getType());
-							gr.setColor(g.getColor());
+							if (g.getColor() != null) {
+								gr.setColor(g.getColor());
+							} else {
+								colors: for (String c: sColors) {
+									for (Group x: iGroups) {
+										if (x.getColor().equals(c)) continue colors;
+									}
+									gr.setColor(c);
+									break;
+								}
+								if (gr.getColor() == null) gr.setColor(sColors[0]);
+							}
 							iGroups.add(gr);
 						}
 						hp.add(gr.cloneGroup());
@@ -1155,7 +1166,6 @@ public class CurriculaCourses extends Composite {
 		if (g == null) {
 			if (name == null || name.isEmpty()) return;
 			g = new Group(name, type);
-			String color = null;
 			colors: for (String c: sColors) {
 				for (Group x: iGroups) {
 					if (x.getColor().equals(c)) continue colors;
