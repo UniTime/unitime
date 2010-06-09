@@ -201,7 +201,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
         if (!exams.isEmpty()) return "";
         String message = "** NO EXAM **";
         if (hasCourseExam && !hasSectionExam) message = ""; // Has other exam
-        else if (!hasSectionExam && !clazz.getSchedulingSubpart().getItype().isOrganized()) message = "Not organized instructional type";
+        if (!hasSectionExam && !clazz.getSchedulingSubpart().getItype().isOrganized()) message = "Not organized instructional type";
         else {
             ClassEvent event = class2event.get(clazz.getUniqueId());
             if (event==null || event.getMeetings().isEmpty()) {
@@ -224,7 +224,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
         if (exams.isEmpty()) {
             String message = "** NO EXAM **";
             if (hasCourseExam && !hasSectionExam) message = ""; // Has other exam
-            else if (!hasSectionExam && !same.firstElement().getSchedulingSubpart().getItype().isOrganized()) message = "Not organized instructional type";
+            if (!hasSectionExam && !same.firstElement().getSchedulingSubpart().getItype().isOrganized()) message = "Not organized instructional type";
             else {
                 ClassEvent classEvent = class2event.get(same.firstElement().getUniqueId());
                 if (classEvent==null || classEvent.getMeetings().isEmpty()) {
@@ -655,8 +655,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                         allSectionsHaveExam = false;
                     }
                 }
-                if (allSectionsHaveExam && classes.size()>1) hasSubpartExam = true;
-                if (allSectionsHaveExam) hasCourseExam = true;
+                if (allSectionsHaveExam) hasSubpartExam = true;
                 for (Class_ clazz : classes) {
                     Integer enrl = (iDispLimits?classLimits.get(clazz.getUniqueId()):null);
                     if (!same.isEmpty() && 
@@ -664,12 +663,12 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                             ToolBox.equals(clazz.getSchedulePrintNote(), same.lastElement().getSchedulePrintNote()) && 
                             exams.equals(getExams(clazz)) && 
                             mw.equals(getMeetWith(clazz, null)) &&
-                            message.equals(getMessage(clazz, hasCourseExam, hasSectionExam, class2event))) {
+                            message.equals(getMessage(clazz, hasCourseExam || hasSubpartExam, hasSectionExam, class2event))) {
                         minEnrl = Math.min(minEnrl, (enrl==null?0:enrl.intValue()));
                         maxEnrl = Math.max(maxEnrl, (enrl==null?0:enrl.intValue()));
                         minLimit = Math.min(minLimit, clazz.getClassLimit());
                         maxLimit = Math.max(maxLimit, clazz.getClassLimit());
-                        message = getMessage(clazz, hasCourseExam, hasSectionExam, class2event);
+                        message = getMessage(clazz, hasCourseExam || hasSubpartExam, hasSectionExam, class2event);
                         same.add(clazz);
                         continue;
                     }
@@ -681,7 +680,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                     mw = getMeetWith(clazz, null);
                     minEnrl = maxEnrl = (enrl==null?0:enrl.intValue());
                     minLimit = maxLimit = clazz.getClassLimit();
-                    message = getMessage(clazz, hasCourseExam, hasSectionExam, class2event);
+                    message = getMessage(clazz, hasCourseExam || hasSubpartExam, hasSectionExam, class2event);
                     same.add(clazz);
                 }
                 if (!same.isEmpty()) print(same, hasCourseExam || hasSubpartExam, hasSectionExam, minLimit, maxLimit, minEnrl, maxEnrl, class2event);

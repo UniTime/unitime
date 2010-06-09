@@ -28,6 +28,7 @@ import org.unitime.timetable.model.SolverInfo;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.solver.remote.SolverRegisterService;
 import org.unitime.timetable.util.RoomAvailability;
+import org.unitime.timetable.util.queue.QueueProcessor;
 
 
 /**
@@ -101,6 +102,8 @@ public class InitServlet extends HttpServlet implements Servlet {
 	             logMessage(" - Stopping Room Availability Service ... ");
 	             RoomAvailability.getInstance().stopService();
 	         }
+	         
+	         QueueProcessor.stopProcessor();
 			
 			logMessage("******* Timetabling Application : Shut down DONE *******");
 		} catch (Exception e) {
