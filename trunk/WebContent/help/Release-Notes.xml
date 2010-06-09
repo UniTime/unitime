@@ -29,6 +29,34 @@
 	<category>
 		<title>BUG FIXES &amp; OTHER IMPROVEMENTS</title>
 		<item>
+			<name>PDF Exam reports</name>
+			<description>
+				<line>Reports Queue
+					<line>Process only one report at a time by putting all requests for a PDF exam report into a queue.</line>
+					<line>Display current queue (of PDF exam reports) on the page, if it is not empty.</line>
+					<line>There is also an ability to delete a request from the queue before it is processed.</line>
+					<line>Also show reports (including log and output files) that were finished during the last hour.</line>
+ 				</line>
+ 				<line>Exam Verification Report -- Class not full-term message
+ 					<line>Fixed an issue with the message not being printed in some cases (POL 10100).</line>
+ 				</line>
+			</description>
+		</item>
+		<item>
+			<name>Session Roll-Forward</name>
+			<description>
+				<line>After rolling forward last like demand data, update the last like demand counts on the Course Offerings.</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.1.264</version>
+	<release-date>Tue, 25 May 2010</release-date>
+	<category>
+		<title>BUG FIXES &amp; OTHER IMPROVEMENTS</title>
+		<item>
 			<name>Student Sectioning</name>
 			<description>
 				<line>Added a set of Enrollment Audit PDF reports.
