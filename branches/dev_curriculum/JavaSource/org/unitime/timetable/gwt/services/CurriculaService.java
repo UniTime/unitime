@@ -19,16 +19,35 @@
 */
 package org.unitime.timetable.gwt.services;
 
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.TreeSet;
 
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CurriculaException;
+import org.unitime.timetable.gwt.shared.CurriculumInterface;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
 @RemoteServiceRelativePath("curriculaService")
 public interface CurriculaService extends RemoteService {
-	public List<String[]> findCurricula(String filter) throws CurriculaException;
-	public List<String[]> getEnrollment(List<String> curriculumId) throws CurriculaException;
-
+	public TreeSet<CurriculumInterface> findCurricula(String filter) throws CurriculaException;
+	public List<CurriculumInterface.CurriculumClassificationInterface> loadClassifications(List<Long> curriculumIds) throws CurriculaException;
+	public TreeSet<CurriculumInterface.CurriculumClassificationInterface> makupClassifications(Long acadAreaId, List<Long> majors, boolean includeCourses) throws CurriculaException;
+	public HashMap<String, Integer[][]> computeEnrollmentsAndLastLikes(Long acadAreaId, List<Long> majors) throws CurriculaException;
+	public TreeSet<CurriculumInterface.AcademicAreaInterface> loadAcademicAreas() throws CurriculaException;
+	public TreeSet<CurriculumInterface.AcademicClassificationInterface> loadAcademicClassifications() throws CurriculaException;
+	public TreeSet<CurriculumInterface.DepartmentInterface> loadDepartments() throws CurriculaException;
+	public TreeSet<CurriculumInterface.MajorInterface> loadMajors(Long curriculumId, Long academicAreaId) throws CurriculaException;
+	public String lastCurriculaFilter() throws CurriculaException;
+	public CurriculumInterface loadCurriculum(Long curriculumId) throws CurriculaException;
+	public Boolean saveCurriculum(CurriculumInterface curriculum) throws CurriculaException;
+	public Boolean deleteCurriculum(Long curriculumId) throws CurriculaException;
+	
+	public Collection<ClassAssignmentInterface.CourseAssignment> listCourseOfferings(String query, Integer limit) throws CurriculaException;
+	public String retrieveCourseDetails(String course) throws CurriculaException;
+	public Collection<ClassAssignmentInterface.ClassAssignment> listClasses(String course) throws CurriculaException;
+	public String[] getAppliationProperty(String[] name) throws CurriculaException;
 }

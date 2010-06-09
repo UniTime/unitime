@@ -38,11 +38,13 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
 
 public class WebTable extends Composite {
 	public static final StudentSectioningResources RESOURCES =  GWT.create(StudentSectioningResources.class);
@@ -139,6 +141,18 @@ public class WebTable extends Composite {
 		}
 	}
 	
+	public void hideColumn(int col) {
+		for (int row = 0; row < iTable.getRowCount(); row++) {
+			iTable.getFlexCellFormatter().setVisible(row, col, false);
+		}
+	}
+	
+	public void showColumn(int col) {
+		for (int row = 0; row < iTable.getRowCount(); row++) {
+			iTable.getFlexCellFormatter().setVisible(row, col, true);
+		}
+	}
+
 	public int getColumnsCount() {
 		if (iHeader==null || iHeader.length==0) return 1;
 		int ret = 0;
@@ -201,6 +215,7 @@ public class WebTable extends Composite {
 				iTable.getFlexCellFormatter().setColSpan(i+getHeaderRowsCount(), j, cell.getColSpan());
 				iTable.getFlexCellFormatter().setStyleName(i+getHeaderRowsCount(), j, cell.getStyleName());
 				iTable.getFlexCellFormatter().setWidth(i+getHeaderRowsCount(), j, cell.getWidth());
+				iTable.getFlexCellFormatter().setVerticalAlignment(i+getHeaderRowsCount(), j, cell.getVerticalAlignment());
 			}
 		}
 	}
@@ -322,6 +337,7 @@ public class WebTable extends Composite {
 					t.getFlexCellFormatter().setColSpan(getRowIdx() + iTable.getHeaderRowsCount(), col, cell.getColSpan());
 					t.getFlexCellFormatter().setStyleName(getRowIdx() + iTable.getHeaderRowsCount(), col, cell.getStyleName());
 					t.getFlexCellFormatter().setWidth(getRowIdx() + iTable.getHeaderRowsCount(), col, cell.getWidth());
+					t.getFlexCellFormatter().setVerticalAlignment(getRowIdx() + iTable.getHeaderRowsCount(), col, cell.getVerticalAlignment());
 			}
 		}
 	}
@@ -333,6 +349,7 @@ public class WebTable extends Composite {
 		String iWidth = null;
 		Row iRow = null;
 		int iColIdx = -1;
+		VerticalAlignmentConstant iVerticalAlignment = HasVerticalAlignment.ALIGN_TOP;
 		
 		public Cell(String value) {
 			iValue = value;
@@ -358,6 +375,8 @@ public class WebTable extends Composite {
 		public void setRow(Row row) { iRow = row; }
 		public Row getRow() { return iRow; }
 		public Widget getWidget() { return null; }
+		public VerticalAlignmentConstant getVerticalAlignment() { return iVerticalAlignment; }
+		public void setVerticalAlignment(VerticalAlignmentConstant vertical) { iVerticalAlignment = vertical; }
 	}
 	
 	public static class CheckboxCell extends Cell {
