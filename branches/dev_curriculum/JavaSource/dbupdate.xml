@@ -2529,6 +2529,60 @@
 			references %SCHEMA%.pos_major (uniqueid) on delete cascade
 		</sql>
 	</update>
-	
-	
+	<update version="51" date="07-Jun-2010" comment="Curriculum course groups">
+		<sql>alter table %SCHEMA%.curriculum_course drop column group_nr</sql>
+		<plsql>
+			create table %SCHEMA%.curriculum_group
+				(
+				  uniqueid number(20) constraint nn_curriculum_group_id not null,
+				  name varchar2(20) constraint nn_curriculum_group_name not null,
+				  color varchar2(20),
+				  type number(10) constraint nn_curriculum_group_type not null,
+				  constraint pk_curriculum_group primary key (uniqueid)
+				)
+		</plsql>
+		<mysql>
+			create table %SCHEMA%.curriculum_group
+				(
+				  uniqueid decimal(20,0) primary key not null,
+				  name varchar(20) not null,
+				  color varchar(60),
+				  type bigint(10) not null
+				) engine = INNODB
+		</mysql>
+		<plsql>
+			create table %SCHEMA%.curriculum_course_group (
+				group_id number(20,0) constraint nn_curriculum_course_id not null,
+				cur_course_id number(20,0) constraint nn_cur_course_groups_course not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.curriculum_course_group add constraint pk_curriculum_course_groups primary key (group_id, cur_course_id)</plsql>
+		<mysql>
+			create table %SCHEMA%.curriculum_course_group (
+				group_id decimal(20,0) not null,
+				cur_course_id decimal(20,0) not null,
+				primary key (group_id, cur_course_id)
+			) engine = INNODB
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.curriculum_course_group add constraint fk_cur_course_group_group foreign key (group_id)
+			references %SCHEMA%.curriculum_group (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.curriculum_course_group add constraint fk_cur_course_group_course foreign key (cur_course_id)
+			references %SCHEMA%.curriculum_course (uniqueid) on delete cascade
+		</sql>
+	</update>
+	<update version="52" date="09-Jun-2010" comment="Curriculum course groups">
+		<plsql>
+			alter table %SCHEMA%.curriculum_group add curriculum_id number(20) constraint nn_curriculum_group_curriculum not null
+		</plsql>
+		<mysql>
+			alter table %SCHEMA%.curriculum_group add curriculum_id decimal(20,0) not null
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.curriculum_group add constraint fk_curriculum_group_curriculum foreign key (curriculum_id)
+			references %SCHEMA%.curriculum (uniqueid) on delete cascade
+		</sql>
+	</update>
 </dbupdate>
