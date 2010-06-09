@@ -30,12 +30,7 @@
 			<TD colspan='2'>
 				<tt:section-header>
 					<tt:section-title><font color='red'>Errors</font></tt:section-title>
-					<logic:empty name="examPdfReportForm" property="report">
-						<html:submit onclick="displayLoading();" accesskey="G" property="op" value="Generate" title="Generate Report (Alt+G)"/>
-					</logic:empty>
-					<logic:notEmpty name="examPdfReportForm" property="report">
-						<html:submit onclick="displayLoading();" accesskey="B" property="op" value="Back" title="Back (Alt+B)"/>
-					</logic:notEmpty>
+					<html:submit onclick="displayLoading();" accesskey="G" property="op" value="Generate" title="Generate Report (Alt+G)"/>
 				</tt:section-header>
 			</TD>
 		</TR>
@@ -54,36 +49,35 @@
 		</TR>
 		<TR><TD>&nbsp;</TD></TR>
 	</logic:messagesPresent>
-	<logic:notEmpty name="examPdfReportForm" property="report">
+	<logic:notEmpty name="table" scope="request">
+		<TR><TD colspan="2">
+			<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+				<bean:write name="table" scope="request" filter="false"/>
+			</TABLE>
+		</TD></TR>
+		<TR><TD colspan='2'>&nbsp;</TD></TR>
+	</logic:notEmpty>
+	<logic:notEmpty name="log" scope="request">
 		<TR>
 			<TD colspan='2'>
 				<tt:section-header>
-					<tt:section-title>Log</tt:section-title>
-					<logic:messagesNotPresent>
-						<html:submit onclick="displayLoading();" accesskey="B" property="op" value="Back" title="Back (Alt+B)"/>
-					</logic:messagesNotPresent>
+					<tt:section-title>
+						Log of <bean:write name="logname" scope="request" filter="false"/>
+					</tt:section-title>
+					<bean:define id="logid" name="logid" scope="request"/>
+					<input type="hidden" name="log" value="<%=logid%>">
+					<html:submit onclick="displayLoading();" accesskey="R" property="op" value="Refresh" title="Refresh Log (Alt+R)"/>
 				</tt:section-header>
 			</TD>
 		</TR>
 		<TR>
   			<TD colspan='2'>
   				<blockquote>
-  					<bean:write name="examPdfReportForm" property="report" filter="false"/>
+	  				<bean:write name="log" scope="request" filter="false"/>
   				</blockquote>
   			</TD>
 		</TR>
-		<TR>
-			<TD colspan='2'>
-				<tt:section-title>&nbsp;</tt:section-title>
-			</TD>
-		</TR>
-		<TR>
-			<TD colspan='2' align='right'>
-				<html:submit onclick="displayLoading();" accesskey="B" property="op" value="Back" title="Back (Alt+B)"/>
-			</TD>
-		</TR>
 	</logic:notEmpty>
-	<logic:empty name="examPdfReportForm" property="report">
 	<TR>
 		<TD colspan='2'>
 			<tt:section-header>
@@ -241,7 +235,6 @@
 			<html:submit onclick="displayLoading();" accesskey="G" property="op" value="Generate" title="Generate Report (Alt+G)"/>
 		</TD>
 	</TR>
-	</logic:empty>
 	</TABLE>
 <script type="text/javascript" language="javascript">
 	function selectionChanged() {
