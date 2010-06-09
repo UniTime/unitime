@@ -19,47 +19,66 @@
 */
 package org.unitime.timetable.gwt.client;
 
+import org.unitime.timetable.gwt.widgets.LoadingWidget;
+import org.unitime.timetable.gwt.widgets.PageLabel;
+
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.RunAsyncCallback;
+import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.DeferredCommand;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
 
 public class Client implements EntryPoint {
-
 	public void onModuleLoad() {
-		initAsync(Window.Location.getParameter("page"));
+		LoadingWidget.getInstance().show();
+		DeferredCommand.addCommand(new Command() {
+			@Override
+			public void execute() {
+				initAsync(Window.Location.getParameter("page"));
+			}
+		});
 	}
 	
 	public void initAsync(final String page) {
 		GWT.runAsync(new RunAsyncCallback() {
 			public void onSuccess() {
 				init(page);
+				LoadingWidget.getInstance().hide();
 			}
 			public void onFailure(Throwable reason) {
 				Label error = new Label("Failed to load the page (" + reason.getMessage() + ")");
 				error.setStyleName("unitime-ErrorMessage");
 				RootPanel.get("loading").setVisible(false);
 				RootPanel.get("body").add(error);
+				LoadingWidget.getInstance().hide();
 			}
 		});
 
 	}
 	
 	public void init(String page) {
-		RootPanel.get("loading").setVisible(false);
-		for (Pages p: Pages.values()) {
-			if (p.name().equals(page)) {
-				RootPanel.get("title").clear();
-				RootPanel.get("title").add(new Label(p.title()));
-				RootPanel.get("body").add(p.widget());
-				return;
+		try {
+			RootPanel.get("loading").setVisible(false);
+			for (Pages p: Pages.values()) {
+				if (p.name().equals(page)) {
+					RootPanel.get("title").clear();
+					PageLabel label = new PageLabel(); label.setPageName(p.title());
+					RootPanel.get("title").add(label);
+					RootPanel.get("body").add(p.widget());
+					return;
+				}
 			}
+			Label error = new Label("Failed to load the page (" + (page == null ? "page not provided" : "page " + page + " not registered" ) + ")");
+			error.setStyleName("unitime-ErrorMessage");
+			RootPanel.get("body").add(error);
+		} catch (Exception e) {
+			Label error = new Label("Failed to load the page (" + e.getMessage() + ")");
+			error.setStyleName("unitime-ErrorMessage");
+			RootPanel.get("body").add(error);
 		}
-		Label error = new Label("Failed to load the application (" + (page == null ? "page not provided" : "page " + page + " not registered" ) + ")");
-		error.setStyleName("unitime-ErrorMessage");
-		RootPanel.get("body").add(error);
 	}
-
+	
 }

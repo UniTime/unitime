@@ -17,16 +17,19 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
-package org.unitime.timetable.gwt.shared;
+package org.unitime.timetable.gwt.resources;
 
-public class CurriculaException extends RuntimeException {
-	
-	public CurriculaException() {
-		super();
-	}
-	
-	public CurriculaException(String message) {
-		super(message);
-	}
+import com.google.gwt.resources.client.ClientBundle;
+import com.google.gwt.resources.client.ImageResource;
 
+public interface GwtResources extends ClientBundle {
+
+	@Source("org/unitime/timetable/gwt/resources/icons/loading.gif")
+	ImageResource loading();
+
+	@Source("org/unitime/timetable/gwt/resources/icons/loading_small.gif")
+	ImageResource loading_small();
+
+	@Source("org/unitime/timetable/gwt/resources/icons/help_icon.gif")
+	ImageResource help();
 }

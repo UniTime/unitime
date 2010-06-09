@@ -1,9 +1,4 @@
 .unitime-Body {
-	background-image: url(http://www.unitime.org/include/bg.jpg);
-	background-color: #FFFFFF;
-	background-position: top center;
-	background-repeat: no-repeat;
-	background-attachment: scroll;
 	font-family: sans-serif, verdana, arial;
 }
 
@@ -38,7 +33,7 @@
 	width: 100%;
 	margin-top: -6px;
 }
-mull
+
 .unitime-PrintIcon {
 	cursor: pointer;	
 }
@@ -68,6 +63,19 @@ h1 {
   color: #777777;
   margin: 15px 0px 5px;
   text-align: left;
+  
+}
+
+.unitime-Label {
+	font-family: Verdana, sans-serif;
+	font-size: 8pt;
+	font-weight: 400;
+	font-style: normal;
+	color: #777777;
+	line-height: 15px;
+	vertical-align: baseline;
+	height: 22px;
+	margin-top: 4px;
 }
 
 .gwt-SuggestBoxCanvas {
@@ -103,7 +111,14 @@ h1 {
 	width: 100%;
 	border-bottom: 1px solid #9CB0CE;
 	padding-top: 5px;
-	font-size: 1em;
+	font-size: large;
+	font-weight: bold;
+	color: black;
+	text-align: left;
+}
+
+.unitime-MainHeader {
+	font-size: large;
 	font-weight: bold;
 	color: black;
 	text-align: left;
@@ -119,6 +134,26 @@ h1 {
 }
 
 .unitime-MainTable {
+}
+
+.unitime-LoadingPanel {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	height: 100%;
+	width: 100%;
+	filter: alpha(opacity = 25);
+	opacity: .25;
+    -moz-opacity: .25;
+	background: #000000;
+	z-index: 2000000;
+}
+
+.unitime-LoadingIcon {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	z-index: 3000000;
 }
 
 .unitime-TableHeader {
@@ -465,6 +500,29 @@ h1 {
 	width: 2px;
 }
 
+.unitime-TinyLabel {
+	font-size: x-small;
+	font-family: arial;
+	padding-left: 2px;
+	padding-right: 2px;
+	margin-left: 2px;
+	margin-right: 2px;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+}
+
+.unitime-TinyLabelWhite {
+	font-size: x-small;
+	font-family: arial;
+	padding-left: 2px;
+	padding-right: 2px;
+	margin-left: 2px;
+	margin-right: 2px;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	color: #FFFFFF;
+}
+
 .unitime-TimeGrid .meeting {
 	position: absolute;
 	font-size: x-small;
@@ -579,7 +637,6 @@ h1 {
 .blue {
 	border: 1px solid #2952A3;
 	background: #668CD9;
-	color: #FFFFFF;
 }
 .blue .header {
 	background: #2952A3;
@@ -593,7 +650,6 @@ h1 {
 .red {
 	border: 1px solid #A32929;
 	background: #D96666;
-	color: #FFFFFF;
 }
 .red .header {
 	background: #A32929;
@@ -607,7 +663,6 @@ h1 {
 .pink {
 	border: 1px solid #B1365F;
 	background: #E67399;
-	color: #FFFFFF;
 }
 .pink .header {
 	background: #B1365F;
