@@ -1,5 +1,7 @@
 package org.unitime.timetable.test;
 
+import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -21,6 +23,7 @@ import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Curriculum;
 import org.unitime.timetable.model.CurriculumClassification;
 import org.unitime.timetable.model.CurriculumCourse;
+import org.unitime.timetable.model.CurriculumCourseGroup;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.Session;
@@ -31,17 +34,20 @@ public class MakeCurriculaFromLastlikeDemands {
     private Long iSessionId = null;
     private float iShareLimit = 0.00f;
     private int iEnrlLimit = 1;
+    private float iTotalShareLimit = 0.03f;
     
-    public MakeCurriculaFromLastlikeDemands(Long sessionId, float shareLimit, int enrlLimit) {
+    public MakeCurriculaFromLastlikeDemands(Long sessionId, float totalShareLimit, float shareLimit, int enrlLimit) {
         iSessionId = sessionId;
+        iTotalShareLimit = totalShareLimit;
         iShareLimit = shareLimit;
         iEnrlLimit = enrlLimit;
     }
     
     public MakeCurriculaFromLastlikeDemands(Long sessionId) {
         this(sessionId,
-             Float.parseFloat(ApplicationProperties.getProperty("tmtbl.curriculum.lldemands.shareLimit", "0.05")),
-             Integer.parseInt(ApplicationProperties.getProperty("tmtbl.curriculum.lldemands.enrlLimit", "20")));
+        	 Float.parseFloat(ApplicationProperties.getProperty("tmtbl.curriculum.lldemands.totalShareLimit", "0.03")),
+             Float.parseFloat(ApplicationProperties.getProperty("tmtbl.curriculum.lldemands.shareLimit", "0.00")),
+             Integer.parseInt(ApplicationProperties.getProperty("tmtbl.curriculum.lldemands.enrlLimit", "0")));
     }
     
     public Hashtable<AcademicArea, Hashtable<PosMajor, Hashtable<AcademicClassification, Hashtable<CourseOffering, Set<Long>>>>> loadLastLikeCurricula(org.hibernate.Session hibSession) {
@@ -140,116 +146,187 @@ public class MakeCurriculaFromLastlikeDemands {
     }
 
     public void update(org.hibernate.Session hibSession, boolean lastLike) {
+    	sLog.info("Deleting existing curricula...");
+    	for (Iterator<Curriculum> i = hibSession.createQuery("select c from Curriculum c where c.department.session=:sessionId").
+        	setLong("sessionId", iSessionId).list().iterator(); i.hasNext(); ) {
+    		hibSession.delete(i.next());
+    	}
+    	hibSession.flush();
+    	
+    	sLog.info("Loading " + (lastLike ? "last-like" : "current") + " student enrollments...");
         Hashtable<AcademicArea, Hashtable<PosMajor, Hashtable<AcademicClassification, Hashtable<CourseOffering, Set<Long>>>>> curricula = (lastLike ? loadLastLikeCurricula(hibSession) : loadRealCurricula(hibSession));
-        Hashtable<AcademicArea, Hashtable<PosMajor, Curriculum>> remainingCurricula = new Hashtable();
-        for (Iterator i=hibSession.
-                createQuery("select c from Curriculum c where c.academicArea!=null and c.department.session=:sessionId").
-                setLong("sessionId", iSessionId).iterate();i.hasNext();) {
-            Curriculum c = (Curriculum)i.next();
-            Hashtable<PosMajor, Curriculum> majors = new Hashtable<PosMajor, Curriculum>();
-            for (Iterator<PosMajor> j = c.getMajors().iterator(); j.hasNext();) {
-            	PosMajor m = j.next();
-            	majors.put(m, c);
-            }
-            remainingCurricula.put(c.getAcademicArea(), majors);
-        }
+        
+        sLog.info("Creating curricula...");
         for (Map.Entry<AcademicArea, Hashtable<PosMajor, Hashtable<AcademicClassification, Hashtable<CourseOffering, Set<Long>>>>> e1 : curricula.entrySet()) {
-        	Hashtable<PosMajor, Curriculum> remainingMajors = remainingCurricula.get(e1.getKey());
             for (Map.Entry<PosMajor, Hashtable<AcademicClassification, Hashtable<CourseOffering, Set<Long>>>> e2 : e1.getValue().entrySet()) {
-            	Curriculum curriculum = (remainingMajors == null ? null : remainingMajors.get(e2.getKey()));
-            	if (curriculum != null && curriculum.getMajors().size() > 1) {
-            		curriculum.getMajors().remove(e2.getKey());
-            		curriculum = null;
-            	}
-                sLog.info("Updating curriculum "+e1.getKey().getAcademicAreaAbbreviation()+" ("+e1.getKey().getShortTitle()+") - " + e2.getKey().getCode() + " (" + e2.getKey().getName()+ ")");
-                Hashtable<Department,Integer> deptCounter = null;
-                Hashtable<AcademicClassification, CurriculumClassification> remainingClassifications = new Hashtable();
-                if (curriculum==null) {
-                    curriculum = new Curriculum();
-                    curriculum.setAcademicArea(e1.getKey());
-                    curriculum.setAbbv(e1.getKey().getAcademicAreaAbbreviation() + "-" + e2.getKey().getCode());
-                    curriculum.setName(e1.getKey().getShortTitle()==null?e1.getKey().getLongTitle():e1.getKey().getShortTitle() + " - " + e2.getKey().getName());
-                    curriculum.setClassifications(new HashSet());
-                    curriculum.setMajors(new HashSet());
-                    curriculum.getMajors().add(e2.getKey());
-                    deptCounter = new Hashtable();
-                } else {
-                	remainingMajors.remove(e2.getKey());
-                    for (Iterator i=curriculum.getClassifications().iterator();i.hasNext();) {
-                        CurriculumClassification cc = (CurriculumClassification)i.next();
-                        remainingClassifications.put(cc.getAcademicClassification(), cc);
+                sLog.info("Creating curriculum "+e1.getKey().getAcademicAreaAbbreviation()+" ("+e1.getKey().getShortTitle()+") - " + e2.getKey().getCode() + " (" + e2.getKey().getName()+ ")");
+                Hashtable<Department,Integer> deptCounter = new Hashtable<Department, Integer>();
+
+                Curriculum curriculum = new Curriculum();
+                curriculum.setAcademicArea(e1.getKey());
+                curriculum.setAbbv(e1.getKey().getAcademicAreaAbbreviation() + "/" + e2.getKey().getCode());
+                curriculum.setName((e1.getKey().getLongTitle() == null ? e1.getKey().getShortTitle() : e1.getKey().getLongTitle()) + " / " + e2.getKey().getName());
+				if (curriculum.getName().length() > 60) curriculum.setName(curriculum.getName().substring(0, 60));
+                curriculum.setClassifications(new HashSet());
+                curriculum.setMajors(new HashSet());
+                curriculum.getMajors().add(e2.getKey());
+
+                Hashtable<CourseOffering, Set<Long>> courseStudents = new Hashtable<CourseOffering, Set<Long>>();
+                Set<Long> studentsThisCurricula = new HashSet<Long>();
+                for (Map.Entry<AcademicClassification, Hashtable<CourseOffering, Set<Long>>> e3 : e2.getValue().entrySet()) {
+                    for (Map.Entry<CourseOffering, Set<Long>> e4 : e3.getValue().entrySet()) {
+                    	studentsThisCurricula.addAll(e4.getValue());
+                    	Set<Long> studentsThisCourse = courseStudents.get(e4.getKey());
+                    	if (studentsThisCourse == null) {
+                    		studentsThisCourse = new HashSet<Long>();
+                    		courseStudents.put(e4.getKey(), studentsThisCourse);
+                    	}
+                    	studentsThisCourse.addAll(e4.getValue());
                     }
                 }
+                
                 for (Map.Entry<AcademicClassification, Hashtable<CourseOffering, Set<Long>>> e3 : e2.getValue().entrySet()) {
-                    CurriculumClassification clasf = null;
-                    for (Iterator i=curriculum.getClassifications().iterator();i.hasNext();) {
-                        CurriculumClassification cc = (CurriculumClassification)i.next();
-                        if (e3.getKey().equals(cc.getAcademicClassification())) { clasf = cc; break; }
-                    }
-                    Hashtable<CourseOffering, CurriculumCourse> remainingCourses = new Hashtable();
-                    if (clasf==null) {
-                        clasf = new CurriculumClassification();
-                        clasf.setCurriculum(curriculum); curriculum.getClassifications().add(clasf);
-                        clasf.setAcademicClassification(e3.getKey());
-                        clasf.setName(e3.getKey().getCode());
-                        clasf.setCourses(new HashSet());
-                    } else {
-                        for (Iterator i=clasf.getCourses().iterator();i.hasNext();) {
-                            CurriculumCourse c = (CurriculumCourse)i.next();
-                            remainingCourses.put(c.getCourse(), c);
-                        }
-                        remainingClassifications.remove(clasf.getAcademicClassification());
-                    }
-                    Set<Long> allStudents = new HashSet();
-                    for (Set<Long> students : e3.getValue().values()) allStudents.addAll(students);
-                    sLog.info("  "+e3.getKey().getCode()+" ("+e3.getKey().getName()+") -- "+allStudents.size()+" students");
-                    if (clasf.getNrStudents()==null) clasf.setNrStudents(allStudents.size());
-                    clasf.setLlStudents(allStudents.size());
+                    CurriculumClassification clasf = new CurriculumClassification();
+                    clasf.setCurriculum(curriculum); curriculum.getClassifications().add(clasf);
+                    clasf.setAcademicClassification(e3.getKey());
+                    clasf.setName(e3.getKey().getCode());
+                    clasf.setCourses(new HashSet());
+
+                    Set<Long> studentsThisCurriculaClassification = new HashSet();
+                    for (Set<Long> students : e3.getValue().values()) studentsThisCurriculaClassification.addAll(students);
+                    
+                    sLog.info("  "+e3.getKey().getCode()+" ("+e3.getKey().getName()+") -- "+studentsThisCurriculaClassification.size()+" students");
+                    
+                    clasf.setNrStudents(studentsThisCurriculaClassification.size());
+                    clasf.setLlStudents(studentsThisCurriculaClassification.size());
+                    
                     for (Map.Entry<CourseOffering, Set<Long>> e4 : e3.getValue().entrySet()) {
-                        CurriculumCourse course = null;
-                        for (Iterator i=clasf.getCourses().iterator();i.hasNext();) {
-                            CurriculumCourse c = (CurriculumCourse)i.next();
-                            if (c.getCourse().equals(e4.getKey())) {
-                                course = c; break;
-                            }
-                        }
-                        float share = ((float)e4.getValue().size())/allStudents.size();
+                        float share = ((float)e4.getValue().size())/studentsThisCurriculaClassification.size();
                         //sLog.info("      "+e3.getKey().getCourseName()+" has "+e3.getValue().size()+" students ("+new DecimalFormat("0.0").format(100.0*share)+"%)");
-                        if (course==null) {
-                            if (share<iShareLimit && e4.getValue().size()<iEnrlLimit) continue;
-                            course = new CurriculumCourse();
-                            course.setClassification(clasf); clasf.getCourses().add(course);
-                            course.setCourse(e4.getKey());
-                        } else {
-                            remainingCourses.remove(course.getCourse());
-                        }
-                        if (course.getPercShare()==null) course.setPercShare(share);
+
+                    	if (share < iShareLimit && e4.getValue().size() < iEnrlLimit) continue;
+                    	
+                    	float totalShare = ((float)courseStudents.get(e4.getKey()).size()) / studentsThisCurricula.size();
+                        if (totalShare < iTotalShareLimit) continue;
+                        
+                        CurriculumCourse course = new CurriculumCourse();
+                        course.setClassification(clasf); clasf.getCourses().add(course);
+                        course.setCourse(e4.getKey());
+                        
+                        course.setPercShare(share);
                         course.setLlShare(share);
-                        if (deptCounter!=null) {
-                            Integer cx = deptCounter.get(course.getCourse().getDepartment());
-                            deptCounter.put(course.getCourse().getDepartment(), new Integer(1+(cx==null?0:cx.intValue())));
-                        }
+                        
+                        Integer cx = deptCounter.get(course.getCourse().getDepartment());
+                        deptCounter.put(course.getCourse().getDepartment(), new Integer(courseStudents.get(e4.getKey()).size() + (cx == null ? 0 : cx.intValue())));
                     }
                 }
         	
                 sortClassifications(curriculum.getClassifications());
+                List<CurriculumCourseGroup> createdGroups = new ArrayList<CurriculumCourseGroup>();
+                
+                Hashtable<CourseOffering, Group[]> course2group = new Hashtable<CourseOffering, Group[]>();
+                int id = 0;
+                int totalStudents = 0;
+
                 for (Iterator i=curriculum.getClassifications().iterator();i.hasNext();) {
                     CurriculumClassification clasf = (CurriculumClassification)i.next();
                     sortCourses(clasf.getCourses());
-                }
-                if (deptCounter!=null) {
-                    Department dept = null; int best = 0;
-                    for (Map.Entry<Department,Integer> e3 : deptCounter.entrySet()) {
-                        if (dept==null || best<e3.getValue()) {
-                            dept = e3.getKey(); best = e3.getValue();
-                        }
+                    totalStudents += clasf.getNrStudents();
+                    
+                    for (Iterator j = clasf.getCourses().iterator(); j.hasNext(); ) {
+                    	CurriculumCourse course = (CurriculumCourse)j.next();
+                    	Group[] g = course2group.get(course.getCourse());
+                    	if (g == null) {
+                    		g = new Group[] {
+                    					new Group(id++, 0 , course, new HashSet<Long>()),
+                    					new Group(id++, 1 , course, new HashSet<Long>())
+                    				};
+                    		course2group.put(course.getCourse(), g);
+                    	} else {
+                    		g[0].getCourses().add(course);
+                    		g[1].getCourses().add(course);
+                    	}
                     }
-                    curriculum.setDepartment(dept);
                 }
+                
+                List<Group> groups = new ArrayList<Group>();
+                for (Group[] g: course2group.values()) {
+                	CourseOffering course = g[0].getFistCourseOffering();
+                	Set<Long> students = courseStudents.get(course);
+                	double share = 100.0f * students.size() / totalStudents;
+                	if (students.size() > 5 && share >= 5.0f) {
+                		g[0].getStudents().addAll(students);
+                		groups.add(g[0]);
+                		g[1].getStudents().addAll(students);
+                		groups.add(g[1]);
+                	}
+                }
+                
+            	boolean shrink;
+            	do {
+            		shrink = false;
+            		Group b1 = null, b2 = null;
+            		double best = 0.0;
+            		for (Group g1: groups) {
+            			for (Group g2: groups) {
+            				if (g1.getId() <= g2.getId()) continue;
+            				double share = g1.share(g2);
+            				if (share > best) {
+            					b1 = g1; b2 = g2; best = share;
+            				}
+            			}
+            		}
+            		if (best >= 0.9) {
+            			sLog.info("  -- merge " + new DecimalFormat("0.00").format(100.0 * best) + " "  + b1 + " w " + b2);
+            			b1.mergeWith(b2);
+            			groups.remove(b2);
+            			sLog.info("     result: " + b1);
+            			shrink = true;
+            		} else {
+            			sLog.info("  -- best NOT merge " + new DecimalFormat("0.00").format(100.0 * best) + " "  + b1 + " w " + b2);
+            		}
+            	} while (shrink);
+
+            	Hashtable<String, Integer> names = new Hashtable<String, Integer>();
+            	for (Group g: groups) {
+            		if (g.countCourseOfferings() <= 1) continue;
+            		sLog.info("  -- " + g);
+            		CurriculumCourseGroup gr = new CurriculumCourseGroup();
+            		String clasf = g.getLeadingClassificationName();
+            		Integer cnt = names.get((g.isSameStudents() ? "R" : "O") + " " + clasf);
+            		if (cnt == null)
+            			cnt = 1;
+            		else
+            			cnt ++;
+            		gr.setName((g.isSameStudents() ? "R" : "O") + " " + clasf + " " + cnt);
+            		names.put((g.isSameStudents() ? "R" : "O") + " " + clasf, cnt);
+            		gr.setType(g.getType());
+            		gr.setCurriculum(curriculum);
+            		createdGroups.add(gr);
+            		for (CurriculumCourse course: g.getCourses()) {
+            			if (course.getGroups() == null) {
+            				course.setGroups(new HashSet());
+            			}
+            			course.getGroups().add(gr);
+            		}
+            	}
+            	
+                Department dept = null; int best = 0;
+                for (Map.Entry<Department,Integer> e3 : deptCounter.entrySet()) {
+                    if (dept==null || best<e3.getValue()) {
+                        dept = e3.getKey(); best = e3.getValue();
+                    }
+                }
+                curriculum.setDepartment(dept);
+
                 hibSession.saveOrUpdate(curriculum);
+                for (CurriculumCourseGroup g: createdGroups)
+                	hibSession.saveOrUpdate(g);
 
             }
         }
+        hibSession.flush();
+        sLog.info("All done.");
     }
     
     public static class AcademicAreaMajor {
@@ -272,6 +349,150 @@ public class MakeCurriculaFromLastlikeDemands {
     	
     	public int hashCode() {
     		return getArea().hashCode() ^ getMajor().hashCode();
+    	}
+    }
+    
+    public static class Group {
+    	private int iId = 0;
+    	private int iType = 0;
+    	private List<CurriculumCourse> iCourses = new ArrayList<CurriculumCourse>();
+    	private Set<Long> iStudents = new HashSet<Long>();
+    	private double iShare = 1.0;
+    	
+    	public Group(int id, int type, CurriculumCourse course, Set<Long> students) {
+    		iId = id;
+    		iType = type;
+    		iStudents.addAll(students);
+    		iCourses.add(course);
+    	}
+    	
+    	public CourseOffering getFistCourseOffering() {
+    		return iCourses.get(0).getCourse();
+    	}
+    	
+    	protected HashSet<CourseOffering> courses() {
+    		HashSet<CourseOffering> courses = new HashSet<CourseOffering>();
+    		for (CurriculumCourse c: iCourses)
+    			courses.add(c.getCourse());
+    		return courses;
+    	}
+    	
+    	public int countCourseOfferings() {
+    		HashSet<CourseOffering> courses = new HashSet<CourseOffering>();
+    		for (CurriculumCourse c: iCourses)
+    			courses.add(c.getCourse());
+    		return courses.size();
+    	}
+    	
+    	protected Hashtable<String, int[]>  getClassifications() {
+    		Hashtable<String, int[]> cnt = new Hashtable<String, int[]>();
+    		for (CurriculumCourse c: iCourses) {
+    			int[] other = cnt.get(c.getClassification().getName());
+    			cnt.put(c.getClassification().getName(), new int[] {
+    				Math.round(c.getPercShare() * c.getClassification().getNrStudents()) + (other == null ? 0 : other[0]),
+    				c.getClassification().getNrStudents() + (other == null ? 0 : other[1])});
+    		}
+    		return cnt;
+    	}
+    	
+    	public CurriculumClassification getClassification(String name) {
+    		for (CurriculumCourse c: iCourses) {
+    			if (c.getClassification().getName().equals(name)) return c.getClassification();
+    		}
+    		return null;
+    	}
+    	
+    	public String getLeadingClassificationName() {
+    		Hashtable<String, int[]> cnt = getClassifications();
+    		String best = null;
+    		int bestValue = 0;
+    		for (Map.Entry<String, int[]> e: cnt.entrySet()) {
+    			if (e.getValue()[0] > bestValue) {
+    				bestValue = e.getValue()[0];
+    				best = e.getKey();
+    			}
+    		}
+    		return best;
+    	}
+    	
+    	public float classificationShare(Group g) {
+    		Hashtable<String, int[]> a = getClassifications();
+    		Hashtable<String, int[]> b = g.getClassifications();
+    		int total1 = 0, total2 = 0, share = 0;
+    		for (Map.Entry<String, int[]> e: a.entrySet()) {
+    			float s1 = ((float)e.getValue()[0]) / e.getValue()[1];
+    			int[] c = b.get(e.getKey());
+    			float s2 = (c == null ? 0f : ((float)c[0]) / c[1]);
+    			int x1 = Math.round(s1 * getClassification(e.getKey()).getNrStudents());
+    			int x2 = Math.round(s2 * getClassification(e.getKey()).getNrStudents());
+    			share += Math.min(x1, x2);
+    			total1 += x1;
+    		}
+    		for (Map.Entry<String, int[]> e: b.entrySet()) {
+    			float s1 = ((float)e.getValue()[0]) / e.getValue()[1];
+    			int x1 = Math.round(s1 * g.getClassification(e.getKey()).getNrStudents());
+    			total2 += x1;
+    		}
+    		return ((float)share) / Math.min(total1, total2);
+    	}
+    	
+    	public List<CurriculumCourse> getCourses() {
+    		return iCourses;
+    	}
+    	
+    	public int getId() {
+    		return iId;
+    	}
+    	
+    	public int getType() {
+    		return iType;
+    	}
+    	
+    	public Set<Long> getStudents() {
+    		return iStudents;
+    	}
+    	
+    	public boolean isSameStudents() {
+    		return iType == 1;
+    	}
+    	
+    	public double getShare() { return iShare; }
+    	
+    	public double share(Group g) {
+    		if (g.getType() != getType()) return 0.0;
+    		if (classificationShare(g) < 0.66) return 0.0;
+    		int minStudents = Math.min(getStudents().size(), g.getStudents().size());
+    		int maxStudents = Math.max(getStudents().size(), g.getStudents().size());
+    		int shareStudents = 0;
+    		for (Long s: getStudents())
+    			if (g.getStudents().contains(s)) shareStudents ++;
+    		double share = ((double)shareStudents) / (isSameStudents() ? maxStudents : minStudents);
+    		// return getShare() * g.getShare() * (isSameStudents() ? share : 1.0 - share);
+    		return isSameStudents() ? share : 1.0 - share;
+    	}
+    	
+    	public void mergeWith(Group g) {
+    		int minStudents = Math.min(getStudents().size(), g.getStudents().size());
+    		int maxStudents = Math.max(getStudents().size(), g.getStudents().size());
+    		int shareStudents = 0;
+    		for (Long s: getStudents())
+    			if (g.getStudents().contains(s)) shareStudents ++;
+    		
+    		double share = ((double)shareStudents) / (isSameStudents() ? maxStudents : minStudents);
+    		if (!isSameStudents()) share = 1.0 - share;
+    		
+    		iStudents.addAll(g.getStudents());
+    		iCourses.addAll(g.getCourses());
+    		iShare *= share * g.getShare();
+    	}
+    	
+    	public String toString() {
+    		String courses = "";
+    		for (CourseOffering c: courses()) {
+    			if (!courses.isEmpty()) courses += " + ";
+    			courses += c.getCourseName();
+    		}
+    		return (isSameStudents() ? "Req" : "Opt")+ "{" + new DecimalFormat("0.0").format(100.0*iShare) + "/" + iStudents.size() + " " + courses + "}";
     	}
     }
     
