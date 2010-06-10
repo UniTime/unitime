@@ -59,6 +59,7 @@ public class ClassAssignmentInterface implements IsSerializable {
 		private boolean iAssigned = true;
 		private String iSubject, iCourseNbr, iTitle, iNote;
 		private boolean iHasUniqueName = true;
+		private Integer iLimit = null, iProjected = null, iEnrollment = null, iLastLike = null;
 		
 		private ArrayList<String> iOverlaps = null;
 		private boolean iNotAvailable = false;
@@ -105,6 +106,38 @@ public class ClassAssignmentInterface implements IsSerializable {
 			ClassAssignment a = new ClassAssignment(this);
 			iAssignments.add(a);
 			return a;
+		}
+		
+		public Integer getLimit() { return iLimit; }
+		public void setLimit(Integer limit) { iLimit = limit; }
+		public String getLimitString() {
+			if (iLimit == null)  return "";
+			if (iLimit < 0) return "&infin;";
+			return iLimit.toString();
+		}
+		
+		public Integer getProjected() { return iProjected; }
+		public void setProjected(Integer projected) { iProjected = projected; }
+		public String getProjectedString() {
+			if (iProjected == null || iProjected == 0)  return "";
+			if (iProjected < 0) return "&infin;";
+			return iProjected.toString();
+		}
+
+		public Integer getLastLike() { return iLastLike; }
+		public void setLastLike(Integer lastLike) { iLastLike = lastLike; }
+		public String getLastLikeString() {
+			if (iLastLike == null || iLastLike == 0)  return "";
+			if (iLastLike < 0) return "&infin;";
+			return iLastLike.toString();
+		}
+		
+		public Integer getEnrollment() { return iEnrollment; }
+		public void setEnrollment(Integer enrollment) { iEnrollment = enrollment; }
+		public String getEnrollmentString() {
+			if (iEnrollment == null || iEnrollment == 0)  return "";
+			if (iEnrollment < 0) return "&infin;";
+			return iEnrollment.toString();
 		}
 	}
 	

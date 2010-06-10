@@ -137,7 +137,7 @@ public class Curricula extends Composite {
 		iTable = new WebTable();
 		iTable.setHeader(
 				new WebTable.Row(
-						new WebTable.Cell("Curricula", 1, "150"),
+						new WebTable.Cell("Curriculum", 1, "150"),
 						new WebTable.Cell("Academic Area", 1, "150"),
 						new WebTable.Cell("Major(s)", 1, "200"),
 						new WebTable.Cell("Department", 1, "250"),

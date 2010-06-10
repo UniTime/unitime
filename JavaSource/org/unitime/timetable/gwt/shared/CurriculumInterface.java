@@ -66,6 +66,15 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 		}
 		return ret;
 	}
+	public String getMajorCodes(String delim) {
+		String ret = "";
+		if (iMajors == null) return ret;
+		for (MajorInterface major: iMajors) {
+			if (!ret.isEmpty()) ret += delim;
+			ret += major.getCode();
+		}
+		return ret;
+	}
 	
 	public DepartmentInterface getDepartment() { return iDept; }
 	public void setDepartment(DepartmentInterface dept) { iDept = dept; }
@@ -78,7 +87,7 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 	}
 	
 	public TreeSet<CourseInterface> getCourses() { return iCourses; }
-	public boolean hasCourses() { return iCourses != null; }
+	public boolean hasCourses() { return iCourses != null && !iCourses.isEmpty(); }
 	public void addCourse(CourseInterface course) {
 		if (iCourses == null) iCourses = new TreeSet<CourseInterface>();
 		iCourses.add(course);
