@@ -398,7 +398,7 @@ public class CurriculaCourses extends Composite {
 			iTable.setWidget(0, col, cl);
 			iTable.getFlexCellFormatter().setStyleName(0, col, "unitime-TableHeader");
 			iTable.getFlexCellFormatter().setWidth(0, col, "60px");
-			iTable.getFlexCellFormatter().setHorizontalAlignment(0, col, HasHorizontalAlignment.ALIGN_CENTER);
+			iTable.getFlexCellFormatter().setHorizontalAlignment(0, col, HasHorizontalAlignment.ALIGN_RIGHT);
 			final int x = col;
 			cl.addClickHandler(new ClickHandler() {
 				@Override
@@ -612,7 +612,7 @@ public class CurriculaCourses extends Composite {
 					}
 				}
 				
-				CurriculaCourseSelectionBox cx = new CurriculaCourseSelectionBox(course.getId().toString(), true);
+				CurriculaCourseSelectionBox cx = new CurriculaCourseSelectionBox(course.getId().toString(), iClassifications.getClassifications());
 				cx.setCourse(course.getCourseName(), false);
 				cx.setWidth("100px");
 				cx.addCourseSelectionChangeHandler(iCourseChangedHandler);
@@ -682,7 +682,7 @@ public class CurriculaCourses extends Composite {
 		HorizontalPanel hp = new HorizontalPanel();
 		iTable.setWidget(row, 0, hp);
 
-		CurriculaCourseSelectionBox cx = new CurriculaCourseSelectionBox(null, true);
+		CurriculaCourseSelectionBox cx = new CurriculaCourseSelectionBox(null, iClassifications.getClassifications());
 		cx.setWidth("100px");
 		cx.addCourseSelectionChangeHandler(new CurriculaCourseSelectionBox.CourseSelectionChangeHandler() {
 			@Override
