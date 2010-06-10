@@ -43,6 +43,7 @@ public interface CurriculaServiceAsync {
 	public void loadCurriculum(Long curriculumId, AsyncCallback<CurriculumInterface> callback) throws CurriculaException;
 	public void saveCurriculum(CurriculumInterface curriculum, AsyncCallback<Boolean> callback) throws CurriculaException;
 	public void deleteCurriculum(Long curriculumId, AsyncCallback<Boolean> callback) throws CurriculaException;
+	public void findCurriculaForACourse(String courseName, AsyncCallback<TreeSet<CurriculumInterface>> callback) throws CurriculaException;
 
 	
 	public void listCourseOfferings(String query, Integer limit, AsyncCallback<Collection<ClassAssignmentInterface.CourseAssignment>> callback) throws CurriculaException;

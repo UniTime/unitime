@@ -38,12 +38,14 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
 import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
 
 public class WebTable extends Composite {
@@ -137,19 +139,15 @@ public class WebTable extends Composite {
 				iTable.getFlexCellFormatter().setStyleName(i, j, (cell.getStyleName() == null ? "unitime-TableHeader" : cell.getStyleName()));
 				iTable.getFlexCellFormatter().setWidth(i, j, (cell.getWidth() == null ? (100 / header.length) + "%" : cell.getWidth()));
 				iTable.getFlexCellFormatter().setColSpan(i, j, cell.getColSpan());
+				iTable.getFlexCellFormatter().setVerticalAlignment(i, j, cell.getVerticalAlignment());
+				iTable.getFlexCellFormatter().setHorizontalAlignment(i, j, cell.getHorizontalAlignment());
 			}
 		}
 	}
 	
-	public void hideColumn(int col) {
+	public void setColumnVisible(int col, boolean visible) {
 		for (int row = 0; row < iTable.getRowCount(); row++) {
-			iTable.getFlexCellFormatter().setVisible(row, col, false);
-		}
-	}
-	
-	public void showColumn(int col) {
-		for (int row = 0; row < iTable.getRowCount(); row++) {
-			iTable.getFlexCellFormatter().setVisible(row, col, true);
+			iTable.getFlexCellFormatter().setVisible(row, col, visible);
 		}
 	}
 
@@ -201,6 +199,7 @@ public class WebTable extends Composite {
 		clearData(false);
 		iRows = rows;
 		for (int i=0; i<iRows.length; i++) {
+			if (iRows[i] == null) continue;
 			iRows[i].setRowIdx(i);
 			iRows[i].setTable(this);
 			iTable.getRowFormatter().setStyleName(i+getHeaderRowsCount(), null);
@@ -216,6 +215,7 @@ public class WebTable extends Composite {
 				iTable.getFlexCellFormatter().setStyleName(i+getHeaderRowsCount(), j, cell.getStyleName());
 				iTable.getFlexCellFormatter().setWidth(i+getHeaderRowsCount(), j, cell.getWidth());
 				iTable.getFlexCellFormatter().setVerticalAlignment(i+getHeaderRowsCount(), j, cell.getVerticalAlignment());
+				iTable.getFlexCellFormatter().setHorizontalAlignment(i+getHeaderRowsCount(), j, cell.getHorizontalAlignment());
 			}
 		}
 	}
@@ -338,6 +338,7 @@ public class WebTable extends Composite {
 					t.getFlexCellFormatter().setStyleName(getRowIdx() + iTable.getHeaderRowsCount(), col, cell.getStyleName());
 					t.getFlexCellFormatter().setWidth(getRowIdx() + iTable.getHeaderRowsCount(), col, cell.getWidth());
 					t.getFlexCellFormatter().setVerticalAlignment(getRowIdx() + iTable.getHeaderRowsCount(), col, cell.getVerticalAlignment());
+					t.getFlexCellFormatter().setHorizontalAlignment(getRowIdx() + iTable.getHeaderRowsCount(), col, cell.getHorizontalAlignment());
 			}
 		}
 	}
@@ -350,6 +351,7 @@ public class WebTable extends Composite {
 		Row iRow = null;
 		int iColIdx = -1;
 		VerticalAlignmentConstant iVerticalAlignment = HasVerticalAlignment.ALIGN_TOP;
+		HorizontalAlignmentConstant iHorizontalAlignment = HasHorizontalAlignment.ALIGN_LEFT;
 		
 		public Cell(String value) {
 			iValue = value;
@@ -377,6 +379,8 @@ public class WebTable extends Composite {
 		public Widget getWidget() { return null; }
 		public VerticalAlignmentConstant getVerticalAlignment() { return iVerticalAlignment; }
 		public void setVerticalAlignment(VerticalAlignmentConstant vertical) { iVerticalAlignment = vertical; }
+		public HorizontalAlignmentConstant getHorizontalAlignment() { return iHorizontalAlignment; }
+		public void setHorizontalAlignment(HorizontalAlignmentConstant vertical) { iHorizontalAlignment = vertical; }
 	}
 	
 	public static class CheckboxCell extends Cell {
