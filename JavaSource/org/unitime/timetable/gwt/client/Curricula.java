@@ -86,9 +86,12 @@ public class Curricula extends Composite {
 	
 	private TextBox iCurriculumAbbv = null, iCurriculumName = null;
 	private Label iCurriculumAbbvError = null, iCurriculumNameError = null, iCurriculumAreaError = null, iCurriculumDeptError = null, iCurriculumClasfTableError = null;
+	private Label iCurriculumAreaLabel = null, iCurriculumDeptLabel = null;
+	private HTML iCurriculumMajorsHTML = null;
 	private ListBox iCurriculumArea = null, iCurriculumDept = null, iCurriculumMajors = null;
 	private CurriculaClassifications iCurriculumClasfTable = null;
 	private CheckBox iCurriculaPercent = null;
+	private boolean iDefaultAbbv = false, iDefaultName = false;
 	
 	private final CurriculaServiceAsync iService = GWT.create(CurriculaService.class);
 	
@@ -129,7 +132,17 @@ public class Curricula extends Composite {
 		
 		iNew = new Button("<u>A</u>dd New");
 		iNew.setAccessKey('a');
+		iNew.setEnabled(false);
 		filterPanel.add(iNew);
+		iService.canAddCurriculum(new AsyncCallback<Boolean>() {
+			@Override
+			public void onFailure(Throwable caught) {
+			}
+			@Override
+			public void onSuccess(Boolean result) {
+				iNew.setEnabled(result);
+			}
+		});
 
 		iCurriculaPanel.add(filterPanel);
 		iCurriculaPanel.setCellHorizontalAlignment(filterPanel, HasHorizontalAlignment.ALIGN_CENTER);
@@ -200,9 +213,8 @@ public class Curricula extends Composite {
 		
 		curriculaTable.setText(idx, 0, "Abbreviation:");
 		VerticalPanel curriculumAbbvVP = new VerticalPanel();
-		iCurriculumAbbv = new TextBox();
+		iCurriculumAbbv = new MyTextBox();
 		iCurriculumAbbv.setWidth("200px");
-		iCurriculumAbbv.setStyleName("gwt-SuggestBox");
 		iCurriculumAbbv.setMaxLength(20);
 		curriculumAbbvVP.add(iCurriculumAbbv);
 		iCurriculumAbbvError = new Label();
@@ -213,15 +225,15 @@ public class Curricula extends Composite {
 		iCurriculumAbbv.addChangeHandler(new ChangeHandler() {
 			@Override
 			public void onChange(ChangeEvent event) {
+				iDefaultAbbv = false;
 				iCurriculumAbbvError.setVisible(false);
 			}
 		});
 
 		curriculaTable.setText(idx, 0, "Name:");
 		VerticalPanel curriculumNameVP = new VerticalPanel();
-		iCurriculumName = new TextBox();
-		iCurriculumName.setWidth("400px");
-		iCurriculumName.setStyleName("gwt-SuggestBox");
+		iCurriculumName = new MyTextBox();
+		iCurriculumName.setWidth("600px");
 		iCurriculumName.setMaxLength(60);
 		curriculumNameVP.add(iCurriculumName);
 		iCurriculumNameError = new Label();
@@ -232,6 +244,7 @@ public class Curricula extends Composite {
 		iCurriculumName.addChangeHandler(new ChangeHandler() {
 			@Override
 			public void onChange(ChangeEvent event) {
+				iDefaultName = false;
 				iCurriculumNameError.setVisible(false);
 			}
 		});
@@ -243,6 +256,10 @@ public class Curricula extends Composite {
 		iCurriculumArea.setStyleName("gwt-SuggestBox");
 		iCurriculumArea.setVisibleItemCount(1);
 		curriculumAreaVP.add(iCurriculumArea);
+		iCurriculumAreaLabel = new Label();
+		iCurriculumAreaLabel.setStyleName("unitime-LabelInsteadEdit");
+		iCurriculumAreaLabel.setVisible(false);
+		curriculumAreaVP.add(iCurriculumAreaLabel);
 		iCurriculumAreaError = new Label();
 		iCurriculumAreaError.setStyleName("unitime-ErrorHint");
 		iCurriculumAreaError.setVisible(false);
@@ -265,6 +282,13 @@ public class Curricula extends Composite {
 		iCurriculumArea.addChangeHandler(new ChangeHandler() {
 			@Override
 			public void onChange(ChangeEvent event) {
+				if (iDefaultName || iDefaultAbbv) {
+					try {
+						AcademicAreaInterface area = iAreas.get(iCurriculumArea.getSelectedIndex());
+						if (iDefaultAbbv) iCurriculumAbbv.setText(area.getAbbv());
+						if (iDefaultName) iCurriculumName.setText(area.getName());
+					} catch (Exception e) {}
+				}
 				iCurriculumAreaError.setVisible(false);
 				loadMajors();
 			}
@@ -272,15 +296,41 @@ public class Curricula extends Composite {
 
 
 		curriculaTable.setText(idx, 0, "Major(s):");
+		VerticalPanel curriculumMajorsVP = new VerticalPanel();
 		iCurriculumMajors = new ListBox(true);
 		iCurriculumMajors.setWidth("300px");
 		iCurriculumMajors.setStyleName("gwt-SuggestBox");
 		iCurriculumMajors.setVisibleItemCount(3);
 		iCurriculumMajors.setHeight("100%");
-		curriculaTable.setWidget(idx++, 1, iCurriculumMajors);
+		curriculumMajorsVP.add(iCurriculumMajors);
+		iCurriculumMajorsHTML = new HTML();
+		iCurriculumMajorsHTML.setStyleName("unitime-LabelInsteadEdit");
+		iCurriculumMajorsHTML.setVisible(false);
+		curriculumMajorsVP.add(iCurriculumMajorsHTML);
+		curriculaTable.setWidget(idx++, 1, curriculumMajorsVP);
 		iCurriculumMajors.addChangeHandler(new ChangeHandler() {
 			@Override
 			public void onChange(ChangeEvent event) {
+				if (iDefaultName || iDefaultAbbv) {
+					try {
+						String defaultAbbv = "", defaultName = "";
+						AcademicAreaInterface area = iAreas.get(iCurriculumArea.getSelectedIndex());
+						defaultAbbv = area.getAbbv();
+						defaultName = area.getName();
+						for (int i = 0; i < iCurriculumMajors.getItemCount(); i++) {
+							if (iCurriculumMajors.isItemSelected(i)) {
+								MajorInterface m = iMajors.get(i);
+								if (!defaultAbbv.contains("/")) { defaultAbbv += "/"; defaultName += " / "; }
+								else { defaultAbbv += ","; defaultName += ", "; }
+								defaultAbbv += m.getCode();
+								defaultName += m.getName();
+							}
+						}
+						if (defaultName.length() > 60) defaultName = defaultName.substring(0, 60);
+						if (iDefaultAbbv) iCurriculumAbbv.setText(defaultAbbv);
+						if (iDefaultName) iCurriculumName.setText(defaultName);
+					} catch (Exception e) {}
+				}
 				loadEnrollments();
 			}
 		});
@@ -292,6 +342,10 @@ public class Curricula extends Composite {
 		iCurriculumDept.setStyleName("gwt-SuggestBox");
 		iCurriculumDept.setVisibleItemCount(1);
 		curriculumDeptVP.add(iCurriculumDept);
+		iCurriculumDeptLabel = new Label();
+		iCurriculumDeptLabel.setStyleName("unitime-LabelInsteadEdit");
+		iCurriculumDeptLabel.setVisible(false);
+		curriculumDeptVP.add(iCurriculumDeptLabel);
 		iCurriculumDeptError = new Label();
 		iCurriculumDeptError.setStyleName("unitime-ErrorHint");
 		iCurriculumDeptError.setVisible(false);
@@ -523,7 +577,6 @@ public class Curricula extends Composite {
 			public void onRowClick(WebTable.RowClickEvent event) {
 				iCurriculaPanel.setVisible(false);
 				RootPanel.get("loading").setVisible(true);
-				setPageName("Edit Curriculum");
 				showLoading();
 				iService.loadCurriculum(iData.get(event.getRowIdx()).getId(), new AsyncCallback<CurriculumInterface>() {
 
@@ -531,12 +584,12 @@ public class Curricula extends Composite {
 					public void onFailure(Throwable caught) {
 						hideLoading();
 						iCurriculaPanel.setVisible(true);
-						setPageName("Curricula");
 					}
 
 					@Override
 					public void onSuccess(CurriculumInterface result) {
 						iCurriculum = result;
+						setPageName(iCurriculum.isEditable() ? "Edit Curriculum" : "Curriculum Details");
 						loadCurriculum();
 						RootPanel.get("loading").setVisible(false);
 						iCurriculumPanel.setVisible(true);
@@ -549,8 +602,14 @@ public class Curricula extends Composite {
 		iNew.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				iCurriculaPanel.setVisible(false);
-				setPageName("Edit Curriculum");
+				setPageName("New Curriculum");
 				iCurriculum = new CurriculumInterface();
+				iCurriculum.setEditable(true);
+				if (iDepts.size() == 1) {
+					DepartmentInterface d = new DepartmentInterface();
+					d.setId(Long.valueOf(iCurriculumDept.getValue(iCurriculumDept.getSelectedIndex())));
+					iCurriculum.setDepartment(d);
+				}
 				loadCurriculum();
 				RootPanel.get("loading").setVisible(false);
 				iCurriculumPanel.setVisible(true);
@@ -679,7 +738,9 @@ public class Curricula extends Composite {
 		if (!iSearch.isEnabled()) return;
 		showLoading();
 		iSearch.setEnabled(false);
-		iNew.setEnabled(false);
+		final boolean newEnabled = iNew.isEnabled();
+		if (newEnabled)
+			iNew.setEnabled(false);
 		iTable.clearData(true);
 		iData.clear();
 		iTable.setEmptyMessage("Loading data...");
@@ -714,7 +775,8 @@ public class Curricula extends Composite {
 						iService.loadClassifications(ids, iLoadClassifications);
 				}
 				iSearch.setEnabled(true);
-				iNew.setEnabled(true);
+				if (newEnabled)
+					iNew.setEnabled(true);
 				hideLoading();
 			}
 			
@@ -729,6 +791,13 @@ public class Curricula extends Composite {
 	}
 		
 	private void loadCurriculum() {
+		if (iCurriculum.getId() == null) {
+			iDefaultAbbv = true; iDefaultName = true;
+		} else {
+			iDefaultAbbv = false; iDefaultName = false;
+		}
+		if (iDepts.isEmpty() || iAreas.isEmpty())
+			iCurriculum.setEditable(false);
 		iCurriculumAbbvError.setVisible(false);
 		iCurriculumNameError.setVisible(false);
 		iCurriculumAreaError.setVisible(false);
@@ -736,24 +805,53 @@ public class Curricula extends Composite {
 		iCurriculumClasfTableError.setVisible(false);
 		for (int i = 0; i < 2; i ++) {
 			iSaveError[i].setVisible(false);
-			iDelete[i].setVisible(iCurriculum.getId() != null);
+			iDelete[i].setVisible(iCurriculum.getId() != null && iCurriculum.isEditable());
+			iSave[i].setVisible(iCurriculum.isEditable());
 		}
 		iCurriculumAbbv.setText(iCurriculum.getAbbv());
+		iCurriculumAbbv.setEnabled(iCurriculum.isEditable());
 		iCurriculumName.setText(iCurriculum.getName());
-		iCurriculumArea.setSelectedIndex(-1);
-		if (iCurriculum.getAcademicArea() != null) {
-			for (int i = 0; i < iAreas.size(); i++)
-				if (iAreas.get(i).getId().equals(iCurriculum.getAcademicArea().getId()))
-					iCurriculumArea.setSelectedIndex(i);
+		iCurriculumName.setEnabled(iCurriculum.isEditable());
+		if (iCurriculum.isEditable()) {
+			iCurriculumArea.setVisible(true);
+			iCurriculumAreaLabel.setVisible(false);
+			iCurriculumArea.setSelectedIndex(-1);
+			if (iCurriculum.getAcademicArea() != null) {
+				for (int i = 0; i < iAreas.size(); i++)
+					if (iAreas.get(i).getId().equals(iCurriculum.getAcademicArea().getId()))
+						iCurriculumArea.setSelectedIndex(i);
+			}
+		} else {
+			iCurriculumArea.setVisible(false);
+			iCurriculumAreaLabel.setVisible(true);
+			iCurriculumAreaLabel.setText(iCurriculum.getAcademicArea().getName());
 		}
-		iCurriculumDept.setSelectedIndex(-1);
-		if (iCurriculum.getDepartment() != null) {
-			for (int i = 0; i < iDepts.size(); i++)
-				if (iDepts.get(i).getId().equals(iCurriculum.getDepartment().getId()))
-					iCurriculumDept.setSelectedIndex(i);
+		if (iCurriculum.isEditable()) {
+			iCurriculumDept.setVisible(true);
+			iCurriculumDeptLabel.setVisible(false);
+			iCurriculumDept.setSelectedIndex(-1);
+			if (iCurriculum.getDepartment() != null) {
+				for (int i = 0; i < iDepts.size(); i++)
+					if (iDepts.get(i).getId().equals(iCurriculum.getDepartment().getId()))
+						iCurriculumDept.setSelectedIndex(i);
+			}
+		} else {
+			iCurriculumDept.setVisible(false);
+			iCurriculumDeptLabel.setVisible(true);
+			iCurriculumDeptLabel.setText(iCurriculum.getDepartment().getLabel());
 		}
-		loadMajors(); // here we can have false
+		if (iCurriculum.isEditable()) {
+			iCurriculumMajors.setVisible(true);
+			iCurriculumMajorsHTML.setVisible(false);
+		} else {
+			iCurriculumMajors.setVisible(false);
+			iCurriculumMajorsHTML.setVisible(true);
+			iCurriculumMajorsHTML.setHTML(iCurriculum.getMajorNames("<br>"));
+		}
+		loadMajors();
+		iCurriculumMajors.setEnabled(iCurriculum.isEditable());
 		iCurriculumClasfTable.populate(iCurriculum.getClassifications());
+		iCurriculumClasfTable.setEnabled(iCurriculum.isEditable());
 		iCurriculumCourses.populate(iCurriculum);
 		for (int col = 0; col < iClassifications.size(); col++) {
 			if (iCurriculumClasfTable.getExpected(col) == null)
@@ -796,6 +894,12 @@ public class Curricula extends Composite {
 				iCurriculum.addMajor(m);
 			}
 		}
+		if (!iCurriculum.hasMajors())
+			for (int i = 0; i < iCurriculumMajors.getItemCount(); i++) {
+				MajorInterface m = new MajorInterface();
+				m.setId(Long.valueOf(iCurriculumMajors.getValue(i)));
+				iCurriculum.addMajor(m);
+			}
 		
 		if (iCurriculumMajors.getItemCount() == 0 && iCurriculumArea.getSelectedIndex() >= 0) {
 			iCurriculumAreaError.setText("Selected academic area has no majors without a curriculum.");
@@ -842,16 +946,40 @@ public class Curricula extends Composite {
 
 						@Override
 						public void onSuccess(TreeSet<MajorInterface> result) {
+							String defaultAbbv = "", defaultName = "";
+							AcademicAreaInterface area = null;
+							try {
+								area = iAreas.get(iCurriculumArea.getSelectedIndex());
+								defaultAbbv = area.getAbbv();
+								defaultName = area.getName();
+							} catch (Exception e) {}
+							
 							iMajors.clear(); iMajors.addAll(result);
 							iCurriculumMajors.clear();
 							int idx = 0;
+							boolean allSelected = true;
 							for (MajorInterface m: result) {
 								iCurriculumMajors.addItem(m.getName(), m.getId().toString());
 								if (iCurriculum != null && iCurriculum.hasMajors()) {
 									iCurriculumMajors.setItemSelected(idx, iCurriculum.getMajors().contains(m));
+									if (iCurriculum.getMajors().contains(m)) {
+										if (!defaultAbbv.contains("/")) { defaultAbbv += "/"; defaultName += " / "; }
+										else { defaultAbbv += ","; defaultName += ", "; }
+										defaultAbbv += m.getCode();
+										defaultName += m.getName();
+									} else {
+										allSelected = false;
+									}
 								}
 								idx++;
 							}
+							if (defaultName.length() > 60) defaultName = defaultName.substring(0, 60);
+							iDefaultAbbv = defaultAbbv.equals(iCurriculumAbbv.getText());
+							iDefaultName = defaultName.equalsIgnoreCase(iCurriculumName.getText());
+							if (!iDefaultAbbv && allSelected && area != null && area.getAbbv().equals(iCurriculumAbbv.getText()))
+								iDefaultAbbv = true;
+							if (!iDefaultName && allSelected && area != null && area.getName().equalsIgnoreCase(iCurriculumName.getText()))
+								iDefaultName = true;
 							iCurriculumMajors.setVisibleItemCount(iCurriculumMajors.getItemCount() <= 3 ? 3 : iCurriculumMajors.getItemCount() > 10 ? 10 : iCurriculumMajors.getItemCount());
 							loadEnrollments();
 							hideLoading();
@@ -906,6 +1034,25 @@ public class Curricula extends Composite {
 	
 	public void setPageName(String pageName) {
 		((PageLabel)RootPanel.get("title").getWidget(0)).setPageName(pageName);
+	}
+	
+	public static class MyTextBox extends TextBox {
+		public MyTextBox() {
+			super();
+			setStyleName("gwt-SuggestBox");
+		}
+		
+		public void setEnabled(boolean enabled) {
+			super.setEnabled(enabled);
+			if (enabled) {
+				getElement().getStyle().setBorderColor(null);
+				getElement().getStyle().setBackgroundColor(null);
+			} else {
+				getElement().getStyle().setBorderColor("transparent");
+				getElement().getStyle().setBackgroundColor("transparent");
+			}
+		}
+		
 	}
 
 }

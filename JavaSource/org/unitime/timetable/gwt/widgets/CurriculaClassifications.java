@@ -31,6 +31,7 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.TextBox;
 
@@ -67,10 +68,9 @@ public class CurriculaClassifications extends Composite {
 		int col = 0;
 		for (final AcademicClassificationInterface clasf: iClassifications) {
 			col ++;
-			final TextBox name = new TextBox();
+			final MyTextBox name = new MyTextBox(true);
 			name.setText(clasf.getCode());
 			name.setWidth("60px");
-			name.setStyleName("gwt-SuggestBox");
 			name.setMaxLength(20);
 			final int xcol = col - 1;
 			name.addChangeHandler(new ChangeHandler() {
@@ -84,7 +84,7 @@ public class CurriculaClassifications extends Composite {
 			iTable.setWidget(0, col, name);
 			iTable.getCellFormatter().setHorizontalAlignment(0, col, HasHorizontalAlignment.ALIGN_CENTER);
 			
-			iTable.setHTML(1, col, clasf.getName().replace(" ", "<br>"));
+			iTable.setWidget(1, col, new HTML(clasf.getName().replace(" ", "<br>")));
 			iTable.getCellFormatter().setHorizontalAlignment(1, col, HasHorizontalAlignment.ALIGN_CENTER);
 			
 			final MyTextBox expected = new MyTextBox(true);
@@ -155,6 +155,16 @@ public class CurriculaClassifications extends Composite {
 		return true;
 	}
 	
+	public void setEnabled(boolean enabled) {
+		for (int i = 0; i < iClassifications.size(); i++) {
+			((MyTextBox)iTable.getWidget(0, 1 + i)).setEnabled(enabled);
+			((MyTextBox)iTable.getWidget(2, 1 + i)).setEnabled(enabled);
+			boolean visible = enabled || getExpected(i) != null || getEnrollment(i) != null || getLastLike(i) != null;
+			for (int j = 0; j < 5; j++)
+				iTable.getWidget(j, 1 + i).setVisible(visible);
+		}
+	}
+	
 	public static class MyTextBox extends TextBox {
 		public MyTextBox(boolean editable) {
 			super();
@@ -164,6 +174,17 @@ public class CurriculaClassifications extends Composite {
 			setTextAlignment(TextBox.ALIGN_RIGHT);
 			if (!editable) {
 				setEnabled(false);
+				getElement().getStyle().setBorderColor("transparent");
+				getElement().getStyle().setBackgroundColor("transparent");
+			}
+		}
+		
+		public void setEnabled(boolean enabled) {
+			super.setEnabled(enabled);
+			if (enabled) {
+				getElement().getStyle().setBorderColor(null);
+				getElement().getStyle().setBackgroundColor(null);
+			} else {
 				getElement().getStyle().setBorderColor("transparent");
 				getElement().getStyle().setBackgroundColor("transparent");
 			}

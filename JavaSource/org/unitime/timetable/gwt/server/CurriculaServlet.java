@@ -71,6 +71,7 @@ import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.PosMajor;
+import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.comparators.ClassComparator;
@@ -98,6 +99,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 			Query q = new Query(filter);
 			getThreadLocalRequest().getSession().setAttribute("Curricula.LastFilter", filter);
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
+			User user = Web.getUser(getThreadLocalRequest().getSession());
 			try {
 				Long sessionId = getAcademicSessionId();
 				
@@ -111,6 +113,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 						ci.setId(c.getUniqueId());
 						ci.setAbbv(c.getAbbv());
 						ci.setName(c.getName());
+						ci.setEditable(c.canUserEdit(user));
 						DepartmentInterface di = new DepartmentInterface();
 						di.setId(c.getDepartment().getUniqueId());
 						di.setAbbv(c.getDepartment().getAbbreviation());
@@ -217,6 +220,8 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 			for (AcademicClassificationInterface clasf: loadAcademicClassifications()) {
 				classifications.put(clasf.getId(), idx++);
 			}
+			
+			User user = Web.getUser(getThreadLocalRequest().getSession());
 
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 			try {
@@ -227,6 +232,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 				curriculumIfc.setId(c.getUniqueId());
 				curriculumIfc.setAbbv(c.getAbbv());
 				curriculumIfc.setName(c.getName());
+				curriculumIfc.setEditable(c.canUserEdit(user));
 				DepartmentInterface deptIfc = new DepartmentInterface();
 				deptIfc.setId(c.getDepartment().getUniqueId());
 				deptIfc.setAbbv(c.getDepartment().getAbbreviation());
@@ -384,6 +390,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 			Long s0 = System.currentTimeMillis();
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 			Transaction tx = null;
+			User user = Web.getUser(getThreadLocalRequest().getSession());
 			try {
 				tx = hibSession.beginTransaction();
 				Long sessionId = getAcademicSessionId();
@@ -416,6 +423,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 				c.setName(curriculum.getName());
 				c.setAcademicArea(AcademicAreaDAO.getInstance().get(curriculum.getAcademicArea().getId(), hibSession));
 				c.setDepartment(DepartmentDAO.getInstance().get(curriculum.getDepartment().getId(), hibSession));
+				if (!c.canUserEdit(user)) throw new CurriculaException("You are not authorized to " + (c.getUniqueId() == null ? "create" : "update") + " this curriculum.");
 				if (c.getMajors() == null) {
 					c.setMajors(new HashSet());
 					for (MajorInterface m: curriculum.getMajors()) {
@@ -613,6 +621,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 			sLog.info("deleteCurriculum(curriculumId=" + curriculumId + ")");
 			Long s0 = System.currentTimeMillis();
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
+			User user = Web.getUser(getThreadLocalRequest().getSession());
 			Transaction tx = null;
 			try {
 				tx = hibSession.beginTransaction();
@@ -623,6 +632,8 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 				
 				Curriculum c = CurriculumDAO.getInstance().get(curriculumId, hibSession);
 				if (c == null) throw new CurriculaException("Curriculum " + curriculumId + " no longer exists.");
+				
+				if (!c.canUserEdit(user)) throw new CurriculaException("You are not authorized to delete this curriculum.");
 				
 				hibSession.delete(c);
 				hibSession.flush();
@@ -1066,7 +1077,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 						"LastLikeCourseDemand x inner join x.student.academicAreaClassifications a inner join x.student.posMajors m, CourseOffering co where " +
 						"x.student.session.uniqueId = :sessionId and co.uniqueId = :courseId and "+
 						"((x.coursePermId is not null and co.permId=x.coursePermId) or (x.coursePermId is null and co.courseNbr=x.courseNbr)) " +
-						"group by a.academicClassification.uniqueId, co.uniqueId, co.subjectArea.subjectAreaAbbreviation, co.courseNbr ")
+						"group by a.academicArea.uniqueId, m.uniqueId, a.academicClassification.uniqueId")
 						.setLong("sessionId", sessionId)
 						.setLong("courseId", courseOffering.getUniqueId())
 						.setCacheable(true).list()) {
@@ -1454,16 +1465,31 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 			Long sessionId = getAcademicSessionId();
 			try {
-				List<Department> depts = hibSession.createQuery(
-						"select d from Department d where d.session.uniqueId = :sessionId order by d.deptCode")
-						.setLong("sessionId", sessionId).setCacheable(true).list();
-				for (Department d: depts) {
-					DepartmentInterface di = new DepartmentInterface();
-					di.setId(d.getUniqueId());
-					di.setCode(d.getDeptCode());
-					di.setAbbv(d.getAbbreviation());
-					di.setName(d.getName());
-					results.add(di);
+				User user = Web.getUser(getThreadLocalRequest().getSession());
+				if (Roles.ADMIN_ROLE.equals(user.getRole())) {
+					List<Department> depts = hibSession.createQuery(
+							"select d from Department d where d.session.uniqueId = :sessionId order by d.deptCode")
+							.setLong("sessionId", sessionId).setCacheable(true).list();
+					for (Department d: depts) {
+						DepartmentInterface di = new DepartmentInterface();
+						di.setId(d.getUniqueId());
+						di.setCode(d.getDeptCode());
+						di.setAbbv(d.getAbbreviation());
+						di.setName(d.getName());
+						results.add(di);
+					}
+				} else {
+					for (Iterator<Department> i = getManager().getDepartments().iterator(); i.hasNext();) {
+						Department d = i.next();
+						if (d.getSession().getUniqueId().equals(sessionId)) {
+							DepartmentInterface di = new DepartmentInterface();
+							di.setId(d.getUniqueId());
+							di.setCode(d.getDeptCode());
+							di.setAbbv(d.getAbbreviation());
+							di.setName(d.getName());
+							results.add(di);
+						}
+					}
 				}
 			} finally {
 				hibSession.close();
@@ -1500,6 +1526,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 	private TimetableManager getManager() {
 		User user = Web.getUser(getThreadLocalRequest().getSession());
 		if (user == null) throw new CurriculaException("not authenticated");
+		if (user.getRole() == null) throw new CurriculaException("no user role");
 		TimetableManager manager = TimetableManager.getManager(user);
 		if (manager == null) throw new CurriculaException("access denied");
 		return manager;
@@ -1751,6 +1778,20 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 		for (int i = 0; i < name.length; i++)
 			ret[i] = ApplicationProperties.getProperty(name[i]);
 		return ret;
+	}
+	
+	public Boolean canAddCurriculum() throws CurriculaException {
+		try {
+			User user = Web.getUser(getThreadLocalRequest().getSession());
+			if (user == null) throw new CurriculaException("not authenticated");
+			return Roles.CURRICULUM_MGR_ROLE.equals(user.getRole()) ||
+				Roles.DEPT_SCHED_MGR_ROLE.equals(user.getRole()) ||
+				Roles.ADMIN_ROLE.equals(user.getRole());
+		} catch  (Exception e) {
+			if (e instanceof CurriculaException) throw (CurriculaException)e;
+			sLog.error(e.getMessage(), e);
+			throw new CurriculaException(e.getMessage());
+		}
 	}
 
 }

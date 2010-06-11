@@ -2585,4 +2585,10 @@
 			references %SCHEMA%.curriculum (uniqueid) on delete cascade
 		</sql>
 	</update>
+	<update version="53" date="11-Jun-2010" comment="Curriculum manager role">
+		<mysql into="ID">select 32767 * next_hi from %SCHEMA%.hibernate_unique_key</mysql>
+		<mysql>update %SCHEMA%.hibernate_unique_key set next_hi = next_hi+1</mysql>
+		<mysql>insert into %SCHEMA%.roles (role_id, reference, abbv) values (%ID%, 'Curriculum Mgr', 'Curriculum Manager')</mysql>
+		<plsql>insert into %SCHEMA%.roles (role_id, reference, abbv) values (%SCHEMA%.role_seq.nextval, 'Curriculum Mgr', 'Curriculum Manager')</plsql>
+	</update>
 </dbupdate>

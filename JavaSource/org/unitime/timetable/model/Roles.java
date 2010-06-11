@@ -70,6 +70,7 @@ public class Roles extends BaseRoles {
 	public static String VIEW_ALL_ROLE = "View All";
 	public static String EXAM_MGR_ROLE = "Exam Mgr";
 	public static String EVENT_MGR_ROLE = "Event Mgr";
+	public static String CURRICULUM_MGR_ROLE = "Curriculum Mgr";
 	
     public static String USER_ROLES_ATTR_NAME = "userRoles";
     public static String ROLES_ATTR_NAME = "rolesList";
