@@ -43,9 +43,9 @@
    Session acadSession = (user==null?null:Session.getCurrentAcadSession(user));
 %>
 <% if (user!=null && manager!=null && acadSession!=null) { %>
-<% if (manager.canSeeCourses(acadSession,user)) { %>
 <% String courseTimetablingVisible = ApplicationProperties.getProperty("tmtbl.menu.display_course_timetabling", "true");
   if (courseTimetablingVisible.equalsIgnoreCase("true") || (user != null && user.isAdmin())) { %>
+<% if (manager.canSeeCourses(acadSession,user)) { %>
 	menu_item('1','Course Timetabling','Course Timetabling','','collapse');
 		menu_item('10','Input Data','Course Timetabling Input Data','','collapse');
 			leaf_item('Instructional Offerings','Instructional Offerings','instructionalOfferingShowSearch.do');
@@ -101,8 +101,11 @@
 		</tt:hasProperty>
 
 	enditem(); //1
-<% } %>
-<% } %>
+<% } else if (Roles.CURRICULUM_MGR_ROLE.equals(user.getRole())) { %>
+	menu_item('1','Course Timetabling','Course Timetabling','','collapse');
+		leaf_item('Curricula', 'Curricula', 'gwt.html?page=curricula');
+	enditem(); //1
+<% }} %>
 <% String studentSectioningVisible = ApplicationProperties.getProperty("tmtbl.menu.display_student_sectioning", "true");
   if (studentSectioningVisible.equalsIgnoreCase("true") || (user != null && user.isAdmin())) { %>
 <% if (manager.canSectionStudents(acadSession,user)) { %>

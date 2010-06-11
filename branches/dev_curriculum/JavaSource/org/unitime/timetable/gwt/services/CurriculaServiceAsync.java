@@ -50,4 +50,5 @@ public interface CurriculaServiceAsync {
 	public void retrieveCourseDetails(String course, AsyncCallback<String> callback) throws CurriculaException;
 	public void listClasses(String course, AsyncCallback<Collection<ClassAssignmentInterface.ClassAssignment>> callback) throws CurriculaException;
 	public void getAppliationProperty(String[] name, AsyncCallback<String[]> callback) throws CurriculaException;
+	public void canAddCurriculum(AsyncCallback<Boolean> callback) throws CurriculaException;
 }

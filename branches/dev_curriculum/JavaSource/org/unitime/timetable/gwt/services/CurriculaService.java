@@ -51,4 +51,5 @@ public interface CurriculaService extends RemoteService {
 	public String retrieveCourseDetails(String course) throws CurriculaException;
 	public Collection<ClassAssignmentInterface.ClassAssignment> listClasses(String course) throws CurriculaException;
 	public String[] getAppliationProperty(String[] name) throws CurriculaException;
+	public Boolean canAddCurriculum() throws CurriculaException;
 }

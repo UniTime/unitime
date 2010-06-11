@@ -53,4 +53,23 @@ public class Curriculum extends BaseCurriculum {
             .setLong("deptId", deptId)
             .setCacheable(true).list();
     }
+    
+    public boolean canUserEdit(org.unitime.commons.User user) {
+    	// Not authenticated -> false
+    	if (user == null) return false;
+    	
+    	// Admin -> always true
+    	if (Roles.ADMIN_ROLE.equals(user.getRole())) return true;
+    	
+    	// Not schedule deputy or curriculum manager -> false
+    	if (!Roles.DEPT_SCHED_MGR_ROLE.equals(user.getRole()) &&
+    			!Roles.CURRICULUM_MGR_ROLE.equals(user.getRole())) return false;
+    	
+		//TODO: Do we want to check Session status as well?
+		//  E.g., getDepartment().effectiveStatusType().canOwnerEdit()
+
+    	// Check department
+    	TimetableManager tm = TimetableManager.getManager(user);
+		return tm != null && tm.getDepartments().contains(getDepartment());
+    }
 }

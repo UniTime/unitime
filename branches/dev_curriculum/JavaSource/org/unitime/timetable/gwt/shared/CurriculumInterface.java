@@ -28,6 +28,7 @@ import com.google.gwt.user.client.rpc.IsSerializable;
 public class CurriculumInterface implements IsSerializable, Comparable<CurriculumInterface> {
 	private Long iId;
 	private String iAbbv, iName;
+	private boolean iEditable = false;
 	
 	private AcademicAreaInterface iAcademicArea;
 	private TreeSet<MajorInterface> iMajors;
@@ -137,6 +138,9 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 	
 	public Integer getRow() { return iRow; }
 	public void setRow(Integer row) { iRow = row; }
+	
+	public void setEditable(boolean editable) { iEditable = editable; }
+	public boolean isEditable() { return iEditable; }
 	
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof CurriculumInterface)) return false;

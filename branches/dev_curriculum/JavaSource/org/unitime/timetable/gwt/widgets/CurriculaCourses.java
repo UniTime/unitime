@@ -69,7 +69,7 @@ import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 
 public class CurriculaCourses extends Composite {
-	private FlexTable iTable = null;
+	private MyFlexTable iTable = null;
 	
 	private boolean iPercent = true;
 	private static NumberFormat NF = NumberFormat.getFormat("##0.0");
@@ -224,12 +224,13 @@ public class CurriculaCourses extends Composite {
 		});
 	}
 	
-	public void populate(CurriculumInterface curriculum) {
+	public void populate(final CurriculumInterface curriculum) {
 		for (int row = iTable.getRowCount() - 1; row >= 0; row--) {
 			iTable.removeRow(row);
 		}
 		iTable.clear(true);
 		iGroups.clear();
+		iTable.setEnabled(curriculum.isEditable());
 		
 		// header
 		final Label groupsLabel = new Label("Group");
@@ -247,45 +248,47 @@ public class CurriculaCourses extends Composite {
 			public void onClick(ClickEvent event) {
 				final PopupPanel popup = new PopupPanel(true);
 				MenuBar menu = new MenuBar(true);
-				for (final CurriculaCourses.Group g: getGroups()) {
-					menu.addItem(
-							new MenuItem(
-									DOM.toString(g.getElement()),
-									true,
-									new Command() {
-										@Override
-										public void execute() {
-											popup.hide();
-											assignGroup(null, g.getName(), g.getType());
-										}
-									}));
-				}
-				if (!getGroups().isEmpty()) {
-					menu.addSeparator();
-				}
-				if (getSelectedCount() > 0) {
-					menu.addItem(new MenuItem("New group...", true, new Command() {
-						@Override
-						public void execute() {
-							popup.hide();
-							iNewGroupDialog.setText("New group");
-							iGrOldName = null;
-							iGrName.setText(String.valueOf((char)('A' + getGroups().size())));
-							iGrType.setSelectedIndex(0);
-							iGrAssign.setVisible(true);
-							iGrDelete.setVisible(false);
-							iGrUpdate.setVisible(false);
-							DeferredCommand.addCommand(new Command() {
-								@Override
-								public void execute() {
-									iGrName.setFocus(true);
-									iGrName.selectAll();
-								}
-							});
-							iNewGroupDialog.center();
-						}
-					}));
-					menu.addSeparator();
+				if (curriculum.isEditable()) {
+					for (final CurriculaCourses.Group g: getGroups()) {
+						menu.addItem(
+								new MenuItem(
+										DOM.toString(g.getElement()),
+										true,
+										new Command() {
+											@Override
+											public void execute() {
+												popup.hide();
+												assignGroup(null, g.getName(), g.getType());
+											}
+										}));
+					}
+					if (!getGroups().isEmpty()) {
+						menu.addSeparator();
+					}
+					if (getSelectedCount() > 0) {
+						menu.addItem(new MenuItem("New group...", true, new Command() {
+							@Override
+							public void execute() {
+								popup.hide();
+								iNewGroupDialog.setText("New group");
+								iGrOldName = null;
+								iGrName.setText(String.valueOf((char)('A' + getGroups().size())));
+								iGrType.setSelectedIndex(0);
+								iGrAssign.setVisible(true);
+								iGrDelete.setVisible(false);
+								iGrUpdate.setVisible(false);
+								DeferredCommand.addCommand(new Command() {
+									@Override
+									public void execute() {
+										iGrName.setFocus(true);
+										iGrName.selectAll();
+									}
+								});
+								iNewGroupDialog.center();
+							}
+						}));
+						menu.addSeparator();
+					}
 				}
 				menu.addItem(new MenuItem("Sort by Group", true, new Command() {
 					@Override
@@ -317,25 +320,27 @@ public class CurriculaCourses extends Composite {
 			public void onClick(ClickEvent event) {
 				final PopupPanel popup = new PopupPanel(true);
 				MenuBar menu = new MenuBar(true);
-				menu.addItem(new MenuItem("Select All", true, new Command() {
-					@Override
-					public void execute() {
-						popup.hide();
-						for (int i = 1; i < iTable.getRowCount(); i++)
-							setSelected(i, !((CurriculaCourseSelectionBox)iTable.getWidget(i, 1)).getCourse().isEmpty());
-					}
-				}));
-				if (getSelectedCount() > 0) {
-					menu.addItem(new MenuItem("Clear Selection", true, new Command() {
+				if (curriculum.isEditable()) {
+					menu.addItem(new MenuItem("Select All", true, new Command() {
 						@Override
 						public void execute() {
 							popup.hide();
 							for (int i = 1; i < iTable.getRowCount(); i++)
-								setSelected(i, false);
+								setSelected(i, !((CurriculaCourseSelectionBox)iTable.getWidget(i, 1)).getCourse().isEmpty());
 						}
 					}));
+					if (getSelectedCount() > 0) {
+						menu.addItem(new MenuItem("Clear Selection", true, new Command() {
+							@Override
+							public void execute() {
+								popup.hide();
+								for (int i = 1; i < iTable.getRowCount(); i++)
+									setSelected(i, false);
+							}
+						}));
+					}
+					menu.addSeparator();
 				}
-				menu.addSeparator();
 				if (iPercent)
 					menu.addItem(new MenuItem("Show Numbers", true, new Command() {
 						@Override
@@ -405,25 +410,27 @@ public class CurriculaCourses extends Composite {
 				public void onClick(ClickEvent event) {
 					final PopupPanel popup = new PopupPanel(true);
 					MenuBar menu = new MenuBar(true);
-					menu.addItem(new MenuItem("Select All", true, new Command() {
-						@Override
-						public void execute() {
-							popup.hide();
-							for (int i = 1; i < iTable.getRowCount(); i++)
-								setSelected(i, !((MyTextBox)iTable.getWidget(i, x)).getText().isEmpty());
-						}
-					}));
-					if (getSelectedCount() > 0) {
-						menu.addItem(new MenuItem("Clear Selection", true, new Command() {
+					if (curriculum.isEditable()) {
+						menu.addItem(new MenuItem("Select All", true, new Command() {
 							@Override
 							public void execute() {
 								popup.hide();
 								for (int i = 1; i < iTable.getRowCount(); i++)
-									setSelected(i, false);
+									setSelected(i, !((MyTextBox)iTable.getWidget(i, x)).getText().isEmpty());
 							}
 						}));
+						if (getSelectedCount() > 0) {
+							menu.addItem(new MenuItem("Clear Selection", true, new Command() {
+								@Override
+								public void execute() {
+									popup.hide();
+									for (int i = 1; i < iTable.getRowCount(); i++)
+										setSelected(i, false);
+								}
+							}));
+						}
+						menu.addSeparator();
 					}
-					menu.addSeparator();
 					if (iPercent)
 						menu.addItem(new MenuItem("Show Numbers", true, new Command() {
 							@Override
@@ -593,7 +600,7 @@ public class CurriculaCourses extends Composite {
 							if (x.getName().equals(g.getName())) { gr = x; break; }
 						}
 						if (gr == null) {
-							gr = new Group(g.getName(), g.getType());
+							gr = new Group(g.getName(), g.getType(), curriculum.isEditable());
 							if (g.getColor() != null) {
 								gr.setColor(g.getColor());
 							} else {
@@ -616,12 +623,14 @@ public class CurriculaCourses extends Composite {
 				cx.setCourse(course.getCourseName(), false);
 				cx.setWidth("100px");
 				cx.addCourseSelectionChangeHandler(iCourseChangedHandler);
+				if (!curriculum.isEditable()) cx.setEnabled(false);
 				iTable.setWidget(row, 1, cx);
 				
 				col = 0;
 				for (final AcademicClassificationInterface clasf: iClassifications.getClassifications()) {
 					CurriculumCourseInterface cci = course.getCurriculumCourse(col);
 					MyTextBox ex = new MyTextBox(col, cci == null ? null : cci.getShare());
+					if (!curriculum.isEditable()) ex.setEnabled(false);
 					iTable.setWidget(row, 2 + 2 * col, ex);
 					MyLabel note = new MyLabel(col, cci == null ? null : cci.getEnrollment(), cci == null ? null : cci.getLastLike());
 					iTable.setWidget(row, 3 + 2 * col, note);
@@ -630,7 +639,7 @@ public class CurriculaCourses extends Composite {
 				}
 			}
 		}
-		addBlankLine();
+		if (curriculum.isEditable()) addBlankLine();
 	}
 	
 	public boolean saveCurriculum(CurriculumInterface c) {
@@ -1092,6 +1101,17 @@ public class CurriculaCourses extends Composite {
 				setText(exp == null ? "N/A" : String.valueOf(Math.round(exp * iShare)));	
 			}
 		}
+		
+		public void setEnabled(boolean enabled) {
+			super.setEnabled(enabled);
+			if (enabled) {
+				getElement().getStyle().setBorderColor(null);
+				getElement().getStyle().setBackgroundColor(null);
+			} else {
+				getElement().getStyle().setBorderColor("transparent");
+				getElement().getStyle().setBackgroundColor("transparent");
+			}
+		}
 	}
 	
 	public static class CourseChangedEvent {
@@ -1114,18 +1134,23 @@ public class CurriculaCourses extends Composite {
 		private String iName;
 		private int iType;
 		private String iColor;
-		public Group(String name, int type) {
+		private boolean iEditable;
+		
+		public Group(String name, int type, boolean editable) {
 			super(name, false);
 			iName = name;
 			iType = type;
 			setStylePrimaryName("unitime-TinyLabel" + (iType == 1 ? "White" : ""));
-			addClickHandler(iGrHandler);
-			addMouseOverHandler(new MouseOverHandler() {
-				@Override
-				public void onMouseOver(MouseOverEvent event) {
-					((Widget)event.getSource()).getElement().getStyle().setCursor(Cursor.POINTER);
-				}
-			});
+			iEditable = editable;
+			if (iEditable) {
+				addClickHandler(iGrHandler);
+				addMouseOverHandler(new MouseOverHandler() {
+					@Override
+					public void onMouseOver(MouseOverEvent event) {
+						((Widget)event.getSource()).getElement().getStyle().setCursor(Cursor.POINTER);
+					}
+				});
+			}
 		}
 		public String getName() { return iName; }
 		public int getType() { return iType; }
@@ -1142,7 +1167,7 @@ public class CurriculaCourses extends Composite {
 			return getName().equals(((Group)o).getName());
 		}
 		public Group cloneGroup() {
-			Group g = new Group(iName, iType);
+			Group g = new Group(iName, iType, iEditable);
 			g.setColor(getColor());
 			return g;
 		}
@@ -1165,7 +1190,7 @@ public class CurriculaCourses extends Composite {
 		}
 		if (g == null) {
 			if (name == null || name.isEmpty()) return;
-			g = new Group(name, type);
+			g = new Group(name, type, true);
 			colors: for (String c: sColors) {
 				for (Group x: iGroups) {
 					if (x.getColor().equals(c)) continue colors;
@@ -1274,13 +1299,20 @@ public class CurriculaCourses extends Composite {
 	}
 	
 	public class MyFlexTable extends FlexTable {
+		private boolean iEnabled = true;
+		
 		public MyFlexTable() {
 			super();
 			sinkEvents(Event.ONMOUSEOVER);
 			sinkEvents(Event.ONMOUSEOUT);
 			sinkEvents(Event.ONCLICK);
 		}
+		
+		public void setEnabled(boolean enabled) { iEnabled = enabled; }
+		public boolean isEnabled() { return iEnabled; }
+		
 		public void onBrowserEvent(Event event) {
+			if (!iEnabled) return;
 			Element td = getEventTargetCell(event);
 			if (td==null) return;
 		    Element tr = DOM.getParent(td);
