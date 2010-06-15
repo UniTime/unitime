@@ -186,7 +186,7 @@ String serverPath = request.getScheme()+"://"+request.getServerName()+":"+reques
 					onMouseOver="this.style.cursor='hand';this.style.cursor='pointer';"
 					onClick="window.open('http://www.unitime.org','unitime','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=yes,location=yes,directories=no,status=yes,menubar=no,copyhistory=no').focus();"
 					>
-					&copy; 2008 UniTime LLC
+					&copy; 2008 - 2010 UniTime LLC
 					<%--
  						[<span style='text-decoration: underline; color: #606060;' onclick="window.open('http://wiki.unitime.org/UniTime_Disclaimer','wikiHelp','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=yes,location=yes,directories=no,status=yes,menubar=no,copyhistory=no').focus(); event.cancelBubble=true;">disclaimer</span>]
  					--%>
