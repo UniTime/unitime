@@ -923,3 +923,36 @@ h1 {
 	margin-top: 10px;
 	width: 100%;
 }
+
+.unitime-TotalRow {
+	border-top: 1px dashed #9CB0CE;
+	font-weight: bold;
+	white-space: nowrap;
+}
+
+.unitime-OtherRow {
+	color: #777777;
+}
+
+.unitime-ClickableTableHeader {
+	padding-top: 5px;
+	font-weight: bold;
+	color: #666666;
+  	background: #e3e8f3 url(../unitime3/gwt/standard/images/hborder.png) repeat-x 0px -2003px;
+  	cursor: pointer;
+  	border-bottom: 1px dashed #9CB0CE;
+}
+
+.unitime3-HeaderTitle {
+	color: #35526F;
+	font-weight: bold;
+	font-size: 110%;
+	font-family: sans-serif, verdana, arial;
+}
+
+.unitime3-HeaderPanel {
+	margin-top: 25px;
+	width: 100%;
+	border-bottom: #35526F 1px solid;
+}
+

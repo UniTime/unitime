@@ -29,7 +29,7 @@ import com.google.gwt.user.client.ui.RootPanel;
  *
  */
 public enum Components {
-	courseCurricula("UniTimeGWT:CourseCurricula", new ComponentFactory() { public void insert(RootPanel panel) { new CourseCurriculaTable().insert(panel); } });
+	courseCurricula("UniTimeGWT:CourseCurricula", new ComponentFactory() { public void insert(RootPanel panel) { new CourseCurriculaTable(false, true, true).insert(panel); } });
 	
 	private String iId;
 	private ComponentFactory iFactory;

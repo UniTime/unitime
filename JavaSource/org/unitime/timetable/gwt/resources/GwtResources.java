@@ -32,4 +32,10 @@ public interface GwtResources extends ClientBundle {
 
 	@Source("org/unitime/timetable/gwt/resources/icons/help_icon.gif")
 	ImageResource help();
+
+	@Source("org/unitime/timetable/gwt/resources/icons/expand_node_btn.gif")
+	ImageResource expand();
+
+	@Source("org/unitime/timetable/gwt/resources/icons/collapse_node_btn.gif")
+	ImageResource collapse();
 }
