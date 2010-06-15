@@ -54,7 +54,11 @@ public class MakeCurriculaFromLastlikeDemands {
     public Hashtable<AcademicArea, Hashtable<PosMajor, Hashtable<AcademicClassification, Hashtable<CourseOffering, Set<Long>>>>> loadLastLikeCurricula(org.hibernate.Session hibSession) {
         Hashtable<AcademicArea, Hashtable<PosMajor, Hashtable<AcademicClassification, Hashtable<CourseOffering, Set<Long>>>>> curricula = new Hashtable();
         List demands = (List)hibSession.createQuery(
-                "select a, m, c, d.student.uniqueId from LastLikeCourseDemand d inner join d.student.academicAreaClassifications a inner join d.student.posMajors m, CourseOffering c where "+
+                "select a2, f2, m2, c, d.student.uniqueId from LastLikeCourseDemand d inner join d.student.academicAreaClassifications a inner join d.student.posMajors m, CourseOffering c," +
+                "AcademicArea a2, AcademicClassification f2, PosMajor m2 where "+
+                "a2.session.uniqueId=:sessionId and a2.academicAreaAbbreviation=a.academicArea.academicAreaAbbreviation and "+
+                "f2.session.uniqueId=:sessionId and f2.code=a.academicClassification.code and " +
+                "m2.session.uniqueId=:sessionId and m2.code=m.code and " +
                 "d.subjectArea.session.uniqueId=:sessionId and c.subjectArea=d.subjectArea and "+
                 "((d.coursePermId=null and c.courseNbr=d.courseNbr) or "+
                 " (d.coursePermId!=null and d.coursePermId=c.permId))")
@@ -64,24 +68,25 @@ public class MakeCurriculaFromLastlikeDemands {
         sLog.info("Processing "+demands.size()+" demands...");
         for (Iterator i=demands.iterator();i.hasNext();) {
             Object o[] = (Object[])i.next();
-            AcademicAreaClassification a = (AcademicAreaClassification)o[0];
-            PosMajor m = (PosMajor)o[1];
-            CourseOffering c = (CourseOffering)o[2];
-            Long s = (Long)o[3];
-            Hashtable<PosMajor, Hashtable<AcademicClassification, Hashtable<CourseOffering, Set<Long>>>> curacad = curricula.get(a.getAcademicArea());
+            AcademicArea a = (AcademicArea)o[0];
+            AcademicClassification f = (AcademicClassification)o[1];
+            PosMajor m = (PosMajor)o[2];
+            CourseOffering c = (CourseOffering)o[3];
+            Long s = (Long)o[4];
+            Hashtable<PosMajor, Hashtable<AcademicClassification, Hashtable<CourseOffering, Set<Long>>>> curacad = curricula.get(a);
             if (curacad==null) {
             	curacad = new Hashtable();
-            	curricula.put(a.getAcademicArea(), curacad);
+            	curricula.put(a, curacad);
             }
             Hashtable<AcademicClassification, Hashtable<CourseOffering, Set<Long>>> clasf = curacad.get(m);
             if (clasf==null) {
                 clasf = new Hashtable();
                 curacad.put(m, clasf);
             }
-            Hashtable<CourseOffering, Set<Long>> courses = clasf.get(a.getAcademicClassification());
+            Hashtable<CourseOffering, Set<Long>> courses = clasf.get(f);
             if (courses==null) {
                 courses = new Hashtable();
-                clasf.put(a.getAcademicClassification(), courses);
+                clasf.put(f, courses);
             }
             Set<Long> students = courses.get(c);
             if (students==null) {
