@@ -355,6 +355,22 @@
 		</logic:notEmpty>
 		
 		<TR>
+			<TD colspan="2">
+				&nbsp;
+			</TD>
+		</TR>
+		<TR>
+			<TD colspan="2">
+				<tt:section-title>Curricula</tt:section-title>
+			</TD>
+		</TR>
+		<TR>
+			<TD colspan="2">
+				<div id='UniTimeGWT:CourseCurricula'><bean:write name="instructionalOfferingDetailForm" property="instrOfferingId" /></div>
+			</TD>
+		</TR>
+		
+		<TR>
 			<TD colspan="2" >&nbsp;</TD>
 		</TR>
 

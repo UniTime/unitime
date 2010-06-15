@@ -56,7 +56,9 @@ String serverPath = request.getScheme()+"://"+request.getServerName()+":"+reques
 	<META http-equiv="cache-control" content="no-cache">
 	<META http-equiv="expires" content="0">
 	<STYLE type="text/css">@import url(<%=basePath%>scripts/jscalendar/calendar-blue.css);</STYLE>
-    <LINK rel="stylesheet" type="text/css" href="<%=basePath%>styles/timetabling.css">
+	<link type="text/css" rel="stylesheet" href="<%=basePath%>unitime3/gwt/standard/standard.css">
+    <link type="text/css" rel="stylesheet" href="<%=basePath%>styles/unitime4.css">
+	<LINK rel="stylesheet" type="text/css" href="<%=basePath%>styles/timetabling.css">
     <tt:hasProperty name="tmtbl.custom.css">
     	<LINK rel="stylesheet" type="text/css" href="<%=basePath%>%tmtbl.custom.css%" />
     </tt:hasProperty>
@@ -206,6 +208,7 @@ String serverPath = request.getScheme()+"://"+request.getServerName()+":"+reques
 		</TR>
 	</TABLE>		
 	</DIV>				
-	
+
+    <script type="text/javascript" language="javascript" src="<%=basePath%>unitime3/unitime3.nocache.js"></script>
 </BODY>
 </html:html>

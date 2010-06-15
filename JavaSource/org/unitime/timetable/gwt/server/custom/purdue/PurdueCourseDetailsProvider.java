@@ -63,6 +63,7 @@ public class PurdueCourseDetailsProvider implements CourseDetailsProvider {
 
 	public String getDetails(AcademicSessionInfo session, String subject, String courseNbr) throws SectioningException {
 		try {
+			if (courseNbr.length() > 5) courseNbr = courseNbr.substring(0, 5);
 			URL url = new URL(sUrl
 				.replace(":year", getYear(session))
 				.replace(":term", getTerm(session))

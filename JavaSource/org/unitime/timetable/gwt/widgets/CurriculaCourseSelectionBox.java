@@ -110,7 +110,7 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator 
 	private HTML iCourseDetails;
 	private ScrollPanel iCourseDetailsPanel, iClassesPanel, iCurriculaPanel;
 	
-	private final CurriculaServiceAsync iSectioningService = GWT.create(CurriculaService.class);
+	private final CurriculaServiceAsync iCurriculaService = GWT.create(CurriculaService.class);
 	
 	private AsyncCallback<Collection<ClassAssignmentInterface.CourseAssignment>> iCourseOfferingsCallback;
 	
@@ -137,7 +137,7 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator 
 		SuggestOracle courseOfferingOracle = new SuggestOracle() {
 			public void requestSuggestions(Request request, Callback callback) {
 				if (request.getQuery().equals(iHint)) return;
-				iSectioningService.listCourseOfferings(request.getQuery(), request.getLimit(), new SuggestCallback(request, callback));
+				iCurriculaService.listCourseOfferings(request.getQuery(), request.getLimit(), new SuggestCallback(request, callback));
 			}
 			public boolean isDisplayStringHTML() { return true; }			
 		};
@@ -608,7 +608,7 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator 
 			iCourses.setEmptyMessage(MESSAGES.courseSelectionNoCourseFilter());
 		} else {
 			iCourses.setEmptyMessage(MESSAGES.courseSelectionLoadingCourses());
-			iSectioningService.listCourseOfferings(iFilter.getText(), null, iCourseOfferingsCallback);
+			iCurriculaService.listCourseOfferings(iFilter.getText(), null, iCourseOfferingsCallback);
 		}
 		iLastQuery = iFilter.getText();
 	}
@@ -794,11 +794,11 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator 
 			iCourseDetailsPanel.setVisible(true);
 			iClasses.clearData(true);
 			iClasses.setEmptyMessage(MESSAGES.courseSelectionLoadingClasses());
-			iSectioningService.retrieveCourseDetails(courseName, iCourseDetailsCallback);
-			iSectioningService.listClasses(courseName, iCourseClassesCallback);
+			iCurriculaService.retrieveCourseDetails(courseName, iCourseDetailsCallback);
+			iCurriculaService.listClasses(courseName, iCourseClassesCallback);
 			iCurricula.clearData(true);
 			iCurricula.setEmptyMessage("Loading curricula ...");
-			iSectioningService.findCurriculaForACourse(courseName, iCourseCurriculaCallback);
+			iCurriculaService.findCurriculaForACourse(courseName, iCourseCurriculaCallback);
 			iLastCourseLookup = courseName;
 		}
 	}

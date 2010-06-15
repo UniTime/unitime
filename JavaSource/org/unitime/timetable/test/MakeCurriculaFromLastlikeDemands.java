@@ -28,6 +28,7 @@ import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao._RootDAO;
+import org.unitime.timetable.util.Constants;
 
 public class MakeCurriculaFromLastlikeDemands {
     protected static Logger sLog = Logger.getLogger(MakeCurriculaFromLastlikeDemands.class);
@@ -165,7 +166,7 @@ public class MakeCurriculaFromLastlikeDemands {
                 Curriculum curriculum = new Curriculum();
                 curriculum.setAcademicArea(e1.getKey());
                 curriculum.setAbbv(e1.getKey().getAcademicAreaAbbreviation() + "/" + e2.getKey().getCode());
-                curriculum.setName((e1.getKey().getLongTitle() == null ? e1.getKey().getShortTitle() : e1.getKey().getLongTitle()) + " / " + e2.getKey().getName());
+                curriculum.setName(Constants.toInitialCase(e1.getKey().getLongTitle() == null ? e1.getKey().getShortTitle() : e1.getKey().getLongTitle()) + " / " + Constants.toInitialCase(e2.getKey().getName()));
 				if (curriculum.getName().length() > 60) curriculum.setName(curriculum.getName().substring(0, 60));
                 curriculum.setClassifications(new HashSet());
                 curriculum.setMajors(new HashSet());
@@ -520,8 +521,8 @@ public class MakeCurriculaFromLastlikeDemands {
 
                 Session session = Session.getSessionUsingInitiativeYearTerm(
                         ApplicationProperties.getProperty("initiative", "PWL"),
-                        ApplicationProperties.getProperty("year","2009"),
-                        ApplicationProperties.getProperty("term","Fall")
+                        ApplicationProperties.getProperty("year","2010"),
+                        ApplicationProperties.getProperty("term","Spring")
                         );
                 
                 if (session==null) {
@@ -531,7 +532,8 @@ public class MakeCurriculaFromLastlikeDemands {
                     sLog.info("Session: "+session);
                 }
                 
-                new MakeCurriculaFromLastlikeDemands(session.getUniqueId()).update(hibSession, false);
+                new MakeCurriculaFromLastlikeDemands(session.getUniqueId()).update(hibSession,
+                		"last-like".equals(ApplicationProperties.getProperty("tmtbl.curriculum.lldemands.students","last-like")));
                 
                 tx.commit();
             } catch (Exception e) {
