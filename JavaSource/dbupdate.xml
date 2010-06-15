@@ -2591,4 +2591,24 @@
 		<mysql>insert into %SCHEMA%.roles (role_id, reference, abbv) values (%ID%, 'Curriculum Mgr', 'Curriculum Manager')</mysql>
 		<plsql>insert into %SCHEMA%.roles (role_id, reference, abbv) values (%SCHEMA%.role_seq.nextval, 'Curriculum Mgr', 'Curriculum Manager')</plsql>
 	</update>
+	<update version="54" date="15-Jun-2010" comment="Academic area, classification, major indexes">
+		<plsql onFail="next">
+			create index %SCHEMA%.idx_academic_area_abbv on %SCHEMA%.academic_area(academic_area_abbreviation, session_id)
+		</plsql>
+		<mysql onFail="next">
+			create index idx_academic_area_abbv on %SCHEMA%.academic_area(academic_area_abbreviation, session_id)
+		</mysql>
+		<plsql onFail="next">
+			create index %SCHEMA%.idx_academic_clasf_code on %SCHEMA%.academic_classification(code, session_id)
+		</plsql>
+		<mysql onFail="next">
+			create index idx_academic_clasf_code on %SCHEMA%.academic_classification(code, session_id)
+		</mysql>
+		<plsql>
+			create index %SCHEMA%.idx_pos_major_code on %SCHEMA%.pos_major(code, session_id)
+		</plsql>
+		<mysql>
+			create index idx_pos_major_code on %SCHEMA%.pos_major(code, session_id)
+		</mysql>
+	</update>
 </dbupdate>
