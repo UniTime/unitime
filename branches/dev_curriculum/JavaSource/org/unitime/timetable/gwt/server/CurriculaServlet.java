@@ -36,6 +36,7 @@ import javax.servlet.ServletException;
 
 import net.sf.cpsolver.coursett.model.Placement;
 import net.sf.cpsolver.coursett.model.RoomLocation;
+import net.sf.cpsolver.ifs.util.ToolBox;
 
 import org.apache.log4j.Logger;
 import org.hibernate.Transaction;
@@ -70,6 +71,7 @@ import org.unitime.timetable.model.CurriculumCourseGroup;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.InstrOfferingConfig;
+import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.SchedulingSubpart;
@@ -79,6 +81,7 @@ import org.unitime.timetable.model.dao.AcademicAreaDAO;
 import org.unitime.timetable.model.dao.AcademicClassificationDAO;
 import org.unitime.timetable.model.dao.CurriculumDAO;
 import org.unitime.timetable.model.dao.DepartmentDAO;
+import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.PosMajorDAO;
 import org.unitime.timetable.util.Constants;
 
@@ -1018,19 +1021,353 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 		}
 	}
 	
+	private TreeSet<CurriculumInterface> loadCurriculaForACourse(org.hibernate.Session hibSession, TreeSet<AcademicClassificationInterface> academicClassifications, CourseOffering courseOffering) throws CurriculaException {
+		TreeSet<CurriculumInterface> results = new TreeSet<CurriculumInterface>();
+		
+		Hashtable<Long, Integer> classifications = new Hashtable<Long, Integer>();
+		int idx = 0;
+		for (AcademicClassificationInterface clasf: academicClassifications) {
+			classifications.put(clasf.getId(), idx++);
+		}
+		
+		Hashtable<Long, Hashtable<Long, Hashtable<Long, Integer>>> area2major2clasf2enrl = new Hashtable<Long, Hashtable<Long,Hashtable<Long,Integer>>>();
+		for (Object[] o : (List<Object[]>)hibSession.createQuery(
+				"select a.academicArea.uniqueId, m.uniqueId, a.academicClassification.uniqueId, count(distinct e.student) " +
+				"from StudentClassEnrollment e inner join e.student.academicAreaClassifications a inner join e.student.posMajors m where " +
+				"e.courseOffering.uniqueId = :courseId group by a.academicArea.uniqueId, m.uniqueId, a.academicClassification.uniqueId")
+				.setLong("courseId", courseOffering.getUniqueId())
+				.setCacheable(true).list()) {
+			Long areaId = (Long)o[0];
+			Long majorId = (Long)o[1];
+			Long clasfId = (Long)o[2];
+			int enrl = ((Number)o[3]).intValue();
+			Hashtable<Long, Hashtable<Long, Integer>> major2clasf2enrl = area2major2clasf2enrl.get(areaId);
+			if (major2clasf2enrl == null) {
+				major2clasf2enrl = new Hashtable<Long, Hashtable<Long,Integer>>();
+				area2major2clasf2enrl.put(areaId, major2clasf2enrl);
+			}
+			Hashtable<Long, Integer> clasf2enrl = major2clasf2enrl.get(majorId);
+			if (clasf2enrl == null) {
+				clasf2enrl = new Hashtable<Long, Integer>();
+				major2clasf2enrl.put(majorId, clasf2enrl);
+			}
+			clasf2enrl.put(clasfId, enrl);
+		}
+		
+		Hashtable<Long, Hashtable<Long, Hashtable<Long, Integer>>> area2major2clasf2ll = new Hashtable<Long, Hashtable<Long,Hashtable<Long,Integer>>>();
+		for (Object[] o : (List<Object[]>)hibSession.createQuery(
+				"select a.academicArea.uniqueId, m.uniqueId, a.academicClassification.uniqueId, count(distinct x.student) from " +
+				"LastLikeCourseDemand x inner join x.student.academicAreaClassifications a inner join x.student.posMajors m, CourseOffering co where " +
+				"x.student.session.uniqueId = :sessionId and co.uniqueId = :courseId and "+
+				"((x.coursePermId is not null and co.permId=x.coursePermId) or (x.coursePermId is null and co.courseNbr=x.courseNbr)) " +
+				"group by a.academicArea.uniqueId, m.uniqueId, a.academicClassification.uniqueId")
+				.setLong("sessionId", courseOffering.getSubjectArea().getSessionId())
+				.setLong("courseId", courseOffering.getUniqueId())
+				.setCacheable(true).list()) {
+			Long areaId = (Long)o[0];
+			Long majorId = (Long)o[1];
+			Long clasfId = (Long)o[2];
+			int lastLike = ((Number)o[3]).intValue();
+			Hashtable<Long, Hashtable<Long, Integer>> major2clasf2ll = area2major2clasf2ll.get(areaId);
+			if (major2clasf2ll == null) {
+				major2clasf2ll = new Hashtable<Long, Hashtable<Long,Integer>>();
+				area2major2clasf2ll.put(areaId, major2clasf2ll);
+			}
+			Hashtable<Long, Integer> clasf2ll = major2clasf2ll.get(majorId);
+			if (clasf2ll == null) {
+				clasf2ll = new Hashtable<Long, Integer>();
+				major2clasf2ll.put(majorId, clasf2ll);
+			}
+			clasf2ll.put(clasfId, lastLike);
+		}
+
+		
+		Hashtable<Long, CurriculumInterface> curricula = new Hashtable<Long, CurriculumInterface>();
+		Hashtable<Long, Hashtable<Long, Integer>> cur2clasf2enrl = new Hashtable<Long, Hashtable<Long, Integer>>();
+		for (CurriculumCourse course : (List<CurriculumCourse>)hibSession.createQuery(
+				"select c from CurriculumCourse c where c.course.uniqueId = :courseId")
+				.setLong("courseId", courseOffering.getUniqueId()).setCacheable(true).list()) {
+			CurriculumClassification clasf = course.getClassification();
+			Curriculum curriculum = clasf.getCurriculum();
+			
+			// create curriculum interface
+			CurriculumInterface curriculumIfc = curricula.get(curriculum.getUniqueId());
+			if (curriculumIfc == null) {
+				curriculumIfc = new CurriculumInterface();
+				curriculumIfc.setId(curriculum.getUniqueId());
+				curriculumIfc.setAbbv(curriculum.getAbbv());
+				curriculumIfc.setName(curriculum.getName());
+				AcademicAreaInterface areaIfc = new AcademicAreaInterface();
+				areaIfc.setId(curriculum.getAcademicArea().getUniqueId());
+				areaIfc.setAbbv(curriculum.getAcademicArea().getAcademicAreaAbbreviation());
+				areaIfc.setName(Constants.toInitialCase(curriculum.getAcademicArea().getLongTitle() == null ? curriculum.getAcademicArea().getShortTitle() : curriculum.getAcademicArea().getLongTitle()));
+				curriculumIfc.setAcademicArea(areaIfc);
+				DepartmentInterface deptIfc = new DepartmentInterface();
+				deptIfc.setId(curriculum.getDepartment().getUniqueId());
+				deptIfc.setAbbv(curriculum.getDepartment().getAbbreviation());
+				deptIfc.setCode(curriculum.getDepartment().getDeptCode());
+				deptIfc.setName(curriculum.getDepartment().getName());
+				curriculumIfc.setDepartment(deptIfc);
+				for (Iterator<PosMajor> i = curriculum.getMajors().iterator(); i.hasNext(); ) {
+					PosMajor major = i.next();
+					MajorInterface mi = new MajorInterface();
+					mi.setId(major.getUniqueId());
+					mi.setCode(major.getCode());
+					mi.setName(Constants.toInitialCase(major.getName()));
+					curriculumIfc.addMajor(mi);
+				}
+				curricula.put(curriculum.getUniqueId(), curriculumIfc);
+				results.add(curriculumIfc);
+				
+				String majorIds = "";
+				for (Iterator<PosMajor> i = curriculum.getMajors().iterator(); i.hasNext(); ) {
+					PosMajor major = i.next();
+					if (!majorIds.isEmpty()) { majorIds += ","; }
+					majorIds += major.getUniqueId();
+				}
+
+				Hashtable<Long, Integer> clasf2enrl = new Hashtable<Long, Integer>();
+				for (Object[] o : (List<Object[]>)hibSession.createQuery(
+						"select a.academicClassification.uniqueId, count(distinct e.student) from StudentClassEnrollment e inner join e.student.academicAreaClassifications a " + 
+						(majorIds.isEmpty() ? "" : " inner join e.student.posMajors m ") + "where " +
+						"e.student.session.uniqueId = :sessionId and "+
+						"a.academicArea.uniqueId = :areaId " + 
+						(majorIds.isEmpty() ? "" : "and m.uniqueId in (" + majorIds + ") ") +
+						"group by a.academicClassification.uniqueId")
+						.setLong("sessionId", courseOffering.getSubjectArea().getSessionId())
+						.setLong("areaId", curriculum.getAcademicArea().getUniqueId())
+						.setCacheable(true).list()) {
+					Long clasfId = (Long)o[0];
+					int enrl = ((Number)o[1]).intValue();
+					clasf2enrl.put(clasfId, enrl);
+				}
+				cur2clasf2enrl.put(curriculum.getUniqueId(), clasf2enrl);
+			}
+			
+			CurriculumClassificationInterface curClasfIfc = new CurriculumClassificationInterface();
+			curClasfIfc.setId(clasf.getUniqueId());
+			curClasfIfc.setName(clasf.getName());
+			curClasfIfc.setCurriculumId(curriculum.getUniqueId());
+			curClasfIfc.setLastLike(clasf.getLlStudents());
+			curClasfIfc.setExpected(clasf.getNrStudents());
+			curClasfIfc.setEnrollment(cur2clasf2enrl.get(curriculum.getUniqueId()).get(clasf.getAcademicClassification().getUniqueId()));
+			AcademicClassificationInterface acadClasfIfc = new AcademicClassificationInterface();
+			acadClasfIfc.setId(clasf.getAcademicClassification().getUniqueId());
+			acadClasfIfc.setName(clasf.getAcademicClassification().getName());
+			acadClasfIfc.setCode(clasf.getAcademicClassification().getCode());
+			curClasfIfc.setAcademicClassification(acadClasfIfc);
+			curriculumIfc.addClassification(curClasfIfc);
+			
+			CourseInterface courseIfc = null;
+			if (curriculumIfc.hasCourses()) {
+				courseIfc = curriculumIfc.getCourses().first();
+			} else {
+				courseIfc = new CourseInterface();
+				courseIfc.setId(course.getCourse().getUniqueId());
+				courseIfc.setCourseName(course.getCourse().getCourseName());
+				curriculumIfc.addCourse(courseIfc);
+			}
+			
+			CurriculumCourseInterface curCourseIfc = new CurriculumCourseInterface();
+			curCourseIfc.setId(course.getUniqueId());
+			curCourseIfc.setCourseOfferingId(course.getCourse().getUniqueId());
+			curCourseIfc.setCurriculumClassificationId(clasf.getUniqueId());
+			curCourseIfc.setShare(course.getPercShare());
+			curCourseIfc.setCourseName(course.getCourse().getCourseName());
+			
+			int enrl = 0;
+			Hashtable<Long, Hashtable<Long, Integer>> major2clasf2enrl = area2major2clasf2enrl.get(curriculum.getAcademicArea().getUniqueId());
+			if (major2clasf2enrl != null) {
+				if (curriculum.getMajors().isEmpty()) {
+					for (Long majorId: major2clasf2enrl.keySet()) {
+						Hashtable<Long, Integer> clasf2enrl = major2clasf2enrl.get(majorId);
+						Integer e = (clasf2enrl == null ? null : clasf2enrl.get(clasf.getAcademicClassification().getUniqueId()));
+						if (e != null) {
+							enrl += e;
+							clasf2enrl.remove(clasf.getAcademicClassification().getUniqueId());
+						}
+					}
+				} else {
+					for (Iterator<PosMajor> i = curriculum.getMajors().iterator(); i.hasNext(); ) {
+						PosMajor m = i.next();
+						Hashtable<Long, Integer> clasf2enrl = major2clasf2enrl.get(m.getUniqueId());
+						Integer e = (clasf2enrl == null ? null : clasf2enrl.get(clasf.getAcademicClassification().getUniqueId()));
+						if (e != null) {
+							enrl += e;
+							clasf2enrl.remove(clasf.getAcademicClassification().getUniqueId());
+						}
+					}
+				}
+			}
+			if (enrl > 0)
+				curCourseIfc.setEnrollment(enrl);
+			
+			int lastLike = 0;
+			Hashtable<Long, Hashtable<Long, Integer>> major2clasf2ll = area2major2clasf2ll.get(curriculum.getAcademicArea().getUniqueId());
+			if (major2clasf2ll != null) {
+				if (curriculum.getMajors().isEmpty()) {
+					for (Long majorId: major2clasf2ll.keySet()) {
+						Hashtable<Long, Integer> clasf2ll = major2clasf2ll.get(majorId);
+						Integer e = (clasf2ll == null ? null : clasf2ll.get(clasf.getAcademicClassification().getUniqueId()));
+						if (e != null) {
+							lastLike += e;
+							clasf2ll.remove(clasf.getAcademicClassification().getUniqueId());
+						}
+					}
+				} else {
+					for (Iterator<PosMajor> i = curriculum.getMajors().iterator(); i.hasNext(); ) {
+						PosMajor m = i.next();
+						Hashtable<Long, Integer> clasf2ll = major2clasf2ll.get(m.getUniqueId());
+						Integer e = (clasf2ll == null ? null : clasf2ll.get(clasf.getAcademicClassification().getUniqueId()));
+						if (e != null) {
+							lastLike += e;
+							clasf2ll.remove(clasf.getAcademicClassification().getUniqueId());
+						}
+					}
+				}
+			}
+			
+			if (lastLike > 0)
+				curCourseIfc.setLastLike(lastLike);
+			
+			courseIfc.setCurriculumCourse(classifications.get(clasf.getAcademicClassification().getUniqueId()), curCourseIfc);
+		}
+		
+		for (CurriculumInterface curriculumIfc: results) {
+			for (AcademicClassificationInterface clasf: academicClassifications) {
+				int enrl = 0;
+				Hashtable<Long, Hashtable<Long, Integer>> major2clasf2enrl = area2major2clasf2enrl.get(curriculumIfc.getAcademicArea().getId());
+				if (major2clasf2enrl != null) {
+					if (!curriculumIfc.hasMajors()) {
+						for (Long majorId: major2clasf2enrl.keySet()) {
+							Hashtable<Long, Integer> clasf2enrl = major2clasf2enrl.get(majorId);
+							Integer e = (clasf2enrl == null ? null : clasf2enrl.get(clasf.getId()));
+							if (e != null) {
+								enrl += e;
+								clasf2enrl.remove(clasf.getId());
+							}
+						}
+					} else {
+						for (MajorInterface m: curriculumIfc.getMajors()) {
+							Hashtable<Long, Integer> clasf2enrl = major2clasf2enrl.get(m.getId());
+							Integer e = (clasf2enrl == null ? null : clasf2enrl.get(clasf.getId()));
+							if (e != null) {
+								enrl += e;
+								clasf2enrl.remove(clasf.getId());
+							}
+						}
+					}
+				}
+				
+				int lastLike = 0;
+				Hashtable<Long, Hashtable<Long, Integer>> major2clasf2ll = area2major2clasf2ll.get(curriculumIfc.getAcademicArea().getId());
+				if (major2clasf2ll != null) {
+					if (!curriculumIfc.hasMajors()) {
+						for (Long majorId: major2clasf2ll.keySet()) {
+							Hashtable<Long, Integer> clasf2ll = major2clasf2ll.get(majorId);
+							Integer e = (clasf2ll == null ? null : clasf2ll.get(clasf.getId()));
+							if (e != null) {
+								lastLike += e;
+								clasf2ll.remove(clasf.getId());
+							}
+						}
+					} else {
+						for (MajorInterface m: curriculumIfc.getMajors()) {
+							Hashtable<Long, Integer> clasf2ll = major2clasf2ll.get(m.getId());
+							Integer e = (clasf2ll == null ? null : clasf2ll.get(clasf.getId()));
+							if (e != null) {
+								lastLike += e;
+								clasf2ll.remove(clasf.getId());
+							}
+						}
+					}
+				}
+				
+				
+				if (enrl > 0 || lastLike > 0) {
+					CourseInterface courseIfc = null;
+					if (curriculumIfc.hasCourses()) {
+						courseIfc = curriculumIfc.getCourses().first();
+					} else {
+						courseIfc = new CourseInterface();
+						courseIfc.setId(courseOffering.getUniqueId());
+						courseIfc.setCourseName(courseOffering.getCourseName());
+						curriculumIfc.addCourse(courseIfc);
+					}
+					
+					CurriculumCourseInterface curCourseIfc = new CurriculumCourseInterface();
+					curCourseIfc.setCourseOfferingId(courseOffering.getUniqueId());
+					curCourseIfc.setShare(0.0f);
+					curCourseIfc.setCourseName(courseOffering.getCourseName());
+
+					if (enrl > 0)
+						curCourseIfc.setEnrollment(enrl);
+
+					if (lastLike > 0)
+						curCourseIfc.setLastLike(lastLike);
+					
+					courseIfc.setCurriculumCourse(classifications.get(clasf.getId()), curCourseIfc);
+				}
+			}
+		}
+		
+		boolean empty = true;
+		CurriculumInterface otherCurriculumIfc = new CurriculumInterface();
+		otherCurriculumIfc.setAbbv("----");
+		otherCurriculumIfc.setName("Other");
+		CourseInterface otherCourseIfc = new CourseInterface();
+		otherCourseIfc.setId(courseOffering.getUniqueId());
+		otherCourseIfc.setCourseName(courseOffering.getCourseName());
+		otherCurriculumIfc.addCourse(otherCourseIfc);
+		for (AcademicClassificationInterface clasf: academicClassifications) {
+			int enrl = 0;
+			for (Long areaId: area2major2clasf2enrl.keySet()) {
+				Hashtable<Long, Hashtable<Long, Integer>> major2clasf2enrl = area2major2clasf2enrl.get(areaId);
+				for (Long majorId: major2clasf2enrl.keySet()) {
+					Hashtable<Long, Integer> clasf2enrl = major2clasf2enrl.get(majorId);
+					Integer e = (clasf2enrl == null ? null : clasf2enrl.get(clasf.getId()));
+					if (e != null) {
+						enrl += e;
+					}
+				}
+			}
+			int lastLike = 0;
+			for (Long areaId: area2major2clasf2ll.keySet()) {
+				Hashtable<Long, Hashtable<Long, Integer>> major2clasf2ll = area2major2clasf2ll.get(areaId);
+				for (Long majorId: major2clasf2ll.keySet()) {
+					Hashtable<Long, Integer> clasf2ll = major2clasf2ll.get(majorId);
+					Integer e = (clasf2ll == null ? null : clasf2ll.get(clasf.getId()));
+					if (e != null) {
+						lastLike += e;
+					}
+				}
+			}
+			if (enrl > 0 || lastLike > 0) {
+				CurriculumCourseInterface otherCurCourseIfc = new CurriculumCourseInterface();
+				otherCurCourseIfc.setCourseOfferingId(courseOffering.getUniqueId());
+				otherCurCourseIfc.setCourseName(courseOffering.getCourseName());
+				if (enrl > 0)
+					otherCurCourseIfc.setEnrollment(enrl);
+				if (lastLike > 0)
+					otherCurCourseIfc.setLastLike(lastLike);
+				otherCourseIfc.setCurriculumCourse(classifications.get(clasf.getId()), otherCurCourseIfc);
+				empty = false;
+			}
+		}
+		if (!empty) results.add(otherCurriculumIfc);
+		
+		return results;
+	}
+	
 	public TreeSet<CurriculumInterface> findCurriculaForACourse(String courseName) throws CurriculaException {
 		try {
 			sLog.info("getCurriculaForACourse(courseName='" + courseName + "')");
 			Long s0 = System.currentTimeMillis();
 			
 			TreeSet<AcademicClassificationInterface> academicClassifications = loadAcademicClassifications();
-			Hashtable<Long, Integer> classifications = new Hashtable<Long, Integer>();
-			int idx = 0;
-			for (AcademicClassificationInterface clasf: academicClassifications) {
-				classifications.put(clasf.getId(), idx++);
-			}
 
-			TreeSet<CurriculumInterface> results = new TreeSet<CurriculumInterface>();
+			TreeSet<CurriculumInterface> results = null;
+			
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 			try {
 				Long sessionId = getAcademicSessionId();
@@ -1047,332 +1384,52 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 				}
 				if (courseOffering == null) throw new CurriculaException("course " + courseName + " does not exist");
 				
-				Hashtable<Long, Hashtable<Long, Hashtable<Long, Integer>>> area2major2clasf2enrl = new Hashtable<Long, Hashtable<Long,Hashtable<Long,Integer>>>();
-				for (Object[] o : (List<Object[]>)hibSession.createQuery(
-						"select a.academicArea.uniqueId, m.uniqueId, a.academicClassification.uniqueId, count(distinct e.student) " +
-						"from StudentClassEnrollment e inner join e.student.academicAreaClassifications a inner join e.student.posMajors m where " +
-						"e.courseOffering.uniqueId = :courseId group by a.academicArea.uniqueId, m.uniqueId, a.academicClassification.uniqueId")
-						.setLong("courseId", courseOffering.getUniqueId())
-						.setCacheable(true).list()) {
-					Long areaId = (Long)o[0];
-					Long majorId = (Long)o[1];
-					Long clasfId = (Long)o[2];
-					int enrl = ((Number)o[3]).intValue();
-					Hashtable<Long, Hashtable<Long, Integer>> major2clasf2enrl = area2major2clasf2enrl.get(areaId);
-					if (major2clasf2enrl == null) {
-						major2clasf2enrl = new Hashtable<Long, Hashtable<Long,Integer>>();
-						area2major2clasf2enrl.put(areaId, major2clasf2enrl);
-					}
-					Hashtable<Long, Integer> clasf2enrl = major2clasf2enrl.get(majorId);
-					if (clasf2enrl == null) {
-						clasf2enrl = new Hashtable<Long, Integer>();
-						major2clasf2enrl.put(majorId, clasf2enrl);
-					}
-					clasf2enrl.put(clasfId, enrl);
-				}
-				
-				Hashtable<Long, Hashtable<Long, Hashtable<Long, Integer>>> area2major2clasf2ll = new Hashtable<Long, Hashtable<Long,Hashtable<Long,Integer>>>();
-				for (Object[] o : (List<Object[]>)hibSession.createQuery(
-						"select a.academicArea.uniqueId, m.uniqueId, a.academicClassification.uniqueId, count(distinct x.student) from " +
-						"LastLikeCourseDemand x inner join x.student.academicAreaClassifications a inner join x.student.posMajors m, CourseOffering co where " +
-						"x.student.session.uniqueId = :sessionId and co.uniqueId = :courseId and "+
-						"((x.coursePermId is not null and co.permId=x.coursePermId) or (x.coursePermId is null and co.courseNbr=x.courseNbr)) " +
-						"group by a.academicArea.uniqueId, m.uniqueId, a.academicClassification.uniqueId")
-						.setLong("sessionId", sessionId)
-						.setLong("courseId", courseOffering.getUniqueId())
-						.setCacheable(true).list()) {
-					Long areaId = (Long)o[0];
-					Long majorId = (Long)o[1];
-					Long clasfId = (Long)o[2];
-					int lastLike = ((Number)o[3]).intValue();
-					Hashtable<Long, Hashtable<Long, Integer>> major2clasf2ll = area2major2clasf2ll.get(areaId);
-					if (major2clasf2ll == null) {
-						major2clasf2ll = new Hashtable<Long, Hashtable<Long,Integer>>();
-						area2major2clasf2ll.put(areaId, major2clasf2ll);
-					}
-					Hashtable<Long, Integer> clasf2ll = major2clasf2ll.get(majorId);
-					if (clasf2ll == null) {
-						clasf2ll = new Hashtable<Long, Integer>();
-						major2clasf2ll.put(majorId, clasf2ll);
-					}
-					clasf2ll.put(clasfId, lastLike);
-				}
+				results = loadCurriculaForACourse(hibSession, academicClassifications, courseOffering);
+			} finally {
+				hibSession.close();
+			}
+			sLog.info("Found " + (results == null ? 0 : results.size()) + " curricula (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
+			return results;
+		} catch (Exception e) {
+			if (e instanceof CurriculaException) throw (CurriculaException)e;
+			sLog.error(e.getMessage(), e);
+			throw new CurriculaException(e.getMessage());
+		}
+	}
+	
+	public TreeSet<CurriculumInterface> findCurriculaForAnInstructionalOffering(Long offeringId) throws CurriculaException {
+		try {
+			sLog.info("findCurriculaForAnOffering(offeringId='" + offeringId + "')");
+			Long s0 = System.currentTimeMillis();
+			
+			TreeSet<AcademicClassificationInterface> academicClassifications = loadAcademicClassifications();
 
+			TreeSet<CurriculumInterface> results = null;
+			
+			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
+			try {
+				Long sessionId = getAcademicSessionId();
 				
-				Hashtable<Long, CurriculumInterface> curricula = new Hashtable<Long, CurriculumInterface>();
-				Hashtable<Long, Hashtable<Long, Integer>> cur2clasf2enrl = new Hashtable<Long, Hashtable<Long, Integer>>();
-				for (CurriculumCourse course : (List<CurriculumCourse>)hibSession.createQuery(
-						"select c from CurriculumCourse c where c.course.uniqueId = :courseId")
-						.setLong("courseId", courseOffering.getUniqueId()).setCacheable(true).list()) {
-					CurriculumClassification clasf = course.getClassification();
-					Curriculum curriculum = clasf.getCurriculum();
-					
-					// create curriculum interface
-					CurriculumInterface curriculumIfc = curricula.get(curriculum.getUniqueId());
-					if (curriculumIfc == null) {
-						curriculumIfc = new CurriculumInterface();
-						curriculumIfc.setId(curriculum.getUniqueId());
-						curriculumIfc.setAbbv(curriculum.getAbbv());
-						curriculumIfc.setName(curriculum.getName());
-						AcademicAreaInterface areaIfc = new AcademicAreaInterface();
-						areaIfc.setId(curriculum.getAcademicArea().getUniqueId());
-						areaIfc.setAbbv(curriculum.getAcademicArea().getAcademicAreaAbbreviation());
-						areaIfc.setName(Constants.toInitialCase(curriculum.getAcademicArea().getLongTitle() == null ? curriculum.getAcademicArea().getShortTitle() : curriculum.getAcademicArea().getLongTitle()));
-						curriculumIfc.setAcademicArea(areaIfc);
-						DepartmentInterface deptIfc = new DepartmentInterface();
-						deptIfc.setId(curriculum.getDepartment().getUniqueId());
-						deptIfc.setAbbv(curriculum.getDepartment().getAbbreviation());
-						deptIfc.setCode(curriculum.getDepartment().getDeptCode());
-						deptIfc.setName(curriculum.getDepartment().getName());
-						curriculumIfc.setDepartment(deptIfc);
-						for (Iterator<PosMajor> i = curriculum.getMajors().iterator(); i.hasNext(); ) {
-							PosMajor major = i.next();
-							MajorInterface mi = new MajorInterface();
-							mi.setId(major.getUniqueId());
-							mi.setCode(major.getCode());
-							mi.setName(Constants.toInitialCase(major.getName()));
-							curriculumIfc.addMajor(mi);
-						}
-						curricula.put(curriculum.getUniqueId(), curriculumIfc);
-						results.add(curriculumIfc);
-						
-						String majorIds = "";
-						for (Iterator<PosMajor> i = curriculum.getMajors().iterator(); i.hasNext(); ) {
-							PosMajor major = i.next();
-							if (!majorIds.isEmpty()) { majorIds += ","; }
-							majorIds += major.getUniqueId();
-						}
-
-						Hashtable<Long, Integer> clasf2enrl = new Hashtable<Long, Integer>();
-						for (Object[] o : (List<Object[]>)hibSession.createQuery(
-								"select a.academicClassification.uniqueId, count(distinct e.student) from StudentClassEnrollment e inner join e.student.academicAreaClassifications a " + 
-								(majorIds.isEmpty() ? "" : " inner join e.student.posMajors m ") + "where " +
-								"e.student.session.uniqueId = :sessionId and "+
-								"a.academicArea.uniqueId = :areaId " + 
-								(majorIds.isEmpty() ? "" : "and m.uniqueId in (" + majorIds + ") ") +
-								"group by a.academicClassification.uniqueId")
-								.setLong("sessionId", sessionId)
-								.setLong("areaId", curriculum.getAcademicArea().getUniqueId())
-								.setCacheable(true).list()) {
-							Long clasfId = (Long)o[0];
-							int enrl = ((Number)o[1]).intValue();
-							clasf2enrl.put(clasfId, enrl);
-						}
-						cur2clasf2enrl.put(curriculum.getUniqueId(), clasf2enrl);
-					}
-					
-					CurriculumClassificationInterface curClasfIfc = new CurriculumClassificationInterface();
-					curClasfIfc.setId(clasf.getUniqueId());
-					curClasfIfc.setName(clasf.getName());
-					curClasfIfc.setCurriculumId(curriculum.getUniqueId());
-					curClasfIfc.setLastLike(clasf.getLlStudents());
-					curClasfIfc.setExpected(clasf.getNrStudents());
-					curClasfIfc.setEnrollment(cur2clasf2enrl.get(curriculum.getUniqueId()).get(clasf.getAcademicClassification().getUniqueId()));
-					AcademicClassificationInterface acadClasfIfc = new AcademicClassificationInterface();
-					acadClasfIfc.setId(clasf.getAcademicClassification().getUniqueId());
-					acadClasfIfc.setName(clasf.getAcademicClassification().getName());
-					acadClasfIfc.setCode(clasf.getAcademicClassification().getCode());
-					curClasfIfc.setAcademicClassification(acadClasfIfc);
-					curriculumIfc.addClassification(curClasfIfc);
-					
-					CourseInterface courseIfc = null;
-					if (curriculumIfc.hasCourses()) {
-						courseIfc = curriculumIfc.getCourses().first();
+				InstructionalOffering offering = InstructionalOfferingDAO.getInstance().get(offeringId, hibSession);
+				if (offering == null) throw new CurriculaException("offering " + offeringId + " does not exist");
+				
+				for (Iterator<CourseOffering> i = offering.getCourseOfferings().iterator(); i.hasNext(); ) {
+					CourseOffering courseOffering = i.next();
+					if (results == null) {
+						results = loadCurriculaForACourse(hibSession, academicClassifications, courseOffering);
 					} else {
-						courseIfc = new CourseInterface();
-						courseIfc.setId(course.getCourse().getUniqueId());
-						courseIfc.setCourseName(course.getCourse().getCourseName());
-						curriculumIfc.addCourse(courseIfc);
-					}
-					
-					CurriculumCourseInterface curCourseIfc = new CurriculumCourseInterface();
-					curCourseIfc.setId(course.getUniqueId());
-					curCourseIfc.setCourseOfferingId(course.getCourse().getUniqueId());
-					curCourseIfc.setCurriculumClassificationId(clasf.getUniqueId());
-					curCourseIfc.setShare(course.getPercShare());
-					curCourseIfc.setCourseName(course.getCourse().getCourseName());
-					
-					int enrl = 0;
-					Hashtable<Long, Hashtable<Long, Integer>> major2clasf2enrl = area2major2clasf2enrl.get(curriculum.getAcademicArea().getUniqueId());
-					if (major2clasf2enrl != null) {
-						if (curriculum.getMajors().isEmpty()) {
-							for (Long majorId: major2clasf2enrl.keySet()) {
-								Hashtable<Long, Integer> clasf2enrl = major2clasf2enrl.get(majorId);
-								Integer e = (clasf2enrl == null ? null : clasf2enrl.get(clasf.getAcademicClassification().getUniqueId()));
-								if (e != null) {
-									enrl += e;
-									clasf2enrl.remove(clasf.getAcademicClassification().getUniqueId());
+						TreeSet<CurriculumInterface> curricula = loadCurriculaForACourse(hibSession, academicClassifications, courseOffering);
+						curricula: for (CurriculumInterface curriculum: curricula) {
+							for (CurriculumInterface result: results) {
+								if (ToolBox.equals(curriculum.getId(), result.getId())) {
+									result.addCourse(curriculum.getCourses().first());
+									continue curricula;
 								}
 							}
-						} else {
-							for (Iterator<PosMajor> i = curriculum.getMajors().iterator(); i.hasNext(); ) {
-								PosMajor m = i.next();
-								Hashtable<Long, Integer> clasf2enrl = major2clasf2enrl.get(m.getUniqueId());
-								Integer e = (clasf2enrl == null ? null : clasf2enrl.get(clasf.getAcademicClassification().getUniqueId()));
-								if (e != null) {
-									enrl += e;
-									clasf2enrl.remove(clasf.getAcademicClassification().getUniqueId());
-								}
-							}
-						}
-					}
-					if (enrl > 0)
-						curCourseIfc.setEnrollment(enrl);
-					
-					int lastLike = 0;
-					Hashtable<Long, Hashtable<Long, Integer>> major2clasf2ll = area2major2clasf2ll.get(curriculum.getAcademicArea().getUniqueId());
-					if (major2clasf2ll != null) {
-						if (curriculum.getMajors().isEmpty()) {
-							for (Long majorId: major2clasf2ll.keySet()) {
-								Hashtable<Long, Integer> clasf2ll = major2clasf2ll.get(majorId);
-								Integer e = (clasf2ll == null ? null : clasf2ll.get(clasf.getAcademicClassification().getUniqueId()));
-								if (e != null) {
-									lastLike += e;
-									clasf2ll.remove(clasf.getAcademicClassification().getUniqueId());
-								}
-							}
-						} else {
-							for (Iterator<PosMajor> i = curriculum.getMajors().iterator(); i.hasNext(); ) {
-								PosMajor m = i.next();
-								Hashtable<Long, Integer> clasf2ll = major2clasf2ll.get(m.getUniqueId());
-								Integer e = (clasf2ll == null ? null : clasf2ll.get(clasf.getAcademicClassification().getUniqueId()));
-								if (e != null) {
-									lastLike += e;
-									clasf2ll.remove(clasf.getAcademicClassification().getUniqueId());
-								}
-							}
-						}
-					}
-					
-					if (lastLike > 0)
-						curCourseIfc.setLastLike(lastLike);
-					
-					courseIfc.setCurriculumCourse(classifications.get(clasf.getAcademicClassification().getUniqueId()), curCourseIfc);
-				}
-				
-				for (CurriculumInterface curriculumIfc: results) {
-					for (AcademicClassificationInterface clasf: academicClassifications) {
-						int enrl = 0;
-						Hashtable<Long, Hashtable<Long, Integer>> major2clasf2enrl = area2major2clasf2enrl.get(curriculumIfc.getAcademicArea().getId());
-						if (major2clasf2enrl != null) {
-							if (!curriculumIfc.hasMajors()) {
-								for (Long majorId: major2clasf2enrl.keySet()) {
-									Hashtable<Long, Integer> clasf2enrl = major2clasf2enrl.get(majorId);
-									Integer e = (clasf2enrl == null ? null : clasf2enrl.get(clasf.getId()));
-									if (e != null) {
-										enrl += e;
-										clasf2enrl.remove(clasf.getId());
-									}
-								}
-							} else {
-								for (MajorInterface m: curriculumIfc.getMajors()) {
-									Hashtable<Long, Integer> clasf2enrl = major2clasf2enrl.get(m.getId());
-									Integer e = (clasf2enrl == null ? null : clasf2enrl.get(clasf.getId()));
-									if (e != null) {
-										enrl += e;
-										clasf2enrl.remove(clasf.getId());
-									}
-								}
-							}
-						}
-						
-						int lastLike = 0;
-						Hashtable<Long, Hashtable<Long, Integer>> major2clasf2ll = area2major2clasf2ll.get(curriculumIfc.getAcademicArea().getId());
-						if (major2clasf2ll != null) {
-							if (!curriculumIfc.hasMajors()) {
-								for (Long majorId: major2clasf2ll.keySet()) {
-									Hashtable<Long, Integer> clasf2ll = major2clasf2ll.get(majorId);
-									Integer e = (clasf2ll == null ? null : clasf2ll.get(clasf.getId()));
-									if (e != null) {
-										lastLike += e;
-										clasf2ll.remove(clasf.getId());
-									}
-								}
-							} else {
-								for (MajorInterface m: curriculumIfc.getMajors()) {
-									Hashtable<Long, Integer> clasf2ll = major2clasf2ll.get(m.getId());
-									Integer e = (clasf2ll == null ? null : clasf2ll.get(clasf.getId()));
-									if (e != null) {
-										lastLike += e;
-										clasf2ll.remove(clasf.getId());
-									}
-								}
-							}
-						}
-						
-						
-						if (enrl > 0 || lastLike > 0) {
-							CourseInterface courseIfc = null;
-							if (curriculumIfc.hasCourses()) {
-								courseIfc = curriculumIfc.getCourses().first();
-							} else {
-								courseIfc = new CourseInterface();
-								courseIfc.setId(courseOffering.getUniqueId());
-								courseIfc.setCourseName(courseOffering.getCourseName());
-								curriculumIfc.addCourse(courseIfc);
-							}
-							
-							CurriculumCourseInterface curCourseIfc = new CurriculumCourseInterface();
-							curCourseIfc.setCourseOfferingId(courseOffering.getUniqueId());
-							curCourseIfc.setShare(0.0f);
-							curCourseIfc.setCourseName(courseOffering.getCourseName());
-
-							if (enrl > 0)
-								curCourseIfc.setEnrollment(enrl);
-
-							if (lastLike > 0)
-								curCourseIfc.setLastLike(lastLike);
-							
-							courseIfc.setCurriculumCourse(classifications.get(clasf.getId()), curCourseIfc);
+							results.add(curriculum);
 						}
 					}
 				}
-				
-				boolean empty = true;
-				CurriculumInterface otherCurriculumIfc = new CurriculumInterface();
-				otherCurriculumIfc.setAbbv("----");
-				otherCurriculumIfc.setName("Other");
-				CourseInterface otherCourseIfc = new CourseInterface();
-				otherCourseIfc.setId(courseOffering.getUniqueId());
-				otherCourseIfc.setCourseName(courseOffering.getCourseName());
-				otherCurriculumIfc.addCourse(otherCourseIfc);
-				for (AcademicClassificationInterface clasf: academicClassifications) {
-					int enrl = 0;
-					for (Long areaId: area2major2clasf2enrl.keySet()) {
-						Hashtable<Long, Hashtable<Long, Integer>> major2clasf2enrl = area2major2clasf2enrl.get(areaId);
-						for (Long majorId: major2clasf2enrl.keySet()) {
-							Hashtable<Long, Integer> clasf2enrl = major2clasf2enrl.get(majorId);
-							Integer e = (clasf2enrl == null ? null : clasf2enrl.get(clasf.getId()));
-							if (e != null) {
-								enrl += e;
-							}
-						}
-					}
-					int lastLike = 0;
-					for (Long areaId: area2major2clasf2ll.keySet()) {
-						Hashtable<Long, Hashtable<Long, Integer>> major2clasf2ll = area2major2clasf2ll.get(areaId);
-						for (Long majorId: major2clasf2ll.keySet()) {
-							Hashtable<Long, Integer> clasf2ll = major2clasf2ll.get(majorId);
-							Integer e = (clasf2ll == null ? null : clasf2ll.get(clasf.getId()));
-							if (e != null) {
-								lastLike += e;
-							}
-						}
-					}
-					if (enrl > 0 || lastLike > 0) {
-						CurriculumCourseInterface otherCurCourseIfc = new CurriculumCourseInterface();
-						otherCurCourseIfc.setCourseOfferingId(courseOffering.getUniqueId());
-						otherCurCourseIfc.setCourseName(courseOffering.getCourseName());
-						if (enrl > 0)
-							otherCurCourseIfc.setEnrollment(enrl);
-						if (lastLike > 0)
-							otherCurCourseIfc.setLastLike(lastLike);
-						otherCourseIfc.setCurriculumCourse(classifications.get(clasf.getId()), otherCurCourseIfc);
-						empty = false;
-					}
-				}
-				if (!empty) results.add(otherCurriculumIfc);
-				
 			} finally {
 				hibSession.close();
 			}

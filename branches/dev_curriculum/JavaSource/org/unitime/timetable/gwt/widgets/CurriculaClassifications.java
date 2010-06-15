@@ -296,4 +296,21 @@ public class CurriculaClassifications extends Composite {
 	public void addNameChangedHandler(NameChangedHandler h) {
 		iNameChangedHandlers.add(h);
 	}
+	
+	public void setVisible(int col, boolean visible) {
+		for (int row = 0; row < iTable.getRowCount(); row++)
+			iTable.getCellFormatter().setVisible(row, 1 + col, visible);
+	}
+	
+	public void hideEmptyColumns() {
+		for (int i = 0; i < iClassifications.size(); i++) {
+			setVisible(i, getExpected(i) != null || getLastLike(i) != null || getEnrollment(i) != null);
+		}
+	}
+	
+	public void showAllColumns() {
+		for (int i = 0; i < iClassifications.size(); i++) {
+			setVisible(i, true);
+		}
+	}
 }

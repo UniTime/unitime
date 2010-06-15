@@ -91,6 +91,7 @@ public class CurriculaCourses extends Composite {
 	private Button iGrAssign, iGrDelete, iGrUpdate;
 	private String iGrOldName = null;
 	private ClickHandler iGrHandler;
+	private boolean iEditable = true;
 	
 	private static String[] sColors = new String[] {
 		"red", "blue", "green", "orange", "yellow", "pink",
@@ -98,6 +99,8 @@ public class CurriculaCourses extends Composite {
 		"lightgreen", "yellowgreen", "redorange", "lightbrown", "lightpurple",
 		"grey", "bluegrey", "lightteal", "yellowgrey", "brown"
 	};
+	
+	private TreeSet<String> iVisibleCourses = null;
 	
 	public CurriculaCourses() {
 		iTable = new MyFlexTable();
@@ -224,7 +227,8 @@ public class CurriculaCourses extends Composite {
 		});
 	}
 	
-	public void populate(final CurriculumInterface curriculum) {
+	public void populate(CurriculumInterface curriculum) {
+		iEditable = curriculum.isEditable();
 		for (int row = iTable.getRowCount() - 1; row >= 0; row--) {
 			iTable.removeRow(row);
 		}
@@ -240,15 +244,17 @@ public class CurriculaCourses extends Composite {
 		groupsLabel.addMouseOverHandler(new MouseOverHandler() {
 			@Override
 			public void onMouseOver(MouseOverEvent event) {
-				((Widget)event.getSource()).getElement().getStyle().setCursor(Cursor.POINTER);
+				if (iVisibleCourses == null)
+					((Widget)event.getSource()).getElement().getStyle().setCursor(Cursor.POINTER);
 			}
 		});
 		groupsLabel.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
+				if (iVisibleCourses != null) return;
 				final PopupPanel popup = new PopupPanel(true);
 				MenuBar menu = new MenuBar(true);
-				if (curriculum.isEditable()) {
+				if (iEditable) {
 					for (final CurriculaCourses.Group g: getGroups()) {
 						menu.addItem(
 								new MenuItem(
@@ -320,7 +326,16 @@ public class CurriculaCourses extends Composite {
 			public void onClick(ClickEvent event) {
 				final PopupPanel popup = new PopupPanel(true);
 				MenuBar menu = new MenuBar(true);
-				if (curriculum.isEditable()) {
+				if (iVisibleCourses != null) {
+					menu.addItem(new MenuItem("Show All Courses", true, new Command() {
+						@Override
+						public void execute() {
+							popup.hide();
+							showAllCourses();
+						}
+					}));
+				}
+				if (iEditable) {
 					menu.addItem(new MenuItem("Select All", true, new Command() {
 						@Override
 						public void execute() {
@@ -381,14 +396,16 @@ public class CurriculaCourses extends Composite {
 							setMode(0);
 						}
 					}));
-				menu.addSeparator();
-				menu.addItem(new MenuItem("Sort by Course", true, new Command() {
-					@Override
-					public void execute() {
-						popup.hide();
-						sort(1);
-					}
-				}));
+				if (iVisibleCourses == null) {
+					menu.addSeparator();
+					menu.addItem(new MenuItem("Sort by Course", true, new Command() {
+						@Override
+						public void execute() {
+							popup.hide();
+							sort(1);
+						}
+					}));
+				}
 				menu.setVisible(true);
 				popup.add(menu);
 				popup.setPopupPosition(courseLabel.getAbsoluteLeft(), courseLabel.getAbsoluteTop() + 20);
@@ -410,7 +427,7 @@ public class CurriculaCourses extends Composite {
 				public void onClick(ClickEvent event) {
 					final PopupPanel popup = new PopupPanel(true);
 					MenuBar menu = new MenuBar(true);
-					if (curriculum.isEditable()) {
+					if (iEditable) {
 						menu.addItem(new MenuItem("Select All", true, new Command() {
 							@Override
 							public void execute() {
@@ -471,14 +488,16 @@ public class CurriculaCourses extends Composite {
 								setMode(0);
 							}
 						}));
-					menu.addSeparator();
-					menu.addItem(new MenuItem("Sort by " + cl.getText(), true, new Command() {
-						@Override
-						public void execute() {
-							popup.hide();
-							sort(x);
-						}
-					}));
+					if (iVisibleCourses == null) {
+						menu.addSeparator();
+						menu.addItem(new MenuItem("Sort by " + cl.getText(), true, new Command() {
+							@Override
+							public void execute() {
+								popup.hide();
+								sort(x);
+							}
+						}));
+					}
 					menu.setVisible(true);
 					popup.add(menu);
 					popup.setPopupPosition(cl.getAbsoluteLeft(), cl.getAbsoluteTop() + 20);
@@ -562,14 +581,16 @@ public class CurriculaCourses extends Composite {
 								setMode(0);
 							}
 						}));
-					menu.addSeparator();
-					menu.addItem(new MenuItem("Sort by " + cl.getText() + " " + MODES[iMode], true, new Command() {
-						@Override
-						public void execute() {
-							popup.hide();
-							sort(y);
-						}
-					}));
+					if (iVisibleCourses == null) {
+						menu.addSeparator();
+						menu.addItem(new MenuItem("Sort by " + cl.getText() + " " + MODES[iMode], true, new Command() {
+							@Override
+							public void execute() {
+								popup.hide();
+								sort(y);
+							}
+						}));
+					}
 					menu.setVisible(true);
 					popup.add(menu);
 					popup.setPopupPosition(m.getAbsoluteLeft(), m.getAbsoluteTop() + 20);
@@ -600,7 +621,7 @@ public class CurriculaCourses extends Composite {
 							if (x.getName().equals(g.getName())) { gr = x; break; }
 						}
 						if (gr == null) {
-							gr = new Group(g.getName(), g.getType(), curriculum.isEditable());
+							gr = new Group(g.getName(), g.getType(), iEditable);
 							if (g.getColor() != null) {
 								gr.setColor(g.getColor());
 							} else {
@@ -623,14 +644,14 @@ public class CurriculaCourses extends Composite {
 				cx.setCourse(course.getCourseName(), false);
 				cx.setWidth("100px");
 				cx.addCourseSelectionChangeHandler(iCourseChangedHandler);
-				if (!curriculum.isEditable()) cx.setEnabled(false);
+				if (!iEditable) cx.setEnabled(false);
 				iTable.setWidget(row, 1, cx);
 				
 				col = 0;
 				for (final AcademicClassificationInterface clasf: iClassifications.getClassifications()) {
 					CurriculumCourseInterface cci = course.getCurriculumCourse(col);
 					MyTextBox ex = new MyTextBox(col, cci == null ? null : cci.getShare());
-					if (!curriculum.isEditable()) ex.setEnabled(false);
+					if (!iEditable) ex.setEnabled(false);
 					iTable.setWidget(row, 2 + 2 * col, ex);
 					MyLabel note = new MyLabel(col, cci == null ? null : cci.getEnrollment(), cci == null ? null : cci.getLastLike());
 					iTable.setWidget(row, 3 + 2 * col, note);
@@ -639,7 +660,7 @@ public class CurriculaCourses extends Composite {
 				}
 			}
 		}
-		if (curriculum.isEditable()) addBlankLine();
+		if (iEditable) addBlankLine();
 	}
 	
 	public boolean saveCurriculum(CurriculumInterface c) {
@@ -690,6 +711,7 @@ public class CurriculaCourses extends Composite {
 		final int row = iTable.getRowCount();
 		HorizontalPanel hp = new HorizontalPanel();
 		iTable.setWidget(row, 0, hp);
+		if (iVisibleCourses != null) iTable.getCellFormatter().setVisible(row, 0, false);
 
 		CurriculaCourseSelectionBox cx = new CurriculaCourseSelectionBox(null, iClassifications.getClassifications());
 		cx.setWidth("100px");
@@ -710,11 +732,14 @@ public class CurriculaCourses extends Composite {
 			}
 		});
 		cx.addCourseSelectionChangeHandler(iCourseChangedHandler);
+		if (!iEditable) cx.setEnabled(false);
 		iTable.setWidget(row, 1, cx);
+		if (iVisibleCourses != null) iTable.getCellFormatter().setVisible(row, 1, false);
 		
 		int col = 0;
 		for (final AcademicClassificationInterface clasf: iClassifications.getClassifications()) {
 			MyTextBox ex = new MyTextBox(col, null);
+			if (!iEditable) ex.setEnabled(false);
 			iTable.setWidget(row, 2 + 2 * col, ex);
 			MyLabel note = new MyLabel(col, null, null);
 			iTable.setWidget(row, 3 + 2 * col, note);
@@ -723,19 +748,11 @@ public class CurriculaCourses extends Composite {
 				iTable.getFlexCellFormatter().setVisible(row, 2 + 2 * col, false);
 				iTable.getFlexCellFormatter().setVisible(row, 3 + 2 * col, false);
 			}
-			col++;
-		}
-	}
-	
-	public void addCourse(String course) {
-		GWT.log("Adding " + course);
-		addBlankLine();
-		for (int row = 1; row < iTable.getRowCount(); row++) {
-			CurriculaCourseSelectionBox c = (CurriculaCourseSelectionBox)iTable.getWidget(row, 1);
-			if (c.getCourse().isEmpty()) {
-				c.setCourse(course, true);
-				return;
+			if (iVisibleCourses != null) {
+				iTable.getCellFormatter().setVisible(row, 2 + 2 * col, false);
+				iTable.getCellFormatter().setVisible(row, 3 + 2 * col, false);
 			}
+			col++;
 		}
 	}
 	
@@ -957,6 +974,7 @@ public class CurriculaCourses extends Composite {
 		for (Map.Entry<String, Integer[][]> course: include) {
 			Integer cc[][] = course.getValue();
 			int row = iTable.getRowCount() - 1;
+			if (!iEditable) row++;
 			GWT.log("Adding " + course.getKey() + " @" + row);
 			addBlankLine();
 			CurriculaCourseSelectionBox c = (CurriculaCourseSelectionBox)iTable.getWidget(row, 1);
@@ -966,6 +984,25 @@ public class CurriculaCourses extends Composite {
 				note.iEnrollment = (cc == null || cc[col] == null ? null : cc[col][0]);
 				note.iLastLike = (cc == null || cc[col] == null ? null : cc[col][1]);
 				note.update();
+			}
+			if (iVisibleCourses!=null) {
+				if (iVisibleCourses.contains(course.getKey())) {
+					((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).setEnabled(false);
+					iTable.getCellFormatter().setVisible(row, 0, true);
+					iTable.getCellFormatter().setVisible(row, 1, true);
+					for (int i = 0; i < iClassifications.getClassifications().size(); i++) {
+						boolean vis = iClassifications.getExpected(i) != null;
+						iTable.getCellFormatter().setVisible(row, 2 + 2 * i, vis);
+						iTable.getCellFormatter().setVisible(row, 3 + 2 * i, vis);
+					}
+				} else {
+					iTable.getCellFormatter().setVisible(row, 0, false);
+					iTable.getCellFormatter().setVisible(row, 1, false);
+					for (int i = 0; i < iClassifications.getClassifications().size(); i++) {
+						iTable.getCellFormatter().setVisible(row, 2 + 2 * i, false);
+						iTable.getCellFormatter().setVisible(row, 3 + 2 * i, false);
+					}
+				}
 			}
 		}
 	}
@@ -1345,6 +1382,51 @@ public class CurriculaCourses extends Composite {
 					getRowFormatter().setStyleName(row, "unitime-TableRow" + (selected ? "Selected" : "") + (hover ? "Hover" : ""));
 				}
 				break;
+			}
+		}
+	}
+	
+	public void showOnlyCourses(TreeSet<CourseInterface> courses) {
+		iVisibleCourses = new TreeSet<String>();
+		for (CourseInterface c: courses) iVisibleCourses.add(c.getCourseName());
+		for (int row = 1; row < iTable.getRowCount(); row++) {
+			String courseName = ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getCourse();
+			if (iVisibleCourses.contains(courseName)) {
+				((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).setEnabled(false);
+				iTable.getCellFormatter().setVisible(row, 0, true);
+				iTable.getCellFormatter().setVisible(row, 1, true);
+				for (int i = 0; i < iClassifications.getClassifications().size(); i++) {
+					boolean vis = iClassifications.getExpected(i) != null;
+					iTable.getCellFormatter().setVisible(row, 2 + 2 * i, vis);
+					iTable.getCellFormatter().setVisible(row, 3 + 2 * i, vis);
+				}
+			} else {
+				iTable.getCellFormatter().setVisible(row, 0, false);
+				iTable.getCellFormatter().setVisible(row, 1, false);
+				for (int i = 0; i < iClassifications.getClassifications().size(); i++) {
+					iTable.getCellFormatter().setVisible(row, 2 + 2 * i, false);
+					iTable.getCellFormatter().setVisible(row, 3 + 2 * i, false);
+				}
+			}
+		}
+	}
+	
+	public void showAllCourses() {
+		if (iVisibleCourses != null) {
+			for (int i = 1; i < iTable.getRowCount(); i++) {
+				String courseName = ((CurriculaCourseSelectionBox)iTable.getWidget(i, 1)).getCourse();
+				setSelected(i, iVisibleCourses.contains(courseName));
+			}
+		}
+		iVisibleCourses = null;
+		for (int row = 1; row < iTable.getRowCount(); row++) {
+			((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).setEnabled(true);
+			iTable.getCellFormatter().setVisible(row, 0, true);
+			iTable.getCellFormatter().setVisible(row, 1, true);
+			for (int i = 0; i < iClassifications.getClassifications().size(); i++) {
+				boolean vis = iClassifications.getExpected(i) != null;
+				iTable.getCellFormatter().setVisible(row, 2 + 2 * i, vis);
+				iTable.getCellFormatter().setVisible(row, 3 + 2 * i, vis);
 			}
 		}
 	}

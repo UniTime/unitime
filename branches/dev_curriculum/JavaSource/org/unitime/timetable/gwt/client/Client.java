@@ -33,16 +33,29 @@ import com.google.gwt.user.client.ui.RootPanel;
 
 public class Client implements EntryPoint {
 	public void onModuleLoad() {
-		LoadingWidget.getInstance().show();
-		DeferredCommand.addCommand(new Command() {
-			@Override
-			public void execute() {
-				initAsync(Window.Location.getParameter("page"));
+		if (RootPanel.get("UniTimeGWT:Body") != null) {
+			LoadingWidget.getInstance().show();
+			DeferredCommand.addCommand(new Command() {
+				@Override
+				public void execute() {
+					initPageAsync(Window.Location.getParameter("page"));
+				}
+			});
+		}
+		for (final Components c: Components.values()) {
+			final RootPanel p = RootPanel.get(c.id());
+			if (p != null) {
+				DeferredCommand.addCommand(new Command() {
+					@Override
+					public void execute() {
+						initComponentAsync(p, c);
+					}
+				});
 			}
-		});
+		}
 	}
 	
-	public void initAsync(final String page) {
+	public void initPageAsync(final String page) {
 		GWT.runAsync(new RunAsyncCallback() {
 			public void onSuccess() {
 				init(page);
@@ -51,34 +64,50 @@ public class Client implements EntryPoint {
 			public void onFailure(Throwable reason) {
 				Label error = new Label("Failed to load the page (" + reason.getMessage() + ")");
 				error.setStyleName("unitime-ErrorMessage");
-				RootPanel.get("loading").setVisible(false);
-				RootPanel.get("body").add(error);
+				RootPanel loading = RootPanel.get("UniTimeGWT:Loading");
+				if (loading != null) loading.setVisible(false);
+				RootPanel.get("UniTimeGWT:Body").add(error);
 				LoadingWidget.getInstance().hide();
 			}
 		});
-
 	}
 	
 	public void init(String page) {
 		try {
-			RootPanel.get("loading").setVisible(false);
+			RootPanel loading = RootPanel.get("UniTimeGWT:Loading");
+			if (loading != null) loading.setVisible(false);
 			for (Pages p: Pages.values()) {
 				if (p.name().equals(page)) {
-					RootPanel.get("title").clear();
-					PageLabel label = new PageLabel(); label.setPageName(p.title());
-					RootPanel.get("title").add(label);
-					RootPanel.get("body").add(p.widget());
+					RootPanel title = RootPanel.get("UniTimeGWT:Title");
+					if (title != null) {
+						title.clear();
+						PageLabel label = new PageLabel(); label.setPageName(p.title());
+						title.add(label);
+					}
+					RootPanel.get("UniTimeGWT:Body").add(p.widget());
 					return;
 				}
 			}
 			Label error = new Label("Failed to load the page (" + (page == null ? "page not provided" : "page " + page + " not registered" ) + ")");
 			error.setStyleName("unitime-ErrorMessage");
-			RootPanel.get("body").add(error);
+			RootPanel.get("UniTimeGWT:Body").add(error);
 		} catch (Exception e) {
 			Label error = new Label("Failed to load the page (" + e.getMessage() + ")");
 			error.setStyleName("unitime-ErrorMessage");
-			RootPanel.get("body").add(error);
+			RootPanel.get("UniTimeGWT:Body").add(error);
 		}
 	}
 	
+	public void initComponentAsync(final RootPanel panel, final Components comp) {
+		GWT.runAsync(new RunAsyncCallback() {
+			public void onSuccess() {
+				comp.insert(panel);
+			}
+			public void onFailure(Throwable reason) {
+				Label error = new Label("Failed to load the component (" + reason.getMessage() + ")");
+				error.setStyleName("unitime-ErrorMessage");
+				panel.clear(); panel.add(error);
+			}
+		});
+	}
 }
