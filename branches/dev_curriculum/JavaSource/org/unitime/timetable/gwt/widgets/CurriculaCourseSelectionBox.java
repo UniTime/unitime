@@ -22,7 +22,6 @@ package org.unitime.timetable.gwt.widgets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -32,10 +31,6 @@ import org.unitime.timetable.gwt.services.CurriculaServiceAsync;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface;
 import org.unitime.timetable.gwt.shared.ToolBox;
-import org.unitime.timetable.gwt.shared.CurriculumInterface.AcademicClassificationInterface;
-import org.unitime.timetable.gwt.shared.CurriculumInterface.CourseInterface;
-import org.unitime.timetable.gwt.shared.CurriculumInterface.CurriculumClassificationInterface;
-import org.unitime.timetable.gwt.shared.CurriculumInterface.CurriculumCourseInterface;
 import org.unitime.timetable.gwt.widgets.WebTable.RowDoubleClickEvent;
 
 import com.google.gwt.core.client.GWT;
@@ -101,9 +96,10 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator 
 	private DialogBox iDialog;
 	private ScrollPanel iCoursesPanel;
 	private VerticalPanel iDialogPanel;
-	private WebTable iCourses, iClasses, iCurricula;
+	private WebTable iCourses, iClasses;
 	private String iLastQuery = null;
 	private Label iCoursesTip;
+	private CourseCurriculaTable iCurricula;
 	
 	private TabPanel iCourseDetailsTabPanel;
 	
@@ -116,7 +112,6 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator 
 	
 	private AsyncCallback<String> iCourseDetailsCallback;
 	private AsyncCallback<Collection<ClassAssignmentInterface.ClassAssignment>> iCourseClassesCallback;
-	private AsyncCallback<TreeSet<CurriculumInterface>> iCourseCurriculaCallback;
 
 	private ArrayList<CourseSelectionChangeHandler> iCourseSelectionChangeHandlers = new ArrayList<CourseSelectionChangeHandler>();
 	
@@ -315,26 +310,9 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator 
 			iClassesPanel.setStyleName("unitime-ScrollPanel-inner");
 			iCourseDetailsTabPanel.add(iClassesPanel, new HTML(MESSAGES.courseSelectionClasses(), false));
 			
-			iCurricula = new WebTable();
-			ArrayList<WebTable.Cell> header = new ArrayList<WebTable.Cell>();
-			header.add(new WebTable.Cell("Curriculum", 1, "100"));
-			header.add(new WebTable.Cell("Area", 1, "100"));
-			header.add(new WebTable.Cell("Major(s)", 1, "100"));
-			for (AcademicClassificationInterface clasf: iClassifications) {
-				header.add(new WebTable.Cell(clasf.getCode(), 1, "75"));
-			}
-			for (int c = 3; c < header.size(); c++) {
-				header.get(c).setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-			}
-			iCurricula.setHeader(new WebTable.Row(header));
-			iCurricula.setEmptyMessage(MESSAGES.courseSelectionNoCourseSelected());
-			VerticalPanel vp = new VerticalPanel();
-			vp.add(iCurricula);
-			Label h = new Label("Expected / Enrolled / Last-Like Students");
-			h.setStyleName("unitime-Hint");
-			vp.add(h);
-			vp.setCellHorizontalAlignment(h, HasHorizontalAlignment.ALIGN_RIGHT);
-			iCurriculaPanel = new ScrollPanel(vp);
+			iCurricula = new CourseCurriculaTable(true, false, false);
+			iCurricula.setErrorMessage(MESSAGES.courseSelectionNoCourseSelected());
+			iCurriculaPanel = new ScrollPanel(iCurricula);
 			iCurriculaPanel.setStyleName("unitime-ScrollPanel-inner");
 			iCourseDetailsTabPanel.add(iCurriculaPanel, new HTML("<u>C</u>urricula", false));
 			
@@ -368,10 +346,7 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator 
 						if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
 							if (iCourses.getSelectedRow()>=0) {
 								WebTable.Row r = iCourses.getRows()[iCourses.getSelectedRow()];
-								if ("true".equals(r.getId()))
-									iTextField.setText(MESSAGES.courseName(r.getCell(0).getValue(), r.getCell(1).getValue()));
-								else
-									iTextField.setText(MESSAGES.courseNameWithTitle(r.getCell(0).getValue(), r.getCell(1).getValue(), r.getCell(2).getValue()));
+								iTextField.setText(MESSAGES.courseName(r.getCell(0).getValue(), r.getCell(1).getValue()));
 								for (CourseSelectionChangeHandler h : iCourseSelectionChangeHandlers)
 									h.onChange(iTextField.getText(), true);
 							} else {
@@ -424,10 +399,7 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator 
 			iCourses.addRowDoubleClickHandler(new WebTable.RowDoubleClickHandler() {
 				public void onRowDoubleClick(RowDoubleClickEvent event) {
 					WebTable.Row r = event.getRow();
-					if ("true".equals(r.getId()))
-						iTextField.setText(MESSAGES.courseName(r.getCell(0).getValue(), r.getCell(1).getValue()));
-					else
-						iTextField.setText(MESSAGES.courseNameWithTitle(r.getCell(0).getValue(), r.getCell(1).getValue(), r.getCell(2).getValue()));
+					iTextField.setText(MESSAGES.courseName(r.getCell(0).getValue(), r.getCell(1).getValue()));
 					iDialog.hide();
 					iImage.setResource(RESOURCES.search_picker());
 					for (CourseSelectionChangeHandler h : iCourseSelectionChangeHandlers)
@@ -589,7 +561,7 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator 
 						if (!hasEnrl && !record.getEnrollmentString().isEmpty()) hasEnrl = true;
 						if (!hasProj && !record.getProjectedString().isEmpty()) hasProj = true;
 						if (!hasLastLike && !record.getLastLikeString().isEmpty()) hasLastLike = true;
-						records[idx].setId(record.hasUniqueName() ? "true" : "false");
+						records[idx].setId(record.getCourseId().toString());
 						idx++;
 					}
 					iCourses.setData(records);
@@ -665,130 +637,15 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator 
 				}
 			};
 		}
-		if (iCourseCurriculaCallback == null) {
-			iCourseCurriculaCallback = new AsyncCallback<TreeSet<CurriculumInterface>>() {
-				@Override
-				public void onFailure(Throwable caught) {
-					iCurricula.setEmptyMessage(caught.getMessage());
-				}
-				@Override
-				public void onSuccess(TreeSet<CurriculumInterface> result) {
-					if (!result.isEmpty()) {
-						WebTable.Row[] rows = new WebTable.Row[1 + result.size()];
-						int idx = 0;
-						CurriculumInterface other = null;
-						boolean[] used = new boolean[iClassifications.size()];
-						for (int i = 0; i < used.length; i++)
-							used[i] = false;
-						int[][] total = new int[iClassifications.size()][];
-						for (int i = 0; i <total.length; i++)
-							total[i] = new int[] {0, 0, 0};
-						for (CurriculumInterface curriculum: result) {
-							if (curriculum.getId() == null) { other = curriculum; continue; }
-							ArrayList<WebTable.Cell> row = new ArrayList<WebTable.Cell>();
-							row.add(new WebTable.Cell(curriculum.getAbbv()));
-							row.add(new WebTable.Cell(curriculum.getAcademicArea().getAbbv()));
-							row.add(new WebTable.Cell(curriculum.getMajorCodes(", ")));
-							CourseInterface course = curriculum.getCourses().first();
-							int col = 0;
-							for (AcademicClassificationInterface clasf: iClassifications) {
-								CurriculumClassificationInterface f = null;
-								for (CurriculumClassificationInterface x: curriculum.getClassifications()) {
-									if (x.getAcademicClassification().getId().equals(clasf.getId())) { f = x; break; }
-								}
-								CurriculumCourseInterface cx = course.getCurriculumCourse(col);
-								String s = "";
-								if (cx != null) {
-									used[col] = true;
-									int exp = (f == null || f.getExpected() == null ? 0 : Math.round(f.getExpected() * cx.getShare()));
-									int last = (cx.getLastLike() == null ? 0 : cx.getLastLike());
-									int enrl = (cx.getEnrollment() == null ? 0 : cx.getEnrollment());
-									s = (exp > 0 ? exp : "-") + " / " + (enrl > 0 ? enrl : "-") + " / " + (last > 0 ? last : "-");
-									total[col][0] += exp;
-									total[col][1] += last;
-									total[col][2] += enrl;
-								}
-								row.add(new WebTable.WidgetCell(new Label(s, false), s));
-								col++;
-							}
-							for (int c = 3; c < row.size(); c++) {
-								row.get(c).setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-							}
-							rows[idx++] = new WebTable.Row(row);
-						}
-						if (other != null && other.hasCourses()) {
-							ArrayList<WebTable.Cell> row = new ArrayList<WebTable.Cell>();
-							row.add(new WebTable.Cell("<i>Other</i>"));
-							row.add(new WebTable.Cell("-"));
-							row.add(new WebTable.Cell("-"));
-							CourseInterface course = other.getCourses().first();
-							int col = 0;
-							for (AcademicClassificationInterface clasf: iClassifications) {
-								CurriculumCourseInterface cx = course.getCurriculumCourse(col);
-								String s = "";
-								if (cx != null) {
-									used[col] = true;
-									int exp = 0;
-									int last = (cx.getLastLike() == null ? 0 : cx.getLastLike());
-									int enrl = (cx.getEnrollment() == null ? 0 : cx.getEnrollment());
-									total[col][0] += exp;
-									total[col][1] += last;
-									total[col][2] += enrl;
-									s = (exp > 0 ? exp : "-") + " / " + (enrl > 0 ? enrl : "-") + " / " + (last > 0 ? last : "-");
-								}
-								row.add(new WebTable.WidgetCell(new Label(s, false), s));
-								col++;
-							}
-							for (int c = 3; c < row.size(); c++) {
-								row.get(c).setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-							}
-							rows[idx++] = new WebTable.Row(row);
-						}
-						ArrayList<WebTable.Cell> row = new ArrayList<WebTable.Cell>();
-						row.add(new WebTable.Cell("<b>Total</b>"));
-						row.add(new WebTable.Cell("&nbsp;"));
-						int[] tx = new int[] {0, 0, 0};
-						for (int i = 0; i < total.length; i ++)
-							for (int j = 0; j < 3; j++)
-								tx[j] += total[i][j];
-						row.add(new WebTable.Cell((tx[0] > 0 ? tx[0] : "-") + " / " + (tx[2] > 0 ? tx[2] : "-") + " / " + (tx[1] > 0 ? tx[1] : "-")));
-						int col = 0;
-						for (AcademicClassificationInterface clasf: iClassifications) {
-							int exp = total[col][0];
-							int last = total[col][1];
-							int enrl = total[col][2];
-							total[col][0] += exp;
-							total[col][1] += last;
-							total[col][2] += enrl;
-							String s = (exp > 0 ? exp : "-") + " / " + (enrl > 0 ? enrl : "-") + " / " + (last > 0 ? last : "-");
-							row.add(new WebTable.WidgetCell(new Label(s, false), s));
-							col++;
-						}
-						for (int c = 0; c < row.size(); c++) {
-							row.get(c).setStyleName("unitime-ClassRowFirst");
-							if (c >= 3) row.get(c).setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-						}
-						rows[idx++] = new WebTable.Row(row);
-						iCurricula.setData(rows);
-						for (int i = 0; i < used.length; i++)
-							iCurricula.setColumnVisible(3 + i, used[i]);
-					} else {
-						iCurricula.setEmptyMessage("The selected course has no curricula.");
-					}
-				}
-			};			
-		}
 		if (iCourses.getSelectedRow()<0) {
 			iCourseDetails.setHTML("<table width='100%'></tr><td class='unitime-TableEmpty'>" + MESSAGES.courseSelectionNoCourseSelected() + "</td></tr></table>");
 			iClasses.setEmptyMessage(MESSAGES.courseSelectionNoCourseSelected());
 			iClasses.clearData(true);
-			iCurricula.setEmptyMessage(MESSAGES.courseSelectionNoCourseSelected());
-			iCurricula.clearData(true);
+			iCurricula.setErrorMessage(MESSAGES.courseSelectionNoCourseSelected());
+			iCurricula.clear(false);
 		} else {
 			WebTable.Row row = iCourses.getRows()[iCourses.getSelectedRow()];
 			String courseName = MESSAGES.courseName(row.getCell(0).getValue(), row.getCell(1).getValue());
-			if ("false".equals(row.getId()))
-				courseName = MESSAGES.courseNameWithTitle(row.getCell(0).getValue(), row.getCell(1).getValue(), row.getCell(2).getValue());
 			if (courseName.equals(iLastCourseLookup)) return;
 			iCourseDetails.setHTML("<table width='100%'></tr><td class='unitime-TableEmpty'>" + MESSAGES.courseSelectionLoadingDetails() + "</td></tr></table>");
 			iCourseDetailsPanel.setVisible(true);
@@ -796,9 +653,7 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator 
 			iClasses.setEmptyMessage(MESSAGES.courseSelectionLoadingClasses());
 			iCurriculaService.retrieveCourseDetails(courseName, iCourseDetailsCallback);
 			iCurriculaService.listClasses(courseName, iCourseClassesCallback);
-			iCurricula.clearData(true);
-			iCurricula.setEmptyMessage("Loading curricula ...");
-			iCurriculaService.findCurriculaForACourse(courseName, iCourseCurriculaCallback);
+			iCurricula.setCourseName(courseName);
 			iLastCourseLookup = courseName;
 		}
 	}
@@ -834,10 +689,7 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator 
 				String courseName = MESSAGES.courseName(suggestion.getSubject(), suggestion.getCourseNbr());
 				String courseNameWithTitle = (suggestion.getTitle() == null ? courseName :
 					MESSAGES.courseNameWithTitle(suggestion.getSubject(), suggestion.getCourseNbr(), suggestion.getTitle()));
-				if (suggestion.hasUniqueName())
-					suggestions.add(new SimpleSuggestion(courseNameWithTitle, courseName));
-				else
-					suggestions.add(new SimpleSuggestion(courseNameWithTitle, courseNameWithTitle));
+				suggestions.add(new SimpleSuggestion(courseNameWithTitle, courseName));
 			}
 			iCallback.onSuggestionsReady(iRequest, new Response(suggestions));
 		}

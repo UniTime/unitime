@@ -45,8 +45,6 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
-import com.google.gwt.event.dom.client.MouseOverEvent;
-import com.google.gwt.event.dom.client.MouseOverHandler;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DOM;
@@ -239,15 +237,8 @@ public class CurriculaCourses extends Composite {
 		// header
 		final Label groupsLabel = new Label("Group");
 		iTable.setWidget(0, 0, groupsLabel);
-		iTable.getFlexCellFormatter().setStyleName(0, 0, "unitime-TableHeader");
+		iTable.getFlexCellFormatter().setStyleName(0, 0, "unitime-ClickableTableHeader");
 		iTable.getFlexCellFormatter().setWidth(0, 0, "20px");
-		groupsLabel.addMouseOverHandler(new MouseOverHandler() {
-			@Override
-			public void onMouseOver(MouseOverEvent event) {
-				if (iVisibleCourses == null)
-					((Widget)event.getSource()).getElement().getStyle().setCursor(Cursor.POINTER);
-			}
-		});
 		groupsLabel.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
@@ -313,14 +304,8 @@ public class CurriculaCourses extends Composite {
 		
 		final Label courseLabel = new Label("Course");
 		iTable.setWidget(0, 1, courseLabel);
-		iTable.getFlexCellFormatter().setStyleName(0, 1, "unitime-TableHeader");
+		iTable.getFlexCellFormatter().setStyleName(0, 1, "unitime-ClickableTableHeader");
 		iTable.getFlexCellFormatter().setWidth(0, 1, "100px");
-		courseLabel.addMouseOverHandler(new MouseOverHandler() {
-			@Override
-			public void onMouseOver(MouseOverEvent event) {
-				((Widget)event.getSource()).getElement().getStyle().setCursor(Cursor.POINTER);
-			}
-		});
 		courseLabel.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
@@ -418,7 +403,7 @@ public class CurriculaCourses extends Composite {
 			col++;
 			final Label cl = new Label(clasf.getCode());
 			iTable.setWidget(0, col, cl);
-			iTable.getFlexCellFormatter().setStyleName(0, col, "unitime-TableHeader");
+			iTable.getFlexCellFormatter().setStyleName(0, col, "unitime-ClickableTableHeader");
 			iTable.getFlexCellFormatter().setWidth(0, col, "60px");
 			iTable.getFlexCellFormatter().setHorizontalAlignment(0, col, HasHorizontalAlignment.ALIGN_RIGHT);
 			final int x = col;
@@ -504,16 +489,10 @@ public class CurriculaCourses extends Composite {
 					popup.show();
 				}
 			});
-			cl.addMouseOverHandler(new MouseOverHandler() {
-				@Override
-				public void onMouseOver(MouseOverEvent event) {
-					((Widget)event.getSource()).getElement().getStyle().setCursor(Cursor.POINTER);
-				}
-			});
 			col++;
 			final HTML m = new HTML(MODE_SHORT[iMode]);
 			iTable.setWidget(0, col, m);
-			iTable.getFlexCellFormatter().setStyleName(0, col, "unitime-TableHeader");
+			iTable.getFlexCellFormatter().setStyleName(0, col, "unitime-ClickableTableHeader");
 			iTable.getFlexCellFormatter().setWidth(0, col, "5px");
 			iTable.getFlexCellFormatter().setHorizontalAlignment(0, col, HasHorizontalAlignment.ALIGN_CENTER);
 			final int y = col;
@@ -595,12 +574,6 @@ public class CurriculaCourses extends Composite {
 					popup.add(menu);
 					popup.setPopupPosition(m.getAbsoluteLeft(), m.getAbsoluteTop() + 20);
 					popup.show();
-				}
-			});
-			m.addMouseOverHandler(new MouseOverHandler() {
-				@Override
-				public void onMouseOver(MouseOverEvent event) {
-					((Widget)event.getSource()).getElement().getStyle().setCursor(Cursor.POINTER);
 				}
 			});
 
@@ -1040,8 +1013,11 @@ public class CurriculaCourses extends Composite {
 
 	public void setVisible(int col, boolean visible) {
 		for (int row = 0; row < iTable.getRowCount(); row++) {
-			iTable.getFlexCellFormatter().setVisible(row, 2 + 2 * col, visible);
-			iTable.getFlexCellFormatter().setVisible(row, 3 + 2 * col, visible);
+			String courseName = (row == 0 ? null : ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getCourse());
+			if (row == 0 || iVisibleCourses == null || iVisibleCourses.contains(courseName)) {
+				iTable.getFlexCellFormatter().setVisible(row, 2 + 2 * col, visible);
+				iTable.getFlexCellFormatter().setVisible(row, 3 + 2 * col, visible);
+			}
 		}
 	}
 	
@@ -1181,12 +1157,7 @@ public class CurriculaCourses extends Composite {
 			iEditable = editable;
 			if (iEditable) {
 				addClickHandler(iGrHandler);
-				addMouseOverHandler(new MouseOverHandler() {
-					@Override
-					public void onMouseOver(MouseOverEvent event) {
-						((Widget)event.getSource()).getElement().getStyle().setCursor(Cursor.POINTER);
-					}
-				});
+				getElement().getStyle().setCursor(Cursor.POINTER);
 			}
 		}
 		public String getName() { return iName; }

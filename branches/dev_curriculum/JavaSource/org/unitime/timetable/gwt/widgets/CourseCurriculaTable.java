@@ -1,8 +1,11 @@
 package org.unitime.timetable.gwt.widgets;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.TreeSet;
 
+import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.services.CurriculaService;
 import org.unitime.timetable.gwt.services.CurriculaServiceAsync;
 import org.unitime.timetable.gwt.shared.CurriculumInterface;
@@ -13,78 +16,157 @@ import org.unitime.timetable.gwt.shared.CurriculumInterface.CurriculumClassifica
 import org.unitime.timetable.gwt.shared.CurriculumInterface.CurriculumCourseInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.DepartmentInterface;
 import org.unitime.timetable.gwt.widgets.CurriculumEdit.EditFinishedEvent;
-import org.unitime.timetable.gwt.widgets.WebTable.RowClickEvent;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style.Cursor;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.Element;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
+import com.google.gwt.user.client.ui.FlexTable;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
+import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.MenuBar;
+import com.google.gwt.user.client.ui.MenuItem;
+import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.Widget;
 
 public class CourseCurriculaTable extends Composite {
+	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
 
 	private final CurriculaServiceAsync iCurriculaService = GWT.create(CurriculaService.class);
 
 	private VerticalPanel iCurriculaPanel;
-	private WebTable iCurricula;
+	private Image iCurriculaImage, iLoadingImage;
+	private MyFlexTable iCurricula;
 	private DialogBox iDialog;
 	private CurriculumEdit iCurriculumEdit;
+	private Label iErrorLabel, iHint;
 	
 	private AsyncCallback<TreeSet<CurriculumInterface>> iCourseCurriculaCallback = null;
+	
 	private TreeSet<AcademicClassificationInterface> iClassifications = null;
 	
 	private TreeSet<CourseInterface> iCourses = new TreeSet<CourseInterface>();
+	private List<ChainedCommand> iRowClicks = new ArrayList<ChainedCommand>();
+	private List<Integer> iRowTypes = new ArrayList<Integer>();
 	
 	private Long iOfferingId = null;
+	private String iCourseName = null;
+	private boolean iVisible = true;
+	private boolean[] iUsed = null;
+	private HashSet<Long> iExpandedAreas = new HashSet<Long>();
+	private HashSet<Long> iAllAreas = new HashSet<Long>();
+	private int iSelectedRow = -1;
+	private boolean iEditable = true;
 	
-	public CourseCurriculaTable() {
-		iCurricula = new WebTable();
-		iCurricula.setHeader(new WebTable.Row(
-				new WebTable.Cell("Curriculum", 1, "100"),
-				new WebTable.Cell("Area", 1, "100"),
-				new WebTable.Cell("Major(s)", 1, "100"),
-				new WebTable.Cell("Curricula...", 1, "200")));
-		iCurricula.setEmptyMessage("No data.");
+	private int iType = 0;
+	private static String[] sTypes = new String[] { "Expected", "Enrolled", "Last-Like", "Expected / Last-Like", "Expected / Enrolled", "Last-Like / Enrolled" };
+	
+	private static int sRowTypeHeader = 0;
+	private static int sRowTypeArea = 1;
+	private static int sRowTypeCurriculum = 2;
+	private static int sRowTypeOtherArea = 3;
+	private static int sRowTypeOther = 4;
+	private static int sRowTypeTotal = 5;
+	
+	public CourseCurriculaTable(boolean visible, boolean editable, boolean showHeader) {
+		iVisible = visible;
+		iEditable = editable;
 		
 		iCurriculaPanel = new VerticalPanel();
-		iCurriculaPanel.add(iCurricula);
-		Label h = new Label("Expected / Enrolled / Last-Like Students");
-		h.setStyleName("unitime-Hint");
-		iCurriculaPanel.add(h);
-		iCurriculaPanel.setCellHorizontalAlignment(h, HasHorizontalAlignment.ALIGN_RIGHT);
+		iCurriculaPanel.setWidth("100%");
+
+		if (showHeader) {
+			HorizontalPanel header = new HorizontalPanel();
+			iCurriculaImage = new Image(iVisible ? RESOURCES.collapse() : RESOURCES.expand());
+			iCurriculaImage.getElement().getStyle().setCursor(Cursor.POINTER);
+			header.add(iCurriculaImage);
+			header.setCellWidth(iCurriculaImage, (2 + iCurriculaImage.getWidth()) + "px");
+			Label curriculaLabel = new Label("Curricula", false);
+			curriculaLabel.setStyleName("unitime3-HeaderTitle");
+			
+			header.add(curriculaLabel);
+			header.setStyleName("unitime3-HeaderPanel");
+			iCurriculaPanel.add(header);
+			
+			iCurriculaImage.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					iVisible = !iVisible;
+					iCurriculaImage.setResource(iVisible ? RESOURCES.collapse() : RESOURCES.expand());
+					if (iCurricula.getRowCount() > 2) {
+						for (int row = 1; row < iCurricula.getRowCount() - 1; row++) {
+							int rowType = iRowTypes.get(row);
+							if (iVisible && (rowType == sRowTypeCurriculum || rowType == sRowTypeOtherArea)) continue;
+							int hc = getHeaderCols(row);
+							for (int col = 0; col < iClassifications.size()  + hc; col++) {
+								iCurricula.getCellFormatter().setVisible(row, col, iVisible && (col < hc || iUsed[col - hc]));
+							}
+						}
+						for (int col = 0; col < iClassifications.size()  + 2; col++) {
+							iCurricula.getCellFormatter().setStyleName(iCurricula.getRowCount() - 1, col, iVisible ? "unitime-TotalRow" : null );
+						}
+					}
+				}
+			});
+		}
+
+		iLoadingImage = new Image(RESOURCES.loading_small());
+		iCurriculaPanel.add(iLoadingImage);
+		iCurriculaPanel.setCellHorizontalAlignment(iLoadingImage, HasHorizontalAlignment.ALIGN_CENTER);
+		iCurriculaPanel.setCellVerticalAlignment(iLoadingImage, HasVerticalAlignment.ALIGN_MIDDLE);
 		
-		initWidget(iCurriculaPanel);
+		VerticalPanel tableAndHint = new VerticalPanel();
 		
-		iCurricula.addRowClickHandler(new WebTable.RowClickHandler() {
+		iCurricula = new MyFlexTable();
+		tableAndHint.add(iCurricula);
+		
+		iHint = new Label("Showing " + sTypes[iType] + " Students");
+		iHint.setStyleName("unitime-Hint");
+		iHint.setVisible(false);
+		tableAndHint.add(iHint);
+		tableAndHint.setCellHorizontalAlignment(iHint, HasHorizontalAlignment.ALIGN_RIGHT);
+		iCurriculaPanel.add(tableAndHint);
+		iHint.addClickHandler(new ClickHandler() {
 			@Override
-			public void onRowClick(RowClickEvent event) {
-				if (event.getRow().getId() != null) {
-					LoadingWidget.getInstance().show();
-					iCurriculaService.loadCurriculum(Long.valueOf(event.getRow().getId()), new AsyncCallback<CurriculumInterface>() {
-
-						@Override
-						public void onFailure(Throwable caught) {
-							LoadingWidget.getInstance().hide();
+			public void onClick(ClickEvent event) {
+				iType = (iType + 1) % sTypes.length;
+				iHint.setText("Showing " + sTypes[iType] + " Students");
+				if (iCurricula.getRowCount() > 1) {
+					for (int row = 1; row < iCurricula.getRowCount(); row++) {
+						for (int col = 0; col < iClassifications.size(); col++) {
+							((MyLabel)iCurricula.getWidget(row, getHeaderCols(row) + col)).refresh();
 						}
-
-						@Override
-						public void onSuccess(CurriculumInterface result) {
-							openDialog(result);
-						}
-					});
-				} else {
-					// Any action for Other and Total lines?
+					}
+					((MyLabel)iCurricula.getWidget(iCurricula.getRowCount() - 1, 1)).refresh();
+					((Label)iCurricula.getWidget(iCurricula.getRowCount() - 1, 0)).setText("Total " + sTypes[iType] + " Students");
 				}
 			}
 		});
+		
+		
+		iErrorLabel = new Label("Oooops, something went wrong.");
+		iErrorLabel.setStyleName("unitime-ErrorMessage");
+		iCurriculaPanel.add(iErrorLabel);
+		iErrorLabel.setVisible(false);
+		
+		initWidget(iCurriculaPanel);
 	}
 	
-	private void openDialog(final CurriculumInterface curriculum) {
+	private void openDialog(final CurriculumInterface curriculum, final ConditionalCommand next) {
 		if (iDialog == null) {
 			iDialog = new DialogBox();
 			iDialog.setAnimationEnabled(true);
@@ -109,6 +191,9 @@ public class CourseCurriculaTable extends Composite {
 				}
 				@Override
 				public void onBack(EditFinishedEvent evt) {
+					if (iSelectedRow >= 0) {
+						iCurricula.getRowFormatter().setStyleName(iSelectedRow, null);	
+					}
 					iDialog.hide();
 				}
 			});
@@ -116,6 +201,9 @@ public class CourseCurriculaTable extends Composite {
 			iCurriculaService.loadAcademicAreas(new AsyncCallback<TreeSet<AcademicAreaInterface>>() {
 				@Override
 				public void onFailure(Throwable caught) {
+					iErrorLabel.setText("Failed to load academic areas (" + caught.getMessage() + ")");
+					iErrorLabel.setVisible(true);
+					next.executeOnFailure();
 				}
 				@Override
 				public void onSuccess(TreeSet<AcademicAreaInterface> result) {
@@ -123,6 +211,9 @@ public class CourseCurriculaTable extends Composite {
 					iCurriculaService.loadDepartments(new AsyncCallback<TreeSet<DepartmentInterface>>() {
 						@Override
 						public void onFailure(Throwable caught) {
+							iErrorLabel.setText("Failed to load departments (" + caught.getMessage() + ")");
+							iErrorLabel.setVisible(true);
+							next.executeOnFailure();
 						}
 						@Override
 						public void onSuccess(TreeSet<DepartmentInterface> result) {
@@ -131,7 +222,7 @@ public class CourseCurriculaTable extends Composite {
 							iCurriculumEdit.edit(curriculum, false);
 							iCurriculumEdit.showOnlyCourses(iCourses);
 							iDialog.center();
-							LoadingWidget.getInstance().hide();
+							next.executeOnSuccess();
 						}
 					});
 				}
@@ -141,7 +232,7 @@ public class CourseCurriculaTable extends Composite {
 			iCurriculumEdit.edit(curriculum, false);
 			iCurriculumEdit.showOnlyCourses(iCourses);
 			iDialog.center();
-			LoadingWidget.getInstance().hide();
+			next.executeOnSuccess();
 		}
 	}
 	
@@ -149,29 +240,600 @@ public class CourseCurriculaTable extends Composite {
 		$wnd.location.replace(url);
 	}-*/;
 	
-	private void initHeader(final Command next) {
+	private void init(final Command next) {
 		iCurriculaService.loadAcademicClassifications(new AsyncCallback<TreeSet<AcademicClassificationInterface>>() {
 			@Override
 			public void onSuccess(TreeSet<AcademicClassificationInterface> result) {
 				iClassifications = result;
-				ArrayList<WebTable.Cell> header = new ArrayList<WebTable.Cell>();
-				header.add(new WebTable.Cell("Curriculum", 1, "100"));
-				header.add(new WebTable.Cell("Area", 1, "100"));
-				header.add(new WebTable.Cell("Major(s)", 1, "100"));
-				for (AcademicClassificationInterface clasf: result) {
-					header.add(new WebTable.Cell(clasf.getCode(), 1, "75"));
-				}
-				for (int c = 3; c < header.size(); c++) {
-					header.get(c).setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-				}
-				iCurricula.setHeader(new WebTable.Row(header));
 				if (next != null) next.execute();
 			}
 			
 			@Override
 			public void onFailure(Throwable caught) {
+				iErrorLabel.setText("Failed to load classifications (" + caught.getMessage() + ").");
+				iErrorLabel.setVisible(true);
 			}
 		});
+	}
+	
+	public void clear(boolean loading) {
+		for (int row = iCurricula.getRowCount() - 1; row >= 0; row--) {
+			iCurricula.removeRow(row);
+		}
+		iCurricula.clear(true);
+		iLoadingImage.setVisible(loading);
+		iErrorLabel.setVisible(false);
+		iHint.setVisible(false);
+	}
+	
+	private void populate(TreeSet<CurriculumInterface> curricula) {
+		// Menu
+		ClickHandler menu = new ClickHandler() {
+			@Override
+			public void onClick(final ClickEvent event) {
+				final PopupPanel popup = new PopupPanel(true);
+				MenuBar menu = new MenuBar(true);
+				MenuItem showHide = new MenuItem(iVisible ? "Hide Details" : "Show Details", true, new Command() {
+					@Override
+					public void execute() {
+						popup.hide();
+						iVisible = !iVisible;
+						if (iCurriculaImage != null)
+							iCurriculaImage.setResource(iVisible ? RESOURCES.collapse() : RESOURCES.expand());
+						if (iCurricula.getRowCount() > 2) {
+							for (int row = 1; row < iCurricula.getRowCount() - 1; row++) {
+								int rowType = iRowTypes.get(row);
+								if (iVisible && (rowType == sRowTypeCurriculum || rowType == sRowTypeOtherArea)) continue;
+								int hc = getHeaderCols(row);
+								for (int col = 0; col < iClassifications.size()  + hc; col++) {
+									iCurricula.getCellFormatter().setVisible(row, col, iVisible && (col < hc || iUsed[col - hc]));
+								}
+							}
+							for (int col = 0; col < iClassifications.size()  + 2; col++) {
+								iCurricula.getCellFormatter().setStyleName(iCurricula.getRowCount() - 1, col, iVisible ? "unitime-TotalRow" : null );
+							}
+						}
+					}
+				});
+				showHide.getElement().getStyle().setCursor(Cursor.POINTER);
+				menu.addItem(showHide);
+				if (iCurricula.getRowCount() > 2 && iVisible) {
+					boolean canExpand = false, canCollapse = false;
+					for (int row = 1; row < iCurricula.getRowCount() - 1; row++) {
+						int rowType = iRowTypes.get(row);
+						if (rowType == sRowTypeArea) {
+							if (iCurricula.getCellFormatter().isVisible(row, 0))
+								canExpand = true;
+							else 
+								canCollapse = true;
+						}
+					}
+					if (canExpand) {
+						MenuItem expandAll = new MenuItem("Expand All", true, new Command() {
+							@Override
+							public void execute() {
+								popup.hide();
+								for (int row = 1; row < iCurricula.getRowCount() - 1; row++) {
+									int rowType = iRowTypes.get(row);
+									boolean visible = (rowType != sRowTypeArea && rowType != sRowTypeOther);
+									int hc = getHeaderCols(row);
+									for (int col = 0; col < iClassifications.size()  + hc; col++) {
+										iCurricula.getCellFormatter().setVisible(row, col, visible && (col < hc || iUsed[col - hc]));
+									}
+									iExpandedAreas.clear();
+									iExpandedAreas.addAll(iAllAreas);
+								}
+							}
+						});
+						expandAll.getElement().getStyle().setCursor(Cursor.POINTER);
+						menu.addItem(expandAll);
+					}
+					if (canCollapse) {
+						MenuItem collapseAll = new MenuItem("Collapse All", true, new Command() {
+							@Override
+							public void execute() {
+								popup.hide();
+								for (int row = 1; row < iCurricula.getRowCount() - 1; row++) {
+									int rowType = iRowTypes.get(row);
+									boolean visible = (rowType != sRowTypeCurriculum && rowType != sRowTypeOtherArea);
+									int hc = getHeaderCols(row);
+									for (int col = 0; col < iClassifications.size()  + hc; col++) {
+										iCurricula.getCellFormatter().setVisible(row, col, visible && (col < hc || iUsed[col - hc]));
+									}
+									iExpandedAreas.clear();
+								}
+							}
+						});
+						collapseAll.getElement().getStyle().setCursor(Cursor.POINTER);
+						menu.addItem(collapseAll);
+					}
+				}
+				menu.addSeparator();
+				for (int i = 0; i < sTypes.length; i++) {
+					final int newType = i;
+					MenuItem item = new MenuItem(
+							"Show " + sTypes[i] + " Students",
+							true,
+							new Command() {
+								@Override
+								public void execute() {
+									popup.hide();
+									iType = newType;
+									iHint.setText("Showing " + sTypes[iType] + " Students");
+									if (iCurricula.getRowCount() > 1) {
+										for (int row = 1; row < iCurricula.getRowCount(); row++) {
+											int hc = getHeaderCols(row);
+											for (int col = 0; col < iClassifications.size(); col++) {
+												((MyLabel)iCurricula.getWidget(row, hc + col)).refresh();
+											}
+										}
+										((MyLabel)iCurricula.getWidget(iCurricula.getRowCount() - 1, 1)).refresh();
+										((Label)iCurricula.getWidget(iCurricula.getRowCount() - 1, 0)).setText("Total " + sTypes[iType] + " Students");
+									}
+								}
+							});
+					if (i == iType)
+						item.getElement().getStyle().setColor("#666666");
+					item.getElement().getStyle().setCursor(Cursor.POINTER);
+					menu.addItem(item);
+				}
+				menu.setVisible(true);
+				popup.add(menu);
+				Element el = ((Widget)event.getSource()).getElement();
+				int x = event.getNativeEvent().getClientX() + el.getOwnerDocument().getScrollLeft();
+				int y = event.getNativeEvent().getClientY() + el.getOwnerDocument().getScrollTop();
+				popup.setPopupPosition(x, y);
+				popup.show();
+			}
+		};
+		
+		// Create header
+		int col = 0;
+		final Label curriculumLabel = new Label("Curriculum", false);
+		curriculumLabel.addClickHandler(menu);
+		iCurricula.setWidget(0, col, curriculumLabel);
+		iCurricula.getFlexCellFormatter().setStyleName(0, col, "unitime-ClickableTableHeader");
+		iCurricula.getFlexCellFormatter().setWidth(0, col, "100px");
+		col++;
+		
+		final Label areaLabel = new Label("Area", false);
+		areaLabel.addClickHandler(menu);
+		iCurricula.setWidget(0, col, areaLabel);
+		iCurricula.getFlexCellFormatter().setStyleName(0, col, "unitime-ClickableTableHeader");
+		iCurricula.getFlexCellFormatter().setWidth(0, col, "100px");
+		col++;
+		
+		final Label majorLabel = new Label("Major(s)", false);
+		majorLabel.addClickHandler(menu);
+		iCurricula.setWidget(0, col, majorLabel);
+		iCurricula.getFlexCellFormatter().setStyleName(0, col, "unitime-ClickableTableHeader");
+		iCurricula.getFlexCellFormatter().setWidth(0, col, "100px");
+		col++;
+		
+		for (AcademicClassificationInterface clasf: iClassifications) {
+			final Label clasfLabel = new Label(clasf.getCode());
+			clasfLabel.addClickHandler(menu);
+			iCurricula.setWidget(0, col, clasfLabel);
+			iCurricula.getFlexCellFormatter().setStyleName(0, col, "unitime-ClickableTableHeader");
+			iCurricula.getFlexCellFormatter().setHorizontalAlignment(0, col, HasHorizontalAlignment.ALIGN_RIGHT);
+			iCurricula.getFlexCellFormatter().setWidth(0, col, "75px");
+			col++;
+		}
+		
+		// Create body
+		iCourses.clear();
+		iRowClicks.clear();
+		iRowClicks.add(null); // for header row
+		iRowTypes.add(sRowTypeHeader);
+		
+		int row = 0;
+		List<CurriculumInterface> otherCurricula = new ArrayList<CurriculumInterface>();
+		List<CurriculumInterface> lastArea = new ArrayList<CurriculumInterface>();
+		iAllAreas.clear();
+		iUsed = new boolean[iClassifications.size()];
+		for (int i = 0; i < iUsed.length; i++)
+			iUsed[i] = false;
+		int[][] total = new int[iClassifications.size()][];
+		for (int i = 0; i <total.length; i++)
+			total[i] = new int[] {0, 0, 0};
+		int[][] totalThisArea = new int[iClassifications.size()][];
+		for (int i = 0; i <totalThisArea.length; i++)
+			totalThisArea[i] = new int[] {0, 0, 0};
+		
+		for (final CurriculumInterface curriculum: curricula) {
+			for (CourseInterface course: curriculum.getCourses()) {
+				CourseInterface cx = new CourseInterface();
+				cx.setId(course.getId()); cx.setCourseName(course.getCourseName());
+				iCourses.add(cx);
+			}
+			if (curriculum.getId() == null) { otherCurricula.add(curriculum); continue; }
+			
+			iAllAreas.add(curriculum.getAcademicArea().getId());
+			if (lastArea.isEmpty() || lastArea.get(0).getAcademicArea().equals(curriculum.getAcademicArea())) {
+				lastArea.add(curriculum);
+			} else if (!lastArea.equals(curriculum.getAcademicArea())) {
+				col = 0; row++;
+				iCurricula.getFlexCellFormatter().setColSpan(row, col, 3);
+				//iCurricula.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_CENTER);
+				iCurricula.setWidget(row, col++, new HTML("<i>" + lastArea.get(0).getAcademicArea().getAbbv() + " - " + lastArea.get(0).getAcademicArea().getName() + " (" + lastArea.size() + ")</i>", false));
+				int clasfIdx = 0;
+				for (AcademicClassificationInterface clasf: iClassifications) {
+					int exp = totalThisArea[clasfIdx][0];
+					int last = totalThisArea[clasfIdx][1];
+					int enrl = totalThisArea[clasfIdx][2];
+					iCurricula.setWidget(row, col, new MyLabel(exp, enrl, last));
+					iCurricula.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_RIGHT);
+					col++; clasfIdx++;
+				}
+				final int finalRow = row;
+				final int lastAreas = lastArea.size();
+				final Long lastAreaId = lastArea.get(0).getAcademicArea().getId();
+				iRowClicks.add(new ChainedCommand() {
+					@Override
+					public void execute(final ConditionalCommand next) {
+						iExpandedAreas.add(lastAreaId);
+						int hc = getHeaderCols(finalRow);
+						for (int col = 0; col < hc + iClassifications.size(); col++) {
+							iCurricula.getCellFormatter().setVisible(finalRow, col, false);
+						}
+						for (int row = 1; row <= lastAreas; row++) {
+							hc = getHeaderCols(finalRow - row);
+							for (int col = 0; col < hc + iClassifications.size(); col++) {
+								iCurricula.getCellFormatter().setVisible(finalRow - row, col, (col < hc || iUsed[col - hc]));
+							}
+						}
+						if (next != null)
+							next.executeOnSuccess();
+					}
+				});
+				iRowTypes.add(sRowTypeArea);
+				if (lastAreas == 1 || iExpandedAreas.contains(lastAreaId))
+					iRowClicks.get(row).execute(null);
+				lastArea.clear();
+				for (int i = 0; i <totalThisArea.length; i++)
+					totalThisArea[i] = new int[] {0, 0, 0};
+				lastArea.add(curriculum);
+			}
+			col = 0; row++;
+			iCurricula.setText(row, col++, curriculum.getAbbv());
+			iCurricula.setText(row, col++, curriculum.getAcademicArea().getAbbv());
+			iCurricula.setText(row, col++, curriculum.getMajorCodes(", "));
+			for (int c = 0; c < 3; c++)
+				iCurricula.getCellFormatter().setVisible(row, c, false);
+			int clasfIdx = 0;
+			for (AcademicClassificationInterface clasf: iClassifications) {
+				CurriculumClassificationInterface f = null;
+				for (CurriculumClassificationInterface x: curriculum.getClassifications()) {
+					if (x.getAcademicClassification().getId().equals(clasf.getId())) { f = x; break; }
+				}
+				int exp = 0, last = 0, enrl = 0;
+				for (CourseInterface course: curriculum.getCourses()) {
+					CurriculumCourseInterface cx = course.getCurriculumCourse(clasfIdx);
+					if (cx != null) {
+						iUsed[clasfIdx] = true;
+						exp += (f == null || f.getExpected() == null ? 0 : Math.round(f.getExpected() * cx.getShare()));
+						last += (cx.getLastLike() == null ? 0 : cx.getLastLike());
+						enrl += (cx.getEnrollment() == null ? 0 : cx.getEnrollment());
+					}
+				}
+				total[clasfIdx][0] += exp;
+				total[clasfIdx][1] += last;
+				total[clasfIdx][2] += enrl;
+				totalThisArea[clasfIdx][0] += exp;
+				totalThisArea[clasfIdx][1] += last;
+				totalThisArea[clasfIdx][2] += enrl;
+				iCurricula.setWidget(row, col, new MyLabel(exp, enrl, last));
+				iCurricula.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_RIGHT);
+				iCurricula.getCellFormatter().setVisible(row, col, false);
+				col++;
+				clasfIdx++;
+			}
+			if (iEditable) {
+				iRowClicks.add(new ChainedCommand() {
+					@Override
+					public void execute(final ConditionalCommand next) {
+						iCurriculaService.loadCurriculum(curriculum.getId(), new AsyncCallback<CurriculumInterface>() {
+							@Override
+							public void onFailure(Throwable caught) {
+								iErrorLabel.setText("Failed to load details for " + curriculum.getAbbv() + " (" + caught.getMessage() + ")");
+								iErrorLabel.setVisible(true);
+								next.executeOnFailure();
+							}
+							@Override
+							public void onSuccess(CurriculumInterface result) {
+								openDialog(result, next);
+							}
+						});
+					}
+				});
+			} else {
+				final Long lastAreaId = curriculum.getAcademicArea().getId();
+				final int finalRow = row;
+				iRowClicks.add(new ChainedCommand() {
+					@Override
+					public void execute(final ConditionalCommand next) {
+						int row = finalRow;
+						while (row > 0 && iRowTypes.get(row) == sRowTypeCurriculum) {
+							int hc = getHeaderCols(row);
+							for (int col = 0; col < iClassifications.size()  + hc; col++) {
+								iCurricula.getCellFormatter().setVisible(row, col, false);
+							}
+							row --;
+						}
+						row = finalRow + 1;
+						while (iRowTypes.get(row) == sRowTypeCurriculum) {
+							int hc = getHeaderCols(row);
+							for (int col = 0; col < iClassifications.size()  + hc; col++) {
+								iCurricula.getCellFormatter().setVisible(row, col, false);
+							}
+							row ++;
+						}
+						int hc = getHeaderCols(row);
+						for (int col = 0; col < iClassifications.size()  + hc; col++) {
+							iCurricula.getCellFormatter().setVisible(row, col, (col < hc || iUsed[col - hc]));
+						}
+						iExpandedAreas.remove(lastAreaId);
+						if (next != null)
+							next.executeOnSuccess();
+					}
+				});
+			}
+			iRowTypes.add(sRowTypeCurriculum);
+		}
+		if (!lastArea.isEmpty()) {
+			col = 0; row++;
+			iCurricula.getFlexCellFormatter().setColSpan(row, col, 3);
+			//iCurricula.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_CENTER);
+			iCurricula.setWidget(row, col++, new HTML("<i>" + lastArea.get(0).getAcademicArea().getAbbv() + " - " + lastArea.get(0).getAcademicArea().getName() + " (" + lastArea.size() + ")</i>", false));
+			int clasfIdx = 0;
+			for (AcademicClassificationInterface clasf: iClassifications) {
+				int exp = totalThisArea[clasfIdx][0];
+				int last = totalThisArea[clasfIdx][1];
+				int enrl = totalThisArea[clasfIdx][2];
+				iCurricula.setWidget(row, col, new MyLabel(exp, enrl, last));
+				iCurricula.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_RIGHT);
+				col++; clasfIdx++;
+			}
+			final int finalRow = row;
+			final int lastAreas = lastArea.size();
+			final Long lastAreaId = lastArea.get(0).getAcademicArea().getId();
+			iRowClicks.add(new ChainedCommand() {
+				@Override
+				public void execute(final ConditionalCommand next) {
+					iExpandedAreas.add(lastAreaId);
+					int hc = getHeaderCols(finalRow);
+					for (int col = 0; col < hc + iClassifications.size(); col++) {
+						iCurricula.getCellFormatter().setVisible(finalRow, col, false);
+					}
+					for (int row = 1; row <= lastAreas; row++) {
+						hc = getHeaderCols(finalRow - row);
+						for (int col = 0; col < hc + iClassifications.size(); col++) {
+							iCurricula.getCellFormatter().setVisible(finalRow - row, col, (col < hc || iUsed[col - hc]));
+						}
+					}
+					if (next != null)
+						next.executeOnSuccess();
+				}
+			});
+			iRowTypes.add(sRowTypeArea);
+			if (lastAreas == 1 || iExpandedAreas.contains(lastAreaId))
+				iRowClicks.get(row).execute(null);
+		}
+		
+		// Other line
+		if (!otherCurricula.isEmpty()) {
+			int[][] totalOther = new int[iClassifications.size()][];
+			for (int i = 0; i <totalOther.length; i++)
+				totalOther[i] = new int[] {0, 0, 0};
+			for (CurriculumInterface other: otherCurricula) {
+				col = 0; row++;
+				iCurricula.getFlexCellFormatter().setColSpan(row, col, 3);
+				//iCurricula.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_CENTER);
+				iCurricula.setHTML(row, col, "<i>" + other.getAbbv() + " - " + other.getName() + "</i>");
+				iCurricula.getCellFormatter().setStyleName(row, col, "unitime-OtherRow");
+				iCurricula.getCellFormatter().setVisible(row, col, false);
+				col++;
+				int clasfIdx = 0;
+				for (AcademicClassificationInterface clasf: iClassifications) {
+					int exp = 0, last = 0, enrl = 0;
+					for (CourseInterface course: other.getCourses()) {
+						CurriculumCourseInterface cx = course.getCurriculumCourse(clasfIdx);
+						if (cx != null) {
+							iUsed[clasfIdx] = true;
+							exp += 0;
+							last += (cx.getLastLike() == null ? 0 : cx.getLastLike());
+							enrl += (cx.getEnrollment() == null ? 0 : cx.getEnrollment());
+						}
+					}
+					total[clasfIdx][0] += exp;
+					total[clasfIdx][1] += last;
+					total[clasfIdx][2] += enrl;
+					totalOther[clasfIdx][0] += exp;
+					totalOther[clasfIdx][1] += last;
+					totalOther[clasfIdx][2] += enrl;
+					iCurricula.setWidget(row, col, new MyLabel(exp, enrl, last));
+					iCurricula.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_RIGHT);
+					iCurricula.getCellFormatter().setStyleName(row, col, "unitime-OtherRow");
+					iCurricula.getCellFormatter().setVisible(row, col, false);
+					col++;
+					clasfIdx++;
+				}
+				iRowTypes.add(sRowTypeOtherArea);
+				final int finalRow = row;
+				iRowClicks.add(new ChainedCommand() {
+					@Override
+					public void execute(final ConditionalCommand next) {
+						int row = finalRow;
+						while (row > 0 && iRowTypes.get(row) == sRowTypeOtherArea) {
+							int hc = getHeaderCols(row);
+							for (int col = 0; col < iClassifications.size()  + hc; col++) {
+								iCurricula.getCellFormatter().setVisible(row, col, false);
+							}
+							row --;
+						}
+						row = finalRow + 1;
+						while (iRowTypes.get(row) == sRowTypeOtherArea) {
+							int hc = getHeaderCols(row);
+							for (int col = 0; col < iClassifications.size()  + hc; col++) {
+								iCurricula.getCellFormatter().setVisible(row, col, false);
+							}
+							row ++;
+						}
+						int hc = getHeaderCols(row);
+						for (int col = 0; col < iClassifications.size()  + hc; col++) {
+							iCurricula.getCellFormatter().setVisible(row, col, (col < hc || iUsed[col - hc]));
+						}
+						iExpandedAreas.remove(-1l);
+						if (next != null)
+							next.executeOnSuccess();
+					}
+				});
+			}
+			col = 0; row++;
+			iCurricula.getFlexCellFormatter().setColSpan(row, col, 3);
+			//iCurricula.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_CENTER);
+			iCurricula.setWidget(row, col, new HTML("<i>Students without curricula</i>", false));
+			iCurricula.getCellFormatter().setStyleName(row, col, "unitime-OtherRow");
+			col++;
+			int clasfIdx = 0;
+			for (AcademicClassificationInterface clasf: iClassifications) {
+				int exp = totalOther[clasfIdx][0];
+				int last = totalOther[clasfIdx][1];
+				int enrl = totalOther[clasfIdx][2];
+				iCurricula.setWidget(row, col, new MyLabel(exp, enrl, last));
+				iCurricula.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_RIGHT);
+				iCurricula.getCellFormatter().setStyleName(row, col, "unitime-OtherRow");
+				col++; clasfIdx++;
+			}
+			final int finalRow = row;
+			final int lastAreas = otherCurricula.size();
+			iAllAreas.add(-1l);
+			iRowClicks.add(new ChainedCommand() {
+				@Override
+				public void execute(final ConditionalCommand next) {
+					iExpandedAreas.add(-1l);
+					int hc = getHeaderCols(finalRow);
+					for (int col = 0; col < hc + iClassifications.size(); col++) {
+						iCurricula.getCellFormatter().setVisible(finalRow, col, false);
+					}
+					for (int row = 1; row <= lastAreas; row++) {
+						hc = getHeaderCols(finalRow - row);
+						for (int col = 0; col < hc + iClassifications.size(); col++) {
+							iCurricula.getCellFormatter().setVisible(finalRow - row, col, (col < hc || iUsed[col - hc]));
+						}
+					}
+					if (next != null)
+						next.executeOnSuccess();
+				}
+			});
+			iRowTypes.add(sRowTypeOther);
+			if (lastAreas == 1 || iExpandedAreas.contains(-1l))
+				iRowClicks.get(row).execute(null);
+		}
+		
+		// Total line
+		col = 0; row++;
+		iRowClicks.add(null);
+		iRowTypes.add(sRowTypeTotal);
+		iCurricula.getFlexCellFormatter().setColSpan(row, col, 2);
+		iCurricula.setWidget(row, col++, new Label("Total " + sTypes[iType] + " Students", false));
+		int[] tx = new int[] {0, 0, 0};
+		for (int i = 0; i < total.length; i ++)
+			for (int j = 0; j < 3; j++)
+				tx[j] += total[i][j];
+		iCurricula.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_RIGHT);
+		iCurricula.setWidget(row, col++, new MyLabel(tx[0], tx[2], tx[1]));
+		for (int c = 0; c < 2; c++)
+			iCurricula.getCellFormatter().setStyleName(row, c, "unitime-TotalRow");
+		int clasfIdx = 0;
+		for (AcademicClassificationInterface clasf: iClassifications) {
+			int exp = total[clasfIdx][0];
+			int last = total[clasfIdx][1];
+			int enrl = total[clasfIdx][2];
+			iCurricula.setWidget(row, col, new MyLabel(exp, enrl, last));
+			iCurricula.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_RIGHT);
+			iCurricula.getCellFormatter().setStyleName(row, col, "unitime-TotalRow");
+			col++; clasfIdx++;
+		}
+		
+		// Hide all lines if requested
+		if (!iVisible) {
+			for (int r = 1; r < iCurricula.getRowCount() - 1; r++) {
+				int hc = getHeaderCols(r);
+				for (int c = 0; c < hc + iClassifications.size(); c++) {
+					iCurricula.getCellFormatter().setVisible(r, c, false);
+				}
+			}
+			int r = iCurricula.getRowCount() - 1;
+			int hc = getHeaderCols(r);
+			for (int c = 0; c < hc + iClassifications.size(); c++) {
+				iCurricula.getCellFormatter().setStyleName(r, c, null);
+			}
+		}
+
+		// Hide not-used classifications
+		for (int i = 0; i < iUsed.length; i++) {
+			for (int r = 0; r < iCurricula.getRowCount(); r++) {
+				if (!iUsed[i]) {
+					iCurricula.getCellFormatter().setVisible(r, getHeaderCols(r) + i, false);
+				}
+			}
+		}
+		
+		boolean typeChanged = false;
+		if (iType == 0 && tx[0] == 0) {
+			if (tx[2] > 0) {
+				iType = 1;
+				typeChanged = true;
+			} else if (tx[1] > 0) {
+				iType = 2;
+				typeChanged = true;
+			}
+		}
+		if (iType == 1 && tx[2] == 0) {
+			if (tx[0] > 0) {
+				iType = 0;
+				typeChanged = true;
+			} else if (tx[1] > 0) {
+				iType = 2;
+				typeChanged = true;
+			}
+		}
+		if (iType == 2 && tx[1] == 0) {
+			if (tx[0] > 0) {
+				iType = 0;
+				typeChanged = true;
+			} else if (tx[2] > 0) {
+				iType = 1;
+				typeChanged = true;
+			}
+		}
+		if (typeChanged) {
+			iHint.setText("Showing " + sTypes[iType] + " Students");
+			if (iCurricula.getRowCount() > 1) {
+				for (int r = 1; r < iCurricula.getRowCount(); r++) {
+					int hc = getHeaderCols(r);
+					for (int c = 0; c < iClassifications.size(); c++) {
+						((MyLabel)iCurricula.getWidget(r, hc + c)).refresh();
+					}
+				}
+				((MyLabel)iCurricula.getWidget(iCurricula.getRowCount() - 1, 1)).refresh();
+				((Label)iCurricula.getWidget(iCurricula.getRowCount() - 1, 0)).setText("Total " + sTypes[iType] + " Students");
+			}
+		}
+		
+		iLoadingImage.setVisible(false);
+		iHint.setVisible(true);
+	}
+	
+	private int getHeaderCols(int row) {
+		int col = 0;
+		int left = 3;
+		while (left > 0) {
+			left -= iCurricula.getFlexCellFormatter().getColSpan(row, col);
+			col ++;
+		}
+		return col;
 	}
 	
 	private void initCallbacks() {
@@ -179,123 +841,19 @@ public class CourseCurriculaTable extends Composite {
 			iCourseCurriculaCallback = new AsyncCallback<TreeSet<CurriculumInterface>>() {
 				@Override
 				public void onFailure(Throwable caught) {
-					iCurricula.setEmptyMessage(caught.getMessage());
-					iCourses.clear();
+					iErrorLabel.setText("Failed to load curricula (" + caught.getMessage() + ").");
+					iErrorLabel.setVisible(true);
+					iLoadingImage.setVisible(false);
 				}
 				@Override
 				public void onSuccess(TreeSet<CurriculumInterface> result) {
-					iCourses.clear();
-					if (!result.isEmpty()) {
-						WebTable.Row[] rows = new WebTable.Row[1 + result.size()];
-						int idx = 0;
-						CurriculumInterface other = null;
-						boolean[] used = new boolean[iClassifications.size()];
-						for (int i = 0; i < used.length; i++)
-							used[i] = false;
-						int[][] total = new int[iClassifications.size()][];
-						for (int i = 0; i <total.length; i++)
-							total[i] = new int[] {0, 0, 0};
-						for (CurriculumInterface curriculum: result) {
-							for (CourseInterface course: curriculum.getCourses()) {
-								CourseInterface cx = new CourseInterface();
-								cx.setId(course.getId()); cx.setCourseName(course.getCourseName());
-								iCourses.add(cx);
-							}
-							if (curriculum.getId() == null) { other = curriculum; continue; }
-							ArrayList<WebTable.Cell> row = new ArrayList<WebTable.Cell>();
-							row.add(new WebTable.Cell(curriculum.getAbbv()));
-							row.add(new WebTable.Cell(curriculum.getAcademicArea().getAbbv()));
-							row.add(new WebTable.Cell(curriculum.getMajorCodes(", ")));
-							int col = 0;
-							for (AcademicClassificationInterface clasf: iClassifications) {
-								CurriculumClassificationInterface f = null;
-								for (CurriculumClassificationInterface x: curriculum.getClassifications()) {
-									if (x.getAcademicClassification().getId().equals(clasf.getId())) { f = x; break; }
-								}
-								int exp = 0, last = 0, enrl = 0;
-								for (CourseInterface course: curriculum.getCourses()) {
-									CurriculumCourseInterface cx = course.getCurriculumCourse(col);
-									if (cx != null) {
-										used[col] = true;
-										exp += (f == null || f.getExpected() == null ? 0 : Math.round(f.getExpected() * cx.getShare()));
-										last += (cx.getLastLike() == null ? 0 : cx.getLastLike());
-										enrl += (cx.getEnrollment() == null ? 0 : cx.getEnrollment());
-									}
-								}
-								total[col][0] += exp;
-								total[col][1] += last;
-								total[col][2] += enrl;
-								String s = "";
-								if (exp > 0 || enrl > 0 || last > 0)
-									s = (exp > 0 ? exp : "-") + " / " + (enrl > 0 ? enrl : "-") + " / " + (last > 0 ? last : "-");
-								row.add(new WebTable.WidgetCell(new Label(s, false), s));
-								col++;
-							}
-							for (int c = 3; c < row.size(); c++) {
-								row.get(c).setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-							}
-							rows[idx] = new WebTable.Row(row);
-							rows[idx++].setId(curriculum.getId().toString());
-						}
-						if (other != null && other.hasCourses()) {
-							ArrayList<WebTable.Cell> row = new ArrayList<WebTable.Cell>();
-							row.add(new WebTable.Cell("<i>Other</i>"));
-							row.add(new WebTable.Cell("-"));
-							row.add(new WebTable.Cell("-"));
-							int col = 0;
-							for (AcademicClassificationInterface clasf: iClassifications) {
-								int exp = 0, last = 0, enrl = 0;
-								for (CourseInterface course: other.getCourses()) {
-									CurriculumCourseInterface cx = course.getCurriculumCourse(col);
-									if (cx != null) {
-										used[col] = true;
-										exp += 0;
-										last += (cx.getLastLike() == null ? 0 : cx.getLastLike());
-										enrl += (cx.getEnrollment() == null ? 0 : cx.getEnrollment());
-									}
-								}
-								total[col][0] += exp;
-								total[col][1] += last;
-								total[col][2] += enrl;
-								String s = "";
-								if (exp > 0 || enrl > 0 || last > 0)
-									s = (exp > 0 ? exp : "-") + " / " + (enrl > 0 ? enrl : "-") + " / " + (last > 0 ? last : "-");
-								row.add(new WebTable.WidgetCell(new Label(s, false), s));
-								col++;
-							}
-							for (int c = 3; c < row.size(); c++) {
-								row.get(c).setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-							}
-							rows[idx++] = new WebTable.Row(row);
-						}
-						ArrayList<WebTable.Cell> row = new ArrayList<WebTable.Cell>();
-						row.add(new WebTable.Cell("<b>Total</b>"));
-						row.add(new WebTable.Cell("&nbsp;"));
-						int[] tx = new int[] {0, 0, 0};
-						for (int i = 0; i < total.length; i ++)
-							for (int j = 0; j < 3; j++)
-								tx[j] += total[i][j];
-						row.add(new WebTable.Cell((tx[0] > 0 ? tx[0] : "-") + " / " + (tx[2] > 0 ? tx[2] : "-") + " / " + (tx[1] > 0 ? tx[1] : "-")));
-						int col = 0;
-						for (AcademicClassificationInterface clasf: iClassifications) {
-							int exp = total[col][0];
-							int last = total[col][1];
-							int enrl = total[col][2];
-							String s = (exp > 0 ? exp : "-") + " / " + (enrl > 0 ? enrl : "-") + " / " + (last > 0 ? last : "-");
-							row.add(new WebTable.WidgetCell(new Label(s, false), s));
-							col++;
-						}
-						for (int c = 0; c < row.size(); c++) {
-							row.get(c).setStyleName("unitime-ClassRowFirst");
-							if (c >= 3) row.get(c).setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-						}
-						rows[idx++] = new WebTable.Row(row);
-						iCurricula.setData(rows);
-						for (int i = 0; i < used.length; i++)
-							iCurricula.setColumnVisible(3 + i, used[i]);
+					if (result.isEmpty()) {
+						iErrorLabel.setText("The selected offering has no curricula.");
+						iErrorLabel.setVisible(true);
 					} else {
-						iCurricula.setEmptyMessage("The selected course has no curricula.");
+						populate(result);
 					}
+					iLoadingImage.setVisible(false);
 				}
 			};			
 		}
@@ -305,13 +863,15 @@ public class CourseCurriculaTable extends Composite {
 		Command populate = new Command() {
 			@Override
 			public void execute() {
-				iCurricula.clearData(true);
-				iCurricula.setEmptyMessage("Loading data...");
-				iCurriculaService.findCurriculaForAnInstructionalOffering(iOfferingId, iCourseCurriculaCallback);
+				clear(true);
+				if (iOfferingId != null)
+					iCurriculaService.findCurriculaForAnInstructionalOffering(iOfferingId, iCourseCurriculaCallback);
+				else
+					iCurriculaService.findCurriculaForACourse(iCourseName, iCourseCurriculaCallback);
 			}
 		};
 		if (iClassifications == null) {
-			initHeader(populate);
+			init(populate);
 		} else {
 			populate.execute();
 		}
@@ -320,8 +880,153 @@ public class CourseCurriculaTable extends Composite {
 	public void insert(final RootPanel panel) {
 		initCallbacks();
 		iOfferingId = Long.valueOf(panel.getElement().getInnerText());
+		iCourseName = null;
 		refresh();
 		panel.getElement().setInnerText(null);
 		panel.add(this);
+		panel.setVisible(true);
 	}
+	
+	public void setCourseName(String courseName) {
+		initCallbacks();
+		iOfferingId = null;
+		iCourseName = courseName;
+		refresh();
+	}
+	
+	public class MyLabel extends Label {
+		private int iExp, iLast, iEnrl;
+		
+		public MyLabel(int exp, int enrl, int last) {
+			//super(exp > 0 || enrl > 0 || last > 0 ? ((exp > 0 ? exp : "-") + " / " + (enrl > 0 ? enrl : "-") + " / " + (last > 0 ? last : "-")) : "", false);
+			super("", false);
+			iExp = exp;
+			iLast = last;
+			iEnrl = enrl;
+			refresh();
+		}
+		
+		public void showExpected() {
+			setText(iExp > 0 ? String.valueOf(iExp) : "");
+		}
+		
+		public void showEnrolled() {
+			setText(iEnrl > 0 ? String.valueOf(iEnrl) : "");
+		}
+
+		public void showLastLike() {
+			setText(iLast > 0 ? String.valueOf(iLast) : "");
+		}
+		
+		public void showExpectedEnrolled() {
+			if (iExp > 0 || iEnrl > 0)
+				setText((iExp > 0 ? String.valueOf(iExp) : "-") + " / " + (iEnrl > 0 ? String.valueOf(iEnrl) : "-"));
+			else
+				setText("");
+		}
+		
+		public void showExpectedLastLike() {
+			if (iExp > 0 || iLast > 0)
+				setText((iExp > 0 ? String.valueOf(iExp) : "-") + " / " + (iLast > 0 ? String.valueOf(iLast) : "-"));
+			else
+				setText("");
+		}
+
+		public void showLastLikeEnrolled() {
+			if (iLast > 0 || iEnrl > 0)
+				setText((iLast > 0 ? String.valueOf(iLast) : "-") + " / " + (iEnrl > 0 ? String.valueOf(iEnrl) : "-"));
+			else
+				setText("");
+		}
+		
+		public void refresh() {
+			switch (iType) {
+			case 0:
+				showExpected();
+				break;
+			case 1:
+				showEnrolled();
+				break;
+			case 2:
+				showLastLike();
+				break;
+			case 3:
+				showExpectedLastLike();
+				break;
+			case 4:
+				showExpectedEnrolled();
+				break;
+			case 5:
+				showLastLikeEnrolled();
+				break;
+			}
+		}
+
+	}
+	
+	public class MyFlexTable extends FlexTable {
+
+		public MyFlexTable() {
+			super();
+			sinkEvents(Event.ONMOUSEOVER);
+			sinkEvents(Event.ONMOUSEOUT);
+			sinkEvents(Event.ONCLICK);
+			setCellPadding(2);
+			setCellSpacing(0);
+		}
+		
+		public void onBrowserEvent(Event event) {
+			Element td = getEventTargetCell(event);
+			if (td==null) return;
+		    Element tr = DOM.getParent(td);
+		    Element body = DOM.getParent(tr);
+		    final int row = DOM.getChildIndex(body, tr);
+
+		    ChainedCommand command = iRowClicks.get(row);
+		    
+		    switch (DOM.eventGetType(event)) {
+			case Event.ONMOUSEOVER:
+				getRowFormatter().setStyleName(row, "unitime-TableRowHover");
+				if (command == null) getRowFormatter().getElement(row).getStyle().setCursor(Cursor.AUTO);
+				break;
+			case Event.ONMOUSEOUT:
+				getRowFormatter().setStyleName(row, null);	
+				break;
+			case Event.ONCLICK:
+				if (command == null) break;
+				LoadingWidget.getInstance().show();
+				getRowFormatter().setStyleName(row, "unitime-TableRowSelected");
+				iSelectedRow = row;
+				command.execute(new ConditionalCommand() {
+					@Override
+					public void executeOnSuccess() {
+						//getRowFormatter().setStyleName(row, null);	
+						LoadingWidget.getInstance().hide();
+					}
+					@Override
+					public void executeOnFailure() {
+						getRowFormatter().setStyleName(row, "unitime-TableRowHover");	
+						LoadingWidget.getInstance().hide();
+					}
+				});
+				break;
+			}
+		}
+	}
+	
+	public static interface ChainedCommand {
+		public void execute(ConditionalCommand command);
+	}
+
+	public static interface ConditionalCommand {
+		public void executeOnSuccess();
+		public void executeOnFailure();
+	}
+	
+	public void setErrorMessage(String message) {
+		iErrorLabel.setText(message);
+		iErrorLabel.setVisible(message != null && !message.isEmpty());
+	}
+	
+	
 }
