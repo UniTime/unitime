@@ -35,7 +35,6 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 public interface CurriculaService extends RemoteService {
 	public TreeSet<CurriculumInterface> findCurricula(String filter) throws CurriculaException;
 	public List<CurriculumInterface.CurriculumClassificationInterface> loadClassifications(List<Long> curriculumIds) throws CurriculaException;
-	public TreeSet<CurriculumInterface.CurriculumClassificationInterface> makupClassifications(Long acadAreaId, List<Long> majors, boolean includeCourses) throws CurriculaException;
 	public HashMap<String, Integer[][]> computeEnrollmentsAndLastLikes(Long acadAreaId, List<Long> majors) throws CurriculaException;
 	public TreeSet<CurriculumInterface.AcademicAreaInterface> loadAcademicAreas() throws CurriculaException;
 	public TreeSet<CurriculumInterface.AcademicClassificationInterface> loadAcademicClassifications() throws CurriculaException;
