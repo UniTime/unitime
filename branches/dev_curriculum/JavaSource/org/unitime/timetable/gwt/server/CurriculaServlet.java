@@ -156,19 +156,26 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 			sLog.info("loadClassifications(curriculumIds=" + curriculumIds + ")");
 			Long s0 = System.currentTimeMillis();
 			if (curriculumIds == null || curriculumIds.isEmpty()) return new ArrayList<CurriculumClassificationInterface>();
+			
 			List<CurriculumClassificationInterface> results = new ArrayList<CurriculumClassificationInterface>();
+			
+			TreeSet<AcademicClassificationInterface> academicClassifications = loadAcademicClassifications();
+
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 			try {
 				Long sessionId = getAcademicSessionId();
 				for (Long curriculumId: curriculumIds) {
 					Curriculum c = CurriculumDAO.getInstance().get(curriculumId, hibSession);
 					if (c == null) throw new CurriculaException("curriculum " + curriculumId + " does not exist anymore, please refresh your data");
-					String majorIds = "";
+					
+					String majorIds = "", majorCodes = "";
 					for (Iterator<PosMajor> i = c.getMajors().iterator(); i.hasNext(); ) {
 						PosMajor major = i.next();
-						if (!majorIds.isEmpty()) { majorIds += ","; }
+						if (!majorIds.isEmpty()) { majorIds += ","; majorCodes += ","; }
 						majorIds += major.getUniqueId();
+						majorCodes += "'" + major.getCode() + "'";
 					}
+					
 					Hashtable<Long, Integer> clasf2enrl = new Hashtable<Long, Integer>();
 					for (Object[] o : (List<Object[]>)hibSession.createQuery(
 							"select a.academicClassification.uniqueId, count(distinct e.student) from StudentClassEnrollment e inner join e.student.academicAreaClassifications a " + 
@@ -184,13 +191,32 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 						int enrl = ((Number)o[1]).intValue();
 						clasf2enrl.put(clasfId, enrl);
 					}
+					
+					Hashtable<String, Integer> clasf2ll = new Hashtable<String, Integer>();
+					for (Object[] o : (List<Object[]>)hibSession.createQuery(
+							"select f.code, count(distinct s) from LastLikeCourseDemand x inner join x.student s " +
+							"inner join s.academicAreaClassifications a inner join a.academicClassification f " + 
+							(majorCodes.isEmpty() ? "" : " inner join s.posMajors m ") + "where " +
+							"x.subjectArea.session.uniqueId = :sessionId and "+
+							"a.academicArea.academicAreaAbbreviation = :acadAbbv " + 
+							(majorCodes.isEmpty() ? "" : "and m.code in (" + majorCodes + ") ") +
+							"group by f.code")
+							.setLong("sessionId", sessionId)
+							.setString("acadAbbv", c.getAcademicArea().getAcademicAreaAbbreviation())
+							.setCacheable(true).list()) {
+						String clasfCode = (String)o[0];
+						int enrl = ((Number)o[1]).intValue();
+						clasf2ll.put(clasfCode, enrl);
+					}
+					
 					TreeSet<CurriculumClassification> classifications = new TreeSet<CurriculumClassification>(c.getClassifications());
 					for (CurriculumClassification clasf: classifications) {
 						CurriculumClassificationInterface cfi = new CurriculumClassificationInterface();
 						cfi.setId(clasf.getUniqueId());
 						cfi.setName(clasf.getName());
 						cfi.setCurriculumId(c.getUniqueId());
-						cfi.setLastLike(clasf.getLlStudents());
+						//cfi.setLastLike(clasf.getLlStudents());
+						cfi.setLastLike(clasf2ll.get(clasf.getAcademicClassification().getCode()));
 						cfi.setExpected(clasf.getNrStudents());
 						cfi.setEnrollment(clasf2enrl.get(clasf.getAcademicClassification().getUniqueId()));
 						AcademicClassificationInterface aci = new AcademicClassificationInterface();
@@ -199,6 +225,23 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 						aci.setCode(clasf.getAcademicClassification().getCode());
 						cfi.setAcademicClassification(aci);
 						results.add(cfi);
+						academicClassifications.remove(aci);
+					}
+
+					if (!academicClassifications.isEmpty()) {
+						for (AcademicClassificationInterface clasf: academicClassifications) {
+							CurriculumClassificationInterface cfi = new CurriculumClassificationInterface();
+							cfi.setName(clasf.getName());
+							cfi.setCurriculumId(c.getUniqueId());
+							cfi.setLastLike(clasf2ll.get(clasf.getCode()));
+							cfi.setEnrollment(clasf2enrl.get(clasf.getId()));
+							AcademicClassificationInterface aci = new AcademicClassificationInterface();
+							aci.setId(clasf.getId());
+							aci.setName(clasf.getName());
+							aci.setCode(clasf.getCode());
+							cfi.setAcademicClassification(aci);
+							results.add(cfi);
+						}
 					}
 				}
 			} finally {
@@ -218,9 +261,10 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 			sLog.info("loadCurriculum(curriculumId=" + curriculumId + ")");
 			Long s0 = System.currentTimeMillis();
 
+			TreeSet<AcademicClassificationInterface> academicClassifications = loadAcademicClassifications();
 			Hashtable<Long, Integer> classifications = new Hashtable<Long, Integer>();
 			int idx = 0;
-			for (AcademicClassificationInterface clasf: loadAcademicClassifications()) {
+			for (AcademicClassificationInterface clasf: academicClassifications) {
 				classifications.put(clasf.getId(), idx++);
 			}
 			
@@ -247,7 +291,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 				areaIfc.setAbbv(c.getAcademicArea().getAcademicAreaAbbreviation());
 				areaIfc.setName(Constants.toInitialCase(c.getAcademicArea().getLongTitle() == null ? c.getAcademicArea().getShortTitle() : c.getAcademicArea().getLongTitle()));
 				curriculumIfc.setAcademicArea(areaIfc);
-				String majorIds = "";
+				String majorIds = "", majorCodes = "";
 				for (Iterator<PosMajor> i = c.getMajors().iterator(); i.hasNext(); ) {
 					PosMajor major = i.next();
 					MajorInterface majorIfc = new MajorInterface();
@@ -255,8 +299,9 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 					majorIfc.setCode(major.getCode());
 					majorIfc.setName(Constants.toInitialCase(major.getName()));
 					curriculumIfc.addMajor(majorIfc);
-					if (!majorIds.isEmpty()) majorIds += ",";
+					if (!majorIds.isEmpty()) { majorIds += ","; majorCodes += ","; }
 					majorIds += major.getUniqueId();
+					majorCodes += "'" + major.getCode() + "'";
 				}
 				
 				Hashtable<Long, Hashtable<Long, Integer>> clasf2course2enrl = new Hashtable<Long, Hashtable<Long,Integer>>();
@@ -297,6 +342,48 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 					clasf2enrl.put(clasfId, enrl);
 				}
 				
+				Hashtable<String, Integer> clasf2ll = new Hashtable<String, Integer>();
+				for (Object[] o : (List<Object[]>)hibSession.createQuery(
+						"select f.code, count(distinct s) from LastLikeCourseDemand x inner join x.student s " +
+						"inner join s.academicAreaClassifications a inner join a.academicClassification f " + 
+						(majorCodes.isEmpty() ? "" : " inner join s.posMajors m ") + "where " +
+						"x.subjectArea.session.uniqueId = :sessionId and "+
+						"a.academicArea.academicAreaAbbreviation = :acadAbbv " + 
+						(majorCodes.isEmpty() ? "" : "and m.code in (" + majorCodes + ") ") +
+						"group by f.code")
+						.setLong("sessionId", sessionId)
+						.setString("acadAbbv", c.getAcademicArea().getAcademicAreaAbbreviation())
+						.setCacheable(true).list()) {
+					String clasfCode = (String)o[0];
+					int enrl = ((Number)o[1]).intValue();
+					clasf2ll.put(clasfCode, enrl);
+				}
+				
+				Hashtable<String, Hashtable<Long, Integer>> clasf2course2ll = new Hashtable<String, Hashtable<Long,Integer>>();
+				for (Object[] o : (List<Object[]>)hibSession.createQuery(
+						"select f.code, co.uniqueId, count(distinct s) " +
+						"from LastLikeCourseDemand x inner join x.student s inner join s.academicAreaClassifications a inner join a.academicClassification f " + 
+						(majorCodes.isEmpty() ? "" : " inner join s.posMajors m ") + ", CourseOffering co where " +
+						"x.subjectArea.session.uniqueId = :sessionId and "+
+						"a.academicArea.academicAreaAbbreviation = :acadAbbv " + 
+						(majorCodes.isEmpty() ? "" : "and m.code in (" + majorCodes + ") ") +
+						"and co.subjectArea.uniqueId = x.subjectArea.uniqueId and " +
+						"((x.coursePermId is not null and co.permId=x.coursePermId) or (x.coursePermId is null and co.courseNbr=x.courseNbr)) " +
+						"group by f.code, co.uniqueId")
+						.setLong("sessionId", sessionId)
+						.setString("acadAbbv", c.getAcademicArea().getAcademicAreaAbbreviation())
+						.setCacheable(true).list()) {
+					String clasfCode = (String)o[0];
+					Long courseId = (Long)o[1];
+					int enrl = ((Number)o[2]).intValue();
+					Hashtable<Long, Integer> course2enrl = clasf2course2ll.get(clasfCode);
+					if (course2enrl == null) {
+						course2enrl = new Hashtable<Long, Integer>();
+						clasf2course2ll.put(clasfCode, course2enrl);
+					}
+					course2enrl.put(courseId, enrl);
+				}
+				
 				Hashtable<Long, CourseInterface> courseId2Interface = new Hashtable<Long, CourseInterface>();
 				Hashtable<String, CurriculumCourseGroupInterface> groups = new Hashtable<String, CurriculumCourseGroupInterface>();
 				for (Iterator<CurriculumClassification> i = c.getClassifications().iterator(); i.hasNext(); ) {
@@ -305,7 +392,8 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 					clasfIfc.setId(clasf.getUniqueId());
 					clasfIfc.setName(clasf.getName());
 					clasfIfc.setCurriculumId(c.getUniqueId());
-					clasfIfc.setLastLike(clasf.getLlStudents());
+					//clasfIfc.setLastLike(clasf.getLlStudents());
+					clasfIfc.setLastLike(clasf2ll.get(clasf.getAcademicClassification().getCode()));
 					clasfIfc.setEnrollment(clasf2enrl.get(clasf.getAcademicClassification().getUniqueId()));
 					clasfIfc.setExpected(clasf.getNrStudents());
 					AcademicClassificationInterface acadClasfIfc = new AcademicClassificationInterface();
@@ -315,6 +403,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 					clasfIfc.setAcademicClassification(acadClasfIfc);
 					curriculumIfc.addClassification(clasfIfc);
 					Hashtable<Long, Integer> course2enrl = clasf2course2enrl.get(clasf.getAcademicClassification().getUniqueId());
+					Hashtable<Long, Integer> course2ll = clasf2course2ll.get(clasf.getAcademicClassification().getCode());
 					for (Iterator<CurriculumCourse> j = clasf.getCourses().iterator(); j.hasNext(); ) {
 						CurriculumCourse course = j.next();
 						CourseInterface courseIfc = courseId2Interface.get(course.getCourse().getUniqueId());
@@ -332,8 +421,11 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 						curCourseIfc.setShare(course.getPercShare());
 						curCourseIfc.setCourseName(course.getCourse().getCourseName());
 						curCourseIfc.setEnrollment(course2enrl == null ? null : course2enrl.get(course.getCourse().getUniqueId()));
+						/*
 						if (course.getLlShare() != null && clasf.getLlStudents() != null)
 							curCourseIfc.setLastLike(Math.round(course.getLlShare() * clasf.getLlStudents()));
+						*/
+						curCourseIfc.setLastLike(course2ll == null ? null : course2ll.get(course.getCourse().getUniqueId()));
 						courseIfc.setCurriculumCourse(classifications.get(clasf.getAcademicClassification().getUniqueId()), curCourseIfc);
 						
 						for (Iterator<CurriculumCourseGroup> k = course.getGroups().iterator(); k.hasNext(); ) {
@@ -349,31 +441,25 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 							courseIfc.addGroup(g);
 						}
 					}
+					academicClassifications.remove(acadClasfIfc);
 				}
 				
-				/*
-				if (curriculumIfc.hasClassifications() && curriculumIfc.hasCourses()) {
-					int totalLastLike = 0, totalEnrollment = 0;
-					for (CurriculumClassificationInterface clasf: curriculumIfc.getClassifications()) {
-						if (clasf.getEnrollment() != null) totalEnrollment += clasf.getEnrollment();
-						if (clasf.getLastLike() != null) totalLastLike += clasf.getLastLike();
-					}
-					for (Iterator<CourseInterface> i = curriculumIfc.getCourses().iterator(); i.hasNext(); ) {
-						CourseInterface course = i.next();
-						int lastLike = 0, enrollment = 0;
-						for (CurriculumCourseInterface ci: course.getCurriculumCourses()) {
-							if (ci == null) continue;
-							if (ci.getEnrollment() != null) enrollment += ci.getEnrollment();
-							if (ci.getLastLike() != null) lastLike += ci.getLastLike();
-						}
-						float enrl = (totalEnrollment == 0 ? 0.0f : 100.0f * enrollment / totalEnrollment);
-						float ll = (totalLastLike == 0 ? 0.0f : 100.0f * lastLike / totalLastLike);
-						if (enrl < 3.0f && ll < 3.0f) {
-							i.remove();
-						}
+				if (!academicClassifications.isEmpty()) {
+					for (AcademicClassificationInterface clasf: academicClassifications) {
+						CurriculumClassificationInterface clasfIfc = new CurriculumClassificationInterface();
+						clasfIfc.setName(clasf.getName());
+						clasfIfc.setCurriculumId(c.getUniqueId());
+						clasfIfc.setLastLike(clasf2ll.get(clasf.getCode()));
+						clasfIfc.setEnrollment(clasf2enrl.get(clasf.getId()));
+						AcademicClassificationInterface acadClasfIfc = new AcademicClassificationInterface();
+						acadClasfIfc.setId(clasf.getId());
+						acadClasfIfc.setName(clasf.getName());
+						acadClasfIfc.setCode(clasf.getCode());
+						clasfIfc.setAcademicClassification(acadClasfIfc);
+						curriculumIfc.addClassification(clasfIfc);
 					}
 				}
-				*/
+
 				
 				sLog.info("Loaded 1 curriculum (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
 				return curriculumIfc;
