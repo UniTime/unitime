@@ -53,7 +53,7 @@
 			column="name"
 			type="java.lang.String"
 			not-null="true"
-			length="20"
+			length="60"
 		/>
 		
 		<many-to-one 
