@@ -31,6 +31,7 @@ import org.unitime.timetable.gwt.shared.CurriculumInterface.AcademicAreaInterfac
 import org.unitime.timetable.gwt.shared.CurriculumInterface.AcademicClassificationInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.CurriculumClassificationInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.DepartmentInterface;
+import org.unitime.timetable.gwt.widgets.CurriculaTable;
 import org.unitime.timetable.gwt.widgets.CurriculumEdit;
 import org.unitime.timetable.gwt.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.widgets.PageLabel;
@@ -38,24 +39,31 @@ import org.unitime.timetable.gwt.widgets.WebTable;
 import org.unitime.timetable.gwt.widgets.CurriculumEdit.EditFinishedEvent;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.DeferredCommand;
+import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.Widget;
 
 public class Curricula extends Composite {
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
@@ -63,7 +71,7 @@ public class Curricula extends Composite {
 	private TextBox iFilter = null;
 	private Button iSearch = null;
 	private Button iNew = null;
-	private WebTable iTable = null;
+	private CurriculaTable iCurriculaTable = null;
 	
 	private VerticalPanel iCurriculaPanel = null;
 	
@@ -73,8 +81,6 @@ public class Curricula extends Composite {
 	
 	private AsyncCallback<List<CurriculumClassificationInterface>> iLoadClassifications;
 	
-	private List<CurriculumInterface> iData = new ArrayList<CurriculumInterface>();
-
 	private WebTable.Row iLastCourse;
 	
 	private CurriculumEdit iCurriculumPanel = null;
@@ -84,7 +90,18 @@ public class Curricula extends Composite {
 		
 		iCurriculaPanel = new VerticalPanel();
 		
-		HorizontalPanel filterPanel = new HorizontalPanel();
+		HorizontalPanel filterPanel = new HorizontalPanelWithHint(new HTML(
+				"Filter curricula by any word from the name, code, or abbreviation<br>of a curricula, academic area, major, or department." +
+				"<br><br>You can also use the following tags:" +
+				"<ul>" +
+				"<li><i>abbv:</i> curriculum abbreviation" + 
+				"<li><i>name:</i> curriculum name" + 
+				"<li><i>area:</i> academic area abbreviation or name" +
+				"<li><i>major:</i> major code or name" +
+				"<li><i>dept:</i> department code, name, or abbreviation" +
+				"</ul>Use <i>or</i>, <i>and</i>, <i>not</i>, and brackets to build a boolean query." +
+				"<br><br>Example: area: A and (major: AGFN or major: AGMG)",
+				false));
 		filterPanel.setSpacing(3);
 		
 		Label filterLabel = new Label("Filter:");
@@ -96,10 +113,11 @@ public class Curricula extends Composite {
 		iFilter.setStyleName("gwt-SuggestBox");
 		iFilter.setHeight("26");
 		filterPanel.add(iFilter);
-	
+
+		
 		iSearch = new Button("<u>S</u>earch");
 		iSearch.setAccessKey('s');
-		filterPanel.add(iSearch);
+		filterPanel.add(iSearch);		
 		
 		iNew = new Button("<u>A</u>dd New");
 		iNew.setAccessKey('a');
@@ -118,20 +136,10 @@ public class Curricula extends Composite {
 		iCurriculaPanel.add(filterPanel);
 		iCurriculaPanel.setCellHorizontalAlignment(filterPanel, HasHorizontalAlignment.ALIGN_CENTER);
 		
-		iTable = new WebTable();
-		iTable.setHeader(
-				new WebTable.Row(
-						new WebTable.Cell("Curriculum", 1, "150"),
-						new WebTable.Cell("Academic Area", 1, "150"),
-						new WebTable.Cell("Major(s)", 1, "200"),
-						new WebTable.Cell("Department", 1, "250"),
-						new WebTable.Cell("Expected Students", 1, "50"),
-						new WebTable.Cell("Enrolled Students", 1, "50"),
-						new WebTable.Cell("Last-like Students", 1, "50")
-				));
-		iTable.setEmptyMessage("No data.");
+		iCurriculaTable = new CurriculaTable();
+		iCurriculaTable.getElement().getStyle().setMarginTop(10, Unit.PX);
 		
-		iCurriculaPanel.add(iTable);
+		iCurriculaPanel.add(iCurriculaTable);
 		
 		iCurriculaPanel.setWidth("100%");
 		
@@ -142,51 +150,6 @@ public class Curricula extends Composite {
 		iPanel.add(iCurriculumPanel);
 		
 		initWidget(iPanel);
-		
-		iLoadClassifications = new AsyncCallback<List<CurriculumClassificationInterface>>() {
-			public void onFailure(Throwable caught) {}
-			public void onSuccess(List<CurriculumClassificationInterface> classifications) {
-				if (iTable.getRows() == null || iTable.getRows().length == 0) return;
-				List<CurriculumInterface> curricula = new ArrayList<CurriculumInterface>();
-				CurriculumInterface last = null;
-				clasf: for (CurriculumClassificationInterface clasf: classifications) {
-					if (last != null && last.getId().equals(clasf.getCurriculumId())) {
-						last.addClassification(clasf);
-						continue clasf;
-					}
-					for (CurriculumInterface c: iData) {
-						if (c.getId().equals(clasf.getCurriculumId())) {
-							if (c.hasClassifications()) c.getClassifications().clear();
-							c.addClassification(clasf);
-							curricula.add(c);
-							last = c;
-							continue clasf;
-						}
-					}
-				}
-				for (CurriculumInterface c: curricula) {
-					if (c.getRow() >= iTable.getRows().length) continue;
-					WebTable.Row row = iTable.getRows()[c.getRow()];
-					if (row.getId().equals(c.getId().toString())) {
-						row.setCell(4, new WebTable.Cell(c.getExpectedString()));
-						row.setCell(5, new WebTable.Cell(c.getEnrollmentString()));
-						row.setCell(6, new WebTable.Cell(c.getLastLikeString()));
-					}
-				}
-				List<Long> noEnrl = new ArrayList<Long>();
-				for (CurriculumInterface c: iData) {
-					if (!c.hasClassifications()) {
-						noEnrl.add(c.getId());
-						if (noEnrl.size() == 1) {
-							iTable.getRows()[c.getRow()].setCell(5, new WebTable.IconCell(RESOURCES.loading_small(),"Loading...",null));
-						}
-					}
-					if (noEnrl.size() >= 10) break;
-				}
-				if (!noEnrl.isEmpty())
-					iService.loadClassifications(noEnrl, iLoadClassifications);
-			}
-		};
 		
 		iSearch.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
@@ -222,29 +185,27 @@ public class Curricula extends Composite {
 			
 			@Override
 			public void onFailure(Throwable caught) {
-				iTable.setEmptyMessage("<font color='red'>Unable to retrieve curricula (" + caught.getMessage() + ").</font>");
+				iCurriculaTable.setError("Unable to retrieve curricula (" + caught.getMessage() + ").");
 				hideLoading();
 			}
 			
 		});
 		
-		iTable.addRowClickHandler(new WebTable.RowClickHandler() {
-			
+		iCurriculaTable.addCurriculumClickHandler(new CurriculaTable.CurriculumClickHandler() {
 			@Override
-			public void onRowClick(WebTable.RowClickEvent event) {
-				iCurriculaPanel.setVisible(false);
+			public void onClick(CurriculaTable.CurriculumClickedEvent evt) {
 				showLoading();
-				iService.loadCurriculum(iData.get(event.getRowIdx()).getId(), new AsyncCallback<CurriculumInterface>() {
+				iService.loadCurriculum(evt.getCurriculum().getId(), new AsyncCallback<CurriculumInterface>() {
 
 					@Override
 					public void onFailure(Throwable caught) {
 						hideLoading();
-						iCurriculaPanel.setVisible(true);
 					}
 
 					@Override
 					public void onSuccess(CurriculumInterface result) {
 						iCurriculumPanel.edit(result, true);
+						iCurriculaPanel.setVisible(false);
 						setPageName(result.isEditable() ? "Edit Curriculum" : "Curriculum Details");
 						iCurriculumPanel.setVisible(true);
 						hideLoading();
@@ -285,6 +246,7 @@ public class Curricula extends Composite {
 				iCurriculumPanel.setVisible(false);
 				setPageName("Curricula");
 				iCurriculaPanel.setVisible(true);
+				iCurriculaTable.scrollIntoView();
 			}
 		});
 		
@@ -314,62 +276,23 @@ public class Curricula extends Composite {
 			@Override
 			public void onSuccess(TreeSet<AcademicClassificationInterface> result) {
 				iCurriculumPanel.setupClassifications(result);
+				iCurriculaTable.setup(new ArrayList<AcademicClassificationInterface>(result));
 			}
 		});
 	}
 	
 	private void loadCurricula() {
 		if (!iSearch.isEnabled()) return;
-		showLoading();
 		iSearch.setEnabled(false);
 		final boolean newEnabled = iNew.isEnabled();
 		if (newEnabled)
 			iNew.setEnabled(false);
-		iTable.clearData(true);
-		iData.clear();
-		iTable.setEmptyMessage("Loading data...");
-		iService.findCurricula(iFilter.getText(), new AsyncCallback<TreeSet<CurriculumInterface>>() {
-			
+		iCurriculaTable.query(iFilter.getText(), new Command() {
 			@Override
-			public void onSuccess(TreeSet<CurriculumInterface> result) {
-				iData.clear(); iData.addAll(result);
-				if (result.isEmpty()) {
-					iTable.setEmptyMessage("No curricula matching the above filter found.");
-				} else {
-					WebTable.Row data[] = new WebTable.Row[result.size()];
-					List<Long> ids = new ArrayList<Long>();
-					int idx = 0;
-					for (CurriculumInterface curriculum: result) {
-						data[idx] = new WebTable.Row(
-								new WebTable.Cell(curriculum.getAbbv()),
-								new WebTable.Cell(curriculum.getAcademicArea().getName()),
-								new WebTable.Cell(curriculum.getMajorNames("<br>")),
-								new WebTable.Cell(curriculum.getDepartment().getLabel()),
-								new WebTable.Cell(""),
-								(idx == 0 ? new WebTable.IconCell(RESOURCES.loading_small(),"Loading...",null) : new WebTable.Cell("")),
-								new WebTable.Cell("")
-								);
-						data[idx].setId(curriculum.getId().toString());
-						curriculum.setRow(idx);
-						if (ids.size() < 10 && !curriculum.hasClassifications()) ids.add(curriculum.getId());
-						idx++;
-					}
-					iTable.setData(data);
-					if (!ids.isEmpty())
-						iService.loadClassifications(ids, iLoadClassifications);
-				}
+			public void execute() {
 				iSearch.setEnabled(true);
 				if (newEnabled)
 					iNew.setEnabled(true);
-				hideLoading();
-			}
-			
-			@Override
-			public void onFailure(Throwable caught) {
-				iTable.setEmptyMessage("<font color='red'>Unable to retrieve curricula (" + caught.getMessage() + ").</font>");
-				iSearch.setEnabled(true);
-				iNew.setEnabled(true);
-				hideLoading();
 			}
 		});
 	}
@@ -382,5 +305,54 @@ public class Curricula extends Composite {
 		((PageLabel)RootPanel.get("UniTimeGWT:Title").getWidget(0)).setPageName(pageName);
 	}
 	
+	public static class HorizontalPanelWithHint extends HorizontalPanel {
+		private PopupPanel iHint = null;
+		private Timer iShowHint, iHideHint = null;
+		
+		public HorizontalPanelWithHint(Widget hint) {
+			super();
+			iHint = new PopupPanel();
+			iHint.setWidget(hint);
+			iHint.setStyleName("unitime-PopupHint");
+			sinkEvents(Event.ONMOUSEOVER);
+			sinkEvents(Event.ONMOUSEOUT);
+			sinkEvents(Event.ONMOUSEMOVE);
+			iShowHint = new Timer() {
+				@Override
+				public void run() {
+					iHint.show();
+				}
+			};
+			iHideHint = new Timer() {
+				@Override
+				public void run() {
+					iHint.hide();
+				}
+			};
+		}
+		
+		public void onBrowserEvent(Event event) {
+			int x = 10 + event.getClientX() + getElement().getOwnerDocument().getScrollLeft();
+			int y = 10 + event.getClientY() + getElement().getOwnerDocument().getScrollTop();
+			
+			switch (DOM.eventGetType(event)) {
+			case Event.ONMOUSEMOVE:
+				if (iHint.isShowing()) {
+					iHint.setPopupPosition(x, y);
+				} else {
+					iShowHint.cancel();
+					iHint.setPopupPosition(x, y);
+					iShowHint.schedule(1000);
+				}
+				break;
+			case Event.ONMOUSEOUT:
+				iShowHint.cancel();
+				if (iHint.isShowing())
+					iHideHint.schedule(1000);
+				break;
+			}
+		}		
+		
+	}
 	
 }
