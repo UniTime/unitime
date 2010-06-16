@@ -379,11 +379,7 @@ public class CourseCurriculaTable extends Composite {
 				}
 				menu.setVisible(true);
 				popup.add(menu);
-				Element el = ((Widget)event.getSource()).getElement();
-				int x = event.getNativeEvent().getClientX() + el.getOwnerDocument().getScrollLeft();
-				int y = event.getNativeEvent().getClientY() + el.getOwnerDocument().getScrollTop();
-				popup.setPopupPosition(x, y);
-				popup.show();
+				popup.showRelativeTo((Widget)event.getSource());
 			}
 		};
 		
