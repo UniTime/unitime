@@ -182,6 +182,10 @@ h1 {
 	background-color: #92c1f0;
 }
 
+.unitime-TableRowProblem {
+	background-color: #f09292;
+}
+
 .unitime-TableRowSelectedHover {
 	cursor: pointer;
 	background-color: #92c1f0;
