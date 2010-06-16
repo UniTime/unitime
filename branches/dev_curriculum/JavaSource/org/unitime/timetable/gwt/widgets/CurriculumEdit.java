@@ -179,7 +179,7 @@ public class CurriculumEdit extends Composite {
 					} catch (Exception e) {}
 				}
 				iCurriculumAreaError.setVisible(false);
-				loadMajors();
+				loadMajors(true);
 			}
 		});
 
@@ -534,7 +534,7 @@ public class CurriculumEdit extends Composite {
 			iCurriculumMajorsHTML.setVisible(true);
 		}
 		iCurriculumMajorsHTML.setHTML(iCurriculum.getMajorNames("<br>"));
-		loadMajors();
+		loadMajors(detailsEditable);
 		iCurriculumMajors.setEnabled(iCurriculum.isEditable() && detailsEditable);
 		iCurriculumClasfTable.populate(iCurriculum.getClassifications());
 		iCurriculumClasfTable.setEnabled(iCurriculum.isEditable());
@@ -623,7 +623,7 @@ public class CurriculumEdit extends Composite {
 		return ret;
 	}
 
-	private void loadMajors() {
+	private void loadMajors(final boolean loadEnrollments) {
 		if (iCurriculumArea.getSelectedIndex() >= 0) {
 			showLoading();
 			iService.loadMajors(iCurriculum.getId(), Long.valueOf(iCurriculumArea.getValue(iCurriculumArea.getSelectedIndex())),
@@ -671,7 +671,7 @@ public class CurriculumEdit extends Composite {
 							if (!iDefaultName && allSelected && area != null && area.getName().equalsIgnoreCase(iCurriculumName.getText()))
 								iDefaultName = true;
 							iCurriculumMajors.setVisibleItemCount(iCurriculumMajors.getItemCount() <= 3 ? 3 : iCurriculumMajors.getItemCount() > 10 ? 10 : iCurriculumMajors.getItemCount());
-							loadEnrollments();
+							if (loadEnrollments) loadEnrollments();
 							hideLoading();
 						}
 					});
