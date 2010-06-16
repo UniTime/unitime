@@ -99,6 +99,7 @@ public class CurriculaCourses extends Composite {
 	};
 	
 	private TreeSet<String> iVisibleCourses = null;
+	private HashMap<String, Integer[][]> iLastCourses = null;
 	
 	public CurriculaCourses() {
 		iTable = new MyFlexTable();
@@ -296,9 +297,7 @@ public class CurriculaCourses extends Composite {
 				}));
 				menu.setVisible(true);
 				popup.add(menu);
-				//popup.setPopupPosition(event.getNativeEvent().getScreenX(), event.getNativeEvent().getScreenY());
-				popup.setPopupPosition(groupsLabel.getAbsoluteLeft(), groupsLabel.getAbsoluteTop() + 20);
-				popup.show();
+				popup.showRelativeTo((Widget)event.getSource());
 			}
 		});
 		
@@ -321,7 +320,7 @@ public class CurriculaCourses extends Composite {
 					}));
 				}
 				if (iEditable) {
-					menu.addItem(new MenuItem("Select All", true, new Command() {
+					menu.addItem(new MenuItem("Select All Courses", true, new Command() {
 						@Override
 						public void execute() {
 							popup.hide();
@@ -330,6 +329,21 @@ public class CurriculaCourses extends Composite {
 						}
 					}));
 					if (getSelectedCount() > 0) {
+						menu.addItem(new MenuItem("Remove Selected Courses", true, new Command() {
+							@Override
+							public void execute() {
+								popup.hide();
+								for (int row = iTable.getRowCount() - 1; row > 0; row --) {
+									if (!isSelected(row)) continue;
+									String course = ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getCourse();
+									if (course.isEmpty() && row + 1 == iTable.getRowCount()) {
+										setSelected(row, false);
+										continue;
+									}
+									iTable.removeRow(row);
+								}
+							}
+						}));
 						menu.addItem(new MenuItem("Clear Selection", true, new Command() {
 							@Override
 							public void execute() {
@@ -383,6 +397,95 @@ public class CurriculaCourses extends Composite {
 					}));
 				if (iVisibleCourses == null) {
 					menu.addSeparator();
+					if (iLastCourses != null) {
+						menu.addItem(new MenuItem("Show Empty Courses", true, new Command() {
+							@Override
+							public void execute() {
+								popup.hide();
+								updateEnrollmentsAndLastLike(iLastCourses);
+							}
+						}));
+					}
+					menu.addItem(new MenuItem("Hide Empty Courses", true, new Command() {
+						@Override
+						public void execute() {
+							popup.hide();
+							boolean selectedOnly = (getSelectedCount() > 0);
+							rows: for (int row = iTable.getRowCount() - 1; row > 0; row --) {
+								String course = ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getCourse();
+								if (course.isEmpty() && row + 1 == iTable.getRowCount()) continue;
+								if (selectedOnly && !isSelected(row)) {
+									setSelected(row, false);
+									continue;
+								}
+								for (int c = 0; c < iClassifications.getClassifications().size(); c++) {
+									int x = 2 + 2 * c;
+									MyTextBox text = (MyTextBox)iTable.getWidget(row, x);
+									if (text.getShare() != null) continue rows;
+								}
+								iTable.removeRow(row);
+							}
+						}
+					}));
+					if (iEditable) {
+						menu.addSeparator();
+						menu.addItem(new MenuItem("Clear Expected Students (All Classifications)", true, new Command() {
+							@Override
+							public void execute() {
+								popup.hide();
+								boolean selectedOnly = (getSelectedCount() > 0);
+								for (int c = 0; c < iClassifications.getClassifications().size(); c++) {
+									int x = 2 + 2 * c;
+									for (int row = 1; row < iTable.getRowCount(); row ++) {
+										if (selectedOnly && !isSelected(row)) continue;
+										MyTextBox text = (MyTextBox)iTable.getWidget(row, x);
+										text.setShare(null);
+									}
+								}
+							}
+						}));
+						menu.addItem(new MenuItem("Copy Last-Like &rarr; Expected (All Classifications)", true, new Command() {
+							@Override
+							public void execute() {
+								popup.hide();
+								boolean selectedOnly = (getSelectedCount() > 0);
+								for (int c = 0; c < iClassifications.getClassifications().size(); c++) {
+									int x = 2 + 2 * c;
+									for (int row = 1; row < iTable.getRowCount(); row ++) {
+										if (selectedOnly && !isSelected(row)) continue;
+										MyTextBox text = (MyTextBox)iTable.getWidget(row, x);
+										MyLabel label = (MyLabel)iTable.getWidget(row, x + 1);
+										if (iPercent)
+											text.setShare(label.getLastLikePercent());
+										else
+											text.setExpected(label.getLastLike());
+									}
+								}
+							}
+						}));
+						menu.addItem(new MenuItem("Copy Enrollment &rarr; Expected (All Classifications)", true, new Command() {
+							@Override
+							public void execute() {
+								popup.hide();
+								boolean selectedOnly = (getSelectedCount() > 0);
+								for (int c = 0; c < iClassifications.getClassifications().size(); c++) {
+									int x = 2 + 2 * c;
+									for (int row = 1; row < iTable.getRowCount(); row ++) {
+										if (selectedOnly && !isSelected(row)) continue;
+										MyTextBox text = (MyTextBox)iTable.getWidget(row, x);
+										MyLabel label = (MyLabel)iTable.getWidget(row, x + 1);
+										if (iPercent)
+											text.setShare(label.getEnrollmentPercent());
+										else
+											text.setExpected(label.getEnrollment());
+									}
+								}
+							}
+						}));						
+					}
+				}
+				if (iVisibleCourses == null) {
+					menu.addSeparator();
 					menu.addItem(new MenuItem("Sort by Course", true, new Command() {
 						@Override
 						public void execute() {
@@ -393,8 +496,7 @@ public class CurriculaCourses extends Composite {
 				}
 				menu.setVisible(true);
 				popup.add(menu);
-				popup.setPopupPosition(courseLabel.getAbsoluteLeft(), courseLabel.getAbsoluteTop() + 20);
-				popup.show();
+				popup.showRelativeTo((Widget)event.getSource());
 			}
 		});
 		
@@ -473,6 +575,53 @@ public class CurriculaCourses extends Composite {
 								setMode(0);
 							}
 						}));
+					if (iVisibleCourses == null && iEditable) {
+						menu.addSeparator();
+						menu.addItem(new MenuItem("Clear Expected Students", true, new Command() {
+							@Override
+							public void execute() {
+								popup.hide();
+								boolean selectedOnly = (getSelectedCount() > 0);
+								for (int row = 1; row < iTable.getRowCount(); row ++) {
+									if (selectedOnly && !isSelected(row)) continue;
+									MyTextBox text = (MyTextBox)iTable.getWidget(row, x);
+									text.setShare(null);
+								}
+							}
+						}));
+						menu.addItem(new MenuItem("Copy Last-Like &rarr; Expected", true, new Command() {
+							@Override
+							public void execute() {
+								popup.hide();
+								boolean selectedOnly = (getSelectedCount() > 0);
+								for (int row = 1; row < iTable.getRowCount(); row ++) {
+									if (selectedOnly && !isSelected(row)) continue;
+									MyTextBox text = (MyTextBox)iTable.getWidget(row, x);
+									MyLabel label = (MyLabel)iTable.getWidget(row, x + 1);
+									if (iPercent)
+										text.setShare(label.getLastLikePercent());
+									else
+										text.setExpected(label.getLastLike());
+								}
+							}
+						}));
+						menu.addItem(new MenuItem("Copy Enrollment &rarr; Expected", true, new Command() {
+							@Override
+							public void execute() {
+								popup.hide();
+								boolean selectedOnly = (getSelectedCount() > 0);
+								for (int row = 1; row < iTable.getRowCount(); row ++) {
+									if (selectedOnly && !isSelected(row)) continue;
+									MyTextBox text = (MyTextBox)iTable.getWidget(row, x);
+									MyLabel label = (MyLabel)iTable.getWidget(row, x + 1);
+									if (iPercent)
+										text.setShare(label.getEnrollmentPercent());
+									else
+										text.setExpected(label.getEnrollment());
+								}
+							}
+						}));
+					}
 					if (iVisibleCourses == null) {
 						menu.addSeparator();
 						menu.addItem(new MenuItem("Sort by " + cl.getText(), true, new Command() {
@@ -485,8 +634,7 @@ public class CurriculaCourses extends Composite {
 					}
 					menu.setVisible(true);
 					popup.add(menu);
-					popup.setPopupPosition(cl.getAbsoluteLeft(), cl.getAbsoluteTop() + 20);
-					popup.show();
+					popup.showRelativeTo((Widget)event.getSource());
 				}
 			});
 			col++;
@@ -572,8 +720,7 @@ public class CurriculaCourses extends Composite {
 					}
 					menu.setVisible(true);
 					popup.add(menu);
-					popup.setPopupPosition(m.getAbsoluteLeft(), m.getAbsoluteTop() + 20);
-					popup.show();
+					popup.showRelativeTo((Widget)event.getSource());
 				}
 			});
 
@@ -846,6 +993,7 @@ public class CurriculaCourses extends Composite {
 	}
 	
 	public void updateEnrollmentsAndLastLike(HashMap<String, Integer[][]> courses) {
+		iLastCourses = courses;
 		rows: for (int row = 1; row < iTable.getRowCount() - 1; ) {
 			for (int col = 0; col < iClassifications.getClassifications().size(); col ++) {
 				MyTextBox text = (MyTextBox)iTable.getWidget(row, 2 + 2 * col);
@@ -1061,7 +1209,25 @@ public class CurriculaCourses extends Composite {
 				break;
 			}
 		}
-	}
+		
+		public Integer getLastLike() { return iLastLike; }
+		
+		public Integer getEnrollment() { return iEnrollment; }
+
+		public Float getLastLikePercent() { 
+			if (iLastLike == null) return null;
+			Integer total = iClassifications.getLastLike(iColumn);
+			if (total == null) return null;
+			return ((float)iLastLike) / total;
+		}
+		
+		public Float getEnrollmentPercent() { 
+			if (iEnrollment == null) return null;
+			Integer total = iClassifications.getEnrollment(iColumn);
+			if (total == null) return null;
+			return ((float)iEnrollment) / total;
+		}
+}
 
 	public class MyTextBox extends TextBox {
 		private int iColumn;
@@ -1097,6 +1263,20 @@ public class CurriculaCourses extends Composite {
 		
 		public void setShare(Float share) {
 			iShare = share;
+			update();
+		}
+		
+		public void setExpected(Integer expected) {
+			if (expected == null) {
+				iShare = null;
+			} else {
+				Integer total = iClassifications.getExpected(iColumn);
+				if (total == null) {
+					iShare = null;
+				} else {
+					iShare = ((float)expected) / total;
+				}
+			}
 			update();
 		}
 		
