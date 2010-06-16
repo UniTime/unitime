@@ -23,6 +23,7 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
@@ -447,6 +448,7 @@ public class CurriculumEdit extends Composite {
 		ClickHandler deleteHandler = new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
+				if (!Window.confirm("Do you realy want to delete this curriculum?")) return;
 				showLoading();
 				iService.deleteCurriculum(iCurriculum.getId(), new AsyncCallback<Boolean>() {
 					@Override
