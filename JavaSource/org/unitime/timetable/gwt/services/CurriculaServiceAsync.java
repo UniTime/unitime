@@ -22,6 +22,7 @@ package org.unitime.timetable.gwt.services;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
@@ -42,6 +43,8 @@ public interface CurriculaServiceAsync {
 	public void loadCurriculum(Long curriculumId, AsyncCallback<CurriculumInterface> callback) throws CurriculaException;
 	public void saveCurriculum(CurriculumInterface curriculum, AsyncCallback<Boolean> callback) throws CurriculaException;
 	public void deleteCurriculum(Long curriculumId, AsyncCallback<Boolean> callback) throws CurriculaException;
+	public void deleteCurricula(Set<Long> curriculumIds, AsyncCallback<Boolean> callback) throws CurriculaException;
+	public void mergeCurricula(Set<Long> curriculumIds, AsyncCallback<Boolean> callback) throws CurriculaException;
 	public void findCurriculaForACourse(String courseName, AsyncCallback<TreeSet<CurriculumInterface>> callback) throws CurriculaException;
 	public void findCurriculaForAnInstructionalOffering(Long offeringId, AsyncCallback<TreeSet<CurriculumInterface>> callback) throws CurriculaException;
 

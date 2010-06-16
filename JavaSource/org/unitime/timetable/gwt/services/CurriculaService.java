@@ -22,6 +22,7 @@ package org.unitime.timetable.gwt.services;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
@@ -44,6 +45,8 @@ public interface CurriculaService extends RemoteService {
 	public CurriculumInterface loadCurriculum(Long curriculumId) throws CurriculaException;
 	public Boolean saveCurriculum(CurriculumInterface curriculum) throws CurriculaException;
 	public Boolean deleteCurriculum(Long curriculumId) throws CurriculaException;
+	public Boolean deleteCurricula(Set<Long> curriculumIds) throws CurriculaException;
+	public Boolean mergeCurricula(Set<Long> curriculumIds) throws CurriculaException;
 	public TreeSet<CurriculumInterface> findCurriculaForACourse(String courseName) throws CurriculaException;
 	public TreeSet<CurriculumInterface> findCurriculaForAnInstructionalOffering(Long offeringId) throws CurriculaException;
 	
