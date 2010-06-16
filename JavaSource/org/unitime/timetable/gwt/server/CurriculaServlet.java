@@ -231,7 +231,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 					if (!academicClassifications.isEmpty()) {
 						for (AcademicClassificationInterface clasf: academicClassifications) {
 							CurriculumClassificationInterface cfi = new CurriculumClassificationInterface();
-							cfi.setName(clasf.getName());
+							cfi.setName(clasf.getCode());
 							cfi.setCurriculumId(c.getUniqueId());
 							cfi.setLastLike(clasf2ll.get(clasf.getCode()));
 							cfi.setEnrollment(clasf2enrl.get(clasf.getId()));
@@ -447,7 +447,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 				if (!academicClassifications.isEmpty()) {
 					for (AcademicClassificationInterface clasf: academicClassifications) {
 						CurriculumClassificationInterface clasfIfc = new CurriculumClassificationInterface();
-						clasfIfc.setName(clasf.getName());
+						clasfIfc.setName(clasf.getCode());
 						clasfIfc.setCurriculumId(c.getUniqueId());
 						clasfIfc.setLastLike(clasf2ll.get(clasf.getCode()));
 						clasfIfc.setEnrollment(clasf2enrl.get(clasf.getId()));
