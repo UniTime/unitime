@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
 
 import javax.servlet.ServletException;
@@ -737,6 +738,243 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 				hibSession.close();
 			}
 			sLog.info("Deleted 1 curriculum (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
+			return null;
+		} catch (Exception e) {
+			if (e instanceof CurriculaException) throw (CurriculaException)e;
+			sLog.error(e.getMessage(), e);
+			throw new CurriculaException(e.getMessage());
+		}
+	}
+	
+	public Boolean deleteCurricula(Set<Long> curriculumIds) throws CurriculaException {
+		try {
+			sLog.info("deleteCurricula(curriculumIds=" + curriculumIds + ")");
+			Long s0 = System.currentTimeMillis();
+			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
+			User user = Web.getUser(getThreadLocalRequest().getSession());
+			Transaction tx = null;
+			try {
+				tx = hibSession.beginTransaction();
+				Long sessionId = getAcademicSessionId();
+				
+				for (Long curriculumId: curriculumIds) {
+					if (curriculumId == null) 
+						throw new CurriculaException("Unsaved curriculum cannot be deleted.");
+					
+					Curriculum c = CurriculumDAO.getInstance().get(curriculumId, hibSession);
+					if (c == null) throw new CurriculaException("Curriculum " + curriculumId + " no longer exists.");
+					
+					if (!c.canUserEdit(user)) throw new CurriculaException("You are not authorized to delete curriculum " + c.getAbbv() + ".");
+					
+					hibSession.delete(c);
+				}
+				
+				hibSession.flush();
+				tx.commit(); tx = null;
+				
+			} finally {
+				try {
+					if (tx != null && tx.isActive()) {
+						tx.rollback();
+					}
+				} catch (Exception e) {}
+				hibSession.close();
+			}
+			sLog.info("Deleted " + curriculumIds.size() + " curricula (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
+			return null;
+		} catch (Exception e) {
+			if (e instanceof CurriculaException) throw (CurriculaException)e;
+			sLog.error(e.getMessage(), e);
+			throw new CurriculaException(e.getMessage());
+		}
+	}
+
+	public Boolean mergeCurricula(Set<Long> curriculumIds) throws CurriculaException {
+		try {
+			sLog.info("mergeCurricula(curriculumIds=" + curriculumIds + ")");
+			Long s0 = System.currentTimeMillis();
+			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
+			User user = Web.getUser(getThreadLocalRequest().getSession());
+			Transaction tx = null;
+			try {
+				tx = hibSession.beginTransaction();
+				Long sessionId = getAcademicSessionId();
+				
+				Curriculum mergedCurriculum = new Curriculum();
+				mergedCurriculum.setMajors(new HashSet());
+				mergedCurriculum.setClassifications(new HashSet());
+				
+				int clasfOrd = 0, courseOrd = 0, cidx = 0;
+				Hashtable<Long, CurriculumCourseGroup> groups = new Hashtable<Long, CurriculumCourseGroup>();
+				
+				for (Long curriculumId: curriculumIds) {
+					if (curriculumId == null) 
+						throw new CurriculaException("Unsaved curriculum cannot be merged.");
+					
+					Curriculum curriculum = CurriculumDAO.getInstance().get(curriculumId, hibSession);
+					if (curriculum == null) throw new CurriculaException("Curriculum " + curriculumId + " no longer exists.");
+					
+					if (!curriculum.canUserEdit(user)) throw new CurriculaException("You are not authorized to merge curriculum " + curriculum.getAbbv() + ".");
+					
+					cidx++;
+						
+					if (mergedCurriculum.getAcademicArea() == null) {
+						mergedCurriculum.setAcademicArea(curriculum.getAcademicArea());
+					} else if (!mergedCurriculum.getAcademicArea().equals(curriculum.getAcademicArea()))
+						throw new CurriculaException("Selected curricula have different academic areas.");
+
+					if (mergedCurriculum.getDepartment() == null) {
+						mergedCurriculum.setDepartment(curriculum.getDepartment());
+					} else if (!mergedCurriculum.getDepartment().equals(curriculum.getDepartment()))
+						throw new CurriculaException("Selected curricula have different departments.");
+						
+					mergedCurriculum.getMajors().addAll(curriculum.getMajors());
+					
+					for (Iterator<CurriculumClassification> i = curriculum.getClassifications().iterator(); i.hasNext(); ) {
+						CurriculumClassification clasf = i.next();
+						CurriculumClassification mergedClasf = null;
+						for (Iterator<CurriculumClassification> j = mergedCurriculum.getClassifications().iterator(); j.hasNext(); ) {
+							CurriculumClassification x = j.next();
+							if (x.getAcademicClassification().equals(clasf.getAcademicClassification())) {
+								mergedClasf = x; break;
+							}
+						}
+						
+						if (mergedClasf == null) {
+							mergedClasf = new CurriculumClassification();
+							mergedClasf.setCurriculum(mergedCurriculum);
+							mergedClasf.setAcademicClassification(clasf.getAcademicClassification());
+							mergedClasf.setCourses(new HashSet());
+							mergedClasf.setName(clasf.getName());
+							mergedClasf.setOrd(clasfOrd++);
+							mergedClasf.setLlStudents(0);
+							mergedClasf.setNrStudents(0);
+							mergedCurriculum.getClassifications().add(mergedClasf);
+						} else {
+							if (!mergedClasf.getName().equals(clasf.getName()))
+								mergedClasf.setName(clasf.getAcademicClassification().getCode());
+						}
+						
+						List<CurriculumCourse> remainingMergedCourses = new ArrayList<CurriculumCourse>(mergedClasf.getCourses());
+						
+						for (Iterator<CurriculumCourse> j = clasf.getCourses().iterator(); j.hasNext(); ) {
+							CurriculumCourse course = j.next();
+							CurriculumCourse mergedCourse = null;
+							for (Iterator<CurriculumCourse> k = remainingMergedCourses.iterator(); k.hasNext(); ) {
+								CurriculumCourse x = k.next();
+								if (x.getCourse().equals(course.getCourse())) {
+									mergedCourse = x;
+									k.remove();
+									break;
+								}
+							}
+							
+							if (mergedCourse == null) {
+								mergedCourse = new CurriculumCourse();
+								mergedCourse.setClassification(mergedClasf);
+								mergedCourse.setCourse(course.getCourse());
+								mergedCourse.setLlShare(0f);
+								mergedCourse.setPercShare(0f);
+								mergedCourse.setOrd(courseOrd++);
+								mergedCourse.setGroups(new HashSet());
+								mergedClasf.getCourses().add(mergedCourse);
+							}
+							
+							mergedCourse.setLlShare(
+									(mergedCourse.getLlShare() * mergedClasf.getLlStudents() +
+									(course.getLlShare() == null || clasf.getLlStudents() == null ? 0f : course.getLlShare() * clasf.getLlStudents())) / 
+									(mergedClasf.getLlStudents() + (clasf.getLlStudents() == null ? 0 : clasf.getLlStudents()))
+									);
+							
+							mergedCourse.setPercShare(
+									(mergedCourse.getPercShare() * mergedClasf.getNrStudents() +
+									(course.getPercShare() == null || clasf.getNrStudents() == null ? 0f : course.getPercShare() * clasf.getNrStudents())) / 
+									(mergedClasf.getNrStudents() + (clasf.getNrStudents() == null ? 0 : clasf.getNrStudents()))
+									);
+
+							for (Iterator<CurriculumCourseGroup> k = course.getGroups().iterator(); k.hasNext(); ) {
+								CurriculumCourseGroup group = k.next();
+								CurriculumCourseGroup mergedGroup = groups.get(group.getUniqueId());
+								if (mergedGroup == null) {
+									mergedGroup = new CurriculumCourseGroup();
+									mergedGroup.setColor(null);
+									mergedGroup.setType(group.getType());
+									mergedGroup.setName(group.getName() + " " + cidx);
+									mergedGroup.setCurriculum(mergedCurriculum);
+									groups.put(group.getUniqueId(), mergedGroup);
+								}
+								
+								mergedCourse.getGroups().add(mergedGroup);
+							}
+						}
+						
+						for (CurriculumCourse mergedCourse: remainingMergedCourses) {
+							if (clasf.getLlStudents() != null && clasf.getLlStudents() > 0)
+								mergedCourse.setLlShare(
+										(mergedCourse.getLlShare() * mergedClasf.getLlStudents()) / 
+										(mergedClasf.getLlStudents() + clasf.getLlStudents())
+										);
+							
+							if (clasf.getNrStudents() != null && clasf.getNrStudents() > 0)
+								mergedCourse.setPercShare(
+										(mergedCourse.getPercShare() * mergedClasf.getNrStudents()) / 
+										(mergedClasf.getNrStudents() + clasf.getNrStudents())
+										);
+						}
+						
+						mergedClasf.setLlStudents(mergedClasf.getLlStudents() + (clasf.getLlStudents() == null ? 0 : clasf.getLlStudents()));
+						mergedClasf.setNrStudents(mergedClasf.getNrStudents() + (clasf.getNrStudents() == null ? 0 : clasf.getNrStudents()));
+						
+					}
+					
+					hibSession.delete(curriculum);
+				}
+				
+				if (mergedCurriculum.getAcademicArea() != null) {
+					String abbv = mergedCurriculum.getAcademicArea().getAcademicAreaAbbreviation();
+					String name = Constants.toInitialCase(mergedCurriculum.getAcademicArea().getLongTitle() == null ? mergedCurriculum.getAcademicArea().getShortTitle() : mergedCurriculum.getAcademicArea().getLongTitle());
+					
+					TreeSet<PosMajor> majors = new TreeSet<PosMajor>(new Comparator<PosMajor>() {
+						public int compare(PosMajor m1, PosMajor m2) {
+							return m1.getCode().compareToIgnoreCase(m2.getCode());
+						}
+					});
+					majors.addAll(mergedCurriculum.getMajors());
+					
+					for (PosMajor m: majors) {
+						if (abbv.indexOf('/') < 0) {
+							abbv += "/"; name += " / ";
+						} else {
+							abbv += ","; name += ", ";
+						}
+						abbv += m.getCode();
+						name += Constants.toInitialCase(m.getName());
+					}
+
+					if (abbv.length() > 20) abbv = abbv.substring(0, 20);
+					mergedCurriculum.setAbbv(abbv);
+					
+					if (name.length() > 60) name = name.substring(0, 60);
+					mergedCurriculum.setName(name);
+					
+					hibSession.saveOrUpdate(mergedCurriculum);
+					
+					for (CurriculumCourseGroup g: groups.values())
+						hibSession.saveOrUpdate(g);
+				}
+				
+				hibSession.flush();
+				tx.commit(); tx = null;
+				
+			} finally {
+				try {
+					if (tx != null && tx.isActive()) {
+						tx.rollback();
+					}
+				} catch (Exception e) {}
+				hibSession.close();
+			}
+			sLog.info("Merged " + curriculumIds.size() + " curricula (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
 			return null;
 		} catch (Exception e) {
 			if (e instanceof CurriculaException) throw (CurriculaException)e;
