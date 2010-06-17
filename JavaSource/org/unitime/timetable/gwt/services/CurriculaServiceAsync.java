@@ -34,7 +34,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 public interface CurriculaServiceAsync {
 	public void findCurricula(String filter, AsyncCallback<TreeSet<CurriculumInterface>> callback) throws CurriculaException;
 	public void loadClassifications(List<Long> curriculumIds, AsyncCallback<List<CurriculumInterface.CurriculumClassificationInterface>> callback) throws CurriculaException;
-	public void computeEnrollmentsAndLastLikes(Long acadAreaId, List<Long> majors, AsyncCallback<HashMap<String, Integer[][]>> callback) throws CurriculaException;
+	public void computeEnrollmentsAndLastLikes(Long acadAreaId, List<Long> majors, AsyncCallback<HashMap<String, Set<Long>[][]>> callback) throws CurriculaException;
 	public void loadAcademicAreas(AsyncCallback<TreeSet<CurriculumInterface.AcademicAreaInterface>> callback) throws CurriculaException;
 	public void loadAcademicClassifications(AsyncCallback<TreeSet<CurriculumInterface.AcademicClassificationInterface>> callback) throws CurriculaException;
 	public void loadDepartments(AsyncCallback<TreeSet<CurriculumInterface.DepartmentInterface>> callback) throws CurriculaException;

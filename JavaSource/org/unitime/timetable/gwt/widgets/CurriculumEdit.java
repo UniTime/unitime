@@ -3,6 +3,7 @@ package org.unitime.timetable.gwt.widgets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.services.CurriculaService;
@@ -15,7 +16,6 @@ import org.unitime.timetable.gwt.shared.CurriculumInterface.DepartmentInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.MajorInterface;
 import org.unitime.timetable.gwt.widgets.CurriculaClassifications.ExpectedChangedEvent;
 import org.unitime.timetable.gwt.widgets.CurriculaClassifications.NameChangedEvent;
-import org.unitime.timetable.gwt.widgets.CurriculaCourses.CourseChangedEvent;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
@@ -63,7 +63,6 @@ public class CurriculumEdit extends Composite {
 	private CurriculumInterface iCurriculum = null;
 	
 	private CurriculaCourses iCurriculumCourses;
-	private HashMap<String,Integer[][]> iLastEnrollment = null;
 	
 	private List<EditFinishedHandler> iEditFinishedHandlers = new ArrayList<EditFinishedHandler>();
 	
@@ -362,38 +361,6 @@ public class CurriculumEdit extends Composite {
 		buttons[1].getElement().getStyle().setMarginTop(2, Unit.PX);
 		
 		initWidget(iCurriculumPanel);
-		
-		iCurriculumCourses.addCourseChangedHandler(new CurriculaCourses.CourseChangedHandler() {
-			@Override
-			public void courseChanged(CourseChangedEvent e) {
-				if (iLastEnrollment == null || iLastEnrollment.isEmpty()) return;
-				Integer[][] c = iLastEnrollment.get(e.getCourseName());
-				for (int col = 0; col < iClassifications.size(); col ++) {
-					iCurriculumCourses.setEnrollmentAndLastLike(e.getCourseName(), col,
-							c == null || c[col] == null ? null : c[col][0], 
-							c == null || c[col] == null ? null : c[col][1]);
-				}
-				/*
-				for (CurriculumClassificationInterface clasf: iLastEnrollment) {
-					int col = iCurriculumClasfTable.getColumn(clasf.getAcademicClassification());
-					if (col < 0) continue;
-					boolean changed = false;
-					if (clasf.hasCourses())
-						for (CurriculumCourseInterface course: clasf.getCourses()) {
-							if (course.getCourseName().equals(e.getCourseName())) {
-								iCurriculumCourses.setEnrollmentAndLastLike(
-										course.getCourseName(),
-										col,
-										course.getEnrollment(),
-										course.getLastLike());
-								changed = true;
-							}
-						}
-					if (!changed)
-						iCurriculumCourses.setEnrollmentAndLastLike(e.getCourseName(), col, null, null);
-				}*/
-			}
-		});
 		
 		ClickHandler backHandler = new ClickHandler() {
 			@Override
@@ -696,7 +663,7 @@ public class CurriculumEdit extends Composite {
 			if (majorIds.isEmpty()) return;
 			
 			showLoading();
-			iService.computeEnrollmentsAndLastLikes(areaId, majorIds, new AsyncCallback<HashMap<String,Integer[][]>>() {
+			iService.computeEnrollmentsAndLastLikes(areaId, majorIds, new AsyncCallback<HashMap<String,Set<Long>[][]>>() {
 
 				@Override
 				public void onFailure(Throwable caught) {
@@ -704,14 +671,13 @@ public class CurriculumEdit extends Composite {
 				}
 
 				@Override
-				public void onSuccess(HashMap<String, Integer[][]> result) {
-					iLastEnrollment = result;
-					Integer[][] x = iLastEnrollment.get("");
+				public void onSuccess(HashMap<String, Set<Long>[][]> result) {
+					Set<Long>[][] x = result.get("");
 					for (int col = 0; col < iClassifications.size(); col++) {
-						iCurriculumClasfTable.setEnrollment(col, x == null || x[col] == null ? null : x[col][0]);
-						iCurriculumClasfTable.setLastLike(col, x == null || x[col] == null ? null : x[col][1]);
+						iCurriculumClasfTable.setEnrollment(col, x == null || x[col] == null || x[col][0] == null ? null : x[col][0].size());
+						iCurriculumClasfTable.setLastLike(col, x == null || x[col] == null || x[col][1] == null ? null : x[col][1].size());
 					}
-					iCurriculumCourses.updateEnrollmentsAndLastLike(iLastEnrollment);
+					iCurriculumCourses.updateEnrollmentsAndLastLike(result);
 					if (iCurriculumClasfTableHint.getText().equals("Show all columns."))
 						iCurriculumClasfTable.hideEmptyColumns();
 					else

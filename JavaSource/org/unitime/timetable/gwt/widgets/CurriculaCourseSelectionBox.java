@@ -62,6 +62,7 @@ import com.google.gwt.user.client.DeferredCommand;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
+import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -80,7 +81,7 @@ import com.google.gwt.user.client.ui.SuggestOracle.Request;
 import com.google.gwt.user.client.ui.SuggestOracle.Response;
 import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
 
-public class CurriculaCourseSelectionBox extends Composite implements Validator {
+public class CurriculaCourseSelectionBox extends Composite implements Validator, Focusable {
 	public static final StudentSectioningResources RESOURCES =  GWT.create(StudentSectioningResources.class);
 	public static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 	public static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
@@ -258,10 +259,10 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator 
 							new WebTable.Cell(MESSAGES.colCourse(), 1, "80"),
 							new WebTable.Cell(MESSAGES.colTitle(), 1, "300"),
 							new WebTable.Cell(MESSAGES.colNote(), 1, "300"),
-							new WebTable.Cell("Limit", 1, "50"),
-							new WebTable.Cell("Projected", 1, "50"),
-							new WebTable.Cell("Enrollment", 1, "50"),
-							new WebTable.Cell("Last-Like", 1, "50")
+							new WebTable.Cell("Limit", 1, "60"),
+							new WebTable.Cell("Projected", 1, "60"),
+							new WebTable.Cell("Enrollment", 1, "60"),
+							new WebTable.Cell("Last-Like", 1, "60")
 							));
 			
 			iDialogPanel = new VerticalPanel();
@@ -311,7 +312,7 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator 
 			iCourseDetailsTabPanel.add(iClassesPanel, new HTML(MESSAGES.courseSelectionClasses(), false));
 			
 			iCurricula = new CourseCurriculaTable(true, false, false);
-			iCurricula.setErrorMessage(MESSAGES.courseSelectionNoCourseSelected());
+			iCurricula.setMessage(MESSAGES.courseSelectionNoCourseSelected());
 			iCurriculaPanel = new ScrollPanel(iCurricula);
 			iCurriculaPanel.setStyleName("unitime-ScrollPanel-inner");
 			iCourseDetailsTabPanel.add(iCurriculaPanel, new HTML("<u>C</u>urricula", false));
@@ -453,6 +454,7 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator 
 		iSuggest.showSuggestionList();
 	}
 
+	@Override
 	public void setAccessKey(char a) {
 		iTextField.setAccessKey(a);
 	}
@@ -641,7 +643,7 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator 
 			iCourseDetails.setHTML("<table width='100%'></tr><td class='unitime-TableEmpty'>" + MESSAGES.courseSelectionNoCourseSelected() + "</td></tr></table>");
 			iClasses.setEmptyMessage(MESSAGES.courseSelectionNoCourseSelected());
 			iClasses.clearData(true);
-			iCurricula.setErrorMessage(MESSAGES.courseSelectionNoCourseSelected());
+			iCurricula.setMessage(MESSAGES.courseSelectionNoCourseSelected());
 			iCurricula.clear(false);
 		} else {
 			WebTable.Row row = iCourses.getRows()[iCourses.getSelectedRow()];
@@ -658,6 +660,7 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator 
 		}
 	}
 	
+	@Override
 	public void setFocus(boolean focus) {
 		iTextField.setFocus(focus);
 		if (focus) iTextField.selectAll();
@@ -767,5 +770,15 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator 
 
 	public void addBlurHandler(BlurHandler h) {
 		iTextField.addBlurHandler(h);
+	}
+
+	@Override
+	public int getTabIndex() {
+		return iTextField.getTabIndex();
+	}
+
+	@Override
+	public void setTabIndex(int index) {
+		iTextField.setTabIndex(index);
 	}
 }

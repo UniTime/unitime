@@ -29,22 +29,31 @@ import org.unitime.timetable.gwt.shared.CurriculumInterface.CurriculumClassifica
 
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.DeferredCommand;
+import com.google.gwt.user.client.Element;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
+import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.TextBox;
+import com.google.gwt.user.client.ui.TextBoxBase;
+import com.google.gwt.user.client.ui.Widget;
 
 public class CurriculaClassifications extends Composite {
 	
-	private FlexTable iTable;
+	private MyFlexTable iTable;
 
 	private List<AcademicClassificationInterface> iClassifications = null;
 	private List<ExpectedChangedHandler> iExpectedChangedHandlers = new ArrayList<ExpectedChangedHandler>();
 	private List<NameChangedHandler> iNameChangedHandlers = new ArrayList<NameChangedHandler>();
-
+	
 	public CurriculaClassifications() {
-		iTable = new FlexTable();
+		iTable = new MyFlexTable();
 		iTable.setCellPadding(2);
 		iTable.setCellSpacing(0);
 		initWidget(iTable);
@@ -311,6 +320,71 @@ public class CurriculaClassifications extends Composite {
 	public void showAllColumns() {
 		for (int i = 0; i < iClassifications.size(); i++) {
 			setVisible(i, true);
+		}
+	}
+	
+	public class MyFlexTable extends FlexTable {
+		
+		public MyFlexTable() {
+			super();
+			sinkEvents(Event.ONKEYDOWN);
+		}
+		
+		private boolean focus(Event event, int oldRow, int oldCol, int row, int col) {
+			final Widget w = getWidget(row, col);
+			if (getCellFormatter().isVisible(row, col) && w != null && w instanceof Focusable) {
+				((Focusable)w).setFocus(true);
+				if (w instanceof TextBoxBase) {
+					DeferredCommand.addCommand(new Command() {
+						@Override
+						public void execute() {
+							((TextBoxBase)w).selectAll();
+						}
+					});
+				}
+				event.stopPropagation();
+				return true;
+			}
+			return false;
+		}
+
+		public void onBrowserEvent(Event event) {
+			Element td = getEventTargetCell(event);
+			if (td==null) return;
+		    Element tr = DOM.getParent(td);
+			int col = DOM.getChildIndex(tr, td);
+		    Element body = DOM.getParent(tr);
+		    int row = DOM.getChildIndex(body, tr);
+
+		    switch (DOM.eventGetType(event)) {
+			case Event.ONKEYDOWN:
+				int oldRow = row, oldCol = col;
+				if (event.getKeyCode() == KeyCodes.KEY_RIGHT && (event.getAltKey() || event.getMetaKey())) {
+					do {
+						col++;
+						if (col >= getCellCount(row)) break;
+					} while (!focus(event, oldRow, oldCol, row, col));
+				}
+				if (event.getKeyCode() == KeyCodes.KEY_LEFT && (event.getAltKey() || event.getMetaKey())) {
+					do {
+						col--;
+						if (col < 0) break;
+					} while (!focus(event, oldRow, oldCol, row, col));
+				}
+				if (event.getKeyCode() == KeyCodes.KEY_UP && (event.getAltKey() || event.getMetaKey())) {
+					do {
+						row--;
+						if (row < 0) break;
+					} while (!focus(event, oldRow, oldCol, row, col));
+				}
+				if (event.getKeyCode() == KeyCodes.KEY_DOWN && (event.getAltKey() || event.getMetaKey())) {
+					do {
+						row++;
+						if (row >= getRowCount()) break;
+					} while (!focus(event, oldRow, oldCol, row, col));
+				}
+				break;
+			}
 		}
 	}
 }

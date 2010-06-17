@@ -981,3 +981,11 @@ h1 {
 	border: 1px solid #AB8B00;
 	background: #FFF0AB;
 }
+
+.unitime-DashedBottom {
+	border-bottom: 1px dashed #333333;
+}
+
+.unitime-DashedTop {
+	border-top: 1px dashed #333333;
+}
