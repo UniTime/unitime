@@ -1552,7 +1552,8 @@ public class CurriculaCourses extends Composite {
 							public void setPosition(int offsetWidth, int offsetHeight) {
 								boolean top = (tr.getAbsoluteBottom() - Window.getScrollTop() + 15 + offsetHeight > Window.getClientHeight());
 								iStudentsTable.setPopupPosition(
-										Math.min(Math.max(x, tr.getAbsoluteLeft() + 15), tr.getAbsoluteRight() - offsetWidth - 15),
+										Math.max(Math.min(x, tr.getAbsoluteRight() - offsetWidth - 15), tr.getAbsoluteLeft() + 15),
+//										Math.min(Math.max(x, tr.getAbsoluteLeft() + 15), tr.getAbsoluteRight() - offsetWidth - 15),
 										top ? tr.getAbsoluteTop() - offsetHeight - 15 : tr.getAbsoluteBottom() + 15);
 							}
 						});
@@ -1565,9 +1566,8 @@ public class CurriculaCourses extends Composite {
 				if (iStudentsTable != null && iStudentsTable.isShowing()) {
 					boolean top = (tr.getAbsoluteBottom() - Window.getScrollTop() + 15 + iStudentsTable.getOffsetHeight() > Window.getClientHeight());
 					iStudentsTable.setPopupPosition(
-							Math.min(Math.max(event.getClientX(), tr.getAbsoluteLeft() + 15),
-									tr.getAbsoluteRight() - iStudentsTable.getOffsetWidth() - 15),
-									top ? tr.getAbsoluteTop() - iStudentsTable.getOffsetHeight() - 15 : tr.getAbsoluteBottom() + 15);
+							Math.max(Math.min(event.getClientX(), tr.getAbsoluteRight() - iStudentsTable.getOffsetWidth() - 15), tr.getAbsoluteLeft() + 15),
+							top ? tr.getAbsoluteTop() - iStudentsTable.getOffsetHeight() - 15 : tr.getAbsoluteBottom() + 15);
 				}
 				break;
 			case Event.ONMOUSEOUT:
@@ -1812,7 +1812,7 @@ public class CurriculaCourses extends Composite {
 				int minTotal = -1;
 				List<Integer> visible = new ArrayList<Integer>();
 				for (row = other.size() - 1; row >= 0; row--) {
-					if (totalC[row] < 1 || totalC[row] < 0.03 * total)
+					if (totalC[row] < 1)
 						iT.getRowFormatter().setVisible(6 + row, false);
 					else {
 						visible.add(row);
@@ -1835,9 +1835,12 @@ public class CurriculaCourses extends Composite {
 				}
 				if (!visible.isEmpty()) {
 					int r = 6 + visible.get(visible.size() - 1);
-					for (int c = 1; c < iT.getCellCount(r); c++) {
-						if (iT.getText(r, c) == null || iT.getText(r, c).isEmpty()) iT.setHTML(r, c, "&nbsp;");
-						iT.getCellFormatter().setStyleName(r, c, "unitime-DashedTop");
+					int col = 1;
+					for (int c = 0; c < iClassifications.getClassifications().size(); c++) {
+						if (iClassifications.getExpected(c) == null) continue;
+						if (iT.getCellCount(r) <= col || iT.getText(r, col) == null || iT.getText(r, col).isEmpty()) iT.setHTML(r, col, "&nbsp;");
+						iT.getCellFormatter().setStyleName(r, col, "unitime-DashedTop");
+						col++;
 					}
 				}
 
