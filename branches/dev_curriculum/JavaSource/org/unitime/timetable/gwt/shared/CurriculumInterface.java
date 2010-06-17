@@ -479,7 +479,7 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 		public void setLastLike(Integer lastLike) { iLastLike = lastLike; }
 		
 		public Integer getEnrollment() { return iEnrollment; }
-		public void setEnrollment(Integer enrollment) { iEnrollment = enrollment; }		
+		public void setEnrollment(Integer enrollment) { iEnrollment = enrollment; }
 		
 		public boolean equals(Object o) {
 			if (o == null || !(o instanceof CurriculumCourseInterface)) return false;

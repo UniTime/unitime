@@ -125,6 +125,7 @@ public class CourseCurriculaTable extends Composite {
 		}
 
 		iLoadingImage = new Image(RESOURCES.loading_small());
+		iLoadingImage.setVisible(false);
 		iCurriculaPanel.add(iLoadingImage);
 		iCurriculaPanel.setCellHorizontalAlignment(iLoadingImage, HasHorizontalAlignment.ALIGN_CENTER);
 		iCurriculaPanel.setCellVerticalAlignment(iLoadingImage, HasVerticalAlignment.ALIGN_MIDDLE);
@@ -201,8 +202,7 @@ public class CourseCurriculaTable extends Composite {
 			iCurriculaService.loadAcademicAreas(new AsyncCallback<TreeSet<AcademicAreaInterface>>() {
 				@Override
 				public void onFailure(Throwable caught) {
-					iErrorLabel.setText("Failed to load academic areas (" + caught.getMessage() + ")");
-					iErrorLabel.setVisible(true);
+					setErrorMessage("Failed to load academic areas (" + caught.getMessage() + ")");
 					next.executeOnFailure();
 				}
 				@Override
@@ -211,8 +211,7 @@ public class CourseCurriculaTable extends Composite {
 					iCurriculaService.loadDepartments(new AsyncCallback<TreeSet<DepartmentInterface>>() {
 						@Override
 						public void onFailure(Throwable caught) {
-							iErrorLabel.setText("Failed to load departments (" + caught.getMessage() + ")");
-							iErrorLabel.setVisible(true);
+							setErrorMessage("Failed to load departments (" + caught.getMessage() + ")");
 							next.executeOnFailure();
 						}
 						@Override
@@ -250,8 +249,7 @@ public class CourseCurriculaTable extends Composite {
 			
 			@Override
 			public void onFailure(Throwable caught) {
-				iErrorLabel.setText("Failed to load classifications (" + caught.getMessage() + ").");
-				iErrorLabel.setVisible(true);
+				setErrorMessage("Failed to load classifications (" + caught.getMessage() + ").");
 			}
 		});
 	}
@@ -420,6 +418,7 @@ public class CourseCurriculaTable extends Composite {
 		iCourses.clear();
 		iRowClicks.clear();
 		iRowClicks.add(null); // for header row
+		iRowTypes.clear();
 		iRowTypes.add(sRowTypeHeader);
 		
 		int row = 0;
@@ -483,7 +482,7 @@ public class CourseCurriculaTable extends Composite {
 					}
 				});
 				iRowTypes.add(sRowTypeArea);
-				if (lastAreas == 1 || iExpandedAreas.contains(lastAreaId))
+				if (iExpandedAreas.contains(lastAreaId))
 					iRowClicks.get(row).execute(null);
 				lastArea.clear();
 				for (int i = 0; i <totalThisArea.length; i++)
@@ -531,8 +530,7 @@ public class CourseCurriculaTable extends Composite {
 						iCurriculaService.loadCurriculum(curriculum.getId(), new AsyncCallback<CurriculumInterface>() {
 							@Override
 							public void onFailure(Throwable caught) {
-								iErrorLabel.setText("Failed to load details for " + curriculum.getAbbv() + " (" + caught.getMessage() + ")");
-								iErrorLabel.setVisible(true);
+								setErrorMessage("Failed to load details for " + curriculum.getAbbv() + " (" + caught.getMessage() + ")");
 								next.executeOnFailure();
 							}
 							@Override
@@ -612,7 +610,7 @@ public class CourseCurriculaTable extends Composite {
 				}
 			});
 			iRowTypes.add(sRowTypeArea);
-			if (lastAreas == 1 || iExpandedAreas.contains(lastAreaId))
+			if (iExpandedAreas.contains(lastAreaId))
 				iRowClicks.get(row).execute(null);
 		}
 		
@@ -723,7 +721,7 @@ public class CourseCurriculaTable extends Composite {
 				}
 			});
 			iRowTypes.add(sRowTypeOther);
-			if (lastAreas == 1 || iExpandedAreas.contains(-1l))
+			if (iExpandedAreas.contains(-1l))
 				iRowClicks.get(row).execute(null);
 		}
 		
@@ -837,15 +835,13 @@ public class CourseCurriculaTable extends Composite {
 			iCourseCurriculaCallback = new AsyncCallback<TreeSet<CurriculumInterface>>() {
 				@Override
 				public void onFailure(Throwable caught) {
-					iErrorLabel.setText("Failed to load curricula (" + caught.getMessage() + ").");
-					iErrorLabel.setVisible(true);
+					setErrorMessage("Failed to load curricula (" + caught.getMessage() + ").");
 					iLoadingImage.setVisible(false);
 				}
 				@Override
 				public void onSuccess(TreeSet<CurriculumInterface> result) {
 					if (result.isEmpty()) {
-						iErrorLabel.setText("The selected offering has no curricula.");
-						iErrorLabel.setVisible(true);
+						setMessage("The selected offering has no curricula.");
 					} else {
 						populate(result);
 					}
@@ -1020,9 +1016,15 @@ public class CourseCurriculaTable extends Composite {
 	}
 	
 	public void setErrorMessage(String message) {
+		iErrorLabel.setStyleName("unitime-ErrorMessage");
 		iErrorLabel.setText(message);
 		iErrorLabel.setVisible(message != null && !message.isEmpty());
 	}
 	
+	public void setMessage(String message) {
+		iErrorLabel.setStyleName("unitime-Message");
+		iErrorLabel.setText(message);
+		iErrorLabel.setVisible(message != null && !message.isEmpty());
+	}
 	
 }

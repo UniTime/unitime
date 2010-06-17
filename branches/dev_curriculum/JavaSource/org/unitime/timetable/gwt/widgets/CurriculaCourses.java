@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.shared.CurriculumInterface;
@@ -36,7 +37,6 @@ import org.unitime.timetable.gwt.shared.CurriculumInterface.CurriculumCourseGrou
 import org.unitime.timetable.gwt.shared.CurriculumInterface.CurriculumCourseInterface;
 import org.unitime.timetable.gwt.widgets.CurriculaClassifications.NameChangedEvent;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
@@ -51,10 +51,12 @@ import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.DeferredCommand;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FlexTable;
+import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -64,6 +66,8 @@ import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.TextBox;
+import com.google.gwt.user.client.ui.TextBoxBase;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 public class CurriculaCourses extends Composite {
@@ -76,7 +80,6 @@ public class CurriculaCourses extends Composite {
 	private static String[] MODE_SHORT = new String[] {"&nbsp;", "Enrl", "Last"};
 	private int iMode = 0;
 	
-	private List<CourseChangedHandler> iCourseChangedHandlers = new ArrayList<CourseChangedHandler>();
 	private List<Group> iGroups = new ArrayList<Group>();
 	
 	private CurriculaClassifications iClassifications;
@@ -99,7 +102,7 @@ public class CurriculaCourses extends Composite {
 	};
 	
 	private TreeSet<String> iVisibleCourses = null;
-	private HashMap<String, Integer[][]> iLastCourses = null;
+	private HashMap<String, Set<Long>[][]> iLastCourses = null;
 	
 	public CurriculaCourses() {
 		iTable = new MyFlexTable();
@@ -109,14 +112,11 @@ public class CurriculaCourses extends Composite {
 		iCourseChangedHandler = new CurriculaCourseSelectionBox.CourseSelectionChangeHandler() {
 			@Override
 			public void onChange(String course, boolean valid) {
-				if (valid) {
-					CourseChangedEvent e = new CourseChangedEvent(course);
-					for (CourseChangedHandler h: iCourseChangedHandlers)
-						h.courseChanged(e);
-				} else if (course.isEmpty()) {
-					for (int col = 0; col < iClassifications.getClassifications().size(); col++) {
-						setEnrollmentAndLastLike(course, col, null, null);
-					}
+				Set<Long>[][] c = (iLastCourses == null ? null : iLastCourses.get(course));
+				for (int col = 0; col < iClassifications.getClassifications().size(); col ++) {
+					setEnrollmentAndLastLike(course, col,
+							c == null || c[col] == null || c[col][0] == null ? null : c[col][0].size(), 
+							c == null || c[col] == null || c[col][1] == null ? null : c[col][1].size());
 				}
 			}
 		};
@@ -329,21 +329,23 @@ public class CurriculaCourses extends Composite {
 						}
 					}));
 					if (getSelectedCount() > 0) {
-						menu.addItem(new MenuItem("Remove Selected Courses", true, new Command() {
-							@Override
-							public void execute() {
-								popup.hide();
-								for (int row = iTable.getRowCount() - 1; row > 0; row --) {
-									if (!isSelected(row)) continue;
-									String course = ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getCourse();
-									if (course.isEmpty() && row + 1 == iTable.getRowCount()) {
-										setSelected(row, false);
-										continue;
+						if (iVisibleCourses == null) {
+							menu.addItem(new MenuItem("Remove Selected Courses", true, new Command() {
+								@Override
+								public void execute() {
+									popup.hide();
+									for (int row = iTable.getRowCount() - 1; row > 0; row --) {
+										if (!isSelected(row)) continue;
+										String course = ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getCourse();
+										if (course.isEmpty() && row + 1 == iTable.getRowCount()) {
+											setSelected(row, false);
+											continue;
+										}
+										iTable.removeRow(row);
 									}
-									iTable.removeRow(row);
 								}
-							}
-						}));
+							}));
+						}
 						menu.addItem(new MenuItem("Clear Selection", true, new Command() {
 							@Override
 							public void execute() {
@@ -840,15 +842,6 @@ public class CurriculaCourses extends Composite {
 			public void onChange(String course, boolean valid) {
 				if (row + 1 == iTable.getRowCount() && valid && !course.isEmpty())
 					addBlankLine();
-				if (valid) {
-					CourseChangedEvent e = new CourseChangedEvent(course);
-					for (CourseChangedHandler h: iCourseChangedHandlers)
-						h.courseChanged(e);
-				} else if (course.isEmpty()) {
-					for (int col = 0; col < iClassifications.getClassifications().size(); col++) {
-						setEnrollmentAndLastLike(course, col, null, null);
-					}
-				}
 			}
 		});
 		cx.addCourseSelectionChangeHandler(iCourseChangedHandler);
@@ -992,7 +985,7 @@ public class CurriculaCourses extends Composite {
 		return changed;
 	}
 	
-	public void updateEnrollmentsAndLastLike(HashMap<String, Integer[][]> courses) {
+	public void updateEnrollmentsAndLastLike(HashMap<String, Set<Long>[][]> courses) {
 		iLastCourses = courses;
 		rows: for (int row = 1; row < iTable.getRowCount() - 1; ) {
 			for (int col = 0; col < iClassifications.getClassifications().size(); col ++) {
@@ -1002,7 +995,6 @@ public class CurriculaCourses extends Composite {
 					continue rows;
 				}
 			}
-			GWT.log("Remove " + ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getCourse() + " @" + row);
 			iTable.removeRow(row);
 		}
 		HashSet<String> updated = new HashSet<String>();
@@ -1010,45 +1002,45 @@ public class CurriculaCourses extends Composite {
 			String c = ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getCourse();
 			if (c.isEmpty()) continue;
 			updated.add(c);
-			Integer cc[][] = courses.get(c);
+			Set<Long> cc[][] = courses.get(c);
 			for (int col = 0; col < iClassifications.getClassifications().size(); col++) {
 				MyLabel note = ((MyLabel)iTable.getWidget(row, 3 + 2 * col));
-				note.iEnrollment = (cc == null || cc[col] == null ? null : cc[col][0]);
-				note.iLastLike = (cc == null || cc[col] == null ? null : cc[col][1]);
+				note.iEnrollment = (cc == null || cc[col] == null || cc[col][0] == null ? null : cc[col][0].size());
+				note.iLastLike = (cc == null || cc[col] == null || cc[col][1] == null ? null : cc[col][1].size());
 				note.update();
 			}
 		}
-		Integer[][] total = courses.get("");
+		Set<Long>[][] total = courses.get("");
 		if (total == null) return;
 		int totalEnrollment = 0, totalLastLike = 0;
 		for (int i = 0; i < total.length; i++) {
-			if (total[i] != null && total[i][0] != null) totalEnrollment += total[i][0];
-			if (total[i] != null && total[i][1] != null) totalLastLike += total[i][1];
+			if (total[i] != null && total[i][0] != null) totalEnrollment += total[i][0].size();
+			if (total[i] != null && total[i][1] != null) totalLastLike += total[i][1].size();
 		}
-		TreeSet<Map.Entry<String, Integer[][]>> include = new TreeSet<Map.Entry<String,Integer[][]>>(new Comparator<Map.Entry<String,Integer[][]>>() {
-			private int highestClassification(Integer[][] a) {
+		TreeSet<Map.Entry<String, Set<Long>[][]>> include = new TreeSet<Map.Entry<String,Set<Long>[][]>>(new Comparator<Map.Entry<String,Set<Long>[][]>>() {
+			private int highestClassification(Set<Long>[][] a) {
 				int best = a.length;
 				int bestVal = -1;
 				for (int i = 0; i < a.length; i++) {
 					if (a[i] == null) continue;
-					if (a[i][0] != null && a[i][0] > bestVal) {
-						bestVal = a[i][0]; best = i;
+					if (a[i][0] != null && a[i][0].size() > bestVal) {
+						bestVal = a[i][0].size(); best = i;
 					}
-					if (a[i][1] != null && a[i][1] > bestVal) {
-						bestVal = a[i][1]; best = i;
+					if (a[i][1] != null && a[i][1].size() > bestVal) {
+						bestVal = a[i][1].size(); best = i;
 					}
 				}
 				return best;
 			}
-			private int firstClassification(Integer[][] a) {
+			private int firstClassification(Set<Long>[][] a) {
 				for (int i = 0; i < a.length; i++) {
 					if (a[i] == null) continue;
-					if (a[i][0] != null && a[i][0] > 0) return i;
-					if (a[i][1] != null && a[i][1] > 0) return i;
+					if (a[i][0] != null && a[i][0].size() > 0) return i;
+					if (a[i][1] != null && a[i][1].size() > 0) return i;
 				}
 				return a.length;
 			}
-			public int compare(Map.Entry<String,Integer[][]> c0, Map.Entry<String,Integer[][]> c1) {
+			public int compare(Map.Entry<String,Set<Long>[][]> c0, Map.Entry<String,Set<Long>[][]> c1) {
 				/*
 				int a0 = highestClassification(c0.getValue());
 				int a1 = highestClassification(c1.getValue());
@@ -1068,10 +1060,10 @@ public class CurriculaCourses extends Composite {
 				if (b0 < b1) return -1;
 				if (b0 > b1) return 1;
 				while (b0 < c0.getValue().length) {
-					int v0 = (c0.getValue()[b0][0] == null ? 0 : c0.getValue()[b0][0]);
-					int v1 = (c1.getValue()[b0][0] == null ? 0 : c1.getValue()[b0][0]);
-					int w0 = (c0.getValue()[b0][1] == null ? 0 : c0.getValue()[b0][1]);
-					int w1 = (c1.getValue()[b0][1] == null ? 0 : c1.getValue()[b0][1]);
+					int v0 = (c0.getValue()[b0][0] == null ? 0 : c0.getValue()[b0][0].size());
+					int v1 = (c1.getValue()[b0][0] == null ? 0 : c1.getValue()[b0][0].size());
+					int w0 = (c0.getValue()[b0][1] == null ? 0 : c0.getValue()[b0][1].size());
+					int w1 = (c1.getValue()[b0][1] == null ? 0 : c1.getValue()[b0][1].size());
 					if (v0 > v1 || w0 > w1) return -1;
 					if (v0 < v1 || w0 < w1) return 1;
 					b0++;
@@ -1079,31 +1071,30 @@ public class CurriculaCourses extends Composite {
 				return c0.getKey().compareTo(c1.getKey());
 			}
 		});
-		for (Map.Entry<String, Integer[][]> course: courses.entrySet()) {
+		for (Map.Entry<String, Set<Long>[][]> course: courses.entrySet()) {
 			if (updated.contains(course.getKey()) || course.getKey().isEmpty()) continue;
-			Integer cc[][] = course.getValue();
+			Set<Long> cc[][] = course.getValue();
 			int enrollment = 0, lastLike = 0;
 			for (int i = 0; i < cc.length; i++) {
-				if (cc[i] != null && cc[i][0] != null) enrollment += cc[i][0];
-				if (cc[i] != null && cc[i][1] != null) lastLike += cc[i][1];
+				if (cc[i] != null && cc[i][0] != null) enrollment += cc[i][0].size();
+				if (cc[i] != null && cc[i][1] != null) lastLike += cc[i][1].size();
 			}
 			if ((totalEnrollment > 0 && 100.0f * enrollment / totalEnrollment > 3.0f) ||
 				(totalLastLike > 0 && 100.0f * lastLike / totalLastLike > 3.0f)) {
 				include.add(course);
 			}
 		}
-		for (Map.Entry<String, Integer[][]> course: include) {
-			Integer cc[][] = course.getValue();
+		for (Map.Entry<String, Set<Long>[][]> course: include) {
+			Set<Long> cc[][] = course.getValue();
 			int row = iTable.getRowCount() - 1;
 			if (!iEditable) row++;
-			GWT.log("Adding " + course.getKey() + " @" + row);
 			addBlankLine();
 			CurriculaCourseSelectionBox c = (CurriculaCourseSelectionBox)iTable.getWidget(row, 1);
 			c.setCourse(course.getKey(), false);
 			for (int col = 0; col < iClassifications.getClassifications().size(); col++) {
 				MyLabel note = ((MyLabel)iTable.getWidget(row, 3 + 2 * col));
-				note.iEnrollment = (cc == null || cc[col] == null ? null : cc[col][0]);
-				note.iLastLike = (cc == null || cc[col] == null ? null : cc[col][1]);
+				note.iEnrollment = (cc == null || cc[col] == null || cc[col][0] == null ? null : cc[col][0].size());
+				note.iLastLike = (cc == null || cc[col] == null  || cc[col][1] == null ? null : cc[col][1].size());
 				note.update();
 			}
 			if (iVisibleCourses!=null) {
@@ -1315,14 +1306,6 @@ public class CurriculaCourses extends Composite {
 		public String getCourseName() { return iCourseName; }
 	}
 	
-	public static interface CourseChangedHandler {
-		public void courseChanged(CourseChangedEvent e);
-	}
-	
-	public void addCourseChangedHandler(CourseChangedHandler h) {
-		iCourseChangedHandlers.add(h);
-	}
-	
 	public class Group extends Label implements Comparable<Group> {
 		private String iName;
 		private int iType;
@@ -1488,22 +1471,61 @@ public class CurriculaCourses extends Composite {
 	
 	public class MyFlexTable extends FlexTable {
 		private boolean iEnabled = true;
+		private StudentsTable iStudentsTable = null;
 		
 		public MyFlexTable() {
 			super();
 			sinkEvents(Event.ONMOUSEOVER);
 			sinkEvents(Event.ONMOUSEOUT);
+			sinkEvents(Event.ONMOUSEMOVE);
 			sinkEvents(Event.ONCLICK);
+			sinkEvents(Event.ONKEYDOWN);
 		}
 		
 		public void setEnabled(boolean enabled) { iEnabled = enabled; }
 		public boolean isEnabled() { return iEnabled; }
 		
+		private boolean focus(Event event, int oldRow, int oldCol, int row, int col) {
+			final Widget w = getWidget(row, col);
+			if (getCellFormatter().isVisible(row, col) && w != null && w instanceof Focusable) {
+				if (oldCol == 1) {
+					((CurriculaCourseSelectionBox)getWidget(oldRow, oldCol)).hideSuggestionList();
+				}
+				((Focusable)w).setFocus(true);
+				if (w instanceof TextBoxBase) {
+					DeferredCommand.addCommand(new Command() {
+						@Override
+						public void execute() {
+							((TextBoxBase)w).selectAll();
+						}
+					});
+				}
+				event.stopPropagation();
+				return true;
+			}
+			return false;
+		}
+		
+		private boolean swapRow(Event event, int oldRow, int oldCol, int row, int col) {
+			Widget w = getWidget(row, col);
+			if (getCellFormatter().isVisible(row, col) && w != null && w instanceof Focusable) {
+				if (oldCol == 1) {
+					((CurriculaCourseSelectionBox)getWidget(oldRow, oldCol)).hideSuggestionList();
+				}
+				swap(oldRow - 1, row - 1);
+				((Focusable)w).setFocus(true);
+				event.stopPropagation();
+				return true;
+			}
+			return false;
+		}
+		
 		public void onBrowserEvent(Event event) {
 			if (!iEnabled) return;
 			Element td = getEventTargetCell(event);
 			if (td==null) return;
-		    Element tr = DOM.getParent(td);
+		    final Element tr = DOM.getParent(td);
+			int col = DOM.getChildIndex(tr, td);
 		    Element body = DOM.getParent(tr);
 		    int row = DOM.getChildIndex(body, tr);
 		    
@@ -1515,9 +1537,44 @@ public class CurriculaCourses extends Composite {
 				if ("unitime-TableRowSelected".equals(style))
 					getRowFormatter().setStyleName(row, "unitime-TableRowSelectedHover");	
 				else
-					getRowFormatter().setStyleName(row, "unitime-TableRowHover");	
+					getRowFormatter().setStyleName(row, "unitime-TableRowHover");
+				
+				if (iStudentsTable != null && iStudentsTable.isShowing()) {
+					iStudentsTable.hide();
+					iStudentsTable = null;
+				}
+				if (canShowStudentsTable(row)) {
+					iStudentsTable = new StudentsTable(row);
+					if (iStudentsTable.canShow()) {
+						final int x = event.getClientX();
+						iStudentsTable.setPopupPositionAndShow(new PopupPanel.PositionCallback() {
+							@Override
+							public void setPosition(int offsetWidth, int offsetHeight) {
+								boolean top = (tr.getAbsoluteBottom() - Window.getScrollTop() + 15 + offsetHeight > Window.getClientHeight());
+								iStudentsTable.setPopupPosition(
+										Math.min(Math.max(x, tr.getAbsoluteLeft() + 15), tr.getAbsoluteRight() - offsetWidth - 15),
+										top ? tr.getAbsoluteTop() - offsetHeight - 15 : tr.getAbsoluteBottom() + 15);
+							}
+						});
+					} else {
+						iStudentsTable = null;
+					}
+				}
+				break;
+			case Event.ONMOUSEMOVE:
+				if (iStudentsTable != null && iStudentsTable.isShowing()) {
+					boolean top = (tr.getAbsoluteBottom() - Window.getScrollTop() + 15 + iStudentsTable.getOffsetHeight() > Window.getClientHeight());
+					iStudentsTable.setPopupPosition(
+							Math.min(Math.max(event.getClientX(), tr.getAbsoluteLeft() + 15),
+									tr.getAbsoluteRight() - iStudentsTable.getOffsetWidth() - 15),
+									top ? tr.getAbsoluteTop() - iStudentsTable.getOffsetHeight() - 15 : tr.getAbsoluteBottom() + 15);
+				}
 				break;
 			case Event.ONMOUSEOUT:
+				if (iStudentsTable != null && iStudentsTable.isShowing()) {
+					iStudentsTable.hide();
+					iStudentsTable = null;
+				}
 				if ("unitime-TableRowHover".equals(style))
 					getRowFormatter().setStyleName(row, null);	
 				else if ("unitime-TableRowSelectedHover".equals(style))
@@ -1531,6 +1588,45 @@ public class CurriculaCourses extends Composite {
 					boolean hover = ("unitime-TableRowHover".equals(style) || "unitime-TableRowSelectedHover".equals(style));
 					boolean selected = !("unitime-TableRowSelected".equals(style) || "unitime-TableRowSelectedHover".equals(style));
 					getRowFormatter().setStyleName(row, "unitime-TableRow" + (selected ? "Selected" : "") + (hover ? "Hover" : ""));
+				}
+				break;
+			case Event.ONKEYDOWN:
+				int oldRow = row, oldCol = col;
+				if (event.getKeyCode() == KeyCodes.KEY_RIGHT && (event.getAltKey() || event.getMetaKey())) {
+					do {
+						col++;
+						if (col >= getCellCount(row)) break;
+					} while (!focus(event, oldRow, oldCol, row, col));
+				}
+				if (event.getKeyCode() == KeyCodes.KEY_LEFT && (event.getAltKey() || event.getMetaKey())) {
+					do {
+						col--;
+						if (col < 0) break;
+					} while (!focus(event, oldRow, oldCol, row, col));
+				}
+				if (event.getKeyCode() == KeyCodes.KEY_UP && (event.getAltKey() || event.getMetaKey())) {
+					do {
+						row--;
+						if (row <= 0) break;
+					} while (!focus(event, oldRow, oldCol, row, col));
+				}
+				if (event.getKeyCode() == KeyCodes.KEY_DOWN && (event.getAltKey() || event.getMetaKey())) {
+					do {
+						row++;
+						if (row >= getRowCount()) break;
+					} while (!focus(event, oldRow, oldCol, row, col));
+				}
+				if (event.getKeyCode() == KeyCodes.KEY_UP && event.getCtrlKey()) {
+					do {
+						row--;
+						if (row <= 0) break;
+					} while (!swapRow(event, oldRow, oldCol, row, col));
+				}
+				if (event.getKeyCode() == KeyCodes.KEY_DOWN && event.getCtrlKey()) {
+					do {
+						row++;
+						if (row >= getRowCount()) break;
+					} while (!swapRow(event, oldRow, oldCol, row, col));
 				}
 				break;
 			}
@@ -1580,5 +1676,177 @@ public class CurriculaCourses extends Composite {
 				iTable.getCellFormatter().setVisible(row, 3 + 2 * i, vis);
 			}
 		}
+	}
+	
+	public boolean canShowStudentsTable(int row) {
+		if (iMode == 0) return false;
+		if (row < 1 || row >= iTable.getRowCount()) return false;
+		String course = ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getCourse();
+		if (iLastCourses == null || !iLastCourses.containsKey(course)) return false;
+		int nrOther = 0;
+		for (int r = 1; r < iTable.getRowCount(); r ++) {
+			if (r == row || !isSelected(r)) continue;
+			nrOther ++;
+		}
+		return (nrOther > 0);
+	}
+	
+	public class StudentsTable extends PopupPanel {
+		private FlexTable iT = new FlexTable();
+		private VerticalPanel iP = new VerticalPanel();
+		private boolean iCanShow = false;
+		
+		private StudentsTable(int currentRow) {
+			super();
+			
+			setStyleName("unitime-PopupHint");
+
+			if (iLastCourses == null) return;
+
+			String course = ((CurriculaCourseSelectionBox)iTable.getWidget(currentRow, 1)).getCourse();
+			
+			Set<Long>[][] thisCourse = iLastCourses.get(course);
+			if (thisCourse == null) return;
+			
+			iP.add(new Label("Comparing " + course + " " + (iMode == 1 ? "enrolled" : "last-like") + " students with the other selected courses:"));
+			iP.add(iT);
+			setWidget(iP);
+			
+			int column = 0;
+			for (int c = 0; c < iClassifications.getClassifications().size(); c++) {
+				if (iClassifications.getExpected(c) == null) continue;
+				iT.setText(0, 1 + column, iClassifications.getName(c));
+				iT.getCellFormatter().setWidth(0, 1 + column, "50px");
+				iT.getCellFormatter().setStyleName(0, 1 + column, "unitime-DashedBottom");
+				column++;
+			}
+			
+			iT.setText(1, 0, "Students in at least 1 other course");
+			iT.setText(2, 0, "Students in at least 2 other courses");
+			iT.setText(3, 0, "Students in at least 3 other courses");
+			iT.setText(4, 0, "Students in all other courses");
+			iT.setText(5, 0, "Students not in any other course");
+			int row = 0;
+			List<Set<Long>[][]> other = new ArrayList<Set<Long>[][]>();
+			for (int r = 1; r < iTable.getRowCount(); r ++) {
+				if (r == currentRow || !isSelected(r)) continue;
+				String c = ((CurriculaCourseSelectionBox)iTable.getWidget(r, 1)).getCourse();
+				if (c.isEmpty()) continue;
+				other.add(iLastCourses.get(c));
+				iT.setText(6 + row, 0, "Students shared with " + c);
+				row++;
+			}
+
+			column = 0;
+			int total = 0;
+			int totalC[] = new int [other.size()];
+			for (int i = 0; i < totalC.length; i++)
+				totalC[i] = 0;
+			boolean has1 = false, has2 = false, has3 = false, hasAll = false, hasNone = false;
+			for (int c = 0; c < iClassifications.getClassifications().size(); c++) {
+				if (iClassifications.getExpected(c) == null) continue;
+				Set<Long> thisEnrollment = thisCourse[c][iMode == 1 ? 0 : 1];
+				if (thisEnrollment != null) {
+					total += thisEnrollment.size();
+					Set<Long> sharedWithOneOther = new HashSet<Long>();
+					Set<Long> sharedWithTwoOther = new HashSet<Long>();
+					Set<Long> sharedWithThreeOther = new HashSet<Long>();
+					Set<Long> sharedWithAll = new HashSet<Long>(thisEnrollment);
+					Set<Long> notShared = new HashSet<Long>(thisEnrollment);
+					row = 0;
+					for (Set<Long>[][] o: other) {
+						Set<Long> enrl = (o == null ? null : o[c][iMode == 1 ? 0 : 1]);
+						if (enrl == null) {
+							sharedWithAll.clear();
+							row++;
+							continue;
+						}
+						int share = 0;
+						for (Long s: thisEnrollment) {
+							if (enrl.contains(s)) {
+								if (!sharedWithOneOther.add(s))
+									if (!sharedWithTwoOther.add(s))
+										sharedWithThreeOther.add(s);
+								share++;
+							}
+						}
+						for (Iterator<Long> i = sharedWithAll.iterator(); i.hasNext(); )
+							if (!enrl.contains(i.next())) i.remove();
+						for (Iterator<Long> i = notShared.iterator(); i.hasNext(); )
+							if (enrl.contains(i.next())) i.remove();
+						if (share > 0) {
+							totalC[row] += share;
+							iT.setText(6 + row, 1 + column, (iPercent ? NF.format(100.0 * share / thisEnrollment.size()) + "%" : "" + share));
+						}
+						row++;
+					}
+					if (!sharedWithOneOther.isEmpty()) {
+						iT.setText(1, 1 + column, (iPercent ? NF.format(100.0 * sharedWithOneOther.size() / thisEnrollment.size()) + "%" : "" + sharedWithOneOther.size()));
+						has1 = true;
+					}
+					if (!sharedWithTwoOther.isEmpty()) {
+						iT.setText(2, 1 + column, (iPercent ? NF.format(100.0 * sharedWithTwoOther.size() / thisEnrollment.size()) + "%" : "" + sharedWithTwoOther.size()));
+						has2 = true;
+					}
+					if (!sharedWithThreeOther.isEmpty()) {
+						iT.setText(3, 1 + column, (iPercent ? NF.format(100.0 * sharedWithThreeOther.size() / thisEnrollment.size()) + "%" : "" + sharedWithThreeOther.size()));
+						has3 = true;
+					}
+					if (!sharedWithAll.isEmpty()) {
+						iT.setText(4, 1 + column, (iPercent ? NF.format(100.0 * sharedWithAll.size() / thisEnrollment.size()) + "%" : "" + sharedWithAll.size()));
+						hasAll = true;
+					}
+					if (!notShared.isEmpty()) {
+						iT.setText(5, 1 + column, (iPercent ? NF.format(100.0 * notShared.size() / thisEnrollment.size()) + "%" : "" + notShared.size()));
+						hasNone = true;
+					}
+				}
+				column ++;
+			}
+			if (!has1 || other.size() == 1) iT.getRowFormatter().setVisible(1, false);
+			if (!has2 || other.size() == 1) iT.getRowFormatter().setVisible(2, false);
+			if (!has3 || other.size() == 1) iT.getRowFormatter().setVisible(3, false);
+			if (!hasAll || other.size() <= 3) iT.getRowFormatter().setVisible(4, false);
+			if (!hasNone || other.size() == 1) iT.getRowFormatter().setVisible(5, false);
+			if (other.size() > 1) {
+				int minTotal = -1;
+				List<Integer> visible = new ArrayList<Integer>();
+				for (row = other.size() - 1; row >= 0; row--) {
+					if (totalC[row] < 1 || totalC[row] < 0.03 * total)
+						iT.getRowFormatter().setVisible(6 + row, false);
+					else {
+						visible.add(row);
+						if (minTotal < 0 || minTotal < totalC[row])
+							minTotal = totalC[row];
+					}
+				}
+				while (visible.size() > 10) {
+					int limit = minTotal; minTotal = -1;
+					for (Iterator<Integer> i = visible.iterator(); i.hasNext() && visible.size() > 10; ) {
+						row = i.next();
+						if (totalC[row] <= limit) {
+							iT.getRowFormatter().setVisible(6 + row, false);
+							i.remove();
+						} else {
+							if (minTotal < 0 || minTotal < totalC[row])
+								minTotal = totalC[row];
+						}
+					}
+				}
+				if (!visible.isEmpty()) {
+					int r = 6 + visible.get(visible.size() - 1);
+					for (int c = 1; c < iT.getCellCount(r); c++) {
+						if (iT.getText(r, c) == null || iT.getText(r, c).isEmpty()) iT.setHTML(r, c, "&nbsp;");
+						iT.getCellFormatter().setStyleName(r, c, "unitime-DashedTop");
+					}
+				}
+
+			}
+						
+			iCanShow = has1 || has2 || hasAll || hasNone;
+		}
+		
+		public boolean canShow() { return iCanShow; }
+		
 	}
 }

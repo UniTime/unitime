@@ -311,9 +311,9 @@ public class CurriculaTable extends Composite {
 			}
 		});
 
-		Label expLabel = new Label("Expected Students");
+		HTML expLabel = new HTML("Expected<br>Students", false);
 		iTable.getFlexCellFormatter().setStyleName(0, col, "unitime-ClickableTableHeader");
-		iTable.getFlexCellFormatter().setWidth(0, col, "50px");
+		iTable.getFlexCellFormatter().setWidth(0, col, "60px");
 		iTable.setWidget(0, col, expLabel);
 		col++;
 		expLabel.addClickHandler(new ClickHandler() {
@@ -336,9 +336,9 @@ public class CurriculaTable extends Composite {
 			}
 		});
 		
-		Label enrlLabel = new Label("Enrolled Students");
+		HTML enrlLabel = new HTML("Enrolled<br>Students", false);
 		iTable.getFlexCellFormatter().setStyleName(0, col, "unitime-ClickableTableHeader");
-		iTable.getFlexCellFormatter().setWidth(0, col, "50px");
+		iTable.getFlexCellFormatter().setWidth(0, col, "60px");
 		iTable.setWidget(0, col, enrlLabel);
 		col++;
 		enrlLabel.addClickHandler(new ClickHandler() {
@@ -361,9 +361,9 @@ public class CurriculaTable extends Composite {
 			}
 		});
 		
-		Label lastLabel = new Label("Last-Like Students");
+		HTML lastLabel = new HTML("Last-Like<br>Students", false);
 		iTable.getFlexCellFormatter().setStyleName(0, col, "unitime-ClickableTableHeader");
-		iTable.getFlexCellFormatter().setWidth(0, col, "50px");
+		iTable.getFlexCellFormatter().setWidth(0, col, "60px");
 		iTable.setWidget(0, col, lastLabel);
 		col++;
 		lastLabel.addClickHandler(new ClickHandler() {
@@ -543,7 +543,7 @@ public class CurriculaTable extends Composite {
 				newlySelected.add(curriculum.getId());
 			row++;
 		}
-		iTable.setWidget(1, 5, new Image(RESOURCES.loading_small()));
+		iTable.setWidget(1, 6, new Image(RESOURCES.loading_small()));
 		iSelectedCurricula.clear();
 		iSelectedCurricula.addAll(newlySelected);
 		
@@ -650,7 +650,6 @@ public class CurriculaTable extends Composite {
 		    if (curriculum == null) return;
 		    
 			String style = getRowFormatter().getStyleName(row);
-			final boolean lastSevenRows = (row > 10 && row + 7 >= getRowCount());
 
 			switch (DOM.eventGetType(event)) {
 			case Event.ONMOUSEOVER:
@@ -660,24 +659,28 @@ public class CurriculaTable extends Composite {
 				} else {
 					getRowFormatter().setStyleName(row, "unitime-TableRowHover");
 				}
-				iClassifications.populate(curriculum.getClassifications());
-				iClassifications.setEnabled(false);
-				final int x = event.getClientX();
-				iClassificationsPopup.setPopupPositionAndShow(new PopupPanel.PositionCallback() {
-					@Override
-					public void setPosition(int offsetWidth, int offsetHeight) {
-						iClassificationsPopup.setPopupPosition(
-								Math.min(Math.max(x, tr.getAbsoluteLeft() + 15), tr.getAbsoluteRight() - offsetWidth - 15),
-								lastSevenRows ? tr.getAbsoluteTop() - offsetHeight - 15 : tr.getAbsoluteBottom() + 15);
-					}
-				});
+				if (curriculum.hasClassifications()) {
+					iClassifications.populate(curriculum.getClassifications());
+					iClassifications.setEnabled(false);
+					final int x = event.getClientX();
+					iClassificationsPopup.setPopupPositionAndShow(new PopupPanel.PositionCallback() {
+						@Override
+						public void setPosition(int offsetWidth, int offsetHeight) {
+							boolean top = (tr.getAbsoluteBottom() - Window.getScrollTop() + 15 + offsetHeight > Window.getClientHeight());
+							iClassificationsPopup.setPopupPosition(
+									Math.min(Math.max(x, tr.getAbsoluteLeft() + 15), tr.getAbsoluteRight() - offsetWidth - 15),
+									top ? tr.getAbsoluteTop() - offsetHeight - 15 : tr.getAbsoluteBottom() + 15);
+						}
+					});
+				}
 				break;
 			case Event.ONMOUSEMOVE:
 				if (iClassificationsPopup.isShowing()) {
+					boolean top = (tr.getAbsoluteBottom() - Window.getScrollTop() + 15 + iClassificationsPopup.getOffsetHeight() > Window.getClientHeight());
 					iClassificationsPopup.setPopupPosition(
 							Math.min(Math.max(event.getClientX(), tr.getAbsoluteLeft() + 15),
 									tr.getAbsoluteRight() - iClassificationsPopup.getOffsetWidth() - 15),
-									lastSevenRows ? tr.getAbsoluteTop() - iClassificationsPopup.getOffsetHeight() - 15 : tr.getAbsoluteBottom() + 15);
+									top ? tr.getAbsoluteTop() - iClassificationsPopup.getOffsetHeight() - 15 : tr.getAbsoluteBottom() + 15);
 				}
 				break;
 			case Event.ONMOUSEOUT:

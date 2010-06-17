@@ -22,6 +22,7 @@ package org.unitime.timetable.gwt.widgets;
 import org.unitime.timetable.gwt.resources.GwtResources;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Composite;
@@ -43,6 +44,17 @@ public class LoadingWidget extends Composite {
 		iImage = new Image(RESOURCES.loading());
 		iImage.setStyleName("unitime-LoadingIcon");
 		initWidget(iPanel);
+		Window.addWindowScrollHandler(new Window.ScrollHandler() {
+			@Override
+			public void onWindowScroll(Window.ScrollEvent event) {
+				if (iCount > 0) {
+					DOM.setStyleAttribute(iPanel.getElement(), "left", String.valueOf(event.getScrollLeft()));
+					DOM.setStyleAttribute(iPanel.getElement(), "top", String.valueOf(event.getScrollTop()));
+					DOM.setStyleAttribute(iImage.getElement(), "left", String.valueOf(event.getScrollLeft() + Window.getClientWidth() / 2));
+					DOM.setStyleAttribute(iImage.getElement(), "top", String.valueOf(event.getScrollTop() + Window.getClientHeight() / 2));
+				}
+			}
+		});
 	}
 	
 	public void show() {
