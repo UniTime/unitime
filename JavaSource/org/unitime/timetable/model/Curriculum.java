@@ -27,12 +27,14 @@ public class Curriculum extends BaseCurriculum {
 	 */
 	public Curriculum (
 		java.lang.Long uniqueId,
+		org.unitime.timetable.model.AcademicArea academicArea,
 		org.unitime.timetable.model.Department department,
 		java.lang.String abbv,
 		java.lang.String name) {
 
 		super (
 			uniqueId,
+			academicArea,
 			department,
 			abbv,
 			name);

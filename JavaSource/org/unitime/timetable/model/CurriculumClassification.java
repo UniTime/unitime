@@ -25,6 +25,7 @@ public class CurriculumClassification extends BaseCurriculumClassification imple
 	public CurriculumClassification (
 		java.lang.Long uniqueId,
 		org.unitime.timetable.model.Curriculum curriculum,
+		org.unitime.timetable.model.AcademicClassification academicClassification,
 		java.lang.String name,
 		java.lang.Integer nrStudents,
 		java.lang.Integer ord) {
@@ -32,6 +33,7 @@ public class CurriculumClassification extends BaseCurriculumClassification imple
 		super (
 			uniqueId,
 			curriculum,
+			academicClassification,
 			name,
 			nrStudents,
 			ord);

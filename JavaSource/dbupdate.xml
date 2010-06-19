@@ -2611,4 +2611,85 @@
 			create index idx_pos_major_code on %SCHEMA%.pos_major(code, session_id)
 		</mysql>
 	</update>
+	<update version="55" date="18-Jun-2010" comment="Curriculum projection rules">
+		<!--  disallow null in curriculum.acad_area_id -->
+		<plsql>
+			alter table %SCHEMA%.curriculum drop constraint fk_curriculum_acad_area
+		</plsql>
+		<mysql>
+			alter table %SCHEMA%.curriculum drop foreign key fk_curriculum_acad_area
+		</mysql>
+		<plsql>
+			alter table %SCHEMA%.curriculum add constraint nn_curriculum_acad_area check (acad_area_id is not null)
+		</plsql>
+		<mysql>
+			alter table %SCHEMA%.curriculum modify acad_area_id decimal(20,0) not null
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.curriculum
+				add constraint fk_curriculum_acad_area foreign key (acad_area_id)
+				references %SCHEMA%.academic_area (uniqueid) on delete cascade
+		</sql>
+		<!--  disallow null in curriculum_clasf.acad_clasf_id -->
+		<plsql>
+			alter table %SCHEMA%.curriculum_clasf drop constraint fk_curriculum_clasf_acad_clasf
+		</plsql>
+		<mysql>
+			alter table %SCHEMA%.curriculum_clasf drop foreign key fk_curriculum_clasf_acad_clasf
+		</mysql>
+		<plsql>
+			alter table %SCHEMA%.curriculum_clasf add constraint nn_curriculum_clasf_acad_clasf check (acad_clasf_id is not null)
+		</plsql>
+		<mysql>
+			alter table %SCHEMA%.curriculum_clasf modify acad_clasf_id decimal(20,0) not null
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.curriculum_clasf
+				add constraint fk_curriculum_clasf_acad_clasf foreign key (acad_clasf_id)
+				references %SCHEMA%.academic_classification (uniqueid) on delete cascade
+		</sql>
+		<!--  drop unused columns -->
+		<sql>alter table %SCHEMA%.curriculum_clasf drop column ll_students</sql>
+		<sql>alter table %SCHEMA%.curriculum_course drop column ll_share</sql>
+		<!--  create curriculum_rule table -->
+		<plsql>
+			create table %SCHEMA%.curriculum_rule
+				(
+				  uniqueid number(20) constraint nn_cur_rule_id not null,
+				  acad_area_id number(20) constraint nn_cur_rule_acad_area not null,
+				  major_id number(20),
+				  acad_clasf_id number(20) constraint nn_cur_rule_acad_clasf not null,
+				  projection float constraint nn_cur_rule_proj not null,
+				  constraint pk_curriculum_rule primary key (uniqueid)
+				)
+		</plsql>
+		<mysql>
+			create table %SCHEMA%.curriculum_rule
+				(
+				  uniqueid decimal(20,0) primary key not null,
+				  acad_area_id decimal(20,0) not null,
+				  major_id decimal(20,0),
+				  acad_clasf_id decimal(20,0) not null,
+				  projection float not null
+				) engine = INNODB
+		</mysql>
+		<plsql>
+			create index %SCHEMA%.idx_cur_rule_areadept on %SCHEMA%.curriculum_rule(acad_area_id, acad_clasf_id)
+		</plsql>
+		<mysql>
+			create index idx_cur_rule_areadept on %SCHEMA%.curriculum_rule(acad_area_id, acad_clasf_id)
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.curriculum_rule add constraint fk_cur_rule_acad_area foreign key (acad_area_id)
+			references %SCHEMA%.academic_area (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.curriculum_rule add constraint fk_cur_rule_major foreign key (major_id)
+			references %SCHEMA%.pos_major (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.curriculum_rule add constraint fk_cur_rule_acad_clasf foreign key (acad_clasf_id)
+			references %SCHEMA%.academic_classification (uniqueid) on delete cascade
+		</sql>
+	</update>
 </dbupdate>

@@ -204,7 +204,6 @@ public class MakeCurriculaFromLastlikeDemands {
                     sLog.info("  "+e3.getKey().getCode()+" ("+e3.getKey().getName()+") -- "+studentsThisCurriculaClassification.size()+" students");
                     
                     clasf.setNrStudents(studentsThisCurriculaClassification.size());
-                    clasf.setLlStudents(studentsThisCurriculaClassification.size());
                     
                     for (Map.Entry<CourseOffering, Set<Long>> e4 : e3.getValue().entrySet()) {
                         float share = ((float)e4.getValue().size())/studentsThisCurriculaClassification.size();
@@ -220,7 +219,6 @@ public class MakeCurriculaFromLastlikeDemands {
                         course.setCourse(e4.getKey());
                         
                         course.setPercShare(share);
-                        course.setLlShare(share);
                         
                         Integer cx = deptCounter.get(course.getCourse().getDepartment());
                         deptCounter.put(course.getCourse().getDepartment(), new Integer(courseStudents.get(e4.getKey()).size() + (cx == null ? 0 : cx.intValue())));

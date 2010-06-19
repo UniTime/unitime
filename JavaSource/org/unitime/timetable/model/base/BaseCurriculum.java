@@ -37,11 +37,13 @@ public abstract class BaseCurriculum  implements Serializable {
 	 */
 	public BaseCurriculum (
 		java.lang.Long uniqueId,
+		org.unitime.timetable.model.AcademicArea academicArea,
 		org.unitime.timetable.model.Department department,
 		java.lang.String abbv,
 		java.lang.String name) {
 
 		this.setUniqueId(uniqueId);
+		this.setAcademicArea(academicArea);
 		this.setDepartment(department);
 		this.setAbbv(abbv);
 		this.setName(name);

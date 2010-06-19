@@ -60,7 +60,7 @@
 			name="academicArea" 
 			class="AcademicArea" 
 			column="acad_area_id" 
-			not-null="false"
+			not-null="true"
 			foreign-key="fk_curriculum_acad_area"
 		/>
 		
@@ -141,13 +141,6 @@
 		/>
 
  		<property
-			name="llStudents"
-			column="ll_students"
-			type="java.lang.Integer"
-			not-null="false"
-		/>
-		
- 		<property
 			name="ord"
 			column="ord"
 			type="java.lang.Integer"
@@ -206,13 +199,6 @@
 			not-null="true"
 		/>
 
- 		<property
-			name="llShare"
-			column="ll_share"
-			type="java.lang.Float"
-			not-null="false"
-		/>
-		
  		<property
 			name="ord"
 			column="ord"
@@ -276,5 +262,52 @@
 			foreign-key="fk_curriculum_group_curriculum"
 		/>
 		
+	</class>
+	
+	<class name="CurriculumProjectionRule" table="curriculum_rule">
+	
+ 		<cache include="non-lazy" usage="read-write"/>
+
+		<id 
+            name="uniqueId"
+            column="uniqueid" 
+            type="java.lang.Long">            
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+				<param name="sequence">PREF_GROUP_SEQ</param>
+			</generator>
+            
+        </id>
+        
+        <many-to-one 
+			name="academicArea" 
+			class="AcademicArea" 
+			column="acad_area_id" 
+			not-null="true"
+			foreign-key="fk_cur_rule_acad_area"
+		/>
+		
+        <many-to-one 
+			name="major" 
+			class="PosMajor" 
+			column="major_id" 
+			not-null="false"
+			foreign-key="fk_cur_rule_major"
+		/>
+		
+		<many-to-one 
+			name="academicClassification" 
+			class="AcademicClassification" 
+			column="acad_clasf_id" 
+			not-null="true"
+			foreign-key="fk_cur_rule_acad_clasf"
+		/>
+		
+		 <property
+			name="projection"
+			column="projection"
+			type="java.lang.Float"
+			not-null="true"
+		/>
+	
 	</class>
 </hibernate-mapping>

@@ -17,7 +17,6 @@ public abstract class BaseCurriculumClassification  implements Serializable {
 	public static String REF = "CurriculumClassification";
 	public static String PROP_NAME = "name";
 	public static String PROP_NR_STUDENTS = "nrStudents";
-	public static String PROP_LL_STUDENTS = "llStudents";
 	public static String PROP_ORD = "ord";
 
 
@@ -40,12 +39,14 @@ public abstract class BaseCurriculumClassification  implements Serializable {
 	public BaseCurriculumClassification (
 		java.lang.Long uniqueId,
 		org.unitime.timetable.model.Curriculum curriculum,
+		org.unitime.timetable.model.AcademicClassification academicClassification,
 		java.lang.String name,
 		java.lang.Integer nrStudents,
 		java.lang.Integer ord) {
 
 		this.setUniqueId(uniqueId);
 		this.setCurriculum(curriculum);
+		this.setAcademicClassification(academicClassification);
 		this.setName(name);
 		this.setNrStudents(nrStudents);
 		this.setOrd(ord);
@@ -64,7 +65,6 @@ public abstract class BaseCurriculumClassification  implements Serializable {
 	// fields
 	private java.lang.String name;
 	private java.lang.Integer nrStudents;
-	private java.lang.Integer llStudents;
 	private java.lang.Integer ord;
 
 	// many to one
@@ -128,23 +128,6 @@ public abstract class BaseCurriculumClassification  implements Serializable {
 	 */
 	public void setNrStudents (java.lang.Integer nrStudents) {
 		this.nrStudents = nrStudents;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: ll_students
-	 */
-	public java.lang.Integer getLlStudents () {
-		return llStudents;
-	}
-
-	/**
-	 * Set the value related to the column: ll_students
-	 * @param llStudents the ll_students value
-	 */
-	public void setLlStudents (java.lang.Integer llStudents) {
-		this.llStudents = llStudents;
 	}
 
 

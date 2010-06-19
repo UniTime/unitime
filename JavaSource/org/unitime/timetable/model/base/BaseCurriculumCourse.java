@@ -16,7 +16,6 @@ public abstract class BaseCurriculumCourse  implements Serializable {
 
 	public static String REF = "CurriculumCourse";
 	public static String PROP_PERC_SHARE = "percShare";
-	public static String PROP_LL_SHARE = "llShare";
 	public static String PROP_ORD = "ord";
 
 
@@ -62,7 +61,6 @@ public abstract class BaseCurriculumCourse  implements Serializable {
 
 	// fields
 	private java.lang.Float percShare;
-	private java.lang.Float llShare;
 	private java.lang.Integer ord;
 
 	// many to one
@@ -108,23 +106,6 @@ public abstract class BaseCurriculumCourse  implements Serializable {
 	 */
 	public void setPercShare (java.lang.Float percShare) {
 		this.percShare = percShare;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: ll_share
-	 */
-	public java.lang.Float getLlShare () {
-		return llShare;
-	}
-
-	/**
-	 * Set the value related to the column: ll_share
-	 * @param llShare the ll_share value
-	 */
-	public void setLlShare (java.lang.Float llShare) {
-		this.llShare = llShare;
 	}
 
 
