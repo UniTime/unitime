@@ -28,6 +28,9 @@ import java.util.TreeSet;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CurriculaException;
 import org.unitime.timetable.gwt.shared.CurriculumInterface;
+import org.unitime.timetable.gwt.shared.CurriculumInterface.AcademicAreaInterface;
+import org.unitime.timetable.gwt.shared.CurriculumInterface.AcademicClassificationInterface;
+import org.unitime.timetable.gwt.shared.CurriculumInterface.MajorInterface;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
@@ -36,7 +39,7 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 public interface CurriculaService extends RemoteService {
 	public TreeSet<CurriculumInterface> findCurricula(String filter) throws CurriculaException;
 	public List<CurriculumInterface.CurriculumClassificationInterface> loadClassifications(List<Long> curriculumIds) throws CurriculaException;
-	public HashMap<String, Set<Long>[][]> computeEnrollmentsAndLastLikes(Long acadAreaId, List<Long> majors) throws CurriculaException;
+	public HashMap<String, CurriculumInterface.CurriculumStudentsInterface[]> computeEnrollmentsAndLastLikes(Long acadAreaId, List<Long> majors) throws CurriculaException;
 	public TreeSet<CurriculumInterface.AcademicAreaInterface> loadAcademicAreas() throws CurriculaException;
 	public TreeSet<CurriculumInterface.AcademicClassificationInterface> loadAcademicClassifications() throws CurriculaException;
 	public TreeSet<CurriculumInterface.DepartmentInterface> loadDepartments() throws CurriculaException;
@@ -55,4 +58,8 @@ public interface CurriculaService extends RemoteService {
 	public Collection<ClassAssignmentInterface.ClassAssignment> listClasses(String course) throws CurriculaException;
 	public String[] getAppliationProperty(String[] name) throws CurriculaException;
 	public Boolean canAddCurriculum() throws CurriculaException;
+	
+	public HashMap<AcademicAreaInterface, HashMap<MajorInterface, HashMap<AcademicClassificationInterface, Number[]>>> loadProjectionRules() throws CurriculaException;
+	public Boolean saveProjectionRules(HashMap<AcademicAreaInterface, HashMap<MajorInterface, HashMap<AcademicClassificationInterface, Number[]>>> rules) throws CurriculaException;
+	public Boolean canEditProjectionRules() throws CurriculaException;
 }

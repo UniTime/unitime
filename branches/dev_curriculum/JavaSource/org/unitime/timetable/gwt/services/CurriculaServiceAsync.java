@@ -28,13 +28,16 @@ import java.util.TreeSet;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CurriculaException;
 import org.unitime.timetable.gwt.shared.CurriculumInterface;
+import org.unitime.timetable.gwt.shared.CurriculumInterface.AcademicAreaInterface;
+import org.unitime.timetable.gwt.shared.CurriculumInterface.AcademicClassificationInterface;
+import org.unitime.timetable.gwt.shared.CurriculumInterface.MajorInterface;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface CurriculaServiceAsync {
 	public void findCurricula(String filter, AsyncCallback<TreeSet<CurriculumInterface>> callback) throws CurriculaException;
 	public void loadClassifications(List<Long> curriculumIds, AsyncCallback<List<CurriculumInterface.CurriculumClassificationInterface>> callback) throws CurriculaException;
-	public void computeEnrollmentsAndLastLikes(Long acadAreaId, List<Long> majors, AsyncCallback<HashMap<String, Set<Long>[][]>> callback) throws CurriculaException;
+	public void computeEnrollmentsAndLastLikes(Long acadAreaId, List<Long> majors, AsyncCallback<HashMap<String, CurriculumInterface.CurriculumStudentsInterface[]>> callback) throws CurriculaException;
 	public void loadAcademicAreas(AsyncCallback<TreeSet<CurriculumInterface.AcademicAreaInterface>> callback) throws CurriculaException;
 	public void loadAcademicClassifications(AsyncCallback<TreeSet<CurriculumInterface.AcademicClassificationInterface>> callback) throws CurriculaException;
 	public void loadDepartments(AsyncCallback<TreeSet<CurriculumInterface.DepartmentInterface>> callback) throws CurriculaException;
@@ -54,4 +57,8 @@ public interface CurriculaServiceAsync {
 	public void listClasses(String course, AsyncCallback<Collection<ClassAssignmentInterface.ClassAssignment>> callback) throws CurriculaException;
 	public void getAppliationProperty(String[] name, AsyncCallback<String[]> callback) throws CurriculaException;
 	public void canAddCurriculum(AsyncCallback<Boolean> callback) throws CurriculaException;
+	
+	public void loadProjectionRules(AsyncCallback<HashMap<AcademicAreaInterface, HashMap<MajorInterface, HashMap<AcademicClassificationInterface, Number[]>>>> callback) throws CurriculaException;
+	public void saveProjectionRules(HashMap<AcademicAreaInterface, HashMap<MajorInterface, HashMap<AcademicClassificationInterface, Number[]>>> rules, AsyncCallback<Boolean> callback) throws CurriculaException;
+	public void canEditProjectionRules(AsyncCallback<Boolean> callback) throws CurriculaException;
 }

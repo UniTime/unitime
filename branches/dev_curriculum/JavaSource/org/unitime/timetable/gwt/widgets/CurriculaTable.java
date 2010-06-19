@@ -386,6 +386,31 @@ public class CurriculaTable extends Composite {
 			}
 		});
 		
+		HTML projLabel = new HTML("Projected<br>Students", false);
+		iTable.getFlexCellFormatter().setStyleName(0, col, "unitime-ClickableTableHeader");
+		iTable.getFlexCellFormatter().setWidth(0, col, "60px");
+		iTable.setWidget(0, col, projLabel);
+		col++;
+		projLabel.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				final PopupPanel popup = new PopupPanel(true);
+				MenuBar menu = new MenuBar(true);
+				MenuItem sort = new MenuItem("Sort by Projected Students", true, new Command() {
+					@Override
+					public void execute() {
+						popup.hide();
+						sort(6);
+					}
+				});
+				sort.getElement().getStyle().setCursor(Cursor.POINTER);
+				menu.addItem(sort);
+				menu.setVisible(true);
+				popup.add(menu);
+				popup.showRelativeTo((Widget)event.getSource());
+			}
+		});
+		
 		iPanel = new VerticalPanel();
 		
 		iPanel.add(iTable);
@@ -429,6 +454,7 @@ public class CurriculaTable extends Composite {
 					iTable.setText(1 + c.getRow(), 5, c.getExpectedString());
 					iTable.setText(1 + c.getRow(), 6, c.getEnrollmentString());
 					iTable.setText(1 + c.getRow(), 7, c.getLastLikeString());
+					iTable.setText(1 + c.getRow(), 8, c.getProjectionString());
 				}
 				List<Long> noEnrl = new ArrayList<Long>();
 				for (CurriculumInterface c: iData) {
@@ -512,6 +538,8 @@ public class CurriculaTable extends Composite {
 		iTable.setText(1 + c.getRow(), col++, (c.getExpected() == null ? "": c.getExpectedString()));
 		iTable.setText(1 + c.getRow(), col++, (c.getEnrollment() == null ? "" : c.getEnrollmentString()));		
 		iTable.setText(1 + c.getRow(), col++, (c.getLastLike() == null ? "" : c.getLastLikeString()));
+		iTable.setText(1 + c.getRow(), col++, (c.getProjection() == null ? "" : c.getProjectionString()));
+
 	}
 	
 	public void populate(TreeSet<CurriculumInterface> result) {

@@ -3,7 +3,6 @@ package org.unitime.timetable.gwt.widgets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.services.CurriculaService;
@@ -12,6 +11,7 @@ import org.unitime.timetable.gwt.shared.CurriculumInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.AcademicAreaInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.AcademicClassificationInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.CourseInterface;
+import org.unitime.timetable.gwt.shared.CurriculumInterface.CurriculumStudentsInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.DepartmentInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.MajorInterface;
 import org.unitime.timetable.gwt.widgets.CurriculaClassifications.ExpectedChangedEvent;
@@ -663,7 +663,7 @@ public class CurriculumEdit extends Composite {
 			if (majorIds.isEmpty()) return;
 			
 			showLoading();
-			iService.computeEnrollmentsAndLastLikes(areaId, majorIds, new AsyncCallback<HashMap<String,Set<Long>[][]>>() {
+			iService.computeEnrollmentsAndLastLikes(areaId, majorIds, new AsyncCallback<HashMap<String,CurriculumStudentsInterface[]>>() {
 
 				@Override
 				public void onFailure(Throwable caught) {
@@ -671,11 +671,12 @@ public class CurriculumEdit extends Composite {
 				}
 
 				@Override
-				public void onSuccess(HashMap<String, Set<Long>[][]> result) {
-					Set<Long>[][] x = result.get("");
+				public void onSuccess(HashMap<String, CurriculumStudentsInterface[]> result) {
+					CurriculumStudentsInterface[] x = result.get("");
 					for (int col = 0; col < iClassifications.size(); col++) {
-						iCurriculumClasfTable.setEnrollment(col, x == null || x[col] == null || x[col][0] == null ? null : x[col][0].size());
-						iCurriculumClasfTable.setLastLike(col, x == null || x[col] == null || x[col][1] == null ? null : x[col][1].size());
+						iCurriculumClasfTable.setEnrollment(col, x == null || x[col] == null ? null : x[col].getEnrollment());
+						iCurriculumClasfTable.setLastLike(col, x == null || x[col] == null ? null : x[col].getLastLike());
+						iCurriculumClasfTable.setProjection(col, x == null || x[col] == null ? null : x[col].getProjection());
 					}
 					iCurriculumCourses.updateEnrollmentsAndLastLike(result);
 					if (iCurriculumClasfTableHint.getText().equals("Show all columns."))

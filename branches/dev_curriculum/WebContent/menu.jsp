@@ -194,6 +194,7 @@
 				menu_item('511','Time Patterns','Manage Time Patterns','timePatternEdit.do','expand');
 					leaf_item('Exact Time','Exact Time Pattern','exactTimeEdit.do');
 				enditem(); //511
+				leaf_item('Curriculum Projections', 'Curriculum Projection Rules', 'gwt.html?page=curprojrules');
 				<%--
 				leaf_item('Preference Levels','Preference Levels','preferenceLevelList.do');
 				--%>

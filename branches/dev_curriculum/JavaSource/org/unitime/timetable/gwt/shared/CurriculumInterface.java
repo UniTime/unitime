@@ -20,7 +20,11 @@
 package org.unitime.timetable.gwt.shared;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
@@ -118,6 +122,14 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 		return ret;
 	}
 	
+	public Integer getProjection() {
+		if (!hasClassifications()) return null;
+		int ret = 0;
+		for (CurriculumClassificationInterface c: getClassifications())
+			ret += (c.getProjection() == null ? 0 : c.getProjection());
+		return ret;
+	}
+	
 	public String getExpectedString() {
 		if (!hasClassifications()) return "?";
 		Integer count = getExpected();
@@ -127,6 +139,12 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 	public String getLastLikeString() {
 		if (!hasClassifications()) return "?";
 		Integer count = getLastLike();
+		return (count == null ? "N/A" : count.toString());
+	}
+
+	public String getProjectionString() {
+		if (!hasClassifications()) return "?";
+		Integer count = getProjection();
 		return (count == null ? "N/A" : count.toString());
 	}
 
@@ -293,7 +311,7 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 	public static class CurriculumClassificationInterface implements IsSerializable, Comparable<CurriculumClassificationInterface> {
 		private Long iCurriculumId, iClasfId;
 		private String iName;
-		private Integer iNrStudents = null, iEnrollment = null, iLastLike = null;
+		private Integer iNrStudents = null, iEnrollment = null, iLastLike = null, iProjection = null;
 		private AcademicClassificationInterface iClasf;
 		private TreeSet<CurriculumCourseInterface> iCourses = null;
 		
@@ -317,6 +335,9 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 		public Integer getLastLike() { return iLastLike; }
 		public void setLastLike(Integer lastLike) { iLastLike = lastLike; }
 		
+		public Integer getProjection() { return iProjection; }
+		public void setProjection(Integer projection) { iProjection = projection; }
+
 		public AcademicClassificationInterface getAcademicClassification() { return iClasf; }
 		public void setAcademicClassification(AcademicClassificationInterface clasf) { iClasf = clasf; }
 		
@@ -456,7 +477,7 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 		private Long iId, iCourseId, iClasfId;
 		private String iCourseName;
 		private float iShare = 0.0f;
-		private Integer iLastLike = null, iEnrollment = null;
+		private Integer iLastLike = null, iEnrollment = null, iProjection = null;
 		
 		public CurriculumCourseInterface() {}
 		
@@ -481,6 +502,9 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 		public Integer getEnrollment() { return iEnrollment; }
 		public void setEnrollment(Integer enrollment) { iEnrollment = enrollment; }
 		
+		public Integer getProjection() { return iProjection; }
+		public void setProjection(Integer projection) { iProjection = projection; }
+
 		public boolean equals(Object o) {
 			if (o == null || !(o instanceof CurriculumCourseInterface)) return false;
 			return getId().equals(((CurriculumCourseInterface)o).getId());
@@ -525,5 +549,74 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 			return getName().compareTo(g.getName());
 		}
 	}
-
+	
+	public static class CurriculumStudentsInterface implements IsSerializable {
+		private Set<Long> iEnrollment = null;
+		private HashMap<String, Set<Long>> iLastLike = null;
+		private HashMap<String, Float> iProjection = null;
+		
+		public CurriculumStudentsInterface() {}
+		
+		public int getEnrollment() {
+			return (iEnrollment == null || iEnrollment.isEmpty() ? 0 : iEnrollment.size());
+		}
+		
+		public int getLastLike() {
+			if (iLastLike == null || iLastLike.isEmpty()) return 0;
+			int lastLike = 0;
+			for (Map.Entry<String, Set<Long>> entry: iLastLike.entrySet())
+				lastLike += entry.getValue().size();
+			return lastLike;
+		}
+		
+		public int getProjection() {
+			if (iLastLike == null || iLastLike.isEmpty()) return 0;
+			float proj = 0;
+			for (Map.Entry<String, Set<Long>> entry: iLastLike.entrySet()) {
+				Float f = (iProjection == null ? null : iProjection.get(entry.getKey()));
+				if (f == null && iProjection != null) f = iProjection.get("");
+				proj += (f == null ? 1.0f : f) * entry.getValue().size();
+			}
+			return Math.round(proj);
+		}
+		
+		public Set<Long> getEnrolledStudents() {
+			return iEnrollment;
+		}
+		
+		public Set<Long> getLastLikeStudents() {
+			if (iLastLike == null || iLastLike.isEmpty()) return null;
+			if (iLastLike.size() == 1) return iLastLike.values().iterator().next();
+			Set<Long> lastLike = new HashSet<Long>();
+			for (Map.Entry<String, Set<Long>> entry: iLastLike.entrySet())
+				lastLike.addAll(entry.getValue());
+			return lastLike;
+		}
+		
+		public Set<Long> getProjectedStudents() {
+			return getLastLikeStudents();
+		}
+		
+		public int countProjectedStudents(Set<Long> students) {
+			if (iLastLike == null || iLastLike.isEmpty()) return 0;
+			float proj = 0;
+			for (Map.Entry<String, Set<Long>> entry: iLastLike.entrySet()) {
+				int share = 0;
+				for (Long student: entry.getValue())
+					if (students.contains(student)) share++;
+				if (share > 0) {
+					Float f = (iProjection == null ? null : iProjection.get(entry.getKey()));
+					if (f == null && iProjection != null) f = iProjection.get("");
+					proj += (f == null ? 1.0f : f) * share;
+				}
+			}
+			return Math.round(proj);
+		}
+		
+		public void setEnrolledStudents(Set<Long> students) { iEnrollment = students; }
+		
+		public void setLastLikeStudents(HashMap<String, Set<Long>> students) { iLastLike = students; }
+		
+		public void setProjection(HashMap<String, Float> projection) { iProjection = projection; }
+	}
 }
