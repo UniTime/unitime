@@ -135,7 +135,7 @@ public class CurriculumEdit extends Composite {
 		curriculaTable.setText(idx, 0, "Name:");
 		VerticalPanel curriculumNameVP = new VerticalPanel();
 		iCurriculumName = new MyTextBox();
-		iCurriculumName.setWidth("600px");
+		iCurriculumName.setWidth("500px");
 		iCurriculumName.setMaxLength(60);
 		curriculumNameVP.add(iCurriculumName);
 		iCurriculumNameError = new Label();
@@ -380,7 +380,7 @@ public class CurriculumEdit extends Composite {
 			@Override
 			public void onClick(ClickEvent event) {
 				if (saveCurriculum()) {
-					showLoading();
+					showLoading("Saving curriculum " + iCurriculum.getName() + " ...");
 					iService.saveCurriculum(iCurriculum, new AsyncCallback<Boolean>() {
 						@Override
 						public void onFailure(Throwable caught) {
@@ -416,7 +416,7 @@ public class CurriculumEdit extends Composite {
 			@Override
 			public void onClick(ClickEvent event) {
 				if (!Window.confirm("Do you realy want to delete this curriculum?")) return;
-				showLoading();
+				showLoading("Deleting curriculum " + iCurriculum.getName() + " ...");
 				iService.deleteCurriculum(iCurriculum.getId(), new AsyncCallback<Boolean>() {
 					@Override
 					public void onFailure(Throwable caught) {
@@ -592,7 +592,7 @@ public class CurriculumEdit extends Composite {
 
 	private void loadMajors(final boolean loadEnrollments) {
 		if (iCurriculumArea.getSelectedIndex() >= 0) {
-			showLoading();
+			showLoading("Loading majors ...");
 			iService.loadMajors(iCurriculum.getId(), Long.valueOf(iCurriculumArea.getValue(iCurriculumArea.getSelectedIndex())),
 					new AsyncCallback<TreeSet<MajorInterface>>() {
 
@@ -662,7 +662,7 @@ public class CurriculumEdit extends Composite {
 			}
 			if (majorIds.isEmpty()) return;
 			
-			showLoading();
+			showLoading("Loading course enrollments ...");
 			iService.computeEnrollmentsAndLastLikes(areaId, majorIds, new AsyncCallback<HashMap<String,CurriculumStudentsInterface[]>>() {
 
 				@Override
@@ -707,7 +707,7 @@ public class CurriculumEdit extends Composite {
 		}
 	}
 
-	public void showLoading() { LoadingWidget.getInstance().show(); }
+	public void showLoading(String message) { LoadingWidget.getInstance().show(message); }
 	
 	public void hideLoading() { LoadingWidget.getInstance().hide(); }
 	

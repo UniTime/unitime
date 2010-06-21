@@ -125,6 +125,7 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator,
 	private static int sLastSelectedCourseDetailsTab = 0;
 	
 	private List<CurriculumInterface.AcademicClassificationInterface> iClassifications;
+	private List<CourseFinderDialogHandler> iCourseFinderDialogHandlers = new ArrayList<CourseFinderDialogHandler>();
 		
 	public CurriculaCourseSelectionBox(String name, List<CurriculumInterface.AcademicClassificationInterface> classifications) {
 		
@@ -260,9 +261,9 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator,
 							new WebTable.Cell(MESSAGES.colTitle(), 1, "300"),
 							new WebTable.Cell(MESSAGES.colNote(), 1, "300"),
 							new WebTable.Cell("Limit", 1, "60"),
+							new WebTable.Cell("Last-Like", 1, "60"),
 							new WebTable.Cell("Projected", 1, "60"),
-							new WebTable.Cell("Enrollment", 1, "60"),
-							new WebTable.Cell("Last-Like", 1, "60")
+							new WebTable.Cell("Enrolled", 1, "60")
 							));
 			
 			iDialogPanel = new VerticalPanel();
@@ -432,6 +433,10 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator,
 			});
 		}
 		
+		CourseFinderDialogEvent e = new CourseFinderDialogEvent();
+		for (CourseFinderDialogHandler h: iCourseFinderDialogHandlers)
+			h.onOpen(e);
+		
 		iImage.setResource(RESOURCES.search_picker_Down());
 		iFilter.setText(iTextField.getText().equals(iHint)?"":iTextField.getText());
 		iCoursesTip.setText(CONSTANTS.courseTips()[(int)(Math.random() * CONSTANTS.courseTips().length)]);
@@ -557,9 +562,9 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator,
 								record.getTitle(),
 								record.getNote(),
 								record.getLimitString(),
+								record.getLastLikeString(),
 								record.getProjectedString(),
-								record.getEnrollmentString(),
-								record.getLastLikeString());
+								record.getEnrollmentString());
 						if (!hasEnrl && !record.getEnrollmentString().isEmpty()) hasEnrl = true;
 						if (!hasProj && !record.getProjectedString().isEmpty()) hasProj = true;
 						if (!hasLastLike && !record.getLastLikeString().isEmpty()) hasLastLike = true;
@@ -780,5 +785,19 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator,
 	@Override
 	public void setTabIndex(int index) {
 		iTextField.setTabIndex(index);
+	}
+	
+	public class CourseFinderDialogEvent {
+		public CurriculaCourseSelectionBox getSource() { 
+			return CurriculaCourseSelectionBox.this;
+		}
+	}
+	
+	public interface CourseFinderDialogHandler {
+		public void onOpen(CourseFinderDialogEvent e);
+	}
+	
+	public void addCourseFinderDialogHandler(CourseFinderDialogHandler h) {
+		iCourseFinderDialogHandlers.add(h);
 	}
 }

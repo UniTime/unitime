@@ -77,9 +77,20 @@ public class CurriculaCourses extends Composite {
 	private boolean iPercent = true;
 	private static NumberFormat NF = NumberFormat.getFormat("##0.0");
 	
-	public static String[] MODES = new String[] { "None", "Enrollment", "Last-Like", "Projection" };
-	private static String[] MODE_SHORT = new String[] {"&nbsp;", "Enrl", "Last", "Proj"};
-	private int iMode = 0;
+	public static enum Mode {
+		LAST ("Last", "Last-Like Enrollment"),
+		PROJ ("Proj", "Projection by Rule"),
+		ENRL ("Curr", "Current Enrollment"),
+		NONE ("&nbsp;", "NONE");
+
+		private String iAbbv, iName;
+		
+		Mode(String abbv, String name) { iAbbv = abbv; iName = name; }
+		
+		public String getAbbv() { return iAbbv; }
+		public String getName() { return iName; }
+	}
+	private Mode iMode = Mode.NONE;
 	
 	private List<Group> iGroups = new ArrayList<Group>();
 	
@@ -205,6 +216,8 @@ public class CurriculaCourses extends Composite {
 						iGrName.selectAll();
 					}
 				});
+				iTable.clearHover();
+				event.stopPropagation();
 				iNewGroupDialog.center();
 			}
 		};
@@ -284,6 +297,7 @@ public class CurriculaCourses extends Composite {
 										iGrName.selectAll();
 									}
 								});
+								iTable.clearHover();
 								iNewGroupDialog.center();
 							}
 						}));
@@ -375,38 +389,16 @@ public class CurriculaCourses extends Composite {
 							setPercent(true);
 						}
 					}));
-				if (iMode != 1)
-					menu.addItem(new MenuItem("Show " + MODES[1], true, new Command() {
+				for (final Mode m: Mode.values()) {
+					if (iMode == m) continue;
+					menu.addItem(new MenuItem(m == Mode.NONE ? "Hide " + iMode.getName() : "Show " + m.getName(), true, new Command() {
 						@Override
 						public void execute() {
 							popup.hide();
-							setMode(1);
+							setMode(m);
 						}
 					}));
-				if (iMode != 2)
-					menu.addItem(new MenuItem("Show " + MODES[2], true, new Command() {
-						@Override
-						public void execute() {
-							popup.hide();
-							setMode(2);
-						}
-					}));
-				if (iMode != 3)
-					menu.addItem(new MenuItem("Show " + MODES[3], true, new Command() {
-						@Override
-						public void execute() {
-							popup.hide();
-							setMode(3);
-						}
-					}));
-				if (iMode > 0)
-					menu.addItem(new MenuItem("Hide " + MODES[iMode], true, new Command() {
-						@Override
-						public void execute() {
-							popup.hide();
-							setMode(0);
-						}
-					}));
+				}
 				if (iVisibleCourses == null) {
 					menu.addSeparator();
 					if (iLastCourses != null) {
@@ -441,7 +433,7 @@ public class CurriculaCourses extends Composite {
 					}));
 					if (iEditable) {
 						menu.addSeparator();
-						menu.addItem(new MenuItem("Clear Expected Students (All Classifications)", true, new Command() {
+						menu.addItem(new MenuItem("Clear Planned Enrollments (All Classifications" + (getSelectedCount() > 0 ? ", Selected Courses Only" : "") + ")", true, new Command() {
 							@Override
 							public void execute() {
 								popup.hide();
@@ -456,8 +448,8 @@ public class CurriculaCourses extends Composite {
 								}
 							}
 						}));
-						if (iMode == 2)
-						menu.addItem(new MenuItem("Copy Last-Like &rarr; Expected (All Classifications)", true, new Command() {
+						if (iMode == Mode.LAST)
+						menu.addItem(new MenuItem("Copy Last-Like &rarr; Planned (All Classifications" + (getSelectedCount() > 0 ? ", Selected Courses Only" : "") + ")", true, new Command() {
 							@Override
 							public void execute() {
 								popup.hide();
@@ -476,8 +468,8 @@ public class CurriculaCourses extends Composite {
 								}
 							}
 						}));
-						if (iMode == 1)
-						menu.addItem(new MenuItem("Copy Enrollment &rarr; Expected (All Classifications)", true, new Command() {
+						if (iMode == Mode.ENRL)
+						menu.addItem(new MenuItem("Copy Current &rarr; Planned (All Classifications" + (getSelectedCount() > 0 ? ", Selected Courses Only" : "") + ")", true, new Command() {
 							@Override
 							public void execute() {
 								popup.hide();
@@ -496,8 +488,8 @@ public class CurriculaCourses extends Composite {
 								}
 							}
 						}));		
-						if (iMode == 3)
-						menu.addItem(new MenuItem("Copy Projection &rarr; Expected (All Classifications)", true, new Command() {
+						if (iMode == Mode.PROJ)
+						menu.addItem(new MenuItem("Copy Projection &rarr; Planned (All Classifications" + (getSelectedCount() > 0 ? ", Selected Courses Only" : "") + ")", true, new Command() {
 							@Override
 							public void execute() {
 								popup.hide();
@@ -533,6 +525,13 @@ public class CurriculaCourses extends Composite {
 				popup.showRelativeTo((Widget)event.getSource());
 			}
 		});
+		
+		CurriculaCourseSelectionBox.CourseFinderDialogHandler fx = new CurriculaCourseSelectionBox.CourseFinderDialogHandler() {
+			@Override
+			public void onOpen(CurriculaCourseSelectionBox.CourseFinderDialogEvent e) {
+				iTable.clearHover();
+			}
+		};
 		
 		int col = 1;
 		for (AcademicClassificationInterface clasf: iClassifications.getClassifications()) {
@@ -585,41 +584,19 @@ public class CurriculaCourses extends Composite {
 								setPercent(true);
 							}
 						}));
-					if (iMode != 1)
-						menu.addItem(new MenuItem("Show " + MODES[1], true, new Command() {
+					for (final Mode m: Mode.values()) {
+						if (iMode == m) continue;
+						menu.addItem(new MenuItem(m == Mode.NONE ? "Hide " + iMode.getName() : "Show " + m.getName(), true, new Command() {
 							@Override
 							public void execute() {
 								popup.hide();
-								setMode(1);
+								setMode(m);
 							}
 						}));
-					if (iMode != 2)
-						menu.addItem(new MenuItem("Show " + MODES[2], true, new Command() {
-							@Override
-							public void execute() {
-								popup.hide();
-								setMode(2);
-							}
-						}));
-					if (iMode != 3)
-						menu.addItem(new MenuItem("Show " + MODES[3], true, new Command() {
-							@Override
-							public void execute() {
-								popup.hide();
-								setMode(3);
-							}
-						}));
-					if (iMode > 0)
-						menu.addItem(new MenuItem("Hide " + MODES[iMode], true, new Command() {
-							@Override
-							public void execute() {
-								popup.hide();
-								setMode(0);
-							}
-						}));
+					}
 					if (iVisibleCourses == null && iEditable) {
 						menu.addSeparator();
-						menu.addItem(new MenuItem("Clear Expected Students", true, new Command() {
+						menu.addItem(new MenuItem("Clear Planned Enrollments" + (getSelectedCount() > 0 ? " (Selected Courses Only)" : ""), true, new Command() {
 							@Override
 							public void execute() {
 								popup.hide();
@@ -631,8 +608,8 @@ public class CurriculaCourses extends Composite {
 								}
 							}
 						}));
-						if (iMode == 2)
-						menu.addItem(new MenuItem("Copy Last-Like &rarr; Expected", true, new Command() {
+						if (iMode == Mode.LAST)
+						menu.addItem(new MenuItem("Copy Last-Like &rarr; Planned" + (getSelectedCount() > 0 ? " (Selected Courses Only)" : ""), true, new Command() {
 							@Override
 							public void execute() {
 								popup.hide();
@@ -648,8 +625,8 @@ public class CurriculaCourses extends Composite {
 								}
 							}
 						}));
-						if (iMode == 1)
-						menu.addItem(new MenuItem("Copy Enrollment &rarr; Expected", true, new Command() {
+						if (iMode == Mode.ENRL)
+						menu.addItem(new MenuItem("Copy Current &rarr; Planned" + (getSelectedCount() > 0 ? " (Selected Courses Only)" : ""), true, new Command() {
 							@Override
 							public void execute() {
 								popup.hide();
@@ -665,8 +642,8 @@ public class CurriculaCourses extends Composite {
 								}
 							}
 						}));
-						if (iMode == 3)
-						menu.addItem(new MenuItem("Copy Projection &rarr; Expected", true, new Command() {
+						if (iMode == Mode.PROJ)
+						menu.addItem(new MenuItem("Copy Projection &rarr; Planned" + (getSelectedCount() > 0 ? " (Selected Courses Only)" : ""), true, new Command() {
 							@Override
 							public void execute() {
 								popup.hide();
@@ -699,7 +676,7 @@ public class CurriculaCourses extends Composite {
 				}
 			});
 			col++;
-			final HTML m = new HTML(MODE_SHORT[iMode]);
+			final HTML m = new HTML(iMode.getAbbv());
 			iTable.setWidget(0, col, m);
 			iTable.getFlexCellFormatter().setStyleName(0, col, "unitime-ClickableTableHeader");
 			iTable.getFlexCellFormatter().setWidth(0, col, "5px");
@@ -745,41 +722,19 @@ public class CurriculaCourses extends Composite {
 								setPercent(true);
 							}
 						}));
-					if (iMode != 1)
-						menu.addItem(new MenuItem("Show " + MODES[1], true, new Command() {
+					for (final Mode m: Mode.values()) {
+						if (iMode == m) continue;
+						menu.addItem(new MenuItem(m == Mode.NONE ? "Hide " + iMode.getName() : "Show " + m.getName(), true, new Command() {
 							@Override
 							public void execute() {
 								popup.hide();
-								setMode(1);
+								setMode(m);
 							}
 						}));
-					if (iMode != 2)
-						menu.addItem(new MenuItem("Show " + MODES[2], true, new Command() {
-							@Override
-							public void execute() {
-								popup.hide();
-								setMode(2);
-							}
-						}));
-					if (iMode != 3)
-						menu.addItem(new MenuItem("Show " + MODES[3], true, new Command() {
-							@Override
-							public void execute() {
-								popup.hide();
-								setMode(3);
-							}
-						}));
-					if (iMode > 0)
-						menu.addItem(new MenuItem("Hide " + MODES[iMode], true, new Command() {
-							@Override
-							public void execute() {
-								popup.hide();
-								setMode(0);
-							}
-						}));
+					}
 					if (iVisibleCourses == null) {
 						menu.addSeparator();
-						menu.addItem(new MenuItem("Sort by " + cl.getText() + " " + MODES[iMode], true, new Command() {
+						menu.addItem(new MenuItem("Sort by " + cl.getText() + " " + iMode.getName(), true, new Command() {
 							@Override
 							public void execute() {
 								popup.hide();
@@ -832,6 +787,7 @@ public class CurriculaCourses extends Composite {
 				CurriculaCourseSelectionBox cx = new CurriculaCourseSelectionBox(course.getId().toString(), iClassifications.getClassifications());
 				cx.setCourse(course.getCourseName(), false);
 				cx.setWidth("100px");
+				cx.addCourseFinderDialogHandler(fx);
 				cx.addCourseSelectionChangeHandler(iCourseChangedHandler);
 				if (!iEditable) cx.setEnabled(false);
 				iTable.setWidget(row, 1, cx);
@@ -993,8 +949,8 @@ public class CurriculaCourses extends Composite {
 		} else {
 			MyLabel l0 = ((MyLabel)iTable.getWidget(r0 + 1, column));
 			MyLabel l1 = ((MyLabel)iTable.getWidget(r1 + 1, column));
-			Integer i0 = (iMode == 1 ? l0.iEnrollment : iMode == 2 ? l0.iLastLike : l0.iProjection);
-			Integer i1 = (iMode == 1 ? l1.iEnrollment : iMode == 2 ? l1.iLastLike : l0.iProjection);
+			Integer i0 = (iMode == Mode.ENRL ? l0.iEnrollment : iMode == Mode.LAST ? l0.iLastLike : l0.iProjection);
+			Integer i1 = (iMode == Mode.ENRL ? l1.iEnrollment : iMode == Mode.LAST ? l1.iLastLike : l0.iProjection);
 			return - (i0 == null ? new Integer(0) : i0).compareTo(i1 == null ? new Integer(0) : i1);
 		}
 	}
@@ -1212,10 +1168,10 @@ public class CurriculaCourses extends Composite {
 		}
 	}
 	
-	public void setMode(int mode) {
+	public void setMode(Mode mode) {
 		iMode = mode;
 		for (int col = 0; col < iClassifications.getClassifications().size(); col++) {
-			((HTML)iTable.getWidget(0, 3 + 2 * col)).setHTML(MODE_SHORT[iMode]);
+			((HTML)iTable.getWidget(0, 3 + 2 * col)).setHTML(mode.getAbbv());
 		}
 		for (int row = 1; row < iTable.getRowCount(); row++) {
 			for (int col = 0; col < iClassifications.getClassifications().size(); col++) {
@@ -1250,10 +1206,10 @@ public class CurriculaCourses extends Composite {
 		
 		public void update() {
 			switch (iMode) {
-			case 0: // None
+			case NONE: // None
 				setText("");
 				break;
-			case 1: // Enrollment
+			case ENRL: // Enrollment
 				if (iEnrollment == null || iEnrollment == 0) {
 					setText("");
 				} else if (iPercent) {
@@ -1263,7 +1219,7 @@ public class CurriculaCourses extends Composite {
 					setText(iEnrollment.toString());
 				}
 				break;
-			case 2: // Last-like
+			case LAST: // Last-like
 				if (iLastLike == null || iLastLike == 0) {
 					setText("");
 				} else if (iPercent) {
@@ -1273,7 +1229,7 @@ public class CurriculaCourses extends Composite {
 					setText(iLastLike.toString());
 				}
 				break;
-			case 3: // Projection
+			case PROJ: // Projection
 				if (iProjection == null || iProjection == 0) {
 					setText("");
 				} else if (iPercent) {
@@ -1566,6 +1522,7 @@ public class CurriculaCourses extends Composite {
 	public class MyFlexTable extends FlexTable {
 		private boolean iEnabled = true;
 		private StudentsTable iStudentsTable = null;
+		private int iLastHoverRow = -1;
 		
 		public MyFlexTable() {
 			super();
@@ -1614,6 +1571,13 @@ public class CurriculaCourses extends Composite {
 			return false;
 		}
 		
+		public void clearHover() {
+		    if (iLastHoverRow <= 0 || iLastHoverRow >= getRowCount()) return;
+			String style = getRowFormatter().getStyleName(iLastHoverRow);
+			boolean selected = ("unitime-TableRowSelected".equals(style) || "unitime-TableRowSelectedHover".equals(style));
+			getRowFormatter().setStyleName(iLastHoverRow, "unitime-TableRow" + (selected ? "Selected" : ""));
+		}
+		
 		public void onBrowserEvent(Event event) {
 			if (!iEnabled) return;
 			Element td = getEventTargetCell(event);
@@ -1628,6 +1592,7 @@ public class CurriculaCourses extends Composite {
 
 		    switch (DOM.eventGetType(event)) {
 			case Event.ONMOUSEOVER:
+				iLastHoverRow = row;
 				if ("unitime-TableRowSelected".equals(style))
 					getRowFormatter().setStyleName(row, "unitime-TableRowSelectedHover");	
 				else
@@ -1773,7 +1738,7 @@ public class CurriculaCourses extends Composite {
 	}
 	
 	public boolean canShowStudentsTable(int row) {
-		if (iMode == 0) return false;
+		if (iMode == Mode.NONE) return false;
 		if (row < 1 || row >= iTable.getRowCount()) return false;
 		String course = ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getCourse();
 		if (iLastCourses == null || !iLastCourses.containsKey(course)) return false;
@@ -1791,7 +1756,7 @@ public class CurriculaCourses extends Composite {
 		private boolean iCanShow = false;
 		
 		private int count(CurriculumStudentsInterface c, Set<Long> students) {
-			if (iMode != 3 || c == null) return students.size();
+			if (iMode != Mode.PROJ || c == null) return students.size();
 			return c.countProjectedStudents(students);
 		}
 		
@@ -1808,7 +1773,7 @@ public class CurriculaCourses extends Composite {
 			CurriculumStudentsInterface[] totals = iLastCourses.get("");
 			if (thisCourse == null) return;
 			
-			iP.add(new Label("Comparing " + course + " " + (iMode == 1 ? "enrolled" : "last-like") + " students with the other selected courses:"));
+			iP.add(new Label("Comparing " + course + " " + iMode.getName().toLowerCase().replace(" enrollment", "") + " students with the other selected courses:"));
 			iP.add(iT);
 			setWidget(iP);
 			
@@ -1846,7 +1811,7 @@ public class CurriculaCourses extends Composite {
 			for (int c = 0; c < iClassifications.getClassifications().size(); c++) {
 				CurriculumStudentsInterface tc = totals[c];
 				if (iClassifications.getExpected(c) == null) continue;
-				Set<Long> thisEnrollment = (thisCourse[c] == null ? null : (iMode == 1 ? thisCourse[c].getEnrolledStudents() : thisCourse[c].getLastLikeStudents()));
+				Set<Long> thisEnrollment = (thisCourse[c] == null ? null : (iMode == Mode.ENRL ? thisCourse[c].getEnrolledStudents() : thisCourse[c].getLastLikeStudents()));
 				if (thisEnrollment != null && count(tc,thisEnrollment) != 0) {
 					total += thisEnrollment.size();
 					Set<Long> sharedWithOneOther = new HashSet<Long>();
@@ -1856,7 +1821,7 @@ public class CurriculaCourses extends Composite {
 					Set<Long> notShared = new HashSet<Long>(thisEnrollment);
 					row = 0;
 					for (CurriculumStudentsInterface[] o: other) {
-						Set<Long> enrl = (o == null || o[c] == null ? null : iMode == 1  ? o[c].getEnrolledStudents() : o[c].getLastLikeStudents());
+						Set<Long> enrl = (o == null || o[c] == null ? null : iMode == Mode.ENRL  ? o[c].getEnrolledStudents() : o[c].getLastLikeStudents());
 						if (enrl == null) {
 							sharedWithAll.clear();
 							row++;

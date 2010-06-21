@@ -7,10 +7,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.TreeSet;
 
+import org.unitime.timetable.gwt.client.CurriculumProjectionRules;
+import org.unitime.timetable.gwt.client.CurriculumProjectionRules.ProjectionRulesEvent;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.services.CurriculaService;
 import org.unitime.timetable.gwt.services.CurriculaServiceAsync;
 import org.unitime.timetable.gwt.shared.CurriculumInterface;
+import org.unitime.timetable.gwt.shared.ToolBox;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.AcademicClassificationInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.CurriculumClassificationInterface;
 
@@ -29,6 +32,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
@@ -38,6 +42,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.PopupPanel;
+import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -66,6 +71,8 @@ public class CurriculaTable extends Composite {
 	private PopupPanel iClassificationsPopup = null;
 	
 	private HashSet<Long> iSelectedCurricula = new HashSet<Long>();
+	
+	private boolean iIsAdmin = false;
 	
 	public CurriculaTable() {
 		iTable = new MyFlexTable();
@@ -124,15 +131,22 @@ public class CurriculaTable extends Composite {
 								}
 							if (!deleteIds.isEmpty()) {
 								if (Window.confirm("Do you realy want to delete the selected " + (deleteIds.size() == 1 ? "curriculum" : "curricula") + "?")) {
+									LoadingWidget.getInstance().show("Deleting selected curricula ...");
 									iService.deleteCurricula(deleteIds, new AsyncCallback<Boolean>() {
 
 										@Override
 										public void onFailure(Throwable caught) {
+											LoadingWidget.getInstance().hide();
 											setError("Unable to delete selected curricula (" + caught.getMessage() + ")");
+											for (CurriculumInterface c: iData)
+												if (c.isEditable() && iSelectedCurricula.contains(c.getId())) {
+													iTable.getRowFormatter().setStyleName(1 + c.getRow(), (c.getId().equals(iLastCurriculumId) ? "unitime-TableRowSelected" : null));
+												}
 										}
 
 										@Override
 										public void onSuccess(Boolean result) {
+											LoadingWidget.getInstance().hide();
 											iSelectedCurricula.clear();
 											query(iLastQuery, null);
 										}
@@ -179,15 +193,22 @@ public class CurriculaTable extends Composite {
 									}
 								if (!mergeIds.isEmpty()) {
 									if (Window.confirm("Do you realy want to merge the selected " + (mergeIds.size() == 1 ? "curriculum" : "curricula") + "?")) {
+										LoadingWidget.getInstance().show("Merging selected curricula ...");
 										iService.mergeCurricula(mergeIds, new AsyncCallback<Boolean>() {
 
 											@Override
 											public void onFailure(Throwable caught) {
+												LoadingWidget.getInstance().hide();
 												setError("Unable to merge selected curricula (" + caught.getMessage() + ")");
+												for (CurriculumInterface c: iData)
+													if (c.isEditable() && iSelectedCurricula.contains(c.getId())) {
+														iTable.getRowFormatter().setStyleName(1 + c.getRow(), (c.getId().equals(iLastCurriculumId) ? "unitime-TableRowSelected" : null));
+													}
 											}
 
 											@Override
 											public void onSuccess(Boolean result) {
+												LoadingWidget.getInstance().hide();
 												iSelectedCurricula.clear();
 												query(iLastQuery, null);
 											}
@@ -204,6 +225,57 @@ public class CurriculaTable extends Composite {
 						delete.getElement().getStyle().setCursor(Cursor.POINTER);
 						menu.addItem(delete);						
 					}
+				}
+				menu.addSeparator();
+				MenuItem rules = new MenuItem("Curriculum Projection Rules", true, new Command() {
+					@Override
+					public void execute() {
+						popup.hide();
+						openCurriculumProjectionRules();
+					}
+				});
+				rules.getElement().getStyle().setCursor(Cursor.POINTER);
+				menu.addItem(rules);
+				if (iIsAdmin) {
+					MenuItem makupCurricula = new MenuItem((iTable.getRowCount() > 1 ? "Recreate" : "Create") + " Curricula from Last-Like Enrollments &amp; Projections", true, new Command() {
+						@Override
+						public void execute() {
+							popup.hide();
+							for (int r = 1; r < iTable.getRowCount(); r++)
+								iTable.getRowFormatter().setStyleName(r, "unitime-TableRowProblem");
+							if (Window.confirm("This will delete all existing curricula and create them from scratch. Are you sure you want to do it?")) {
+								if (Window.confirm("Are you REALLY sure you want to recreate all curricula?")) {
+									LoadingWidget.getInstance().show("You may also go grab a coffee ... &nbsp;&nbsp;&nbsp;&nbsp;This will take a while ...", 300000);
+									iService.makeupCurriculaFromLastLikeDemands(true, new AsyncCallback<Boolean>(){
+
+										@Override
+										public void onFailure(Throwable caught) {
+											setError("Unable to create curricula (" + caught.getMessage() + ")");
+											for (CurriculumInterface c: iData)
+												iTable.getRowFormatter().setStyleName(1 + c.getRow(), (c.getId().equals(iLastCurriculumId) ? "unitime-TableRowSelected" : null));
+											LoadingWidget.getInstance().hide();
+										}
+
+										@Override
+										public void onSuccess(Boolean result) {
+											LoadingWidget.getInstance().hide();
+											iSelectedCurricula.clear();
+											query(iLastQuery, null);
+										}
+										
+									});
+								} else {
+									for (CurriculumInterface c: iData)
+										iTable.getRowFormatter().setStyleName(1 + c.getRow(), (c.getId().equals(iLastCurriculumId) ? "unitime-TableRowSelected" : null));
+								}
+							} else {
+								for (CurriculumInterface c: iData)
+									iTable.getRowFormatter().setStyleName(1 + c.getRow(), (c.getId().equals(iLastCurriculumId) ? "unitime-TableRowSelected" : null));
+							}
+						}
+					});
+					makupCurricula.getElement().getStyle().setCursor(Cursor.POINTER);
+					menu.addItem(makupCurricula);						
 				}
 				menu.setVisible(true);
 				popup.add(menu);
@@ -310,18 +382,18 @@ public class CurriculaTable extends Composite {
 				popup.showRelativeTo((Widget)event.getSource());
 			}
 		});
-
-		HTML expLabel = new HTML("Expected<br>Students", false);
+		
+		HTML lastLabel = new HTML("Last-Like<br>Enrollment", false);
 		iTable.getFlexCellFormatter().setStyleName(0, col, "unitime-ClickableTableHeader");
 		iTable.getFlexCellFormatter().setWidth(0, col, "60px");
-		iTable.setWidget(0, col, expLabel);
+		iTable.setWidget(0, col, lastLabel);
 		col++;
-		expLabel.addClickHandler(new ClickHandler() {
+		lastLabel.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				final PopupPanel popup = new PopupPanel(true);
 				MenuBar menu = new MenuBar(true);
-				MenuItem sort = new MenuItem("Sort by Expected Students", true, new Command() {
+				MenuItem sort = new MenuItem("Sort by Last-Like Enrollment", true, new Command() {
 					@Override
 					public void execute() {
 						popup.hide();
@@ -336,57 +408,7 @@ public class CurriculaTable extends Composite {
 			}
 		});
 		
-		HTML enrlLabel = new HTML("Enrolled<br>Students", false);
-		iTable.getFlexCellFormatter().setStyleName(0, col, "unitime-ClickableTableHeader");
-		iTable.getFlexCellFormatter().setWidth(0, col, "60px");
-		iTable.setWidget(0, col, enrlLabel);
-		col++;
-		enrlLabel.addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				final PopupPanel popup = new PopupPanel(true);
-				MenuBar menu = new MenuBar(true);
-				MenuItem sort = new MenuItem("Sort by Enrolled Students", true, new Command() {
-					@Override
-					public void execute() {
-						popup.hide();
-						sort(6);
-					}
-				});
-				sort.getElement().getStyle().setCursor(Cursor.POINTER);
-				menu.addItem(sort);
-				menu.setVisible(true);
-				popup.add(menu);
-				popup.showRelativeTo((Widget)event.getSource());
-			}
-		});
-		
-		HTML lastLabel = new HTML("Last-Like<br>Students", false);
-		iTable.getFlexCellFormatter().setStyleName(0, col, "unitime-ClickableTableHeader");
-		iTable.getFlexCellFormatter().setWidth(0, col, "60px");
-		iTable.setWidget(0, col, lastLabel);
-		col++;
-		lastLabel.addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				final PopupPanel popup = new PopupPanel(true);
-				MenuBar menu = new MenuBar(true);
-				MenuItem sort = new MenuItem("Sort by Last-Like Students", true, new Command() {
-					@Override
-					public void execute() {
-						popup.hide();
-						sort(6);
-					}
-				});
-				sort.getElement().getStyle().setCursor(Cursor.POINTER);
-				menu.addItem(sort);
-				menu.setVisible(true);
-				popup.add(menu);
-				popup.showRelativeTo((Widget)event.getSource());
-			}
-		});
-		
-		HTML projLabel = new HTML("Projected<br>Students", false);
+		HTML projLabel = new HTML("Projection<br>by&nbsp;Rule", false);
 		iTable.getFlexCellFormatter().setStyleName(0, col, "unitime-ClickableTableHeader");
 		iTable.getFlexCellFormatter().setWidth(0, col, "60px");
 		iTable.setWidget(0, col, projLabel);
@@ -396,11 +418,70 @@ public class CurriculaTable extends Composite {
 			public void onClick(ClickEvent event) {
 				final PopupPanel popup = new PopupPanel(true);
 				MenuBar menu = new MenuBar(true);
-				MenuItem sort = new MenuItem("Sort by Projected Students", true, new Command() {
+				MenuItem sort = new MenuItem("Sort by Projection by Rule", true, new Command() {
 					@Override
 					public void execute() {
 						popup.hide();
 						sort(6);
+					}
+				});
+				sort.getElement().getStyle().setCursor(Cursor.POINTER);
+				menu.addItem(sort);
+				MenuItem rules = new MenuItem("Curriculum Projection Rules", true, new Command() {
+					@Override
+					public void execute() {
+						popup.hide();
+						openCurriculumProjectionRules();
+					}
+				});
+				rules.getElement().getStyle().setCursor(Cursor.POINTER);
+				menu.addItem(rules);
+				menu.setVisible(true);
+				popup.add(menu);
+				popup.showRelativeTo((Widget)event.getSource());
+			}
+		});
+		
+		HTML expLabel = new HTML("Planned<br>Enrollment", false);
+		iTable.getFlexCellFormatter().setStyleName(0, col, "unitime-ClickableTableHeader");
+		iTable.getFlexCellFormatter().setWidth(0, col, "60px");
+		iTable.setWidget(0, col, expLabel);
+		col++;
+		expLabel.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				final PopupPanel popup = new PopupPanel(true);
+				MenuBar menu = new MenuBar(true);
+				MenuItem sort = new MenuItem("Sort by Planned Enrollment", true, new Command() {
+					@Override
+					public void execute() {
+						popup.hide();
+						sort(7);
+					}
+				});
+				sort.getElement().getStyle().setCursor(Cursor.POINTER);
+				menu.addItem(sort);
+				menu.setVisible(true);
+				popup.add(menu);
+				popup.showRelativeTo((Widget)event.getSource());
+			}
+		});
+		
+		HTML enrlLabel = new HTML("Current<br>Enrollment", false);
+		iTable.getFlexCellFormatter().setStyleName(0, col, "unitime-ClickableTableHeader");
+		iTable.getFlexCellFormatter().setWidth(0, col, "60px");
+		iTable.setWidget(0, col, enrlLabel);
+		col++;
+		enrlLabel.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				final PopupPanel popup = new PopupPanel(true);
+				MenuBar menu = new MenuBar(true);
+				MenuItem sort = new MenuItem("Sort by Current Enrollment", true, new Command() {
+					@Override
+					public void execute() {
+						popup.hide();
+						sort(8);
 					}
 				});
 				sort.getElement().getStyle().setCursor(Cursor.POINTER);
@@ -451,10 +532,10 @@ public class CurriculaTable extends Composite {
 					}
 				}
 				for (CurriculumInterface c: curricula) {
-					iTable.setText(1 + c.getRow(), 5, c.getExpectedString());
-					iTable.setText(1 + c.getRow(), 6, c.getEnrollmentString());
-					iTable.setText(1 + c.getRow(), 7, c.getLastLikeString());
-					iTable.setText(1 + c.getRow(), 8, c.getProjectionString());
+					iTable.setText(1 + c.getRow(), 5, c.getLastLikeString());
+					iTable.setText(1 + c.getRow(), 6, c.getProjectionString());
+					iTable.setText(1 + c.getRow(), 7, c.getExpectedString());
+					iTable.setText(1 + c.getRow(), 8, c.getEnrollmentString());
 				}
 				List<Long> noEnrl = new ArrayList<Long>();
 				for (CurriculumInterface c: iData) {
@@ -477,6 +558,16 @@ public class CurriculaTable extends Composite {
 		iClassificationsPopup = new PopupPanel();
 		iClassificationsPopup.setWidget(iClassifications);
 		iClassificationsPopup.setStyleName("unitime-PopupHint");
+		
+		iService.isAdmin(new AsyncCallback<Boolean>() {
+			@Override
+			public void onFailure(Throwable caught) {
+			}
+			@Override
+			public void onSuccess(Boolean result) {
+				iIsAdmin = result;
+			}			
+		});
 	}
 	
 	public void setup(List<AcademicClassificationInterface> classifications) {
@@ -535,10 +626,10 @@ public class CurriculaTable extends Composite {
 		iTable.setText(1 + c.getRow(), col++, c.getAcademicArea().getName());
 		iTable.setHTML(1 + c.getRow(), col++, (c.hasMajors() && c.getMajors().size() > 3 ? c.getMajorCodes(", ") : c.getMajorNames("<br>")));
 		iTable.setText(1 + c.getRow(), col++, c.getDepartment().getLabel());
-		iTable.setText(1 + c.getRow(), col++, (c.getExpected() == null ? "": c.getExpectedString()));
-		iTable.setText(1 + c.getRow(), col++, (c.getEnrollment() == null ? "" : c.getEnrollmentString()));		
 		iTable.setText(1 + c.getRow(), col++, (c.getLastLike() == null ? "" : c.getLastLikeString()));
 		iTable.setText(1 + c.getRow(), col++, (c.getProjection() == null ? "" : c.getProjectionString()));
+		iTable.setText(1 + c.getRow(), col++, (c.getExpected() == null ? "": c.getExpectedString()));
+		iTable.setText(1 + c.getRow(), col++, (c.getEnrollment() == null ? "" : c.getEnrollmentString()));		
 
 	}
 	
@@ -743,6 +834,43 @@ public class CurriculaTable extends Composite {
 		for (int r = 1; r < iTable.getRowCount(); r++)
 			if ("unitime-TableRowSelected".equals(iTable.getRowFormatter().getStyleName(r)))
 				iTable.getRowFormatter().getElement(r).scrollIntoView();
+	}
+	
+	private void openCurriculumProjectionRules() {
+		final DialogBox dialog = new DialogBox();
+		dialog.setAnimationEnabled(true);
+		dialog.setAutoHideEnabled(true);
+		dialog.setGlassEnabled(true);
+		dialog.setModal(true);
+		final CurriculumProjectionRules rules = new CurriculumProjectionRules();
+		rules.setAllowClose(true);
+		rules.getElement().getStyle().setMarginRight(ToolBox.getScrollBarWidth(), Unit.PX);
+		rules.getElement().getStyle().setPaddingLeft(10, Unit.PX);
+		rules.getElement().getStyle().setPaddingRight(10, Unit.PX);
+		final ScrollPanel panel = new ScrollPanel(rules);
+		panel.setHeight(Math.round(0.9 * Window.getClientHeight()) + "px");
+		panel.setStyleName("unitime-ScrollPanel");
+		dialog.setWidget(panel);
+		dialog.setText("Curriculum Projection Rules");
+		rules.addProjectionRulesHandler(new CurriculumProjectionRules.ProjectionRulesHandler() {
+			@Override
+			public void onRulesSaved(ProjectionRulesEvent evt) {
+				dialog.hide();
+			}
+			@Override
+			public void onRulesLoaded(ProjectionRulesEvent evt) {
+				dialog.center();
+				//panel.setWidth((ToolBox.getScrollBarWidth() + rules.getOffsetWidth()) + "px");
+			}
+			@Override
+			public void onRulesClosed(ProjectionRulesEvent evt) {
+				dialog.hide();
+			}
+			@Override
+			public void onException(Throwable caught) {
+				setError("Unable to open curriculum projection rules (" + caught.getMessage() + ")");
+			}
+		});
 	}
 	
 	public static class CurriculumClickedEvent {

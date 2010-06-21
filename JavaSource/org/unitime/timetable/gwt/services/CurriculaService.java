@@ -56,8 +56,10 @@ public interface CurriculaService extends RemoteService {
 	public Collection<ClassAssignmentInterface.CourseAssignment> listCourseOfferings(String query, Integer limit) throws CurriculaException;
 	public String retrieveCourseDetails(String course) throws CurriculaException;
 	public Collection<ClassAssignmentInterface.ClassAssignment> listClasses(String course) throws CurriculaException;
-	public String[] getAppliationProperty(String[] name) throws CurriculaException;
+	public String[] getApplicationProperty(String[] name) throws CurriculaException;
 	public Boolean canAddCurriculum() throws CurriculaException;
+	public Boolean isAdmin() throws CurriculaException;
+	public Boolean makeupCurriculaFromLastLikeDemands(boolean lastLike) throws CurriculaException;
 	
 	public HashMap<AcademicAreaInterface, HashMap<MajorInterface, HashMap<AcademicClassificationInterface, Number[]>>> loadProjectionRules() throws CurriculaException;
 	public Boolean saveProjectionRules(HashMap<AcademicAreaInterface, HashMap<MajorInterface, HashMap<AcademicClassificationInterface, Number[]>>> rules) throws CurriculaException;

@@ -72,8 +72,26 @@ public class CourseCurriculaTable extends Composite {
 	private int iSelectedRow = -1;
 	private boolean iEditable = true;
 	
-	private int iType = 0;
-	private static String[] sTypes = new String[] { "Expected", "Enrolled", "Last-Like", "Projected", "Expected / Last-Like", "Expected / Enrolled", "Expected / Projected", "Last-Like / Enrolled", "Projected / Enrolled" };
+	
+	public static enum Type {
+		EXP ("Planned"),
+		ENRL ("Current"),
+		LAST ("Last-Like"),
+		PROJ ("Projected by Rule"),
+		EXP2ENRL ("Planned / Current"),
+		EXP2LAST ("Planned / Last-Like"),
+		EXP2PROJ ("Planned / Projected"),
+		LAST2ENRL ("Last-Like / Current"),
+		PROJ2ENRL ("Projected / Current");
+
+		private String iName;
+		
+		Type(String name) { iName = name; }
+		
+		public String getName() { return iName; }
+	}
+
+	private Type iType = Type.EXP;
 	
 	private static int sRowTypeHeader = 0;
 	private static int sRowTypeArea = 1;
@@ -135,7 +153,7 @@ public class CourseCurriculaTable extends Composite {
 		iCurricula = new MyFlexTable();
 		tableAndHint.add(iCurricula);
 		
-		iHint = new Label("Showing " + sTypes[iType] + " Students");
+		iHint = new Label("Showing " + iType.getName() + " Enrollment");
 		iHint.setStyleName("unitime-Hint");
 		iHint.setVisible(false);
 		tableAndHint.add(iHint);
@@ -144,8 +162,8 @@ public class CourseCurriculaTable extends Composite {
 		iHint.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				iType = (iType + 1) % sTypes.length;
-				iHint.setText("Showing " + sTypes[iType] + " Students");
+				iType = Type.values()[(iType.ordinal() + 1) % Type.values().length];
+				iHint.setText("Showing " + iType.getName() + " Enrollment");
 				if (iCurricula.getRowCount() > 1) {
 					for (int row = 1; row < iCurricula.getRowCount(); row++) {
 						for (int col = 0; col < iClassifications.size(); col++) {
@@ -153,7 +171,7 @@ public class CourseCurriculaTable extends Composite {
 						}
 					}
 					((MyLabel)iCurricula.getWidget(iCurricula.getRowCount() - 1, 1)).refresh();
-					((Label)iCurricula.getWidget(iCurricula.getRowCount() - 1, 0)).setText("Total " + sTypes[iType] + " Students");
+					((Label)iCurricula.getWidget(iCurricula.getRowCount() - 1, 0)).setText("Total " + iType.getName() + " Enrollment");
 				}
 			}
 		});
@@ -347,17 +365,16 @@ public class CourseCurriculaTable extends Composite {
 					}
 				}
 				menu.addSeparator();
-				for (int i = 0; i < sTypes.length; i++) {
-					final int newType = i;
+				for (final Type t : Type.values()) {
 					MenuItem item = new MenuItem(
-							"Show " + sTypes[i] + " Students",
+							"Show " + t.getName() + " Enrollment",
 							true,
 							new Command() {
 								@Override
 								public void execute() {
 									popup.hide();
-									iType = newType;
-									iHint.setText("Showing " + sTypes[iType] + " Students");
+									iType = t;
+									iHint.setText("Showing " + t.getName() + " Enrollment");
 									if (iCurricula.getRowCount() > 1) {
 										for (int row = 1; row < iCurricula.getRowCount(); row++) {
 											int hc = getHeaderCols(row);
@@ -366,11 +383,11 @@ public class CourseCurriculaTable extends Composite {
 											}
 										}
 										((MyLabel)iCurricula.getWidget(iCurricula.getRowCount() - 1, 1)).refresh();
-										((Label)iCurricula.getWidget(iCurricula.getRowCount() - 1, 0)).setText("Total " + sTypes[iType] + " Students");
+										((Label)iCurricula.getWidget(iCurricula.getRowCount() - 1, 0)).setText("Total " + t.getName() + " Enrollment");
 									}
 								}
 							});
-					if (i == iType)
+					if (t == iType)
 						item.getElement().getStyle().setColor("#666666");
 					item.getElement().getStyle().setCursor(Cursor.POINTER);
 					menu.addItem(item);
@@ -481,6 +498,11 @@ public class CourseCurriculaTable extends Composite {
 						if (next != null)
 							next.executeOnSuccess();
 					}
+
+					@Override
+					public String getLoadingMessage() {
+						return null;
+					}
 				});
 				iRowTypes.add(sRowTypeArea);
 				if (iExpandedAreas.contains(lastAreaId))
@@ -543,6 +565,10 @@ public class CourseCurriculaTable extends Composite {
 							}
 						});
 					}
+					@Override
+					public String getLoadingMessage() {
+						return "Loading details for " + curriculum.getName() + " ...";
+					}
 				});
 			} else {
 				final Long lastAreaId = curriculum.getAcademicArea().getId();
@@ -573,6 +599,10 @@ public class CourseCurriculaTable extends Composite {
 						iExpandedAreas.remove(lastAreaId);
 						if (next != null)
 							next.executeOnSuccess();
+					}
+					@Override
+					public String getLoadingMessage() {
+						return null;
 					}
 				});
 			}
@@ -612,6 +642,10 @@ public class CourseCurriculaTable extends Composite {
 					}
 					if (next != null)
 						next.executeOnSuccess();
+				}
+				@Override
+				public String getLoadingMessage() {
+					return null;
 				}
 			});
 			iRowTypes.add(sRowTypeArea);
@@ -689,6 +723,10 @@ public class CourseCurriculaTable extends Composite {
 						if (next != null)
 							next.executeOnSuccess();
 					}
+					@Override
+					public String getLoadingMessage() {
+						return null;
+					}
 				});
 			}
 			col = 0; row++;
@@ -728,6 +766,10 @@ public class CourseCurriculaTable extends Composite {
 					if (next != null)
 						next.executeOnSuccess();
 				}
+				@Override
+				public String getLoadingMessage() {
+					return null;
+				}
 			});
 			iRowTypes.add(sRowTypeOther);
 			if (iExpandedAreas.contains(-1l))
@@ -739,7 +781,7 @@ public class CourseCurriculaTable extends Composite {
 		iRowClicks.add(null);
 		iRowTypes.add(sRowTypeTotal);
 		iCurricula.getFlexCellFormatter().setColSpan(row, col, 2);
-		iCurricula.setWidget(row, col++, new Label("Total " + sTypes[iType] + " Students", false));
+		iCurricula.setWidget(row, col++, new Label("Total " + iType.getName() + " Enrollment", false));
 		int[] tx = new int[] {0, 0, 0, 0};
 		for (int i = 0; i < total.length; i ++)
 			for (int j = 0; j < 4; j++)
@@ -785,47 +827,47 @@ public class CourseCurriculaTable extends Composite {
 		}
 		
 		boolean typeChanged = false;
-		if (iType == 0 && tx[0] == 0) {
+		if (iType == Type.EXP && tx[0] == 0) {
 			if (tx[2] > 0) {
-				iType = 1;
+				iType = Type.ENRL;
 				typeChanged = true;
 			} else if (tx[1] > 0) {
-				iType = 2;
+				iType = Type.LAST;
 				typeChanged = true;
 			}
 		}
-		if (iType == 1 && tx[2] == 0) {
+		if (iType == Type.ENRL && tx[2] == 0) {
 			if (tx[0] > 0) {
-				iType = 0;
+				iType = Type.EXP;
 				typeChanged = true;
 			} else if (tx[1] > 0) {
-				iType = 2;
+				iType = Type.LAST;
 				typeChanged = true;
 			}
 		}
-		if (iType == 2 && tx[1] == 0) {
+		if (iType == Type.LAST && tx[1] == 0) {
 			if (tx[0] > 0) {
-				iType = 0;
+				iType = Type.EXP;
 				typeChanged = true;
 			} else if (tx[2] > 0) {
-				iType = 1;
+				iType = Type.ENRL;
 				typeChanged = true;
 			}
 		}
-		if (iType == 3 && tx[3] == 0) {
+		if (iType == Type.PROJ && tx[3] == 0) {
 			if (tx[0] > 0) {
-				iType = 0;
+				iType = Type.EXP;
 				typeChanged = true;
 			} else if (tx[1] > 0) {
-				iType = 2;
+				iType = Type.ENRL;
 				typeChanged = true;
 			} else if (tx[2] > 0) {
-				iType = 1;
+				iType = Type.LAST;
 				typeChanged = true;
 			}
 		}
 		if (typeChanged) {
-			iHint.setText("Showing " + sTypes[iType] + " Students");
+			iHint.setText("Showing " + iType.getName() + " Enrollment");
 			if (iCurricula.getRowCount() > 1) {
 				for (int r = 1; r < iCurricula.getRowCount(); r++) {
 					int hc = getHeaderCols(r);
@@ -834,7 +876,7 @@ public class CourseCurriculaTable extends Composite {
 					}
 				}
 				((MyLabel)iCurricula.getWidget(iCurricula.getRowCount() - 1, 1)).refresh();
-				((Label)iCurricula.getWidget(iCurricula.getRowCount() - 1, 0)).setText("Total " + sTypes[iType] + " Students");
+				((Label)iCurricula.getWidget(iCurricula.getRowCount() - 1, 0)).setText("Total " + iType.getName() + " Enrollment");
 			}
 		}
 		
@@ -974,31 +1016,31 @@ public class CourseCurriculaTable extends Composite {
 
 		public void refresh() {
 			switch (iType) {
-			case 0:
+			case EXP:
 				showExpected();
 				break;
-			case 1:
+			case ENRL:
 				showEnrolled();
 				break;
-			case 2:
+			case LAST:
 				showLastLike();
 				break;
-			case 3:
+			case PROJ:
 				showProjected();
 				break;
-			case 4:
+			case EXP2LAST:
 				showExpectedLastLike();
 				break;
-			case 5:
+			case EXP2ENRL:
 				showExpectedEnrolled();
 				break;
-			case 6:
+			case EXP2PROJ:
 				showExpectedProjected();
 				break;
-			case 7:
+			case LAST2ENRL:
 				showLastLikeEnrolled();
 				break;
-			case 8:
+			case PROJ2ENRL:
 				showProjectedEnrolled();
 			}
 		}
@@ -1023,7 +1065,7 @@ public class CourseCurriculaTable extends Composite {
 		    Element body = DOM.getParent(tr);
 		    final int row = DOM.getChildIndex(body, tr);
 
-		    ChainedCommand command = iRowClicks.get(row);
+		    final ChainedCommand command = iRowClicks.get(row);
 		    
 		    switch (DOM.eventGetType(event)) {
 			case Event.ONMOUSEOVER:
@@ -1035,19 +1077,22 @@ public class CourseCurriculaTable extends Composite {
 				break;
 			case Event.ONCLICK:
 				if (command == null) break;
-				LoadingWidget.getInstance().show();
+				if (command.getLoadingMessage() != null)
+					LoadingWidget.getInstance().show(command.getLoadingMessage());
 				getRowFormatter().setStyleName(row, "unitime-TableRowSelected");
 				iSelectedRow = row;
 				command.execute(new ConditionalCommand() {
 					@Override
 					public void executeOnSuccess() {
 						//getRowFormatter().setStyleName(row, null);	
-						LoadingWidget.getInstance().hide();
+						if (command.getLoadingMessage() != null)
+							LoadingWidget.getInstance().hide();
 					}
 					@Override
 					public void executeOnFailure() {
 						getRowFormatter().setStyleName(row, "unitime-TableRowHover");	
-						LoadingWidget.getInstance().hide();
+						if (command.getLoadingMessage() != null)
+							LoadingWidget.getInstance().hide();
 					}
 				});
 				break;
@@ -1057,6 +1102,7 @@ public class CourseCurriculaTable extends Composite {
 	
 	public static interface ChainedCommand {
 		public void execute(ConditionalCommand command);
+		public String getLoadingMessage();
 	}
 
 	public static interface ConditionalCommand {

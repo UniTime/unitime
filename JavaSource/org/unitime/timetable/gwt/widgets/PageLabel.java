@@ -71,7 +71,7 @@ public class PageLabel extends Composite {
 				
 		initWidget(iPanel);
 		
-		iService.getAppliationProperty(new String[] {"tmtbl.wiki.help", "tmtbl.wiki.url"}, new AsyncCallback<String[]>() {
+		iService.getApplicationProperty(new String[] {"tmtbl.wiki.help", "tmtbl.wiki.url"}, new AsyncCallback<String[]>() {
 			
 			@Override
 			public void onSuccess(String[] result) {
