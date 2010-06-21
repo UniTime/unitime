@@ -123,14 +123,24 @@ public class CurriculaCourses extends Composite {
 		initWidget(iTable);
 		iCourseChangedHandler = new CurriculaCourseSelectionBox.CourseSelectionChangeHandler() {
 			@Override
-			public void onChange(String course, boolean valid) {
-				CurriculumStudentsInterface[] c = (iLastCourses == null ? null : iLastCourses.get(course));
+			public void onChange(CurriculaCourseSelectionBox.CourseSelectionChangeEvent evt) {
+				CurriculumStudentsInterface[] c = (iLastCourses == null ? null : iLastCourses.get(evt.getCourse()));
 				for (int col = 0; col < iClassifications.getClassifications().size(); col ++) {
-					setEnrollmentAndLastLike(course, col,
+					setEnrollmentAndLastLike(evt.getCourse(), col,
 							c == null || c[col] == null ? null : c[col].getEnrollment(), 
 							c == null || c[col] == null ? null : c[col].getLastLike(),
 							c == null || c[col] == null ? null : c[col].getProjection());
 				}
+				Element td = evt.getSource().getElement();
+				while (td != null && !DOM.getElementProperty(td, "tagName").equalsIgnoreCase("td")) {
+					td = DOM.getParent(td);
+				}
+				Element tr = DOM.getParent(td);
+				int col = DOM.getChildIndex(tr, td);
+			    Element body = DOM.getParent(tr);
+			    int row = DOM.getChildIndex(body, tr);
+			    if (row + 1 == iTable.getRowCount() && !evt.getCourse().isEmpty())
+					addBlankLine();
 			}
 		};
 		
@@ -853,21 +863,20 @@ public class CurriculaCourses extends Composite {
 	}
 	
 	public void addBlankLine() {
-		final int row = iTable.getRowCount();
+		int row = iTable.getRowCount();
 		HorizontalPanel hp = new HorizontalPanel();
 		iTable.setWidget(row, 0, hp);
 		if (iVisibleCourses != null) iTable.getCellFormatter().setVisible(row, 0, false);
 
 		CurriculaCourseSelectionBox cx = new CurriculaCourseSelectionBox(null, iClassifications.getClassifications());
 		cx.setWidth("100px");
-		cx.addCourseSelectionChangeHandler(new CurriculaCourseSelectionBox.CourseSelectionChangeHandler() {
+		cx.addCourseSelectionChangeHandler(iCourseChangedHandler);
+		cx.addCourseFinderDialogHandler(new CurriculaCourseSelectionBox.CourseFinderDialogHandler() {
 			@Override
-			public void onChange(String course, boolean valid) {
-				if (row + 1 == iTable.getRowCount() && valid && !course.isEmpty())
-					addBlankLine();
+			public void onOpen(CurriculaCourseSelectionBox.CourseFinderDialogEvent e) {
+				iTable.clearHover();
 			}
 		});
-		cx.addCourseSelectionChangeHandler(iCourseChangedHandler);
 		if (!iEditable) cx.setEnabled(false);
 		iTable.setWidget(row, 1, cx);
 		if (iVisibleCourses != null) iTable.getCellFormatter().setVisible(row, 1, false);
@@ -1680,12 +1689,14 @@ public class CurriculaCourses extends Composite {
 						row--;
 						if (row <= 0) break;
 					} while (!swapRow(event, oldRow, oldCol, row, col));
+					event.preventDefault();
 				}
 				if (event.getKeyCode() == KeyCodes.KEY_DOWN && event.getCtrlKey()) {
 					do {
 						row++;
 						if (row >= getRowCount()) break;
 					} while (!swapRow(event, oldRow, oldCol, row, col));
+					event.preventDefault();
 				}
 				break;
 			}
