@@ -1370,6 +1370,34 @@ public class Class_ extends BaseClass_ {
        Transaction trans = null;
        try {
     	trans = hibSession.beginTransaction();
+    	List<Long> classIds = (List<Long>)hibSession.createQuery(
+    			"select c.uniqueId from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering as io " +
+    			"where io.session.uniqueId = :sessionId)").
+                setLong("sessionId", acadSession.getUniqueId()).list();
+    	String ids = "";
+    	int count = 0;
+    	for (Long id: classIds) {
+    		if (count > 0) ids += ",";
+    		ids += id;
+    		count ++;
+    		if (count == 1000) {
+    			hibSession.createQuery("update Class_  c " +
+    	        		"set c.enrollment=(select count(distinct d.student) " +
+    	                " from StudentClassEnrollment d " +
+    	                " where d.clazz.uniqueId =c.uniqueId) " + 
+    	                " where c.uniqueId in (" + ids + ")").executeUpdate();
+    			ids = ""; count = 0;
+    		}
+    	}
+    	if (count > 0) {
+			hibSession.createQuery("update Class_  c " +
+	        		"set c.enrollment=(select count(distinct d.student) " +
+	                " from StudentClassEnrollment d " +
+	                " where d.clazz.uniqueId =c.uniqueId) " + 
+	                " where c.uniqueId in (" + ids + ")").executeUpdate();
+    	}
+    	/*
+    	// This does not work on MySQL (You can't specify target table 'CLASS_' for update in FROM clause)
         hibSession.createQuery("update Class_  c " +
         		"set c.enrollment=(select count(distinct d.student) " +
                 " from StudentClassEnrollment d " +
@@ -1378,6 +1406,7 @@ public class Class_ extends BaseClass_ {
                 " from Class_ cls inner join cls.schedulingSubpart.instrOfferingConfig.instructionalOffering as io " +
                 " where io.session.uniqueId = :sessionId)").
                 setLong("sessionId", acadSession.getUniqueId().longValue()).executeUpdate();
+        */
         trans.commit();
        } catch (Exception e) {
     	   if (trans != null){
