@@ -46,6 +46,16 @@
 			<name>Session Roll-Forward</name>
 			<description>
 				<line>After rolling forward last like demand data, update the last like demand counts on the Course Offerings.</line>
+				<line>Fix bug where solver groups were not being placed on the timetable managers during roll forward.</line>
+			</description>
+		</item>
+		<item>
+			<name>Data Exchange</name>
+			<description>
+				<line>Student Enrollment Import
+					<line>Update class / course enrollments by default.</line>
+					<line>Fixed the queries that do the update to work on MySQL as well.</line>
+				</line>
 			</description>
 		</item>
 	</category>

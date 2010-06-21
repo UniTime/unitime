@@ -68,7 +68,7 @@ public class StudentEnrollmentImport extends BaseImport {
 	           	throw new Exception("No session found for the given campus, year, and term.");
 	        }
 	        loadClasses(session.getUniqueId());
-	        info("classes loaded");
+	        debug("classes loaded");
 	        if (manager == null){
 	        	manager = findDefaultManager();
 	        }
@@ -142,8 +142,8 @@ public class StudentEnrollmentImport extends BaseImport {
                 rollbackTransaction();
             }
         }
-        info("Appliation property: tmtbl.data.import.studentEnrl.class.updateEnrollments = " + ApplicationProperties.getProperty("tmtbl.data.import.studentEnrl.class.updateEnrollments","false"));
-        if (session != null && "true".equals(ApplicationProperties.getProperty("tmtbl.data.import.studentEnrl.class.updateEnrollments","false"))){
+        debug("Application property: tmtbl.data.import.studentEnrl.class.updateEnrollments = " + ApplicationProperties.getProperty("tmtbl.data.import.studentEnrl.class.updateEnrollments","true"));
+        if (session != null && "true".equals(ApplicationProperties.getProperty("tmtbl.data.import.studentEnrl.class.updateEnrollments","true"))){
             try {
                 beginTransaction();
                 info("  Updating class enrollments...");
@@ -170,6 +170,8 @@ public class StudentEnrollmentImport extends BaseImport {
 		    	sce.setCourseOffering(controllingCourses.get(externalId));
 		    	sce.setTimestamp(new java.util.Date());
 		    	student.addToclassEnrollments(sce);
+            } else {
+            	warn("Class " + externalId + " not found.");
             }
         }
 	}
