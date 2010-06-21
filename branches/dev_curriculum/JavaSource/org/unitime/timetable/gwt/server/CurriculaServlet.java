@@ -1984,7 +1984,8 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 						"select c from CourseOffering c where " +
 						"c.subjectArea.session.uniqueId = :sessionId and (" +
 						"lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) like :q || '%' " +
-						(query.length()>2 ? "or lower(c.title) like '%' || :q || '%'" : "") + ")")
+						(query.length()>2 ? "or lower(c.title) like '%' || :q || '%'" : "") + ") " +
+						"order by c.subjectArea.subjectAreaAbbreviation, c.courseNbr")
 						.setString("q", query.toLowerCase())
 						.setLong("sessionId", sessionId)
 						.setCacheable(true).setMaxResults(limit == null || limit < 0 ? Integer.MAX_VALUE : limit).list()) {

@@ -182,14 +182,16 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator,
 		
 		iSuggest.addSelectionHandler(new SelectionHandler<Suggestion>() {
 			public void onSelection(SelectionEvent<Suggestion> event) {
+				CourseSelectionChangeEvent e = new CourseSelectionChangeEvent(iTextField.getText(), !iTextField.getText().isEmpty());
 				for (CourseSelectionChangeHandler h : iCourseSelectionChangeHandlers)
-					h.onChange(iTextField.getText(), !iTextField.getText().isEmpty());
+					h.onChange(e);
 			}
 		});
 		iTextField.addChangeHandler(new ChangeHandler() {
 			public void onChange(ChangeEvent event) {
+				CourseSelectionChangeEvent e = new CourseSelectionChangeEvent(iTextField.getText(), false);
 				for (CourseSelectionChangeHandler h : iCourseSelectionChangeHandlers)
-					h.onChange(iTextField.getText(), false);
+					h.onChange(e);
 			}
 		});
 		iTextField.addKeyDownHandler(new KeyDownHandler() {
@@ -349,9 +351,9 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator,
 							if (iCourses.getSelectedRow()>=0) {
 								WebTable.Row r = iCourses.getRows()[iCourses.getSelectedRow()];
 								iTextField.setText(MESSAGES.courseName(r.getCell(0).getValue(), r.getCell(1).getValue()));
+								CourseSelectionChangeEvent e = new CourseSelectionChangeEvent(iTextField.getText(), true);
 								for (CourseSelectionChangeHandler h : iCourseSelectionChangeHandlers)
-									h.onChange(iTextField.getText(), true);
-							} else {
+									h.onChange(e);
 								iTextField.setText(iFilter.getText());
 							}
 						}					
@@ -404,8 +406,9 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator,
 					iTextField.setText(MESSAGES.courseName(r.getCell(0).getValue(), r.getCell(1).getValue()));
 					iDialog.hide();
 					iImage.setResource(RESOURCES.search_picker());
+					CourseSelectionChangeEvent e = new CourseSelectionChangeEvent(iTextField.getText(), true);
 					for (CourseSelectionChangeHandler h : iCourseSelectionChangeHandlers)
-						h.onChange(iTextField.getText(), true);
+						h.onChange(e);
 					DeferredCommand.addCommand(new Command() {
 						public void execute() {
 							setFocus(true);
@@ -519,9 +522,11 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator,
 		} else {
 			iTextField.setStyleName("gwt-SuggestBox");
 		}
-		if (fireChangeEvent)
+		if (fireChangeEvent) {
+			CourseSelectionChangeEvent e = new CourseSelectionChangeEvent(iTextField.getText(), course != null && !course.isEmpty());
 			for (CourseSelectionChangeHandler h : iCourseSelectionChangeHandlers)
-				h.onChange(iTextField.getText(), course != null && !course.isEmpty());
+				h.onChange(e);
+		}
 	}
 	
 	public void setEnabled(boolean enabled) {
@@ -671,9 +676,23 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator,
 		if (focus) iTextField.selectAll();
 
 	}
+	
+	public class CourseSelectionChangeEvent{
+		private String iCourse;
+		private boolean iValid;
+		
+		public CourseSelectionChangeEvent(String course, boolean valid) {
+			iCourse = course;
+			iValid = valid;
+		}
+		
+		public String getCourse() { return iCourse; }
+		public boolean isValid() { return iValid; }
+		public CurriculaCourseSelectionBox getSource() { return CurriculaCourseSelectionBox.this; }
+	}
 		
 	public interface CourseSelectionChangeHandler{
-		public void onChange(String course, boolean valid);
+		public void onChange(CourseSelectionChangeEvent evt);
 	}
 	
 	public class SuggestCallback implements AsyncCallback<Collection<ClassAssignmentInterface.CourseAssignment>> {
