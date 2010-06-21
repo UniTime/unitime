@@ -24,6 +24,7 @@ import org.unitime.timetable.model.Curriculum;
 import org.unitime.timetable.model.CurriculumClassification;
 import org.unitime.timetable.model.CurriculumCourse;
 import org.unitime.timetable.model.CurriculumCourseGroup;
+import org.unitime.timetable.model.CurriculumProjectionRule;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.Session;
@@ -150,6 +151,34 @@ public class MakeCurriculaFromLastlikeDemands {
         for (CurriculumClassification c : new TreeSet<CurriculumClassification>(classf))
             c.setOrd(ord++);
     }
+    
+	private Hashtable<String,Hashtable<String, Float>> getRules(org.hibernate.Session hibSession, Long acadAreaId) {
+		Hashtable<String,Hashtable<String, Float>> clasf2major2proj = new Hashtable<String, Hashtable<String,Float>>();
+		for (CurriculumProjectionRule rule: (List<CurriculumProjectionRule>)hibSession.createQuery(
+				"select r from CurriculumProjectionRule r where r.academicArea.uniqueId=:acadAreaId")
+				.setLong("acadAreaId", acadAreaId).setCacheable(true).list()) {
+			String majorCode = (rule.getMajor() == null ? "" : rule.getMajor().getCode());
+			String clasfCode = rule.getAcademicClassification().getCode();
+			Float projection = rule.getProjection();
+			Hashtable<String, Float> major2proj = clasf2major2proj.get(clasfCode);
+			if (major2proj == null) {
+				major2proj = new Hashtable<String, Float>();
+				clasf2major2proj.put(clasfCode, major2proj);
+			}
+			major2proj.put(majorCode, projection);
+		}
+		return clasf2major2proj;
+	}
+	
+	public float getProjection(Hashtable<String,Hashtable<String, Float>> clasf2major2proj, String majorCode, String clasfCode) {
+		if (clasf2major2proj == null || clasf2major2proj.isEmpty()) return 1.0f;
+		Hashtable<String, Float> major2proj = clasf2major2proj.get(clasfCode);
+		if (major2proj == null) return 1.0f;
+		Float projection = major2proj.get(majorCode);
+		if (projection == null)
+			projection = major2proj.get("");
+		return (projection == null ? 1.0f : projection);
+	}
 
     public void update(org.hibernate.Session hibSession, boolean lastLike) {
     	sLog.info("Deleting existing curricula...");
@@ -164,6 +193,7 @@ public class MakeCurriculaFromLastlikeDemands {
         
         sLog.info("Creating curricula...");
         for (Map.Entry<AcademicArea, Hashtable<PosMajor, Hashtable<AcademicClassification, Hashtable<CourseOffering, Set<Long>>>>> e1 : curricula.entrySet()) {
+        	Hashtable<String,Hashtable<String, Float>> rules = getRules(hibSession, e1.getKey().getUniqueId());
             for (Map.Entry<PosMajor, Hashtable<AcademicClassification, Hashtable<CourseOffering, Set<Long>>>> e2 : e1.getValue().entrySet()) {
                 sLog.info("Creating curriculum "+e1.getKey().getAcademicAreaAbbreviation()+" ("+e1.getKey().getShortTitle()+") - " + e2.getKey().getCode() + " (" + e2.getKey().getName()+ ")");
                 Hashtable<Department,Integer> deptCounter = new Hashtable<Department, Integer>();
@@ -192,18 +222,20 @@ public class MakeCurriculaFromLastlikeDemands {
                 }
                 
                 for (Map.Entry<AcademicClassification, Hashtable<CourseOffering, Set<Long>>> e3 : e2.getValue().entrySet()) {
-                    CurriculumClassification clasf = new CurriculumClassification();
-                    clasf.setCurriculum(curriculum); curriculum.getClassifications().add(clasf);
-                    clasf.setAcademicClassification(e3.getKey());
-                    clasf.setName(e3.getKey().getCode());
-                    clasf.setCourses(new HashSet());
 
                     Set<Long> studentsThisCurriculaClassification = new HashSet();
                     for (Set<Long> students : e3.getValue().values()) studentsThisCurriculaClassification.addAll(students);
                     
                     sLog.info("  "+e3.getKey().getCode()+" ("+e3.getKey().getName()+") -- "+studentsThisCurriculaClassification.size()+" students");
+                    int projNrStudents = Math.round(getProjection(rules, e2.getKey().getCode(), e3.getKey().getCode()) * studentsThisCurriculaClassification.size());
+                    if (projNrStudents <= 0) continue;
                     
-                    clasf.setNrStudents(studentsThisCurriculaClassification.size());
+                    CurriculumClassification clasf = new CurriculumClassification();
+                    clasf.setCurriculum(curriculum); curriculum.getClassifications().add(clasf);
+                    clasf.setAcademicClassification(e3.getKey());
+                    clasf.setName(e3.getKey().getCode());
+                    clasf.setCourses(new HashSet());
+                    clasf.setNrStudents(projNrStudents);
                     
                     for (Map.Entry<CourseOffering, Set<Long>> e4 : e3.getValue().entrySet()) {
                         float share = ((float)e4.getValue().size())/studentsThisCurriculaClassification.size();
