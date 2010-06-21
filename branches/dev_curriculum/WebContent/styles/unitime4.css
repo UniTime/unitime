@@ -200,8 +200,9 @@ h1 {
 .unitime-ScrollPanel {
 	padding: 2px;
 	border: 1px solid #9CB0CE;
-	overflow: scroll;
+	overflow: auto;
 	overflow-x: hidden;	
+	overflow-y: scroll;	
 }
 
 .unitime-ScrollPanel-inner {
@@ -997,7 +998,25 @@ h1 {
 	color: #000000;
 	border: 1px solid #A32929;
 	background: #D96666;
-	text-center: right;	
+	text-align: center;	
+	z-index: 3000000;
+}
+
+.unitime-PopupMessage {
+	position: absolute;
+	font-size: small;
+	font-family: arial;
+	overflow: hidden;
+	filter: alpha(opacity = 90);
+	opacity: .90;
+    -moz-opacity: .90;
+	-webkit-border-radius: 6px;
+	-moz-border-radius: 6px;
+	padding: 10px;
+	color: #000000;
+	border: 1px solid #2952A3;
+	background: #668CD9;
+	text-align: center;	
 	z-index: 3000000;
 }
 

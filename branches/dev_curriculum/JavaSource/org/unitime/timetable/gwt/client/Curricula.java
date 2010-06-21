@@ -171,7 +171,7 @@ public class Curricula extends Composite {
 			}
 		});
 		
-		showLoading();
+		showLoading("Loading curricula ...");
 		iService.lastCurriculaFilter(new AsyncCallback<String>() {
 			
 			@Override
@@ -194,7 +194,7 @@ public class Curricula extends Composite {
 		iCurriculaTable.addCurriculumClickHandler(new CurriculaTable.CurriculumClickHandler() {
 			@Override
 			public void onClick(CurriculaTable.CurriculumClickedEvent evt) {
-				showLoading();
+				showLoading("Loading curriculum " + evt.getCurriculum().getName() + " ...");
 				iService.loadCurriculum(evt.getCurriculum().getId(), new AsyncCallback<CurriculumInterface>() {
 
 					@Override
@@ -297,7 +297,7 @@ public class Curricula extends Composite {
 		});
 	}
 
-	public void showLoading() { LoadingWidget.getInstance().show(); }
+	public void showLoading(String message) { LoadingWidget.getInstance().show(message); }
 	
 	public void hideLoading() { LoadingWidget.getInstance().hide(); }
 	

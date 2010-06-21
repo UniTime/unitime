@@ -55,8 +55,10 @@ public interface CurriculaServiceAsync {
 	public void listCourseOfferings(String query, Integer limit, AsyncCallback<Collection<ClassAssignmentInterface.CourseAssignment>> callback) throws CurriculaException;
 	public void retrieveCourseDetails(String course, AsyncCallback<String> callback) throws CurriculaException;
 	public void listClasses(String course, AsyncCallback<Collection<ClassAssignmentInterface.ClassAssignment>> callback) throws CurriculaException;
-	public void getAppliationProperty(String[] name, AsyncCallback<String[]> callback) throws CurriculaException;
+	public void getApplicationProperty(String[] name, AsyncCallback<String[]> callback) throws CurriculaException;
 	public void canAddCurriculum(AsyncCallback<Boolean> callback) throws CurriculaException;
+	public void isAdmin(AsyncCallback<Boolean> callback) throws CurriculaException;
+	public void makeupCurriculaFromLastLikeDemands(boolean lastLike, AsyncCallback<Boolean> callback) throws CurriculaException;
 	
 	public void loadProjectionRules(AsyncCallback<HashMap<AcademicAreaInterface, HashMap<MajorInterface, HashMap<AcademicClassificationInterface, Number[]>>>> callback) throws CurriculaException;
 	public void saveProjectionRules(HashMap<AcademicAreaInterface, HashMap<MajorInterface, HashMap<AcademicClassificationInterface, Number[]>>> rules, AsyncCallback<Boolean> callback) throws CurriculaException;

@@ -34,7 +34,7 @@ import com.google.gwt.user.client.ui.RootPanel;
 public class Client implements EntryPoint {
 	public void onModuleLoad() {
 		if (RootPanel.get("UniTimeGWT:Body") != null) {
-			LoadingWidget.getInstance().show();
+			LoadingWidget.getInstance().show("Loading page ...");
 			DeferredCommand.addCommand(new Command() {
 				@Override
 				public void execute() {
@@ -78,6 +78,7 @@ public class Client implements EntryPoint {
 			if (loading != null) loading.setVisible(false);
 			for (Pages p: Pages.values()) {
 				if (p.name().equals(page)) {
+					LoadingWidget.getInstance().setMessage("Loading " + p.title() + " ...");
 					RootPanel title = RootPanel.get("UniTimeGWT:Title");
 					if (title != null) {
 						title.clear();

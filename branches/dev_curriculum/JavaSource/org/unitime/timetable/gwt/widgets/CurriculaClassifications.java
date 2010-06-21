@@ -68,13 +68,13 @@ public class CurriculaClassifications extends Composite {
 		iClassifications = classifications;
 		iTable.setText(0, 0, "Name:");
 		iTable.setText(1, 0, "Classification:");
-		iTable.setText(2, 0, "Expected Students:");
+		iTable.setText(2, 0, "Last-Like Enrollment:");
 		iTable.getCellFormatter().setWordWrap(2, 0, false);
-		iTable.setText(3, 0, "Enrolled Students:");
+		iTable.setText(3, 0, "Projected by Rule:");
 		iTable.getCellFormatter().setWordWrap(3, 0, false);
-		iTable.setText(4, 0, "Last-Like Students:");
+		iTable.setText(4, 0, "Planned Enrollment:");
 		iTable.getCellFormatter().setWordWrap(4, 0, false);
-		iTable.setText(5, 0, "Projected Students:");
+		iTable.setText(5, 0, "Current Enrollment:");
 		iTable.getCellFormatter().setWordWrap(5, 0, false);
 		int col = 0;
 		for (final AcademicClassificationInterface clasf: iClassifications) {
@@ -98,9 +98,17 @@ public class CurriculaClassifications extends Composite {
 			iTable.setWidget(1, col, new HTML(clasf.getName().replace(" ", "<br>")));
 			iTable.getCellFormatter().setHorizontalAlignment(1, col, HasHorizontalAlignment.ALIGN_CENTER);
 			
-			final MyTextBox expected = new MyTextBox(true);
-			iTable.setWidget(2, col, expected);
+			MyTextBox ll = new MyTextBox(false);
+			iTable.setWidget(2, col, ll);
 			iTable.getCellFormatter().setHorizontalAlignment(2, col, HasHorizontalAlignment.ALIGN_CENTER);
+			
+			MyTextBox proj = new MyTextBox(false);
+			iTable.setWidget(3, col, proj);
+			iTable.getCellFormatter().setHorizontalAlignment(3, col, HasHorizontalAlignment.ALIGN_CENTER);
+			
+			final MyTextBox expected = new MyTextBox(true);
+			iTable.setWidget(4, col, expected);
+			iTable.getCellFormatter().setHorizontalAlignment(4, col, HasHorizontalAlignment.ALIGN_CENTER);
 			expected.addChangeHandler(new ChangeHandler() {
 				@Override
 				public void onChange(ChangeEvent event) {
@@ -115,14 +123,9 @@ public class CurriculaClassifications extends Composite {
 						h.expectedChanged(e);
 				}
 			});
+			
 			MyTextBox enrl = new MyTextBox(false);
-			iTable.setWidget(3, col, enrl);
-			iTable.getCellFormatter().setHorizontalAlignment(3, col, HasHorizontalAlignment.ALIGN_CENTER);
-			MyTextBox ll = new MyTextBox(false);
-			iTable.setWidget(4, col, ll);
-			iTable.getCellFormatter().setHorizontalAlignment(4, col, HasHorizontalAlignment.ALIGN_CENTER);
-			MyTextBox proj = new MyTextBox(false);
-			iTable.setWidget(5, col, proj);
+			iTable.setWidget(5, col, enrl);
 			iTable.getCellFormatter().setHorizontalAlignment(5, col, HasHorizontalAlignment.ALIGN_CENTER);
 		}
 	}
@@ -175,7 +178,7 @@ public class CurriculaClassifications extends Composite {
 	public void setEnabled(boolean enabled) {
 		for (int i = 0; i < iClassifications.size(); i++) {
 			((MyTextBox)iTable.getWidget(0, 1 + i)).setEnabled(enabled);
-			((MyTextBox)iTable.getWidget(2, 1 + i)).setEnabled(enabled);
+			((MyTextBox)iTable.getWidget(4, 1 + i)).setEnabled(enabled);
 			boolean visible = enabled || getExpected(i) != null || getEnrollment(i) != null || getLastLike(i) != null || getProjection(i) != null;
 			for (int j = 0; j < 6; j++)
 				iTable.getWidget(j, 1 + i).setVisible(visible);
@@ -224,7 +227,7 @@ public class CurriculaClassifications extends Composite {
 	}
 
 	public Integer getExpected(int column) {
-		String text = ((TextBox)iTable.getWidget(2, 1 + column)).getText();
+		String text = ((TextBox)iTable.getWidget(4, 1 + column)).getText();
 		if (text.isEmpty()) return null;
 		try {
 			return Integer.parseInt(text);
@@ -234,39 +237,11 @@ public class CurriculaClassifications extends Composite {
 	}
 	
 	public void setExpected(int column, Integer expected) {
-		((TextBox)iTable.getWidget(2, 1 + column)).setText(expected == null ? "" : expected.toString());
+		((TextBox)iTable.getWidget(4, 1 + column)).setText(expected == null ? "" : expected.toString());
 	}
 
 	
 	public Integer getEnrollment(int column) {
-		String text = ((TextBox)iTable.getWidget(3, 1 + column)).getText();
-		if (text.isEmpty()) return null;
-		try {
-			return Integer.parseInt(text);
-		} catch (Exception e) {
-			return null;
-		}
-	}
-
-	public void setEnrollment(int column, Integer enrollment) {
-		((TextBox)iTable.getWidget(3, 1 + column)).setText(enrollment == null || enrollment == 0 ? "" : enrollment.toString());
-	}
-	
-	public Integer getLastLike(int column) {
-		String text = ((TextBox)iTable.getWidget(4, 1 + column)).getText();
-		if (text.isEmpty()) return null;
-		try {
-			return Integer.parseInt(text);
-		} catch (Exception e) {
-			return null;
-		}
-	}
-
-	public void setLastLike(int column, Integer lastLike) {
-		((TextBox)iTable.getWidget(4, 1 + column)).setText(lastLike == null || lastLike == 0? "" : lastLike.toString());
-	}
-
-	public Integer getProjection(int column) {
 		String text = ((TextBox)iTable.getWidget(5, 1 + column)).getText();
 		if (text.isEmpty()) return null;
 		try {
@@ -276,8 +251,36 @@ public class CurriculaClassifications extends Composite {
 		}
 	}
 
+	public void setEnrollment(int column, Integer enrollment) {
+		((TextBox)iTable.getWidget(5, 1 + column)).setText(enrollment == null || enrollment == 0 ? "" : enrollment.toString());
+	}
+	
+	public Integer getLastLike(int column) {
+		String text = ((TextBox)iTable.getWidget(2, 1 + column)).getText();
+		if (text.isEmpty()) return null;
+		try {
+			return Integer.parseInt(text);
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	public void setLastLike(int column, Integer lastLike) {
+		((TextBox)iTable.getWidget(2, 1 + column)).setText(lastLike == null || lastLike == 0? "" : lastLike.toString());
+	}
+
+	public Integer getProjection(int column) {
+		String text = ((TextBox)iTable.getWidget(3, 1 + column)).getText();
+		if (text.isEmpty()) return null;
+		try {
+			return Integer.parseInt(text);
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
 	public void setProjection(int column, Integer projection) {
-		((TextBox)iTable.getWidget(5, 1 + column)).setText(projection == null || projection == 0 ? "" : projection.toString());
+		((TextBox)iTable.getWidget(3, 1 + column)).setText(projection == null || projection == 0 ? "" : projection.toString());
 	}
 	
 

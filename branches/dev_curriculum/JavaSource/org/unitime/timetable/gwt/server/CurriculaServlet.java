@@ -87,6 +87,7 @@ import org.unitime.timetable.model.dao.CurriculumDAO;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.PosMajorDAO;
+import org.unitime.timetable.test.MakeCurriculaFromLastlikeDemands;
 import org.unitime.timetable.util.Constants;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
@@ -2156,7 +2157,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 		}
 	}
 	
-	public String[] getAppliationProperty(String[] name) throws CurriculaException {
+	public String[] getApplicationProperty(String[] name) throws CurriculaException {
 		String[] ret = new String[name.length];
 		for (int i = 0; i < name.length; i++)
 			ret[i] = ApplicationProperties.getProperty(name[i]);
@@ -2177,6 +2178,18 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 		}
 	}
 	
+	public Boolean isAdmin() throws CurriculaException {
+		try {
+			User user = Web.getUser(getThreadLocalRequest().getSession());
+			if (user == null) throw new CurriculaException("not authenticated");
+			return Roles.ADMIN_ROLE.equals(user.getRole());
+		} catch  (Exception e) {
+			if (e instanceof CurriculaException) throw (CurriculaException)e;
+			sLog.error(e.getMessage(), e);
+			throw new CurriculaException(e.getMessage());
+		}
+	}
+
 	public HashMap<AcademicAreaInterface, HashMap<MajorInterface, HashMap<AcademicClassificationInterface, Number[]>>> loadProjectionRules() throws CurriculaException {
 		sLog.info("loadProjectionRules()");
 		Long s0 = System.currentTimeMillis();
@@ -2271,7 +2284,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 								if (lastLike != null) ll += lastLike;
 							}
 						}
-						rules4default.put(clasf, new Number[] { new Float(1.0f), new Integer(ll) });
+						rules4default.put(clasf, new Number[] { null, new Integer(ll) });
 					}
 					List<MajorInterface> majorsOfArea = majors.get(area.getId());
 					if (majorsOfArea != null)
@@ -2281,7 +2294,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 							rules4area.put(major, rules4major);
 							for (AcademicClassificationInterface clasf: classifications) {
 								Integer lastLike = (clasf2ll == null ? null : clasf2ll.get(clasf.getCode()));
-								rules4major.put(clasf, new Number[] { new Float(1.0f), new Integer(lastLike == null ? 0 : lastLike) });
+								rules4major.put(clasf, new Number[] { null, new Integer(lastLike == null ? 0 : lastLike) });
 							}
 						}
 				}
@@ -2331,7 +2344,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 					for (Map.Entry<MajorInterface, HashMap<AcademicClassificationInterface, Number[]>> b: a.getValue().entrySet()) {
 						PosMajor major = null;
 						for (Map.Entry<AcademicClassificationInterface, Number[]> c: b.getValue().entrySet()) {
-							if (c.getValue()[1].intValue() <= 0 || c.getValue()[0].floatValue() == 1.0f) continue;
+							if (c.getValue()[1].intValue() <= 0 || c.getValue()[0] == null) continue;
 							
 							if (area == null)
 								area = AcademicAreaDAO.getInstance().get(a.getKey().getId(), hibSession);
@@ -2375,6 +2388,41 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 		if (!Roles.ADMIN_ROLE.equals(user.getRole()))
 			throw new CurriculaException("not authorized to change curriculum projection rules");
 		return true;
+	}
+	
+	public Boolean makeupCurriculaFromLastLikeDemands(boolean lastLike) throws CurriculaException {
+		sLog.info("makeupCurriculaFromLastLikeDemands(lastLike=" + lastLike + ")");
+		long s0 = System.currentTimeMillis();
+		try {
+			if (!isAdmin())
+				throw new CurriculaException("not authorized to (re)create curricula");
+			
+			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
+			Transaction tx = null;
+			try {
+				tx = hibSession.beginTransaction();
+				Long sessionId = getAcademicSessionId();
+				
+				MakeCurriculaFromLastlikeDemands m = new MakeCurriculaFromLastlikeDemands(sessionId);
+				m.update(hibSession, lastLike);
+
+				hibSession.flush();
+				tx.commit(); tx = null;
+			} finally {
+				try {
+					if (tx != null && tx.isActive()) {
+						tx.rollback();
+					}
+				} catch (Exception e) {}
+				hibSession.close();
+			}
+			sLog.info("Curricula recreated (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
+			return null;
+		} catch  (Exception e) {
+			if (e instanceof CurriculaException) throw (CurriculaException)e;
+			sLog.error(e.getMessage(), e);
+			throw new CurriculaException(e.getMessage());
+		}
 	}
 
 }
