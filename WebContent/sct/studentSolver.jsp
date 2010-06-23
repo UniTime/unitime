@@ -106,7 +106,7 @@ try {
 			</logic:equal>
 			<% if (parameter.getType().startsWith("enum(") && parameter.getType().endsWith(")")) { %>
 				<html:select property='<%="parameterValue["+parameter.getId()+"]"%>' disabled="<%=disabled || parameter.getDisabled()%>">
-					<html:options property='<%="enum("+parameter.getType()+")"%>'/>
+					<html:options property='<%=parameter.getType()%>'/>
 				</html:select>
 				&nbsp;<html:errors property='<%="parameterValue["+parameter.getId()+"]"%>'/>
 			<% } %>

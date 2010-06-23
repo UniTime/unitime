@@ -19,7 +19,7 @@ import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.MoreThanTwoADayCo
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamInstructorInfo;
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamSectionInfo;
 
-import com.lowagie.text.DocumentException;
+import com.itextpdf.text.DocumentException;
 
 public class ConflictsByCourseAndInstructorReport extends PdfLegacyExamReport {
     protected static Logger sLog = Logger.getLogger(ConflictsByCourseAndStudentReport.class);

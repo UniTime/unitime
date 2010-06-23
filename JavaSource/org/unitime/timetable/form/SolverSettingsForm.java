@@ -174,7 +174,7 @@ public class SolverSettingsForm extends ActionForm {
 	public String[] getAppearances() { return SolverPredefinedSetting.sAppearances; }
 	public Collection getEnum(String type) {
 		Vector options = new Vector();
-		StringTokenizer stk = new StringTokenizer(type.substring(5,type.length()),",");
+		StringTokenizer stk = new StringTokenizer(type,",");
 		while (stk.hasMoreTokens()) options.add(stk.nextToken());
 		return options;
 	}

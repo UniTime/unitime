@@ -25,6 +25,7 @@
 	<META http-equiv="cache-control" content="no-cache">
 	<META http-equiv="expires" content="0">
 	<LINK rel="stylesheet" type="text/css" href="styles/timetabling.css">
+	<link rel="shortcut icon" href="images/timetabling.ico" />
 	<SCRIPT language="javascript" type="text/javascript">
            <!--
            if(parent.frames.length!=0)

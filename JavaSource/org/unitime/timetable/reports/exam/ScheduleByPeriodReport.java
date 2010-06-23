@@ -16,7 +16,7 @@ import org.unitime.timetable.solver.exam.ui.ExamInfo;
 import org.unitime.timetable.solver.exam.ui.ExamRoomInfo;
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamSectionInfo;
 
-import com.lowagie.text.DocumentException;
+import com.itextpdf.text.DocumentException;
 
 public class ScheduleByPeriodReport extends PdfLegacyExamReport {
     protected static Logger sLog = Logger.getLogger(ScheduleByPeriodReport.class);

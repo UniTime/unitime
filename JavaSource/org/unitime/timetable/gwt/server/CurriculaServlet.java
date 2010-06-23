@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -2122,8 +2121,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 						a.setDatePattern(p.getTimeLocation().getDatePatternName());
 					}
 					if (p != null && p.getRoomLocations() != null) {
-						for (Enumeration<RoomLocation> e = p.getRoomLocations().elements(); e.hasMoreElements(); ) {
-							RoomLocation rm = e.nextElement();
+						for (RoomLocation rm: p.getRoomLocations()) {
 							a.addRoom(rm.getName());
 						}
 					}

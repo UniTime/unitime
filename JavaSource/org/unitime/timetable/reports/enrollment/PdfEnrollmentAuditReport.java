@@ -30,7 +30,7 @@ import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.StudentClassEnrollmentDAO;
 import org.unitime.timetable.reports.PdfLegacyReport;
 
-import com.lowagie.text.DocumentException;
+import com.itextpdf.text.DocumentException;
 
 /**
  * @author says

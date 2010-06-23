@@ -30,7 +30,7 @@ import java.util.Vector;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
 
-import com.lowagie.text.DocumentException;
+import com.itextpdf.text.DocumentException;
 
 /**
  * @author says

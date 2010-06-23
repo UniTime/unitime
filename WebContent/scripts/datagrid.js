@@ -163,25 +163,32 @@ StrutsLayout.Datagrid = function Datagrid(in_property, in_styleId, in_styleClass
 	function addDatagridCell(row, index, property, styleClass, type, values) {
 		var newCell = row.insertCell(row.cells.length);
 		newCell.className = styleClass;
-		var inputElementName = type=="select"? "SELECT" : "INPUT";
-		var input = document.createElement(inputElementName);
-		if (type!="select") {
-			input.setAttribute('type', type==null ? "text" : type);
-		}
-	    input.setAttribute('name', property + "[" + index + "]");
-	    if (type=="checkbox") {	   
-		    input.setAttribute('value', "true");
-		} else if (type=="select") {
-			for (i=0;i<values.length; i++) {
-				var option = document.createElement("OPTION");
-				option.setAttribute("value",  values[i].value);
-				option.innerHTML = values[i].label;
-				input.appendChild(option);
+		
+		if (type=="empty") {
+			if (values!=null && values!="") {
+				eval(values + "(newCell,index)");
 			}
 		} else {
-			input.setAttribute('value', "");
+			var inputElementName = type=="select"? "SELECT" : "INPUT";
+			var input = document.createElement(inputElementName);
+			if (type!="select") {
+				input.setAttribute('type', type==null ? "text" : type);
+			}
+		    input.setAttribute('name', property + "[" + index + "]");
+		    if (type=="checkbox") {	   
+			    input.setAttribute('value', "true");
+			} else if (type=="select") {
+				for (i=0;i<values.length; i++) {
+					var option = document.createElement("OPTION");
+					option.setAttribute("value",  values[i].value);
+					option.innerHTML = values[i].label;
+					input.appendChild(option);
+				}
+			} else {
+				input.setAttribute('value', "");
+			}
+		    newCell.appendChild(input);
 		}
-	    newCell.appendChild(input);
 	    return newCell;
 	}
 		
@@ -215,7 +222,13 @@ StrutsLayout.addDatagridLine = function(property) {
 	newRow.className = !odd ? datagrid.styleClass : datagrid.styleClass2;
 	if (datagrid.allowSelection) {
 		newRow.onclick = new Function("strutsLayoutDatagridData['" + property + "'].selectDatagridLine(" + table.rows.length + ");");
-		newRow.style.cursor = "pointer;hand;";
+		if (document.all) {
+			// Does not work on Gecko
+			newRow.style.cursor = "hand";
+		} else {
+			// Break on IE5.x
+			newRow.style.cursor = "pointer";
+		}
 	}
 	var newCell;
 	for (i in datagrid.columns) {

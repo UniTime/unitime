@@ -46,13 +46,14 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.engine.SessionFactoryImplementor;
+import org.hibernate.engine.SessionImplementor;
 import org.hibernate.hql.QueryExecutionRequestException;
 import org.hibernate.metadata.ClassMetadata;
-import org.hibernate.pretty.Formatter;
 import org.hibernate.type.CollectionType;
 import org.hibernate.type.Type;
 import org.unitime.commons.Debug;
 import org.unitime.commons.hibernate.util.HibernateUtil;
+import org.unitime.commons.hibernate.util.PrettyFormatter;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.HibernateQueryTestForm;
 import org.unitime.timetable.model.dao._RootDAO;
@@ -123,7 +124,7 @@ public class HibernateQueryTestAction extends Action {
 	                    }
 	                    Object o = i.next();
 	                    if (s.length()==0) printHeader(s, o);
-	                    printLine(s, o);
+	                    printLine(s, o, (SessionImplementor)hibSession);
 	                }
 	                if (s.length()>0) {
 	                    printFooter(s);
@@ -167,7 +168,7 @@ public class HibernateQueryTestAction extends Action {
             if (sql.length()>0) sql+="<br><br>";
             if (comment!=null)
                 sql += "<font color='gray'>-- "+comment+"</font>";
-            sql += new Formatter(line).format().replaceAll("\n", "<br>").replaceAll(" ", "&nbsp;");
+            sql += new PrettyFormatter(line).format().replaceAll("\n", "<br>").replaceAll(" ", "&nbsp;");
         }
         if (sql.length()>0)
             request.setAttribute("sql",sql);
@@ -259,7 +260,7 @@ public class HibernateQueryTestAction extends Action {
     }
     
     
-    public void printLine(StringBuffer s, Object o) {
+    public void printLine(StringBuffer s, Object o, SessionImplementor session) {
         s.append("<tr align='left' onmouseover=\"this.style.backgroundColor='rgb(223,231,242)';\" onmouseout=\"this.style.backgroundColor='transparent';\" >");
         SessionFactory hibSessionFactory = new _RootDAO().getSession().getSessionFactory();
         if (o==null) {
@@ -274,7 +275,7 @@ public class HibernateQueryTestAction extends Action {
                     if (meta==null) {
                         line(s,x[i]);
                     } else {
-                        line(s,meta.getIdentifier(x[i], EntityMode.POJO));
+                        line(s,meta.getIdentifier(x[i], session));
                         for (int j=0;j<meta.getPropertyNames().length;j++) 
                             if (!skip(meta.getPropertyTypes()[j], meta.getPropertyLaziness()[j]))
                                 line(s,meta.getPropertyValue(x[i], meta.getPropertyNames()[j], EntityMode.POJO));
@@ -286,7 +287,7 @@ public class HibernateQueryTestAction extends Action {
             if (meta==null) {
                 line(s,o);
             } else {
-                line(s,meta.getIdentifier(o, EntityMode.POJO));
+                line(s,meta.getIdentifier(o, session));
                 for (int i=0;i<meta.getPropertyNames().length;i++) 
                     if (!skip(meta.getPropertyTypes()[i],meta.getPropertyLaziness()[i]))
                         line(s,meta.getPropertyValue(o, meta.getPropertyNames()[i], EntityMode.POJO));

@@ -30,18 +30,19 @@ import java.util.StringTokenizer;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.util.PdfEventHandler;
 
-import com.lowagie.text.Chunk;
-import com.lowagie.text.Document;
-import com.lowagie.text.Element;
-import com.lowagie.text.Font;
-import com.lowagie.text.FontFactory;
-import com.lowagie.text.Image;
-import com.lowagie.text.PageSize;
-import com.lowagie.text.Paragraph;
-import com.lowagie.text.Rectangle;
-import com.lowagie.text.pdf.PdfPCell;
-import com.lowagie.text.pdf.PdfPTable;
-import com.lowagie.text.pdf.PdfWriter;
+import com.itextpdf.text.BaseColor;
+import com.itextpdf.text.Chunk;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.Element;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.FontFactory;
+import com.itextpdf.text.Image;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
 
 
 /**
@@ -64,7 +65,7 @@ public class PdfWebTable extends WebTable {
 	
 	private PdfPCell createCell() {
 		PdfPCell cell = new PdfPCell();
-		cell.setBorderColor(Color.BLACK);
+		cell.setBorderColor(BaseColor.BLACK);
 		cell.setPadding(3);
 		cell.setBorderWidth(0);
 		cell.setVerticalAlignment(Element.ALIGN_TOP);
@@ -96,9 +97,9 @@ public class PdfWebTable extends WebTable {
 		float width = 0; 
 		if (text.indexOf('\n')>=0) {
 			for (StringTokenizer s = new StringTokenizer(text,"\n"); s.hasMoreTokens();)
-				width = Math.max(width,font.getBaseFont().getWidthPoint(s.nextToken(), font.size()));
+				width = Math.max(width,font.getBaseFont().getWidthPoint(s.nextToken(), font.getSize()));
 		} else 
-			width = Math.max(width,font.getBaseFont().getWidthPoint(text, font.size()));
+			width = Math.max(width,font.getBaseFont().getWidthPoint(text, font.getSize()));
 		return width;
 	}
 	
@@ -107,13 +108,13 @@ public class PdfWebTable extends WebTable {
 		float width = 0; 
 		if (text.indexOf('\n')>=0) {
 			for (StringTokenizer s = new StringTokenizer(text,"\n"); s.hasMoreTokens();)
-				width = font.getBaseFont().getWidthPoint(s.nextToken(), font.size());
+				width = font.getBaseFont().getWidthPoint(s.nextToken(), font.getSize());
 		} else 
-			width = Math.max(width,font.getBaseFont().getWidthPoint(text, font.size()));
+			width = Math.max(width,font.getBaseFont().getWidthPoint(text, font.getSize()));
 		return width;
 	}
 
-	private float addText(PdfPCell cell, String text, boolean bold, boolean italic, boolean underline, Color color, Color bgColor) {
+	private float addText(PdfPCell cell, String text, boolean bold, boolean italic, boolean underline, BaseColor color, BaseColor bgColor) {
 		Font font = FontFactory.getFont(FontFactory.HELVETICA, 12, (underline?Font.UNDERLINE:0)+(italic&&bold?Font.BOLDITALIC:italic?Font.ITALIC:bold?Font.BOLD:Font.NORMAL), color);
 		Chunk chunk = new Chunk(text,font);
 		if (bgColor!=null) chunk.setBackground(bgColor);
@@ -127,21 +128,21 @@ public class PdfWebTable extends WebTable {
 		float width = 0; 
 		if (text.indexOf('\n')>=0) {
 			for (StringTokenizer s = new StringTokenizer(text,"\n"); s.hasMoreTokens();)
-				width = Math.max(width,font.getBaseFont().getWidthPoint(s.nextToken(), font.size()));
+				width = Math.max(width,font.getBaseFont().getWidthPoint(s.nextToken(), font.getSize()));
 		} else 
-			width = Math.max(width,font.getBaseFont().getWidthPoint(text, font.size()));
+			width = Math.max(width,font.getBaseFont().getWidthPoint(text, font.getSize()));
 		return width;
 	}
 	
-	private float addText(PdfPCell cell, String text, boolean bold, boolean italic, boolean underline, Color color,
-			boolean borderTop, boolean borderBottom, boolean borderLeft, boolean borderRight, Color borderColor, Color bgColor ) {
+	private float addText(PdfPCell cell, String text, boolean bold, boolean italic, boolean underline, BaseColor color,
+			boolean borderTop, boolean borderBottom, boolean borderLeft, boolean borderRight, BaseColor borderColor, BaseColor bgColor ) {
 		
     	cell.setBorderWidth(1);
     	
 		if (borderTop) {
 			cell.setBorder(PdfPCell.TOP);
 			if (borderColor==null)
-				cell.setBorderColorTop(Color.BLACK);
+				cell.setBorderColorTop(BaseColor.BLACK);
 			else
 				cell.setBorderColorTop(borderColor);
 		}
@@ -149,7 +150,7 @@ public class PdfWebTable extends WebTable {
 		if (borderBottom) {
 			cell.setBorder(PdfPCell.BOTTOM);
 			if (borderColor==null)
-				cell.setBorderColorBottom(Color.BLACK);
+				cell.setBorderColorBottom(BaseColor.BLACK);
 			else
 				cell.setBorderColorBottom(borderColor);
 		}
@@ -157,7 +158,7 @@ public class PdfWebTable extends WebTable {
 		if (borderLeft) {
 			cell.setBorder(PdfPCell.LEFT);
 			if (borderColor==null)
-				cell.setBorderColorLeft(Color.BLACK);
+				cell.setBorderColorLeft(BaseColor.BLACK);
 			else
 				cell.setBorderColorLeft(borderColor);
 		}
@@ -165,7 +166,7 @@ public class PdfWebTable extends WebTable {
 		if (borderRight) {
 			cell.setBorder(PdfPCell.RIGHT);
 			if (borderColor==null)
-				cell.setBorderColorRight(Color.BLACK);
+				cell.setBorderColorRight(BaseColor.BLACK);
 			else
 				cell.setBorderColorRight(borderColor);
 		}
@@ -173,14 +174,14 @@ public class PdfWebTable extends WebTable {
 		return addText(cell, text, bold, italic, underline, color, bgColor);
 	}	
 	
-	private float addText(PdfPCell cell, String text, boolean bold, boolean italic, boolean underline, Color color,
-			boolean border, Color borderColor, Color bgColor) {
+	private float addText(PdfPCell cell, String text, boolean bold, boolean italic, boolean underline, BaseColor color,
+			boolean border, BaseColor borderColor, BaseColor bgColor) {
 		
 		if (border) {
 	    	cell.setBorderWidth(1);
 			cell.setBorder(PdfPCell.RIGHT | PdfPCell.LEFT | PdfPCell.TOP | PdfPCell.BOTTOM );
 			if (borderColor==null)
-				cell.setBorderColor(Color.BLACK);
+				cell.setBorderColor(BaseColor.BLACK);
 			else
 				cell.setBorderColor(borderColor);
 		}
@@ -189,12 +190,12 @@ public class PdfWebTable extends WebTable {
 	}	
 	
 	private float addText(PdfPCell cell, String text, boolean bold) {
-		if (text==null) return addText(cell, "", bold, false, false, Color.BLACK, null);
-		if (text.indexOf("@@")<0) return addText(cell, text, bold, false, false, Color.BLACK, null);
+		if (text==null) return addText(cell, "", bold, false, false, BaseColor.BLACK, null);
+		if (text.indexOf("@@")<0) return addText(cell, text, bold, false, false, BaseColor.BLACK, null);
 		
-		Color color = Color.BLACK; 
-		Color bcolor = Color.BLACK;
-		Color bgColor = null;
+		BaseColor color = BaseColor.BLACK; 
+		BaseColor bcolor = BaseColor.BLACK;
+		BaseColor bgColor = null;
 		boolean bd=bold, it=false, un=false;
 		boolean ba=false, bt=false, bb=false, bl=false, br=false;		
 		float maxWidth = 0; 
@@ -249,15 +250,15 @@ public class PdfWebTable extends WebTable {
 				if ("COLOR".equals(cmd)) {
 					String hex = line.substring(pos, line.indexOf(' ',pos));
 					pos+=hex.length()+1;
-					color = new Color(Integer.parseInt(hex,16));
+					color = new BaseColor(Integer.parseInt(hex,16));
 				}
 				if ("END_COLOR".equals(cmd)) {
-					color = Color.BLACK;
+					color = BaseColor.BLACK;
 				}
                 if ("BGCOLOR".equals(cmd)) {
                     String hex = line.substring(pos, line.indexOf(' ',pos));
                     pos+=hex.length()+1;
-                    bgColor = new Color(Integer.parseInt(hex,16));
+                    bgColor = new BaseColor(Integer.parseInt(hex,16));
                 }
                 if ("END_BGCOLOR".equals(cmd)) {
                     bgColor = null;
@@ -273,7 +274,7 @@ public class PdfWebTable extends WebTable {
 					
 					String hex = line.substring(pos, line.indexOf(' ',pos));
 					pos+=hex.length()+1;
-					bcolor = new Color(Integer.parseInt(hex,16));
+					bcolor = new BaseColor(Integer.parseInt(hex,16));
 					
 					if ("BORDER_ALL".equals(cmd)) {
 						ba = true;
@@ -407,7 +408,7 @@ public class PdfWebTable extends WebTable {
     	for (int i=0;i<widths.length;i++)
     		totalWidth += 25f+widths[i];
     	
-    	totalWidth = Math.max(PageSize.LETTER.height(), totalWidth);
+    	totalWidth = Math.max(PageSize.LETTER.getHeight(), totalWidth);
     	
     	return totalWidth;
 	}

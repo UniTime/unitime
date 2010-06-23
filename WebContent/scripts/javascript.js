@@ -72,7 +72,7 @@ function checkValue(field, property, type, required) {
 	}
 }
 
-// Return true if value is an email address
+// Return true if value is an e-mail address
 function isEmail(value) {
 	invalidChars = " /:,;";
 	if (value=="") return false;
@@ -133,6 +133,128 @@ function isDate(value) {
 	if (isNaN(date)) return false;	
 	return true;
  }
+ 
+/**
+ * Check if a number is being type in.
+ */
+function checkNumber(el, e) {
+	// Get the key.
+	var key = 0;
+	if (e.charCode) {
+		key = e.charCode;
+	} else if (e.keyCode) {
+		key = e.keyCode;
+	}
+	
+	// Check key.
+	if (key>=48 && key<=57) {
+		// Digit : ok
+		return true;
+	} else if (checkSpecialKey(el, e)) {
+		// Special letter : don't block.
+		return true;
+	}
+	
+	// Block everything else.
+	return false;
+}
+
+/**
+ *
+ */
+function checkSpecialKey(element, e) {
+	// Get key code.
+	var key = e.keyCode;
+	switch (key) {
+		case 8:
+		case 9:
+		case 35:
+		case 16:
+		case 35:
+		case 36:
+		case 37:
+		case 38:
+		case 39:
+		case 40:
+		case 144:
+		case 145:
+		case 17:
+		case 18:
+		case 19:
+		case 20:
+		case 36:
+		case 45:
+		case 46:
+		case 91:
+		case 92:
+		case 145:
+	return true;
+		default:
+			return false;
+	}
+ }
+
+/**
+ * Check if the current field is fill.
+ * If yes, move focus to the next field.
+ */ 
+function checkAutoSkip(el, e){
+	// keyCode :  8 backtab, 9 tab, 35 end, 16 shift
+	//             35 to 40 cursor , 144 verrnum ,145 defil
+	// 17 ctrl,18 alt,19 attn,20 capslock,36 home,45  ins,46 del, 91/92 fenetw,93 menuw
+	
+	// Get key code.
+	var key = e.keyCode;
+	
+   if ((el.tagName=="INPUT" || el.tagName=="TEXTAREA")
+       && !(key >=16  && key <=20)
+       && !(key >=35  && key <=40)
+       && !(key >=91  && key <=93)
+       && key !=  8 && key !=  9
+       && key != 45 && key != 46
+       && key !=144 && key !=145){
+
+      if (el.tagName=="INPUT") {
+          var longueurChamp = el.maxLength ;
+          if (longueurChamp == -1) {
+              longueurChamp = 9999;
+      	  }
+          var taille = el.maxLength ;
+      }
+      if (el.tagName=="TEXTAREA") {
+          var longueurChamp = el.rows * el.cols ;
+          var taille =  el.rows * el.cols  ;
+      }
+
+      // Check if the user hit the maximum length
+      if (el.value.length>= longueurChamp || el.value.length>= taille){
+         var i;
+        // Find the next control on the form.
+         for(i=0; i < el.form.elements.length; i++){
+            if (el==el.form.elements[i]){
+               break;
+            }
+         }
+         if (i != el.form.elements.length){
+            for(j=i+1; j < el.form.elements.length; j++){
+
+              if (el.form.elements[j].disabled == false && !el.form.elements[j].readOnly) {
+				  // look for the next editable field.
+                 if (el.form.elements[j].type=="text" || el.form.elements[j].type=="password" || el.form.elements[j].type=="checkbox" || el.form.elements[j].type=="CHECKBOX" || el.form.elements[j].tagName=="TEXTAREA" || el.form.elements[j].tagName=="select" || el.form.elements[j].tagName=="SELECT") {
+         			el.form.elements[j].focus();
+                    break;
+                  }
+               }
+            }          
+		 }
+         else {
+            // Go to the first control if at the last control
+            i=0;
+            el.form.elements[i].focus();
+         }
+      }
+   }
+}
 
 // menu functions
 
@@ -425,28 +547,12 @@ function showCalendar(year, month, day, pattern, formName, formProperty, event, 
 		calyear.options.length = endYear - startYear + 1;
 	}
 
-	if(document.all) {
-		// IE.
-		var ofy=document.body.scrollTop;
-		var ofx=document.body.scrollLeft;
-		document.all.slcalcod.style.left = event.clientX+ofx+10;
-		document.all.slcalcod.style.top = event.clientY+ofy+10;
-		document.all.slcalcod.style.visibility="visible";
-		document.all.calmois.selectedIndex= month;		
-	} else if(document.layers) {
-		// Netspace 4
-		document.slcalcod.left = e.pageX+10;
-		document.slcalcod.top = e.pageY+10;
-		document.slcalcod.visibility="visible";
+	// Update the calendar.
+	if (document.layers) {
 		document.slcalcod.document.caltitre.document.forms[0].calmois.selectedIndex=month;
+	} else if (document.all) {
+		document.all.calmois.selectedIndex= month;
 	} else {
-		// Mozilla
-		var calendrier = document.getElementById("slcalcod");
-		var ofy=document.body.scrollTop;
-		var ofx=document.body.scrollLeft;
-		calendrier.style.left = event.clientX+ofx+10;
-		calendrier.style.top = event.clientY+ofy+10;
-		calendrier.style.visibility="visible";
 		document.getElementById("calmois").selectedIndex=month;
 	}
 	if (document.forms[formName].elements[formProperty].stlayout) {
@@ -457,12 +563,83 @@ function showCalendar(year, month, day, pattern, formName, formProperty, event, 
 	} else {
 		cal_chg(day, month, year);	
 	}
+
+	if(document.all) {
+		// IE.
+		var position = cal_place(event);
+		document.all.slcalcod.style.left = position[0];
+		document.all.slcalcod.style.top = position[1];
+		document.all.slcalcod.style.visibility="visible";
+	} else if(document.layers) {
+		// Netspace 4
+		document.slcalcod.left = e.pageX+10;
+		document.slcalcod.top = e.pageY+10;
+		document.slcalcod.visibility="visible";
+	} else {
+		// Mozilla
+		var calendrier = document.getElementById("slcalcod");
+		var position = cal_place(event);
+		calendrier.style.left = position[0];
+		calendrier.style.top = position[1];				
+		calendrier.style.visibility="visible";
+	}	
 	if (document.all) {
 		hideElement("SELECT");
 	}
 	calformname = formName;
 	calformelement = formProperty;
 	calpattern = pattern;
+}
+
+/**
+ * Compute the size of the window.
+ */
+function cal_window_size() {
+	var myWidth = 0, myHeight = 0;
+  	if( typeof( window.innerWidth ) == 'number' ) {
+	    //Non-IE
+	    myWidth = window.innerWidth;
+	    myHeight = window.innerHeight;
+  	} else if( document.documentElement && ( document.documentElement.clientWidth || document.documentElement.clientHeight ) ) {
+	    //IE 6+ in 'standards compliant mode'
+	    myWidth = document.documentElement.clientWidth;
+	    myHeight = document.documentElement.clientHeight;
+	} else if( document.body && ( document.body.clientWidth || document.body.clientHeight ) ) {
+	    //IE 4 compatible
+	    myWidth = document.body.clientWidth;
+	    myHeight = document.body.clientHeight;
+	}
+	return [myWidth, myHeight];  
+}
+
+/**
+ * Compute where the calendar popup should be placed
+ */
+function cal_place(event) {
+	var calendrier = document.getElementById("slcalcod");
+	var ofy=document.body.scrollTop;
+	var ofx=document.body.scrollLeft;
+	var size = cal_window_size();
+
+	var endX = calendrier.clientWidth + event.clientX + ofx + 10;	
+	var endY = calendrier.clientHeight + event.clientY + ofy + 10;
+	
+	var calX;
+	var calY;
+
+	if (endX>size[0]) {
+		calX = event.clientX + ofx - 10 - calendrier.clientWidth;
+	} else {
+		calX = event.clientX + ofx + 10;
+	}
+	
+	if (endY>size[1]) {
+		calY = event.clientY + ofy - 10 - calendrier.clientHeight;
+	} else {
+		calY = event.clientY + ofy + 10;
+	}
+	
+	return [calX, calY];
 }
 
 /**
@@ -507,7 +684,7 @@ function cal_chg(day, month, year){
 				str+='		<td class="CALENDARBORDER" width=1><img src="' + imgsrc + 'shim.gif" width=1 height=20></td>\n';
 				
 				str+='		<td class="CALENDAR'; 
-				if(/*ldt.getDay()==i && */ldt.getDate()==j && j==day /*&& newMonth==month && lc_annee==year*/) {
+				if((ldt.getDay()+1-calweekstart+7)%7==i && ldt.getDate()==j && j==day /*&& newMonth==month && lc_annee==year*/) {
 					str+='SELECTED'; 
 				} else if(i==weekEnd1Pos || i==weekEnd2Pos) {
 					str+='WEEKEND'; 
@@ -590,6 +767,9 @@ function dtemaj(jour, mois, annee){
 	document.forms[calformname].elements[calformelement].stlayout.month = mois;
 	document.forms[calformname].elements[calformelement].stlayout.year = annee;
 	hideCalendar();
+	if (document.forms[calformname].elements[calformelement].onchange) {
+		document.forms[calformname].elements[calformelement].onchange();
+	}
 }
 
 function formatDate(day, month, year) {
@@ -748,32 +928,78 @@ function showElement(elmID)
  *
  * @param tabVarName: name of the form variable that holds the id of the selected tab.
  */
-function selectTab(tabGroupId, tabGroupSize, selectedTabId, enabledStyle, disabledStyle, errorStyle, tabKeyName, tabKeyValue) {
+function selectTab(tabGroupId, tabGroupSize, selectedTabId, enabledStyle, disabledStyle, errorStyle, tabKeyName, tabKeyValue, callback) {
 	// first unselect all tab in the tag groups.
 	for (i=0;i<tabGroupSize;i++) {
-		element = document.getElementById("tabs" + tabGroupId + "head" + i);
+		var element = document.getElementById("tabs" + tabGroupId + "head" + i);
+		
+		var element_left = document.getElementById("tabs" + tabGroupId + "head" + i + "_left");
+		var element_right = document.getElementById("tabs" + tabGroupId + "head" + i + "_right");
+		var element_bottom = document.getElementById("tabs" + tabGroupId + "head" + i + "_bottom");
+		
+		var element_body = document.getElementById("tabs" + tabGroupId + "tab" + i);
+		
 		if (element.classNameErrorStdLayout) {
 			element.className = errorStyle;
+		
+			if (element_right) element_right.className = errorStyle;
+			if (element_left) element_left.className = errorStyle;
+			if (element_bottom) element_bottom.className = errorStyle;
+		
 			element.style.color = "";			
 		} else if (element.className == enabledStyle) {
 			element.className = disabledStyle;
+			
+			if (element_right) element_right.className = disabledStyle+"_right";
+			if (element_left) element_left.className = disabledStyle+"_left";
+			if (element_bottom) element_bottom.className = disabledStyle+"_bottom";
+			
 			element.style.color = "";
 		} else if (element.className == errorStyle) {
 			// do nothing more
 		}
 		
-		document.getElementById("tabs" + tabGroupId + "tab" + i).style.display = "none";
+		if (element_body) {
+			element_body.style.display = "none";
+		}
 	}
 	if (document.getElementById("tabs" + tabGroupId + "head" + selectedTabId).className==errorStyle) {
 		document.getElementById("tabs" + tabGroupId + "head" + selectedTabId).classNameErrorStdLayout = new Object();
 	}
 	document.getElementById("tabs" + tabGroupId + "head" + selectedTabId).className = enabledStyle;
+	
+	if (document.getElementById("tabs" + tabGroupId + "head" + selectedTabId + "_left")) 
+		document.getElementById("tabs" + tabGroupId + "head" + selectedTabId + "_left").className = enabledStyle+"_left";
+	if (document.getElementById("tabs" + tabGroupId + "head" + selectedTabId + "_right"))
+		document.getElementById("tabs" + tabGroupId + "head" + selectedTabId + "_right").className = enabledStyle+"_right";
+	if (document.getElementById("tabs" + tabGroupId + "head" + selectedTabId + "_bottom"))
+		document.getElementById("tabs" + tabGroupId + "head" + selectedTabId + "_bottom").className = enabledStyle+"_bottom";
+	
 	document.getElementById("tabs" + tabGroupId + "head" + selectedTabId).style.cursor = "default";
 	document.getElementById("tabs" + tabGroupId + "tab" + selectedTabId).style.display = "";
-	
-	// update a cookie holding the name of the selected tab.
+		
 	if (tabKeyName!=null) {
-		setTabCookie(tabKeyName, tabKeyValue);
+		if (callback!=null) {
+			// cookie should not be used. Inform the server of the new seletec tab.
+			var xhr = null; 
+			if(window.XMLHttpRequest) {
+				// Standard 
+				xhr = new XMLHttpRequest(); 
+			} else if(window.ActiveXObject) { 
+				// Internet Explorer 
+				xhr_object = new ActiveXObject("Microsoft.XMLHTTP");
+			} else { 
+				// Impossible to inform the server of the change.			    
+			   return; 
+			} 
+			xhr.open("POST", callback, false);
+			xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");  
+			xhr.send("tabKey=" + tabKeyName + "&tabValue=" + tabKeyValue); 
+			if(xhr.readyState != 4) alert("Fail to update tab state on server");
+		} else {
+			// update a cookie holding the name of the selected tab.
+			setTabCookie(tabKeyName, tabKeyValue);
+		}
 	}
 }
 function onTabHeaderOver(tabGroupId, selectedTabId, enabledStyle) {
@@ -932,6 +1158,94 @@ function expandFirstLevels(treeviewId, numberOfLevelsToExpand) {
 	}
 }
 
+function openAll(treeviewId, numberOfLevelsToExpand) {
+	if (!isTreeviewLocked(treeviewId)) {
+	    menuId = "treeView" + treeviewId;
+	    var doModify;
+		list = document.getElementsByTagName("td");
+		for (i=0; i<list.length; i++) {
+			currentElement = list[i];
+			if (currentElement.id.indexOf(menuId) != -1
+				&& currentElement.id!=menuId) {
+				// we are at a submenu level
+	
+				idSuffix = currentElement.id.substring(menuId.length);
+				if (countStringOccurence(idSuffix, "*") <= numberOfLevelsToExpand) {
+	
+					subTreeName = currentElement.id.substring(8);
+	
+					image = document.getElementById("treeViewImage" + subTreeName);
+	
+					link = image.parentNode;
+					if (link.href.indexOf("javascript://") != -1) {
+	
+						if (image.src.indexOf("Close")!=-1) {
+							reg=new RegExp("Close", "g");
+							image.src = image.src.replace(reg, "Open");
+							doModify = true;
+						} else {
+						    // do nothing
+	                        doModify = false;
+						}
+	
+						if (document.getElementById("treeView" + subTreeName).innerHTML == "") {
+							//return true;
+						} else {
+						    if(doModify) {
+							    changeMenu("treeView" + subTreeName);
+	                        }
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+function closeAll(treeviewId, numberOfLevelsToExpand) {
+	if (!isTreeviewLocked(treeviewId)) {
+	    menuId = "treeView" + treeviewId;
+	    var doModify;
+		list = document.getElementsByTagName("td");
+		for (i=0; i<list.length; i++) {
+			currentElement = list[i];
+			if (currentElement.id.indexOf(menuId) != -1
+				&& currentElement.id!=menuId) {
+				// we are at a submenu level
+	
+				idSuffix = currentElement.id.substring(menuId.length);
+				if (countStringOccurence(idSuffix, "*") <= numberOfLevelsToExpand) {
+	
+					subTreeName = currentElement.id.substring(8);
+	
+					image = document.getElementById("treeViewImage" + subTreeName);
+	
+					link = image.parentNode;
+					if (link.href.indexOf("javascript://") != -1) {
+	
+						if (image.src.indexOf("Close")!=-1) {
+						    // do nothing						
+							doModify = false;
+						} else {
+							reg=new RegExp("Open", "g");
+							image.src = image.src.replace(reg, "Close");
+							doModify = true;
+						}
+	
+						if (document.getElementById("treeView" + subTreeName).innerHTML == "") {
+							//return true;
+						} else {
+						    if (doModify) {
+							    changeMenu("treeView" + subTreeName);
+	                        }
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
 function countStringOccurence(stringToTest, occurenceToCount) {
 	index = stringToTest.indexOf(occurenceToCount);
 	if (stringToTest.indexOf(occurenceToCount) != -1) {
@@ -973,7 +1287,7 @@ function unlockTreeview(in_name) {
 
 function isTreeviewLocked(in_name) {
 	var pos = in_name.indexOf('*');
-	var name = in_name.substring(0, pos);
+	var name = pos==-1 ? in_name : in_name.substring(0, pos);
 	var value = lockedTrees[name];
 	return "locked" == value;
 }
@@ -1046,7 +1360,10 @@ function checkFormChange(link, text) {
 			}
 			for (var k=0, l=what.elements[i].options.length; k<l; k++) {
 				if (what.elements[i].options[k].selected != what.elements[i].options[k].defaultSelected && (selectSet || k!=0)) {
-					ok = false; break;
+					if ("calmois"!=what.elements[i].name && "calyear"!=what.elements[i].name) { 
+						// don't check changes on the popup calendar						
+						ok = false; break;
+					}
 				}
 			}
 		} else if (what.elements[i].type == "submit") {
@@ -1057,7 +1374,9 @@ function checkFormChange(link, text) {
 			if (what.elements[i].value !=null && what.elements[i].value!="") {
 				ok = false;
 				break;			
-			}			
+			}	
+		} else if (what.elements[i].type == "reset") {
+			continue;		
 		} else {
 			alert(what.elements[i].type);
 		}
@@ -1139,9 +1458,17 @@ function clearDetail(id) {
 function initDependentComboHandler(masterSelectName, childSelectName, jsArrayName, jsChildArrayName, childSelectedValue) {
 	// find the master select.
 	var combo = findCombo(masterSelectName);
-	var customFunction = new Function("return updateCombo('" + masterSelectName + "', '" + childSelectName + "', " + jsArrayName + ", '" + jsChildArrayName + "');");
-	combo.onchange = customFunction;
-	combo.onchange();
+	var customFunction = new Function("updateCombo('" + masterSelectName + "', '" + childSelectName + "', " + jsArrayName + ", '" + jsChildArrayName + "');");
+	if (combo.addEventListener) {
+		combo.addEventListener("change", customFunction, false);
+		customFunction();
+	} else if (combo.attachEvent) {
+		combo.attachEvent("onchange", customFunction);
+		customFunction();
+	} else {
+		combo.onchange = customFunction;
+		combo.onchange();
+	}	
 	
 	// init child combo selected value.
 	var childCombo = findCombo(childSelectName);
@@ -1318,4 +1645,21 @@ function showLayoutLayer(ID,event) {
 
 function hideLayoutLayer(ID) {
     document.getElementById(ID).style.visibility = "hidden";
+}
+/**
+ * Call by the default BasicImageRender
+ */
+function getParentForm(obj,reqCode){
+ 	var par=obj.parentNode;
+ 	while(par.nodeName!="FORM" && par.nodeName!="BODY"){
+  		par=par.parentNode;
+ 	}
+ 	var form=null;
+ 	if(par.nodeName=='FORM'){
+  		form=par;
+  		form.elements['reqCode'].value = reqCode; 
+  		form.submit();
+ 	} else {
+  		alert("Javascript Error.No form linked to this button.");
+ 	}
 }

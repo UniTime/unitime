@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE struts-config PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 1.2//EN" "http://struts.apache.org/dtds/struts-config_1_2.dtd">
+<!DOCTYPE struts-config PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 1.3//EN" "http://struts.apache.org/dtds/struts-config_1_3.dtd">
 <!-- 
  * UniTime 3.1 (University Timetabling Application)
  * Copyright (C) 2008, UniTime LLC
@@ -22,8 +22,6 @@
 
    <display-name>UniTime</display-name>
    <description>University Timetabling Application</description>
-   
-   <data-sources />
    
    <form-beans >
 	  <form-bean name="distributionTypeListForm" type="org.unitime.timetable.form.DistributionTypeListForm" />

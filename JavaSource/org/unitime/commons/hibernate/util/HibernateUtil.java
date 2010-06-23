@@ -119,8 +119,14 @@ public class HibernateUtil {
     
     public static String getProperty(Properties properties, String name) {
         String value = properties.getProperty(name);
-        if (value!=null) return value;
-        return ApplicationProperties.getProperty(name);
+        if (value!=null) {
+            sLog.debug("   -- " + name + "=" + value);
+        	return value;
+        }
+        sLog.debug("   -- using application properties for " + name);
+        value = ApplicationProperties.getProperty(name);
+        sLog.debug("     -- " + name + "=" + value);
+        return value;
     }
     
     public static void fixSchemaInFormulas(Configuration cfg) {
@@ -367,11 +373,11 @@ public class HibernateUtil {
                 String className = (String)entry.getKey();
                 ClassMetadata classMetadata = (ClassMetadata)entry.getValue();
                 try {
-                    hibSessionFactory.evict(Class.forName(className));
+                    hibSessionFactory.getCache().evictEntityRegion(Class.forName(className));
                     for (int j=0;j<classMetadata.getPropertyNames().length;j++) {
                         if (classMetadata.getPropertyTypes()[j].isCollectionType()) {
                             try {
-                                hibSessionFactory.evictCollection(className+"."+classMetadata.getPropertyNames()[j]);
+                                hibSessionFactory.getCache().evictCollectionRegion(className+"."+classMetadata.getPropertyNames()[j]);
                             } catch (MappingException e) {}
                         }
                     }
@@ -379,19 +385,19 @@ public class HibernateUtil {
             }
         } else {
             ClassMetadata classMetadata = hibSessionFactory.getClassMetadata(persistentClass);
-            hibSessionFactory.evict(persistentClass);
+            hibSessionFactory.getCache().evictEntityRegion(persistentClass);
             if (classMetadata!=null) {
                 for (int j=0;j<classMetadata.getPropertyNames().length;j++) {
                     if (classMetadata.getPropertyTypes()[j].isCollectionType()) {
                         try {
-                            hibSessionFactory.evictCollection(persistentClass.getClass().getName()+"."+classMetadata.getPropertyNames()[j]);
+                            hibSessionFactory.getCache().evictCollectionRegion(persistentClass.getClass().getName()+"."+classMetadata.getPropertyNames()[j]);
                         } catch (MappingException e) {}
                     }
                 }
             }
         }
         if (evictQueries)
-            hibSessionFactory.evictQueries();
+            hibSessionFactory.getCache().evictQueryRegions();
     }
     
     public static boolean isMySQL() {
