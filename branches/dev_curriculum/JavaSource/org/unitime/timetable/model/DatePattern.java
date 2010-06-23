@@ -223,7 +223,7 @@ public class DatePattern extends BaseDatePattern implements Comparable {
 				d = 1;
 			}
 			for (;d<=daysOfMonth && charPosition < ptrn.length ;d++) {
-				if (ptrn[charPosition] == '1' || (first != null && dayOfWeek == Calendar.SUNDAY)) {
+				if (ptrn[charPosition] == '1' || (first != null && dayOfWeek == Calendar.SUNDAY && charPosition + 1 < ptrn.length && ptrn[1 + charPosition] == '1')) {
 					if (first==null){
 						//first = ((m<0?12+m:m%12)+1)+"/"+d+"/"+((m>=12)?startYear+1:startYear);
 						cal.setTime(getStartDate());
