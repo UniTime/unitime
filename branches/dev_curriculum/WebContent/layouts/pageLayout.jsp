@@ -63,7 +63,7 @@ String serverPath = request.getScheme()+"://"+request.getServerName()+":"+reques
     	<LINK rel="stylesheet" type="text/css" href="<%=basePath%>%tmtbl.custom.css%" />
     </tt:hasProperty>
     <link rel="shortcut icon" href="<%=basePath%>images/timetabling.ico" />
-	<TITLE><tiles:getAsString name="title" /></TITLE>
+	<TITLE>UniTime 3.2| <tiles:getAsString name="title" /></TITLE>
     <SCRIPT language="JavaScript" type="text/javascript" src="<%=basePath%>scripts/loading.js"></SCRIPT>
     <SCRIPT language="JavaScript" type="text/javascript" src="<%=basePath%>scripts/validator.js"></SCRIPT>
 	<SCRIPT language="JavaScript" type="text/javascript" src="<%=basePath%>scripts/jscalendar/calendar.js"></SCRIPT>

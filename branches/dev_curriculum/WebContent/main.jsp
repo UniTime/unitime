@@ -28,7 +28,7 @@
 		</title>
 	</tt:hasProperty>
 	<tt:notHasProperty name="tmtbl.title">
-		<title>Timetabling</title>
+		<title>UniTime 3.2| University Timetabling Application</title>
 	</tt:notHasProperty>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 	<link rel="stylesheet" type="text/css" href="styles/timetabling.css" />

@@ -62,13 +62,13 @@ import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.PdfEventHandler;
 import org.unitime.timetable.webutil.PdfWebTable;
 
-import com.lowagie.text.Document;
-import com.lowagie.text.FontFactory;
-import com.lowagie.text.PageSize;
-import com.lowagie.text.Paragraph;
-import com.lowagie.text.Rectangle;
-import com.lowagie.text.pdf.PdfPTable;
-import com.lowagie.text.pdf.PdfWriter;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.FontFactory;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
 
 
 /** 
@@ -148,7 +148,7 @@ public class SolutionReportAction extends Action {
         	try {
         		File file = ApplicationProperties.getTempFile("report", "pdf");
         		
-        		Document doc = new Document(new Rectangle(60f + PageSize.LETTER.height(), 60f + 0.75f * PageSize.LETTER.height()),30,30,30,30);
+        		Document doc = new Document(new Rectangle(60f + PageSize.LETTER.getHeight(), 60f + 0.75f * PageSize.LETTER.getHeight()),30,30,30,30);
         		
         		out = new FileOutputStream(file);
     			PdfWriter iWriter = PdfWriter.getInstance(doc, out);

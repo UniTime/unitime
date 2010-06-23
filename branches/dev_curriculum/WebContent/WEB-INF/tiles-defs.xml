@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE tiles-definitions
 			PUBLIC
-			"-//Apache Software Foundation//DTD Tiles Configuration 1.1//EN"
-			"http://struts.apache.org/dtds/tiles-config_1_1.dtd" >
+			"-//Apache Software Foundation//DTD Tiles Configuration 1.3//EN"
+			"http://struts.apache.org/dtds/tiles-config_1_3.dtd" >
 <!-- 
  * UniTime 3.1 (University Timetabling Application)
  * Copyright (C) 2008, UniTime LLC
@@ -40,7 +40,7 @@
   		id="timetable.pageLayout"
   		page="/layouts/pageLayout.jsp">
 		<put name="onLoadFunction" type="string" value="onLoad='doLoad()'" />
-		<put name="title" type="string" value="Timetabling Application" />
+		<put name="title" type="string" value="University Timetabling Application" />
 		<put name="header" value="/header.jsp" />
 		<put name="body" value="" />
  		<put name="body2" value="" />

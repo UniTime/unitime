@@ -9,12 +9,12 @@ import java.util.Date;
 
 import org.unitime.timetable.util.Constants;
 
-import com.lowagie.text.Document;
-import com.lowagie.text.DocumentException;
-import com.lowagie.text.FontFactory;
-import com.lowagie.text.PageSize;
-import com.lowagie.text.Paragraph;
-import com.lowagie.text.pdf.PdfWriter;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.FontFactory;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.pdf.PdfWriter;
 
 public class PdfLegacyReport {
     protected int iNrChars = 133;
@@ -185,7 +185,8 @@ public class PdfLegacyReport {
         if (iPrint!=null) {
             iPrint.print(iBuffer);
         } else {
-            Paragraph p = new Paragraph(iBuffer.toString(), FontFactory.getFont(FontFactory.COURIER, 9));
+        	//FIXME: For some reason when a line starts with space, the line is shifted by one space in the resulting PDF (when using iText 5.0.2)
+            Paragraph p = new Paragraph(iBuffer.toString().replace("\n ", "\n  "), FontFactory.getFont(FontFactory.COURIER, 9));
             p.setLeading(9.5f); //was 13.5f
             iDoc.add(p);
         }

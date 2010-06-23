@@ -207,12 +207,12 @@
 %>
 				<logic:equal name="solverSettingsForm" property='<%="useDefault["+def.getUniqueId()+"]"%>' value="false">
 					<html:select property='<%="parameter["+def.getUniqueId()+"]"%>' disabled="false">
-						<html:options property='<%="enum("+def.getType()+")"%>'/>
+						<html:options property='<%=def.getType()%>'/>
 					</html:select>
 				</logic:equal>
 				<logic:equal name="solverSettingsForm" property='<%="useDefault["+def.getUniqueId()+"]"%>' value="true">
 					<html:select property='<%="parameter["+def.getUniqueId()+"]"%>' disabled="true">
-						<html:options property='<%="enum("+def.getType()+")"%>'/>
+						<html:options property='<%=def.getType()%>'/>
 					</html:select>
 				</logic:equal>
 <%

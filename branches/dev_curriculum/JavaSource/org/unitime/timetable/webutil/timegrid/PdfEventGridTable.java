@@ -1,6 +1,5 @@
 package org.unitime.timetable.webutil.timegrid;
 
-import java.awt.Color;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -20,23 +19,24 @@ import org.unitime.timetable.model.dao.ClassEventDAO;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.PdfEventHandler;
 
-import com.lowagie.text.Chunk;
-import com.lowagie.text.Document;
-import com.lowagie.text.DocumentException;
-import com.lowagie.text.Element;
-import com.lowagie.text.FontFactory;
-import com.lowagie.text.Paragraph;
-import com.lowagie.text.Rectangle;
-import com.lowagie.text.pdf.PdfPCell;
-import com.lowagie.text.pdf.PdfPTable;
-import com.lowagie.text.pdf.PdfWriter;
+import com.itextpdf.text.BaseColor;
+import com.itextpdf.text.Chunk;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Element;
+import com.itextpdf.text.FontFactory;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
 
 public class PdfEventGridTable extends EventGridTable {
     private PdfWriter iWriter = null;
     private Document iDocument = null;
     
-    private static Color sBorderColor = new Color(100,100,100);
-    private static Color sNotAvailableColor = new Color(224,224,224);
+    private static BaseColor sBorderColor = new BaseColor(100,100,100);
+    private static BaseColor sNotAvailableColor = new BaseColor(224,224,224);
     private static int sDefaultNumberOfColumns = 10;
     
     public PdfEventGridTable(EventGridForm form) {
@@ -322,7 +322,7 @@ public class PdfEventGridTable extends EventGridTable {
             if (iNext!=null) iNext.addRow(name);
         }
         
-        public void addEmptyCell(boolean hMiddle, boolean vMiddle, boolean left, Color color) {
+        public void addEmptyCell(boolean hMiddle, boolean vMiddle, boolean left, BaseColor color) {
             if (iIndex<iNrCols) {
                 PdfPCell c = createCell(0,(hMiddle?0:1),(left?1:0),(vMiddle?0:1));
                 if (color!=null) c.setBackgroundColor(color);
@@ -336,7 +336,7 @@ public class PdfEventGridTable extends EventGridTable {
             addCell(middle, top, left, name, bold, null);
         }
 
-        public void addCell(boolean middle, boolean top, boolean left, String name, boolean bold, Color color) {
+        public void addCell(boolean middle, boolean top, boolean left, String name, boolean bold, BaseColor color) {
             if (iIndex<iNrCols) {
                 PdfPCell c = createCell((top?1:0),(middle?0:1),(left?1:0),1);
                 if (name!=null) addText(c, name, bold);

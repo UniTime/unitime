@@ -292,7 +292,7 @@ public class ExamSolverForm extends ActionForm {
 	public Collection getEnum(String type) {
 		Vector options = new Vector();
 		options.add("");
-		StringTokenizer stk = new StringTokenizer(type.substring(5,type.length()),",");
+		StringTokenizer stk = new StringTokenizer(type,",");
 		while (stk.hasMoreTokens()) options.add(stk.nextToken());
 		return options;
 	}

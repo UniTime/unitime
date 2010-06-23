@@ -23,7 +23,8 @@
 		<META http-equiv="Content-Type"	content="text/html; charset=ISO-8859-1">
 		<META http-equiv="Refresh" content="1; url=login.do">		
 		<LINK rel="stylesheet" type="text/css" href="styles/timetabling.css">
-		<TITLE>Timetabling</TITLE>
+		<link rel="shortcut icon" href="images/timetabling.ico" />
+		<TITLE>UniTime 3.2| University Timetabling Application</TITLE>
 	</HEAD>
 	<BODY>
 		<% if (ApplicationProperties.getProperty("tmtbl.header.external", "").trim().length()>0) { %>

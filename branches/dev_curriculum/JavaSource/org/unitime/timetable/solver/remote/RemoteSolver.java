@@ -383,7 +383,7 @@ public class RemoteSolver extends TimetableSolver implements TimetableInfoFilePr
 	        sLog.info("Solver ready.");
 	        sInitialized = true;
 		} catch (Exception e) {
-			e.printStackTrace();
+			sLog.fatal("Solver initialization failed", e);
 			throw e;
 		}
 	}

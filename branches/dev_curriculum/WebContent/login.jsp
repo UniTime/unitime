@@ -24,7 +24,8 @@
 		<META http-equiv="Content-Type"
 			content="text/html; charset=ISO-8859-1">
 		<LINK rel="stylesheet" type="text/css" href="styles/timetabling.css">
-		<TITLE>Timetabling</TITLE>
+		<link rel="shortcut icon" href="images/timetabling.ico" />
+		<TITLE>UniTime 3.2| University Timetabling Application</TITLE>
 	</HEAD>
 	<BODY class="bodyMain" onload="document.forms[0].username.focus();">
 
@@ -57,7 +58,7 @@
 				<TR>
 					<TD>&nbsp;</TD>
 					<TD class="H3" align="center" colspan="3">
-						<IMG src="images/timetabling.jpg" alt="Timetabling" title="Timetabling Log In">
+						<IMG src="images/timetabling-nocopy.jpg" alt="Timetabling" title="Timetabling Log In">
 						<BR>
 						&nbsp;
 						<% if (errorMsg!=null)  { %>
@@ -70,7 +71,7 @@
 
 				<TR>
 					<TD align="left" rowspan="2" valign="middle">
-						<IMG src="images/timetabling-logo-main.jpg" border="0" align="bottom" alt="Timetabling" title="Timetabling" hspace="20">
+						<IMG src="images/unitime.png" border="0" align="bottom" alt="UniTime" title="UniTime" hspace="20">
 					</TD>
 					<TD colspan="3">
 						<DIV align="left" id="login">
