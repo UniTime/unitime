@@ -75,8 +75,7 @@ public class DeptBalancingReport implements Serializable {
 					iLimit[i][j]=deptSpread.getMaxCourses()[i][j];
 					iUsage[i][j]=deptSpread.getNrCourses()[i][j];
 					iCourses[i][j]=new HashSet(deptSpread.getCourses()[i][j].size());
-					for (Enumeration e=deptSpread.getCourses()[i][j].elements();e.hasMoreElements();) {
-						Placement placement = (Placement)e.nextElement();
+					for (Placement placement: deptSpread.getCourses()[i][j]) {
 						Lecture lecture = (Lecture)placement.variable();
 						ClassAssignmentDetails ca = (ClassAssignmentDetails)detailCache.get(lecture.getClassId());
 						if (ca==null) {

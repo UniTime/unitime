@@ -23,10 +23,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -179,8 +178,8 @@ public class SectioningServer {
 	public void reloadStudent(org.unitime.timetable.model.Student s) {
 		Student student = iStudentTable.get(s.getUniqueId());
 		if (student != null) {
-			for (Enumeration<Request> e = student.getRequests().elements(); e.hasMoreElements();) {
-				Request r = (Request)e.nextElement();
+			for (Iterator<Request> e = student.getRequests().iterator(); e.hasNext();) {
+				Request r = (Request)e.next();
 				if (r.getAssignment() != null) r.unassign(0);
 			}
 			iModel.removeStudent(student);
@@ -234,18 +233,18 @@ public class SectioningServer {
 	private Course clone(Course course, long studentId, boolean updateFromCache) {
 		Offering clonedOffering = new Offering(course.getOffering().getId(), course.getOffering().getName());
 		Course clonedCourse = new Course(course.getId(), course.getSubjectArea(), course.getCourseNumber(), clonedOffering, course.getLimit(), course.getProjected());
-		for (Enumeration<Config> e = course.getOffering().getConfigs().elements(); e.hasMoreElements();) {
-			Config config = e.nextElement();
+		for (Iterator<Config> e = course.getOffering().getConfigs().iterator(); e.hasNext();) {
+			Config config = e.next();
 			Config clonedConfig = new Config(config.getId(), config.getName(), clonedOffering);
 			Hashtable<Subpart, Subpart> subparts = new Hashtable<Subpart, Subpart>();
 			Hashtable<Section, Section> sections = new Hashtable<Section, Section>();
-			for (Enumeration<Subpart> f = config.getSubparts().elements(); f.hasMoreElements();) {
-				Subpart subpart = f.nextElement();
+			for (Iterator<Subpart> f = config.getSubparts().iterator(); f.hasNext();) {
+				Subpart subpart = f.next();
 				Subpart clonedSubpart = new Subpart(subpart.getId(), subpart.getInstructionalType(), subpart.getName(), clonedConfig,
 						(subpart.getParent() == null ? null: subparts.get(subpart.getParent())));
 				subparts.put(subpart, clonedSubpart);
-				for (Enumeration<Section> g = subpart.getSections().elements(); g.hasMoreElements();) {
-					Section section = g.nextElement();
+				for (Iterator<Section> g = subpart.getSections().iterator(); g.hasNext();) {
+					Section section = g.next();
 					int limit = section.getLimit() - section.getEnrollments().size();
 					for (Iterator<Enrollment> i = section.getEnrollments().iterator(); i.hasNext();) {
 						Enrollment enrollment = i.next();
@@ -272,12 +271,12 @@ public class SectioningServer {
 		ArrayList<Long> classIds = new ArrayList<Long>();
 		final Hashtable<Long, String> classNames = new Hashtable<Long, String>();
 		Hashtable<Long, Section> classes = new Hashtable<Long, Section>();
-		for (Enumeration<Config> e = course.getOffering().getConfigs().elements(); e.hasMoreElements();) {
-			Config config = e.nextElement();
-			for (Enumeration<Subpart> f = config.getSubparts().elements(); f.hasMoreElements();) {
-				Subpart subpart = f.nextElement();
-				for (Enumeration<Section> g = subpart.getSections().elements(); g.hasMoreElements();) {
-					Section section = g.nextElement();
+		for (Iterator<Config> e = course.getOffering().getConfigs().iterator(); e.hasNext();) {
+			Config config = e.next();
+			for (Iterator<Subpart> f = config.getSubparts().iterator(); f.hasNext();) {
+				Subpart subpart = f.next();
+				for (Iterator<Section> g = subpart.getSections().iterator(); g.hasNext();) {
+					Section section = g.next();
 					classIds.add(section.getId());
 					classNames.put(section.getId(), section.getName());
 					classes.put(section.getId(), section);
@@ -395,10 +394,10 @@ public class SectioningServer {
 		Student student = (Student)iStudentTable.get(studentId);
 		if (student == null) return null;
 		Set<Long> ret = new HashSet<Long>();
-		for (Enumeration<Request> e = student.getRequests().elements(); e.hasMoreElements(); ) {
-			Request r = (Request)e.nextElement();
+		for (Iterator<Request> e = student.getRequests().iterator(); e.hasNext(); ) {
+			Request r = (Request)e.next();
 			if (!(r instanceof CourseRequest) || r.getInitialAssignment() == null) continue;
-			for (Iterator<Section> i = ((Enrollment)r.getInitialAssignment()).getAssignments().iterator(); i.hasNext();)
+			for (Iterator<Section> i = ((Enrollment)r.getInitialAssignment()).getSections().iterator(); i.hasNext();)
 				ret.add(i.next().getId());
 		}
 		return ret;
@@ -530,7 +529,7 @@ public class SectioningServer {
 				if (requiredSectionsForCourse != null) requiredSections = requiredSectionsForCourse.get(r);
 				if (r.isAlternative() && r.isAssigned()) nrAssignedAlt++;
 				TreeSet<Section> sections = new TreeSet<Section>(new EnrollmentSectionComparator());
-				sections.addAll(enrollment.getAssignments());
+				sections.addAll(enrollment.getSections());
 				Course course = enrollment.getOffering().getCourse(enrollment.getStudent());
 				ClassAssignmentInterface.CourseAssignment ca = new ClassAssignmentInterface.CourseAssignment();
 				ca.setAssigned(true);
@@ -543,7 +542,7 @@ public class SectioningServer {
 				} else if (course.getOffering().getConfigs().size() > 1) {
 					hasAlt = true;
 				} else {
-					for (Iterator<Subpart> i = ((Config)course.getOffering().getConfigs().firstElement()).getSubparts().iterator(); i.hasNext();) {
+					for (Iterator<Subpart> i = ((Config)course.getOffering().getConfigs().get(0)).getSubparts().iterator(); i.hasNext();) {
 						Subpart s = i.next();
 						if (s.getSections().size() > 1) { hasAlt = true; break; }
 					}
@@ -565,8 +564,8 @@ public class SectioningServer {
 						a.setDatePattern(section.getTime().getDatePatternName());
 					}
 					if (section.getRooms() != null) {
-						for (Enumeration<RoomLocation> e = section.getRooms().elements(); e.hasMoreElements(); ) {
-							RoomLocation rm = e.nextElement();
+						for (Iterator<RoomLocation> e = section.getRooms().iterator(); e.hasNext(); ) {
+							RoomLocation rm = e.next();
 							a.addRoom(rm.getName());
 						}
 					}
@@ -587,7 +586,7 @@ public class SectioningServer {
 					String from = null;
 					for (Enrollment x: enrollments) {
 						if (x == null || !x.isCourseRequest() || x.getAssignments() == null || x.getAssignments().isEmpty()) continue;
-						for (Iterator<Section> j=x.getAssignments().iterator(); j.hasNext();) {
+						for (Iterator<Section> j=x.getSections().iterator(); j.hasNext();) {
 							Section s = j.next();
 							if (s == section || s.getTime() == null) continue;
 							double d = distance(s, section);
@@ -654,12 +653,12 @@ public class SectioningServer {
         if (enrollments == null || enrollments.length == 0)
         	throw new SectioningException(SectioningExceptionType.NO_SOLUTION);
         int idx=0;
-        for (Enumeration<Request> e = student.getRequests().elements(); e.hasMoreElements(); idx++) {
-        	Request r = e.nextElement();
+        for (Iterator<Request> e = student.getRequests().iterator(); e.hasNext(); idx++) {
+        	Request r = e.next();
         	if (enrollments[idx] == null) {
         		Config c = null;
         		if (r instanceof CourseRequest)
-        			c = (Config)((Course)((CourseRequest)r).getCourses().firstElement()).getOffering().getConfigs().firstElement();
+        			c = (Config)((Course)((CourseRequest)r).getCourses().get(0)).getOffering().getConfigs().get(0);
         		enrollments[idx] = new Enrollment(r, 0, c, null);
         	}
         }
@@ -688,8 +687,8 @@ public class SectioningServer {
 		Hashtable<CourseRequest, Set<Section>> requiredSectionsForCourse = new Hashtable<CourseRequest, Set<Section>>();
 		HashSet<FreeTimeRequest> requiredFreeTimes = new HashSet<FreeTimeRequest>();
 
-		for (Enumeration<Request> e = student.getRequests().elements(); e.hasMoreElements();) {
-			Request r = (Request)e.nextElement();
+		for (Iterator<Request> e = student.getRequests().iterator(); e.hasNext();) {
+			Request r = (Request)e.next();
 			if (r instanceof CourseRequest) {
 				CourseRequest cr = (CourseRequest)r;
 				HashSet<Section> preferredSections = new HashSet<Section>();
@@ -751,12 +750,12 @@ public class SectioningServer {
 		ArrayList<Section> sections = new ArrayList<Section>();
 		Course course = iCourseTable.get(courseInfo.getUniqueId());
 		if (course == null) return sections;
-		for (Enumeration<Config> e=course.getOffering().getConfigs().elements(); e.hasMoreElements();) {
-			Config cfg = e.nextElement();
-			for (Enumeration<Subpart> f=cfg.getSubparts().elements(); f.hasMoreElements();) {
-				Subpart subpart = f.nextElement();
-				for (Enumeration<Section> g=subpart.getSections().elements(); g.hasMoreElements();) {
-					Section section = g.nextElement();
+		for (Iterator<Config> e=course.getOffering().getConfigs().iterator(); e.hasNext();) {
+			Config cfg = e.next();
+			for (Iterator<Subpart> f=cfg.getSubparts().iterator(); f.hasNext();) {
+				Subpart subpart = f.next();
+				for (Iterator<Section> g=subpart.getSections().iterator(); g.hasNext();) {
+					Section section = g.next();
 					sections.add(section);
 				}
 			}
@@ -769,12 +768,12 @@ public class SectioningServer {
 		ArrayList<Section> sections = new ArrayList<Section>();
 		Course course = iCourseTable.get(courseName);
 		if (course == null) return sections;
-		for (Enumeration<Config> e=course.getOffering().getConfigs().elements(); e.hasMoreElements();) {
-			Config cfg = e.nextElement();
-			for (Enumeration<Subpart> f=cfg.getSubparts().elements(); f.hasMoreElements();) {
-				Subpart subpart = f.nextElement();
-				for (Enumeration<Section> g=subpart.getSections().elements(); g.hasMoreElements();) {
-					Section section = g.nextElement();
+		for (Iterator<Config> e=course.getOffering().getConfigs().iterator(); e.hasNext();) {
+			Config cfg = e.next();
+			for (Iterator<Subpart> f=cfg.getSubparts().iterator(); f.hasNext();) {
+				Subpart subpart = f.next();
+				for (Iterator<Section> g=subpart.getSections().iterator(); g.hasNext();) {
+					Section section = g.next();
 					sections.add(section);
 				}
 			}
@@ -810,8 +809,8 @@ public class SectioningServer {
 
 		Request selectedRequest = null;
 		Section selectedSection = null;
-		for (Enumeration<Request> e = student.getRequests().elements(); e.hasMoreElements();) {
-			Request r = (Request)e.nextElement();
+		for (Iterator<Request> e = student.getRequests().iterator(); e.hasNext();) {
+			Request r = (Request)e.next();
 			if (r instanceof CourseRequest) {
 				CourseRequest cr = (CourseRequest)r;
 				if (!selectedAssignment.isFreeTime() && cr.getCourse(selectedAssignment.getCourseId()) != null) {

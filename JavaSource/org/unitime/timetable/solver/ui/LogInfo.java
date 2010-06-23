@@ -24,6 +24,7 @@ import java.util.*;
 
 import org.dom4j.Element;
 
+import net.sf.cpsolver.ifs.util.ArrayList;
 import net.sf.cpsolver.ifs.util.Progress;
 
 /**
@@ -33,15 +34,14 @@ public class LogInfo implements TimetableInfo, Serializable {
 	private static final long serialVersionUID = 1L;
 	public static int sVersion = 1; // to be able to do some changes in the future
 	public static int sNoSaveThreshold = Progress.MSGLEVEL_DEBUG;
-	private Vector iLog = new Vector();
+	private List<Progress.Message> iLog = new ArrayList<Progress.Message>();
 	
-	public void setLog(Vector log) { iLog = log; }
-	public Vector getLog() { return iLog; }
+	public void setLog(List<Progress.Message> log) { iLog = log; }
+	public List<Progress.Message> getLog() { return iLog; }
 	
     public String getLog(int level) {
     	StringBuffer sb = new StringBuffer(); 
-    	for (Enumeration e=iLog.elements();e.hasMoreElements();) {
-    		Progress.Message m = (Progress.Message)e.nextElement();
+    	for (Progress.Message m: iLog) {
     		String s = m.toString(level);
     		if (s!=null) sb.append(s+"\n");
     	}
@@ -50,8 +50,7 @@ public class LogInfo implements TimetableInfo, Serializable {
     
     public String getHtmlLog(int level, boolean includeDate) {
     	StringBuffer sb = new StringBuffer(); 
-    	for (Enumeration e=iLog.elements();e.hasMoreElements();) {
-    		Progress.Message m = (Progress.Message)e.nextElement();
+    	for (Progress.Message m: iLog) {
     		String s = m.toHtmlString(level, includeDate);
     		if (s!=null) sb.append(s+"<br>");
     	}
@@ -60,8 +59,7 @@ public class LogInfo implements TimetableInfo, Serializable {
 	
     public String getHtmlLog(int level, boolean includeDate, String fromStage) {
     	StringBuffer sb = new StringBuffer(); 
-    	for (Enumeration e=iLog.elements();e.hasMoreElements();) {
-    		Progress.Message m = (Progress.Message)e.nextElement();
+    	for (Progress.Message m: iLog) {
     		if (m.getLevel()==Progress.MSGLEVEL_STAGE && m.getMessage().equals(fromStage))
     			sb = new StringBuffer();
     		String s = m.toHtmlString(level, includeDate);
@@ -85,8 +83,7 @@ public class LogInfo implements TimetableInfo, Serializable {
 	}
 	public void save(Element root) throws Exception {
 		root.addAttribute("version", String.valueOf(sVersion));
-		for (Enumeration e=iLog.elements();e.hasMoreElements();) {
-			Progress.Message msg = (Progress.Message)e.nextElement();
+    	for (Progress.Message msg: iLog) {
 			if (msg.getLevel()<=sNoSaveThreshold) continue;
 			msg.save(root.addElement("msg"));
 		}

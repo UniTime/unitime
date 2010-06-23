@@ -91,8 +91,8 @@ public class BatchStudentSectioningTest {
         });
         solution.addSolutionListener(new SolutionListener() {
             public void solutionUpdated(Solution solution) {}
-            public void getInfo(Solution solution, java.util.Dictionary info) {}
-            public void getInfo(Solution solution, java.util.Dictionary info, java.util.Vector variables) {}
+            public void getInfo(Solution solution, java.util.Map info) {}
+            public void getInfo(Solution solution, java.util.Map info, java.util.Collection variables) {}
             public void bestCleared(Solution solution) {}
             public void bestSaved(Solution solution) {
                 StudentSectioningModel m = (StudentSectioningModel)solution.getModel();

@@ -25,10 +25,9 @@ import java.text.DecimalFormat;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -128,8 +127,8 @@ public class StudentSectioningTest {
     
     private static HashSet generateAvailableChoices(Offering offering, Random rnd, double availProb) {
         HashSet ret = new HashSet();
-        for (Enumeration e=offering.getConfigs().elements();e.hasMoreElements();) {
-            Config config = (Config)e.nextElement();
+        for (Iterator e=offering.getConfigs().iterator();e.hasNext();) {
+            Config config = (Config)e.next();
             HashSet touchedSubparts = new HashSet();
             Vector subparts = new Vector(config.getSubparts());
             for (int i=subparts.size()-1;i>=0;i--) {
@@ -150,7 +149,7 @@ public class StudentSectioningTest {
                         }
                     }
                     if (!added && subpart.getSections().size()>0) {
-                        Section section = (Section)subpart.getSections().elementAt((int)rnd.nextDouble()*subpart.getSections().size());
+                        Section section = (Section)subpart.getSections().get((int)rnd.nextDouble()*subpart.getSections().size());
                         while (section!=null) {
                             ret.add(section.getChoice());
                             touchedSubparts.add(section.getSubpart());
@@ -271,11 +270,11 @@ public class StudentSectioningTest {
             sLog.debug("  -- hold for "+clazz.getClassLabel()+" decreased by 1 (to "+si.getNbrHoldingStudents()+")");
        }
         Vector feasibleEnrollments = new Vector();
-        for (Enumeration g=courseRequest.values().elements();g.hasMoreElements();) {
-            Enrollment enrl = (Enrollment)g.nextElement();
+        for (Iterator g=courseRequest.values().iterator();g.hasNext();) {
+            Enrollment enrl = (Enrollment)g.next();
             boolean overlaps = false;
-            for (Enumeration h=courseRequest.getStudent().getRequests().elements();h.hasMoreElements();) {
-                Request otherRequest = (Request)h.nextElement();
+            for (Iterator h=courseRequest.getStudent().getRequests().iterator();h.hasNext();) {
+                Request otherRequest = (Request)h.next();
                 if (otherRequest instanceof CourseRequest) {
                     CourseRequest otherCourseRequest = (CourseRequest)otherRequest;
                     if (otherCourseRequest.equals(courseRequest)) continue;
@@ -290,8 +289,8 @@ public class StudentSectioningTest {
                 feasibleEnrollments.add(enrl);
         }
         double decrement = courseRequest.getWeight() / feasibleEnrollments.size();
-        for (Enumeration g=feasibleEnrollments.elements();g.hasMoreElements();) {
-            Enrollment feasibleEnrollment = (Enrollment)g.nextElement();
+        for (Iterator g=feasibleEnrollments.iterator();g.hasNext();) {
+            Enrollment feasibleEnrollment = (Enrollment)g.next();
             for (Iterator i=feasibleEnrollment.getAssignments().iterator();i.hasNext();) {
                 Section section = (Section)i.next();
                 Class_ clazz = new Class_DAO().get(new Long(section.getId()));
@@ -372,8 +371,8 @@ public class StudentSectioningTest {
             }
             if (choice.getOffering().getConfigs().size()==configs.size()) return;
             HashSet depends = new HashSet();
-            for (Enumeration e=choice.getOffering().getConfigs().elements();e.hasMoreElements();) {
-                Config config = (Config)e.nextElement();
+            for (Iterator e=choice.getOffering().getConfigs().iterator();e.hasNext();) {
+                Config config = (Config)e.next();
                 if (!configs.contains(config)) continue;
                 Subpart subpartThisConfig = null;
                 for (Iterator f=config.getSubparts().iterator();f.hasNext();) {
@@ -386,8 +385,8 @@ public class StudentSectioningTest {
                     Subpart subpart = (Subpart)f.next();
                     if (subpart.compareTo(subpartThisConfig)>=0) continue;
                     if (subpart.getParent()!=null) continue;
-                    for (Enumeration g=subpart.getSections().elements();g.hasMoreElements();) {
-                        Section section = (Section)g.nextElement();
+                    for (Iterator g=subpart.getSections().iterator();g.hasNext();) {
+                        Section section = (Section)g.next();
                         if (depends.add(section.getChoice())) {
                             Element depEl = choiceEl.addElement("depends");
                             depEl.addAttribute("class", section.getChoice().getInstructionalType());
@@ -515,8 +514,8 @@ public class StudentSectioningTest {
         org.hibernate.Session hibSession = new StudentDAO().getSession();
         Transaction tx = hibSession.beginTransaction();
         try {
-            for (Enumeration e=student.getRequests().elements();e.hasMoreElements();) {
-                Request request = (Request)e.nextElement();
+            for (Iterator e=student.getRequests().iterator();e.hasNext();) {
+                Request request = (Request)e.next();
                 if (request instanceof CourseRequest)
                     updateSectioningInfos(hibSession, s, (CourseRequest)request);
             }
@@ -537,8 +536,8 @@ public class StudentSectioningTest {
                 hibSession.delete(cd); i.remove();
             }
             hibSession.flush();
-            for (Enumeration e=student.getRequests().elements();e.hasMoreElements();) {
-                Request request = (Request)e.nextElement();
+            for (Iterator e=student.getRequests().iterator();e.hasNext();) {
+                Request request = (Request)e.next();
                 CourseDemand cd = null;
                 if (request instanceof FreeTimeRequest) {
                     FreeTimeRequest freeTime = (FreeTimeRequest)request;
@@ -570,8 +569,8 @@ public class StudentSectioningTest {
                     int ord = 0;
                     Enrollment enrollment = (Enrollment)request.getAssignment();
                     org.unitime.timetable.model.CourseRequest crq = null;
-                    for (Enumeration f=courseRequest.getCourses().elements();f.hasMoreElements();ord++) {
-                        Course course = (Course)f.nextElement();
+                    for (Iterator f=courseRequest.getCourses().iterator();f.hasNext();ord++) {
+                        Course course = (Course)f.next();
                         org.unitime.timetable.model.CourseRequest cr = new org.unitime.timetable.model.CourseRequest();
                         cr.setOrder(new Integer(ord));
                         cr.setAllowOverlap(Boolean.FALSE);
@@ -614,7 +613,7 @@ public class StudentSectioningTest {
                         if (courseRequest.isWaitlist() && student.canAssign(courseRequest)) {
                             WaitList wl = new WaitList();
                             wl.setStudent(s);
-                            wl.setCourseOffering(new CourseOfferingDAO().get(new Long(((Course)courseRequest.getCourses().firstElement()).getId())));
+                            wl.setCourseOffering(new CourseOfferingDAO().get(new Long(((Course)courseRequest.getCourses().get(0)).getId())));
                             wl.setTimestamp(new Date());
                             wl.setType(new Integer(0));
                             hibSession.save(wl);
@@ -638,8 +637,8 @@ public class StudentSectioningTest {
                 }
                 if (cd!=null && messages!=null) {
                     int ord = 0;
-                    for (Enumeration f=messages.elements();f.hasMoreElements();) {
-                        StudentSctBBTest.Message message = (StudentSctBBTest.Message)f.nextElement();
+                    for (Iterator f=messages.iterator();f.hasNext();) {
+                        StudentSctBBTest.Message message = (StudentSctBBTest.Message)f.next();
                         if (request.equals(message.getRequest())) {
                             StudentEnrollmentMessage m = new StudentEnrollmentMessage();
                             m.setCourseDemand(cd);
@@ -680,15 +679,15 @@ public class StudentSectioningTest {
         if (studentElement.element("retrieveCourseRequests")!=null) {
             loadStudent(session, student, messages);
             sbt = new StudentSctBBTest(student);
-            for (Enumeration e=student.getRequests().elements();e.hasMoreElements();) {
-                Request request = (Request)e.nextElement();
+            for (Iterator e=student.getRequests().iterator();e.hasNext();) {
+                Request request = (Request)e.next();
                 if (request.getInitialAssignment()!=null)
                     request.assign(0, request.getInitialAssignment());
             }
-            for (Enumeration e=student.getRequests().elements();e.hasMoreElements();) {
-                Request request = (Request)e.nextElement();
+            for (Iterator e=student.getRequests().iterator();e.hasNext();) {
+                Request request = (Request)e.next();
                 if (request instanceof FreeTimeRequest) {
-                    Enrollment enrollment = (Enrollment)request.values().firstElement();
+                    Enrollment enrollment = (Enrollment)request.values().get(0);
                     if (sbt.conflictValues(enrollment).isEmpty())
                         request.assign(0, enrollment);
                 }
@@ -765,8 +764,8 @@ public class StudentSectioningTest {
                         sLog.warn("    Course "+subjectArea+" "+courseNumber+" not found.");
                         continue;
                     }
-                    for (Enumeration e=student.getRequests().elements();e.hasMoreElements();) {
-                        Request request = (Request)e.nextElement();
+                    for (Iterator e=student.getRequests().iterator();e.hasNext();) {
+                        Request request = (Request)e.next();
                         if (request instanceof CourseRequest) {
                             CourseRequest courseRequest = (CourseRequest)request;
                             Course course = courseRequest.getCourse(co.getUniqueId().longValue());
@@ -818,12 +817,12 @@ public class StudentSectioningTest {
         Element ackResponseElement = studentResponseElement.addElement("acknowledgement");
         ackResponseElement.addAttribute("result", "ok");
         Element courseReqResponseElement = studentResponseElement.addElement("courseRequests"); 
-        for (Enumeration e=messages.elements();e.hasMoreElements();) {
-            StudentSctBBTest.Message message = (StudentSctBBTest.Message)e.nextElement();
+        for (Iterator e=messages.iterator();e.hasNext();) {
+            StudentSctBBTest.Message message = (StudentSctBBTest.Message)e.next();
             ackResponseElement.addElement("message").addAttribute("type", message.getLevelString()).setText(message.getMessage());
         }
-        for (Enumeration e=student.getRequests().elements();e.hasMoreElements();) {
-            Request request = (Request)e.nextElement();
+        for (Iterator e=student.getRequests().iterator();e.hasNext();) {
+            Request request = (Request)e.next();
             Element reqElement = null;
             if (request instanceof FreeTimeRequest) {
                 FreeTimeRequest ftRequest = (FreeTimeRequest)request;
@@ -836,8 +835,8 @@ public class StudentSectioningTest {
             } else {
                 CourseRequest courseRequest = (CourseRequest)request;
                 reqElement = courseReqResponseElement.addElement("courseOffering");
-                for (Enumeration f=courseRequest.getCourses().elements();f.hasMoreElements();) {
-                    Course course = (Course)f.nextElement();
+                for (Iterator f=courseRequest.getCourses().iterator();f.hasNext();) {
+                    Course course = (Course)f.next();
                     Element element = (reqElement.attribute("subjectArea")==null?reqElement:reqElement.addElement("alternative"));
                     element.addAttribute("subjectArea", course.getSubjectArea());
                     element.addAttribute("courseNumber", course.getCourseNumber());
@@ -877,13 +876,13 @@ public class StudentSectioningTest {
         boolean generateRandomAvailability = (student.getId()<0);
         Element scheduleResponseElement = studentResponseElement.addElement("schedule");
         scheduleResponseElement.addAttribute("type", (commit?"actual":"proposed"));
-        for (Enumeration e=student.getRequests().elements();e.hasMoreElements();) {
-            Request request = (Request)e.nextElement();
+        for (Iterator e=student.getRequests().iterator();e.hasNext();) {
+            Request request = (Request)e.next();
             if (request.getAssignment()==null) {
                 sLog.info("    request "+request+" has no assignment");
                 if (request instanceof CourseRequest && ((CourseRequest)request).isWaitlist() && request.getStudent().canAssign(request)) {
                     Element courseOfferingElement = scheduleResponseElement.addElement("courseOffering");
-                    Course course = (Course)((CourseRequest)request).getCourses().firstElement();
+                    Course course = (Course)((CourseRequest)request).getCourses().get(0);
                     courseOfferingElement.addAttribute("subjectArea", course.getSubjectArea());
                     courseOfferingElement.addAttribute("courseNumber", course.getCourseNumber());
                     CourseOffering co = CourseOffering.findByUniqueId(course.getId());
@@ -907,7 +906,7 @@ public class StudentSectioningTest {
                 CourseRequest courseRequest = (CourseRequest)request;
                 Element courseOfferingElement = scheduleResponseElement.addElement("courseOffering");
                 Enrollment enrollment = (Enrollment)request.getAssignment();
-                HashSet unusedInstructionalTypes = null;
+                Set unusedInstructionalTypes = null;
                 Offering offering = null;
                 HashSet availableChoices = null;
                 Vector assignments = new Vector(enrollment.getAssignments());
@@ -964,10 +963,10 @@ public class StudentSectioningTest {
                     } else classElement.addAttribute("time", "Arr Hrs");
                     if (section.getNrRooms()>0) {
                         String location = "";
-                        for (Enumeration f=section.getRooms().elements();f.hasMoreElements();) {
-                            RoomLocation rl = (RoomLocation)f.nextElement();
+                        for (Iterator f=section.getRooms().iterator();f.hasNext();) {
+                            RoomLocation rl = (RoomLocation)f.next();
                             location += rl.getName();
-                            if (f.hasMoreElements()) location+=",";
+                            if (f.hasNext()) location+=",";
                         }
                         classElement.addAttribute("location", location);
                     }
@@ -1013,8 +1012,8 @@ public class StudentSectioningTest {
                         classElement.addAttribute("name", ((Subpart)offering.getSubparts(unusedInstructionalType).iterator().next()).getName());
                         Vector choices = new Vector(offering.getChoices(unusedInstructionalType));
                         Collections.sort(choices, choiceComparator);
-                        for (Enumeration f = choices.elements();f.hasMoreElements();) {
-                            Choice choice = (Choice)f.nextElement();
+                        for (Iterator f = choices.iterator();f.hasNext();) {
+                            Choice choice = (Choice)f.next();
                             Element choiceEl = classElement.addElement("choice");
                             choiceEl.addAttribute("id", choice.getId());
                             choiceEl.addAttribute("available", (availableChoices==null?"true":availableChoices.contains(choice)?"true":"false"));

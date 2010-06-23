@@ -441,13 +441,12 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         Hashtable lastLike = new Hashtable();
         Hashtable real = new Hashtable();
         iProgress.setPhase("Computing last-like request weights...", 2*getModel().getStudents().size());
-        for (Enumeration e=getModel().getStudents().elements();e.hasMoreElements();) {
-            Student student = (Student)e.nextElement(); iProgress.incProgress();
-            for (Enumeration f=student.getRequests().elements();f.hasMoreElements();) {
-                Request request = (Request)f.nextElement();
+        for (Student student: getModel().getStudents()) {
+        	iProgress.incProgress();
+            for (Request request: student.getRequests()) {
                 if (request instanceof CourseRequest) {
                     CourseRequest courseRequest = (CourseRequest)request;
-                    Course course = (Course)courseRequest.getCourses().firstElement();
+                    Course course = (Course)courseRequest.getCourses().get(0);
                     Integer cnt = (Integer)(student.isDummy()?lastLike:real).get(course);
                     (student.isDummy()?lastLike:real).put(course, new Integer((cnt==null?0:cnt.intValue())+1));
                 }
@@ -462,7 +461,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 }
                 if (request instanceof CourseRequest) {
                     CourseRequest courseRequest = (CourseRequest)request;
-                    Course course = (Course)courseRequest.getCourses().firstElement();
+                    Course course = (Course)courseRequest.getCourses().get(0);
                     Integer lastLikeCnt = (Integer)lastLike.get(course);
                     Integer realCnt = (Integer)real.get(course);
                     courseRequest.setWeight(Test.getLastLikeStudentWeight(course, realCnt==null?0:realCnt.intValue(), lastLikeCnt==null?0:lastLikeCnt.intValue()));
@@ -513,8 +512,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 }
             if (!assignedSections.isEmpty()) {
                 iProgress.trace("committed assignment: "+assignedSections);
-                for (Enumeration e=request.values().elements();e.hasMoreElements();) {
-                    Enrollment enrollment = (Enrollment)e.nextElement();
+                for (Enrollment enrollment: request.values()) {
                     if (enrollment.getAssignments().containsAll(assignedSections)) {
                         request.setInitialAssignment(enrollment);
                         iProgress.trace("found: "+enrollment);
@@ -656,8 +654,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 getModel().addStudent(student);
             }
             iProgress.setPhase("Assigning course requests...", getModel().variables().size());
-            for (Enumeration e=getModel().variables().elements();e.hasMoreElements();) {
-                Request request = (Request)e.nextElement(); iProgress.incProgress();
+            for (Request request: getModel().variables()) {
+            	iProgress.incProgress();
                 if (request.getInitialAssignment()==null) continue;
                 Set conflicts = getModel().conflictValues(request.getInitialAssignment());
                 if (conflicts.isEmpty())
@@ -670,8 +668,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 }
             }
             iProgress.setPhase("Assigning free-time requests...", getModel().variables().size());
-            for (Enumeration e=getModel().variables().elements();e.hasMoreElements();) {
-                Request request = (Request)e.nextElement(); iProgress.incProgress();
+            for (Request request: getModel().variables()) {
+            	iProgress.incProgress();
                 if (request instanceof FreeTimeRequest && request.getStudent().canAssign(request)) {
                     FreeTimeRequest ft = (FreeTimeRequest)request;
                     Enrollment enrollment = ft.createEnrollment();

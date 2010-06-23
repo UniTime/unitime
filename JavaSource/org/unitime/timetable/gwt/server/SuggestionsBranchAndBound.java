@@ -22,7 +22,6 @@ package org.unitime.timetable.gwt.server;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -105,8 +104,7 @@ public class SuggestionsBranchAndBound {
 			}
 		}
         
-        for (Enumeration<Request> e = iStudent.getRequests().elements(); e.hasMoreElements();) {
-        	Request request = e.nextElement();
+        for (Request request: iStudent.getRequests()) {
         	if (request.getAssignment() == null && request instanceof FreeTimeRequest) {
         		FreeTimeRequest ft = (FreeTimeRequest)request;
         		Enrollment enrollment = ft.createEnrollment();
@@ -114,8 +112,7 @@ public class SuggestionsBranchAndBound {
         	}
         }
         
-        for (Enumeration<Request> e = iStudent.getRequests().elements(); e.hasMoreElements();) {
-        	Request request = e.nextElement();
+        for (Request request: iStudent.getRequests()) {
     		request.setInitialAssignment(request.getAssignment());
         }
 		
@@ -201,7 +198,7 @@ public class SuggestionsBranchAndBound {
 		if (canLeaveUnassigned(request)) {
     		Config config = null;
     		if (request instanceof CourseRequest)
-    			config = (Config)((Course)((CourseRequest)request).getCourses().firstElement()).getOffering().getConfigs().firstElement();
+    			config = (Config)((Course)((CourseRequest)request).getCourses().get(0)).getOffering().getConfigs().get(0);
     		values.add(new Enrollment(request, 0, config, new HashSet<Section>()));
 		}
 		iValues.put(request, values);
@@ -299,10 +296,10 @@ public class SuggestionsBranchAndBound {
         		iValue += value(enrollment);
         		if (request.getInitialAssignment() != null && enrollment.isCourseRequest()) {
             		Enrollment original = (Enrollment)request.getInitialAssignment();
-        			for (Iterator<Section> i = enrollment.getAssignments().iterator(); i.hasNext();) {
+        			for (Iterator<Section> i = enrollment.getSections().iterator(); i.hasNext();) {
         				Section section = i.next();
         				Section originalSection = null;
-        				for (Iterator<Section> j = original.getAssignments().iterator(); j.hasNext();) {
+        				for (Iterator<Section> j = original.getSections().iterator(); j.hasNext();) {
         					Section x = j.next();
         					if (x.getSubpart().getId() == section.getSubpart().getId()) {
         						originalSection = x; break;
@@ -317,7 +314,7 @@ public class SuggestionsBranchAndBound {
         	if (iSelectedRequest != null && iSelectedSection != null) {
         		Enrollment enrollment = (Enrollment)iSelectedRequest.getAssignment();
         		if (enrollment.getAssignments() != null && !enrollment.getAssignments().isEmpty()) {
-        			for (Iterator<Section> i = enrollment.getAssignments().iterator(); i.hasNext();) {
+        			for (Iterator<Section> i = enrollment.getSections().iterator(); i.hasNext();) {
         				Section section = i.next();
         				if (section.getSubpart().getId() == iSelectedSection.getSubpart().getId()) {
         					iSelectedEnrollment = section; break;
@@ -334,19 +331,19 @@ public class SuggestionsBranchAndBound {
         	if (iSelectedRequest != null) {
         		Enrollment enrollment = (Enrollment)iSelectedRequest.getAssignment();
         		if (enrollment.isCourseRequest() && enrollment.getAssignments() != null && !enrollment.getAssignments().isEmpty())
-        			iSelectedSections.addAll(enrollment.getAssignments());
+        			iSelectedSections.addAll(enrollment.getSections());
         	}
  		}
 		
 		public void init() {
         	iEnrollments = new Enrollment[iStudent.getRequests().size()];
         	for (int i = 0; i < iStudent.getRequests().size(); i++) {
-    			Request r = (Request)iStudent.getRequests().elementAt(i);
+    			Request r = (Request)iStudent.getRequests().get(i);
         		iEnrollments[i] = (Enrollment)r.getAssignment();
         		if (iEnrollments[i] == null) {
         			Config c = null;
             		if (r instanceof CourseRequest)
-            			c = (Config)((Course)((CourseRequest)r).getCourses().firstElement()).getOffering().getConfigs().firstElement();
+            			c = (Config)((Course)((CourseRequest)r).getCourses().get(0)).getOffering().getConfigs().get(0);
             		iEnrollments[i] = new Enrollment(r, 0, c, null);
         		}
         	}
@@ -365,7 +362,7 @@ public class SuggestionsBranchAndBound {
         		if (enrollment != null && enrollment.getAssignments().contains(iSelectedEnrollment)) return true;
         		if (iSelectedEnrollmentChangeTime) {
         			Section selectedEnrollment = null;
-        			for (Iterator<Section> i = enrollment.getAssignments().iterator(); i.hasNext();) {
+        			for (Iterator<Section> i = enrollment.getSections().iterator(); i.hasNext();) {
         				Section section = i.next();
         				if (section.getSubpart().getId() == iSelectedSection.getSubpart().getId()) {
         					selectedEnrollment = section; break;

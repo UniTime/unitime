@@ -232,7 +232,7 @@ public class Suggestion implements Serializable, Comparable {
 				}
 			}
 
-			for (Enumeration e=lecture.jenrlConstraints();e.hasMoreElements();) {
+			for (Enumeration e=lecture.jenrlConstraints().elements();e.hasMoreElements();) {
         		JenrlConstraint jenrl = (JenrlConstraint)e.nextElement();
         		long j = jenrl.jenrl(lecture, dummyPlacement);
         		if (j>0) {

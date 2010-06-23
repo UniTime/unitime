@@ -29,9 +29,9 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Vector;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -83,9 +83,9 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
     
     public Date getLoadedDate() {
         if (iLoadedDate==null && !isPassivated()) {
-            Vector log = Progress.getInstance(currentSolution().getModel()).getLog();
+            List<Progress.Message> log = Progress.getInstance(currentSolution().getModel()).getLog();
             if (log!=null && !log.isEmpty()) {
-                iLoadedDate = ((Progress.Message)log.firstElement()).getDate();
+                iLoadedDate = log.get(0).getDate();
             }
         }
         return iLoadedDate;

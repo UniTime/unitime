@@ -277,10 +277,10 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 		int iCounter = 0;
 		int iDays;
 		int iStartSlot;
-		Vector iRoomIds;
+		List iRoomIds;
 		String iInstructorName = null;
-		Vector iRoomNames;
-		Vector iRoomPrefs;
+		List iRoomNames;
+		List iRoomPrefs;
 		int iTimePref;
 		CBSVariable iVariable = null;
 		HashSet iConstraints = new HashSet();
@@ -290,7 +290,7 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 		String iDatePatternName = null;
 		Long iPatternId = null;
 		
-		CBSValue(CBSVariable var, String instructorName, Vector roomNames, int days, int startSlot, Vector roomIds, int timePref, Vector roomPrefs, int length, String datePatternName, Long patternId, int breakTime) {
+		CBSValue(CBSVariable var, String instructorName, List roomNames, int days, int startSlot, List roomIds, int timePref, List roomPrefs, int length, String datePatternName, Long patternId, int breakTime) {
 			iStartSlot = startSlot; iDays = days; iRoomIds = roomIds;
 			iVariable = var; iInstructorName = instructorName; iRoomNames = roomNames; iTimePref = timePref; iRoomPrefs = roomPrefs;
 			iDatePatternName = datePatternName; iLength = length; iBreakTime = breakTime;
@@ -305,9 +305,9 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 			iRoomPrefs = new Vector();
 			for (Iterator i=element.elementIterator("room");i.hasNext();) {
 				Element r = (Element)i.next();
-				iRoomIds.addElement(Integer.valueOf(r.attributeValue("id")));
-				iRoomNames.addElement(r.attributeValue("name"));
-				iRoomPrefs.addElement(Integer.valueOf(r.attributeValue("pref")));
+				iRoomIds.add(Integer.valueOf(r.attributeValue("id")));
+				iRoomNames.add(r.attributeValue("name"));
+				iRoomPrefs.add(Integer.valueOf(r.attributeValue("pref")));
 			}
 			iInstructorName = element.attributeValue("iName");
 			iTimePref = Integer.parseInt(element.attributeValue("tpref"));
@@ -344,10 +344,10 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 		public String getDatePatternName() {
 			return iDatePatternName;
 		}
-		public Vector getRoomNames() { return iRoomNames; }
+		public List getRoomNames() { return iRoomNames; }
 		public String getInstructorName() { return iInstructorName; }
 		public int getTimePref() { return iTimePref; }
-		public Vector getRoomPrefs() { return iRoomPrefs; }
+		public List getRoomPrefs() { return iRoomPrefs; }
 		public String toString() {
 			//return getDays()+" "+getStartTime()+" "+getRoom().getRoomLabel();
 			return getDays()+" "+getStartTime()+" "+iRoomNames+(iInstructorName==null?"":" "+iInstructorName);
@@ -357,7 +357,7 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 			iCounter+=value;
 			if (iVariable!=null) iVariable.incCounter(value);
 		}
-		public Vector getRoomIds() {
+		public List getRoomIds() {
 			return iRoomIds;
 		}
 		public Set constraints() { return iConstraints; }
@@ -389,9 +389,9 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
                 element.addAttribute("pattern", iPatternId.toString());
 			for (int i=0;i<iRoomIds.size();i++) {
 				Element r = element.addElement("room");
-				r.addAttribute("id",iRoomIds.elementAt(i).toString());
-				r.addAttribute("name",iRoomNames.elementAt(i).toString());
-				r.addAttribute("pref",iRoomPrefs.elementAt(i).toString());
+				r.addAttribute("id",iRoomIds.get(i).toString());
+				r.addAttribute("name",iRoomNames.get(i).toString());
+				r.addAttribute("pref",iRoomPrefs.get(i).toString());
 			}
 			if (iInstructorName!=null)
 				element.addAttribute("iName",iInstructorName);
@@ -479,19 +479,19 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 		long iClassId;
 		int iDays;
 		int iStartSlot;
-		Vector iRoomIds;
+		List iRoomIds;
 		int iCounter = 0;
 		String iVarName, iInstructorName;
 		String iPref;
 		int iTimePref;
-		Vector iRoomPrefs;
-		Vector iRoomNames;
+		List iRoomPrefs;
+		List iRoomNames;
 		int iLength;
 		int iBreakTime;
 		String iDatePatternName = null;
 		Long iPatternId;
 		
-		CBSAssignment(CBSConstraint constraint, long classId, String varName, String instructorName, Vector roomNames, int days, int startSlot, Vector roomIds, String pref, int timePref, Vector roomPrefs, int length, String datePatternName, Long patternId, int breakTime) {
+		CBSAssignment(CBSConstraint constraint, long classId, String varName, String instructorName, List roomNames, int days, int startSlot, List roomIds, String pref, int timePref, List roomPrefs, int length, String datePatternName, Long patternId, int breakTime) {
 			iClassId = classId; iStartSlot = startSlot; iDays = days; iRoomIds = roomIds;
 			iConstraint = constraint;
 			iVarName = varName; iInstructorName = instructorName; iRoomNames = roomNames;
@@ -509,9 +509,9 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 			iRoomPrefs = new Vector();
 			for (Iterator i=element.elementIterator("room");i.hasNext();) {
 				Element r = (Element)i.next();
-				iRoomIds.addElement(Integer.valueOf(r.attributeValue("id")));
-				iRoomNames.addElement(r.attributeValue("name"));
-				iRoomPrefs.addElement(Integer.valueOf(r.attributeValue("pref")));
+				iRoomIds.add(Integer.valueOf(r.attributeValue("id")));
+				iRoomNames.add(r.attributeValue("name"));
+				iRoomPrefs.add(Integer.valueOf(r.attributeValue("pref")));
 			}
 			iVarName = element.attributeValue("varName");
 			iInstructorName = element.attributeValue("iName");
@@ -550,14 +550,14 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 			return iVarName+" "+getDays()+" "+getStartTime()+" "+iRoomNames+(iInstructorName==null?"":" "+iInstructorName);
 		}
 		public String getVariableName() { return iVarName; }
-		public Vector getRoomNames() { return iRoomNames; }
+		public List getRoomNames() { return iRoomNames; }
 		public String getInstructorName() { return iInstructorName; }
-		public Vector getRoomIds() {
+		public List getRoomIds() {
 			return iRoomIds;
 		}
 		public String getPref() { return iPref; }
 		public int getTimePref() { return iTimePref; }
-		public Vector getRoomPrefs() { return iRoomPrefs; }
+		public List getRoomPrefs() { return iRoomPrefs; }
 		public int getLength() {
 			return iLength;
 		}
@@ -590,9 +590,9 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 			element.addAttribute("class",String.valueOf(iClassId));
 			for (int i=0;i<iRoomIds.size();i++) {
 				Element r = element.addElement("room");
-				r.addAttribute("id",iRoomIds.elementAt(i).toString());
-				r.addAttribute("name",iRoomNames.elementAt(i).toString());
-				r.addAttribute("pref",iRoomPrefs.elementAt(i).toString());
+				r.addAttribute("id",iRoomIds.get(i).toString());
+				r.addAttribute("name",iRoomNames.get(i).toString());
+				r.addAttribute("pref",iRoomPrefs.get(i).toString());
 			}
 			element.addAttribute("datePattern", iDatePatternName);
 			element.addAttribute("length", String.valueOf(iLength));
@@ -664,8 +664,8 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
     		"</font> ";
     	String roomLink = "";
     	for (int i=0;i<value.getRoomIds().size();i++) {
-    		name += (i>0?", ":"")+"<font color='"+PreferenceLevel.int2color(((Integer)value.getRoomPrefs().elementAt(i)).intValue())+"'>"+ value.getRoomNames().elementAt(i)+"</font>";
-    		roomLink += "&room"+i+"="+value.getRoomIds().elementAt(i);
+    		name += (i>0?", ":"")+"<font color='"+PreferenceLevel.int2color(((Integer)value.getRoomPrefs().get(i)).intValue())+"'>"+ value.getRoomNames().get(i)+"</font>";
+    		roomLink += "&room"+i+"="+value.getRoomIds().get(i);
     	}
     	if (value.getInstructorName()!=null)
     		name += " "+value.getInstructorName();
@@ -725,8 +725,8 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
     		"</font> ";
     	String roomLink = "";
     	for (int i=0;i<assignment.getRoomIds().size();i++) {
-    		name += (i>0?", ":"")+"<font color='"+PreferenceLevel.int2color(((Integer)assignment.getRoomPrefs().elementAt(i)).intValue())+"'>"+ assignment.getRoomNames().elementAt(i)+"</font>";
-    		roomLink += "&room"+i+"="+assignment.getRoomIds().elementAt(i);
+    		name += (i>0?", ":"")+"<font color='"+PreferenceLevel.int2color(((Integer)assignment.getRoomPrefs().get(i)).intValue())+"'>"+ assignment.getRoomNames().get(i)+"</font>";
+    		roomLink += "&room"+i+"="+assignment.getRoomIds().get(i);
     	}
     	if (assignment.getInstructorName()!=null)
     		name += " "+assignment.getInstructorName();

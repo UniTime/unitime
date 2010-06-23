@@ -19,9 +19,8 @@
 */
 package org.unitime.timetable.gwt.server;
 
-import java.util.Enumeration;
-import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Hashtable;
 import java.util.Set;
 
 import net.sf.cpsolver.ifs.util.DataProperties;
@@ -72,15 +71,15 @@ public class SuggestionSelection extends BranchBoundSelection {
         	Double cached = iBestTime.get(cr);
         	if (cached != null) return cached.doubleValue();
         	double bestTime = 0;
-        	for (Enumeration<Course> e = cr.getCourses().elements(); e.hasMoreElements();) {
-        		Course course = e.nextElement();
-        		for (Enumeration<Config> f = course.getOffering().getConfigs().elements(); f.hasMoreElements();) {
-        			Config config = f.nextElement();
+        	for (Iterator<Course> e = cr.getCourses().iterator(); e.hasNext();) {
+        		Course course = e.next();
+        		for (Iterator<Config> f = course.getOffering().getConfigs().iterator(); f.hasNext();) {
+        			Config config = f.next();
         			int nrSubpartsWithTime = 0;
-        			subparts: for (Enumeration<Subpart> g = config.getSubparts().elements(); g.hasMoreElements(); ) {
-        				Subpart subpart = g.nextElement();
-        				for (Enumeration<Section> h = subpart.getSections().elements(); h.hasMoreElements(); ) {
-        					Section section = h.nextElement();
+        			subparts: for (Iterator<Subpart> g = config.getSubparts().iterator(); g.hasNext(); ) {
+        				Subpart subpart = g.next();
+        				for (Iterator<Section> h = subpart.getSections().iterator(); h.hasNext(); ) {
+        					Section section = h.next();
         					if (section.getTime() != null) { nrSubpartsWithTime++; continue subparts; }
         				}
         			}
@@ -102,12 +101,12 @@ public class SuggestionSelection extends BranchBoundSelection {
             	int nrPreferred = 0;
             	Set<Section> preferredSections = iPreferredSections.get(cr);
             	if (preferredSections != null)
-                	for (Iterator<Section> j = iAssignment[i].getAssignments().iterator(); j.hasNext();) {
+                	for (Iterator<Section> j = iAssignment[i].getSections().iterator(); j.hasNext();) {
                 		Section section = j.next();
                 		if (preferredSections.contains(section)) nrPreferred++;
                 	}
             	preferredFraction = 1.0 - ((double)nrPreferred) / iAssignment[i].getAssignments().size();
-            	for (Iterator<Section> j = iAssignment[i].getAssignments().iterator(); j.hasNext();) {
+            	for (Iterator<Section> j = iAssignment[i].getSections().iterator(); j.hasNext();) {
             		Section section = j.next();
             		if (section.getTime() != null) hasTime++;
             	}

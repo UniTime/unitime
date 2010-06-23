@@ -514,8 +514,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     		hibSession.flush(); hibSession.clear(); batchIdx = 0;
     		
     		ConflictStatistics cbs = null;
-    		for (Iterator i=getSolver().getExtensions().iterator();i.hasNext();) {
-    			Extension ext = (Extension)i.next();
+    		for (Extension ext: getSolver().getExtensions()) {
     			if (ext instanceof ConflictStatistics) {
     				cbs = (ConflictStatistics)ext; break;
     			}

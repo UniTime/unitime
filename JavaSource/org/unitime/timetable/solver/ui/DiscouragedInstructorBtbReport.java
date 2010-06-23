@@ -22,8 +22,8 @@ package org.unitime.timetable.solver.ui;
 import java.io.Serializable;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
-import java.util.Vector;
 
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.solver.interactive.ClassAssignmentDetails;
@@ -50,11 +50,9 @@ public class DiscouragedInstructorBtbReport implements Serializable {
 			HashSet used = new HashSet();
 	        for (int slot=1;slot<Constants.SLOTS_PER_DAY * Constants.NR_DAYS;slot++) {
 	        	if ((slot%Constants.SLOTS_PER_DAY)==0) continue;
-	            for (Enumeration f=ic.getResource(slot).elements();f.hasMoreElements();) {
-	            	Placement placement = (Placement)f.nextElement();
-	            	Vector prevPlacements = ic.getPlacements(slot-1,placement);
-	            	for (Enumeration i=prevPlacements.elements();i.hasMoreElements();) {
-	            		Placement prevPlacement = (Placement)i.nextElement();
+	            for (Placement placement: ic.getResource(slot)) {
+	            	List<Placement> prevPlacements = ic.getPlacements(slot-1,placement);
+	            	for (Placement prevPlacement: prevPlacements) {
 	            		if (prevPlacement.equals(placement)) continue;
 	            		if (!used.add(prevPlacement+"."+placement)) continue; 
 	            		double dist = Placement.getDistance(prevPlacement,placement);

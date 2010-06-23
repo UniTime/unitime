@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -277,8 +276,7 @@ public class CalendarServlet extends HttpServlet {
 			out.println("DESCRIPTION:" + desc);
         if (section.getRooms() != null && !section.getRooms().isEmpty()) {
         	String loc = "";
-        	for (Enumeration<RoomLocation> e = section.getRooms().elements(); e.hasMoreElements(); ) {
-        		RoomLocation r = e.nextElement();
+        	for (RoomLocation r: section.getRooms()) {
         		if (!loc.isEmpty()) loc += ", ";
         		loc += r.getName();
         	}
