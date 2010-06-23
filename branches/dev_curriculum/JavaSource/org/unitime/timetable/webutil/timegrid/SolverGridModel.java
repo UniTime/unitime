@@ -23,6 +23,7 @@ import java.io.Serializable;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
@@ -91,10 +92,9 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 		HashSet done = new HashSet();
 		for (int i=0;i<Constants.DAY_CODES.length;i++)
 			for (int j=0;j<Constants.SLOTS_PER_DAY;j++) {
-                Vector placements = (room.getAvailableArray()==null?null:room.getAvailableArray()[i*Constants.SLOTS_PER_DAY+j]);
+                List<Placement> placements = (room.getAvailableArray()==null?null:room.getAvailableArray()[i*Constants.SLOTS_PER_DAY+j]);
                 if (placements!=null && !placements.isEmpty()) {
-                    for (Enumeration e=placements.elements();e.hasMoreElements();) {
-                        Placement p = (Placement)e.nextElement();
+                    for (Placement p: placements) {
                         if (done.add(p))
                             init(solver, p, sBgModeNotAvailable, firstDay);
                     }
@@ -127,10 +127,9 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 			HashSet done = new HashSet();
 			for (int i=0;i<Constants.DAY_CODES.length;i++)
 				for (int j=0;j<Constants.SLOTS_PER_DAY;j++) {
-                    Vector placements = instructor.getAvailableArray()[i*Constants.SLOTS_PER_DAY+j];
+                    List<Placement> placements = instructor.getAvailableArray()[i*Constants.SLOTS_PER_DAY+j];
                     if (placements!=null) {
-                        for (Enumeration e=placements.elements();e.hasMoreElements();) {
-                            Placement p = (Placement)e.nextElement();
+                        for (Placement p: placements) {
                             if (p==null || !done.add(p)) continue;
                             init(solver, p, sBgModeNotAvailable, firstDay);
                         }

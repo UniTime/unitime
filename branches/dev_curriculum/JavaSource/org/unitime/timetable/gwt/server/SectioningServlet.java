@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -222,8 +221,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 			for (Section section: sections) {
 				String room = null;
 				if (section.getRooms() != null) {
-					for (Enumeration<RoomLocation> e = section.getRooms().elements(); e.hasMoreElements(); ) {
-						RoomLocation rm = e.nextElement();
+					for (RoomLocation rm: section.getRooms()) {
 						if (room == null) room = ""; else room += ", ";
 						room += rm.getName();
 					}
@@ -253,8 +251,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 					a.setDatePattern(section.getTime().getDatePatternName());
 				}
 				if (section.getRooms() != null) {
-					for (Enumeration<RoomLocation> e = section.getRooms().elements(); e.hasMoreElements(); ) {
-						RoomLocation rm = e.nextElement();
+					for (RoomLocation rm: section.getRooms()) {
 						a.addRoom(rm.getName());
 					}
 				}

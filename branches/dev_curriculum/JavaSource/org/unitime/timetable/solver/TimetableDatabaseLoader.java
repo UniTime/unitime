@@ -1684,7 +1684,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	if (!parentLecture.hasAnyChildren()) return;
 		for (Enumeration e1=parentLecture.getChildrenSubpartIds();e1.hasMoreElements();) {
 			Long subpartId = (Long) e1.nextElement();
-        	Vector children = parentLecture.getChildren(subpartId);
+        	net.sf.cpsolver.ifs.util.List children = parentLecture.getChildren(subpartId);
 
         	ClassLimitConstraint clc = new ClassLimitConstraint(parentLecture, getClassLimitConstraitName(parentLecture));
 
@@ -1795,8 +1795,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		parentLecture = (Lecture)iLectures.get(c.getUniqueId());
     	}
     	if (parentLecture!=null && !parentLecture.isCommitted()) {
-    		for (Enumeration e=parentLecture.sameSubpartLectures().elements();e.hasMoreElements();) {
-    			Lecture lecture = (Lecture)e.nextElement();
+    		for (Lecture lecture: parentLecture.sameSubpartLectures()) {
     			if (!lecture.equals(parentLecture) && !lecture.isCommitted()) {
     				//iProgress.debug("[A] Students "+students+" cannot enroll "+lecture.getName()+" due to the enrollment of "+clazz.getClassLabel());
     				for (Iterator i=students.iterator();i.hasNext();) {

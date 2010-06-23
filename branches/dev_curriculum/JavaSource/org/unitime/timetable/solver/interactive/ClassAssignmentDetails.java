@@ -27,6 +27,7 @@ import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -115,7 +116,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 			getAssignedTime().equals(getInitialTime()) && 
 			getAssignedRoom().equals(getInitialRoom());
 	}
-	public void setAssigned(AssignmentPreferenceInfo info, Vector roomIds, int days, int slot) {
+	public void setAssigned(AssignmentPreferenceInfo info, List<Long> roomIds, int days, int slot) {
 		iAssignedTime = null; 
 		if (days>=0 && slot>=0) {
 			for (Enumeration e=iTimes.elements();e.hasMoreElements();) {
@@ -129,12 +130,11 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 		if (roomIds!=null) {
 			int idx = 0;
 			iAssignedRoom = new RoomInfo[roomIds.size()];
-			for (Enumeration e=roomIds.elements();e.hasMoreElements();idx++) {
-				Long roomId = (Long)e.nextElement();
+			for (Long roomId: roomIds) {
 				for (Enumeration f=iRooms.elements();f.hasMoreElements();) {
 					RoomInfo room = (RoomInfo)f.nextElement();
 					if (room.getId().equals(roomId)) {
-						iAssignedRoom[idx] = room; break;
+						iAssignedRoom[idx++] = room; break;
 					}
 				}
 			}

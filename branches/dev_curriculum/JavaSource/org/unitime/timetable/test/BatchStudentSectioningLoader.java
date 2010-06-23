@@ -396,13 +396,11 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
     private void fixWeights() {
         Hashtable lastLike = new Hashtable();
         Hashtable real = new Hashtable();
-        for (Enumeration e=getModel().getStudents().elements();e.hasMoreElements();) {
-            Student student = (Student)e.nextElement();
-            for (Enumeration f=student.getRequests().elements();f.hasMoreElements();) {
-                Request request = (Request)f.nextElement();
+        for (Student student: getModel().getStudents()) {
+            for (Request request: student.getRequests()) {
                 if (request instanceof CourseRequest) {
                     CourseRequest courseRequest = (CourseRequest)request;
-                    Course course = (Course)courseRequest.getCourses().firstElement();
+                    Course course = (Course)courseRequest.getCourses().get(0);
                     Integer cnt = (Integer)(student.isDummy()?lastLike:real).get(course);
                     (student.isDummy()?lastLike:real).put(course, new Integer((cnt==null?0:cnt.intValue())+1));
                 }
@@ -417,7 +415,7 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
                 }
                 if (request instanceof CourseRequest) {
                     CourseRequest courseRequest = (CourseRequest)request;
-                    Course course = (Course)courseRequest.getCourses().firstElement();
+                    Course course = (Course)courseRequest.getCourses().get(0);
                     Integer lastLikeCnt = (Integer)lastLike.get(course);
                     Integer realCnt = (Integer)real.get(course);
                     courseRequest.setWeight(Test.getLastLikeStudentWeight(course, realCnt==null?0:realCnt.intValue(), lastLikeCnt==null?0:lastLikeCnt.intValue()));
@@ -468,8 +466,7 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
                 }
             if (!assignedSections.isEmpty()) {
                 sLog.debug("    -- committed assignment: "+assignedSections);
-                for (Enumeration e=request.values().elements();e.hasMoreElements();) {
-                    Enrollment enrollment = (Enrollment)e.nextElement();
+                for (Enrollment enrollment: request.values()) {
                     if (enrollment.getAssignments().containsAll(assignedSections)) {
                         request.setInitialAssignment(enrollment);
                         sLog.debug("      -- found: "+enrollment);
@@ -610,8 +607,7 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
                     getModel().addStudent(student);
                 }
                 if (classAssignments!=null && !classAssignments.isEmpty()) {
-                    for (Enumeration e=getModel().variables().elements();e.hasMoreElements();) {
-                        Request request = (Request)e.nextElement();
+                    for (Request request: getModel().variables()) {
                         if (request.getInitialAssignment()==null) continue;
                         Set conflicts = getModel().conflictValues(request.getInitialAssignment());
                         if (conflicts.isEmpty())

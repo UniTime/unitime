@@ -24,7 +24,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -410,8 +409,7 @@ public class CourseLoader {
     
     @SuppressWarnings("unchecked")
 	 public void assignStudent(Student student, org.unitime.timetable.model.Student s, boolean tweakLimits) {
-		for (Enumeration<Request> e = student.getRequests().elements(); e.hasMoreElements();) {
-			Request r = (Request)e.nextElement();
+		for (Request r: student.getRequests()) {
 			if (r instanceof CourseRequest && r.getInitialAssignment() != null) {
                 if (r.getModel().conflictValues(r.getInitialAssignment()).isEmpty()) {
                 	r.assign(0, r.getInitialAssignment());
@@ -420,14 +418,13 @@ public class CourseLoader {
                 	Enrollment enrl = (Enrollment)r.getInitialAssignment();
                 	sLog.error("There is a problem assigning " + cr.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + ") [" + iAcademicSession + "]");
                 	boolean hasLimit = false, hasOverlap = false;
-                	sections: for (Iterator<Section> i = enrl.getAssignments().iterator(); i.hasNext();) {
+                	sections: for (Iterator<Section> i = enrl.getSections().iterator(); i.hasNext();) {
                 		Section section = i.next();
                 		if (section.getTime() != null) {
-                    		for (Enumeration<Request> f = student.getRequests().elements(); f.hasMoreElements(); ) {
-                    			Request q = f.nextElement();
+                    		for (Request q: student.getRequests()) {
                     			if (q.getAssignment() == null || !(q instanceof CourseRequest)) continue;
                     			Enrollment enrlx = (Enrollment)q.getAssignment();
-                    			for (Iterator<Section> j = enrlx.getAssignments().iterator(); j.hasNext();) {
+                    			for (Iterator<Section> j = enrlx.getSections().iterator(); j.hasNext();) {
                     				Section sectionx = j.next();
                     				if (sectionx.getTime() == null) continue;
                     				if (sectionx.getTime().hasIntersection(section.getTime())) {
@@ -455,7 +452,7 @@ public class CourseLoader {
                 	if (!hasLimit && !hasOverlap) {
                 		for (Iterator<Enrollment> i = r.getModel().conflictValues(r.getInitialAssignment()).iterator(); i.hasNext();) {
                 			Enrollment enrlx = i.next();
-                			for (Iterator<Section> j = enrlx.getAssignments().iterator(); j.hasNext();) {
+                			for (Iterator<Section> j = enrlx.getSections().iterator(); j.hasNext();) {
                 				Section sectionx = j.next();
                 				sLog.info("    conflicts with " + sectionx.getSubpart().getConfig().getOffering().getName() + " " + sectionx.getSubpart().getName() + " " +
             							sectionx.getName() + (sectionx.getTime() == null ? "" : " " + sectionx.getTime().getLongName()));
@@ -470,8 +467,7 @@ public class CourseLoader {
                 }
 			}
 		}
-		for (Enumeration<Request> e = student.getRequests().elements(); e.hasMoreElements();) {
-			Request r = (Request)e.nextElement();
+		for (Request r: student.getRequests()) {
 			if (r instanceof FreeTimeRequest) {
 				FreeTimeRequest ft = (FreeTimeRequest)r;
                 Enrollment enrollment = ft.createEnrollment();

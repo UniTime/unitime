@@ -74,8 +74,7 @@ public class SameSubpartBalancingReport implements Serializable {
 					iLimit[i][j]=spread.getMaxCourses()[i][j];
 					iUsage[i][j]=spread.getNrCourses()[i][j];
 					iCourses[i][j]=new HashSet(spread.getCourses()[i][j].size());
-					for (Enumeration e=spread.getCourses()[i][j].elements();e.hasMoreElements();) {
-						Placement placement = (Placement)e.nextElement();
+					for (Placement placement: spread.getCourses()[i][j]) {
 						Lecture lecture = (Lecture)placement.variable();
 						ClassAssignmentDetails ca = (ClassAssignmentDetails)detailCache.get(lecture.getClassId());
 						if (ca==null) {

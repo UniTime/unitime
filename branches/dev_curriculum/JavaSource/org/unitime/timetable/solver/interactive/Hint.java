@@ -60,7 +60,7 @@ public class Hint implements Serializable {
 		iClassId = ((Lecture)placement.variable()).getClassId();
 		iDays = placement.getTimeLocation().getDayCode();
 		iStartSlot = placement.getTimeLocation().getStartSlot();
-		iRoomIds = placement.getRoomIds();
+		iRoomIds = new Vector(placement.getRoomIds());
 		iPatternId = placement.getTimeLocation().getTimePatternId();
 		if (populateInfo && solver!=null)
 			iInfo = new AssignmentPreferenceInfo(solver, placement, false);

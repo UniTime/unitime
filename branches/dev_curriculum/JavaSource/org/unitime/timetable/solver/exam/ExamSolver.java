@@ -29,6 +29,7 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -76,7 +77,7 @@ import net.sf.cpsolver.ifs.util.ToolBox;
 /**
  * @author Tomas Muller
  */
-public class ExamSolver extends Solver implements ExamSolverProxy {
+public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolverProxy {
     private static Log sLog = LogFactory.getLog(ExamSolver.class);
     private int iDebugLevel = Progress.MSGLEVEL_INFO;
     private boolean iWorking = false;
@@ -101,9 +102,9 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
     
     public Date getLoadedDate() {
         if (iLoadedDate==null && !isPassivated()) {
-            Vector log = Progress.getInstance(currentSolution().getModel()).getLog();
+            List<Progress.Message> log = Progress.getInstance(currentSolution().getModel()).getLog();
             if (log!=null && !log.isEmpty()) {
-                iLoadedDate = ((Progress.Message)log.firstElement()).getDate();
+                iLoadedDate = log.get(0).getDate();
             }
         }
         return iLoadedDate;
@@ -850,8 +851,7 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
     
     public ExamConflictStatisticsInfo getCbsInfo() {
         ConflictStatistics cbs = null;
-        for (Enumeration e=getExtensions().elements();e.hasMoreElements();) {
-            Extension ext = (Extension)e.nextElement();
+        for (Extension ext: getExtensions()) {
             if (ext instanceof ConflictStatistics) {
                 cbs = (ConflictStatistics)ext;
                 break;
@@ -870,8 +870,7 @@ public class ExamSolver extends Solver implements ExamSolverProxy {
     
     public ExamConflictStatisticsInfo getCbsInfo(Long examId) {
         ConflictStatistics cbs = null;
-        for (Enumeration e=getExtensions().elements();e.hasMoreElements();) {
-            Extension ext = (Extension)e.nextElement();
+        for (Extension ext: getExtensions()) {
             if (ext instanceof ConflictStatistics) {
                 cbs = (ConflictStatistics)ext;
                 break;

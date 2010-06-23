@@ -32,6 +32,7 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -137,9 +138,9 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
 	
 	public Date getLoadedDate() {
 		if (iLoadedDate==null && !isPassivated()) {
-			Vector log = Progress.getInstance(currentSolution().getModel()).getLog();
+			List<Progress.Message> log = Progress.getInstance(currentSolution().getModel()).getLog();
 			if (log!=null && !log.isEmpty()) {
-				iLoadedDate = ((Progress.Message)log.firstElement()).getDate();
+				iLoadedDate = log.get(0).getDate();
 			}
 		}
 		return iLoadedDate;
@@ -519,8 +520,7 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
     
     public ConflictStatisticsInfo getCbsInfo() {
     	ConflictStatistics cbs = null;
-    	for (Enumeration e=getExtensions().elements();e.hasMoreElements();) {
-    		Extension ext = (Extension)e.nextElement();
+    	for (Extension ext: getExtensions()) {
     		if (ext instanceof ConflictStatistics) {
     			cbs = (ConflictStatistics)ext;
     			break;
@@ -539,8 +539,7 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
     
     public ConflictStatisticsInfo getCbsInfo(Long classId) {
     	ConflictStatistics cbs = null;
-    	for (Enumeration e=getExtensions().elements();e.hasMoreElements();) {
-    		Extension ext = (Extension)e.nextElement();
+        for (Extension ext: getExtensions()) {
     		if (ext instanceof ConflictStatistics) {
     			cbs = (ConflictStatistics)ext;
     			break;
