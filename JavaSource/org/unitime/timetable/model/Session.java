@@ -672,7 +672,7 @@ public class Session extends BaseSession implements Comparable {
 		StringBuffer sb = new StringBuffer();
 		for (int m = startMonth; m <= endMonth; m++) {
 			int year = DateUtils.calculateActualYear(m, startYear);
-			int daysOfMonth = DateUtils.getNrDaysOfMonth(m, year);
+			int daysOfMonth = DateUtils.getNrDaysOfMonth(m, startYear);
 			for (int d = 1; d <= daysOfMonth; d++) {
 				String holiday = request.getParameter("cal_val_" + year + "_"
 						+ ((12 + m) % 12) + "_" + d);
