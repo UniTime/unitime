@@ -124,9 +124,11 @@ public class CurriculumProjectionRules extends Composite {
 			iErrorMessage[i].setVisible(false);
 			iSave[i].setVisible(false);
 			iSave[i].addClickHandler(save);
+			iSave[i].addStyleName("unitime-NoPrint");
 			iClose[i].setVisible(false);
 			iClose[i].addClickHandler(close);
 			iClose[i].getElement().getStyle().setMarginLeft(4, Unit.PX);
+			iClose[i].addStyleName("unitime-NoPrint");
 			HorizontalPanel buttons = new HorizontalPanel();
 			buttons.add(iSave[i]);
 			buttons.add(iClose[i]);
@@ -135,6 +137,7 @@ public class CurriculumProjectionRules extends Composite {
 			iHeaderPanel[i].add(buttons);
 		}
 		iHeaderPanel[0].setVisible(false);
+		iHeaderPanel[0].addStyleName("unitime-NoPrint");
 		
 		iPanel.add(iHeaderPanel[0]);
 		
@@ -677,7 +680,7 @@ public class CurriculumProjectionRules extends Composite {
 			sinkEvents(Event.ONCLICK);
 			sinkEvents(Event.ONKEYDOWN);
 			setStylePrimaryName("unitime-MainTable");
-			addStyleName("unitime-BottomLine");
+			addStyleName("unitime-NotPrintableBottomLine");
 		}
 		
 		private boolean focus(Event event, int oldRow, int oldCol, int row, int col) {

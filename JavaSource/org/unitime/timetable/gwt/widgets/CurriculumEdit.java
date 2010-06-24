@@ -46,11 +46,12 @@ public class CurriculumEdit extends Composite {
 	private Button[] iDelete = null;
 	private Button[] iBack = null;
 	private Label[] iSaveError = null;
+	private HorizontalPanel[] iButtons = null;
 
 	private TextBox iCurriculumAbbv = null, iCurriculumName = null;
 	private Label iCurriculumAbbvError = null, iCurriculumNameError = null, iCurriculumAreaError = null, iCurriculumDeptError = null, iCurriculumClasfTableError = null;
 	private Label iCurriculumAreaLabel = null, iCurriculumDeptLabel = null, iCurriculumClasfTableHint = null;
-	private HTML iCurriculumMajorsHTML = null;
+	private HTML iCurriculumMajorsHTML = null, iCurriculumMajorsPrint = null;
 	private ListBox iCurriculumArea = null, iCurriculumDept = null, iCurriculumMajors = null;
 	private CurriculaClassifications iCurriculumClasfTable = null;
 	private CheckBox iCurriculaPercent = null;
@@ -73,7 +74,7 @@ public class CurriculumEdit extends Composite {
 		FlexTable curriculaTable = new FlexTable();
 		
 		curriculaTable.setStylePrimaryName("unitime-MainTable");
-		curriculaTable.addStyleName("unitime-BottomLine");
+		curriculaTable.addStyleName("unitime-NotPrintableBottomLine");
 		curriculaTable.setCellPadding(2);
 		curriculaTable.setCellSpacing(0);
 		curriculaTable.setWidth("100%");
@@ -87,17 +88,18 @@ public class CurriculumEdit extends Composite {
 		iBack = new Button[] {new Button("<u>B</u>ack"), new Button("<u>B</u>ack")};
 		iBack[0].setAccessKey('c');
 		iSaveError = new Label[] { new Label(), new Label() };
-		HorizontalPanel buttons[] = new HorizontalPanel[] {new HorizontalPanel(), new HorizontalPanel()};
+		iButtons = new HorizontalPanel[] {new HorizontalPanel(), new HorizontalPanel()};
 		for (int i = 0; i < 2; i++) {
 			iSave[i].setWidth("75px");
 			iDelete[i].setWidth("75px");
 			iBack[i].setWidth("75px");
 			iSaveError[i].setStyleName("unitime-ErrorMessage");
-			buttons[i].add(iSave[i]);
+			iButtons[i].add(iSave[i]);
 			iSave[i].getElement().getStyle().setMarginRight(4, Unit.PX);
-			buttons[i].add(iDelete[i]);
+			iButtons[i].add(iDelete[i]);
 			iDelete[i].getElement().getStyle().setMarginRight(4, Unit.PX);
-			buttons[i].add(iBack[i]);
+			iButtons[i].add(iBack[i]);
+			iButtons[i].addStyleName("unitime-NoPrint");
 		}
 		
 		HorizontalPanel titleAndButtons = new HorizontalPanel();
@@ -105,8 +107,8 @@ public class CurriculumEdit extends Composite {
 		title.setStyleName("unitime-MainHeader");
 		titleAndButtons.add(title);
 		titleAndButtons.add(iSaveError[0]);
-		titleAndButtons.add(buttons[0]);
-		titleAndButtons.setCellHorizontalAlignment(buttons[0], HasHorizontalAlignment.ALIGN_RIGHT);
+		titleAndButtons.add(iButtons[0]);
+		titleAndButtons.setCellHorizontalAlignment(iButtons[0], HasHorizontalAlignment.ALIGN_RIGHT);
 		titleAndButtons.setWidth("100%");
 		curriculaTable.getFlexCellFormatter().setColSpan(idx, 0, 2);
 		curriculaTable.getFlexCellFormatter().setStyleName(idx, 0, "unitime-MainTableHeader");
@@ -155,7 +157,7 @@ public class CurriculumEdit extends Composite {
 		VerticalPanel curriculumAreaVP = new VerticalPanel();
 		iCurriculumArea = new ListBox(false);
 		iCurriculumArea.setWidth("300px");
-		iCurriculumArea.setStyleName("gwt-SuggestBox");
+		iCurriculumArea.setStyleName("unitime-TextBox");
 		iCurriculumArea.setVisibleItemCount(1);
 		curriculumAreaVP.add(iCurriculumArea);
 		iCurriculumAreaLabel = new Label();
@@ -187,38 +189,46 @@ public class CurriculumEdit extends Composite {
 		VerticalPanel curriculumMajorsVP = new VerticalPanel();
 		iCurriculumMajors = new ListBox(true);
 		iCurriculumMajors.setWidth("300px");
-		iCurriculumMajors.setStyleName("gwt-SuggestBox");
+		iCurriculumMajors.setStyleName("unitime-TextBox");
 		iCurriculumMajors.setVisibleItemCount(3);
 		iCurriculumMajors.setHeight("100%");
+		iCurriculumMajors.addStyleName("unitime-NoPrint");
 		curriculumMajorsVP.add(iCurriculumMajors);
 		iCurriculumMajorsHTML = new HTML();
 		iCurriculumMajorsHTML.setStyleName("unitime-LabelInsteadEdit");
 		iCurriculumMajorsHTML.setVisible(false);
+		iCurriculumMajorsHTML.addStyleName("unitime-NoPrint");
 		curriculumMajorsVP.add(iCurriculumMajorsHTML);
+		iCurriculumMajorsPrint = new HTML();
+		iCurriculumMajorsPrint.setStyleName("unitime-LabelInsteadEdit");
+		iCurriculumMajorsPrint.addStyleName("unitime-Print");
+		curriculumMajorsVP.add(iCurriculumMajorsPrint);
 		curriculaTable.setWidget(idx++, 1, curriculumMajorsVP);
 		iCurriculumMajors.addChangeHandler(new ChangeHandler() {
 			@Override
 			public void onChange(ChangeEvent event) {
-				if (iDefaultName || iDefaultAbbv) {
-					try {
-						String defaultAbbv = "", defaultName = "";
-						AcademicAreaInterface area = iAreas.get(iCurriculumArea.getSelectedIndex());
-						defaultAbbv = area.getAbbv();
-						defaultName = area.getName();
-						for (int i = 0; i < iCurriculumMajors.getItemCount(); i++) {
-							if (iCurriculumMajors.isItemSelected(i)) {
-								MajorInterface m = iMajors.get(i);
-								if (!defaultAbbv.contains("/")) { defaultAbbv += "/"; defaultName += " / "; }
-								else { defaultAbbv += ","; defaultName += ", "; }
-								defaultAbbv += m.getCode();
-								defaultName += m.getName();
-							}
+				try {
+					String defaultAbbv = "", defaultName = "";
+					AcademicAreaInterface area = iAreas.get(iCurriculumArea.getSelectedIndex());
+					defaultAbbv = area.getAbbv();
+					defaultName = area.getName();
+					String majors = "";
+					for (int i = 0; i < iCurriculumMajors.getItemCount(); i++) {
+						if (iCurriculumMajors.isItemSelected(i)) {
+							MajorInterface m = iMajors.get(i);
+							if (!defaultAbbv.contains("/")) { defaultAbbv += "/"; defaultName += " / "; }
+							else { defaultAbbv += ","; defaultName += ", "; }
+							defaultAbbv += m.getCode();
+							defaultName += m.getName();
+							if (!majors.isEmpty()) majors += "<br>";
+							majors += m.getName();
 						}
-						if (defaultName.length() > 60) defaultName = defaultName.substring(0, 60);
-						if (iDefaultAbbv) iCurriculumAbbv.setText(defaultAbbv);
-						if (iDefaultName) iCurriculumName.setText(defaultName);
-					} catch (Exception e) {}
-				}
+					}
+					if (defaultName.length() > 60) defaultName = defaultName.substring(0, 60);
+					if (iDefaultAbbv) iCurriculumAbbv.setText(defaultAbbv);
+					if (iDefaultName) iCurriculumName.setText(defaultName);
+					iCurriculumMajorsPrint.setHTML(majors);
+				} catch (Exception e) {}
 				loadEnrollments();
 			}
 		});
@@ -227,7 +237,7 @@ public class CurriculumEdit extends Composite {
 		VerticalPanel curriculumDeptVP = new VerticalPanel();
 		iCurriculumDept = new ListBox(false);
 		iCurriculumDept.setWidth("300px");
-		iCurriculumDept.setStyleName("gwt-SuggestBox");
+		iCurriculumDept.setStyleName("unitime-TextBox");
 		iCurriculumDept.setVisibleItemCount(1);
 		curriculumDeptVP.add(iCurriculumDept);
 		iCurriculumDeptLabel = new Label();
@@ -354,11 +364,12 @@ public class CurriculumEdit extends Composite {
 		errorAndButtons.add(iSaveError[1]);
 		errorAndButtons.setCellWidth(iSaveError[1], "34%");
 		errorAndButtons.setCellHorizontalAlignment(iSaveError[1], HasHorizontalAlignment.ALIGN_CENTER);
-		errorAndButtons.add(buttons[1]);
-		errorAndButtons.setCellHorizontalAlignment(buttons[1], HasHorizontalAlignment.ALIGN_RIGHT);
-		errorAndButtons.setCellWidth(buttons[1], "33%");
+		errorAndButtons.add(iButtons[1]);
+		errorAndButtons.setCellHorizontalAlignment(iButtons[1], HasHorizontalAlignment.ALIGN_RIGHT);
+		errorAndButtons.setCellWidth(iButtons[1], "33%");
+		errorAndButtons.addStyleName("unitime-NoPrint");
 		iCurriculumPanel.add(errorAndButtons);
-		buttons[1].getElement().getStyle().setMarginTop(2, Unit.PX);
+		iButtons[1].getElement().getStyle().setMarginTop(2, Unit.PX);
 		
 		initWidget(iCurriculumPanel);
 		
@@ -501,6 +512,7 @@ public class CurriculumEdit extends Composite {
 			iCurriculumMajorsHTML.setVisible(true);
 		}
 		iCurriculumMajorsHTML.setHTML(iCurriculum.getMajorNames("<br>"));
+		iCurriculumMajorsPrint.setHTML(iCurriculum.getMajorNames("<br>"));
 		loadMajors(detailsEditable);
 		iCurriculumMajors.setEnabled(iCurriculum.isEditable() && detailsEditable);
 		iCurriculumClasfTable.populate(iCurriculum.getClassifications());
@@ -692,7 +704,7 @@ public class CurriculumEdit extends Composite {
 	public static class MyTextBox extends TextBox {
 		public MyTextBox() {
 			super();
-			setStyleName("gwt-SuggestBox");
+			setStyleName("unitime-TextBox");
 		}
 		
 		public void setEnabled(boolean enabled) {

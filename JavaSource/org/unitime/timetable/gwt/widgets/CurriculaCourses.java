@@ -139,6 +139,11 @@ public class CurriculaCourses extends Composite {
 				int col = DOM.getChildIndex(tr, td);
 			    Element body = DOM.getParent(tr);
 			    int row = DOM.getChildIndex(body, tr);
+			    if (evt.getCourse().isEmpty()) {
+					iTable.getRowFormatter().addStyleName(row, "unitime-NoPrint");
+			    } else {
+					iTable.getRowFormatter().removeStyleName(row, "unitime-NoPrint");
+			    }
 			    if (row + 1 == iTable.getRowCount() && !evt.getCourse().isEmpty())
 					addBlankLine();
 			}
@@ -899,6 +904,7 @@ public class CurriculaCourses extends Composite {
 			}
 			col++;
 		}
+		iTable.getRowFormatter().addStyleName(row, "unitime-NoPrint");
 	}
 	
 	public void sort(final int column) {
@@ -977,6 +983,14 @@ public class CurriculaCourses extends Composite {
 		String course = c0.getCourse();
 		c0.setCourse(c1.getCourse(), false);
 		c1.setCourse(course, false);
+		if (c0.getCourse().isEmpty())
+			iTable.getRowFormatter().addStyleName(1 + r1, "unitime-NoPrint");
+		else 
+			iTable.getRowFormatter().removeStyleName(1 + r1, "unitime-NoPrint");
+		if (c1.getCourse().isEmpty())
+			iTable.getRowFormatter().addStyleName(1 + r0, "unitime-NoPrint");
+		else 
+			iTable.getRowFormatter().removeStyleName(1 + r0, "unitime-NoPrint");
 		for (int col = 0; col < iClassifications.getClassifications().size(); col ++) {
 			MyTextBox t0 = (MyTextBox)iTable.getWidget(1 + r0, 2 + 2 * col);
 			MyTextBox t1 = (MyTextBox)iTable.getWidget(1 + r1, 2 + 2 * col);
@@ -1129,6 +1143,7 @@ public class CurriculaCourses extends Composite {
 			addBlankLine();
 			CurriculaCourseSelectionBox c = (CurriculaCourseSelectionBox)iTable.getWidget(row, 1);
 			c.setCourse(course.getKey(), false);
+			iTable.getRowFormatter().removeStyleName(row, "unitime-NoPrint");
 			for (int col = 0; col < iClassifications.getClassifications().size(); col++) {
 				MyLabel note = ((MyLabel)iTable.getWidget(row, 3 + 2 * col));
 				note.iEnrollment = (cc == null || cc[col] == null ? null : cc[col].getEnrollment());
@@ -1177,6 +1192,8 @@ public class CurriculaCourses extends Composite {
 		}
 	}
 	
+	public boolean getPercent() { return iPercent; }
+	
 	public void setMode(Mode mode) {
 		iMode = mode;
 		for (int col = 0; col < iClassifications.getClassifications().size(); col++) {
@@ -1188,6 +1205,8 @@ public class CurriculaCourses extends Composite {
 			}
 		}
 	}
+	
+	public Mode getMode() { return iMode; }
 
 	public void setVisible(int col, boolean visible) {
 		for (int row = 0; row < iTable.getRowCount(); row++) {
@@ -1288,7 +1307,7 @@ public class CurriculaCourses extends Composite {
 			iColumn = column;
 			iShare = share;
 			setWidth("60px");
-			setStyleName("gwt-SuggestBox");
+			setStyleName("unitime-TextBox");
 			setMaxLength(6);
 			setTextAlignment(TextBox.ALIGN_RIGHT);
 			addChangeHandler(new ChangeHandler() {

@@ -84,6 +84,7 @@ public class CurriculaTable extends Composite {
 		iTable.getFlexCellFormatter().setWidth(0, col, "10px");
 		iTable.getCellFormatter().setHorizontalAlignment(0, col, HasHorizontalAlignment.ALIGN_CENTER);
 		iTable.setWidget(0, col, selectHtml);
+		iTable.getCellFormatter().addStyleName(0, 0, "unitime-NoPrint");
 		col++;
 		selectHtml.addClickHandler(new ClickHandler() {
 			@Override
@@ -625,6 +626,7 @@ public class CurriculaTable extends Composite {
 		} else {
 			iTable.setText(1 + c.getRow(), col++, "");
 		}
+		iTable.getCellFormatter().addStyleName(1 + c.getRow(), 0, "unitime-NoPrint");
 		iTable.setText(1 + c.getRow(), col++, c.getAbbv());
 		iTable.setText(1 + c.getRow(), col++, c.getAcademicArea().getName());
 		iTable.setHTML(1 + c.getRow(), col++, (c.hasMajors() && c.getMajors().size() > 3 ? c.getMajorCodes(", ") : c.getMajorNames("<br>")));
@@ -639,7 +641,7 @@ public class CurriculaTable extends Composite {
 		iTable.setText(1 + c.getRow(), col++, (c.getEnrollment() == null ? "" : c.getEnrollmentString()));
 	}
 	
-	public void populate(TreeSet<CurriculumInterface> result) {
+	public void populate(TreeSet<CurriculumInterface> result, boolean editable) {
 		clear();
 		
 		if (result.isEmpty()) {
@@ -658,18 +660,20 @@ public class CurriculaTable extends Composite {
 		for (CurriculumInterface curriculum: iData) {
 			if (ids.size() < 10 && !curriculum.hasClassifications()) ids.add(curriculum.getId());
 			curriculum.setRow(row);
-			if (curriculum.isEditable()) hasEditable = true;
+			if (curriculum.isEditable() && editable) hasEditable = true;
 			fillRow(curriculum);
 			if (curriculum.getId().equals(iLastCurriculumId)) {
 				iTable.getRowFormatter().setStyleName(1 + row, "unitime-TableRowSelected");
 				rowToScroll = 1 + row;
 			}
-			if (curriculum.isEditable() && iSelectedCurricula.contains(curriculum.getId()))
+			if (curriculum.isEditable() && editable && iSelectedCurricula.contains(curriculum.getId()))
 				newlySelected.add(curriculum.getId());
 			row++;
 		}
-		iTable.setWidget(1, 7, new Image(RESOURCES.loading_small()));
-		iTable.getFlexCellFormatter().setHorizontalAlignment(1, 7, HasHorizontalAlignment.ALIGN_LEFT);
+		if (!ids.isEmpty()) {
+			iTable.setWidget(1, 7, new Image(RESOURCES.loading_small()));
+			iTable.getFlexCellFormatter().setHorizontalAlignment(1, 7, HasHorizontalAlignment.ALIGN_LEFT);
+		}
 		iSelectedCurricula.clear();
 		iSelectedCurricula.addAll(newlySelected);
 		
@@ -699,7 +703,7 @@ public class CurriculaTable extends Composite {
 			@Override
 			public void onSuccess(TreeSet<CurriculumInterface> result) {
 				iLoadingImage.setVisible(false);
-				populate(result);
+				populate(result, true);
 				if (next != null)
 					next.execute();
 			}
@@ -763,6 +767,7 @@ public class CurriculaTable extends Composite {
 			sinkEvents(Event.ONMOUSEMOVE);
 			setCellPadding(2);
 			setCellSpacing(0);
+			getElement().getStyle().setProperty("whiteSpace", "nowrap");
 		}
 		
 		public void onBrowserEvent(Event event) {
@@ -899,6 +904,10 @@ public class CurriculaTable extends Composite {
 	
 	public void addCurriculumClickHandler(CurriculumClickHandler h) {
 		iCurriculumClickHandlers.add(h);
+	}
+	
+	public List<CurriculumInterface> getCurricula() {
+		return iData;
 	}
 
 }

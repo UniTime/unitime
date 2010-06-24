@@ -138,7 +138,7 @@ public class ToolBox {
     		"<link type=\"text/css\" rel=\"stylesheet\" href=\"" + GWT.getHostPageBaseURL() + "unitime4/gwt/standard/standard.css\">" +
     		"<link type=\"text/css\" rel=\"stylesheet\" href=\"" + GWT.getHostPageBaseURL() + "styles/unitime4.css\">" +
     	    "<link rel=\"shortcut icon\" href=\"" + GWT.getHostPageBaseURL() + "images/timetabling.ico\">" +
-    	    "<title>UniTime 4.0 Preview | Student Scheduling Assistant</title>" +
+    	    "<title>UniTime 3.2 | University Timetabling Application</title>" +
     		"</header><body>" + 
     		"<table align=\"center\"><tr><td>" +
     		"<table class=\"unitime-Page\"><tr><td>" +
@@ -151,7 +151,7 @@ public class ToolBox {
     		"</td></tr></table>" +
     		"</td></tr><tr><td>" +
     		"<table class=\"unitime-Footer\"><tr>" +
-    		"<td width=\"33%\" align=\"left\" nowrap=\"nowrap\">Printed from UniTime 4 | Student Scheduling Assistant</td>" +
+    		"<td width=\"33%\" align=\"left\" nowrap=\"nowrap\">Printed from UniTime 3.2 | University Timetabling Application</td>" +
     		"<td width=\"34%\" align=\"center\">&copy; 2010 UniTime.org</td>" +
     		"<td width=\"33%\" align=\"right\">" + DateTimeFormat.getMediumDateTimeFormat().format(new Date()) + "</td>" +
     		"</tr></table></td></tr></table>" +
