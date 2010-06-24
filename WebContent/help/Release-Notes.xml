@@ -24,9 +24,13 @@
 <doc-title>Timetabling - Release Notes</doc-title>
 
 <release>
-	<version>3.1.@build.number@</version>
+	<version>3.2.@build.number@</version>
 	<release-date>@release.date@</release-date>
 	<category>
+		<title>NEW FEATURES</title>
+		<item>
+			<name>Curriculum-based course timetabling</name>
+		</item>	
 		<title>BUG FIXES &amp; OTHER IMPROVEMENTS</title>
 		<item>
 			<name>PDF Exam reports</name>
