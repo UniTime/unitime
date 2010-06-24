@@ -51,7 +51,6 @@ import com.google.gwt.user.client.DeferredCommand;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
@@ -75,7 +74,7 @@ public class Curricula extends Composite {
 	
 	private VerticalPanel iCurriculaPanel = null;
 	
-	private AbsolutePanel iPanel = null;
+	private VerticalPanel iPanel = null;
 	
 	private final CurriculaServiceAsync iService = GWT.create(CurriculaService.class);
 	
@@ -86,7 +85,7 @@ public class Curricula extends Composite {
 	private CurriculumEdit iCurriculumPanel = null;
 	
 	public Curricula() {
-		iPanel = new AbsolutePanel();
+		iPanel = new VerticalPanel();
 		
 		iCurriculaPanel = new VerticalPanel();
 		
@@ -113,15 +112,16 @@ public class Curricula extends Composite {
 		iFilter.setStyleName("gwt-SuggestBox");
 		iFilter.setHeight("26");
 		filterPanel.add(iFilter);
-
 		
 		iSearch = new Button("<u>S</u>earch");
 		iSearch.setAccessKey('s');
+		iSearch.addStyleName("unitime-NoPrint");
 		filterPanel.add(iSearch);		
 		
 		iNew = new Button("<u>A</u>dd New");
 		iNew.setAccessKey('a');
 		iNew.setEnabled(false);
+		iNew.addStyleName("unitime-NoPrint");
 		filterPanel.add(iNew);
 		iService.canAddCurriculum(new AsyncCallback<Boolean>() {
 			@Override
@@ -132,7 +132,7 @@ public class Curricula extends Composite {
 				iNew.setEnabled(result);
 			}
 		});
-
+		
 		iCurriculaPanel.add(filterPanel);
 		iCurriculaPanel.setCellHorizontalAlignment(filterPanel, HasHorizontalAlignment.ALIGN_CENTER);
 		

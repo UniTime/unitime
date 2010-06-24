@@ -1027,3 +1027,64 @@ h1 {
 .unitime-DashedTop {
 	border-top: 1px dashed #333333;
 }
+
+.unitime-TextBox {
+	font-family: Verdana, sans-serif;
+	font-size: 8pt;
+	font-weight: 400;
+	font-style: normal;
+	color: #333333;
+	line-height: 15px;
+	vertical-align: baseline;
+	background: #FFFFFF;
+	height: 22px;
+	border: 1px solid #9CB0CE;
+	padding: 2px;
+}
+
+.unitime-Print {
+	visibility: hidden;
+	display: none;
+}
+
+.unitime-NotPrintableBottomLine {
+	border-bottom: 1px solid #9CB0CE;
+}
+
+@media print {
+	.unitime-TextBox {
+		color: black;
+		background: transparent;
+		border: none;
+	}
+	.gwt-SuggestBox{
+		color: black;
+		background: transparent;
+		border: none;
+	}
+	.unitime-MainTable {
+		page-break-before: avoid;
+		page-break-after: avoid;
+		page-break-inside: auto;
+	}
+	.unitime-Footer {
+		page-break-before: avoid;
+	}
+	.unitime-NoPrint {
+		visibility: hidden;
+		display: none;
+	}
+	.unitime-Print {
+		visibility: visible;
+		display: inherit;
+	}
+	.unitime-ClickableTableHeader {
+		color: black;
+		font-weight: normall;
+		background: none;
+	  	border-bottom: 1px dashed black;
+	}
+	.unitime-NotPrintableBottomLine {
+		border: none;
+	}
+}
