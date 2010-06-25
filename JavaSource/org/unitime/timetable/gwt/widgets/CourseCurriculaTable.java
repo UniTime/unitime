@@ -19,6 +19,7 @@ import org.unitime.timetable.gwt.widgets.CurriculumEdit.EditFinishedEvent;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Cursor;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Command;
@@ -111,12 +112,13 @@ public class CourseCurriculaTable extends Composite {
 			HorizontalPanel header = new HorizontalPanel();
 			iCurriculaImage = new Image(iVisible ? RESOURCES.collapse() : RESOURCES.expand());
 			iCurriculaImage.getElement().getStyle().setCursor(Cursor.POINTER);
+			iCurriculaImage.setVisible(false);
 			header.add(iCurriculaImage);
-			header.setCellWidth(iCurriculaImage, (2 + iCurriculaImage.getWidth()) + "px");
 			Label curriculaLabel = new Label("Curricula", false);
 			curriculaLabel.setStyleName("unitime3-HeaderTitle");
-			
+			curriculaLabel.getElement().getStyle().setPaddingLeft(2, Unit.PX);
 			header.add(curriculaLabel);
+			header.setCellWidth(curriculaLabel, "100%");
 			header.setStyleName("unitime3-HeaderPanel");
 			iCurriculaPanel.add(header);
 			
@@ -144,6 +146,7 @@ public class CourseCurriculaTable extends Composite {
 
 		iLoadingImage = new Image(RESOURCES.loading_small());
 		iLoadingImage.setVisible(false);
+		iLoadingImage.getElement().getStyle().setMarginTop(10, Unit.PX);
 		iCurriculaPanel.add(iLoadingImage);
 		iCurriculaPanel.setCellHorizontalAlignment(iLoadingImage, HasHorizontalAlignment.ALIGN_CENTER);
 		iCurriculaPanel.setCellVerticalAlignment(iLoadingImage, HasVerticalAlignment.ALIGN_MIDDLE);
@@ -778,7 +781,33 @@ public class CourseCurriculaTable extends Composite {
 		
 		// Total line
 		col = 0; row++;
-		iRowClicks.add(null);
+		iRowClicks.add(new ChainedCommand() {
+			@Override
+			public void execute(ConditionalCommand next) {
+				iVisible = !iVisible;
+				if (iCurriculaImage != null)
+					iCurriculaImage.setResource(iVisible ? RESOURCES.collapse() : RESOURCES.expand());
+				if (iCurricula.getRowCount() > 2) {
+					for (int row = 1; row < iCurricula.getRowCount() - 1; row++) {
+						int rowType = iRowTypes.get(row);
+						if (iVisible && (rowType == sRowTypeCurriculum || rowType == sRowTypeOtherArea)) continue;
+						int hc = getHeaderCols(row);
+						for (int col = 0; col < iClassifications.size()  + hc; col++) {
+							iCurricula.getCellFormatter().setVisible(row, col, iVisible && (col < hc || iUsed[col - hc]));
+						}
+					}
+					for (int col = 0; col < iClassifications.size()  + 2; col++) {
+						iCurricula.getCellFormatter().setStyleName(iCurricula.getRowCount() - 1, col, iVisible ? "unitime-TotalRow" : null );
+					}
+				}
+				if (next != null)
+					next.executeOnSuccess();
+			}
+			@Override
+			public String getLoadingMessage() {
+				return null;
+			}
+		});
 		iRowTypes.add(sRowTypeTotal);
 		iCurricula.getFlexCellFormatter().setColSpan(row, col, 2);
 		iCurricula.setWidget(row, col++, new Label("Total " + iType.getName() + " Enrollment", false));
@@ -882,6 +911,7 @@ public class CourseCurriculaTable extends Composite {
 		
 		iLoadingImage.setVisible(false);
 		iHint.setVisible(true);
+		iCurriculaImage.setVisible(true);
 	}
 	
 	private int getHeaderCols(int row) {
