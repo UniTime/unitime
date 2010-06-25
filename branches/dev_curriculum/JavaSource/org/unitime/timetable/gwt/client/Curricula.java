@@ -50,11 +50,11 @@ import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.DeferredCommand;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
@@ -70,11 +70,13 @@ public class Curricula extends Composite {
 	private TextBox iFilter = null;
 	private Button iSearch = null;
 	private Button iNew = null;
+	private Button iPrint = null;
 	private CurriculaTable iCurriculaTable = null;
 	
 	private VerticalPanel iCurriculaPanel = null;
 	
 	private VerticalPanel iPanel = null;
+	private HorizontalPanel iFilterPanel = null;
 	
 	private final CurriculaServiceAsync iService = GWT.create(CurriculaService.class);
 	
@@ -89,7 +91,7 @@ public class Curricula extends Composite {
 		
 		iCurriculaPanel = new VerticalPanel();
 		
-		HorizontalPanel filterPanel = new HorizontalPanelWithHint(new HTML(
+		iFilterPanel = new HorizontalPanelWithHint(new HTML(
 				"Filter curricula by any word from the name, code, or abbreviation<br>of a curricula, academic area, major, or department." +
 				"<br><br>You can also use the following tags:" +
 				"<ul>" +
@@ -101,28 +103,33 @@ public class Curricula extends Composite {
 				"</ul>Use <i>or</i>, <i>and</i>, <i>not</i>, and brackets to build a boolean query." +
 				"<br><br>Example: area: A and (major: AGFN or major: AGMG)",
 				false));
-		filterPanel.setSpacing(3);
+		iFilterPanel.setSpacing(3);
 		
 		Label filterLabel = new Label("Filter:");
-		filterPanel.add(filterLabel);
-		filterPanel.setCellVerticalAlignment(filterLabel, HasVerticalAlignment.ALIGN_MIDDLE);
+		iFilterPanel.add(filterLabel);
+		iFilterPanel.setCellVerticalAlignment(filterLabel, HasVerticalAlignment.ALIGN_MIDDLE);
 		
 		iFilter = new TextBox();
 		iFilter.setWidth("400px");
 		iFilter.setStyleName("gwt-SuggestBox");
 		iFilter.setHeight("26");
-		filterPanel.add(iFilter);
+		iFilterPanel.add(iFilter);
 		
 		iSearch = new Button("<u>S</u>earch");
 		iSearch.setAccessKey('s');
 		iSearch.addStyleName("unitime-NoPrint");
-		filterPanel.add(iSearch);		
+		iFilterPanel.add(iSearch);		
 		
+		iPrint = new Button("<u>P</u>rint");
+		iPrint.setAccessKey('p');
+		iPrint.addStyleName("unitime-NoPrint");
+		iFilterPanel.add(iPrint);		
+
 		iNew = new Button("<u>A</u>dd New");
 		iNew.setAccessKey('a');
 		iNew.setEnabled(false);
 		iNew.addStyleName("unitime-NoPrint");
-		filterPanel.add(iNew);
+		iFilterPanel.add(iNew);
 		iService.canAddCurriculum(new AsyncCallback<Boolean>() {
 			@Override
 			public void onFailure(Throwable caught) {
@@ -133,8 +140,9 @@ public class Curricula extends Composite {
 			}
 		});
 		
-		iCurriculaPanel.add(filterPanel);
-		iCurriculaPanel.setCellHorizontalAlignment(filterPanel, HasHorizontalAlignment.ALIGN_CENTER);
+		//iCurriculaPanel.add(filterPanel);
+		//iCurriculaPanel.setCellHorizontalAlignment(filterPanel, HasHorizontalAlignment.ALIGN_CENTER);
+		RootPanel.get("UniTimeGWT:TitlePanel").add(iFilterPanel);
 		
 		iCurriculaTable = new CurriculaTable();
 		iCurriculaTable.getElement().getStyle().setMarginTop(10, Unit.PX);
@@ -161,6 +169,13 @@ public class Curricula extends Composite {
 			public void onKeyUp(KeyUpEvent event) {
 				if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER)
 					loadCurricula();
+			}
+		});
+		
+		iPrint.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				Window.print();
 			}
 		});
 		
@@ -206,6 +221,7 @@ public class Curricula extends Composite {
 					public void onSuccess(CurriculumInterface result) {
 						iCurriculumPanel.edit(result, true);
 						iCurriculaPanel.setVisible(false);
+						iFilterPanel.setVisible(false);
 						setPageName(result.isEditable() ? "Edit Curriculum" : "Curriculum Details");
 						iCurriculumPanel.setVisible(true);
 						hideLoading();
@@ -217,6 +233,7 @@ public class Curricula extends Composite {
 		iNew.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				iCurriculaPanel.setVisible(false);
+				iFilterPanel.setVisible(false);
 				setPageName("New Curriculum");
 				iCurriculumPanel.addNew();
 				iCurriculumPanel.setVisible(true);
@@ -230,6 +247,7 @@ public class Curricula extends Composite {
 				iCurriculumPanel.setVisible(false);
 				setPageName("Curricula");
 				iCurriculaPanel.setVisible(true);
+				iFilterPanel.setVisible(true);
 				loadCurricula();
 			}
 			
@@ -238,6 +256,7 @@ public class Curricula extends Composite {
 				iCurriculumPanel.setVisible(false);
 				setPageName("Curricula");
 				iCurriculaPanel.setVisible(true);
+				iFilterPanel.setVisible(true);
 				loadCurricula();
 			}
 			
@@ -246,6 +265,7 @@ public class Curricula extends Composite {
 				iCurriculumPanel.setVisible(false);
 				setPageName("Curricula");
 				iCurriculaPanel.setVisible(true);
+				iFilterPanel.setVisible(true);
 				iCurriculaTable.scrollIntoView();
 			}
 		});
@@ -284,6 +304,7 @@ public class Curricula extends Composite {
 	private void loadCurricula() {
 		if (!iSearch.isEnabled()) return;
 		iSearch.setEnabled(false);
+		iPrint.setEnabled(false);
 		final boolean newEnabled = iNew.isEnabled();
 		if (newEnabled)
 			iNew.setEnabled(false);
@@ -291,6 +312,7 @@ public class Curricula extends Composite {
 			@Override
 			public void execute() {
 				iSearch.setEnabled(true);
+				iPrint.setEnabled(true);
 				if (newEnabled)
 					iNew.setEnabled(true);
 			}
