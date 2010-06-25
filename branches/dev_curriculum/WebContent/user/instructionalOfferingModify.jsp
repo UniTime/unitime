@@ -134,7 +134,7 @@
 	<INPUT type="hidden" name="moveUpClassId" value = "">
 	<INPUT type="hidden" name="moveDownClassId" value = "">
 
-	<TABLE width="93%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 <!-- Buttons -->
 		<TR>
 			<TD valign="middle" colspan="2">

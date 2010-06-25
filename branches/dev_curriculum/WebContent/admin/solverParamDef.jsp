@@ -33,7 +33,7 @@
 <logic:notEqual name="solverParamDefForm" property="op" value="List">
 	<html:hidden property="order"/><html:errors property="order"/>
 
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD colspan="2">
 				<tt:section-header>
@@ -130,7 +130,7 @@
 </logic:notEqual>
 <logic:equal name="solverParamDefForm" property="op" value="List">
 	<input type="hidden" name="group" value="">
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<bean:write scope="request" name="SolverParameterDef.table" filter="false"/>
 	</TABLE>
 	<% if (request.getAttribute("hash") != null) { %>

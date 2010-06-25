@@ -26,7 +26,7 @@
 <tiles:importAttribute />
 <html:form action="/classes">
 	<logic:notEmpty name="classesForm" property="sessions">
-	<TABLE width="95%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 	<html:hidden property="op"/>
 	<TR>
 		<TD nowspan>
@@ -61,7 +61,7 @@
 	<BR>
 	
 	<logic:empty name="classesForm" property="table">
-		<table width='95%' border='0' cellspacing='0' cellpadding='3'>
+		<table width='100%' border='0' cellspacing='0' cellpadding='3'>
 			<tr><td style='color:red;font-weight:bold;'>
 				<logic:empty name="classesForm" property="session">
 					There are no classes available at the moment. 
@@ -89,7 +89,7 @@
 	</logic:empty>
 	
 	<logic:notEmpty name="classesForm" property="table">
-		<table width='95%' border='0' cellspacing='0' cellpadding='3'>
+		<table width='100%' border='0' cellspacing='0' cellpadding='3'>
 			<bean:write name="classesForm" property="table" filter="false"/>
 		</table>
 	</logic:notEmpty>
@@ -98,7 +98,7 @@
 	<tt:propertyEquals name="tmtbl.authentication.norole" value="true">
 		<BR>
 		<a name="login"></a>
-		<TABLE width="95%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD nowspan>
 				<tt:section-title>Personal Schedule</tt:section-title>

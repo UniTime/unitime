@@ -30,7 +30,7 @@
 <html:hidden property="screen"/>
 <html:hidden property="id"/>
 
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<logic:messagesPresent>
 		<TR>
 			<TD colspan="2" align="left" class="errorCell">

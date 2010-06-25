@@ -31,7 +31,7 @@
 try {
 %>
 	<script language="JavaScript">blToggleHeader('Filter','dispFilter');blStart('dispFilter');</script>
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 	<TR>
 		<TD>Compare with:</TD>
 		<TD>
@@ -61,7 +61,7 @@ try {
 	</TR>
 	</TABLE>
 	<script language="JavaScript">blEnd('dispFilter');blStartCollapsed('dispFilter');</script>
-		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<TR>
 				<TD colspan='2' align='right'>
 					<html:submit onclick="displayLoading();" property="op" value="Export PDF"/>
@@ -75,7 +75,7 @@ try {
 	String changes = (String)request.getAttribute("SolutionChanges.table");
 	if (changes!=null) {
 %>
-		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<%=changes%>
 			<tr>
 				<td colspan='<%=request.getAttribute("SolutionChanges.table.colspan")%>'>
@@ -86,7 +86,7 @@ try {
 <%
 	} else {
 %>
-		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<TR>
 				<TD colspan="2">
 					<DIV class="WelcomeRowHead">

@@ -104,7 +104,7 @@
 	<INPUT type="hidden" name="click" value = "n">
 	<INPUT type="hidden" name="doit" value="Cancel">
 	
-	<TABLE width="93%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 
 		<TR>
 			<TD colspan="2">
@@ -231,7 +231,7 @@
 
 	</TABLE>
 	
-	<TABLE width="93%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<% int cols = 9; %>
 		<%= request.getAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME)!=null 
 			? request.getAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME)

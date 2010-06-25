@@ -27,7 +27,7 @@
 
 <html:form action="/exactTimeEdit">
 
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD colspan="2">
 				<tt:section-header>

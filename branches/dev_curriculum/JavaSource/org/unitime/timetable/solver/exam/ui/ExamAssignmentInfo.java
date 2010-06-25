@@ -853,7 +853,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
     }
     
     public String getConflictTable(boolean header) {
-        String ret = "<table border='0' width='95%' cellspacing='0' cellpadding='3'>";
+        String ret = "<table border='0' width='100%' cellspacing='0' cellpadding='3'>";
         if (header) {
             ret += "<tr>";
             ret += "<td><i>Students</i></td>";
@@ -874,7 +874,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
     }
     
     public String getConflictInfoTable() {
-        String ret = "<table border='0' width='95%' cellspacing='0' cellpadding='3'>";
+        String ret = "<table border='0' width='100%' cellspacing='0' cellpadding='3'>";
         ret += "<tr>";
         ret += "<td><i>Students</i></td>";
         ret += "<td><i>Conflict</i></td>";
@@ -897,7 +897,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
     }
     
     public String getDistributionConflictTable(boolean header) {
-        String ret = "<table border='0' width='95%' cellspacing='0' cellpadding='3'>";
+        String ret = "<table border='0' width='100%' cellspacing='0' cellpadding='3'>";
         if (header) {
             ret += "<tr>";
             ret += "<td><i>Preference</i></td>";
@@ -914,7 +914,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
     }
     
     public String getDistributionInfoConflictTable() {
-        String ret = "<table border='0' width='95%' cellspacing='0' cellpadding='3'>";
+        String ret = "<table border='0' width='100%' cellspacing='0' cellpadding='3'>";
         ret += "<tr>";
         ret += "<td><i>Preference</i></td>";
         ret += "<td><i>Distribution</i></td>";
@@ -1010,7 +1010,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
     }
     
     public String getInstructorConflictTable(boolean header) {
-        String ret = "<table border='0' width='95%' cellspacing='0' cellpadding='3'>";
+        String ret = "<table border='0' width='100%' cellspacing='0' cellpadding='3'>";
         if (header) {
             ret += "<tr>";
             ret += "<td><i>Instructors</i></td>";
@@ -1031,7 +1031,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
     }
     
     public String getInstructorConflictInfoTable() {
-        String ret = "<table border='0' width='95%' cellspacing='0' cellpadding='3'>";
+        String ret = "<table border='0' width='100%' cellspacing='0' cellpadding='3'>";
         ret += "<tr>";
         ret += "<td><i>Students</i></td>";
         ret += "<td><i>Conflict</i></td>";

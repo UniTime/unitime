@@ -46,7 +46,7 @@
 	<html:hidden property="op2" value=""/>
 	<bean:define name='<%=frmName%>' property="examId" id="examId"/>
 	
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD valign="middle" colspan='2'>
 				<tt:section-header>
@@ -215,7 +215,7 @@
 					<i>No relation defined for this exam.</i>
 				</logic:empty>
 				<logic:notEmpty scope="request" name="ExamDetail.table">
-					<table border='0' cellspacing="0" cellpadding="3" width='99%'>
+					<table border='0' cellspacing="0" cellpadding="3" width='100%'>
 					<bean:write scope="request" name="ExamDetail.table" filter="false"/>
 					</table>
 				</logic:notEmpty>

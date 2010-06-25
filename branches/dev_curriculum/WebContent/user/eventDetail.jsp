@@ -32,7 +32,7 @@
 	<html:hidden property="id"/>
 	<html:hidden property="nextId"/>
 	<html:hidden property="previousId"/>	
-	<TABLE width="93%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<logic:messagesPresent>
 		<TR>
 			<TD colspan="2" align="left" class="errorCell">
@@ -378,7 +378,7 @@
 					<i>No relation defined for this event.</i>
 				</logic:empty>
 				<logic:notEmpty scope="request" name="EventDetail.table">
-					<table border='0' cellspacing="0" cellpadding="3" width='99%'>
+					<table border='0' cellspacing="0" cellpadding="3" width='100%'>
 					<bean:write scope="request" name="EventDetail.table" filter="false"/>
 					</table>
 				</logic:notEmpty>
@@ -410,7 +410,7 @@
 		</TR>
 		<TR>
 			<TD colspan='2'>
-				<table border='0' cellspacing="0" cellpadding="3" width='99%'>
+				<table border='0' cellspacing="0" cellpadding="3" width='100%'>
 				<bean:write scope="request" name="EventDetail.table" filter="false"/>
 				</table>
 			</TD>

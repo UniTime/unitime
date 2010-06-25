@@ -38,7 +38,7 @@
 	<INPUT type="hidden" name="op2" value="">
 	<html:hidden property="distPrefId"/>
 
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<% if (request.getAttribute(DistributionPref.DIST_PREF_REQUEST_ATTR)==null) { %>	
 		<html:hidden property="examType"/>
 		<TR>
@@ -110,7 +110,7 @@
 		
 		<TR>
 			<TD nowrap valign='top'>Distribution Type: <font class="reqField">*</font></TD>
-			<TD colspan='2' width='95%'>
+			<TD colspan='2' width='100%'>
 				<html:select style="width:300;" property="distType" onchange="javascript: distTypeChanged(this.value);"> <!-- op2.value='DistTypeChange';submit(); -->
 					<html:option value="-">-</html:option>
 					<html:options collection="<%=DistributionType.DIST_TYPE_ATTR_NAME%>" property="uniqueId" labelProperty="label" />

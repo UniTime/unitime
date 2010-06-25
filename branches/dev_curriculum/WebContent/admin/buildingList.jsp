@@ -22,7 +22,7 @@
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html"%>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic"%>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
-<table width="90%" border="0" cellspacing="0" cellpadding="3">
+<table width="100%" border="0" cellspacing="0" cellpadding="3">
 	<tr><td colspan='5' nowrap>
 		<tt:section-header>
 			<tt:section-title>Buildings</tt:section-title>
@@ -86,7 +86,7 @@ webTable.addLine(
 		</TD>
 	</TR>
 	<TR>
-		<TD colspan='5' align="right" nowrap width="99%">
+		<TD colspan='5' align="right" nowrap width="100%">
 				<table border='0'><tr><td>
 				<html:form action="buildingEdit" styleClass="FormWithNoPadding">
 					<html:hidden property="op" value="Add"/>

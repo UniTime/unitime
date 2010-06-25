@@ -33,7 +33,7 @@
 	}
 	boolean enabled = new _RootDAO().getSession().getSessionFactory().getStatistics().isStatisticsEnabled();
 %>
-<TABLE width="95%">
+<TABLE width="100%">
 		<TR>
 			<TD>
 				<tt:section-header>

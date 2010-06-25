@@ -26,7 +26,7 @@
 <tiles:importAttribute />
 <html:form action="/lastChanges">
 	<script language="JavaScript">blToggleHeader('Filter','dispFilter');blStart('dispFilter');</script>
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 	<TR>
 		<TD>Department:</TD>
 		<TD>
@@ -78,7 +78,7 @@
 	</TR>
 	</TABLE>
 	<script language="JavaScript">blEnd('dispFilter');blStartCollapsed('dispFilter');</script>
-		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<TR>
 				<TD colspan='2' align='right'>
 					<html:submit onclick="displayLoading();" accesskey="R" property="op" value="Refresh"/>
@@ -90,7 +90,7 @@
 
 	<BR><BR>
 
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<%=request.getAttribute("table")%>
 	</TABLE>
 </html:form>

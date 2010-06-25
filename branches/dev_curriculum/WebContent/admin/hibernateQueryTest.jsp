@@ -26,7 +26,7 @@
 
 <html:form action="/hibernateQueryTest">
 
-	<TABLE width="95%">
+	<TABLE width="100%">
 		<TR>
 			<TD colspan='2'>
 				<tt:section-header>

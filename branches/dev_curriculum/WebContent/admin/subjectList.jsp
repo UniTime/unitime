@@ -32,7 +32,7 @@
 
 <html:form action="subjectAreaEdit.do">
 
-	<TABLE width="95%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 
 		<TR>
 			<TD>
@@ -53,7 +53,7 @@
 
 	</TABLE>
 
-	<TABLE width="95%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 <%
 	boolean dispLastChanges = (!"no".equals(Settings.getSettingValue(Web.getUser(session), Constants.SETTINGS_DISP_LAST_CHANGES)));
 	
@@ -137,7 +137,7 @@
 
 	</TABLE>
 	
-	<TABLE width="95%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 
 		<TR>
 			<TD class="WelcomeRowHead">

@@ -29,7 +29,7 @@
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html"%>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic"%>
 
-<table width="90%" border="0" cellspacing="0" cellpadding="3">
+<table width="100%" border="0" cellspacing="0" cellpadding="3">
 <%
     WebTable webTable = new WebTable( 10,
     "Distribution Types",

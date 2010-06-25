@@ -66,7 +66,7 @@
 <html:form method="post" action="sessionEdit.do">
 	<INPUT type="hidden" name="refresh" value="">
 	
-	<TABLE width="95%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 
 		<TR>
 			<TD colspan="3">

@@ -27,7 +27,7 @@
 
 <html:form action="sessionEdit">
 
-	<table width="98%" border="0" cellspacing="0" cellpadding="3">
+	<table width="100%" border="0" cellspacing="0" cellpadding="3">
 		<tr>
 			<td>
 				<tt:section-header>
@@ -42,7 +42,7 @@
 		</tr>
 	</table>
 
-	<table width="90%" border="0" cellspacing="0" cellpadding="3">
+	<table width="100%" border="0" cellspacing="0" cellpadding="3">
 		<%
 			WebTable webTable = new WebTable(
 					12, "", "sessionList.do?order=%%",					
@@ -125,7 +125,7 @@
 
 	</table>
 	
-	<table width="98%" border="0" cellspacing="0" cellpadding="3">
+	<table width="100%" border="0" cellspacing="0" cellpadding="3">
 		<tr>
 			<td align="center" class="WelcomeRowHead">
 			&nbsp;

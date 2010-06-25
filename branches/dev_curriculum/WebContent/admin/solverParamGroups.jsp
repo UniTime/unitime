@@ -35,7 +35,7 @@
 <logic:notEqual name="solverParamGroupsForm" property="op" value="List">
 	<html:hidden property="order"/><html:errors property="order"/>
 
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD colspan="2">
 				<tt:section-header>
@@ -106,7 +106,7 @@
 
 </logic:notEqual>
 <logic:equal name="solverParamGroupsForm" property="op" value="List">
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<tr>
 			<td colspan='4'>
 				<tt:section-header>

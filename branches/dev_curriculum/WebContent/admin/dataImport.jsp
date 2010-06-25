@@ -22,7 +22,7 @@
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <html:form action="/dataImport" focus="file" enctype="multipart/form-data">
 
-	<TABLE width="95%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 
 	<logic:messagesPresent>
 		<TR>

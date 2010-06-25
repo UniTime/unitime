@@ -57,7 +57,7 @@
 	<BR>
 	<% if (exception!=null) { %>
 	<BLOCKQUOTE>
-		<TABLE width="90%" border="0">
+		<TABLE width="100%" border="0">
 			<TR>
 				<TD colspan="2">
 					<DIV class="WelcomeRowHead">

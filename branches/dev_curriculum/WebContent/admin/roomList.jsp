@@ -30,7 +30,7 @@
 	RoomListForm frm = (RoomListForm) request.getAttribute(frmName);
 %>
 
-<TABLE width="93%" border="0" cellspacing="0" cellpadding="3">
+<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 <%
 	String colspan = request.getAttribute("colspan")!=null
 					 ? request.getAttribute("colspan").toString()

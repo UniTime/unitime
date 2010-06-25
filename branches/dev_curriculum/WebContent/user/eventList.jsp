@@ -33,7 +33,7 @@
 <tiles:importAttribute />
 <html:form action="/eventList">
 <script language="JavaScript">blToggleHeader('Filter','dispFilter');blStart('dispFilter');</script>
-<TABLE border="0" cellspacing="0" cellpadding="3" width='90%'>
+<TABLE border="0" cellspacing="0" cellpadding="3" width='100%'>
 		<logic:messagesPresent>
 		<TR>
 			<TD colspan="2" align="left" class="errorCell">
@@ -130,7 +130,7 @@
 		</TR>
 </TABLE>
 <script language="JavaScript">blEnd('dispFilter');blStartCollapsed('dispFilter');</script>
-<TABLE border="0" cellspacing="0" cellpadding="3" width='90%'>	
+<TABLE border="0" cellspacing="0" cellpadding="3" width='100%'>	
 	<TR>
 		<TD align='right'>
 			<html:submit property="op" value="Export PDF" onclick="displayLoading();" accesskey="P" title="Export to PDF (Alt+P)"/> 

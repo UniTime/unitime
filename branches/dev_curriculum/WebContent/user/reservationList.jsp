@@ -120,7 +120,7 @@
 				</TABLE>
 
 				<script language="JavaScript" type="text/javascript">blEnd('dispFilter');blStartCollapsed('dispFilter');</script>
-				<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+				<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 					<TR>
 						<TD colspan='2' align='right'>
 							<br>

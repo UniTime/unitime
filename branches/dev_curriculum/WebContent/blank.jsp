@@ -24,21 +24,21 @@
 
 <HTML>
 <HEAD>
+	<LINK rel="stylesheet" type="text/css" href="styles/unitime.css">
 	<LINK rel="stylesheet" type="text/css" href="styles/timetabling.css">
     <tt:hasProperty name="tmtbl.custom.css">
 		<LINK rel="stylesheet" type="text/css" href="%tmtbl.custom.css%" />
     </tt:hasProperty>
     <SCRIPT language="JavaScript" type="text/javascript" src="scripts/loading.js"></SCRIPT>
 </HEAD>
-<BODY class="bodyStyle">
+<BODY class="unitime-Body">
 	<tt:hasProperty name="tmtbl.global.warn">
 		<table width='100%' border='0' cellpadding='3' cellspacing='0'><tr><td class="reqGlobalWarn" width='5'>&nbsp;</td><td class="reqGlobalWarn" >
 			<tt:property name="tmtbl.global.warn"/>
 		</td></tr></table>
 	</tt:hasProperty>
-<DIV id="contentMain">
-&nbsp;
-<BR>
+
+<div id="contentMain">
 <% 
 	String imageFile = "logo.jpg";
 	String sysMessage = ApplicationConfig.getConfigValue(Constants.CFG_SYSTEM_MESSAGE, "");
@@ -46,7 +46,20 @@
 		imageFile = "logofaded.jpg";
 	}
 %>
-
+	<table align="center">
+		<tr><td>
+		</td></tr>
+    <tr><td valign="top">
+	    <table class="unitime-Page" width="100%">
+	    <tr><td>
+    		<table id="UniTimeGWT:Header" class="unitime-MainTable" cellpadding="2" cellspacing="0" width="100%">
+		   		<tr><td rowspan="2"><a href='http://www.unitime.org'><img src="images/unitime.png" border="0"/></a></td>
+		   			<td nowrap="nowrap" width="100%" align="right" valign="middle" class="unitime-Title" style="padding-right: 20px; padding-top: 5px">
+		   				<span class='unitime-Title'>University Timetabling Application</span>
+		   			</td>
+	    		</tr>
+	    	</table>
+	    </td></tr><tr><td style="min-width: 800px">
 <TABLE width="650" height="600" align="center"
 	background="images/<%=imageFile%>" style="background-repeat:no-repeat;background-position:top;">
 	<TR>
@@ -77,9 +90,20 @@
 		</TD>
 	</TR>
 </TABLE>
-</DIV>				
+	    </td></tr></table>
+    </td></tr><tr><td>
+    	<table class="unitime-Footer">
+    		<tr>
+    			<td width="33%"></td>
+    			<td width="34%" align="center" nowrap="nowrap"><a class='unitime-FooterLink' href='http://www.unitime.org'>&copy; 2008 - 2010 UniTime.org</a></td>
+    			<td width="33%" align="right" nowrap="nowrap">
+    			</td>
+    			</tr>
+    	</table>
+	</td></tr></table>
+</div>
 
-<DIV id="loadingMain" style="visibility:hidden;display:none">
+<div id="loadingMain" style="visibility:hidden;display:none">
 <TABLE width="100%" height="100%" align="center" cellpadding="0" cellspacing="0" border="0">
 	<TR>
 		<TD valign="middle" align="center">
@@ -88,7 +112,7 @@
 		</TD>
 	</TR>
 </TABLE>		
-</DIV>				
+</div>				
 	
 </BODY>
 </HTML>

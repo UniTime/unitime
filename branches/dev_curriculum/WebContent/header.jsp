@@ -21,9 +21,10 @@
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 
-<tiles:importAttribute name="showNavigation" scope="request"/>
+<tiles:importAttribute name="showNavigation" scope="request"/>	
 
-<BR>
+<%--			
+	<BR>
 	<TABLE border="0" width="100%" cellspacing="0" cellpadding="0">
 		<TR>
 			<TD width="200" nowrap>
@@ -32,7 +33,7 @@
 					<IMG align="middle" vspace="5" border="0" src="images/loading.gif">
 				</DIV>
 			</TD>
-			
+
 			<logic:notEqual name="helpFile" value=""> 
 			<TD align="center" width="40">
 				<A href='help.do?helpFile=<%=request.getAttribute("helpFile").toString()%>' accesskey="H" title="Help (Alt+H)" target="helpWindow"><IMG border="0" align="middle" src="images/Help24.gif" title="Help (Alt+H)" alt="Help (Alt+H)"></A>
@@ -50,6 +51,12 @@
 			<TD width="40">&nbsp;</TD>
 		</TR>
 	</TABLE>
+	--%>
+	
+	<DIV id="loading" style="visibility:hidden;display:none">
+		&nbsp; &nbsp; &nbsp; 
+		<IMG align="middle" vspace="5" border="0" src="images/loading.gif">
+	</DIV>
 	
 	<logic:equal name="showNavigation" value="true"> 
 		<tt:has-back>

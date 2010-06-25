@@ -54,7 +54,7 @@
 	<html:hidden property="previousId"/>
 	<html:hidden property="lookupEnabled"/>
 	
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<%@include file="instructorLookup.jspf" %>
 		<% 
 		if (frm.getMatchFound()==null || !frm.getMatchFound().booleanValue()) {

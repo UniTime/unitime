@@ -54,7 +54,7 @@
 		</script>
 	</logic:equal>
 	<tt:confirm name="confirmAssign"><bean:write name="model" property="assignConfirm"/></tt:confirm>
-	<table border='0' width='95%'>
+	<table border='0' width='100%'>
 		<tr><td colspan='2'>
 			<tt:section-header>
 				<tt:section-title>Examination <bean:write name="exam" property="examName"/></tt:section-title>

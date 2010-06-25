@@ -74,7 +74,7 @@ function tAll(location, admin) {
 
 
 <html:form action="/eventRoomAvailability">
-	<TABLE width="93%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<logic:messagesPresent>
 		<TR>
 			<TD align="left" class="errorCell">

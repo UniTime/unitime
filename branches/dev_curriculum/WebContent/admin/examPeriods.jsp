@@ -55,7 +55,7 @@
 	<html:hidden property="uniqueId"/><html:errors property="uniqueId"/>
 	<html:hidden property="autoSetup"/>
 	<logic:equal name="examPeriodEditForm" property="autoSetup" value="true">
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD colspan="2">
 				<tt:section-header>
@@ -267,7 +267,7 @@
 	</TABLE>
 	</logic:equal>
 	<logic:equal name="examPeriodEditForm" property="autoSetup" value="false">
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD colspan="2">
 				<tt:section-header>
@@ -389,7 +389,7 @@
 <BR>
 </logic:notEqual>
 <logic:equal name="examPeriodEditForm" property="op" value="List">
-<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 	<TR>
 		<TD colspan='8'>
 			<tt:section-header>

@@ -39,7 +39,7 @@
 	
 	<logic:equal name="inquiryForm" property="op" value="Sent">
 	
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD colspan="2">
 				Your inquiry was successfully submitted. Thank you.
@@ -60,7 +60,7 @@
 	</TABLE>
 	</logic:equal>
 	<logic:notEqual name="inquiryForm" property="op" value="Sent">
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD colspan="2">
 				<tt:section-header>

@@ -111,7 +111,7 @@ try {
 	if (status==null)
 		status = "Solver not started.";
 %>
-<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 	<TR>
 		<TD colspan="2">
 			<DIV class="WelcomeRowHead">
@@ -227,7 +227,7 @@ try {
 	</TR>
 </TABLE>
 <BR><BR>
-<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 <%
 	if (solver==null) {
 		String id = (String)request.getSession().getAttribute("Solver.selectedSolutionId");
@@ -427,7 +427,7 @@ try {
 %>
 
 	<tt:propertyEquals name="tmtbl.solver.remote.allow_jnlp_exec" value="true">
-		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<TR>
 				<TD><DIV class="WelcomeRowHeadBlank">&nbsp;</DIV></TD>
 			</TR>
