@@ -28,21 +28,29 @@ import org.unitime.timetable.gwt.widgets.StudentSectioningWidget;
 import org.unitime.timetable.gwt.widgets.UserAuthentication;
 import org.unitime.timetable.gwt.widgets.UserAuthentication.UserAuthenticatedEvent;
 
-import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.RunAsyncCallback;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.Grid;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.RootPanel;
 
-public class StudentSectioning implements EntryPoint {
+public class StudentSectioning extends Composite {
 	public static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 	
 	private final SectioningServiceAsync iSectioningService = GWT.create(SectioningService.class);
-
-	public void onModuleLoad() {
+	
+	public StudentSectioning() {
+		Grid titlePanel = new Grid(1, 3);
+		titlePanel.getCellFormatter().setWidth(0, 0, "33%");
+		titlePanel.getCellFormatter().setWidth(0, 1, "34%");
+		titlePanel.getCellFormatter().setWidth(0, 2, "33%");
+		titlePanel.getCellFormatter().setHorizontalAlignment(0, 1, HasHorizontalAlignment.ALIGN_CENTER);
+		titlePanel.getCellFormatter().setHorizontalAlignment(0, 2, HasHorizontalAlignment.ALIGN_RIGHT);
+		titlePanel.setHTML(0, 0, "&nbsp;");
+		
 		final UserAuthentication userAuthentication = new UserAuthentication(true);
-		RootPanel.get("logIn").add(userAuthentication);
+		titlePanel.setWidget(0, 1, userAuthentication);
 		
 		iSectioningService.whoAmI(new AsyncCallback<String>() {
 			public void onFailure(Throwable caught) {
@@ -53,31 +61,15 @@ public class StudentSectioning implements EntryPoint {
 			}
 		});
 		
-		initAsync(userAuthentication);
-	}
-	
-	private void initAsync(final UserAuthentication userAuthentication) {
-		GWT.runAsync(new RunAsyncCallback() {
-			public void onSuccess() {
-				init(userAuthentication);
-			}
-			public void onFailure(Throwable reason) {
-				Label error = new Label(MESSAGES.failedToLoadTheApp(reason.getMessage()));
-				error.setStyleName("unitime-ErrorMessage");
-				RootPanel.get("loading").setVisible(false);
-				RootPanel.get("body").add(error);
-			}
-		});
-	}
-	
-	private void init(final UserAuthentication userAuthentication) {
 		final AcademicSessionSelector sessionSelector = new AcademicSessionSelector();
-		RootPanel.get("sessionSelector").add(sessionSelector);
+		titlePanel.setWidget(0, 2, sessionSelector);
 		
+		RootPanel.get("UniTimeGWT:TitlePanel").add(titlePanel);
+
 		final StudentSectioningWidget widget = new StudentSectioningWidget(sessionSelector, userAuthentication);
-		RootPanel.get("loading").setVisible(false);
-		RootPanel.get("body").add(widget);
 		
+		initWidget(widget);
+
 		userAuthentication.addUserAuthenticatedHandler(new UserAuthentication.UserAuthenticatedHandler() {
 			public void onLogIn(UserAuthenticatedEvent event) {
 				sessionSelector.selectSession();
@@ -110,5 +102,4 @@ public class StudentSectioning implements EntryPoint {
 			}
 		});
 	}
-	
 }

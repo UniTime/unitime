@@ -79,8 +79,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 	private static Logger sLog = Logger.getLogger(SectioningServlet.class);
 
 	public void init() throws ServletException {
-		System.out.println("UniTime 4 is starting up ...");
-        //PropertyConfigurator.configure(ApplicationProperties.getProperties());
+		System.out.println("Student Sectioning Service is starting up ...");
         SectioningServer.init();
 		org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
 		String year = ApplicationProperties.getProperty("unitime.enrollment.year");
@@ -103,9 +102,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 				Thread t = new Thread(new Runnable() {
 					public void run() {
 						try {
-							SectioningServer s = SectioningServer.getInstance(sessionId);
-							if (SectioningServer.sCustomSectionNames != null)
-								SectioningServer.sCustomSectionNames.update(s.getAcademicSession());
+							SectioningServer.createInstance(sessionId);
 						} catch (Exception e) {
 							sLog.fatal("Unable to upadte session " + session.getAcademicTerm() + " " + session.getAcademicYear() +
 									" (" + session.getAcademicInitiative() + "), reason: "+ e.getMessage(), e);
@@ -124,7 +121,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 	}
 	
 	public void destroy() {
-		System.out.println("UniTime 4 is going down ...");
+		System.out.println("Student Sectioning Service is going down ...");
 	}
 	
 	public Collection<ClassAssignmentInterface.CourseAssignment> listCourseOfferings(Long sessionId, String query, Integer limit) throws SectioningException {

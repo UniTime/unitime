@@ -19,8 +19,8 @@
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    <link type="text/css" rel="stylesheet" href="unitime3/gwt/standard/standard.css">
-    <link type="text/css" rel="stylesheet" href="styles/unitime4.css">
+    <link type="text/css" rel="stylesheet" href="unitime/gwt/standard/standard.css">
+    <link type="text/css" rel="stylesheet" href="styles/unitime.css">
     <link rel="shortcut icon" href="images/timetabling.ico">
     <title>UniTime 3.2| University Timetabling Application</title>
   </head>
@@ -30,11 +30,16 @@
     <table align="center"><tr><td>
 	    <table class="unitime-Page" width="100%"><tr><td>
     		<table id="UniTimeGWT:Header" class="unitime-MainTable" cellpadding="2" cellspacing="0" width="100%">
-		   		<tr><td>
+		   		<tr><td rowspan="2">
 	    			<a href='http://www.unitime.org'>
 	    				<img src="images/unitime.png" border="0"/>
 	    			</a>
-	    		</td><td nowrap="nowrap" class="unitime-Title" width="100%" align="right" valign="middle" style="padding-right: 20px;"><span id='UniTimeGWT:Title'></span></td></tr>
+	    		</td><td nowrap="nowrap" class="unitime-Title" width="100%" align="right" valign="middle" style="padding-right: 20px;">
+	    			<span id='UniTimeGWT:Title'></span>
+	    		</td></tr>
+	    		<tr><td width="100%" align="center" valign="middle">
+	    			<span id='UniTimeGWT:TitlePanel'></span>
+	    		</td></tr>
 	    	</table>
 	    </td></tr><tr><td>
 	    	<table id="UniTimeGWT:Loading" class="unitime-MainTable" cellpadding="2" cellspacing="0" width="100%">
@@ -54,6 +59,6 @@
     			</tr>
     	</table>
 	</td></tr></table>
-    <script type="text/javascript" language="javascript" src="unitime3/unitime3.nocache.js"></script>
+    <script type="text/javascript" language="javascript" src="unitime/unitime.nocache.js"></script>
   </body>
 </html>

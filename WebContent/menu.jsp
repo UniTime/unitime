@@ -113,7 +113,10 @@
 		menu_item('71', 'Batch Solver','Student Sectioning Solver','studentSolver.do', 'collapse');
 			leaf_item('Log','Student Sectioning Solver Log','studentSolverLog.do');
 		enditem();//71
+		<!--
 		leaf_item('Online Demo','Student Sectioning Online Demo','sectioningDemo.do');
+		-->
+		leaf_item('Assistant', 'Student Scheduling Assistant', 'gwt.html?page=sectioning');
 		leaf_item('Enrollment Audits','Enrollment Audit PDF Reports','enrollmentAuditPdfReport.do');
 	enditem();//7
 <% } %>

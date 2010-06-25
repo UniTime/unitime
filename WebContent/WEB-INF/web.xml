@@ -98,7 +98,7 @@
 
     <servlet-mapping>
         <servlet-name>sectioningServiceServlet</servlet-name>
-        <url-pattern>/unitime4/sectioningService</url-pattern>
+        <url-pattern>/unitime/sectioningService</url-pattern>
     </servlet-mapping>
   
     <servlet-mapping>
@@ -108,7 +108,7 @@
 	
     <servlet-mapping>
         <servlet-name>curriculaServiceServlet</servlet-name>
-        <url-pattern>/unitime3/curriculaService</url-pattern>
+        <url-pattern>/unitime/curriculaService</url-pattern>
     </servlet-mapping>
 
 	<!-- Servlet Mappings -->

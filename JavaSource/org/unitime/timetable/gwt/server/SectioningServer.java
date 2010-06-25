@@ -213,13 +213,15 @@ public class SectioningServer {
 		}
 	}
 	
-	public static SectioningServer getInstance(Long academicSessionId) throws SectioningException {
-		SectioningServer s = sInstances.get(academicSessionId);
-		if (s == null) {
-			s = new SectioningServer(academicSessionId);
-			sInstances.put(academicSessionId, s);
-		}
-		return s;
+	public static void createInstance(Long academicSessionId) {
+		SectioningServer s = new SectioningServer(academicSessionId);
+		sInstances.put(academicSessionId, s);
+		if (SectioningServer.sCustomSectionNames != null)
+			SectioningServer.sCustomSectionNames.update(s.getAcademicSession());
+	}
+	
+	public static SectioningServer getInstance(final Long academicSessionId) throws SectioningException {
+		return sInstances.get(academicSessionId);
 	}
 	
 	public static TreeSet<AcademicSessionInfo> getAcademicSessions() {

@@ -101,13 +101,6 @@
 			<classpath path="${build.dir}"/>
 			<jvmarg value="-Xmx600M"/>
 			<jvmarg value="${macJvmArgs}"/>
-			<arg value="org.unitime.timetable.gwt.UniTime4"/>
-		</java>
-		<java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler" dir="${temp.dir}">
-			<classpath refid="build.classpath" />
-			<classpath path="${build.dir}"/>
-			<jvmarg value="-Xmx600M"/>
-			<jvmarg value="${macJvmArgs}"/>
 			<arg value="org.unitime.timetable.gwt.UniTime"/>
 		</java>
 	</target>
@@ -192,8 +185,7 @@
 				<include name="help/**/*.*" />
 				<include name="scripts/**/*.gif" />
 				<exclude name="WEB-INF/classes/**/*.*" />
-				<exclude name="unitime3/**/*.*" />
-				<exclude name="unitime4/**/*.*" />
+				<exclude name="unitime/**/*.*" />
 				<exclude name="test/**/*.*" />
 			</fileset>
 		</copy>
