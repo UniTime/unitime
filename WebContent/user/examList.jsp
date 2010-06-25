@@ -91,7 +91,7 @@
 
 	<logic:notEmpty scope="request" name="ExamList.table">
 		<BR><BR>
-		<TABLE width="99%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<bean:write scope="request" name="ExamList.table" filter="false"/>
 		</TABLE>
 	</logic:notEmpty>

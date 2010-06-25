@@ -43,6 +43,7 @@ import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.RootPanel;
 
 public class PageLabel extends Composite {
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
@@ -72,7 +73,6 @@ public class PageLabel extends Composite {
 		initWidget(iPanel);
 		
 		iService.getApplicationProperty(new String[] {"tmtbl.wiki.help", "tmtbl.wiki.url"}, new AsyncCallback<String[]>() {
-			
 			@Override
 			public void onSuccess(String[] result) {
 				iEnabled = "true".equals(result[0]);
@@ -112,6 +112,14 @@ public class PageLabel extends Composite {
 		});
 		
 	}
+	
+	public void insert(final RootPanel panel) {
+		setPageName(panel.getElement().getInnerText());
+		panel.getElement().setInnerText(null);
+		panel.add(this);
+		panel.setVisible(true);
+	}
+
 	
 	public void setPageName(String pageName) {
 		iName.setText(pageName);

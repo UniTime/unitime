@@ -267,7 +267,7 @@ function choiceChangedX(subjectArea, courseNumber, title, classId, chId, type) {
 <script language="javascript">displayLoading();</script>
 
 	<logic:messagesPresent>
-		<table width='93%' border='0' cellspacing='0' cellpadding='3'>
+		<table width='100%' border='0' cellspacing='0' cellpadding='3'>
 			<TR>
 				<TD colspan="2" align="left" class="errorCell">
 					<B><U>ERRORS</U></B><BR>
@@ -289,7 +289,7 @@ function choiceChangedX(subjectArea, courseNumber, title, classId, chId, type) {
 	<html:hidden property="nrAltRequests" />
 	<input type='hidden' name='reqIdx' value='-1'>
 	<input type='hidden' name='op2' value=''>
-	<table width='93%' border='0' cellspacing='0' cellpadding='3'>
+	<table width='100%' border='0' cellspacing='0' cellpadding='3'>
 		<tr>
 			<td colspan="2" valign="middle">
 				<tt:section-header>
@@ -321,7 +321,7 @@ function choiceChangedX(subjectArea, courseNumber, title, classId, chId, type) {
 		</tr>
 	</table>
 	<br>		
-	<table width='93%' border='0' cellspacing='0' cellpadding='3'>
+	<table width='100%' border='0' cellspacing='0' cellpadding='3'>
 		<tr>
 			<td colspan="7" valign="middle">
 				<tt:section-header>

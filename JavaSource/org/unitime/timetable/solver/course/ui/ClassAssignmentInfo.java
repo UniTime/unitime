@@ -90,7 +90,7 @@ public class ClassAssignmentInfo extends ClassAssignment implements Serializable
     }
     
     public String getConflictTable(boolean header) {
-        String ret = "<table border='0' width='95%' cellspacing='0' cellpadding='3'>";
+        String ret = "<table border='0' width='100%' cellspacing='0' cellpadding='3'>";
         if (header) {
             ret += "<tr>";
             ret += "<td><i>Students</i></td>";

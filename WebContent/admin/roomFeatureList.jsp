@@ -23,7 +23,7 @@
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 
-<TABLE width="93%" border="0" cellspacing="0" cellpadding="3">
+<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 
 	<!-- Buttons -->
 	<TR>

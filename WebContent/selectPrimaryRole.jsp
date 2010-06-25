@@ -24,7 +24,7 @@
 <html:form action="selectPrimaryRole.do" target="_top">
 	<html:hidden property="sessionId"/>
 	<html:hidden property="roleId"/>
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<% if (!"Y".equals(request.getParameter("list"))) { %>
 			<tr><td colspan='4'>
 				<i>A default user role and/or academic session could not be assigned. Please select one of the user role and academic session combinations below to proceed.<br><br></i>

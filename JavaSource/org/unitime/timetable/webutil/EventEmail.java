@@ -100,7 +100,7 @@ public class EventEmail {
             		"A:hover    { color: blue; text-decoration: none; }" +
             		"-->";
             message += "</style></head><body bgcolor='#ffffff' style='font-size: 10pt; font-family: arial;'>";
-            message += "<table border='0' width='95%' align='center' cellspacing='10'>";
+            message += "<table border='0' width='100%' align='center' cellspacing='10'>";
             
             message += "<tr><td colspan='2' style='border-bottom: 2px #2020FF solid;'><font size='+2'>";
             message += iEvent.getEventName();

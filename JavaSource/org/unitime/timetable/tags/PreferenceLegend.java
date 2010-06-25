@@ -72,7 +72,7 @@ public class PreferenceLegend extends TagSupport {
     		border = "border-"+iSeparator+":black 1px dashed";
     	if ("none".equals(iSeparator)) border = null;
         
-        StringBuffer html = new StringBuffer(border==null?"":"<table width='99%' cellspacing='1' cellpadding='1' border='0' style='"+border+"'><tr><td align='center'>");
+        StringBuffer html = new StringBuffer(border==null?"":"<table width='100%' cellspacing='1' cellpadding='1' border='0' style='"+border+"'><tr><td align='center'>");
         html.append("<table cellspacing='1' cellpadding='1' border='0'><tr>");
         
         Collection prefLevels = (Collection)pageContext.getRequest().getAttribute(PreferenceLevel.PREF_LEVEL_ATTR_NAME);

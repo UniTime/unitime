@@ -27,7 +27,7 @@
 <html:form action="/solverInfoDef" focus="name">
 <html:hidden property="uniqueId"/><html:errors property="uniqueId"/>
 
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD colspan="2">
 				<DIV class="WelcomeRowHead">
@@ -81,7 +81,7 @@
 
 <BR>&nbsp;<BR>
 
-<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 	<%= request.getAttribute("SolverInfoDef.table") %> 
 </TABLE>
 

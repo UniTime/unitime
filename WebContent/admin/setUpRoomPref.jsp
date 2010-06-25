@@ -36,7 +36,7 @@
 <html:form action="/editRoomPref">
 	<html:hidden property="id"/>
 
-	<TABLE width="93%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD valign="middle" colspan='2'>
 				<tt:section-header>

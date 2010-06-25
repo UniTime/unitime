@@ -49,7 +49,7 @@
 </TABLE>
 
 <!-- room departments list -->
-<TABLE width="90%" border="0" cellspacing="0" cellpadding="5">
+<TABLE width="100%" border="0" cellspacing="0" cellpadding="5">
 	<% if (request.getAttribute("roomDepts") != null) {%>
 		<%=request.getAttribute("roomDepts")%>
 	<%}%>

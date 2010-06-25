@@ -27,7 +27,7 @@
 <html:form action="/roomAvailability">
 	<html:hidden property="showSections"/>
 	<html:hidden property="subjectArea" />
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 	<TR>
 		<TD colspan='2'>
 			<tt:section-header>
@@ -79,7 +79,7 @@
 
 	<BR><BR>
 	<logic:empty name="roomAvailabilityForm" property="table">
-		<table width='95%' border='0' cellspacing='0' cellpadding='3'>
+		<table width='100%' border='0' cellspacing='0' cellpadding='3'>
 			<tr><td><i>
 				<logic:equal name="roomAvailabilityForm" property="examType" value="-1">
 					Examination problem not selected.
@@ -91,7 +91,7 @@
 		</table>
 	</logic:empty>
 	<logic:notEmpty name="roomAvailabilityForm" property="table">
-		<table width='95%' border='0' cellspacing='0' cellpadding='3'>
+		<table width='100%' border='0' cellspacing='0' cellpadding='3'>
 			<bean:write name="roomAvailabilityForm" property="table" filter="false"/>
 		</table>
 	</logic:notEmpty>
@@ -101,7 +101,7 @@
 			location.hash = '<%=request.getAttribute("hash")%>';
 		</SCRIPT>
 	</logic:notEmpty>
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 	<TR>
 		<TD>
 			<tt:section-title/>

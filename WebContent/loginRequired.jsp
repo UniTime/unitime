@@ -29,7 +29,7 @@
 	<SCRIPT language="javascript" type="text/javascript">
            <!--
            if(parent.frames.length!=0)
-	           top.location.href = '<%=request.getContextPath()%>/loginRequired.do?message=<%=request.getParameter("message")%>'
+	           top.location.href = '<%=request.getContextPath()%>/loginRequired.jsp?message=<%=request.getParameter("message")%>'
            //-->
      </SCRIPT>
 

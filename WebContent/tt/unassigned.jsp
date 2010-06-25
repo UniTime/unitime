@@ -29,14 +29,14 @@
 
 <html:form action="/unassigned">
 	<% 	SolverProxy solver = WebSolver.getSolver(session); %>
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<td colspan='4'>
 				<i>
 					NOTE: Only classes that are <%=solver==null?"included in the selected solution":"loaded into the solver"%> 
-					are displayed in the below list. This means that classes that are assigned to other timetabling managers 
+					are displayed in the below list. This means that classes that are assigned to other<br/>timetabling managers 
 					(e.g., LLR or LAB) as well as classes that <%=solver==null?"were":"are"%> not loaded into the solver 
-					(e.g., Arrange Hours classes) are excluded. 
+					(e.g., Arrange Hours classes) are excluded.<br/>
 					For the full list of classes see <a href='classShowSearch.do'>Classes</a> or 
 					<a href='classAssignmentsReportShowSearch.do'>Class Assignments</a> page.<br>
 				</i>
@@ -65,11 +65,11 @@
 				<br>
 				<i>
 					NOTE: Only classes that are <%=solver==null?"included in the selected solution":"loaded into the solver"%> 
-					are displayed in the above list. This means that classes that are assigned to other timetabling managers 
+					are displayed in the below list. This means that classes that are assigned to other<br/>timetabling managers 
 					(e.g., LLR or LAB) as well as classes that <%=solver==null?"were":"are"%> not loaded into the solver 
-					(e.g., Arrange Hours classes) are excluded. 
+					(e.g., Arrange Hours classes) are excluded.<br/>
 					For the full list of classes see <a href='classShowSearch.do'>Classes</a> or 
-					<a href='classAssignmentsReportShowSearch.do'>Class Assignments</a> page.
+					<a href='classAssignmentsReportShowSearch.do'>Class Assignments</a> page.<br>
 				</i>
 			</TD>
 		</TR>

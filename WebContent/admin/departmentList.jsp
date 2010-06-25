@@ -28,7 +28,7 @@
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld"	prefix="html"%>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic"%>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
-<TABLE width="98%" border="0" cellspacing="0" cellpadding="3">
+<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 	<TR>
 		<TD align="right">
 			<tt:section-header>
@@ -53,7 +53,7 @@
 	</TR>
 </TABLE>
 
-<TABLE width="98%" border="0" cellspacing="0" cellpadding="3">
+<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 
 	<%
 		DepartmentListForm frm = (DepartmentListForm) request.getAttribute("departmentListForm");
@@ -168,7 +168,7 @@
 
 </TABLE>
 
-<TABLE width="98%" border="0" cellspacing="0" cellpadding="3">
+<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 	<TR>
 		<TD align="right" colspan="2">
 			<tt:section-header/>

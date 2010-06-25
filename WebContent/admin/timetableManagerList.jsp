@@ -23,7 +23,7 @@
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 
-<TABLE width="98%" border="0" cellspacing="0" cellpadding="3">
+<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 	<TR>
 		<TD align="right">
 			<tt:section-header>
@@ -49,7 +49,7 @@
 	</TR>
 </TABLE>				
 
-<TABLE width="98%" border="0" cellspacing="0" cellpadding="1">
+<TABLE width="100%" border="0" cellspacing="0" cellpadding="1">
 	<%=request.getAttribute("schedDeputyList")%>
 </TABLE>
 

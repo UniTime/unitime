@@ -277,29 +277,114 @@ A.l7 {
 	font-family: sans-serif, verdana, arial
 }
 
+input[type="text"] {
+	font-family: Verdana, sans-serif;
+	font-size: 8pt;
+	font-weight: 400;
+	font-style: normal;
+	color: #333333;
+	line-height: 15px;
+	vertical-align: baseline;
+	background: #FFFFFF;
+	height: 22px;
+	border: 1px solid #9CB0CE;
+	padding: 2px;
+}
+
+textarea {
+	font-family: Verdana, sans-serif;
+	font-size: 8pt;
+	font-weight: 400;
+	font-style: normal;
+	color: #333333;
+	line-height: 15px;
+	vertical-align: baseline;
+	background: #FFFFFF;
+	border: 1px solid #9CB0CE;
+	padding: 2px;
+}
+
+input[type="submit"] {
+  margin: 0;
+  padding: 3px 5px;
+  text-decoration: none;
+  font-size: small;
+  cursor: pointer;
+  cursor: hand;
+  background: url("../unitime/gwt/standard/images/hborder.png") repeat-x 0px -27px;
+  border: 1px outset #ccc;
+}
+
+input[type="submit"]:active {
+  border: 1px inset #ccc;
+}
+input[type="submit"]:hover {
+  border-color: #9cf #69e #69e #7af;
+}
+input[type="submit"][disabled] {
+  cursor: default;
+  color: #888;
+}
+input[type="submit"][disabled]:hover {
+  border: 1px outset #ccc;
+}
+
+input[type="button"] {
+  margin: 0;
+  padding: 3px 5px;
+  text-decoration: none;
+  font-size: small;
+  cursor: pointer;
+  cursor: hand;
+  background: url("../unitime/gwt/standard/images/hborder.png") repeat-x 0px -27px;
+  border: 1px outset #ccc;
+}
+input[type="button"]:active {
+  border: 1px inset #ccc;
+}
+input[type="button"]:hover {
+  border-color: #9cf #69e #69e #7af;
+}
+input[type="button"][disabled] {
+  cursor: default;
+  color: #888;
+}
+input[type="button"][disabled]:hover {
+  border: 1px outset #ccc;
+}
+
+body, table td, select {
+  font-family: Arial Unicode MS, Arial, sans-serif;
+  font-size: small;
+}
+
+/*
 input {
-	border-style: solid;
-	border-width: 1px;
-	border-right-color: #c0c0c0;
-	border-bottom-color: #c0c0c0;
-	border-top-color: #808080;
-	border-left-color: #808080;
-	padding: 1px 1px 1px 1px;
-	font-family: sans-serif, verdana, arial;
-	font-weight: normal;
-	font-size: 90%;
+	font-family: Verdana, sans-serif;
+	font-size: 8pt;
+	font-weight: 400;
+	font-style: normal;
+	color: #333333;
+	line-height: 15px;
+	vertical-align: baseline;
+	background: #FFFFFF;
+	height: 22px;
+	border: 1px solid #9CB0CE;
+	padding: 2px;
 }
 
 textarea,select {
-	border-style: solid;
-	border-width: 1px;
-	border-right-color: #c0c0c0;
-	border-bottom-color: #c0c0c0;
-	border-top-color: #808080;
-	border-left-color: #808080;
-	padding: 2px 2px 2px 2px;
-	font-family: sans-serif, verdana, arial;
-	font-size: 90%;
+	font-family: Verdana, sans-serif;
+	font-size: 8pt;
+	font-weight: 400;
+	font-style: normal;
+	color: #333333;
+	line-height: 15px;
+	vertical-align: baseline;
+	background: #FFFFFF;
+	height: 22px;
+	border: 1px solid #9CB0CE;
+	padding: 2px;
 }
 
 input.btn {
@@ -314,7 +399,6 @@ input.btn {
 	font-family: sans-serif, verdana, arial;
 	font-size: 90%;
 	font-weight: normal;
-	/*height: 20px;*/
 }
 
 input.btnSmall {
@@ -328,23 +412,20 @@ input.btnSmall {
 	padding: 1px 1px 1px 1px;
 	font-family: sans-serif, verdana, arial;
 	font-size: 90%;
-	/*left: 650px;
-	position: absolute;
-	height: 20px;*/
 }
-
 input.txt,textarea.txt {
-	border-style: solid;
-	border-width: 1px;
-	border-right-color: #c0c0c0;
-	border-bottom-color: #c0c0c0;
-	border-top-color: #808080;
-	border-left-color: #808080;
-	padding: 2px 2px 2px 2px;
-	font-family: sans-serif, verdana, arial;
-	font-size: 90%;
+	font-family: Verdana, sans-serif;
+	font-size: 8pt;
+	font-weight: 400;
+	font-style: normal;
+	color: #333333;
+	line-height: 15px;
+	vertical-align: baseline;
+	background: #FFFFFF;
+	height: 22px;
+	border: 1px solid #9CB0CE;
+	padding: 2px;
 }
-
 select.cmb {
 	border-style: solid;
 	border-width: 1px;
@@ -356,7 +437,7 @@ select.cmb {
 	font-family: sans-serif, verdana, arial;
 	font-size: 90%;
 }
-
+*/
 A.menuLink:hover {
 	font-size: 80%;
 	color: red;

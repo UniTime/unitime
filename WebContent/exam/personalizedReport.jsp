@@ -24,7 +24,7 @@
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <tiles:importAttribute />
 <html:form action="/personalSchedule">
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR><TD align='right'>
 			<logic:equal name="personalizedExamReportForm" property="admin" value="true">
 				<html:hidden property="uid" styleId="uid" onchange="submit();"/>
@@ -50,53 +50,53 @@
 	</logic:notEmpty>
 	<logic:notEmpty scope="request" name="sessions">
 		<BR>
-		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<bean:write scope="request" name="sessions" filter="false"/>
 		</TABLE>
 	</logic:notEmpty>
 	<logic:notEmpty scope="request" name="iclsschd">
 		<BR>
-		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<bean:write scope="request" name="iclsschd" filter="false"/>
 		</TABLE>
 	</logic:notEmpty>
 	<logic:notEmpty scope="request" name="ischedule">
 		<BR>
-		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<bean:write scope="request" name="ischedule" filter="false"/>
 		</TABLE>
 	</logic:notEmpty>
 	<logic:notEmpty scope="request" name="iconf">
 		<BR>
-		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<bean:write scope="request" name="iconf" filter="false"/>
 		</TABLE>
 	</logic:notEmpty>
 	<logic:notEmpty scope="request" name="sconf">
 		<BR>
-		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<bean:write scope="request" name="sconf" filter="false"/>
 		</TABLE>
 	</logic:notEmpty>
 	<logic:notEmpty scope="request" name="clsschd">
 		<BR>
-		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<bean:write scope="request" name="clsschd" filter="false"/>
 		</TABLE>
 	</logic:notEmpty>
 	<logic:notEmpty scope="request" name="schedule">
 		<BR>
-		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<bean:write scope="request" name="schedule" filter="false"/>
 		</TABLE>
 	</logic:notEmpty>
 	<logic:notEmpty scope="request" name="conf">
 		<BR>
-		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<bean:write scope="request" name="conf" filter="false"/>
 		</TABLE>
 	</logic:notEmpty>
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR><TD><tt:section-title/></TD></TR>
 		<TR><TD align='right'>
 			<logic:equal name="personalizedExamReportForm" property="admin" value="true">

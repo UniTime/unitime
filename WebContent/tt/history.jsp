@@ -31,7 +31,7 @@
 try {
 %>
 	<script language="JavaScript">blToggleHeader('Filter','dispFilter');blStart('dispFilter');</script>
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 	<TR>
 		<TD>Simplified mode:</TD>
 		<TD>
@@ -47,7 +47,7 @@ try {
 	</TR>
 	</TABLE>
 	<script language="JavaScript">blEnd('dispFilter');blStartCollapsed('dispFilter');</script>
-		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<TR>
 				<TD colspan='2' align='right'>
 					<html:submit onclick="displayLoading();" property="op" value="Export PDF"/>
@@ -61,7 +61,7 @@ try {
 	String history = (String)request.getAttribute("AssignmentHistory.table");
 	if (history!=null) {
 %>
-		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<%=history%>
 			<tr>
 				<td colspan='<%=request.getAttribute("AssignmentHistory.table.colspan")%>'>
@@ -72,7 +72,7 @@ try {
 <%
 	} else {
 %>
-		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<TR>
 				<TD colspan="2">
 					<DIV class="WelcomeRowHead">

@@ -32,7 +32,7 @@
 try {
 %>
 	<script language="JavaScript">blToggleHeader('Filter','dispFilter');blStart('dispFilter');</script>
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 	<TR>
 		<TD>Simplified mode:</TD>
 		<TD>
@@ -48,7 +48,7 @@ try {
 	</TR>
 	</TABLE>
 	<script language="JavaScript">blEnd('dispFilter');blStartCollapsed('dispFilter');</script>
-		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<TR>
 				<TD colspan='2' align='right'>
 					<html:submit onclick="displayLoading();" property="op" value="Export PDF"/>
@@ -64,16 +64,16 @@ try {
 	SolverProxy solver = WebSolver.getSolver(session);
 	if (assigned!=null) {
 %>
-		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<tr>
 				<td colspan='<%=request.getAttribute("AssignedClasses.table.colspan")%>'>
 					<i>
-						NOTE: Only classes that are <%=solver==null?"included in the selected solution":"loaded into the solver"%> 
-						are displayed in the below list. This means that classes that are assigned to other timetabling managers 
-						(e.g., LLR or LAB) as well as classes that <%=solver==null?"were":"are"%> not loaded into the solver 
-						(e.g., Arrange Hours classes) are excluded. 
-						For the full list of classes see <a href='classShowSearch.do'>Classes</a> or 
-						<a href='classAssignmentsReportShowSearch.do'>Class Assignments</a> page.
+					NOTE: Only classes that are <%=solver==null?"included in the selected solution":"loaded into the solver"%> 
+					are displayed in the below list. This means that classes that are assigned to other<br/>timetabling managers 
+					(e.g., LLR or LAB) as well as classes that <%=solver==null?"were":"are"%> not loaded into the solver 
+					(e.g., Arrange Hours classes) are excluded.<br/>
+					For the full list of classes see <a href='classShowSearch.do'>Classes</a> or 
+					<a href='classAssignmentsReportShowSearch.do'>Class Assignments</a> page.<br>
 					</i>
 				</td>
 			</tr>
@@ -88,12 +88,12 @@ try {
 					<tt:displayPrefLevelLegend/>
 					<br>
 					<i>
-						NOTE: Only classes that are <%=solver==null?"included in the selected solution":"loaded into the solver"%> 
-						are displayed in the above list. This means that classes that are assigned to other timetabling managers 
-						(e.g., LLR or LAB) as well as classes that <%=solver==null?"were":"are"%> not loaded into the solver 
-						(e.g., Arrange Hours classes) are excluded. 
-						For the full list of classes see <a href='classShowSearch.do'>Classes</a> or 
-						<a href='classAssignmentsReportShowSearch.do'>Class Assignments</a> page.
+					NOTE: Only classes that are <%=solver==null?"included in the selected solution":"loaded into the solver"%> 
+					are displayed in the below list. This means that classes that are assigned to other<br/>timetabling managers 
+					(e.g., LLR or LAB) as well as classes that <%=solver==null?"were":"are"%> not loaded into the solver 
+					(e.g., Arrange Hours classes) are excluded.<br/>
+					For the full list of classes see <a href='classShowSearch.do'>Classes</a> or 
+					<a href='classAssignmentsReportShowSearch.do'>Class Assignments</a> page.<br>
 					</i>
 				</td>
 			</tr>
@@ -101,7 +101,7 @@ try {
 <%
 	} else {
 %>
-		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<TR>
 				<TD colspan="2">
 					<DIV class="WelcomeRowHead">

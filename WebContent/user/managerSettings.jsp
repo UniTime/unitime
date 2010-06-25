@@ -32,7 +32,7 @@
 <html:hidden property="keyId"/><html:errors property="keyId"/>
 <html:hidden property="settingId"/><html:errors property="settingId"/>
 
-	<TABLE width="93%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD>
 				<tt:section-header>
@@ -82,7 +82,7 @@
 
 </logic:equal>
 <logic:notEqual name="mgrSettingsForm" property="op" value="Edit">
-	<TABLE width="93%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<%= request.getAttribute(Settings.SETTINGS_ATTR_NAME) %>
 	</TABLE>
 </logic:notEqual>

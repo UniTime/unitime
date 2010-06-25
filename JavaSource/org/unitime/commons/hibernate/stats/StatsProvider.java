@@ -72,7 +72,7 @@ public class StatsProvider {
             
             // Generate HTML table
             Table table = new Table();
-            table.setWidth("90%");
+            table.setWidth("100%");
             table.setBorder(0);
             table.setCellSpacing(0);
             table.setCellPadding(3);

@@ -112,7 +112,7 @@
 <html:form action="/listSolutions">
 	<input type='hidden' name='confirm' value='y'/>
 	<logic:notEmpty name="listSolutionsForm" property="messages">
-		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<TR><TD colspan="2" align="left" class="errorCell">
 				<font color="red"><B>ERRORS:</B><BR>
 		<logic:iterate name="listSolutionsForm" property="messages" id="error">
@@ -167,7 +167,7 @@
 		if (status==null)
 			status = "Solver not started.";
 %>
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD colspan="2">
 				<DIV class="WelcomeRowHead">
@@ -279,7 +279,7 @@
 <logic:notEmpty name="listSolutionsForm" property="solutionBeans">
 	<html:hidden property="selectedSolutionBean"/><html:errors property="selectedSolutionBean"/>
 	<html:hidden property="note"/>
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR><TD colspan='2'>&nbsp;</TD></TR>
 	<logic:iterate name="listSolutionsForm" property="solutionBeans" id="sb" indexId="idx">
 		<TR>
@@ -372,13 +372,13 @@
 	</TABLE>
 </logic:notEmpty>
 <BR>
-<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 	<%= request.getAttribute("ListSolutions.table") %> 
 </TABLE>
 <logic:equal name="listSolutionsForm" property="canDo" value="true">
 <logic:notEmpty name="listSolutionsForm" property="owners">
 <% if (solver==null) { %>
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD nowrap>
 			Load into interactive solver:

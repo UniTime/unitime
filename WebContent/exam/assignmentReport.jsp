@@ -27,7 +27,7 @@
 <tiles:importAttribute />
 <html:form action="/examAssignmentReport">
 	<script language="JavaScript">blToggleHeader('Filter','dispFilter');blStart('dispFilter');</script>
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD width="10%" nowrap>Show classes/courses:</TD>
 			<TD>
@@ -37,7 +37,7 @@
 	</TABLE>
 	<script language="JavaScript">blEnd('dispFilter');blStartCollapsed('dispFilter');</script>
 	<script language="JavaScript">blEndCollapsed('dispFilter');</script>
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 	<TR>
   		<TD width="10%" nowrap>Examination Problem:</TD>
 		<TD>
@@ -91,14 +91,14 @@
 
 	<BR><BR>
 	<logic:empty name="examAssignmentReportForm" property="table">
-		<table width='95%' border='0' cellspacing='0' cellpadding='3'>
+		<table width='100%' border='0' cellspacing='0' cellpadding='3'>
 			<tr><td><i>
 				No exams matching the above criteria found.
 			</i></td></tr>
 		</table>
 	</logic:empty>
 	<logic:notEmpty name="examAssignmentReportForm" property="table">
-		<table width='95%' border='0' cellspacing='0' cellpadding='3'>
+		<table width='100%' border='0' cellspacing='0' cellpadding='3'>
 			<bean:define id="colspan" name="examAssignmentReportForm" property="nrColumns"/>
 			<bean:write name="examAssignmentReportForm" property="table" filter="false"/>
 			<tr><td colspan='<%=colspan%>'><tt:displayPrefLevelLegend/></td></tr>

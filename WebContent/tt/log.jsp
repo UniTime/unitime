@@ -30,7 +30,7 @@
 <tiles:importAttribute />
 
 <html:form action="/solverLog">
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD colspan="2">
 				<DIV class="WelcomeRowHead">
@@ -63,7 +63,7 @@
 		<logic:iterate name="solverLogForm" property="ownerNames" id="ownerName" indexId="idx">
 			<BR>
 			<logic:greaterThan name="solverLogForm" property="nrLogs" value="1">
-				<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+				<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 					<TR>
 						<TD colspan="2">
 							<DIV class="WelcomeRowHead">
@@ -78,7 +78,7 @@
 	</logic:notEqual>
 	
 	<logic:equal name="solverLogForm" property="nrLogs" value="0">
-		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<TR>
 				<TD colspan="2">	
 					<i>Neither a solver is started nor solution is selected.</i>

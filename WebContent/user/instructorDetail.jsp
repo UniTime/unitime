@@ -44,7 +44,7 @@
 	<html:hidden property="deptCode"/>
 	<html:hidden property="op2" value=""/>
 	
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD valign="middle" colspan='2'>
 				<tt:section-header>
@@ -181,7 +181,7 @@
 		</TR>
 		<TR>
 			<TD colspan="2">
-				<table width="90%" border="0" cellspacing="0" cellpadding="3">
+				<table width="100%" border="0" cellspacing="0" cellpadding="3">
 					<%if (request.getAttribute("classTable") != null ) {%>
 						<%=request.getAttribute("classTable")%>
 					<%} else { %>

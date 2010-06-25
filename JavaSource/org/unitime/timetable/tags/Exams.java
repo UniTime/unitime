@@ -339,7 +339,7 @@ public class Exams extends BodyTagSupport {
                 }
             }
             
-            pageContext.getOut().println("<table width='99%' border='0' cellspacing='0' cellpadding='3'>");
+            pageContext.getOut().println("<table width='100%' border='0' cellspacing='0' cellpadding='3'>");
             if ("Exam".equals(pageContext.getRequest().getParameter("backType"))) {
                 pageContext.getOut().println("<tr><td colpan='9'><A name='examHash'>&nbsp;</A></td></tr>");
                 hasExamHash = true;

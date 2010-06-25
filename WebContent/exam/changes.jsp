@@ -27,7 +27,7 @@
 <tiles:importAttribute />
 <html:form action="/examChanges">
 	<script language="JavaScript">blToggleHeader('Filter','dispFilter');blStart('dispFilter');</script>
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD width="10%" nowrap>Show classes/courses:</TD>
 			<TD>
@@ -43,7 +43,7 @@
 	</TABLE>
 	<script language="JavaScript">blEnd('dispFilter');blStartCollapsed('dispFilter');</script>
 	<script language="JavaScript">blEndCollapsed('dispFilter');</script>
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 	<TR>
 		<TD width="10%" nowrap>Subject Areas:</TD>
 		<TD>
@@ -78,7 +78,7 @@
 
 	<BR><BR>
 	<logic:empty name="examChangesForm" property="table">
-		<table width='95%' border='0' cellspacing='0' cellpadding='3'>
+		<table width='100%' border='0' cellspacing='0' cellpadding='3'>
 			<tr><td><i>
 				<logic:equal name="examChangesForm" property="noSolver" value="true">
 					No examination timetable is loaded into the solver.
@@ -99,7 +99,7 @@
 		</table>
 	</logic:empty>
 	<logic:notEmpty name="examChangesForm" property="table">
-		<table width='95%' border='0' cellspacing='0' cellpadding='3'>
+		<table width='100%' border='0' cellspacing='0' cellpadding='3'>
 			<bean:define id="colspan" name="examChangesForm" property="nrColumns"/>
 			<bean:write name="examChangesForm" property="table" filter="false"/>
 			<tr><td colspan='<%=colspan%>'><tt:displayPrefLevelLegend/></td></tr>

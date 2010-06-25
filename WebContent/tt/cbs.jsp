@@ -44,7 +44,7 @@ try {
 	ConflictStatisticsInfo.printHtmlHeader(out);
 %>
 	<script language="JavaScript">blToggleHeader('Filter','dispFilter');blStart('dispFilter');</script>
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD>Mode:</TD>
 			<TD>
@@ -68,7 +68,7 @@ try {
 		</TR>
 	</TABLE>
 	<script language="JavaScript">blEnd('dispFilter');blStartCollapsed('dispFilter');</script>
-		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<TR>
 				<TD colspan='2' align='right'>
 					<html:submit onclick="displayLoading();" accesskey="R" property="op" value="Refresh"/>
@@ -111,13 +111,13 @@ try {
 	cbs.printHtml(out, limit/100.0, type, clickable);
 %>
 	</font>
-	<table border='0' width='90%'><tr><td>
+	<table border='0' width='100%'><tr><td>
 		<tt:displayPrefLevelLegend/>
 	</td></tr></table>
 <%
 	} else {
 %>
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD colspan="2">	
 				<i>Conflict-based statistics is not available at the moment.</i>

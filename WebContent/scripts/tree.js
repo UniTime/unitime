@@ -82,6 +82,12 @@ function makelink(page, name, title, target) {
 		var onClick = '';
 		if (target==null || target=='') target='__idContentFrame';
 		if (target=='__idContentFrame') onClick='onClick=" if (!event.ctrlKey) displayLoading();"';
+		/*
+		if (page.indexOf('?') >= 0)
+			page += '&gwt.codesvr=127.0.0.1:9997';
+		else
+			page += '?gwt.codesvr=127.0.0.1:9997';
+			*/
 		document.write('&nbsp;<A ' + onClick + ' target="' + target + '" href="'+page+'" title="'+title+'" >'+name+'</A>');
 	}
 }

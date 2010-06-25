@@ -25,7 +25,7 @@
 
 <html:form action="/distributionTypeEdit">
 	<html:hidden property="uniqueId"/>
-	<table width="93%" border="0" cellspacing="0" cellpadding="3">	
+	<table width="100%" border="0" cellspacing="0" cellpadding="3">	
 		<TR>
 			<TD colspan='2'>
 			<tt:section-header>

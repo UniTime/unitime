@@ -27,7 +27,7 @@
 <tiles:importAttribute />
 <html:form action="/unassignedExams">
 	<script language="JavaScript">blToggleHeader('Filter','dispFilter');blStart('dispFilter');</script>
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD width="10%" nowrap>Show classes/courses:</TD>
 			<TD>
@@ -37,7 +37,7 @@
 	</TABLE>
 	<script language="JavaScript">blEnd('dispFilter');blStartCollapsed('dispFilter');</script>
 	<script language="JavaScript">blEndCollapsed('dispFilter');</script>
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 	<TR>
   		<TD width="10%" nowrap>Examination Problem:</TD>
 		<TD>
@@ -72,7 +72,7 @@
 
 	<BR><BR>
 	<logic:empty name="examReportForm" property="table">
-		<table width='95%' border='0' cellspacing='0' cellpadding='3'>
+		<table width='100%' border='0' cellspacing='0' cellpadding='3'>
 			<tr><td><i>
 				<logic:empty name="examReportForm" property="subjectArea">
 					No subject area selected.
@@ -90,7 +90,7 @@
 		</table>
 	</logic:empty>
 	<logic:notEmpty name="examReportForm" property="table">
-		<table width='95%' border='0' cellspacing='0' cellpadding='3'>
+		<table width='100%' border='0' cellspacing='0' cellpadding='3'>
 			<bean:define id="colspan" name="examReportForm" property="nrColumns"/>
 			<!-- 
 			<tr><td colspan='<%=colspan%>'><tt:displayPrefLevelLegend separator="none"/></td></tr>

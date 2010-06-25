@@ -36,7 +36,7 @@
 <html:hidden property="departmentsEditable"/><html:errors property="departmentsEditable"/>
 
 <logic:notEqual name="solverGroupEditForm" property="op" value="List">
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD colspan="2">
 				<tt:section-header>
@@ -172,7 +172,7 @@
 	</TABLE>
 </logic:notEqual>
 <logic:equal name="solverGroupEditForm" property="op" value="List">
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD align="right" colspan="5">
 				<tt:section-header>

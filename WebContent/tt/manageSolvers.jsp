@@ -27,23 +27,23 @@
 
 <html:form action="/manageSolvers">
 
-<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 	<%= request.getAttribute("ManageSolvers.table") %> 
 </TABLE>
 <BR>
-<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 	<%= request.getAttribute("ManageSolvers.xtable") %> 
 </TABLE>
 <BR>
-<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 	<%= request.getAttribute("ManageSolvers.stable") %> 
 </TABLE>
 <BR>
-<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 	<%= request.getAttribute("ManageSolvers.table2") %> 
 </TABLE>
 <BR>
-<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 	<TR>
 		<TD colspan='2'><DIV class="WelcomeRowHeadBlank">&nbsp;</DIV></TD>
 	</TR>

@@ -21,7 +21,7 @@
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <%@ include file="../checkAdmin.jspf" %>
 
-	<TABLE align="left" width="95%">
+	<TABLE align="left" width="100%">
 		<TR>
 			<TD>
 				<tt:activeSessions />

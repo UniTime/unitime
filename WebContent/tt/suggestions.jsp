@@ -150,7 +150,7 @@ try {
 	<html:hidden property="depth" /> 
 	<html:hidden property="timeout" /> 
 	<script language="JavaScript">blToggleHeader('Filter','dispSugFilter');blStart('dispSugFilter');</script>
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD width='10%'>Display conflict table:</TD>
 			<TD>
@@ -197,9 +197,8 @@ try {
 		</TR>
 		</table>
 	<script language="JavaScript">blEnd('dispSugFilter');blStartCollapsed('dispSugFilter');</script>
-		</table>
 	<script language="JavaScript">blEndCollapsed('dispSugFilter');</script>	
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD width="10%" nowrap>Allow placements:</TD>
 			<TD>
@@ -235,7 +234,7 @@ try {
 	if (request.getAttribute("Suggestions.assignmentInfo")!=null) {
 %>
 		<br><br>
-		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<TR>
 				<TD colspan="2">
 					<DIV class="WelcomeRowHead">
@@ -256,7 +255,7 @@ try {
 %>
 	<logic:equal name="suggestionsForm" property="showFilter" value="false">
 		<BR><BR>
-		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<TR>
 				<TD colspan="2">
 					<DIV class="WelcomeRowHead">
@@ -285,7 +284,7 @@ try {
 	if (selectedAssignment!=null || selectedSuggestion!=null || conflictAssignments!=null) {
 %>
 		<BR><BR>	
-		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<%=(selectedAssignment==null?"":selectedAssignment)%>
 			<%=(selectedSuggestion==null?"":selectedSuggestion)%>
 			<%=(conflictAssignments==null?"":conflictAssignments)%>
@@ -294,7 +293,7 @@ try {
 		if (selectedInfo!=null) {
 %>
 			<BR>
-			<TABLE border="0" cellspacing="0" cellpadding="3" width="90%">
+			<TABLE border="0" cellspacing="0" cellpadding="3" width="100%">
 				<%=selectedInfo%>
 				<TR><TD align='right' colspan='3'>
 					<tt:section-header/>
@@ -311,7 +310,7 @@ try {
 	if (conftable!=null) {
 %>
 		<BR><BR>
-		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<%=conftable%>
 		</TABLE>
 <%
@@ -321,10 +320,10 @@ try {
 	if (suggestions!=null) {
 %>
 		<BR><BR>
-		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<%=suggestions%>
 		</TABLE>
-		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<TR>
 				<TD><I><%=(suggestionsMessage==null?"":suggestionsMessage)%></I></TD>
 				<TD align='right'>
@@ -342,13 +341,13 @@ try {
 	if (placements!=null) {
 %>
 		<BR><BR>
-		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<%=placements%>
 		</TABLE>
 <%
 		if (placementsMessage!=null) {
 %>
-			<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+			<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 				<TR><TD><I><%=placementsMessage%></I></TD></TR>
 			</TABLE>
 <%
@@ -383,7 +382,7 @@ try {
 	if (cbs!=null && classId!=null && cbs.getCBS(classId)!=null) {
 %>
 	<BR>
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD colspan="2">
 				<DIV class="WelcomeRowHead">

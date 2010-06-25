@@ -30,7 +30,7 @@
 <tiles:importAttribute />
 
 <html:form action="/examSolverLog">
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD colspan="2">
 				<DIV class="WelcomeRowHead">
@@ -64,7 +64,7 @@
 	</logic:notEmpty>
 	
 	<logic:empty name="examSolverLogForm" property="log">
-		<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<TR>
 				<TD colspan="2">	
 					<i>Examination solver is not started.</i>

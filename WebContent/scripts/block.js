@@ -26,7 +26,7 @@ function blToggle(divName) {
 }
 
 function blToggleHeader(name, divName) {
-	document.writeln('<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">');
+	document.writeln('<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">');
 	document.writeln('<TR><TD colspan="2"><DIV class="WelcomeRowHead">');
 	blToggle(divName);
 	document.writeln(name);

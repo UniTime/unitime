@@ -32,7 +32,7 @@
 <input type='hidden' name='op2' value=''>
 <html:hidden property="canEdit"/>
 <logic:notEqual name="roomTypeEditForm" property="op" value="List">
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD colspan="3">
 				<tt:section-header>
@@ -112,7 +112,7 @@
 	</TABLE>
 </logic:notEqual>
 <logic:equal name="roomTypeEditForm" property="op" value="List">
-	<TABLE width="90%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<tr>
 			<td colspan='5'>
 				<tt:section-header>
