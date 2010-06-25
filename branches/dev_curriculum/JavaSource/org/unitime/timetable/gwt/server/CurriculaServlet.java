@@ -2423,5 +2423,92 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 			throw new CurriculaException(e.getMessage());
 		}
 	}
+	
+	public Boolean updateCurriculaByProjections(Set<Long> curriculumIds) throws CurriculaException {
+		sLog.info("updateCurriculaByProjections(curricula=" + curriculumIds + ")");
+		long s0 = System.currentTimeMillis();
+		User user = Web.getUser(getThreadLocalRequest().getSession());
+		try {
+			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
+			Transaction tx = null;
+			try {
+				tx = hibSession.beginTransaction();
+				Long sessionId = getAcademicSessionId();
+
+				List<Curriculum> curricula = null;
+				if (curriculumIds == null) {
+					curricula = hibSession.createQuery(
+							"select distinct c from Curriculum c where c.department.session.uniqueId = :sessionId")
+					.setLong("sessionId", sessionId)
+					.setCacheable(true).list();
+				} else {
+					curricula = new ArrayList<Curriculum>();
+					for (Long id: curriculumIds)
+						curricula.add(CurriculumDAO.getInstance().get(id, hibSession));
+				}
+				
+				for (Curriculum c: curricula) {
+					if (c == null || !c.canUserEdit(user)) continue;
+					
+					Hashtable<String,HashMap<String, Float>> rules = getRules(hibSession, c.getAcademicArea().getUniqueId());
+					
+					Hashtable<String, Hashtable<String, Integer>> majorClasf2ll = new Hashtable<String,Hashtable<String,Integer>>();
+					for (Object[] o : (List<Object[]>)hibSession.createQuery(
+							"select m.code, f.code, count(distinct s) from LastLikeCourseDemand x inner join x.student s " +
+							"inner join s.academicAreaClassifications ac inner join ac.academicClassification f inner join ac.academicArea a " +
+							"inner join s.posMajors m where x.subjectArea.session.uniqueId = :sessionId and a.uniqueId = :acadAreaId " +
+							"group by m.code, f.code")
+							.setLong("sessionId", sessionId)
+							.setLong("acadAreaId", c.getAcademicArea().getUniqueId())
+							.setCacheable(true).list()) {
+						String major = (String)o[0];
+						String clasf = (String)o[1];
+						int students = ((Number)o[2]).intValue();
+						Hashtable<String, Integer> clasf2ll = majorClasf2ll.get(major);
+						if (clasf2ll == null) {
+							clasf2ll = new Hashtable<String, Integer>();
+							majorClasf2ll.put(major, clasf2ll);
+						}
+						clasf2ll.put(clasf, students);
+					}
+
+					for (Iterator<CurriculumClassification> i = c.getClassifications().iterator(); i.hasNext(); ) {
+						CurriculumClassification clasf = i.next();
+						
+						float proj = 0.0f;
+						for (Iterator<PosMajor> j = c.getMajors().iterator(); j.hasNext(); ) {
+							PosMajor m = j.next();
+							Hashtable<String, Integer> clasf2ll = majorClasf2ll.get(m.getCode());
+							
+							Integer lastLike = (clasf2ll == null ? null : clasf2ll.get(clasf.getAcademicClassification().getCode()));
+							
+							proj += getProjection(rules, m.getCode(), clasf.getAcademicClassification().getCode()) * (lastLike == null ? 0 : lastLike);
+						}
+						
+						clasf.setNrStudents(Math.round(proj));
+						hibSession.saveOrUpdate(clasf);
+					}
+					
+				}
+				
+				hibSession.flush();
+				tx.commit(); tx = null;
+			} finally {
+				try {
+					if (tx != null && tx.isActive()) {
+						tx.rollback();
+					}
+				} catch (Exception e) {}
+				hibSession.close();
+			}
+			sLog.info("Curricula update (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
+			return null;
+		} catch  (Exception e) {
+			if (e instanceof CurriculaException) throw (CurriculaException)e;
+			sLog.error(e.getMessage(), e);
+			throw new CurriculaException(e.getMessage());
+		}
+	}
+
 
 }

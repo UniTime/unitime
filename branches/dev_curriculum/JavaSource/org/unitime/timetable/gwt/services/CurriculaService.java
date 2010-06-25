@@ -60,6 +60,7 @@ public interface CurriculaService extends RemoteService {
 	public Boolean canAddCurriculum() throws CurriculaException;
 	public Boolean isAdmin() throws CurriculaException;
 	public Boolean makeupCurriculaFromLastLikeDemands(boolean lastLike) throws CurriculaException;
+	public Boolean updateCurriculaByProjections(Set<Long> curriculumIds) throws CurriculaException;
 	
 	public HashMap<AcademicAreaInterface, HashMap<MajorInterface, HashMap<AcademicClassificationInterface, Number[]>>> loadProjectionRules() throws CurriculaException;
 	public Boolean saveProjectionRules(HashMap<AcademicAreaInterface, HashMap<MajorInterface, HashMap<AcademicClassificationInterface, Number[]>>> rules) throws CurriculaException;
