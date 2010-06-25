@@ -237,6 +237,54 @@ public class CurriculaTable extends Composite {
 				});
 				rules.getElement().getStyle().setCursor(Cursor.POINTER);
 				menu.addItem(rules);
+				MenuItem updatePlanned = new MenuItem("Update Planned Enrollment by Projection Rules", true, new Command() {
+					@Override
+					public void execute() {
+						popup.hide();
+						HashSet<Long> curIds = null;
+						if (iSelectedCurricula.isEmpty()) {
+							for (CurriculumInterface c: iData)
+								if (c.isEditable()) {
+									iTable.getRowFormatter().setStyleName(1 + c.getRow(), "unitime-TableRowProblem");
+								}
+						} else {
+							curIds = new HashSet<Long>();
+							for (CurriculumInterface c: iData)
+								if (c.isEditable() && iSelectedCurricula.contains(c.getId())) {
+									curIds.add(c.getId());
+									iTable.getRowFormatter().setStyleName(1 + c.getRow(), "unitime-TableRowProblem");
+								}
+						}
+						if (Window.confirm("Do you realy want to update " + (curIds == null ? "all " + (iIsAdmin ? "": "your ") + "curricula" : "the selected " + (curIds.size() == 1 ? "curriculum" : "curricula")) + "?")) {
+							LoadingWidget.getInstance().show("Updating " + (curIds == null ? "all " + (iIsAdmin ? "": "your ") + "curricula" : "the selected " + (curIds.size() == 1 ? "curriculum" : "curricula")) + " ... " +
+									"&nbsp;&nbsp;&nbsp;&nbsp;This could take a while ...", 300000);
+							iService.updateCurriculaByProjections(curIds, new AsyncCallback<Boolean>() {
+								@Override
+								public void onFailure(Throwable caught) {
+									setError("Unable to update curricula (" + caught.getMessage() + ")");
+									for (CurriculumInterface c: iData)
+										if (c.isEditable()) {
+											iTable.getRowFormatter().setStyleName(1 + c.getRow(), (c.getId().equals(iLastCurriculumId) ? "unitime-TableRowSelected" : null));
+										}
+									LoadingWidget.getInstance().hide();
+								}
+
+								@Override
+								public void onSuccess(Boolean result) {
+									LoadingWidget.getInstance().hide();
+									query(iLastQuery, null);
+								}
+							});
+						} else {
+							for (CurriculumInterface c: iData)
+								if (c.isEditable()) {
+									iTable.getRowFormatter().setStyleName(1 + c.getRow(), (c.getId().equals(iLastCurriculumId) ? "unitime-TableRowSelected" : null));
+								}
+						}
+					}
+				});
+				updatePlanned.getElement().getStyle().setCursor(Cursor.POINTER);
+				menu.addItem(updatePlanned);
 				if (iIsAdmin) {
 					MenuItem makupCurricula = new MenuItem((iTable.getRowCount() > 1 ? "Recreate" : "Create") + " Curricula from Last-Like Enrollments &amp; Projections", true, new Command() {
 						@Override
@@ -246,7 +294,8 @@ public class CurriculaTable extends Composite {
 								iTable.getRowFormatter().setStyleName(r, "unitime-TableRowProblem");
 							if (Window.confirm("This will delete all existing curricula and create them from scratch. Are you sure you want to do it?")) {
 								if (Window.confirm("Are you REALLY sure you want to recreate all curricula?")) {
-									LoadingWidget.getInstance().show("You may also go grab a coffee ... &nbsp;&nbsp;&nbsp;&nbsp;This will take a while ...", 300000);
+									LoadingWidget.getInstance().show((iTable.getRowCount() > 1 ? "Recreating" : "Creating") + " all curricula ... " +
+											"&nbsp;&nbsp;&nbsp;&nbsp;You may also go grab a coffee ... &nbsp;&nbsp;&nbsp;&nbsp;This will take a while ...", 300000);
 									iService.makeupCurriculaFromLastLikeDemands(true, new AsyncCallback<Boolean>(){
 
 										@Override
