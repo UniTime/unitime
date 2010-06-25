@@ -45,6 +45,7 @@ public class CurriculumEdit extends Composite {
 	private Button[] iSave = null;
 	private Button[] iDelete = null;
 	private Button[] iBack = null;
+	private Button[] iPrint = null;
 	private Label[] iSaveError = null;
 	private HorizontalPanel[] iButtons = null;
 
@@ -87,6 +88,8 @@ public class CurriculumEdit extends Composite {
 		iDelete[0].setAccessKey('d');
 		iBack = new Button[] {new Button("<u>B</u>ack"), new Button("<u>B</u>ack")};
 		iBack[0].setAccessKey('c');
+		iPrint = new Button[] {new Button("<u>P</u>rint"), new Button("<u>P</u>rint")};
+		iPrint[0].setAccessKey('p');
 		iSaveError = new Label[] { new Label(), new Label() };
 		iButtons = new HorizontalPanel[] {new HorizontalPanel(), new HorizontalPanel()};
 		for (int i = 0; i < 2; i++) {
@@ -97,6 +100,8 @@ public class CurriculumEdit extends Composite {
 			iButtons[i].add(iSave[i]);
 			iSave[i].getElement().getStyle().setMarginRight(4, Unit.PX);
 			iButtons[i].add(iDelete[i]);
+			iPrint[i].getElement().getStyle().setMarginRight(4, Unit.PX);
+			iButtons[i].add(iPrint[i]);
 			iDelete[i].getElement().getStyle().setMarginRight(4, Unit.PX);
 			iButtons[i].add(iBack[i]);
 			iButtons[i].addStyleName("unitime-NoPrint");
@@ -452,6 +457,17 @@ public class CurriculumEdit extends Composite {
 		for (int i = 0; i < 2; i++ ) {
 			iDelete[i].addClickHandler(deleteHandler);
 		}
+		
+		ClickHandler printHandler = new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				Window.print();
+			}
+		};
+
+		for (int i = 0; i < 2; i++ ) {
+			iPrint[i].addClickHandler(printHandler);
+		}
 	}
 	
 	private void loadCurriculum(boolean detailsEditable) {
@@ -469,8 +485,9 @@ public class CurriculumEdit extends Composite {
 		iCurriculumClasfTableError.setVisible(false);
 		for (int i = 0; i < 2; i ++) {
 			iSaveError[i].setVisible(false);
-			iDelete[i].setVisible(iCurriculum.getId() != null && iCurriculum.isEditable());
+			iDelete[i].setVisible(detailsEditable && iCurriculum.getId() != null && iCurriculum.isEditable());
 			iSave[i].setVisible(iCurriculum.isEditable());
+			iPrint[i].setVisible(detailsEditable);
 		}
 		iCurriculumAbbv.setText(iCurriculum.getAbbv());
 		iCurriculumAbbv.setEnabled(iCurriculum.isEditable() && detailsEditable);

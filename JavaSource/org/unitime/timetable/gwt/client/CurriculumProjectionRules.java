@@ -55,7 +55,7 @@ public class CurriculumProjectionRules extends Composite {
 	private MyFlexTable iTable;
 	
 	private VerticalPanel iPanel = null;
-	private Button[] iSave = null, iClose = null;
+	private Button[] iSave = null, iClose = null, iPrint = null;
 	private Label[] iErrorMessage = null;
 	private HorizontalPanel[] iHeaderPanel = null;
 	
@@ -107,15 +107,24 @@ public class CurriculumProjectionRules extends Composite {
 				}
 			}
 		};
+		
+		ClickHandler print = new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				Window.print();
+			}
+		};
 				
 		iHeaderPanel = new HorizontalPanel[] { new HorizontalPanel(), new HorizontalPanel()};
 		iHeaderPanel[0].setStyleName("unitime-MainTableHeader");
 		iErrorMessage = new Label[] {new Label(), new Label()};
 		iSave = new Button[] { new Button("<u>S</u>ave"), new Button("<u>S</u>ave")};
 		iClose = new Button[] { new Button("<u>C</u>lose"), new Button("<u>C</u>lose")};
+		iPrint = new Button[] { new Button("<u>P</u>rint"), new Button("<u>P</u>rint")};
 		
 		iSave[0].setAccessKey('s');
 		iClose[0].setAccessKey('c');
+		iPrint[0].setAccessKey('p');
 		
 		for (int i = 0; i < 2; i++) {
 			iHeaderPanel[i].setSpacing(2);
@@ -129,8 +138,13 @@ public class CurriculumProjectionRules extends Composite {
 			iClose[i].addClickHandler(close);
 			iClose[i].getElement().getStyle().setMarginLeft(4, Unit.PX);
 			iClose[i].addStyleName("unitime-NoPrint");
+			iPrint[i].setVisible(false);
+			iPrint[i].addClickHandler(print);
+			iPrint[i].getElement().getStyle().setMarginLeft(4, Unit.PX);
+			iPrint[i].addStyleName("unitime-NoPrint");
 			HorizontalPanel buttons = new HorizontalPanel();
 			buttons.add(iSave[i]);
+			buttons.add(iPrint[i]);
 			buttons.add(iClose[i]);
 			iHeaderPanel[i].add(iErrorMessage[i]);
 			iHeaderPanel[i].setCellWidth(iErrorMessage[i], "100%");
@@ -173,8 +187,10 @@ public class CurriculumProjectionRules extends Composite {
 						@Override
 						public void onSuccess(Boolean result) {
 							if (result) {
-								for (int i = 0; i < iSave.length; i++)
+								for (int i = 0; i < iSave.length; i++) {
 									iSave[i].setVisible(true);
+									iPrint[i].setVisible(!iClose[i].isVisible());
+								}
 								iEditable = true;
 								updateAll();
 							}
