@@ -19,7 +19,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  -->
  
- <module rename-to='unitime3'>
+ <module rename-to='unitime'>
 	<!-- Inherit the core Web Toolkit stuff.                        -->
 	<inherits name='com.google.gwt.user.User' />
 	<inherits name='com.google.gwt.user.UserAgent' />
