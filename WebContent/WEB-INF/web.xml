@@ -96,6 +96,11 @@
     	<load-on-startup>2</load-on-startup>
     </servlet>
 
+	<servlet>
+    	<servlet-name>menuServiceServlet</servlet-name>
+    	<servlet-class>org.unitime.timetable.gwt.server.MenuServlet</servlet-class>
+    </servlet>
+
     <servlet-mapping>
         <servlet-name>sectioningServiceServlet</servlet-name>
         <url-pattern>/unitime/sectioningService</url-pattern>
@@ -109,6 +114,11 @@
     <servlet-mapping>
         <servlet-name>curriculaServiceServlet</servlet-name>
         <url-pattern>/unitime/curriculaService</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>menuServiceServlet</servlet-name>
+        <url-pattern>/unitime/menuService</url-pattern>
     </servlet-mapping>
 
 	<!-- Servlet Mappings -->

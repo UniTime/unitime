@@ -39,24 +39,28 @@
 <%	}%>
 <HTML>
 <HEAD>
-	<TITLE>Timetabling - Error</TITLE>
+	<TITLE>UniTime 3.2| Error</TITLE>
 	<META http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link type="text/css" rel="stylesheet" href="styles/unitime.css">
 	<LINK rel="stylesheet" type="text/css" href="styles/timetabling.css" />
 </HEAD>
-<BODY class="bodyStyle" background="images/bkrnd2.jpg">
-	<BR>
-	<TABLE border="0" width="100%">
-		<TR>
-			<TD width="12">&nbsp;</TD>
-			<TD height="45" align="right" class="WelcomeHead">
-				<DIV class="H3">Runtime Error &nbsp;</DIV>
-			</TD>
-			<TD width="55"><IMG align="middle" src="images/logosmall.jpg" border="0"></TD>
-		</TR>
-	</TABLE>
-	<BR>
+<BODY class="bodyMain">
+	<table align="center">
+    <tr>
+    <td valign="top">
+	    <table class="unitime-Page" width="100%"><tr>
+	    <td>
+    		<table class="unitime-MainTable" cellpadding="2" cellspacing="0" width="100%">
+		   		<tr><td rowspan="3">
+	    			<a href='http://www.unitime.org'>
+	    				<img src="images/unitime.png" border="0"/>
+	    			</a>
+	    		</td><td nowrap="nowrap" class="unitime-Title" width="100%" align="right" valign="middle" style="padding-right: 20px;">
+	    			Runtime Error
+	    		</td></tr>
+	    	</table>
+	    </td></tr><tr><td>
 	<% if (exception!=null) { %>
-	<BLOCKQUOTE>
 		<TABLE width="100%" border="0">
 			<TR>
 				<TD colspan="2">
@@ -71,15 +75,13 @@
 	                </DIV>
 				</TD>
 			</TR>
-
 		<% 
 		    WebOutputStream wos = new WebOutputStream();
 	        PrintWriter pw = new PrintWriter(wos);
 	        exception.printStackTrace(pw);
 	        pw.close();
 			String stackTrace = wos.toString();
-			
-			if(Web.isAdmin(session)) { %>
+		%>
 			<TR align="left" valign="top">
 				<TD><FONT color="898989">Trace: </FONT></TD>
 				<TD> <FONT color="898989"> <%
@@ -87,9 +89,7 @@
 				    %></FONT>
 				</TD>
 			</TR>
-		<% 	}
-		
-			Vector sessionTrace = new Vector();
+		<%	Vector sessionTrace = new Vector();
 			try {
 				String errorEmail = (String) ApplicationProperties.getProperty("tmtbl.error.email");
 				String smtpDomain = (String) ApplicationProperties.getProperty("tmtbl.smtp.domain");
@@ -116,7 +116,16 @@
 			Debug.error(exception);
 		%>
 		</TABLE>
-	</BLOCKQUOTE>
-	<% } %>
-</BODY>
+	<% } %>	    
+	    </td></tr></table>
+    </td></tr><tr><td>
+    	<table class="unitime-Footer">
+    		<tr>
+    			<td width="33%" align="left"></td>
+    			<td width="34%" align="center" nowrap="nowrap"><a class='unitime-FooterLink' href='http://www.unitime.org'>&copy; 2010 UniTime.org</a></td>
+    			<td width="33%" align="right"></td>
+    			</tr>
+    	</table>
+	</td></tr></table>
+  </body>
 </HTML>

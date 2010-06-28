@@ -16,73 +16,105 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 --%>
+<%@ page language="java"%>
+<%@ page errorPage="error.jsp"%>
+<%@ page import="org.unitime.timetable.model.ApplicationConfig"%>
+<%@ page import="org.unitime.timetable.util.Constants" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
-<%@ page errorPage="error.jsp" %>
-<%@ include file="/checkLogin.jspf" %>
-<%@ include file="/checkAccessLevel.jspf" %>
-<html>
+
+<HTML>
 <head>
-	<tt:hasProperty name="tmtbl.title">
-		<title>
-			<tt:property name="tmtbl.title"/>
-		</title>
-	</tt:hasProperty>
-	<tt:notHasProperty name="tmtbl.title">
-		<title>UniTime 3.2| University Timetabling Application</title>
-	</tt:notHasProperty>
-	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-	<link rel="stylesheet" type="text/css" href="styles/timetabling.css" />
-	<link rel="shortcut icon" href="images/timetabling.ico" />
-	<script language="javascript" type="text/javascript">
-		var strFrameCols = "";
-		var bMenuFrameCollapsed = false;
-
-    	function onreadystatechange() {
-    		if (document.readyState != "complete") return;
-		}
-
-		function onbeforeunload() {
-			// set original frame width in case frame has been collapsed
-			if (strFrameCols != "0px,200px,*") strOrigFrameCols = strFrameCols;
-			else strOrigFrameCols = "0px,200px,*";
-			// get get the current frame width; this may be zero
-			var x = document.getElementById('__idMenuFrameset');
-			strFrameCols = x.cols;
-    	}
-
-		function onMenuFrameResize() {
-			var x = document.getElementById('__idMenuFrameset');
-			if (x.cols== "28px,0px,*") {
-				if (!bMenuFrameCollapsed) {
-					document.getElementById("__idMenuNavFrame").tabIndex = "-1";
-					document.getElementById("__idMenuFrame").tabIndex = "-1";
-					bMenuFrameCollapsed = true;
-				}
-			} else {
-				if (bMenuFrameCollapsed) {
-					document.getElementById("__idMenuNavFrame").tabIndex = "0";
-					document.getElementById("__idMenuFrame").tabIndex = "0";
-					bMenuFrameCollapsed = false;
-				}
-			}
-		}
-
-	    if(parent.frames.length!=0)
-	       top.location.href = 'main.jsp';
-	</script>
+    <link type="text/css" rel="stylesheet" href="unitime/gwt/standard/standard.css">
+    <link type="text/css" rel="stylesheet" href="styles/unitime.css">
+    <link type="text/css" rel="stylesheet" href="styles/timetabling.css">
+    <tt:hasProperty name="tmtbl.custom.css">
+		<LINK rel="stylesheet" type="text/css" href="%tmtbl.custom.css%" />
+    </tt:hasProperty>
+    <script language="JavaScript" type="text/javascript" src="scripts/loading.js"></script>
+    <script type="text/javascript" language="javascript" src="unitime/unitime.nocache.js"></script>
 </head>
+<BODY class="unitime-Body">
+    <iframe src="javascript:''" id="__gwt_historyFrame" tabIndex="-1" style="position:absolute;width:0;height:0;border:0"></iframe>
+    <iframe src="javascript:''" id="__printingFrame" tabIndex="-1" style="position:absolute;width:0;height:0;border:0"></iframe>
+    
+    <span id='UniTimeGWT:MenuBar' style="display: none;" ></span>
 
-<frameset cols="0,200,*" id="__idMenuFrameset" name="__idMenuFrameset" border="0" onresize="onMenuFrameResize();">
-    <frameset id="__idMenuFramesetMin" rows="22,*">
-        <frame class="MenuFrameMin" id="__idMenuFrameMin" name="__idMenuFrameMin" src="menumin.jsp" marginwidth="0" marginheight="0" framespacing="0" frameborder="0" scrolling="no"/>
-        <frame id="__blankFrame" name="__idBlankFrame" src="empty.html" marginwidth="0" marginheight="0" framespacing="0" frameborder="0" scrolling="no"/>
-    </frameset>
-    <frameset class="MenuFrameLeftBorder" id="__idMenuFramesetLeft" name="__idMenuFramesetLeft" rows="22,*,177">
-         <frame class="MenuNavFrame" id="__idMenuNavFrame" name="__idMenuNavFrame" src="menunav.jsp" marginwidth="0" marginheight="0" framespacing="0" frameborder="0" scrolling="no"/>
-         <frame id="__idMenuFrame" name="__idMenuFrame" src="menu.jsp" marginwidth="0" marginheight="0" framespacing="0" frameborder="0" scrolling="auto"/>
-         <frame class="MenuUserFrame" id="__userFrame" name="__idUserFrame" src="admin/userinfo.jsp" marginwidth="0" marginheight="0" framespacing="0" frameborder="0" scrolling="no"/>
-    </frameset>
-    <frame name="__idContentFrame" id="__idContentFrame" src="blank.jsp" marginwidth="0" marginheight="0" framespacing="0"/>
-</frameset>
+	<tt:hasProperty name="tmtbl.global.warn">
+		<table width='100%' border='0' cellpadding='3' cellspacing='0'><tr><td class="reqGlobalWarn" width='5'>&nbsp;</td><td class="reqGlobalWarn" >
+			<tt:property name="tmtbl.global.warn"/>
+		</td></tr></table>
+	</tt:hasProperty>
 
-</html>
+<div id="contentMain">
+	<table align="center" >
+		<tr><td>
+		</td></tr>
+    <tr><td valign="top" >
+	    <table class="unitime-Page" width="100%" background="images/logofaded.jpg" style="background-repeat:no-repeat;background-position: center;">
+	    <tr><td>
+    		<table class="unitime-MainTable" cellpadding="2" cellspacing="0" width="100%">
+		   		<tr><td rowspan="2"><a href='http://www.unitime.org'><img src="images/unitime.png" border="0"/></a></td>
+		   			<td nowrap="nowrap" width="100%" align="right" valign="middle" class="unitime-Title" style="padding-right: 20px; padding-top: 5px">
+		   				<span class='unitime-Title'>University Timetabling Application</span>
+		   			</td>
+	    		</tr>
+	    		<tr><td width="100%" align="right" valign="middle" nowrap="nowrap">
+	    			<span id='UniTimeGWT:Header'></span>
+	    		</td></tr>
+	    	</table>
+	    </td></tr><tr><td style="min-width: 800px">
+<TABLE width="800" height="600" align="center">
+	<TR>
+	<% 
+	String sysMessage = ApplicationConfig.getConfigValue(Constants.CFG_SYSTEM_MESSAGE, "");
+%>
+		<TD align="center" valign="top" width="100%" height="100%" <%=(sysMessage==null || sysMessage.trim().length() == 0 ? "background=\"images/logo.jpg\"" : "" )%> style="background-repeat:no-repeat;background-position: center;">
+		<TABLE width="100%" cellspacing="2" cellpadding="2" border="0">
+			<% 
+				if (sysMessage!=null && sysMessage.trim().length()>0) {
+			%>
+			<TR>
+				<TD class="WelcomeRowHead" align="left">System Messages</TD>
+			</TR>
+			<TR>
+				<TD align="left">
+					&nbsp;<BR>
+					<FONT class="normalBlack">
+						<%= sysMessage %>
+					</FONT>
+					<BR>&nbsp;
+				</TD>
+			</TR>
+			<%
+				}
+			%>
+		</TABLE>
+		</TD>
+	</TR>
+</TABLE>
+	    </td></tr></table>
+    </td></tr><tr><td>
+    	<table class="unitime-Footer">
+    		<tr>
+    			<td width="33%" align="left" nowrap="nowrap"><span id="UniTimeGWT:Version"></span></td>
+    			<td width="34%" align="center" nowrap="nowrap"><a class='unitime-FooterLink' href='http://www.unitime.org'>&copy; 2008 - 2010 UniTime.org</a></td>
+    			<td width="33%" align="right" nowrap="nowrap">
+    			</td>
+    			</tr>
+    	</table>
+	</td></tr></table>
+</div>
+
+<div id="loadingMain" style="visibility:hidden;display:none">
+<TABLE width="100%" height="100%" align="center" cellpadding="0" cellspacing="0" border="0">
+	<TR>
+		<TD valign="middle" align="center">
+			<font class="WelcomeRowHeadNoLine">Loading</font><br>&nbsp;<br>
+			<IMG align="middle" vspace="5" border="0" src="images/loading.gif">
+		</TD>
+	</TR>
+</TABLE>		
+</div>				
+	
+</BODY>
+</HTML>

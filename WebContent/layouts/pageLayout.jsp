@@ -96,6 +96,8 @@ String serverPath = request.getScheme()+"://"+request.getServerName()+":"+reques
     <iframe src="javascript:''" id="__gwt_historyFrame" tabIndex="-1" style="position:absolute;width:0;height:0;border:0"></iframe>
     <iframe src="javascript:''" id="__printingFrame" tabIndex="-1" style="position:absolute;width:0;height:0;border:0"></iframe>
     
+    <span id='UniTimeGWT:MenuBar' style="display: none;" ></span>
+    
     <tt:hasProperty name="tmtbl.global.warn">
 		<table width='100%' border='0' cellpadding='3' cellspacing='0'><tr><td class="reqGlobalWarn" width='5'>&nbsp;</td><td class="reqGlobalWarn" >
 			<tt:property name="tmtbl.global.warn"/>
@@ -133,42 +135,52 @@ String serverPath = request.getScheme()+"://"+request.getServerName()+":"+reques
 	<logic:equal name="showSolverWarnings" value="true">
 		<tt:solver-warnings/>
 	</logic:equal>
-	
+		
 	<tiles:importAttribute/>
 	<tiles:importAttribute name="title" scope="request"/>
 	<tiles:importAttribute name="showNavigation" scope="request"/>
 	<tiles:importAttribute name="helpFile" scope="request"/>
 	<div id="contentMain">
 	<table align="center">
-		<tr><td>
-		</td></tr>
-    <tr><td valign="top">
+    <tr>
+    <!-- 
+    <td valign="top"><span id='UniTimeGWT:SideBar'></span></td>
+    -->
+    <td valign="top">
 	    <table class="unitime-Page" width="100%">
 	    <tr><td>
-    		<table id="UniTimeGWT:Header" class="unitime-MainTable" cellpadding="2" cellspacing="0" width="100%">
-		   		<tr><td rowspan="2"><a href='http://www.unitime.org' tabIndex="-1"><img src="images/unitime.png" border="0"/></a></td>
+    		<table class="unitime-MainTable" cellpadding="2" cellspacing="0" width="100%">
+		   		<tr><td rowspan="3"><a href='http://www.unitime.org' tabIndex="-1"><img src="images/unitime.png" border="0"/></a></td>
 		   			<td nowrap="nowrap" width="100%" align="right" valign="middle" class="unitime-Title" style="padding-right: 20px;">
 		   				<span id='UniTimeGWT:Title'><bean:write name="title" scope="request"/></span>
 		   			</td>
 	    		</tr><tr>
-	    			<td width="100%" align="left" valign="middle" >
-	    				<tiles:insert attribute="header">
-							<tiles:put name="helpFile" value="${helpFile}"/>
-							<tiles:put name="showNavigation" value="${showNavigation}"/>
-						</tiles:insert>
+	    			<td width="100%" align="right" valign="middle" nowrap="nowrap">
+	    				<span id='UniTimeGWT:Header'/>
+	    			</td>
+	    		</tr><tr>
+	    			<td width="100%" align="left" valign="middle">
+	    				<span id='UniTimeGWT:TitlePanel'>
+	    					<tiles:insert attribute="header">
+								<tiles:put name="helpFile" value="${helpFile}"/>
+								<tiles:put name="showNavigation" value="${showNavigation}"/>
+							</tiles:insert>
+						</span>
 	    			</td>
 	    		</tr>
 	    	</table>
 	    </td></tr><tr><td style="min-width: 800px">
+        	<span id='UniTimeGWT:Content'>
 	    		<tiles:insert attribute="body">
 					<tiles:put name="body2" value="${body2}"/>
 					<tiles:put name="action2" value="${action2}"/>
 				</tiles:insert>
+        	</span>
 	    </td></tr></table>
     </td></tr><tr><td>
     	<table class="unitime-Footer">
     		<tr>
-    			<td width="33%"></td>
+    			<td width="33%" align="left" nowrap="nowrap"><span id="UniTimeGWT:Version"></span></td>
     			<td width="34%" align="center" nowrap="nowrap"><a class='unitime-FooterLink' href='http://www.unitime.org'>&copy; 2008 - 2010 UniTime.org</a></td>
     			<td width="33%" align="right" nowrap="nowrap">
 	<logic:notEmpty scope="request" name="TimeStamp"> 

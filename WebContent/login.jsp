@@ -23,15 +23,20 @@
 	<HEAD>
 		<META http-equiv="Content-Type"
 			content="text/html; charset=ISO-8859-1">
-		<LINK rel="stylesheet" type="text/css" href="styles/timetabling.css">
+ 	   <link type="text/css" rel="stylesheet" href="unitime/gwt/standard/standard.css">
+ 	   <link type="text/css" rel="stylesheet" href="styles/unitime.css">
+ 	   <link type="text/css" rel="stylesheet" href="styles/timetabling.css">
 		<link rel="shortcut icon" href="images/timetabling.ico" />
+	    <script type="text/javascript" language="javascript" src="unitime/unitime.nocache.js"></script>
 		<TITLE>UniTime 3.2| University Timetabling Application</TITLE>
 	</HEAD>
 	<BODY class="bodyMain" onload="document.forms[0].username.focus();">
-
+	
 	<% if (ApplicationProperties.getProperty("tmtbl.header.external", "").trim().length()>0) { %>
 	<jsp:include flush="true" page='<%=ApplicationProperties.getProperty("tmtbl.header.external")%>' />
 	<% } %>
+	
+    <span id='UniTimeGWT:MenuBar' style="display: none;" ></span>
 	
 <%
 	String errorMsg = null;
@@ -58,13 +63,13 @@
 				<TR>
 					<TD>&nbsp;</TD>
 					<TD class="H3" align="center" colspan="3">
-						<IMG src="images/timetabling-nocopy.jpg" alt="Timetabling" title="Timetabling Log In">
+						<IMG src="images/timetabling-nocopy.jpg" alt="Timetabling" title="Timetabling Log In" style="margin-bottom: 5px;">
 						<BR>
 						&nbsp;
 						<% if (errorMsg!=null)  { %>
-							<font class="errorMessage">
+							<span class="errorMessage">
 							<%= errorMsg %>
-							</font>
+							</span>
 						<% } %>
 					</TD>
 				</TR>

@@ -17,11 +17,16 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 --%>
 <%@ page import="org.unitime.timetable.ApplicationProperties" %>
+<%@ page import="org.unitime.commons.web.Web"%>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <HTML>
 	<HEAD>
 		<META http-equiv="Content-Type"	content="text/html; charset=ISO-8859-1">
-		<META http-equiv="Refresh" content="1; url=login.do">		
+		<% if (!Web.isLoggedIn(session)) {%>
+		<META http-equiv="Refresh" content="1; url=login.do">	
+		<% } else { %>	
+		<META http-equiv="Refresh" content="1; url=selectPrimaryRole.do">	
+		<% } %>
 		<LINK rel="stylesheet" type="text/css" href="styles/timetabling.css">
 		<link rel="shortcut icon" href="images/timetabling.ico" />
 		<TITLE>UniTime 3.2| University Timetabling Application</TITLE>

@@ -110,7 +110,7 @@ public class CourseCurriculaTable extends Composite {
 
 		if (showHeader) {
 			HorizontalPanel header = new HorizontalPanel();
-			iCurriculaImage = new Image(iVisible ? RESOURCES.collapse() : RESOURCES.expand());
+			iCurriculaImage = new Image(iVisible ? RESOURCES.treeOpen() : RESOURCES.treeClosed());
 			iCurriculaImage.getElement().getStyle().setCursor(Cursor.POINTER);
 			iCurriculaImage.setVisible(false);
 			header.add(iCurriculaImage);
@@ -126,7 +126,7 @@ public class CourseCurriculaTable extends Composite {
 				@Override
 				public void onClick(ClickEvent event) {
 					iVisible = !iVisible;
-					iCurriculaImage.setResource(iVisible ? RESOURCES.collapse() : RESOURCES.expand());
+					iCurriculaImage.setResource(iVisible ? RESOURCES.treeOpen() : RESOURCES.treeClosed());
 					if (iCurricula.getRowCount() > 2) {
 						for (int row = 1; row < iCurricula.getRowCount() - 1; row++) {
 							int rowType = iRowTypes.get(row);
@@ -298,7 +298,7 @@ public class CourseCurriculaTable extends Composite {
 						popup.hide();
 						iVisible = !iVisible;
 						if (iCurriculaImage != null)
-							iCurriculaImage.setResource(iVisible ? RESOURCES.collapse() : RESOURCES.expand());
+							iCurriculaImage.setResource(iVisible ? RESOURCES.treeOpen() : RESOURCES.treeClosed());
 						if (iCurricula.getRowCount() > 2) {
 							for (int row = 1; row < iCurricula.getRowCount() - 1; row++) {
 								int rowType = iRowTypes.get(row);
@@ -735,7 +735,7 @@ public class CourseCurriculaTable extends Composite {
 			col = 0; row++;
 			iCurricula.getFlexCellFormatter().setColSpan(row, col, 3);
 			//iCurricula.getCellFormatter().setHorizontalAlignment(row, col, HasHorizontalAlignment.ALIGN_CENTER);
-			iCurricula.setWidget(row, col, new HTML("<i>Students without curricula</i>", false));
+			iCurricula.setWidget(row, col, new HTML("<i>Other Students</i>", false));
 			iCurricula.getCellFormatter().setStyleName(row, col, "unitime-OtherRow");
 			col++;
 			int clasfIdx = 0;
@@ -786,7 +786,7 @@ public class CourseCurriculaTable extends Composite {
 			public void execute(ConditionalCommand next) {
 				iVisible = !iVisible;
 				if (iCurriculaImage != null)
-					iCurriculaImage.setResource(iVisible ? RESOURCES.collapse() : RESOURCES.expand());
+					iCurriculaImage.setResource(iVisible ? RESOURCES.treeOpen() : RESOURCES.treeClosed());
 				if (iCurricula.getRowCount() > 2) {
 					for (int row = 1; row < iCurricula.getRowCount() - 1; row++) {
 						int rowType = iRowTypes.get(row);

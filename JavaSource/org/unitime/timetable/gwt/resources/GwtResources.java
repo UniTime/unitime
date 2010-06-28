@@ -22,7 +22,7 @@ package org.unitime.timetable.gwt.resources;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.ImageResource;
 
-public interface GwtResources extends ClientBundle {
+public interface GwtResources extends ClientBundle, com.google.gwt.user.client.ui.Tree.Resources {
 
 	@Source("org/unitime/timetable/gwt/resources/icons/loading.gif")
 	ImageResource loading();
@@ -34,8 +34,23 @@ public interface GwtResources extends ClientBundle {
 	ImageResource help();
 
 	@Source("org/unitime/timetable/gwt/resources/icons/expand_node_btn.gif")
-	ImageResource expand();
+	ImageResource treeClosed();
 
 	@Source("org/unitime/timetable/gwt/resources/icons/collapse_node_btn.gif")
-	ImageResource collapse();
+	ImageResource treeOpen();
+
+	@Source("org/unitime/timetable/gwt/resources/icons/end_node_btn.gif")
+	ImageResource treeLeaf();
+
+	@Source("org/unitime/timetable/gwt/resources/icons/minimize.gif")
+	ImageResource menu_opened();
+
+	@Source("org/unitime/timetable/gwt/resources/icons/minimize_RO.gif")
+	ImageResource menu_opened_hover();
+
+	@Source("org/unitime/timetable/gwt/resources/icons/openMenu.gif")
+	ImageResource menu_closed();
+
+	@Source("org/unitime/timetable/gwt/resources/icons/openMenu_RO.gif")
+	ImageResource menu_closed_hover();
 }

@@ -1042,6 +1042,66 @@ h1 {
 	padding: 2px;
 }
 
+.unitime-MenuHeaderLabel {
+	color: #6991CE;
+}
+
+.unitime-MenuHeaderOpen {
+	border: 1px solid #9CB0CE;
+	margin-top: 10px;
+	width: 100%;
+	padding: 2px;
+}
+.unitime-MenuHeaderOpen:focus {
+	outline: none;
+}
+
+.unitime-MenuHeaderClose {
+	margin-top: 10px;
+	background: red;
+	padding: 2px;
+	background: transparent;
+}
+.unitime-MenuHeaderClose:focus {
+	outline: none;
+}
+
+.gwt-DisclosurePanel .header :focus {
+	outline: none;
+}
+
+.gwt-DisclosurePanel .header:focus, .gwt-DisclosurePanel .header a:focus, .gwt-DisclosurePanel .header td:focus {
+	outline: none;
+}
+
+.gwt-DisclosurePanel .content {
+  border-left: 1px solid #9CB0CE;
+  padding: 6px 2px 6px 6px;
+  margin-left: 6px;
+  -webkit-border-bottom-left: 5px;
+  -moz-border-radius-bottomleft: 5px;	
+ 
+}
+
+.gwt-StackPanel {
+  border-bottom: 1px solid #9CB0CE;
+}
+.gwt-StackPanel .gwt-StackPanelItem {
+  cursor: pointer;
+  cursor: hand;
+  font-size: medium;
+  padding: 3px;
+  border: 1px solid #9CB0CE;
+  border-bottom: 0px;
+  background: #d3def6 url(../unitime/gwt/standard/images/hborder.png) repeat-x 0px -989px;
+}
+.gwt-StackPanel .gwt-StackPanelContent {
+  border: 1px solid #9CB0CE;
+  border-bottom: 0px;
+  background: white;
+  padding: 2px 2px 10px 5px;
+}
+
 .unitime-Print {
 	visibility: hidden;
 	display: none;
@@ -1087,4 +1147,22 @@ h1 {
 	.unitime-NotPrintableBottomLine {
 		border: none;
 	}
+}
+
+.unitime-BlankSeparator {
+}
+
+#background {
+	background-attachment:fixed;
+	width: 100%; 
+    height: 100%; 
+    position: absolute; 
+    left: 0px; 
+    top: 0px; 
+    z-index: -100000;
+}
+
+.stretch {
+	width:100%;
+	height:100%;
 }
