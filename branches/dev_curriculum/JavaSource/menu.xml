@@ -1,0 +1,303 @@
+<?xml version="1.0"?>
+<unitime-menu>
+	<menu name="Courses" title="Course Timetabling">
+		<condition>
+			<isAuthenticated/>
+			<or>
+				<propertyEquals name="tmtbl.menu.display_course_timetabling" value="true" defaultValue="true"/>
+				<hasRole name="Administrator"/>
+			</or>
+			<canSeeCourses/>
+		</condition>
+		<menu name="Input Data" title="Course Timetabling Input Data">
+			<item name="Instructional Offerings" page="instructionalOfferingShowSearch.do"/>
+			<item name="Classes" page="classShowSearch.do"/>
+			<item name="Curricula" page="curricula" type="gwt"/>
+			<separator/>
+			<item name="Instructors" page="instructorSearch.do"/>
+			<item name="Designator List" page="designatorList.do"/>
+			<separator/>
+			<item name="Rooms" page="roomSearch.do"/>
+			<item name="Room Features" page="roomFeatureSearch.do"/>
+			<item name="Room Groups" page="roomGroupSearch.do"/>
+			<separator/>
+			<item name="Distribution Preferences" page="distributionPrefs.do"/>
+			<item name="Reservations" page="reservationList.do"/>
+			<item name="Class Assignments" page="classAssignmentsReportShowSearch.do">
+				<condition>
+					<canSeeTimetable/>
+				</condition>
+			</item>
+		</menu>
+		<menu name="Course Timetabling" title="Course Timetabling Solver">
+			<condition>
+				<hasASolverGroup/>
+				<canSeeTimetable/>
+				<canDoTimetable/>
+			</condition>
+			<item name="Saved Timetables" page="listSolutions.do"/>
+			<item name="Solver" page="solver.do"/>
+			<item name="Timetable Grid" page="timetable.do"/>
+			<separator/>
+			<item name="Assigned Classes" page="assignedClasses.do"/>
+			<item name="Not-assigned Classes" page="unassigned.do"/>
+			<item name="Changes" page="solutionChanges.do"/>
+			<item name="History" page="assignmentHistory.do"/>
+			<item name="Conflict Statistics" page="cbs.do"/>
+			<item name="Solver Log" page="solverLog.do"/>
+			<item name="Reports" page="solutionReport.do"/>
+			<separator>
+				<condition>
+					<hasRole name="Administrator"/>
+				</condition>
+			</separator>
+			<item name="Manage Solvers" page="manageSolvers.do">
+				<condition>
+					<hasRole name="Administrator"/>
+				</condition>
+			</item>
+		</menu>
+		<menu name="Course Timetabling" title="Course Timetabling Solver">
+			<condition>
+				<hasASolverGroup/>
+				<canSeeTimetable/>
+				<not>
+					<canDoTimetable/>
+				</not>
+			</condition>
+			<item name="Saved Timetables" page="listSolutions.do"/>
+			<item name="Timetable Grid" page="timetable.do"/>
+		</menu>
+		<menu name="Course Audit" title="Course Timetabling Audit">
+			<condition>
+				<hasASolverGroup/>
+				<not>
+					<canSeeTimetable/>
+				</not>
+				<canAudit/>
+			</condition>
+			<item name="Solver" page="solver.do"/>
+			<item name="Conflict Statistics" page="cbs.do"/>
+			<item name="Solver Log" page="solverLog.do"/>
+			<item name="Reports" page="solutionReport.do"/>
+		</menu>
+	</menu>
+	<menu name="Curricula" title="Curriculum Timetabling">
+		<condition>
+			<hasRole name="Curriculum Mgr"/>
+		</condition>
+		<item name="Curricula" page="curricula" type="gwt"/>
+	</menu>
+	<menu name="Students">
+		<condition>
+			<or>
+				<propertyEquals name="tmtbl.menu.display_student_sectioning" value="true" defaultValue="true"/>
+				<hasRole name="Administrator"/>
+			</or>
+			<canSectionStudents/>
+		</condition>
+		<item name="Batch Solver" page="studentSolver.do"/>
+		<item name="Solver Log" page="studentSolverLog.do"/>
+		<separator/>
+		<item name="Scheduling Assistant" page="sectioning" type="gwt"/>
+		<item name="Enrollment Audits" page="enrollmentAuditPdfReport.do"/>
+	</menu>
+	<menu name="Examinations">
+		<condition>
+			<or>
+				<propertyEquals name="tmtbl.menu.display_exam_timetabling" value="true" defaultValue="true"/>
+				<hasRole name="Administrator"/>
+			</or>
+			<canSeeExams/>
+		</condition>
+		<menu name="Input Data">
+			<item name="Instructors" page="instructorSearch.do"/>
+			<separator/>
+			<item name="Rooms" page="roomSearch.do?default=Exam"/>
+			<item name="Room Features" page="roomFeatureSearch.do?default=Exam"/>
+			<item name="Room Groups" page="roomGroupSearch.do?default=Exam"/>
+			<item name="Room Availability" page="roomAvailability.do">
+				<condition>
+					<hasRoomAvailability/>
+				</condition>
+			</item>
+			<separator/>
+			<item name="Examinations" page="examList.do"/>
+			<item name="Distribution Preferences" page="examDistributionPrefs.do"/>
+		</menu>
+		<menu name="Examination Timetabling">
+			<condition>
+				<canTimetableExams/>
+			</condition>
+			<item name="Examination Solver" page="examSolver.do"/>
+			<item name="Timetable Grid" page="examGrid.do"/>
+			<separator/>
+			<item name="Assigned Exams" page="assignedExams.do"/>
+			<item name="Not-assigned Exams" page="unassignedExams.do"/>
+			<item name="Changes" page="examChanges.do"/>
+			<item name="Conflict Statistics" page="ecbs.do"/>
+			<item name="Solver Log" page="examSolverLog.do"/>
+			<separator/>
+			<item name="Reports" page="examAssignmentReport.do"/>
+			<item name="Pdf Reports" page="examPdfReport.do">
+				<condition>
+					<or>
+						<hasRole name="Administrator"/>
+						<hasRole name="Exam Mgr"/>
+					</or>
+				</condition>
+			</item>
+		</menu>
+		<menu name="Examination Timetabling">
+			<condition>
+				<not>
+					<canTimetableExams/>
+				</not>
+			</condition>
+			<item name="Pdf Reports" page="examPdfReport.do"/>
+		</menu>
+	</menu>
+	<item name="Classes" page="classes.do">
+		<condition>
+			<or>
+				<not>
+					<isAuthenticated/>
+				</not>
+				<not>
+					<hasRole/>
+				</not>
+			</or>
+		</condition>
+	</item>
+	<item name="Examinations" page="exams.do">
+		<condition>
+			<or>
+				<not>
+					<isAuthenticated/>
+				</not>
+				<not>
+					<hasRole/>
+				</not>
+			</or>
+		</condition>
+	</item>
+	<menu name="Events">
+		<condition>
+			<or>
+				<propertyEquals name="tmtbl.menu.display_event_management" value="true" defaultValue="true"/>
+				<hasRole name="Administrator"/>
+			</or>
+			<canSeeEvents/>
+		</condition>
+		<item name="Events" page="eventList.do"/>
+		<item name="Meetings" page="meetingList.do"/>
+		<item name="Add Event" page="eventAdd.do"/>
+		<item name="Room Availability" page="eventGrid.do"/>
+	</menu>
+	<item name="Personal Schedule" page="personalSchedule.do">
+		<condition>
+			<or>
+				<hasRole name="Administrator"/>
+				<and>
+					<propertyEquals name="tmtbl.menu.display_personal_schedule" value="true" defaultValue="true"/>
+					<hasPersonalReport/>
+				</and>
+			</or>
+		</condition>
+	</item>
+	<separator/>
+	<menu name="Administration">
+		<condition>
+			<hasRole name="Administrator"/>
+		</condition>
+		<menu name="Academic Sessions">
+			<item name="Academic Sessions" page="sessionList.do"/>
+			<item name="Managers" page="timetableManagerList.do"/>
+			<item name="Departments" page="departmentList.do"/>
+			<item name="Subject Areas" page="ubjectList.do"/>
+			<item name="Buildings" page="buildingList.do"/>
+			<separator/>
+			<item name="Date Patterns" page="datePatternEdit.do"/>
+			<item name="Time Patterns" page="timePatternEdit.do"/>
+			<item name="Exact Time" page="exactTimeEdit.do"/>
+			<separator/>
+			<item name="Curriculum Projections" page="curprojrules" type="gwt"/>
+			<item name="Examination Periods" page="examPeriodEdit.do"/>
+			<item name="Data Exchange" page="dataImport.do"/>
+			<item name="Roll Forward Session" page="rollForwardSession.do"/>
+			<item name="Change Log" page="lastChanges.do"/>
+		</menu>
+		<menu name="Solver">
+			<item name="Manage Solvers" page="manageSolvers.do"/>
+			<separator/>
+			<item name="Parameter Groups" page="solverParamGroups.do"/>
+			<item name="Parameters" page="solverParamDef.do"/>
+			<item name="Configurations" page="solverSettings.do"/>
+			<separator/>
+			<item name="Solver Groups" page="solverGroupEdit.do"/>
+			<item name="Distribution Types" page="distributionTypeList.do"/>
+		</menu>
+		<menu name="Other">
+			<item name="Instructional Types" page="itypeDescList.do"/>
+			<item name="Status Types" page="deptStatusTypeEdit.do"/>
+			<item name="Room Types" page="roomTypeEdit.do"/>
+			<item name="Sponsoring Organizations" page="sponsoringOrgList.do"/>
+			<item name="Standard Notes" page="eventStandardNotes.do"/>
+		</menu>
+		<menu name="Custom">
+			<item name="Users" page="userEdit.do"/>
+		</menu>
+		<menu name="Defaults">
+			<item name="Configuration" page="applicationConfig.do"/>
+			<item name="User Settings" page="settings.do"/>
+		</menu>
+		<menu name="Utilities">
+			<item name="Hibernate Statistics" page="hibernateStats.do"/>
+			<item name="Test HQL" page="hibernateQueryTest.do"/>
+		</menu>
+	</menu>
+	<menu name="Preferences">
+		<condition>
+			<isAuthenticated/>
+			<hasRole/>
+		</condition>	
+		<item name="Change Role" page="selectPrimaryRole.do?list=Y"/>
+		<item name="Switch User" page="chameleon.do">
+			<condition>
+				<or>
+					<hasRole name="Administrator"/>
+					<isChameleon/>
+				</or>
+			</condition>
+		</item>
+		<item name="Settings" page="managerSettings.do"/>
+	</menu>
+	<menu name="Help">
+		<condition>
+			<isAuthenticated/>
+		</condition>
+		<item name="Event Manual" page="tmtbl.help.manual.events" type="property" target="download"/>
+		<item name="Data Entry Manual" page="tmtbl.help.manual.input_data" type="property" target="download"/>
+		<item name="Solver Manual" page="tmtbl.help.manual.solver" type="property" target="download"/>
+		<item name="Tips &amp; Tricks" page="tmtbl.help.tricks" type="property" target="dialog"/>
+		<item name="FAQ" page="tmtbl.help.faq" type="property" target="dialog"/>
+		<item name="Release Notes" page="tmtbl.help.release_notes" type="property" target="dialog"/>
+		<item name="Contact Us" page="inquiry.do">
+			<condition>
+				<hasProperty name="tmtbl.inquiry.email"/>
+			</condition>
+		</item>
+	</menu>
+	<item name="Log Out" page="logOut.do">
+		<condition>
+			<isAuthenticated/>
+		</condition>
+	</item>
+	<item name="Log In" page="login.do">
+		<condition>
+			<not>
+				<isAuthenticated/>
+			</not>
+		</condition>
+	</item>
+</unitime-menu>

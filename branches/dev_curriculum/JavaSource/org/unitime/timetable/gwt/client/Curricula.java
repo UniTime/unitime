@@ -55,6 +55,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
@@ -140,9 +141,9 @@ public class Curricula extends Composite {
 			}
 		});
 		
-		//iCurriculaPanel.add(filterPanel);
-		//iCurriculaPanel.setCellHorizontalAlignment(filterPanel, HasHorizontalAlignment.ALIGN_CENTER);
-		RootPanel.get("UniTimeGWT:TitlePanel").add(iFilterPanel);
+		iCurriculaPanel.add(iFilterPanel);
+		iCurriculaPanel.setCellHorizontalAlignment(iFilterPanel, HasHorizontalAlignment.ALIGN_CENTER);
+		//RootPanel.get("UniTimeGWT:TitlePanel").add(iFilterPanel);
 		
 		iCurriculaTable = new CurriculaTable();
 		iCurriculaTable.getElement().getStyle().setMarginTop(10, Unit.PX);
@@ -221,7 +222,6 @@ public class Curricula extends Composite {
 					public void onSuccess(CurriculumInterface result) {
 						iCurriculumPanel.edit(result, true);
 						iCurriculaPanel.setVisible(false);
-						iFilterPanel.setVisible(false);
 						setPageName(result.isEditable() ? "Edit Curriculum" : "Curriculum Details");
 						iCurriculumPanel.setVisible(true);
 						hideLoading();
@@ -233,7 +233,6 @@ public class Curricula extends Composite {
 		iNew.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				iCurriculaPanel.setVisible(false);
-				iFilterPanel.setVisible(false);
 				setPageName("New Curriculum");
 				iCurriculumPanel.addNew();
 				iCurriculumPanel.setVisible(true);
@@ -247,7 +246,6 @@ public class Curricula extends Composite {
 				iCurriculumPanel.setVisible(false);
 				setPageName("Curricula");
 				iCurriculaPanel.setVisible(true);
-				iFilterPanel.setVisible(true);
 				loadCurricula();
 			}
 			
@@ -256,7 +254,6 @@ public class Curricula extends Composite {
 				iCurriculumPanel.setVisible(false);
 				setPageName("Curricula");
 				iCurriculaPanel.setVisible(true);
-				iFilterPanel.setVisible(true);
 				loadCurricula();
 			}
 			
@@ -265,7 +262,6 @@ public class Curricula extends Composite {
 				iCurriculumPanel.setVisible(false);
 				setPageName("Curricula");
 				iCurriculaPanel.setVisible(true);
-				iFilterPanel.setVisible(true);
 				iCurriculaTable.scrollIntoView();
 			}
 		});

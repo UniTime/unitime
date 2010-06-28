@@ -972,7 +972,7 @@ public class Class_ extends BaseClass_ {
                 nrReservedStudentsThisOffering += reservation.getReserved().intValue();
             nrReservedStudents += reservation.getReserved().intValue();
         }
-
+        
 
         float nrLastLikeStudents = (float)(offering.getInstructionalOffering().getDemand()==null?0:offering.getInstructionalOffering().getDemand().intValue());
         float nrLastLikeStudentsThisOffering = (float)offering.getDemand().intValue();

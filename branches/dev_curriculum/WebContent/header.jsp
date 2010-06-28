@@ -54,8 +54,13 @@
 	--%>
 	
 	<DIV id="loading" style="visibility:hidden;display:none">
-		&nbsp; &nbsp; &nbsp; 
-		<IMG align="middle" vspace="5" border="0" src="images/loading.gif">
+		<TABLE border="0" width='100%'>
+			<TR>
+				<TD align="center" valign="middle">
+					<IMG align="middle" vspace="5" border="0" src="images/loading.gif">
+				</TD>
+			</TR>
+		</TABLE>
 	</DIV>
 	
 	<logic:equal name="showNavigation" value="true"> 

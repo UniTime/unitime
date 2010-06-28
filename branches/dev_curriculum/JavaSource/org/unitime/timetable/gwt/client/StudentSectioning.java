@@ -64,7 +64,8 @@ public class StudentSectioning extends Composite {
 		final AcademicSessionSelector sessionSelector = new AcademicSessionSelector();
 		titlePanel.setWidget(0, 2, sessionSelector);
 		
-		RootPanel.get("UniTimeGWT:TitlePanel").add(titlePanel);
+		RootPanel.get("UniTimeGWT:Header").clear();
+		RootPanel.get("UniTimeGWT:Header").add(titlePanel);
 
 		final StudentSectioningWidget widget = new StudentSectioningWidget(sessionSelector, userAuthentication);
 		
