@@ -28,14 +28,14 @@
 		<course subject="A&amp;AE" courseNbr="101" controlling="true" title="" scheduleBookNote=""/>
 		<course subject="A&amp;AE" courseNbr="101H" controlling="false" title="" scheduleBookNote=""/>
 		<config name="1" limit="20">
-			<subpart type="Lec" suffix="" minPerWeek="100">
+			<subpart type="Lec" suffix="" minPerWeek="50">
 			  		<subpartCredit creditType="collegiate" creditUnitType="semesterHours" creditFormat="fixedUnit" fixedCredit="1"/>
-				<subpart type="Rec" suffix="" minPerWeek="50">
+				<subpart type="Rec" suffix="" minPerWeek="100">
 			  		<subpartCredit creditType="collegiate" creditUnitType="semesterHours" creditFormat="fixedUnit" fixedCredit="1"/>
+					<subpart type="Rec" suffix="a" minPerWeek="50"/>
 				</subpart>
 				<subpart type="Lab" suffix="" minPerWeek="100">
  			  		<subpartCredit creditType="collegiate" creditUnitType="semesterHours" creditFormat="fixedUnit" fixedCredit="1"/>
-					<subpart type="Lab" suffix="a" minPerWeek="50"/>
 				</subpart>
 			</subpart>
 			<subpart type="Lab" suffix="" minPerWeek="150"/>
