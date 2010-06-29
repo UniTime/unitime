@@ -25,6 +25,7 @@ import java.util.Properties;
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
 import org.hibernate.cfg.Configuration;
+import org.hibernate.cfg.ObjectNameNormalizer;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.engine.SessionImplementor;
 import org.hibernate.id.Configurable;
@@ -38,11 +39,13 @@ public class UniqueIdGenerator implements IdentifierGenerator, Configurable {
     IdentifierGenerator iGenerator = null;
     private static String sGenClass = null;
     private static String sDefaultSchema = null;
+    private static ObjectNameNormalizer sNormalizer = null;
     
     public static void configure(Configuration config) {
         sGenClass = config.getProperty("tmtbl.uniqueid.generator");
         if (sGenClass==null) sGenClass = "org.hibernate.id.SequenceGenerator";
         sDefaultSchema = config.getProperty("default_schema");
+        sNormalizer = config.createMappings().getObjectNameNormalizer();
     }
     
     public IdentifierGenerator getGenerator() throws HibernateException {
@@ -64,8 +67,10 @@ public class UniqueIdGenerator implements IdentifierGenerator, Configurable {
     
     public void configure(Type type, Properties params, Dialect d) throws MappingException {
         if (getGenerator() instanceof Configurable) {
-            if (params.getProperty("schema")==null && sDefaultSchema!=null)
+            if (params.getProperty("schema") == null && sDefaultSchema != null)
                 params.setProperty("schema", sDefaultSchema);
+            if (params.get("identifier_normalizer") == null && sNormalizer != null)
+            	params.put("identifier_normalizer", sNormalizer);
             ((Configurable)getGenerator()).configure(type, params, d);
         }
     }
