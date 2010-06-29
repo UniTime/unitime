@@ -609,6 +609,7 @@
   	<definition name="courseOfferingEditTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Edit Course Offering"/>
 		<put name="body" value="/user/courseOfferingEdit.jsp" />
+		<put name="showNavigation" value="true" />
   	</definition>
   	
   	<definition name="designatorListTile" extends="pageLayoutDef">
@@ -657,11 +658,13 @@
   	<definition name="courseReservationEditTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Course Reservations"/>
 		<put name="body" value="/user/courseReservationEdit.jsp" />
+		<put name="showNavigation" value="true" />	
   	</definition>
   	
   	<definition name="academicAreaReservationEditTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Academic Area Reservations"/>
 		<put name="body" value="/user/academicAreaReservationEdit.jsp" />
+		<put name="showNavigation" value="true" />
   	</definition>
   	
   	<definition name="posReservationEditTile" extends="pageLayoutDef">

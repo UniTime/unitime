@@ -85,6 +85,7 @@ public class Client implements EntryPoint {
 						PageLabel label = new PageLabel(); label.setPageName(p.title());
 						title.add(label);
 					}
+					Window.setTitle("UniTime 3.2| " + p.title());
 					RootPanel.get("UniTimeGWT:Body").add(p.widget());
 					return;
 				}

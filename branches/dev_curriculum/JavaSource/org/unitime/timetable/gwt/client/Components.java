@@ -34,7 +34,8 @@ public enum Components {
 	title("UniTimeGWT:Title", new ComponentFactory() { public void insert(RootPanel panel) { new PageLabel().insert(panel); } }),
 	menubar("UniTimeGWT:MenuBar", new ComponentFactory() { public void insert(RootPanel panel) { new UniTimeMenuBar().insert(panel); } }),
 	header("UniTimeGWT:Header", new ComponentFactory() { public void insert(RootPanel panel) { new UniTimeHeader().insert(panel); } }),
-	version("UniTimeGWT:Version", new ComponentFactory() { public void insert(RootPanel panel) { new UniTimeVersion().insert(panel); } });
+	version("UniTimeGWT:Version", new ComponentFactory() { public void insert(RootPanel panel) { new UniTimeVersion().insert(panel); } }),
+	back("UniTimeGWT:Back", new ComponentFactory() { public void insert(RootPanel panel) { new UniTimeBack().insert(panel); } });
 	
 	private String iId;
 	private ComponentFactory iFactory;

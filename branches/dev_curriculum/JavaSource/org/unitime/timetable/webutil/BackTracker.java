@@ -142,6 +142,20 @@ public class BackTracker {
 		}
 	}
 	
+	public static String getGwtBack(HttpServletRequest request, int nrBackSteps) {
+		synchronized (request.getSession()) {
+			Vector back = getBackList(request.getSession());
+			if (back.size()<=1) return "";
+			StringBuffer ret = new StringBuffer("");
+			for (int i=Math.max(0,back.size()-MAX_BACK_STEPS); i<back.size(); i++) {
+				String[] backItem = (String[])back.elementAt(i);
+				if (ret.length() > 0) ret.append("&");
+				ret.append(encodeURL(backItem[0])+"|"+backItem[1]);
+			}
+			return "<span id='UniTimeGWT:Back' style='display:none;'>"+ret.toString()+"</span>";
+		}
+	}
+	
 	public static boolean hasBack(HttpServletRequest request, int nrBackSteps) {
 		synchronized (request.getSession()) {
 			Vector backList = getBackList(request.getSession());

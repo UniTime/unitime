@@ -76,7 +76,7 @@ public class UniTimeHeader extends Composite {
 				ClickHandler c = new ClickHandler() {
 					@Override
 					public void onClick(ClickEvent event) {
-						open("selectPrimaryRole.do?list=Y");
+						open(GWT.getHostPageBaseURL() + "selectPrimaryRole.do?list=Y");
 					}
 				};
 				sessionLabel.addClickHandler(c);
@@ -107,7 +107,7 @@ public class UniTimeHeader extends Composite {
 					ClickHandler c = new ClickHandler() {
 						@Override
 						public void onClick(ClickEvent event) {
-							open("chameleon.do");
+							open(GWT.getHostPageBaseURL() + "chameleon.do");
 						}
 					};
 					userLabel.addClickHandler(c);
@@ -149,11 +149,11 @@ public class UniTimeHeader extends Composite {
 					@Override
 					public void onClick(ClickEvent event) {
 						if (type.equals("Course Timetabling Solver"))
-							open("solver.do");
+							open(GWT.getHostPageBaseURL() + "solver.do");
 						else if (type.equals("Examinations Solver"))
-							open("examSolver.do");
+							open(GWT.getHostPageBaseURL() + "examSolver.do");
 						else
-							open("studentSolver.do");
+							open(GWT.getHostPageBaseURL() + "studentSolver.do");
 					}
 				};
 				userLabel.addClickHandler(c);

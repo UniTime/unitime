@@ -71,6 +71,7 @@ String serverPath = request.getScheme()+"://"+request.getServerName()+":"+reques
 	<script language="JavaScript" type="text/javascript" src="<%=basePath%>scripts/jscalendar/calendar-setup.js"></script>
 	<script language="JavaScript" type="text/javascript" src="<%=basePath%>scripts/select.js"></script>
 	<script language="JavaScript" type="text/javascript" src="<%=basePath%>scripts/rtt.js"></script>
+	<%--
 	<script language="javascript"><!--
 		function doLoad() {
 			// Trick 1 to prevent use of back button
@@ -80,18 +81,10 @@ String serverPath = request.getScheme()+"://"+request.getServerName()+":"+reques
             // Focus on frame 
 			self.focus();
 		}
-		<%--
-		if (window.location.href.indexOf('gwt.codesvr') < 0) {
-		  if (window.location.href.indexOf('?') < 0)
-			window.location.href = window.location.href + '?gwt.codesvr=127.0.0.1:9997';
-		else
-			window.location.href = window.location.href + '&gwt.codesvr=127.0.0.1:9997';
-		}
-		--%>
 	// --></script>
+	--%>
 	<script type="text/javascript" language="javascript" src="<%=basePath%>unitime/unitime.nocache.js">--</script>
 </head>
-
 <body class="unitime-Body" <tiles:getAsString name="onLoadFunction" />>
     <iframe src="javascript:''" id="__gwt_historyFrame" tabIndex="-1" style="position:absolute;width:0;height:0;border:0"></iframe>
     <iframe src="javascript:''" id="__printingFrame" tabIndex="-1" style="position:absolute;width:0;height:0;border:0"></iframe>

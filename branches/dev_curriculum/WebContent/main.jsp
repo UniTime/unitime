@@ -24,7 +24,9 @@
 
 <HTML>
 <head>
-    <link type="text/css" rel="stylesheet" href="unitime/gwt/standard/standard.css">
+	<title>UniTime 3.2| University Timetabling Application</title>
+	<link rel="shortcut icon" href="images/timetabling.ico" />
+	<link type="text/css" rel="stylesheet" href="unitime/gwt/standard/standard.css">
     <link type="text/css" rel="stylesheet" href="styles/unitime.css">
     <link type="text/css" rel="stylesheet" href="styles/timetabling.css">
     <tt:hasProperty name="tmtbl.custom.css">
