@@ -187,7 +187,7 @@ public class UniTimeMenuBar extends Composite {
 			frame.setSize(String.valueOf(Window.getClientWidth() * 3 / 4), String.valueOf(Window.getClientHeight() * 3 / 4));
 			dialog.center();
 		} else {
-			open(url);
+			open(GWT.getHostPageBaseURL() + url);
 		}
 	}
 	
