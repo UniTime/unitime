@@ -28,7 +28,7 @@
  	   <link type="text/css" rel="stylesheet" href="styles/timetabling.css">
 		<link rel="shortcut icon" href="images/timetabling.ico" />
 	    <script type="text/javascript" language="javascript" src="unitime/unitime.nocache.js"></script>
-		<TITLE>UniTime 3.2| University Timetabling Application</TITLE>
+		<TITLE>UniTime 3.2| Log In</TITLE>
 	</HEAD>
 	<BODY class="bodyMain" onload="document.forms[0].username.focus();">
 	

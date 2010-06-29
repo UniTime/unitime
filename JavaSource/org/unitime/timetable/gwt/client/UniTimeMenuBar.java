@@ -41,95 +41,15 @@ public class UniTimeMenuBar extends Composite {
 		initWidget(iMenu);
 		
 		iService.getMenu(new AsyncCallback<List<MenuInterface>>() {
-			
 			@Override
 			public void onSuccess(List<MenuInterface> result) {
 				initMenu(iMenu, result, 0);
 				iMenu.setVisible(true);
 			}
-			
 			@Override
 			public void onFailure(Throwable caught) {
-				Window.alert("Failed to load the menu, reason: " + caught.getMessage());
 			}
 		});
-		
-		/*
-		
-		// Make some sub-menus that we will cascade from the top menu.
-		Command cmd = new Command() {
-			
-			@Override
-			public void execute() {
-				Window.alert("Menu clicked.");
-			}
-		};
-		
-	    MenuBar coursesMenu = new MenuBar(true);
-	    
-	    MenuBar inputData = new MenuBar(true);
-	    inputData.addItem("Instructional Offerings", new Command() {
-			
-			@Override
-			public void execute() {
-				LoadingWidget.getInstance().show();
-				open("instructionalOfferingShowSearch.do?gwt.codesvr=127.0.0.1:9997");
-			}
-		});
-	    inputData.addItem("Classes", cmd);
-	    inputData.addItem("Curricula", new Command() {
-			@Override
-			public void execute() {
-				openPageAsync("curricula");
-			}
-		});
-	    inputData.addSeparator();
-	    inputData.addItem("Instructors", cmd);
-	    inputData.addItem("Designator List", cmd);
-	    inputData.addSeparator();
-	    inputData.addItem("Rooms", cmd);
-	    inputData.addItem("Room Features", cmd);
-	    inputData.addItem("Room Groups", cmd);
-	    coursesMenu.addItem(new MenuItem("Input Data", inputData));
-
-	    MenuBar solver = new MenuBar(true);
-	    solver.addItem("Timetabling", cmd);
-	    solver.addItem("Solver", cmd);
-	    solver.addItem("Timetable", cmd);
-	    coursesMenu.addItem(new MenuItem("Timetables", solver));
-
-	    MenuBar barMenu = new MenuBar(true);
-	    barMenu.addItem("the", cmd);
-	    barMenu.addItem("bar", cmd);
-	    barMenu.addItem("menu", cmd);
-
-	    MenuBar bazMenu = new MenuBar(true);
-	    bazMenu.addItem("the", cmd);
-	    bazMenu.addItem("baz", cmd);
-	    bazMenu.addItem("menu", cmd);
-
-	    // Make a new menu bar, adding a few cascading menus to it.
-	    MenuBar menu = new MenuBar();
-	    menu.addItem("Courses", coursesMenu);
-	    menu.addItem("Students", barMenu);
-	    menu.addItem("Examinations", bazMenu);
-	    menu.addItem("Events", cmd);
-	    menu.addItem("Personal&nbsp;Schedule", true, cmd);
-	    menu.addSeparator();
-	    menu.addItem("Administration", cmd);
-	    MenuItemSeparator s = new MenuItemSeparator();
-	    s.setWidth("100%");
-	    s.setTitle("Huray");
-	    menu.addSeparator(s);
-	    menu.addSeparator();
-	    menu.setAnimationEnabled(true);
-	    menu.addItem("Preferneces", cmd);
-	    menu.addItem("Logout", cmd);
-	    
-	    menu.addStyleName("unitime-NoPrint");
-	
-		initWidget(menu);
-		*/
 	}
 	
 	private void initMenu(MenuBar menu, List<MenuInterface> items, int level) {
@@ -198,7 +118,7 @@ public class UniTimeMenuBar extends Composite {
 	private void openPageAsync(final String page) {
 		LoadingWidget.getInstance().show();
 		if (RootPanel.get("UniTimeGWT:Content") == null || RootPanel.get("UniTimeGWT:TitlePanel") == null) {
-			open("gwt.html?page=" + page);
+			open(GWT.getHostPageBaseURL() + "gwt.html?page=" + page);
 			return;
 		}
 		RootPanel.get("UniTimeGWT:Content").clear();

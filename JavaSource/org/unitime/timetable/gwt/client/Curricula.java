@@ -45,10 +45,13 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.DeferredCommand;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -140,7 +143,7 @@ public class Curricula extends Composite {
 				iNew.setEnabled(result);
 			}
 		});
-		
+				
 		iCurriculaPanel.add(iFilterPanel);
 		iCurriculaPanel.setCellHorizontalAlignment(iFilterPanel, HasHorizontalAlignment.ALIGN_CENTER);
 		//RootPanel.get("UniTimeGWT:TitlePanel").add(iFilterPanel);
@@ -187,25 +190,41 @@ public class Curricula extends Composite {
 			}
 		});
 		
-		showLoading("Loading curricula ...");
-		iService.lastCurriculaFilter(new AsyncCallback<String>() {
-			
+		if (Window.Location.getParameter("q") != null) {
+			iFilter.setText(Window.Location.getParameter("q"));
+			loadCurricula();
+		} else {
+			showLoading("Loading curricula ...");
+			iService.lastCurriculaFilter(new AsyncCallback<String>() {
+				
+				@Override
+				public void onSuccess(String result) {
+					if (iFilter.getText().isEmpty()) {
+						iFilter.setText(result);
+						loadCurricula();
+					}
+					hideLoading();
+				}
+				
+				@Override
+				public void onFailure(Throwable caught) {
+					iCurriculaTable.setError("Unable to retrieve curricula (" + caught.getMessage() + ").");
+					hideLoading();
+				}
+				
+			});
+		}
+		
+		History.addValueChangeHandler(new ValueChangeHandler<String>() {
 			@Override
-			public void onSuccess(String result) {
-				if (iFilter.getText().isEmpty()) {
-					iFilter.setText(result);
+			public void onValueChange(ValueChangeEvent<String> event) {
+				if (event.getValue() != null && !event.getValue().isEmpty()) {
+					iFilter.setText(event.getValue());
 					loadCurricula();
 				}
-				hideLoading();
 			}
-			
-			@Override
-			public void onFailure(Throwable caught) {
-				iCurriculaTable.setError("Unable to retrieve curricula (" + caught.getMessage() + ").");
-				hideLoading();
-			}
-			
 		});
+
 		
 		iCurriculaTable.addCurriculumClickHandler(new CurriculaTable.CurriculumClickHandler() {
 			@Override
@@ -304,6 +323,7 @@ public class Curricula extends Composite {
 		final boolean newEnabled = iNew.isEnabled();
 		if (newEnabled)
 			iNew.setEnabled(false);
+		History.newItem(iFilter.getText(), false);
 		iCurriculaTable.query(iFilter.getText(), new Command() {
 			@Override
 			public void execute() {

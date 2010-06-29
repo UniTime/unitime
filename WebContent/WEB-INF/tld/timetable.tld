@@ -74,6 +74,17 @@
 		</attribute>
 	</tag>
   	<tag>
+		<name>gwt-back</name>
+		<tag-class>org.unitime.timetable.tags.GwtBack</tag-class>
+		<body-content>JSP</body-content>
+		<attribute>
+			<name>back</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<type>java.lang.Integer</type>
+		</attribute>
+	</tag>
+  	<tag>
 		<name>back-mark</name>
 		<tag-class>org.unitime.timetable.tags.MarkBack</tag-class>
 		<body-content>JSP</body-content>

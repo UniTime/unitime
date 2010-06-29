@@ -71,6 +71,7 @@
 					<TD>
 						<tt:back styleClass="btn" name="[&larr;]" title="Return to %%"/>
 						<tt:back-tree/>
+						<tt:gwt-back/>
 					</TD>
 					<TD width="40">&nbsp;</TD>
 				</TR>
