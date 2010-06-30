@@ -1,3 +1,22 @@
+/*
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
+ * as indicated by the @authors tag.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
 package org.unitime.timetable.gwt.client;
 
 import java.util.List;
@@ -5,6 +24,7 @@ import java.util.List;
 import org.unitime.timetable.gwt.services.MenuService;
 import org.unitime.timetable.gwt.services.MenuServiceAsync;
 import org.unitime.timetable.gwt.shared.MenuInterface;
+import org.unitime.timetable.gwt.shared.ToolBox;
 import org.unitime.timetable.gwt.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.widgets.PageLabel;
 
@@ -107,18 +127,14 @@ public class UniTimeMenuBar extends Composite {
 			frame.setSize(String.valueOf(Window.getClientWidth() * 3 / 4), String.valueOf(Window.getClientHeight() * 3 / 4));
 			dialog.center();
 		} else {
-			open(GWT.getHostPageBaseURL() + url);
+			ToolBox.open(GWT.getHostPageBaseURL() + url);
 		}
 	}
-	
-	private native void open(String url) /*-{
-		$wnd.location = url;
-	}-*/;
 	
 	private void openPageAsync(final String page) {
 		LoadingWidget.getInstance().show();
 		if (RootPanel.get("UniTimeGWT:Content") == null || RootPanel.get("UniTimeGWT:TitlePanel") == null) {
-			open(GWT.getHostPageBaseURL() + "gwt.html?page=" + page);
+			ToolBox.open(GWT.getHostPageBaseURL() + "gwt.html?page=" + page);
 			return;
 		}
 		RootPanel.get("UniTimeGWT:Content").clear();

@@ -160,7 +160,7 @@ public class ToolBox {
     }
     
 	public native static void open(String url) /*-{
-		document.location = url;
+		$wnd.location = url;
 	}-*/;
 
 }

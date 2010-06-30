@@ -219,7 +219,7 @@ public class Curricula extends Composite {
 			@Override
 			public void onValueChange(ValueChangeEvent<String> event) {
 				if (event.getValue() != null && !event.getValue().isEmpty()) {
-					iFilter.setText(event.getValue());
+					iFilter.setText(event.getValue().replace("%20", " "));
 					loadCurricula();
 				}
 			}
