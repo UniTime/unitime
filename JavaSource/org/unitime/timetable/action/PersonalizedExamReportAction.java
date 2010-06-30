@@ -180,7 +180,7 @@ public class PersonalizedExamReportAction extends Action {
         }
         
         Long sessionId = (Long)request.getAttribute("PersonalizedExamReport.SessionId");
-        if (request.getParameter("session")!=null) {
+        if (request.getParameter("session")!=null && request.getParameter("session").length() > 0) {
             sessionId = Long.valueOf(request.getParameter("session"));
             request.setAttribute("PersonalizedExamReport.SessionId", sessionId);
         }
@@ -579,7 +579,7 @@ public class PersonalizedExamReportAction extends Action {
             String bgColor = null;
             if (sessionId.equals(session.getUniqueId())) bgColor = "rgb(168,187,225)";
             table.addLine(
-                    "onClick=\"document.location='personalSchedule.do?session="+session.getUniqueId()+"';\"",
+            		"onClick=\"personalizedExamReportForm.session.value='" + session.getUniqueId() +"'; personalizedExamReportForm.submit();\"",
                     new String[] {
                         session.getAcademicTerm(),
                         session.getAcademicYear(),

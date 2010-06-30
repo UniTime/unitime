@@ -31,6 +31,7 @@
 				<html:hidden property="fname" styleId="fname"/>
 				<html:hidden property="mname" styleId="mname"/>
 				<html:hidden property="lname" styleId="lname"/>
+				<input type='hidden' name='session' value=''/>
 				<input type='button' value='Lookup' onclick="window.open('user/peopleLookup.jsp?query='+fname.value+' '+lname.value+'&submit=true','peopleLookup','width=800,height=600,resizable=no,scrollbars=yes,toolbar=no,location=no,directories=no,status=no,menubar=no,copyhistory=no').focus();" style="btn">
 			</logic:equal>
 			<logic:equal name="personalizedExamReportForm" property="canExport" value="true">
