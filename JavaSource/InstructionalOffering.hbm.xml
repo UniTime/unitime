@@ -76,12 +76,6 @@
 		/>
 		 		
 		<property
-			name="projectedDemand"
-			type="java.lang.Integer"
-			formula=" ( select /*+ RULE */ sum(co.proj_demand) from %SCHEMA%.course_offering co where co.instr_offr_id = uniqueid ) "
-		/>
-		
-		<property
 			name="ctrlCourseId"
 			type="java.lang.Integer"
 			formula=" (select /*+ RULE */ co.uniqueid from %SCHEMA%.course_offering co where co.instr_offr_id = uniqueid and co.is_control = 1) "

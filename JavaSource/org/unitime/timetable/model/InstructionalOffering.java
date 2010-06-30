@@ -802,5 +802,15 @@ public class InstructionalOffering extends BaseInstructionalOffering {
             setCacheable(true).
             uniqueResult();
     }
+    
+    public Integer getProjectedDemand() {
+    	int demand = 0;
+    	for (Iterator<CourseOffering> i = getCourseOfferings().iterator(); i.hasNext(); ) {
+    		CourseOffering course = i.next();
+    		if (course.getProjectedDemand() != null) 
+    			demand += course.getProjectedDemand();
+    	}
+    	return demand;
+    }
 
 }

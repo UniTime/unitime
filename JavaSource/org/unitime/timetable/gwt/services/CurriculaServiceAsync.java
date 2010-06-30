@@ -60,6 +60,9 @@ public interface CurriculaServiceAsync {
 	public void isAdmin(AsyncCallback<Boolean> callback) throws CurriculaException;
 	public void makeupCurriculaFromLastLikeDemands(boolean lastLike, AsyncCallback<Boolean> callback) throws CurriculaException;
 	public void updateCurriculaByProjections(Set<Long> curriculumIds, AsyncCallback<Boolean> callback) throws CurriculaException;
+	public void populateCourseProjectedDemands(boolean includeOtherStudents, AsyncCallback<Boolean> callback) throws CurriculaException;
+	public void populateCourseProjectedDemands(boolean includeOtherStudents, Long offeringId, AsyncCallback<Boolean> callback) throws CurriculaException;
+
 	
 	public void loadProjectionRules(AsyncCallback<HashMap<AcademicAreaInterface, HashMap<MajorInterface, HashMap<AcademicClassificationInterface, Number[]>>>> callback) throws CurriculaException;
 	public void saveProjectionRules(HashMap<AcademicAreaInterface, HashMap<MajorInterface, HashMap<AcademicClassificationInterface, Number[]>>> rules, AsyncCallback<Boolean> callback) throws CurriculaException;

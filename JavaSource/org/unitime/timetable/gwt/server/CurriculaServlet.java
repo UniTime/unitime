@@ -173,6 +173,30 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 		return clasf2major2proj;
 	}
 	
+	private Hashtable<String, Hashtable<String, HashMap<String, Float>>> getRules(org.hibernate.Session hibSession) {
+		Hashtable<String, Hashtable<String, HashMap<String, Float>>> area2clasf2major2proj = new Hashtable<String, Hashtable<String,HashMap<String,Float>>>();
+		for (CurriculumProjectionRule rule: (List<CurriculumProjectionRule>)hibSession.createQuery(
+				"select r from CurriculumProjectionRule r where r.academicArea.session.uniqueId = :sessionId")
+				.setLong("sessionId", getAcademicSessionId()).setCacheable(true).list()) {
+			String areaAbbv = rule.getAcademicArea().getAcademicAreaAbbreviation();
+			String majorCode = (rule.getMajor() == null ? "" : rule.getMajor().getCode());
+			String clasfCode = rule.getAcademicClassification().getCode();
+			Float projection = rule.getProjection();
+			Hashtable<String, HashMap<String, Float>> clasf2major2proj = area2clasf2major2proj.get(areaAbbv);
+			if (clasf2major2proj == null) {
+				clasf2major2proj = new Hashtable<String, HashMap<String,Float>>();
+				area2clasf2major2proj.put(areaAbbv, clasf2major2proj);
+			}
+			HashMap<String, Float> major2proj = clasf2major2proj.get(clasfCode);
+			if (major2proj == null) {
+				major2proj = new HashMap<String, Float>();
+				clasf2major2proj.put(clasfCode, major2proj);
+			}
+			major2proj.put(majorCode, projection);
+		}
+		return area2clasf2major2proj;
+	}
+	
 	public float getProjection(Hashtable<String,HashMap<String, Float>> clasf2major2proj, String majorCode, String clasfCode) {
 		if (clasf2major2proj == null || clasf2major2proj.isEmpty()) return 1.0f;
 		HashMap<String, Float> major2proj = clasf2major2proj.get(clasfCode);
@@ -2502,6 +2526,255 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 				hibSession.close();
 			}
 			sLog.info("Curricula update (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
+			return null;
+		} catch  (Exception e) {
+			if (e instanceof CurriculaException) throw (CurriculaException)e;
+			sLog.error(e.getMessage(), e);
+			throw new CurriculaException(e.getMessage());
+		}
+	}
+	
+	public Boolean populateCourseProjectedDemands(boolean includeOtherStudents) throws CurriculaException {
+		sLog.info("populateCourseProjectedDemands(includeOtherStudents=" + includeOtherStudents + ")");
+		long s0 = System.currentTimeMillis();
+		try {
+			if (!isAdmin())
+				throw new CurriculaException("not authorized to populate course projected demands");
+			
+			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
+			Transaction tx = null;
+			try {
+				tx = hibSession.beginTransaction();
+				Long sessionId = getAcademicSessionId();
+				
+				Hashtable<Long, Hashtable<String, Hashtable<String, Hashtable<String, Integer>>>> course2area2major2clasf2ll = null;
+				if (includeOtherStudents) {
+					course2area2major2clasf2ll = new Hashtable<Long, Hashtable<String, Hashtable<String,Hashtable<String,Integer>>>>();
+					for (Object[] o : (List<Object[]>)hibSession.createQuery(
+							"select co.uniqueId, r.academicAreaAbbreviation, m.code, f.code, count(distinct s) from " +
+							"LastLikeCourseDemand x inner join x.student s inner join s.academicAreaClassifications a inner join s.posMajors m " +
+							"inner join a.academicClassification f inner join a.academicArea r, CourseOffering co where " +
+							"x.subjectArea.session.uniqueId = :sessionId and co.subjectArea.session.uniqueId = :sessionId and "+
+							"((x.coursePermId is not null and co.permId=x.coursePermId) or (x.coursePermId is null and co.courseNbr=x.courseNbr)) " +
+							"group by r.academicAreaAbbreviation, m.code, f.code")
+							.setLong("sessionId", sessionId)
+							.setCacheable(true).list()) {
+						Long courseId = (Long)o[0];
+						String areaAbbv = (String)o[1];
+						String majorCode = (String)o[2];
+						String clasfCode = (String)o[3];
+						int lastLike = ((Number)o[4]).intValue();
+						Hashtable<String, Hashtable<String, Hashtable<String, Integer>>> area2major2clasf2ll = course2area2major2clasf2ll.get(courseId);
+						if (area2major2clasf2ll == null) {
+							area2major2clasf2ll = new Hashtable<String, Hashtable<String,Hashtable<String,Integer>>>();
+							course2area2major2clasf2ll.put(courseId, area2major2clasf2ll);
+						}
+						Hashtable<String, Hashtable<String, Integer>> major2clasf2ll = area2major2clasf2ll.get(areaAbbv);
+						if (major2clasf2ll == null) {
+							major2clasf2ll = new Hashtable<String, Hashtable<String,Integer>>();
+							area2major2clasf2ll.put(areaAbbv, major2clasf2ll);
+						}
+						Hashtable<String, Integer> clasf2ll = major2clasf2ll.get(majorCode);
+						if (clasf2ll == null) {
+							clasf2ll = new Hashtable<String, Integer>();
+							major2clasf2ll.put(majorCode, clasf2ll);
+						}
+						clasf2ll.put(clasfCode, lastLike);
+					}
+				}
+				
+				Hashtable<String, Hashtable<String, HashMap<String, Float>>> rules = (includeOtherStudents ? getRules(hibSession) : null);
+				
+				Hashtable<Long, List<CurriculumCourse>> course2curriculum = new Hashtable<Long, List<CurriculumCourse>>();
+				for (CurriculumCourse cc: (List<CurriculumCourse>)hibSession.createQuery(
+						"select cc from CurriculumCourse cc where cc.classification.curriculum.academicArea.session.uniqueId = :sessionId")
+						.setLong("sessionId", sessionId)
+						.setCacheable(true).list()) {
+					List<CurriculumCourse> curricula = course2curriculum.get(cc.getCourse().getUniqueId());
+					if (curricula == null) {
+						curricula = new ArrayList<CurriculumCourse>();
+						course2curriculum.put(cc.getCourse().getUniqueId(), curricula);
+					}
+					curricula.add(cc);
+				}
+				
+				for (CourseOffering courseOffering: (List<CourseOffering>)hibSession.createQuery(
+						"select co from CourseOffering co where co.subjectArea.session.uniqueId = :sessionId")
+						.setLong("sessionId", sessionId)
+						.setCacheable(true).list()) {
+
+					Hashtable<String, Hashtable<String, Hashtable<String, Integer>>> area2major2clasf2ll = (course2area2major2clasf2ll == null ? null : course2area2major2clasf2ll.get(courseOffering.getUniqueId()));
+					List<CurriculumCourse> curricula = course2curriculum.get(courseOffering.getUniqueId());
+					
+					float demand = 0.0f;
+					if (curricula != null)
+						for (CurriculumCourse curriculum: curricula) {
+							demand += curriculum.getPercShare() * curriculum.getClassification().getNrStudents();
+							if (area2major2clasf2ll != null) {
+								String areaAbbv = curriculum.getClassification().getCurriculum().getAcademicArea().getAcademicAreaAbbreviation();
+								Hashtable<String, Hashtable<String, Integer>> major2clasf2ll = area2major2clasf2ll.get(areaAbbv);
+								if (major2clasf2ll != null) {
+									if (curriculum.getClassification().getCurriculum().getMajors().isEmpty()) {
+										for (Hashtable<String, Integer> clasf2ll: major2clasf2ll.values()) {
+											clasf2ll.remove(curriculum.getClassification().getAcademicClassification().getCode());
+										}
+									} else {
+										for (PosMajor major: (Collection<PosMajor>)curriculum.getClassification().getCurriculum().getMajors()) {
+											Hashtable<String, Integer> clasf2ll = major2clasf2ll.get(major.getCode());
+											if (clasf2ll != null)
+												clasf2ll.remove(curriculum.getClassification().getAcademicClassification().getCode());
+										}
+									}
+								}
+							}
+						}
+					
+					if (area2major2clasf2ll != null) {
+						for (Map.Entry<String, Hashtable<String, Hashtable<String, Integer>>> areaEmajor2clasf2ll: area2major2clasf2ll.entrySet()) {
+							for (Map.Entry<String, Hashtable<String, Integer>> majorEclasf2ll: areaEmajor2clasf2ll.getValue().entrySet()) {
+								for (Map.Entry<String, Integer> clasfEll: majorEclasf2ll.getValue().entrySet()) {
+									demand += getProjection(rules == null ? null : rules.get(areaEmajor2clasf2ll.getKey()), majorEclasf2ll.getKey(), clasfEll.getKey()) * clasfEll.getValue();
+								}
+							}
+						}
+					}
+					
+					courseOffering.setProjectedDemand(Math.round(demand));
+					
+					hibSession.saveOrUpdate(courseOffering);
+				}
+				
+				hibSession.flush();
+				tx.commit(); tx = null;
+			} finally {
+				try {
+					if (tx != null && tx.isActive()) {
+						tx.rollback();
+					}
+				} catch (Exception e) {}
+				hibSession.close();
+			}
+			sLog.info("Curricula recreated (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
+			return null;
+		} catch  (Exception e) {
+			if (e instanceof CurriculaException) throw (CurriculaException)e;
+			sLog.error(e.getMessage(), e);
+			throw new CurriculaException(e.getMessage());
+		}
+	}
+	
+	public Boolean populateCourseProjectedDemands(boolean includeOtherStudents, Long offeringId) throws CurriculaException {
+		sLog.info("populateCourseProjectedDemands(includeOtherStudents=" + includeOtherStudents + ", offering=" + offeringId +")");
+		long s0 = System.currentTimeMillis();
+		try {
+			User user = Web.getUser(getThreadLocalRequest().getSession());
+			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
+			Transaction tx = null;
+			try {
+				tx = hibSession.beginTransaction();
+				Long sessionId = getAcademicSessionId();
+				
+				InstructionalOffering offering = InstructionalOfferingDAO.getInstance().get(offeringId, hibSession);
+				if (offering == null) throw new CurriculaException("offering " + offeringId + " does not exist");
+				
+				if (!offering.isEditableBy(user)) {
+					if (user == null || !Roles.CURRICULUM_MGR_ROLE.equals(user.getRole()) || !getManager().getDepartments().contains(offering.getDepartment()))
+						throw new CurriculaException("not authorized to populate course projected demands");
+				}
+				
+				int offeringDemand = 0;
+				for (Iterator<CourseOffering> i = offering.getCourseOfferings().iterator(); i.hasNext(); ) {
+					CourseOffering courseOffering = i.next();
+					
+					
+					Hashtable<String, Hashtable<String, Hashtable<String, Integer>>> area2major2clasf2ll =  null;
+					if (includeOtherStudents) {
+						area2major2clasf2ll = new Hashtable<String, Hashtable<String,Hashtable<String,Integer>>>();
+						for (Object[] o : (List<Object[]>)hibSession.createQuery(
+								"select r.academicAreaAbbreviation, m.code, f.code, count(distinct s) from " +
+								"LastLikeCourseDemand x inner join x.student s inner join s.academicAreaClassifications a inner join s.posMajors m " +
+								"inner join a.academicClassification f inner join a.academicArea r, CourseOffering co where " +
+								"x.subjectArea.session.uniqueId = :sessionId and co.uniqueId = :courseId and "+
+								"((x.coursePermId is not null and co.permId=x.coursePermId) or (x.coursePermId is null and co.courseNbr=x.courseNbr)) " +
+								"group by r.academicAreaAbbreviation, m.code, f.code")
+								.setLong("sessionId", courseOffering.getSubjectArea().getSessionId())
+								.setLong("courseId", courseOffering.getUniqueId())
+								.setCacheable(true).list()) {
+							String areaAbbv = (String)o[0];
+							String majorCode = (String)o[1];
+							String clasfCode = (String)o[2];
+							int lastLike = ((Number)o[3]).intValue();
+							Hashtable<String, Hashtable<String, Integer>> major2clasf2ll = area2major2clasf2ll.get(areaAbbv);
+							if (major2clasf2ll == null) {
+								major2clasf2ll = new Hashtable<String, Hashtable<String,Integer>>();
+								area2major2clasf2ll.put(areaAbbv, major2clasf2ll);
+							}
+							Hashtable<String, Integer> clasf2ll = major2clasf2ll.get(majorCode);
+							if (clasf2ll == null) {
+								clasf2ll = new Hashtable<String, Integer>();
+								major2clasf2ll.put(majorCode, clasf2ll);
+							}
+							clasf2ll.put(clasfCode, lastLike);
+						}
+					}
+					
+					Hashtable<String, Hashtable<String, HashMap<String, Float>>> rules = (includeOtherStudents ? getRules(hibSession) : null);
+					
+					float demand = 0.0f;
+					for (CurriculumCourse curriculum: (List<CurriculumCourse>)hibSession.createQuery(
+							"select cc from CurriculumCourse cc where cc.course.uniqueId = :courseId")
+							.setLong("courseId", courseOffering.getUniqueId())
+							.setCacheable(true).list()) {
+						demand += curriculum.getPercShare() * curriculum.getClassification().getNrStudents();
+						if (area2major2clasf2ll != null) {
+							String areaAbbv = curriculum.getClassification().getCurriculum().getAcademicArea().getAcademicAreaAbbreviation();
+							Hashtable<String, Hashtable<String, Integer>> major2clasf2ll = area2major2clasf2ll.get(areaAbbv);
+							if (major2clasf2ll != null) {
+								if (curriculum.getClassification().getCurriculum().getMajors().isEmpty()) {
+									for (Hashtable<String, Integer> clasf2ll: major2clasf2ll.values()) {
+										clasf2ll.remove(curriculum.getClassification().getAcademicClassification().getCode());
+									}
+								} else {
+									for (PosMajor major: (Collection<PosMajor>)curriculum.getClassification().getCurriculum().getMajors()) {
+										Hashtable<String, Integer> clasf2ll = major2clasf2ll.get(major.getCode());
+										if (clasf2ll != null)
+											clasf2ll.remove(curriculum.getClassification().getAcademicClassification().getCode());
+									}
+								}
+							}
+						}
+					}
+						
+						
+					if (area2major2clasf2ll != null) {
+						for (Map.Entry<String, Hashtable<String, Hashtable<String, Integer>>> areaEmajor2clasf2ll: area2major2clasf2ll.entrySet()) {
+							for (Map.Entry<String, Hashtable<String, Integer>> majorEclasf2ll: areaEmajor2clasf2ll.getValue().entrySet()) {
+								for (Map.Entry<String, Integer> clasfEll: majorEclasf2ll.getValue().entrySet()) {
+									demand += getProjection(rules == null ? null : rules.get(areaEmajor2clasf2ll.getKey()), majorEclasf2ll.getKey(), clasfEll.getKey()) * clasfEll.getValue();
+								}
+							}
+						}
+					}
+					
+					courseOffering.setProjectedDemand(Math.round(demand));
+					
+					offeringDemand += Math.round(demand);
+					
+					hibSession.saveOrUpdate(courseOffering);
+				}
+				
+				hibSession.flush();
+
+				tx.commit(); tx = null;
+			} finally {
+				try {
+					if (tx != null && tx.isActive()) {
+						tx.rollback();
+					}
+				} catch (Exception e) {}
+				hibSession.close();
+			}
+			sLog.info("Curricula recreated (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
 			return null;
 		} catch  (Exception e) {
 			if (e instanceof CurriculaException) throw (CurriculaException)e;

@@ -38,7 +38,6 @@ public abstract class BaseInstructionalOffering  implements Serializable {
 	public static String PROP_NOT_OFFERED = "notOffered";
 	public static String PROP_DEMAND = "demand";
 	public static String PROP_ENROLLMENT = "enrollment";
-	public static String PROP_PROJECTED_DEMAND = "projectedDemand";
 	public static String PROP_CTRL_COURSE_ID = "ctrlCourseId";
 	public static String PROP_LIMIT = "limit";
 	public static String PROP_DESIGNATOR_REQUIRED = "designatorRequired";
@@ -91,7 +90,6 @@ public abstract class BaseInstructionalOffering  implements Serializable {
 	private java.lang.Boolean notOffered;
 	private java.lang.Integer demand;
 	private java.lang.Integer enrollment;
-	private java.lang.Integer projectedDemand;
 	private java.lang.Integer ctrlCourseId;
 	private java.lang.Integer limit;
 	private java.lang.Boolean designatorRequired;
@@ -201,24 +199,6 @@ public abstract class BaseInstructionalOffering  implements Serializable {
 	public void setEnrollment (java.lang.Integer enrollment) {
 		this.enrollment = enrollment;
 	}
-
-
-
-	/**
-	 * Return the value associated with the column: projectedDemand
-	 */
-	public java.lang.Integer getProjectedDemand () {
-		return projectedDemand;
-	}
-
-	/**
-	 * Set the value related to the column: projectedDemand
-	 * @param projectedDemand the projectedDemand value
-	 */
-	public void setProjectedDemand (java.lang.Integer projectedDemand) {
-		this.projectedDemand = projectedDemand;
-	}
-
 
 
 	/**
