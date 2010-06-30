@@ -31,7 +31,6 @@
   		page="/layouts/defaultLayout.jsp">
 
 		<put name="header" value="/header.jsp" />
-		<put name="menu" value="/menu.jsp" />
 		<put name="body" value="" />
   	</definition>
 
@@ -46,11 +45,11 @@
  		<put name="body2" value="" />
  		<put name="showNavigation" value="false" />
 		<put name="showSolverWarnings" value="false" />
- 		<put name="helpFile" value="" />
  		<put name="checkLogin" value="true" />
  		<put name="checkRole" value="true" />
  		<put name="checkAdmin" value="false" />
  		<put name="checkAccessLevel" value="true" />
+ 		<put name="showMenu" value="true" />
   	</definition>
 
 	<!-- Page Layouts -->
@@ -464,6 +463,7 @@
 		<put name="title" type="string" value="Suggestions"/>
 		<put name="body" value="/tt/suggestions.jsp" />
 		<put name="showSolverWarnings" value="true" />
+		<put name="showMenu" value="false" />
   	</definition>
 
 	<definition	name="statsTile" extends="pageLayoutDef">
@@ -864,6 +864,7 @@
 	<definition	name="examInfoTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Examination Assignment"/>
 		<put name="body" value="/exam/info.jsp" />
+		<put name="showMenu" value="false" />
   	</definition>
   	
  	<definition	name="examAssignmentReportTile" extends="pageLayoutDef">
@@ -1031,6 +1032,7 @@
 	<definition	name="classInfoTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Class Assignment"/>
 		<put name="body" value="/tt/info.jsp" />
+		<put name="showMenu" value="false" />
   	</definition>
 
  	<definition	name="enrollmentAuditPdfReportTile" extends="pageLayoutDef">
