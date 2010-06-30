@@ -1,5 +1,5 @@
 /*
- * UniTime 4.0 (University Timetabling Application)
+ * UniTime 3.2 (University Timetabling Application)
  * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
