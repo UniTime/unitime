@@ -1,3 +1,22 @@
+/*
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
+ * as indicated by the @authors tag.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
 package org.unitime.timetable.gwt.widgets;
 
 import java.util.ArrayList;
@@ -286,6 +305,62 @@ public class CurriculaTable extends Composite {
 				updatePlanned.getElement().getStyle().setCursor(Cursor.POINTER);
 				menu.addItem(updatePlanned);
 				if (iIsAdmin) {
+					menu.addSeparator();
+					MenuItem populateProjectedDemands = new MenuItem("Populate Course Projected Demands", true, new Command() {
+						@Override
+						public void execute() {
+							popup.hide();
+							if (Window.confirm("Do you really want to populate projected demands for all courses?")) {
+								LoadingWidget.getInstance().show("Populating projected demands for all courses ...");
+								iService.populateCourseProjectedDemands(false, new AsyncCallback<Boolean>(){
+
+									@Override
+									public void onFailure(Throwable caught) {
+										setError("Unable to populate course projected demands (" + caught.getMessage() + ")");
+										LoadingWidget.getInstance().hide();
+									}
+
+									@Override
+									public void onSuccess(Boolean result) {
+										LoadingWidget.getInstance().hide();
+										iSelectedCurricula.clear();
+										query(iLastQuery, null);
+									}
+									
+								});
+							}
+						}
+					});
+					populateProjectedDemands.getElement().getStyle().setCursor(Cursor.POINTER);
+					menu.addItem(populateProjectedDemands);
+					MenuItem populateProjectedDemands2 = new MenuItem("Populate Course Projected Demands (Include Other Students)", true, new Command() {
+						@Override
+						public void execute() {
+							popup.hide();
+							if (Window.confirm("Do you really want to populate projected demands for all courses?")) {
+								LoadingWidget.getInstance().show("Populating projected demands for all courses ... " +
+										"&nbsp;&nbsp;&nbsp;&nbsp;You may also go grab a coffee ... &nbsp;&nbsp;&nbsp;&nbsp;This will take a while ...", 300000);
+								iService.populateCourseProjectedDemands(true, new AsyncCallback<Boolean>(){
+									@Override
+									public void onFailure(Throwable caught) {
+										setError("Unable to populate course projected demands (" + caught.getMessage() + ")");
+										LoadingWidget.getInstance().hide();
+									}
+
+									@Override
+									public void onSuccess(Boolean result) {
+										LoadingWidget.getInstance().hide();
+										iSelectedCurricula.clear();
+										query(iLastQuery, null);
+									}
+									
+								});
+							}
+						}
+					});
+					populateProjectedDemands2.getElement().getStyle().setCursor(Cursor.POINTER);
+					menu.addItem(populateProjectedDemands2);
+					menu.addSeparator();
 					MenuItem makupCurricula = new MenuItem((iTable.getRowCount() > 1 ? "Recreate" : "Create") + " Curricula from Last-Like Enrollments &amp; Projections", true, new Command() {
 						@Override
 						public void execute() {

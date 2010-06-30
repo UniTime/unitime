@@ -1,3 +1,22 @@
+/*
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
+ * as indicated by the @authors tag.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
 package org.unitime.timetable.gwt.widgets;
 
 import java.util.ArrayList;
@@ -9,6 +28,7 @@ import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.services.CurriculaService;
 import org.unitime.timetable.gwt.services.CurriculaServiceAsync;
 import org.unitime.timetable.gwt.shared.CurriculumInterface;
+import org.unitime.timetable.gwt.shared.ToolBox;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.AcademicAreaInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.AcademicClassificationInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.CourseInterface;
@@ -395,6 +415,52 @@ public class CourseCurriculaTable extends Composite {
 					item.getElement().getStyle().setCursor(Cursor.POINTER);
 					menu.addItem(item);
 				}
+				menu.addSeparator();
+				MenuItem populateProjectedDemands = new MenuItem("Populate Course Projected Demands", true, new Command() {
+					@Override
+					public void execute() {
+						popup.hide();
+						LoadingWidget.getInstance().show("Populating projected demands for this offering ...");
+						iCurriculaService.populateCourseProjectedDemands(false, iOfferingId, new AsyncCallback<Boolean>(){
+
+							@Override
+							public void onFailure(Throwable caught) {
+								setErrorMessage("Unable to populate course projected demands (" + caught.getMessage() + ")");
+								LoadingWidget.getInstance().hide();
+							}
+
+							@Override
+							public void onSuccess(Boolean result) {
+								ToolBox.open(GWT.getHostPageBaseURL() + "instructionalOfferingDetail.do?io=" + iOfferingId);
+							}
+							
+						});
+					}
+				});
+				populateProjectedDemands.getElement().getStyle().setCursor(Cursor.POINTER);
+				menu.addItem(populateProjectedDemands);
+				MenuItem populateProjectedDemands2 = new MenuItem("Populate Course Projected Demands (Include Other Students)", true, new Command() {
+					@Override
+					public void execute() {
+						popup.hide();
+						LoadingWidget.getInstance().show("Populating projected demands for this course ...");
+						iCurriculaService.populateCourseProjectedDemands(true, iOfferingId, new AsyncCallback<Boolean>(){
+							@Override
+							public void onFailure(Throwable caught) {
+								setErrorMessage("Unable to populate course projected demands (" + caught.getMessage() + ")");
+								LoadingWidget.getInstance().hide();
+							}
+
+							@Override
+							public void onSuccess(Boolean result) {
+								ToolBox.open(GWT.getHostPageBaseURL() + "instructionalOfferingDetail.do?io=" + iOfferingId);
+							}
+							
+						});
+					}
+				});
+				populateProjectedDemands2.getElement().getStyle().setCursor(Cursor.POINTER);
+				menu.addItem(populateProjectedDemands2);
 				menu.setVisible(true);
 				popup.add(menu);
 				popup.showRelativeTo((Widget)event.getSource());
