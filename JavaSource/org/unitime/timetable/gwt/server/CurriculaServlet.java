@@ -1355,6 +1355,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 				"LastLikeCourseDemand x inner join x.student s inner join s.academicAreaClassifications a inner join s.posMajors m " +
 				"inner join a.academicClassification f inner join a.academicArea r, CourseOffering co where " +
 				"x.subjectArea.session.uniqueId = :sessionId and co.uniqueId = :courseId and "+
+				"co.subjectArea.uniqueId = x.subjectArea.uniqueId and " +
 				"((x.coursePermId is not null and co.permId=x.coursePermId) or (x.coursePermId is null and co.courseNbr=x.courseNbr)) " +
 				"group by r.academicAreaAbbreviation, m.code, f.code")
 				.setLong("sessionId", courseOffering.getSubjectArea().getSessionId())
@@ -2555,8 +2556,9 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 							"LastLikeCourseDemand x inner join x.student s inner join s.academicAreaClassifications a inner join s.posMajors m " +
 							"inner join a.academicClassification f inner join a.academicArea r, CourseOffering co where " +
 							"x.subjectArea.session.uniqueId = :sessionId and co.subjectArea.session.uniqueId = :sessionId and "+
+							"co.subjectArea.uniqueId = x.subjectArea.uniqueId and " +
 							"((x.coursePermId is not null and co.permId=x.coursePermId) or (x.coursePermId is null and co.courseNbr=x.courseNbr)) " +
-							"group by r.academicAreaAbbreviation, m.code, f.code")
+							"group by co.uniqueId, r.academicAreaAbbreviation, m.code, f.code")
 							.setLong("sessionId", sessionId)
 							.setCacheable(true).list()) {
 						Long courseId = (Long)o[0];
@@ -2654,7 +2656,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 				} catch (Exception e) {}
 				hibSession.close();
 			}
-			sLog.info("Curricula recreated (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
+			sLog.info("Course projected demands updated (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
 			return null;
 		} catch  (Exception e) {
 			if (e instanceof CurriculaException) throw (CurriculaException)e;
@@ -2695,6 +2697,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 								"LastLikeCourseDemand x inner join x.student s inner join s.academicAreaClassifications a inner join s.posMajors m " +
 								"inner join a.academicClassification f inner join a.academicArea r, CourseOffering co where " +
 								"x.subjectArea.session.uniqueId = :sessionId and co.uniqueId = :courseId and "+
+								"co.subjectArea.uniqueId = x.subjectArea.uniqueId and " +
 								"((x.coursePermId is not null and co.permId=x.coursePermId) or (x.coursePermId is null and co.courseNbr=x.courseNbr)) " +
 								"group by r.academicAreaAbbreviation, m.code, f.code")
 								.setLong("sessionId", courseOffering.getSubjectArea().getSessionId())
@@ -2774,7 +2777,7 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 				} catch (Exception e) {}
 				hibSession.close();
 			}
-			sLog.info("Curricula recreated (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
+			sLog.info("Course projected demands updated (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
 			return null;
 		} catch  (Exception e) {
 			if (e instanceof CurriculaException) throw (CurriculaException)e;
