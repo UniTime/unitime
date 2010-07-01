@@ -125,7 +125,7 @@
 					<html:option value="-">-</html:option>
 					<html:options collection="<%=DistributionType.DIST_TYPE_ATTR_NAME%>" property="uniqueId" labelProperty="label" />
 				</html:select>
-				<span id='distTypeDesc' style='display:block;padding:3px'>
+				<span id='distTypeDesc' style='display:block;padding:3px; max-width: 800px;'>
 					<bean:write name="distributionPrefsForm" property="description" filter="false"/>
 				</span>
 			</TD>
@@ -138,7 +138,7 @@
 					<html:option value="-">-</html:option>
 					<html:options name="distributionPrefsForm" property="groupings"/>
 				</html:select>
-				<span id='groupingDesc' style='display:block;padding:3px'>
+				<span id='groupingDesc' style='display:block;padding:3px; max-width: 800px;'>
 					<bean:write name="distributionPrefsForm" property="groupingDescription" filter="false"/>
 				</span>
 			</TD>
