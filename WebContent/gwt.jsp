@@ -16,6 +16,10 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  -->
+<%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8"%>
+<%@ page errorPage="error.jsp"%>
+<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
@@ -65,7 +69,14 @@
     			<td width="33%" align="left" nowrap="nowrap"><span id="UniTimeGWT:Version"></span></td>
     			<td width="34%" align="center" nowrap="nowrap"><a class='unitime-FooterLink' href='http://www.unitime.org'>&copy; 2010 UniTime.org</a></td>
     			<td width="33%" align="right"></td>
+    		</tr>
+    		<tt:hasProperty name="tmtbl.page.disclaimer">
+    			<tr>
+    				<td colspan="3" align="center" style="color:#777777; max-width: 800px;">
+    					<tt:property name="tmtbl.page.disclaimer"/>
+    				</td>
     			</tr>
+    		</tt:hasProperty>
     	</table>
 	</td></tr></table>
     <script type="text/javascript" language="javascript" src="unitime/unitime.nocache.js"></script>

@@ -89,7 +89,7 @@ public class UniTimeMenuBar extends Composite {
 						if (item.getPage() != null) {
 							if (item.isGWT()) 
 								//openPageAsync(item.getPage());
-								openUrl(item.getName(), "gwt.html?page=" + item.getPage(), item.getTarget());
+								openUrl(item.getName(), "gwt.jsp?page=" + item.getPage(), item.getTarget());
 							else {
 								openUrl(item.getName(), item.getPage(), item.getTarget());
 							}
@@ -134,7 +134,7 @@ public class UniTimeMenuBar extends Composite {
 	private void openPageAsync(final String page) {
 		LoadingWidget.getInstance().show();
 		if (RootPanel.get("UniTimeGWT:Content") == null || RootPanel.get("UniTimeGWT:TitlePanel") == null) {
-			ToolBox.open(GWT.getHostPageBaseURL() + "gwt.html?page=" + page);
+			ToolBox.open(GWT.getHostPageBaseURL() + "gwt.jsp?page=" + page);
 			return;
 		}
 		RootPanel.get("UniTimeGWT:Content").clear();
