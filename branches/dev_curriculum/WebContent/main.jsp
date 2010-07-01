@@ -96,13 +96,20 @@
 </TABLE>
 	    </td></tr></table>
     </td></tr><tr><td>
-    	<table class="unitime-Footer">
+    	<table class="unitime-Footer" style="max-width: 800px;">
     		<tr>
     			<td width="33%" align="left" nowrap="nowrap"><span id="UniTimeGWT:Version"></span></td>
     			<td width="34%" align="center" nowrap="nowrap"><a class='unitime-FooterLink' href='http://www.unitime.org'>&copy; 2008 - 2010 UniTime.org</a></td>
     			<td width="33%" align="right" nowrap="nowrap">
     			</td>
+    		</tr>
+    		<tt:hasProperty name="tmtbl.page.disclaimer">
+    			<tr>
+    				<td colspan="3" align="center" style="color:#777777;">
+    					<tt:property name="tmtbl.page.disclaimer"/>
+    				</td>
     			</tr>
+    		</tt:hasProperty>
     	</table>
 	</td></tr></table>
 </div>

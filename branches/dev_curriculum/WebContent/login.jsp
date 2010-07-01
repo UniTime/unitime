@@ -17,6 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 --%>
 <%@ page import="org.unitime.timetable.ApplicationProperties" %>
+<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <HTML>
@@ -108,11 +109,22 @@
 				</TR>
 			</TABLE>
 		</FORM>
+		
+		<BR>
+		&nbsp;
+		<BR>
+		&nbsp;
 
-		<BR>
-		&nbsp;
-		<BR>
-		&nbsp;
+	<tt:hasProperty name="tmtbl.page.disclaimer">
+		<table align="center" class="unitime-Footer">
+			<tr>
+    			<td colspan="3" align="center" style="color:#777777;">
+    				<tt:property name="tmtbl.page.disclaimer"/>
+    			</td>
+    		</tr>
+    	</table>
+    </tt:hasProperty>
+		
 
 		<% if (ApplicationProperties.getProperty("tmtbl.footer.external", "").trim().length()>0) { %>
 			<jsp:include flush="true" page='<%=ApplicationProperties.getProperty("tmtbl.footer.external")%>' />
