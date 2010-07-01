@@ -598,17 +598,11 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
         	mail += "TimeStamp: "+(new Date());
         	
         	Email email = new Email();
-        	
-        	email.sendMail(
-        			(String)ApplicationProperties.getProperty("tmtbl.smtp.host", "smtp.purdue.edu"), 
-        			(String)ApplicationProperties.getProperty("tmtbl.smtp.domain", "smtp.purdue.edu"), 
-        			(String)ApplicationProperties.getProperty("tmtbl.inquiry.sender", "smasops@purdue.edu"), 
-        			mgr.getEmailAddress(), 
-        			(String)ApplicationProperties.getProperty("tmtbl.inquiry.email","smasops@purdue.edu"), 
-        			"Timetabling (Solution commit): "+subject, 
-        			mail, 
-        			new Vector());
-        	
+        	email.addRecipient(mgr.getEmailAddress(), mgr.getName());
+        	email.addNotifyCC();
+        	email.setSubject("UniTime (Solution Commit): "+subject);
+        	email.setText(mail);
+        	email.send();
 		} catch (Exception e) {
 			sLog.error("Unable to send solution commit/uncommit notification, reason: "+e.getMessage(),e);
 		}
@@ -1449,16 +1443,16 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
         SolutionDAO dao = new SolutionDAO();
         org.hibernate.Session hibSession = dao.getSession(); 
         SessionFactory hibSessionFactory = hibSession.getSessionFactory(); 
-        hibSessionFactory.evict(Solution.class, solutionId);
-        hibSessionFactory.evictCollection(Solution.class.getName()+".parameters", solutionId);
-        hibSessionFactory.evictCollection(Solution.class.getName()+".assignments", solutionId);
+        hibSessionFactory.getCache().evictEntity(Solution.class, solutionId);
+        hibSessionFactory.getCache().evictCollection(Solution.class.getName()+".parameters", solutionId);
+        hibSessionFactory.getCache().evictCollection(Solution.class.getName()+".assignments", solutionId);
         for (Iterator i=hibSession.createQuery("select c.uniqueId from "+
                     "Class_ c, Solution s where s.uniqueId=:solutionId and "+
                     "c.managingDept.uniqueId in elements (s.owner.departments)").
                     setLong("solutionId", solutionId.longValue()).iterate(); i.hasNext();) {
             Number classId = (Number)i.next();
-            hibSession.getSessionFactory().evict(Class_.class, classId);
-            hibSessionFactory.evictCollection(Class_.class.getName()+".assignments", classId);
+            hibSessionFactory.getCache().evictEntity(Class_.class, classId);
+            hibSessionFactory.getCache().evictCollection(Class_.class.getName()+".assignments", classId);
         }
    }
     

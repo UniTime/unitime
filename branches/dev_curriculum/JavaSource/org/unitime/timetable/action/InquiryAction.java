@@ -19,11 +19,9 @@
 */
 package org.unitime.timetable.action;
 
-import java.io.IOException;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -161,7 +159,6 @@ public class InquiryAction extends Action {
 	            	mail += "Version: "+Constants.VERSION+"."+Constants.BLD_NUMBER+" ("+Constants.REL_DATE+")\r\n";
 	            	mail += "TimeStamp: "+(new Date());
 	            	
-	            	Email email = new Email();
 	            	
                     String inqEmail = ApplicationProperties.getProperty("tmtbl.inquiry.email","smasops@purdue.edu");
 	            	String cc = inqEmail;
@@ -176,17 +173,23 @@ public class InquiryAction extends Action {
                     String domain = ApplicationProperties.getProperty("tmtbl.smtp.domain", host);
                     String sender = ApplicationProperties.getProperty("tmtbl.inquiry.sender", inqEmail);
                     EventContact c = EventContact.findByExternalUniqueId(user.getId());
-                    String mgrEmail = (mgr!=null && mgr.getEmailAddress()!=null?mgr.getEmailAddress():
-                            c!=null && c.getEmailAddress()!=null?c.getEmailAddress():
-                                user.getLogin()+ApplicationProperties.getProperty("tmtbl.inquiry.email.suffix","@purdue.edu"));
 	            	
-	            	email.sendMail(
-	            			host, domain, sender, mgrEmail, cc, 
-	            			"Timetabling ("+myForm.getTypeMsg(myForm.getType())+"): "+myForm.getSubject(), 
-	            			mail, 
-	            			new Vector());
-	            	
-	            	try {
+                    Email email = new Email();
+                    email.setSubject("UniTime ("+myForm.getTypeMsg(myForm.getType())+"): "+myForm.getSubject());
+                    email.setText(mail);
+                    
+                    email.addNotify();
+                    
+                    if (mgr != null && mgr.getEmailAddress() != null) {
+                        email.addRecipientCC(mgr.getEmailAddress(), mgr.getName());
+                    } else if (c != null && c.getEmailAddress() != null) {
+                    	email.addRecipientCC(c.getEmailAddress(), c.getName());
+                    } else {
+                    	email.addRecipientCC(user.getLogin()+ApplicationProperties.getProperty("tmtbl.inquiry.email.suffix","@purdue.edu"), null);
+                    }
+                    email.send();
+                    
+                    if ("true".equals(ApplicationProperties.getProperty("tmtbl.inquiry.autoreply", "false"))) {
             		
 	            		mail = "The following inquiry was submitted on your behalf. "+
 	            			"We will contact you soon. "+
@@ -201,13 +204,20 @@ public class InquiryAction extends Action {
             				myForm.getMessage()+"\n"+
             				"-- END INQUIRY -------------------------------------------";
                         
-                        email.sendMail(
-                                host, domain, sender, inqEmail, mgrEmail,
-	            				"RE: Timetabling ("+myForm.getTypeMsg(myForm.getType())+"): "+myForm.getSubject(),
-	            				mail,
-	            				new Vector());
-	            		
-	            	} catch (IOException e) {}
+                        email = new Email();
+                        email.setSubject("REL UniTime ("+myForm.getTypeMsg(myForm.getType())+"): "+myForm.getSubject());
+                        email.setText(mail);
+                        
+                        if (mgr != null && mgr.getEmailAddress() != null) {
+                            email.addRecipient(mgr.getEmailAddress(), mgr.getName());
+                        } else if (c != null && c.getEmailAddress() != null) {
+                        	email.addRecipient(c.getEmailAddress(), c.getName());
+                        } else {
+                        	email.addRecipient(user.getLogin()+ApplicationProperties.getProperty("tmtbl.inquiry.email.suffix","@purdue.edu"), null);
+                        }
+                        
+                        email.send();
+	            	}
 	            	
 	            	myForm.setOp("Sent");
 	            	return mapping.findForward("display");

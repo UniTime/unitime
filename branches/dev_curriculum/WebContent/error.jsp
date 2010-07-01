@@ -89,27 +89,24 @@
 				    %></FONT>
 				</TD>
 			</TR>
-		<%	Vector sessionTrace = new Vector();
-			try {
-				String errorEmail = (String) ApplicationProperties.getProperty("tmtbl.error.email");
-				String smtpDomain = (String) ApplicationProperties.getProperty("tmtbl.smtp.domain");
-				String smtpHost = (String) ApplicationProperties.getProperty("tmtbl.smtp.host");
-				String sentFrom = (String) ApplicationProperties.getProperty("tmtbl.error.sentFrom");
-				String replyTo = (String) ApplicationProperties.getProperty("tmtbl.error.replyTo");
-				String subject = (String) ApplicationProperties.getProperty("tmtbl.error.subject");
+		<%	try {
+				String errorEmail = ApplicationProperties.getProperty("tmtbl.error.email");
+				String subject = ApplicationProperties.getProperty("tmtbl.error.subject");
 
-				if (session.getAttribute("userTrace")!=null
+				if (session.getAttribute("userTrace") !=null
 						&& errorEmail!=null && errorEmail.trim().length()>0 
-						&& exception.getMessage().toLowerCase().indexOf("access denied")<0) {				
-					String data = "Server: " +  request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+request.getContextPath()+"/\n"
+						&& exception.getMessage().toLowerCase().indexOf("access denied")<0) {	
+					Email email = new Email();
+					email.setSubject(subject);
+					email.setText("Server: " +  request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+request.getContextPath()+"/\n"
 								+ "Exception: " + exception.getMessage() + "\n" 
 								+ "Stack Trace: " + stackTrace.replaceAll("<br>\n", "") + "\n\n"								
-								+ (String) session.getAttribute("userTrace");
-					Email email = new Email();
-					email.sendMail(smtpHost, smtpDomain, sentFrom, replyTo, errorEmail, subject, data, sessionTrace);
+								+ (String) session.getAttribute("userTrace"));
+					email.addRecipient(errorEmail, null);
+					email.addNotifyCC();
+					email.send();
 				}
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				Debug.error(e);
 			}
 			

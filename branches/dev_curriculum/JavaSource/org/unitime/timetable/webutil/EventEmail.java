@@ -4,24 +4,14 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
-import javax.mail.Authenticator;
-import javax.mail.Multipart;
-import javax.mail.PasswordAuthentication;
-import javax.mail.Transport;
-import javax.mail.Message.RecipientType;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.unitime.commons.Email;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
@@ -235,34 +225,10 @@ public class EventEmail {
             message += "</td></tr></table>";
             message += "</body></html>";
             
-            Properties p = ApplicationProperties.getProperties();
-            if (p.getProperty("mail.smtp.host")==null && p.getProperty("tmtbl.smtp.host")!=null)
-                p.setProperty("mail.smtp.host", p.getProperty("tmtbl.smtp.host"));
-            
-            Authenticator a = null;
-            if (ApplicationProperties.getProperty("tmtbl.mail.user")!=null && ApplicationProperties.getProperty("tmtbl.mail.pwd")!=null) {
-                p.setProperty("mail.smtp.user", ApplicationProperties.getProperty("tmtbl.mail.user"));
-                p.setProperty("mail.smtp.auth", "true");
-                a = new Authenticator() {
-                    public PasswordAuthentication getPasswordAuthentication() {
-                        return new PasswordAuthentication(
-                                ApplicationProperties.getProperty("tmtbl.mail.user"),
-                                ApplicationProperties.getProperty("tmtbl.mail.pwd"));
-                    }
-                };
-            }
-            javax.mail.Session mailSession = javax.mail.Session.getDefaultInstance(p, a);
-            MimeMessage mail = new MimeMessage(mailSession);
+            Email mail = new Email();
             mail.setSubject(subject);
             
-            InternetAddress from = 
-                new InternetAddress(
-                        ApplicationProperties.getProperty("tmtbl.inquiry.sender",ApplicationProperties.getProperty("tmtbl.contact.email")),
-                        ApplicationProperties.getProperty("tmtbl.inquiry.sender.name"));
-            mail.setFrom(from);
-
-            MimeBodyPart text = new MimeBodyPart(); text.setContent(message, "text/html");
-            Multipart body = new MimeMultipart(); body.addBodyPart(text);
+            mail.setHTML(message);
 
             conf = ApplicationProperties.getTempFile("email", "html");
             PrintWriter pw = null;
@@ -275,27 +241,24 @@ public class EventEmail {
             
             String to = "";
             if (iEvent.getMainContact()!=null && iEvent.getMainContact().getEmailAddress()!=null) {
-                mail.addRecipient(RecipientType.TO, new InternetAddress(iEvent.getMainContact().getEmailAddress(),iEvent.getMainContact().getName()));
+                mail.addRecipient(iEvent.getMainContact().getEmailAddress(),iEvent.getMainContact().getName());
                 to = "<a href='mailto:"+iEvent.getMainContact().getEmailAddress()+"'>"+iEvent.getMainContact().getShortName()+"</a>";
             }
             if (iEvent.getEmail()!=null && iEvent.getEmail().length()>0) {
                 for (StringTokenizer stk = new StringTokenizer(iEvent.getEmail(),";:,\n\r\t");stk.hasMoreTokens();) {
                     String email = stk.nextToken();
-                    mail.addRecipient(RecipientType.CC, new InternetAddress(email));
+                    mail.addRecipientCC(email, null);
                     if (to.length()>0) to+=", ";
                     to += email;
                 }
             }
             if (iEvent.getSponsoringOrganization()!=null && iEvent.getSponsoringOrganization().getEmail()!=null && iEvent.getSponsoringOrganization().getEmail().length()>0) {
-                mail.addRecipient(RecipientType.TO, new InternetAddress(iEvent.getSponsoringOrganization().getEmail(),iEvent.getSponsoringOrganization().getName()));
+                mail.addRecipient(iEvent.getSponsoringOrganization().getEmail(),iEvent.getSponsoringOrganization().getName());
                 if (to.length()>0) to+=", ";
                 to += "<a href='mailto:"+iEvent.getSponsoringOrganization().getEmail()+"'>"+iEvent.getSponsoringOrganization().getName()+"</a>";
             }
             
-            mail.setSentDate(new Date());
-            mail.setContent(body);
-            
-            Transport.send(mail);
+            mail.send();
             
             request.getSession().setAttribute(Constants.REQUEST_MSSG, 
                     (conf==null || !conf.exists()?"":"<a class='noFancyLinks' href='temp/"+conf.getName()+"'>")+
