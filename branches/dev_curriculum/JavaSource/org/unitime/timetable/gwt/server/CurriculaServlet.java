@@ -2481,10 +2481,10 @@ public class CurriculaServlet extends RemoteServiceServlet implements CurriculaS
 					for (Object[] o : (List<Object[]>)hibSession.createQuery(
 							"select m.code, f.code, count(distinct s) from LastLikeCourseDemand x inner join x.student s " +
 							"inner join s.academicAreaClassifications ac inner join ac.academicClassification f inner join ac.academicArea a " +
-							"inner join s.posMajors m where x.subjectArea.session.uniqueId = :sessionId and a.uniqueId = :acadAreaId " +
+							"inner join s.posMajors m where x.subjectArea.session.uniqueId = :sessionId and a.academicAreaAbbreviation = :acadAbbv " +
 							"group by m.code, f.code")
 							.setLong("sessionId", sessionId)
-							.setLong("acadAreaId", c.getAcademicArea().getUniqueId())
+							.setString("acadAbbv", c.getAcademicArea().getAcademicAreaAbbreviation())
 							.setCacheable(true).list()) {
 						String major = (String)o[0];
 						String clasf = (String)o[1];
