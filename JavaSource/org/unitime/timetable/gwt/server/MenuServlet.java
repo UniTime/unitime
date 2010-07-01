@@ -22,6 +22,7 @@ package org.unitime.timetable.gwt.server;
 import java.io.File;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -65,6 +66,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 public class MenuServlet extends RemoteServiceServlet implements MenuService {
 	private static Logger sLog = Logger.getLogger(MenuServlet.class);
+	private static DecimalFormat sDF = new DecimalFormat("0.0");
     private static Element iRoot = null;
 
 	public void init() throws ServletException {
@@ -394,4 +396,12 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 		}
 	}
 	
+	public String getHelpPage(String title) throws MenuException {
+		if ("true".equals(ApplicationProperties.getProperty("tmtbl.wiki.help", "true")) && ApplicationProperties.getProperty("tmtbl.wiki.url") != null) {
+			sLog.info("Help: " + ApplicationProperties.getProperty("tmtbl.wiki.url") + title.trim().replace(' ', '_'));
+			return ApplicationProperties.getProperty("tmtbl.wiki.url") + title.trim().replace(' ', '_');
+		} else {
+			throw new MenuException("help pages are disabled");
+		}
+	}
 }
