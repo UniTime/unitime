@@ -95,6 +95,7 @@ public class LoadingWidget extends Composite {
 		if (message != null) {
 			boolean showing = (iCount > 0 && !iMessage.getText().isEmpty());
 			iMessage.setHTML(message);
+			iMessage.setStyleName("unitime-PopupMessage");
 			if (!showing && !iMessage.getText().isEmpty()) {
 				RootPanel.get().add(iMessage, Window.getScrollLeft() + Window.getClientWidth() / 2 - 200, Window.getScrollTop() + Window.getClientHeight() / 3);
 			} else if (showing && iMessage.getText().isEmpty()) {
@@ -106,6 +107,24 @@ public class LoadingWidget extends Composite {
 	
 	public void setMessage(String message) {
 		iMessage.setHTML(message);
+		iMessage.setStyleName("unitime-PopupMessage");
+	}
+	
+	public void fail(String message) {
+		fail(message, 5000);
+	}
+	
+	public void fail(String message, int hideDelayInMillis) {
+		iTimer.cancel();
+		iMessage.setHTML(message);
+		iMessage.setStyleName("unitime-PopupWarning");
+		Timer t = new Timer() {
+			@Override
+			public void run() {
+				hide();
+			}
+		};
+		t.schedule(hideDelayInMillis);
 	}
 	
 	public void hide() {
@@ -118,6 +137,10 @@ public class LoadingWidget extends Composite {
 			RootPanel.get().remove(iMessage);
 			iMessage.setHTML("");
 		}
+	}
+	
+	public boolean isShowing() {
+		return iCount > 0;
 	}
 
 	public static LoadingWidget getInstance() {

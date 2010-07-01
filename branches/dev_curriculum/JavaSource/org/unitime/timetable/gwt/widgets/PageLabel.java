@@ -20,19 +20,23 @@
 package org.unitime.timetable.gwt.widgets;
 
 import org.unitime.timetable.gwt.resources.GwtResources;
-import org.unitime.timetable.gwt.services.CurriculaService;
-import org.unitime.timetable.gwt.services.CurriculaServiceAsync;
+import org.unitime.timetable.gwt.services.MenuService;
+import org.unitime.timetable.gwt.services.MenuServiceAsync;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.FrameElement;
+import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.MouseOverEvent;
-import com.google.gwt.event.dom.client.MouseOverHandler;
+import com.google.gwt.event.logical.shared.CloseEvent;
+import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -43,21 +47,22 @@ import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 
 public class PageLabel extends Composite {
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
 
-	private final CurriculaServiceAsync iService = GWT.create(CurriculaService.class);
+	private final MenuServiceAsync iService = GWT.create(MenuService.class);
 
 	private HorizontalPanel iPanel;
 	
 	private Label iName;
 	private Image iHelp;
 	
-	private boolean iEnabled = false;
-	private String iWikiUrl = null;
-
+	private String iUrl = null;
+	private Timer iTimer = null;
+	
 	public PageLabel() {
 		iPanel = new HorizontalPanel();
 		
@@ -65,6 +70,7 @@ public class PageLabel extends Composite {
         iName.setStyleName("unitime-Title");
 		iHelp = new Image(RESOURCES.help());
 		iHelp.setVisible(false);
+		iHelp.getElement().getStyle().setCursor(Cursor.POINTER);
 		
 		iPanel.add(iName);
 		iPanel.add(iHelp);
@@ -72,45 +78,52 @@ public class PageLabel extends Composite {
 				
 		initWidget(iPanel);
 		
-		iService.getApplicationProperty(new String[] {"tmtbl.wiki.help", "tmtbl.wiki.url"}, new AsyncCallback<String[]>() {
-			@Override
-			public void onSuccess(String[] result) {
-				iEnabled = "true".equals(result[0]);
-				iWikiUrl = result[1];
-				iHelp.setVisible(iEnabled && iWikiUrl != null && !iName.getText().isEmpty());
-			}
-			
-			@Override
-			public void onFailure(Throwable caught) {
-				iEnabled = false;
-			}
-		});
-		
 		final DialogBox dialog = new MyDialogBox();
 		dialog.setAutoHideEnabled(true);
 		dialog.setModal(true);
-		final Frame frame = new Frame();
+		final Frame frame = new MyFrame();
 		frame.getElement().getStyle().setBorderWidth(0, Unit.PX);
 		dialog.setGlassEnabled(true);
 		dialog.setAnimationEnabled(true);
 		dialog.setWidget(frame);
 		
-		iHelp.addClickHandler(new ClickHandler() {
+		iTimer = new Timer() {
 			@Override
-			public void onClick(ClickEvent event) {
-				dialog.setText(iName.getText() + " Help");
-				frame.setUrl(iWikiUrl + iName.getText().trim().replace(' ', '_'));
-				frame.setSize(String.valueOf(Window.getClientWidth() * 3 / 4), String.valueOf(Window.getClientHeight() * 3 / 4));
-				dialog.center();
+			public void run() {
+				if (LoadingWidget.getInstance().isShowing())
+					LoadingWidget.getInstance().fail(iName.getText() + " Help does not seem to load, " +
+							"please check <a href='" + iUrl + "' style='white-space: nowrap;'>" + iUrl + "</a> for yourself.");
 			}
-		});
-		iHelp.addMouseOverHandler(new MouseOverHandler() {
+		};
+
+		dialog.addCloseHandler(new CloseHandler<PopupPanel>() {
 			@Override
-			public void onMouseOver(MouseOverEvent event) {
-				iHelp.getElement().getStyle().setCursor(Cursor.POINTER);	
+			public void onClose(CloseEvent<PopupPanel> event) {
+				if (LoadingWidget.getInstance().isShowing())
+					LoadingWidget.getInstance().hide();
 			}
 		});
 		
+		iHelp.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				if (iUrl == null) return;
+				dialog.setText(iName.getText() + " Help");
+				frame.setUrl(iUrl);
+				frame.setSize(String.valueOf(Window.getClientWidth() * 3 / 4), String.valueOf(Window.getClientHeight() * 3 / 4));
+				dialog.center();
+				iTimer.schedule(30000);
+			}
+		});
+		
+	}
+	
+	private boolean hasTag(Element parent, String name, String id) {
+		NodeList<Element> elements = parent.getElementsByTagName(name);
+		for (int i = 0; i < elements.getLength(); i++) {
+			if (id.equals(elements.getItem(i).getId())) return true;
+		}
+		return false;
 	}
 	
 	public void insert(final RootPanel panel) {
@@ -119,14 +132,25 @@ public class PageLabel extends Composite {
 		panel.add(this);
 		panel.setVisible(true);
 	}
-
 	
-	public void setPageName(String pageName) {
-		iName.setText(pageName);
-		iHelp.setTitle(pageName + " Help");
-		iHelp.setVisible(iEnabled && iWikiUrl != null);
+	public void setPageName(String title) {
+		iName.setText(title);
+		iHelp.setTitle(title + " Help");
+		iHelp.setVisible(false);
+		iService.getHelpPage(title, new AsyncCallback<String>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				iHelp.setVisible(false);
+				iUrl = null;
+			}
+			@Override
+			public void onSuccess(String result) {
+				iHelp.setVisible(true);
+				iUrl = result;
+			}
+		});		
 	}
-	
+
 	private class MyDialogBox extends DialogBox {
 		private MyDialogBox() { super(); }
 		protected void onPreviewNativeEvent(NativePreviewEvent event) {
@@ -135,4 +159,26 @@ public class PageLabel extends Composite {
 				MyDialogBox.this.hide();
 		}
 	}
+	
+	public static void notifyFrameLoaded() {
+		LoadingWidget.getInstance().hide();
+	}
+	
+	public class MyFrame extends Frame {
+		public MyFrame() {
+			super();
+			hookFremaLoaded((FrameElement)getElement().cast());
+		}
+		
+		public void onLoad() {
+			super.onLoad();
+			LoadingWidget.getInstance().show("Loading " + iName.getText() + " Help ...");
+		}
+	}
+	
+	public native void hookFremaLoaded(FrameElement element) /*-{
+		element.onload = function() {
+			@org.unitime.timetable.gwt.widgets.PageLabel::notifyFrameLoaded()();
+		}
+	}-*/;
 }
