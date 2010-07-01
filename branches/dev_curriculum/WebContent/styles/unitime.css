@@ -1111,6 +1111,10 @@ h1 {
 	border-bottom: 1px solid #9CB0CE;
 }
 
+.unitime-GrayText {
+	color: #777777;
+}
+
 @media print {
 	.unitime-TextBox {
 		color: black;
@@ -1146,6 +1150,12 @@ h1 {
 	}
 	.unitime-NotPrintableBottomLine {
 		border: none;
+	}
+	.unitime-GrayText {
+		color: black;
+	}
+	.unitime-Label {
+		color: black;
 	}
 }
 
