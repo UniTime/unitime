@@ -34,4 +34,6 @@ public interface MenuServiceAsync {
 	public void getSessionInfo(AsyncCallback<HashMap<String, String>> callback) throws MenuException;
 	public void getVersion(AsyncCallback<String> callback) throws MenuException;
 	public void getSolverInfo(AsyncCallback<HashMap<String, String>> callback) throws MenuException;
+
+	public void getHelpPage(String title, AsyncCallback<String> callback) throws MenuException;
 }
