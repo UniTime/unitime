@@ -19,7 +19,6 @@
 
 package org.unitime.timetable.dataexchange;
 
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -31,7 +30,6 @@ import java.util.TreeSet;
 import java.util.Vector;
 
 import org.unitime.commons.Email;
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimetableManager;
@@ -99,26 +97,24 @@ public abstract class EventRelatedImports extends BaseImport {
 	}
 	
 	protected void mailLoadResults(){
-       	Email email = new Email();
-       	
-       	String subject = getEmailSubject(); //"Course Offering Import Results";
-       	String mail = "";
-       	for (Iterator<String> it = changeList.iterator(); it.hasNext(); ){
-       		mail += (String) it.next() + "\n";
-       	}
-    	
     	try {
-			email.sendMail(
-					(String)ApplicationProperties.getProperty("tmtbl.smtp.host", "smtp.purdue.edu"), 
-					(String)ApplicationProperties.getProperty("tmtbl.smtp.domain", "smtp.purdue.edu"), 
-					(String)ApplicationProperties.getProperty("tmtbl.inquiry.sender", "smasops@purdue.edu"), 
-					(manager != null?manager.getEmailAddress():(String)ApplicationProperties.getProperty("tmtbl.inquiry.sender", "smasops@purdue.edu")), 
-					(String)ApplicationProperties.getProperty("tmtbl.inquiry.email","smasops@purdue.edu"), 
-					"Timetabling (Data Import): "+subject, 
-					mail, 
-					new Vector<Object>());
-		} catch (IOException e) {
-			e.printStackTrace();
+    		Email email = new Email();
+    		email.setSubject("UniTime (Data Import): " + getEmailSubject());
+           	
+           	String mail = "";
+           	for (Iterator<String> it = changeList.iterator(); it.hasNext(); ){
+           		mail += (String) it.next() + "\n";
+           	}
+           	email.setText(mail);
+           	
+        	if (manager != null)
+        		email.addRecipient(manager.getEmailAddress(), manager.getName());
+           	
+        	email.addNotifyCC();
+           	
+           	email.send();
+		} catch (Exception e) {
+			sLog.error(e.getMessage(), e);
 		}
 	}
 

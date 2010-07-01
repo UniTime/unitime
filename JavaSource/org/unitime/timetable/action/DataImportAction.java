@@ -25,22 +25,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.DecimalFormat;
-import java.util.Date;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
-import javax.activation.DataHandler;
-import javax.activation.FileDataSource;
-import javax.mail.Authenticator;
-import javax.mail.BodyPart;
-import javax.mail.Multipart;
-import javax.mail.PasswordAuthentication;
-import javax.mail.Transport;
-import javax.mail.Message.RecipientType;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -56,6 +43,7 @@ import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 import org.unitime.commons.Debug;
+import org.unitime.commons.Email;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
@@ -197,50 +185,21 @@ public class DataImportAction extends Action {
         if (op!=null && myForm.getEmail() && myForm.getAddress()!=null && myForm.getAddress().length()>0) {
             myForm.setEmail(false);
             try {
-                InternetAddress from = 
-                    (manager.getEmailAddress()==null?
-                            new InternetAddress(
-                                    ApplicationProperties.getProperty("tmtbl.inquiry.sender",ApplicationProperties.getProperty("tmtbl.contact.email")),
-                                    ApplicationProperties.getProperty("tmtbl.inquiry.sender.name")):
-                            new InternetAddress(manager.getEmailAddress(),manager.getName()));
-                Properties p = ApplicationProperties.getProperties();
-                if (p.getProperty("mail.smtp.host")==null && p.getProperty("tmtbl.smtp.host")!=null)
-                    p.setProperty("mail.smtp.host", p.getProperty("tmtbl.smtp.host"));
-                Authenticator a = null;
-                if (ApplicationProperties.getProperty("tmtbl.mail.user")!=null && ApplicationProperties.getProperty("tmtbl.mail.pwd")!=null) {
-                    a = new Authenticator() {
-                        public PasswordAuthentication getPasswordAuthentication() {
-                            return new PasswordAuthentication(
-                                    ApplicationProperties.getProperty("tmtbl.mail.user"),
-                                    ApplicationProperties.getProperty("tmtbl.mail.pwd"));
-                        }
-                    };
-                }
-                javax.mail.Session mailSession = javax.mail.Session.getDefaultInstance(p, a);
-                MimeMessage mail = new MimeMessage(mailSession);
-                mail.setSubject("Data exchange finished.");
-                Multipart body = new MimeMultipart();
-                MimeBodyPart text = new MimeBodyPart();
-                text.setContent(log.toString()+"<br><br>"+
+            	
+            	Email mail = new Email();
+            	mail.setSubject("Data exchange finished.");
+            	mail.setHTML(log.toString()+"<br><br>"+
                         "This email was automatically generated at "+
                         request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+request.getContextPath()+
                         ", by "+
                         "UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+
-                        " (Univesity Timetabling Application, http://www.unitime.org).","text/html");
-                body.addBodyPart(text);
-                if (myForm.getAddress()!=null) for (StringTokenizer s=new StringTokenizer(myForm.getAddress(),";,\n\r ");s.hasMoreTokens();) 
-                    mail.addRecipient(RecipientType.TO, new InternetAddress(s.nextToken()));
-                if (from!=null)
-                    mail.setFrom(from);
-                if (xmlFile!=null) {
-                    BodyPart attachement = new MimeBodyPart();
-                    attachement.setDataHandler(new DataHandler(new FileDataSource(xmlFile)));
-                    attachement.setFileName(xmlName);
-                    body.addBodyPart(attachement);
-                }
-                mail.setSentDate(new Date());
-                mail.setContent(body);
-                Transport.send(mail);
+                        " (Univesity Timetabling Application, http://www.unitime.org).");
+            	if (myForm.getAddress()!=null) for (StringTokenizer s=new StringTokenizer(myForm.getAddress(),";,\n\r ");s.hasMoreTokens();) 
+                    mail.addRecipient(s.nextToken(), null);
+            	mail.addNotifyCC();
+                if (xmlFile!=null)
+                	mail.addAttachement(xmlFile, xmlName);
+                mail.send();
             } catch (Exception e) {
                 Debug.error(e);
                 ActionMessages errors = new ActionErrors();

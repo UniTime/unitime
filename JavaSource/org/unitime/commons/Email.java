@@ -1,6 +1,6 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -19,126 +19,116 @@
 */
 package org.unitime.commons;
 
-/**
- * Sends anonymous emails
- * @author Heston Fernandes
- */
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.Socket;
-import java.util.StringTokenizer;
-import java.util.Vector;
+import java.io.File;
+import java.io.UnsupportedEncodingException;
+import java.util.Date;
+import java.util.Properties;
+
+import javax.activation.DataHandler;
+import javax.activation.FileDataSource;
+import javax.mail.Authenticator;
+import javax.mail.BodyPart;
+import javax.mail.MessagingException;
+import javax.mail.Multipart;
+import javax.mail.PasswordAuthentication;
+import javax.mail.Transport;
+import javax.mail.Message.RecipientType;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+
+import org.unitime.timetable.ApplicationProperties;
 
 public class Email {
-
-	// Constants
-	private static final int SMTP_PORT = 25;
-	private static final char SMTP_ERROR_CODE1 = '4';
-	private static final char SMTP_ERROR_CODE2 = '5';
-
-
-	/**
-	 * Send Email
-	 * @param host IP Address or Host name
-	 * @param domain Host Domain
-	 * @param sender Sender - must be an email address only (no names)
-	 * @param replyTo Usually same as sender but can be of the form Name&lt;email&gt;
-	 *                 Example: ABC &lt;abc@xyz.com&gt;
-	 * @param recipients Recipients (multiple recipients separated by ;)
-	 * @param subject Subject
-	 * @param maildata Content
-	 * @param sessionTrace Stores transcript of conversation with mail server
-	 * @throws IOException
-	 */
-	public void sendMail(	String host,
-							String domain,
-							String sender,
-							String replyTo,
-							String recipients,
-							String subject,
-							String maildata,
-							Vector sessionTrace ) throws IOException {
-
-		Socket mailSocket;
-		BufferedReader socketIn;
-		DataOutputStream socketOut;
-		String address;
-		StringTokenizer tokenizer;
-
-		mailSocket = new Socket(host, SMTP_PORT);
-		socketIn =new BufferedReader(
-					new InputStreamReader(mailSocket.getInputStream()));
-		socketOut = new DataOutputStream(mailSocket.getOutputStream());
-
-		readReply(socketIn, sessionTrace);
-
-		sendCommand(socketOut, "HELO " + domain, sessionTrace);
-		readReply(socketIn, sessionTrace);
-
-		sendCommand(socketOut, "MAIL FROM: " + sender, sessionTrace);
-		readReply(socketIn, sessionTrace);
-
-		tokenizer = new StringTokenizer(recipients, ";");
-
-		while (tokenizer.hasMoreElements()) {
-			sendCommand( socketOut,
-						 "RCPT TO: " + tokenizer.nextToken(),
-						 sessionTrace );
-			readReply(socketIn, sessionTrace);
-		}
-
-		maildata =  "Date: " + (new java.util.Date()).toString() + "\r\n" +
-					"To: " + recipients + "\r\n" +
-					"From: " + replyTo + "\r\n" +
-					"Reply-To: " + replyTo + "\r\n" +
-					"Subject: " + subject + "\r\n" +
-					"\r\n" +
-					maildata + "\r\n";
-
-		sendCommand(socketOut, "DATA", sessionTrace);
-		readReply(socketIn, sessionTrace);
-
-		sendCommand(socketOut, maildata + "\n.", sessionTrace);
-		readReply(socketIn, sessionTrace);
-
-		sendCommand(socketOut, "QUIT", sessionTrace);
-		readReply(socketIn, sessionTrace);
+	private javax.mail.Session iMailSession = null;
+	private MimeMessage iMail = null;
+	private Multipart iBody = null;
+	
+	public Email() {
+        Properties p = ApplicationProperties.getProperties();
+        if (p.getProperty("mail.smtp.host")==null && p.getProperty("tmtbl.smtp.host")!=null)
+            p.setProperty("mail.smtp.host", p.getProperty("tmtbl.smtp.host"));
+        
+        Authenticator a = null;
+        if (ApplicationProperties.getProperty("tmtbl.mail.user")!=null && ApplicationProperties.getProperty("tmtbl.mail.pwd")!=null) {
+            p.setProperty("mail.smtp.user", ApplicationProperties.getProperty("tmtbl.mail.user"));
+            p.setProperty("mail.smtp.auth", "true");
+            a = new Authenticator() {
+                public PasswordAuthentication getPasswordAuthentication() {
+                    return new PasswordAuthentication(
+                            ApplicationProperties.getProperty("tmtbl.mail.user"),
+                            ApplicationProperties.getProperty("tmtbl.mail.pwd"));
+                }
+            };
+        }
+        iMailSession = javax.mail.Session.getDefaultInstance(p, a);
+        iMail = new MimeMessage(iMailSession);
+        iBody = new MimeMultipart();
+	}
+	
+	public void setSubject(String subject) throws MessagingException {
+		iMail.setSubject(subject);
+	}
+	
+	private void setFrom(String email, String name) throws MessagingException, UnsupportedEncodingException {
+		if (email != null)
+			iMail.setFrom(new InternetAddress(email, name));
+	}
+	
+	private void addRecipient(RecipientType type, String email, String name) throws UnsupportedEncodingException, MessagingException {
+		iMail.addRecipient(type, new InternetAddress(email, name));
+	}
+	
+	public void addRecipient(String email, String name) throws UnsupportedEncodingException, MessagingException {
+		addRecipient(RecipientType.TO, email, name);
+	}
+	
+	public void addRecipientCC(String email, String name) throws UnsupportedEncodingException, MessagingException {
+		addRecipient(RecipientType.CC, email, name);
 	}
 
-	/**
-	 * Sends command to server
-	 * @param out Output Stream
-	 * @param command Command
-	 * @param sessionTrace Stores transcript of conversation with mail server
-	 * @throws IOException
-	 */
-	private void sendCommand(	DataOutputStream out,
-								String command,
-								Vector sessionTrace) throws IOException {
-		out.writeBytes(command + "\r\n");
-		sessionTrace.addElement(command + "\r\n");
+	public void addRecipientBCC(String email, String name) throws UnsupportedEncodingException, MessagingException {
+		addRecipient(RecipientType.BCC, email, name);
+	}
+	
+	public void setText(String message) throws MessagingException {
+        MimeBodyPart text = new MimeBodyPart(); text.setContent(message, "text/plain");
+       iBody.addBodyPart(text);
+	}
+	
+	public void setHTML(String message) throws MessagingException {
+        MimeBodyPart text = new MimeBodyPart(); text.setContent(message, "text/html");
+       iBody.addBodyPart(text);
 	}
 
-	/**
-	 * Reads server responses to commands
-	 * @param reader Object to read response from server
-	 * @param sessionTrace Stores transcript of conversation with mail server
-	 * @throws IOException
-	 */
-	private void readReply(BufferedReader reader, Vector sessionTrace)
-		throws IOException {
+	public void addNotify(RecipientType type) throws MessagingException, UnsupportedEncodingException {
+		iMail.addRecipient(RecipientType.TO, new InternetAddress(
+				ApplicationProperties.getProperty("tmtbl.notif.email", ApplicationProperties.getProperty("tmtbl.notif.commit.email")),
+				ApplicationProperties.getProperty("tmtbl.notif.email.name", "UniTime Operator")));
+	}
 
-		String reply;
-		char statusCode;
+	public void addNotify() throws MessagingException, UnsupportedEncodingException {
+		addNotify(RecipientType.TO);
+	}
+	
+	public void addNotifyCC() throws MessagingException, UnsupportedEncodingException {
+		addNotify(RecipientType.CC);
+	}
+	
+	public void addAttachement(File file, String name) throws MessagingException {
+        BodyPart attachement = new MimeBodyPart();
+        attachement.setDataHandler(new DataHandler(new FileDataSource(file)));
+        attachement.setFileName(name == null ? file.getName() : name);
+        iBody.addBodyPart(attachement);
+	}
 
-		reply = reader.readLine();
-		statusCode = reply.charAt(0);
-		sessionTrace.addElement(reply + "\r\n");
-
-		if ((statusCode == SMTP_ERROR_CODE1) || (statusCode == SMTP_ERROR_CODE2))
-			throw (new IOException("SMTP: " + reply));
+	public void send() throws MessagingException, UnsupportedEncodingException {
+        setFrom(ApplicationProperties.getProperty("tmtbl.inquiry.sender", ApplicationProperties.getProperty("tmtbl.contact.email")),
+        		ApplicationProperties.getProperty("tmtbl.inquiry.sender.name", ApplicationProperties.getProperty("tmtbl.contact.email.name", "UniTime Email")));
+        iMail.setSentDate(new Date());
+        iMail.setContent(iBody);
+        Transport.send(iMail);
 	}
 
 }
