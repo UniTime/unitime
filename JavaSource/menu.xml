@@ -276,9 +276,25 @@
 		<condition>
 			<isAuthenticated/>
 		</condition>
-		<item name="Event Manual" page="tmtbl.help.manual.events" type="property" target="download"/>
-		<item name="Data Entry Manual" page="tmtbl.help.manual.input_data" type="property" target="download"/>
-		<item name="Solver Manual" page="tmtbl.help.manual.solver" type="property" target="download"/>
+		<item name="Event Manual" page="tmtbl.help.manual.events" type="property" target="download">
+			<condition>
+				<canSeeEvents/>
+			</condition>
+		</item>
+		<item name="Data Entry Manual" page="tmtbl.help.manual.input_data" type="property" target="download">
+			<condition>
+				<canSeeCourses/>
+			</condition>
+		</item>
+		<item name="Solver Manual" page="tmtbl.help.manual.solver" type="property" target="download">
+			<condition>
+				<or>
+					<canDoTimetable/>
+					<canAudit/>
+					<canSeeTimetable/>
+				</or>
+			</condition>
+		</item>
 		<item name="Tips &amp; Tricks" page="tmtbl.help.tricks" type="property" target="dialog"/>
 		<item name="FAQ" page="tmtbl.help.faq" type="property" target="dialog"/>
 		<item name="Release Notes" page="tmtbl.help.release_notes" type="property" target="dialog"/>
