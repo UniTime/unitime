@@ -74,7 +74,6 @@ import com.google.gwt.user.client.ui.Widget;
 public class CurriculaCourses extends Composite {
 	private MyFlexTable iTable = null;
 	
-	private boolean iPercent = true;
 	private static NumberFormat NF = NumberFormat.getFormat("##0.0");
 	
 	public static enum Mode {
@@ -90,7 +89,6 @@ public class CurriculaCourses extends Composite {
 		public String getAbbv() { return iAbbv; }
 		public String getName() { return iName; }
 	}
-	private Mode iMode = Mode.NONE;
 	
 	private List<Group> iGroups = new ArrayList<Group>();
 	
@@ -388,7 +386,7 @@ public class CurriculaCourses extends Composite {
 					}
 					menu.addSeparator();
 				}
-				if (iPercent)
+				if (CurriculumCookie.getInstance().getCurriculaCoursesPercent())
 					menu.addItem(new MenuItem("Show Numbers", true, new Command() {
 						@Override
 						public void execute() {
@@ -405,8 +403,8 @@ public class CurriculaCourses extends Composite {
 						}
 					}));
 				for (final Mode m: Mode.values()) {
-					if (iMode == m) continue;
-					menu.addItem(new MenuItem(m == Mode.NONE ? "Hide " + iMode.getName() : "Show " + m.getName(), true, new Command() {
+					if (CurriculumCookie.getInstance().getCurriculaCoursesMode() == m) continue;
+					menu.addItem(new MenuItem(m == Mode.NONE ? "Hide " + CurriculumCookie.getInstance().getCurriculaCoursesMode().getName() : "Show " + m.getName(), true, new Command() {
 						@Override
 						public void execute() {
 							popup.hide();
@@ -463,7 +461,7 @@ public class CurriculaCourses extends Composite {
 								}
 							}
 						}));
-						if (iMode == Mode.LAST)
+						if (CurriculumCookie.getInstance().getCurriculaCoursesMode() == Mode.LAST)
 						menu.addItem(new MenuItem("Copy Last-Like &rarr; Planned (All Classifications" + (getSelectedCount() > 0 ? ", Selected Courses Only" : "") + ")", true, new Command() {
 							@Override
 							public void execute() {
@@ -475,7 +473,7 @@ public class CurriculaCourses extends Composite {
 										if (selectedOnly && !isSelected(row)) continue;
 										MyTextBox text = (MyTextBox)iTable.getWidget(row, x);
 										MyLabel label = (MyLabel)iTable.getWidget(row, x + 1);
-										if (iPercent)
+										if (CurriculumCookie.getInstance().getCurriculaCoursesPercent())
 											text.setShare(label.getLastLikePercent());
 										else
 											text.setExpected(label.getLastLike());
@@ -483,7 +481,7 @@ public class CurriculaCourses extends Composite {
 								}
 							}
 						}));
-						if (iMode == Mode.ENRL)
+						if (CurriculumCookie.getInstance().getCurriculaCoursesMode() == Mode.ENRL)
 						menu.addItem(new MenuItem("Copy Current &rarr; Planned (All Classifications" + (getSelectedCount() > 0 ? ", Selected Courses Only" : "") + ")", true, new Command() {
 							@Override
 							public void execute() {
@@ -495,7 +493,7 @@ public class CurriculaCourses extends Composite {
 										if (selectedOnly && !isSelected(row)) continue;
 										MyTextBox text = (MyTextBox)iTable.getWidget(row, x);
 										MyLabel label = (MyLabel)iTable.getWidget(row, x + 1);
-										if (iPercent)
+										if (CurriculumCookie.getInstance().getCurriculaCoursesPercent())
 											text.setShare(label.getEnrollmentPercent());
 										else
 											text.setExpected(label.getEnrollment());
@@ -503,7 +501,7 @@ public class CurriculaCourses extends Composite {
 								}
 							}
 						}));		
-						if (iMode == Mode.PROJ)
+						if (CurriculumCookie.getInstance().getCurriculaCoursesMode() == Mode.PROJ)
 						menu.addItem(new MenuItem("Copy Projection &rarr; Planned (All Classifications" + (getSelectedCount() > 0 ? ", Selected Courses Only" : "") + ")", true, new Command() {
 							@Override
 							public void execute() {
@@ -515,7 +513,7 @@ public class CurriculaCourses extends Composite {
 										if (selectedOnly && !isSelected(row)) continue;
 										MyTextBox text = (MyTextBox)iTable.getWidget(row, x);
 										MyLabel label = (MyLabel)iTable.getWidget(row, x + 1);
-										if (iPercent)
+										if (CurriculumCookie.getInstance().getCurriculaCoursesPercent())
 											text.setShare(label.getProjectionPercent());
 										else
 											text.setExpected(label.getProjection());
@@ -583,7 +581,7 @@ public class CurriculaCourses extends Composite {
 						}
 						menu.addSeparator();
 					}
-					if (iPercent)
+					if (CurriculumCookie.getInstance().getCurriculaCoursesPercent())
 						menu.addItem(new MenuItem("Show Numbers", true, new Command() {
 							@Override
 							public void execute() {
@@ -600,8 +598,8 @@ public class CurriculaCourses extends Composite {
 							}
 						}));
 					for (final Mode m: Mode.values()) {
-						if (iMode == m) continue;
-						menu.addItem(new MenuItem(m == Mode.NONE ? "Hide " + iMode.getName() : "Show " + m.getName(), true, new Command() {
+						if (CurriculumCookie.getInstance().getCurriculaCoursesMode() == m) continue;
+						menu.addItem(new MenuItem(m == Mode.NONE ? "Hide " + CurriculumCookie.getInstance().getCurriculaCoursesMode().getName() : "Show " + m.getName(), true, new Command() {
 							@Override
 							public void execute() {
 								popup.hide();
@@ -623,7 +621,7 @@ public class CurriculaCourses extends Composite {
 								}
 							}
 						}));
-						if (iMode == Mode.LAST)
+						if (CurriculumCookie.getInstance().getCurriculaCoursesMode() == Mode.LAST)
 						menu.addItem(new MenuItem("Copy Last-Like &rarr; Planned" + (getSelectedCount() > 0 ? " (Selected Courses Only)" : ""), true, new Command() {
 							@Override
 							public void execute() {
@@ -633,14 +631,14 @@ public class CurriculaCourses extends Composite {
 									if (selectedOnly && !isSelected(row)) continue;
 									MyTextBox text = (MyTextBox)iTable.getWidget(row, x);
 									MyLabel label = (MyLabel)iTable.getWidget(row, x + 1);
-									if (iPercent)
+									if (CurriculumCookie.getInstance().getCurriculaCoursesPercent())
 										text.setShare(label.getLastLikePercent());
 									else
 										text.setExpected(label.getLastLike());
 								}
 							}
 						}));
-						if (iMode == Mode.ENRL)
+						if (CurriculumCookie.getInstance().getCurriculaCoursesMode() == Mode.ENRL)
 						menu.addItem(new MenuItem("Copy Current &rarr; Planned" + (getSelectedCount() > 0 ? " (Selected Courses Only)" : ""), true, new Command() {
 							@Override
 							public void execute() {
@@ -650,14 +648,14 @@ public class CurriculaCourses extends Composite {
 									if (selectedOnly && !isSelected(row)) continue;
 									MyTextBox text = (MyTextBox)iTable.getWidget(row, x);
 									MyLabel label = (MyLabel)iTable.getWidget(row, x + 1);
-									if (iPercent)
+									if (CurriculumCookie.getInstance().getCurriculaCoursesPercent())
 										text.setShare(label.getEnrollmentPercent());
 									else
 										text.setExpected(label.getEnrollment());
 								}
 							}
 						}));
-						if (iMode == Mode.PROJ)
+						if (CurriculumCookie.getInstance().getCurriculaCoursesMode() == Mode.PROJ)
 						menu.addItem(new MenuItem("Copy Projection &rarr; Planned" + (getSelectedCount() > 0 ? " (Selected Courses Only)" : ""), true, new Command() {
 							@Override
 							public void execute() {
@@ -667,7 +665,7 @@ public class CurriculaCourses extends Composite {
 									if (selectedOnly && !isSelected(row)) continue;
 									MyTextBox text = (MyTextBox)iTable.getWidget(row, x);
 									MyLabel label = (MyLabel)iTable.getWidget(row, x + 1);
-									if (iPercent)
+									if (CurriculumCookie.getInstance().getCurriculaCoursesPercent())
 										text.setShare(label.getProjectionPercent());
 									else
 										text.setExpected(label.getProjection());
@@ -691,7 +689,7 @@ public class CurriculaCourses extends Composite {
 				}
 			});
 			col++;
-			final HTML m = new HTML(iMode.getAbbv());
+			final HTML m = new HTML(CurriculumCookie.getInstance().getCurriculaCoursesMode().getAbbv());
 			iTable.setWidget(0, col, m);
 			iTable.getFlexCellFormatter().setStyleName(0, col, "unitime-ClickableTableHeader");
 			iTable.getFlexCellFormatter().setWidth(0, col, "5px");
@@ -721,7 +719,7 @@ public class CurriculaCourses extends Composite {
 						}));
 					}
 					menu.addSeparator();
-					if (iPercent)
+					if (CurriculumCookie.getInstance().getCurriculaCoursesPercent())
 						menu.addItem(new MenuItem("Show Numbers", true, new Command() {
 							@Override
 							public void execute() {
@@ -738,8 +736,8 @@ public class CurriculaCourses extends Composite {
 							}
 						}));
 					for (final Mode m: Mode.values()) {
-						if (iMode == m) continue;
-						menu.addItem(new MenuItem(m == Mode.NONE ? "Hide " + iMode.getName() : "Show " + m.getName(), true, new Command() {
+						if (CurriculumCookie.getInstance().getCurriculaCoursesMode() == m) continue;
+						menu.addItem(new MenuItem(m == Mode.NONE ? "Hide " + CurriculumCookie.getInstance().getCurriculaCoursesMode().getName() : "Show " + m.getName(), true, new Command() {
 							@Override
 							public void execute() {
 								popup.hide();
@@ -749,7 +747,7 @@ public class CurriculaCourses extends Composite {
 					}
 					if (iVisibleCourses == null) {
 						menu.addSeparator();
-						menu.addItem(new MenuItem("Sort by " + cl.getText() + " " + iMode.getName(), true, new Command() {
+						menu.addItem(new MenuItem("Sort by " + cl.getText() + " " + CurriculumCookie.getInstance().getCurriculaCoursesMode().getName(), true, new Command() {
 							@Override
 							public void execute() {
 								popup.hide();
@@ -964,8 +962,9 @@ public class CurriculaCourses extends Composite {
 		} else {
 			MyLabel l0 = ((MyLabel)iTable.getWidget(r0 + 1, column));
 			MyLabel l1 = ((MyLabel)iTable.getWidget(r1 + 1, column));
-			Integer i0 = (iMode == Mode.ENRL ? l0.iEnrollment : iMode == Mode.LAST ? l0.iLastLike : l0.iProjection);
-			Integer i1 = (iMode == Mode.ENRL ? l1.iEnrollment : iMode == Mode.LAST ? l1.iLastLike : l0.iProjection);
+			Mode mode = CurriculumCookie.getInstance().getCurriculaCoursesMode();
+			Integer i0 = (mode == Mode.ENRL ? l0.iEnrollment : mode == Mode.LAST ? l0.iLastLike : l0.iProjection);
+			Integer i1 = (mode == Mode.ENRL ? l1.iEnrollment : mode == Mode.LAST ? l1.iLastLike : l0.iProjection);
 			return - (i0 == null ? new Integer(0) : i0).compareTo(i1 == null ? new Integer(0) : i1);
 		}
 	}
@@ -1174,16 +1173,16 @@ public class CurriculaCourses extends Composite {
 	}
 	
 	public void expectedChanged(int col, int expected) {
-		if (!iPercent) {
+		if (!CurriculumCookie.getInstance().getCurriculaCoursesPercent()) {
 			for (int row = 1; row < iTable.getRowCount(); row++) {
 				((MyTextBox)iTable.getWidget(row, 2 + 2 * col)).update();
 			}
 		}
 	}
 	
-	public void setPercent(boolean percent) {
-		if (iPercent == percent) return;
-		iPercent = percent;
+	private void setPercent(boolean percent) {
+		if (CurriculumCookie.getInstance().getCurriculaCoursesPercent() == percent) return;
+		CurriculumCookie.getInstance().setCurriculaCoursesPercent(percent);
 		for (int row = 1; row < iTable.getRowCount(); row++) {
 			for (int col = 0; col < iClassifications.getClassifications().size(); col++) {
 				((MyTextBox)iTable.getWidget(row, 2 + 2 * col)).update();
@@ -1192,10 +1191,10 @@ public class CurriculaCourses extends Composite {
 		}
 	}
 	
-	public boolean getPercent() { return iPercent; }
+	private boolean getPercent() { return CurriculumCookie.getInstance().getCurriculaCoursesPercent(); }
 	
-	public void setMode(Mode mode) {
-		iMode = mode;
+	private void setMode(Mode mode) {
+		CurriculumCookie.getInstance().setCurriculaCoursesMode(mode);
 		for (int col = 0; col < iClassifications.getClassifications().size(); col++) {
 			((HTML)iTable.getWidget(0, 3 + 2 * col)).setHTML(mode.getAbbv());
 		}
@@ -1206,7 +1205,7 @@ public class CurriculaCourses extends Composite {
 		}
 	}
 	
-	public Mode getMode() { return iMode; }
+	private Mode getMode() { return CurriculumCookie.getInstance().getCurriculaCoursesMode(); }
 
 	public void setVisible(int col, boolean visible) {
 		for (int row = 0; row < iTable.getRowCount(); row++) {
@@ -1233,14 +1232,14 @@ public class CurriculaCourses extends Composite {
 		}
 		
 		public void update() {
-			switch (iMode) {
+			switch (CurriculumCookie.getInstance().getCurriculaCoursesMode()) {
 			case NONE: // None
 				setText("");
 				break;
 			case ENRL: // Enrollment
 				if (iEnrollment == null || iEnrollment == 0) {
 					setText("");
-				} else if (iPercent) {
+				} else if (CurriculumCookie.getInstance().getCurriculaCoursesPercent()) {
 					Integer total = iClassifications.getEnrollment(iColumn);
 					setText(total == null ? "N/A" : NF.format(100.0 * iEnrollment / total) + "%");
 				} else {
@@ -1250,7 +1249,7 @@ public class CurriculaCourses extends Composite {
 			case LAST: // Last-like
 				if (iLastLike == null || iLastLike == 0) {
 					setText("");
-				} else if (iPercent) {
+				} else if (CurriculumCookie.getInstance().getCurriculaCoursesPercent()) {
 					Integer total = iClassifications.getLastLike(iColumn);
 					setText(total == null ? "N/A" : NF.format(100.0 * iLastLike / total) + "%");
 				} else {
@@ -1260,7 +1259,7 @@ public class CurriculaCourses extends Composite {
 			case PROJ: // Projection
 				if (iProjection == null || iProjection == 0) {
 					setText("");
-				} else if (iPercent) {
+				} else if (CurriculumCookie.getInstance().getCurriculaCoursesPercent()) {
 					Integer total = iClassifications.getProjection(iColumn);
 					setText(total == null ? "N/A" : NF.format(100.0 * iProjection / total) + "%");
 				} else {
@@ -1356,7 +1355,7 @@ public class CurriculaCourses extends Composite {
 		public void update() {
 			if (iShare == null) 
 				setText("");
-			else if (iPercent)
+			else if (CurriculumCookie.getInstance().getCurriculaCoursesPercent())
 				setText(NF.format(100.0 * iShare) + "%");
 			else {
 				Integer exp = iClassifications.getExpected(iColumn);
@@ -1768,7 +1767,7 @@ public class CurriculaCourses extends Composite {
 	}
 	
 	public boolean canShowStudentsTable(int row) {
-		if (iMode == Mode.NONE) return false;
+		if (CurriculumCookie.getInstance().getCurriculaCoursesMode() == Mode.NONE) return false;
 		if (row < 1 || row >= iTable.getRowCount()) return false;
 		String course = ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getCourse();
 		if (iLastCourses == null || !iLastCourses.containsKey(course)) return false;
@@ -1786,7 +1785,7 @@ public class CurriculaCourses extends Composite {
 		private boolean iCanShow = false;
 		
 		private int count(CurriculumStudentsInterface c, Set<Long> students) {
-			if (iMode != Mode.PROJ || c == null) return students.size();
+			if (CurriculumCookie.getInstance().getCurriculaCoursesMode() != Mode.PROJ || c == null) return students.size();
 			return c.countProjectedStudents(students);
 		}
 		
@@ -1803,7 +1802,7 @@ public class CurriculaCourses extends Composite {
 			CurriculumStudentsInterface[] totals = iLastCourses.get("");
 			if (thisCourse == null) return;
 			
-			iP.add(new Label("Comparing " + course + " " + iMode.getName().toLowerCase().replace(" enrollment", "") + " students with the other selected courses:"));
+			iP.add(new Label("Comparing " + course + " " + CurriculumCookie.getInstance().getCurriculaCoursesMode().getName().toLowerCase().replace(" enrollment", "") + " students with the other selected courses:"));
 			iP.add(iT);
 			setWidget(iP);
 			
@@ -1841,7 +1840,7 @@ public class CurriculaCourses extends Composite {
 			for (int c = 0; c < iClassifications.getClassifications().size(); c++) {
 				CurriculumStudentsInterface tc = totals[c];
 				if (iClassifications.getExpected(c) == null) continue;
-				Set<Long> thisEnrollment = (thisCourse[c] == null ? null : (iMode == Mode.ENRL ? thisCourse[c].getEnrolledStudents() : thisCourse[c].getLastLikeStudents()));
+				Set<Long> thisEnrollment = (thisCourse[c] == null ? null : (CurriculumCookie.getInstance().getCurriculaCoursesMode() == Mode.ENRL ? thisCourse[c].getEnrolledStudents() : thisCourse[c].getLastLikeStudents()));
 				if (thisEnrollment != null && count(tc,thisEnrollment) != 0) {
 					total += thisEnrollment.size();
 					Set<Long> sharedWithOneOther = new HashSet<Long>();
@@ -1851,7 +1850,7 @@ public class CurriculaCourses extends Composite {
 					Set<Long> notShared = new HashSet<Long>(thisEnrollment);
 					row = 0;
 					for (CurriculumStudentsInterface[] o: other) {
-						Set<Long> enrl = (o == null || o[c] == null ? null : iMode == Mode.ENRL  ? o[c].getEnrolledStudents() : o[c].getLastLikeStudents());
+						Set<Long> enrl = (o == null || o[c] == null ? null : CurriculumCookie.getInstance().getCurriculaCoursesMode() == Mode.ENRL  ? o[c].getEnrolledStudents() : o[c].getLastLikeStudents());
 						if (enrl == null) {
 							sharedWithAll.clear();
 							row++;
@@ -1872,28 +1871,29 @@ public class CurriculaCourses extends Composite {
 							if (enrl.contains(i.next())) i.remove();
 						if (!share.isEmpty() && count(tc, share) != 0) {
 							totalC[row] += share.size();
-							iT.setText(6 + row, 1 + column, (iPercent ? NF.format(100.0 * count(tc, share) / count(tc,thisEnrollment)) + "%" : "" + count(tc,share)));
+							iT.setText(6 + row, 1 + column, (CurriculumCookie.getInstance().getCurriculaCoursesPercent() ? NF.format(100.0 * count(tc, share) / count(tc,thisEnrollment)) + "%" : "" + count(tc,share)));
 						}
 						row++;
 					}
+					boolean percent = CurriculumCookie.getInstance().getCurriculaCoursesPercent();
 					if (!sharedWithOneOther.isEmpty() && count(tc,sharedWithOneOther) != 0) {
-						iT.setText(1, 1 + column, (iPercent ? NF.format(100.0 * count(tc,sharedWithOneOther) / count(tc,thisEnrollment)) + "%" : "" + count(tc,sharedWithOneOther)));
+						iT.setText(1, 1 + column, (percent ? NF.format(100.0 * count(tc,sharedWithOneOther) / count(tc,thisEnrollment)) + "%" : "" + count(tc,sharedWithOneOther)));
 						has1 = true;
 					}
 					if (!sharedWithTwoOther.isEmpty() && count(tc,sharedWithTwoOther) != 0) {
-						iT.setText(2, 1 + column, (iPercent ? NF.format(100.0 * count(tc,sharedWithTwoOther) / count(tc,thisEnrollment)) + "%" : "" + count(tc,sharedWithTwoOther)));
+						iT.setText(2, 1 + column, (percent ? NF.format(100.0 * count(tc,sharedWithTwoOther) / count(tc,thisEnrollment)) + "%" : "" + count(tc,sharedWithTwoOther)));
 						has2 = true;
 					}
 					if (!sharedWithThreeOther.isEmpty() && count(tc,sharedWithThreeOther) != 0) {
-						iT.setText(3, 1 + column, (iPercent ? NF.format(100.0 * count(tc,sharedWithThreeOther) / count(tc,thisEnrollment)) + "%" : "" + count(tc,sharedWithThreeOther)));
+						iT.setText(3, 1 + column, (percent ? NF.format(100.0 * count(tc,sharedWithThreeOther) / count(tc,thisEnrollment)) + "%" : "" + count(tc,sharedWithThreeOther)));
 						has3 = true;
 					}
 					if (!sharedWithAll.isEmpty() && count(tc,sharedWithAll) != 0) {
-						iT.setText(4, 1 + column, (iPercent ? NF.format(100.0 * count(tc,sharedWithAll) / count(tc,thisEnrollment)) + "%" : "" + count(tc,sharedWithAll)));
+						iT.setText(4, 1 + column, (percent ? NF.format(100.0 * count(tc,sharedWithAll) / count(tc,thisEnrollment)) + "%" : "" + count(tc,sharedWithAll)));
 						hasAll = true;
 					}
 					if (!notShared.isEmpty() && count(tc,notShared) != 0) {
-						iT.setText(5, 1 + column, (iPercent ? NF.format(100.0 * count(tc,notShared) / count(tc,thisEnrollment)) + "%" : "" + count(tc,notShared)));
+						iT.setText(5, 1 + column, (percent ? NF.format(100.0 * count(tc,notShared) / count(tc,thisEnrollment)) + "%" : "" + count(tc,notShared)));
 						hasNone = true;
 					}
 				}

@@ -314,7 +314,7 @@ public class CurriculaCourseSelectionBox extends Composite implements Validator,
 			iClassesPanel.setStyleName("unitime-ScrollPanel-inner");
 			iCourseDetailsTabPanel.add(iClassesPanel, new HTML(MESSAGES.courseSelectionClasses(), false));
 			
-			iCurricula = new CourseCurriculaTable(true, false, false);
+			iCurricula = new CourseCurriculaTable(false, false);
 			iCurricula.setMessage(MESSAGES.courseSelectionNoCourseSelected());
 			iCurriculaPanel = new ScrollPanel(iCurricula);
 			iCurriculaPanel.setStyleName("unitime-ScrollPanel-inner");

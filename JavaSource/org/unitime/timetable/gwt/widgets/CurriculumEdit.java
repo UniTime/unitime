@@ -115,6 +115,7 @@ public class CurriculumEdit extends Composite {
 			iSave[i].setWidth("75px");
 			iDelete[i].setWidth("75px");
 			iBack[i].setWidth("75px");
+			iPrint[i].setWidth("75px");
 			iSaveError[i].setStyleName("unitime-ErrorMessage");
 			iButtons[i].add(iSave[i]);
 			iSave[i].getElement().getStyle().setMarginRight(4, Unit.PX);

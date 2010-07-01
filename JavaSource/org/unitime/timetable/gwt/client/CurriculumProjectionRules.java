@@ -33,6 +33,7 @@ import org.unitime.timetable.gwt.shared.CurriculaException;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.AcademicAreaInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.AcademicClassificationInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.MajorInterface;
+import org.unitime.timetable.gwt.widgets.CurriculumCookie;
 import org.unitime.timetable.gwt.widgets.LoadingWidget;
 
 import com.google.gwt.core.client.GWT;
@@ -79,8 +80,6 @@ public class CurriculumProjectionRules extends Composite {
 	private HorizontalPanel[] iHeaderPanel = null;
 	
 	private boolean iEditable = false;
-	private boolean iPercent = true;
-	private boolean iShowLastLike = true;
 	
 	private HashMap<AcademicAreaInterface, HashMap<MajorInterface, HashMap<AcademicClassificationInterface, Number[]>>> iRules = null;
 	
@@ -368,12 +367,12 @@ public class CurriculumProjectionRules extends Composite {
 			public void onClick(ClickEvent event) {
 				final PopupPanel popup = new PopupPanel(true);
 				MenuBar menu = new MenuBar(true);
-				if (iPercent)
+				if (CurriculumCookie.getInstance().getCurriculumProjectionRulesPercent())
 					menu.addItem(new MenuItem("Show Numbers", true, new Command() {
 						@Override
 						public void execute() {
 							popup.hide();
-							iPercent = false;
+							CurriculumCookie.getInstance().setCurriculumProjectionRulesPercent(false);
 							updateAll();
 						}
 					}));
@@ -382,16 +381,16 @@ public class CurriculumProjectionRules extends Composite {
 						@Override
 						public void execute() {
 							popup.hide();
-							iPercent = true;
+							CurriculumCookie.getInstance().setCurriculumProjectionRulesPercent(true);
 							updateAll();
 						}
 					}));
-				if (iShowLastLike)
+				if (CurriculumCookie.getInstance().getCurriculumProjectionRulesShowLastLike())
 					menu.addItem(new MenuItem("Hide Last-Like Enrollments", true, new Command() {
 						@Override
 						public void execute() {
 							popup.hide();
-							iShowLastLike = false;
+							CurriculumCookie.getInstance().setCurriculumProjectionRulesShowLastLike(false);
 							updateAll();
 						}
 					}));
@@ -400,7 +399,7 @@ public class CurriculumProjectionRules extends Composite {
 						@Override
 						public void execute() {
 							popup.hide();
-							iShowLastLike = true;
+							CurriculumCookie.getInstance().setCurriculumProjectionRulesShowLastLike(true);
 							updateAll();
 						}
 					}));
@@ -501,7 +500,7 @@ public class CurriculumProjectionRules extends Composite {
 			
 			iTextBox = new TextBox();
 			iTextBox.setWidth("60px");
-			iTextBox.setStyleName("gwt-SuggestBox");
+			iTextBox.setStyleName("unitime-TextBox");
 			iTextBox.setMaxLength(6);
 			iTextBox.setTextAlignment(TextBox.ALIGN_RIGHT);
 			iTextBox.addChangeHandler(new ChangeHandler() {
@@ -608,12 +607,16 @@ public class CurriculumProjectionRules extends Composite {
 		public void update() {
 			float projection = iRow.getProjection(iClasf);
 			int lastLike = iRow.getLastLike(iClasf);
-			if (iPercent) {
+			if (CurriculumCookie.getInstance().getCurriculumProjectionRulesPercent()) {
 				iTextBox.setText(NF.format(100.0 * projection) + "%");
 			} else {
 				iTextBox.setText(String.valueOf(Math.round(projection * lastLike)));
 			}
-			iTextBox.getElement().getStyle().setColor(iRow.isDefaultProjection(iClasf) ? "#777777" : null);
+			if (iRow.isDefaultProjection(iClasf))
+				iTextBox.addStyleName("unitime-GrayText");
+			else
+				iTextBox.removeStyleName("unitime-GrayText");
+			//iTextBox.getElement().getStyle().setColor(iRow.isDefaultProjection(iClasf) ? "#777777" : null);
 			setVisible(lastLike > 0);
 			if (iCellEditable != iEditable) {
 				iCellEditable = iEditable;
@@ -626,8 +629,8 @@ public class CurriculumProjectionRules extends Composite {
 					iTextBox.getElement().getStyle().setBackgroundColor("transparent");
 				}
 			}
-			iFrontLabel.setVisible(iShowLastLike && !iPercent);
-			iRearLabel.setVisible(iShowLastLike && iPercent);
+			iFrontLabel.setVisible(CurriculumCookie.getInstance().getCurriculumProjectionRulesShowLastLike() && !CurriculumCookie.getInstance().getCurriculumProjectionRulesPercent());
+			iRearLabel.setVisible(CurriculumCookie.getInstance().getCurriculumProjectionRulesShowLastLike() && CurriculumCookie.getInstance().getCurriculumProjectionRulesPercent());
 			if (projection == 1.0f) {
 				iFrontLabel.setHTML("&nbsp;");
 			} else {

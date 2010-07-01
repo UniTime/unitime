@@ -86,7 +86,6 @@ public class CourseCurriculaTable extends Composite {
 	
 	private Long iOfferingId = null;
 	private String iCourseName = null;
-	private boolean iVisible = true;
 	private boolean[] iUsed = null;
 	private HashSet<Long> iExpandedAreas = new HashSet<Long>();
 	private HashSet<Long> iAllAreas = new HashSet<Long>();
@@ -112,8 +111,6 @@ public class CourseCurriculaTable extends Composite {
 		public String getName() { return iName; }
 	}
 
-	private Type iType = Type.EXP;
-	
 	private static int sRowTypeHeader = 0;
 	private static int sRowTypeArea = 1;
 	private static int sRowTypeCurriculum = 2;
@@ -121,16 +118,15 @@ public class CourseCurriculaTable extends Composite {
 	private static int sRowTypeOther = 4;
 	private static int sRowTypeTotal = 5;
 	
-	public CourseCurriculaTable(boolean visible, boolean editable, boolean showHeader) {
-		iVisible = visible;
+	public CourseCurriculaTable(boolean editable, boolean showHeader) {
 		iEditable = editable;
 		
 		iCurriculaPanel = new VerticalPanel();
 		iCurriculaPanel.setWidth("100%");
-
+		
 		if (showHeader) {
 			HorizontalPanel header = new HorizontalPanel();
-			iCurriculaImage = new Image(iVisible ? RESOURCES.treeOpen() : RESOURCES.treeClosed());
+			iCurriculaImage = new Image(CurriculumCookie.getInstance().getCurriculaCoursesDetails() ? RESOURCES.treeOpen() : RESOURCES.treeClosed());
 			iCurriculaImage.getElement().getStyle().setCursor(Cursor.POINTER);
 			iCurriculaImage.setVisible(false);
 			header.add(iCurriculaImage);
@@ -145,19 +141,19 @@ public class CourseCurriculaTable extends Composite {
 			iCurriculaImage.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
-					iVisible = !iVisible;
-					iCurriculaImage.setResource(iVisible ? RESOURCES.treeOpen() : RESOURCES.treeClosed());
+					CurriculumCookie.getInstance().setCurriculaCoursesDetails(!CurriculumCookie.getInstance().getCurriculaCoursesDetails());
+					iCurriculaImage.setResource(CurriculumCookie.getInstance().getCurriculaCoursesDetails() ? RESOURCES.treeOpen() : RESOURCES.treeClosed());
 					if (iCurricula.getRowCount() > 2) {
 						for (int row = 1; row < iCurricula.getRowCount() - 1; row++) {
 							int rowType = iRowTypes.get(row);
-							if (iVisible && (rowType == sRowTypeCurriculum || rowType == sRowTypeOtherArea)) continue;
+							if (CurriculumCookie.getInstance().getCurriculaCoursesDetails() && (rowType == sRowTypeCurriculum || rowType == sRowTypeOtherArea)) continue;
 							int hc = getHeaderCols(row);
 							for (int col = 0; col < iClassifications.size()  + hc; col++) {
-								iCurricula.getCellFormatter().setVisible(row, col, iVisible && (col < hc || iUsed[col - hc]));
+								iCurricula.getCellFormatter().setVisible(row, col, CurriculumCookie.getInstance().getCurriculaCoursesDetails() && (col < hc || iUsed[col - hc]));
 							}
 						}
 						for (int col = 0; col < iClassifications.size()  + 2; col++) {
-							iCurricula.getCellFormatter().setStyleName(iCurricula.getRowCount() - 1, col, iVisible ? "unitime-TotalRow" : null );
+							iCurricula.getCellFormatter().setStyleName(iCurricula.getRowCount() - 1, col, CurriculumCookie.getInstance().getCurriculaCoursesDetails() ? "unitime-TotalRow" : null );
 						}
 					}
 				}
@@ -176,7 +172,7 @@ public class CourseCurriculaTable extends Composite {
 		iCurricula = new MyFlexTable();
 		tableAndHint.add(iCurricula);
 		
-		iHint = new Label("Showing " + iType.getName() + " Enrollment");
+		iHint = new Label("Showing " + CurriculumCookie.getInstance().getCourseCurriculaTableType().getName() + " Enrollment");
 		iHint.setStyleName("unitime-Hint");
 		iHint.setVisible(false);
 		tableAndHint.add(iHint);
@@ -185,8 +181,8 @@ public class CourseCurriculaTable extends Composite {
 		iHint.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				iType = Type.values()[(iType.ordinal() + 1) % Type.values().length];
-				iHint.setText("Showing " + iType.getName() + " Enrollment");
+				CurriculumCookie.getInstance().setCourseCurriculaTableType(Type.values()[(CurriculumCookie.getInstance().getCourseCurriculaTableType().ordinal() + 1) % Type.values().length]);
+				iHint.setText("Showing " + CurriculumCookie.getInstance().getCourseCurriculaTableType().getName() + " Enrollment");
 				if (iCurricula.getRowCount() > 1) {
 					for (int row = 1; row < iCurricula.getRowCount(); row++) {
 						for (int col = 0; col < iClassifications.size(); col++) {
@@ -194,7 +190,7 @@ public class CourseCurriculaTable extends Composite {
 						}
 					}
 					((MyLabel)iCurricula.getWidget(iCurricula.getRowCount() - 1, 1)).refresh();
-					((Label)iCurricula.getWidget(iCurricula.getRowCount() - 1, 0)).setText("Total " + iType.getName() + " Enrollment");
+					((Label)iCurricula.getWidget(iCurricula.getRowCount() - 1, 0)).setText("Total " + CurriculumCookie.getInstance().getCourseCurriculaTableType().getName() + " Enrollment");
 				}
 			}
 		});
@@ -204,7 +200,7 @@ public class CourseCurriculaTable extends Composite {
 		iErrorLabel.setStyleName("unitime-ErrorMessage");
 		iCurriculaPanel.add(iErrorLabel);
 		iErrorLabel.setVisible(false);
-		
+				
 		initWidget(iCurriculaPanel);
 	}
 	
@@ -312,31 +308,31 @@ public class CourseCurriculaTable extends Composite {
 			public void onClick(final ClickEvent event) {
 				final PopupPanel popup = new PopupPanel(true);
 				MenuBar menu = new MenuBar(true);
-				MenuItem showHide = new MenuItem(iVisible ? "Hide Details" : "Show Details", true, new Command() {
+				MenuItem showHide = new MenuItem(CurriculumCookie.getInstance().getCurriculaCoursesDetails() ? "Hide Details" : "Show Details", true, new Command() {
 					@Override
 					public void execute() {
 						popup.hide();
-						iVisible = !iVisible;
+						CurriculumCookie.getInstance().setCurriculaCoursesDetails(!CurriculumCookie.getInstance().getCurriculaCoursesDetails());
 						if (iCurriculaImage != null)
-							iCurriculaImage.setResource(iVisible ? RESOURCES.treeOpen() : RESOURCES.treeClosed());
+							iCurriculaImage.setResource(CurriculumCookie.getInstance().getCurriculaCoursesDetails() ? RESOURCES.treeOpen() : RESOURCES.treeClosed());
 						if (iCurricula.getRowCount() > 2) {
 							for (int row = 1; row < iCurricula.getRowCount() - 1; row++) {
 								int rowType = iRowTypes.get(row);
-								if (iVisible && (rowType == sRowTypeCurriculum || rowType == sRowTypeOtherArea)) continue;
+								if (CurriculumCookie.getInstance().getCurriculaCoursesDetails() && (rowType == sRowTypeCurriculum || rowType == sRowTypeOtherArea)) continue;
 								int hc = getHeaderCols(row);
 								for (int col = 0; col < iClassifications.size()  + hc; col++) {
-									iCurricula.getCellFormatter().setVisible(row, col, iVisible && (col < hc || iUsed[col - hc]));
+									iCurricula.getCellFormatter().setVisible(row, col, CurriculumCookie.getInstance().getCurriculaCoursesDetails() && (col < hc || iUsed[col - hc]));
 								}
 							}
 							for (int col = 0; col < iClassifications.size()  + 2; col++) {
-								iCurricula.getCellFormatter().setStyleName(iCurricula.getRowCount() - 1, col, iVisible ? "unitime-TotalRow" : null );
+								iCurricula.getCellFormatter().setStyleName(iCurricula.getRowCount() - 1, col, CurriculumCookie.getInstance().getCurriculaCoursesDetails() ? "unitime-TotalRow" : null );
 							}
 						}
 					}
 				});
 				showHide.getElement().getStyle().setCursor(Cursor.POINTER);
 				menu.addItem(showHide);
-				if (iCurricula.getRowCount() > 2 && iVisible) {
+				if (iCurricula.getRowCount() > 2 && CurriculumCookie.getInstance().getCurriculaCoursesDetails()) {
 					boolean canExpand = false, canCollapse = false;
 					for (int row = 1; row < iCurricula.getRowCount() - 1; row++) {
 						int rowType = iRowTypes.get(row);
@@ -396,7 +392,7 @@ public class CourseCurriculaTable extends Composite {
 								@Override
 								public void execute() {
 									popup.hide();
-									iType = t;
+									CurriculumCookie.getInstance().setCourseCurriculaTableType(t);
 									iHint.setText("Showing " + t.getName() + " Enrollment");
 									if (iCurricula.getRowCount() > 1) {
 										for (int row = 1; row < iCurricula.getRowCount(); row++) {
@@ -410,7 +406,7 @@ public class CourseCurriculaTable extends Composite {
 									}
 								}
 							});
-					if (t == iType)
+					if (t == CurriculumCookie.getInstance().getCourseCurriculaTableType())
 						item.getElement().getStyle().setColor("#666666");
 					item.getElement().getStyle().setCursor(Cursor.POINTER);
 					menu.addItem(item);
@@ -850,20 +846,20 @@ public class CourseCurriculaTable extends Composite {
 		iRowClicks.add(new ChainedCommand() {
 			@Override
 			public void execute(ConditionalCommand next) {
-				iVisible = !iVisible;
+				CurriculumCookie.getInstance().setCurriculaCoursesDetails(!CurriculumCookie.getInstance().getCurriculaCoursesDetails());
 				if (iCurriculaImage != null)
-					iCurriculaImage.setResource(iVisible ? RESOURCES.treeOpen() : RESOURCES.treeClosed());
+					iCurriculaImage.setResource(CurriculumCookie.getInstance().getCurriculaCoursesDetails() ? RESOURCES.treeOpen() : RESOURCES.treeClosed());
 				if (iCurricula.getRowCount() > 2) {
 					for (int row = 1; row < iCurricula.getRowCount() - 1; row++) {
 						int rowType = iRowTypes.get(row);
-						if (iVisible && (rowType == sRowTypeCurriculum || rowType == sRowTypeOtherArea)) continue;
+						if (CurriculumCookie.getInstance().getCurriculaCoursesDetails() && (rowType == sRowTypeCurriculum || rowType == sRowTypeOtherArea)) continue;
 						int hc = getHeaderCols(row);
 						for (int col = 0; col < iClassifications.size()  + hc; col++) {
-							iCurricula.getCellFormatter().setVisible(row, col, iVisible && (col < hc || iUsed[col - hc]));
+							iCurricula.getCellFormatter().setVisible(row, col, CurriculumCookie.getInstance().getCurriculaCoursesDetails() && (col < hc || iUsed[col - hc]));
 						}
 					}
 					for (int col = 0; col < iClassifications.size()  + 2; col++) {
-						iCurricula.getCellFormatter().setStyleName(iCurricula.getRowCount() - 1, col, iVisible ? "unitime-TotalRow" : null );
+						iCurricula.getCellFormatter().setStyleName(iCurricula.getRowCount() - 1, col, CurriculumCookie.getInstance().getCurriculaCoursesDetails() ? "unitime-TotalRow" : null );
 					}
 				}
 				if (next != null)
@@ -876,7 +872,7 @@ public class CourseCurriculaTable extends Composite {
 		});
 		iRowTypes.add(sRowTypeTotal);
 		iCurricula.getFlexCellFormatter().setColSpan(row, col, 2);
-		iCurricula.setWidget(row, col++, new Label("Total " + iType.getName() + " Enrollment", false));
+		iCurricula.setWidget(row, col++, new Label("Total " + CurriculumCookie.getInstance().getCourseCurriculaTableType().getName() + " Enrollment", false));
 		int[] tx = new int[] {0, 0, 0, 0};
 		for (int i = 0; i < total.length; i ++)
 			for (int j = 0; j < 4; j++)
@@ -898,7 +894,7 @@ public class CourseCurriculaTable extends Composite {
 		}
 		
 		// Hide all lines if requested
-		if (!iVisible) {
+		if (!CurriculumCookie.getInstance().getCurriculaCoursesDetails()) {
 			for (int r = 1; r < iCurricula.getRowCount() - 1; r++) {
 				int hc = getHeaderCols(r);
 				for (int c = 0; c < hc + iClassifications.size(); c++) {
@@ -922,47 +918,49 @@ public class CourseCurriculaTable extends Composite {
 		}
 		
 		boolean typeChanged = false;
-		if (iType == Type.EXP && tx[0] == 0) {
+		Type type = CurriculumCookie.getInstance().getCourseCurriculaTableType();
+		if (type == Type.EXP && tx[0] == 0) {
 			if (tx[2] > 0) {
-				iType = Type.ENRL;
+				type = Type.ENRL;
 				typeChanged = true;
 			} else if (tx[1] > 0) {
-				iType = Type.LAST;
+				type = Type.LAST;
 				typeChanged = true;
 			}
 		}
-		if (iType == Type.ENRL && tx[2] == 0) {
+		if (type == Type.ENRL && tx[2] == 0) {
 			if (tx[0] > 0) {
-				iType = Type.EXP;
+				type = Type.EXP;
 				typeChanged = true;
 			} else if (tx[1] > 0) {
-				iType = Type.LAST;
+				type = Type.LAST;
 				typeChanged = true;
 			}
 		}
-		if (iType == Type.LAST && tx[1] == 0) {
+		if (type == Type.LAST && tx[1] == 0) {
 			if (tx[0] > 0) {
-				iType = Type.EXP;
+				type = Type.EXP;
 				typeChanged = true;
 			} else if (tx[2] > 0) {
-				iType = Type.ENRL;
+				type = Type.ENRL;
 				typeChanged = true;
 			}
 		}
-		if (iType == Type.PROJ && tx[3] == 0) {
+		if (type == Type.PROJ && tx[3] == 0) {
 			if (tx[0] > 0) {
-				iType = Type.EXP;
+				type = Type.EXP;
 				typeChanged = true;
 			} else if (tx[1] > 0) {
-				iType = Type.ENRL;
+				type = Type.ENRL;
 				typeChanged = true;
 			} else if (tx[2] > 0) {
-				iType = Type.LAST;
+				type = Type.LAST;
 				typeChanged = true;
 			}
 		}
 		if (typeChanged) {
-			iHint.setText("Showing " + iType.getName() + " Enrollment");
+			CurriculumCookie.getInstance().setCourseCurriculaTableType(type);
+			iHint.setText("Showing " + type.getName() + " Enrollment");
 			if (iCurricula.getRowCount() > 1) {
 				for (int r = 1; r < iCurricula.getRowCount(); r++) {
 					int hc = getHeaderCols(r);
@@ -971,7 +969,7 @@ public class CourseCurriculaTable extends Composite {
 					}
 				}
 				((MyLabel)iCurricula.getWidget(iCurricula.getRowCount() - 1, 1)).refresh();
-				((Label)iCurricula.getWidget(iCurricula.getRowCount() - 1, 0)).setText("Total " + iType.getName() + " Enrollment");
+				((Label)iCurricula.getWidget(iCurricula.getRowCount() - 1, 0)).setText("Total " + type.getName() + " Enrollment");
 			}
 		}
 		
@@ -1111,7 +1109,7 @@ public class CourseCurriculaTable extends Composite {
 		}
 
 		public void refresh() {
-			switch (iType) {
+			switch (CurriculumCookie.getInstance().getCourseCurriculaTableType()) {
 			case EXP:
 				showExpected();
 				break;
