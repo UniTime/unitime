@@ -23,59 +23,26 @@
 
 <tiles:importAttribute name="showNavigation" scope="request"/>	
 
-<%--			
-	<BR>
-	<TABLE border="0" width="100%" cellspacing="0" cellpadding="0">
-		<TR>
-			<TD width="200" nowrap>
-				<DIV id="loading" style="visibility:hidden;display:none">
-					&nbsp; &nbsp; &nbsp; 
-					<IMG align="middle" vspace="5" border="0" src="images/loading.gif">
-				</DIV>
-			</TD>
-
-			<logic:notEqual name="helpFile" value=""> 
-			<TD align="center" width="40">
-				<A href='help.do?helpFile=<%=request.getAttribute("helpFile").toString()%>' accesskey="H" title="Help (Alt+H)" target="helpWindow"><IMG border="0" align="middle" src="images/Help24.gif" title="Help (Alt+H)" alt="Help (Alt+H)"></A>
-			</TD>
-			</logic:notEqual>
-		
-			<TD height="45" align="right" class="WelcomeHead" valign='middle'>
-				<tt:wiki-help><bean:write scope="request" name="title"/></tt:wiki-help>
-			</TD>
-			
-			<TD width="55" align="right">
-				<IMG align="middle" src="images/logosmall.jpg" border="0">
-			</TD>
-			
-			<TD width="40">&nbsp;</TD>
-		</TR>
-	</TABLE>
-	--%>
-	
-	<DIV id="loading" style="visibility:hidden;display:none">
-		<TABLE border="0" width='100%'>
-			<TR>
-				<TD align="center" valign="middle">
-					<IMG align="middle" vspace="5" border="0" src="images/loading.gif">
-				</TD>
-			</TR>
-		</TABLE>
-	</DIV>
+	<div id="loading" style="visibility:hidden;display:none">
+		<table border="0" width='100%'>
+			<tr>
+				<td align="center" valign="middle">
+					<img align="middle" vspace="5" border="0" src="images/loading.gif">
+				</td>
+			</tr>
+		</table>
+	</div>
 	
 	<logic:equal name="showNavigation" value="true"> 
 		<tt:has-back>
-			<TABLE border="0" width='100%'>
-				<TR>
-					<TD width="40">&nbsp;</TD>
-					<TD>
+			<table border="0" width='100%'>
+				<tr>
+					<td style="max-width: 800px;">
 						<tt:back styleClass="btn" name="[&larr;]" title="Return to %%"/>
 						<tt:back-tree/>
 						<tt:gwt-back/>
-					</TD>
-					<TD width="40">&nbsp;</TD>
-				</TR>
-			</TABLE>
+					</td>
+				</tr>
+			</table>
 		</tt:has-back>
 	</logic:equal>
-<BR>
