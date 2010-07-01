@@ -386,6 +386,26 @@
 			<jvmarg value="${macJvmArgs}"/>
 			<arg value="-war"/>
 			<arg value="${env.TOMCAT_HOME}/webapps/UniTime"/>
+			<arg value="org.unitime.timetable.gwt.UniTime"/>
+		</java>
+	</target>
+	
+	<target name="redeploy-gwtdev" depends="check-tomcat-home,load-properties">
+        <path id="build.classpath">
+            <fileset dir="${lib.dir}">
+            	<include name="*.jar"/>
+            </fileset>
+			<fileset dir="${3rd_party.dir}">
+				<include name="*.jar" />
+			</fileset>
+        </path>
+		<java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler">
+			<classpath refid="build.classpath" />
+			<classpath path="JavaSource"/>
+			<jvmarg value="-Xmx600M"/>
+			<jvmarg value="${macJvmArgs}"/>
+			<arg value="-war"/>
+			<arg value="${env.TOMCAT_HOME}/webapps/UniTime"/>
 			<arg value="-draftCompile"/>
 			<arg value="org.unitime.timetable.gwt.UniTimeDev"/>
 		</java>
