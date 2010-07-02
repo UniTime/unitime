@@ -515,7 +515,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 	
 	public static void sendNotification(Solution uncommittedSolution, Solution committedSolution, String puid, boolean success, Vector messages) {
 		try {
-			if (!"true".equalsIgnoreCase((String)ApplicationProperties.getProperty("tmtbl.notif.commit.enabled", "true")))
+			if (!"true".equals(ApplicationProperties.getProperty("unitime.email.notif.commit", ApplicationProperties.getProperty("tmtbl.notif.commit.enabled", "true"))))
 				return; //email notification disabled
 
 			SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy hh:mmaa");

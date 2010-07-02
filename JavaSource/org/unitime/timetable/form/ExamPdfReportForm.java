@@ -29,6 +29,7 @@ import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
+import org.unitime.commons.Email;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.TimetableManager;
@@ -241,10 +242,7 @@ public class ExamPdfReportForm extends ExamReportForm {
     public void setCc(String cc) { iCc = cc; }
     public String getBcc() { return iBcc; }
     public void setBcc(String bcc) { iBcc = bcc; }
-    public boolean getCanEmail() { 
-        return ApplicationProperties.getProperty("tmtbl.smtp.host")!=null &&
-            ApplicationProperties.getProperty("tmtbl.smtp.host").trim().length()>0;
-    }
+    public boolean getCanEmail() { return Email.isEnabled(); }
     public String getMessage() { return iMessage; }
     public void setMessage(String message) { iMessage = message; }
     public String getSubject() { return iSubject; }

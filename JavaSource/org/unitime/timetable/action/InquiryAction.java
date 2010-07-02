@@ -169,54 +169,60 @@ public class InquiryAction extends Action {
 	            		}
 	            	}
                     
-                    String host = ApplicationProperties.getProperty("tmtbl.smtp.host", "smtp.purdue.edu");
-                    String domain = ApplicationProperties.getProperty("tmtbl.smtp.domain", host);
-                    String sender = ApplicationProperties.getProperty("tmtbl.inquiry.sender", inqEmail);
                     EventContact c = EventContact.findByExternalUniqueId(user.getId());
 	            	
                     Email email = new Email();
                     email.setSubject("UniTime ("+myForm.getTypeMsg(myForm.getType())+"): "+myForm.getSubject());
                     email.setText(mail);
                     
-                    email.addNotify();
+                    if (ApplicationProperties.getProperty("unitime.email.inquiry") != null)
+                    	email.addRecipient(ApplicationProperties.getProperty("unitime.email.inquiry"), ApplicationProperties.getProperty("unitime.email.inquiry.name"));
+                    else
+                    	email.addNotify();
                     
-                    if (mgr != null && mgr.getEmailAddress() != null) {
-                        email.addRecipientCC(mgr.getEmailAddress(), mgr.getName());
-                    } else if (c != null && c.getEmailAddress() != null) {
-                    	email.addRecipientCC(c.getEmailAddress(), c.getName());
-                    } else {
-                    	email.addRecipientCC(user.getLogin()+ApplicationProperties.getProperty("tmtbl.inquiry.email.suffix","@purdue.edu"), null);
-                    }
-                    email.send();
+                    boolean autoreply = "true".equals(ApplicationProperties.getProperty("unitime.email.inquiry.autoreply", ApplicationProperties.getProperty("tmtbl.inquiry.autoreply", "false")));
                     
-                    if ("true".equals(ApplicationProperties.getProperty("tmtbl.inquiry.autoreply", "false"))) {
-            		
-	            		mail = "The following inquiry was submitted on your behalf. "+
-	            			"We will contact you soon. "+
-            				"This email was automatically generated, please do not reply.\n\n";
-                        
-                        if (ApplicationProperties.getProperty("tmtbl.inquiry.sender.name")!=null) {
-                            mail += "Thank you, \n\n"+ApplicationProperties.getProperty("tmtbl.inquiry.sender.name")+"\n\n";
-                        }
-                        
-                        mail +=
-                            "-- INQUIRY ("+myForm.getTypeMsg(myForm.getType())+"): "+myForm.getSubject()+" ---------- \n\n"+
-            				myForm.getMessage()+"\n"+
-            				"-- END INQUIRY -------------------------------------------";
-                        
-                        email = new Email();
-                        email.setSubject("REL UniTime ("+myForm.getTypeMsg(myForm.getType())+"): "+myForm.getSubject());
-                        email.setText(mail);
-                        
+                    if (!autoreply) {
                         if (mgr != null && mgr.getEmailAddress() != null) {
-                            email.addRecipient(mgr.getEmailAddress(), mgr.getName());
+                            email.addRecipientCC(mgr.getEmailAddress(), mgr.getName());
                         } else if (c != null && c.getEmailAddress() != null) {
-                        	email.addRecipient(c.getEmailAddress(), c.getName());
+                        	email.addRecipientCC(c.getEmailAddress(), c.getName());
                         } else {
-                        	email.addRecipient(user.getLogin()+ApplicationProperties.getProperty("tmtbl.inquiry.email.suffix","@purdue.edu"), null);
+                        	email.addRecipientCC(user.getLogin() + ApplicationProperties.getProperty("unitime.email.inquiry.suffix", ApplicationProperties.getProperty("tmtbl.inquiry.email.suffix","@unitime.org")), null);
                         }
-                        
                         email.send();
+                    }
+                    
+                    if (autoreply) {
+            		
+                    	try {
+    	            		mail = "The following inquiry was submitted on your behalf. " +
+	    	            		"We will contact you soon. "+
+	            				"This email was automatically generated, please do not reply.\n\n";
+                        
+    	            		if (ApplicationProperties.getProperty("tmtbl.inquiry.sender.name")!=null) {
+                                mail += "Thank you, \n\n"+ApplicationProperties.getProperty("tmtbl.inquiry.sender.name")+"\n\n";
+                            }
+                            
+                            mail +=
+                                "-- INQUIRY ("+myForm.getTypeMsg(myForm.getType())+"): "+myForm.getSubject()+" ---------- \n\n"+
+                				myForm.getMessage()+"\n"+
+                				"-- END INQUIRY -------------------------------------------";
+                            
+                            email = new Email();
+                            email.setSubject("RE: UniTime ("+myForm.getTypeMsg(myForm.getType())+"): "+myForm.getSubject());
+                            email.setText(mail);
+                            
+                            if (mgr != null && mgr.getEmailAddress() != null) {
+                                email.addRecipient(mgr.getEmailAddress(), mgr.getName());
+                            } else if (c != null && c.getEmailAddress() != null) {
+                            	email.addRecipient(c.getEmailAddress(), c.getName());
+                            } else {
+                            	email.addRecipient(user.getLogin() + ApplicationProperties.getProperty("unitime.email.inquiry.suffix", ApplicationProperties.getProperty("tmtbl.inquiry.email.suffix","@unitime.org")), null);
+                            }
+                            
+                            email.send();
+                    	} catch (Exception e) {}
 	            	}
 	            	
 	            	myForm.setOp("Sent");

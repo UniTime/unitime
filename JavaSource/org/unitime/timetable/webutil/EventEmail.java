@@ -72,7 +72,7 @@ public class EventEmail {
                 break;
             }
 
-            if (!"true".equals(ApplicationProperties.getProperty("tmtbl.event.confirmationEmail","true"))) {
+            if (!"true".equals(ApplicationProperties.getProperty("unitime.email.confirm.event", ApplicationProperties.getProperty("tmtbl.event.confirmationEmail","true")))) {
                 request.getSession().setAttribute(Constants.REQUEST_MSSG, "Confirmation emails are disabled.");
                 return;
             }

@@ -50,21 +50,27 @@ public class Email {
         if (p.getProperty("mail.smtp.host")==null && p.getProperty("tmtbl.smtp.host")!=null)
             p.setProperty("mail.smtp.host", p.getProperty("tmtbl.smtp.host"));
         
+        final String user = ApplicationProperties.getProperty("mail.smtp.user", ApplicationProperties.getProperty("unitime.email.user", ApplicationProperties.getProperty("tmtbl.mail.user")));
+        final String password = ApplicationProperties.getProperty("mail.smtp.password", ApplicationProperties.getProperty("unitime.email.password", ApplicationProperties.getProperty("tmtbl.mail.pwd")));
+        
         Authenticator a = null;
-        if (ApplicationProperties.getProperty("tmtbl.mail.user")!=null && ApplicationProperties.getProperty("tmtbl.mail.pwd")!=null) {
-            p.setProperty("mail.smtp.user", ApplicationProperties.getProperty("tmtbl.mail.user"));
+        if (user != null && password != null) {
+            p.setProperty("mail.smtp.user", user);
             p.setProperty("mail.smtp.auth", "true");
             a = new Authenticator() {
                 public PasswordAuthentication getPasswordAuthentication() {
-                    return new PasswordAuthentication(
-                            ApplicationProperties.getProperty("tmtbl.mail.user"),
-                            ApplicationProperties.getProperty("tmtbl.mail.pwd"));
-                }
+                    return new PasswordAuthentication(user, password); }
             };
         }
+
         iMailSession = javax.mail.Session.getDefaultInstance(p, a);
         iMail = new MimeMessage(iMailSession);
         iBody = new MimeMultipart();
+	}
+	
+	public static boolean isEnabled() {
+		return (ApplicationProperties.getProperty("tmtbl.smtp.host") != null && ApplicationProperties.getProperty("tmtbl.smtp.host").length() > 0) || 
+			(ApplicationProperties.getProperty("mail.smtp.host") != null && ApplicationProperties.getProperty("mail.smtp.host").length() > 0);
 	}
 	
 	public void setSubject(String subject) throws MessagingException {
@@ -74,6 +80,11 @@ public class Email {
 	private void setFrom(String email, String name) throws MessagingException, UnsupportedEncodingException {
 		if (email != null)
 			iMail.setFrom(new InternetAddress(email, name));
+	}
+	
+	private void setReplyTo(String email, String name) throws UnsupportedEncodingException, MessagingException {
+		if (email != null)
+			iMail.setReplyTo(new InternetAddress[] {new InternetAddress(email, name)});
 	}
 	
 	private void addRecipient(RecipientType type, String email, String name) throws UnsupportedEncodingException, MessagingException {
@@ -104,8 +115,8 @@ public class Email {
 
 	public void addNotify(RecipientType type) throws MessagingException, UnsupportedEncodingException {
 		iMail.addRecipient(RecipientType.TO, new InternetAddress(
-				ApplicationProperties.getProperty("tmtbl.notif.email", ApplicationProperties.getProperty("tmtbl.notif.commit.email")),
-				ApplicationProperties.getProperty("tmtbl.notif.email.name", "UniTime Operator")));
+				ApplicationProperties.getProperty("unitime.email.notif", ApplicationProperties.getProperty("tmtbl.notif.email", ApplicationProperties.getProperty("tmtbl.notif.commit.email"))),
+				ApplicationProperties.getProperty("unitime.email.notif.name", ApplicationProperties.getProperty("tmtbl.notif.email.name", "UniTime Operator"))));
 	}
 
 	public void addNotify() throws MessagingException, UnsupportedEncodingException {
@@ -124,10 +135,18 @@ public class Email {
 	}
 
 	public void send() throws MessagingException, UnsupportedEncodingException {
-        setFrom(ApplicationProperties.getProperty("tmtbl.inquiry.sender", ApplicationProperties.getProperty("tmtbl.contact.email")),
-        		ApplicationProperties.getProperty("tmtbl.inquiry.sender.name", ApplicationProperties.getProperty("tmtbl.contact.email.name", "UniTime Email")));
+        setFrom(
+        		ApplicationProperties.getProperty("unitime.email.sender", 
+        				ApplicationProperties.getProperty("tmtbl.inquiry.sender", ApplicationProperties.getProperty("tmtbl.contact.email"))),
+        		ApplicationProperties.getProperty("unitime.email.sender.name", 
+        				ApplicationProperties.getProperty("tmtbl.inquiry.sender.name", ApplicationProperties.getProperty("tmtbl.contact.email.name", "UniTime Email")))
+        		);
+        setReplyTo(ApplicationProperties.getProperty("unitime.email.replyto"),
+        		ApplicationProperties.getProperty("unitime.email.replyto.name"));
+        		
         iMail.setSentDate(new Date());
         iMail.setContent(iBody);
+        iMail.saveChanges();
         Transport.send(iMail);
 	}
 
