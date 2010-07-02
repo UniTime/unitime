@@ -122,6 +122,13 @@
 		</TR>
 		
 		<TR>
+			<TD nowrap>Curricula:</TD>
+			<TD>
+				<html:checkbox property="exportCurricula"/>
+			</TD>
+		</TR>
+
+		<TR>
 			<TD colspan="2">
 				&nbsp;
 			</TD>

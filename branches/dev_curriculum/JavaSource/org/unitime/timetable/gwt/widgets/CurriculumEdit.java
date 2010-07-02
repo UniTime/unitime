@@ -250,6 +250,7 @@ public class CurriculumEdit extends Composite {
 						}
 					}
 					if (defaultName.length() > 60) defaultName = defaultName.substring(0, 60);
+					if (defaultAbbv.length() > 20) defaultAbbv = defaultAbbv.substring(0, 20);
 					if (iDefaultAbbv) iCurriculumAbbv.setText(defaultAbbv);
 					if (iDefaultName) iCurriculumName.setText(defaultName);
 					iCurriculumMajorsPrint.setHTML(majors);
@@ -680,6 +681,7 @@ public class CurriculumEdit extends Composite {
 								idx++;
 							}
 							if (defaultName.length() > 60) defaultName = defaultName.substring(0, 60);
+							if (defaultAbbv.length() > 20) defaultAbbv = defaultAbbv.substring(0, 20);
 							iDefaultAbbv = defaultAbbv.equals(iCurriculumAbbv.getText());
 							iDefaultName = defaultName.equalsIgnoreCase(iCurriculumName.getText());
 							if (!iDefaultAbbv && allSelected && area != null && area.getAbbv().equals(iCurriculumAbbv.getText()))

@@ -43,6 +43,7 @@ public class DataImportForm extends ActionForm {
 	private boolean iExportFinalExams;
 	private boolean iExportMidtermExams;
 	private boolean iExportTimetable;
+	private boolean iExportCurricula;
     private boolean iEmail = false;
     private String iAddr = null;
     private String iLog = null;
@@ -55,8 +56,12 @@ public class DataImportForm extends ActionForm {
         }
         
         if ("Export".equals(iOp)) {
-            if (!getExportCourses() && !getExportFinalExams() && !getExportMidtermExams() && !getExportTimetable()) {
+            if (!getExportCourses() && !getExportFinalExams() && !getExportMidtermExams() && !getExportTimetable() && !getExportCurricula()) {
                 errors.add("export", new ActionMessage("errors.generic", "Nothing to export") );
+            }
+            
+            if (getExportCurricula() && (getExportCourses() || getExportFinalExams() || getExportMidtermExams() || getExportTimetable())) {
+            	errors.add("export", new ActionMessage("errors.generic", "Curricula need to be exported separately") );
             }
         }
         
@@ -65,7 +70,7 @@ public class DataImportForm extends ActionForm {
 
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
 		iFile = null;
-		iExportCourses = false; iExportFinalExams = false; iExportMidtermExams = false; iExportTimetable = false;
+		iExportCourses = false; iExportFinalExams = false; iExportMidtermExams = false; iExportTimetable = false; iExportCurricula = false;
 		iEmail = false; iAddr = null;
 		iLog = null;
         TimetableManager manager = TimetableManager.getManager(Web.getUser(request.getSession()));
@@ -85,6 +90,8 @@ public class DataImportForm extends ActionForm {
     public void setExportMidtermExams(boolean exportMidtermExams) { iExportMidtermExams = exportMidtermExams; }
     public boolean getExportTimetable() { return iExportTimetable; }
     public void setExportTimetable(boolean exportTimetable) { iExportTimetable = exportTimetable; }
+    public boolean getExportCurricula() { return iExportCurricula; }
+    public void setExportCurricula(boolean exportCurricula) { iExportCurricula = exportCurricula; }
     
     public boolean getEmail() { return iEmail; }
     public void setEmail(boolean email) { iEmail = email; }

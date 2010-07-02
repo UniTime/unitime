@@ -7,7 +7,7 @@ import org.unitime.timetable.model.dao.CurriculumDAO;
 
 
 
-public class Curriculum extends BaseCurriculum {
+public class Curriculum extends BaseCurriculum implements Comparable<Curriculum> {
 	private static final long serialVersionUID = 1L;
 
 /*[CONSTRUCTOR MARKER BEGIN]*/
@@ -73,5 +73,11 @@ public class Curriculum extends BaseCurriculum {
     	// Check department
     	TimetableManager tm = TimetableManager.getManager(user);
 		return tm != null && tm.getDepartments().contains(getDepartment());
+    }
+    
+    public int compareTo(Curriculum c) {
+    	int cmp = getAbbv().compareToIgnoreCase(c.getAbbv());
+    	if (cmp != 0) return cmp;
+    	return getUniqueId().compareTo(c.getUniqueId());
     }
 }
