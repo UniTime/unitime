@@ -194,9 +194,10 @@ public class DataImportAction extends Action {
                         ", by "+
                         "UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+
                         " (Univesity Timetabling Application, http://www.unitime.org).");
-            	if (myForm.getAddress()!=null) for (StringTokenizer s=new StringTokenizer(myForm.getAddress(),";,\n\r ");s.hasMoreTokens();) 
+            	for (StringTokenizer s=new StringTokenizer(myForm.getAddress(),";,\n\r ");s.hasMoreTokens();) 
                     mail.addRecipient(s.nextToken(), null);
-            	mail.addNotifyCC();
+            	if ("true".equals(ApplicationProperties.getProperty("unitime.email.notif.data", "false")))
+            		mail.addNotifyCC();
                 if (xmlFile!=null)
                 	mail.addAttachement(xmlFile, xmlName);
                 mail.send();

@@ -90,26 +90,18 @@
 				</TD>
 			</TR>
 		<%	try {
-				String errorEmail = ApplicationProperties.getProperty("tmtbl.error.email");
-				String subject = ApplicationProperties.getProperty("tmtbl.error.subject");
-
-				if (session.getAttribute("userTrace") !=null
-						&& errorEmail!=null && errorEmail.trim().length()>0 
-						&& exception.getMessage().toLowerCase().indexOf("access denied")<0) {	
+				if ("true".equals(ApplicationProperties.getProperty("unitime.email.notif.error", "false")) && 
+					session.getAttribute("userTrace") !=null && exception.getMessage().toLowerCase().indexOf("access denied") < 0) {	
 					Email email = new Email();
-					email.setSubject(subject);
+					email.setSubject("UniTime Error Report");
 					email.setText("Server: " +  request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+request.getContextPath()+"/\n"
 								+ "Exception: " + exception.getMessage() + "\n" 
-								+ "Stack Trace: " + stackTrace.replaceAll("<br>\n", "") + "\n\n"								
+								+ "Stack Trace: " + stackTrace.replaceAll("<br>", "") + "\n\n"								
 								+ (String) session.getAttribute("userTrace"));
-					email.addRecipient(errorEmail, null);
-					email.addNotifyCC();
+					email.addNotify();
 					email.send();
 				}
-			} catch (Exception e) {
-				Debug.error(e);
-			}
-			
+			} catch (Exception e) { }
 			Debug.error(exception);
 		%>
 		</TABLE>

@@ -31,8 +31,8 @@ import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
+import org.unitime.commons.Email;
 import org.unitime.commons.web.Web;
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.UserData;
@@ -176,10 +176,7 @@ public class EnrollmentAuditPdfReportForm extends ActionForm {
     public void setCc(String cc) { iCc = cc; }
     public String getBcc() { return iBcc; }
     public void setBcc(String bcc) { iBcc = bcc; }
-    public boolean getCanEmail() { 
-        return ApplicationProperties.getProperty("tmtbl.smtp.host")!=null &&
-            ApplicationProperties.getProperty("tmtbl.smtp.host").trim().length()>0;
-    }
+    public boolean getCanEmail() { return Email.isEnabled(); }
     public String getReport() { return iReport; }
     public void setReport(String report) { iReport = report; }
     public void log(String message) {
