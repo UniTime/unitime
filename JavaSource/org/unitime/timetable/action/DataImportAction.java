@@ -124,9 +124,8 @@ public class DataImportAction extends Action {
             }
             try {
                 Session session = Session.getCurrentAcadSession(Web.getUser(request.getSession()));
-                String root = (myForm.getExportCourses()?"offerings":myForm.getExportFinalExams() || myForm.getExportMidtermExams()?"exams":"timetable");
+                String root = (myForm.getExportCourses()?"offerings":myForm.getExportFinalExams() || myForm.getExportMidtermExams()?"exams":myForm.getExportTimetable()?"timetable":"curricula");
                 Properties params = new Properties();
-                //TODO: checked OK, tested OK
                 xmlName = session.getAcademicTerm()+session.getSessionStartYear()+"_"+root;
                 params.setProperty("tmtbl.export.exam", (myForm.getExportCourses()?"false":"true"));
                 params.setProperty("tmtbl.export.timetable", (myForm.getExportTimetable()?"true":"false")); //exam only

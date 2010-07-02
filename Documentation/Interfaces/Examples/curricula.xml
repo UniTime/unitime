@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE curricula PUBLIC "-//UniTime//DTD University Course Timetabling/EN" "http://www.unitime.org/interface/Curricula_3_2.dtd">
+<!--
+ 
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+-->
+
+<curricula campus="PWL" year="2010" term="Spring" created="Fri Jul 02 17:32:09 CEST 2010">
+
+	<curriculum abbreviation="A/AGEC,AGFN" name="Agriculture / Agricultural Economics &amp; Finance">
+		<!-- one academic area is required -->
+		<!-- academic area usually corresponds to a school, faculty, etc. -->
+		<academicArea abbreviation="A"/>
+		
+		<!-- department is optional -->
+		<!-- only curriculum or scheduling managers of this department are able to edit this curriculum -->
+		<!-- if none is provided, one is computed based on the courses of the curriculum (controlling department with highest enrollment within the curriculum) -->
+		<department code="1145"/>
+		
+		<!-- there can be more than one major, but all of them have to be of the same academic area -->
+		<!-- no major means all majors of the academic area -->
+		<!-- major usually corresponds to a particular field of study, e.g., Agricultural Economics and Agricultural Finance -->
+		<major code="AGEC"/>
+		<major code="AGFN"/>
+		
+		<!-- name is optional (defaults to the academic classification code), enrollment is required -->
+		<classification name="03" enrollment="15">
+			<!-- exactly one academic classification -->
+			<!-- academic classification usually corresponds to a year / semester of study (e.g., First Semester Sophmore -->
+			<academicClassification code="03"/>
+			
+			<!-- list of courses -->
+			<!-- fields subject and courseNbr are required, share defaults to 1.0 -->
+			<!-- 
+				share is a percentage of the students of this classification (within this curriculum)
+				that are expected to attend the course
+				(1.0 ~ all students of the classification, 0.0 ~ none)
+			 -->
+			<course subject="AGEC" courseNbr="21700" share="0.5385"/>
+			<course subject="ENGL" courseNbr="10600A" share="0.4615"/>
+			<course subject="AGEC" courseNbr="20200" share="0.3846">
+				<!-- groups are optional, and there to be able to express some relations between these courses -->
+				<!-- only id is required (group id needs to be unique only within the curriculum, type defaults to OPT) -->
+				<!--
+					type == OPT .. group is optional (e.g., students should attend one of these courses)
+						this means there there are no student conflicts between courses of this group within this curriculum
+					type == REQ .. group is required (e.g., students taking one course of this group are required to take at least some other one of this group)
+						this means that there are always conflicts between courses of this group within this curriculum 
+				 -->
+				<group id="1" name="O 04 4" type="OPT"/>
+			</course>
+			<course subject="COM" courseNbr="11400A" share="0.3077">
+				<group id="1" name="O 04 4" type="OPT"/>
+			</course>
+			<course subject="PSY" courseNbr="12000B" share="0.0769"/>
+		</classification>
+		<classification name="05" enrollment="10">
+			<academicClassification code="05"/>
+			<course subject="AGEC" courseNbr="21700" share="0.4444">
+				<group id="1" name="O 04 4" type="OPT"/>
+			</course>
+			<!-- ... -->
+		</classification>
+		<!-- ... -->
+	</curriculum>
+	<!-- external ids may be also provided -->
+	<curriculum abbreviation="A/ANPD" name="Agriculture / Animal Products">
+		<academicArea externalId="A" abbreviation="A"/>
+		<department externalId="1392" code="1392"/>
+		<major externalId="ANPD" code="ANPD"/>
+		<classification name="04" enrollment="3">
+			<academicClassification externalId="04" code="04"/>
+			<course externalId="ANSC18100OrientationToAnSci" subject="ANSC" courseNbr="18100" share="1.0000"/>
+			<course externalId="BIOL11100FundamentalsBiolII" subject="BIOL" courseNbr="11100" share="1.0000"/>
+			<course externalId="COM11400FundamentOfSpeech" subject="COM" courseNbr="11400A" share="0.6667"/>
+		</classification>
+		<classification name="07" enrollment="1">
+			<academicClassification externalId="07" code="07"/>
+			<course externalId="BIOL22100IntroToMicrobiology" subject="BIOL" courseNbr="22100" share="1.0000"/>
+			<course externalId="AGEC33000MgmtMethodsAgrBus" subject="AGEC" courseNbr="33000" share="1.0000"/>
+			<course externalId="ANSC32400AppldAnimalNutrition" subject="ANSC" courseNbr="32400" share="1.0000"/>
+			<course externalId="ANSC49500LdrshpForADiverseWorkplace" subject="ANSC" courseNbr="49500A" share="1.0000"/>
+			<course externalId="PSY12000ElementaryPsychology" subject="PSY" courseNbr="12000B" share="1.0000"/>
+		</classification>
+		<!-- ... -->
+	</curriculum>
+	<!-- an example with only required fields -->
+	<curriculum>
+		<academicArea abbreviation="A"/>
+		<major code="FDSC"/>
+		<classification enrollment="4">
+			<academicClassification code="02"/>
+			<course subject="COM" courseNbr="11400A"/>
+			<course subject="BIOL" courseNbr="11100"/>
+		</classification>
+		<classification enrollment="4">
+			<academicClassification code="03"/>
+			<course subject="COM" courseNbr="11400A" share="0.3333">
+				<group id="1"/>
+			</course>
+			<course subject="CHM" courseNbr="11500" share="0.6667">
+				<group id="1"/>
+			</course>
+		</classification>
+		<!-- ... -->
+	</curriculum>
+	<!-- ... -->
+</curricula>
