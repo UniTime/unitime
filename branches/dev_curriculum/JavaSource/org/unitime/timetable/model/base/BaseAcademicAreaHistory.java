@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -21,86 +21,47 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import org.unitime.timetable.model.AcademicAreaHistory;
+import org.unitime.timetable.model.History;
 
-/**
- * This is an object that contains data related to the HISTORY table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="HISTORY"
- */
-
-public abstract class BaseAcademicAreaHistory extends org.unitime.timetable.model.History  implements Serializable {
-
-	public static String REF = "AcademicAreaHistory";
+public abstract class BaseAcademicAreaHistory extends History implements Serializable {
+	private static final long serialVersionUID = 1L;
 
 
-	// constructors
-	public BaseAcademicAreaHistory () {
+
+	public BaseAcademicAreaHistory() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseAcademicAreaHistory (java.lang.Long uniqueId) {
-		super(uniqueId);
+	public BaseAcademicAreaHistory(Long uniqueId) {
+		setUniqueId(uniqueId);
+		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseAcademicAreaHistory (
-		java.lang.Long uniqueId,
-		java.lang.String oldValue,
-		java.lang.String newValue,
-		java.lang.Long sessionId) {
+	protected void initialize() {}
 
-		super (
-			uniqueId,
-			oldValue,
-			newValue,
-			sessionId);
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof AcademicAreaHistory)) return false;
+		if (getUniqueId() == null || ((AcademicAreaHistory)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((AcademicAreaHistory)o).getUniqueId());
 	}
 
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-
-
-
-
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.AcademicAreaHistory)) return false;
-		else {
-			org.unitime.timetable.model.AcademicAreaHistory academicAreaHistory = (org.unitime.timetable.model.AcademicAreaHistory) obj;
-			if (null == this.getUniqueId() || null == academicAreaHistory.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(academicAreaHistory.getUniqueId()));
-		}
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
+	public String toString() {
+		return "AcademicAreaHistory["+getUniqueId()+"]";
 	}
 
-
-	public String toString () {
-		return super.toString();
+	public String toDebugString() {
+		return "AcademicAreaHistory[" +
+			"\n	NewValue: " + getNewValue() +
+			"\n	OldValue: " + getOldValue() +
+			"\n	Session: " + getSession() +
+			"\n	SessionId: " + getSessionId() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-
 }

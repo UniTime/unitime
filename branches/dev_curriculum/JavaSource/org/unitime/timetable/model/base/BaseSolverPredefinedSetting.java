@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -20,179 +20,78 @@
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
+import org.unitime.timetable.model.SolverParameter;
+import org.unitime.timetable.model.SolverPredefinedSetting;
 
-/**
- * This is an object that contains data related to the SOLVER_PREDEF_SETTING table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="SOLVER_PREDEF_SETTING"
- */
+public abstract class BaseSolverPredefinedSetting implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseSolverPredefinedSetting  implements Serializable {
+	private Long iUniqueId;
+	private String iName;
+	private String iDescription;
+	private Integer iAppearance;
 
-	public static String REF = "SolverPredefinedSetting";
+	private Set<SolverParameter> iParameters;
+
+	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_NAME = "name";
 	public static String PROP_DESCRIPTION = "description";
 	public static String PROP_APPEARANCE = "appearance";
 
-
-	// constructors
-	public BaseSolverPredefinedSetting () {
+	public BaseSolverPredefinedSetting() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseSolverPredefinedSetting (java.lang.Long uniqueId) {
-		this.setUniqueId(uniqueId);
+	public BaseSolverPredefinedSetting(Long uniqueId) {
+		setUniqueId(uniqueId);
 		initialize();
 	}
 
-	protected void initialize () {}
+	protected void initialize() {}
 
+	public Long getUniqueId() { return iUniqueId; }
+	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	public String getName() { return iName; }
+	public void setName(String name) { iName = name; }
 
-	private int hashCode = Integer.MIN_VALUE;
+	public String getDescription() { return iDescription; }
+	public void setDescription(String description) { iDescription = description; }
 
-	// primary key
-	private java.lang.Long uniqueId;
+	public Integer getAppearance() { return iAppearance; }
+	public void setAppearance(Integer appearance) { iAppearance = appearance; }
 
-	// fields
-	private java.lang.String name;
-	private java.lang.String description;
-	private java.lang.Integer appearance;
-
-	// collections
-	private java.util.Set parameters;
-
-
-
-	/**
-	 * Return the unique identifier of this class
-     * @hibernate.id
-     *  generator-class="sequence"
-     *  column="UNIQUEID"
-     */
-	public java.lang.Long getUniqueId () {
-		return uniqueId;
+	public Set<SolverParameter> getParameters() { return iParameters; }
+	public void setParameters(Set<SolverParameter> parameters) { iParameters = parameters; }
+	public void addToparameters(SolverParameter solverParameter) {
+		if (iParameters == null) iParameters = new HashSet();
+		iParameters.add(solverParameter);
 	}
 
-	/**
-	 * Set the unique identifier of this class
-	 * @param uniqueId the new ID
-	 */
-	public void setUniqueId (java.lang.Long uniqueId) {
-		this.uniqueId = uniqueId;
-		this.hashCode = Integer.MIN_VALUE;
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof SolverPredefinedSetting)) return false;
+		if (getUniqueId() == null || ((SolverPredefinedSetting)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((SolverPredefinedSetting)o).getUniqueId());
 	}
 
-
-
-
-	/**
-	 * Return the value associated with the column: NAME
-	 */
-	public java.lang.String getName () {
-		return name;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	/**
-	 * Set the value related to the column: NAME
-	 * @param name the NAME value
-	 */
-	public void setName (java.lang.String name) {
-		this.name = name;
+	public String toString() {
+		return "SolverPredefinedSetting["+getUniqueId()+" "+getName()+"]";
 	}
 
-
-
-	/**
-	 * Return the value associated with the column: DESCRIPTION
-	 */
-	public java.lang.String getDescription () {
-		return description;
+	public String toDebugString() {
+		return "SolverPredefinedSetting[" +
+			"\n	Appearance: " + getAppearance() +
+			"\n	Description: " + getDescription() +
+			"\n	Name: " + getName() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-	/**
-	 * Set the value related to the column: DESCRIPTION
-	 * @param description the DESCRIPTION value
-	 */
-	public void setDescription (java.lang.String description) {
-		this.description = description;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: APPEARANCE
-	 */
-	public java.lang.Integer getAppearance () {
-		return appearance;
-	}
-
-	/**
-	 * Set the value related to the column: APPEARANCE
-	 * @param appearance the APPEARANCE value
-	 */
-	public void setAppearance (java.lang.Integer appearance) {
-		this.appearance = appearance;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: parameters
-	 */
-	public java.util.Set getParameters () {
-		return parameters;
-	}
-
-	/**
-	 * Set the value related to the column: parameters
-	 * @param parameters the parameters value
-	 */
-	public void setParameters (java.util.Set parameters) {
-		this.parameters = parameters;
-	}
-
-	public void addToparameters (org.unitime.timetable.model.SolverParameter solverParameter) {
-		if (null == getParameters()) setParameters(new java.util.HashSet());
-		getParameters().add(solverParameter);
-	}
-
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.SolverPredefinedSetting)) return false;
-		else {
-			org.unitime.timetable.model.SolverPredefinedSetting solverPredefinedSetting = (org.unitime.timetable.model.SolverPredefinedSetting) obj;
-			if (null == this.getUniqueId() || null == solverPredefinedSetting.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(solverPredefinedSetting.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

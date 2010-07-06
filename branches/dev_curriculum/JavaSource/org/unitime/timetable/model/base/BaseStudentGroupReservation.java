@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -21,108 +21,57 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import org.unitime.timetable.model.CharacteristicReservation;
+import org.unitime.timetable.model.StudentGroup;
+import org.unitime.timetable.model.StudentGroupReservation;
 
-/**
- * This is an object that contains data related to the STUDENT_GROUP_RESERVATION table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="STUDENT_GROUP_RESERVATION"
- */
+public abstract class BaseStudentGroupReservation extends CharacteristicReservation implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseStudentGroupReservation extends org.unitime.timetable.model.CharacteristicReservation  implements Serializable {
-
-	public static String REF = "StudentGroupReservation";
+	private StudentGroup iStudentGroup;
 
 
-	// constructors
-	public BaseStudentGroupReservation () {
+	public BaseStudentGroupReservation() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseStudentGroupReservation (java.lang.Long uniqueId) {
-		super(uniqueId);
+	public BaseStudentGroupReservation(Long uniqueId) {
+		setUniqueId(uniqueId);
+		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseStudentGroupReservation (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.ReservationType reservationType,
-		java.lang.String ownerClassId,
-		java.lang.Long owner,
-		java.lang.Integer priority) {
+	protected void initialize() {}
 
-		super (
-			uniqueId,
-			reservationType,
-			ownerClassId,
-			owner,
-			priority);
+	public StudentGroup getStudentGroup() { return iStudentGroup; }
+	public void setStudentGroup(StudentGroup studentGroup) { iStudentGroup = studentGroup; }
+
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof StudentGroupReservation)) return false;
+		if (getUniqueId() == null || ((StudentGroupReservation)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((StudentGroupReservation)o).getUniqueId());
 	}
 
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-
-	// many to one
-	private org.unitime.timetable.model.StudentGroup studentGroup;
-
-
-
-
-
-
-	/**
-	 * Return the value associated with the column: STUDENT_GROUP
-	 */
-	public org.unitime.timetable.model.StudentGroup getStudentGroup () {
-		return studentGroup;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	/**
-	 * Set the value related to the column: STUDENT_GROUP
-	 * @param studentGroup the STUDENT_GROUP value
-	 */
-	public void setStudentGroup (org.unitime.timetable.model.StudentGroup studentGroup) {
-		this.studentGroup = studentGroup;
+	public String toString() {
+		return "StudentGroupReservation["+getUniqueId()+"]";
 	}
 
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.StudentGroupReservation)) return false;
-		else {
-			org.unitime.timetable.model.StudentGroupReservation studentGroupReservation = (org.unitime.timetable.model.StudentGroupReservation) obj;
-			if (null == this.getUniqueId() || null == studentGroupReservation.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(studentGroupReservation.getUniqueId()));
-		}
+	public String toDebugString() {
+		return "StudentGroupReservation[" +
+			"\n	Owner: " + getOwner() +
+			"\n	OwnerClassId: " + getOwnerClassId() +
+			"\n	PriorEnrollment: " + getPriorEnrollment() +
+			"\n	Priority: " + getPriority() +
+			"\n	ProjectedEnrollment: " + getProjectedEnrollment() +
+			"\n	Requested: " + getRequested() +
+			"\n	ReservationType: " + getReservationType() +
+			"\n	Reserved: " + getReserved() +
+			"\n	StudentGroup: " + getStudentGroup() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

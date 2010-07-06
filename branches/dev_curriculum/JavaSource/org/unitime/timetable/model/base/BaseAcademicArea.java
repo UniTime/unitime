@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -20,249 +20,99 @@
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
+import org.unitime.timetable.model.AcademicArea;
+import org.unitime.timetable.model.PosMajor;
+import org.unitime.timetable.model.PosMinor;
+import org.unitime.timetable.model.Session;
 
-/**
- * This is an object that contains data related to the ACADEMIC_AREA table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="ACADEMIC_AREA"
- */
+public abstract class BaseAcademicArea implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseAcademicArea  implements Serializable {
+	private Long iUniqueId;
+	private String iExternalUniqueId;
+	private String iAcademicAreaAbbreviation;
+	private String iShortTitle;
+	private String iLongTitle;
 
-	public static String REF = "AcademicArea";
-	public static String PROP_EXTERNAL_UNIQUE_ID = "externalUniqueId";
+	private Session iSession;
+	private Set<PosMajor> iPosMajors;
+	private Set<PosMinor> iPosMinors;
+
+	public static String PROP_UNIQUEID = "uniqueId";
+	public static String PROP_EXTERNAL_UID = "externalUniqueId";
 	public static String PROP_ACADEMIC_AREA_ABBREVIATION = "academicAreaAbbreviation";
 	public static String PROP_SHORT_TITLE = "shortTitle";
 	public static String PROP_LONG_TITLE = "longTitle";
 
-
-	// constructors
-	public BaseAcademicArea () {
+	public BaseAcademicArea() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseAcademicArea (java.lang.Long uniqueId) {
-		this.setUniqueId(uniqueId);
+	public BaseAcademicArea(Long uniqueId) {
+		setUniqueId(uniqueId);
 		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseAcademicArea (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Session session,
-		java.lang.String academicAreaAbbreviation,
-		java.lang.String shortTitle,
-		java.lang.String longTitle) {
+	protected void initialize() {}
 
-		this.setUniqueId(uniqueId);
-		this.setSession(session);
-		this.setAcademicAreaAbbreviation(academicAreaAbbreviation);
-		this.setShortTitle(shortTitle);
-		this.setLongTitle(longTitle);
-		initialize();
+	public Long getUniqueId() { return iUniqueId; }
+	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
+
+	public String getExternalUniqueId() { return iExternalUniqueId; }
+	public void setExternalUniqueId(String externalUniqueId) { iExternalUniqueId = externalUniqueId; }
+
+	public String getAcademicAreaAbbreviation() { return iAcademicAreaAbbreviation; }
+	public void setAcademicAreaAbbreviation(String academicAreaAbbreviation) { iAcademicAreaAbbreviation = academicAreaAbbreviation; }
+
+	public String getShortTitle() { return iShortTitle; }
+	public void setShortTitle(String shortTitle) { iShortTitle = shortTitle; }
+
+	public String getLongTitle() { return iLongTitle; }
+	public void setLongTitle(String longTitle) { iLongTitle = longTitle; }
+
+	public Session getSession() { return iSession; }
+	public void setSession(Session session) { iSession = session; }
+
+	public Set<PosMajor> getPosMajors() { return iPosMajors; }
+	public void setPosMajors(Set<PosMajor> posMajors) { iPosMajors = posMajors; }
+	public void addToposMajors(PosMajor posMajor) {
+		if (iPosMajors == null) iPosMajors = new HashSet();
+		iPosMajors.add(posMajor);
 	}
 
-	protected void initialize () {}
-
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-	// primary key
-	private java.lang.Long uniqueId;
-
-	// fields
-	private java.lang.String externalUniqueId;
-	private java.lang.String academicAreaAbbreviation;
-	private java.lang.String shortTitle;
-	private java.lang.String longTitle;
-
-	// many to one
-	private org.unitime.timetable.model.Session session;
-
-	// collections
-	private java.util.Set posMajors;
-	private java.util.Set posMinors;
-
-
-
-	/**
-	 * Return the unique identifier of this class
-     * @hibernate.id
-     *  generator-class="sequence"
-     *  column="UNIQUEID"
-     */
-	public java.lang.Long getUniqueId () {
-		return uniqueId;
+	public Set<PosMinor> getPosMinors() { return iPosMinors; }
+	public void setPosMinors(Set<PosMinor> posMinors) { iPosMinors = posMinors; }
+	public void addToposMinors(PosMinor posMinor) {
+		if (iPosMinors == null) iPosMinors = new HashSet();
+		iPosMinors.add(posMinor);
 	}
 
-	/**
-	 * Set the unique identifier of this class
-	 * @param uniqueId the new ID
-	 */
-	public void setUniqueId (java.lang.Long uniqueId) {
-		this.uniqueId = uniqueId;
-		this.hashCode = Integer.MIN_VALUE;
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof AcademicArea)) return false;
+		if (getUniqueId() == null || ((AcademicArea)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((AcademicArea)o).getUniqueId());
 	}
 
-
-
-
-	/**
-	 * Return the value associated with the column: EXTERNAL_UID
-	 */
-	public java.lang.String getExternalUniqueId () {
-		return externalUniqueId;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	/**
-	 * Set the value related to the column: EXTERNAL_UID
-	 * @param externalUniqueId the EXTERNAL_UID value
-	 */
-	public void setExternalUniqueId (java.lang.String externalUniqueId) {
-		this.externalUniqueId = externalUniqueId;
+	public String toString() {
+		return "AcademicArea["+getUniqueId()+"]";
 	}
 
-
-
-	/**
-	 * Return the value associated with the column: ACADEMIC_AREA_ABBREVIATION
-	 */
-	public java.lang.String getAcademicAreaAbbreviation () {
-		return academicAreaAbbreviation;
+	public String toDebugString() {
+		return "AcademicArea[" +
+			"\n	AcademicAreaAbbreviation: " + getAcademicAreaAbbreviation() +
+			"\n	ExternalUniqueId: " + getExternalUniqueId() +
+			"\n	LongTitle: " + getLongTitle() +
+			"\n	Session: " + getSession() +
+			"\n	ShortTitle: " + getShortTitle() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-	/**
-	 * Set the value related to the column: ACADEMIC_AREA_ABBREVIATION
-	 * @param academicAreaAbbreviation the ACADEMIC_AREA_ABBREVIATION value
-	 */
-	public void setAcademicAreaAbbreviation (java.lang.String academicAreaAbbreviation) {
-		this.academicAreaAbbreviation = academicAreaAbbreviation;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: SHORT_TITLE
-	 */
-	public java.lang.String getShortTitle () {
-		return shortTitle;
-	}
-
-	/**
-	 * Set the value related to the column: SHORT_TITLE
-	 * @param shortTitle the SHORT_TITLE value
-	 */
-	public void setShortTitle (java.lang.String shortTitle) {
-		this.shortTitle = shortTitle;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: LONG_TITLE
-	 */
-	public java.lang.String getLongTitle () {
-		return longTitle;
-	}
-
-	/**
-	 * Set the value related to the column: LONG_TITLE
-	 * @param longTitle the LONG_TITLE value
-	 */
-	public void setLongTitle (java.lang.String longTitle) {
-		this.longTitle = longTitle;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: SESSION_ID
-	 */
-	public org.unitime.timetable.model.Session getSession () {
-		return session;
-	}
-
-	/**
-	 * Set the value related to the column: SESSION_ID
-	 * @param session the SESSION_ID value
-	 */
-	public void setSession (org.unitime.timetable.model.Session session) {
-		this.session = session;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: posMajors
-	 */
-	public java.util.Set getPosMajors () {
-		return posMajors;
-	}
-
-	/**
-	 * Set the value related to the column: posMajors
-	 * @param posMajors the posMajors value
-	 */
-	public void setPosMajors (java.util.Set posMajors) {
-		this.posMajors = posMajors;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: posMinors
-	 */
-	public java.util.Set getPosMinors () {
-		return posMinors;
-	}
-
-	/**
-	 * Set the value related to the column: posMinors
-	 * @param posMinors the posMinors value
-	 */
-	public void setPosMinors (java.util.Set posMinors) {
-		this.posMinors = posMinors;
-	}
-
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.AcademicArea)) return false;
-		else {
-			org.unitime.timetable.model.AcademicArea academicArea = (org.unitime.timetable.model.AcademicArea) obj;
-			if (null == this.getUniqueId() || null == academicArea.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(academicArea.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

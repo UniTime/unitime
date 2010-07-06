@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -20,192 +20,75 @@
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
+import java.util.Date;
 
+import org.dom4j.Document;
+import org.unitime.timetable.model.Student;
+import org.unitime.timetable.model.StudentSectHistory;
 
-/**
- * This is an object that contains data related to the STUDENT_SECT_HIST table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="STUDENT_SECT_HIST"
- */
+public abstract class BaseStudentSectHistory implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseStudentSectHistory  implements Serializable {
+	private Long iUniqueId;
+	private Document iData;
+	private Integer iType;
+	private Date iTimestamp;
 
-	public static String REF = "StudentSectHistory";
+	private Student iStudent;
+
+	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_DATA = "data";
 	public static String PROP_TYPE = "type";
 	public static String PROP_TIMESTAMP = "timestamp";
 
-
-	// constructors
-	public BaseStudentSectHistory () {
+	public BaseStudentSectHistory() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseStudentSectHistory (java.lang.Long uniqueId) {
-		this.setUniqueId(uniqueId);
+	public BaseStudentSectHistory(Long uniqueId) {
+		setUniqueId(uniqueId);
 		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseStudentSectHistory (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Student student,
-		org.unitime.commons.hibernate.blob.XmlBlobType data,
-		java.lang.Integer type,
-		java.util.Date timestamp) {
+	protected void initialize() {}
 
-		this.setUniqueId(uniqueId);
-		this.setStudent(student);
-		this.setData(data);
-		this.setType(type);
-		this.setTimestamp(timestamp);
-		initialize();
+	public Long getUniqueId() { return iUniqueId; }
+	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
+
+	public Document getData() { return iData; }
+	public void setData(Document data) { iData = data; }
+
+	public Integer getType() { return iType; }
+	public void setType(Integer type) { iType = type; }
+
+	public Date getTimestamp() { return iTimestamp; }
+	public void setTimestamp(Date timestamp) { iTimestamp = timestamp; }
+
+	public Student getStudent() { return iStudent; }
+	public void setStudent(Student student) { iStudent = student; }
+
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof StudentSectHistory)) return false;
+		if (getUniqueId() == null || ((StudentSectHistory)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((StudentSectHistory)o).getUniqueId());
 	}
 
-	protected void initialize () {}
-
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-	// primary key
-	private java.lang.Long uniqueId;
-
-	// fields
-	private org.unitime.commons.hibernate.blob.XmlBlobType data;
-	private java.lang.Integer type;
-	private java.util.Date timestamp;
-
-	// many to one
-	private org.unitime.timetable.model.Student student;
-
-
-
-	/**
-	 * Return the unique identifier of this class
-     * @hibernate.id
-     *  generator-class="sequence"
-     *  column="UNIQUEID"
-     */
-	public java.lang.Long getUniqueId () {
-		return uniqueId;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	/**
-	 * Set the unique identifier of this class
-	 * @param uniqueId the new ID
-	 */
-	public void setUniqueId (java.lang.Long uniqueId) {
-		this.uniqueId = uniqueId;
-		this.hashCode = Integer.MIN_VALUE;
+	public String toString() {
+		return "StudentSectHistory["+getUniqueId()+"]";
 	}
 
-
-
-
-	/**
-	 * Return the value associated with the column: DATA
-	 */
-	public org.unitime.commons.hibernate.blob.XmlBlobType getData () {
-		return data;
+	public String toDebugString() {
+		return "StudentSectHistory[" +
+			"\n	Data: " + getData() +
+			"\n	Student: " + getStudent() +
+			"\n	Timestamp: " + getTimestamp() +
+			"\n	Type: " + getType() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-	/**
-	 * Set the value related to the column: DATA
-	 * @param data the DATA value
-	 */
-	public void setData (org.unitime.commons.hibernate.blob.XmlBlobType data) {
-		this.data = data;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: TYPE
-	 */
-	public java.lang.Integer getType () {
-		return type;
-	}
-
-	/**
-	 * Set the value related to the column: TYPE
-	 * @param type the TYPE value
-	 */
-	public void setType (java.lang.Integer type) {
-		this.type = type;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: TIMESTAMP
-	 */
-	public java.util.Date getTimestamp () {
-		return timestamp;
-	}
-
-	/**
-	 * Set the value related to the column: TIMESTAMP
-	 * @param timestamp the TIMESTAMP value
-	 */
-	public void setTimestamp (java.util.Date timestamp) {
-		this.timestamp = timestamp;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: STUDENT_ID
-	 */
-	public org.unitime.timetable.model.Student getStudent () {
-		return student;
-	}
-
-	/**
-	 * Set the value related to the column: STUDENT_ID
-	 * @param student the STUDENT_ID value
-	 */
-	public void setStudent (org.unitime.timetable.model.Student student) {
-		this.student = student;
-	}
-
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.StudentSectHistory)) return false;
-		else {
-			org.unitime.timetable.model.StudentSectHistory studentSectHistory = (org.unitime.timetable.model.StudentSectHistory) obj;
-			if (null == this.getUniqueId() || null == studentSectHistory.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(studentSectHistory.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

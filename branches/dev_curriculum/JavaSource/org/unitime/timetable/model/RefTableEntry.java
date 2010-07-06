@@ -38,18 +38,6 @@ public class RefTableEntry extends BaseRefTableEntry {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public RefTableEntry (
-		Long uniqueId,
-		java.lang.String reference) {
-
-		super (
-			uniqueId,
-			reference);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 	public RefTableEntry (java.lang.String reference, java.lang.String label) {

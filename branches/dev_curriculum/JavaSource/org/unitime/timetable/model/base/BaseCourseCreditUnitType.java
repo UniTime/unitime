@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -21,103 +21,52 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import org.unitime.timetable.model.CourseCreditUnitType;
+import org.unitime.timetable.model.RefTableEntry;
 
-/**
- * This is an object that contains data related to the COURSE_CREDIT_UNIT_TYPE table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="COURSE_CREDIT_UNIT_TYPE"
- */
+public abstract class BaseCourseCreditUnitType extends RefTableEntry implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseCourseCreditUnitType extends org.unitime.timetable.model.RefTableEntry  implements Serializable {
+	private String iAbbreviation;
 
-	public static String REF = "CourseCreditUnitType";
+
 	public static String PROP_ABBREVIATION = "abbreviation";
 
-
-	// constructors
-	public BaseCourseCreditUnitType () {
+	public BaseCourseCreditUnitType() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseCourseCreditUnitType (Long uniqueId) {
-		super(uniqueId);
+	public BaseCourseCreditUnitType(Long uniqueId) {
+		setUniqueId(uniqueId);
+		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseCourseCreditUnitType (
-		Long uniqueId,
-		java.lang.String reference) {
+	protected void initialize() {}
 
-		super (
-			uniqueId,
-			reference);
+	public String getAbbreviation() { return iAbbreviation; }
+	public void setAbbreviation(String abbreviation) { iAbbreviation = abbreviation; }
+
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof CourseCreditUnitType)) return false;
+		if (getUniqueId() == null || ((CourseCreditUnitType)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((CourseCreditUnitType)o).getUniqueId());
 	}
 
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-
-	// fields
-	private java.lang.String abbreviation;
-
-
-
-
-
-
-	/**
-	 * Return the value associated with the column: ABBREVIATION
-	 */
-	public java.lang.String getAbbreviation () {
-		return abbreviation;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	/**
-	 * Set the value related to the column: ABBREVIATION
-	 * @param abbreviation the ABBREVIATION value
-	 */
-	public void setAbbreviation (java.lang.String abbreviation) {
-		this.abbreviation = abbreviation;
+	public String toString() {
+		return "CourseCreditUnitType["+getUniqueId()+" "+getLabel()+"]";
 	}
 
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.CourseCreditUnitType)) return false;
-		else {
-			org.unitime.timetable.model.CourseCreditUnitType courseCreditUnitType = (org.unitime.timetable.model.CourseCreditUnitType) obj;
-			if (null == this.getUniqueId() || null == courseCreditUnitType.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(courseCreditUnitType.getUniqueId()));
-		}
+	public String toDebugString() {
+		return "CourseCreditUnitType[" +
+			"\n	Abbreviation: " + getAbbreviation() +
+			"\n	Label: " + getLabel() +
+			"\n	Reference: " + getReference() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

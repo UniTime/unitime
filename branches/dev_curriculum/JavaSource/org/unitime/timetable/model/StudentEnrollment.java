@@ -38,22 +38,6 @@ public class StudentEnrollment extends BaseStudentEnrollment {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public StudentEnrollment (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Solution solution,
-		org.unitime.timetable.model.Class_ clazz,
-		java.lang.Long studentId) {
-
-		super (
-			uniqueId,
-			solution,
-			clazz,
-			studentId);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 

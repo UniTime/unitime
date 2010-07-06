@@ -40,22 +40,6 @@ public class Designator extends BaseDesignator implements Comparable {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public Designator (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.SubjectArea subjectArea,
-		org.unitime.timetable.model.DepartmentalInstructor instructor,
-		java.lang.String code) {
-
-		super (
-			uniqueId,
-			subjectArea,
-			instructor,
-			code);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 	/**

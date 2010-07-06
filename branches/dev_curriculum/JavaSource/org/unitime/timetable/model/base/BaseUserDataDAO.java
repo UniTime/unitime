@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -19,180 +19,93 @@
 */
 package org.unitime.timetable.model.base;
 
+import java.util.List;
+
 import org.hibernate.Hibernate;
-import org.hibernate.Session;
 import org.hibernate.criterion.Order;
+
+import org.unitime.timetable.model.UserData;
+import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.UserDataDAO;
 
-/**
- * This is an automatically generated DAO class which should not be edited.
- */
-public abstract class BaseUserDataDAO extends org.unitime.timetable.model.dao._RootDAO {
+public abstract class BaseUserDataDAO extends _RootDAO {
 
-	// query name references
+	private static UserDataDAO sInstance;
 
-
-	public static UserDataDAO instance;
-
-	/**
-	 * Return a singleton of the DAO
-	 */
 	public static UserDataDAO getInstance () {
-		if (null == instance) instance = new UserDataDAO();
-		return instance;
+		if (sInstance == null) sInstance = new UserDataDAO();
+		return sInstance;
 	}
 
 	public Class getReferenceClass () {
-		return org.unitime.timetable.model.UserData.class;
+		return UserData.class;
 	}
 
-    public Order getDefaultOrder () {
+	public Order getDefaultOrder () {
 		return null;
-    }
-
-	/**
-	 * Cast the object as a org.unitime.timetable.model.UserData
-	 */
-	public org.unitime.timetable.model.UserData cast (Object object) {
-		return (org.unitime.timetable.model.UserData) object;
 	}
 
-	public org.unitime.timetable.model.UserData get(org.unitime.timetable.model.UserData key)
-	{
-		return (org.unitime.timetable.model.UserData) get(getReferenceClass(), key);
+	public UserData get(UserData key) {
+		return (UserData) get(getReferenceClass(), key);
 	}
 
-	public org.unitime.timetable.model.UserData get(org.unitime.timetable.model.UserData key, Session s)
-	{
-		return (org.unitime.timetable.model.UserData) get(getReferenceClass(), key, s);
+	public UserData get(UserData key, org.hibernate.Session hibSession) {
+		return (UserData) get(getReferenceClass(), key, hibSession);
 	}
 
-	public org.unitime.timetable.model.UserData load(org.unitime.timetable.model.UserData key)
-	{
-		return (org.unitime.timetable.model.UserData) load(getReferenceClass(), key);
+	public UserData load(UserData key) {
+		return (UserData) load(getReferenceClass(), key);
 	}
 
-	public org.unitime.timetable.model.UserData load(org.unitime.timetable.model.UserData key, Session s)
-	{
-		return (org.unitime.timetable.model.UserData) load(getReferenceClass(), key, s);
+	public UserData load(UserData key, org.hibernate.Session hibSession) {
+		return (UserData) load(getReferenceClass(), key, hibSession);
 	}
 
-	public org.unitime.timetable.model.UserData loadInitialize(org.unitime.timetable.model.UserData key, Session s) 
-	{ 
-		org.unitime.timetable.model.UserData obj = load(key, s); 
-		if (!Hibernate.isInitialized(obj)) {
-			Hibernate.initialize(obj);
-		} 
-		return obj; 
+	public UserData loadInitialize(UserData key, org.hibernate.Session hibSession) {
+		UserData userData = load(key, hibSession);
+		if (!Hibernate.isInitialized(userData)) Hibernate.initialize(userData);
+		return userData;
 	}
 
-
-	/**
-	 * Persist the given transient instance, first assigning a generated identifier. (Or using the current value
-	 * of the identifier property if the assigned generator is used.) 
-	 * @param userData a transient instance of a persistent class 
-	 * @return the class identifier
-	 */
-	public org.unitime.timetable.model.UserData save(org.unitime.timetable.model.UserData userData)
-	{
-		return (org.unitime.timetable.model.UserData) super.save(userData);
+	public void save(UserData userData) {
+		save((Object) userData);
 	}
 
-	/**
-	 * Persist the given transient instance, first assigning a generated identifier. (Or using the current value
-	 * of the identifier property if the assigned generator is used.) 
-	 * Use the Session given.
-	 * @param userData a transient instance of a persistent class
-	 * @param s the Session
-	 * @return the class identifier
-	 */
-	public org.unitime.timetable.model.UserData save(org.unitime.timetable.model.UserData userData, Session s)
-	{
-		return (org.unitime.timetable.model.UserData) save((Object) userData, s);
+	public void save(UserData userData, org.hibernate.Session hibSession) {
+		save((Object) userData, hibSession);
 	}
 
-	/**
-	 * Either save() or update() the given instance, depending upon the value of its identifier property. By default
-	 * the instance is always saved. This behaviour may be adjusted by specifying an unsaved-value attribute of the
-	 * identifier property mapping. 
-	 * @param userData a transient instance containing new or updated state 
-	 */
-	public void saveOrUpdate(org.unitime.timetable.model.UserData userData)
-	{
+	public void saveOrUpdate(UserData userData) {
 		saveOrUpdate((Object) userData);
 	}
 
-	/**
-	 * Either save() or update() the given instance, depending upon the value of its identifier property. By default the
-	 * instance is always saved. This behaviour may be adjusted by specifying an unsaved-value attribute of the identifier
-	 * property mapping. 
-	 * Use the Session given.
-	 * @param userData a transient instance containing new or updated state.
-	 * @param s the Session.
-	 */
-	public void saveOrUpdate(org.unitime.timetable.model.UserData userData, Session s)
-	{
-		saveOrUpdate((Object) userData, s);
+	public void saveOrUpdate(UserData userData, org.hibernate.Session hibSession) {
+		saveOrUpdate((Object) userData, hibSession);
 	}
 
-	/**
-	 * Update the persistent state associated with the given identifier. An exception is thrown if there is a persistent
-	 * instance with the same identifier in the current session.
-	 * @param userData a transient instance containing updated state
-	 */
-	public void update(org.unitime.timetable.model.UserData userData) 
-	{
+
+	public void update(UserData userData) {
 		update((Object) userData);
 	}
 
-	/**
-	 * Update the persistent state associated with the given identifier. An exception is thrown if there is a persistent
-	 * instance with the same identifier in the current session.
-	 * Use the Session given.
-	 * @param userData a transient instance containing updated state
-	 * @param the Session
-	 */
-	public void update(org.unitime.timetable.model.UserData userData, Session s)
-	{
-		update((Object) userData, s);
+	public void update(UserData userData, org.hibernate.Session hibSession) {
+		update((Object) userData, hibSession);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * @param userData the instance to be removed
-	 */
-	public void delete(org.unitime.timetable.model.UserData userData)
-	{
+
+	public void delete(UserData userData) {
 		delete((Object) userData);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * Use the Session given.
-	 * @param userData the instance to be removed
-	 * @param s the Session
-	 */
-	public void delete(org.unitime.timetable.model.UserData userData, Session s)
-	{
-		delete((Object) userData, s);
-	}
-	
-	/**
-	 * Re-read the state of the given instance from the underlying database. It is inadvisable to use this to implement
-	 * long-running sessions that span many business tasks. This method is, however, useful in certain special circumstances.
-	 * For example 
-	 * <ul> 
-	 * <li>where a database trigger alters the object state upon insert or update</li>
-	 * <li>after executing direct SQL (eg. a mass update) in the same session</li>
-	 * <li>after inserting a Blob or Clob</li>
-	 * </ul>
-	 */
-	public void refresh (org.unitime.timetable.model.UserData userData, Session s)
-	{
-		refresh((Object) userData, s);
+	public void delete(UserData userData, org.hibernate.Session hibSession) {
+		delete((Object) userData, hibSession);
 	}
 
+	public void refresh(UserData userData, org.hibernate.Session hibSession) {
+		refresh((Object) userData, hibSession);
+	}
 
+	public List<UserData> findAll(org.hibernate.Session hibSession) {
+		return hibSession.createQuery("from UserData").list();
+	}
 }

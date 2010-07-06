@@ -45,18 +45,6 @@ public class CourseCreditType extends BaseCourseCreditType {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public CourseCreditType (
-		Long uniqueId,
-		java.lang.String reference) {
-
-		super (
-			uniqueId,
-			reference);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 	public static String COURSE_CREDIT_TYPE_ATTR_NAME = "courseCreditTypeList";

@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -19,202 +19,100 @@
 */
 package org.unitime.timetable.model.base;
 
+import java.util.List;
+
 import org.hibernate.Hibernate;
-import org.hibernate.Session;
 import org.hibernate.criterion.Order;
+
+import org.unitime.timetable.model.ArrangeCreditUnitConfig;
+import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.ArrangeCreditUnitConfigDAO;
 
-/**
- * This is an automatically generated DAO class which should not be edited.
- */
-public abstract class BaseArrangeCreditUnitConfigDAO extends org.unitime.timetable.model.dao._RootDAO {
+public abstract class BaseArrangeCreditUnitConfigDAO extends _RootDAO {
 
-	// query name references
+	private static ArrangeCreditUnitConfigDAO sInstance;
 
-
-	public static ArrangeCreditUnitConfigDAO instance;
-
-	/**
-	 * Return a singleton of the DAO
-	 */
 	public static ArrangeCreditUnitConfigDAO getInstance () {
-		if (null == instance) instance = new ArrangeCreditUnitConfigDAO();
-		return instance;
+		if (sInstance == null) sInstance = new ArrangeCreditUnitConfigDAO();
+		return sInstance;
 	}
 
 	public Class getReferenceClass () {
-		return org.unitime.timetable.model.ArrangeCreditUnitConfig.class;
+		return ArrangeCreditUnitConfig.class;
 	}
 
-    public Order getDefaultOrder () {
+	public Order getDefaultOrder () {
 		return null;
-    }
-
-	/**
-	 * Cast the object as a org.unitime.timetable.model.ArrangeCreditUnitConfig
-	 */
-	public org.unitime.timetable.model.ArrangeCreditUnitConfig cast (Object object) {
-		return (org.unitime.timetable.model.ArrangeCreditUnitConfig) object;
 	}
 
-	public org.unitime.timetable.model.ArrangeCreditUnitConfig get(java.lang.Long key)
-	{
-		return (org.unitime.timetable.model.ArrangeCreditUnitConfig) get(getReferenceClass(), key);
+	public ArrangeCreditUnitConfig get(Long uniqueId) {
+		return (ArrangeCreditUnitConfig) get(getReferenceClass(), uniqueId);
 	}
 
-	public org.unitime.timetable.model.ArrangeCreditUnitConfig get(java.lang.Long key, Session s)
-	{
-		return (org.unitime.timetable.model.ArrangeCreditUnitConfig) get(getReferenceClass(), key, s);
+	public ArrangeCreditUnitConfig get(Long uniqueId, org.hibernate.Session hibSession) {
+		return (ArrangeCreditUnitConfig) get(getReferenceClass(), uniqueId, hibSession);
 	}
 
-	public org.unitime.timetable.model.ArrangeCreditUnitConfig load(java.lang.Long key)
-	{
-		return (org.unitime.timetable.model.ArrangeCreditUnitConfig) load(getReferenceClass(), key);
+	public ArrangeCreditUnitConfig load(Long uniqueId) {
+		return (ArrangeCreditUnitConfig) load(getReferenceClass(), uniqueId);
 	}
 
-	public org.unitime.timetable.model.ArrangeCreditUnitConfig load(java.lang.Long key, Session s)
-	{
-		return (org.unitime.timetable.model.ArrangeCreditUnitConfig) load(getReferenceClass(), key, s);
+	public ArrangeCreditUnitConfig load(Long uniqueId, org.hibernate.Session hibSession) {
+		return (ArrangeCreditUnitConfig) load(getReferenceClass(), uniqueId, hibSession);
 	}
 
-	public org.unitime.timetable.model.ArrangeCreditUnitConfig loadInitialize(java.lang.Long key, Session s) 
-	{ 
-		org.unitime.timetable.model.ArrangeCreditUnitConfig obj = load(key, s); 
-		if (!Hibernate.isInitialized(obj)) {
-			Hibernate.initialize(obj);
-		} 
-		return obj; 
+	public ArrangeCreditUnitConfig loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
+		ArrangeCreditUnitConfig arrangeCreditUnitConfig = load(uniqueId, hibSession);
+		if (!Hibernate.isInitialized(arrangeCreditUnitConfig)) Hibernate.initialize(arrangeCreditUnitConfig);
+		return arrangeCreditUnitConfig;
 	}
 
-
-	/**
-	 * Persist the given transient instance, first assigning a generated identifier. (Or using the current value
-	 * of the identifier property if the assigned generator is used.) 
-	 * @param arrangeCreditUnitConfig a transient instance of a persistent class 
-	 * @return the class identifier
-	 */
-	public java.lang.Long save(org.unitime.timetable.model.ArrangeCreditUnitConfig arrangeCreditUnitConfig)
-	{
-		return (java.lang.Long) super.save(arrangeCreditUnitConfig);
+	public void save(ArrangeCreditUnitConfig arrangeCreditUnitConfig) {
+		save((Object) arrangeCreditUnitConfig);
 	}
 
-	/**
-	 * Persist the given transient instance, first assigning a generated identifier. (Or using the current value
-	 * of the identifier property if the assigned generator is used.) 
-	 * Use the Session given.
-	 * @param arrangeCreditUnitConfig a transient instance of a persistent class
-	 * @param s the Session
-	 * @return the class identifier
-	 */
-	public java.lang.Long save(org.unitime.timetable.model.ArrangeCreditUnitConfig arrangeCreditUnitConfig, Session s)
-	{
-		return (java.lang.Long) save((Object) arrangeCreditUnitConfig, s);
+	public void save(ArrangeCreditUnitConfig arrangeCreditUnitConfig, org.hibernate.Session hibSession) {
+		save((Object) arrangeCreditUnitConfig, hibSession);
 	}
 
-	/**
-	 * Either save() or update() the given instance, depending upon the value of its identifier property. By default
-	 * the instance is always saved. This behaviour may be adjusted by specifying an unsaved-value attribute of the
-	 * identifier property mapping. 
-	 * @param arrangeCreditUnitConfig a transient instance containing new or updated state 
-	 */
-	public void saveOrUpdate(org.unitime.timetable.model.ArrangeCreditUnitConfig arrangeCreditUnitConfig)
-	{
+	public void saveOrUpdate(ArrangeCreditUnitConfig arrangeCreditUnitConfig) {
 		saveOrUpdate((Object) arrangeCreditUnitConfig);
 	}
 
-	/**
-	 * Either save() or update() the given instance, depending upon the value of its identifier property. By default the
-	 * instance is always saved. This behaviour may be adjusted by specifying an unsaved-value attribute of the identifier
-	 * property mapping. 
-	 * Use the Session given.
-	 * @param arrangeCreditUnitConfig a transient instance containing new or updated state.
-	 * @param s the Session.
-	 */
-	public void saveOrUpdate(org.unitime.timetable.model.ArrangeCreditUnitConfig arrangeCreditUnitConfig, Session s)
-	{
-		saveOrUpdate((Object) arrangeCreditUnitConfig, s);
+	public void saveOrUpdate(ArrangeCreditUnitConfig arrangeCreditUnitConfig, org.hibernate.Session hibSession) {
+		saveOrUpdate((Object) arrangeCreditUnitConfig, hibSession);
 	}
 
-	/**
-	 * Update the persistent state associated with the given identifier. An exception is thrown if there is a persistent
-	 * instance with the same identifier in the current session.
-	 * @param arrangeCreditUnitConfig a transient instance containing updated state
-	 */
-	public void update(org.unitime.timetable.model.ArrangeCreditUnitConfig arrangeCreditUnitConfig) 
-	{
+
+	public void update(ArrangeCreditUnitConfig arrangeCreditUnitConfig) {
 		update((Object) arrangeCreditUnitConfig);
 	}
 
-	/**
-	 * Update the persistent state associated with the given identifier. An exception is thrown if there is a persistent
-	 * instance with the same identifier in the current session.
-	 * Use the Session given.
-	 * @param arrangeCreditUnitConfig a transient instance containing updated state
-	 * @param the Session
-	 */
-	public void update(org.unitime.timetable.model.ArrangeCreditUnitConfig arrangeCreditUnitConfig, Session s)
-	{
-		update((Object) arrangeCreditUnitConfig, s);
+	public void update(ArrangeCreditUnitConfig arrangeCreditUnitConfig, org.hibernate.Session hibSession) {
+		update((Object) arrangeCreditUnitConfig, hibSession);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * @param id the instance ID to be removed
-	 */
-	public void delete(java.lang.Long id)
-	{
-		delete((Object) load(id));
+	public void delete(Long uniqueId) {
+		delete(load(uniqueId));
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * Use the Session given.
-	 * @param id the instance ID to be removed
-	 * @param s the Session
-	 */
-	public void delete(java.lang.Long id, Session s)
-	{
-		delete((Object) load(id, s), s);
+	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
+		delete(load(uniqueId, hibSession), hibSession);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * @param arrangeCreditUnitConfig the instance to be removed
-	 */
-	public void delete(org.unitime.timetable.model.ArrangeCreditUnitConfig arrangeCreditUnitConfig)
-	{
+	public void delete(ArrangeCreditUnitConfig arrangeCreditUnitConfig) {
 		delete((Object) arrangeCreditUnitConfig);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * Use the Session given.
-	 * @param arrangeCreditUnitConfig the instance to be removed
-	 * @param s the Session
-	 */
-	public void delete(org.unitime.timetable.model.ArrangeCreditUnitConfig arrangeCreditUnitConfig, Session s)
-	{
-		delete((Object) arrangeCreditUnitConfig, s);
-	}
-	
-	/**
-	 * Re-read the state of the given instance from the underlying database. It is inadvisable to use this to implement
-	 * long-running sessions that span many business tasks. This method is, however, useful in certain special circumstances.
-	 * For example 
-	 * <ul> 
-	 * <li>where a database trigger alters the object state upon insert or update</li>
-	 * <li>after executing direct SQL (eg. a mass update) in the same session</li>
-	 * <li>after inserting a Blob or Clob</li>
-	 * </ul>
-	 */
-	public void refresh (org.unitime.timetable.model.ArrangeCreditUnitConfig arrangeCreditUnitConfig, Session s)
-	{
-		refresh((Object) arrangeCreditUnitConfig, s);
+	public void delete(ArrangeCreditUnitConfig arrangeCreditUnitConfig, org.hibernate.Session hibSession) {
+		delete((Object) arrangeCreditUnitConfig, hibSession);
 	}
 
+	public void refresh(ArrangeCreditUnitConfig arrangeCreditUnitConfig, org.hibernate.Session hibSession) {
+		refresh((Object) arrangeCreditUnitConfig, hibSession);
+	}
 
+	public List<ArrangeCreditUnitConfig> findAll(org.hibernate.Session hibSession) {
+		return hibSession.createQuery("from ArrangeCreditUnitConfig").list();
+	}
 }

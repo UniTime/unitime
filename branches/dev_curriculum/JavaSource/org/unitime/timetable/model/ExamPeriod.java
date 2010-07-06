@@ -56,30 +56,6 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public ExamPeriod (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.PreferenceLevel prefLevel,
-		java.lang.Integer dateOffset,
-		java.lang.Integer startSlot,
-		java.lang.Integer length,
-		java.lang.Integer examType,
-		java.lang.Integer eventStartOffset,
-		java.lang.Integer eventStopOffset) {
-
-		super (
-			uniqueId,
-			prefLevel,
-			dateOffset,
-			startSlot,
-			length,
-			examType,
-			eventStartOffset,
-			eventStopOffset);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 	
 	public static String PERIOD_ATTR_NAME = "periodList";

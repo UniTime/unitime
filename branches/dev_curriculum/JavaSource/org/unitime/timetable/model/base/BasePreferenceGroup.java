@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -20,139 +20,69 @@
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
+import org.unitime.timetable.model.DistributionObject;
+import org.unitime.timetable.model.Preference;
+import org.unitime.timetable.model.PreferenceGroup;
 
-/**
- * This is an object that contains data related to the  table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table=""
- */
+public abstract class BasePreferenceGroup implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BasePreferenceGroup  implements Serializable {
+	private Long iUniqueId;
 
-	public static String REF = "PreferenceGroup";
+	private Set<Preference> iPreferences;
+	private Set<DistributionObject> iDistributionObjects;
 
+	public static String PROP_UNIQUEID = "uniqueId";
 
-	// constructors
-	public BasePreferenceGroup () {
+	public BasePreferenceGroup() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BasePreferenceGroup (java.lang.Long uniqueId) {
-		this.setUniqueId(uniqueId);
+	public BasePreferenceGroup(Long uniqueId) {
+		setUniqueId(uniqueId);
 		initialize();
 	}
 
-	protected void initialize () {}
+	protected void initialize() {}
 
+	public Long getUniqueId() { return iUniqueId; }
+	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
-
-	private int hashCode = Integer.MIN_VALUE;
-
-	// primary key
-	private java.lang.Long uniqueId;
-
-	// collections
-	private java.util.Set preferences;
-	private java.util.Set distributionObjects;
-
-
-
-	/**
-	 * Return the unique identifier of this class
-     * @hibernate.id
-     *  generator-class="org.unitime.commons.hibernate.id.UniqueIdGenerator"
-     *  column="UNIQUEID"
-     */
-	public java.lang.Long getUniqueId () {
-		return uniqueId;
+	public Set<Preference> getPreferences() { return iPreferences; }
+	public void setPreferences(Set<Preference> preferences) { iPreferences = preferences; }
+	public void addTopreferences(Preference preference) {
+		if (iPreferences == null) iPreferences = new HashSet();
+		iPreferences.add(preference);
 	}
 
-	/**
-	 * Set the unique identifier of this class
-	 * @param uniqueId the new ID
-	 */
-	public void setUniqueId (java.lang.Long uniqueId) {
-		this.uniqueId = uniqueId;
-		this.hashCode = Integer.MIN_VALUE;
+	public Set<DistributionObject> getDistributionObjects() { return iDistributionObjects; }
+	public void setDistributionObjects(Set<DistributionObject> distributionObjects) { iDistributionObjects = distributionObjects; }
+	public void addTodistributionObjects(DistributionObject distributionObject) {
+		if (iDistributionObjects == null) iDistributionObjects = new HashSet();
+		iDistributionObjects.add(distributionObject);
 	}
 
-
-
-
-	/**
-	 * Return the value associated with the column: preferences
-	 */
-	public java.util.Set getPreferences () {
-		return preferences;
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof PreferenceGroup)) return false;
+		if (getUniqueId() == null || ((PreferenceGroup)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((PreferenceGroup)o).getUniqueId());
 	}
 
-	/**
-	 * Set the value related to the column: preferences
-	 * @param preferences the preferences value
-	 */
-	public void setPreferences (java.util.Set preferences) {
-		this.preferences = preferences;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	public void addTopreferences (org.unitime.timetable.model.Preference preference) {
-		if (null == getPreferences()) setPreferences(new java.util.HashSet());
-		getPreferences().add(preference);
+	public String toString() {
+		return "PreferenceGroup["+getUniqueId()+"]";
 	}
 
-
-
-	/**
-	 * Return the value associated with the column: distributionObjects
-	 */
-	public java.util.Set getDistributionObjects () {
-		return distributionObjects;
+	public String toDebugString() {
+		return "PreferenceGroup[" +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-	/**
-	 * Set the value related to the column: distributionObjects
-	 * @param distributionObjects the distributionObjects value
-	 */
-	public void setDistributionObjects (java.util.Set distributionObjects) {
-		this.distributionObjects = distributionObjects;
-	}
-
-	public void addTodistributionObjects (org.unitime.timetable.model.DistributionObject distributionObject) {
-		if (null == getDistributionObjects()) setDistributionObjects(new java.util.HashSet());
-		getDistributionObjects().add(distributionObject);
-	}
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.PreferenceGroup)) return false;
-		else {
-			org.unitime.timetable.model.PreferenceGroup preferenceGroup = (org.unitime.timetable.model.PreferenceGroup) obj;
-			if (null == this.getUniqueId() || null == preferenceGroup.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(preferenceGroup.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

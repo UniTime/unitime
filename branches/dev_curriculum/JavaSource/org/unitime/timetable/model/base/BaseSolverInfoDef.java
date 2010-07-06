@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -21,153 +21,66 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import org.unitime.timetable.model.SolverInfoDef;
 
-/**
- * This is an object that contains data related to the SOLVER_INFO_DEF table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="SOLVER_INFO_DEF"
- */
+public abstract class BaseSolverInfoDef implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseSolverInfoDef  implements Serializable {
+	private Long iUniqueId;
+	private String iName;
+	private String iDescription;
+	private String iImplementation;
 
-	public static String REF = "SolverInfoDef";
+
+	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_NAME = "name";
 	public static String PROP_DESCRIPTION = "description";
 	public static String PROP_IMPLEMENTATION = "implementation";
 
-
-	// constructors
-	public BaseSolverInfoDef () {
+	public BaseSolverInfoDef() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseSolverInfoDef (java.lang.Long uniqueId) {
-		this.setUniqueId(uniqueId);
+	public BaseSolverInfoDef(Long uniqueId) {
+		setUniqueId(uniqueId);
 		initialize();
 	}
 
-	protected void initialize () {}
+	protected void initialize() {}
 
+	public Long getUniqueId() { return iUniqueId; }
+	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	public String getName() { return iName; }
+	public void setName(String name) { iName = name; }
 
-	private int hashCode = Integer.MIN_VALUE;
+	public String getDescription() { return iDescription; }
+	public void setDescription(String description) { iDescription = description; }
 
-	// primary key
-	private java.lang.Long uniqueId;
+	public String getImplementation() { return iImplementation; }
+	public void setImplementation(String implementation) { iImplementation = implementation; }
 
-	// fields
-	private java.lang.String name;
-	private java.lang.String description;
-	private java.lang.String implementation;
-
-
-
-	/**
-	 * Return the unique identifier of this class
-     * @hibernate.id
-     *  generator-class="sequence"
-     *  column="UNIQUEID"
-     */
-	public java.lang.Long getUniqueId () {
-		return uniqueId;
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof SolverInfoDef)) return false;
+		if (getUniqueId() == null || ((SolverInfoDef)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((SolverInfoDef)o).getUniqueId());
 	}
 
-	/**
-	 * Set the unique identifier of this class
-	 * @param uniqueId the new ID
-	 */
-	public void setUniqueId (java.lang.Long uniqueId) {
-		this.uniqueId = uniqueId;
-		this.hashCode = Integer.MIN_VALUE;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-
-
-
-	/**
-	 * Return the value associated with the column: NAME
-	 */
-	public java.lang.String getName () {
-		return name;
+	public String toString() {
+		return "SolverInfoDef["+getUniqueId()+" "+getName()+"]";
 	}
 
-	/**
-	 * Set the value related to the column: NAME
-	 * @param name the NAME value
-	 */
-	public void setName (java.lang.String name) {
-		this.name = name;
+	public String toDebugString() {
+		return "SolverInfoDef[" +
+			"\n	Description: " + getDescription() +
+			"\n	Implementation: " + getImplementation() +
+			"\n	Name: " + getName() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-
-
-	/**
-	 * Return the value associated with the column: DESCRIPTION
-	 */
-	public java.lang.String getDescription () {
-		return description;
-	}
-
-	/**
-	 * Set the value related to the column: DESCRIPTION
-	 * @param description the DESCRIPTION value
-	 */
-	public void setDescription (java.lang.String description) {
-		this.description = description;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: IMPLEMENTATION
-	 */
-	public java.lang.String getImplementation () {
-		return implementation;
-	}
-
-	/**
-	 * Set the value related to the column: IMPLEMENTATION
-	 * @param implementation the IMPLEMENTATION value
-	 */
-	public void setImplementation (java.lang.String implementation) {
-		this.implementation = implementation;
-	}
-
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.SolverInfoDef)) return false;
-		else {
-			org.unitime.timetable.model.SolverInfoDef solverInfoDef = (org.unitime.timetable.model.SolverInfoDef) obj;
-			if (null == this.getUniqueId() || null == solverInfoDef.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(solverInfoDef.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

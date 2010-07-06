@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -20,145 +20,98 @@
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.ExamConflict;
+import org.unitime.timetable.model.Student;
 
 public abstract class BaseExamConflict implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-    public static String REF = "ExamConflict";
+	private Long iUniqueId;
+	private Integer iConflictType;
+	private Double iDistance;
+	private Integer iNrStudents;
+	private Integer iNrInstructors;
 
+	private Set<Exam> iExams;
+	private Set<Student> iStudents;
+	private Set<DepartmentalInstructor> iInstructors;
 
-	// constructors
+	public static String PROP_UNIQUEID = "uniqueId";
+	public static String PROP_CONFLICT_TYPE = "conflictType";
+	public static String PROP_DISTANCE = "distance";
+
 	public BaseExamConflict() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseExamConflict (java.lang.Long uniqueId) {
-        this.setUniqueId(uniqueId);
-        initialize();
+	public BaseExamConflict(Long uniqueId) {
+		setUniqueId(uniqueId);
+		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseExamConflict (
-		java.lang.Long uniqueId,
-		java.lang.Integer conflictType) {
+	protected void initialize() {}
 
-	    this.setUniqueId(uniqueId);
-        this.setConflictType(conflictType);
-        initialize();
+	public Long getUniqueId() { return iUniqueId; }
+	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
+
+	public Integer getConflictType() { return iConflictType; }
+	public void setConflictType(Integer conflictType) { iConflictType = conflictType; }
+
+	public Double getDistance() { return iDistance; }
+	public void setDistance(Double distance) { iDistance = distance; }
+
+	public Integer getNrStudents() { return iNrStudents; }
+	public void setNrStudents(Integer nrStudents) { iNrStudents = nrStudents; }
+
+	public Integer getNrInstructors() { return iNrInstructors; }
+	public void setNrInstructors(Integer nrInstructors) { iNrInstructors = nrInstructors; }
+
+	public Set<Exam> getExams() { return iExams; }
+	public void setExams(Set<Exam> exams) { iExams = exams; }
+	public void addToexams(Exam exam) {
+		if (iExams == null) iExams = new HashSet();
+		iExams.add(exam);
 	}
 
-    protected void initialize () {}
-
-	private int hashCode = Integer.MIN_VALUE;
-
-    // primary key
-    private java.lang.Long uniqueId;
-
-    // fields
-	private java.lang.Integer conflictType;
-	private java.lang.Integer nrStudents;
-	private java.lang.Integer nrInstructors;
-	private java.lang.Double distance;
-	
-	// sets
-	private java.util.Set exams;
-	private java.util.Set students;
-	private java.util.Set instructors;
-
-    public java.lang.Long getUniqueId () {
-        return uniqueId;
-    }
-
-    public void setUniqueId (java.lang.Long uniqueId) {
-        this.uniqueId = uniqueId;
-        this.hashCode = Integer.MIN_VALUE;
-    }
-
-    public void setConflictType(java.lang.Integer conflictType) {
-        this.conflictType = conflictType;
-    }
-    
-    public java.lang.Integer getConflictType() {
-        return conflictType;
-    }
-    
-    public void setNrStudents(java.lang.Integer nrStudents) {
-        this.nrStudents = nrStudents;
-    }
-    
-    public java.lang.Integer getNrStudents() {
-        return nrStudents;
-    }
-    
-    public void setNrInstructors(java.lang.Integer nrInstructors) {
-        this.nrInstructors = nrInstructors;
-    }
-    
-    public java.lang.Integer getNrInstructors() {
-        return nrInstructors;
-    }
-
-    public void setDistance(java.lang.Double distance) {
-        this.distance = distance;
-    }
-    
-    public java.lang.Double getDistance() {
-        return distance;
-    }
-    
-    public void setExams(java.util.Set exams) {
-        this.exams = exams;
-    }
-    
-    public java.util.Set getExams() {
-        return exams;
-    }
-    
-    public void setStudents(java.util.Set students) {
-        this.students = students;
-    }
-    
-    public java.util.Set getStudents() {
-        return students;
-    }
-    
-    public void setInstructors(java.util.Set instructors) {
-        this.instructors = instructors;
-    }
-    
-    public java.util.Set getInstructors() {
-        return instructors;
-    }
-
-	public boolean equals (Object obj) {
-        if (null == obj) return false;
-        if (!(obj instanceof org.unitime.timetable.model.ExamConflict)) return false;
-        else {
-            org.unitime.timetable.model.ExamConflict examConflict = (org.unitime.timetable.model.ExamConflict) obj;
-            if (null == this.getUniqueId() || null == examConflict.getUniqueId()) return false;
-            else return (this.getUniqueId().equals(examConflict.getUniqueId()));
-        }
-    }
-
-    public int hashCode () {
-        if (Integer.MIN_VALUE == this.hashCode) {
-            if (null == this.getUniqueId()) return super.hashCode();
-            else {
-                String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-                this.hashCode = hashStr.hashCode();
-            }
-        }
-        return this.hashCode;
-    }
-
-
-	public String toString () {
-		return super.toString();
+	public Set<Student> getStudents() { return iStudents; }
+	public void setStudents(Set<Student> students) { iStudents = students; }
+	public void addTostudents(Student student) {
+		if (iStudents == null) iStudents = new HashSet();
+		iStudents.add(student);
 	}
 
+	public Set<DepartmentalInstructor> getInstructors() { return iInstructors; }
+	public void setInstructors(Set<DepartmentalInstructor> instructors) { iInstructors = instructors; }
+	public void addToinstructors(DepartmentalInstructor departmentalInstructor) {
+		if (iInstructors == null) iInstructors = new HashSet();
+		iInstructors.add(departmentalInstructor);
+	}
 
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof ExamConflict)) return false;
+		if (getUniqueId() == null || ((ExamConflict)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((ExamConflict)o).getUniqueId());
+	}
+
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
+	}
+
+	public String toString() {
+		return "ExamConflict["+getUniqueId()+"]";
+	}
+
+	public String toDebugString() {
+		return "ExamConflict[" +
+			"\n	ConflictType: " + getConflictType() +
+			"\n	Distance: " + getDistance() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
+	}
 }

@@ -68,18 +68,6 @@ public class TimePattern extends BaseTimePattern implements Comparable {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public TimePattern (
-		java.lang.Long uniqueId,
-		Session session) {
-
-		super (
-			uniqueId,
-			session);
-	}
-
     /*[CONSTRUCTOR MARKER END]*/
 
     public static Vector findAll(HttpServletRequest request, Boolean visible) throws Exception {

@@ -51,28 +51,6 @@ public class Building extends BaseBuilding implements Comparable {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public Building (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Session session,
-		java.lang.String externalUniqueId,
-		java.lang.String abbreviation,
-		java.lang.String name,
-		java.lang.Integer coordinateX,
-		java.lang.Integer coordinateY) {
-
-		super (
-			uniqueId,
-			session,
-			externalUniqueId,
-			abbreviation,
-			name,
-			coordinateX,
-			coordinateY);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 	/** Request attribute name for available buildings **/

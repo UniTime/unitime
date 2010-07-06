@@ -38,28 +38,6 @@ public class CourseSubpartCredit extends BaseCourseSubpartCredit {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public CourseSubpartCredit (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.CourseCatalog courseCatalog,
-		java.lang.String subpartId,
-		java.lang.String creditType,
-		java.lang.String creditUnitType,
-		java.lang.String creditFormat,
-		java.lang.Float fixedMinimumCredit) {
-
-		super (
-			uniqueId,
-			courseCatalog,
-			subpartId,
-			creditType,
-			creditUnitType,
-			creditFormat,
-			fixedMinimumCredit);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 

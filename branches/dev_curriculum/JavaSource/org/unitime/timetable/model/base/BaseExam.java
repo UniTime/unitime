@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -20,394 +20,161 @@
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
+import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.ExamConflict;
+import org.unitime.timetable.model.ExamOwner;
+import org.unitime.timetable.model.ExamPeriod;
+import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.PreferenceGroup;
+import org.unitime.timetable.model.Session;
 
-/**
- * This is an object that contains data related to the EXAM table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="EXAM"
- */
+public abstract class BaseExam extends PreferenceGroup implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseExam extends org.unitime.timetable.model.PreferenceGroup  implements Serializable {
+	private String iName;
+	private String iNote;
+	private Integer iLength;
+	private Integer iExamSize;
+	private Integer iPrintOffset;
+	private Integer iMaxNbrRooms;
+	private Integer iSeatingType;
+	private String iAssignedPreference;
+	private Integer iExamType;
+	private Integer iAvgPeriod;
+	private Long iUniqueIdRolledForwardFrom;
 
-	public static String REF = "Exam";
+	private Session iSession;
+	private ExamPeriod iAssignedPeriod;
+	private Set<ExamOwner> iOwners;
+	private Set<Location> iAssignedRooms;
+	private Set<DepartmentalInstructor> iInstructors;
+	private Set<ExamConflict> iConflicts;
+
 	public static String PROP_NAME = "name";
 	public static String PROP_NOTE = "note";
 	public static String PROP_LENGTH = "length";
-	public static String PROP_MAX_NBR_ROOMS = "maxNbrRooms";
-	public static String PROP_SEATING_TYPE = "seatingType";
-	public static String PROP_ASSIGNED_PREFERENCE = "assignedPreference";
-	public static String PROP_EXAM_TYPE = "examType";
-	public static String PROP_AVG_PERIOD = "avgPeriod";
-	public static String PROP_UNIQUE_ID_ROLLED_FORWARD_FROM = "uniqueIdRolledForwardFrom";
 	public static String PROP_EXAM_SIZE = "examSize";
 	public static String PROP_PRINT_OFFSET = "printOffset";
+	public static String PROP_MAX_NBR_ROOMS = "maxNbrRooms";
+	public static String PROP_SEATING_TYPE = "seatingType";
+	public static String PROP_ASSIGNED_PREF = "assignedPreference";
+	public static String PROP_EXAM_TYPE = "examType";
+	public static String PROP_AVG_PERIOD = "avgPeriod";
+	public static String PROP_UID_ROLLED_FWD_FROM = "uniqueIdRolledForwardFrom";
 
-
-	// constructors
-	public BaseExam () {
-		super();
+	public BaseExam() {
+		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseExam (java.lang.Long uniqueId) {
-		super(uniqueId);
+	public BaseExam(Long uniqueId) {
+		setUniqueId(uniqueId);
+		initialize();
 	}
 
-	protected void initialize () {}
+	protected void initialize() {}
 
+	public String getName() { return iName; }
+	public void setName(String name) { iName = name; }
 
-	private int hashCode = Integer.MIN_VALUE;
+	public String getNote() { return iNote; }
+	public void setNote(String note) { iNote = note; }
 
+	public Integer getLength() { return iLength; }
+	public void setLength(Integer length) { iLength = length; }
 
-	// fields
-	private java.lang.String name;
-	private java.lang.String note;
-	private java.lang.Integer length;
-	private java.lang.Integer examSize;
-	private java.lang.Integer printOffset;
-	private java.lang.Integer maxNbrRooms;
-	private java.lang.Integer seatingType;
-	private java.lang.String assignedPreference;
-	private java.lang.Integer examType;
-	private java.lang.Integer avgPeriod;
-	private java.lang.Long uniqueIdRolledForwardFrom;
+	public Integer getExamSize() { return iExamSize; }
+	public void setExamSize(Integer examSize) { iExamSize = examSize; }
 
-	// many to one
-	private org.unitime.timetable.model.Session session;
-	private org.unitime.timetable.model.ExamPeriod assignedPeriod;
+	public Integer getPrintOffset() { return iPrintOffset; }
+	public void setPrintOffset(Integer printOffset) { iPrintOffset = printOffset; }
 
-	// collections
-	private java.util.Set owners;
-	private java.util.Set assignedRooms;
-	private java.util.Set instructors;
-	private java.util.Set conflicts;
+	public Integer getMaxNbrRooms() { return iMaxNbrRooms; }
+	public void setMaxNbrRooms(Integer maxNbrRooms) { iMaxNbrRooms = maxNbrRooms; }
 
+	public Integer getSeatingType() { return iSeatingType; }
+	public void setSeatingType(Integer seatingType) { iSeatingType = seatingType; }
 
+	public String getAssignedPreference() { return iAssignedPreference; }
+	public void setAssignedPreference(String assignedPreference) { iAssignedPreference = assignedPreference; }
 
+	public Integer getExamType() { return iExamType; }
+	public void setExamType(Integer examType) { iExamType = examType; }
 
+	public Integer getAvgPeriod() { return iAvgPeriod; }
+	public void setAvgPeriod(Integer avgPeriod) { iAvgPeriod = avgPeriod; }
 
+	public Long getUniqueIdRolledForwardFrom() { return iUniqueIdRolledForwardFrom; }
+	public void setUniqueIdRolledForwardFrom(Long uniqueIdRolledForwardFrom) { iUniqueIdRolledForwardFrom = uniqueIdRolledForwardFrom; }
 
-	/**
-	 * Return the value associated with the column: NAME
-	 */
-	public java.lang.String getName () {
-		return name;
+	public Session getSession() { return iSession; }
+	public void setSession(Session session) { iSession = session; }
+
+	public ExamPeriod getAssignedPeriod() { return iAssignedPeriod; }
+	public void setAssignedPeriod(ExamPeriod assignedPeriod) { iAssignedPeriod = assignedPeriod; }
+
+	public Set<ExamOwner> getOwners() { return iOwners; }
+	public void setOwners(Set<ExamOwner> owners) { iOwners = owners; }
+	public void addToowners(ExamOwner examOwner) {
+		if (iOwners == null) iOwners = new HashSet();
+		iOwners.add(examOwner);
 	}
 
-	/**
-	 * Set the value related to the column: NAME
-	 * @param name the NAME value
-	 */
-	public void setName (java.lang.String name) {
-		this.name = name;
+	public Set<Location> getAssignedRooms() { return iAssignedRooms; }
+	public void setAssignedRooms(Set<Location> assignedRooms) { iAssignedRooms = assignedRooms; }
+	public void addToassignedRooms(Location location) {
+		if (iAssignedRooms == null) iAssignedRooms = new HashSet();
+		iAssignedRooms.add(location);
 	}
 
-
-
-	/**
-	 * Return the value associated with the column: NOTE
-	 */
-	public java.lang.String getNote () {
-		return note;
+	public Set<DepartmentalInstructor> getInstructors() { return iInstructors; }
+	public void setInstructors(Set<DepartmentalInstructor> instructors) { iInstructors = instructors; }
+	public void addToinstructors(DepartmentalInstructor departmentalInstructor) {
+		if (iInstructors == null) iInstructors = new HashSet();
+		iInstructors.add(departmentalInstructor);
 	}
 
-	/**
-	 * Set the value related to the column: NOTE
-	 * @param note the NOTE value
-	 */
-	public void setNote (java.lang.String note) {
-		this.note = note;
+	public Set<ExamConflict> getConflicts() { return iConflicts; }
+	public void setConflicts(Set<ExamConflict> conflicts) { iConflicts = conflicts; }
+	public void addToconflicts(ExamConflict examConflict) {
+		if (iConflicts == null) iConflicts = new HashSet();
+		iConflicts.add(examConflict);
 	}
 
-
-
-	/**
-	 * Return the value associated with the column: LENGTH
-	 */
-	public java.lang.Integer getLength () {
-		return length;
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof Exam)) return false;
+		if (getUniqueId() == null || ((Exam)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((Exam)o).getUniqueId());
 	}
 
-	/**
-	 * Set the value related to the column: LENGTH
-	 * @param length the LENGTH value
-	 */
-	public void setLength (java.lang.Integer length) {
-		this.length = length;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-    /**
-     * Return the value associated with the column: EXAM_SIZE
-     */
-    public java.lang.Integer getExamSize () {
-        return examSize;
-    }
-
-    /**
-     * Set the value related to the column: EXAM_SIZE
-     * @param length the EXAM_SIZE value
-     */
-    public void setExamSize (java.lang.Integer examSize) {
-        this.examSize = examSize;
-    }
-
-    /**
-     * Return the value associated with the column: PRINT_OFFSET
-     */
-    public java.lang.Integer getPrintOffset () {
-        return printOffset;
-    }
-
-    /**
-     * Set the value related to the column: PRINT_OFFSET
-     * @param length the PRINT_OFFSET value
-     */
-    public void setPrintOffset (java.lang.Integer printOffset) {
-        this.printOffset = printOffset;
-    }
-    
-    
-	/**
-	 * Return the value associated with the column: MAX_NBR_ROOMS
-	 */
-	public java.lang.Integer getMaxNbrRooms () {
-		return maxNbrRooms;
+	public String toString() {
+		return "Exam["+getUniqueId()+" "+getName()+"]";
 	}
 
-	/**
-	 * Set the value related to the column: MAX_NBR_ROOMS
-	 * @param maxNbrRooms the MAX_NBR_ROOMS value
-	 */
-	public void setMaxNbrRooms (java.lang.Integer maxNbrRooms) {
-		this.maxNbrRooms = maxNbrRooms;
+	public String toDebugString() {
+		return "Exam[" +
+			"\n	AssignedPeriod: " + getAssignedPeriod() +
+			"\n	AssignedPreference: " + getAssignedPreference() +
+			"\n	AvgPeriod: " + getAvgPeriod() +
+			"\n	ExamSize: " + getExamSize() +
+			"\n	ExamType: " + getExamType() +
+			"\n	Length: " + getLength() +
+			"\n	MaxNbrRooms: " + getMaxNbrRooms() +
+			"\n	Name: " + getName() +
+			"\n	Note: " + getNote() +
+			"\n	PrintOffset: " + getPrintOffset() +
+			"\n	SeatingType: " + getSeatingType() +
+			"\n	Session: " + getSession() +
+			"\n	UniqueId: " + getUniqueId() +
+			"\n	UniqueIdRolledForwardFrom: " + getUniqueIdRolledForwardFrom() +
+			"]";
 	}
-
-
-
-	/**
-	 * Return the value associated with the column: SEATING_TYPE
-	 */
-	public java.lang.Integer getSeatingType () {
-		return seatingType;
-	}
-
-	/**
-	 * Set the value related to the column: SEATING_TYPE
-	 * @param seatingType the SEATING_TYPE value
-	 */
-	public void setSeatingType (java.lang.Integer seatingType) {
-		this.seatingType = seatingType;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: ASSIGNED_PREF
-	 */
-	public java.lang.String getAssignedPreference () {
-		return assignedPreference;
-	}
-
-	/**
-	 * Set the value related to the column: ASSIGNED_PREF
-	 * @param assignedPreference the ASSIGNED_PREF value
-	 */
-	public void setAssignedPreference (java.lang.String assignedPreference) {
-		this.assignedPreference = assignedPreference;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: EXAM_TYPE
-	 */
-	public java.lang.Integer getExamType () {
-		return examType;
-	}
-
-	/**
-	 * Set the value related to the column: EXAM_TYPE
-	 * @param examType the EXAM_TYPE value
-	 */
-	public void setExamType (java.lang.Integer examType) {
-		this.examType = examType;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: AVG_PERIOD
-	 */
-	public java.lang.Integer getAvgPeriod () {
-		return avgPeriod;
-	}
-
-	/**
-	 * Set the value related to the column: AVG_PERIOD
-	 * @param avgPeriod the AVG_PERIOD value
-	 */
-	public void setAvgPeriod (java.lang.Integer avgPeriod) {
-		this.avgPeriod = avgPeriod;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: UID_ROLLED_FWD_FROM
-	 */
-	public java.lang.Long getUniqueIdRolledForwardFrom () {
-		return uniqueIdRolledForwardFrom;
-	}
-
-	/**
-	 * Set the value related to the column: UID_ROLLED_FWD_FROM
-	 * @param uniqueIdRolledForwardFrom the UID_ROLLED_FWD_FROM value
-	 */
-	public void setUniqueIdRolledForwardFrom (java.lang.Long uniqueIdRolledForwardFrom) {
-		this.uniqueIdRolledForwardFrom = uniqueIdRolledForwardFrom;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: SESSION_ID
-	 */
-	public org.unitime.timetable.model.Session getSession () {
-		return session;
-	}
-
-	/**
-	 * Set the value related to the column: SESSION_ID
-	 * @param session the SESSION_ID value
-	 */
-	public void setSession (org.unitime.timetable.model.Session session) {
-		this.session = session;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: ASSIGNED_PERIOD
-	 */
-	public org.unitime.timetable.model.ExamPeriod getAssignedPeriod () {
-		return assignedPeriod;
-	}
-
-	/**
-	 * Set the value related to the column: ASSIGNED_PERIOD
-	 * @param assignedPeriod the ASSIGNED_PERIOD value
-	 */
-	public void setAssignedPeriod (org.unitime.timetable.model.ExamPeriod assignedPeriod) {
-		this.assignedPeriod = assignedPeriod;
-	}
-
-
-	/**
-	 * Return the value associated with the column: owners
-	 */
-	public java.util.Set getOwners () {
-		return owners;
-	}
-
-	/**
-	 * Set the value related to the column: owners
-	 * @param owners the owners value
-	 */
-	public void setOwners (java.util.Set owners) {
-		this.owners = owners;
-	}
-
-	public void addToowners (org.unitime.timetable.model.ExamOwner examOwner) {
-		if (null == getOwners()) setOwners(new java.util.HashSet());
-		getOwners().add(examOwner);
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: assignedRooms
-	 */
-	public java.util.Set getAssignedRooms () {
-		return assignedRooms;
-	}
-
-	/**
-	 * Set the value related to the column: assignedRooms
-	 * @param assignedRooms the assignedRooms value
-	 */
-	public void setAssignedRooms (java.util.Set assignedRooms) {
-		this.assignedRooms = assignedRooms;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: instructors
-	 */
-	public java.util.Set getInstructors () {
-		return instructors;
-	}
-
-	/**
-	 * Set the value related to the column: instructors
-	 * @param instructors the instructors value
-	 */
-	public void setInstructors (java.util.Set instructors) {
-		this.instructors = instructors;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: conflicts
-	 */
-	public java.util.Set getConflicts () {
-		return conflicts;
-	}
-
-	/**
-	 * Set the value related to the column: conflicts
-	 * @param conflicts the conflicts value
-	 */
-	public void setConflicts (java.util.Set conflicts) {
-		this.conflicts = conflicts;
-	}
-
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.Exam)) return false;
-		else {
-			org.unitime.timetable.model.Exam exam = (org.unitime.timetable.model.Exam) obj;
-			if (null == this.getUniqueId() || null == exam.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(exam.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

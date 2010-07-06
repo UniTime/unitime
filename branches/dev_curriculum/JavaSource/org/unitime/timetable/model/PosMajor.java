@@ -44,22 +44,6 @@ public class PosMajor extends BasePosMajor {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public PosMajor (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Session session,
-		java.lang.String code,
-		java.lang.String name) {
-
-		super (
-			uniqueId,
-			session,
-			code,
-			name);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
     /** Request attribute name for available pos majors **/

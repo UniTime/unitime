@@ -61,22 +61,6 @@ public class InstrOfferingConfig extends BaseInstrOfferingConfig {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public InstrOfferingConfig (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.InstructionalOffering instructionalOffering,
-		java.lang.Integer limit,
-		java.lang.Boolean unlimitedEnrollment) {
-
-		super (
-			uniqueId,
-			instructionalOffering,
-			limit,
-			unlimitedEnrollment);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 	
 	public Department getDepartment() {

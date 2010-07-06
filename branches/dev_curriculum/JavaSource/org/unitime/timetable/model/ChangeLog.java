@@ -56,32 +56,6 @@ public class ChangeLog extends BaseChangeLog implements Comparable {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public ChangeLog (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Session session,
-		org.unitime.timetable.model.TimetableManager manager,
-		java.util.Date timeStamp,
-		java.lang.String objectType,
-		java.lang.String objectTitle,
-		java.lang.Long objectUniqueId,
-		java.lang.String sourceString,
-		java.lang.String operationString) {
-
-		super (
-			uniqueId,
-			session,
-			manager,
-			timeStamp,
-			objectType,
-			objectTitle,
-			objectUniqueId,
-			sourceString,
-			operationString);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
     
     public static enum Operation {

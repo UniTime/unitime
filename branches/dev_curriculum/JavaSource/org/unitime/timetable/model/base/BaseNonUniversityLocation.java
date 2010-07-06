@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -21,129 +21,68 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.NonUniversityLocation;
+import org.unitime.timetable.model.RoomType;
 
-/**
- * This is an object that contains data related to the NON_UNIVERSITY_LOCATION table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="NON_UNIVERSITY_LOCATION"
- */
+public abstract class BaseNonUniversityLocation extends Location implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseNonUniversityLocation extends org.unitime.timetable.model.Location  implements Serializable {
+	private String iName;
 
-	public static String REF = "NonUniversityLocation";
+	private RoomType iRoomType;
+
 	public static String PROP_NAME = "name";
-    public static String PROP_ROOM_TYPE = "roomType";
 
-
-	// constructors
-	public BaseNonUniversityLocation () {
+	public BaseNonUniversityLocation() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseNonUniversityLocation (java.lang.Long uniqueId) {
-		super(uniqueId);
+	public BaseNonUniversityLocation(Long uniqueId) {
+		setUniqueId(uniqueId);
+		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseNonUniversityLocation (
-		java.lang.Long uniqueId,
-		java.lang.Long permanentId,
-		java.lang.Integer capacity,
-		java.lang.Integer coordinateX,
-		java.lang.Integer coordinateY,
-		java.lang.Boolean ignoreTooFar,
-		java.lang.Boolean ignoreRoomCheck) {
+	protected void initialize() {}
 
-		super (
-			uniqueId,
-			permanentId,
-			capacity,
-			coordinateX,
-			coordinateY,
-			ignoreTooFar,
-			ignoreRoomCheck);
+	public String getName() { return iName; }
+	public void setName(String name) { iName = name; }
+
+	public RoomType getRoomType() { return iRoomType; }
+	public void setRoomType(RoomType roomType) { iRoomType = roomType; }
+
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof NonUniversityLocation)) return false;
+		if (getUniqueId() == null || ((NonUniversityLocation)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((NonUniversityLocation)o).getUniqueId());
 	}
 
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-
-	// fields
-	private java.lang.String name;
-
-	// many to one
-    private org.unitime.timetable.model.RoomType roomType;
-
-
-
-
-	/**
-	 * Return the value associated with the column: NAME
-	 */
-	public java.lang.String getName () {
-		return name;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	/**
-	 * Set the value related to the column: NAME
-	 * @param name the NAME value
-	 */
-	public void setName (java.lang.String name) {
-		this.name = name;
+	public String toString() {
+		return "NonUniversityLocation["+getUniqueId()+" "+getName()+"]";
 	}
 
-
-    /**
-     * Return the value associated with the column: ROOM_TYPE
-     */
-    public org.unitime.timetable.model.RoomType getRoomType () {
-        return roomType;
-    }
-
-    /**
-     * Set the value related to the column: ROOM_TYPE
-     * @param scheduledRoomType the ROOM_TYPE value
-     */
-    public void setRoomType (org.unitime.timetable.model.RoomType roomType) {
-        this.roomType = roomType;
-    }
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.NonUniversityLocation)) return false;
-		else {
-			org.unitime.timetable.model.NonUniversityLocation nonUniversityLocation = (org.unitime.timetable.model.NonUniversityLocation) obj;
-			if (null == this.getUniqueId() || null == nonUniversityLocation.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(nonUniversityLocation.getUniqueId()));
-		}
+	public String toDebugString() {
+		return "NonUniversityLocation[" +
+			"\n	Capacity: " + getCapacity() +
+			"\n	CoordinateX: " + getCoordinateX() +
+			"\n	CoordinateY: " + getCoordinateY() +
+			"\n	DisplayName: " + getDisplayName() +
+			"\n	ExamCapacity: " + getExamCapacity() +
+			"\n	ExamType: " + getExamType() +
+			"\n	IgnoreRoomCheck: " + getIgnoreRoomCheck() +
+			"\n	IgnoreTooFar: " + getIgnoreTooFar() +
+			"\n	ManagerIds: " + getManagerIds() +
+			"\n	Name: " + getName() +
+			"\n	Pattern: " + getPattern() +
+			"\n	PermanentId: " + getPermanentId() +
+			"\n	RoomType: " + getRoomType() +
+			"\n	Session: " + getSession() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

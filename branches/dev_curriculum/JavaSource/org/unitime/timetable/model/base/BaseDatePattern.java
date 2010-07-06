@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -20,248 +20,97 @@
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
+import org.unitime.timetable.model.DatePattern;
+import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.Session;
 
-/**
- * This is an object that contains data related to the DATE_PATTERN table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="DATE_PATTERN"
- */
+public abstract class BaseDatePattern implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseDatePattern  implements Serializable {
+	private Long iUniqueId;
+	private String iName;
+	private String iPattern;
+	private Integer iOffset;
+	private Integer iType;
+	private Boolean iVisible;
 
-	public static String REF = "DatePattern";
+	private Session iSession;
+	private Set<Department> iDepartments;
+
+	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_NAME = "name";
 	public static String PROP_PATTERN = "pattern";
 	public static String PROP_OFFSET = "offset";
 	public static String PROP_TYPE = "type";
 	public static String PROP_VISIBLE = "visible";
 
-
-	// constructors
-	public BaseDatePattern () {
+	public BaseDatePattern() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseDatePattern (java.lang.Long uniqueId) {
-		this.setUniqueId(uniqueId);
+	public BaseDatePattern(Long uniqueId) {
+		setUniqueId(uniqueId);
 		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseDatePattern (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Session session,
-		java.lang.String pattern,
-		java.lang.Integer offset) {
+	protected void initialize() {}
 
-		this.setUniqueId(uniqueId);
-		this.setSession(session);
-		this.setPattern(pattern);
-		this.setOffset(offset);
-		initialize();
+	public Long getUniqueId() { return iUniqueId; }
+	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
+
+	public String getName() { return iName; }
+	public void setName(String name) { iName = name; }
+
+	public String getPattern() { return iPattern; }
+	public void setPattern(String pattern) { iPattern = pattern; }
+
+	public Integer getOffset() { return iOffset; }
+	public void setOffset(Integer offset) { iOffset = offset; }
+
+	public Integer getType() { return iType; }
+	public void setType(Integer type) { iType = type; }
+
+	public Boolean isVisible() { return iVisible; }
+	public Boolean getVisible() { return iVisible; }
+	public void setVisible(Boolean visible) { iVisible = visible; }
+
+	public Session getSession() { return iSession; }
+	public void setSession(Session session) { iSession = session; }
+
+	public Set<Department> getDepartments() { return iDepartments; }
+	public void setDepartments(Set<Department> departments) { iDepartments = departments; }
+	public void addTodepartments(Department department) {
+		if (iDepartments == null) iDepartments = new HashSet();
+		iDepartments.add(department);
 	}
 
-	protected void initialize () {}
-
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-	// primary key
-	private java.lang.Long uniqueId;
-
-	// fields
-	private java.lang.String name;
-	private java.lang.String pattern;
-	private java.lang.Integer offset;
-	private java.lang.Integer type;
-	private java.lang.Boolean visible;
-
-	// many to one
-	private org.unitime.timetable.model.Session session;
-
-	// collections
-	private java.util.Set departments;
-
-
-
-	/**
-	 * Return the unique identifier of this class
-     * @hibernate.id
-     *  generator-class="sequence"
-     *  column="UNIQUEID"
-     */
-	public java.lang.Long getUniqueId () {
-		return uniqueId;
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof DatePattern)) return false;
+		if (getUniqueId() == null || ((DatePattern)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((DatePattern)o).getUniqueId());
 	}
 
-	/**
-	 * Set the unique identifier of this class
-	 * @param uniqueId the new ID
-	 */
-	public void setUniqueId (java.lang.Long uniqueId) {
-		this.uniqueId = uniqueId;
-		this.hashCode = Integer.MIN_VALUE;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-
-
-
-	/**
-	 * Return the value associated with the column: NAME
-	 */
-	public java.lang.String getName () {
-		return name;
+	public String toString() {
+		return "DatePattern["+getUniqueId()+" "+getName()+"]";
 	}
 
-	/**
-	 * Set the value related to the column: NAME
-	 * @param name the NAME value
-	 */
-	public void setName (java.lang.String name) {
-		this.name = name;
+	public String toDebugString() {
+		return "DatePattern[" +
+			"\n	Name: " + getName() +
+			"\n	Offset: " + getOffset() +
+			"\n	Pattern: " + getPattern() +
+			"\n	Session: " + getSession() +
+			"\n	Type: " + getType() +
+			"\n	UniqueId: " + getUniqueId() +
+			"\n	Visible: " + getVisible() +
+			"]";
 	}
-
-
-
-	/**
-	 * Return the value associated with the column: PATTERN
-	 */
-	public java.lang.String getPattern () {
-		return pattern;
-	}
-
-	/**
-	 * Set the value related to the column: PATTERN
-	 * @param pattern the PATTERN value
-	 */
-	public void setPattern (java.lang.String pattern) {
-		this.pattern = pattern;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: OFFSET
-	 */
-	public java.lang.Integer getOffset () {
-		return offset;
-	}
-
-	/**
-	 * Set the value related to the column: OFFSET
-	 * @param offset the OFFSET value
-	 */
-	public void setOffset (java.lang.Integer offset) {
-		this.offset = offset;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: TYPE
-	 */
-	public java.lang.Integer getType () {
-		return type;
-	}
-
-	/**
-	 * Set the value related to the column: TYPE
-	 * @param type the TYPE value
-	 */
-	public void setType (java.lang.Integer type) {
-		this.type = type;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: VISIBLE
-	 */
-	public java.lang.Boolean isVisible () {
-		return visible;
-	}
-
-	/**
-	 * Set the value related to the column: VISIBLE
-	 * @param visible the VISIBLE value
-	 */
-	public void setVisible (java.lang.Boolean visible) {
-		this.visible = visible;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: SESSION_ID
-	 */
-	public org.unitime.timetable.model.Session getSession () {
-		return session;
-	}
-
-	/**
-	 * Set the value related to the column: SESSION_ID
-	 * @param session the SESSION_ID value
-	 */
-	public void setSession (org.unitime.timetable.model.Session session) {
-		this.session = session;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: departments
-	 */
-	public java.util.Set getDepartments () {
-		return departments;
-	}
-
-	/**
-	 * Set the value related to the column: departments
-	 * @param departments the departments value
-	 */
-	public void setDepartments (java.util.Set departments) {
-		this.departments = departments;
-	}
-
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.DatePattern)) return false;
-		else {
-			org.unitime.timetable.model.DatePattern datePattern = (org.unitime.timetable.model.DatePattern) obj;
-			if (null == this.getUniqueId() || null == datePattern.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(datePattern.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

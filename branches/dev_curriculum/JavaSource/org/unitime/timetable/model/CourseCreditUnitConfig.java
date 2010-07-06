@@ -42,24 +42,6 @@ public abstract class CourseCreditUnitConfig extends BaseCourseCreditUnitConfig 
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public CourseCreditUnitConfig (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.CourseCreditType creditType,
-		org.unitime.timetable.model.CourseCreditUnitType creditUnitType,
-		java.lang.String creditFormat,
-		java.lang.Boolean definesCreditAtCourseLevel) {
-
-		super (
-			uniqueId,
-			creditType,
-			creditUnitType,
-			creditFormat,
-			definesCreditAtCourseLevel);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 	public static CourseCreditUnitConfig createCreditUnitConfigOfFormat(String creditFormat, String creditType, String creditUnitType, Float units, Float maxUnits, Boolean fractionalIncrementsAllowed, Boolean creditAtCourseLevel){

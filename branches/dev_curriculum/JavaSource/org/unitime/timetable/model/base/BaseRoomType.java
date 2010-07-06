@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -21,84 +21,59 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import org.unitime.timetable.model.RefTableEntry;
+import org.unitime.timetable.model.RoomType;
 
-/**
- * This is an object that contains data related to the ROOM_TYPE table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="ROOM_TYPE"
- */
+public abstract class BaseRoomType extends RefTableEntry implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseRoomType extends org.unitime.timetable.model.RefTableEntry  implements Serializable {
+	private Integer iOrd;
+	private Boolean iRoom;
 
-	public static String REF = "RoomType";
 
-	// constructors
-	public BaseRoomType () {
+	public static String PROP_ORD = "ord";
+	public static String PROP_IS_ROOM = "room";
+
+	public BaseRoomType() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseRoomType (Long uniqueId) {
-		super(uniqueId);
+	public BaseRoomType(Long uniqueId) {
+		setUniqueId(uniqueId);
+		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseRoomType (
-		Long uniqueId,
-		java.lang.String reference) {
+	protected void initialize() {}
 
-		super (
-			uniqueId,
-			reference);
+	public Integer getOrd() { return iOrd; }
+	public void setOrd(Integer ord) { iOrd = ord; }
+
+	public Boolean isRoom() { return iRoom; }
+	public Boolean getRoom() { return iRoom; }
+	public void setRoom(Boolean room) { iRoom = room; }
+
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof RoomType)) return false;
+		if (getUniqueId() == null || ((RoomType)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((RoomType)o).getUniqueId());
 	}
 
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-
-	//fields
-	private Integer ord;
-	private Boolean room;
-	
-	public Integer getOrd() { return ord; }
-	public void setOrd(Integer ord) { this.ord = ord; }
-
-	public Boolean isRoom() { return room; }
-    public void setRoom(Boolean room) { this.room = room; }
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.RoomType)) return false;
-		else {
-			org.unitime.timetable.model.RoomType roomType = (org.unitime.timetable.model.RoomType) obj;
-			if (null == this.getUniqueId() || null == roomType.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(roomType.getUniqueId()));
-		}
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
+	public String toString() {
+		return "RoomType["+getUniqueId()+" "+getLabel()+"]";
 	}
 
-
-	public String toString () {
-		return super.toString();
+	public String toDebugString() {
+		return "RoomType[" +
+			"\n	Label: " + getLabel() +
+			"\n	Ord: " + getOrd() +
+			"\n	Reference: " + getReference() +
+			"\n	Room: " + getRoom() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-
 }

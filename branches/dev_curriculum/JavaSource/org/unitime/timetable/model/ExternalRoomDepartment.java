@@ -44,24 +44,6 @@ public class ExternalRoomDepartment extends BaseExternalRoomDepartment {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public ExternalRoomDepartment (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.ExternalRoom room,
-		java.lang.String departmentCode,
-		java.lang.Integer percent,
-		java.lang.String assignmentType) {
-
-		super (
-			uniqueId,
-			room,
-			departmentCode,
-			percent,
-			assignmentType);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 	/**

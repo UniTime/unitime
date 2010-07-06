@@ -47,18 +47,6 @@ public class RoomFeature extends BaseRoomFeature implements Comparable {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public RoomFeature (
-		java.lang.Long uniqueId,
-		java.lang.String label) {
-
-		super (
-			uniqueId,
-			label);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 	public static String featureTypeDisplayString() {

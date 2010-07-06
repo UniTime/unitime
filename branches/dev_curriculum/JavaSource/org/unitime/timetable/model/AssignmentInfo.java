@@ -36,18 +36,6 @@ public class AssignmentInfo extends BaseAssignmentInfo {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public AssignmentInfo (
-		java.lang.Long uniqueId,
-		org.dom4j.Document value) {
-
-		super (
-			uniqueId,
-			value);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 	public String generateId() {

@@ -38,22 +38,6 @@ public class ExternalRoomFeature extends BaseExternalRoomFeature {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public ExternalRoomFeature (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.ExternalRoom room,
-		java.lang.String name,
-		java.lang.String value) {
-
-		super (
-			uniqueId,
-			room,
-			name,
-			value);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 

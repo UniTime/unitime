@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -21,169 +21,66 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import org.unitime.timetable.model.ManagerSettings;
+import org.unitime.timetable.model.Settings;
+import org.unitime.timetable.model.TimetableManager;
 
-/**
- * This is an object that contains data related to the MANAGER_SETTINGS table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="MANAGER_SETTINGS"
- */
+public abstract class BaseManagerSettings implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseManagerSettings  implements Serializable {
+	private Long iUniqueId;
+	private String iValue;
 
-	public static String REF = "ManagerSettings";
+	private Settings iKey;
+	private TimetableManager iManager;
+
+	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_VALUE = "value";
 
-
-	// constructors
-	public BaseManagerSettings () {
+	public BaseManagerSettings() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseManagerSettings (java.lang.Long uniqueId) {
-		this.setUniqueId(uniqueId);
+	public BaseManagerSettings(Long uniqueId) {
+		setUniqueId(uniqueId);
 		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseManagerSettings (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Settings key,
-		org.unitime.timetable.model.TimetableManager manager,
-		java.lang.String value) {
+	protected void initialize() {}
 
-		this.setUniqueId(uniqueId);
-		this.setKey(key);
-		this.setManager(manager);
-		this.setValue(value);
-		initialize();
+	public Long getUniqueId() { return iUniqueId; }
+	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
+
+	public String getValue() { return iValue; }
+	public void setValue(String value) { iValue = value; }
+
+	public Settings getKey() { return iKey; }
+	public void setKey(Settings key) { iKey = key; }
+
+	public TimetableManager getManager() { return iManager; }
+	public void setManager(TimetableManager manager) { iManager = manager; }
+
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof ManagerSettings)) return false;
+		if (getUniqueId() == null || ((ManagerSettings)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((ManagerSettings)o).getUniqueId());
 	}
 
-	protected void initialize () {}
-
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-	// primary key
-	private java.lang.Long uniqueId;
-
-	// fields
-	private java.lang.String value;
-
-	// many to one
-	private org.unitime.timetable.model.Settings key;
-	private org.unitime.timetable.model.TimetableManager manager;
-
-
-
-	/**
-	 * Return the unique identifier of this class
-     * @hibernate.id
-     *  generator-class="sequence"
-     *  column="UNIQUEID"
-     */
-	public java.lang.Long getUniqueId () {
-		return uniqueId;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	/**
-	 * Set the unique identifier of this class
-	 * @param uniqueId the new ID
-	 */
-	public void setUniqueId (java.lang.Long uniqueId) {
-		this.uniqueId = uniqueId;
-		this.hashCode = Integer.MIN_VALUE;
+	public String toString() {
+		return "ManagerSettings["+getUniqueId()+"]";
 	}
 
-
-
-
-	/**
-	 * Return the value associated with the column: VALUE
-	 */
-	public java.lang.String getValue () {
-		return value;
+	public String toDebugString() {
+		return "ManagerSettings[" +
+			"\n	Key: " + getKey() +
+			"\n	Manager: " + getManager() +
+			"\n	UniqueId: " + getUniqueId() +
+			"\n	Value: " + getValue() +
+			"]";
 	}
-
-	/**
-	 * Set the value related to the column: VALUE
-	 * @param value the VALUE value
-	 */
-	public void setValue (java.lang.String value) {
-		this.value = value;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: KEY_ID
-	 */
-	public org.unitime.timetable.model.Settings getKey () {
-		return key;
-	}
-
-	/**
-	 * Set the value related to the column: KEY_ID
-	 * @param key the KEY_ID value
-	 */
-	public void setKey (org.unitime.timetable.model.Settings key) {
-		this.key = key;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: USER_UNIQUEID
-	 */
-	public org.unitime.timetable.model.TimetableManager getManager () {
-		return manager;
-	}
-
-	/**
-	 * Set the value related to the column: USER_UNIQUEID
-	 * @param manager the USER_UNIQUEID value
-	 */
-	public void setManager (org.unitime.timetable.model.TimetableManager manager) {
-		this.manager = manager;
-	}
-
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.ManagerSettings)) return false;
-		else {
-			org.unitime.timetable.model.ManagerSettings managerSettings = (org.unitime.timetable.model.ManagerSettings) obj;
-			if (null == this.getUniqueId() || null == managerSettings.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(managerSettings.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

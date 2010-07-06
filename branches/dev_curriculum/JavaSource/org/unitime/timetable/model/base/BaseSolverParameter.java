@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -21,147 +21,60 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import org.unitime.timetable.model.SolverParameter;
+import org.unitime.timetable.model.SolverParameterDef;
 
-/**
- * This is an object that contains data related to the SOLVER_PARAMETER table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="SOLVER_PARAMETER"
- */
+public abstract class BaseSolverParameter implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseSolverParameter  implements Serializable {
+	private Long iUniqueId;
+	private String iValue;
 
-	public static String REF = "SolverParameter";
+	private SolverParameterDef iDefinition;
+
+	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_VALUE = "value";
 
-
-	// constructors
-	public BaseSolverParameter () {
+	public BaseSolverParameter() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseSolverParameter (java.lang.Long uniqueId) {
-		this.setUniqueId(uniqueId);
+	public BaseSolverParameter(Long uniqueId) {
+		setUniqueId(uniqueId);
 		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseSolverParameter (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.SolverParameterDef definition) {
+	protected void initialize() {}
 
-		this.setUniqueId(uniqueId);
-		this.setDefinition(definition);
-		initialize();
+	public Long getUniqueId() { return iUniqueId; }
+	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
+
+	public String getValue() { return iValue; }
+	public void setValue(String value) { iValue = value; }
+
+	public SolverParameterDef getDefinition() { return iDefinition; }
+	public void setDefinition(SolverParameterDef definition) { iDefinition = definition; }
+
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof SolverParameter)) return false;
+		if (getUniqueId() == null || ((SolverParameter)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((SolverParameter)o).getUniqueId());
 	}
 
-	protected void initialize () {}
-
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-	// primary key
-	private java.lang.Long uniqueId;
-
-	// fields
-	private java.lang.String value;
-
-	// many to one
-	private org.unitime.timetable.model.SolverParameterDef definition;
-
-
-
-	/**
-	 * Return the unique identifier of this class
-     * @hibernate.id
-     *  generator-class="sequence"
-     *  column="UNIQUEID"
-     */
-	public java.lang.Long getUniqueId () {
-		return uniqueId;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	/**
-	 * Set the unique identifier of this class
-	 * @param uniqueId the new ID
-	 */
-	public void setUniqueId (java.lang.Long uniqueId) {
-		this.uniqueId = uniqueId;
-		this.hashCode = Integer.MIN_VALUE;
+	public String toString() {
+		return "SolverParameter["+getUniqueId()+"]";
 	}
 
-
-
-
-	/**
-	 * Return the value associated with the column: VALUE
-	 */
-	public java.lang.String getValue () {
-		return value;
+	public String toDebugString() {
+		return "SolverParameter[" +
+			"\n	Definition: " + getDefinition() +
+			"\n	UniqueId: " + getUniqueId() +
+			"\n	Value: " + getValue() +
+			"]";
 	}
-
-	/**
-	 * Set the value related to the column: VALUE
-	 * @param value the VALUE value
-	 */
-	public void setValue (java.lang.String value) {
-		this.value = value;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: SOLVER_PARAM_DEF_ID
-	 */
-	public org.unitime.timetable.model.SolverParameterDef getDefinition () {
-		return definition;
-	}
-
-	/**
-	 * Set the value related to the column: SOLVER_PARAM_DEF_ID
-	 * @param definition the SOLVER_PARAM_DEF_ID value
-	 */
-	public void setDefinition (org.unitime.timetable.model.SolverParameterDef definition) {
-		this.definition = definition;
-	}
-
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.SolverParameter)) return false;
-		else {
-			org.unitime.timetable.model.SolverParameter solverParameter = (org.unitime.timetable.model.SolverParameter) obj;
-			if (null == this.getUniqueId() || null == solverParameter.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(solverParameter.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

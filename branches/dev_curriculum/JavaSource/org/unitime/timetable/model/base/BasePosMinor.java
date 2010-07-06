@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -20,210 +20,84 @@
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
+import org.unitime.timetable.model.AcademicArea;
+import org.unitime.timetable.model.PosMinor;
+import org.unitime.timetable.model.Session;
 
-/**
- * This is an object that contains data related to the POS_MINOR table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="POS_MINOR"
- */
+public abstract class BasePosMinor implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BasePosMinor  implements Serializable {
+	private Long iUniqueId;
+	private String iExternalUniqueId;
+	private String iCode;
+	private String iName;
 
-	public static String REF = "PosMinor";
-	public static String PROP_EXTERNAL_UNIQUE_ID = "externalUniqueId";
+	private Session iSession;
+	private Set<AcademicArea> iAcademicAreas;
+
+	public static String PROP_UNIQUEID = "uniqueId";
+	public static String PROP_EXTERNAL_UID = "externalUniqueId";
 	public static String PROP_CODE = "code";
 	public static String PROP_NAME = "name";
 
-
-	// constructors
-	public BasePosMinor () {
+	public BasePosMinor() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BasePosMinor (java.lang.Long uniqueId) {
-		this.setUniqueId(uniqueId);
+	public BasePosMinor(Long uniqueId) {
+		setUniqueId(uniqueId);
 		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BasePosMinor (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Session session,
-		java.lang.String code,
-		java.lang.String name) {
+	protected void initialize() {}
 
-		this.setUniqueId(uniqueId);
-		this.setSession(session);
-		this.setCode(code);
-		this.setName(name);
-		initialize();
+	public Long getUniqueId() { return iUniqueId; }
+	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
+
+	public String getExternalUniqueId() { return iExternalUniqueId; }
+	public void setExternalUniqueId(String externalUniqueId) { iExternalUniqueId = externalUniqueId; }
+
+	public String getCode() { return iCode; }
+	public void setCode(String code) { iCode = code; }
+
+	public String getName() { return iName; }
+	public void setName(String name) { iName = name; }
+
+	public Session getSession() { return iSession; }
+	public void setSession(Session session) { iSession = session; }
+
+	public Set<AcademicArea> getAcademicAreas() { return iAcademicAreas; }
+	public void setAcademicAreas(Set<AcademicArea> academicAreas) { iAcademicAreas = academicAreas; }
+	public void addToacademicAreas(AcademicArea academicArea) {
+		if (iAcademicAreas == null) iAcademicAreas = new HashSet();
+		iAcademicAreas.add(academicArea);
 	}
 
-	protected void initialize () {}
-
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-	// primary key
-	private java.lang.Long uniqueId;
-
-	// fields
-	private java.lang.String externalUniqueId;
-	private java.lang.String code;
-	private java.lang.String name;
-
-	// many to one
-	private org.unitime.timetable.model.Session session;
-
-	// collections
-	private java.util.Set academicAreas;
-
-
-
-	/**
-	 * Return the unique identifier of this class
-     * @hibernate.id
-     *  generator-class="sequence"
-     *  column="UNIQUEID"
-     */
-	public java.lang.Long getUniqueId () {
-		return uniqueId;
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof PosMinor)) return false;
+		if (getUniqueId() == null || ((PosMinor)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((PosMinor)o).getUniqueId());
 	}
 
-	/**
-	 * Set the unique identifier of this class
-	 * @param uniqueId the new ID
-	 */
-	public void setUniqueId (java.lang.Long uniqueId) {
-		this.uniqueId = uniqueId;
-		this.hashCode = Integer.MIN_VALUE;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-
-
-
-	/**
-	 * Return the value associated with the column: EXTERNAL_UID
-	 */
-	public java.lang.String getExternalUniqueId () {
-		return externalUniqueId;
+	public String toString() {
+		return "PosMinor["+getUniqueId()+" "+getName()+"]";
 	}
 
-	/**
-	 * Set the value related to the column: EXTERNAL_UID
-	 * @param externalUniqueId the EXTERNAL_UID value
-	 */
-	public void setExternalUniqueId (java.lang.String externalUniqueId) {
-		this.externalUniqueId = externalUniqueId;
+	public String toDebugString() {
+		return "PosMinor[" +
+			"\n	Code: " + getCode() +
+			"\n	ExternalUniqueId: " + getExternalUniqueId() +
+			"\n	Name: " + getName() +
+			"\n	Session: " + getSession() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-
-
-	/**
-	 * Return the value associated with the column: CODE
-	 */
-	public java.lang.String getCode () {
-		return code;
-	}
-
-	/**
-	 * Set the value related to the column: CODE
-	 * @param code the CODE value
-	 */
-	public void setCode (java.lang.String code) {
-		this.code = code;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: NAME
-	 */
-	public java.lang.String getName () {
-		return name;
-	}
-
-	/**
-	 * Set the value related to the column: NAME
-	 * @param name the NAME value
-	 */
-	public void setName (java.lang.String name) {
-		this.name = name;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: SESSION_ID
-	 */
-	public org.unitime.timetable.model.Session getSession () {
-		return session;
-	}
-
-	/**
-	 * Set the value related to the column: SESSION_ID
-	 * @param session the SESSION_ID value
-	 */
-	public void setSession (org.unitime.timetable.model.Session session) {
-		this.session = session;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: academicAreas
-	 */
-	public java.util.Set getAcademicAreas () {
-		return academicAreas;
-	}
-
-	/**
-	 * Set the value related to the column: academicAreas
-	 * @param academicAreas the academicAreas value
-	 */
-	public void setAcademicAreas (java.util.Set academicAreas) {
-		this.academicAreas = academicAreas;
-	}
-
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.PosMinor)) return false;
-		else {
-			org.unitime.timetable.model.PosMinor posMinor = (org.unitime.timetable.model.PosMinor) obj;
-			if (null == this.getUniqueId() || null == posMinor.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(posMinor.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

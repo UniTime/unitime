@@ -1252,7 +1252,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		DistributionObject distObj = null;
 		String cei = null;
 		boolean allFound = true;
-		HashSet<?> existingDistObjs = new HashSet<Object>();
+		HashSet<DistributionObject> existingDistObjs = new HashSet<DistributionObject>();
 		existingDistObjs.addAll(dp.getDistributionObjects());
 		for (Iterator<?> ceiIt = classExternalIds.iterator(); ceiIt.hasNext();){
 			cei = (String) ceiIt.next();

@@ -53,20 +53,6 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public TimetableManager (
-		java.lang.Long uniqueId,
-		java.lang.String firstName,
-		java.lang.String lastName) {
-
-		super (
-			uniqueId,
-			firstName,
-			lastName);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 	public static TimetableManager findByExternalId(String externalId){

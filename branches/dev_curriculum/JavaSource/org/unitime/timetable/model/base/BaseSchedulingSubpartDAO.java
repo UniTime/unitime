@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -19,202 +19,116 @@
 */
 package org.unitime.timetable.model.base;
 
+import java.util.List;
+
 import org.hibernate.Hibernate;
-import org.hibernate.Session;
 import org.hibernate.criterion.Order;
+
+import org.unitime.timetable.model.SchedulingSubpart;
+import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 
-/**
- * This is an automatically generated DAO class which should not be edited.
- */
-public abstract class BaseSchedulingSubpartDAO extends org.unitime.timetable.model.dao._RootDAO {
+public abstract class BaseSchedulingSubpartDAO extends _RootDAO {
 
-	// query name references
+	private static SchedulingSubpartDAO sInstance;
 
-
-	public static SchedulingSubpartDAO instance;
-
-	/**
-	 * Return a singleton of the DAO
-	 */
 	public static SchedulingSubpartDAO getInstance () {
-		if (null == instance) instance = new SchedulingSubpartDAO();
-		return instance;
+		if (sInstance == null) sInstance = new SchedulingSubpartDAO();
+		return sInstance;
 	}
 
 	public Class getReferenceClass () {
-		return org.unitime.timetable.model.SchedulingSubpart.class;
+		return SchedulingSubpart.class;
 	}
 
-    public Order getDefaultOrder () {
+	public Order getDefaultOrder () {
 		return null;
-    }
-
-	/**
-	 * Cast the object as a org.unitime.timetable.model.SchedulingSubpart
-	 */
-	public org.unitime.timetable.model.SchedulingSubpart cast (Object object) {
-		return (org.unitime.timetable.model.SchedulingSubpart) object;
 	}
 
-	public org.unitime.timetable.model.SchedulingSubpart get(java.lang.Long key)
-	{
-		return (org.unitime.timetable.model.SchedulingSubpart) get(getReferenceClass(), key);
+	public SchedulingSubpart get(Long uniqueId) {
+		return (SchedulingSubpart) get(getReferenceClass(), uniqueId);
 	}
 
-	public org.unitime.timetable.model.SchedulingSubpart get(java.lang.Long key, Session s)
-	{
-		return (org.unitime.timetable.model.SchedulingSubpart) get(getReferenceClass(), key, s);
+	public SchedulingSubpart get(Long uniqueId, org.hibernate.Session hibSession) {
+		return (SchedulingSubpart) get(getReferenceClass(), uniqueId, hibSession);
 	}
 
-	public org.unitime.timetable.model.SchedulingSubpart load(java.lang.Long key)
-	{
-		return (org.unitime.timetable.model.SchedulingSubpart) load(getReferenceClass(), key);
+	public SchedulingSubpart load(Long uniqueId) {
+		return (SchedulingSubpart) load(getReferenceClass(), uniqueId);
 	}
 
-	public org.unitime.timetable.model.SchedulingSubpart load(java.lang.Long key, Session s)
-	{
-		return (org.unitime.timetable.model.SchedulingSubpart) load(getReferenceClass(), key, s);
+	public SchedulingSubpart load(Long uniqueId, org.hibernate.Session hibSession) {
+		return (SchedulingSubpart) load(getReferenceClass(), uniqueId, hibSession);
 	}
 
-	public org.unitime.timetable.model.SchedulingSubpart loadInitialize(java.lang.Long key, Session s) 
-	{ 
-		org.unitime.timetable.model.SchedulingSubpart obj = load(key, s); 
-		if (!Hibernate.isInitialized(obj)) {
-			Hibernate.initialize(obj);
-		} 
-		return obj; 
+	public SchedulingSubpart loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
+		SchedulingSubpart schedulingSubpart = load(uniqueId, hibSession);
+		if (!Hibernate.isInitialized(schedulingSubpart)) Hibernate.initialize(schedulingSubpart);
+		return schedulingSubpart;
 	}
 
-
-	/**
-	 * Persist the given transient instance, first assigning a generated identifier. (Or using the current value
-	 * of the identifier property if the assigned generator is used.) 
-	 * @param schedulingSubpart a transient instance of a persistent class 
-	 * @return the class identifier
-	 */
-	public java.lang.Long save(org.unitime.timetable.model.SchedulingSubpart schedulingSubpart)
-	{
-		return (java.lang.Long) super.save(schedulingSubpart);
+	public void save(SchedulingSubpart schedulingSubpart) {
+		save((Object) schedulingSubpart);
 	}
 
-	/**
-	 * Persist the given transient instance, first assigning a generated identifier. (Or using the current value
-	 * of the identifier property if the assigned generator is used.) 
-	 * Use the Session given.
-	 * @param schedulingSubpart a transient instance of a persistent class
-	 * @param s the Session
-	 * @return the class identifier
-	 */
-	public java.lang.Long save(org.unitime.timetable.model.SchedulingSubpart schedulingSubpart, Session s)
-	{
-		return (java.lang.Long) save((Object) schedulingSubpart, s);
+	public void save(SchedulingSubpart schedulingSubpart, org.hibernate.Session hibSession) {
+		save((Object) schedulingSubpart, hibSession);
 	}
 
-	/**
-	 * Either save() or update() the given instance, depending upon the value of its identifier property. By default
-	 * the instance is always saved. This behaviour may be adjusted by specifying an unsaved-value attribute of the
-	 * identifier property mapping. 
-	 * @param schedulingSubpart a transient instance containing new or updated state 
-	 */
-	public void saveOrUpdate(org.unitime.timetable.model.SchedulingSubpart schedulingSubpart)
-	{
+	public void saveOrUpdate(SchedulingSubpart schedulingSubpart) {
 		saveOrUpdate((Object) schedulingSubpart);
 	}
 
-	/**
-	 * Either save() or update() the given instance, depending upon the value of its identifier property. By default the
-	 * instance is always saved. This behaviour may be adjusted by specifying an unsaved-value attribute of the identifier
-	 * property mapping. 
-	 * Use the Session given.
-	 * @param schedulingSubpart a transient instance containing new or updated state.
-	 * @param s the Session.
-	 */
-	public void saveOrUpdate(org.unitime.timetable.model.SchedulingSubpart schedulingSubpart, Session s)
-	{
-		saveOrUpdate((Object) schedulingSubpart, s);
+	public void saveOrUpdate(SchedulingSubpart schedulingSubpart, org.hibernate.Session hibSession) {
+		saveOrUpdate((Object) schedulingSubpart, hibSession);
 	}
 
-	/**
-	 * Update the persistent state associated with the given identifier. An exception is thrown if there is a persistent
-	 * instance with the same identifier in the current session.
-	 * @param schedulingSubpart a transient instance containing updated state
-	 */
-	public void update(org.unitime.timetable.model.SchedulingSubpart schedulingSubpart) 
-	{
+
+	public void update(SchedulingSubpart schedulingSubpart) {
 		update((Object) schedulingSubpart);
 	}
 
-	/**
-	 * Update the persistent state associated with the given identifier. An exception is thrown if there is a persistent
-	 * instance with the same identifier in the current session.
-	 * Use the Session given.
-	 * @param schedulingSubpart a transient instance containing updated state
-	 * @param the Session
-	 */
-	public void update(org.unitime.timetable.model.SchedulingSubpart schedulingSubpart, Session s)
-	{
-		update((Object) schedulingSubpart, s);
+	public void update(SchedulingSubpart schedulingSubpart, org.hibernate.Session hibSession) {
+		update((Object) schedulingSubpart, hibSession);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * @param id the instance ID to be removed
-	 */
-	public void delete(java.lang.Long id)
-	{
-		delete((Object) load(id));
+	public void delete(Long uniqueId) {
+		delete(load(uniqueId));
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * Use the Session given.
-	 * @param id the instance ID to be removed
-	 * @param s the Session
-	 */
-	public void delete(java.lang.Long id, Session s)
-	{
-		delete((Object) load(id, s), s);
+	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
+		delete(load(uniqueId, hibSession), hibSession);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * @param schedulingSubpart the instance to be removed
-	 */
-	public void delete(org.unitime.timetable.model.SchedulingSubpart schedulingSubpart)
-	{
+	public void delete(SchedulingSubpart schedulingSubpart) {
 		delete((Object) schedulingSubpart);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * Use the Session given.
-	 * @param schedulingSubpart the instance to be removed
-	 * @param s the Session
-	 */
-	public void delete(org.unitime.timetable.model.SchedulingSubpart schedulingSubpart, Session s)
-	{
-		delete((Object) schedulingSubpart, s);
-	}
-	
-	/**
-	 * Re-read the state of the given instance from the underlying database. It is inadvisable to use this to implement
-	 * long-running sessions that span many business tasks. This method is, however, useful in certain special circumstances.
-	 * For example 
-	 * <ul> 
-	 * <li>where a database trigger alters the object state upon insert or update</li>
-	 * <li>after executing direct SQL (eg. a mass update) in the same session</li>
-	 * <li>after inserting a Blob or Clob</li>
-	 * </ul>
-	 */
-	public void refresh (org.unitime.timetable.model.SchedulingSubpart schedulingSubpart, Session s)
-	{
-		refresh((Object) schedulingSubpart, s);
+	public void delete(SchedulingSubpart schedulingSubpart, org.hibernate.Session hibSession) {
+		delete((Object) schedulingSubpart, hibSession);
 	}
 
+	public void refresh(SchedulingSubpart schedulingSubpart, org.hibernate.Session hibSession) {
+		refresh((Object) schedulingSubpart, hibSession);
+	}
 
+	public List<SchedulingSubpart> findAll(org.hibernate.Session hibSession) {
+		return hibSession.createQuery("from SchedulingSubpart").list();
+	}
+
+	public List<SchedulingSubpart> findByItype(org.hibernate.Session hibSession, Integer itypeId) {
+		return hibSession.createQuery("from SchedulingSubpart x where x.itype.itype = :itypeId").setInteger("itypeId", itypeId).list();
+	}
+
+	public List<SchedulingSubpart> findByParentSubpart(org.hibernate.Session hibSession, Long parentSubpartId) {
+		return hibSession.createQuery("from SchedulingSubpart x where x.parentSubpart.uniqueId = :parentSubpartId").setLong("parentSubpartId", parentSubpartId).list();
+	}
+
+	public List<SchedulingSubpart> findByInstrOfferingConfig(org.hibernate.Session hibSession, Long instrOfferingConfigId) {
+		return hibSession.createQuery("from SchedulingSubpart x where x.instrOfferingConfig.uniqueId = :instrOfferingConfigId").setLong("instrOfferingConfigId", instrOfferingConfigId).list();
+	}
+
+	public List<SchedulingSubpart> findByDatePattern(org.hibernate.Session hibSession, Long datePatternId) {
+		return hibSession.createQuery("from SchedulingSubpart x where x.datePattern.uniqueId = :datePatternId").setLong("datePatternId", datePatternId).list();
+	}
 }

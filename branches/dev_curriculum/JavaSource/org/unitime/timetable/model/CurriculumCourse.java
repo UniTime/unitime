@@ -21,25 +21,7 @@ public class CurriculumCourse extends BaseCurriculumCourse implements Comparable
 	public CurriculumCourse (java.lang.Long uniqueId) {
 		super(uniqueId);
 	}
-
-	/**
-	 * Constructor for required fields
-	 */
-	public CurriculumCourse (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.CurriculumClassification classification,
-		org.unitime.timetable.model.CourseOffering course,
-		java.lang.Float percShare,
-		java.lang.Integer ord) {
-
-		super (
-			uniqueId,
-			classification,
-			course,
-			percShare,
-			ord);
-	}
-
+	
 /*[CONSTRUCTOR MARKER END]*/
 
 	public int compareTo(CurriculumCourse c) {

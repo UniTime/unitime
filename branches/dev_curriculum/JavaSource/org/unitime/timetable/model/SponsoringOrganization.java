@@ -22,18 +22,6 @@ public class SponsoringOrganization extends BaseSponsoringOrganization implement
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public SponsoringOrganization (
-		java.lang.Long uniqueId,
-		java.lang.String name) {
-
-		super (
-			uniqueId,
-			name);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 	
 	public int compareTo(Object o) {

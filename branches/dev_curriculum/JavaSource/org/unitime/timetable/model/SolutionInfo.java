@@ -38,18 +38,6 @@ public class SolutionInfo extends BaseSolutionInfo {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public SolutionInfo (
-		java.lang.Long uniqueId,
-		org.dom4j.Document value) {
-
-		super (
-			uniqueId,
-			value);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 	public String generateId() {

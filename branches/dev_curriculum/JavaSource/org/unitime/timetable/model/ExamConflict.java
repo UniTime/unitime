@@ -35,19 +35,7 @@ public class ExamConflict extends BaseExamConflict implements Comparable<ExamCon
 	public ExamConflict (java.lang.Long uniqueId) {
 		super(uniqueId);
 	}
-
-	/**
-	 * Constructor for required fields
-	 */
-	public ExamConflict (
-	        java.lang.Long uniqueId,
-	        java.lang.Integer conflictType) {
-
-		super (
-			uniqueId,
-			conflictType);
-	}
-
+	
 /*[CONSTRUCTOR MARKER END]*/
 
 	

@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -21,169 +21,66 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.Designator;
+import org.unitime.timetable.model.SubjectArea;
 
-/**
- * This is an object that contains data related to the DESIGNATOR table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="DESIGNATOR"
- */
+public abstract class BaseDesignator implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseDesignator  implements Serializable {
+	private Long iUniqueId;
+	private String iCode;
 
-	public static String REF = "Designator";
+	private SubjectArea iSubjectArea;
+	private DepartmentalInstructor iInstructor;
+
+	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_CODE = "code";
 
-
-	// constructors
-	public BaseDesignator () {
+	public BaseDesignator() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseDesignator (java.lang.Long uniqueId) {
-		this.setUniqueId(uniqueId);
+	public BaseDesignator(Long uniqueId) {
+		setUniqueId(uniqueId);
 		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseDesignator (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.SubjectArea subjectArea,
-		org.unitime.timetable.model.DepartmentalInstructor instructor,
-		java.lang.String code) {
+	protected void initialize() {}
 
-		this.setUniqueId(uniqueId);
-		this.setSubjectArea(subjectArea);
-		this.setInstructor(instructor);
-		this.setCode(code);
-		initialize();
+	public Long getUniqueId() { return iUniqueId; }
+	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
+
+	public String getCode() { return iCode; }
+	public void setCode(String code) { iCode = code; }
+
+	public SubjectArea getSubjectArea() { return iSubjectArea; }
+	public void setSubjectArea(SubjectArea subjectArea) { iSubjectArea = subjectArea; }
+
+	public DepartmentalInstructor getInstructor() { return iInstructor; }
+	public void setInstructor(DepartmentalInstructor instructor) { iInstructor = instructor; }
+
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof Designator)) return false;
+		if (getUniqueId() == null || ((Designator)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((Designator)o).getUniqueId());
 	}
 
-	protected void initialize () {}
-
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-	// primary key
-	private java.lang.Long uniqueId;
-
-	// fields
-	private java.lang.String code;
-
-	// many to one
-	private org.unitime.timetable.model.SubjectArea subjectArea;
-	private org.unitime.timetable.model.DepartmentalInstructor instructor;
-
-
-
-	/**
-	 * Return the unique identifier of this class
-     * @hibernate.id
-     *  generator-class="sequence"
-     *  column="UNIQUEID"
-     */
-	public java.lang.Long getUniqueId () {
-		return uniqueId;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	/**
-	 * Set the unique identifier of this class
-	 * @param uniqueId the new ID
-	 */
-	public void setUniqueId (java.lang.Long uniqueId) {
-		this.uniqueId = uniqueId;
-		this.hashCode = Integer.MIN_VALUE;
+	public String toString() {
+		return "Designator["+getUniqueId()+"]";
 	}
 
-
-
-
-	/**
-	 * Return the value associated with the column: CODE
-	 */
-	public java.lang.String getCode () {
-		return code;
+	public String toDebugString() {
+		return "Designator[" +
+			"\n	Code: " + getCode() +
+			"\n	Instructor: " + getInstructor() +
+			"\n	SubjectArea: " + getSubjectArea() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-	/**
-	 * Set the value related to the column: CODE
-	 * @param code the CODE value
-	 */
-	public void setCode (java.lang.String code) {
-		this.code = code;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: SUBJECT_AREA_ID
-	 */
-	public org.unitime.timetable.model.SubjectArea getSubjectArea () {
-		return subjectArea;
-	}
-
-	/**
-	 * Set the value related to the column: SUBJECT_AREA_ID
-	 * @param subjectArea the SUBJECT_AREA_ID value
-	 */
-	public void setSubjectArea (org.unitime.timetable.model.SubjectArea subjectArea) {
-		this.subjectArea = subjectArea;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: INSTRUCTOR_ID
-	 */
-	public org.unitime.timetable.model.DepartmentalInstructor getInstructor () {
-		return instructor;
-	}
-
-	/**
-	 * Set the value related to the column: INSTRUCTOR_ID
-	 * @param instructor the INSTRUCTOR_ID value
-	 */
-	public void setInstructor (org.unitime.timetable.model.DepartmentalInstructor instructor) {
-		this.instructor = instructor;
-	}
-
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.Designator)) return false;
-		else {
-			org.unitime.timetable.model.Designator designator = (org.unitime.timetable.model.Designator) obj;
-			if (null == this.getUniqueId() || null == designator.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(designator.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

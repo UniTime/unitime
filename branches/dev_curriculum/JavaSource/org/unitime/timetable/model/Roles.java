@@ -49,20 +49,6 @@ public class Roles extends BaseRoles {
 		super(roleId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public Roles (
-		java.lang.Long roleId,
-		java.lang.String reference,
-		java.lang.String abbv) {
-
-		super (
-			roleId,
-			reference,
-			abbv);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 	public static String ADMIN_ROLE = "Administrator";

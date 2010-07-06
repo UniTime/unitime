@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -20,369 +20,141 @@
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
+import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.CourseCreditUnitConfig;
+import org.unitime.timetable.model.DatePattern;
+import org.unitime.timetable.model.InstrOfferingConfig;
+import org.unitime.timetable.model.ItypeDesc;
+import org.unitime.timetable.model.PreferenceGroup;
+import org.unitime.timetable.model.SchedulingSubpart;
+import org.unitime.timetable.model.Session;
 
-/**
- * This is an object that contains data related to the SCHEDULING_SUBPART table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="SCHEDULING_SUBPART"
- */
+public abstract class BaseSchedulingSubpart extends PreferenceGroup implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseSchedulingSubpart extends org.unitime.timetable.model.PreferenceGroup  implements Serializable {
+	private Integer iMinutesPerWk;
+	private Boolean iAutoSpreadInTime;
+	private Boolean iStudentAllowOverlap;
+	private String iSchedulingSubpartSuffixCache;
+	private String iCourseName;
+	private Integer iLimit;
+	private Long iUniqueIdRolledForwardFrom;
 
-	public static String REF = "SchedulingSubpart";
-	public static String PROP_MINUTES_PER_WK = "minutesPerWk";
-	public static String PROP_AUTO_SPREAD_IN_TIME = "autoSpreadInTime";
+	private Session iSession;
+	private ItypeDesc iItype;
+	private SchedulingSubpart iParentSubpart;
+	private InstrOfferingConfig iInstrOfferingConfig;
+	private DatePattern iDatePattern;
+	private Set<SchedulingSubpart> iChildSubparts;
+	private Set<Class_> iClasses;
+	private Set<CourseCreditUnitConfig> iCreditConfigs;
+
+	public static String PROP_MIN_PER_WK = "minutesPerWk";
+	public static String PROP_AUTO_TIME_SPREAD = "autoSpreadInTime";
 	public static String PROP_STUDENT_ALLOW_OVERLAP = "studentAllowOverlap";
-	public static String PROP_SCHEDULING_SUBPART_SUFFIX_CACHE = "schedulingSubpartSuffixCache";
-	public static String PROP_COURSE_NAME = "courseName";
-	public static String PROP_LIMIT = "limit";
-	public static String PROP_UNIQUE_ID_ROLLED_FORWARD_FROM = "uniqueIdRolledForwardFrom";
+	public static String PROP_SUBPART_SUFFIX = "schedulingSubpartSuffixCache";
+	public static String PROP_UID_ROLLED_FWD_FROM = "uniqueIdRolledForwardFrom";
 
-
-	// constructors
-	public BaseSchedulingSubpart () {
+	public BaseSchedulingSubpart() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseSchedulingSubpart (java.lang.Long uniqueId) {
-		super(uniqueId);
+	public BaseSchedulingSubpart(Long uniqueId) {
+		setUniqueId(uniqueId);
+		initialize();
 	}
 
+	protected void initialize() {}
 
+	public Integer getMinutesPerWk() { return iMinutesPerWk; }
+	public void setMinutesPerWk(Integer minutesPerWk) { iMinutesPerWk = minutesPerWk; }
 
-	private int hashCode = Integer.MIN_VALUE;
+	public Boolean isAutoSpreadInTime() { return iAutoSpreadInTime; }
+	public Boolean getAutoSpreadInTime() { return iAutoSpreadInTime; }
+	public void setAutoSpreadInTime(Boolean autoSpreadInTime) { iAutoSpreadInTime = autoSpreadInTime; }
 
+	public Boolean isStudentAllowOverlap() { return iStudentAllowOverlap; }
+	public Boolean getStudentAllowOverlap() { return iStudentAllowOverlap; }
+	public void setStudentAllowOverlap(Boolean studentAllowOverlap) { iStudentAllowOverlap = studentAllowOverlap; }
 
-	// fields
-	private java.lang.Integer minutesPerWk;
-	private java.lang.Boolean autoSpreadInTime;
-	private java.lang.Boolean studentAllowOverlap;
-	private java.lang.String schedulingSubpartSuffixCache;
-	private java.lang.String courseName;
-	private java.lang.Integer limit;
-	private java.lang.Long uniqueIdRolledForwardFrom;
+	public String getSchedulingSubpartSuffixCache() { return iSchedulingSubpartSuffixCache; }
+	public void setSchedulingSubpartSuffixCache(String schedulingSubpartSuffixCache) { iSchedulingSubpartSuffixCache = schedulingSubpartSuffixCache; }
 
-	// many to one
-	private org.unitime.timetable.model.Session session;
-	private org.unitime.timetable.model.ItypeDesc itype;
-	private org.unitime.timetable.model.SchedulingSubpart parentSubpart;
-	private org.unitime.timetable.model.InstrOfferingConfig instrOfferingConfig;
-	private org.unitime.timetable.model.DatePattern datePattern;
+	public String getCourseName() { return iCourseName; }
+	public void setCourseName(String courseName) { iCourseName = courseName; }
 
-	// collections
-	private java.util.Set childSubparts;
-	private java.util.Set classes;
-	private java.util.Set creditConfigs;
+	public Integer getLimit() { return iLimit; }
+	public void setLimit(Integer limit) { iLimit = limit; }
 
+	public Long getUniqueIdRolledForwardFrom() { return iUniqueIdRolledForwardFrom; }
+	public void setUniqueIdRolledForwardFrom(Long uniqueIdRolledForwardFrom) { iUniqueIdRolledForwardFrom = uniqueIdRolledForwardFrom; }
 
+	public Session getSession() { return iSession; }
+	public void setSession(Session session) { iSession = session; }
 
+	public ItypeDesc getItype() { return iItype; }
+	public void setItype(ItypeDesc itype) { iItype = itype; }
 
+	public SchedulingSubpart getParentSubpart() { return iParentSubpart; }
+	public void setParentSubpart(SchedulingSubpart parentSubpart) { iParentSubpart = parentSubpart; }
 
+	public InstrOfferingConfig getInstrOfferingConfig() { return iInstrOfferingConfig; }
+	public void setInstrOfferingConfig(InstrOfferingConfig instrOfferingConfig) { iInstrOfferingConfig = instrOfferingConfig; }
 
-	/**
-	 * Return the value associated with the column: MIN_PER_WK
-	 */
-	public java.lang.Integer getMinutesPerWk () {
-		return minutesPerWk;
+	public DatePattern getDatePattern() { return iDatePattern; }
+	public void setDatePattern(DatePattern datePattern) { iDatePattern = datePattern; }
+
+	public Set<SchedulingSubpart> getChildSubparts() { return iChildSubparts; }
+	public void setChildSubparts(Set<SchedulingSubpart> childSubparts) { iChildSubparts = childSubparts; }
+	public void addTochildSubparts(SchedulingSubpart schedulingSubpart) {
+		if (iChildSubparts == null) iChildSubparts = new HashSet();
+		iChildSubparts.add(schedulingSubpart);
 	}
 
-	/**
-	 * Set the value related to the column: MIN_PER_WK
-	 * @param minutesPerWk the MIN_PER_WK value
-	 */
-	public void setMinutesPerWk (java.lang.Integer minutesPerWk) {
-		this.minutesPerWk = minutesPerWk;
+	public Set<Class_> getClasses() { return iClasses; }
+	public void setClasses(Set<Class_> classes) { iClasses = classes; }
+	public void addToclasses(Class_ class_) {
+		if (iClasses == null) iClasses = new HashSet();
+		iClasses.add(class_);
 	}
 
-
-
-	/**
-	 * Return the value associated with the column: AUTO_TIME_SPREAD
-	 */
-	public java.lang.Boolean isAutoSpreadInTime () {
-		return autoSpreadInTime;
+	public Set<CourseCreditUnitConfig> getCreditConfigs() { return iCreditConfigs; }
+	public void setCreditConfigs(Set<CourseCreditUnitConfig> creditConfigs) { iCreditConfigs = creditConfigs; }
+	public void addTocreditConfigs(CourseCreditUnitConfig courseCreditUnitConfig) {
+		if (iCreditConfigs == null) iCreditConfigs = new HashSet();
+		iCreditConfigs.add(courseCreditUnitConfig);
 	}
 
-	/**
-	 * Set the value related to the column: AUTO_TIME_SPREAD
-	 * @param autoSpreadInTime the AUTO_TIME_SPREAD value
-	 */
-	public void setAutoSpreadInTime (java.lang.Boolean autoSpreadInTime) {
-		this.autoSpreadInTime = autoSpreadInTime;
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof SchedulingSubpart)) return false;
+		if (getUniqueId() == null || ((SchedulingSubpart)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((SchedulingSubpart)o).getUniqueId());
 	}
 
-
-
-	/**
-	 * Return the value associated with the column: STUDENT_ALLOW_OVERLAP
-	 */
-	public java.lang.Boolean isStudentAllowOverlap () {
-		return studentAllowOverlap;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	/**
-	 * Set the value related to the column: STUDENT_ALLOW_OVERLAP
-	 * @param studentAllowOverlap the STUDENT_ALLOW_OVERLAP value
-	 */
-	public void setStudentAllowOverlap (java.lang.Boolean studentAllowOverlap) {
-		this.studentAllowOverlap = studentAllowOverlap;
+	public String toString() {
+		return "SchedulingSubpart["+getUniqueId()+"]";
 	}
 
-
-
-	/**
-	 * Return the value associated with the column: SUBPART_SUFFIX
-	 */
-	public java.lang.String getSchedulingSubpartSuffixCache () {
-		return schedulingSubpartSuffixCache;
+	public String toDebugString() {
+		return "SchedulingSubpart[" +
+			"\n	AutoSpreadInTime: " + getAutoSpreadInTime() +
+			"\n	DatePattern: " + getDatePattern() +
+			"\n	InstrOfferingConfig: " + getInstrOfferingConfig() +
+			"\n	Itype: " + getItype() +
+			"\n	MinutesPerWk: " + getMinutesPerWk() +
+			"\n	ParentSubpart: " + getParentSubpart() +
+			"\n	SchedulingSubpartSuffixCache: " + getSchedulingSubpartSuffixCache() +
+			"\n	StudentAllowOverlap: " + getStudentAllowOverlap() +
+			"\n	UniqueId: " + getUniqueId() +
+			"\n	UniqueIdRolledForwardFrom: " + getUniqueIdRolledForwardFrom() +
+			"]";
 	}
-
-	/**
-	 * Set the value related to the column: SUBPART_SUFFIX
-	 * @param schedulingSubpartSuffixCache the SUBPART_SUFFIX value
-	 */
-	public void setSchedulingSubpartSuffixCache (java.lang.String schedulingSubpartSuffixCache) {
-		this.schedulingSubpartSuffixCache = schedulingSubpartSuffixCache;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: courseName
-	 */
-	public java.lang.String getCourseName () {
-		return courseName;
-	}
-
-	/**
-	 * Set the value related to the column: courseName
-	 * @param courseName the courseName value
-	 */
-	public void setCourseName (java.lang.String courseName) {
-		this.courseName = courseName;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: limit
-	 */
-	public java.lang.Integer getLimit () {
-		return limit;
-	}
-
-	/**
-	 * Set the value related to the column: limit
-	 * @param limit the limit value
-	 */
-	public void setLimit (java.lang.Integer limit) {
-		this.limit = limit;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: UID_ROLLED_FWD_FROM
-	 */
-	public java.lang.Long getUniqueIdRolledForwardFrom () {
-		return uniqueIdRolledForwardFrom;
-	}
-
-	/**
-	 * Set the value related to the column: UID_ROLLED_FWD_FROM
-	 * @param uniqueIdRolledForwardFrom the UID_ROLLED_FWD_FROM value
-	 */
-	public void setUniqueIdRolledForwardFrom (java.lang.Long uniqueIdRolledForwardFrom) {
-		this.uniqueIdRolledForwardFrom = uniqueIdRolledForwardFrom;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: session
-	 */
-	public org.unitime.timetable.model.Session getSession () {
-		return session;
-	}
-
-	/**
-	 * Set the value related to the column: session
-	 * @param session the session value
-	 */
-	public void setSession (org.unitime.timetable.model.Session session) {
-		this.session = session;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: itype
-	 */
-	public org.unitime.timetable.model.ItypeDesc getItype () {
-		return itype;
-	}
-
-	/**
-	 * Set the value related to the column: itype
-	 * @param itype the itype value
-	 */
-	public void setItype (org.unitime.timetable.model.ItypeDesc itype) {
-		this.itype = itype;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: PARENT
-	 */
-	public org.unitime.timetable.model.SchedulingSubpart getParentSubpart () {
-		return parentSubpart;
-	}
-
-	/**
-	 * Set the value related to the column: PARENT
-	 * @param parentSubpart the PARENT value
-	 */
-	public void setParentSubpart (org.unitime.timetable.model.SchedulingSubpart parentSubpart) {
-		this.parentSubpart = parentSubpart;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: CONFIG_ID
-	 */
-	public org.unitime.timetable.model.InstrOfferingConfig getInstrOfferingConfig () {
-		return instrOfferingConfig;
-	}
-
-	/**
-	 * Set the value related to the column: CONFIG_ID
-	 * @param instrOfferingConfig the CONFIG_ID value
-	 */
-	public void setInstrOfferingConfig (org.unitime.timetable.model.InstrOfferingConfig instrOfferingConfig) {
-		this.instrOfferingConfig = instrOfferingConfig;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: DATE_PATTERN_ID
-	 */
-	public org.unitime.timetable.model.DatePattern getDatePattern () {
-		return datePattern;
-	}
-
-	/**
-	 * Set the value related to the column: DATE_PATTERN_ID
-	 * @param datePattern the DATE_PATTERN_ID value
-	 */
-	public void setDatePattern (org.unitime.timetable.model.DatePattern datePattern) {
-		this.datePattern = datePattern;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: childSubparts
-	 */
-	public java.util.Set getChildSubparts () {
-		return childSubparts;
-	}
-
-	/**
-	 * Set the value related to the column: childSubparts
-	 * @param childSubparts the childSubparts value
-	 */
-	public void setChildSubparts (java.util.Set childSubparts) {
-		this.childSubparts = childSubparts;
-	}
-
-	public void addTochildSubparts (org.unitime.timetable.model.SchedulingSubpart schedulingSubpart) {
-		if (null == getChildSubparts()) setChildSubparts(new java.util.HashSet());
-		getChildSubparts().add(schedulingSubpart);
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: classes
-	 */
-	public java.util.Set getClasses () {
-		return classes;
-	}
-
-	/**
-	 * Set the value related to the column: classes
-	 * @param classes the classes value
-	 */
-	public void setClasses (java.util.Set classes) {
-		this.classes = classes;
-	}
-
-	public void addToclasses (org.unitime.timetable.model.Class_ class_) {
-		if (null == getClasses()) setClasses(new java.util.HashSet());
-		getClasses().add(class_);
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: creditConfigs
-	 */
-	public java.util.Set getCreditConfigs () {
-		return creditConfigs;
-	}
-
-	/**
-	 * Set the value related to the column: creditConfigs
-	 * @param creditConfigs the creditConfigs value
-	 */
-	public void setCreditConfigs (java.util.Set creditConfigs) {
-		this.creditConfigs = creditConfigs;
-	}
-
-	public void addTocreditConfigs (org.unitime.timetable.model.CourseCreditUnitConfig courseCreditUnitConfig) {
-		if (null == getCreditConfigs()) setCreditConfigs(new java.util.HashSet());
-		getCreditConfigs().add(courseCreditUnitConfig);
-	}
-
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.SchedulingSubpart)) return false;
-		else {
-			org.unitime.timetable.model.SchedulingSubpart schedulingSubpart = (org.unitime.timetable.model.SchedulingSubpart) obj;
-			if (null == this.getUniqueId() || null == schedulingSubpart.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(schedulingSubpart.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

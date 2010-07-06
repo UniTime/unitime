@@ -1,105 +1,75 @@
+/*
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
+ * as indicated by the @authors tag.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import org.unitime.timetable.model.ClassEvent;
+import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.Event;
 
-/**
- * This is an object that contains data related to the EVENT table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="EVENT"
- */
+public abstract class BaseClassEvent extends Event implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseClassEvent extends org.unitime.timetable.model.Event  implements Serializable {
-
-	public static String REF = "ClassEvent";
+	private Class_ iClazz;
 
 
-	// constructors
-	public BaseClassEvent () {
+	public BaseClassEvent() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseClassEvent (java.lang.Long uniqueId) {
-		super(uniqueId);
+	public BaseClassEvent(Long uniqueId) {
+		setUniqueId(uniqueId);
+		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseClassEvent (
-		java.lang.Long uniqueId,
-		java.lang.Integer minCapacity,
-		java.lang.Integer maxCapacity) {
+	protected void initialize() {}
 
-		super (
-			uniqueId,
-			minCapacity,
-			maxCapacity);
+	public Class_ getClazz() { return iClazz; }
+	public void setClazz(Class_ clazz) { iClazz = clazz; }
+
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof ClassEvent)) return false;
+		if (getUniqueId() == null || ((ClassEvent)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((ClassEvent)o).getUniqueId());
 	}
 
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-
-	// many to one
-	private org.unitime.timetable.model.Class_ clazz;
-
-
-
-
-
-
-	/**
-	 * Return the value associated with the column: CLASS_ID
-	 */
-	public org.unitime.timetable.model.Class_ getClazz () {
-		return clazz;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	/**
-	 * Set the value related to the column: CLASS_ID
-	 * @param clazz the CLASS_ID value
-	 */
-	public void setClazz (org.unitime.timetable.model.Class_ clazz) {
-		this.clazz = clazz;
+	public String toString() {
+		return "ClassEvent["+getUniqueId()+"]";
 	}
 
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.ClassEvent)) return false;
-		else {
-			org.unitime.timetable.model.ClassEvent classEvent = (org.unitime.timetable.model.ClassEvent) obj;
-			if (null == this.getUniqueId() || null == classEvent.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(classEvent.getUniqueId()));
-		}
+	public String toDebugString() {
+		return "ClassEvent[" +
+			"\n	Clazz: " + getClazz() +
+			"\n	Email: " + getEmail() +
+			"\n	EventName: " + getEventName() +
+			"\n	MainContact: " + getMainContact() +
+			"\n	MaxCapacity: " + getMaxCapacity() +
+			"\n	MinCapacity: " + getMinCapacity() +
+			"\n	SponsoringOrganization: " + getSponsoringOrganization() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

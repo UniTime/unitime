@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -21,189 +21,72 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.StudentAccomodation;
 
-/**
- * This is an object that contains data related to the STUDENT_ACCOMODATION table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="STUDENT_ACCOMODATION"
- */
+public abstract class BaseStudentAccomodation implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseStudentAccomodation  implements Serializable {
+	private Long iUniqueId;
+	private String iName;
+	private String iAbbreviation;
+	private String iExternalUniqueId;
 
-	public static String REF = "StudentAccomodation";
+	private Session iSession;
+
+	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_NAME = "name";
 	public static String PROP_ABBREVIATION = "abbreviation";
-	public static String PROP_EXTERNAL_UNIQUE_ID = "externalUniqueId";
+	public static String PROP_EXTERNAL_UID = "externalUniqueId";
 
-
-	// constructors
-	public BaseStudentAccomodation () {
+	public BaseStudentAccomodation() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseStudentAccomodation (java.lang.Long uniqueId) {
-		this.setUniqueId(uniqueId);
+	public BaseStudentAccomodation(Long uniqueId) {
+		setUniqueId(uniqueId);
 		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseStudentAccomodation (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Session session,
-		java.lang.String name,
-		java.lang.String abbreviation) {
+	protected void initialize() {}
 
-		this.setUniqueId(uniqueId);
-		this.setSession(session);
-		this.setName(name);
-		this.setAbbreviation(abbreviation);
-		initialize();
+	public Long getUniqueId() { return iUniqueId; }
+	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
+
+	public String getName() { return iName; }
+	public void setName(String name) { iName = name; }
+
+	public String getAbbreviation() { return iAbbreviation; }
+	public void setAbbreviation(String abbreviation) { iAbbreviation = abbreviation; }
+
+	public String getExternalUniqueId() { return iExternalUniqueId; }
+	public void setExternalUniqueId(String externalUniqueId) { iExternalUniqueId = externalUniqueId; }
+
+	public Session getSession() { return iSession; }
+	public void setSession(Session session) { iSession = session; }
+
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof StudentAccomodation)) return false;
+		if (getUniqueId() == null || ((StudentAccomodation)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((StudentAccomodation)o).getUniqueId());
 	}
 
-	protected void initialize () {}
-
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-	// primary key
-	private java.lang.Long uniqueId;
-
-	// fields
-	private java.lang.String name;
-	private java.lang.String abbreviation;
-	private java.lang.String externalUniqueId;
-
-	// many to one
-	private org.unitime.timetable.model.Session session;
-
-
-
-	/**
-	 * Return the unique identifier of this class
-     * @hibernate.id
-     *  generator-class="sequence"
-     *  column="UNIQUEID"
-     */
-	public java.lang.Long getUniqueId () {
-		return uniqueId;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	/**
-	 * Set the unique identifier of this class
-	 * @param uniqueId the new ID
-	 */
-	public void setUniqueId (java.lang.Long uniqueId) {
-		this.uniqueId = uniqueId;
-		this.hashCode = Integer.MIN_VALUE;
+	public String toString() {
+		return "StudentAccomodation["+getUniqueId()+" "+getName()+"]";
 	}
 
-
-
-
-	/**
-	 * Return the value associated with the column: NAME
-	 */
-	public java.lang.String getName () {
-		return name;
+	public String toDebugString() {
+		return "StudentAccomodation[" +
+			"\n	Abbreviation: " + getAbbreviation() +
+			"\n	ExternalUniqueId: " + getExternalUniqueId() +
+			"\n	Name: " + getName() +
+			"\n	Session: " + getSession() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-	/**
-	 * Set the value related to the column: NAME
-	 * @param name the NAME value
-	 */
-	public void setName (java.lang.String name) {
-		this.name = name;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: ABBREVIATION
-	 */
-	public java.lang.String getAbbreviation () {
-		return abbreviation;
-	}
-
-	/**
-	 * Set the value related to the column: ABBREVIATION
-	 * @param abbreviation the ABBREVIATION value
-	 */
-	public void setAbbreviation (java.lang.String abbreviation) {
-		this.abbreviation = abbreviation;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: EXTERNAL_UID
-	 */
-	public java.lang.String getExternalUniqueId () {
-		return externalUniqueId;
-	}
-
-	/**
-	 * Set the value related to the column: EXTERNAL_UID
-	 * @param externalUniqueId the EXTERNAL_UID value
-	 */
-	public void setExternalUniqueId (java.lang.String externalUniqueId) {
-		this.externalUniqueId = externalUniqueId;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: SESSION_ID
-	 */
-	public org.unitime.timetable.model.Session getSession () {
-		return session;
-	}
-
-	/**
-	 * Set the value related to the column: SESSION_ID
-	 * @param session the SESSION_ID value
-	 */
-	public void setSession (org.unitime.timetable.model.Session session) {
-		this.session = session;
-	}
-
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.StudentAccomodation)) return false;
-		else {
-			org.unitime.timetable.model.StudentAccomodation studentAccomodation = (org.unitime.timetable.model.StudentAccomodation) obj;
-			if (null == this.getUniqueId() || null == studentAccomodation.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(studentAccomodation.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

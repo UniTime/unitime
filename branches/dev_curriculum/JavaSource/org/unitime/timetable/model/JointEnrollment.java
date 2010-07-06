@@ -38,24 +38,6 @@ public class JointEnrollment extends BaseJointEnrollment {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public JointEnrollment (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Solution solution,
-		org.unitime.timetable.model.Class_ class1,
-		org.unitime.timetable.model.Class_ class2,
-		java.lang.Double jenrl) {
-
-		super (
-			uniqueId,
-			solution,
-			class1,
-			class2,
-			jenrl);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 

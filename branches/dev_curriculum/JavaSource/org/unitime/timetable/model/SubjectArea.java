@@ -59,32 +59,6 @@ public class SubjectArea extends BaseSubjectArea implements Comparable {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public SubjectArea (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Session session,
-		org.unitime.timetable.model.Department department,
-		java.lang.String externalUniqueId,
-		java.lang.String subjectAreaAbbreviation,
-		java.lang.String shortTitle,
-		java.lang.String longTitle,
-		java.lang.Boolean scheduleBookOnly,
-		java.lang.Boolean pseudoSubjectArea) {
-
-		super (
-			uniqueId,
-			session,
-			department,
-			externalUniqueId,
-			subjectAreaAbbreviation,
-			shortTitle,
-			longTitle,
-			scheduleBookOnly,
-			pseudoSubjectArea);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 	
 	/**

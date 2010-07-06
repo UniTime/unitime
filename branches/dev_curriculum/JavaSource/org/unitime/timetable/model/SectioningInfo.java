@@ -38,22 +38,6 @@ public class SectioningInfo extends BaseSectioningInfo {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public SectioningInfo (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Class_ clazz,
-		java.lang.Double nbrExpectedStudents,
-		java.lang.Double nbrHoldingStudents) {
-
-		super (
-			uniqueId,
-			clazz,
-			nbrExpectedStudents,
-			nbrHoldingStudents);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 

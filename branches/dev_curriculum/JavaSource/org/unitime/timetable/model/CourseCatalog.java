@@ -43,34 +43,6 @@ public class CourseCatalog extends BaseCourseCatalog {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public CourseCatalog (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Session session,
-		java.lang.String subject,
-		java.lang.String courseNumber,
-		java.lang.String title,
-		java.lang.Boolean designatorRequired,
-		java.lang.String creditType,
-		java.lang.String creditUnitType,
-		java.lang.String creditFormat,
-		java.lang.Float fixedMinimumCredit) {
-
-		super (
-			uniqueId,
-			session,
-			subject,
-			courseNumber,
-			title,
-			designatorRequired,
-			creditType,
-			creditUnitType,
-			creditFormat,
-			fixedMinimumCredit);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 	public static CourseCatalog findCourseFromPreviousSessionInCatalogForSession(CourseOffering courseOffering, Session session){

@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -19,202 +19,116 @@
 */
 package org.unitime.timetable.model.base;
 
+import java.util.List;
+
 import org.hibernate.Hibernate;
-import org.hibernate.Session;
 import org.hibernate.criterion.Order;
+
+import org.unitime.timetable.model.ChangeLog;
+import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.ChangeLogDAO;
 
-/**
- * This is an automatically generated DAO class which should not be edited.
- */
-public abstract class BaseChangeLogDAO extends org.unitime.timetable.model.dao._RootDAO {
+public abstract class BaseChangeLogDAO extends _RootDAO {
 
-	// query name references
+	private static ChangeLogDAO sInstance;
 
-
-	public static ChangeLogDAO instance;
-
-	/**
-	 * Return a singleton of the DAO
-	 */
 	public static ChangeLogDAO getInstance () {
-		if (null == instance) instance = new ChangeLogDAO();
-		return instance;
+		if (sInstance == null) sInstance = new ChangeLogDAO();
+		return sInstance;
 	}
 
 	public Class getReferenceClass () {
-		return org.unitime.timetable.model.ChangeLog.class;
+		return ChangeLog.class;
 	}
 
-    public Order getDefaultOrder () {
+	public Order getDefaultOrder () {
 		return null;
-    }
-
-	/**
-	 * Cast the object as a org.unitime.timetable.model.ChangeLog
-	 */
-	public org.unitime.timetable.model.ChangeLog cast (Object object) {
-		return (org.unitime.timetable.model.ChangeLog) object;
 	}
 
-	public org.unitime.timetable.model.ChangeLog get(java.lang.Long key)
-	{
-		return (org.unitime.timetable.model.ChangeLog) get(getReferenceClass(), key);
+	public ChangeLog get(Long uniqueId) {
+		return (ChangeLog) get(getReferenceClass(), uniqueId);
 	}
 
-	public org.unitime.timetable.model.ChangeLog get(java.lang.Long key, Session s)
-	{
-		return (org.unitime.timetable.model.ChangeLog) get(getReferenceClass(), key, s);
+	public ChangeLog get(Long uniqueId, org.hibernate.Session hibSession) {
+		return (ChangeLog) get(getReferenceClass(), uniqueId, hibSession);
 	}
 
-	public org.unitime.timetable.model.ChangeLog load(java.lang.Long key)
-	{
-		return (org.unitime.timetable.model.ChangeLog) load(getReferenceClass(), key);
+	public ChangeLog load(Long uniqueId) {
+		return (ChangeLog) load(getReferenceClass(), uniqueId);
 	}
 
-	public org.unitime.timetable.model.ChangeLog load(java.lang.Long key, Session s)
-	{
-		return (org.unitime.timetable.model.ChangeLog) load(getReferenceClass(), key, s);
+	public ChangeLog load(Long uniqueId, org.hibernate.Session hibSession) {
+		return (ChangeLog) load(getReferenceClass(), uniqueId, hibSession);
 	}
 
-	public org.unitime.timetable.model.ChangeLog loadInitialize(java.lang.Long key, Session s) 
-	{ 
-		org.unitime.timetable.model.ChangeLog obj = load(key, s); 
-		if (!Hibernate.isInitialized(obj)) {
-			Hibernate.initialize(obj);
-		} 
-		return obj; 
+	public ChangeLog loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
+		ChangeLog changeLog = load(uniqueId, hibSession);
+		if (!Hibernate.isInitialized(changeLog)) Hibernate.initialize(changeLog);
+		return changeLog;
 	}
 
-
-	/**
-	 * Persist the given transient instance, first assigning a generated identifier. (Or using the current value
-	 * of the identifier property if the assigned generator is used.) 
-	 * @param changeLog a transient instance of a persistent class 
-	 * @return the class identifier
-	 */
-	public java.lang.Long save(org.unitime.timetable.model.ChangeLog changeLog)
-	{
-		return (java.lang.Long) super.save(changeLog);
+	public void save(ChangeLog changeLog) {
+		save((Object) changeLog);
 	}
 
-	/**
-	 * Persist the given transient instance, first assigning a generated identifier. (Or using the current value
-	 * of the identifier property if the assigned generator is used.) 
-	 * Use the Session given.
-	 * @param changeLog a transient instance of a persistent class
-	 * @param s the Session
-	 * @return the class identifier
-	 */
-	public java.lang.Long save(org.unitime.timetable.model.ChangeLog changeLog, Session s)
-	{
-		return (java.lang.Long) save((Object) changeLog, s);
+	public void save(ChangeLog changeLog, org.hibernate.Session hibSession) {
+		save((Object) changeLog, hibSession);
 	}
 
-	/**
-	 * Either save() or update() the given instance, depending upon the value of its identifier property. By default
-	 * the instance is always saved. This behaviour may be adjusted by specifying an unsaved-value attribute of the
-	 * identifier property mapping. 
-	 * @param changeLog a transient instance containing new or updated state 
-	 */
-	public void saveOrUpdate(org.unitime.timetable.model.ChangeLog changeLog)
-	{
+	public void saveOrUpdate(ChangeLog changeLog) {
 		saveOrUpdate((Object) changeLog);
 	}
 
-	/**
-	 * Either save() or update() the given instance, depending upon the value of its identifier property. By default the
-	 * instance is always saved. This behaviour may be adjusted by specifying an unsaved-value attribute of the identifier
-	 * property mapping. 
-	 * Use the Session given.
-	 * @param changeLog a transient instance containing new or updated state.
-	 * @param s the Session.
-	 */
-	public void saveOrUpdate(org.unitime.timetable.model.ChangeLog changeLog, Session s)
-	{
-		saveOrUpdate((Object) changeLog, s);
+	public void saveOrUpdate(ChangeLog changeLog, org.hibernate.Session hibSession) {
+		saveOrUpdate((Object) changeLog, hibSession);
 	}
 
-	/**
-	 * Update the persistent state associated with the given identifier. An exception is thrown if there is a persistent
-	 * instance with the same identifier in the current session.
-	 * @param changeLog a transient instance containing updated state
-	 */
-	public void update(org.unitime.timetable.model.ChangeLog changeLog) 
-	{
+
+	public void update(ChangeLog changeLog) {
 		update((Object) changeLog);
 	}
 
-	/**
-	 * Update the persistent state associated with the given identifier. An exception is thrown if there is a persistent
-	 * instance with the same identifier in the current session.
-	 * Use the Session given.
-	 * @param changeLog a transient instance containing updated state
-	 * @param the Session
-	 */
-	public void update(org.unitime.timetable.model.ChangeLog changeLog, Session s)
-	{
-		update((Object) changeLog, s);
+	public void update(ChangeLog changeLog, org.hibernate.Session hibSession) {
+		update((Object) changeLog, hibSession);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * @param id the instance ID to be removed
-	 */
-	public void delete(java.lang.Long id)
-	{
-		delete((Object) load(id));
+	public void delete(Long uniqueId) {
+		delete(load(uniqueId));
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * Use the Session given.
-	 * @param id the instance ID to be removed
-	 * @param s the Session
-	 */
-	public void delete(java.lang.Long id, Session s)
-	{
-		delete((Object) load(id, s), s);
+	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
+		delete(load(uniqueId, hibSession), hibSession);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * @param changeLog the instance to be removed
-	 */
-	public void delete(org.unitime.timetable.model.ChangeLog changeLog)
-	{
+	public void delete(ChangeLog changeLog) {
 		delete((Object) changeLog);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * Use the Session given.
-	 * @param changeLog the instance to be removed
-	 * @param s the Session
-	 */
-	public void delete(org.unitime.timetable.model.ChangeLog changeLog, Session s)
-	{
-		delete((Object) changeLog, s);
-	}
-	
-	/**
-	 * Re-read the state of the given instance from the underlying database. It is inadvisable to use this to implement
-	 * long-running sessions that span many business tasks. This method is, however, useful in certain special circumstances.
-	 * For example 
-	 * <ul> 
-	 * <li>where a database trigger alters the object state upon insert or update</li>
-	 * <li>after executing direct SQL (eg. a mass update) in the same session</li>
-	 * <li>after inserting a Blob or Clob</li>
-	 * </ul>
-	 */
-	public void refresh (org.unitime.timetable.model.ChangeLog changeLog, Session s)
-	{
-		refresh((Object) changeLog, s);
+	public void delete(ChangeLog changeLog, org.hibernate.Session hibSession) {
+		delete((Object) changeLog, hibSession);
 	}
 
+	public void refresh(ChangeLog changeLog, org.hibernate.Session hibSession) {
+		refresh((Object) changeLog, hibSession);
+	}
 
+	public List<ChangeLog> findAll(org.hibernate.Session hibSession) {
+		return hibSession.createQuery("from ChangeLog").list();
+	}
+
+	public List<ChangeLog> findBySession(org.hibernate.Session hibSession, Long sessionId) {
+		return hibSession.createQuery("from ChangeLog x where x.session.uniqueId = :sessionId").setLong("sessionId", sessionId).list();
+	}
+
+	public List<ChangeLog> findByManager(org.hibernate.Session hibSession, Long managerId) {
+		return hibSession.createQuery("from ChangeLog x where x.manager.uniqueId = :managerId").setLong("managerId", managerId).list();
+	}
+
+	public List<ChangeLog> findBySubjectArea(org.hibernate.Session hibSession, Long subjectAreaId) {
+		return hibSession.createQuery("from ChangeLog x where x.subjectArea.uniqueId = :subjectAreaId").setLong("subjectAreaId", subjectAreaId).list();
+	}
+
+	public List<ChangeLog> findByDepartment(org.hibernate.Session hibSession, Long departmentId) {
+		return hibSession.createQuery("from ChangeLog x where x.department.uniqueId = :departmentId").setLong("departmentId", departmentId).list();
+	}
 }

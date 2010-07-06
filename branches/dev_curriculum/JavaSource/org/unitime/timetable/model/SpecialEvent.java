@@ -23,20 +23,6 @@ public class SpecialEvent extends BaseSpecialEvent {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public SpecialEvent (
-		java.lang.Long uniqueId,
-		java.lang.Integer minCapacity,
-		java.lang.Integer maxCapacity) {
-
-		super (
-			uniqueId,
-			minCapacity,
-			maxCapacity);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
     public Set<Student> getStudents() {

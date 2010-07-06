@@ -1,185 +1,92 @@
+/*
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
+ * as indicated by the @authors tag.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import org.unitime.timetable.model.AcademicArea;
+import org.unitime.timetable.model.AcademicClassification;
+import org.unitime.timetable.model.CurriculumProjectionRule;
+import org.unitime.timetable.model.PosMajor;
 
-/**
- * This is an object that contains data related to the curriculum_rule table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="curriculum_rule"
- */
+public abstract class BaseCurriculumProjectionRule implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseCurriculumProjectionRule  implements Serializable {
+	private Long iUniqueId;
+	private Float iProjection;
 
-	public static String REF = "Curriculum";
+	private AcademicArea iAcademicArea;
+	private PosMajor iMajor;
+	private AcademicClassification iAcademicClassification;
+
+	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_PROJECTION = "projection";
 
-
-	// constructors
-	public BaseCurriculumProjectionRule () {
+	public BaseCurriculumProjectionRule() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseCurriculumProjectionRule (java.lang.Long uniqueId) {
-		this.setUniqueId(uniqueId);
+	public BaseCurriculumProjectionRule(Long uniqueId) {
+		setUniqueId(uniqueId);
 		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseCurriculumProjectionRule (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.AcademicArea academicArea,
-		org.unitime.timetable.model.AcademicClassification academicClassification,
-		java.lang.Float projection) {
+	protected void initialize() {}
 
-		this.setUniqueId(uniqueId);
-		this.setAcademicArea(academicArea);
-		this.setAcademicClassification(academicClassification);
-		this.setProjection(projection);
-		initialize();
+	public Long getUniqueId() { return iUniqueId; }
+	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
+
+	public Float getProjection() { return iProjection; }
+	public void setProjection(Float projection) { iProjection = projection; }
+
+	public AcademicArea getAcademicArea() { return iAcademicArea; }
+	public void setAcademicArea(AcademicArea academicArea) { iAcademicArea = academicArea; }
+
+	public PosMajor getMajor() { return iMajor; }
+	public void setMajor(PosMajor major) { iMajor = major; }
+
+	public AcademicClassification getAcademicClassification() { return iAcademicClassification; }
+	public void setAcademicClassification(AcademicClassification academicClassification) { iAcademicClassification = academicClassification; }
+
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof CurriculumProjectionRule)) return false;
+		if (getUniqueId() == null || ((CurriculumProjectionRule)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((CurriculumProjectionRule)o).getUniqueId());
 	}
 
-	protected void initialize () {}
-
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-	// primary key
-	private java.lang.Long uniqueId;
-
-	// fields
-	private java.lang.Float projection;
-
-	// many to one
-	private org.unitime.timetable.model.AcademicArea academicArea;
-	private org.unitime.timetable.model.AcademicClassification academicClassification;
-	private org.unitime.timetable.model.PosMajor major;
-
-
-
-	/**
-	 * Return the unique identifier of this class
-     * @hibernate.id
-     *  generator-class="org.unitime.commons.hibernate.id.UniqueIdGenerator"
-     *  column="uniqueid"
-     */
-	public java.lang.Long getUniqueId () {
-		return uniqueId;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	/**
-	 * Set the unique identifier of this class
-	 * @param uniqueId the new ID
-	 */
-	public void setUniqueId (java.lang.Long uniqueId) {
-		this.uniqueId = uniqueId;
-		this.hashCode = Integer.MIN_VALUE;
+	public String toString() {
+		return "CurriculumProjectionRule["+getUniqueId()+"]";
 	}
 
-
-
-
-	/**
-	 * Return the value associated with the column: projection
-	 */
-	public java.lang.Float getProjection () {
-		return projection;
+	public String toDebugString() {
+		return "CurriculumProjectionRule[" +
+			"\n	AcademicArea: " + getAcademicArea() +
+			"\n	AcademicClassification: " + getAcademicClassification() +
+			"\n	Major: " + getMajor() +
+			"\n	Projection: " + getProjection() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-	/**
-	 * Set the value related to the column: projection
-	 * @param projection the projection value
-	 */
-	public void setProjection (java.lang.Float projection) {
-		this.projection = projection;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: acad_area_id
-	 */
-	public org.unitime.timetable.model.AcademicArea getAcademicArea () {
-		return academicArea;
-	}
-
-	/**
-	 * Set the value related to the column: acad_area_id
-	 * @param academicArea the acad_area_id value
-	 */
-	public void setAcademicArea (org.unitime.timetable.model.AcademicArea academicArea) {
-		this.academicArea = academicArea;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: acad_clasf_id
-	 */
-	public org.unitime.timetable.model.AcademicClassification getAcademicClassification () {
-		return academicClassification;
-	}
-
-	/**
-	 * Set the value related to the column: acad_clasf_id
-	 * @param academicClassification the acad_clasf_id value
-	 */
-	public void setAcademicClassification (org.unitime.timetable.model.AcademicClassification academicClassification) {
-		this.academicClassification = academicClassification;
-	}
-	
-	
-	/**
-	 * Return the value associated with the column: major_id
-	 */
-	public org.unitime.timetable.model.PosMajor getMajor () {
-		return major;
-	}
-
-	/**
-	 * Set the value related to the column: major_id
-	 * @param major the major_id value
-	 */
-	public void setMajor (org.unitime.timetable.model.PosMajor major) {
-		this.major = major;
-	}
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.Curriculum)) return false;
-		else {
-			org.unitime.timetable.model.Curriculum curriculum = (org.unitime.timetable.model.Curriculum) obj;
-			if (null == this.getUniqueId() || null == curriculum.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(curriculum.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -21,104 +21,51 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import org.unitime.timetable.model.Preference;
+import org.unitime.timetable.model.RoomGroup;
+import org.unitime.timetable.model.RoomGroupPref;
 
-/**
- * This is an object that contains data related to the ROOM_GROUP_PREF table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="ROOM_GROUP_PREF"
- */
+public abstract class BaseRoomGroupPref extends Preference implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseRoomGroupPref extends org.unitime.timetable.model.Preference  implements Serializable {
-
-	public static String REF = "RoomGroupPref";
+	private RoomGroup iRoomGroup;
 
 
-	// constructors
-	public BaseRoomGroupPref () {
+	public BaseRoomGroupPref() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseRoomGroupPref (java.lang.Long uniqueId) {
-		super(uniqueId);
+	public BaseRoomGroupPref(Long uniqueId) {
+		setUniqueId(uniqueId);
+		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseRoomGroupPref (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.PreferenceGroup owner,
-		org.unitime.timetable.model.PreferenceLevel prefLevel) {
+	protected void initialize() {}
 
-		super (
-			uniqueId,
-			owner,
-			prefLevel);
+	public RoomGroup getRoomGroup() { return iRoomGroup; }
+	public void setRoomGroup(RoomGroup roomGroup) { iRoomGroup = roomGroup; }
+
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof RoomGroupPref)) return false;
+		if (getUniqueId() == null || ((RoomGroupPref)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((RoomGroupPref)o).getUniqueId());
 	}
 
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-
-	// many to one
-	private org.unitime.timetable.model.RoomGroup roomGroup;
-
-
-
-
-
-
-	/**
-	 * Return the value associated with the column: ROOM_GROUP_ID
-	 */
-	public org.unitime.timetable.model.RoomGroup getRoomGroup () {
-		return roomGroup;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	/**
-	 * Set the value related to the column: ROOM_GROUP_ID
-	 * @param roomGroup the ROOM_GROUP_ID value
-	 */
-	public void setRoomGroup (org.unitime.timetable.model.RoomGroup roomGroup) {
-		this.roomGroup = roomGroup;
+	public String toString() {
+		return "RoomGroupPref["+getUniqueId()+"]";
 	}
 
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.RoomGroupPref)) return false;
-		else {
-			org.unitime.timetable.model.RoomGroupPref roomGroupPref = (org.unitime.timetable.model.RoomGroupPref) obj;
-			if (null == this.getUniqueId() || null == roomGroupPref.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(roomGroupPref.getUniqueId()));
-		}
+	public String toDebugString() {
+		return "RoomGroupPref[" +
+			"\n	Owner: " + getOwner() +
+			"\n	PrefLevel: " + getPrefLevel() +
+			"\n	RoomGroup: " + getRoomGroup() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

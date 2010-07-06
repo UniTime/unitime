@@ -12,35 +12,13 @@ public class RoomTypeOption extends BaseRoomTypeOption {
 		super();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public RoomTypeOption (
-		org.unitime.timetable.model.RoomType roomType,
-		org.unitime.timetable.model.Session session) {
-
-		super (
-			roomType,
-			session);
-	}
-
-	/**
-	 * Constructor for required fields
-	 */
-	public RoomTypeOption (
-		org.unitime.timetable.model.RoomType roomType,
-		org.unitime.timetable.model.Session session,
-		java.lang.Integer status,
-		java.lang.String message) {
-
-		super (
-			roomType,
-			session,
-			status,
-			message);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
+	
+	public RoomTypeOption(RoomType roomType, Session session) {
+		setRoomType(roomType);
+		setSession(session);
+		initialize();
+	}
 
 	public static final int sStatusNoOptions = 0;
 	public static final int sStatusScheduleEvents = 1;

@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -21,125 +21,58 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import org.unitime.timetable.model.Preference;
+import org.unitime.timetable.model.TimePattern;
+import org.unitime.timetable.model.TimePref;
 
-/**
- * This is an object that contains data related to the TIME_PREF table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="TIME_PREF"
- */
+public abstract class BaseTimePref extends Preference implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseTimePref extends org.unitime.timetable.model.Preference  implements Serializable {
+	private String iPreference;
 
-	public static String REF = "TimePref";
+	private TimePattern iTimePattern;
+
 	public static String PROP_PREFERENCE = "preference";
 
-
-	// constructors
-	public BaseTimePref () {
+	public BaseTimePref() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseTimePref (java.lang.Long uniqueId) {
-		super(uniqueId);
+	public BaseTimePref(Long uniqueId) {
+		setUniqueId(uniqueId);
+		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseTimePref (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.PreferenceGroup owner,
-		org.unitime.timetable.model.PreferenceLevel prefLevel) {
+	protected void initialize() {}
 
-		super (
-			uniqueId,
-			owner,
-			prefLevel);
+	public String getPreference() { return iPreference; }
+	public void setPreference(String preference) { iPreference = preference; }
+
+	public TimePattern getTimePattern() { return iTimePattern; }
+	public void setTimePattern(TimePattern timePattern) { iTimePattern = timePattern; }
+
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof TimePref)) return false;
+		if (getUniqueId() == null || ((TimePref)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((TimePref)o).getUniqueId());
 	}
 
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-
-	// fields
-	private java.lang.String preference;
-
-	// many to one
-	private org.unitime.timetable.model.TimePattern timePattern;
-
-
-
-
-
-
-	/**
-	 * Return the value associated with the column: PREFERENCE
-	 */
-	public java.lang.String getPreference () {
-		return preference;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	/**
-	 * Set the value related to the column: PREFERENCE
-	 * @param preference the PREFERENCE value
-	 */
-	public void setPreference (java.lang.String preference) {
-		this.preference = preference;
+	public String toString() {
+		return "TimePref["+getUniqueId()+"]";
 	}
 
-
-
-	/**
-	 * Return the value associated with the column: TIME_PATTERN_ID
-	 */
-	public org.unitime.timetable.model.TimePattern getTimePattern () {
-		return timePattern;
+	public String toDebugString() {
+		return "TimePref[" +
+			"\n	Owner: " + getOwner() +
+			"\n	PrefLevel: " + getPrefLevel() +
+			"\n	Preference: " + getPreference() +
+			"\n	TimePattern: " + getTimePattern() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-	/**
-	 * Set the value related to the column: TIME_PATTERN_ID
-	 * @param timePattern the TIME_PATTERN_ID value
-	 */
-	public void setTimePattern (org.unitime.timetable.model.TimePattern timePattern) {
-		this.timePattern = timePattern;
-	}
-
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.TimePref)) return false;
-		else {
-			org.unitime.timetable.model.TimePref timePref = (org.unitime.timetable.model.TimePref) obj;
-			if (null == this.getUniqueId() || null == timePref.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(timePref.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -20,20 +20,42 @@
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
+import org.unitime.timetable.model.Building;
+import org.unitime.timetable.model.DatePattern;
+import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.DepartmentStatusType;
+import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.PreferenceGroup;
+import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.SubjectArea;
 
-/**
- * This is an object that contains data related to the SESSIONS table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="SESSIONS"
- */
+public abstract class BaseSession extends PreferenceGroup implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseSession extends org.unitime.timetable.model.PreferenceGroup  implements Serializable {
+	private String iAcademicInitiative;
+	private String iAcademicYear;
+	private String iAcademicTerm;
+	private Date iSessionBeginDateTime;
+	private Date iClassesEndDateTime;
+	private Date iSessionEndDateTime;
+	private Date iExamBeginDate;
+	private Date iEventBeginDate;
+	private Date iEventEndDate;
+	private String iHolidays;
 
-	public static String REF = "Session";
+	private DepartmentStatusType iStatusType;
+	private DatePattern iDefaultDatePattern;
+	private Set<SubjectArea> iSubjectAreas;
+	private Set<Building> iBuildings;
+	private Set<Department> iDepartments;
+	private Set<Location> iRooms;
+	private Set<InstructionalOffering> iInstructionalOfferings;
+
 	public static String PROP_ACADEMIC_INITIATIVE = "academicInitiative";
 	public static String PROP_ACADEMIC_YEAR = "academicYear";
 	public static String PROP_ACADEMIC_TERM = "academicTerm";
@@ -45,383 +67,118 @@ public abstract class BaseSession extends org.unitime.timetable.model.Preference
 	public static String PROP_EVENT_END_DATE = "eventEndDate";
 	public static String PROP_HOLIDAYS = "holidays";
 
-
-	// constructors
-	public BaseSession () {
+	public BaseSession() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseSession (java.lang.Long uniqueId) {
-		super(uniqueId);
+	public BaseSession(Long uniqueId) {
+		setUniqueId(uniqueId);
+		initialize();
 	}
 
+	protected void initialize() {}
 
+	public String getAcademicInitiative() { return iAcademicInitiative; }
+	public void setAcademicInitiative(String academicInitiative) { iAcademicInitiative = academicInitiative; }
 
-	private int hashCode = Integer.MIN_VALUE;
+	public String getAcademicYear() { return iAcademicYear; }
+	public void setAcademicYear(String academicYear) { iAcademicYear = academicYear; }
 
+	public String getAcademicTerm() { return iAcademicTerm; }
+	public void setAcademicTerm(String academicTerm) { iAcademicTerm = academicTerm; }
 
-	// fields
-	private java.lang.String academicInitiative;
-	private java.lang.String academicYear;
-	private java.lang.String academicTerm;
-	private java.util.Date sessionBeginDateTime;
-	private java.util.Date classesEndDateTime;
-	private java.util.Date sessionEndDateTime;
-	private java.util.Date examBeginDate;
-    private java.util.Date eventBeginDate;
-    private java.util.Date eventEndDate;
-	private java.lang.String holidays;
+	public Date getSessionBeginDateTime() { return iSessionBeginDateTime; }
+	public void setSessionBeginDateTime(Date sessionBeginDateTime) { iSessionBeginDateTime = sessionBeginDateTime; }
 
-	// many to one
-	private org.unitime.timetable.model.DepartmentStatusType statusType;
-	private org.unitime.timetable.model.DatePattern defaultDatePattern;
+	public Date getClassesEndDateTime() { return iClassesEndDateTime; }
+	public void setClassesEndDateTime(Date classesEndDateTime) { iClassesEndDateTime = classesEndDateTime; }
 
-	// collections
-	private java.util.Set subjectAreas;
-	private java.util.Set buildings;
-	private java.util.Set departments;
-	private java.util.Set rooms;
-	private java.util.Set instructionalOfferings;
+	public Date getSessionEndDateTime() { return iSessionEndDateTime; }
+	public void setSessionEndDateTime(Date sessionEndDateTime) { iSessionEndDateTime = sessionEndDateTime; }
 
+	public Date getExamBeginDate() { return iExamBeginDate; }
+	public void setExamBeginDate(Date examBeginDate) { iExamBeginDate = examBeginDate; }
 
+	public Date getEventBeginDate() { return iEventBeginDate; }
+	public void setEventBeginDate(Date eventBeginDate) { iEventBeginDate = eventBeginDate; }
 
+	public Date getEventEndDate() { return iEventEndDate; }
+	public void setEventEndDate(Date eventEndDate) { iEventEndDate = eventEndDate; }
 
+	public String getHolidays() { return iHolidays; }
+	public void setHolidays(String holidays) { iHolidays = holidays; }
 
+	public DepartmentStatusType getStatusType() { return iStatusType; }
+	public void setStatusType(DepartmentStatusType statusType) { iStatusType = statusType; }
 
-	/**
-	 * Return the value associated with the column: ACADEMIC_INITIATIVE
-	 */
-	public java.lang.String getAcademicInitiative () {
-		return academicInitiative;
+	public DatePattern getDefaultDatePattern() { return iDefaultDatePattern; }
+	public void setDefaultDatePattern(DatePattern defaultDatePattern) { iDefaultDatePattern = defaultDatePattern; }
+
+	public Set<SubjectArea> getSubjectAreas() { return iSubjectAreas; }
+	public void setSubjectAreas(Set<SubjectArea> subjectAreas) { iSubjectAreas = subjectAreas; }
+	public void addTosubjectAreas(SubjectArea subjectArea) {
+		if (iSubjectAreas == null) iSubjectAreas = new HashSet();
+		iSubjectAreas.add(subjectArea);
 	}
 
-	/**
-	 * Set the value related to the column: ACADEMIC_INITIATIVE
-	 * @param academicInitiative the ACADEMIC_INITIATIVE value
-	 */
-	public void setAcademicInitiative (java.lang.String academicInitiative) {
-		this.academicInitiative = academicInitiative;
+	public Set<Building> getBuildings() { return iBuildings; }
+	public void setBuildings(Set<Building> buildings) { iBuildings = buildings; }
+	public void addTobuildings(Building building) {
+		if (iBuildings == null) iBuildings = new HashSet();
+		iBuildings.add(building);
 	}
 
-
-
-	/**
-	 * Return the value associated with the column: ACADEMIC_YEAR
-	 */
-	public java.lang.String getAcademicYear () {
-		return academicYear;
+	public Set<Department> getDepartments() { return iDepartments; }
+	public void setDepartments(Set<Department> departments) { iDepartments = departments; }
+	public void addTodepartments(Department department) {
+		if (iDepartments == null) iDepartments = new HashSet();
+		iDepartments.add(department);
 	}
 
-	/**
-	 * Set the value related to the column: ACADEMIC_YEAR
-	 * @param academicYear the ACADEMIC_YEAR value
-	 */
-	public void setAcademicYear (java.lang.String academicYear) {
-		this.academicYear = academicYear;
+	public Set<Location> getRooms() { return iRooms; }
+	public void setRooms(Set<Location> rooms) { iRooms = rooms; }
+	public void addTorooms(Location location) {
+		if (iRooms == null) iRooms = new HashSet();
+		iRooms.add(location);
 	}
 
-
-
-	/**
-	 * Return the value associated with the column: ACADEMIC_TERM
-	 */
-	public java.lang.String getAcademicTerm () {
-		return academicTerm;
+	public Set<InstructionalOffering> getInstructionalOfferings() { return iInstructionalOfferings; }
+	public void setInstructionalOfferings(Set<InstructionalOffering> instructionalOfferings) { iInstructionalOfferings = instructionalOfferings; }
+	public void addToinstructionalOfferings(InstructionalOffering instructionalOffering) {
+		if (iInstructionalOfferings == null) iInstructionalOfferings = new HashSet();
+		iInstructionalOfferings.add(instructionalOffering);
 	}
 
-	/**
-	 * Set the value related to the column: ACADEMIC_TERM
-	 * @param academicTerm the ACADEMIC_TERM value
-	 */
-	public void setAcademicTerm (java.lang.String academicTerm) {
-		this.academicTerm = academicTerm;
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof Session)) return false;
+		if (getUniqueId() == null || ((Session)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((Session)o).getUniqueId());
 	}
 
-
-
-	/**
-	 * Return the value associated with the column: SESSION_BEGIN_DATE_TIME
-	 */
-	public java.util.Date getSessionBeginDateTime () {
-		return sessionBeginDateTime;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	/**
-	 * Set the value related to the column: SESSION_BEGIN_DATE_TIME
-	 * @param sessionBeginDateTime the SESSION_BEGIN_DATE_TIME value
-	 */
-	public void setSessionBeginDateTime (java.util.Date sessionBeginDateTime) {
-		this.sessionBeginDateTime = sessionBeginDateTime;
+	public String toString() {
+		return "Session["+getUniqueId()+"]";
 	}
 
-
-
-	/**
-	 * Return the value associated with the column: CLASSES_END_DATE_TIME
-	 */
-	public java.util.Date getClassesEndDateTime () {
-		return classesEndDateTime;
+	public String toDebugString() {
+		return "Session[" +
+			"\n	AcademicInitiative: " + getAcademicInitiative() +
+			"\n	AcademicTerm: " + getAcademicTerm() +
+			"\n	AcademicYear: " + getAcademicYear() +
+			"\n	ClassesEndDateTime: " + getClassesEndDateTime() +
+			"\n	DefaultDatePattern: " + getDefaultDatePattern() +
+			"\n	EventBeginDate: " + getEventBeginDate() +
+			"\n	EventEndDate: " + getEventEndDate() +
+			"\n	ExamBeginDate: " + getExamBeginDate() +
+			"\n	Holidays: " + getHolidays() +
+			"\n	SessionBeginDateTime: " + getSessionBeginDateTime() +
+			"\n	SessionEndDateTime: " + getSessionEndDateTime() +
+			"\n	StatusType: " + getStatusType() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-	/**
-	 * Set the value related to the column: CLASSES_END_DATE_TIME
-	 * @param classesEndDateTime the CLASSES_END_DATE_TIME value
-	 */
-	public void setClassesEndDateTime (java.util.Date classesEndDateTime) {
-		this.classesEndDateTime = classesEndDateTime;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: SESSION_END_DATE_TIME
-	 */
-	public java.util.Date getSessionEndDateTime () {
-		return sessionEndDateTime;
-	}
-
-	/**
-	 * Set the value related to the column: SESSION_END_DATE_TIME
-	 * @param sessionEndDateTime the SESSION_END_DATE_TIME value
-	 */
-	public void setSessionEndDateTime (java.util.Date sessionEndDateTime) {
-		this.sessionEndDateTime = sessionEndDateTime;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: EXAM_BEGIN_DATE
-	 */
-	public java.util.Date getExamBeginDate () {
-		return examBeginDate;
-	}
-
-	/**
-	 * Set the value related to the column: EXAM_BEGIN_DATE
-	 * @param examBeginDate the EXAM_BEGIN_DATE value
-	 */
-	public void setExamBeginDate (java.util.Date examBeginDate) {
-		this.examBeginDate = examBeginDate;
-	}
-
-    /**
-     * Return the value associated with the column: EVENT_BEGIN_DATE
-     */
-    public java.util.Date getEventBeginDate () {
-        return eventBeginDate;
-    }
-
-    /**
-     * Set the value related to the column: EVENT_BEGIN_DATE
-     * @param eventBeginDate the EVENT_BEGIN_DATE value
-     */
-    public void setEventBeginDate (java.util.Date eventBeginDate) {
-        this.eventBeginDate = eventBeginDate;
-    }
-
-    /**
-     * Return the value associated with the column: EVENT_END_DATE
-     */
-    public java.util.Date getEventEndDate () {
-        return eventEndDate;
-    }
-
-    /**
-     * Set the value related to the column: EVENT_END_DATE
-     * @param eventEndDate the EVENT_END_DATE value
-     */
-    public void setEventEndDate (java.util.Date eventEndDate) {
-        this.eventEndDate = eventEndDate;
-    }
-    
-
-	/**
-	 * Return the value associated with the column: HOLIDAYS
-	 */
-	public java.lang.String getHolidays () {
-		return holidays;
-	}
-
-	/**
-	 * Set the value related to the column: HOLIDAYS
-	 * @param holidays the HOLIDAYS value
-	 */
-	public void setHolidays (java.lang.String holidays) {
-		this.holidays = holidays;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: STATUS_TYPE
-	 */
-	public org.unitime.timetable.model.DepartmentStatusType getStatusType () {
-		return statusType;
-	}
-
-	/**
-	 * Set the value related to the column: STATUS_TYPE
-	 * @param statusType the STATUS_TYPE value
-	 */
-	public void setStatusType (org.unitime.timetable.model.DepartmentStatusType statusType) {
-		this.statusType = statusType;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: DEF_DATEPATT_ID
-	 */
-	public org.unitime.timetable.model.DatePattern getDefaultDatePattern () {
-		return defaultDatePattern;
-	}
-
-	/**
-	 * Set the value related to the column: DEF_DATEPATT_ID
-	 * @param defaultDatePattern the DEF_DATEPATT_ID value
-	 */
-	public void setDefaultDatePattern (org.unitime.timetable.model.DatePattern defaultDatePattern) {
-		this.defaultDatePattern = defaultDatePattern;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: subjectAreas
-	 */
-	public java.util.Set getSubjectAreas () {
-		return subjectAreas;
-	}
-
-	/**
-	 * Set the value related to the column: subjectAreas
-	 * @param subjectAreas the subjectAreas value
-	 */
-	public void setSubjectAreas (java.util.Set subjectAreas) {
-		this.subjectAreas = subjectAreas;
-	}
-
-	public void addTosubjectAreas (org.unitime.timetable.model.SubjectArea subjectArea) {
-		if (null == getSubjectAreas()) setSubjectAreas(new java.util.HashSet());
-		getSubjectAreas().add(subjectArea);
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: buildings
-	 */
-	public java.util.Set getBuildings () {
-		return buildings;
-	}
-
-	/**
-	 * Set the value related to the column: buildings
-	 * @param buildings the buildings value
-	 */
-	public void setBuildings (java.util.Set buildings) {
-		this.buildings = buildings;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: departments
-	 */
-	public java.util.Set getDepartments () {
-		return departments;
-	}
-
-	/**
-	 * Set the value related to the column: departments
-	 * @param departments the departments value
-	 */
-	public void setDepartments (java.util.Set departments) {
-		this.departments = departments;
-	}
-
-	public void addTodepartments (org.unitime.timetable.model.Department department) {
-		if (null == getDepartments()) setDepartments(new java.util.HashSet());
-		getDepartments().add(department);
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: rooms
-	 */
-	public java.util.Set getRooms () {
-		return rooms;
-	}
-
-	/**
-	 * Set the value related to the column: rooms
-	 * @param rooms the rooms value
-	 */
-	public void setRooms (java.util.Set rooms) {
-		this.rooms = rooms;
-	}
-
-	public void addTorooms (org.unitime.timetable.model.Location location) {
-		if (null == getRooms()) setRooms(new java.util.HashSet());
-		getRooms().add(location);
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: instructionalOfferings
-	 */
-	public java.util.Set getInstructionalOfferings () {
-		return instructionalOfferings;
-	}
-
-	/**
-	 * Set the value related to the column: instructionalOfferings
-	 * @param instructionalOfferings the instructionalOfferings value
-	 */
-	public void setInstructionalOfferings (java.util.Set instructionalOfferings) {
-		this.instructionalOfferings = instructionalOfferings;
-	}
-
-	public void addToinstructionalOfferings (org.unitime.timetable.model.InstructionalOffering instructionalOffering) {
-		if (null == getInstructionalOfferings()) setInstructionalOfferings(new java.util.HashSet());
-		getInstructionalOfferings().add(instructionalOffering);
-	}
-
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.Session)) return false;
-		else {
-			org.unitime.timetable.model.Session session = (org.unitime.timetable.model.Session) obj;
-			if (null == this.getUniqueId() || null == session.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(session.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

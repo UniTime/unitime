@@ -39,24 +39,6 @@ public class ArrangeCreditUnitConfig extends BaseArrangeCreditUnitConfig {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public ArrangeCreditUnitConfig (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.CourseCreditType creditType,
-		org.unitime.timetable.model.CourseCreditUnitType creditUnitType,
-		java.lang.String creditFormat,
-		java.lang.Boolean definesCreditAtCourseLevel) {
-
-		super (
-			uniqueId,
-			creditType,
-			creditUnitType,
-			creditFormat,
-			definesCreditAtCourseLevel);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 	public String creditText() {

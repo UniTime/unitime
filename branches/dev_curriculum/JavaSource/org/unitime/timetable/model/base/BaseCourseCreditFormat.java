@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -21,103 +21,52 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import org.unitime.timetable.model.CourseCreditFormat;
+import org.unitime.timetable.model.RefTableEntry;
 
-/**
- * This is an object that contains data related to the CRSE_CREDIT_FORMAT table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="CRSE_CREDIT_FORMAT"
- */
+public abstract class BaseCourseCreditFormat extends RefTableEntry implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseCourseCreditFormat extends org.unitime.timetable.model.RefTableEntry  implements Serializable {
+	private String iAbbreviation;
 
-	public static String REF = "CourseCreditFormat";
+
 	public static String PROP_ABBREVIATION = "abbreviation";
 
-
-	// constructors
-	public BaseCourseCreditFormat () {
+	public BaseCourseCreditFormat() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseCourseCreditFormat (Long uniqueId) {
-		super(uniqueId);
+	public BaseCourseCreditFormat(Long uniqueId) {
+		setUniqueId(uniqueId);
+		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseCourseCreditFormat (
-		Long uniqueId,
-		java.lang.String reference) {
+	protected void initialize() {}
 
-		super (
-			uniqueId,
-			reference);
+	public String getAbbreviation() { return iAbbreviation; }
+	public void setAbbreviation(String abbreviation) { iAbbreviation = abbreviation; }
+
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof CourseCreditFormat)) return false;
+		if (getUniqueId() == null || ((CourseCreditFormat)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((CourseCreditFormat)o).getUniqueId());
 	}
 
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-
-	// fields
-	private java.lang.String abbreviation;
-
-
-
-
-
-
-	/**
-	 * Return the value associated with the column: ABBREVIATION
-	 */
-	public java.lang.String getAbbreviation () {
-		return abbreviation;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	/**
-	 * Set the value related to the column: ABBREVIATION
-	 * @param abbreviation the ABBREVIATION value
-	 */
-	public void setAbbreviation (java.lang.String abbreviation) {
-		this.abbreviation = abbreviation;
+	public String toString() {
+		return "CourseCreditFormat["+getUniqueId()+" "+getLabel()+"]";
 	}
 
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.CourseCreditFormat)) return false;
-		else {
-			org.unitime.timetable.model.CourseCreditFormat courseCreditFormat = (org.unitime.timetable.model.CourseCreditFormat) obj;
-			if (null == this.getUniqueId() || null == courseCreditFormat.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(courseCreditFormat.getUniqueId()));
-		}
+	public String toDebugString() {
+		return "CourseCreditFormat[" +
+			"\n	Abbreviation: " + getAbbreviation() +
+			"\n	Label: " + getLabel() +
+			"\n	Reference: " + getReference() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

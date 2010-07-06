@@ -39,20 +39,6 @@ public class RoomPref extends BaseRoomPref {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public RoomPref (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.PreferenceGroup owner,
-		org.unitime.timetable.model.PreferenceLevel prefLevel) {
-
-		super (
-			uniqueId,
-			owner,
-			prefLevel);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 	public String preferenceText() { 

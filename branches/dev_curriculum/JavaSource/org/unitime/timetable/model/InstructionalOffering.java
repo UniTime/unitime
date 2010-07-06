@@ -71,24 +71,6 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public InstructionalOffering (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Session session,
-		java.lang.Integer instrOfferingPermId,
-		java.lang.Boolean notOffered,
-		java.lang.Boolean designatorRequired) {
-
-		super (
-			uniqueId,
-			session,
-			instrOfferingPermId,
-			notOffered,
-			designatorRequired);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 	public String getCourseName(){

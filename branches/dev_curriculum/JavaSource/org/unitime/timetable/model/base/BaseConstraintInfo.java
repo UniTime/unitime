@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -20,103 +20,58 @@
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
-import org.dom4j.Document;
+import java.util.HashSet;
+import java.util.Set;
 
-/**
- * This is an object that contains data related to the SOLVER_INFO table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="SOLVER_INFO"
- */
+import org.unitime.timetable.model.Assignment;
+import org.unitime.timetable.model.ConstraintInfo;
+import org.unitime.timetable.model.SolverInfo;
 
-public abstract class BaseConstraintInfo extends org.unitime.timetable.model.SolverInfo  implements Serializable {
+public abstract class BaseConstraintInfo extends SolverInfo implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-	public static String REF = "ConstraintInfo";
+	private Set<Assignment> iAssignments;
 
 
-	// constructors
-	public BaseConstraintInfo () {
+	public BaseConstraintInfo() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseConstraintInfo (java.lang.Long uniqueId) {
-		super(uniqueId);
+	public BaseConstraintInfo(Long uniqueId) {
+		setUniqueId(uniqueId);
+		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseConstraintInfo (
-		java.lang.Long uniqueId,
-		Document value) {
+	protected void initialize() {}
 
-		super (
-			uniqueId,
-			value);
+	public Set<Assignment> getAssignments() { return iAssignments; }
+	public void setAssignments(Set<Assignment> assignments) { iAssignments = assignments; }
+	public void addToassignments(Assignment assignment) {
+		if (iAssignments == null) iAssignments = new HashSet();
+		iAssignments.add(assignment);
 	}
 
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-
-	// collections
-	private java.util.Set assignments;
-
-
-
-
-
-
-	/**
-	 * Return the value associated with the column: assignments
-	 */
-	public java.util.Set getAssignments () {
-		return assignments;
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof ConstraintInfo)) return false;
+		if (getUniqueId() == null || ((ConstraintInfo)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((ConstraintInfo)o).getUniqueId());
 	}
 
-	/**
-	 * Set the value related to the column: assignments
-	 * @param assignments the assignments value
-	 */
-	public void setAssignments (java.util.Set assignments) {
-		this.assignments = assignments;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.ConstraintInfo)) return false;
-		else {
-			org.unitime.timetable.model.ConstraintInfo constraintInfo = (org.unitime.timetable.model.ConstraintInfo) obj;
-			if (null == this.getUniqueId() || null == constraintInfo.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(constraintInfo.getUniqueId()));
-		}
+	public String toString() {
+		return "ConstraintInfo["+getUniqueId()+"]";
 	}
 
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
+	public String toDebugString() {
+		return "ConstraintInfo[" +
+			"\n	Definition: " + getDefinition() +
+			"\n	Opt: " + getOpt() +
+			"\n	UniqueId: " + getUniqueId() +
+			"\n	Value: " + getValue() +
+			"]";
 	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -21,111 +21,66 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import org.unitime.timetable.model.ExamLocationPref;
+import org.unitime.timetable.model.ExamPeriod;
+import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.PreferenceLevel;
+
 public abstract class BaseExamLocationPref implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-    public static String REF = "ExamLocationPref";
+	private Long iUniqueId;
 
+	private Location iLocation;
+	private PreferenceLevel iPrefLevel;
+	private ExamPeriod iExamPeriod;
 
-	// constructors
+	public static String PROP_UNIQUEID = "uniqueId";
+
 	public BaseExamLocationPref() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseExamLocationPref (java.lang.Long uniqueId) {
-        this.setUniqueId(uniqueId);
-        initialize();
+	public BaseExamLocationPref(Long uniqueId) {
+		setUniqueId(uniqueId);
+		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseExamLocationPref (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Location location,
-		org.unitime.timetable.model.PreferenceLevel prefLevel,
-		org.unitime.timetable.model.ExamPeriod period) {
+	protected void initialize() {}
 
-	    this.setUniqueId(uniqueId);
-        this.setLocation(location);
-        this.setPrefLevel(prefLevel);
-        this.setExamPeriod(period);
-        initialize();
+	public Long getUniqueId() { return iUniqueId; }
+	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
+
+	public Location getLocation() { return iLocation; }
+	public void setLocation(Location location) { iLocation = location; }
+
+	public PreferenceLevel getPrefLevel() { return iPrefLevel; }
+	public void setPrefLevel(PreferenceLevel prefLevel) { iPrefLevel = prefLevel; }
+
+	public ExamPeriod getExamPeriod() { return iExamPeriod; }
+	public void setExamPeriod(ExamPeriod examPeriod) { iExamPeriod = examPeriod; }
+
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof ExamLocationPref)) return false;
+		if (getUniqueId() == null || ((ExamLocationPref)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((ExamLocationPref)o).getUniqueId());
 	}
 
-    protected void initialize () {}
-
-	private int hashCode = Integer.MIN_VALUE;
-
-    // primary key
-    private java.lang.Long uniqueId;
-
-    // fields
-	private org.unitime.timetable.model.Location location;
-	private org.unitime.timetable.model.PreferenceLevel prefLevel;
-	private org.unitime.timetable.model.ExamPeriod examPeriod;
-
-
-    public java.lang.Long getUniqueId () {
-        return uniqueId;
-    }
-
-    public void setUniqueId (java.lang.Long uniqueId) {
-        this.uniqueId = uniqueId;
-        this.hashCode = Integer.MIN_VALUE;
-    }
-
-    public void setLocation(org.unitime.timetable.model.Location location) { 
-        this.location = location;
-	}
-	
-	public org.unitime.timetable.model.Location getLocation() {
-	    return location;
-	}
-	
-    public void setPrefLevel(org.unitime.timetable.model.PreferenceLevel prefLevel) { 
-        this.prefLevel = prefLevel;
-    }
-    
-    public org.unitime.timetable.model.PreferenceLevel getPrefLevel() {
-        return prefLevel;
-    }
-
-    public void setExamPeriod(org.unitime.timetable.model.ExamPeriod examPeriod) { 
-        this.examPeriod = examPeriod;
-    }
-    
-    public org.unitime.timetable.model.ExamPeriod getExamPeriod() {
-        return examPeriod;
-    }
-
-    public boolean equals (Object obj) {
-        if (null == obj) return false;
-        if (!(obj instanceof org.unitime.timetable.model.ExamLocationPref)) return false;
-        else {
-            org.unitime.timetable.model.ExamLocationPref examLocationPref = (org.unitime.timetable.model.ExamLocationPref) obj;
-            if (null == this.getUniqueId() || null == examLocationPref.getUniqueId()) return false;
-            else return (this.getUniqueId().equals(examLocationPref.getUniqueId()));
-        }
-    }
-
-    public int hashCode () {
-        if (Integer.MIN_VALUE == this.hashCode) {
-            if (null == this.getUniqueId()) return super.hashCode();
-            else {
-                String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-                this.hashCode = hashStr.hashCode();
-            }
-        }
-        return this.hashCode;
-    }
-
-
-	public String toString () {
-		return super.toString();
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
+	public String toString() {
+		return "ExamLocationPref["+getUniqueId()+"]";
+	}
 
+	public String toDebugString() {
+		return "ExamLocationPref[" +
+			"\n	ExamPeriod: " + getExamPeriod() +
+			"\n	Location: " + getLocation() +
+			"\n	PrefLevel: " + getPrefLevel() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
+	}
 }

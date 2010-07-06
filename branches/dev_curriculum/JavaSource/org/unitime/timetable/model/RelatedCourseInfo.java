@@ -47,24 +47,6 @@ public class RelatedCourseInfo extends BaseRelatedCourseInfo implements Comparab
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public RelatedCourseInfo (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.CourseEvent event,
-		org.unitime.timetable.model.CourseOffering course,
-		java.lang.Long ownerId,
-		java.lang.Integer ownerType) {
-
-		super (
-			uniqueId,
-			event,
-			course,
-			ownerId,
-			ownerType);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 	public static List findByOwnerIdType(org.hibernate.Session hibSession, Long ownerId, Integer ownerType) {
 	    return (hibSession.

@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008-2009, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -19,202 +19,116 @@
 */
 package org.unitime.timetable.model.base;
 
+import java.util.List;
+
 import org.hibernate.Hibernate;
-import org.hibernate.Session;
-import org.unitime.timetable.model.dao.Class_DAO;
 import org.hibernate.criterion.Order;
 
-/**
- * This is an automatically generated DAO class which should not be edited.
- */
-public abstract class BaseClass_DAO extends org.unitime.timetable.model.dao._RootDAO {
+import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.dao._RootDAO;
+import org.unitime.timetable.model.dao.Class_DAO;
 
-	// query name references
+public abstract class BaseClass_DAO extends _RootDAO {
 
+	private static Class_DAO sInstance;
 
-	public static Class_DAO instance;
-
-	/**
-	 * Return a singleton of the DAO
-	 */
 	public static Class_DAO getInstance () {
-		if (null == instance) instance = new Class_DAO();
-		return instance;
+		if (sInstance == null) sInstance = new Class_DAO();
+		return sInstance;
 	}
 
 	public Class getReferenceClass () {
-		return org.unitime.timetable.model.Class_.class;
+		return Class_.class;
 	}
 
-    public Order getDefaultOrder () {
+	public Order getDefaultOrder () {
 		return null;
-    }
-
-	/**
-	 * Cast the object as a org.unitime.timetable.model.Class_
-	 */
-	public org.unitime.timetable.model.Class_ cast (Object object) {
-		return (org.unitime.timetable.model.Class_) object;
 	}
 
-	public org.unitime.timetable.model.Class_ get(java.lang.Long key)
-	{
-		return (org.unitime.timetable.model.Class_) get(getReferenceClass(), key);
+	public Class_ get(Long uniqueId) {
+		return (Class_) get(getReferenceClass(), uniqueId);
 	}
 
-	public org.unitime.timetable.model.Class_ get(java.lang.Long key, Session s)
-	{
-		return (org.unitime.timetable.model.Class_) get(getReferenceClass(), key, s);
+	public Class_ get(Long uniqueId, org.hibernate.Session hibSession) {
+		return (Class_) get(getReferenceClass(), uniqueId, hibSession);
 	}
 
-	public org.unitime.timetable.model.Class_ load(java.lang.Long key)
-	{
-		return (org.unitime.timetable.model.Class_) load(getReferenceClass(), key);
+	public Class_ load(Long uniqueId) {
+		return (Class_) load(getReferenceClass(), uniqueId);
 	}
 
-	public org.unitime.timetable.model.Class_ load(java.lang.Long key, Session s)
-	{
-		return (org.unitime.timetable.model.Class_) load(getReferenceClass(), key, s);
+	public Class_ load(Long uniqueId, org.hibernate.Session hibSession) {
+		return (Class_) load(getReferenceClass(), uniqueId, hibSession);
 	}
 
-	public org.unitime.timetable.model.Class_ loadInitialize(java.lang.Long key, Session s) 
-	{ 
-		org.unitime.timetable.model.Class_ obj = load(key, s); 
-		if (!Hibernate.isInitialized(obj)) {
-			Hibernate.initialize(obj);
-		} 
-		return obj; 
+	public Class_ loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
+		Class_ class_ = load(uniqueId, hibSession);
+		if (!Hibernate.isInitialized(class_)) Hibernate.initialize(class_);
+		return class_;
 	}
 
-
-	/**
-	 * Persist the given transient instance, first assigning a generated identifier. (Or using the current value
-	 * of the identifier property if the assigned generator is used.) 
-	 * @param class_ a transient instance of a persistent class 
-	 * @return the class identifier
-	 */
-	public java.lang.Long save(org.unitime.timetable.model.Class_ class_)
-	{
-		return (java.lang.Long) super.save(class_);
+	public void save(Class_ class_) {
+		save((Object) class_);
 	}
 
-	/**
-	 * Persist the given transient instance, first assigning a generated identifier. (Or using the current value
-	 * of the identifier property if the assigned generator is used.) 
-	 * Use the Session given.
-	 * @param class_ a transient instance of a persistent class
-	 * @param s the Session
-	 * @return the class identifier
-	 */
-	public java.lang.Long save(org.unitime.timetable.model.Class_ class_, Session s)
-	{
-		return (java.lang.Long) save((Object) class_, s);
+	public void save(Class_ class_, org.hibernate.Session hibSession) {
+		save((Object) class_, hibSession);
 	}
 
-	/**
-	 * Either save() or update() the given instance, depending upon the value of its identifier property. By default
-	 * the instance is always saved. This behaviour may be adjusted by specifying an unsaved-value attribute of the
-	 * identifier property mapping. 
-	 * @param class_ a transient instance containing new or updated state 
-	 */
-	public void saveOrUpdate(org.unitime.timetable.model.Class_ class_)
-	{
+	public void saveOrUpdate(Class_ class_) {
 		saveOrUpdate((Object) class_);
 	}
 
-	/**
-	 * Either save() or update() the given instance, depending upon the value of its identifier property. By default the
-	 * instance is always saved. This behaviour may be adjusted by specifying an unsaved-value attribute of the identifier
-	 * property mapping. 
-	 * Use the Session given.
-	 * @param class_ a transient instance containing new or updated state.
-	 * @param s the Session.
-	 */
-	public void saveOrUpdate(org.unitime.timetable.model.Class_ class_, Session s)
-	{
-		saveOrUpdate((Object) class_, s);
+	public void saveOrUpdate(Class_ class_, org.hibernate.Session hibSession) {
+		saveOrUpdate((Object) class_, hibSession);
 	}
 
-	/**
-	 * Update the persistent state associated with the given identifier. An exception is thrown if there is a persistent
-	 * instance with the same identifier in the current session.
-	 * @param class_ a transient instance containing updated state
-	 */
-	public void update(org.unitime.timetable.model.Class_ class_) 
-	{
+
+	public void update(Class_ class_) {
 		update((Object) class_);
 	}
 
-	/**
-	 * Update the persistent state associated with the given identifier. An exception is thrown if there is a persistent
-	 * instance with the same identifier in the current session.
-	 * Use the Session given.
-	 * @param class_ a transient instance containing updated state
-	 * @param the Session
-	 */
-	public void update(org.unitime.timetable.model.Class_ class_, Session s)
-	{
-		update((Object) class_, s);
+	public void update(Class_ class_, org.hibernate.Session hibSession) {
+		update((Object) class_, hibSession);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * @param id the instance ID to be removed
-	 */
-	public void delete(java.lang.Long id)
-	{
-		delete((Object) load(id));
+	public void delete(Long uniqueId) {
+		delete(load(uniqueId));
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * Use the Session given.
-	 * @param id the instance ID to be removed
-	 * @param s the Session
-	 */
-	public void delete(java.lang.Long id, Session s)
-	{
-		delete((Object) load(id, s), s);
+	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
+		delete(load(uniqueId, hibSession), hibSession);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * @param class_ the instance to be removed
-	 */
-	public void delete(org.unitime.timetable.model.Class_ class_)
-	{
+	public void delete(Class_ class_) {
 		delete((Object) class_);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * Use the Session given.
-	 * @param class_ the instance to be removed
-	 * @param s the Session
-	 */
-	public void delete(org.unitime.timetable.model.Class_ class_, Session s)
-	{
-		delete((Object) class_, s);
-	}
-	
-	/**
-	 * Re-read the state of the given instance from the underlying database. It is inadvisable to use this to implement
-	 * long-running sessions that span many business tasks. This method is, however, useful in certain special circumstances.
-	 * For example 
-	 * <ul> 
-	 * <li>where a database trigger alters the object state upon insert or update</li>
-	 * <li>after executing direct SQL (eg. a mass update) in the same session</li>
-	 * <li>after inserting a Blob or Clob</li>
-	 * </ul>
-	 */
-	public void refresh (org.unitime.timetable.model.Class_ class_, Session s)
-	{
-		refresh((Object) class_, s);
+	public void delete(Class_ class_, org.hibernate.Session hibSession) {
+		delete((Object) class_, hibSession);
 	}
 
+	public void refresh(Class_ class_, org.hibernate.Session hibSession) {
+		refresh((Object) class_, hibSession);
+	}
 
+	public List<Class_> findAll(org.hibernate.Session hibSession) {
+		return hibSession.createQuery("from Class_").list();
+	}
+
+	public List<Class_> findByManagingDept(org.hibernate.Session hibSession, Long managingDeptId) {
+		return hibSession.createQuery("from Class_ x where x.managingDept.uniqueId = :managingDeptId").setLong("managingDeptId", managingDeptId).list();
+	}
+
+	public List<Class_> findBySchedulingSubpart(org.hibernate.Session hibSession, Long schedulingSubpartId) {
+		return hibSession.createQuery("from Class_ x where x.schedulingSubpart.uniqueId = :schedulingSubpartId").setLong("schedulingSubpartId", schedulingSubpartId).list();
+	}
+
+	public List<Class_> findByParentClass(org.hibernate.Session hibSession, Long parentClassId) {
+		return hibSession.createQuery("from Class_ x where x.parentClass.uniqueId = :parentClassId").setLong("parentClassId", parentClassId).list();
+	}
+
+	public List<Class_> findByDatePattern(org.hibernate.Session hibSession, Long datePatternId) {
+		return hibSession.createQuery("from Class_ x where x.datePattern.uniqueId = :datePatternId").setLong("datePatternId", datePatternId).list();
+	}
 }

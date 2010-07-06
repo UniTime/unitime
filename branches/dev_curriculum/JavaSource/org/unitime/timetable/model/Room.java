@@ -47,28 +47,6 @@ public class Room extends BaseRoom {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public Room (
-		java.lang.Long uniqueId,
-		java.lang.Long permanentId,
-		java.lang.Integer capacity,
-		java.lang.Integer coordinateX,
-		java.lang.Integer coordinateY,
-		java.lang.Boolean ignoreTooFar,
-		java.lang.Boolean ignoreRoomCheck) {
-
-		super (
-			uniqueId,
-			permanentId,
-			capacity,
-			coordinateX,
-			coordinateY,
-			ignoreTooFar,
-			ignoreRoomCheck);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 	
 	public String bldgAbbvRoomNumber() {

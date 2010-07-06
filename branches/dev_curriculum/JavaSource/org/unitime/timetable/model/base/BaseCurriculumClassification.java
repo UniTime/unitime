@@ -1,237 +1,109 @@
+/*
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
+ * as indicated by the @authors tag.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
+import org.unitime.timetable.model.AcademicClassification;
+import org.unitime.timetable.model.Curriculum;
+import org.unitime.timetable.model.CurriculumClassification;
+import org.unitime.timetable.model.CurriculumCourse;
 
-/**
- * This is an object that contains data related to the curricula_clasf table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="curricula_clasf"
- */
+public abstract class BaseCurriculumClassification implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseCurriculumClassification  implements Serializable {
+	private Long iUniqueId;
+	private String iName;
+	private Integer iNrStudents;
+	private Integer iOrd;
 
-	public static String REF = "CurriculumClassification";
+	private Curriculum iCurriculum;
+	private AcademicClassification iAcademicClassification;
+	private Set<CurriculumCourse> iCourses;
+
+	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_NAME = "name";
 	public static String PROP_NR_STUDENTS = "nrStudents";
 	public static String PROP_ORD = "ord";
 
-
-	// constructors
-	public BaseCurriculumClassification () {
+	public BaseCurriculumClassification() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseCurriculumClassification (java.lang.Long uniqueId) {
-		this.setUniqueId(uniqueId);
+	public BaseCurriculumClassification(Long uniqueId) {
+		setUniqueId(uniqueId);
 		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseCurriculumClassification (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Curriculum curriculum,
-		org.unitime.timetable.model.AcademicClassification academicClassification,
-		java.lang.String name,
-		java.lang.Integer nrStudents,
-		java.lang.Integer ord) {
+	protected void initialize() {}
 
-		this.setUniqueId(uniqueId);
-		this.setCurriculum(curriculum);
-		this.setAcademicClassification(academicClassification);
-		this.setName(name);
-		this.setNrStudents(nrStudents);
-		this.setOrd(ord);
-		initialize();
+	public Long getUniqueId() { return iUniqueId; }
+	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
+
+	public String getName() { return iName; }
+	public void setName(String name) { iName = name; }
+
+	public Integer getNrStudents() { return iNrStudents; }
+	public void setNrStudents(Integer nrStudents) { iNrStudents = nrStudents; }
+
+	public Integer getOrd() { return iOrd; }
+	public void setOrd(Integer ord) { iOrd = ord; }
+
+	public Curriculum getCurriculum() { return iCurriculum; }
+	public void setCurriculum(Curriculum curriculum) { iCurriculum = curriculum; }
+
+	public AcademicClassification getAcademicClassification() { return iAcademicClassification; }
+	public void setAcademicClassification(AcademicClassification academicClassification) { iAcademicClassification = academicClassification; }
+
+	public Set<CurriculumCourse> getCourses() { return iCourses; }
+	public void setCourses(Set<CurriculumCourse> courses) { iCourses = courses; }
+	public void addTocourses(CurriculumCourse curriculumCourse) {
+		if (iCourses == null) iCourses = new HashSet();
+		iCourses.add(curriculumCourse);
 	}
 
-	protected void initialize () {}
-
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-	// primary key
-	private java.lang.Long uniqueId;
-
-	// fields
-	private java.lang.String name;
-	private java.lang.Integer nrStudents;
-	private java.lang.Integer ord;
-
-	// many to one
-	private org.unitime.timetable.model.Curriculum curriculum;
-	private org.unitime.timetable.model.AcademicClassification academicClassification;
-
-	// collections
-	private java.util.Set courses;
-
-
-
-	/**
-	 * Return the unique identifier of this class
-     * @hibernate.id
-     *  generator-class="org.unitime.commons.hibernate.id.UniqueIdGenerator"
-     *  column="uniqueid"
-     */
-	public java.lang.Long getUniqueId () {
-		return uniqueId;
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof CurriculumClassification)) return false;
+		if (getUniqueId() == null || ((CurriculumClassification)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((CurriculumClassification)o).getUniqueId());
 	}
 
-	/**
-	 * Set the unique identifier of this class
-	 * @param uniqueId the new ID
-	 */
-	public void setUniqueId (java.lang.Long uniqueId) {
-		this.uniqueId = uniqueId;
-		this.hashCode = Integer.MIN_VALUE;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-
-
-
-	/**
-	 * Return the value associated with the column: name
-	 */
-	public java.lang.String getName () {
-		return name;
+	public String toString() {
+		return "CurriculumClassification["+getUniqueId()+" "+getName()+"]";
 	}
 
-	/**
-	 * Set the value related to the column: name
-	 * @param name the name value
-	 */
-	public void setName (java.lang.String name) {
-		this.name = name;
+	public String toDebugString() {
+		return "CurriculumClassification[" +
+			"\n	AcademicClassification: " + getAcademicClassification() +
+			"\n	Curriculum: " + getCurriculum() +
+			"\n	Name: " + getName() +
+			"\n	NrStudents: " + getNrStudents() +
+			"\n	Ord: " + getOrd() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-
-
-	/**
-	 * Return the value associated with the column: nr_students
-	 */
-	public java.lang.Integer getNrStudents () {
-		return nrStudents;
-	}
-
-	/**
-	 * Set the value related to the column: nr_students
-	 * @param nrStudents the nr_students value
-	 */
-	public void setNrStudents (java.lang.Integer nrStudents) {
-		this.nrStudents = nrStudents;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: ord
-	 */
-	public java.lang.Integer getOrd () {
-		return ord;
-	}
-
-	/**
-	 * Set the value related to the column: ord
-	 * @param ord the ord value
-	 */
-	public void setOrd (java.lang.Integer ord) {
-		this.ord = ord;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: curricula_id
-	 */
-	public org.unitime.timetable.model.Curriculum getCurriculum () {
-		return curriculum;
-	}
-
-	/**
-	 * Set the value related to the column: curricula_id
-	 * @param curriculum the curricula_id value
-	 */
-	public void setCurriculum (org.unitime.timetable.model.Curriculum curriculum) {
-		this.curriculum = curriculum;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: acad_clasf_id
-	 */
-	public org.unitime.timetable.model.AcademicClassification getAcademicClassification () {
-		return academicClassification;
-	}
-
-	/**
-	 * Set the value related to the column: acad_clasf_id
-	 * @param academicClassification the acad_clasf_id value
-	 */
-	public void setAcademicClassification (org.unitime.timetable.model.AcademicClassification academicClassification) {
-		this.academicClassification = academicClassification;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: courses
-	 */
-	public java.util.Set getCourses () {
-		return courses;
-	}
-
-	/**
-	 * Set the value related to the column: courses
-	 * @param courses the courses value
-	 */
-	public void setCourses (java.util.Set courses) {
-		this.courses = courses;
-	}
-
-	public void addTocourses (org.unitime.timetable.model.CurriculumCourse curriculumCourse) {
-		if (null == getCourses()) setCourses(new java.util.HashSet());
-		getCourses().add(curriculumCourse);
-	}
-
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.CurriculumClassification)) return false;
-		else {
-			org.unitime.timetable.model.CurriculumClassification curriculumClassification = (org.unitime.timetable.model.CurriculumClassification) obj;
-			if (null == this.getUniqueId() || null == curriculumClassification.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(curriculumClassification.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

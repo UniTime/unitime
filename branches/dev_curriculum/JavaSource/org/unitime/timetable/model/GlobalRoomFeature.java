@@ -47,18 +47,6 @@ public class GlobalRoomFeature extends BaseGlobalRoomFeature {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public GlobalRoomFeature (
-		java.lang.Long uniqueId,
-		java.lang.String label) {
-
-		super (
-			uniqueId,
-			label);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 	
 	public static String featureTypeDisplayString() {

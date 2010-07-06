@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -20,20 +20,41 @@
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
+import org.unitime.timetable.model.Assignment;
+import org.unitime.timetable.model.ExamLocationPref;
+import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.RoomDept;
+import org.unitime.timetable.model.RoomFeature;
+import org.unitime.timetable.model.RoomGroup;
+import org.unitime.timetable.model.Session;
 
-/**
- * This is an object that contains data related to the  table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table=""
- */
+public abstract class BaseLocation implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseLocation  implements Serializable {
+	private Long iUniqueId;
+	private Long iPermanentId;
+	private Integer iCapacity;
+	private Integer iCoordinateX;
+	private Integer iCoordinateY;
+	private Boolean iIgnoreTooFar;
+	private Boolean iIgnoreRoomCheck;
+	private String iManagerIds;
+	private String iPattern;
+	private Integer iExamType;
+	private Integer iExamCapacity;
+	private String iDisplayName;
 
-	public static String REF = "Location";
+	private Session iSession;
+	private Set<RoomFeature> iFeatures;
+	private Set<ExamLocationPref> iExamPreferences;
+	private Set<Assignment> iAssignments;
+	private Set<RoomGroup> iRoomGroups;
+	private Set<RoomDept> iRoomDepts;
+
+	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_PERMANENT_ID = "permanentId";
 	public static String PROP_CAPACITY = "capacity";
 	public static String PROP_COORDINATE_X = "coordinateX";
@@ -46,401 +67,123 @@ public abstract class BaseLocation  implements Serializable {
 	public static String PROP_EXAM_CAPACITY = "examCapacity";
 	public static String PROP_DISPLAY_NAME = "displayName";
 
-
-	// constructors
-	public BaseLocation () {
+	public BaseLocation() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseLocation (java.lang.Long uniqueId) {
-		this.setUniqueId(uniqueId);
+	public BaseLocation(Long uniqueId) {
+		setUniqueId(uniqueId);
 		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseLocation (
-		java.lang.Long uniqueId,
-		java.lang.Long permanentId,
-		java.lang.Integer capacity,
-		java.lang.Integer coordinateX,
-		java.lang.Integer coordinateY,
-		java.lang.Boolean ignoreTooFar,
-		java.lang.Boolean ignoreRoomCheck) {
+	protected void initialize() {}
 
-		this.setUniqueId(uniqueId);
-		this.setPermanentId(permanentId);
-		this.setCapacity(capacity);
-		this.setCoordinateX(coordinateX);
-		this.setCoordinateY(coordinateY);
-		this.setIgnoreTooFar(ignoreTooFar);
-		this.setIgnoreRoomCheck(ignoreRoomCheck);
-		initialize();
+	public Long getUniqueId() { return iUniqueId; }
+	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
+
+	public Long getPermanentId() { return iPermanentId; }
+	public void setPermanentId(Long permanentId) { iPermanentId = permanentId; }
+
+	public Integer getCapacity() { return iCapacity; }
+	public void setCapacity(Integer capacity) { iCapacity = capacity; }
+
+	public Integer getCoordinateX() { return iCoordinateX; }
+	public void setCoordinateX(Integer coordinateX) { iCoordinateX = coordinateX; }
+
+	public Integer getCoordinateY() { return iCoordinateY; }
+	public void setCoordinateY(Integer coordinateY) { iCoordinateY = coordinateY; }
+
+	public Boolean isIgnoreTooFar() { return iIgnoreTooFar; }
+	public Boolean getIgnoreTooFar() { return iIgnoreTooFar; }
+	public void setIgnoreTooFar(Boolean ignoreTooFar) { iIgnoreTooFar = ignoreTooFar; }
+
+	public Boolean isIgnoreRoomCheck() { return iIgnoreRoomCheck; }
+	public Boolean getIgnoreRoomCheck() { return iIgnoreRoomCheck; }
+	public void setIgnoreRoomCheck(Boolean ignoreRoomCheck) { iIgnoreRoomCheck = ignoreRoomCheck; }
+
+	public String getManagerIds() { return iManagerIds; }
+	public void setManagerIds(String managerIds) { iManagerIds = managerIds; }
+
+	public String getPattern() { return iPattern; }
+	public void setPattern(String pattern) { iPattern = pattern; }
+
+	public Integer getExamType() { return iExamType; }
+	public void setExamType(Integer examType) { iExamType = examType; }
+
+	public Integer getExamCapacity() { return iExamCapacity; }
+	public void setExamCapacity(Integer examCapacity) { iExamCapacity = examCapacity; }
+
+	public String getDisplayName() { return iDisplayName; }
+	public void setDisplayName(String displayName) { iDisplayName = displayName; }
+
+	public Session getSession() { return iSession; }
+	public void setSession(Session session) { iSession = session; }
+
+	public Set<RoomFeature> getFeatures() { return iFeatures; }
+	public void setFeatures(Set<RoomFeature> features) { iFeatures = features; }
+	public void addTofeatures(RoomFeature roomFeature) {
+		if (iFeatures == null) iFeatures = new HashSet();
+		iFeatures.add(roomFeature);
 	}
 
-	protected void initialize () {}
-
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-	// primary key
-	private java.lang.Long uniqueId;
-
-	// fields
-	private java.lang.Long permanentId;
-	private java.lang.Integer capacity;
-	private java.lang.Integer coordinateX;
-	private java.lang.Integer coordinateY;
-	private java.lang.Boolean ignoreTooFar;
-	private java.lang.Boolean ignoreRoomCheck;
-	private java.lang.String managerIds;
-	private java.lang.String pattern;
-	private java.lang.Integer examType;
-	private java.lang.Integer examCapacity;
-	private java.lang.String displayName;
-
-	// many to one
-	private org.unitime.timetable.model.Session session;
-
-	// collections
-	private java.util.Set features;
-	private java.util.Set assignments;
-	private java.util.Set roomGroups;
-	private java.util.Set roomDepts;
-	private java.util.Set examPreferences;
-
-
-
-	/**
-	 * Return the unique identifier of this class
-     * @hibernate.id
-     *  generator-class="org.unitime.commons.hibernate.id.UniqueIdGenerator"
-     *  column="UNIQUEID"
-     */
-	public java.lang.Long getUniqueId () {
-		return uniqueId;
+	public Set<ExamLocationPref> getExamPreferences() { return iExamPreferences; }
+	public void setExamPreferences(Set<ExamLocationPref> examPreferences) { iExamPreferences = examPreferences; }
+	public void addToexamPreferences(ExamLocationPref examLocationPref) {
+		if (iExamPreferences == null) iExamPreferences = new HashSet();
+		iExamPreferences.add(examLocationPref);
 	}
 
-	/**
-	 * Set the unique identifier of this class
-	 * @param uniqueId the new ID
-	 */
-	public void setUniqueId (java.lang.Long uniqueId) {
-		this.uniqueId = uniqueId;
-		this.hashCode = Integer.MIN_VALUE;
+	public Set<Assignment> getAssignments() { return iAssignments; }
+	public void setAssignments(Set<Assignment> assignments) { iAssignments = assignments; }
+	public void addToassignments(Assignment assignment) {
+		if (iAssignments == null) iAssignments = new HashSet();
+		iAssignments.add(assignment);
 	}
 
-
-
-
-	/**
-	 * Return the value associated with the column: PERMANENT_ID
-	 */
-	public java.lang.Long getPermanentId () {
-		return permanentId;
+	public Set<RoomGroup> getRoomGroups() { return iRoomGroups; }
+	public void setRoomGroups(Set<RoomGroup> roomGroups) { iRoomGroups = roomGroups; }
+	public void addToroomGroups(RoomGroup roomGroup) {
+		if (iRoomGroups == null) iRoomGroups = new HashSet();
+		iRoomGroups.add(roomGroup);
 	}
 
-	/**
-	 * Set the value related to the column: PERMANENT_ID
-	 * @param permanentId the PERMANENT_ID value
-	 */
-	public void setPermanentId (java.lang.Long permanentId) {
-		this.permanentId = permanentId;
+	public Set<RoomDept> getRoomDepts() { return iRoomDepts; }
+	public void setRoomDepts(Set<RoomDept> roomDepts) { iRoomDepts = roomDepts; }
+	public void addToroomDepts(RoomDept roomDept) {
+		if (iRoomDepts == null) iRoomDepts = new HashSet();
+		iRoomDepts.add(roomDept);
 	}
 
-
-
-	/**
-	 * Return the value associated with the column: CAPACITY
-	 */
-	public java.lang.Integer getCapacity () {
-		return capacity;
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof Location)) return false;
+		if (getUniqueId() == null || ((Location)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((Location)o).getUniqueId());
 	}
 
-	/**
-	 * Set the value related to the column: CAPACITY
-	 * @param capacity the CAPACITY value
-	 */
-	public void setCapacity (java.lang.Integer capacity) {
-		this.capacity = capacity;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-
-
-	/**
-	 * Return the value associated with the column: COORDINATE_X
-	 */
-	public java.lang.Integer getCoordinateX () {
-		return coordinateX;
+	public String toString() {
+		return "Location["+getUniqueId()+"]";
 	}
 
-	/**
-	 * Set the value related to the column: COORDINATE_X
-	 * @param coordinateX the COORDINATE_X value
-	 */
-	public void setCoordinateX (java.lang.Integer coordinateX) {
-		this.coordinateX = coordinateX;
+	public String toDebugString() {
+		return "Location[" +
+			"\n	Capacity: " + getCapacity() +
+			"\n	CoordinateX: " + getCoordinateX() +
+			"\n	CoordinateY: " + getCoordinateY() +
+			"\n	DisplayName: " + getDisplayName() +
+			"\n	ExamCapacity: " + getExamCapacity() +
+			"\n	ExamType: " + getExamType() +
+			"\n	IgnoreRoomCheck: " + getIgnoreRoomCheck() +
+			"\n	IgnoreTooFar: " + getIgnoreTooFar() +
+			"\n	ManagerIds: " + getManagerIds() +
+			"\n	Pattern: " + getPattern() +
+			"\n	PermanentId: " + getPermanentId() +
+			"\n	Session: " + getSession() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-
-
-	/**
-	 * Return the value associated with the column: COORDINATE_Y
-	 */
-	public java.lang.Integer getCoordinateY () {
-		return coordinateY;
-	}
-
-	/**
-	 * Set the value related to the column: COORDINATE_Y
-	 * @param coordinateY the COORDINATE_Y value
-	 */
-	public void setCoordinateY (java.lang.Integer coordinateY) {
-		this.coordinateY = coordinateY;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: IGNORE_TOO_FAR
-	 */
-	public java.lang.Boolean isIgnoreTooFar () {
-		return ignoreTooFar;
-	}
-
-	/**
-	 * Set the value related to the column: IGNORE_TOO_FAR
-	 * @param ignoreTooFar the IGNORE_TOO_FAR value
-	 */
-	public void setIgnoreTooFar (java.lang.Boolean ignoreTooFar) {
-		this.ignoreTooFar = ignoreTooFar;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: IGNORE_ROOM_CHECK
-	 */
-	public java.lang.Boolean isIgnoreRoomCheck () {
-		return ignoreRoomCheck;
-	}
-
-	/**
-	 * Set the value related to the column: IGNORE_ROOM_CHECK
-	 * @param ignoreRoomCheck the IGNORE_ROOM_CHECK value
-	 */
-	public void setIgnoreRoomCheck (java.lang.Boolean ignoreRoomCheck) {
-		this.ignoreRoomCheck = ignoreRoomCheck;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: MANAGER_IDS
-	 */
-	public java.lang.String getManagerIds () {
-		return managerIds;
-	}
-
-	/**
-	 * Set the value related to the column: MANAGER_IDS
-	 * @param managerIds the MANAGER_IDS value
-	 */
-	public void setManagerIds (java.lang.String managerIds) {
-		this.managerIds = managerIds;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: PATTERN
-	 */
-	public java.lang.String getPattern () {
-		return pattern;
-	}
-
-	/**
-	 * Set the value related to the column: PATTERN
-	 * @param pattern the PATTERN value
-	 */
-	public void setPattern (java.lang.String pattern) {
-		this.pattern = pattern;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: EXAM_ENABLE
-	 */
-	public java.lang.Integer getExamType () {
-		return examType;
-	}
-
-	/**
-	 * Set the value related to the column: EXAM_ENABLE
-	 * @param examEnabled the EXAM_ENABLE value
-	 */
-	public void setExamType (java.lang.Integer examType) {
-		this.examType = examType;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: EXAM_CAPACITY
-	 */
-	public java.lang.Integer getExamCapacity () {
-		return examCapacity;
-	}
-
-	/**
-	 * Set the value related to the column: EXAM_CAPACITY
-	 * @param examCapacity the EXAM_CAPACITY value
-	 */
-	public void setExamCapacity (java.lang.Integer examCapacity) {
-		this.examCapacity = examCapacity;
-	}
-
-	/**
-	 * Return the value associated with the column: DISPLAY_NAME
-	 */
-	public java.lang.String getDisplayName () {
-		return displayName;
-	}
-
-	/**
-	 * Set the value related to the column: DISPLAY_NAME
-	 * @param displayName the DISPLAY_NAME value
-	 */
-	public void setDisplayName (java.lang.String displayName) {
-		this.displayName = displayName;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: SESSION_ID
-	 */
-	public org.unitime.timetable.model.Session getSession () {
-		return session;
-	}
-
-	/**
-	 * Set the value related to the column: SESSION_ID
-	 * @param session the SESSION_ID value
-	 */
-	public void setSession (org.unitime.timetable.model.Session session) {
-		this.session = session;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: features
-	 */
-	public java.util.Set getFeatures () {
-		return features;
-	}
-
-	/**
-	 * Set the value related to the column: features
-	 * @param features the features value
-	 */
-	public void setFeatures (java.util.Set features) {
-		this.features = features;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: assignments
-	 */
-	public java.util.Set getAssignments () {
-		return assignments;
-	}
-
-	/**
-	 * Set the value related to the column: assignments
-	 * @param assignments the assignments value
-	 */
-	public void setAssignments (java.util.Set assignments) {
-		this.assignments = assignments;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: roomGroups
-	 */
-	public java.util.Set getRoomGroups () {
-		return roomGroups;
-	}
-
-	/**
-	 * Set the value related to the column: roomGroups
-	 * @param roomGroups the roomGroups value
-	 */
-	public void setRoomGroups (java.util.Set roomGroups) {
-		this.roomGroups = roomGroups;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: roomDepts
-	 */
-	public java.util.Set getRoomDepts () {
-		return roomDepts;
-	}
-
-	/**
-	 * Set the value related to the column: roomDepts
-	 * @param roomDepts the roomDepts value
-	 */
-	public void setRoomDepts (java.util.Set roomDepts) {
-		this.roomDepts = roomDepts;
-	}
-
-	public void addToroomDepts (org.unitime.timetable.model.RoomDept roomDept) {
-		if (null == getRoomDepts()) setRoomDepts(new java.util.HashSet());
-		getRoomDepts().add(roomDept);
-	}
-
-
-	public java.util.Set getExamPreferences() { return examPreferences; }
-	public void setExamPreferences(java.util.Set examPreferences) { this.examPreferences = examPreferences; }
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.Location)) return false;
-		else {
-			org.unitime.timetable.model.Location location = (org.unitime.timetable.model.Location) obj;
-			if (null == this.getUniqueId() || null == location.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(location.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

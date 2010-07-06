@@ -45,18 +45,6 @@ public class OfferingConsentType extends BaseOfferingConsentType {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public OfferingConsentType (
-		Long uniqueId,
-		java.lang.String reference) {
-
-		super (
-			uniqueId,
-			reference);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
     /** Request attribute name for available consent typess **/

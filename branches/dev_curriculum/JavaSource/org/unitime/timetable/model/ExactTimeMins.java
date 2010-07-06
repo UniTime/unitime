@@ -41,24 +41,6 @@ public class ExactTimeMins extends BaseExactTimeMins implements Comparable {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public ExactTimeMins (
-		java.lang.Long uniqueId,
-		java.lang.Integer minsPerMtgMin,
-		java.lang.Integer minsPerMtgMax,
-		java.lang.Integer nrSlots,
-		java.lang.Integer breakTime) {
-
-		super (
-			uniqueId,
-			minsPerMtgMin,
-			minsPerMtgMax,
-			nrSlots,
-			breakTime);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 	public static ExactTimeMins findByMinPerMtg(int minPerMtg) {

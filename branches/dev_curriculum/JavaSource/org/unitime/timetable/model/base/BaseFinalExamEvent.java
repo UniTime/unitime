@@ -1,85 +1,70 @@
+/*
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
+ * as indicated by the @authors tag.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import org.unitime.timetable.model.ExamEvent;
+import org.unitime.timetable.model.FinalExamEvent;
 
-/**
- * This is an object that contains data related to the EVENT table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="EVENT"
- */
-
-public abstract class BaseFinalExamEvent extends org.unitime.timetable.model.ExamEvent  implements Serializable {
-
-	public static String REF = "FinalExamEvent";
+public abstract class BaseFinalExamEvent extends ExamEvent implements Serializable {
+	private static final long serialVersionUID = 1L;
 
 
-	// constructors
-	public BaseFinalExamEvent () {
+
+	public BaseFinalExamEvent() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseFinalExamEvent (java.lang.Long uniqueId) {
-		super(uniqueId);
+	public BaseFinalExamEvent(Long uniqueId) {
+		setUniqueId(uniqueId);
+		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseFinalExamEvent (
-		java.lang.Long uniqueId,
-		java.lang.Integer minCapacity,
-		java.lang.Integer maxCapacity) {
+	protected void initialize() {}
 
-		super (
-			uniqueId,
-			minCapacity,
-			maxCapacity);
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof FinalExamEvent)) return false;
+		if (getUniqueId() == null || ((FinalExamEvent)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((FinalExamEvent)o).getUniqueId());
 	}
 
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-
-
-
-
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.FinalExamEvent)) return false;
-		else {
-			org.unitime.timetable.model.FinalExamEvent finalExamEvent = (org.unitime.timetable.model.FinalExamEvent) obj;
-			if (null == this.getUniqueId() || null == finalExamEvent.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(finalExamEvent.getUniqueId()));
-		}
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
+	public String toString() {
+		return "FinalExamEvent["+getUniqueId()+"]";
 	}
 
-
-	public String toString () {
-		return super.toString();
+	public String toDebugString() {
+		return "FinalExamEvent[" +
+			"\n	Email: " + getEmail() +
+			"\n	EventName: " + getEventName() +
+			"\n	Exam: " + getExam() +
+			"\n	MainContact: " + getMainContact() +
+			"\n	MaxCapacity: " + getMaxCapacity() +
+			"\n	MinCapacity: " + getMinCapacity() +
+			"\n	SponsoringOrganization: " + getSponsoringOrganization() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-
 }

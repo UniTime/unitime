@@ -38,28 +38,6 @@ public class StudentEnrollmentMessage extends BaseStudentEnrollmentMessage imple
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public StudentEnrollmentMessage (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.CourseDemand courseDemand,
-		java.lang.String message,
-		java.lang.Integer level,
-		java.lang.Integer type,
-		java.util.Date timestamp,
-        java.lang.Integer order) {
-
-		super (
-			uniqueId,
-			courseDemand,
-			message,
-			level,
-			type,
-			timestamp,
-            order);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 	public int compareTo(Object o) {

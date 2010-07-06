@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -19,204 +19,106 @@
 */
 package org.unitime.timetable.model.base;
 
+import java.util.List;
+
 import org.hibernate.Hibernate;
-import org.hibernate.Session;
 import org.hibernate.criterion.Order;
+
+import org.unitime.timetable.model.User;
+import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.UserDAO;
 
-/**
- * This is an automatically generated DAO class which should not be edited.
- */
-public abstract class BaseUserDAO extends org.unitime.timetable.model.dao._RootDAO {
+public abstract class BaseUserDAO extends _RootDAO {
 
-	public BaseUserDAO () {}
-	
-	// query name references
+	private static UserDAO sInstance;
 
-
-	public static UserDAO instance;
-
-	/**
-	 * Return a singleton of the DAO
-	 */
 	public static UserDAO getInstance () {
-		if (null == instance) instance = new org.unitime.timetable.model.dao.UserDAO();
-		return instance;
+		if (sInstance == null) sInstance = new UserDAO();
+		return sInstance;
 	}
 
 	public Class getReferenceClass () {
-		return org.unitime.timetable.model.User.class;
+		return User.class;
 	}
 
-    public Order getDefaultOrder () {
+	public Order getDefaultOrder () {
 		return null;
-    }
-
-	/**
-	 * Cast the object as a org.unitime.timetable.model.User
-	 */
-	public org.unitime.timetable.model.User cast (Object object) {
-		return (org.unitime.timetable.model.User) object;
 	}
 
-	public org.unitime.timetable.model.User get(java.lang.String key)
-	{
-		return (org.unitime.timetable.model.User) get(getReferenceClass(), key);
+	public User get(String username) {
+		return (User) get(getReferenceClass(), username);
 	}
 
-	public org.unitime.timetable.model.User get(java.lang.String key, Session s)
-	{
-		return (org.unitime.timetable.model.User) get(getReferenceClass(), key, s);
+	public User get(String username, org.hibernate.Session hibSession) {
+		return (User) get(getReferenceClass(), username, hibSession);
 	}
 
-	public org.unitime.timetable.model.User load(java.lang.String key)
-	{
-		return (org.unitime.timetable.model.User) load(getReferenceClass(), key);
+	public User load(String username) {
+		return (User) load(getReferenceClass(), username);
 	}
 
-	public org.unitime.timetable.model.User load(java.lang.String key, Session s)
-	{
-		return (org.unitime.timetable.model.User) load(getReferenceClass(), key, s);
+	public User load(String username, org.hibernate.Session hibSession) {
+		return (User) load(getReferenceClass(), username, hibSession);
 	}
 
-	public org.unitime.timetable.model.User loadInitialize(java.lang.String key, Session s) 
-	{ 
-		org.unitime.timetable.model.User obj = load(key, s); 
-		if (!Hibernate.isInitialized(obj)) {
-			Hibernate.initialize(obj);
-		} 
-		return obj; 
+	public User loadInitialize(String username, org.hibernate.Session hibSession) {
+		User user = load(username, hibSession);
+		if (!Hibernate.isInitialized(user)) Hibernate.initialize(user);
+		return user;
 	}
 
-
-	/**
-	 * Persist the given transient instance, first assigning a generated identifier. (Or using the current value
-	 * of the identifier property if the assigned generator is used.) 
-	 * @param user a transient instance of a persistent class 
-	 * @return the class identifier
-	 */
-	public java.lang.String save(org.unitime.timetable.model.User user)
-	{
-		return (java.lang.String) super.save(user);
+	public void save(User user) {
+		save((Object) user);
 	}
 
-	/**
-	 * Persist the given transient instance, first assigning a generated identifier. (Or using the current value
-	 * of the identifier property if the assigned generator is used.) 
-	 * Use the Session given.
-	 * @param user a transient instance of a persistent class
-	 * @param s the Session
-	 * @return the class identifier
-	 */
-	public java.lang.String save(org.unitime.timetable.model.User user, Session s)
-	{
-		return (java.lang.String) save((Object) user, s);
+	public void save(User user, org.hibernate.Session hibSession) {
+		save((Object) user, hibSession);
 	}
 
-	/**
-	 * Either save() or update() the given instance, depending upon the value of its identifier property. By default
-	 * the instance is always saved. This behaviour may be adjusted by specifying an unsaved-value attribute of the
-	 * identifier property mapping. 
-	 * @param user a transient instance containing new or updated state 
-	 */
-	public void saveOrUpdate(org.unitime.timetable.model.User user)
-	{
+	public void saveOrUpdate(User user) {
 		saveOrUpdate((Object) user);
 	}
 
-	/**
-	 * Either save() or update() the given instance, depending upon the value of its identifier property. By default the
-	 * instance is always saved. This behaviour may be adjusted by specifying an unsaved-value attribute of the identifier
-	 * property mapping. 
-	 * Use the Session given.
-	 * @param user a transient instance containing new or updated state.
-	 * @param s the Session.
-	 */
-	public void saveOrUpdate(org.unitime.timetable.model.User user, Session s)
-	{
-		saveOrUpdate((Object) user, s);
+	public void saveOrUpdate(User user, org.hibernate.Session hibSession) {
+		saveOrUpdate((Object) user, hibSession);
 	}
 
-	/**
-	 * Update the persistent state associated with the given identifier. An exception is thrown if there is a persistent
-	 * instance with the same identifier in the current session.
-	 * @param user a transient instance containing updated state
-	 */
-	public void update(org.unitime.timetable.model.User user) 
-	{
+
+	public void update(User user) {
 		update((Object) user);
 	}
 
-	/**
-	 * Update the persistent state associated with the given identifier. An exception is thrown if there is a persistent
-	 * instance with the same identifier in the current session.
-	 * Use the Session given.
-	 * @param user a transient instance containing updated state
-	 * @param the Session
-	 */
-	public void update(org.unitime.timetable.model.User user, Session s)
-	{
-		update((Object) user, s);
+	public void update(User user, org.hibernate.Session hibSession) {
+		update((Object) user, hibSession);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * @param id the instance ID to be removed
-	 */
-	public void delete(java.lang.Object id)
-	{
-		delete((Object) load((String)id));
+	public void delete(Object username) {
+		if (username instanceof String)
+			delete((Object) load((String)username));
+		else
+		super.delete(username);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * Use the Session given.
-	 * @param id the instance ID to be removed
-	 * @param s the Session
-	 */
-	public void delete(java.lang.Object id, Session s)
-	{
-		delete((Object) load((String)id, s), s);
+	public void delete(Object username, org.hibernate.Session hibSession) {
+		if (username instanceof String)
+			delete((Object) load((String)username, hibSession), hibSession);
+		else
+			super.delete(username, hibSession);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * @param user the instance to be removed
-	 */
-	public void delete(org.unitime.timetable.model.User user)
-	{
+	public void delete(User user) {
 		delete((Object) user);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * Use the Session given.
-	 * @param user the instance to be removed
-	 * @param s the Session
-	 */
-	public void delete(org.unitime.timetable.model.User user, Session s)
-	{
-		delete((Object) user, s);
-	}
-	
-	/**
-	 * Re-read the state of the given instance from the underlying database. It is inadvisable to use this to implement
-	 * long-running sessions that span many business tasks. This method is, however, useful in certain special circumstances.
-	 * For example 
-	 * <ul> 
-	 * <li>where a database trigger alters the object state upon insert or update</li>
-	 * <li>after executing direct SQL (eg. a mass update) in the same session</li>
-	 * <li>after inserting a Blob or Clob</li>
-	 * </ul>
-	 */
-	public void refresh (org.unitime.timetable.model.User user, Session s)
-	{
-		refresh((Object) user, s);
+	public void delete(User user, org.hibernate.Session hibSession) {
+		delete((Object) user, hibSession);
 	}
 
+	public void refresh(User user, org.hibernate.Session hibSession) {
+		refresh((Object) user, hibSession);
+	}
 
+	public List<User> findAll(org.hibernate.Session hibSession) {
+		return hibSession.createQuery("from User").list();
+	}
 }

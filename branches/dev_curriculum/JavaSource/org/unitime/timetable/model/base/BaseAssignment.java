@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -20,320 +20,129 @@
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
+import org.unitime.timetable.model.Assignment;
+import org.unitime.timetable.model.AssignmentInfo;
+import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.ConstraintInfo;
+import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.Solution;
+import org.unitime.timetable.model.TimePattern;
 
-/**
- * This is an object that contains data related to the ASSIGNMENT table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="ASSIGNMENT"
- */
+public abstract class BaseAssignment implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseAssignment  implements Serializable {
+	private Long iUniqueId;
+	private Integer iDays;
+	private Integer iStartSlot;
+	private Long iClassId;
+	private String iClassName;
 
-	public static String REF = "Assignment";
+	private TimePattern iTimePattern;
+	private Solution iSolution;
+	private Class_ iClazz;
+	private Set<DepartmentalInstructor> iInstructors;
+	private Set<Location> iRooms;
+	private Set<AssignmentInfo> iAssignmentInfo;
+	private Set<ConstraintInfo> iConstraintInfo;
+
+	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_DAYS = "days";
-	public static String PROP_START_SLOT = "startSlot";
+	public static String PROP_SLOT = "startSlot";
 	public static String PROP_CLASS_ID = "classId";
 	public static String PROP_CLASS_NAME = "className";
 
-
-	// constructors
-	public BaseAssignment () {
+	public BaseAssignment() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseAssignment (java.lang.Long uniqueId) {
-		this.setUniqueId(uniqueId);
+	public BaseAssignment(Long uniqueId) {
+		setUniqueId(uniqueId);
 		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseAssignment (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.TimePattern timePattern,
-		org.unitime.timetable.model.Solution solution,
-		org.unitime.timetable.model.Class_ clazz) {
+	protected void initialize() {}
 
-		this.setUniqueId(uniqueId);
-		this.setTimePattern(timePattern);
-		this.setSolution(solution);
-		this.setClazz(clazz);
-		initialize();
+	public Long getUniqueId() { return iUniqueId; }
+	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
+
+	public Integer getDays() { return iDays; }
+	public void setDays(Integer days) { iDays = days; }
+
+	public Integer getStartSlot() { return iStartSlot; }
+	public void setStartSlot(Integer startSlot) { iStartSlot = startSlot; }
+
+	public Long getClassId() { return iClassId; }
+	public void setClassId(Long classId) { iClassId = classId; }
+
+	public String getClassName() { return iClassName; }
+	public void setClassName(String className) { iClassName = className; }
+
+	public TimePattern getTimePattern() { return iTimePattern; }
+	public void setTimePattern(TimePattern timePattern) { iTimePattern = timePattern; }
+
+	public Solution getSolution() { return iSolution; }
+	public void setSolution(Solution solution) { iSolution = solution; }
+
+	public Class_ getClazz() { return iClazz; }
+	public void setClazz(Class_ clazz) { iClazz = clazz; }
+
+	public Set<DepartmentalInstructor> getInstructors() { return iInstructors; }
+	public void setInstructors(Set<DepartmentalInstructor> instructors) { iInstructors = instructors; }
+	public void addToinstructors(DepartmentalInstructor departmentalInstructor) {
+		if (iInstructors == null) iInstructors = new HashSet();
+		iInstructors.add(departmentalInstructor);
 	}
 
-	protected void initialize () {}
-
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-	// primary key
-	private java.lang.Long uniqueId;
-
-	// fields
-	private java.lang.Integer days;
-	private java.lang.Integer startSlot;
-	private java.lang.Long classId;
-	private java.lang.String className;
-
-	// many to one
-	private org.unitime.timetable.model.TimePattern timePattern;
-	private org.unitime.timetable.model.Solution solution;
-	private org.unitime.timetable.model.Class_ clazz;
-
-	// collections
-	private java.util.Set instructors;
-	private java.util.Set rooms;
-	private java.util.Set assignmentInfo;
-	private java.util.Set constraintInfo;
-
-
-
-	/**
-	 * Return the unique identifier of this class
-     * @hibernate.id
-     *  generator-class="sequence"
-     *  column="UNIQUEID"
-     */
-	public java.lang.Long getUniqueId () {
-		return uniqueId;
+	public Set<Location> getRooms() { return iRooms; }
+	public void setRooms(Set<Location> rooms) { iRooms = rooms; }
+	public void addTorooms(Location location) {
+		if (iRooms == null) iRooms = new HashSet();
+		iRooms.add(location);
 	}
 
-	/**
-	 * Set the unique identifier of this class
-	 * @param uniqueId the new ID
-	 */
-	public void setUniqueId (java.lang.Long uniqueId) {
-		this.uniqueId = uniqueId;
-		this.hashCode = Integer.MIN_VALUE;
+	public Set<AssignmentInfo> getAssignmentInfo() { return iAssignmentInfo; }
+	public void setAssignmentInfo(Set<AssignmentInfo> assignmentInfo) { iAssignmentInfo = assignmentInfo; }
+	public void addToassignmentInfo(AssignmentInfo assignmentInfo) {
+		if (iAssignmentInfo == null) iAssignmentInfo = new HashSet();
+		iAssignmentInfo.add(assignmentInfo);
 	}
 
-
-
-
-	/**
-	 * Return the value associated with the column: DAYS
-	 */
-	public java.lang.Integer getDays () {
-		return days;
+	public Set<ConstraintInfo> getConstraintInfo() { return iConstraintInfo; }
+	public void setConstraintInfo(Set<ConstraintInfo> constraintInfo) { iConstraintInfo = constraintInfo; }
+	public void addToconstraintInfo(ConstraintInfo constraintInfo) {
+		if (iConstraintInfo == null) iConstraintInfo = new HashSet();
+		iConstraintInfo.add(constraintInfo);
 	}
 
-	/**
-	 * Set the value related to the column: DAYS
-	 * @param days the DAYS value
-	 */
-	public void setDays (java.lang.Integer days) {
-		this.days = days;
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof Assignment)) return false;
+		if (getUniqueId() == null || ((Assignment)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((Assignment)o).getUniqueId());
 	}
 
-
-
-	/**
-	 * Return the value associated with the column: SLOT
-	 */
-	public java.lang.Integer getStartSlot () {
-		return startSlot;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	/**
-	 * Set the value related to the column: SLOT
-	 * @param startSlot the SLOT value
-	 */
-	public void setStartSlot (java.lang.Integer startSlot) {
-		this.startSlot = startSlot;
+	public String toString() {
+		return "Assignment["+getUniqueId()+"]";
 	}
 
-
-
-	/**
-	 * Return the value associated with the column: CLASS_ID
-	 */
-	public java.lang.Long getClassId () {
-		return classId;
+	public String toDebugString() {
+		return "Assignment[" +
+			"\n	ClassId: " + getClassId() +
+			"\n	ClassName: " + getClassName() +
+			"\n	Clazz: " + getClazz() +
+			"\n	Days: " + getDays() +
+			"\n	Solution: " + getSolution() +
+			"\n	StartSlot: " + getStartSlot() +
+			"\n	TimePattern: " + getTimePattern() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-	/**
-	 * Set the value related to the column: CLASS_ID
-	 * @param classId the CLASS_ID value
-	 */
-	public void setClassId (java.lang.Long classId) {
-		this.classId = classId;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: CLASS_NAME
-	 */
-	public java.lang.String getClassName () {
-		return className;
-	}
-
-	/**
-	 * Set the value related to the column: CLASS_NAME
-	 * @param className the CLASS_NAME value
-	 */
-	public void setClassName (java.lang.String className) {
-		this.className = className;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: TIME_PATTERN_ID
-	 */
-	public org.unitime.timetable.model.TimePattern getTimePattern () {
-		return timePattern;
-	}
-
-	/**
-	 * Set the value related to the column: TIME_PATTERN_ID
-	 * @param timePattern the TIME_PATTERN_ID value
-	 */
-	public void setTimePattern (org.unitime.timetable.model.TimePattern timePattern) {
-		this.timePattern = timePattern;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: SOLUTION_ID
-	 */
-	public org.unitime.timetable.model.Solution getSolution () {
-		return solution;
-	}
-
-	/**
-	 * Set the value related to the column: SOLUTION_ID
-	 * @param solution the SOLUTION_ID value
-	 */
-	public void setSolution (org.unitime.timetable.model.Solution solution) {
-		this.solution = solution;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: CLASS_ID
-	 */
-	public org.unitime.timetable.model.Class_ getClazz () {
-		return clazz;
-	}
-
-	/**
-	 * Set the value related to the column: CLASS_ID
-	 * @param clazz the CLASS_ID value
-	 */
-	public void setClazz (org.unitime.timetable.model.Class_ clazz) {
-		this.clazz = clazz;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: instructors
-	 */
-	public java.util.Set getInstructors () {
-		return instructors;
-	}
-
-	/**
-	 * Set the value related to the column: instructors
-	 * @param instructors the instructors value
-	 */
-	public void setInstructors (java.util.Set instructors) {
-		this.instructors = instructors;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: rooms
-	 */
-	public java.util.Set getRooms () {
-		return rooms;
-	}
-
-	/**
-	 * Set the value related to the column: rooms
-	 * @param rooms the rooms value
-	 */
-	public void setRooms (java.util.Set rooms) {
-		this.rooms = rooms;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: assignmentInfo
-	 */
-	public java.util.Set getAssignmentInfo () {
-		return assignmentInfo;
-	}
-
-	/**
-	 * Set the value related to the column: assignmentInfo
-	 * @param assignmentInfo the assignmentInfo value
-	 */
-	public void setAssignmentInfo (java.util.Set assignmentInfo) {
-		this.assignmentInfo = assignmentInfo;
-	}
-
-	public void addToassignmentInfo (org.unitime.timetable.model.SolverInfo solverInfo) {
-		if (null == getAssignmentInfo()) setAssignmentInfo(new java.util.HashSet());
-		getAssignmentInfo().add(solverInfo);
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: constraintInfo
-	 */
-	public java.util.Set getConstraintInfo () {
-		return constraintInfo;
-	}
-
-	/**
-	 * Set the value related to the column: constraintInfo
-	 * @param constraintInfo the constraintInfo value
-	 */
-	public void setConstraintInfo (java.util.Set constraintInfo) {
-		this.constraintInfo = constraintInfo;
-	}
-	
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.Assignment)) return false;
-		else {
-			org.unitime.timetable.model.Assignment assignment = (org.unitime.timetable.model.Assignment) obj;
-			if (null == this.getUniqueId() || null == assignment.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(assignment.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

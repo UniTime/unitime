@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -21,148 +21,60 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import org.unitime.timetable.model.StudentStatusType;
 
-/**
- * This is an object that contains data related to the STUDENT_STATUS_TYPE table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="STUDENT_STATUS_TYPE"
- */
+public abstract class BaseStudentStatusType implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseStudentStatusType  implements Serializable {
+	private Long iUniqueId;
+	private String iAbbreviation;
+	private String iName;
 
-	public static String REF = "StudentStatusType";
+
+	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_ABBREVIATION = "abbreviation";
 	public static String PROP_NAME = "name";
 
-
-	// constructors
-	public BaseStudentStatusType () {
+	public BaseStudentStatusType() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseStudentStatusType (java.lang.Long uniqueId) {
-		this.setUniqueId(uniqueId);
+	public BaseStudentStatusType(Long uniqueId) {
+		setUniqueId(uniqueId);
 		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseStudentStatusType (
-		java.lang.Long uniqueId,
-		java.lang.String abbreviation,
-		java.lang.String name) {
+	protected void initialize() {}
 
-		this.setUniqueId(uniqueId);
-		this.setAbbreviation(abbreviation);
-		this.setName(name);
-		initialize();
+	public Long getUniqueId() { return iUniqueId; }
+	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
+
+	public String getAbbreviation() { return iAbbreviation; }
+	public void setAbbreviation(String abbreviation) { iAbbreviation = abbreviation; }
+
+	public String getName() { return iName; }
+	public void setName(String name) { iName = name; }
+
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof StudentStatusType)) return false;
+		if (getUniqueId() == null || ((StudentStatusType)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((StudentStatusType)o).getUniqueId());
 	}
 
-	protected void initialize () {}
-
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-	// primary key
-	private java.lang.Long uniqueId;
-
-	// fields
-	private java.lang.String abbreviation;
-	private java.lang.String name;
-
-
-
-	/**
-	 * Return the unique identifier of this class
-     * @hibernate.id
-     *  generator-class="sequence"
-     *  column="UNIQUEID"
-     */
-	public java.lang.Long getUniqueId () {
-		return uniqueId;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	/**
-	 * Set the unique identifier of this class
-	 * @param uniqueId the new ID
-	 */
-	public void setUniqueId (java.lang.Long uniqueId) {
-		this.uniqueId = uniqueId;
-		this.hashCode = Integer.MIN_VALUE;
+	public String toString() {
+		return "StudentStatusType["+getUniqueId()+" "+getName()+"]";
 	}
 
-
-
-
-	/**
-	 * Return the value associated with the column: ABBREVIATION
-	 */
-	public java.lang.String getAbbreviation () {
-		return abbreviation;
+	public String toDebugString() {
+		return "StudentStatusType[" +
+			"\n	Abbreviation: " + getAbbreviation() +
+			"\n	Name: " + getName() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-	/**
-	 * Set the value related to the column: ABBREVIATION
-	 * @param abbreviation the ABBREVIATION value
-	 */
-	public void setAbbreviation (java.lang.String abbreviation) {
-		this.abbreviation = abbreviation;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: NAME
-	 */
-	public java.lang.String getName () {
-		return name;
-	}
-
-	/**
-	 * Set the value related to the column: NAME
-	 * @param name the NAME value
-	 */
-	public void setName (java.lang.String name) {
-		this.name = name;
-	}
-
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.StudentStatusType)) return false;
-		else {
-			org.unitime.timetable.model.StudentStatusType studentStatusType = (org.unitime.timetable.model.StudentStatusType) obj;
-			if (null == this.getUniqueId() || null == studentStatusType.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(studentStatusType.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

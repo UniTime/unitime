@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -19,202 +19,100 @@
 */
 package org.unitime.timetable.model.base;
 
+import java.util.List;
+
 import org.hibernate.Hibernate;
-import org.hibernate.Session;
 import org.hibernate.criterion.Order;
+
+import org.unitime.timetable.model.CourseHistory;
+import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.CourseHistoryDAO;
 
-/**
- * This is an automatically generated DAO class which should not be edited.
- */
-public abstract class BaseCourseHistoryDAO extends org.unitime.timetable.model.dao._RootDAO {
+public abstract class BaseCourseHistoryDAO extends _RootDAO {
 
-	// query name references
+	private static CourseHistoryDAO sInstance;
 
-
-	public static CourseHistoryDAO instance;
-
-	/**
-	 * Return a singleton of the DAO
-	 */
 	public static CourseHistoryDAO getInstance () {
-		if (null == instance) instance = new CourseHistoryDAO();
-		return instance;
+		if (sInstance == null) sInstance = new CourseHistoryDAO();
+		return sInstance;
 	}
 
 	public Class getReferenceClass () {
-		return org.unitime.timetable.model.CourseHistory.class;
+		return CourseHistory.class;
 	}
 
-    public Order getDefaultOrder () {
+	public Order getDefaultOrder () {
 		return null;
-    }
-
-	/**
-	 * Cast the object as a org.unitime.timetable.model.CourseHistory
-	 */
-	public org.unitime.timetable.model.CourseHistory cast (Object object) {
-		return (org.unitime.timetable.model.CourseHistory) object;
 	}
 
-	public org.unitime.timetable.model.CourseHistory get(java.lang.Long key)
-	{
-		return (org.unitime.timetable.model.CourseHistory) get(getReferenceClass(), key);
+	public CourseHistory get(Long uniqueId) {
+		return (CourseHistory) get(getReferenceClass(), uniqueId);
 	}
 
-	public org.unitime.timetable.model.CourseHistory get(java.lang.Long key, Session s)
-	{
-		return (org.unitime.timetable.model.CourseHistory) get(getReferenceClass(), key, s);
+	public CourseHistory get(Long uniqueId, org.hibernate.Session hibSession) {
+		return (CourseHistory) get(getReferenceClass(), uniqueId, hibSession);
 	}
 
-	public org.unitime.timetable.model.CourseHistory load(java.lang.Long key)
-	{
-		return (org.unitime.timetable.model.CourseHistory) load(getReferenceClass(), key);
+	public CourseHistory load(Long uniqueId) {
+		return (CourseHistory) load(getReferenceClass(), uniqueId);
 	}
 
-	public org.unitime.timetable.model.CourseHistory load(java.lang.Long key, Session s)
-	{
-		return (org.unitime.timetable.model.CourseHistory) load(getReferenceClass(), key, s);
+	public CourseHistory load(Long uniqueId, org.hibernate.Session hibSession) {
+		return (CourseHistory) load(getReferenceClass(), uniqueId, hibSession);
 	}
 
-	public org.unitime.timetable.model.CourseHistory loadInitialize(java.lang.Long key, Session s) 
-	{ 
-		org.unitime.timetable.model.CourseHistory obj = load(key, s); 
-		if (!Hibernate.isInitialized(obj)) {
-			Hibernate.initialize(obj);
-		} 
-		return obj; 
+	public CourseHistory loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
+		CourseHistory courseHistory = load(uniqueId, hibSession);
+		if (!Hibernate.isInitialized(courseHistory)) Hibernate.initialize(courseHistory);
+		return courseHistory;
 	}
 
-
-	/**
-	 * Persist the given transient instance, first assigning a generated identifier. (Or using the current value
-	 * of the identifier property if the assigned generator is used.) 
-	 * @param courseHistory a transient instance of a persistent class 
-	 * @return the class identifier
-	 */
-	public java.lang.Long save(org.unitime.timetable.model.CourseHistory courseHistory)
-	{
-		return (java.lang.Long) super.save(courseHistory);
+	public void save(CourseHistory courseHistory) {
+		save((Object) courseHistory);
 	}
 
-	/**
-	 * Persist the given transient instance, first assigning a generated identifier. (Or using the current value
-	 * of the identifier property if the assigned generator is used.) 
-	 * Use the Session given.
-	 * @param courseHistory a transient instance of a persistent class
-	 * @param s the Session
-	 * @return the class identifier
-	 */
-	public java.lang.Long save(org.unitime.timetable.model.CourseHistory courseHistory, Session s)
-	{
-		return (java.lang.Long) save((Object) courseHistory, s);
+	public void save(CourseHistory courseHistory, org.hibernate.Session hibSession) {
+		save((Object) courseHistory, hibSession);
 	}
 
-	/**
-	 * Either save() or update() the given instance, depending upon the value of its identifier property. By default
-	 * the instance is always saved. This behaviour may be adjusted by specifying an unsaved-value attribute of the
-	 * identifier property mapping. 
-	 * @param courseHistory a transient instance containing new or updated state 
-	 */
-	public void saveOrUpdate(org.unitime.timetable.model.CourseHistory courseHistory)
-	{
+	public void saveOrUpdate(CourseHistory courseHistory) {
 		saveOrUpdate((Object) courseHistory);
 	}
 
-	/**
-	 * Either save() or update() the given instance, depending upon the value of its identifier property. By default the
-	 * instance is always saved. This behaviour may be adjusted by specifying an unsaved-value attribute of the identifier
-	 * property mapping. 
-	 * Use the Session given.
-	 * @param courseHistory a transient instance containing new or updated state.
-	 * @param s the Session.
-	 */
-	public void saveOrUpdate(org.unitime.timetable.model.CourseHistory courseHistory, Session s)
-	{
-		saveOrUpdate((Object) courseHistory, s);
+	public void saveOrUpdate(CourseHistory courseHistory, org.hibernate.Session hibSession) {
+		saveOrUpdate((Object) courseHistory, hibSession);
 	}
 
-	/**
-	 * Update the persistent state associated with the given identifier. An exception is thrown if there is a persistent
-	 * instance with the same identifier in the current session.
-	 * @param courseHistory a transient instance containing updated state
-	 */
-	public void update(org.unitime.timetable.model.CourseHistory courseHistory) 
-	{
+
+	public void update(CourseHistory courseHistory) {
 		update((Object) courseHistory);
 	}
 
-	/**
-	 * Update the persistent state associated with the given identifier. An exception is thrown if there is a persistent
-	 * instance with the same identifier in the current session.
-	 * Use the Session given.
-	 * @param courseHistory a transient instance containing updated state
-	 * @param the Session
-	 */
-	public void update(org.unitime.timetable.model.CourseHistory courseHistory, Session s)
-	{
-		update((Object) courseHistory, s);
+	public void update(CourseHistory courseHistory, org.hibernate.Session hibSession) {
+		update((Object) courseHistory, hibSession);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * @param id the instance ID to be removed
-	 */
-	public void delete(java.lang.Long id)
-	{
-		delete((Object) load(id));
+	public void delete(Long uniqueId) {
+		delete(load(uniqueId));
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * Use the Session given.
-	 * @param id the instance ID to be removed
-	 * @param s the Session
-	 */
-	public void delete(java.lang.Long id, Session s)
-	{
-		delete((Object) load(id, s), s);
+	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
+		delete(load(uniqueId, hibSession), hibSession);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * @param courseHistory the instance to be removed
-	 */
-	public void delete(org.unitime.timetable.model.CourseHistory courseHistory)
-	{
+	public void delete(CourseHistory courseHistory) {
 		delete((Object) courseHistory);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * Use the Session given.
-	 * @param courseHistory the instance to be removed
-	 * @param s the Session
-	 */
-	public void delete(org.unitime.timetable.model.CourseHistory courseHistory, Session s)
-	{
-		delete((Object) courseHistory, s);
-	}
-	
-	/**
-	 * Re-read the state of the given instance from the underlying database. It is inadvisable to use this to implement
-	 * long-running sessions that span many business tasks. This method is, however, useful in certain special circumstances.
-	 * For example 
-	 * <ul> 
-	 * <li>where a database trigger alters the object state upon insert or update</li>
-	 * <li>after executing direct SQL (eg. a mass update) in the same session</li>
-	 * <li>after inserting a Blob or Clob</li>
-	 * </ul>
-	 */
-	public void refresh (org.unitime.timetable.model.CourseHistory courseHistory, Session s)
-	{
-		refresh((Object) courseHistory, s);
+	public void delete(CourseHistory courseHistory, org.hibernate.Session hibSession) {
+		delete((Object) courseHistory, hibSession);
 	}
 
+	public void refresh(CourseHistory courseHistory, org.hibernate.Session hibSession) {
+		refresh((Object) courseHistory, hibSession);
+	}
 
+	public List<CourseHistory> findAll(org.hibernate.Session hibSession) {
+		return hibSession.createQuery("from CourseHistory").list();
+	}
 }

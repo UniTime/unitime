@@ -51,8 +51,10 @@ public class SolverInfo extends BaseSolverInfo {
 
 
 /*[CONSTRUCTOR MARKER END]*/
+	
 	public SolverInfo (Long uniqueId, Document value) {
-		super (uniqueId,value);
+		super(uniqueId);
+		setValue(value);
 	}
 
 	public TimetableInfo getInfo() throws Exception {

@@ -19,26 +19,6 @@ public class CurriculumClassification extends BaseCurriculumClassification imple
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public CurriculumClassification (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Curriculum curriculum,
-		org.unitime.timetable.model.AcademicClassification academicClassification,
-		java.lang.String name,
-		java.lang.Integer nrStudents,
-		java.lang.Integer ord) {
-
-		super (
-			uniqueId,
-			curriculum,
-			academicClassification,
-			name,
-			nrStudents,
-			ord);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 	public int compareTo(CurriculumClassification cc) {

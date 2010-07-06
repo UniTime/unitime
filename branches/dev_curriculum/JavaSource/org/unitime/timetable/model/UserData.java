@@ -37,33 +37,13 @@ public class UserData extends BaseUserData {
 		super();
 	}
 
-	/**
-	 * Constructor for primary name
-	 */
-	public UserData (
-		java.lang.String externalUniqueId,
-		java.lang.String name) {
-
-		super (
-			externalUniqueId,
-			name);
-	}
-
-	/**
-	 * Constructor for required fields
-	 */
-	public UserData (
-		java.lang.String externalUniqueId,
-		java.lang.String name,
-		java.lang.String value) {
-
-		super (
-			externalUniqueId,
-			name,
-			value);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
+	
+	public UserData(String externalUniqueId, String name) {
+		setExternalUniqueId(externalUniqueId);
+		setName(name);
+		initialize();
+	}
 
 	public static void setProperty(String externalUniqueId, String name, String value) {
 		UserDataDAO dao = new UserDataDAO();

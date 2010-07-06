@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -20,170 +20,76 @@
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
+import org.unitime.timetable.model.DistributionObject;
+import org.unitime.timetable.model.DistributionPref;
+import org.unitime.timetable.model.DistributionType;
+import org.unitime.timetable.model.Preference;
 
-/**
- * This is an object that contains data related to the DISTRIBUTION_PREF table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="DISTRIBUTION_PREF"
- */
+public abstract class BaseDistributionPref extends Preference implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseDistributionPref extends org.unitime.timetable.model.Preference  implements Serializable {
+	private Integer iGrouping;
+	private Long iUniqueIdRolledForwardFrom;
 
-	public static String REF = "DistributionPref";
+	private DistributionType iDistributionType;
+	private Set<DistributionObject> iDistributionObjects;
+
 	public static String PROP_GROUPING = "grouping";
-	public static String PROP_UNIQUE_ID_ROLLED_FORWARD_FROM = "uniqueIdRolledForwardFrom";
+	public static String PROP_UID_ROLLED_FWD_FROM = "uniqueIdRolledForwardFrom";
 
-
-	// constructors
-	public BaseDistributionPref () {
+	public BaseDistributionPref() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseDistributionPref (java.lang.Long uniqueId) {
-		super(uniqueId);
+	public BaseDistributionPref(Long uniqueId) {
+		setUniqueId(uniqueId);
+		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseDistributionPref (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.PreferenceGroup owner,
-		org.unitime.timetable.model.PreferenceLevel prefLevel) {
+	protected void initialize() {}
 
-		super (
-			uniqueId,
-			owner,
-			prefLevel);
+	public Integer getGrouping() { return iGrouping; }
+	public void setGrouping(Integer grouping) { iGrouping = grouping; }
+
+	public Long getUniqueIdRolledForwardFrom() { return iUniqueIdRolledForwardFrom; }
+	public void setUniqueIdRolledForwardFrom(Long uniqueIdRolledForwardFrom) { iUniqueIdRolledForwardFrom = uniqueIdRolledForwardFrom; }
+
+	public DistributionType getDistributionType() { return iDistributionType; }
+	public void setDistributionType(DistributionType distributionType) { iDistributionType = distributionType; }
+
+	public Set<DistributionObject> getDistributionObjects() { return iDistributionObjects; }
+	public void setDistributionObjects(Set<DistributionObject> distributionObjects) { iDistributionObjects = distributionObjects; }
+	public void addTodistributionObjects(DistributionObject distributionObject) {
+		if (iDistributionObjects == null) iDistributionObjects = new HashSet();
+		iDistributionObjects.add(distributionObject);
 	}
 
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-
-	// fields
-	private java.lang.Integer grouping;
-	private java.lang.Long uniqueIdRolledForwardFrom;
-
-	// many to one
-	private org.unitime.timetable.model.DistributionType distributionType;
-
-	// collections
-	private java.util.Set distributionObjects;
-
-
-
-
-
-
-	/**
-	 * Return the value associated with the column: GROUPING
-	 */
-	public java.lang.Integer getGrouping () {
-		return grouping;
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof DistributionPref)) return false;
+		if (getUniqueId() == null || ((DistributionPref)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((DistributionPref)o).getUniqueId());
 	}
 
-	/**
-	 * Set the value related to the column: GROUPING
-	 * @param grouping the GROUPING value
-	 */
-	public void setGrouping (java.lang.Integer grouping) {
-		this.grouping = grouping;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-
-
-	/**
-	 * Return the value associated with the column: UID_ROLLED_FWD_FROM
-	 */
-	public java.lang.Long getUniqueIdRolledForwardFrom () {
-		return uniqueIdRolledForwardFrom;
+	public String toString() {
+		return "DistributionPref["+getUniqueId()+"]";
 	}
 
-	/**
-	 * Set the value related to the column: UID_ROLLED_FWD_FROM
-	 * @param uniqueIdRolledForwardFrom the UID_ROLLED_FWD_FROM value
-	 */
-	public void setUniqueIdRolledForwardFrom (java.lang.Long uniqueIdRolledForwardFrom) {
-		this.uniqueIdRolledForwardFrom = uniqueIdRolledForwardFrom;
+	public String toDebugString() {
+		return "DistributionPref[" +
+			"\n	DistributionType: " + getDistributionType() +
+			"\n	Grouping: " + getGrouping() +
+			"\n	Owner: " + getOwner() +
+			"\n	PrefLevel: " + getPrefLevel() +
+			"\n	UniqueId: " + getUniqueId() +
+			"\n	UniqueIdRolledForwardFrom: " + getUniqueIdRolledForwardFrom() +
+			"]";
 	}
-
-
-
-	/**
-	 * Return the value associated with the column: DIST_TYPE_ID
-	 */
-	public org.unitime.timetable.model.DistributionType getDistributionType () {
-		return distributionType;
-	}
-
-	/**
-	 * Set the value related to the column: DIST_TYPE_ID
-	 * @param distributionType the DIST_TYPE_ID value
-	 */
-	public void setDistributionType (org.unitime.timetable.model.DistributionType distributionType) {
-		this.distributionType = distributionType;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: distributionObjects
-	 */
-	public java.util.Set getDistributionObjects () {
-		return distributionObjects;
-	}
-
-	/**
-	 * Set the value related to the column: distributionObjects
-	 * @param distributionObjects the distributionObjects value
-	 */
-	public void setDistributionObjects (java.util.Set distributionObjects) {
-		this.distributionObjects = distributionObjects;
-	}
-
-	public void addTodistributionObjects (org.unitime.timetable.model.DistributionObject distributionObject) {
-		if (null == getDistributionObjects()) setDistributionObjects(new java.util.HashSet());
-		getDistributionObjects().add(distributionObject);
-	}
-
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.DistributionPref)) return false;
-		else {
-			org.unitime.timetable.model.DistributionPref distributionPref = (org.unitime.timetable.model.DistributionPref) obj;
-			if (null == this.getUniqueId() || null == distributionPref.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(distributionPref.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

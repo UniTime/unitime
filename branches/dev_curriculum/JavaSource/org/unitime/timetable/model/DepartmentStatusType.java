@@ -61,18 +61,6 @@ public class DepartmentStatusType extends BaseDepartmentStatusType implements Co
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public DepartmentStatusType (
-		Long uniqueId,
-		java.lang.String reference) {
-
-		super (
-			uniqueId,
-			reference);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 	
 	/**

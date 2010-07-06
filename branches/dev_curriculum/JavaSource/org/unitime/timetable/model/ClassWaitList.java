@@ -40,24 +40,6 @@ public class ClassWaitList extends BaseClassWaitList {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public ClassWaitList (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Student student,
-		org.unitime.timetable.model.Class_ clazz,
-		java.lang.Integer type,
-		java.util.Date timestamp) {
-
-		super (
-			uniqueId,
-			student,
-			clazz,
-			type,
-			timestamp);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 

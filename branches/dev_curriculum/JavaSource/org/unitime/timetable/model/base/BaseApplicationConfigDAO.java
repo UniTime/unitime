@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -19,208 +19,106 @@
 */
 package org.unitime.timetable.model.base;
 
+import java.util.List;
+
 import org.hibernate.Hibernate;
-import org.hibernate.Session;
 import org.hibernate.criterion.Order;
+
+import org.unitime.timetable.model.ApplicationConfig;
+import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.ApplicationConfigDAO;
 
-/**
- * This is an automatically generated DAO class which should not be edited.
- */
-public abstract class BaseApplicationConfigDAO extends org.unitime.timetable.model.dao._RootDAO {
+public abstract class BaseApplicationConfigDAO extends _RootDAO {
 
-	// query name references
+	private static ApplicationConfigDAO sInstance;
 
-
-	public static ApplicationConfigDAO instance;
-
-	/**
-	 * Return a singleton of the DAO
-	 */
 	public static ApplicationConfigDAO getInstance () {
-		if (null == instance) instance = new ApplicationConfigDAO();
-		return instance;
+		if (sInstance == null) sInstance = new ApplicationConfigDAO();
+		return sInstance;
 	}
 
 	public Class getReferenceClass () {
-		return org.unitime.timetable.model.ApplicationConfig.class;
+		return ApplicationConfig.class;
 	}
 
-    public Order getDefaultOrder () {
+	public Order getDefaultOrder () {
 		return null;
-    }
-
-	/**
-	 * Cast the object as a org.unitime.timetable.model.ApplicationConfig
-	 */
-	public org.unitime.timetable.model.ApplicationConfig cast (Object object) {
-		return (org.unitime.timetable.model.ApplicationConfig) object;
 	}
 
-	public org.unitime.timetable.model.ApplicationConfig get(java.lang.String key)
-	{
-		return (org.unitime.timetable.model.ApplicationConfig) get(getReferenceClass(), key);
+	public ApplicationConfig get(String key) {
+		return (ApplicationConfig) get(getReferenceClass(), key);
 	}
 
-	public org.unitime.timetable.model.ApplicationConfig get(java.lang.String key, Session s)
-	{
-		return (org.unitime.timetable.model.ApplicationConfig) get(getReferenceClass(), key, s);
+	public ApplicationConfig get(String key, org.hibernate.Session hibSession) {
+		return (ApplicationConfig) get(getReferenceClass(), key, hibSession);
 	}
 
-	public org.unitime.timetable.model.ApplicationConfig load(java.lang.String key)
-	{
-		return (org.unitime.timetable.model.ApplicationConfig) load(getReferenceClass(), key);
+	public ApplicationConfig load(String key) {
+		return (ApplicationConfig) load(getReferenceClass(), key);
 	}
 
-	public org.unitime.timetable.model.ApplicationConfig load(java.lang.String key, Session s)
-	{
-		return (org.unitime.timetable.model.ApplicationConfig) load(getReferenceClass(), key, s);
+	public ApplicationConfig load(String key, org.hibernate.Session hibSession) {
+		return (ApplicationConfig) load(getReferenceClass(), key, hibSession);
 	}
 
-	public org.unitime.timetable.model.ApplicationConfig loadInitialize(java.lang.String key, Session s) 
-	{ 
-		org.unitime.timetable.model.ApplicationConfig obj = load(key, s); 
-		if (!Hibernate.isInitialized(obj)) {
-			Hibernate.initialize(obj);
-		} 
-		return obj; 
+	public ApplicationConfig loadInitialize(String key, org.hibernate.Session hibSession) {
+		ApplicationConfig applicationConfig = load(key, hibSession);
+		if (!Hibernate.isInitialized(applicationConfig)) Hibernate.initialize(applicationConfig);
+		return applicationConfig;
 	}
 
-
-	/**
-	 * Persist the given transient instance, first assigning a generated identifier. (Or using the current value
-	 * of the identifier property if the assigned generator is used.) 
-	 * @param applicationConfig a transient instance of a persistent class 
-	 * @return the class identifier
-	 */
-	public java.lang.String save(org.unitime.timetable.model.ApplicationConfig applicationConfig)
-	{
-		return (java.lang.String) super.save(applicationConfig);
+	public void save(ApplicationConfig applicationConfig) {
+		save((Object) applicationConfig);
 	}
 
-	/**
-	 * Persist the given transient instance, first assigning a generated identifier. (Or using the current value
-	 * of the identifier property if the assigned generator is used.) 
-	 * Use the Session given.
-	 * @param applicationConfig a transient instance of a persistent class
-	 * @param s the Session
-	 * @return the class identifier
-	 */
-	public java.lang.String save(org.unitime.timetable.model.ApplicationConfig applicationConfig, Session s)
-	{
-		return (java.lang.String) save((Object) applicationConfig, s);
+	public void save(ApplicationConfig applicationConfig, org.hibernate.Session hibSession) {
+		save((Object) applicationConfig, hibSession);
 	}
 
-	/**
-	 * Either save() or update() the given instance, depending upon the value of its identifier property. By default
-	 * the instance is always saved. This behaviour may be adjusted by specifying an unsaved-value attribute of the
-	 * identifier property mapping. 
-	 * @param applicationConfig a transient instance containing new or updated state 
-	 */
-	public void saveOrUpdate(org.unitime.timetable.model.ApplicationConfig applicationConfig)
-	{
+	public void saveOrUpdate(ApplicationConfig applicationConfig) {
 		saveOrUpdate((Object) applicationConfig);
 	}
 
-	/**
-	 * Either save() or update() the given instance, depending upon the value of its identifier property. By default the
-	 * instance is always saved. This behaviour may be adjusted by specifying an unsaved-value attribute of the identifier
-	 * property mapping. 
-	 * Use the Session given.
-	 * @param applicationConfig a transient instance containing new or updated state.
-	 * @param s the Session.
-	 */
-	public void saveOrUpdate(org.unitime.timetable.model.ApplicationConfig applicationConfig, Session s)
-	{
-		saveOrUpdate((Object) applicationConfig, s);
+	public void saveOrUpdate(ApplicationConfig applicationConfig, org.hibernate.Session hibSession) {
+		saveOrUpdate((Object) applicationConfig, hibSession);
 	}
 
-	/**
-	 * Update the persistent state associated with the given identifier. An exception is thrown if there is a persistent
-	 * instance with the same identifier in the current session.
-	 * @param applicationConfig a transient instance containing updated state
-	 */
-	public void update(org.unitime.timetable.model.ApplicationConfig applicationConfig) 
-	{
+
+	public void update(ApplicationConfig applicationConfig) {
 		update((Object) applicationConfig);
 	}
 
-	/**
-	 * Update the persistent state associated with the given identifier. An exception is thrown if there is a persistent
-	 * instance with the same identifier in the current session.
-	 * Use the Session given.
-	 * @param applicationConfig a transient instance containing updated state
-	 * @param the Session
-	 */
-	public void update(org.unitime.timetable.model.ApplicationConfig applicationConfig, Session s)
-	{
-		update((Object) applicationConfig, s);
+	public void update(ApplicationConfig applicationConfig, org.hibernate.Session hibSession) {
+		update((Object) applicationConfig, hibSession);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * @param id the instance ID to be removed
-	 */
-	public void delete(java.lang.Object id)
-	{
-        if (id instanceof String)
-            delete((Object) load((String)id));
-        else
-            super.delete(id);
+	public void delete(Object key) {
+		if (key instanceof String)
+			delete((Object) load((String)key));
+		else
+		super.delete(key);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * Use the Session given.
-	 * @param id the instance ID to be removed
-	 * @param s the Session
-	 */
-	public void delete(java.lang.Object id, Session s)
-	{
-        if (id instanceof String)
-            delete((Object) load((String)id, s), s);
-        else
-            super.delete(id, s);
+	public void delete(Object key, org.hibernate.Session hibSession) {
+		if (key instanceof String)
+			delete((Object) load((String)key, hibSession), hibSession);
+		else
+			super.delete(key, hibSession);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * @param applicationConfig the instance to be removed
-	 */
-	public void delete(org.unitime.timetable.model.ApplicationConfig applicationConfig)
-	{
+	public void delete(ApplicationConfig applicationConfig) {
 		delete((Object) applicationConfig);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * Use the Session given.
-	 * @param applicationConfig the instance to be removed
-	 * @param s the Session
-	 */
-	public void delete(org.unitime.timetable.model.ApplicationConfig applicationConfig, Session s)
-	{
-		delete((Object) applicationConfig, s);
-	}
-	
-	/**
-	 * Re-read the state of the given instance from the underlying database. It is inadvisable to use this to implement
-	 * long-running sessions that span many business tasks. This method is, however, useful in certain special circumstances.
-	 * For example 
-	 * <ul> 
-	 * <li>where a database trigger alters the object state upon insert or update</li>
-	 * <li>after executing direct SQL (eg. a mass update) in the same session</li>
-	 * <li>after inserting a Blob or Clob</li>
-	 * </ul>
-	 */
-	public void refresh (org.unitime.timetable.model.ApplicationConfig applicationConfig, Session s)
-	{
-		refresh((Object) applicationConfig, s);
+	public void delete(ApplicationConfig applicationConfig, org.hibernate.Session hibSession) {
+		delete((Object) applicationConfig, hibSession);
 	}
 
+	public void refresh(ApplicationConfig applicationConfig, org.hibernate.Session hibSession) {
+		refresh((Object) applicationConfig, hibSession);
+	}
 
+	public List<ApplicationConfig> findAll(org.hibernate.Session hibSession) {
+		return hibSession.createQuery("from ApplicationConfig").list();
+	}
 }

@@ -37,18 +37,6 @@ public class User extends BaseUser {
 		super(username);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public User (
-		java.lang.String username,
-		java.lang.String password) {
-
-		super (
-			username,
-			password);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
     
     public static User findByExternalId(String externalId) {

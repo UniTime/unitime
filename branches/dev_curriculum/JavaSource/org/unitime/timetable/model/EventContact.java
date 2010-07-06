@@ -42,20 +42,6 @@ public class EventContact extends BaseEventContact {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public EventContact (
-		java.lang.Long uniqueId,
-		java.lang.String emailAddress,
-		java.lang.String phone) {
-
-		super (
-			uniqueId,
-			emailAddress,
-			phone);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 	public static EventContact findByExternalUniqueId(String externalUniqueId) {

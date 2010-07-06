@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -21,121 +21,72 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.ExamOwner;
+
 public abstract class BaseExamOwner implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-    public static String REF = "ExamOwner";
+	private Long iUniqueId;
+	private Long iOwnerId;
+	private Integer iOwnerType;
 
+	private Exam iExam;
+	private CourseOffering iCourse;
 
-	// constructors
+	public static String PROP_UNIQUEID = "uniqueId";
+	public static String PROP_OWNER_ID = "ownerId";
+	public static String PROP_OWNER_TYPE = "ownerType";
+
 	public BaseExamOwner() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseExamOwner (java.lang.Long uniqueId) {
-        this.setUniqueId(uniqueId);
-        initialize();
+	public BaseExamOwner(Long uniqueId) {
+		setUniqueId(uniqueId);
+		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseExamOwner (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Exam exam,
-		java.lang.Long ownerId,
-		java.lang.Integer ownerType,
-		org.unitime.timetable.model.CourseOffering course) {
+	protected void initialize() {}
 
-	    this.setUniqueId(uniqueId);
-        this.setExam(exam);
-        this.setOwnerId(ownerId);
-        this.setOwnerType(ownerType);
-        this.setCourse(course);
-        initialize();
+	public Long getUniqueId() { return iUniqueId; }
+	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
+
+	public Long getOwnerId() { return iOwnerId; }
+	public void setOwnerId(Long ownerId) { iOwnerId = ownerId; }
+
+	public Integer getOwnerType() { return iOwnerType; }
+	public void setOwnerType(Integer ownerType) { iOwnerType = ownerType; }
+
+	public Exam getExam() { return iExam; }
+	public void setExam(Exam exam) { iExam = exam; }
+
+	public CourseOffering getCourse() { return iCourse; }
+	public void setCourse(CourseOffering course) { iCourse = course; }
+
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof ExamOwner)) return false;
+		if (getUniqueId() == null || ((ExamOwner)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((ExamOwner)o).getUniqueId());
 	}
 
-    protected void initialize () {}
-
-	private int hashCode = Integer.MIN_VALUE;
-
-    // primary key
-    private java.lang.Long uniqueId;
-
-    // fields
-	private org.unitime.timetable.model.Exam exam;
-	private java.lang.Long ownerId;
-	private java.lang.Integer ownerType;
-	private org.unitime.timetable.model.CourseOffering course;
-
-    public java.lang.Long getUniqueId () {
-        return uniqueId;
-    }
-
-    public void setUniqueId (java.lang.Long uniqueId) {
-        this.uniqueId = uniqueId;
-        this.hashCode = Integer.MIN_VALUE;
-    }
-
-    public void setExam(org.unitime.timetable.model.Exam exam) {
-	    this.exam = exam;
-	}
-	
-	public org.unitime.timetable.model.Exam getExam() {
-	    return exam;
-	}
-	
-	public void setOwnerId(java.lang.Long ownerId) {
-	    this.ownerId = ownerId;
-	}
-	
-	public java.lang.Long getOwnerId() {
-	    return ownerId;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	public void setOwnerType(java.lang.Integer ownerType) {
-	    this.ownerType = ownerType;
-	}
-	
-	public java.lang.Integer getOwnerType() {
-	    return ownerType;
-	}
-	
-	public org.unitime.timetable.model.CourseOffering getCourse() {
-	    return course;
-	}
-	
-	public void setCourse(org.unitime.timetable.model.CourseOffering course) {
-	    this.course = course;
+	public String toString() {
+		return "ExamOwner["+getUniqueId()+"]";
 	}
 
-	public boolean equals (Object obj) {
-        if (null == obj) return false;
-        if (!(obj instanceof org.unitime.timetable.model.ExamOwner)) return false;
-        else {
-            org.unitime.timetable.model.ExamOwner examOwner = (org.unitime.timetable.model.ExamOwner) obj;
-            if (null == this.getUniqueId() || null == examOwner.getUniqueId()) return false;
-            else return (this.getUniqueId().equals(examOwner.getUniqueId()));
-        }
-    }
-
-    public int hashCode () {
-        if (Integer.MIN_VALUE == this.hashCode) {
-            if (null == this.getUniqueId()) return super.hashCode();
-            else {
-                String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-                this.hashCode = hashStr.hashCode();
-            }
-        }
-        return this.hashCode;
-    }
-
-
-	public String toString () {
-		return super.toString();
+	public String toDebugString() {
+		return "ExamOwner[" +
+			"\n	Course: " + getCourse() +
+			"\n	Exam: " + getExam() +
+			"\n	OwnerId: " + getOwnerId() +
+			"\n	OwnerType: " + getOwnerType() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-
 }

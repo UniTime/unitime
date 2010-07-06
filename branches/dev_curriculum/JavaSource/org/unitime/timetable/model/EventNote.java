@@ -41,22 +41,6 @@ public class EventNote extends BaseEventNote implements Comparable<EventNote> {
 	public EventNote (java.lang.Long uniqueId) {
 		super(uniqueId);
 	}
-
-	/**
-	 * Constructor for required fields
-	 */
-	public EventNote (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Event event,
-		java.lang.Integer noteType,
-		java.util.Date timeStamp) {
-
-		super (
-			uniqueId,
-			event,
-			noteType,
-			timeStamp);
-	}
 	
 /*[CONSTRUCTOR MARKER END]*/
 	

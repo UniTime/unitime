@@ -39,22 +39,6 @@ public class PosMinor extends BasePosMinor {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public PosMinor (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.Session session,
-		java.lang.String code,
-		java.lang.String name) {
-
-		super (
-			uniqueId,
-			session,
-			code,
-			name);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
     public static PosMinor findByCode(Long sessionId, String code) {

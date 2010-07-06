@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -19,202 +19,100 @@
 */
 package org.unitime.timetable.model.base;
 
+import java.util.List;
+
 import org.hibernate.Hibernate;
-import org.hibernate.Session;
 import org.hibernate.criterion.Order;
+
+import org.unitime.timetable.model.VariableFixedCreditUnitConfig;
+import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.VariableFixedCreditUnitConfigDAO;
 
-/**
- * This is an automatically generated DAO class which should not be edited.
- */
-public abstract class BaseVariableFixedCreditUnitConfigDAO extends org.unitime.timetable.model.dao._RootDAO {
+public abstract class BaseVariableFixedCreditUnitConfigDAO extends _RootDAO {
 
-	// query name references
+	private static VariableFixedCreditUnitConfigDAO sInstance;
 
-
-	public static VariableFixedCreditUnitConfigDAO instance;
-
-	/**
-	 * Return a singleton of the DAO
-	 */
 	public static VariableFixedCreditUnitConfigDAO getInstance () {
-		if (null == instance) instance = new VariableFixedCreditUnitConfigDAO();
-		return instance;
+		if (sInstance == null) sInstance = new VariableFixedCreditUnitConfigDAO();
+		return sInstance;
 	}
 
 	public Class getReferenceClass () {
-		return org.unitime.timetable.model.VariableFixedCreditUnitConfig.class;
+		return VariableFixedCreditUnitConfig.class;
 	}
 
-    public Order getDefaultOrder () {
+	public Order getDefaultOrder () {
 		return null;
-    }
-
-	/**
-	 * Cast the object as a org.unitime.timetable.model.VariableFixedCreditUnitConfig
-	 */
-	public org.unitime.timetable.model.VariableFixedCreditUnitConfig cast (Object object) {
-		return (org.unitime.timetable.model.VariableFixedCreditUnitConfig) object;
 	}
 
-	public org.unitime.timetable.model.VariableFixedCreditUnitConfig get(java.lang.Long key)
-	{
-		return (org.unitime.timetable.model.VariableFixedCreditUnitConfig) get(getReferenceClass(), key);
+	public VariableFixedCreditUnitConfig get(Long uniqueId) {
+		return (VariableFixedCreditUnitConfig) get(getReferenceClass(), uniqueId);
 	}
 
-	public org.unitime.timetable.model.VariableFixedCreditUnitConfig get(java.lang.Long key, Session s)
-	{
-		return (org.unitime.timetable.model.VariableFixedCreditUnitConfig) get(getReferenceClass(), key, s);
+	public VariableFixedCreditUnitConfig get(Long uniqueId, org.hibernate.Session hibSession) {
+		return (VariableFixedCreditUnitConfig) get(getReferenceClass(), uniqueId, hibSession);
 	}
 
-	public org.unitime.timetable.model.VariableFixedCreditUnitConfig load(java.lang.Long key)
-	{
-		return (org.unitime.timetable.model.VariableFixedCreditUnitConfig) load(getReferenceClass(), key);
+	public VariableFixedCreditUnitConfig load(Long uniqueId) {
+		return (VariableFixedCreditUnitConfig) load(getReferenceClass(), uniqueId);
 	}
 
-	public org.unitime.timetable.model.VariableFixedCreditUnitConfig load(java.lang.Long key, Session s)
-	{
-		return (org.unitime.timetable.model.VariableFixedCreditUnitConfig) load(getReferenceClass(), key, s);
+	public VariableFixedCreditUnitConfig load(Long uniqueId, org.hibernate.Session hibSession) {
+		return (VariableFixedCreditUnitConfig) load(getReferenceClass(), uniqueId, hibSession);
 	}
 
-	public org.unitime.timetable.model.VariableFixedCreditUnitConfig loadInitialize(java.lang.Long key, Session s) 
-	{ 
-		org.unitime.timetable.model.VariableFixedCreditUnitConfig obj = load(key, s); 
-		if (!Hibernate.isInitialized(obj)) {
-			Hibernate.initialize(obj);
-		} 
-		return obj; 
+	public VariableFixedCreditUnitConfig loadInitialize(Long uniqueId, org.hibernate.Session hibSession) {
+		VariableFixedCreditUnitConfig variableFixedCreditUnitConfig = load(uniqueId, hibSession);
+		if (!Hibernate.isInitialized(variableFixedCreditUnitConfig)) Hibernate.initialize(variableFixedCreditUnitConfig);
+		return variableFixedCreditUnitConfig;
 	}
 
-
-	/**
-	 * Persist the given transient instance, first assigning a generated identifier. (Or using the current value
-	 * of the identifier property if the assigned generator is used.) 
-	 * @param variableFixedCreditUnitConfig a transient instance of a persistent class 
-	 * @return the class identifier
-	 */
-	public java.lang.Long save(org.unitime.timetable.model.VariableFixedCreditUnitConfig variableFixedCreditUnitConfig)
-	{
-		return (java.lang.Long) super.save(variableFixedCreditUnitConfig);
+	public void save(VariableFixedCreditUnitConfig variableFixedCreditUnitConfig) {
+		save((Object) variableFixedCreditUnitConfig);
 	}
 
-	/**
-	 * Persist the given transient instance, first assigning a generated identifier. (Or using the current value
-	 * of the identifier property if the assigned generator is used.) 
-	 * Use the Session given.
-	 * @param variableFixedCreditUnitConfig a transient instance of a persistent class
-	 * @param s the Session
-	 * @return the class identifier
-	 */
-	public java.lang.Long save(org.unitime.timetable.model.VariableFixedCreditUnitConfig variableFixedCreditUnitConfig, Session s)
-	{
-		return (java.lang.Long) save((Object) variableFixedCreditUnitConfig, s);
+	public void save(VariableFixedCreditUnitConfig variableFixedCreditUnitConfig, org.hibernate.Session hibSession) {
+		save((Object) variableFixedCreditUnitConfig, hibSession);
 	}
 
-	/**
-	 * Either save() or update() the given instance, depending upon the value of its identifier property. By default
-	 * the instance is always saved. This behaviour may be adjusted by specifying an unsaved-value attribute of the
-	 * identifier property mapping. 
-	 * @param variableFixedCreditUnitConfig a transient instance containing new or updated state 
-	 */
-	public void saveOrUpdate(org.unitime.timetable.model.VariableFixedCreditUnitConfig variableFixedCreditUnitConfig)
-	{
+	public void saveOrUpdate(VariableFixedCreditUnitConfig variableFixedCreditUnitConfig) {
 		saveOrUpdate((Object) variableFixedCreditUnitConfig);
 	}
 
-	/**
-	 * Either save() or update() the given instance, depending upon the value of its identifier property. By default the
-	 * instance is always saved. This behaviour may be adjusted by specifying an unsaved-value attribute of the identifier
-	 * property mapping. 
-	 * Use the Session given.
-	 * @param variableFixedCreditUnitConfig a transient instance containing new or updated state.
-	 * @param s the Session.
-	 */
-	public void saveOrUpdate(org.unitime.timetable.model.VariableFixedCreditUnitConfig variableFixedCreditUnitConfig, Session s)
-	{
-		saveOrUpdate((Object) variableFixedCreditUnitConfig, s);
+	public void saveOrUpdate(VariableFixedCreditUnitConfig variableFixedCreditUnitConfig, org.hibernate.Session hibSession) {
+		saveOrUpdate((Object) variableFixedCreditUnitConfig, hibSession);
 	}
 
-	/**
-	 * Update the persistent state associated with the given identifier. An exception is thrown if there is a persistent
-	 * instance with the same identifier in the current session.
-	 * @param variableFixedCreditUnitConfig a transient instance containing updated state
-	 */
-	public void update(org.unitime.timetable.model.VariableFixedCreditUnitConfig variableFixedCreditUnitConfig) 
-	{
+
+	public void update(VariableFixedCreditUnitConfig variableFixedCreditUnitConfig) {
 		update((Object) variableFixedCreditUnitConfig);
 	}
 
-	/**
-	 * Update the persistent state associated with the given identifier. An exception is thrown if there is a persistent
-	 * instance with the same identifier in the current session.
-	 * Use the Session given.
-	 * @param variableFixedCreditUnitConfig a transient instance containing updated state
-	 * @param the Session
-	 */
-	public void update(org.unitime.timetable.model.VariableFixedCreditUnitConfig variableFixedCreditUnitConfig, Session s)
-	{
-		update((Object) variableFixedCreditUnitConfig, s);
+	public void update(VariableFixedCreditUnitConfig variableFixedCreditUnitConfig, org.hibernate.Session hibSession) {
+		update((Object) variableFixedCreditUnitConfig, hibSession);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * @param id the instance ID to be removed
-	 */
-	public void delete(java.lang.Long id)
-	{
-		delete((Object) load(id));
+	public void delete(Long uniqueId) {
+		delete(load(uniqueId));
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * Use the Session given.
-	 * @param id the instance ID to be removed
-	 * @param s the Session
-	 */
-	public void delete(java.lang.Long id, Session s)
-	{
-		delete((Object) load(id, s), s);
+	public void delete(Long uniqueId, org.hibernate.Session hibSession) {
+		delete(load(uniqueId, hibSession), hibSession);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * @param variableFixedCreditUnitConfig the instance to be removed
-	 */
-	public void delete(org.unitime.timetable.model.VariableFixedCreditUnitConfig variableFixedCreditUnitConfig)
-	{
+	public void delete(VariableFixedCreditUnitConfig variableFixedCreditUnitConfig) {
 		delete((Object) variableFixedCreditUnitConfig);
 	}
 
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 * Use the Session given.
-	 * @param variableFixedCreditUnitConfig the instance to be removed
-	 * @param s the Session
-	 */
-	public void delete(org.unitime.timetable.model.VariableFixedCreditUnitConfig variableFixedCreditUnitConfig, Session s)
-	{
-		delete((Object) variableFixedCreditUnitConfig, s);
-	}
-	
-	/**
-	 * Re-read the state of the given instance from the underlying database. It is inadvisable to use this to implement
-	 * long-running sessions that span many business tasks. This method is, however, useful in certain special circumstances.
-	 * For example 
-	 * <ul> 
-	 * <li>where a database trigger alters the object state upon insert or update</li>
-	 * <li>after executing direct SQL (eg. a mass update) in the same session</li>
-	 * <li>after inserting a Blob or Clob</li>
-	 * </ul>
-	 */
-	public void refresh (org.unitime.timetable.model.VariableFixedCreditUnitConfig variableFixedCreditUnitConfig, Session s)
-	{
-		refresh((Object) variableFixedCreditUnitConfig, s);
+	public void delete(VariableFixedCreditUnitConfig variableFixedCreditUnitConfig, org.hibernate.Session hibSession) {
+		delete((Object) variableFixedCreditUnitConfig, hibSession);
 	}
 
+	public void refresh(VariableFixedCreditUnitConfig variableFixedCreditUnitConfig, org.hibernate.Session hibSession) {
+		refresh((Object) variableFixedCreditUnitConfig, hibSession);
+	}
 
+	public List<VariableFixedCreditUnitConfig> findAll(org.hibernate.Session hibSession) {
+		return hibSession.createQuery("from VariableFixedCreditUnitConfig").list();
+	}
 }

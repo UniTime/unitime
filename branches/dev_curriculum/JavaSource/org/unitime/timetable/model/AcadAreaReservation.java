@@ -38,24 +38,6 @@ public class AcadAreaReservation extends BaseAcadAreaReservation {
 		super(uniqueId);
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public AcadAreaReservation (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.ReservationType reservationType,
-		java.lang.String ownerClassId,
-		java.lang.Long owner,
-		java.lang.Integer priority) {
-
-		super (
-			uniqueId,
-			reservationType,
-			ownerClassId,
-			owner,
-			priority);
-	}
-
 /*[CONSTRUCTOR MARKER END]*/
 
 }

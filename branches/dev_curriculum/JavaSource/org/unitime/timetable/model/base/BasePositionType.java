@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -21,103 +21,52 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import org.unitime.timetable.model.PositionType;
+import org.unitime.timetable.model.RefTableEntry;
 
-/**
- * This is an object that contains data related to the POSITION_TYPE table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="POSITION_TYPE"
- */
+public abstract class BasePositionType extends RefTableEntry implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BasePositionType extends org.unitime.timetable.model.RefTableEntry  implements Serializable {
+	private Integer iSortOrder;
 
-	public static String REF = "PositionType";
+
 	public static String PROP_SORT_ORDER = "sortOrder";
 
-
-	// constructors
-	public BasePositionType () {
+	public BasePositionType() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BasePositionType (Long uniqueId) {
-		super(uniqueId);
+	public BasePositionType(Long uniqueId) {
+		setUniqueId(uniqueId);
+		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BasePositionType (
-		Long uniqueId,
-		java.lang.String reference) {
+	protected void initialize() {}
 
-		super (
-			uniqueId,
-			reference);
+	public Integer getSortOrder() { return iSortOrder; }
+	public void setSortOrder(Integer sortOrder) { iSortOrder = sortOrder; }
+
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof PositionType)) return false;
+		if (getUniqueId() == null || ((PositionType)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((PositionType)o).getUniqueId());
 	}
 
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-
-	// fields
-	private java.lang.Integer sortOrder;
-
-
-
-
-
-
-	/**
-	 * Return the value associated with the column: SORT_ORDER
-	 */
-	public java.lang.Integer getSortOrder () {
-		return sortOrder;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	/**
-	 * Set the value related to the column: SORT_ORDER
-	 * @param sortOrder the SORT_ORDER value
-	 */
-	public void setSortOrder (java.lang.Integer sortOrder) {
-		this.sortOrder = sortOrder;
+	public String toString() {
+		return "PositionType["+getUniqueId()+" "+getLabel()+"]";
 	}
 
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.PositionType)) return false;
-		else {
-			org.unitime.timetable.model.PositionType positionType = (org.unitime.timetable.model.PositionType) obj;
-			if (null == this.getUniqueId() || null == positionType.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(positionType.getUniqueId()));
-		}
+	public String toDebugString() {
+		return "PositionType[" +
+			"\n	Label: " + getLabel() +
+			"\n	Reference: " + getReference() +
+			"\n	SortOrder: " + getSortOrder() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

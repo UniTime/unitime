@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -20,319 +20,136 @@
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
+import org.unitime.timetable.model.AcadAreaReservation;
+import org.unitime.timetable.model.CourseOfferingReservation;
+import org.unitime.timetable.model.IndividualReservation;
+import org.unitime.timetable.model.InstrOfferingConfig;
+import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.PosReservation;
+import org.unitime.timetable.model.SchedulingSubpart;
+import org.unitime.timetable.model.StudentGroupReservation;
 
-/**
- * This is an object that contains data related to the INSTR_OFFERING_CONFIG table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table="INSTR_OFFERING_CONFIG"
- */
+public abstract class BaseInstrOfferingConfig implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseInstrOfferingConfig  implements Serializable {
+	private Long iUniqueId;
+	private Integer iLimit;
+	private Boolean iUnlimitedEnrollment;
+	private String iName;
+	private Long iUniqueIdRolledForwardFrom;
 
-	public static String REF = "InstrOfferingConfig";
-	public static String PROP_LIMIT = "limit";
+	private InstructionalOffering iInstructionalOffering;
+	private Set<SchedulingSubpart> iSchedulingSubparts;
+	private Set<CourseOfferingReservation> iCourseReservations;
+	private Set<IndividualReservation> iIndividualReservations;
+	private Set<StudentGroupReservation> iStudentGroupReservations;
+	private Set<AcadAreaReservation> iAcadAreaReservations;
+	private Set<PosReservation> iPosReservations;
+
+	public static String PROP_UNIQUEID = "uniqueId";
+	public static String PROP_CONFIG_LIMIT = "limit";
 	public static String PROP_UNLIMITED_ENROLLMENT = "unlimitedEnrollment";
 	public static String PROP_NAME = "name";
-	public static String PROP_UNIQUE_ID_ROLLED_FORWARD_FROM = "uniqueIdRolledForwardFrom";
+	public static String PROP_UID_ROLLED_FWD_FROM = "uniqueIdRolledForwardFrom";
 
-
-	// constructors
-	public BaseInstrOfferingConfig () {
+	public BaseInstrOfferingConfig() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseInstrOfferingConfig (java.lang.Long uniqueId) {
-		this.setUniqueId(uniqueId);
+	public BaseInstrOfferingConfig(Long uniqueId) {
+		setUniqueId(uniqueId);
 		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseInstrOfferingConfig (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.InstructionalOffering instructionalOffering,
-		java.lang.Integer limit,
-		java.lang.Boolean unlimitedEnrollment) {
+	protected void initialize() {}
 
-		this.setUniqueId(uniqueId);
-		this.setInstructionalOffering(instructionalOffering);
-		this.setLimit(limit);
-		this.setUnlimitedEnrollment(unlimitedEnrollment);
-		initialize();
+	public Long getUniqueId() { return iUniqueId; }
+	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
+
+	public Integer getLimit() { return iLimit; }
+	public void setLimit(Integer limit) { iLimit = limit; }
+
+	public Boolean isUnlimitedEnrollment() { return iUnlimitedEnrollment; }
+	public Boolean getUnlimitedEnrollment() { return iUnlimitedEnrollment; }
+	public void setUnlimitedEnrollment(Boolean unlimitedEnrollment) { iUnlimitedEnrollment = unlimitedEnrollment; }
+
+	public String getName() { return iName; }
+	public void setName(String name) { iName = name; }
+
+	public Long getUniqueIdRolledForwardFrom() { return iUniqueIdRolledForwardFrom; }
+	public void setUniqueIdRolledForwardFrom(Long uniqueIdRolledForwardFrom) { iUniqueIdRolledForwardFrom = uniqueIdRolledForwardFrom; }
+
+	public InstructionalOffering getInstructionalOffering() { return iInstructionalOffering; }
+	public void setInstructionalOffering(InstructionalOffering instructionalOffering) { iInstructionalOffering = instructionalOffering; }
+
+	public Set<SchedulingSubpart> getSchedulingSubparts() { return iSchedulingSubparts; }
+	public void setSchedulingSubparts(Set<SchedulingSubpart> schedulingSubparts) { iSchedulingSubparts = schedulingSubparts; }
+	public void addToschedulingSubparts(SchedulingSubpart schedulingSubpart) {
+		if (iSchedulingSubparts == null) iSchedulingSubparts = new HashSet();
+		iSchedulingSubparts.add(schedulingSubpart);
 	}
 
-	protected void initialize () {}
-
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-	// primary key
-	private java.lang.Long uniqueId;
-
-	// fields
-	private java.lang.Integer limit;
-	private java.lang.Boolean unlimitedEnrollment;
-	private java.lang.String name;
-	private java.lang.Long uniqueIdRolledForwardFrom;
-
-	// many to one
-	private org.unitime.timetable.model.InstructionalOffering instructionalOffering;
-
-	// collections
-	private java.util.Set schedulingSubparts;
-	private java.util.Set courseReservations;
-	private java.util.Set individualReservations;
-	private java.util.Set studentGroupReservations;
-	private java.util.Set acadAreaReservations;
-	private java.util.Set posReservations;
-
-
-
-	/**
-	 * Return the unique identifier of this class
-     * @hibernate.id
-     *  generator-class="org.unitime.commons.hibernate.id.UniqueIdGenerator"
-     *  column="UNIQUEID"
-     */
-	public java.lang.Long getUniqueId () {
-		return uniqueId;
+	public Set<CourseOfferingReservation> getCourseReservations() { return iCourseReservations; }
+	public void setCourseReservations(Set<CourseOfferingReservation> courseReservations) { iCourseReservations = courseReservations; }
+	public void addTocourseReservations(CourseOfferingReservation courseOfferingReservation) {
+		if (iCourseReservations == null) iCourseReservations = new HashSet();
+		iCourseReservations.add(courseOfferingReservation);
 	}
 
-	/**
-	 * Set the unique identifier of this class
-	 * @param uniqueId the new ID
-	 */
-	public void setUniqueId (java.lang.Long uniqueId) {
-		this.uniqueId = uniqueId;
-		this.hashCode = Integer.MIN_VALUE;
+	public Set<IndividualReservation> getIndividualReservations() { return iIndividualReservations; }
+	public void setIndividualReservations(Set<IndividualReservation> individualReservations) { iIndividualReservations = individualReservations; }
+	public void addToindividualReservations(IndividualReservation individualReservation) {
+		if (iIndividualReservations == null) iIndividualReservations = new HashSet();
+		iIndividualReservations.add(individualReservation);
 	}
 
-
-
-
-	/**
-	 * Return the value associated with the column: CONFIG_LIMIT
-	 */
-	public java.lang.Integer getLimit () {
-		return limit;
+	public Set<StudentGroupReservation> getStudentGroupReservations() { return iStudentGroupReservations; }
+	public void setStudentGroupReservations(Set<StudentGroupReservation> studentGroupReservations) { iStudentGroupReservations = studentGroupReservations; }
+	public void addTostudentGroupReservations(StudentGroupReservation studentGroupReservation) {
+		if (iStudentGroupReservations == null) iStudentGroupReservations = new HashSet();
+		iStudentGroupReservations.add(studentGroupReservation);
 	}
 
-	/**
-	 * Set the value related to the column: CONFIG_LIMIT
-	 * @param limit the CONFIG_LIMIT value
-	 */
-	public void setLimit (java.lang.Integer limit) {
-		this.limit = limit;
+	public Set<AcadAreaReservation> getAcadAreaReservations() { return iAcadAreaReservations; }
+	public void setAcadAreaReservations(Set<AcadAreaReservation> acadAreaReservations) { iAcadAreaReservations = acadAreaReservations; }
+	public void addToacadAreaReservations(AcadAreaReservation acadAreaReservation) {
+		if (iAcadAreaReservations == null) iAcadAreaReservations = new HashSet();
+		iAcadAreaReservations.add(acadAreaReservation);
 	}
 
-
-
-	/**
-	 * Return the value associated with the column: UNLIMITED_ENROLLMENT
-	 */
-	public java.lang.Boolean isUnlimitedEnrollment () {
-		return unlimitedEnrollment;
+	public Set<PosReservation> getPosReservations() { return iPosReservations; }
+	public void setPosReservations(Set<PosReservation> posReservations) { iPosReservations = posReservations; }
+	public void addToposReservations(PosReservation posReservation) {
+		if (iPosReservations == null) iPosReservations = new HashSet();
+		iPosReservations.add(posReservation);
 	}
 
-	/**
-	 * Set the value related to the column: UNLIMITED_ENROLLMENT
-	 * @param unlimitedEnrollment the UNLIMITED_ENROLLMENT value
-	 */
-	public void setUnlimitedEnrollment (java.lang.Boolean unlimitedEnrollment) {
-		this.unlimitedEnrollment = unlimitedEnrollment;
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof InstrOfferingConfig)) return false;
+		if (getUniqueId() == null || ((InstrOfferingConfig)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((InstrOfferingConfig)o).getUniqueId());
 	}
 
-
-
-	/**
-	 * Return the value associated with the column: NAME
-	 */
-	public java.lang.String getName () {
-		return name;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	/**
-	 * Set the value related to the column: NAME
-	 * @param name the NAME value
-	 */
-	public void setName (java.lang.String name) {
-		this.name = name;
+	public String toString() {
+		return "InstrOfferingConfig["+getUniqueId()+" "+getName()+"]";
 	}
 
-
-
-	/**
-	 * Return the value associated with the column: UID_ROLLED_FWD_FROM
-	 */
-	public java.lang.Long getUniqueIdRolledForwardFrom () {
-		return uniqueIdRolledForwardFrom;
+	public String toDebugString() {
+		return "InstrOfferingConfig[" +
+			"\n	InstructionalOffering: " + getInstructionalOffering() +
+			"\n	Limit: " + getLimit() +
+			"\n	Name: " + getName() +
+			"\n	UniqueId: " + getUniqueId() +
+			"\n	UniqueIdRolledForwardFrom: " + getUniqueIdRolledForwardFrom() +
+			"\n	UnlimitedEnrollment: " + getUnlimitedEnrollment() +
+			"]";
 	}
-
-	/**
-	 * Set the value related to the column: UID_ROLLED_FWD_FROM
-	 * @param uniqueIdRolledForwardFrom the UID_ROLLED_FWD_FROM value
-	 */
-	public void setUniqueIdRolledForwardFrom (java.lang.Long uniqueIdRolledForwardFrom) {
-		this.uniqueIdRolledForwardFrom = uniqueIdRolledForwardFrom;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: INSTR_OFFR_ID
-	 */
-	public org.unitime.timetable.model.InstructionalOffering getInstructionalOffering () {
-		return instructionalOffering;
-	}
-
-	/**
-	 * Set the value related to the column: INSTR_OFFR_ID
-	 * @param instructionalOffering the INSTR_OFFR_ID value
-	 */
-	public void setInstructionalOffering (org.unitime.timetable.model.InstructionalOffering instructionalOffering) {
-		this.instructionalOffering = instructionalOffering;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: schedulingSubparts
-	 */
-	public java.util.Set getSchedulingSubparts () {
-		return schedulingSubparts;
-	}
-
-	/**
-	 * Set the value related to the column: schedulingSubparts
-	 * @param schedulingSubparts the schedulingSubparts value
-	 */
-	public void setSchedulingSubparts (java.util.Set schedulingSubparts) {
-		this.schedulingSubparts = schedulingSubparts;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: courseReservations
-	 */
-	public java.util.Set getCourseReservations () {
-		return courseReservations;
-	}
-
-	/**
-	 * Set the value related to the column: courseReservations
-	 * @param courseReservations the courseReservations value
-	 */
-	public void setCourseReservations (java.util.Set courseReservations) {
-		this.courseReservations = courseReservations;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: individualReservations
-	 */
-	public java.util.Set getIndividualReservations () {
-		return individualReservations;
-	}
-
-	/**
-	 * Set the value related to the column: individualReservations
-	 * @param individualReservations the individualReservations value
-	 */
-	public void setIndividualReservations (java.util.Set individualReservations) {
-		this.individualReservations = individualReservations;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: studentGroupReservations
-	 */
-	public java.util.Set getStudentGroupReservations () {
-		return studentGroupReservations;
-	}
-
-	/**
-	 * Set the value related to the column: studentGroupReservations
-	 * @param studentGroupReservations the studentGroupReservations value
-	 */
-	public void setStudentGroupReservations (java.util.Set studentGroupReservations) {
-		this.studentGroupReservations = studentGroupReservations;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: acadAreaReservations
-	 */
-	public java.util.Set getAcadAreaReservations () {
-		return acadAreaReservations;
-	}
-
-	/**
-	 * Set the value related to the column: acadAreaReservations
-	 * @param acadAreaReservations the acadAreaReservations value
-	 */
-	public void setAcadAreaReservations (java.util.Set acadAreaReservations) {
-		this.acadAreaReservations = acadAreaReservations;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: posReservations
-	 */
-	public java.util.Set getPosReservations () {
-		return posReservations;
-	}
-
-	/**
-	 * Set the value related to the column: posReservations
-	 * @param posReservations the posReservations value
-	 */
-	public void setPosReservations (java.util.Set posReservations) {
-		this.posReservations = posReservations;
-	}
-
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.InstrOfferingConfig)) return false;
-		else {
-			org.unitime.timetable.model.InstrOfferingConfig instrOfferingConfig = (org.unitime.timetable.model.InstrOfferingConfig) obj;
-			if (null == this.getUniqueId() || null == instrOfferingConfig.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(instrOfferingConfig.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }

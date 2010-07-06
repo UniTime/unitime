@@ -65,29 +65,7 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
 	public CourseOffering (java.lang.Long uniqueId) {
 		super(uniqueId);
 	}
-
-	/**
-	 * Constructor for required fields
-	 */
-	public CourseOffering (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.SubjectArea subjectArea,
-		org.unitime.timetable.model.InstructionalOffering instructionalOffering,
-		java.lang.Boolean isControl,
-		java.lang.Integer nbrExpectedStudents,
-		java.lang.Integer demand,
-		java.lang.String courseNbr) {
-
-		super (
-			uniqueId,
-			subjectArea,
-			instructionalOffering,
-			isControl,
-			nbrExpectedStudents,
-			demand,
-			courseNbr);
-	}
-
+	
 /*[CONSTRUCTOR MARKER END]*/
 
 	public String getCourseName() {

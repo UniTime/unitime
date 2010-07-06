@@ -1,8 +1,8 @@
 /*
- * UniTime 3.1 (University Timetabling Application)
- * Copyright (C) 2008, UniTime LLC, and individual contributors
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -21,166 +21,72 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import org.unitime.timetable.model.CharacteristicReservation;
+import org.unitime.timetable.model.Reservation;
 
-/**
- * This is an object that contains data related to the  table.
- * Do not modify this class because it will be overwritten if the configuration file
- * related to this class is modified.
- *
- * @hibernate.class
- *  table=""
- */
+public abstract class BaseCharacteristicReservation extends Reservation implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-public abstract class BaseCharacteristicReservation extends org.unitime.timetable.model.Reservation  implements Serializable {
+	private Integer iReserved;
+	private Integer iRequested;
+	private Integer iPriorEnrollment;
+	private Integer iProjectedEnrollment;
 
-	public static String REF = "CharacteristicReservation";
+
 	public static String PROP_RESERVED = "reserved";
 	public static String PROP_REQUESTED = "requested";
 	public static String PROP_PRIOR_ENROLLMENT = "priorEnrollment";
 	public static String PROP_PROJECTED_ENROLLMENT = "projectedEnrollment";
 
-
-	// constructors
-	public BaseCharacteristicReservation () {
+	public BaseCharacteristicReservation() {
 		initialize();
 	}
 
-	/**
-	 * Constructor for primary key
-	 */
-	public BaseCharacteristicReservation (java.lang.Long uniqueId) {
-		super(uniqueId);
+	public BaseCharacteristicReservation(Long uniqueId) {
+		setUniqueId(uniqueId);
+		initialize();
 	}
 
-	/**
-	 * Constructor for required fields
-	 */
-	public BaseCharacteristicReservation (
-		java.lang.Long uniqueId,
-		org.unitime.timetable.model.ReservationType reservationType,
-		java.lang.String ownerClassId,
-		java.lang.Long owner,
-		java.lang.Integer priority) {
+	protected void initialize() {}
 
-		super (
-			uniqueId,
-			reservationType,
-			ownerClassId,
-			owner,
-			priority);
+	public Integer getReserved() { return iReserved; }
+	public void setReserved(Integer reserved) { iReserved = reserved; }
+
+	public Integer getRequested() { return iRequested; }
+	public void setRequested(Integer requested) { iRequested = requested; }
+
+	public Integer getPriorEnrollment() { return iPriorEnrollment; }
+	public void setPriorEnrollment(Integer priorEnrollment) { iPriorEnrollment = priorEnrollment; }
+
+	public Integer getProjectedEnrollment() { return iProjectedEnrollment; }
+	public void setProjectedEnrollment(Integer projectedEnrollment) { iProjectedEnrollment = projectedEnrollment; }
+
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof CharacteristicReservation)) return false;
+		if (getUniqueId() == null || ((CharacteristicReservation)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((CharacteristicReservation)o).getUniqueId());
 	}
 
-
-
-	private int hashCode = Integer.MIN_VALUE;
-
-
-	// fields
-	private java.lang.Integer reserved;
-	private java.lang.Integer requested;
-	private java.lang.Integer priorEnrollment;
-	private java.lang.Integer projectedEnrollment;
-
-
-
-
-
-
-	/**
-	 * Return the value associated with the column: RESERVED
-	 */
-	public java.lang.Integer getReserved () {
-		return reserved;
+	public int hashCode() {
+		if (getUniqueId() == null) return super.hashCode();
+		return getUniqueId().hashCode();
 	}
 
-	/**
-	 * Set the value related to the column: RESERVED
-	 * @param reserved the RESERVED value
-	 */
-	public void setReserved (java.lang.Integer reserved) {
-		this.reserved = reserved;
+	public String toString() {
+		return "CharacteristicReservation["+getUniqueId()+"]";
 	}
 
-
-
-	/**
-	 * Return the value associated with the column: REQUESTED
-	 */
-	public java.lang.Integer getRequested () {
-		return requested;
+	public String toDebugString() {
+		return "CharacteristicReservation[" +
+			"\n	Owner: " + getOwner() +
+			"\n	OwnerClassId: " + getOwnerClassId() +
+			"\n	PriorEnrollment: " + getPriorEnrollment() +
+			"\n	Priority: " + getPriority() +
+			"\n	ProjectedEnrollment: " + getProjectedEnrollment() +
+			"\n	Requested: " + getRequested() +
+			"\n	ReservationType: " + getReservationType() +
+			"\n	Reserved: " + getReserved() +
+			"\n	UniqueId: " + getUniqueId() +
+			"]";
 	}
-
-	/**
-	 * Set the value related to the column: REQUESTED
-	 * @param requested the REQUESTED value
-	 */
-	public void setRequested (java.lang.Integer requested) {
-		this.requested = requested;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: PRIOR_ENROLLMENT
-	 */
-	public java.lang.Integer getPriorEnrollment () {
-		return priorEnrollment;
-	}
-
-	/**
-	 * Set the value related to the column: PRIOR_ENROLLMENT
-	 * @param priorEnrollment the PRIOR_ENROLLMENT value
-	 */
-	public void setPriorEnrollment (java.lang.Integer priorEnrollment) {
-		this.priorEnrollment = priorEnrollment;
-	}
-
-
-
-	/**
-	 * Return the value associated with the column: PROJECTED_ENROLLMENT
-	 */
-	public java.lang.Integer getProjectedEnrollment () {
-		return projectedEnrollment;
-	}
-
-	/**
-	 * Set the value related to the column: PROJECTED_ENROLLMENT
-	 * @param projectedEnrollment the PROJECTED_ENROLLMENT value
-	 */
-	public void setProjectedEnrollment (java.lang.Integer projectedEnrollment) {
-		this.projectedEnrollment = projectedEnrollment;
-	}
-
-
-
-
-
-	public boolean equals (Object obj) {
-		if (null == obj) return false;
-		if (!(obj instanceof org.unitime.timetable.model.CharacteristicReservation)) return false;
-		else {
-			org.unitime.timetable.model.CharacteristicReservation characteristicReservation = (org.unitime.timetable.model.CharacteristicReservation) obj;
-			if (null == this.getUniqueId() || null == characteristicReservation.getUniqueId()) return false;
-			else return (this.getUniqueId().equals(characteristicReservation.getUniqueId()));
-		}
-	}
-
-	public int hashCode () {
-		if (Integer.MIN_VALUE == this.hashCode) {
-			if (null == this.getUniqueId()) return super.hashCode();
-			else {
-				String hashStr = this.getClass().getName() + ":" + this.getUniqueId().hashCode();
-				this.hashCode = hashStr.hashCode();
-			}
-		}
-		return this.hashCode;
-	}
-
-
-	public String toString () {
-		return super.toString();
-	}
-
-
 }
