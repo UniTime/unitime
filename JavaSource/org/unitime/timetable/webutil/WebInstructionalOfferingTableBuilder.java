@@ -25,6 +25,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Set;
@@ -33,8 +34,6 @@ import java.util.Vector;
 
 import javax.servlet.http.HttpSession;
 import javax.servlet.jsp.JspWriter;
-
-import net.sf.cpsolver.coursett.model.TimeLocation.IntEnumeration;
 
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
@@ -1084,9 +1083,9 @@ public class WebInstructionalOfferingTableBuilder {
     			if (info!=null) {
     				sb.append("<font color='"+(isEditable?PreferenceLevel.int2color(info.getTimePreference()):disabledColor)+"'>");
     			}
-   				IntEnumeration e = a.getTimeLocation().getDays();
+   				Enumeration<Integer> e = a.getTimeLocation().getDays();
    				while (e.hasMoreElements()){
-   					sb.append(Constants.DAY_NAMES_SHORT[(int)e.nextInt()]);
+   					sb.append(Constants.DAY_NAMES_SHORT[e.nextElement()]);
    				}
    				sb.append(" ");
    				sb.append(a.getTimeLocation().getStartTimeHeader());

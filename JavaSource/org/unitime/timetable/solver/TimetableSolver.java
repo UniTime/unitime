@@ -146,7 +146,7 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
 		return iLoadedDate;
 	}
 	
-	public net.sf.cpsolver.ifs.solution.Solution currentSolution() {
+	public net.sf.cpsolver.ifs.solution.Solution<Lecture, Placement> currentSolution() {
 		activateIfNeeded();
 		return super.currentSolution();
 	}
@@ -357,8 +357,7 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
     	Progress iProgress = null;
     	public ReloadingDoneCallback() {
     		iSolutionId = getProperties().getProperty("General.SolutionId");
-    		for (Enumeration e=currentSolution().getModel().variables().elements();e.hasMoreElements();) {
-    			Lecture lecture = (Lecture)e.nextElement();
+    		for (Lecture lecture: currentSolution().getModel().variables()) {
     			if (lecture.getAssignment()!=null)
     				iCurrentAssignmentTable.put(lecture.getClassId(),lecture.getAssignment());
     			if (lecture.getBestAssignment()!=null)
@@ -368,17 +367,15 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
     		}
     	}
     	private Lecture getLecture(Long classId) {
-    		for (Enumeration e=currentSolution().getModel().variables().elements();e.hasMoreElements();) {
-    			Lecture l = (Lecture)e.nextElement();
-    			if (l.getClassId().equals(classId)) 
-    				return l;
+    		for (Lecture lecture: currentSolution().getModel().variables()) {
+    			if (lecture.getClassId().equals(classId)) 
+    				return lecture;
     		}
     		return null;
     	}
     	private Placement getPlacement(Lecture lecture, Placement placement) {
     		TimeLocation time = null;
-    		for (Enumeration f=lecture.timeLocations().elements();f.hasMoreElements();) {
-    			TimeLocation t = (TimeLocation)f.nextElement();
+    		for (TimeLocation t: lecture.timeLocations()) {
     			if (placement.getTimeLocation().equals(t)) {
     				time = t; break;
     			}
@@ -388,8 +385,7 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
     			return null;
     		}
     		Vector rooms = new Vector();
-    		for (Enumeration f=lecture.roomLocations().elements();f.hasMoreElements();) {
-    			RoomLocation r = (RoomLocation)f.nextElement();
+    		for (RoomLocation r: lecture.roomLocations()) {
     			if (placement.isMultiRoom() && placement.getRoomLocations().contains(r)) {
     				rooms.add(r);
     			}
@@ -422,8 +418,7 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
             }
     	}
     	private void unassignAll() {
-    		for (Enumeration e=currentSolution().getModel().variables().elements();e.hasMoreElements();) {
-    			Lecture lecture = (Lecture)e.nextElement();
+    		for (Lecture lecture: currentSolution().getModel().variables()) {
     			if (lecture.getAssignment()!=null)
     				lecture.unassign(0);
     		}
@@ -579,20 +574,17 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
     	synchronized (currentSolution()) {
     		TimetableModel model = (TimetableModel)currentSolution().getModel();
     		if (resourceType==TimetableGridModel.sResourceTypeRoom) {
-    			for (Enumeration e=model.getRoomConstraints().elements();e.hasMoreElements();) {
-    				RoomConstraint rc = (RoomConstraint)e.nextElement();
+    			for (RoomConstraint rc: model.getRoomConstraints()) {
     				if (!match(findString, rc.getName())) continue;
     				models.add(new SolverGridModel(this,rc,startDay,bgMode));
     			}
     		} else if (resourceType==TimetableGridModel.sResourceTypeInstructor) {
-    			for (Enumeration e=model.getInstructorConstraints().elements();e.hasMoreElements();) {
-    				InstructorConstraint ic = (InstructorConstraint)e.nextElement();
+    			for (InstructorConstraint ic: model.getInstructorConstraints()) {
     				if (!match(findString, ic.getName())) continue;
     				models.add(new SolverGridModel(this,ic,startDay,bgMode));
     			}
     		} else if (resourceType==TimetableGridModel.sResourceTypeDepartment) {
-    			for (Enumeration e=model.getDepartmentSpreadConstraints().elements();e.hasMoreElements();) {
-    				DepartmentSpreadConstraint dc = (DepartmentSpreadConstraint)e.nextElement();
+    			for (DepartmentSpreadConstraint dc: model.getDepartmentSpreadConstraints()) {
     				if (!match(findString, dc.getName())) continue;
     				models.add(new SolverGridModel(this,dc,startDay,bgMode));
     			}
@@ -604,8 +596,7 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
     public ClassAssignmentDetails getClassAssignmentDetails(Long classId, boolean includeConstraints) {
     	synchronized (currentSolution()) {
     		TimetableModel model = (TimetableModel)currentSolution().getModel();
-    		for (Enumeration e=model.variables().elements();e.hasMoreElements();) {
-    			Lecture lecture = (Lecture)e.nextElement();
+    		for (Lecture lecture: model.variables()) {
     			if (lecture.getClassId().equals(classId))
     				return new ClassAssignmentDetails(this,lecture,includeConstraints);
     		}
@@ -634,8 +625,7 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
     public void assign(Collection hints) {
 		synchronized (currentSolution()) {
 			Hashtable initialAssignments = new Hashtable();
-			for (Enumeration e=currentSolution().getModel().assignedVariables().elements();e.hasMoreElements();) {
-				Lecture lec = (Lecture)e.nextElement();
+			for (Lecture lec: currentSolution().getModel().assignedVariables()) {
 				initialAssignments.put(lec,lec.getAssignment());
 			}
 			AssignmentRecord record = new AssignmentRecord(this);
@@ -654,8 +644,7 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
                 Placement p = hint.getPlacement((TimetableModel)currentSolution().getModel());
                 if (p!=null) p.variable().assign(0,p);
             }
-			for (Enumeration e=currentSolution().getModel().unassignedVariables().elements();e.hasMoreElements();) {
-				Lecture lec = (Lecture)e.nextElement();
+			for (Lecture lec: currentSolution().getModel().unassignedVariables()) {
 				Placement p = (Placement)initialAssignments.get(lec);
 				if (p!=null) { 
 					record.add(p,null);
@@ -675,8 +664,7 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
 				Hint hint = (Hint)i.next();
 				Placement p = hint.getPlacement((TimetableModel)currentSolution().getModel());
 				if (p==null) continue;
-		        for (Enumeration c=p.variable().hardConstraints().elements(); c.hasMoreElements();) {
-		            Constraint constraint = (Constraint)c.nextElement();
+		        for (Constraint constraint: p.variable().hardConstraints()) {
 		            HashSet conflicts = new HashSet();
 		            constraint.computeConflicts(p, conflicts);
 		            if (conflicts!=null && !conflicts.isEmpty()) {
@@ -836,8 +824,7 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
     public Assignment getAssignment(Long classId) {
     	synchronized (currentSolution()) {
     		Lecture lecture = null;
-    		for (Enumeration e=currentSolution().getModel().variables().elements();e.hasMoreElements();) {
-    			Lecture l = (Lecture)e.nextElement();
+    		for (Lecture l: currentSolution().getModel().variables()) {
     			if (l.getClassId().equals(classId)) {
     				lecture = l; break;
     			}
@@ -856,8 +843,7 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
     		assignment.setBreakTime(placement.getTimeLocation().getBreakTime());
     		HashSet rooms = new HashSet();
     		if (placement.isMultiRoom()) {
-    			for (Enumeration e=placement.getRoomLocations().elements();e.hasMoreElements();) {
-    				RoomLocation r = (RoomLocation)e.nextElement();
+    			for (RoomLocation r: placement.getRoomLocations()) {
     				Location room = (new LocationDAO()).get(r.getId());
     				if (room!=null) rooms.add(room);
     			}
@@ -869,8 +855,7 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
     		TimePattern pattern = (new TimePatternDAO()).get(placement.getTimeLocation().getTimePatternId());
     		assignment.setTimePattern(pattern);
     		HashSet instructors = new HashSet();
-    		for (Enumeration e=lecture.getInstructorConstraints().elements();e.hasMoreElements();) {
-    			InstructorConstraint ic = (InstructorConstraint)e.nextElement();
+    		for (InstructorConstraint ic: lecture.getInstructorConstraints()) {
     			DepartmentalInstructor instructor = null;
     			if (ic.getResourceId()!=null) {
 					instructor = (new DepartmentalInstructorDAO()).get(ic.getResourceId());
@@ -893,8 +878,7 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
     public AssignmentPreferenceInfo getAssignmentInfo(Long classId) {
     	synchronized (currentSolution()) {
     		Lecture lecture = null;
-    		for (Enumeration e=currentSolution().getModel().variables().elements();e.hasMoreElements();) {
-    			Lecture l = (Lecture)e.nextElement();
+    		for (Lecture l: currentSolution().getModel().variables()) {
     			if (l.getClassId().equals(classId)) {
     				lecture = l; break;
     			}
@@ -951,8 +935,7 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
 	public Vector getChangesToInitial() {
 		Vector ret = new Vector();
 		synchronized (currentSolution()) {
-			for (Enumeration e=currentSolution().getModel().variables().elements();e.hasMoreElements();) {
-				Lecture lecture = (Lecture)e.nextElement();
+			for (Lecture lecture: currentSolution().getModel().variables()) {
 				if (!ToolBox.equals(lecture.getInitialAssignment(),lecture.getAssignment())) {
 					RecordedAssignment a = new RecordedAssignment(this,(Placement)lecture.getInitialAssignment(),(Placement)lecture.getAssignment()); 
 					if (lecture.getInitialAssignment()!=null) {
@@ -971,8 +954,7 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
 	public Vector getAssignedClasses() {
 		Vector ret = new Vector();
 		synchronized (currentSolution()) {
-			for (Enumeration e=currentSolution().getModel().assignedVariables().elements();e.hasMoreElements();) {
-				Lecture lecture = (Lecture)e.nextElement();
+			for (Lecture lecture: currentSolution().getModel().assignedVariables()) {
 				ret.addElement(new ClassAssignmentDetails(this,lecture,false));
 			}
 		}
@@ -982,8 +964,7 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
 	public Vector getChangesToBest() {
 		Vector ret = new Vector();
 		synchronized (currentSolution()) {
-			for (Enumeration e=currentSolution().getModel().variables().elements();e.hasMoreElements();) {
-				Lecture lecture = (Lecture)e.nextElement();
+			for (Lecture lecture: currentSolution().getModel().variables()) {
 				if (!ToolBox.equals(lecture.getBestAssignment(),lecture.getAssignment())) {
 					RecordedAssignment a = new RecordedAssignment(this,(Placement)lecture.getBestAssignment(),(Placement)lecture.getAssignment());
 					if (lecture.getBestAssignment()!=null) {
@@ -1024,8 +1005,7 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
 				for (Iterator i=solution.getAssignments().iterator();i.hasNext();) {
 					Assignment assignment = (Assignment)i.next();
 					Lecture lecture = null;
-					for (Enumeration e=currentSolution().getModel().variables().elements();e.hasMoreElements();) {
-						Lecture l = (Lecture)e.nextElement();
+					for (Lecture l: currentSolution().getModel().variables()) {
 						if (l.getClassId().equals(assignment.getClassId())) {
 							lecture = l; break;
 						}
@@ -1044,8 +1024,7 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
 						ret.addElement(a);
 					}
 				}
-				for (Enumeration e=currentSolution().getModel().variables().elements();e.hasMoreElements();) {
-					Lecture lecture = (Lecture)e.nextElement();
+				for (Lecture lecture: currentSolution().getModel().variables()) {
 					if (ids.contains(lecture.getClassId()) || lecture.getAssignment()==null) continue;
 					if (!ownerId.equals(lecture.getSolverGroupId())) continue;
 					Placement placement = (Placement)lecture.getAssignment();

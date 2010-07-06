@@ -20,7 +20,6 @@
 package org.unitime.timetable.solver.ui;
 
 import java.io.Serializable;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -43,10 +42,9 @@ public class PerturbationReport implements Serializable {
 	
 	public PerturbationReport(Solver solver) {
 		TimetableModel model = (TimetableModel)solver.currentSolution().getModel();
-		for (Enumeration e=model.perturbVariables().elements();e.hasMoreElements();) {
-			Lecture lecture = (Lecture)e.nextElement();
-			Placement placement = (Placement)lecture.getAssignment();
-			Placement initial = (Placement)lecture.getInitialAssignment();
+		for (Lecture lecture: model.perturbVariables()) {
+			Placement placement = lecture.getAssignment();
+			Placement initial = lecture.getInitialAssignment();
 			if (placement==null || initial==null || placement.equals(initial)) continue;
 			iGroups.add(new PerturbationGroup(solver,lecture));
 		}
@@ -128,10 +126,8 @@ public class PerturbationReport implements Serializable {
 	            if (!initialStudentConflicts.contains(e.next())) newStudentConflicts++;
 
 
-	       	for (Enumeration e=lecture.getInstructorConstraints().elements();e.hasMoreElements();) {
-	       		InstructorConstraint ic = (InstructorConstraint)e.nextElement();
-	       		for (Enumeration f=ic.variables().elements();f.hasMoreElements();) {
-	       			Lecture lect = (Lecture)f.nextElement();
+	       	for (InstructorConstraint ic: lecture.getInstructorConstraints()) {
+	       		for (Lecture lect: ic.variables()) {
 	       			if (lect.equals(lecture)) continue;
 	       			int initialPreference = (lect.getInitialAssignment()==null?PreferenceLevel.sIntLevelNeutral:ic.getDistancePreference(initialPlacement,(Placement)lect.getInitialAssignment()));
 	       			int assignedPreference = (lect.getAssignment()==null?PreferenceLevel.sIntLevelNeutral:ic.getDistancePreference(assignedPlacement,(Placement)lect.getAssignment()));

@@ -21,8 +21,8 @@ package org.unitime.timetable.solver.interactive;
 
 import java.io.Serializable;
 import java.util.Comparator;
-import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Vector;
 
 import javax.servlet.http.HttpSession;
@@ -35,7 +35,7 @@ import net.sf.cpsolver.coursett.model.Lecture;
 import net.sf.cpsolver.coursett.model.Placement;
 import net.sf.cpsolver.coursett.model.RoomLocation;
 import net.sf.cpsolver.coursett.model.TimeLocation;
-import net.sf.cpsolver.ifs.model.Model;
+import net.sf.cpsolver.coursett.model.TimetableModel;
 import net.sf.cpsolver.ifs.solver.Solver;
 
 /**
@@ -46,12 +46,12 @@ public class Hint implements Serializable {
 	private Long iClassId;
 	private int iDays;
 	private int iStartSlot;
-	private Vector iRoomIds;
+	private List<Long> iRoomIds;
 	private Long iPatternId;
 	private AssignmentPreferenceInfo iInfo = null;
 	private ClassAssignmentDetails iDetails = null;
-	public Hint(Long classId, int days, int startSlot, Vector roomIds, Long patternId) {
-		iClassId = classId; iDays = days; iStartSlot = startSlot; iRoomIds = new Vector(1); iRoomIds = new Vector(roomIds); iPatternId = patternId;
+	public Hint(Long classId, int days, int startSlot, List<Long> roomIds, Long patternId) {
+		iClassId = classId; iDays = days; iStartSlot = startSlot; iRoomIds = roomIds; iPatternId = patternId;
 	}
 	public Hint(Solver solver, Placement placement) {
 		this(solver, placement, false);
@@ -60,23 +60,21 @@ public class Hint implements Serializable {
 		iClassId = ((Lecture)placement.variable()).getClassId();
 		iDays = placement.getTimeLocation().getDayCode();
 		iStartSlot = placement.getTimeLocation().getStartSlot();
-		iRoomIds = new Vector(placement.getRoomIds());
+		iRoomIds = placement.getRoomIds();
 		iPatternId = placement.getTimeLocation().getTimePatternId();
 		if (populateInfo && solver!=null)
 			iInfo = new AssignmentPreferenceInfo(solver, placement, false);
-		if (((Lecture)placement.variable()).isCommitted() && solver!=null)
-			iDetails = new ClassAssignmentDetails(solver,(Lecture)placement.variable(),placement,false);
+		if (placement.variable().isCommitted() && solver!=null)
+			iDetails = new ClassAssignmentDetails(solver, placement.variable(),placement,false);
 	}
-	public Placement getPlacement(Model model) {
+	public Placement getPlacement(TimetableModel model) {
 		return getPlacement(model, true);
 	}
-	public Placement getPlacement(Model model, boolean checkValidity) {
-		for (Enumeration e1=model.variables().elements();e1.hasMoreElements();) {
-			Lecture lecture = (Lecture)e1.nextElement();
+	public Placement getPlacement(TimetableModel model, boolean checkValidity) {
+		for (Lecture lecture: model.variables()) {
 			if (!lecture.getClassId().equals(iClassId)) continue;
     		TimeLocation timeLocation = null;
-        	for (Enumeration e2=lecture.timeLocations().elements();e2.hasMoreElements();) {
-        		TimeLocation t = (TimeLocation)e2.nextElement();
+        	for (TimeLocation t: lecture.timeLocations()) {
         		if (t.getDayCode()!=iDays) continue;
         		if (t.getStartSlot()!=iStartSlot) continue;
         		if (!t.getTimePatternId().equals(iPatternId)) continue;
@@ -84,10 +82,8 @@ public class Hint implements Serializable {
         	}
         	Vector roomLocations = new Vector();
         	if (lecture.getNrRooms()>0) {
-            	for (Enumeration e2=iRoomIds.elements();e2.hasMoreElements();) {
-    				Long roomId = (Long)e2.nextElement();
-                	for (Enumeration e3=lecture.roomLocations().elements();e3.hasMoreElements();) {
-                		RoomLocation r = (RoomLocation)e3.nextElement();
+            	for (Long roomId: iRoomIds) {
+                	for (RoomLocation r: lecture.roomLocations()) {
                 		if (r.getId().equals(roomId))
                 			roomLocations.add(r);
                 	}
@@ -118,13 +114,13 @@ public class Hint implements Serializable {
 		return null;
 	}
 	public AssignmentPreferenceInfo getInfo(Solver solver) {
-		Placement p = getPlacement(solver.currentSolution().getModel());
+		Placement p = getPlacement((TimetableModel)solver.currentSolution().getModel());
 		if (p==null) return null;
 		return new AssignmentPreferenceInfo(solver, p, false);
 	}
 	
 	public String getNotValidReason(Solver solver) {
-		Placement p = getPlacement(solver.currentSolution().getModel(), false);
+		Placement p = getPlacement((TimetableModel)solver.currentSolution().getModel(), false);
 		if (p==null) return "Selected placement is not valid (room or instructor not avaiable).";
 		if (p.isValid()) return "Selected placement is valid.";
 		String reason = p.getNotValidReason();
@@ -133,7 +129,7 @@ public class Hint implements Serializable {
 	public Long getClassId() { return iClassId; }
 	public int getDays() { return iDays; }
 	public int getStartSlot() { return iStartSlot; }
-	public Vector getRoomIds() { return iRoomIds; }
+	public List<Long> getRoomIds() { return iRoomIds; }
 	public Long getPatternId() { return iPatternId; }
 	
 	public boolean equals(Object o) {
@@ -175,8 +171,7 @@ public class Hint implements Serializable {
     	element.addAttribute("days", String.valueOf(iDays));
     	element.addAttribute("start", String.valueOf(iStartSlot));
     	if (iRoomIds!=null) {
-    		for (Enumeration e=iRoomIds.elements();e.hasMoreElements();) {
-                Long roomId = (Long)e.nextElement();
+    		for (Long roomId: iRoomIds) {
     			if (roomId!=null)
     				element.addElement("room").addAttribute("id", roomId.toString());
     		}

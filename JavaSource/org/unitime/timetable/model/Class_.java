@@ -34,7 +34,6 @@ import java.util.Vector;
 
 import javax.servlet.http.HttpSession;
 
-import net.sf.cpsolver.coursett.model.TimeLocation.IntEnumeration;
 import net.sf.cpsolver.coursett.preference.MinMaxPreferenceCombination;
 import net.sf.cpsolver.coursett.preference.PreferenceCombination;
 
@@ -1580,9 +1579,9 @@ public class Class_ extends BaseClass_ {
 			Debug.error(e);
 		}
 		if (a!=null) {
-				IntEnumeration e = a.getTimeLocation().getDays();
+				Enumeration<Integer> e = a.getTimeLocation().getDays();
 				while (e.hasMoreElements()){
-					sb.append(Constants.DAY_NAMES_SHORT[(int)e.nextInt()]);
+					sb.append(Constants.DAY_NAMES_SHORT[e.nextElement()]);
 				}
 				sb.append(" ");
 				sb.append(a.getTimeLocation().getStartTimeHeader());

@@ -21,7 +21,6 @@ package org.unitime.timetable.solver.ui;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Set;
@@ -44,8 +43,7 @@ public class SameSubpartBalancingReport implements Serializable {
 	
 	public SameSubpartBalancingReport(Solver solver) {
 		TimetableModel model = (TimetableModel)solver.currentSolution().getModel();
-		for (Enumeration e=model.getSpreadConstraints().elements();e.hasMoreElements();) {
-			SpreadConstraint spread = (SpreadConstraint)e.nextElement();
+		for (SpreadConstraint spread: model.getSpreadConstraints()) {
 			if (spread.getPenalty()==0) continue;
 			iGroups.add(new SameSubpartBalancingGroup(solver,spread));
 		}

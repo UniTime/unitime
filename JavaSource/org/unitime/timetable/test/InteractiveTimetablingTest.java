@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.Locale;
 
 import org.unitime.timetable.solver.interactive.Suggestion;
@@ -66,8 +65,7 @@ public class InteractiveTimetablingTest {
             long solutions1 = 0, solutions2 = 0;
             double time1 = 0, time2 = 0;
             int timeout = 0;
-            for (Enumeration e=model.variables().elements();e.hasMoreElements();) {
-            	Lecture lect = (Lecture)e.nextElement();
+            for (Lecture lect: model.variables()) {
             	SuggestionsModel m1 = new SuggestionsModel();
                 m1.setDepth(depth);
                 m1.setTimeout(5000);

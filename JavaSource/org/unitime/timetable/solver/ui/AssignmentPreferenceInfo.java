@@ -20,7 +20,6 @@
 package org.unitime.timetable.solver.ui;
 
 import java.io.Serializable;
-import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
@@ -110,8 +109,7 @@ public class AssignmentPreferenceInfo implements TimetableInfo, Serializable {
 		else
 			setTimePreference(placement.getTimeLocation().getPreference());
 		if (placement.isMultiRoom()) {
-			for (Enumeration e=placement.getRoomLocations().elements();e.hasMoreElements();) {
-				RoomLocation r = (RoomLocation)e.nextElement();
+			for (RoomLocation r: placement.getRoomLocations()) {
 				if (lecture.nrRoomLocations()==lecture.getNrRooms() && r.getPreference()==0)
 					setRoomPreference(r.getId(),PreferenceLevel.sIntLevelRequired);
 				else
@@ -127,8 +125,7 @@ public class AssignmentPreferenceInfo implements TimetableInfo, Serializable {
 			int nrSameRoomPlacementsNoConf = 0;
 			int nrSameTimePlacementsNoConf = 0;
 			int nrPlacementsNoConf = 0;
-			for (Enumeration e=lecture.values().elements();e.hasMoreElements();) {
-				Placement p = (Placement)e.nextElement();
+			for (Placement p: lecture.values()) {
 				if (p.isHard()) continue;
 				if (p.equals(placement)) continue;
 				if (!lecture.getModel().conflictValues(p).isEmpty()) continue;
@@ -144,8 +141,7 @@ public class AssignmentPreferenceInfo implements TimetableInfo, Serializable {
 			setNrSameTimePlacementsNoConf(nrSameTimePlacementsNoConf);
 		}
 		int btbInstructorPref = 0;
-       	for (Enumeration e=lecture.getInstructorConstraints().elements();e.hasMoreElements();) {
-       		InstructorConstraint ic = (InstructorConstraint)e.nextElement();
+       	for (InstructorConstraint ic: lecture.getInstructorConstraints()) {
        		btbInstructorPref += ic.getPreferenceCombination(placement);
        	}
        	setBtbInstructorPreference(btbInstructorPref);
@@ -159,8 +155,7 @@ public class AssignmentPreferenceInfo implements TimetableInfo, Serializable {
 		iMinRoomSize = lecture.minRoomSize();
 		iUselessHalfHours = placement.nrUselessHalfHours();
 		DepartmentSpreadConstraint deptConstraint = null;
-		for (Enumeration e=lecture.constraints().elements();e.hasMoreElements();) {
-			Constraint c = (Constraint)e.nextElement();
+		for (Constraint c: lecture.constraints()) {
 			if (c instanceof DepartmentSpreadConstraint)
 				deptConstraint = (DepartmentSpreadConstraint)c;
 			if (c instanceof GroupConstraint)

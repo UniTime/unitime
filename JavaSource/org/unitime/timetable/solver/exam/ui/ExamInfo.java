@@ -72,8 +72,7 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
         iSeatingType = (exam.hasAltSeating()?Exam.sSeatingTypeExam:Exam.sSeatingTypeNormal);
         if (!exam.getOwners().isEmpty()) {
             iSections = new Vector();
-            for (Enumeration e=exam.getOwners().elements();e.hasMoreElements();) {
-                net.sf.cpsolver.exam.model.ExamOwner ecs = (net.sf.cpsolver.exam.model.ExamOwner)e.nextElement();
+            for (net.sf.cpsolver.exam.model.ExamOwner ecs: exam.getOwners()) {
                 HashSet<Long> studentIds = new HashSet<Long>();
                 for (Iterator i=ecs.getStudents().iterator();i.hasNext();) 
                     studentIds.add(((ExamStudent)i.next()).getId());
@@ -81,8 +80,7 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
             }
         }
         iInstructors = new Vector();
-        for (Enumeration e=exam.constraints().elements();e.hasMoreElements();) {
-            Constraint c = (Constraint)e.nextElement();
+        for (Constraint c: exam.constraints()) {
             if (c instanceof ExamInstructor) {
                 ExamInstructor instructor = (ExamInstructor)c;
                 iInstructors.add(new ExamInstructorInfo(instructor.getId(), null, instructor.getName()));

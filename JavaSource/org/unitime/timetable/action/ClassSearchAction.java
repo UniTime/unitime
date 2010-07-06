@@ -21,7 +21,6 @@ package org.unitime.timetable.action;
 
 import java.io.File;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -552,8 +551,7 @@ public class ClassSearchAction extends LookupDispatchAction {
 						}
 						boolean filterLine = true;
 						if (p.isMultiRoom()) {
-							for (Enumeration e=p.getRoomLocations().elements();e.hasMoreElements();) {
-								RoomLocation r = (RoomLocation)e.nextElement();
+							for (RoomLocation r: p.getRoomLocations()) {
 								if (r.getName().toUpperCase().indexOf(filterAssignedRoom)>=0) {
 									filterLine = false;
 									break;

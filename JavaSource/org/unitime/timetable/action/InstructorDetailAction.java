@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.action;
 
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -28,8 +29,6 @@ import java.util.Vector;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-
-import net.sf.cpsolver.coursett.model.TimeLocation.IntEnumeration;
 
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
@@ -288,9 +287,9 @@ public class InstructorDetailAction extends PreferencesAction {
 		    		if (a!=null) {
 		    			if (info!=null)
 		    				assignedTime += "<font color='"+PreferenceLevel.int2color(info.getTimePreference())+"'>";
-		    			IntEnumeration e = a.getTimeLocation().getDays();
+		    			Enumeration<Integer> e = a.getTimeLocation().getDays();
 		   				while (e.hasMoreElements()){
-		   					assignedTime += Constants.DAY_NAMES_SHORT[(int)e.nextInt()];
+		   					assignedTime += Constants.DAY_NAMES_SHORT[e.nextElement()];
 		   				}
 		   				assignedTime += " ";
 		   				assignedTime += a.getTimeLocation().getStartTimeHeader();

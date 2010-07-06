@@ -209,12 +209,12 @@ public class CsvClassAssignmentExport {
                 StringBuffer roomSb = new StringBuffer();
                 StringBuffer bldgSb = new StringBuffer();
                 if (placement.isMultiRoom()) {
-                    for (Enumeration e=placement.getRoomLocations().elements();e.hasMoreElements();) {
-                        RoomLocation r = (RoomLocation)e.nextElement();
+                    for (Iterator<RoomLocation> e=placement.getRoomLocations().iterator();e.hasNext();) {
+                        RoomLocation r = e.next();
                         String room = (placement.getRoomLocation()==null?"":placement.getRoomLocation().getName());
                         bldgSb.append(room.substring(0,room.lastIndexOf(' ')));
                         roomSb.append(room.substring(room.lastIndexOf(' ')+1));
-                        if (e.hasMoreElements()) {
+                        if (e.hasNext()) {
                             roomSb.append('\n');
                             bldgSb.append('\n');
                         }

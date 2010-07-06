@@ -289,8 +289,7 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
         Progress iProgress = null;
         public ReloadingDoneCallback() {
             iSolutionId = getProperties().getProperty("General.SolutionId");
-            for (Enumeration e=currentSolution().getModel().variables().elements();e.hasMoreElements();) {
-                Request request = (Request)e.nextElement();
+            for (Request request: currentSolution().getModel().variables()) {
                 if (request.getAssignment()!=null)
                     iCurrentAssignmentTable.put(request.getId(),request.getAssignment());
                 if (request.getBestAssignment()!=null)
@@ -300,8 +299,7 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
             }
         }
         private Request getRequest(long id) {
-            for (Enumeration e=currentSolution().getModel().variables().elements();e.hasMoreElements();) {
-                Request request = (Request)e.nextElement();
+            for (Request request: currentSolution().getModel().variables()) {
                 if (request.getId()==id) return request;
             }
             return null;
@@ -344,8 +342,7 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
             }
         }
         private void unassignAll() {
-            for (Enumeration e=currentSolution().getModel().variables().elements();e.hasMoreElements();) {
-                Request request = (Request)e.nextElement();
+            for (Request request: currentSolution().getModel().variables()) {
                 if (request.getAssignment()!=null) request.unassign(0);
             }
         }
@@ -523,8 +520,7 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
     
     public void clear() {
         synchronized (currentSolution()) {
-            for (Enumeration e=currentSolution().getModel().variables().elements();e.hasMoreElements();) {
-                Request request = (Request)e.nextElement();
+            for (Request request: currentSolution().getModel().variables()) {
                 if (request.getAssignment()!=null) request.unassign(0);
             }
             currentSolution().clearBest();
@@ -535,7 +531,7 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
         return getProperties().getPropertyLong("General.SessionId",null);
     }
     
-    public Solution currentSolution() {
+    public Solution<Request, Enrollment> currentSolution() {
         activateIfNeeded();
         return super.currentSolution();
     }
