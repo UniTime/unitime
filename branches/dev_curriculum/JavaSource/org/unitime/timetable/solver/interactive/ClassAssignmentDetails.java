@@ -166,8 +166,8 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 			if (placement.isMultiRoom()) {
 				iRoom = new RoomInfo[placement.getRoomLocations().size()];
 				int idx = 0;
-				for (Enumeration e=placement.getRoomLocations().elements();e.hasMoreElements();idx++) {
-					RoomLocation room = (RoomLocation)e.nextElement(); 
+				for (Iterator<RoomLocation> e=placement.getRoomLocations().iterator();e.hasNext();idx++) {
+					RoomLocation room = e.next(); 
 					iRoom[idx] = new RoomInfo(room.getName(),room.getId(),room.getRoomSize(),(room.getPreference()==0 && lecture.nrRoomLocations()==lecture.getNrRooms()?PreferenceLevel.sIntLevelRequired:room.getPreference()));
 				}
 			} else {
@@ -180,7 +180,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 			if (!lecture.getInstructorConstraints().isEmpty()) {
 				iInstructor = new InstructorInfo[lecture.getInstructorConstraints().size()];
 				for (int i=0;i<lecture.getInstructorConstraints().size();i++) {
-					InstructorConstraint ic = (InstructorConstraint)lecture.getInstructorConstraints().elementAt(i);
+					InstructorConstraint ic = (InstructorConstraint)lecture.getInstructorConstraints().get(i);
 					iInstructor[i] = new InstructorInfo(ic.getName(),ic.getResourceId());
 				}
 			}
@@ -191,8 +191,8 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 			if (initialPlacement.isMultiRoom()) {
 				iInitialRoom = new RoomInfo[initialPlacement.getRoomLocations().size()];
 				int idx = 0;
-				for (Enumeration e=initialPlacement.getRoomLocations().elements();e.hasMoreElements();idx++) {
-					RoomLocation room = (RoomLocation)e.nextElement(); 
+				for (Iterator<RoomLocation> e=initialPlacement.getRoomLocations().iterator();e.hasNext();idx++) {
+					RoomLocation room = e.next(); 
 					iInitialRoom[idx] = new RoomInfo(room.getName(),room.getId(),room.getRoomSize(),(room.getPreference()==0 && lecture.nrRoomLocations()==lecture.getNrRooms()?PreferenceLevel.sIntLevelRequired:room.getPreference()));
 				}
 			} else {
@@ -203,13 +203,11 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 			int min = Constants.SLOT_LENGTH_MIN*time.getNrSlotsPerMeeting()-time.getBreakTime();
 			iInitialTime = new TimeInfo(time.getDayCode(),time.getStartSlot(),(time.getPreference()==0 && lecture.nrTimeLocations()==1?PreferenceLevel.sIntLevelRequired:time.getPreference()), min,time.getDatePatternName(),time.getTimePatternId());
 		}
-		for (Enumeration e=lecture.timeLocations().elements();e.hasMoreElements();) {
-			TimeLocation time = (TimeLocation)e.nextElement();
+		for (TimeLocation time: lecture.timeLocations()) {
 			int min = Constants.SLOT_LENGTH_MIN*time.getNrSlotsPerMeeting()-time.getBreakTime();
 			iTimes.add(new TimeInfo(time.getDayCode(),time.getStartSlot(),(time.getPreference()==0 && lecture.nrTimeLocations()==1?PreferenceLevel.sIntLevelRequired:time.getPreference()),min,time.getDatePatternName(),time.getTimePatternId()));
 		}
-		for (Enumeration e=lecture.roomLocations().elements();e.hasMoreElements();) {
-			RoomLocation room = (RoomLocation)e.nextElement();
+		for (RoomLocation room: lecture.roomLocations()) {
 			iRooms.add(new RoomInfo(room.getName(),room.getId(),room.getRoomSize(),(room.getPreference()==0 && lecture.nrRoomLocations()==lecture.getNrRooms()?PreferenceLevel.sIntLevelRequired:room.getPreference())));
 		}
 		if (includeConstraints) {
@@ -227,13 +225,11 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
     				iStudentConflicts.add(new StudentConflictInfo(assignmentId,jInfo,StudentConflictInfo.OTHER_ASSIGNMENT_CONFLICT_TYPE));
     			}
 			}
-			for (Enumeration e=lecture.constraints().elements();e.hasMoreElements();) {
-				Constraint c = (Constraint)e.nextElement();
+			for (Constraint c: lecture.constraints()) {
 				if (c instanceof GroupConstraint) {
 					GroupConstraint gc = (GroupConstraint)c;
 					DistributionInfo dist = new DistributionInfo(new GroupConstraintInfo(gc));
-					for (Enumeration f=gc.variables().elements();f.hasMoreElements();) {
-						Lecture another = (Lecture)f.nextElement();
+					for (Lecture another: gc.variables()) {
 						if (another.equals(lecture)) continue;
 						dist.addClass(another.getClassId());
 					}
@@ -241,10 +237,8 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 				}
 			}
 			if (!lecture.getInstructorConstraints().isEmpty() && placement!=null) {
-				for (Enumeration e=lecture.getInstructorConstraints().elements();e.hasMoreElements();) {
-					InstructorConstraint ic = (InstructorConstraint)e.nextElement();
-				    for (Enumeration f=ic.variables().elements();f.hasMoreElements();) {
-				        Lecture other = (Lecture)f.nextElement();
+				for (InstructorConstraint ic: lecture.getInstructorConstraints()) {
+				    for (Lecture other: ic.variables()) {
 				        if (other.equals(lecture) || other.getAssignment()==null) continue;
 				        int pref = ic.getDistancePreference(placement, (Placement)other.getAssignment());
 				        if (pref==PreferenceLevel.sIntLevelNeutral) continue;
@@ -744,7 +738,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 				sb.append("<input type='hidden' name='curRoom' value='0'/>");
 				sb.append("<input type='hidden' name='roomState' value='0'/>");
 				for (int i=0;i<getClazz().nrRooms();i++)
-					sb.append("<input type='hidden' name='room"+i+"' value='"+(selection==null?iRoom==null?"":iRoom[i].getId().toString():selection.getRoomIds().elementAt(i).toString())+"'/>");
+					sb.append("<input type='hidden' name='room"+i+"' value='"+(selection==null?iRoom==null?"":iRoom[i].getId().toString():selection.getRoomIds().get(i).toString())+"'/>");
 			}
 			for (Enumeration e=elements();e.hasMoreElements();) {
 				RoomInfo room = (RoomInfo)e.nextElement();

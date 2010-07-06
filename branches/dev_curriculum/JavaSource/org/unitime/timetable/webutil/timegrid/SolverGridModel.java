@@ -42,7 +42,6 @@ import net.sf.cpsolver.coursett.model.Lecture;
 import net.sf.cpsolver.coursett.model.Placement;
 import net.sf.cpsolver.coursett.model.RoomLocation;
 import net.sf.cpsolver.coursett.model.TimetableModel;
-import net.sf.cpsolver.coursett.model.TimeLocation.IntEnumeration;
 import net.sf.cpsolver.ifs.model.Constraint;
 import net.sf.cpsolver.ifs.solver.Solver;
 
@@ -72,8 +71,7 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 		iYear = ((TimetableModel)solver.currentSolution().getModel()).getYear();
 		if (firstDay<0) {
 			Vector placements = new Vector();
-			for (Enumeration e=room.assignedVariables().elements();e.hasMoreElements();) {
-				Lecture lecture = (Lecture)e.nextElement();
+			for (Lecture lecture: room.assignedVariables()) {
 				Placement placement = (Placement)lecture.getAssignment();
 				if (placement.hasRoomLocation(iRoomId))
 						placements.add(placement);
@@ -115,8 +113,7 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 		iYear = ((TimetableModel)solver.currentSolution().getModel()).getYear();
 		if (firstDay<0) {
 			Vector placements = new Vector();
-			for (Enumeration e=instructor.assignedVariables().elements();e.hasMoreElements();) {
-				Lecture lecture = (Lecture)e.nextElement();
+			for (Lecture lecture: instructor.assignedVariables()) {
 				placements.add(lecture.getAssignment());
 			}
 			init(solver, placements, bgMode, firstDay);
@@ -145,8 +142,7 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 		setSize(dept.variables().size());
 		iYear = ((TimetableModel)solver.currentSolution().getModel()).getYear();
 		Vector placements = new Vector();
-		for (Enumeration e=dept.assignedVariables().elements();e.hasMoreElements();) {
-			Lecture lecture = (Lecture)e.nextElement();
+		for (Lecture lecture: dept.assignedVariables()) {
 			Placement placement = (Placement)lecture.getAssignment();
 			placements.add(placement);
 		}
@@ -185,8 +181,8 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 	private void init(Solver solver, Placement placement, int bgMode, int firstDay) {
 		Lecture lecture = (Lecture)placement.variable();
 		TimetableGridCell cell = null;
-		for (IntEnumeration f=placement.getTimeLocation().getStartSlots();f.hasMoreElements();) {
-			int slot = f.nextInt();
+		for (Enumeration<Integer> f=placement.getTimeLocation().getStartSlots();f.hasMoreElements();) {
+			int slot = f.nextElement();
 			if (firstDay>=0 && !placement.getTimeLocation().getWeekCode().get(firstDay+(slot/Constants.SLOTS_PER_DAY))) continue;
 			if (cell==null) {
 				cell = createCell(solver, slot/Constants.SLOTS_PER_DAY,slot%Constants.SLOTS_PER_DAY,(Lecture)placement.variable(), placement, bgMode);
@@ -201,8 +197,7 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
     	if (lecture.isCommitted()) return PreferenceLevel.sRequired;
         if (placement==null) {
         	boolean hasNoConf = false;
-            for (Enumeration e=lecture.values().elements();e.hasMoreElements();) {
-                Placement p = (Placement)e.nextElement();
+            for (Placement p: lecture.values()) {
                 if (p.isHard()) continue;
                 if (lecture.getModel().conflictValues(p).isEmpty()) {
                 	hasNoConf=true; break;
@@ -226,8 +221,7 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
         boolean hasRoom = false;
         boolean hasTimeNoConf = false;
         boolean hasRoomNoConf = false;
-        for (Enumeration e=lecture.values().elements();e.hasMoreElements();) {
-            Placement p = (Placement)e.nextElement();
+        for (Placement p: lecture.values()) {
             if (p.equals(placement)) continue;
             if (p.isHard()) continue; 
             if (p.getTimeLocation().equals(placement.getTimeLocation())) {
@@ -258,8 +252,7 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
     
     private int nrPlacementsNoConf(Lecture lecture, Placement placement) {
 		int nrPlacementsNoConf = 0;
-		for (Enumeration e=lecture.values().elements();e.hasMoreElements();) {
-			Placement p = (Placement)e.nextElement();
+        for (Placement p: lecture.values()) {
             if (p.equals(placement)) continue;
             if (p.isHard()) continue;
             if (!lecture.getModel().conflictValues(p).isEmpty()) continue;
@@ -287,8 +280,7 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 			penalty = solver.getPerturbationsCounter().getPerturbationPenalty(solver.currentSolution().getModel(),placement,new Vector());
 		}
 		DepartmentSpreadConstraint deptConstraint = null;
-		for (Enumeration e=lecture.constraints().elements();e.hasMoreElements();) {
-			Constraint c = (Constraint)e.nextElement();
+		for (Constraint c: lecture.constraints()) {
 			if (c instanceof DepartmentSpreadConstraint) {
 				deptConstraint = (DepartmentSpreadConstraint)c;
 				break;
@@ -307,8 +299,7 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 			background = TimetableGridCell.conflicts2color(studConf);
 		} else if (bgMode==sBgModeInstructorBtbPref) {
 			int pref = 0;
-	       	for (Enumeration e=lecture.getInstructorConstraints().elements();e.hasMoreElements();) {
-	       		InstructorConstraint ic = (InstructorConstraint)e.nextElement();
+	       	for (InstructorConstraint ic: lecture.getInstructorConstraints()) {
 	       		pref += ic.getPreferenceCombination(placement);
 	       	}
 			background = TimetableGridCell.pref2color(pref);
@@ -332,8 +323,7 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 			long minRoomSize = lecture.minRoomSize();
 			int roomSize = 0;
 			if (placement.isMultiRoom()) {
-				for (Enumeration e=placement.getRoomLocations().elements();e.hasMoreElements();) {
-					RoomLocation r = (RoomLocation)e.nextElement();
+				for (RoomLocation r: placement.getRoomLocations()) {
 					roomSize += r.getRoomSize();
 				}
 			} else
@@ -365,8 +355,7 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 				
 			
 			int btbInstrPref = 0;
-	       	for (Enumeration e=lecture.getInstructorConstraints().elements();e.hasMoreElements();) {
-	       		InstructorConstraint ic = (InstructorConstraint)e.nextElement();
+	       	for (InstructorConstraint ic: lecture.getInstructorConstraints()) {
 	       		btbInstrPref += ic.getPreferenceCombination(placement);
 	       	}
 
@@ -379,8 +368,7 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 				(deptConstraint==null?"":", deptBal:"+deptConstraint.getMaxPenalty(placement));
 			
 			int gcPref = 0;
-			for (Enumeration e=lecture.constraints().elements();e.hasMoreElements();) {
-				Constraint c = (Constraint)e.nextElement();
+			for (Constraint c: lecture.constraints()) {
 				if (!(c instanceof GroupConstraint)) continue;
 				GroupConstraint gc = (GroupConstraint)c;
 				if (gc.isHard()) continue;

@@ -21,7 +21,6 @@ package org.unitime.timetable.solver.ui;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Set;
@@ -44,8 +43,7 @@ public class DeptBalancingReport implements Serializable {
 	
 	public DeptBalancingReport(Solver solver) {
 		TimetableModel model = (TimetableModel)solver.currentSolution().getModel();
-		for (Enumeration e=model.getDepartmentSpreadConstraints().elements();e.hasMoreElements();) {
-			DepartmentSpreadConstraint deptSpread = (DepartmentSpreadConstraint)e.nextElement();
+		for (DepartmentSpreadConstraint deptSpread: model.getDepartmentSpreadConstraints()) {
 			iGroups.add(new DeptBalancingGroup(solver,deptSpread));
 		}
 		

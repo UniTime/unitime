@@ -33,8 +33,8 @@ import org.hibernate.Transaction;
 import org.hibernate.SessionFactory;
 
 import org.hibernate.cfg.Configuration;
-import org.hibernate.criterion.Expression;
 import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Restrictions;
 import org.unitime.commons.hibernate.util.DatabaseUpdate;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 
@@ -401,7 +401,7 @@ public abstract class _BaseRootDAO {
 	 */
 	protected java.util.List findFiltered (Session s, String propName, Object filter, Order order) {
 		Criteria crit = s.createCriteria(getReferenceClass());
-		crit.add(Expression.eq(propName, filter));
+		crit.add(Restrictions.eq(propName, filter));
 		if (null != order) crit.addOrder(order);
 		return crit.list();
 	}

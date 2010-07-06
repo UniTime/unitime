@@ -22,6 +22,7 @@ package org.unitime.timetable.solver;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Vector;
 
@@ -39,7 +40,7 @@ import net.sf.cpsolver.coursett.model.FinalSectioning;
 import net.sf.cpsolver.coursett.model.Lecture;
 import net.sf.cpsolver.coursett.model.Student;
 import net.sf.cpsolver.coursett.model.TimetableModel;
-import net.sf.cpsolver.ifs.util.FastVector;
+import net.sf.cpsolver.ifs.util.ArrayList;
 import net.sf.cpsolver.ifs.util.Progress;
 
 /**
@@ -57,25 +58,22 @@ public class EnrollmentCheck {
     public void checkJenrl(Progress p) {
         try {
             p.setPhase("Checking jenrl ...",iModel.variables().size());
-            for (Enumeration i1=iModel.variables().elements();i1.hasMoreElements();) {
-                Lecture l1 = (Lecture)i1.nextElement();
+            for (Lecture l1: iModel.variables()) {
                 p.incProgress();
                 p.debug("Checking "+l1.getName()+" ...");
-                for (Enumeration i2=iModel.variables().elements();i2.hasMoreElements();) {
-                    Lecture l2 = (Lecture)i2.nextElement();
+                for (Lecture l2: iModel.variables()) {
                     if (l1.getId()<l2.getId()) {
                         double jenrl = 0;
-                        Vector jenrlStudents = new FastVector();
+                        List<Student> jenrlStudents = new ArrayList<Student>();
                         for (Iterator i3=l1.students().iterator(); i3.hasNext(); ) {
                             Student student = (Student)i3.next();
                             if (l2.students().contains(student)) {
                                 jenrl+=student.getJenrlWeight(l1,l2);
-                                jenrlStudents.addElement(student);
+                                jenrlStudents.add(student);
                             }
                         }
                         boolean found = false;
-                        for (Enumeration i3=iModel.getJenrlConstraints().elements();i3.hasMoreElements(); ) {
-                            JenrlConstraint j = (JenrlConstraint)i3.nextElement();
+                        for (JenrlConstraint j: iModel.getJenrlConstraints()) {
                             Lecture a=(Lecture)j.first();
                             Lecture b=(Lecture)j.second();
                             if ((a.equals(l1) && b.equals(l2)) || (a.equals(l2) && b.equals(l1))) {
@@ -199,8 +197,7 @@ public class EnrollmentCheck {
             p.warn("Inconsistent number of committed student conflits (counter="+iModel.getCommitedStudentConflicts()+", actual="+iModel.countCommitedStudentConflicts()+").");
         }
         p.setPhase("Checking class limits...", iModel.variables().size());
-        for (Enumeration e=iModel.variables().elements();e.hasMoreElements();) {
-            Lecture lecture = (Lecture)e.nextElement();
+        for (Lecture lecture: iModel.variables()) {
             p.incProgress();
             p.debug("Checking "+getClassLabel(lecture)+" ... students="+lecture.students().size()+", weighted="+lecture.nrWeightedStudents()+", limit="+lecture.classLimit()+" ("+lecture.minClassLimit()+".."+lecture.maxClassLimit()+")");
             if (lecture.students().isEmpty()) continue;

@@ -2,7 +2,6 @@ package org.unitime.timetable.solver.exam.ui;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -45,8 +44,7 @@ public class ExamProposedChange implements Serializable, Comparable<ExamProposed
                 iInitials.put(exam.getId(),initialInfo.get(exam));
             }
         }
-        for (Enumeration e=model.assignedVariables().elements();e.hasMoreElements();) {
-            Exam exam = (Exam)e.nextElement();
+        for (Exam exam: model.assignedVariables()) {
             if (resolvedExams.contains(exam)) continue;
             ExamPlacement current = (ExamPlacement)exam.getAssignment();
             ExamPlacement initial = initialAssignment.get(exam);

@@ -20,7 +20,6 @@
 package org.unitime.timetable.solver.ui;
 
 import java.io.Serializable;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Set;
@@ -40,14 +39,12 @@ public class StudentConflictsReport implements Serializable {
 
 	public StudentConflictsReport(Solver solver) {
 		TimetableModel model = (TimetableModel)solver.currentSolution().getModel();
-		for (Enumeration e=model.getJenrlConstraints().elements();e.hasMoreElements(); ) {
-			JenrlConstraint jenrl = (JenrlConstraint)e.nextElement();
+		for (JenrlConstraint jenrl: model.getJenrlConstraints()) {
 			if (jenrl.isInConflict())
 				iGroups.add(new JenrlInfo(solver, jenrl));
 		}
 		Hashtable ret = new Hashtable();
-		for (Enumeration e=model.assignedVariables().elements();e.hasMoreElements();) {
-			Lecture lecture = (Lecture)e.nextElement();
+		for (Lecture lecture: model.assignedVariables()) {
 			iGroups.addAll(JenrlInfo.getCommitedJenrlInfos(solver, lecture).values());
 		}
 	}

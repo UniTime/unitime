@@ -21,7 +21,6 @@ package org.unitime.timetable.solver.ui;
 
 import java.io.Serializable;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Vector;
@@ -43,8 +42,7 @@ public class ViolatedDistrPreferencesReport implements Serializable {
 
 	public ViolatedDistrPreferencesReport(Solver solver) {
 		TimetableModel model = (TimetableModel)solver.currentSolution().getModel();
-		for (Enumeration e=model.getGroupConstraints().elements();e.hasMoreElements(); ) {
-			GroupConstraint gc = (GroupConstraint)e.nextElement();
+		for (GroupConstraint gc: model.getGroupConstraints()) {
 			if (!gc.isSatisfied())
 				iGroups.add(new ViolatedDistrPreference(solver, gc));
 		}
@@ -65,8 +63,7 @@ public class ViolatedDistrPreferencesReport implements Serializable {
 			iPreference = gc.getPreference();
 			iType = gc.getType();
 			iName = gc.getName();
-			for (Enumeration e=gc.variables().elements();e.hasMoreElements();) {
-				Lecture lecture = (Lecture)e.nextElement();
+			for (Lecture lecture: gc.variables()) {
 				if (lecture.getAssignment()==null) continue;
 				iClasses.add(new ClassAssignmentDetails(solver,lecture,false));
 			}

@@ -134,7 +134,7 @@ public class DivSecAssignmentComparator implements Comparator {
 	}
 	
 	public int compareTimeLocations(Class_ c1, Class_ c2, TimeLocation t1, TimeLocation t2) {
-		int cmp = Double.compare(t1.getStartSlots().nextInt(), t2.getStartSlots().nextInt());
+		int cmp = t1.getStartSlots().nextElement().compareTo(t2.getStartSlots().nextElement());
 		if (cmp!=0) return cmp;
 		cmp = Double.compare(t1.getDayCode(), t2.getDayCode());
 		if (cmp!=0) return cmp;

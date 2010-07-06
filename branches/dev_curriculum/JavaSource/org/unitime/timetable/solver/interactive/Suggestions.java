@@ -89,8 +89,7 @@ public class Suggestions implements Serializable {
         iMinRoomSize = model.getMinRoomSize();
         iMaxRoomSize = model.getMaxRoomSize();
         iFilterText = (model.getFilterText()==null?null:model.getFilterText().trim().toUpperCase());
-        for (Enumeration e=iModel.variables().elements();e.hasMoreElements();) {
-        	Lecture lecture = (Lecture)e.nextElement();
+        for (Lecture lecture: iModel.variables()) {
         	if (lecture.getClassId().equals(model.getClassId())) {
         		iLecture = lecture;
         		break;
@@ -130,8 +129,7 @@ public class Suggestions implements Serializable {
     		computeConfTable();
         iCurrentSuggestion = tryAssignment((Placement)null);
         Hashtable initialAssignments = new Hashtable();
-        for (Enumeration e=iModel.assignedVariables().elements();e.hasMoreElements();) {
-        	Lecture lec = (Lecture)e.nextElement();
+        for (Lecture lec: iModel.assignedVariables()) {
             initialAssignments.put(lec,lec.getAssignment());
         }
         iEmptySuggestion = new Suggestion(iSolver, initialAssignments, new Vector(), new Vector());
@@ -149,8 +147,7 @@ public class Suggestions implements Serializable {
         synchronized (iSolver.currentSolution()) {
             Vector unAssignedVariables = new Vector(iModel.unassignedVariables());
             Hashtable initialAssignments = new Hashtable();
-            for (Enumeration e=iModel.assignedVariables().elements();e.hasMoreElements();) {
-                Lecture lec = (Lecture)e.nextElement();
+            for (Lecture lec: iModel.assignedVariables()) {
                 initialAssignments.put(lec,lec.getAssignment());
             }
             Hashtable conflictsToResolve = new Hashtable();
@@ -195,8 +192,7 @@ public class Suggestions implements Serializable {
         synchronized (iSolver.currentSolution()) {
             Vector unAssignedVariables = new Vector(iModel.unassignedVariables());
             Hashtable initialAssignments = new Hashtable();
-            for (Enumeration e=iModel.assignedVariables().elements();e.hasMoreElements();) {
-                Lecture lec = (Lecture)e.nextElement();
+            for (Lecture lec: iModel.assignedVariables()) {
                 initialAssignments.put(lec,lec.getAssignment());
             }
             Hashtable conflictsToResolve = new Hashtable();
@@ -264,18 +260,17 @@ public class Suggestions implements Serializable {
     private TreeSet<PlacementValue> values(Lecture lecture) {
     	TreeSet<PlacementValue> vals = new TreeSet();
     	if (lecture.equals(iLecture)) {
-    		for (Enumeration e=(lecture.allowBreakHard() || !iAllowBreakHard?lecture.values():lecture.computeValues(true)).elements();e.hasMoreElements();) {
-    			Placement p = (Placement)e.nextElement();
+    		for (Placement p: (lecture.allowBreakHard() || !iAllowBreakHard?lecture.values():lecture.computeValues(true))) {
     			if (match(p)) vals.add(new PlacementValue(p));
     		}
     	} else {
     		if (lecture.allowBreakHard() || !iAllowBreakHard) {
-    			for (Enumeration e=lecture.values().elements();e.hasMoreElements();) {
-    				vals.add(new PlacementValue((Placement)e.nextElement()));
+    			for (Placement x: lecture.values()) {
+    				vals.add(new PlacementValue(x));
     			}
     		} else {
-    			for (Enumeration e=lecture.computeValues(true).elements();e.hasMoreElements();) {
-    				vals.add(new PlacementValue((Placement)e.nextElement()));
+    			for (Placement x: lecture.computeValues(true)) {
+    				vals.add(new PlacementValue(x));
     			}
     		}
     	}
@@ -381,8 +376,7 @@ public class Suggestions implements Serializable {
     
     public void computeConfTable() {
     	iConfTable = new Vector();
-    	for (Enumeration e=iLecture.timeLocations().elements();e.hasMoreElements();) {
-    		TimeLocation t = (TimeLocation)e.nextElement();
+    	for (TimeLocation t: iLecture.timeLocations()) {
     		if (!iAllowBreakHard && PreferenceLevel.sProhibited.equals(PreferenceLevel.int2prolog(t.getPreference())))
     			continue;
     		if (t.getPreference()>500) continue;
@@ -392,8 +386,7 @@ public class Suggestions implements Serializable {
     
     public void computeTryAllAssignments() {
     	iAllAssignments = new TreeSet();
-    	for (Enumeration e=iLecture.values().elements();e.hasMoreElements();) {
-    		Placement p = (Placement)e.nextElement();
+    	for (Placement p: iLecture.values()) {
     		if (p.equals(iLecture.getAssignment())) continue;
     		if (p.isHard() && !iAllowBreakHard) continue;
     		if (!match(p)) continue;

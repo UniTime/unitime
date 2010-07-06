@@ -20,7 +20,6 @@
 package org.unitime.timetable.solver.ui;
 
 import java.io.Serializable;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -54,16 +53,14 @@ public class RoomReport implements Serializable {
 		for (int i=0;i<sGroupSizes.length-1;i++) {
 			iGroups.add(new RoomAllocationGroup(sGroupSizes[i],sGroupSizes[i+1]));
 		}
-		for (Enumeration e=model.getRoomConstraints().elements();e.hasMoreElements();) {
-			RoomConstraint rc = (RoomConstraint)e.nextElement();
+		for (RoomConstraint rc: model.getRoomConstraints()) {
 			if (!ToolBox.equals(iRoomType,rc.getType())) continue;
 			for (Iterator i=iGroups.iterator();i.hasNext();) {
 				RoomAllocationGroup g = (RoomAllocationGroup)i.next();
 				g.add(rc);
 			}
 		}
-		for (Enumeration e=model.variables().elements();e.hasMoreElements();) {
-			Lecture lecture = (Lecture)e.nextElement();
+		for (Lecture lecture: model.variables()) {
 			for (Iterator i=iGroups.iterator();i.hasNext();) {
 				RoomAllocationGroup g = (RoomAllocationGroup)i.next();
 				g.add(lecture);
@@ -135,8 +132,7 @@ public class RoomReport implements Serializable {
 			if (lecture.canShareRoom()) {
 				for (Iterator i=lecture.canShareRoomConstraints().iterator();i.hasNext();) {
 					GroupConstraint gc = (GroupConstraint)i.next();
-					for (Enumeration e=gc.variables().elements();e.hasMoreElements();) {
-						Lecture other = (Lecture)e.nextElement();
+					for (Lecture other: gc.variables()) {
 						if (other.getClassId().compareTo(lecture.getClassId())<0)
 							skip=true;
 					}
@@ -146,8 +142,7 @@ public class RoomReport implements Serializable {
             
             skip = true;
 			boolean canUse = false, mustUse = true, mustUseThisSizeOrBigger = true;
-			for (Enumeration e=lecture.roomLocations().elements();e.hasMoreElements();) {
-				RoomLocation r = (RoomLocation)e.nextElement();
+			for (RoomLocation r: lecture.roomLocations()) {
                 if (r.getRoomConstraint()==null) continue;
                 if (!ToolBox.equals(iRoomType,r.getRoomConstraint().getType())) continue;
 				if (PreferenceLevel.sProhibited.equals(PreferenceLevel.int2prolog(r.getPreference()))) continue;
@@ -163,22 +158,22 @@ public class RoomReport implements Serializable {
             
 			boolean shouldUse = canUse && mustUseThisSizeOrBigger;
 			if (canUse) {
-				TimeLocation t = (TimeLocation)lecture.timeLocations().firstElement();
+				TimeLocation t = lecture.timeLocations().get(0);
 				iSlotsCanUse += (((double)t.getNrWeeks(iStartDay,iEndDay))/iNrWeeks)*lecture.getNrRooms()*t.getNrMeetings()*t.getNrSlotsPerMeeting();
 				iLecturesCanUse += lecture.getNrRooms();
 			}
 			if (mustUse) {
-				TimeLocation t = (TimeLocation)lecture.timeLocations().firstElement();
+				TimeLocation t = lecture.timeLocations().get(0);
 				iSlotsMustUse += (((double)t.getNrWeeks(iStartDay,iEndDay))/iNrWeeks)*lecture.getNrRooms()*t.getNrMeetings()*t.getNrSlotsPerMeeting();
 				iLecturesMustUse += lecture.getNrRooms();
 			}
 			if (mustUseThisSizeOrBigger) {
-				TimeLocation t = (TimeLocation)lecture.timeLocations().firstElement();
+				TimeLocation t = lecture.timeLocations().get(0);
 				iSlotsMustUseThisSizeOrBigger += (((double)t.getNrWeeks(iStartDay,iEndDay))/iNrWeeks)*lecture.getNrRooms()*t.getNrMeetings()*t.getNrSlotsPerMeeting();
 				iLecturesMustUseThisSizeOrBigger += lecture.getNrRooms();
 			}
 			if (shouldUse) {
-				TimeLocation t = (TimeLocation)lecture.timeLocations().firstElement();
+				TimeLocation t = lecture.timeLocations().get(0);
 				iSlotsShouldUse += (((double)t.getNrWeeks(iStartDay,iEndDay))/iNrWeeks)*lecture.getNrRooms()*t.getNrMeetings()*t.getNrSlotsPerMeeting();
 				iLecturesShouldUse += lecture.getNrRooms();
 			}
@@ -187,8 +182,7 @@ public class RoomReport implements Serializable {
 			if (lecture.getAssignment()!=null) {
 				Placement placement = (Placement)lecture.getAssignment();
 				if (placement.isMultiRoom()) {
-					for (Enumeration e=placement.getRoomLocations().elements();e.hasMoreElements();) {
-						RoomLocation r = (RoomLocation)e.nextElement();
+					for (RoomLocation r: placement.getRoomLocations()) {
                         if (r.getRoomConstraint()==null) continue;
                         if (!ToolBox.equals(iRoomType,r.getRoomConstraint().getType())) continue;
 						if (iMinRoomSize<=r.getRoomSize() && r.getRoomSize()<iMaxRoomSize)

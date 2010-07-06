@@ -20,7 +20,6 @@
 package org.unitime.timetable.solver.exam;
 
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -119,8 +118,7 @@ public class ExamDatabaseSaver extends ExamSaver {
                 j.remove();
             }
             Exam examVar = null;
-            for (Enumeration e=getModel().variables().elements();e.hasMoreElements();) {
-                Exam x = (Exam)e.nextElement();
+            for (Exam x: getModel().variables()) {
                 if (exam.getUniqueId().equals(x.getId())) { examVar=x;break; }
             }
             if (examVar==null) {
@@ -232,8 +230,7 @@ public class ExamDatabaseSaver extends ExamSaver {
             }
         }
         iProgress.setPhase("Saving conflicts...", getModel().assignedVariables().size());
-        for (Enumeration e=getModel().assignedVariables().elements();e.hasMoreElements();) {
-            Exam examVar = (Exam)e.nextElement();
+        for (Exam examVar: getModel().assignedVariables()) {
             iProgress.incProgress();
             org.unitime.timetable.model.Exam exam = (org.unitime.timetable.model.Exam)examTable.get(examVar.getId());
             if (exam==null) continue;
@@ -380,8 +377,7 @@ public class ExamDatabaseSaver extends ExamSaver {
             contact.setEmailAddress(manager.getEmailAddress());
             hibSession.save(contact);
         }
-        for (Enumeration e=getModel().assignedVariables().elements();e.hasMoreElements();) {
-            Exam examVar = (Exam)e.nextElement();
+        for (Exam examVar: getModel().assignedVariables()) {
             iProgress.incProgress();
             org.unitime.timetable.model.Exam exam = (org.unitime.timetable.model.Exam)examTable.get(examVar.getId());
             if (exam==null) continue;

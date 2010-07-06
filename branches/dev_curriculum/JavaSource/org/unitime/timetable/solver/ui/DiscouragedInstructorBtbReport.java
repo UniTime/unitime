@@ -20,7 +20,6 @@
 package org.unitime.timetable.solver.ui;
 
 import java.io.Serializable;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -45,8 +44,7 @@ public class DiscouragedInstructorBtbReport implements Serializable {
 
 	public DiscouragedInstructorBtbReport(Solver solver) {
 		TimetableModel model = (TimetableModel)solver.currentSolution().getModel();
-		for (Enumeration e=model.getInstructorConstraints().elements();e.hasMoreElements(); ) {
-			InstructorConstraint ic = (InstructorConstraint)e.nextElement();
+		for (InstructorConstraint ic: model.getInstructorConstraints()) {
 			HashSet used = new HashSet();
 	        for (int slot=1;slot<Constants.SLOTS_PER_DAY * Constants.NR_DAYS;slot++) {
 	        	if ((slot%Constants.SLOTS_PER_DAY)==0) continue;

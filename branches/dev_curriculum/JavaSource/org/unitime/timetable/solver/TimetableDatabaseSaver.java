@@ -94,8 +94,8 @@ public class TimetableDatabaseSaver extends TimetableSaver {
 	private boolean iCommitSolution = false;
     private boolean iStudentSectioning = false;
 	
-	private Hashtable iAssignments = new Hashtable();
-	private Hashtable iSolutions = new Hashtable();
+	private Hashtable<Long, Assignment> iAssignments = new Hashtable<Long, Assignment>();
+	private Hashtable<Long, Solution> iSolutions = new Hashtable<Long, Solution>();
 	
 	private Progress iProgress = null;
 	
@@ -337,9 +337,8 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     		
     		iProgress.setPhase("Saving assignments ...", getModel().variables().size());
     		HashSet assignments = new HashSet();
-    		for (Enumeration e1=getModel().variables().elements();e1.hasMoreElements();) {
-    			Lecture lecture = (Lecture)e1.nextElement();
-    			Placement placement = (Placement)lecture.getAssignment();
+    		for (Lecture lecture: getModel().variables()) {
+    			Placement placement = lecture.getAssignment();
     			if (placement!=null) {
     				iProgress.trace("save "+lecture.getName()+" "+placement.getName());
     				Class_ clazz = (new Class_DAO()).get(lecture.getClassId(),hibSession);
@@ -349,8 +348,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     				}
         			HashSet rooms = new HashSet();
         			if (placement.isMultiRoom()) {
-        				for (Enumeration e=placement.getRoomLocations().elements();e.hasMoreElements();) {
-        					RoomLocation r = (RoomLocation)e.nextElement();
+        				for (RoomLocation r: placement.getRoomLocations()) {
             				Location room = (new LocationDAO()).get(r.getId(), hibSession);
             				if (room==null) {
                					iProgress.warn("Unable to save assignment for class "+lecture+" ("+placement.getLongName()+") -- room (id:"+r.getId()+") does not exist.");
@@ -370,8 +368,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
         			}
         			
         			HashSet instructors = new HashSet();
-        			for (Enumeration e=lecture.getInstructorConstraints().elements();e.hasMoreElements();) {
-        				InstructorConstraint ic = (InstructorConstraint)e.nextElement();
+        			for (InstructorConstraint ic: lecture.getInstructorConstraints()) {
             			DepartmentalInstructor instructor = null;
             			if (ic.getPuid()!=null && ic.getPuid().length()>0) {
             				instructor = DepartmentalInstructor.findByPuidDepartmentId(ic.getPuid(), clazz.getControllingDept().getUniqueId()); 
@@ -413,8 +410,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     		hibSession.flush(); hibSession.clear(); batchIdx = 0;
     		
     		iProgress.setPhase("Saving student enrollments ...", getModel().variables().size());
-    		for (Enumeration e1=getModel().variables().elements();e1.hasMoreElements();) {
-    			Lecture lecture = (Lecture)e1.nextElement();
+    		for (Lecture lecture: getModel().variables()) {
     			Class_ clazz = (new Class_DAO()).get(lecture.getClassId(),hibSession);
     			if (clazz==null) continue;
     			iProgress.trace("save "+lecture.getName());
@@ -483,8 +479,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     			iProgress.warn("Back-to-back instructor info is not registered.");
     		
     		Hashtable lectures4solution = new Hashtable();
-       		for (Enumeration e=getModel().variables().elements();e.hasMoreElements();) {
-       			Lecture lecture = (Lecture)e.nextElement();
+    		for (Lecture lecture: getModel().variables()) {
        			Solution s = getSolution(lecture, hibSession);
        			if (s==null) continue;
        			Vector lectures = (Vector)lectures4solution.get(s);
@@ -543,9 +538,8 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     		hibSession.flush(); hibSession.clear(); batchIdx = 0;
     		
     		iProgress.setPhase("Saving variable infos ...", getModel().variables().size());
-    		for (Enumeration e1=getModel().variables().elements();e1.hasMoreElements();) {
-    			Lecture lecture = (Lecture)e1.nextElement();
-    			Placement placement = (Placement)lecture.getAssignment();
+    		for (Lecture lecture: getModel().variables()) {
+    			Placement placement = lecture.getAssignment();
     			if (placement!=null) {
     				Assignment assignment = (Assignment)iAssignments.get(lecture.getClassId()); 
     				AssignmentInfo assignmentInfo = new AssignmentInfo();
@@ -564,14 +558,11 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     		hibSession.flush(); hibSession.clear(); batchIdx = 0;
     		
     		iProgress.setPhase("Saving btb instructor infos ...", getModel().variables().size());
-    		for (Enumeration e1=getModel().assignedVariables().elements();e1.hasMoreElements();) {
-    			Lecture lecture1 = (Lecture)e1.nextElement();
+    		for (Lecture lecture1: getModel().assignedVariables()) {
     			Placement placement1 = (Placement)lecture1.getAssignment();
     			iProgress.incProgress();
-    			for (Enumeration e2=lecture1.getInstructorConstraints().elements();e2.hasMoreElements();) {
-    				InstructorConstraint ic = (InstructorConstraint)e2.nextElement();
-    				for (Enumeration e3=ic.assignedVariables().elements();e3.hasMoreElements();) {
-    					Lecture lecture2 = (Lecture)e3.nextElement();
+    			for (InstructorConstraint ic: lecture1.getInstructorConstraints()) {
+    				for (Lecture lecture2: ic.assignedVariables()) {
     					Placement placement2 = (Placement)lecture2.getAssignment();
     					if (lecture2.getClassId().compareTo(lecture1.getClassId())<=0) continue;
     					int pref = ic.getDistancePreference(placement1, placement2);
@@ -607,16 +598,14 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     		hibSession.flush(); hibSession.clear(); batchIdx = 0;
     		
     		iProgress.setPhase("Saving group constraint infos ...", getModel().getGroupConstraints().size());
-    		for (Enumeration e1=getModel().getGroupConstraints().elements();e1.hasMoreElements();) {
-    			GroupConstraint gc = (GroupConstraint)e1.nextElement();
+    		for (GroupConstraint gc: getModel().getGroupConstraints()) {
     			GroupConstraintInfo gcInfo = new GroupConstraintInfo(gc);
     			ConstraintInfo constraintInfo = new ConstraintInfo();
     			constraintInfo.setDefinition(defDistributionInfo);
     			constraintInfo.setOpt(gcInfo.isSatisfied()?"1":"0");
     			iProgress.trace("Distribution constraint "+gcInfo.getName()+" (p:"+gcInfo.getPreference()+", s:"+gcInfo.isSatisfied()+") between");
     			HashSet gcAssignments = new HashSet();
-    			for (Enumeration e2=gc.variables().elements();e2.hasMoreElements();) {
-    				Lecture lecture = (Lecture)e2.nextElement();
+    			for (Lecture lecture: gc.variables()) {
     				Assignment assignment = (Assignment)iAssignments.get(lecture.getClassId());
     				iProgress.trace("  "+lecture.getAssignment());
     				if (assignment!=null)
@@ -640,8 +629,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     		hibSession.flush(); hibSession.clear(); batchIdx = 0;
     		
     		iProgress.setPhase("Saving student enrollment infos ...", getModel().getJenrlConstraints().size());
-    		for (Enumeration e1=getModel().getJenrlConstraints().elements();e1.hasMoreElements();) {
-    			JenrlConstraint jc = (JenrlConstraint)e1.nextElement();
+    		for (JenrlConstraint jc: getModel().getJenrlConstraints()) {
     			if (!jc.isInConflict() || !jc.isOfTheSameProblem()) {
     				iProgress.incProgress();
     				continue;

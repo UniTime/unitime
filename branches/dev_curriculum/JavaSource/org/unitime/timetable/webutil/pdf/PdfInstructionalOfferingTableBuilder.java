@@ -26,12 +26,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
-
-import net.sf.cpsolver.coursett.model.TimeLocation.IntEnumeration;
 
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
@@ -895,9 +894,9 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     		}
     		if (a!=null) {
     			StringBuffer sb = new StringBuffer();
-   				IntEnumeration e = a.getTimeLocation().getDays();
+   				Enumeration<Integer> e = a.getTimeLocation().getDays();
    				while (e.hasMoreElements()){
-   					sb.append(Constants.DAY_NAMES_SHORT[(int)e.nextInt()]);
+   					sb.append(Constants.DAY_NAMES_SHORT[e.nextElement()]);
    				}
    				sb.append(" ");
    				sb.append(a.getTimeLocation().getStartTimeHeader());

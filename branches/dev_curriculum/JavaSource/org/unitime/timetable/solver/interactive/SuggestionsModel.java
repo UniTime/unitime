@@ -21,6 +21,7 @@ package org.unitime.timetable.solver.interactive;
 
 import java.io.Serializable;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.TreeSet;
 import java.util.Vector;
 
@@ -173,7 +174,7 @@ public class SuggestionsModel implements Serializable {
 	public Long getClassId() { return iClassId; }
 	
     public Vector getHints() { return iHints; }
-    public void addHint(Long classId, int days, int startSlots, Vector roomIds, Long patternId) {
+    public void addHint(Long classId, int days, int startSlots, List<Long> roomIds, Long patternId) {
     	Hint hint = new Hint(classId, days, startSlots, roomIds,patternId);
         Hint prev = null;
         for (Enumeration e=iHints.elements();e.hasMoreElements();) {

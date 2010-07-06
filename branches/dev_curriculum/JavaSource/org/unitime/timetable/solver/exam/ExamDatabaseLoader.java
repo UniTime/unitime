@@ -21,7 +21,6 @@ package org.unitime.timetable.solver.exam;
 
 import java.util.Collection;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -223,8 +222,7 @@ public class ExamDatabaseLoader extends ExamLoader {
             Vector periodPlacements = new Vector();
             boolean hasReqPeriod = false;
             Set periodPrefs = exam.getPreferences(ExamPeriodPref.class);
-            for (Enumeration e=getModel().getPeriods().elements();e.hasMoreElements(); ) {
-                ExamPeriod period = (ExamPeriod)e.nextElement();
+            for (ExamPeriod period: getModel().getPeriods()) {
                 if (iProhibitedPeriods.contains(period) ||  period.getLength()<exam.getLength()) continue;
                 String pref = null;
                 for (Iterator j=periodPrefs.iterator();j.hasNext();) {
@@ -287,8 +285,8 @@ public class ExamDatabaseLoader extends ExamLoader {
                     continue;
                 }
                 boolean hasAssignment = false;
-                for (Enumeration ep=x.getPeriodPlacements().elements();!hasAssignment && ep.hasMoreElements();) {
-                    ExamPeriodPlacement period = (ExamPeriodPlacement)ep.nextElement();
+                for (Iterator<ExamPeriodPlacement> ep=x.getPeriodPlacements().iterator();!hasAssignment && ep.hasNext();) {
+                    ExamPeriodPlacement period = ep.next();
                     if (x.findRoomsRandom(period)!=null) hasAssignment = true;
                 }
                 if (!hasAssignment) {
@@ -493,8 +491,7 @@ public class ExamDatabaseLoader extends ExamLoader {
             
             boolean canBeUsed = false;
             boolean hasStrongDisc = false, allStrongDisc = true;
-            for (Enumeration e=getModel().getPeriods().elements();e.hasMoreElements();) {
-                ExamPeriod period = (ExamPeriod)e.nextElement();
+            for (ExamPeriod period: getModel().getPeriods()) {
                 if (roomEx.isAvailable(period))
                     if (roomEx.getPenalty(period)==4) hasStrongDisc = true;
                     else allStrongDisc = false;
@@ -572,8 +569,7 @@ public class ExamDatabaseLoader extends ExamLoader {
             }
             if (!student.variables().contains(exam))
                 student.addVariable(exam);
-            for (Enumeration e=exam.getOwners().elements();e.hasMoreElements();) {
-                ExamOwner owner = (ExamOwner)e.nextElement();
+            for (ExamOwner owner: exam.getOwners()) {
                 if (owner.getId()==ownerId) owner.getStudents().add(student);
             }
         }
@@ -852,9 +848,8 @@ public class ExamDatabaseLoader extends ExamLoader {
     protected void assignInitial() {
         if (iLoadSolution) {
             iProgress.setPhase("Assigning loaded solution...", getModel().variables().size());
-            for (Enumeration e=getModel().variables().elements();e.hasMoreElements();) {
+            for (Exam exam: getModel().variables()) {
                 iProgress.incProgress();
-                Exam exam = (Exam)e.nextElement();
                 ExamPlacement placement = (ExamPlacement)exam.getInitialAssignment();
                 if (placement==null) continue;
                 Set conf = getModel().conflictValues(placement);
@@ -884,17 +879,16 @@ public class ExamDatabaseLoader extends ExamLoader {
     
     protected void checkConsistency() {
         iProgress.setPhase("Checking consistency...", getModel().variables().size());
-        for (Enumeration e=getModel().variables().elements();e.hasMoreElements();) {
+        for (Exam exam: getModel().variables()) {
             iProgress.incProgress();
-            Exam exam = (Exam)e.nextElement();
-            if (exam.getPeriodPlacements().isEmpty()) {
+           if (exam.getPeriodPlacements().isEmpty()) {
                 iProgress.error("Exam "+getExamLabel(exam)+" has no period available.");
                 continue;
             }
             if (exam.getMaxRooms()>0) {
                 int capacity = 0;
                 for (int i = 0; i < Math.min(exam.getMaxRooms(), exam.getRoomPlacements().size()); i++) {
-                    ExamRoomPlacement r = (ExamRoomPlacement)exam.getRoomPlacements().elementAt(i);
+                    ExamRoomPlacement r = (ExamRoomPlacement)exam.getRoomPlacements().get(i);
                     capacity += r.getSize(exam.hasAltSeating());
                 }
                 if (capacity<exam.getSize()) {
@@ -902,8 +896,8 @@ public class ExamDatabaseLoader extends ExamLoader {
                     continue;
                 }
                 boolean hasValue = false;
-                for (Enumeration f=exam.getPeriodPlacements().elements();!hasValue && f.hasMoreElements();) {
-                    ExamPeriodPlacement period = (ExamPeriodPlacement)f.nextElement();
+                for (Iterator<ExamPeriodPlacement> f=exam.getPeriodPlacements().iterator();!hasValue && f.hasNext();) {
+                    ExamPeriodPlacement period = f.next();
                     if (exam.findBestAvailableRooms(period)!=null) hasValue = true;
                 }
                 if (!hasValue) {
@@ -994,11 +988,9 @@ public class ExamDatabaseLoader extends ExamLoader {
     
     private boolean sameOwners(Exam x1, Exam x2) {
         if (x1.getOwners().isEmpty() || x1.getOwners().size()!=x2.getOwners().size()) return false;
-        owners: for (Enumeration e=x1.getOwners().elements();e.hasMoreElements();) {
-            ExamOwner o1 = (ExamOwner)e.nextElement();
+        owners: for (ExamOwner o1: x1.getOwners()) {
             org.unitime.timetable.model.ExamOwner w1 = iOwners.get(o1.getId());
-            for (Enumeration f=x2.getOwners().elements();f.hasMoreElements();) {
-                ExamOwner o2 = (ExamOwner)f.nextElement();
+            for (ExamOwner o2: x2.getOwners()) {
                 org.unitime.timetable.model.ExamOwner w2 = iOwners.get(o2.getId());
                 if (w1.getOwnerType().equals(w2.getOwnerType()) && w1.getOwnerId().equals(w2.getOwnerId())) continue owners; 
             }
@@ -1010,11 +1002,9 @@ public class ExamDatabaseLoader extends ExamLoader {
     public void makeupSameRoomConstraints() {
         iProgress.setPhase("Posting same rooms...", getModel().variables().size());
         long dc = 0;
-        for (Enumeration e=getModel().variables().elements();e.hasMoreElements();) {
-            Exam first = (Exam)e.nextElement();
+        for (Exam first: getModel().variables()) {
             iProgress.incProgress();
-            for (Enumeration f=getModel().variables().elements();f.hasMoreElements();) {
-                Exam second = (Exam)f.nextElement();
+            for (Exam second: getModel().variables()) {
                 if (first.getId()>=second.getId() || !sameOwners(first,second)) continue;
                 iProgress.debug("Posting same room constraint between "+first.getName()+" and "+second.getName());
                 ExamDistributionConstraint constraint = new ExamDistributionConstraint(--dc, ExamDistributionConstraint.sDistSameRoom, false, 4);

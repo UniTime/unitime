@@ -23,7 +23,6 @@ import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Set;
@@ -107,8 +106,7 @@ public class ExamAssignment extends ExamInfo implements Serializable {
                 }
             }
             MinMaxPreferenceCombination pc = new MinMaxPreferenceCombination();
-            for (Enumeration e=((net.sf.cpsolver.exam.model.Exam)placement.variable()).getDistributionConstraints().elements();e.hasMoreElements();) {
-                ExamDistributionConstraint dc = (ExamDistributionConstraint)e.nextElement();
+            for (ExamDistributionConstraint dc: placement.variable().getDistributionConstraints()) {
                 if (dc.isHard() || dc.isSatisfied()) continue;
                 pc.addPreferenceInt(dc.getWeight());
             }

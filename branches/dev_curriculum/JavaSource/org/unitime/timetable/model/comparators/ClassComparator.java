@@ -203,7 +203,7 @@ public class ClassComparator implements Comparator {
         			else {
         				TimeLocation t1 = a1.getPlacement().getTimeLocation();
         				TimeLocation t2 = a2.getPlacement().getTimeLocation();
-        				cmp = Double.compare(t1.getStartSlots().nextInt(), t2.getStartSlots().nextInt());
+        				cmp = t1.getStartSlots().nextElement().compareTo(t2.getStartSlots().nextElement());
         				if (cmp==0)
         					cmp = Double.compare(t1.getDayCode(), t2.getDayCode());
         				if (cmp==0)

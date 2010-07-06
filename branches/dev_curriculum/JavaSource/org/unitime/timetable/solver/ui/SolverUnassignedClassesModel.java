@@ -19,8 +19,6 @@
 */
 package org.unitime.timetable.solver.ui;
 
-import java.util.Enumeration;
-
 import org.unitime.timetable.solver.TimetableSolver;
 
 import net.sf.cpsolver.coursett.model.Lecture;
@@ -33,8 +31,7 @@ public class SolverUnassignedClassesModel extends UnassignedClassesModel {
 	
 	public SolverUnassignedClassesModel(TimetableSolver solver) {
 		super();
-		for (Enumeration e=solver.currentSolution().getModel().unassignedVariables().elements();e.hasMoreElements();) {
-			Lecture lecture = (Lecture)e.nextElement();
+		for (Lecture lecture: solver.currentSolution().getModel().unassignedVariables()) {
 			String name = lecture.getName();
 			String onClick = "window.open('suggestions.do?id="+lecture.getClassId()+"&op=Reset','suggestions','width=1000,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,directories=no,status=yes,menubar=no,copyhistory=no').focus();";
 			String instructorName = lecture.getInstructorName();
