@@ -17,13 +17,16 @@ arbitrary number of queries, and import declarations of arbitrary classes.
  -->
 
 <!ELEMENT hibernate-mapping (
-	meta*, 
-	typedef*, 
-	import*, 
+	meta*,
+	identifier-generator*,
+	typedef*,
+	filter-def*,
+	import*,
 	(class|subclass|joined-subclass|union-subclass)*,
     resultset*,
 	(query|sql-query)*,
 	filter-def*,
+	fetch-profile*,
     database-object*
 )>
 	<!ATTLIST hibernate-mapping schema CDATA #IMPLIED>									<!-- default: none -->
@@ -35,7 +38,7 @@ arbitrary number of queries, and import declarations of arbitrary classes.
 	<!ATTLIST hibernate-mapping package CDATA #IMPLIED>									<!-- default: none -->
 
 <!--
-	META element definition; used to assign meta-level attributes to a class
+	<meta.../> is used to assign meta-level attributes to a class
 	or property.  Is currently used by codegenerator as a placeholder for
 	values that is not directly related to OR mappings.
 -->
@@ -44,7 +47,14 @@ arbitrary number of queries, and import declarations of arbitrary classes.
 	<!ATTLIST meta inherit (true|false) "true">
 
 <!--
-	TYPEDEF element definition; defines a new name for a Hibernate type. May
+    <identifier-generator.../> allows customized short-naming of IdentifierGenerator implementations.
+-->
+<!ELEMENT identifier-generator EMPTY>
+    <!ATTLIST identifier-generator name CDATA #REQUIRED>
+    <!ATTLIST identifier-generator class CDATA #REQUIRED>
+
+<!--
+	<typedef.../> allows defining a customized type mapping for a Hibernate type. May
 	contain parameters for parameterizable types.
 -->
 <!ELEMENT typedef (param*)>
@@ -78,6 +88,7 @@ arbitrary number of queries, and import declarations of arbitrary classes.
 	((join*,subclass*)|joined-subclass*|union-subclass*),
 	loader?,sql-insert?,sql-update?,sql-delete?,
 	filter*,
+    fetch-profile*,
     resultset*,
 	(query|sql-query)*
 )>
@@ -91,7 +102,7 @@ arbitrary number of queries, and import declarations of arbitrary classes.
 	<!ATTLIST class subselect CDATA #IMPLIED>
 	<!ATTLIST class discriminator-value CDATA #IMPLIED>				<!-- default: unqualified class name | none -->
 	<!ATTLIST class mutable (true|false) "true">
-	<!ATTLIST class abstract (true|false) "false">
+	<!ATTLIST class abstract (true|false) #IMPLIED>
 	<!ATTLIST class polymorphism (implicit|explicit) "implicit">
 	<!ATTLIST class where CDATA #IMPLIED>							<!-- default: none -->
 	<!ATTLIST class persister CDATA #IMPLIED>
@@ -133,6 +144,22 @@ arbitrary number of queries, and import declarations of arbitrary classes.
 	<!ATTLIST filter name CDATA #REQUIRED>
 	<!ATTLIST filter condition CDATA #IMPLIED>
 
+<!--
+-->
+<!ELEMENT fetch-profile (fetch*)>
+    <!ATTLIST fetch-profile name CDATA #REQUIRED>
+
+<!--
+    The <fetch> element defines a single path to which the fetch
+    refers, as well as the style of fetch to apply.  The 'root' of the
+    path is different depending upon the context in which the
+    containing <fetch-profile/> occurs; within a <class/> element,
+    the entity-name of the containing class mapping is assumed...
+-->
+<!ELEMENT fetch EMPTY>
+    <!ATTLIST fetch entity CDATA #IMPLIED> <!-- Implied as long as the containing fetch profile is contained in a class mapping -->
+    <!ATTLIST fetch association CDATA #REQUIRED>
+    <!ATTLIST fetch style (join|select) "join">
 
 <!-- A join allows some properties of a class to be persisted to a second table -->
 
@@ -174,7 +201,7 @@ via Session.getIdentifier() -->
 key column. The class must implement java.io.Serializable and reimplement equals() 
 and hashCode(). -->
 
-<!ELEMENT composite-id ( meta*, (key-property|key-many-to-one)+ )>
+<!ELEMENT composite-id ( meta*, (key-property|key-many-to-one)+, generator? )>
 	<!ATTLIST composite-id class CDATA #IMPLIED>
 	<!ATTLIST composite-id mapped (true|false) "false">
 	<!ATTLIST composite-id name CDATA #IMPLIED>
@@ -231,6 +258,7 @@ application through a property of the Java class. -->
 	join*, 
 	subclass*,
 	loader?,sql-insert?,sql-update?,sql-delete?,
+    fetch-profile*,
     resultset*,
 	(query|sql-query)*
 )>
@@ -243,7 +271,7 @@ application through a property of the Java class. -->
 	<!ATTLIST subclass select-before-update (true|false) "false">
 	<!ATTLIST subclass extends CDATA #IMPLIED>							<!-- default: empty when a toplevel, otherwise the nearest class definition -->
 	<!ATTLIST subclass lazy (true|false) #IMPLIED>
-	<!ATTLIST subclass abstract (true|false) "false">
+	<!ATTLIST subclass abstract (true|false) #IMPLIED>
 	<!ATTLIST subclass persister CDATA #IMPLIED>
 	<!ATTLIST subclass batch-size CDATA #IMPLIED>
 	<!ATTLIST subclass node CDATA #IMPLIED>
@@ -263,6 +291,7 @@ application through a property of the Java class. -->
 	(property|many-to-one|one-to-one|component|dynamic-component|properties|any|map|set|list|bag|idbag|array|primitive-array)*, 
 	joined-subclass*,
 	loader?,sql-insert?,sql-update?,sql-delete?,
+    fetch-profile*,
     resultset*,
 	(query|sql-query)*
 )>
@@ -278,7 +307,7 @@ application through a property of the Java class. -->
 	<!ATTLIST joined-subclass select-before-update (true|false) "false">
 	<!ATTLIST joined-subclass extends CDATA #IMPLIED>			 		<!-- default: none when toplevel, otherwise the nearest class definition -->
 	<!ATTLIST joined-subclass lazy (true|false) #IMPLIED>
-	<!ATTLIST joined-subclass abstract (true|false) "false">
+	<!ATTLIST joined-subclass abstract (true|false) #IMPLIED>
 	<!ATTLIST joined-subclass persister CDATA #IMPLIED>
 	<!ATTLIST joined-subclass check CDATA #IMPLIED>				 		<!-- default: none -->
 	<!ATTLIST joined-subclass batch-size CDATA #IMPLIED>
@@ -298,6 +327,7 @@ application through a property of the Java class. -->
 	(property|many-to-one|one-to-one|component|dynamic-component|properties|any|map|set|list|bag|idbag|array|primitive-array)*,
 	union-subclass*,
 	loader?,sql-insert?,sql-update?,sql-delete?,
+    fetch-profile*,
     resultset*,
 	(query|sql-query)*
 )>
@@ -313,7 +343,7 @@ application through a property of the Java class. -->
 	<!ATTLIST union-subclass select-before-update (true|false) "false">
 	<!ATTLIST union-subclass extends CDATA #IMPLIED>					<!-- default: none when toplevel, otherwise the nearest class definition -->
 	<!ATTLIST union-subclass lazy (true|false) #IMPLIED>
-	<!ATTLIST union-subclass abstract (true|false) "false">
+	<!ATTLIST union-subclass abstract (true|false) #IMPLIED>
 	<!ATTLIST union-subclass persister CDATA #IMPLIED>
 	<!ATTLIST union-subclass check CDATA #IMPLIED>						<!-- default: none -->
 	<!ATTLIST union-subclass batch-size CDATA #IMPLIED>
@@ -377,7 +407,7 @@ etc. to an entity). -->
 <!-- Declares a one-to-one association between two entities (Or from a component, 
 component element, etc. to an entity). -->
 
-<!ELEMENT one-to-one (meta*|formula*)>
+<!ELEMENT one-to-one (meta*,formula*)>
 	<!ATTLIST one-to-one name CDATA #REQUIRED>
 	<!ATTLIST one-to-one formula CDATA #IMPLIED>
 	<!ATTLIST one-to-one access CDATA #IMPLIED>
@@ -725,11 +755,11 @@ relationship from the collection table to the enclosing class. -->
 
 <!-- Declares the element type of a collection of basic type -->
 
-<!ELEMENT element (column|formula)*>
+<!ELEMENT element ( (column|formula)*, type? )>
 	<!ATTLIST element column CDATA #IMPLIED>
 	<!ATTLIST element node CDATA #IMPLIED>
 	<!ATTLIST element formula CDATA #IMPLIED>
-	<!ATTLIST element type CDATA #REQUIRED>
+	<!ATTLIST element type CDATA #IMPLIED>
 	<!ATTLIST element length CDATA #IMPLIED>
 	<!ATTLIST element precision CDATA #IMPLIED>
 	<!ATTLIST element scale CDATA #IMPLIED>
@@ -765,6 +795,7 @@ element type of a collection and specifies a many-to-many relational model -->
 	<!ATTLIST many-to-many foreign-key CDATA #IMPLIED>
 	<!ATTLIST many-to-many unique (true|false) "false">
 	<!ATTLIST many-to-many where CDATA #IMPLIED>
+	<!ATTLIST many-to-many order-by CDATA #IMPLIED>
 	<!ATTLIST many-to-many property-ref CDATA #IMPLIED>
 
 <!-- A composite element allows a collection to hold instances of an arbitrary 
@@ -775,6 +806,7 @@ Composite elements may not hold nested collections. -->
 <!ELEMENT composite-element ( 
 	(meta*),
 	parent?,
+	tuplizer*,
 	(property|many-to-one|any|nested-composite-element)* 
 )>
 	<!ATTLIST composite-element class CDATA #REQUIRED>
@@ -782,6 +814,7 @@ Composite elements may not hold nested collections. -->
 
 <!ELEMENT nested-composite-element ( 
 	parent?,
+	tuplizer*,
 	(property|many-to-one|any|nested-composite-element)* 
 )>
 	<!ATTLIST nested-composite-element class CDATA #REQUIRED>
@@ -883,6 +916,8 @@ mapping associations to classes with composite ids. -->
 	<!ATTLIST column index CDATA #IMPLIED>
 	<!ATTLIST column check CDATA #IMPLIED>						<!-- default: no check constraint -->
     <!ATTLIST column default CDATA #IMPLIED>                    <!-- default: no default value -->
+    <!ATTLIST column read CDATA #IMPLIED>                       <!-- default: column name -->
+    <!ATTLIST column write CDATA #IMPLIED>                      <!-- default: parameter placeholder ('?') -->
 
 <!-- The formula and subselect elements allow us to map derived properties and 
 entities. -->
@@ -929,9 +964,9 @@ an entity or collection -->
 	<!ATTLIST sql-query cache-region CDATA #IMPLIED>
 	<!ATTLIST sql-query fetch-size CDATA #IMPLIED>
 	<!ATTLIST sql-query timeout CDATA #IMPLIED>
-	<!ATTLIST query cache-mode (get|ignore|normal|put|refresh) #IMPLIED>
-    <!ATTLIST query read-only (true|false) #IMPLIED>
-    <!ATTLIST query comment CDATA #IMPLIED>
+	<!ATTLIST sql-query cache-mode (get|ignore|normal|put|refresh) #IMPLIED>
+    <!ATTLIST sql-query read-only (true|false) #IMPLIED>
+    <!ATTLIST sql-query comment CDATA #IMPLIED>
 	<!ATTLIST sql-query callable (true|false) "false">
 
 <!-- The query-param element is used only by tools that generate
@@ -982,37 +1017,41 @@ finder methods for named queries -->
 
 <!ELEMENT return-scalar EMPTY>
 	<!ATTLIST return-scalar column CDATA #REQUIRED>
-	<!ATTLIST return-scalar type CDATA #REQUIRED>
+	<!ATTLIST return-scalar type CDATA #IMPLIED>
 
 <!ELEMENT synchronize EMPTY>
 	<!ATTLIST synchronize table CDATA #REQUIRED>
 	
 <!-- custom sql operations -->
 <!ELEMENT sql-insert (#PCDATA)>
-	<!ATTLIST sql-insert callable (true|false) "false">	
+	<!ATTLIST sql-insert callable (true|false) "false">
+	<!ATTLIST sql-insert check (none|rowcount|param) #IMPLIED>
 
 <!ELEMENT sql-update (#PCDATA)>
-	<!ATTLIST sql-update callable (true|false) "false">	
+	<!ATTLIST sql-update callable (true|false) "false">
+	<!ATTLIST sql-update check (none|rowcount|param) #IMPLIED>
 
 <!ELEMENT sql-delete (#PCDATA)>
-	<!ATTLIST sql-delete callable (true|false) "false">	
+	<!ATTLIST sql-delete callable (true|false) "false">
+	<!ATTLIST sql-delete check (none|rowcount|param) #IMPLIED>
 
 <!ELEMENT sql-delete-all (#PCDATA)>
 	<!ATTLIST sql-delete-all callable (true|false) "false">
+	<!ATTLIST sql-delete-all check (none|rowcount|param) #IMPLIED>
 
 <!--
     Element for defining "auxiliary" database objects.  Must be one of two forms:
 
     #1 :
-        <auxiliary-object>
+        <database-object>
             <definition class="CustomClassExtendingAuxiliaryObject"/>
-        </auxiliary-object>
+        </database-object>
 
     #2 :
-        <auxiliary-object>
-            <create>CRAETE OR REPLACE ....</create>
+        <database-object>
+            <create>CREATE OR REPLACE ....</create>
             <drop>DROP ....</drop>
-        </auxiliary-object>
+        </database-object>
 -->
 <!ELEMENT database-object ( (definition|(create,drop)), dialect-scope* )>
 
